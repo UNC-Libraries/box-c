@@ -1,0 +1,67 @@
+body { margin: 0px;
+	padding: 0px;
+	height: 100%;
+	min-height: 100%;
+	border: none;
+	color: #333333;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+}
+
+
+
+h1 {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18pt; font-weight: bold; color: #339966;}
+h2 {  font-family: Georgia, "Times New Roman", Times, serif; font-size: 15pt; font-style: normal; font-weight: bolder; color: #336666}
+p, td {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	color: #333333;
+}
+li {
+
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	line-height: 18px;
+	color: #333333;
+}
+
+ul { list-style: square; }
+ul ul { list-style: disc; }
+ul ul ul {list-style: circle; }
+
+.menu {  font-family: Arial, Helvetica, sans-serif; font-size: 9pt}
+
+.selected {
+	font-weight: bold;
+	color: #006633;
+}
+
+td {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	color: #333333;
+}
+
+.smaller {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: #333333;
+}
+pre {
+	font-family: "Courier New", Courier, mono;
+	font-size: 9pt;
+	color: #333333;
+	
+}	
+div.gx { padding: 5px; border:1px dashed #ccc; } 
+
+.background-green {
+	background-color: #339966
+;
+	background-image: url(images/spacer-green.gif);
+} 
+.background-gray {
+	background-color: #dddddd
+;
+	background-image: url(images/spacer-gray.gif);
+} 

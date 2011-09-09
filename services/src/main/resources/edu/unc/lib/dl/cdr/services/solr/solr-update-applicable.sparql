@@ -1,0 +1,6 @@
+SELECT ?pid ?modifiedDate
+FROM <%1$s>
+WHERE {
+	?pid <info:fedora/fedora-system:def/view#lastModifiedDate> ?modifiedDate
+	FILTER (?pid = <%2$s>)
+}

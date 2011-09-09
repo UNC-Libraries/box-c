@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2008 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+			http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/util 
+			http://www.springframework.org/schema/util/spring-util.xsd">	
+
+    <bean name="propertiesURI" class="java.lang.System" factory-method="getProperty">
+		<constructor-arg index="0" value="server.properties.uri"/>
+		<!-- property name for properties URI location -->
+		<constructor-arg index="1" value="classpath:server.properties"/>
+	</bean>
+	<bean id="serverProperties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<ref bean="propertiesURI"/>
+			</list>
+		</property>
+		<property name="ignoreResourceNotFound" value="false"/>
+	</bean>
+	
+
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+
+		<!-- Max 1GB -->
+		<property name="maxUploadSize" value="1073741824"/>
+		<property name="maxInMemorySize" value="5000000" />
+	</bean>
+
+
+	<!-- Solr -->
+
+	<bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
+		<property name="properties" ref="searchProperties" />
+	</bean>
+	<bean id="solrSettings" class="edu.unc.lib.dl.search.solr.util.SolrSettings">
+		<property name="properties" ref="solrProperties" />
+	</bean>
+	<util:properties id="searchProperties" location="classpath:search.properties" />
+	<util:properties id="solrProperties" location="classpath:solr.properties"
+		local-override="true">
+		<prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
+		</prop>
+	</util:properties>
+	
+	<bean id="hierarchicalFacet" class="edu.unc.lib.dl.search.solr.model.HierarchicalFacet"/>
+
+	<bean id="solrSearchService" class="edu.unc.lib.dl.search.solr.service.SolrSearchService"
+		init-method="initializeSolrServer">
+		<property name="solrSettings" ref="solrSettings"/>
+		<property name="searchSettings" ref="searchSettings"/>
+	</bean>
+
+	<bean id="searchStateFactory"
+		class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
+		<property name="searchSettings" ref="searchSettings"/>
+	</bean>
+	
+	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
+		<value>${admin.access.groups}</value>
+	</util:set>
+
+
+
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/>
+
+	<!-- "That's one of the lesser known features of the DispatcherServlet: if you provide a custom HandlerAdapter (such as the MessageHandlerAdapter), you will lose the standard ones (which are listed in DispatcherServlet.properties). So the solution is to add the SimpleControllerHandlerAdapter to the application-servlet.xml,and everything should work again." -->
+	<bean id="controllerHandlerAdapter"
+		class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/>
+
+
+
+	<!--   -->
+	<bean id="searchController" class="edu.unc.lib.dl.ui.search.SearchController">
+		<property name="searchProcessor" ref="searchProcessor"/>
+		<property name="successView" value="account-created"/>
+	</bean>
+
+	<bean id="searchProcessor" class="edu.unc.lib.dl.search.SearchProcessor"> </bean>
+
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename" value="messages"/>
+	</bean>
+
+	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.FixedLocaleResolver"/>
+
+	<bean id="uiUtilityMethods" class="edu.unc.lib.dl.ui.util.UiUtilityMethods" lazy-init="true">
+		<property name="agentManager" ref="agentManager"/>
+		<property name="folderManager" ref="folderManager"/>
+    </bean>
+
+	<bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<props>
+				<prop key="/ajax/getallpaths">ajaxPathController</prop>
+				<prop key="/submit/collection">createCollectionController</prop>
+				<prop key="/submit/collection/**/*">createCollectionController</prop>
+				<prop key="/submit/mediated">mediatedSubmitController</prop>
+				<prop key="/submit/mediated/**/*">mediatedSubmitController</prop>
+				<prop key="/submit/metsubmitbypid">metsSubmitByPidController</prop>
+				<prop key="/submit/metsubmitbypid/**/*">metsSubmitByPidController</prop>
+				<prop key="/admin/deleteobject">deleteObjectController</prop>
+				<prop key="/admin/deleteobject/**/*">deleteObjectController</prop>
+				<prop key="/admin/moveobject">moveObjectController</prop>
+				<prop key="/admin/moveobject/**/*">moveObjectController</prop>
+				<prop key="/admin/updateobject">updateObjectController</prop>
+				<prop key="/admin/updateobject/**/*">updateObjectController</prop>
+				<prop key="/admin/createuser">adminController</prop>
+				<prop key="/admin/creategroup">adminController</prop>
+				<prop key="/admin/deleteuser">adminController</prop>
+				<prop key="/admin/deletegroup">adminController</prop>
+				<prop key="/admin/addusertogroup0">addUserToGroupController</prop>
+				<prop key="/admin/removeuserfromgroup0">removeUserFromGroupController</prop>
+				<prop key="/admin/">adminController</prop>
+				<prop key="/admin/reindexsearch">reindexSearchController</prop>
+				<prop key="/*">passThroughController</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="deleteObjectController" class="edu.unc.lib.dl.ui.DeleteObjectController"
+		lazy-init="true">
+		<property name="uiWebService" ref="uiWebService"/>
+		<property name="agentManager" ref="agentManager"/>
+		<property name="folderManager" ref="folderManager"/>
+		<property name="digitalObjectManager" ref="digitalObjectManager" />
+		<property name="commandClass" value="edu.unc.lib.dl.schema.DeleteObjectDAO"/>
+		<property name="commandName" value="deleteObjectDAO"/>
+		<property name="formView" value="deleteobject"/>
+		<property name="successView" value="deleteobject"/>
+		<property name="deleteObjectUrl"
+			value="https://${repository.host}${repository.port}/${admin.webapp.name}/ir/admin/deleteobject"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="baseUrl" value="${admin.base.path}"/>
+	</bean>
+
+	<bean id="moveObjectController" class="edu.unc.lib.dl.ui.MoveObjectController"
+		lazy-init="true">
+		<property name="uiWebService" ref="uiWebService"/>
+		<property name="agentManager" ref="agentManager"/>
+		<property name="folderManager" ref="folderManager"/>
+		<property name="digitalObjectManager" ref="digitalObjectManager" />
+		<property name="commandClass" value="edu.unc.lib.dl.schema.MoveObjectDAO"/>
+		<property name="commandName" value="moveObjectDAO"/>
+ 		<property name="formView" value="moveobject"/>
+    	<property name="successView" value="movesubmitted"/>   
+		<property name="moveObjectUrl"
+			value="https://${repository.host}${repository.port}/${admin.webapp.name}/ir/admin/moveobject"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="baseUrl" value="${admin.base.path}"/>
+	</bean>
+
+	<bean id="updateObjectController" class="edu.unc.lib.dl.ui.UpdateObjectController"
+		lazy-init="true">
+		<property name="uiWebService" ref="uiWebService"/>
+		<property name="agentManager" ref="agentManager"/>
+		<property name="folderManager" ref="folderManager"/>
+		<property name="digitalObjectManager" ref="digitalObjectManager" />
+		<property name="commandClass" value="edu.unc.lib.dl.util.UpdateObjectDAO"/>
+		<property name="commandName" value="updateObjectDAO"/>
+		<property name="formView" value="updateobject"/>
+		<property name="successView" value="updateobject"/>
+		<property name="updateObjectUrl"
+			value="https://${repository.host}${repository.port}/${admin.webapp.name}/ir/admin/updateobject"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="baseUrl" value="${admin.base.path}"/>
+	</bean>
+
+	<bean id="metsSubmitByPidController" class="edu.unc.lib.dl.ui.MetsSubmitByPidController">
+		<property name="commandClass" value="edu.unc.lib.dl.util.MetsSubmitByPidDAO"/>
+		<property name="commandName" value="metsSubmitByPidDAO"/>
+		<property name="formView" value="metsubmitbypid"/>
+		<property name="successView" value="metsubmitbypid"/>
+		<property name="uiWebService" ref="uiWebService"/>
+		<property name="agentManager" ref="agentManager"/>
+		<property name="folderManager" ref="folderManager"/>
+		<property name="uiUtilityMethods" ref="uiUtilityMethods"/>
+		<property name="metsIngestObjectUrl"
+			value="https://${repository.host}${repository.port}/${admin.webapp.name}/ir/submit/metsubmitbypid"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="baseUrl" value="${admin.base.path}"/>		
+	</bean>
+
+	<bean id="metsSubmitValidator" class="edu.unc.lib.dl.ui.MetsSubmitValidator"/>
+
+
+	<bean id="mediatedSubmitController" class="edu.unc.lib.dl.ui.MediatedSubmitController">
+		<property name="commandClass" value="edu.unc.lib.dl.util.MediatedSubmitDAO"/>
+		<property name="commandName" value="mediatedSubmitDAO"/>
+		<property name="formView" value="mediated"/>
+		<property name="successView" value="mediated"/>
+		<property name="uiWebService" ref="uiWebService"/>
+		<property name="agentManager" ref="agentManager"/>
+		<property name="folderManager" ref="folderManager"/>
+		<property name="validator" ref="mediatedSubmitValidator"/>
+		<property name="uiUtilityMethods" ref="uiUtilityMethods"/>
+	</bean>
+
+	<bean id="mediatedSubmitValidator" class="edu.unc.lib.dl.ui.MediatedSubmitValidator"/>
+
+	<bean id="createCollectionController" class="edu.unc.lib.dl.ui.CreateCollectionController">
+		<property name="commandClass" value="edu.unc.lib.dl.util.MediatedSubmitDAO"/>
+		<property name="commandName" value="mediatedSubmitDAO"/>
+		<property name="formView" value="createcollection"/>
+		<property name="successView" value="createcollection"/>
+		<property name="uiWebService" ref="uiWebService"/>
+		<property name="agentManager" ref="agentManager"/>
+		<property name="folderManager" ref="folderManager"/>
+		<property name="validator" ref="createCollectionValidator"/>
+		<property name="uiUtilityMethods" ref="uiUtilityMethods"/>
+	</bean>
+	
+	<bean id="createCollectionValidator" class="edu.unc.lib.dl.ui.CreateCollectionValidator"/>
+	
+
+	<bean id="addUserToGroupController" class="edu.unc.lib.dl.ui.AddUserToGroupController">
+		<property name="uiWebService" ref="uiWebService"/>
+		<property name="pages">
+			<list>
+				<value>addusertogroup0</value>
+				<value>addusertogroup1</value>
+				<value>addusertogroup2</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="removeUserFromGroupController" class="edu.unc.lib.dl.ui.RemoveUserFromGroupController">
+		<property name="uiWebService" ref="uiWebService"/>
+		<property name="pages">
+			<list>
+				<value>removeuserfromgroup0</value>
+				<value>removeuserfromgroup1</value>
+				<value>removeuserfromgroup2</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="adminController" class="edu.unc.lib.dl.ui.AdminController">
+		<property name="uiWebService" ref="uiWebService"/>
+	</bean>
+
+	<bean id="passThroughController" class="edu.unc.lib.dl.ui.PassThroughController"> </bean>
+
+	<bean id="ajaxPathController" class="edu.unc.lib.dl.ui.AjaxPathController">
+		<property name="uiWebService" ref="uiWebService"/>		
+	</bean>
+
+	<bean id="reindexSearchController" class="edu.unc.lib.dl.ui.ReindexSearchController">
+		<property name="uiWebService" ref="uiWebService"/>
+	</bean>	
+
+	<bean id="addToSearchController" class="edu.unc.lib.dl.ui.AddToSearchController">
+		<property name="uiWebService" ref="uiWebService"/>
+	</bean>
+
+	<bean id="removeFromSearchController" class="edu.unc.lib.dl.ui.RemoveFromSearchController">
+		<property name="uiWebService" ref="uiWebService"/>
+	</bean>
+
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+		<property name="prefix" value="/WEB-INF/jsp/"/>
+		<property name="suffix" value=".jsp"/>
+		<property name="order" value="2"/>
+	</bean>
+
+	<bean id="uiWebService" class="edu.unc.lib.dl.ui.ws.UiWebService">
+		<property name="dataService" ref="dataService"/>
+		<property name="marshaller" ref="marshaller"/>
+		<property name="unmarshaller" ref="marshaller"/>
+		<property name="defaultUri" value="https://${repository.host}${repository.port}/${admin.webapp.name}/ws"/>
+		<property name="messageSenders" ref="commonsMessageSender"/>
+		<property name="utilityMethods" ref="utilityMethods"/>
+	</bean>
+	
+	<bean id="utilityMethods" class="edu.unc.lib.dl.util.UtilityMethods">
+		<property name="idService" ref="idService" />
+		<property name="fedoraDataUrl" value="https://${fedora.host}${fedora.port}/fedora/get/" />
+		<property name="baseHostUrl">
+			<value>https://${repository.host}${repository.port}/${admin.webapp.name}</value>
+		</property>     
+	</bean>	
+	
+
+	<!-- For getting datastreams from Fedora directly from UI -->
+
+	<!-- CommonsHttpMessageSender supports authentication and
+		advanced configuration options through the "httpClient"
+		property. -->
+	<bean id="commonsMessageSender"
+		class="org.springframework.ws.transport.http.CommonsHttpMessageSender">
+		<property name="credentials" ref="fedoraCredentials"/>
+	</bean>
+
+	<bean id="fedoraCredentials" class="org.apache.commons.httpclient.UsernamePasswordCredentials">
+		<property name="userName" value="${fedora.admin.username}"/>
+		<property name="password" value="${fedora.admin.password}"/>
+	</bean>
+
+	<bean
+		class="org.springframework.ws.server.endpoint.adapter.GenericMarshallingMethodEndpointAdapter">
+		<constructor-arg ref="marshaller"/>
+	</bean>
+
+	<!-- Marshaller -->
+	<bean id="marshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+		<description> The JAXB 2 Marshaller is used by the endpoints. </description>
+		<property name="contextPath" value="edu.unc.lib.dl.schema"/>
+	</bean>
+
+	<!-- WSDL creation -->
+	<bean id="dlservice" class="org.springframework.ws.wsdl.wsdl11.DynamicWsdl11Definition">
+		<property name="builder">
+			<bean
+				class="org.springframework.ws.wsdl.wsdl11.builder.XsdBasedSoap11Wsdl4jDefinitionBuilder">
+				<property name="schema" value="/WEB-INF/classes/dlservice.xsd"/>
+				<property name="portTypeName" value="dlservice"/>
+				<property name="locationUri" value="https://${repository.host}${repository.port}/${admin.webapp.name}/dlservice/"/>
+				<property name="targetNamespace" value="${admin.namespace}"/>
+			</bean>
+		</property>
+	</bean>
+
+	<bean name="agentManager" class="edu.unc.lib.dl.agents.AgentManager">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+	</bean>
+
+	<bean name="folderManager" class="edu.unc.lib.dl.services.FolderManager">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+	</bean>	
+	
+	
+</beans>

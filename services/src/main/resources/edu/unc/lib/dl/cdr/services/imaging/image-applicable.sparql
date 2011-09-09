@@ -1,0 +1,37 @@
+PREFIX fedora-view: <info:fedora/fedora-system:def/view#> 
+PREFIX fedora-model: <info:fedora/fedora-system:def/model#> 
+PREFIX cdr-base: <http://cdr.unc.edu/definitions/1.0/base-model.xml#> 
+ASK 
+FROM <%1$s>
+WHERE 
+{ 
+  { ?pid <info:fedora/fedora-system:def/model#hasModel> <info:fedora/cdr-model:Simple> .
+    ?pid cdr-base:sourceData ?srcDS . 
+    ?srcDS fedora-view:lastModifiedDate ?srcModified . 
+    ?pid cdr-base:hasSourceMimeType ?srcMime .
+    ?pid <%3$s> ?jp2DS . 
+    ?jp2DS fedora-view:lastModifiedDate ?jp2Modified . 
+    FILTER ( 
+      regex( str(?srcMime), 'image/')
+      && ?srcModified > ?jp2Modified 
+    ) 
+  } UNION { 
+    ?pid <info:fedora/fedora-system:def/model#hasModel> <info:fedora/cdr-model:Simple> .
+    ?pid cdr-base:sourceData ?srcDS .
+    ?pid cdr-base:hasSourceMimeType ?srcMime .
+    OPTIONAL { ?pid <%3$s> ?jp2DS . } 
+    FILTER ( 
+      regex( str(?srcMime), 'image/')
+      && !bound(?jp2DS) ) 
+  } UNION {
+    ?pid <info:fedora/fedora-system:def/model#hasModel> <info:fedora/cdr-model:Simple> .
+    ?pid cdr-base:sourceData ?srcDS .
+    ?pid cdr-base:hasSourceMimeType ?srcMime .
+    OPTIONAL { ?pid <%3$s> ?jp2DS . 
+      ?jp2DS fedora-view:lastModifiedDate ?jp2Modified . } 
+    FILTER ( 
+      regex( str(?srcMime), 'image/')
+      && !bound(?jp2DS) && !bound(?jp2Modified) ) 
+  }
+  FILTER ( ?pid = <%2$s> )
+}

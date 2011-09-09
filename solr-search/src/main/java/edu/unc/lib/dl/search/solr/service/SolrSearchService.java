@@ -1,0 +1,602 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package edu.unc.lib.dl.search.solr.service;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.QueryResponse;
+
+import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.SearchRequest;
+import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.model.FacetFieldList;
+import edu.unc.lib.dl.search.solr.util.DateFormatUtil;
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.dl.search.solr.util.SolrSettings;
+import edu.unc.lib.dl.search.solr.util.SearchSettings;
+import edu.unc.lib.dl.security.access.AccessGroupConstants;
+import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.security.access.AccessRestrictionException;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Iterator;
+
+/**
+ * Performs CDR specific Solr search tasks, using solrj for connecting to the 
+ * solr instance.
+ * @author bbpennel
+ * $Id: SolrSearchService.java 2766 2011-08-22 15:29:07Z bbpennel $
+ * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-search/src/main/java/edu/unc/lib/dl/search/solr/service/SolrSearchService.java $
+ */
+public class SolrSearchService {
+	private static final Logger LOG = LoggerFactory.getLogger(SolrSearchService.class);
+	private SolrServer server;
+	@Autowired
+	protected SolrSettings solrSettings;
+	@Autowired
+	protected SearchSettings searchSettings;
+	
+	public SolrSearchService(){
+	}
+	
+	/**
+	 * Establish the SolrServer object according to the configuration specified in settings.
+	 */
+	protected void initializeSolrServer(){
+		server = solrSettings.getSolrServer();
+	}
+	
+	/**
+	 * Retrieves the Solr tuple representing the object identified by id. 
+	 * @param id identifier (uuid) of the object to retrieve.
+	 * @param userAccessGroups
+	 * @return
+	 */
+	public BriefObjectMetadataBean getObjectById(SimpleIdRequest idRequest){
+		LOG.debug("In getObjectbyID");
+		
+		QueryResponse queryResponse = null;
+		SolrQuery solrQuery = new SolrQuery();
+		StringBuilder query = new StringBuilder();
+		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':').append(solrSettings.sanitize(idRequest.getId()));
+		try {
+			//Add access restrictions to query
+			addAccessRestrictions(query, idRequest.getAccessGroups(), SearchFieldKeys.RECORD_ACCESS);
+			if (idRequest.getAccessTypeFilter() != null){
+				addAccessRestrictions(query, idRequest.getAccessGroups(), idRequest.getAccessTypeFilter());
+			}
+		} catch (AccessRestrictionException e){
+			//If the user doesn't have any access groups, they don't have access to anything, return null.
+			LOG.error("Error while attempting to add access restrictions to object " + idRequest.getId(), e);
+			return null;
+		}
+		
+		//Restrict the result fields if set
+		if (idRequest.getResultFields() != null){
+			for (String field: idRequest.getResultFields()){
+				solrQuery.addField(solrSettings.getFieldName(field));
+			}
+		}
+		
+		solrQuery.setQuery(query.toString());
+		solrQuery.setRows(1);
+		
+		LOG.debug("getObjectById query: " + solrQuery.toString());
+		try {
+			queryResponse = server.query(solrQuery);
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+			return null;
+		}
+		
+		List<BriefObjectMetadataBean> results = queryResponse.getBeans(BriefObjectMetadataBean.class);
+		if (results != null && results.size() > 0){
+			return results.get(0);
+		}
+		return null;
+	}
+	
+	/**
+	 * Retrieves search results as a SearchResultResponse.  Will not return the solr query use for the request.
+	 * @param searchRequest
+	 * @return
+	 */
+	public SearchResultResponse getSearchResults(SearchRequest searchRequest){
+		return getSearchResults(searchRequest, false);
+	}
+	
+	/**
+	 * Generates a solr query from the search state specified in searchRequest and executes it,
+	 * returning a result set of BriefObjectMetadataBeans and, optionally, the SolrQuery
+	 * generated for this request.
+	 * @param searchRequest
+	 * @param returnQuery
+	 * @return
+	 */
+	public SearchResultResponse getSearchResults(SearchRequest searchRequest, boolean returnQuery){
+		LOG.debug("In getSearchResults: " + searchRequest.getSearchState());
+		
+		boolean isRetrieveFacetsRequest = searchRequest.getSearchState().getFacetsToRetrieve() != null 
+		&& searchRequest.getSearchState().getFacetsToRetrieve().size() > 0;
+		
+		SolrQuery solrQuery = this.generateSearch(searchRequest, isRetrieveFacetsRequest);
+		
+		LOG.debug("getSearchResults query: " + solrQuery);
+		try {
+			return executeSearch(solrQuery, searchRequest.getSearchState(), isRetrieveFacetsRequest, returnQuery);
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr search result request", e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Adds access restrictions to the provided query string buffer.  If there are no 
+	 * access groups in the provided group set, then an AccessRestrictionException is thrown
+	 * as it is invalid for a user to have no permissions.  If the user is an admin, then
+	 * do not restrict access
+	 * @param query string buffer containing the query to append access groups to.
+	 * @param accessGroups set of access groups to append to the query
+	 * @return The original query restricted to results available to the provided 
+	 * access groups
+	 * @throws AccessRestrictionException thrown if no groups are provided.
+	 */
+	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups, String accessType) throws AccessRestrictionException {
+		if (accessGroups == null || accessGroups.size() == 0){
+			throw new AccessRestrictionException("No access groups were provided.");
+		}
+		if (!accessType.equals(SearchFieldKeys.RECORD_ACCESS) || (accessType.equals(SearchFieldKeys.RECORD_ACCESS) && !accessGroups.contains(AccessGroupConstants.ADMIN_GROUP))){
+			query.append(" (").append(accessGroups.joinAccessGroups(" OR ", solrSettings.getFieldName(accessType) + ":", true)).append(')');
+		}
+		return query;
+	}
+	
+	/**
+	 * Attempts to retrieve the hierarchical facet from the facet field corresponding to fieldKey 
+	 * that matches the value of searchValue.  Retrieves and populates all tiers leading up to the 
+	 * tier number given in searchValue.
+	 * @param fieldKey Key of the facet field to search for the facet within.
+	 * @param searchValue Value to find a matching facet for, should be formatted <tier>,<value>
+	 * @param accessGroups
+	 * @return
+	 */
+	public HierarchicalFacet getHierarchicalFacet(String fieldKey, String searchValue, AccessGroupSet accessGroups){
+		QueryResponse queryResponse = null;
+		SolrQuery solrQuery = new SolrQuery();
+		StringBuilder query = new StringBuilder();
+		query.append("[* TO *]");
+		
+		try {
+			//Add access restrictions to query
+			addAccessRestrictions(query, accessGroups, SearchFieldKeys.RECORD_ACCESS);
+		} catch (AccessRestrictionException e){
+			//If the user doesn't have any access groups, they don't have access to anything, return null.
+			LOG.error(e.getMessage());
+			return null;
+		}
+		solrQuery.setQuery(query.toString());
+		solrQuery.setRows(0);
+		
+		solrQuery.setFacet(true);
+		solrQuery.setFacetMinCount(1);
+		
+		solrQuery.addFacetField(solrSettings.getFieldName(fieldKey));
+		solrQuery.addFilterQuery(solrSettings.getFieldName(fieldKey) + ":" + solrSettings.sanitize(searchValue) + searchSettings.facetSubfieldDelimiter + "*");
+		
+		LOG.debug("getHierarchicalFacet query: " + solrQuery.toString());
+		try {
+			queryResponse = server.query(solrQuery);
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+			return null;
+		}
+		
+		try {
+			int requestTier = Integer.parseInt(searchValue.substring(0, searchValue.indexOf(searchSettings.facetSubfieldDelimiter)));
+			ArrayList<HierarchicalFacet.HierarchicalFacetTier> tiers = new ArrayList<HierarchicalFacet.HierarchicalFacetTier>();
+			FacetField facetField = queryResponse.getFacetField(solrSettings.getFieldName(fieldKey));
+			for (FacetField.Count facet: facetField.getValues()){
+				String[] facetComponents = facet.getName().split(searchSettings.facetSubfieldDelimiter);
+				try {
+					int responseTier = Integer.parseInt(facetComponents[0]);
+					if (responseTier <= requestTier){
+						tiers.add(new HierarchicalFacet.HierarchicalFacetTier(responseTier, facetComponents[1], facetComponents[2]));
+					}
+				} catch (java.lang.NumberFormatException e){
+					LOG.error("Error parsing hierarchical facet strings:\n" + e);
+				}
+			}
+			if (facetField.getValueCount() > 0){
+				return new HierarchicalFacet(fieldKey, tiers, 0);
+			}
+		} catch (Exception e){
+			
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Checks if an item is accessible given the specified access restrictions
+	 * @param idRequest
+	 * @param accessType
+	 * @return
+	 */
+	public boolean isAccessible(SimpleIdRequest idRequest, String accessType){
+		QueryResponse queryResponse = null;
+		SolrQuery solrQuery = new SolrQuery();
+		StringBuilder query = new StringBuilder();
+		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':').append(solrSettings.sanitize(idRequest.getId()));
+		
+		try {
+			//Add access restrictions to query
+			addAccessRestrictions(query, idRequest.getAccessGroups(), SearchFieldKeys.RECORD_ACCESS);
+			if (accessType != null){
+				addAccessRestrictions(query, idRequest.getAccessGroups(), accessType);
+			}
+		} catch (AccessRestrictionException e){
+			//If the user doesn't have any access groups, they don't have access to anything, return null.
+			LOG.error(e.getMessage());
+			return false;
+		}
+		
+		solrQuery.setQuery(query.toString());
+		solrQuery.setRows(0);
+		
+		solrQuery.addField(solrSettings.getFieldName(SearchFieldKeys.ID));
+		
+		LOG.debug("getObjectById query: " + solrQuery.toString());
+		try {
+			queryResponse = server.query(solrQuery);
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+			return false;
+		}
+		
+		return queryResponse.getResults().getNumFound() > 0;
+	}
+	
+	/**
+	 * Gets the ancestor path facet for the provided pid, given the access groups provided. 
+	 * @param pid
+	 * @param accessGroups
+	 * @return
+	 */
+	public HierarchicalFacet getAncestorPath(String pid, AccessGroupSet accessGroups){
+		List<String> resultFields = new ArrayList<String>();
+		resultFields.add(SearchFieldKeys.ANCESTOR_PATH);
+		
+		SimpleIdRequest idRequest = new SimpleIdRequest(pid, resultFields, accessGroups);
+		
+		BriefObjectMetadataBean rootNode = null;
+		try {
+			rootNode = getObjectById(idRequest);
+		} catch (Exception e){
+			LOG.error("Error while retrieving Solr entry for ", e);
+		}
+		if (rootNode == null)
+			return null;
+		return rootNode.getAncestorPath();
+	}
+	
+	/**
+	 * Wrapper method for executing a solr query.
+	 * @param query
+	 * @return
+	 * @throws SolrServerException
+	 */
+	protected QueryResponse executeQuery(SolrQuery query) throws SolrServerException {
+		return server.query(query);
+	}
+	
+	/**
+	 * Constructs a SolrQuery object from the search state specified within a SearchRequest object.
+	 * The request may optionally request to retrieve facet results in addition to search results.
+	 * @param searchRequest
+	 * @param isRetrieveFacetsRequest
+	 * @return
+	 */
+	protected SolrQuery generateSearch(SearchRequest searchRequest, boolean isRetrieveFacetsRequest){
+		SearchState searchState = searchRequest.getSearchState();
+		SolrQuery solrQuery = new SolrQuery();
+		StringBuilder query = new StringBuilder();
+		//Generate search term query string
+		String searchType = null;
+		HashMap<String,String> searchFields = searchState.getSearchFields();
+		if (searchFields != null){
+			boolean firstTerm = true;
+			Iterator<String> searchTypeIt = searchFields.keySet().iterator();
+			while (searchTypeIt.hasNext()){
+				searchType = searchTypeIt.next();
+				List<String> searchFragments = searchState.getSearchTermFragments(searchType);
+				LOG.debug(searchType + ": "+searchFragments);
+				for (String searchFragment: searchFragments){
+					searchFragment = solrSettings.sanitize(searchFragment);
+					if (firstTerm)
+						firstTerm = false;
+					else query.append(' ').append(searchState.getSearchTermOperator()).append(' ');
+					query.append(solrSettings.getFieldName(searchType)).append(':').append(searchFragment).append(' ');
+				}
+			}
+		}
+		
+		//Add range Fields to the query
+		HashMap<String,SearchState.RangePair> rangeFields = searchState.getRangeFields();
+		if (rangeFields != null){
+			Iterator<Map.Entry<String, SearchState.RangePair>> rangeTermIt = rangeFields.entrySet().iterator();
+			while (rangeTermIt.hasNext()){
+				Map.Entry<String, SearchState.RangePair> rangeTerm = rangeTermIt.next();
+				if (rangeTerm != null && !(rangeTerm.getValue().getLeftHand() == null && rangeTerm.getValue().getRightHand() == null)){
+					query.append(solrSettings.getFieldName(rangeTerm.getKey())).append(":[");
+					
+					if (rangeTerm.getValue().getLeftHand() == null || rangeTerm.getValue().getLeftHand().length() == 0){
+						query.append('*');
+					} else {
+						if (searchSettings.dateSearchableFields.contains(rangeTerm.getKey())){
+							try {
+								query.append(DateFormatUtil.getFormattedDate(rangeTerm.getValue().getLeftHand(), true, false));
+							} catch (NumberFormatException e){
+								query.append('*');
+							}
+						} else {
+							query.append(solrSettings.sanitize(rangeTerm.getValue().getLeftHand()));
+						}
+					}
+					query.append(" TO ");
+					if (rangeTerm.getValue().getRightHand() == null || rangeTerm.getValue().getRightHand().length() == 0){
+						query.append('*');
+					} else {
+						if (searchSettings.dateSearchableFields.contains(rangeTerm.getKey())){
+							try{
+								query.append(DateFormatUtil.getFormattedDate(rangeTerm.getValue().getRightHand(), true, true));
+							} catch (NumberFormatException e){
+								query.append('*');
+							}
+						} else {
+							query.append(solrSettings.sanitize(rangeTerm.getValue().getRightHand()));
+						}
+					}
+					query.append("] ");
+				}
+			}
+		}
+		
+		try {
+			//Add access restrictions to query
+			addAccessRestrictions(query, searchRequest.getAccessGroups(), SearchFieldKeys.RECORD_ACCESS);
+			if (searchState.getAccessTypeFilter() != null){
+				addAccessRestrictions(query, searchRequest.getAccessGroups(), searchState.getAccessTypeFilter());
+			}
+		} catch (AccessRestrictionException e){
+			//If the user doesn't have any access groups, they don't have access to anything, return null.
+			LOG.error(e.getMessage());
+			return null;
+		}
+		
+		//Add query
+		if (query.length() > 0){
+			solrQuery.setQuery(query.toString());
+		} else {
+			solrQuery.setQuery("[* TO *]");
+		}
+		
+		if (searchState.getResultFields() != null){
+			for (String field: searchState.getResultFields()){
+				solrQuery.addField(solrSettings.getFieldName(field));
+			}
+		}
+		
+		//Add sort parameters
+		
+		if(searchSettings == null) LOG.debug("searchSettings is NULL");
+		
+		List<SearchSettings.SortField> sortFields = searchSettings.sortTypes.get(searchState.getSortType());
+		if (sortFields != null){
+			for (int i=0; i<sortFields.size(); i++){
+				SearchSettings.SortField sortField = sortFields.get(i);
+				SolrQuery.ORDER sortOrder = SolrQuery.ORDER.valueOf(sortField.getSortOrder());
+				if (searchState.getSortOrder() != null && searchState.getSortOrder().equals(searchSettings.sortReverse)){
+					sortOrder = sortOrder.reverse();
+				}
+				solrQuery.addSortField(solrSettings.getFieldName(sortField.getFieldName()), sortOrder);
+			}
+		}
+		
+		//Set requested resource types
+		String resourceTypeFilter = this.getResourceTypeFilter(searchState.getResourceTypes());
+		if (resourceTypeFilter != null){
+			solrQuery.addFilterQuery(resourceTypeFilter);
+		}
+		
+		//Turn on faceting
+		solrQuery.setFacet(true);
+		solrQuery.setFacetMinCount(1);
+		solrQuery.setFacetLimit(searchState.getBaseFacetLimit());
+		
+		//Override the base facet limit if overrides are given.
+		if (searchState.getFacetLimits() != null){
+			for (Entry<String,Integer> facetLimit: searchState.getFacetLimits().entrySet()){
+				solrQuery.add("f." + solrSettings.getFieldName(facetLimit.getKey()) + ".facet.limit", facetLimit.getValue().toString());
+			}
+		}
+		
+		if (isRetrieveFacetsRequest){
+			//Add facet fields
+			for (String facetName: searchState.getFacetsToRetrieve()){
+				solrQuery.addFacetField(solrSettings.getFieldName(facetName));
+			}
+		}
+		
+		//Set default hierarchy tiers to 1
+		HashMap<String,Integer> hierarchyBaseTier = new HashMap<String,Integer>();
+		
+		//Add facet limits
+		HashMap<String,Object> facets = searchState.getFacets();
+		if (facets != null){
+			Iterator<Entry<String,Object>> facetIt = facets.entrySet().iterator();
+			while (facetIt.hasNext()){
+				Entry<String,Object> facetEntry = facetIt.next();
+				//Determine if the facet is hierarchical or not.
+				if (facetEntry.getValue() instanceof HierarchicalFacet){
+					HierarchicalFacet hierFacet = (HierarchicalFacet)facetEntry.getValue();
+					//If it is hierarchical, then need to add all the preceding tiers
+					if (hierFacet.getFacetTiers() != null){
+						for (HierarchicalFacet.HierarchicalFacetTier facetTier: hierFacet.getFacetTiers()){
+							StringBuilder filterQuery = new StringBuilder();
+							filterQuery.append(solrSettings.getFieldName(facetEntry.getKey())).append(":") 
+									.append(facetTier.getTier()).append(searchSettings.facetSubfieldDelimiter);
+							if (!facetTier.getSearchValue().equals("*")){
+								filterQuery.append(solrSettings.sanitize(facetTier.getSearchValue())).append(searchSettings.facetSubfieldDelimiter);
+							}
+							filterQuery.append('*');
+							
+							solrQuery.addFilterQuery(filterQuery.toString());
+							if (hierFacet.getCutoffTier() != null && searchRequest.isApplyFacetCutoffs()){
+								filterQuery = new StringBuilder();
+								filterQuery.append('!').append(solrSettings.getFieldName(facetEntry.getKey())).append(":") 
+										.append(hierFacet.getCutoffTier()).append(searchSettings.facetSubfieldDelimiter).append('*');
+								solrQuery.addFilterQuery(filterQuery.toString());
+							}
+						}
+						if (searchRequest.isApplyFacetPrefixes()){
+							hierarchyBaseTier.put(solrSettings.getFieldName(facetEntry.getKey()), hierFacet.getHighestTier());
+						}
+					}
+				} else {
+					//facetEntry.
+					//Add Normal facets
+					solrQuery.addFilterQuery(solrSettings.getFieldName(facetEntry.getKey()) + ":\"" + solrSettings.sanitize((String)facetEntry.getValue()) + "\"");
+				}
+			}
+		}
+		
+		//Scope hierarchical facet results to the highest tier selected within the facet tree
+		if (isRetrieveFacetsRequest && searchRequest.isApplyFacetPrefixes()){
+			for (String hierFacetName: searchSettings.hierarchicalFacets){
+				String hierFacetKey = solrSettings.getFieldName(hierFacetName);
+				if (hierarchyBaseTier.containsKey(hierFacetKey)){
+					solrQuery.setFacetPrefix(hierFacetKey, (hierarchyBaseTier.get(hierFacetKey) + 1) + searchSettings.facetSubfieldDelimiter);
+				} else {
+					solrQuery.setFacetPrefix(hierFacetKey, "1" + searchSettings.facetSubfieldDelimiter);
+				}
+			}
+			
+			//Add individual facet field sorts if they are present.
+			if (searchState.getFacetSorts() != null){
+				for (Entry<String,String> facetSort: searchState.getFacetSorts().entrySet()){
+					solrQuery.add("f." + solrSettings.getFieldName(facetSort.getKey()) + ".facet.sort", facetSort.getValue());
+				}
+			}
+		}
+			
+		//Set Navigation options
+		solrQuery.setStart(searchState.getStartRow());
+		if (searchState.getRowsPerPage() != null)
+			solrQuery.setRows(searchState.getRowsPerPage());
+		
+		return solrQuery;
+	}
+	
+	/**
+	 * Executes a SolrQuery based off of a search state and stores the results as BriefObjectMetadataBeans.
+	 * @param query the solr query to be executed
+	 * @param searchState the search state used to generate this SolrQuery 
+	 * @param isRetrieveFacetsRequest indicates if facet results hould be returned
+	 * @param returnQuery indicates whether to return the solr query object as part of the response.
+	 * @return
+	 * @throws SolrServerException
+	 */
+	protected SearchResultResponse executeSearch(SolrQuery query, SearchState searchState, boolean isRetrieveFacetsRequest, boolean returnQuery) throws SolrServerException {
+		QueryResponse queryResponse = server.query(query);
+		SearchResultResponse response = new SearchResultResponse();
+		//Retrieve the results as BriefObjectMetadataBeans and store them to response
+		response.setResultList(queryResponse.getBeans(BriefObjectMetadataBean.class));
+		if (isRetrieveFacetsRequest){
+			//Store facet results
+			response.setFacetFields(new FacetFieldList(queryResponse.getFacetFields(), 
+					searchSettings.hierarchicalFacets, solrSettings.getFieldNamesInverted()));
+			//Add empty entries for any empty facets, then sort the list
+			if (searchState.getFacetsToRetrieve() != null && searchState.getFacetsToRetrieve().size() != response.getFacetFields().size()){
+				response.getFacetFields().addMissing(searchState.getFacetsToRetrieve());
+			}
+			response.getFacetFields().sort(searchSettings.facetDisplayOrder);
+		} else {
+			response.setFacetFields(null);
+		}
+		//Store the number of results
+		response.setResultCount(queryResponse.getResults().getNumFound());
+		//Set search state that generated this result
+		response.setSearchState(searchState);
+		
+		//Add the query to the result if it was requested
+		if (returnQuery){
+			response.setGeneratedQuery(query);
+		}
+		return response;
+	}
+	
+	/**
+	 * Generates a solr query style string to add a resource type filter for the given
+	 * list of resources types.
+	 * @param resourceTypes
+	 * @return
+	 */
+	protected String getResourceTypeFilter(List<String> resourceTypes){
+		if (resourceTypes == null || resourceTypes.size() == 0)
+			return null;
+		
+		StringBuilder sb = new StringBuilder();
+		boolean firstType = true;
+		String resourceTypeLabel = solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE);
+		Iterator<String> resourceTypeIt = resourceTypes.iterator();
+		while (resourceTypeIt.hasNext()){
+			if (firstType)
+				firstType = false;
+			else sb.append(" OR ");
+			sb.append(resourceTypeLabel).append(':').append(resourceTypeIt.next()).append(' ');
+		}
+		return sb.toString();
+	}
+
+	public SolrSettings getSolrSettings() {
+		return solrSettings;
+	}
+
+	public void setSolrSettings(SolrSettings solrSettings) {
+		this.solrSettings = solrSettings;
+	}
+
+	public SearchSettings getSearchSettings() {
+		return searchSettings;
+	}
+
+	public void setSearchSettings(SearchSettings searchSettings) {
+		this.searchSettings = searchSettings;
+	}
+	
+}

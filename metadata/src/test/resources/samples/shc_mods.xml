@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>Southern Historical Collection</title>
+    </titleInfo>
+
+    <name type="personal">
+        <namePart>Dr. J. G. de Roulhac Hamilton</namePart>
+        <displayForm>Dr. J. G. de Roulhac Hamilton</displayForm>
+        <role>
+            <roleTerm type="text">creator</roleTerm>
+        </role>
+    </name>
+    
+    <name type="personal">
+        <namePart>Sarah Graham Kenan</namePart>
+        <displayForm>Sarah Graham Kenan</displayForm>
+        <role>
+            <roleTerm type="text">funder</roleTerm>
+        </role>
+    </name>
+
+    <originInfo>
+        <dateCreated keyDate="yes" encoding="iso8601">19300114</dateCreated>
+    </originInfo>
+
+    <language>
+        <languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+    </language>
+
+    <abstract>Long at the center of inquiry into the history and culture of the American South, the
+        Southern Historical Collection (SHC) is a vast collection of distinct archival collections.
+        These collections are comprised of unique primary documents, such as diaries, journals,
+        letters, correspondence, photographs, maps, drawings, ledgers, oral histories, moving
+        images, albums, scrapbooks, and literary manuscripts.</abstract>
+
+    <subject>
+        <topic>Southern United States -- History</topic>
+    </subject>
+</mods>

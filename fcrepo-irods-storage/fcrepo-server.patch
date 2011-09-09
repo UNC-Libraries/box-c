@@ -1,0 +1,66 @@
+Index: fcrepo-server/src/main/java/fedora/server/storage/ContentManagerParams.java
+===================================================================
+--- fcrepo-server/src/main/java/fedora/server/storage/ContentManagerParams.java	(revision 8682)
++++ fcrepo-server/src/main/java/fedora/server/storage/ContentManagerParams.java	(working copy)
+@@ -53,6 +53,9 @@
+         try {
+             this.protocol = new URL(url).getProtocol();
+         } catch (MalformedURLException e) {
++            if(url.startsWith("irods://")) {
++        	return;
++            }
+             throw new RuntimeException(e);
+         }
+     }
+Index: fcrepo-server/src/main/java/fedora/server/utilities/ConnectionWrapper.java
+===================================================================
+--- fcrepo-server/src/main/java/fedora/server/utilities/ConnectionWrapper.java	(revision 8682)
++++ fcrepo-server/src/main/java/fedora/server/utilities/ConnectionWrapper.java	(working copy)
+@@ -4,14 +4,14 @@
+  */
+ package fedora.server.utilities;
+ 
+-/* JDBC_4_ANT_TOKEN_BEGIN -
++/* JDBC_4_ANT_TOKEN_BEGIN */
+ import java.sql.Array;
+ import java.sql.Blob;
+ import java.sql.Clob;
+ import java.sql.NClob;
+ import java.sql.SQLXML;
+ import java.sql.Struct;
+-- JDBC_4_ANT_TOKEN_END */
++/* JDBC_4_ANT_TOKEN_END */
+ import java.sql.CallableStatement;
+ import java.sql.Connection;
+ import java.sql.DatabaseMetaData;
+@@ -38,7 +38,7 @@
+         m_wrappedConnection = wrapped;
+     }
+     
+-    /* JDBC_4_ANT_TOKEN_BEGIN -
++    /* JDBC_4_ANT_TOKEN_BEGIN */
+ 
+     public boolean isWrapperFor(Class<?> iface) {
+         throw new UnsupportedOperationException(
+@@ -105,7 +105,7 @@
+                 "Java 1.6 Connection methods are not supported");
+     }
+ 
+-    - JDBC_4_ANT_TOKEN_END */
++    /* JDBC_4_ANT_TOKEN_END */
+ 
+     public Statement createStatement() throws SQLException {
+         return m_wrappedConnection.createStatement();
+Index: fcrepo-server/src/main/java/fedora/server/validation/ValidationUtility.java
+===================================================================
+--- fcrepo-server/src/main/java/fedora/server/validation/ValidationUtility.java	(revision 8682)
++++ fcrepo-server/src/main/java/fedora/server/validation/ValidationUtility.java	(working copy)
+@@ -60,6 +60,8 @@
+         } catch (MalformedURLException e) {
+             if (url.startsWith(DatastreamManagedContent.UPLOADED_SCHEME)) {
+                 return;
++            } else if (url.startsWith("irods://")) {
++                return;
+             }
+             throw new ValidationException("Malformed URL: " + url, e);
+         }

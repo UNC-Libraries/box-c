@@ -1,0 +1,620 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2008 The University of North Carolina at Chapel Hill Licensed 
+	under the Apache License, Version 2.0 (the "License"); you may not use this 
+	file except in compliance with the License. You may obtain a copy of the 
+	License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by 
+	applicable law or agreed to in writing, software distributed under the License 
+	is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY 
+	KIND, either express or implied. See the License for the specific language 
+	governing permissions and limitations under the License. -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+			http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/util 
+			http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<bean name="propertiesURI" class="java.lang.System"
+		factory-method="getProperty">
+		<constructor-arg index="0" value="server.properties.uri" />
+		<!-- property name for properties URI location -->
+		<constructor-arg index="1" value="classpath:server.properties" />
+	</bean>
+	<bean id="serverProperties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<ref bean="propertiesURI" />
+			</list>
+		</property>
+		<property name="ignoreResourceNotFound" value="false" />
+	</bean>
+
+	<bean id="messageSender"
+		class="org.springframework.ws.transport.http.CommonsHttpMessageSender">
+		<property name="credentials" ref="fedoraCredentials" />
+	</bean>
+
+	<!-- CommonsHttpMessageSender supports authentication and advanced configuration 
+		options through the "httpClient" property. -->
+	<bean id="commonsMessageSender"
+		class="org.springframework.ws.transport.http.CommonsHttpMessageSender">
+		<property name="credentials" ref="fedoraCredentials" />
+	</bean>
+
+	<bean id="fedoraCredentials"
+		class="org.apache.commons.httpclient.UsernamePasswordCredentials">
+		<property name="userName" value="${fedora.admin.username}" />
+		<property name="password" value="${fedora.admin.password}" />
+	</bean>
+
+	<!-- _______________________________________________________________________________________________________________________ -->
+	<!-- Add services here -->
+
+	<!-- Solr -->
+
+	<bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
+		<property name="properties" ref="searchProperties" />
+	</bean>
+	<bean id="solrSettings" class="edu.unc.lib.dl.search.solr.util.SolrSettings">
+		<property name="properties" ref="solrProperties" />
+	</bean>
+	<util:properties id="searchProperties" location="classpath:search.properties" />
+	<util:properties id="solrProperties" location="classpath:solr.properties"
+		local-override="true">
+		<prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
+		</prop>
+	</util:properties>
+
+	<bean id="hierarchicalFacet" class="edu.unc.lib.dl.search.solr.model.HierarchicalFacet">
+		<property name="searchSettings" ref="searchSettings" />
+	</bean>
+
+	<bean id="solrSearchService" class="edu.unc.lib.dl.search.solr.service.SolrSearchService"
+		init-method="initializeSolrServer">
+		<property name="solrSettings" ref="solrSettings" />
+		<property name="searchSettings" ref="searchSettings" />
+	</bean>
+
+	<bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
+		<property name="searchSettings" ref="searchSettings" />
+	</bean>
+
+	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
+		<value>${admin.access.groups}</value>
+	</util:set>
+
+	<bean id="idService" class="edu.unc.lib.dl.service.impl.IdServiceImpl">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="baseURL" value="https://${fedora.host}${fedora.port}/fedora/" />
+		<property name="name" value="${fedora.admin.username}" />
+		<property name="pass" value="${fedora.admin.password}" />
+	</bean>
+
+	<bean id="gatherRelsExtInformationService"
+		class="edu.unc.lib.dl.service.impl.GatherRelsExtInformationServiceImpl">
+		<property name="baseURL" value="https://${fedora.host}${fedora.port}/fedora/" />
+		<property name="name" value="${fedora.admin.username}" />
+		<property name="pass" value="${fedora.admin.password}" />
+		<property name="idService" ref="idService" />
+		<property name="dataService" ref="dataService" />
+		<property name="baseIrUrl">
+			<value>https://${repository.host}${repository.port}/${admin.webapp.name}/ir/info/
+			</value>
+		</property>
+	</bean>
+
+	<bean id="constituentService" class="edu.unc.lib.dl.service.impl.ConstituentServiceImpl">
+		<property name="baseURL" value="https://${fedora.host}${fedora.port}/fedora/" />
+		<property name="name" value="${fedora.admin.username}" />
+		<property name="pass" value="${fedora.admin.password}" />
+		<property name="idService" ref="idService" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+
+	<bean id="submitService" class="edu.unc.lib.dl.service.impl.SubmitServiceImpl">
+		<property name="agentManager" ref="agentManager" />
+		<property name="digitalObjectManager" ref="digitalObjectManager" />
+	</bean>
+
+	<bean id="updateService" class="edu.unc.lib.dl.service.impl.UpdateServiceImpl">
+		<property name="agentManager" ref="agentManager" />
+		<property name="digitalObjectManager" ref="digitalObjectManager" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+
+	<bean id="userManagementService" class="edu.unc.lib.dl.service.impl.UserManagementServiceImpl">
+		<property name="agentManager" ref="agentManager" />
+	</bean>
+
+
+
+	<bean id="itemInfoService" class="edu.unc.lib.dl.service.impl.ItemInfoServiceImpl">
+		<property name="idService" ref="idService" />
+		<property name="dataService" ref="dataService" />
+		<property name="searchService" ref="searchService" />
+		<property name="viewSelectionService" ref="viewSelectionService" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="gatherRelsExtInformationService" ref="gatherRelsExtInformationService" />
+		<property name="utilityMethods" ref="utilityMethods" />
+		<property name="baseInstUrl">
+			<value>https://${repository.host}${repository.port}/${admin.webapp.name}/
+			</value>
+		</property>
+	</bean>
+
+	<bean id="searchService" class="edu.unc.lib.dl.service.impl.SearchServiceImpl">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="searchIndex" ref="searchIndex" />
+		<property name="defaultSearchSettings">
+			<ref bean="defaultSearchSettings" />
+		</property>
+		<property name="baseInstUrl">
+			<value>https://${repository.host}${repository.port}/${admin.webapp.name}/
+			</value>
+		</property>
+		<property name="collectionUrl">
+			<value>https://${repository.host}${repository.port}/${admin.webapp.name}/ir/info/Collections/
+			</value>
+		</property>
+		<property name="searchUrl">
+			<value>https://${repository.host}${repository.port}/${admin.webapp.name}/ir/pagedsearch
+			</value>
+		</property>
+		<property name="searchSettings" ref="searchSettings" />
+		<property name="solrSearchService" ref="solrSearchService" />
+	</bean>
+
+	<bean id="searchIndex" class="edu.unc.lib.dl.search.SearchIndex">
+		<property name="solrUrl">
+			<value>https://${solr.host}${solr.port}/solr</value>
+		</property>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="constituentService" ref="constituentService" />
+		<property name="idService" ref="idService" />
+		<property name="dataService" ref="dataService" />
+		<property name="utilityMethods" ref="utilityMethods" />
+		<property name="gatherRelsExtInformationService" ref="gatherRelsExtInformationService" />
+		<property name="baseHostUrl">
+			<value>https://${repository.host}${repository.port}/${admin.webapp.name}/
+			</value>
+		</property>
+		<property name="baseIrUrl">
+			<value>https://${repository.host}${repository.port}/${admin.webapp.name}/ir/info
+			</value>
+		</property>
+		<property name="collectionUrl">
+			<value>https://${repository.host}${repository.port}/${admin.webapp.name}/ir/info/Collections/
+			</value>
+		</property>
+		<property name="userName" value="${fedora.admin.username}" />
+		<property name="password" value="${fedora.admin.password}" />
+	</bean>
+
+	<bean id="utilityMethods" class="edu.unc.lib.dl.util.UtilityMethods">
+		<property name="idService" ref="idService" />
+		<property name="fedoraDataUrl"
+			value="https://${fedora.host}${fedora.port}/fedora/get/" />
+		<property name="baseHostUrl">
+			<value>https://${repository.host}${repository.port}/${admin.webapp.name}/
+			</value>
+		</property>
+	</bean>
+
+	<bean id="viewSelectionService" class="edu.unc.lib.dl.service.impl.ViewSelectionServiceImpl">
+	</bean>
+
+
+	<bean id="dataService" class="edu.unc.lib.dl.service.impl.DataServiceImpl">
+		<property name="idService" ref="idService" />
+		<property name="gatherRelsExtInformationService" ref="gatherRelsExtInformationService" />
+		<property name="constituentService" ref="constituentService" />
+		<property name="utilityMethods" ref="utilityMethods" />
+		<property name="marshaller" ref="marshaller" />
+		<property name="unmarshaller" ref="marshaller" />
+		<property name="defaultUri"
+			value="https://${fedora.host}${fedora.port}/fedora/services/access" />
+		<property name="messageSenders" ref="commonsMessageSender" />
+		<property name="baseHostUrl">
+			<value>https://${repository.host}${repository.port}/${admin.webapp.name}/
+			</value>
+		</property>
+	</bean>
+
+	<!-- _______________________________________________________________________________________________________________________ -->
+	<!-- Add endpoints here -->
+
+	<bean id="deleteObjectsEndpoint" class="edu.unc.lib.dl.ws.DeleteObjectsEndpoint">
+		<property name="agentManager" ref="agentManager" />
+		<property name="digitalObjectManager" ref="digitalObjectManager" />
+	</bean>
+
+	<bean id="overviewDataEndpoint" class="edu.unc.lib.dl.ws.OverviewDataEndpoint">
+		<property name="searchService" ref="searchService" />
+	</bean>
+
+	<bean id="getBreadcrumbsAndChildrenEndpoint" class="edu.unc.lib.dl.ws.GetBreadcrumbsAndChildrenEndpoint">
+		<property name="searchService" ref="searchService" />
+		<property name="constituentService" ref="constituentService" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+
+	<bean id="basicQueryEndpoint" class="edu.unc.lib.dl.ws.BasicQueryEndpoint">
+		<property name="searchService" ref="searchService" />
+	</bean>
+
+	<bean id="reindexSearchEndpoint" class="edu.unc.lib.dl.ws.ReindexSearchEndpoint">
+		<property name="searchService" ref="searchService" />
+	</bean>
+
+	<bean id="getChildrenEndpoint" class="edu.unc.lib.dl.ws.GetChildrenEndpoint">
+		<property name="searchService" ref="searchService" />
+	</bean>
+
+	<bean id="getAllCollectionPathsEndpoint" class="edu.unc.lib.dl.ws.GetAllCollectionPathsEndpoint">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+
+	<bean id="moveObjectEndpoint" class="edu.unc.lib.dl.ws.MoveObjectEndpoint">
+		<property name="updateService" ref="updateService" />
+	</bean>
+
+	<bean id="getDataEndpoint" class="edu.unc.lib.dl.ws.GetDataEndpoint">
+		<property name="dataService" ref="dataService" />
+	</bean>
+
+	<bean id="constituentEndpoint" class="edu.unc.lib.dl.ws.ConstituentEndpoint">
+		<property name="constituentService" ref="constituentService" />
+	</bean>
+
+
+	<bean id="imageViewEndpoint" class="edu.unc.lib.dl.ws.ImageViewEndpoint">
+		<property name="dataService" ref="dataService" />
+	</bean>
+
+
+	<bean id="getItemInfoEndpoint" class="edu.unc.lib.dl.ws.GetItemInfoEndpoint">
+		<property name="marshaller" ref="marshaller" />
+		<property name="unmarshaller" ref="marshaller" />
+		<property name="defaultUri"
+			value="https://${fedora.host}${fedora.port}/fedora/services/access" />
+		<property name="messageSenders" ref="commonsMessageSender" />
+		<property name="itemInfoService" ref="itemInfoService" />
+	</bean>
+
+	<bean id="idQueryEndpoint" class="edu.unc.lib.dl.ws.IdQueryEndpoint">
+		<property name="idService" ref="idService" />
+	</bean>
+
+	<bean id="containerQueryEndpoint" class="edu.unc.lib.dl.ws.ContainerQueryEndpoint">
+		<property name="itemInfoService" ref="itemInfoService" />
+	</bean>
+
+	<bean id="getCollectionsEndpoint" class="edu.unc.lib.dl.ws.GetCollectionsEndpoint">
+		<property name="searchService" ref="searchService" />
+	</bean>
+
+
+	<bean id="addToSearchEndpoint" class="edu.unc.lib.dl.ws.AddToSearchEndpoint">
+		<property name="gatherRelsExtInformationService" ref="gatherRelsExtInformationService" />
+		<property name="searchService" ref="searchService" />
+	</bean>
+
+	<bean id="removeFromSearchEndpoint" class="edu.unc.lib.dl.ws.RemoveFromSearchEndpoint">
+		<property name="searchIndex" ref="searchIndex" />
+	</bean>
+
+	<bean id="userGroupEndpoint" class="edu.unc.lib.dl.ws.UserGroupEndpoint">
+		<property name="userManagementService" ref="userManagementService" />
+	</bean>
+
+	<bean id="createCollectionEndpoint" class="edu.unc.lib.dl.ws.CreateCollectionEndpoint">
+		<property name="submitService" ref="submitService" />
+	</bean>
+
+	<bean id="mediatedSubmitEndpoint" class="edu.unc.lib.dl.ws.MediatedSubmitEndpoint">
+		<property name="submitService" ref="submitService" />
+	</bean>
+
+	<bean id="metsSubmitEndpoint" class="edu.unc.lib.dl.ws.MetsSubmitEndpoint">
+		<property name="submitService" ref="submitService" />
+	</bean>
+
+	<bean id="updateEndpoint" class="edu.unc.lib.dl.ws.UpdateEndpoint">
+		<property name="updateService" ref="updateService" />
+	</bean>
+
+
+	<!-- _______________________________________________________________________________________________________________________ -->
+	<!-- Add default search settings here -->
+	<bean id="defaultSearchSettings" class="edu.unc.lib.dl.util.DefaultSearchSettings">
+		<property name="url">
+			<value>https://${solr.host}${solr.port}/solr</value>
+		</property>
+		<property name="defaultParameters">
+			<value></value>
+		</property>
+	</bean>
+
+
+
+	<!-- _______________________________________________________________________________________________________________________ -->
+
+	<!-- Don't modify entries below this line without checking with other teammates 
+		first -->
+
+	<!-- For large file transfers via Web Services -->
+	<!-- <bean id="messageFactory" class="org.springframework.ws.soap.axiom.AxiomSoapMessageFactory"> 
+		<property name="payloadCaching" value="false" /> </bean> -->
+
+	<bean id="endpointMapping"
+		class="org.springframework.ws.server.endpoint.mapping.PayloadRootAnnotationMethodEndpointMapping">
+		<property name="interceptors">
+			<list>
+				<ref local="validatingInterceptor" />
+				<ref local="loggingInterceptor" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="validatingInterceptor"
+		class="org.springframework.ws.soap.server.endpoint.interceptor.PayloadValidatingInterceptor">
+		<property name="schema" value="/WEB-INF/classes/dlservice.xsd" />
+		<property name="validateRequest" value="true" />
+		<property name="validateResponse" value="true" />
+	</bean>
+
+	<bean id="loggingInterceptor"
+		class="org.springframework.ws.server.endpoint.interceptor.PayloadLoggingInterceptor">
+		<description>
+			This interceptor logs the message payload.
+		</description>
+	</bean>
+
+
+	<!-- Unmarshaller -->
+	<bean id="unmarshaller" class="org.springframework.oxm.xmlbeans.XmlBeansMarshaller" />
+
+	<bean
+		class="org.springframework.ws.server.endpoint.adapter.GenericMarshallingMethodEndpointAdapter">
+		<constructor-arg ref="marshaller" />
+	</bean>
+
+	<!-- Marshaller -->
+	<bean id="marshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+		<description>
+			The JAXB 2 Marshaller is used by the endpoints.
+		</description>
+		<property name="contextPath" value="edu.unc.lib.dl.schema" />
+	</bean>
+
+	<!-- WSDL creation -->
+	<bean id="dlservice"
+		class="org.springframework.ws.wsdl.wsdl11.DefaultWsdl11Definition">
+		<property name="schema">
+			<bean class="org.springframework.xml.xsd.SimpleXsdSchema">
+				<property name="xsd" value="/WEB-INF/classes/dlservice.xsd" />
+			</bean>
+		</property>
+		<property name="portTypeName" value="dlservice" />
+		<property name="locationUri"
+			value="https://${repository.host}${repository.port}/${admin.webapp.name}/dlservice/" />
+		<property name="targetNamespace" value="${admin.namespace}" />
+	</bean>
+
+	<!-- <bean id="dlservice" class="org.springframework.ws.wsdl.wsdl11.DynamicWsdl11Definition"> 
+		<property name="builder"> <bean class="org.springframework.ws.wsdl.wsdl11.builder.XsdBasedSoap11Wsdl4jDefinitionBuilder"> 
+		<property name="schema" value="/WEB-INF/xsd/dlservice.xsd" /> <property name="portTypeName" 
+		value="dlservice" /> <property name="locationUri" value="https://${repository.host}${repository.port}/${admin.webapp.name}/dlservice/" 
+		/> <property name="targetNamespace" value="${admin.namespace}" /> </bean> 
+		</property> </bean> -->
+
+	<!-- spring-context.xml contents here -->
+	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl">
+		<property name="itqlEndpointURL"
+			value="http://${mulgara.host}${mulgara.port}/webservices/services/ItqlBeanService" />
+		<property name="serverModelUri" value="rmi://${mulgara.host}/server1#" />
+		<property name="name" value="${fedora.admin.username}" />
+		<property name="pass" value="${fedora.admin.password}" />
+	</bean>
+	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
+		init-method="init">
+		<property name="fedoraContextUrl" value="https://${fedora.host}${fedora.port}/fedora" />
+		<property name="username" value="${fedora.admin.username}" />
+		<property name="password" value="${fedora.admin.password}" />
+	</bean>
+	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient"
+		init-method="init">
+		<property name="fedoraContextUrl" value="https://${fedora.host}${fedora.port}/fedora" />
+		<property name="username" value="${fedora.admin.username}" />
+		<property name="password" value="${fedora.admin.password}" />
+	</bean>
+
+	<!-- a pooling based JMS provider -->
+	<bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL">
+			<value>tcp://${jms.host}${jms.port}</value>
+		</property>
+	</bean>
+
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="defaultDestinationName" value="repository.updates" />
+		<property name="pubSubDomain" value="true" />
+	</bean>
+
+	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+		<property name="jmsTemplate" ref="jmsTemplate" />
+	</bean>
+	<!-- END OF REMOTE BEANS -->
+
+	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
+		<property name="managementClient" ref="managementClient" />
+		<property name="accessClient" ref="accessClient" />
+		<property name="operationsMessageSender" ref="operationsMessageSender" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="sipProcessorFactory" ref="sipProcessorFactory" />
+		<property name="aipIngestPipeline" ref="aipIngestPipeline" />
+		<property name="schematronValidator" ref="schematronValidator" />
+		<property name="containerContentsHelper">
+			<bean class="edu.unc.lib.dl.util.ContainerContentsHelper">
+				<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+			</bean>
+		</property>
+		<property name="mailNotifier" ref="mailNotifier" />
+		<property name="available" value="true" />
+	</bean>
+
+	<bean id="mailNotifier" class="edu.unc.lib.dl.services.MailNotifier">
+		<property name="mailSender">
+			<bean class="org.springframework.mail.javamail.JavaMailSenderImpl">
+				<property name="host" value="${smtp.host}" />
+				<property name="port" value="${smtp.port}" />
+				<property name="defaultEncoding" value="UTF-8" />
+			</bean>
+		</property>
+		<property name="irBaseUrl"
+			value="https://${repository.host}${repository.port}/${admin.webapp.name}/" />
+		<property name="freemarkerConfiguration" ref="freemarkerConfiguration" />
+		<property name="administratorAddress" value="${administrator.email}" />
+		<property name="repositoryFromAddress" value="${repository.from.email}" />
+	</bean>
+
+	<bean id="freemarkerConfiguration" class="freemarker.template.Configuration">
+		<property name="templateLoader">
+			<bean class="freemarker.cache.ClassTemplateLoader">
+				<constructor-arg index="0" type="java.lang.Class"
+					value="edu.unc.lib.dl.services.MailNotifier" />
+				<constructor-arg index="1" value="" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="sipProcessorFactory" class="edu.unc.lib.dl.ingest.sip.SIPProcessorFactory"
+		init-method="init">
+		<property name="sipProcessors">
+			<map>
+				<entry key="edu.unc.lib.dl.ingest.sip.METSPackageSIP"
+					value-ref="metsPackageSIPProcessor" />
+				<entry key="edu.unc.lib.dl.ingest.sip.AgentSIP" value-ref="personAgentSIPProcessor" />
+				<entry key="edu.unc.lib.dl.ingest.sip.SingleFileSIP"
+					value-ref="singleFileSIPProcessor" />
+				<entry key="edu.unc.lib.dl.ingest.sip.SingleFolderSIP"
+					value-ref="singleFolderSIPProcessor" />
+			</map>
+		</property>
+	</bean>
+
+	<bean id="pidGenerator" class="edu.unc.lib.dl.pidgen.UUIDPIDGenerator"
+		init-method="init">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="verifyUnique" value="false" />
+	</bean>
+
+	<bean id="personAgentSIPProcessor" class="edu.unc.lib.dl.ingest.sip.AgentSIPProcessor">
+		<property name="pidGenerator" ref="pidGenerator" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+
+	<bean id="singleFileSIPProcessor" class="edu.unc.lib.dl.ingest.sip.SingleFileSIPProcessor">
+		<property name="pidGenerator" ref="pidGenerator" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+
+	<bean id="singleFolderSIPProcessor" class="edu.unc.lib.dl.ingest.sip.SingleFolderSIPProcessor">
+		<property name="pidGenerator" ref="pidGenerator" />
+	</bean>
+
+	<bean id="metsPackageSIPProcessor" class="edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor">
+		<property name="schematronValidator" ref="schematronValidator" />
+		<property name="metsPackageFileValidator">
+			<bean class="edu.unc.lib.dl.ingest.sip.METSPackageFileValidator"/>			
+		</property>
+		<property name="pidGenerator" ref="pidGenerator" />
+	</bean>
+
+	<bean id="aipIngestPipeline" class="edu.unc.lib.dl.ingest.aip.AIPIngestPipeline">
+		<property name="preIngestFilters">
+			<list>
+				<bean class="edu.unc.lib.dl.ingest.aip.LogIdentifierAssignmentFilter" />
+				<bean class="edu.unc.lib.dl.ingest.aip.CheckAIPRequirementsFilter" />
+				<bean class="edu.unc.lib.dl.ingest.aip.CheckContainerFilter">
+					<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+				</bean>
+				<bean class="edu.unc.lib.dl.ingest.aip.CheckPathConflictFilter">
+					<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+				</bean>
+				<bean class="edu.unc.lib.dl.ingest.aip.MODSValidationFilter">
+					<property name="schematronValidator" ref="schematronValidator" />
+				</bean>
+				<bean class="edu.unc.lib.dl.ingest.aip.DublinCoreCrosswalkFilter" />
+				<!-- <bean class="edu.unc.lib.dl.ingest.aip.SerializeEventLogsFilter"/> -->
+			</list>
+		</property>
+	</bean>
+
+	<bean id="repositoryInitializer" class="edu.unc.lib.dl.services.RepositoryInitializer"
+		init-method="init">
+		<property name="digitalObjectManager" ref="digitalObjectManager" />
+		<property name="managementClient" ref="managementClient" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="agentManager" ref="agentManager" />
+		<property name="folderManager" ref="folderManager" />
+		<property name="mailNotifier" ref="mailNotifier" />
+		<property name="initialAdministrators">
+			<map>
+				<entry key="${admin.initial.1.key}" value="admin.initial.1.value" />
+			</map>
+		</property>
+		<property name="autoinitialize" value="no" />
+		<property name="foxmlObjects">
+			<list>
+				<value>classpath:foxml-objects/ContainerModel.xml</value>
+				<value>classpath:foxml-objects/GroupAgentModel.xml</value>
+				<value>classpath:foxml-objects/PersonAgentModel.xml</value>
+				<value>classpath:foxml-objects/PreservedObjectModel.xml</value>
+				<value>classpath:foxml-objects/SimpleModel.xml</value>
+				<value>classpath:foxml-objects/SoftwareAgentModel.xml</value>
+				<value>classpath:foxml-objects/StorageReportSDef.xml</value>
+				<value>classpath:foxml-objects/StorageReportSDep.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="agentManager" class="edu.unc.lib.dl.agents.AgentManager">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="digitalObjectManager" ref="digitalObjectManager" />
+	</bean>
+
+	<bean name="folderManager" class="edu.unc.lib.dl.services.FolderManager">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="digitalObjectManager" ref="digitalObjectManager" />
+	</bean>
+
+	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
+		init-method="loadSchemas">
+		<property name="schemas">
+			<map>
+				<entry key="http://cdr.unc.edu/METS/profiles/Simple"
+					value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch" />
+				<entry key="object-mods"
+					value="classpath:edu/unc/lib/dl/schematron/object-mods.sch" />
+				<entry key="vocabularies-mods"
+					value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch" />
+			</map>
+		</property>
+	</bean>
+	
+	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
+		lazy-init="false">
+		<property name="beans">
+			<map>
+				<entry key="cdradmin:name=digitalObjectManager" value-ref="digitalObjectManager" />
+			</map>
+		</property>
+		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
+	</bean>
+
+</beans>

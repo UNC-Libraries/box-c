@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd"
+ xmlns="http://www.springframework.org/schema/beans">
+
+		<!-- "localhost", 1247, "fedora", "inst1repo", "/cdrZone/home/fedora", "cdrZone", "cdrResc" -->
+	<bean id="irodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">
+		<constructor-arg index="0" value="${irods.host}"/>
+		<constructor-arg index="1" type="int" value="${irods.port}"/>
+		<constructor-arg index="2" value="${irods.username}"/>
+		<constructor-arg index="3" value="${irods.password}"/>
+		<constructor-arg index="4" value="${irods.homedir}"/>
+		<constructor-arg index="5" value="${irods.zone}"/>
+		<constructor-arg index="6" value="${irods.resource}"/>
+	</bean>
+
+</beans>

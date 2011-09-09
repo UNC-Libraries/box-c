@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<METS_Profile xmlns="http://www.loc.gov/METS_Profile/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:METS="http://www.loc.gov/METS/"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xsi:schemaLocation="http://www.loc.gov/METS_Profile/ http://www.loc.gov/standards/mets/profile_docs/mets.profile.v1-2.xsd
+    http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd
+    http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd
+    info:lc/xmlns/premis-v2 http://www.loc.gov/standards/premis/draft-schemas-2-0/premis-v2-0.xsd
+    http://www.w3.org/1999/xlink http://www.loc.gov/standards/xlink/xlink.xsd">
+    <URI LOCTYPE="URL">http://cdr.unc.edu/METS/profiles/Simple</URI>
+    <title>Submission Profile for Carolina Digital Repository</title>
+    <abstract>This profile specifies how METS documents for submissions to the Carolina Digital
+        Repository should be encoded. This profile alone can describe annotated file structures, but
+        may be extended to include more complex objects, such as multi-file media objects or paged
+        items.</abstract>
+    <date>2009-06-07T15:00:00</date>
+    <contact>
+        <name>Gregory Jansen</name>
+        <institution>University Libraries, University of North Carolina at Chapel Hill</institution>
+        <address>Davis Library, UNC Campus, Chapel Hill, NC 27599</address>
+        <email>count0@email.unc.edu</email>
+    </contact>
+    <related_profile>There are no related profiles.</related_profile>
+    <extension_schema>
+        <name>MODS v3.3</name>
+        <URI>http://www.loc.gov/standards/mods/v3/mods-3-3.xsd</URI>
+        <note>MODS elements will be used to record descriptive metadata for each object.</note>
+    </extension_schema>
+    <description_rules> </description_rules>
+    <controlled_vocabularies>
+        <vocabulary>
+            <name>CDR &lt;structMap&gt; TYPE Attributes</name>
+            <maintenance_agency>Carolina Digital Repository</maintenance_agency>
+            <values>
+                <value>Basic</value>
+            </values>
+            <context>
+                <p>This is the vocabulary for the TYPE attribute on the &lt;structMap&gt;
+                    element.</p>
+            </context>
+            <description>
+                <p>If a &lt;structMap&gt; type is omitted then Basic is implied.  Basic
+                    &lt;structMap&gt;s are the only TYPE supported so far in this profile.
+                    They can be used to represent Disks, Folders and Files.</p>
+            </description>
+        </vocabulary>
+        <vocabulary>
+            <name>CDR &lt;div&gt; TYPE Attributes</name>
+            <maintenance_agency>Carolina Digital Repository</maintenance_agency>
+            <values>
+                <value>Disk</value>
+                <value>Folder</value>
+                <value>File</value>
+                <!-- <value>Image</value> -->
+                <value>Reference</value>
+            </values>
+            <context>
+                <p>This is the vocabulary for the TYPE attribute on the &lt;div&gt;
+                element.</p>
+            </context>
+            <description>
+                <p>If a &lt;div&gt; type is omitted from the &lt;structMap&gt; then
+                    Folder or File may be inferred from the context. (If a &lt;div&gt;
+                    without explicit TYPE contains other &lt;div&gt;s, then it is a Folder,
+                    otherwise it is a File.)</p>
+                <p>Disk is used to represent an archived Disk file system, with contents and
+                    metadata.</p>
+                <p>Folder is used to represent a Folder within a file system. Folders may be used to
+                    represent the content of Disk objects or on their own.</p>
+                <p>File is used to represent a single file within a file system. File objects
+                    include the master file. However, they also may include additional metadata
+                    describing the master file. A File div bundles the master file together with
+                    related metadata. Files may be used on their own, within a Folder or within a
+                    Disk.</p>
+                <p>Reference is used to include a div from a separate structMap, with a potentially
+                    different object model, within a Disk or Folder. The reference MUST make use of
+                    a structLink to associate the Reference with the other div.</p>
+            </description>
+        </vocabulary>
+        <vocabulary>
+            <name>CDR &lt;file&gt; USE Attributes</name>
+            <maintenance_agency>Carolina Digital Repository</maintenance_agency>
+            <values>
+                <value>Master</value>
+                <value>DiskImage</value>
+                <value>Thumbnail</value>
+            </values>
+            <context>
+                <p>This is the vocabulary for the USE attribute on each &lt;file&gt;.</p>
+            </context>
+            <description>
+                <p>These use values give files a specific role within an object.</p>
+                <p>Master is used for all the data files within an object that together comprise the
+                    complete data representation upon submission. If a use value is not specified a
+                    file is assumed to be a master file. Generally a single master file is
+                    associated with a File div.</p>
+                <p>DiskImage is used for archival disk image files. A single DiskImage file may be
+                    specified only within a Disk object. The file MUST be a complete archival image
+                    of the file system on the original physical disk. ISO image formats are strongly
+                    encouraged, including ISO 9660 and ISO UDF.</p>
+                <p>Thumbnail is used to specify a thumbnail image which may be used as a surrogate
+                    for the object.</p>
+            </description>
+        </vocabulary>
+    </controlled_vocabularies>
+    <structural_requirements>
+        <metsRootElement>
+            <requirement>
+                <p>A conforming METS document MUST have a PROFILE attribute indicating the following
+                    url:</p>
+                <p>http://cdr.unc.edu/METS/profiles/Simple</p>
+            </requirement>
+        </metsRootElement>
+        <metsHdr>
+            <requirement>
+                <p>At least one valid &lt;agent&gt; element with a ROLE attribute of CREATOR
+                    and a TYPE attribute of INDIVIDUAL.</p>
+            </requirement>
+            <requirement>
+                <p>At least one valid &lt;agent&gt; element with a ROLE attribute of
+                    CUSTODIAN and a TYPE attribute of ORGANIZATION is recommended.</p>
+            </requirement>
+            <requirement>
+                <p>A CREATEDATE attribute is required containing a valid ISO 8601 date string.</p>
+            </requirement>
+        </metsHdr>
+        <dmdSec>
+            <requirement>
+                <p>A conforming METS document MAY contain a &lt;dmdSec&gt; corresponding to
+                    any &lt;div&gt; in the structure map.</p>
+            </requirement>
+            <requirement>
+                <p>A conforming METS document MUST use an &lt;xmlData&gt; with a
+                    &lt;mdWrap&gt; in each &lt;dmdSec&gt;. The
+                    &lt;xmlData&gt; must contain a MODS element that is valid according to
+                    the MODS extension schema.</p>
+                <!-- TODO allow MODS to be xlinked -->
+            </requirement>
+        </dmdSec>
+        <amdSec>
+            <requirement>
+                <p>A conforming METS document MUST NOT contain any &lt;amdSec&gt;
+                elements.</p>
+            </requirement>
+            <requirement>
+                <p>A conforming METS document MUST NOT contain any &lt;techMD&gt;
+                elements.</p>
+            </requirement>
+            <requirement>
+                <p>A conforming METS document MUST NOT contain a &lt;rightsMD&gt; element or
+                    a &lt;sourceMD&gt; element.</p>
+            </requirement>
+        </amdSec>
+        <fileSec>
+            <requirement>
+                <head>File Groups (&lt;fileGrp&gt;)</head>
+                <p>Files MUST be grouped together in one or more &lt;fileGrp&gt; elements, 
+                    but there is no particular reason to use more than one at this time.</p>
+            </requirement>
+            <requirement>
+                <p>Each &lt;file&gt; MUST have an ID attribute that is referenced by a &lt;fptr&gt; element
+                    in the &lt;structMap&gt;.</p>
+                <p>Each &lt;file&gt; MAY have a USE attribute from the CDR file USE
+                    Attribute vocabulary.</p>
+                <p>A &lt;file&gt; with a USE attribute will be consider as a USE of
+                    'Master'.</p>
+            </requirement>
+            <requirement>
+                <p>Each &lt;file&gt; MUST contain a &lt;FLocat&gt; element with
+                    LOCTYPE of "URL" and an xlink:href attribute that points to a resolvable URL.</p>
+                <p>Resolvable URLs include those using a "file://" prefix that point at a file
+                    bundled in the METS package. In these URLs the base directory and the root
+                    directory both resolve to the top folder of the METS package. For example, a
+                    file at the root of the archive can be referenced by an absolute URL such as
+                    "file:///foo.txt" or a relative URL, such as "file://foo.txt". For security
+                    reasons the "file://" prefix cannot be used to resolve files outside of the METS
+                    package. Something like this, "file://../../../../etc/shadow" will result in an
+                    error.</p>
+                <p>Resolvable URLs include HTTP and HTTPS links that do not require a password. The
+                    response should be the data file without intermediate pages. (client-side
+                    redirects are not guarranteed to work)</p>
+                <p>TODO: Resolvable URLs also include iRODS-style URLs that refer to zones federated
+                    with the CDR, such as university libraries staging space.</p>
+                <p>Relative paths may be used only for files with a METS bundle, omitting the
+                    "file:" prefix.</p>
+            </requirement>
+            <requirement>
+                <p>Each &lt;file&gt; MUST have a correct IANA MIMETYPE attribute.</p>
+            </requirement>
+            <requirement>
+                <p>Each &lt;file&gt; MAY have an MD5 checksum in the CHECKSUM attribute. If
+                    a CHECKSUMTYPE attribute is given, then it MUST be "MD5".</p>
+            </requirement>
+        </fileSec>
+        <structMap>
+            <requirement>
+                <head>&lt;div&gt; Elements</head>
+                <p>The &lt;div&gt; elements in the METS structure map are used to record
+                    digital objects and their placement within the submission.</p>
+            </requirement>
+            <requirement>
+                <p>A conforming METS document MAY have a TYPE attribute on &lt;structMap&gt;
+                    elements. If there is a TYPE attribute then it must be taken from the CDR structMap
+                    TYPE Attribute vocabulary.  If no TYPE is given, then the &lt;structMap&gt; is assumed to be
+                    "Basic".</p>
+            </requirement>
+            <requirement>
+                <p>A conforming METS document MAY have a TYPE attribute on &lt;div&gt;
+                    elements. If there is a TYPE attribute then it must be taken from the CDR div
+                    TYPE Attribute vocabulary.</p>
+            </requirement>
+            <requirement>
+                <p>A conforming METS document MAY have an ID attribute unique to the document on
+                    every &lt;div&gt;. If an ID attribute is included, then this will be
+                    used to make the slug for the object, which is unique within the parent object
+                    and used to construct a repository path and stable URL.</p>
+                <!-- Note: the ID attribute is overloaded by use as a slug and as a reference in smLink.  Eventually
+                    this could be a problem! -Greg -->
+            </requirement>
+            <requirement>
+                <p>A conforming METS document MAY either have a LABEL attribute or a corresponding
+                    dmdSec containing a MODS title for each &lt;div&gt; or both. The string
+                    provided in one of these two ways will be used to label the object within the
+                    context of the parent object. Therefore the string should distinguish each
+                    object from it's siblings and may also assume the context of the parent object.
+                    If both a LABEL and a MODS title are supplied, then the LABEL will be used for
+                    this purpose.</p>
+                <p>If neither of the strings above are provided, then a label of the form "Untitled
+                    File 47" will be created, based on the position of the div within its sibling
+                    divs.</p>
+            </requirement>
+            <requirement>
+                <p>A conforming METS document MAY have an ORDER attribute for any
+                    &lt;div&gt;. The specified numeric order will be used to sort the object
+                    with respect to it's siblings within the parent object. If no order is
+                    explicitly specified then the order of div elements will be used.</p>
+                <p>A conforming METS document MAY have an ORDERLABEL attribute for ANY
+                    &lt;div&gt;. If an ORDERLABEL is included, then it will be appended to
+                    the LABEL attribute.</p>
+            </requirement>
+        </structMap>
+
+        <structLink>
+            <requirement>
+                <p>A conforming METS document MAY contain a &lt;structLink&gt; element, but
+                    this behavior is not yet implemented. For now they are ignored!</p>
+            </requirement>
+        </structLink>
+
+        <behaviorSec>
+            <requirement>
+                <p>A conforming METS document MUST NOT contain a &lt;behaviorSec&gt;
+                    element.</p>
+            </requirement>
+        </behaviorSec>
+    </structural_requirements>
+
+    <technical_requirements>
+        <content_files>
+            <requirement>
+                <p>All the files marked as USE MASTER or without a USE attribute MUST taken together
+                    comprise a complete representation of the work.</p>
+            </requirement>
+            <!--<requirement>
+                <p>All master images referenced by a conforming METS document must be in ?????
+                    format with a bit-depth of ?? and employing the ????? colorspace. The images
+                    must contain a header element containing a copyright statement? The master
+                    images must not employ watermarking technology.</p>
+            </requirement>
+            <requirement>
+                <p>All web viewable derivative images referenced by a conforming METS document must
+                    be in the Portable Network Graphics version 1.2 format with a bit-depth of 16
+                    and employing the sRGB color space. The graphic must contain a tEXt chunk
+                    containing a copyright statement?</p>
+            </requirement>-->
+        </content_files>
+        <behavior_files>
+            <requirement>
+                <p>There MUST not be any behaviors associated with a conforming document.</p>
+            </requirement>
+        </behavior_files>
+        <metadata_files>
+            <requirement>
+                <p>Any MODS XML embedded within a &lt;dmdSec&gt; MUST validate against the
+                    MODS extension schema specified above.</p>
+            </requirement>
+            <requirement>
+                <head>Vocabularies for Descriptive Metadata</head>
+                <p>A conforming METS document MAY have a &lt;mods&gt; element corresponding
+                    to each &lt;div&gt; element.</p>
+            </requirement>
+        </metadata_files>
+    </technical_requirements>
+    <tool>
+        <description>
+            <p>There MUST NOT be any particular tools associated with a conforming document.</p>
+        </description>
+    </tool>
+    <Appendix NUMBER="1" ID="ex1">
+        <METS:mets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.loc.gov/METS/ ../schemas/mets.xsd"
+            xmlns:METS="http://www.loc.gov/METS/" xmlns:xlink="http://www.w3.org/1999/xlink"
+            xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            PROFILE="http://cdr.unc.edu/METS/profiles/Simple">
+
+            <METS:metsHdr CREATEDATE="2009-03-02T13:56:21.297-05:00">
+                <METS:agent ROLE="CREATOR" TYPE="INDIVIDUAL">
+                    <METS:name>Margaret Dickson</METS:name>
+                </METS:agent>
+            </METS:metsHdr>
+
+            <METS:dmdSec ID="d3e2-MODS">
+                <METS:mdWrap MDTYPE="MODS">
+                    <METS:xmlData>
+                        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+                            <mods:titleInfo>
+                                <mods:title>Esperanza e insatisfacción adolescente en la novela
+                                    española de finales del siglo veinte: graffiteros, okupas y
+                                    soñadores</mods:title>
+                            </mods:titleInfo>
+                            <mods:genre authority="local">http://purl.org/eprint/type/Thesis</mods:genre>
+                            <mods:typeOfResource>text</mods:typeOfResource>
+                            <mods:name type="personal">
+                                <mods:affiliation>Romance Languages</mods:affiliation>
+                                <mods:namePart>Muñoz-Hermoso, Abel.</mods:namePart>
+                                <mods:role>
+                                    <mods:roleTerm>creator</mods:roleTerm>
+                                </mods:role>
+                            </mods:name>
+                            <mods:originInfo>
+                                <mods:dateIssued keyDate="yes" encoding="iso8601"
+                                >200605</mods:dateIssued>
+                            </mods:originInfo>
+                            <mods:language>
+                                <mods:languageTerm type="code" authority="iso639-2b"
+                                >spa</mods:languageTerm>
+                            </mods:language>
+                            <mods:abstract>According to literary critic Juan Antonio Masoliver
+                                Ródenas, Spanish novels written at the end of the twentieth century
+                                reflected Spanish society's dissatisfaction with its government and
+                                general pessimism. The purpose of this dissertation is to study five
+                                Spanish novels written at that time--Martín Casariego's El chico que
+                                imitaba a Roberto Carlos (1996), Lorenzo Silva's Algún día, cuando
+                                pueda llevarte a Varsovia (1997), Ray Loriga's Héroes (1993), José
+                                Ángel Mañas' Mensaka (1995), and Care Santos' Okupada (1997)--to
+                                show that while some authors indeed provided a dark and negative
+                                vision of Spanish society, others gave the reader a more optimistic
+                                and positive image of the nation and its future. The texts chosen
+                                for this study all present the world from the perspective of Spanish
+                                adolescents and focus on the many different issues they must
+                                confront in an increasingly globalized society. In order to
+                                understand the context from which these novels originated, they are
+                                analyzed from an urban and cultural perspective. This approach also
+                                helps to establish a parallel between a young person’s coming-of-age
+                                and the social, political and cultural changes taking place in Spain
+                                at the turn the twenty-first century. Given the importance of the
+                                development of identity in these texts, the correlation between the
+                                Spanish adolescent novel and the tradition of the Bildungsroman is
+                                also explored. A key to the process of identity development is the
+                                different mechanisms young people rely on to escape (albeit
+                                temporarily) from their problems. Some of the alternatives available
+                                to adolescents presented in the texts studied here are the use of
+                                the imagination, the development of an ecological consciousness, and
+                                participation in social youth movements, such as painting graffiti
+                                and squatter movements. In the end, the choices made by Casariego,
+                                Silva, Loriga, Mañas, and Santos’ protagonists reveal the essential
+                                differences among the Spanish novels written in the 1990s. By
+                                presenting the reader with an image of youth that is hedonistic and
+                                materialistic, Héroes and Mensaka confirm the critics’ assertion
+                                that the Spanish novel reflected the nation’s disenchantment and
+                                pessimism. However, the level of social engagement that motivates
+                                the actions of the protagonists of El chico , Algún día, and Okupada
+                                suggests that not all Spanish novelists viewed their nation from the
+                                same negative perspective. What is more, the optimistic futures
+                                suggested in these three novels positively influence young Spanish
+                                readers at a time in their lives when they are developing their own
+                                identity as individuals and social beings. By presenting characters
+                                that face their problems and explore the various options available
+                                to them, these authors indirectly help their adolescent readers who
+                                are themselves living similar situations and in the process of
+                                becoming adults.</mods:abstract>
+                            <mods:accessCondition type="use">The author has granted the University
+                                of North Carolina at Chapel Hill a limited, non-exclusive right to
+                                make this publication available to the public. The author retains
+                                all other rights.</mods:accessCondition>
+                            <mods:accessCondition type="access">Open access</mods:accessCondition>
+                        </mods:mods>
+                    </METS:xmlData>
+                </METS:mdWrap>
+            </METS:dmdSec>
+
+            <METS:fileSec>
+                <METS:fileGrp>
+                    <METS:file ID="diskimage" MIMETYPE="archive/iso9660" USE="DiskImage">
+                        <METS:FLocat LOCTYPE="URL"
+                            xlink:href="http://darkive.lib.unc.edu/98274924.iso"/>
+                    </METS:file>
+
+                    <METS:file ID="image1" MIMETYPE="text/xml">
+                        <METS:FLocat LOCTYPE="URL"
+                            xlink:href="http://darkive.lib.unc.edu/98274924.tiff"/>
+                    </METS:file>
+
+                    <METS:file ID="r5" MIMETYPE="text/xml">
+                        <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+                    </METS:file>
+
+                    <METS:file ID="r6" MIMETYPE="text/xml">
+                        <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+                    </METS:file>
+
+                    <METS:file ID="r7" MIMETYPE="text/xml">
+                        <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+                    </METS:file>
+
+                    <METS:file ID="r8" MIMETYPE="text/xml">
+                        <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+                    </METS:file>
+
+                    <METS:file ID="r9" MIMETYPE="text/xml">
+                        <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+                    </METS:file>
+                </METS:fileGrp>
+            </METS:fileSec>
+
+            <METS:structMap ID="top">
+                <METS:div TYPE="Disk" LABEL="Thomas Watson Digital Collection" ORDER="5">
+                    <METS:div TYPE="Folder" LABEL="Correspondence Series" DMDID="d3e2-MODS">
+                        <METS:div ID="corr1" LABEL="1873" ORDER="1" ORDERLABEL="1a"> </METS:div>
+                        <METS:div ID="corr2" LABEL="1874" ORDER="2" ORDERLABEL="1b">
+                            <METS:div TYPE="File">
+                                <METS:fptr FILEID="r5"/>
+                            </METS:div>
+                            <METS:div TYPE="File">
+                                <METS:fptr FILEID="r6"/>
+                            </METS:div>
+                            <METS:div TYPE="File">
+                                <METS:fptr FILEID="r7"/>
+                            </METS:div>
+                            <METS:div>
+                                <METS:fptr FILEID="r8"/>
+                            </METS:div>
+                            <METS:div LABEL="File McFileson">
+                                <METS:fptr FILEID="r9"/>
+                            </METS:div>
+                        </METS:div>
+                    </METS:div>
+                    <METS:div TYPE="Reference" ID="ead1"/>
+                </METS:div>
+            </METS:structMap>
+
+            <METS:structMap TYPE="Basic">
+                <METS:div ID="i1" TYPE="File">
+                    <METS:fptr FILEID="image1"/>
+                </METS:div>
+            </METS:structMap>
+
+            <METS:structLink>
+                <METS:smLink xlink:from="ead1" xlink:to="i1" xlink:arcrole="refersTo"/>
+            </METS:structLink>
+        </METS:mets>
+
+    </Appendix>
+</METS_Profile>

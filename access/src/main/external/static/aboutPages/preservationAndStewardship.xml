@@ -1,0 +1,54 @@
+<div class="contentarea about_page">
+	<h2 class="fontface">Preservation and Stewardship</h2>
+
+	<p>The Carolina Digital Repository (CDR) manages the infrastructure and
+		services necessary to provide sustainable access to digital objects.
+	</p>
+	<p>The CDR is designed and operated to ensure the integrity of digital
+		files at a bitstream level (the way information is encoded).
+		Characteristics that will affect preservation are recorded in metadata
+		as part of the deposit process. The CDR regularly verifies the
+		integrity of files, maintains a record of preservation-related
+		actions,
+		and employs best practices in the field for persistent storage,
+		including back-up and recovery procedures.</p>
+	<p>Repository staff consult with prospective depositors regarding the
+		nature of their digital collections, foreseeable challenges for
+		long-term access, and strategies for meeting their preservation goals.
+	</p>
+
+	<h3>Services Provided</h3>
+
+	<ul class="contentul">
+		<li>Consult with pilot collection contributors for preparation of
+			submission of content into the CDR</li>
+		<li>Capture descriptive information about digital objects</li>
+
+		<li>
+			Create and maintain service application, including:
+			<ul class="contentul">
+				<li>Search</li>
+				<li>Display</li>
+				<li>Export</li>
+			</ul>
+		</li>
+
+		<li>Provide and manage sufficient storage for ingest and maintenance
+			of
+			content and associated metadata</li>
+		<li>Provide and manage persistent storage, including appropriate
+			back-up and recovery procedures</li>
+		<li>Sustain bitstream-level preservation of digital objects</li>
+		<li>Perform system monitoring, testing and debugging</li>
+	</ul>
+
+	<h3>Caveats</h3>
+	<ul class="contentul">
+
+		<li>Services provided by the CDR reflect the repository's stage of
+			development and implementation of evolving standards and best
+			practices in the field. As the repository grows and the technology
+			matures, so will the CDR's capabilities for preservation and access.
+		</li>
+	</ul>
+</div>

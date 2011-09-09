@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<premis xmlns="info:lc/xmlns/premis-v2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="info:lc/xmlns/premis-v2 premis.xsd" version="2.0">
+    <object xsi:type="representation">
+        <objectIdentifier>
+            <objectIdentifierType>PID</objectIdentifierType>
+            <objectIdentifierValue>cdr:1234</objectIdentifierValue>
+        </objectIdentifier>
+    </object>
+    <event>
+        <eventIdentifier>
+            <eventIdentifierType>UUID</eventIdentifierType>
+            <eventIdentifierValue>event:09873lkasd092oiu20893</eventIdentifierValue>
+        </eventIdentifier>
+        <eventType>normalization</eventType>
+        <eventDateTime>2009-10-28T10:29:44</eventDateTime>
+        <linkingAgentIdentifier>
+            <linkingAgentIdentifierType></linkingAgentIdentifierType>
+            <linkingAgentIdentifierValue></linkingAgentIdentifierValue>
+            <linkingAgentRole>initiator</linkingAgentRole>
+        </linkingAgentIdentifier>
+    </event>
+</premis>

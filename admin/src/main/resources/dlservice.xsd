@@ -1,0 +1,834 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2008 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<schema xmlns="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+	attributeFormDefault="qualified" targetNamespace="http://www.lib.unc.edu/dlservice/schemas"
+	xmlns:tns="http://www.lib.unc.edu/dlservice/schemas"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:fedora-types="http://www.fedora.info/definitions/1/0/types/">
+	<import namespace="http://www.fedora.info/definitions/1/0/types/" schemaLocation="fedora-types.xsd"/>
+
+	<element name="ContainerQuery">
+		<complexType>
+			<sequence>
+				<element name="irUrlInfo" type="tns:IrUrlInfo" nillable="true"/>
+				<element name="container" type="boolean" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+	
+
+	<element name="ResearchItemMetadata">
+		<complexType>
+			<sequence>
+				<element name="size" type="string"/>
+				<element name="pages" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<complexType name="ResearchItemMetadataComplexType">
+		<sequence>
+			<element name="size" type="string"/>
+			<element name="pages" type="string"/>
+		</sequence>
+	</complexType>
+
+
+	<element name="ConferenceMetadata">
+		<complexType>
+			<sequence>
+				<element name="dateRange" type="string"/>
+				<element name="location" type="string"/>
+				<element name="sponsor" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<complexType name="ConferenceMetadataComplexType">
+		<sequence>
+			<element name="dateRange" type="string"/>
+			<element name="location" type="string"/>
+			<element name="sponsor" type="string"/>
+		</sequence>
+	</complexType>
+
+
+	<element name="JournalCollectionMetadata">
+		<complexType>
+			<sequence>
+				<element name="issn" type="string"/>
+				<element name="oclc" type="string"/>
+				<element name="coverage" type="string"/>
+				<element name="country" type="string"/>
+				<element name="language" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<complexType name="JournalCollectionMetadataComplexType">
+		<sequence>
+			<element name="issn" type="string"/>
+			<element name="oclc" type="string"/>
+			<element name="coverage" type="string"/>
+			<element name="country" type="string"/>
+			<element name="language" type="string"/>
+		</sequence>
+	</complexType>
+
+	<element name="JournalArticleMetadata">
+		<complexType>
+			<sequence>
+				<element name="pages" type="string"/>
+				<element name="language" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<complexType name="JournalArticleMetadataComplexType">
+		<sequence>
+			<element name="pages" type="string"/>
+			<element name="language" type="string"/>
+		</sequence>
+	</complexType>
+
+	<element name="ImageListRequest">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="ImageListResponse">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string"/>
+				<element name="images" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="pdfs" type="string" minOccurs="0" maxOccurs="unbounded"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="ImageViewRequest">
+		<complexType>
+			<sequence>
+				<element name="irUrlInfo" type="tns:IrUrlInfo"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<complexType name="ImageViewResponse">
+		<sequence>
+			<element name="pid" type="string"/>
+			<element name="images" type="string" minOccurs="0" maxOccurs="unbounded"/>
+			<element name="pdfs" type="string" minOccurs="0" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+
+
+	<complexType name="ImageViewResponseList">
+		<sequence>
+			<element name="title" type="string"/>
+			<element name="stableUrl" type="string"/>
+			<element name="images" type="string" minOccurs="0" maxOccurs="unbounded"/>
+			<element name="pdfs" type="string" minOccurs="0" maxOccurs="unbounded"/>
+			<element name="imageViewResponse" type="tns:ImageViewResponse" minOccurs="0"
+				maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+
+
+	<!-- IrMetadata begin -->
+	<element name="IrMetadataResponse">
+		<complexType>
+			<sequence>
+				<element name="title" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="creator" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="format" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="publisher" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="subject" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="description" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="type" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="spatial" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="temporal" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="issued" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="fullContentFile" type="string"/>
+				<element name="thumbnailFile" type="string"/>
+				<element name="textEquivalent" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+
+	<!-- ItemInfo begin -->
+	<element name="ItemInfoRequest">
+		<complexType>
+			<sequence>
+				<element name="irUrlInfo" type="tns:IrUrlInfo"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="ItemInfoResponse">
+		<complexType>
+			<sequence>
+				<element name="irUrlInfo" type="tns:IrUrlInfo"/>
+				<element name="baseInstUrl" type="string"/>
+				<element name="creator" type="string"/>
+				<element name="collection" type="string"/>
+				<element name="date" type="string"/>
+				<element name="title" type="string"/>
+				<element name="publisher" type="string"/>
+				<element name="issued" type="string"/>
+				<element name="stableUrl" type="string"/>
+				<element name="imageView" type="string"/>
+				<element name="description" type="string"/>
+				<element name="text" type="string"/>
+				<element name="type" type="string"/>
+				<element name="contentModel" type="string"/>
+				<element name="textSurrogate" type="string"/>
+				<element name="thumbnail" type="string"/>
+				<element name="nextConstituent" type="string"/>
+				<element name="prevConstituent" type="string"/>
+				<element name="rights" type="string"/>
+				<element name="view" type="string"/>
+				<element name="subjects" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="breadcrumbs" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="datastreams" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="basicQueryResponse" type="tns:BasicQueryResponse" minOccurs="0"
+					maxOccurs="unbounded"/>
+				<element name="images" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="JournalCollectionMetadata"
+					type="tns:JournalCollectionMetadataComplexType"/>
+				<element name="JournalArticleMetadata" type="tns:JournalArticleMetadataComplexType"/>
+				<element name="ConferenceMetadata" type="tns:ConferenceMetadataComplexType"/>
+				<element name="ResearchItemMetadata" type="tns:ResearchItemMetadataComplexType"/>
+			</sequence>
+		</complexType>
+	</element>
+	<!-- ItemInfo end -->
+
+	<!-- AddToXmlDb begin -->
+	<element name="AddToXmlDbRequest">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string" minOccurs="0" maxOccurs="unbounded"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="AddToXmlDbResponse">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="response" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+	<!-- AddToXmlDb end -->
+
+	<!-- GetFromXmlDb begin -->
+	<element name="GetFromXmlDbRequest">
+		<complexType>
+			<sequence>
+				<element name="query" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="GetFromXmlDbResponse">
+		<complexType>
+			<sequence>
+				<element name="response" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+	<!-- GetFromXmlDb end -->
+
+
+	<!-- AddToSearch begin -->
+	<element name="AddToSearchRequest">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string" minOccurs="0" maxOccurs="unbounded"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="AddToSearchResponse">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="response" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+	<!-- AddToSearch end -->
+
+	<!-- ReindexSearch begin -->
+	<element name="ReindexSearchRequest">
+		<complexType>
+			<sequence>
+				<element name="userid" type="string" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+	
+	<element name="ReindexSearchResponse">
+		<complexType>
+			<sequence>
+				<element name="userid" type="string" nillable="true"/>
+				<element name="response" type="string" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+	<!-- ReindexSearch end -->
+	
+
+	<!-- RemoveFromSearch begin -->
+	<element name="RemoveFromSearchRequest">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string" minOccurs="0" maxOccurs="unbounded"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="RemoveFromSearchResponse">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="response" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+	<!-- RemoveFromSearch end -->
+
+    <!-- GetBreadcrumbsAndChildren begin -->
+	<element name="GetBreadcrumbsAndChildrenRequest">
+		<complexType>
+			<sequence>
+				<element name="irUrlInfo" type="tns:IrUrlInfo" nillable="true"/>
+				<element name="baseUrl" type="string"/>
+				<element name="accessGroups" type="string" nillable="true"/>
+				<element name="pid" type="string" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="GetBreadcrumbsAndChildrenResponse">
+		<complexType>
+			<sequence>
+				<element name="breadcrumbs" type="tns:PathInfoDao" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="children" type="tns:PathInfoDao" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+	<!-- GetBreadcrumbsAndChildren end -->
+	
+	<!-- DeleteObjects begin -->
+	<element name="DeleteObjectsRequest">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="admin" type="string" />
+			</sequence>
+		</complexType>
+	</element>
+	
+	<element name="DeleteObjectsResponse">
+		<complexType>
+			<sequence>
+				<element name="response" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+	<!-- DeleteObjects end -->
+	
+	
+    <!-- GetAllCollectionPaths begin -->
+	<element name="GetAllCollectionPathsRequest">
+		<complexType>
+			<sequence>
+				<element name="userid" type="string" nillable="true"/>
+				<element name="pid" type="string" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+	
+	<element name="GetAllCollectionPathsResponse">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string" nillable="true"/>
+				<element name="paths" type="string" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+	<!-- GetAllCollectionPaths end -->
+	
+
+
+	<!-- GetChildrenFromSearch begin -->
+	<element name="GetChildrenRequest">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string"/>
+				<element name="baseUrl" type="string" nillable="true"/>
+				<element name="type" type="string" nillable="false"/>
+			</sequence>
+		</complexType>
+	</element>
+	
+	<element name="GetChildrenResponse">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string"/>
+				<element name="child" type="string" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+				<element name="response" type="string" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+	<!-- GetChildrenFromSearch end -->
+	
+
+	<!-- Data begin -->
+	<element name="DataRequest">
+		<complexType>
+			<sequence>
+				<element name="irUrlInfo" type="tns:IrUrlInfo"/>
+				<element name="userid" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="DataResponse">
+		<complexType>
+			<sequence>
+				<element name="dissemination" type="fedora-types:MIMETypedStream"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<!-- Data end -->
+
+	<!-- Fedora Data begin -->
+	<element name="FedoraDataRequest">
+		<complexType>
+			<sequence>
+				<element name="irUrlInfo" type="tns:IrUrlInfo"/>
+				<element name="userid" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="FedoraDataResponse">
+		<complexType>
+			<sequence>
+				<element name="fedoraDataUrl" type="string"/>
+				<element name="mimeType" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<!-- Fedora Data end -->
+
+
+
+	<!-- Id begin -->
+	<element name="IdQueryRequest">
+		<complexType>
+			<sequence>
+				<element name="irUrlInfo" type="tns:IrUrlInfo"/>
+				<element name="userid" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="Id">
+		<complexType>
+			<sequence>
+				<element name="uid" type="string"/>
+				<element name="pid" type="string"/>
+				<element name="type" type="string"/>
+				<element name="irUrlInfo" type="tns:IrUrlInfo"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<!-- Id end -->
+
+	<complexType name="IrUrlInfo">
+		<sequence>
+			<element name="url" type="string" nillable="true"/>
+			<element name="decodedUrl" type="string" nillable="true"/>
+			<element name="uri" type="string" nillable="true"/>
+			<element name="fedoraUrl" type="string" nillable="true"/>
+			<element name="parameters" type="string" nillable="true"/>
+		</sequence>
+	</complexType>
+
+	<element name="CollectionsRequest">
+		<complexType>
+			<sequence>
+				<element name="userid" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<!-- OverviewData -->
+	<element name="OverviewDataRequest">
+		<complexType>
+			<sequence>
+				<element name="id" type="string"/>
+				<element name="fileCount" type="boolean"/>				
+			</sequence>
+		</complexType>
+	</element>
+	
+	<element name="OverviewDataResponse">
+	<complexType>
+		<sequence>
+			<element name="id" type="string"/>
+			<element name="date" type="string"/>
+			<element name="files" type="string" nillable="true"/>
+		</sequence>
+	</complexType>
+	</element>
+	
+
+	<!-- BasicQuery begin -->
+	<element name="BasicQueryRequest">
+		<complexType>
+			<sequence>
+				<element name="query" type="string"/>
+				<element name="inside" type="string" nillable="true"/>
+				<element name="restriction" type="string"/>
+				<element name="userid" type="string"/>
+				<element name="start" type="int"/>
+				<element name="rows" type="int"/>
+				<element name="all" type="string" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<complexType name="BasicQueryResponse">
+		<sequence>
+			<element name="id" type="string"/>
+			<element name="title" type="string"/>
+			<element name="creator" type="string"/>
+			<element name="collection" type="string"/>
+			<element name="collectionTitle" type="string"/>
+			<element name="isCollection" type="string"/>
+			<element name="repoPath" type="string"/>			
+			<element name="date" type="string"/>
+			<element name="type" type="string"/>
+			<element name="uri" type="string"/>
+			<element name="excerpt" type="string" nillable="true"/>
+			<element name="thumbnail" type="string" nillable="true"/>
+		</sequence>
+	</complexType>
+
+	<element name="BasicQueryResponseList">
+		<complexType>
+			<sequence>
+				<element name="queryString" type="string"/>
+				<element name="baseInstUrl" type="string"/>
+				<element name="collectionUrl" type="string"/>
+				<element name="allUrl" type="string" nillable="true"/>
+				<element name="pagedUrl" type="string"/>
+				<element name="nextUrl" type="string" nillable="true"/>
+				<element name="nextUrlCount" type="string" nillable="true"/>
+				<element name="previousUrl" type="string" nillable="true"/>
+				<element name="previousUrlCount" type="string" nillable="true"/>
+				<element name="basicQueryResponse" type="tns:BasicQueryResponse" minOccurs="0"
+					maxOccurs="unbounded"/>
+				<element name="start" type="int"/>
+				<element name="end" type="int"/>
+				<element name="results" type="long"/>
+				<element name="rows" type="int"/>
+				<element name="inside" type="string" nillable="true"/>
+				<element name="searchInString" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<!-- BasicQuery end -->
+
+	<!-- AdvancedQuery begin -->
+	<element name="AdvancedQueryRequest">
+		<complexType>
+			<sequence>
+				<element name="query" type="string"/>
+				<element name="userid" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="AdvancedQueryResponse">
+		<complexType>
+			<sequence>
+				<element name="result" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<!-- AdvancedQuery end -->
+
+	<!-- UserGroup begin -->
+
+	<!-- Types:
+    	CREATE_USER
+    	CREATE_GROUP
+    	DELETE_USER
+    	DELETE_GROUP
+    	ADD_USER_TO_GROUP
+    	REMOVE_USER_FROM_GROUP
+    -->
+	<element name="UserGroupDAO">
+		<complexType>
+			<sequence>
+				<element name="type" type="string" nillable="true"/>
+				<element name="message" type="string" nillable="true"/>
+				<element name="groupName" type="string" nillable="true"/>
+				<element name="userName" type="string" nillable="true"/>
+				<element name="onyen" type="string" nillable="true"/>
+				<element name="groupPid" type="string" nillable="true"/>
+				<element name="pid" type="string" nillable="true"/>
+				<element name="users" type="tns:agent" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+				<element name="groups" type="tns:agent" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+				<element name="adminName" type="string" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<complexType name="agent">
+		<sequence>
+			<element name="name" type="string"/>
+			<element name="pid" type="string" nillable="true"/>
+		</sequence>
+	</complexType>
+
+	<element name="UserGroupResponse">
+		<complexType>
+			<sequence>
+				<element name="type" type="string" nillable="true"/>
+				<element name="message" type="string" nillable="true"/>
+				<element name="userGroup" type="string" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<!-- UserGroup end -->
+
+
+	<complexType name="SingleUpdateFile">
+		<sequence>
+			<element name="file" type="string" nillable="true"/>
+			<element name="fileName" type="string" nillable="true"/>
+			<element name="dsId" type="string" nillable="true"/>
+			<element name="label" type="string" nillable="true"/>
+			<element name="originalLabel" type="string" nillable="true"/>
+			<element name="mimetype" type="string" nillable="true"/>			
+			<element name="checksum" type="string" nillable="true"/>
+		</sequence>
+	</complexType>
+	
+
+	<element name="UpdateIngestObject">
+		<complexType>
+			<sequence>
+				<element name="message" type="string" nillable="true"/>
+				<element name="pid" type="string" nillable="true"/>
+				<element name="adminOnyen" type="string" nillable="true"/>
+				<element name="metadataChecksum" type="string" nillable="true"/>
+				<element name="files" type="tns:SingleUpdateFile" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+				<element name="metadata" type="base64Binary" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+	
+	
+
+	<!-- Submit objects -->
+
+	<element name="CreateCollectionObject">
+		<complexType>
+			<sequence>
+				<element name="message" type="string" nillable="true"/>
+				<element name="ownerPid" type="string" nillable="true"/>
+				<element name="adminOnyen" type="string" nillable="true"/>
+				<element name="users" type="string" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+				<element name="groups" type="string" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+				<element name="filePath" type="string" nillable="true"/>
+				<element name="metadata" type="base64Binary" nillable="true"/>
+				<element name="submissionCheck" type="xsd:boolean" nillable="true"/>				
+			</sequence>
+		</complexType>
+	</element>
+	
+
+	<element name="MediatedSubmitIngestObject">
+		<complexType>
+			<sequence>
+				<element name="message" type="string" nillable="true"/>
+				<element name="ownerPid" type="string" nillable="true"/>
+				<element name="adminOnyen" type="string" nillable="true"/>
+				<element name="users" type="string" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+				<element name="groups" type="string" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+				<element name="filePath" type="string" nillable="true"/>
+				<element name="checksum" type="string" nillable="true"/>
+				<element name="checksumDate" type="string" nillable="true"/>
+				<element name="file" type="base64Binary" nillable="true"/>
+				<element name="metadataName" type="string" nillable="true"/>
+				<element name="metadata" type="base64Binary" nillable="true"/>
+				<element name="mimetype" type="string" nillable="true"/>
+				<element name="fileName" type="string"/>
+				<element name="origFileName" type="string"/>
+				<element name="virusCheck" type="xsd:boolean" nillable="true"/>
+				<element name="virusSoftware" type="string" nillable="true"/>
+				<element name="virusDate" type="string" nillable="true"/>
+				<element name="submissionCheck" type="xsd:boolean" nillable="true"/>				
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="MetsSubmitIngestObject">
+		<complexType>
+			<sequence>
+				<element name="message" type="string" nillable="true"/>
+				<element name="adminOnyen" type="string" nillable="true"/>
+				<element name="ownerPid" type="string" nillable="true"/>
+				<element name="parentPid" type="string"/>
+				<element name="filePath" type="string" nillable="true"/>
+				<element name="file" type="base64Binary" nillable="true"/>
+				<element name="fileName" type="string"/>
+				<element name="virusCheck" type="xsd:boolean" nillable="true"/>
+				<element name="virusSoftware" type="string" nillable="true"/>
+				<element name="virusDate" type="string" nillable="true"/>				
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="DeletePathRequest">
+		<complexType>
+			<sequence>
+				<element name="adminOnyen" type="string"/>
+				<element name="pid" type="string" minOccurs="0" maxOccurs="unbounded"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="DeletePathResponse">
+		<complexType>
+			<sequence>
+				<element name="message" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="DeleteObjectDAO">
+		<complexType>
+			<sequence>
+				<element name="message" type="string" nillable="true"/>
+				<element name="paths" type="tns:PathInfoDao" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+				<element name="breadcrumbs" type="tns:PathInfoDao" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+	
+
+
+
+	<element name="MoveObjectRequest">
+		<complexType>
+			<sequence>
+				<element name="adminOnyen" type="string" nillable="true"/>
+				<element name="message" type="string" nillable="true"/>
+				<element name="parent" type="string" nillable="true"/>
+				<element name="children" type="string" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="MoveObjectResponse">
+		<complexType>
+			<sequence>
+				<element name="message" type="string" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+	
+
+	<element name="MoveObjectDAO">
+		<complexType>
+			<sequence>
+				<element name="message" type="string" nillable="true"/>
+				<element name="paths" type="tns:PathInfoDao" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+				<element name="breadcrumbs" type="tns:PathInfoDao" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+				<element name="movedPids" type="string" minOccurs="0" maxOccurs="unbounded"
+				nillable="true"/>
+				<element name="groupType" type="string" nillable="true"/> 
+				<element name="groupName" type="string" nillable="true"/> 
+				<element name="collectionPid" type="string" nillable="true"/> 
+				<element name="collectionPath" type="string" nillable="true"/> 
+			</sequence>
+		</complexType>
+	</element>
+	
+
+	<complexType name="PathInfoDao">
+		<sequence>
+			<element name="label" type="string" nillable="true"/>
+			<element name="path" type="string"/>
+			<element name="pid" type="string"/>
+			<element name="slug" type="string" nillable="true"/>
+		</sequence>
+	</complexType>
+
+	<element name="PathInfoRequest">
+		<complexType>
+			<sequence>
+				<element name="pid" type="string"/>
+				<element name="userid" type="string"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<element name="PathInfoResponse">
+		<complexType>
+			<sequence>
+				<element name="paths" type="tns:PathInfoDao" minOccurs="0" maxOccurs="unbounded"
+					nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+
+</schema>

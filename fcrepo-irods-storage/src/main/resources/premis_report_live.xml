@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<premis xmlns="info:lc/xmlns/premis-v2" xmlns:xsi="http://www.w3c.org/2001/XMLSchema-instance"
+    version="2.0">
+    <object xsi:type="representation">
+        <objectIdentifier>
+            <objectIdentifierType>Fedora PID</objectIdentifierType>
+            <objectIdentifierValue>uuid:0b83a11e-cdee-47e7-8968-f99d23a2eba4</objectIdentifierValue>
+        </objectIdentifier>
+        <originalName>After the fall : Vettori, Machiavelli, and the refiguring of Italia in
+            sixteenth-century political discourse</originalName>
+        <relationship>
+            <relationshipType>has part</relationshipType>
+            <relationshipSubType>fedora-system:hasDatastream</relationshipSubType>
+            <relatedObjectIdentification>
+                <relatedObjectIdentifierType>Fedora Datastream PID</relatedObjectIdentifierType>
+                <relatedObjectIdentifierValue>uuid:0b83a11e-cdee-47e7-8968-f99d23a2eba4+RELS-EXT+RELS-EXT.0</relatedObjectIdentifierValue>
+            </relatedObjectIdentification>
+        </relationship>
+        <relationship>
+            <relationshipType>has part</relationshipType>
+            <relationshipSubType>fedora-system:hasDatastream</relationshipSubType>
+            <relatedObjectIdentification>
+                <relatedObjectIdentifierType>Fedora Datastream PID</relatedObjectIdentifierType>
+                <relatedObjectIdentifierValue>uuid:0b83a11e-cdee-47e7-8968-f99d23a2eba4+MD_DESCRIPTIVE+MD_DESCRIPTIVE.0</relatedObjectIdentifierValue>
+            </relatedObjectIdentification>
+        </relationship>
+        <relationship>
+            <relationshipType>has part</relationshipType>
+            <relationshipSubType>fedora-system:hasDatastream</relationshipSubType>
+            <relatedObjectIdentification>
+                <relatedObjectIdentifierType>Fedora Datastream PID</relatedObjectIdentifierType>
+                <relatedObjectIdentifierValue>uuid:0b83a11e-cdee-47e7-8968-f99d23a2eba4+DATA_FILE+DATA_FILE.0</relatedObjectIdentifierValue>
+            </relatedObjectIdentification>
+        </relationship>
+        <relationship>
+            <relationshipType>has part</relationshipType>
+            <relationshipSubType>fedora-system:hasDatastream</relationshipSubType>
+            <relatedObjectIdentification>
+                <relatedObjectIdentifierType>Fedora Datastream PID</relatedObjectIdentifierType>
+                <relatedObjectIdentifierValue>uuid:0b83a11e-cdee-47e7-8968-f99d23a2eba4+DC+DC.0</relatedObjectIdentifierValue>
+            </relatedObjectIdentification>
+        </relationship>
+        <relationship>
+            <relationshipType>has part</relationshipType>
+            <relationshipSubType>fedora-system:hasDatastream</relationshipSubType>
+            <relatedObjectIdentification>
+                <relatedObjectIdentifierType>Fedora Datastream PID</relatedObjectIdentifierType>
+                <relatedObjectIdentifierValue>uuid:0b83a11e-cdee-47e7-8968-f99d23a2eba4+MD_EVENTS+MD_EVENTS.0</relatedObjectIdentifierValue>
+            </relatedObjectIdentification>
+        </relationship>
+    </object>
+    <object xsi:type="bitstream">
+        <objectIdentifier>
+            <objectIdentifierType>Fedora Datastream PID</objectIdentifierType>
+            <objectIdentifierValue>uuid:0b83a11e-cdee-47e7-8968-f99d23a2eba4+RELS-EXT+RELS-EXT.0</objectIdentifierValue>
+        </objectIdentifier>
+        <objectCharacteristics>
+            <compositionLevel>1</compositionLevel>
+            <size>1349</size>
+            <format>
+                <formatDesignation>
+                    <formatName>text/xml</formatName>
+                </formatDesignation>
+                <formatNote>IANA MIME-type</formatNote>
+            </format>
+        </objectCharacteristics>
+        <storage>
+            <contentLocation>
+                <contentLocationType>iRODS URI</contentLocationType>
+                <contentLocationValue>irods://antler.libint.unc.edu:5555/cdrTestZone/home/fedora/objects/2010/0324/14/41/uuid_0b83a11e-cdee-47e7-8968-f99d23a2eba4</contentLocationValue>
+            </contentLocation>
+            <storageMedium>cache - unix file system</storageMedium>
+        </storage>
+    </object>
+    <object xsi:type="bitstream">
+        <objectIdentifier>
+            <objectIdentifierType>Fedora Datastream PID</objectIdentifierType>
+            <objectIdentifierValue>uuid:0b83a11e-cdee-47e7-8968-f99d23a2eba4+MD_DESCRIPTIVE+MD_DESCRIPTIVE.0</objectIdentifierValue>
+        </objectIdentifier>
+        <objectCharacteristics>
+            <compositionLevel>1</compositionLevel>
+            <size>2893</size>
+            <format>
+                <formatDesignation>
+                    <formatName>text/xml</formatName>
+                </formatDesignation>
+                <formatNote>IANA MIME-type</formatNote>
+            </format>
+        </objectCharacteristics>
+        <storage>
+            <contentLocation>
+                <contentLocationType>iRODS URI</contentLocationType>
+                <contentLocationValue>irods://antler.libint.unc.edu:5555/cdrTestZone/home/fedora/objects/2010/0324/14/41/uuid_0b83a11e-cdee-47e7-8968-f99d23a2eba4</contentLocationValue>
+            </contentLocation>
+            <storageMedium>cache - unix file system</storageMedium>
+        </storage>
+    </object>
+    <object xsi:type="file">
+        <objectIdentifier>
+            <objectIdentifierType>Fedora Datastream PID</objectIdentifierType>
+            <objectIdentifierValue>uuid:0b83a11e-cdee-47e7-8968-f99d23a2eba4+DATA_FILE+DATA_FILE.0</objectIdentifierValue>
+        </objectIdentifier>
+        <objectCharacteristics>
+            <compositionLevel>0</compositionLevel>
+            <fixity>
+                <messageDigestAlgorithm>MD5</messageDigestAlgorithm>
+                <messageDigest>19723324f1fadbbf8c3a2bea636348d3</messageDigest>
+                <messageDigestOriginator>IRODS Microservice</messageDigestOriginator>
+            </fixity>
+            <size>748586</size>
+            <format>
+                <formatDesignation>
+                    <formatName>application/pdf</formatName>
+                </formatDesignation>
+                <formatNote>unvalidated IANA MIME-type</formatNote>
+            </format>
+        </objectCharacteristics>
+        <originalName>http://dc.lib.unc.edu/cgi-bin/showfile.exe?CISOROOT=/etd&amp;CISOPTR=116</originalName>
+        <storage>
+            <contentLocation>
+                <contentLocationType>iRODS URI</contentLocationType>
+                <contentLocationValue>irods://antler.libint.unc.edu:5555/cdrTestZone/home/fedora/datastreams/2010/0324/14/41/uuid_0b83a11e-cdee-47e7-8968-f99d23a2eba4+DATA_FILE+DATA_FILE.0</contentLocationValue>
+            </contentLocation>
+            <storageMedium>cache - unix file system</storageMedium>
+        </storage>
+    </object>
+    <object xsi:type="bitstream">
+        <objectIdentifier>
+            <objectIdentifierType>Fedora Datastream PID</objectIdentifierType>
+            <objectIdentifierValue>uuid:0b83a11e-cdee-47e7-8968-f99d23a2eba4+DC+DC.0</objectIdentifierValue>
+        </objectIdentifier>
+        <objectCharacteristics>
+            <compositionLevel>1</compositionLevel>
+            <size>2186</size>
+            <format>
+                <formatDesignation>
+                    <formatName>text/xml</formatName>
+                </formatDesignation>
+                <formatNote>IANA MIME-type</formatNote>
+            </format>
+        </objectCharacteristics>
+        <storage>
+            <contentLocation>
+                <contentLocationType>iRODS URI</contentLocationType>
+                <contentLocationValue>irods://antler.libint.unc.edu:5555/cdrTestZone/home/fedora/objects/2010/0324/14/41/uuid_0b83a11e-cdee-47e7-8968-f99d23a2eba4</contentLocationValue>
+            </contentLocation>
+            <storageMedium>cache - unix file system</storageMedium>
+        </storage>
+    </object>
+    <object xsi:type="file">
+        <objectIdentifier>
+            <objectIdentifierType>Fedora Datastream PID</objectIdentifierType>
+            <objectIdentifierValue>uuid:0b83a11e-cdee-47e7-8968-f99d23a2eba4+MD_EVENTS+MD_EVENTS.0</objectIdentifierValue>
+        </objectIdentifier>
+        <objectCharacteristics>
+            <compositionLevel>0</compositionLevel>
+            <fixity>
+                <messageDigestAlgorithm>MD5</messageDigestAlgorithm>
+                <messageDigest>24cc94aeaeec02fea8925041d0c0168d</messageDigest>
+                <messageDigestOriginator>IRODS Microservice</messageDigestOriginator>
+            </fixity>
+            <size>6241</size>
+            <format>
+                <formatDesignation>
+                    <formatName>text/xml</formatName>
+                </formatDesignation>
+                <formatNote>unvalidated IANA MIME-type</formatNote>
+            </format>
+        </objectCharacteristics>
+        <originalName>PREMIS Events Metadata</originalName>
+        <storage>
+            <contentLocation>
+                <contentLocationType>iRODS URI</contentLocationType>
+                <contentLocationValue>irods://antler.libint.unc.edu:5555/cdrTestZone/home/fedora/datastreams/2010/0324/14/41/uuid_0b83a11e-cdee-47e7-8968-f99d23a2eba4+MD_EVENTS+MD_EVENTS.0</contentLocationValue>
+            </contentLocation>
+            <storageMedium>cache - unix file system</storageMedium>
+        </storage>
+    </object>
+</premis>

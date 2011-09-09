@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2009 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<premis xmlns="info:lc/xmlns/premis-v2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="info:lc/xmlns/premis-v2 file:/home/count0/workspace/cdr-irods/src/main/resources/premis.xsd" version="2.0">
+    <!-- defines object characteristics and storage for FOXML and relationships with other objects -->
+    <object xsi:type="representation">
+        <objectIdentifier>
+            <objectIdentifierType>Fedora PID</objectIdentifierType>
+            <objectIdentifierValue>info:fedora/cdr:300</objectIdentifierValue>
+        </objectIdentifier>
+        <originalName>The Magnificent Analysis of Something for Science</originalName>
+        <relationship>
+            <relationshipType>has part</relationshipType>
+            <relationshipSubType>fedora:hasDatastream</relationshipSubType>
+            <relatedObjectIdentification>
+                <relatedObjectIdentifierType>Fedora PID</relatedObjectIdentifierType>
+                <relatedObjectIdentifierValue>info:fedora/cdr:300+DATA_FILE</relatedObjectIdentifierValue>
+            </relatedObjectIdentification>
+        </relationship>
+    </object>    
+    <object xsi:type="file">
+        <objectIdentifier>
+            <objectIdentifierType>Fedora PID</objectIdentifierType>
+            <objectIdentifierValue>info:fedora/cdr:300+DATA_FILE+20091007T10:12:20AM</objectIdentifierValue>
+        </objectIdentifier>
+        <objectCharacteristics>
+            <!-- not re-encoded by repo, not compressed or encrypted -->
+            <compositionLevel>0</compositionLevel>
+            <fixity>
+                <messageDigestAlgorithm>MD5</messageDigestAlgorithm>
+                <messageDigest>ab45abqa4b4b5454a45</messageDigest>
+                <!-- TODO should really be originator (earliest digest, even submitter) -->
+                <messageDigestOriginator>iRODS checksum microservice</messageDigestOriginator>
+            </fixity>
+            <size>1208912</size>
+            <!-- TODO replace with format information recorded elsewhere, merge MD_TECHNICAL? -->
+            <format>
+                <formatDesignation>
+                    <formatName>Unknown</formatName>
+                </formatDesignation>
+            </format>
+            <objectCharacteristicsExtension>
+                <!-- iRODS-specific metadata could go here -->
+            </objectCharacteristicsExtension>
+        </objectCharacteristics>
+        <originalName>my presentation.docx</originalName>
+        <storage>
+            <contentLocation>
+                <contentLocationType>iRODS URI</contentLocationType>
+                <contentLocationValue>irods://cambridge.lib.unc.edu:3333/93824/123/124/cdr_300+DATA_FILE</contentLocationValue>
+            </contentLocation>
+            <storageMedium>Hard disk</storageMedium>
+        </storage>
+        <storage>
+            <contentLocation>
+                <contentLocationType>iRODS URI</contentLocationType>
+                <contentLocationValue>irods://ithaca.lib.unc.edu:3333/93824/123/124/cdr_300+DATA_FILE</contentLocationValue>
+            </contentLocation>
+            <storageMedium>Magnetic tape</storageMedium>            
+        </storage>
+    </object>
+    <!-- TODO represent multiple versions of files -->
+</premis>

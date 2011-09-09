@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+    <mods:titleInfo>
+        <mods:title>Electronic Theses and Dissertations</mods:title>
+    </mods:titleInfo>
+    <mods:typeOfResource collection="yes">text</mods:typeOfResource>
+    <mods:genre  authority="eprint" authorityURI="http://purl.org/eprint/type/"
+        valueURI="http://purl.org/eprint/type/Thesis">Thesis</mods:genre>
+    <mods:typeOfResource>text</mods:typeOfResource>
+    <mods:name type="corporate">
+        <mods:namePart>UNC Chapel Hill</mods:namePart>
+        <mods:role>
+            <mods:roleTerm type="text" authority="marcrelator">Degree grantor</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:accessCondition type="use">The author has granted the University of North Carolina at Chapel Hill a limited, non-exclusive right to make this publication available to the public. The author retains all other rights.</mods:accessCondition>
+    <mods:accessCondition type="access">Open access</mods:accessCondition>
+</mods:mods>

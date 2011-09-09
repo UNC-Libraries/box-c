@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>edu.unc.lib.cdr</groupId>
+	<artifactId>cdr</artifactId>
+	<packaging>pom</packaging>
+	<version>2.0-SNAPSHOT</version>
+	<name>Carolina Digital Repository</name>
+	<description>The Carolina Digital Repository (CDR) is a repository for material in electronic formats produced by members of the University of North Carolina at Chapel Hill community. Its chief purpose is to provide for the long-term preservation of such materials. By preservation we mean the ability to ingest the material, index and search it, replicate it, and keep it safe from alteration.</description>
+	<url>http://cdr.unc.edu</url>
+	<inceptionYear>2008</inceptionYear>
+	<organization>
+		<name>University of North Carolina at Chapel Hill Libraries</name>
+		<url>http://www.lib.unc.edu</url>
+	</organization>
+
+	<developers>
+		<developer>
+			<id>greg</id>
+			<name>Gregory Jansen</name>
+			<email>gregory.jansen@gmail.com</email>
+			<url>http://www.meekmok.com/janglejack/</url>
+			<organization>University of North Carolina at Chapel Hill Libraries</organization>
+			<organizationUrl>http://www.lib.unc.edu</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+	</developers>
+
+	<licenses>
+		<license>
+			<name>Apache 2</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>A business-friendly OSS license</comments>
+		</license>
+	</licenses>
+
+	<properties>
+		<cdr.version>2.0-SNAPSHOT</cdr.version>
+		<spring.version>3.0.5.RELEASE</spring.version>
+		<spring.security.version>3.0.5.RELEASE</spring.security.version>
+		<spring.ws.version>2.0.1.RELEASE</spring.ws.version>
+		<spring.tiger.ws.version>1.5.9</spring.tiger.ws.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
+	<distributionManagement>
+		<repository>
+			<id>dlbuild.libint.unc.edu</id>
+			<name>dlbuild.libint.unc.edu-releases</name>
+			<url>http://dlbuild.libint.unc.edu:8080/artifactory/libs-release-local</url>
+		</repository>
+		<snapshotRepository>
+			<id>dlbuild.libint.unc.edu</id>
+			<name>dlbuild.libint.unc.edu-snapshots</name>
+			<url>http://dlbuild.libint.unc.edu:8080/artifactory/libs-snapshot-local</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<issueManagement>
+		<system>trac</system>
+		<url>https://intranet.lib.unc.edu:82/trac/cdr/</url>
+	</issueManagement>
+	<scm>
+		<connection>scm:javasvn:svn://intranet.lib.unc.edu/cdr/cdr-master/trunk</connection>
+		<developerConnection>scm:javasvn:svn://intranet.lib.unc.edu/cdr/cdr-master/trunk</developerConnection>
+	</scm>
+
+	<modules>
+		<module>access</module>
+		<module>access-security</module>
+		<module>admin</module>
+		<module>fcrepo-cdr-fesl</module>
+		<module>fcrepo-clients</module>
+		<module>fcrepo-irods-storage</module>
+		<module>metadata</module>
+		<module>persistence</module>
+		<module>services</module>
+		<module>solr-ingest</module>
+		<module>solr-search</module>
+	</modules>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.7</version>
+			</plugin>
+		</plugins>
+	</reporting>
+
+	<profiles>
+		<profile>
+			<id>example-settings</id>
+			<!-- supplies test properties to src/test/resources/server.properties -->
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<repositoryProtocol>https</repositoryProtocol>
+				<repositoryHost>localhost</repositoryHost>
+				<repositoryPort></repositoryPort>
+				<repositoryContext></repositoryContext>
+
+				<fedoraProtocol>https</fedoraProtocol>
+				<fedoraHost>localhost</fedoraHost>
+				<fedoraPort></fedoraPort>
+				<fedoraContext>fedora/</fedoraContext>
+				<fedoraAdminUsername>fedoraAdmin</fedoraAdminUsername>
+				<fedoraAdminPassword>fedoraPassword</fedoraAdminPassword>
+
+				<mulgaraProtocol>http</mulgaraProtocol>
+				<mulgaraHost>localhost</mulgaraHost>
+				<mulgaraPort>:8080</mulgaraPort>
+				<mulgaraContext></mulgaraContext>
+				
+				<solrProtocol>https</solrProtocol>
+				<solrHost>localhost</solrHost>
+				<solrPort></solrPort>
+				<solrContext>solr</solrContext>
+				
+				<externalBaseUrl>http://localhost/static/</externalBaseUrl>
+
+				<jmsHost>localhost</jmsHost>
+				<jmsPort>:61616</jmsPort>
+
+				<!-- note: no colon on this port -->
+				<smtpHost>localhost</smtpHost>
+				<smtpPort>25</smtpPort>
+
+				<administratorEmail>somebody@example.com</administratorEmail>
+				<repositoryFromEmail>services@example.com</repositoryFromEmail>
+			</properties>
+		</profile>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<downloadSources>true</downloadSources>
+					<downloadJavadocs>true</downloadJavadocs>
+				</configuration>
+			</plugin>
+			<plugin>
+				<inherited>false</inherited>
+				<groupId>com.google.code.maven-license-plugin</groupId>
+				<artifactId>maven-license-plugin</artifactId>
+				<version>1.4.0</version>
+				<configuration>
+					<header>${basedir}/etc/header.txt</header>
+					<failIfMissing>true</failIfMissing>
+					<aggregate>true</aggregate>
+					<properties>
+						<year>${project.inceptionYear}</year>
+					</properties>
+					<excludes>
+						<exclude>**/header.txt</exclude>
+						<exclude>**/bin/**</exclude>
+						<exclude>**/bundled/**</exclude>
+						<exclude>**/standards/**</exclude>
+						<exclude>**/resources/**</exclude>
+						<exclude>**/solr-config/**</exclude>
+						<exclude>**/external/static/**</exclude>
+						<exclude>**/add_to_maven/**</exclude>
+						<exclude>**/for_tomcat_common_endorsed/**</exclude>
+						<exclude>**/js/jquery/**</exclude>
+						<exclude>**/js/yahoo/**</exclude>
+						<exclude>**/*.tld</exclude>
+						<exclude>**/*.tld</exclude>
+						<exclude>**/*.zip</exclude>
+						<exclude>**/*.springBeans</exclude>
+						<exclude>**/jaxb-*/**</exclude>
+						<exclude>**/src/jaxb/**</exclude>
+						<exclude>**/*.xsd</exclude>
+						<exclude>**/*.patch</exclude>
+						<exclude>**/*.r</exclude>
+						<exclude>**/*.ir</exclude>
+						<exclude>**/*.xcf</exclude>
+						<exclude>**/robots.txt</exclude>
+					</excludes>
+					<mapping>
+						<sch>XML_STYLE</sch>
+					</mapping>
+					<encoding>UTF-8</encoding>
+				</configuration>
+				<executions>
+					<execution>
+						<id>check-headers</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.8</version>
+				<executions>
+					<execution>
+						<id>integration-test</id>
+						<goals>
+							<goal>integration-test</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>verify</id>
+						<goals>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin> -->
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.0</version>
+				<dependencies>
+					<dependency>
+						<groupId>com.google.code.maven-scm-provider-svnjava</groupId>
+						<artifactId>maven-scm-provider-svnjava</artifactId>
+						<version>1.10</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<!-- <tagBase>scm:javasvn:svn://intranet.lib.unc.edu/cdr/cdr-metadata/tags</tagBase> -->
+					<providerImplementations>
+						<svn>javasvn</svn>
+					</providerImplementations>
+					<resume>false</resume>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>aduna</id>
+			<name>Aduna software</name>
+			<url>http://repo.aduna-software.org/maven2/releases</url>
+		</repository>
+		<repository>
+			<id>duraspace</id>
+			<name>Duraspace Public Repo</name>
+			<url>https://m2.duraspace.org/content/repositories/public/</url>
+		</repository>
+		<repository>
+			<id>duraspace-releases</id>
+			<name>Duraspace Releases</name>
+			<url>https://m2.duraspace.org/content/repositories/releases/</url>
+		</repository>
+		<repository>
+			<id>maven2-repository.dev.java.net</id>
+			<name>Java.net Maven 2 Repository</name>
+			<url>http://download.java.net/maven/2</url>
+		</repository>
+		<repository>
+			<id>codehaus-repository</id>
+			<name>Codehaus Repository</name>
+			<url>http://repository.codehaus.org</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>maven2-repository.dev.java.net</id>
+			<name>Java.net Maven 2 Repository</name>
+			<url>http://download.java.net/maven/2</url>
+		</pluginRepository>
+		<!-- <pluginRepository> <id>maven-repository.dev.java.net</id> <name>Java.net Maven 1 Repository (legacy)</name> 
+			<url>http://download.java.net/maven/1</url> <layout>legacy</layout> </pluginRepository> -->
+	</pluginRepositories>
+
+</project>

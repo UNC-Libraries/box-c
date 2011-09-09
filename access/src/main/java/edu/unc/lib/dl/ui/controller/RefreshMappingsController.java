@@ -1,0 +1,70 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package edu.unc.lib.dl.ui.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import edu.unc.lib.dl.security.access.AccessGroupConstants;
+import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
+import edu.unc.lib.dl.ui.util.LookupMappingsSettings;
+import edu.unc.lib.dl.ui.view.XSLViewResolver;
+
+/**
+ * Allows admin users to trigger reloads of various UI specific mappings.
+ * @author bbpennel
+ * $Id: RefreshMappingsController.java 2743 2011-08-12 16:56:19Z bbpennel $
+ * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/RefreshMappingsController.java $
+ */
+@Controller
+@RequestMapping("/refreshMappings")
+public class RefreshMappingsController extends CDRBaseController {
+	private static final Logger LOG = LoggerFactory.getLogger(RefreshMappingsController.class);
+	
+	@Autowired(required=true)
+	private XSLViewResolver xslViewResolver;
+	
+	@RequestMapping(method = RequestMethod.GET)
+	public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		AccessGroupSet accessGroups = getUserAccessGroups(request);
+		if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)){
+			throw new ResourceNotFoundException();
+		}
+		
+		try {
+			LookupMappingsSettings.updateMappings();
+		} catch (Exception e){
+			response.getWriter().append("Failed to refresh mappings, check logs.");
+			LOG.error("Failed to refresh mappings", e);
+		}
+		
+		try {
+			xslViewResolver.refreshViews();
+		} catch (Exception e){
+			response.getWriter().append("Failed to refresh transform mappings, check logs.");
+			LOG.error("Failed to refresh transform mappings", e);
+		}
+		response.getWriter().append("Mappings refresh was successful.");
+	}
+}

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>metadata</artifactId>
+	<packaging>jar</packaging>
+	<name>CDR Metadata Utilities</name>
+	<description>All schemas, vocabularies and constants for the CDR along with utility classes.</description>
+	<parent>
+		<groupId>edu.unc.lib.cdr</groupId>
+		<artifactId>cdr</artifactId>
+		<version>2.0-SNAPSHOT</version>
+	</parent>
+	<build>
+		<finalName>cdr-metadata</finalName>
+	</build>
+	<dependencies>
+		<!-- Note that most of the dependencies here have optional set to "true" which means that projects 
+			which import this one need not pull in the dependencies transitively. -->
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>jdom</groupId>
+			<artifactId>jdom</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.saxon</groupId>
+			<artifactId>saxon</artifactId>
+			<version>8.7</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.saxon</groupId>
+			<artifactId>saxon-dom</artifactId>
+			<version>8.7</version>
+		</dependency>
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+			<version>1.6.2</version>
+		</dependency>
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.9.1</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.4</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>xml-apis</groupId>
+			<artifactId>xml-apis</artifactId>
+			<version>2.9.1</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.5.2</version>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
+
+</project>

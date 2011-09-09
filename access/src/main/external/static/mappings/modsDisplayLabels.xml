@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings>
+	<mapping key="modsDisplayNames" ordered="false">
+		<pair key="extent">Extent</pair>
+		<pair key="reformattingQuality">Reformatting Quality</pair>
+		<pair key="note">Note</pair>
+		<pair key="rights">Access Conditions</pair>
+		<pair key="accessCondition">Access Conditions</pair>
+		<pair key="accessCondition|use">Usage Conditions</pair>
+		<pair key="dateIssued">Date Issued</pair>
+		<pair key="dateCreated">Date Created</pair>
+		<pair key="dateCaptured">Date Captured</pair>
+		<pair key="dateModified">Date Modified</pair>
+		<pair key="dateValid">Date Valid</pair>
+		<pair key="dateOther">Date</pair>
+		<pair key="contributor">Contributor</pair>
+		<pair key="creator">Creator</pair>
+		<pair key="name">Contributor</pair>
+		<pair key="name|creator">Creator</pair>
+		<pair key="title">Title</pair>
+		<pair key="identifier">Identifier</pair>
+		<pair key="typeOfResource">Type Of Resource</pair>
+		<pair key="classification">Classification</pair>
+		<pair key="type">Type of Resource</pair>
+		<pair key="subject">Subject</pair>
+		<pair key="genre">Genre</pair>
+		<pair key="relatedItem">Related Item</pair>
+		<pair key="publisher">Publisher</pair>
+		<pair key="relation">Relation</pair>
+		<pair key="source">Source</pair>
+		<pair key="format">Format</pair>
+		<pair key="language">Language</pair>
+	</mapping>
+</mappings>

@@ -1,0 +1,397 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+body {
+margin:0;
+padding:0;
+}
+
+ul.abc {
+padding:0;
+margin:0;
+list-style-type:none;
+margin-left:20px;
+margin-bottom:0px;
+padding-bottom:20px;
+clear:both;
+}
+
+ul.abc li.current {
+font-weight:bold;
+color:#CC6600;
+}
+
+
+ul.abc li {
+float:left;
+margin-right:2px;
+white-space:nowrap;
+}
+
+
+ul.abc li a{
+text-decoration:none;
+color:#0066CC;
+white-space:nowrap;
+}
+
+ul.abc li a:hover{
+text-decoration:underline;
+color:#CC6600;
+}
+
+
+table#mlayout {
+width:100%;
+
+}
+
+td#left {
+vertical-align:top;
+width:20%
+}
+
+td#right {
+vertical-align:top;
+width:100%;
+}
+
+table {
+font:normal 12px Arial, Helvetica, sans-serif;
+}
+
+#descrwrap {
+width:70%;
+}
+
+#descr td{
+border-bottom:1px solid #ddd;
+}
+
+#index {
+width:70%;
+}
+#index td{
+border-bottom:1px solid #ddd;
+}
+
+#children {
+width:70%;
+}
+#children td{
+border-bottom:1px solid #ddd;
+}
+
+#surrogate {
+width:70%;
+}
+#surrogate td{
+border-bottom:1px solid #ddd;
+}
+
+#formats {
+width:70%;
+}
+#formats td{
+border-bottom:1px solid #ddd;
+}
+
+#images {
+width:70%;
+}
+#images td{
+
+border-bottom:1px solid #ddd;
+border-collapse:collapse;
+}
+
+.mhdr {
+padding:2px;
+background-color:#006699;
+color:#fff;
+font:bold 12px Verdana, Arial, Helvetica, sans-serif;
+}
+.hdr {
+padding:2px;
+font:bold 11px Verdana, Arial, Helvetica, sans-serif;
+color:#369;
+vertical-align:top;
+/*width:150px;*/
+
+}
+
+table#list {
+border-left:1px solid #ddd;
+border-bottom:1px solid #ddd;
+border-collapse:collapse;
+margin-left:10%;
+margin-right:10%;
+width:80%;
+}
+
+table#list td {
+border-right:1px solid #ddd;
+border-top:1px solid #ddd;
+padding:3px;
+}
+
+table#list th {
+background-color:#6699cc;
+color:#fff;
+border-right:1px solid #ddd;
+border-top:1px solid #ddd;
+padding:3px;
+}
+
+table#descrwrap {
+margin-top:20px;
+}
+
+div.card_hdr {
+display:inline-block;
+background-color:#f5f5f5;
+border:1px solid #ddd;
+margin-bottom:30px;
+padding:2px;
+}
+div.card_hdr h1{
+float:left;
+background-color:#f5f5f5;
+color:#336699;
+font-size:11pt;
+
+}
+
+div.card_hdr div {
+float:right;
+}
+
+.term-highlight {
+    background-color:#CCFFFF;
+    color:#000000;
+    font-weight:bold
+}
+
+.clear
+{
+    clear: both;
+    padding-bottom: 1px;    /* for Gecko-based browsers */
+    margin-bottom: -1px;    /* for Gecko-based browsers */
+}
+
+td#left ul {
+border-top:2px solid #ddd;
+text-align:left;
+list-style-type: none;
+margin-left:0;
+margin-top:0px;
+margin-bottom:0;
+
+padding-left:0; }
+
+td#left ul li {
+display:inline;
+padding-top:0;
+margin:0;
+margin-left:0;
+padding-left:0;
+margin-top:0;
+margin-bottom:0;
+
+}
+
+td#left ul li a {
+font:normal 11px Verdana;
+text-decoration: none;
+color:#369;
+display:block;
+/*background: #fff url(/images/arr_r.gif) no-repeat 10px 50% ;*/
+padding-left:25px;
+border:0;
+border-bottom:1px solid #eee;
+line-height:18px
+}
+
+
+
+td#left ul li a:link {
+color:#369;
+}
+
+td#left ul li a:visited {
+color:#369; }
+
+td#left ul li a:hover {
+background:#f5f5f5 url(../images/r_arr_m.gif) no-repeat 10px 50% ;
+font-weight:normal;
+color: #999; }
+
+td#left ul li a:active {
+color:red; }
+
+td#left ul li a.current {
+background:#f5f5f5 url(../images/r_arr_m.gif) no-repeat 10px 50%;
+font-weight:bold;
+}
+
+div.path {
+border-bottom:1px solid #ddd;
+padding-left:20px;
+padding-bottom:5px;
+margin-bottom:20px;
+font:normal 12px Arial, Helvetica, sans-serif;
+color:#3366CC;
+}
+
+div.path span.arr {
+font-weight:bold;
+padding-right:3px;
+padding-left:3px;
+}
+
+div.path span.last {
+font-weight:bold;
+color:#336699;
+}
+
+div.path a {
+color:#003366;
+font:normal 12px Arial, Helvetica, sans-serif;
+text-decoration:underline;
+color:#3366CC;
+}
+
+div.path a span {
+font-style:italic;
+}
+
+
+div.path a:hover {
+text-decoration:underline;
+}
+
+form {
+font-family:Arial, sans-serif
+}
+a.button {
+border:1px solid #ddd;
+display:block;
+width:7em;
+text-align:center;
+margin-bottom:5px;
+font-family:Arial, sans-serif;
+padding:5px;
+}
+
+
+div.records_hdr {
+padding:2px;
+background-color:#f5f5f5;
+border:1px solid #ddd;
+margin-bottom:30px;
+}
+div.records_hdr h1{
+padding:0;
+margin:0;
+color:#336699;
+font-size:11pt;
+
+}
+
+ul.years {
+list-style:circle;
+}
+
+ul.years li {
+color:#ff6600;
+}
+
+ul.years a {
+color:#336699;
+text-decoration:none;
+}
+
+ul.years a:hover {
+text-decoration:underline;
+}
+
+ul.years li span {
+color:#333;
+}
+
+div#menulbl {
+text-align:center;
+font:bold 14px Arial, Helvetica, sans-serif;
+color:#336699;
+padding:7px 5px;
+border:1px solid #dedede;
+}
+
+div.motto {
+text-align:right;
+font:bold 11px Verdana;
+padding-right:40px;
+color:#003366;
+
+}
+
+div.disclaimer a {
+text-align:right;
+font:normal 11px Verdana;
+padding-right:40px;
+color:#0066CC;
+
+}
+
+div.error p{
+    font-style: italic;
+    color: red;
+}
+
+ul#lang {
+margin:0;
+padding:0;
+list-style-type:none;
+font:bold 12px Verdana;
+}
+
+ul#lang li {
+float:left;
+margin-top:0;
+}
+
+ul#lang li a {
+color:#fff;
+text-decoration:none;
+text-transform:uppercase;
+display:block;
+margin-right:10px;
+background-color:#06c;
+width:4em;
+text-align:center;
+padding:2px;
+
+}
+ul#lang li a.off {
+background-color:#ccc;
+color:#f5f5f5;
+cursor:text;
+}
+
+div.footer {
+
+margin:10px;
+padding:5px;
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings>
+	<mapping key="advancedFormats" ordered="true">
+		<pair key="1,image">Image</pair>
+		<pair key="2,tif"> -- tif</pair>
+		<pair key="2,jpg"> -- jpg</pair>
+		<pair key="2,gif"> -- gif</pair>
+		<pair key="1,collection">Collection</pair>
+		<pair key="1,dataset">Dataset</pair>
+		<pair key="1,interactive">Interactive Resource</pair>
+		<pair key="1,video">Video</pair>
+		<pair key="1,software">Software</pair>
+		<pair key="1,audio">Audio</pair>
+		<pair key="1,archive">Archive File</pair>
+		<pair key="1,text">Text</pair>
+		<pair key="2,doc"> -- doc</pair>
+		<pair key="2,pdf"> -- pdf</pair>
+		<pair key="2,txt"> -- txt</pair>
+		<pair key="1,unknown">Unknown</pair>
+	</mapping>
+	<mapping key="advancedAccess" ordered="true">
+		<pair key="surrogateAccess">Preview Available</pair>
+		<pair key="fileAccess">Original File Available</pair>
+	</mapping>
+</mappings>

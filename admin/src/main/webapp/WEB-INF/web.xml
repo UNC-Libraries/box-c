@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2008 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!--  <!DOCTYPE web-app PUBLIC '-//Sun Microsystems, Inc.//DTD Web Application 2.5//EN' 'http://java.sun.com/dtd/web-app_2_5.dtd'> -->
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5" xmlns="http://java.sun.com/xml/ns/javaee">
+    <!--  <web-app> -->
+
+    <error-page>
+       <error-code>404</error-code>
+       <location>/404.jsp</location>
+     </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/login.jsp</location>
+    </error-page>
+    
+    <servlet>
+        <servlet-name>uiapp</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <!-- Defines the Spring-WS MessageDispatcherServlet -->
+    <servlet>
+        <servlet-name>dlservice</servlet-name>
+        <servlet-class>org.springframework.ws.transport.http.MessageDispatcherServlet</servlet-class>
+        <init-param>
+            <!-- Transform the location attributes in WSDLs -->
+            <param-name>transformWsdlLocations</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+
+
+    <!-- Map all requests to this servlet -->
+    <servlet-mapping>
+        <servlet-name>dlservice</servlet-name>
+        <url-pattern>/ws/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>uiapp</servlet-name>
+<!--        <url-pattern>*.jsp</url-pattern> -->
+        <url-pattern>/ir/*</url-pattern> 
+    </servlet-mapping>
+
+     
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <!-- 	<taglib>
+		<taglib-uri>/spring</taglib-uri>
+		<taglib-location>/WEB-INF/spring.tld</taglib-location>
+	</taglib>
+-->
+
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value> 
+            /WEB-INF/uiapp-servlet.xml 
+            /WEB-INF/dlservice-servlet.xml 
+        </param-value>
+    </context-param>
+      <filter>
+        <filter-name>SetCharacterEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+  <filter-mapping>
+        <filter-name>SetCharacterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>   
+<!--    <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>  
+        </filter-mapping> -->
+    
+    <!-- Uncomment the following filter configuration for development purposes only. -->
+<!--       <filter>
+        <filter-name>SpoofShibbolethHeadersFilter</filter-name>
+        <filter-class>edu.unc.lib.dl.security.SpoofShibbolethHeadersFilter</filter-class>
+        <init-param>
+        <param-name>remoteUser</param-name>
+        <param-value>testuser</param-value>
+        </init-param>
+        <init-param>
+        <param-name>isMemberOfHeader</param-name>
+        <param-value>enter:groups:here</param-value>
+        </init-param>
+        </filter>    
+        <filter-mapping>
+        <filter-name>SpoofShibbolethHeadersFilter</filter-name>
+        <url-pattern>/*</url-pattern>  
+        </filter-mapping>  
+-->
+      <filter>
+        <filter-name>UserToGroupFilter</filter-name>
+        <filter-class>edu.unc.lib.dl.security.UserToGroupFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>UserToGroupFilter</filter-name>
+        <url-pattern>/*</url-pattern>  
+    </filter-mapping>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>uiapp</web-resource-name>
+            <url-pattern>/ir/*</url-pattern>
+        </web-resource-collection>
+        <user-data-constraint>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+    
+    
+</web-app>

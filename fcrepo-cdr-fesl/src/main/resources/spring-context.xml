@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2008 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- <beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:cdr="http://cdr.unc.edu/schema/spring-beans/fedora-client"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+	http://cdr.unc.edu/schema/spring-beans/fedora-client http://cdr.unc.edu/schema/spring-beans/fedora-client.xsd">
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:cdr="http://cdr.unc.edu/schema/spring-beans/fedora-client"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+	http://cdr.unc.edu/schema/spring-beans/fedora-client http://cdr.unc.edu/schema/spring-beans/fedora-client.xsd">
+	
+
+	<bean id="messageSender"
+		class="org.springframework.ws.transport.http.CommonsHttpMessageSender">
+		<property name="credentials" ref="fedoraCredentials" />
+	</bean>	
+
+	<!-- CommonsHttpMessageSender supports authentication and
+		advanced configuration options through the "httpClient"
+		property. -->
+	<bean id="commonsMessageSender"
+		class="org.springframework.ws.transport.http.CommonsHttpMessageSender">
+		<property name="credentials" ref="fedoraCredentials" />
+	</bean>
+
+	<bean id="fedoraCredentials"
+		class="org.apache.commons.httpclient.UsernamePasswordCredentials">
+		<property name="userName" value="${fedora.user}" />
+		<property name="password" value="${fedora.pass}" />
+	</bean>
+
+    <bean id="cdrRIAttributeFinder"
+		class="edu.unc.lib.dl.security.CdrRIAttributeFinder">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+	</bean>	
+	
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:fedora.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- spring-context.xml contents here -->
+	<bean id="tripleStoreQueryService"
+		class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl">
+		<property name="itqlEndpointURL"
+			value="${mulgara.baseUrl}/webservices/services/ItqlBeanService"/>
+		<property name="serverModelUri" value="${mulgara.serverModelUri}"/>
+		<property name="name" value="${fedora.user}"/>
+		<property name="pass" value="${fedora.pass}"/>
+	</bean>
+</beans>

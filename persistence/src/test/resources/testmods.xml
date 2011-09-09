@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>Hiring and recruitment practices in academic libraries</title>
+    </titleInfo>
+    
+    <name type="personal">
+        <namePart>Raschke, Gregory K.</namePart>
+        <displayForm>Gregory K. Raschke</displayForm>
+        <role>
+            <roleTerm type="text">creator</roleTerm>
+        </role>
+    </name>
+    
+    <originInfo>
+        <dateCreated keyDate="yes" encoding="iso8601">20031008</dateCreated>
+    </originInfo>
+    
+    <language>
+        <languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+    </language>
+    
+    <abstract>Academic libraries need to change their recruiting and hiring procedures to stay competitive in today's changing marketplace. By taking too long to find and to hire talented professionals in a tight labor market, academic libraries are losing out on top candidates and limiting their ability to become innovative and dynamic organizations, etc..</abstract>
+    
+    <subject>
+        <topic>Academic libraries</topic>
+        <topic>Employment - Academic Libraries</topic>
+    </subject>
+    
+    <physicalDescription>
+        <extent>20 pages</extent>
+    </physicalDescription>
+    
+    
+    <genre authority="local">http://purl.org/eprint/type/ConferencePaper</genre>
+    
+    <!--<typeOfResource>text</typeOfResource>-->
+    
+    <accessCondition type="use and reproduction">Open access</accessCondition>
+</mods>

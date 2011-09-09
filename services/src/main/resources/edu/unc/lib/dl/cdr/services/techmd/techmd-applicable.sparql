@@ -1,0 +1,26 @@
+PREFIX fedora-view: <info:fedora/fedora-system:def/view#> 
+PREFIX fedora-model: <info:fedora/fedora-system:def/model#> 
+PREFIX cdr-base: <http://cdr.unc.edu/definitions/1.0/base-model.xml#> 
+ASK 
+FROM <%1$s>
+WHERE 
+{ 
+  { ?pid cdr-base:sourceData ?srcDS . 
+    ?srcDS fedora-view:lastModifiedDate ?srcModified . 
+    ?pid cdr-base:techData ?techDS . 
+    ?techDS fedora-view:lastModifiedDate ?techModified . 
+    FILTER ( 
+      ?srcModified > ?techModified 
+    ) 
+  } UNION { 
+    ?pid cdr-base:sourceData ?srcDS .
+    OPTIONAL { ?pid cdr-base:techData ?techDS . } 
+    FILTER ( !bound(?techDS) ) 
+  } UNION { 
+    ?pid cdr-base:sourceData ?srcDS .
+    OPTIONAL { ?pid cdr-base:techData ?techDS . 
+      ?techDS fedora-view:lastModifiedDate ?techModified . } 
+    FILTER ( !bound(?techDS) && !bound(?techModified)) 
+  }
+  FILTER ( ?pid = <%2$s> )
+}

@@ -1,0 +1,53 @@
+<div class="contentarea about_page">
+	<h2 class="fontface">Technology Overview</h2>
+
+	<h3>Architecture Overview</h3>
+
+	<p>The University Library, with the cooperation of the School of Information and Library 
+	Science and the <a href="http://dice.unc.edu/">Data Intensive Cyberinfrastructure Environments 
+	(DICE) Center</a>, is actively developing the repository. Following standards developed 
+	in the reference model for an Open Archival Information Systems, the CDR employs 
+	the <a href="http://fedora-commons.org/">Fedora Commons Repository</a> as an object, 
+	model and services provider and <a href="https://www.irods.org/">iRODS</a> as a distributed
+	storage and preservation system.</p>
+	
+	<p> The University Library is a partner in the Policy-Driven Repository Infrastructure project 
+	funded by the Institute for Museum and Library Services (IMLS) to build on the initial 
+	Fedora to iRODS connector and investigate interoperability issues in greater depth. UNC 
+	Libraries efforts with respect to the CDR are based on connecting these two technologies.</p>
+
+	<p>In partnership with the <a href="http://www.renci.org/">Renaissance Computing Institute 
+	(RENCI)</a>, Duke University and North Carolina State University, the University 
+	Library and UNC Information Technology Services are participating in a project funded 
+	by the <a href="http://www.rtp.org/main/index.php?pid=53&amp;sec=1">Triangle University Center 
+	for Advanced Studies, Inc. (TUCASI)</a> to develop policies and infrastructures that will
+	support the federation of independent repositories built on diverse hardware and software 
+	platforms. The CDR will form one of UNC's core technologies for this project.</p>
+	<br/>
+	<h3>Technology overview</h3>
+	<ul>
+		<li>Solr</li>
+		<li>Spring framework</li>
+		<li>Fedora</li>
+		<li>iRods</li>
+		<li>FITS</li>
+		<li>imagemagick</li>
+		<li>Eclipse Modeling Framework</li>
+		<li>Shibboleth</li>
+	</ul>
+	<br/>
+	<img src="/static/aboutPages/CDRSystemOverview.png" class="diagram"/>
+	<br/>
+	<br/>
+	<h3>Standards and Protocols Used</h3>
+	<ul>
+		<li>METS (for SIP transmission)</li>
+		<li>MODS (used for descriptive schema within CDR)</li>
+		<li>PREMIS (used to document preservation events)</li>
+	</ul>
+	<br/>
+	<br/>
+	<h3>Ingest Workflow</h3>
+	
+	<img src="/static/aboutPages/workbenchworkflow.png" class="diagram" style="width: 800px; height: 306px;"/> 
+</div>

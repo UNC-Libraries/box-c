@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+	<channel>
+		<title>Carolina Digital Repository Featured Content</title>
+		<link>http://cdr.lib.unc.edu</link>
+		<description>Featured content entries</description>
+		<language>en</language>
+		<item>
+
+			<title>African American Performance Art Archive</title>
+			<link>record?id=uuid%3abded4944-f033-4015-af0f-3d39595f4d30</link>
+			<description>The African American Performance Art Archive (aapaa.org) makes crucial documentation of historically significant performances by African American artists available on-line to artists, scholars, and students in the spirit of intellectual exchange.</description>
+			<enclosure url="/static/images/rsvp_x_feature.jpg" length="" type="image/jpg" />
+		</item>
+		<item>
+			<title>Electronic Theses and Dissertations</title>
+
+			<link>record?id=uuid%3aa012aad2-1ab1-43b2-b5ab-0e14740e5e07</link>
+			<description>The Graduate School at the University of North Carolina at Chapel Hill began to accept dissertations and theses electronically for graduation in the spring of 2006.  This collection includes electronically submitted Theses and Dissertation from May 2006 through May 2010.</description>
+			<enclosure url="/static/images/old_well_feature.jpg" length="" type="image/jpg" />
+		</item>
+		<item>
+			<title>Department of History Digital Photos, 2005-2010</title>
+			<link>record?id=uuid%3ab803dc0a-6952-47f8-97ee-9bd56947e443</link>
+
+			<description>Digital photographs documenting events held by the Department of History.</description>
+			<enclosure url="/static/images/DSC00901_feature.jpg" length="" type="image/jpg" />
+		</item>
+	</channel>
+	
+</rss>

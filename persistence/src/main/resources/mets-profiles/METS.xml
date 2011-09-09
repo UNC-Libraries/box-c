@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<METS:mets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://www.loc.gov/METS/ ../schemas/mets.xsd"
+ xmlns:METS="http://www.loc.gov/METS/"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ PROFILE="http://cdla.unc.edu/mets-profiles/cdr_models.xml">
+
+	<METS:metsHdr>
+		<METS:agent ROLE="ARCHIVIST">
+			<METS:name>Margaret Dickson</METS:name>
+		</METS:agent>
+	</METS:metsHdr>
+
+	<METS:fileSec>
+		<METS:fileGrp>
+			<METS:file ID="daolinks">
+				<METS:FContent>
+					<METS:xmlData>
+						<eadLinks>
+							<link from="k2kh234" to="corr1"/>
+							<link from="k2l23h2" to="corr2"/>
+						</eadLinks>
+					</METS:xmlData>
+				</METS:FContent>
+			</METS:file>
+			<METS:file ID="eadxml">
+				<METS:FLocat LOCTYPE="URL" xlink:href="file:///ead.xml"/>
+			</METS:file>
+			<METS:file ID="image1">
+				<METS:FLocat LOCTYPE="URL" xlink:href="http://darkive.lib.unc.edu/98274924.tiff"/>
+			</METS:file>
+			<METS:file ID="myfile">
+				<METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+			</METS:file>
+			<METS:file ID="r5">
+				<METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+			</METS:file>
+			<METS:file ID="r6">
+				<METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+			</METS:file>
+			<METS:file ID="r7">
+				<METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+			</METS:file>
+			<METS:file ID="r8">
+				<METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+			</METS:file>
+			<METS:file ID="r9">
+				<METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+			</METS:file>
+			<METS:file ID="p1">
+				<METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+			</METS:file>
+			<METS:file ID="p2">
+				<METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+			</METS:file>
+		</METS:fileGrp>
+	</METS:fileSec>
+	
+	<!-- DIVs need both a content type AND a role in complex content models, However the basic Container content
+		model only have one role, which can be made a default role..  There for a basic content model can just use the 
+		type attribute to express content model.  When you have a special role and a CM, then you need an additional structure
+		map.  If the role of the contained object is not a default. -->
+	<!-- The ContainerCM expects types of Container, Resource and File. Resources are always links to objects with arbitrary content models. -->
+	<METS:structMap LABEL="Thomas Watson Archives" TYPE="BasicCM" ID="top">
+		<METS:div TYPE="Folder" LABEL="Thomas Watson Digital Collection" ORDER="5">
+			<METS:div TYPE="Folder" LABEL="Correspondence Series">
+				<METS:div ID="corr1" TYPE="Folder" LABEL="1873" ORDER="1" ORDERLABEL="1a">
+					<METS:div ID="r1"/>
+					<METS:div ID="r2"/>
+					<METS:div ID="r3"/>
+					<METS:div ID="r4"/>
+				</METS:div>
+				<METS:div ID="corr2" TYPE="Folder" LABEL="1874" ORDER="2" ORDERLABEL="1b">
+					<METS:div TYPE="Image">
+						<METS:fptr FILEID="r5"/>
+					</METS:div>
+					<METS:div TYPE="Image">
+						<METS:fptr FILEID="r6"/>
+					</METS:div>
+					<METS:div TYPE="Image">
+						<METS:fptr FILEID="r7"/>
+					</METS:div>
+					<METS:div TYPE="Image">
+						<METS:fptr FILEID="r8"/>
+					</METS:div>
+					<METS:div TYPE="Image" LABEL="File McFileson">
+						<METS:fptr FILEID="r9"/>
+					</METS:div>
+				</METS:div>
+			</METS:div>
+			<METS:div TYPE="Reference" ID="ead1"/>
+		</METS:div>
+	</METS:structMap>
+	
+	<!-- Archive Description Content Model expects EADXML and perhaps more -->
+	<METS:structMap TYPE="ScannedDocumentCM">
+		<METS:div TYPE="Document">
+		<METS:div TYPE="Page">
+			<METS:fptr FILEID="p1"/>
+		</METS:div>
+		<METS:div TYPE="Page">
+			<METS:fptr FILEID="p2"/>
+		</METS:div>
+			</METS:div>
+	</METS:structMap>
+	
+	<!-- Archive Description Content Model expects EADXML and perhaps more -->
+	<METS:structMap TYPE="ArchivalDescriptionCM">
+		<METS:div ID="ead2" TYPE="ArchivalDescription">
+			<METS:div  TYPE="EADXML">
+				<METS:fptr FILEID="eadxml"/>
+			</METS:div>
+			<METS:div TYPE="DAOLINKS">
+				<METS:fptr FILEID="daolinks"></METS:fptr>
+			</METS:div>
+		</METS:div>
+	</METS:structMap>
+	
+	<METS:structMap TYPE="ImageCM">
+		<METS:div ID="i1" TYPE="Image">
+			<METS:fptr FILEID="image1"/>
+		</METS:div>
+	</METS:structMap>
+	
+	<!-- many more individual image structure maps go here... -->
+	<METS:structLink>
+		<METS:smLink xlink:from="ead1" xlink:to="ead2" xlink:arcrole="refersTo"/>
+		<METS:smLink xlink:from="r1" xlink:to="i1" xlink:arcrole="refersTo"/>
+	</METS:structLink>
+</METS:mets>
