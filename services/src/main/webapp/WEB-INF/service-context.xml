@@ -365,9 +365,15 @@
 	<bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
 		<property name="searchSettings" ref="searchSettings" />
 	</bean>
+	
+	<bean id="accessGroupConstants" class="edu.unc.lib.dl.security.access.AccessGroupConstants">
+		<property name="ADMIN_GROUP" value="${access.group.admin}"/>
+	</bean>
+	
 	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
 		<value>unc:app:lib:cdr:admin</value>
 	</util:set>
+	
 	<bean id="solrUpdateService" class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateService"
 		init-method="init" destroy-method="destroy">
 		<property name="fedoraDataService" ref="fedoraDataService" />

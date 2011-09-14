@@ -54,13 +54,14 @@ public class SolrUpdateService {
 	@Autowired
 	private SearchSettings searchSettings;
 	private String collectionsPid = null;
+	public static final String TARGET_ALL = "fullIndex";
 
 	private ThreadPoolExecutor executor = null;
 	private BlockingQueue<SolrUpdateRequest> pidQueue = null;
 	private List<SolrUpdateRequest> collisionList = null;
 	private Set<String> lockedPids = null;
 	private int maxIngestThreads = 3;
-
+	
 	public SolrUpdateService() {
 		pidQueue = new LinkedBlockingQueue<SolrUpdateRequest>();
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
@@ -240,8 +241,11 @@ public class SolrUpdateService {
 		return executor.getActiveCount();
 	}
 	
+	public String getTargetAllSelector(){
+		return SolrUpdateService.TARGET_ALL;
+	}
+	
 	public String statusString(){
-		
 		StringBuilder status = new StringBuilder();
 		status.append("\nPid Queue Size: ").append(pidQueue.size())
 				.append("\nCollision List size: ").append(collisionList.size()).append(collisionList.toString())
