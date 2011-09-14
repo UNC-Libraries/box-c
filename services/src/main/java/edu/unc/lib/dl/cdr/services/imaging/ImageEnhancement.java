@@ -44,10 +44,6 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * attached to the specified object.
  * 
  * @author bbpennel 
- * $Id: ImageEnhancement.java 2765 2011-08-22 14:23:12Z bbpennel $ 
- * $URL:
- *         https://vcs.lib.unc.edu/cdr/cdr-services/trunk/src/main
- *         /java/edu/unc/lib/dl/cdr/services/imaging/ImageEnhancement.java $
  */
 public class ImageEnhancement extends Enhancement<Element> {
 	private static final Logger LOG = LoggerFactory.getLogger(ImageEnhancement.class);

@@ -27,8 +27,6 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 /**
  * Populates a list of department values and forwards to the dept browse.
  * @author bbpennel
- * $Id: BrowseDepartmentsController.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/BrowseDepartmentsController.java $
  */
 @Controller
 @RequestMapping("/browseDepartments")

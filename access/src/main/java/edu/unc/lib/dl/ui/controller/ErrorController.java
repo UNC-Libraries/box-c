@@ -27,8 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 /**
  * Controller for forwarding users to specific error pages.
  * @author bbpennel
- * $Id: ErrorController.java 2736 2011-08-08 20:04:52Z count0 $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/ErrorController.java $
  */
 @Controller
 public class ErrorController {	

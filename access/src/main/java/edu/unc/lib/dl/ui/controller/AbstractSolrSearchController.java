@@ -34,8 +34,6 @@ import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 /**
  * Abstract base class for controllers which interact with solr services.
  * @author bbpennel
- * $Id: AbstractSolrSearchController.java 2736 2011-08-08 20:04:52Z count0 $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/AbstractSolrSearchController.java $
  */
 public abstract class AbstractSolrSearchController extends CDRBaseController {
 	

@@ -36,8 +36,6 @@ import edu.unc.lib.dl.search.solr.util.SearchSettings;
  * 
  * This object is used for both requests and responses.
  * @author bbpennel
- * $Id: HierarchicalFacet.java 2767 2011-08-22 18:12:20Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-search/src/main/java/edu/unc/lib/dl/search/solr/model/HierarchicalFacet.java $
  */
 public class HierarchicalFacet extends GenericFacet {
 	private static final Logger LOG = LoggerFactory.getLogger(HierarchicalFacet.class);

@@ -50,8 +50,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * Controller which retrieves extended metadata and returns a transformed view of it
  * @author bbpennel
- * $Id: FullRecordController.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/FullRecordController.java $
  */
 @Controller
 @RequestMapping("/record")

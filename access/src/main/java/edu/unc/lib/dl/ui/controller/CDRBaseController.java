@@ -25,8 +25,6 @@ import edu.unc.lib.dl.security.access.UserSecurityProfile;
 /**
  * Common base controller for use in the CDR UI, offers basic security functionality.
  * @author bbpennel
- * $Id: CDRBaseController.java 2736 2011-08-08 20:04:52Z count0 $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/CDRBaseController.java $
  */
 public abstract class CDRBaseController {
 	protected AccessGroupSet getUserAccessGroups(HttpServletRequest request){

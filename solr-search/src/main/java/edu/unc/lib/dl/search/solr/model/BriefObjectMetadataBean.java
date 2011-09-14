@@ -32,8 +32,6 @@ import org.slf4j.LoggerFactory;
  * Stores a single Solr tuple representing an object from a search result.  Can be populated 
  * directly by Solrj's queryResponse.getBeans.
  * @author bbpennel
- * $Id: BriefObjectMetadataBean.java 1916 2011-03-22 15:13:55Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-access/trunk/src/main/java/edu/unc/lib/dl/ui/model/response/BriefObjectMetadataBean.java $
  */
 public class BriefObjectMetadataBean {
 	@SuppressWarnings("unused")

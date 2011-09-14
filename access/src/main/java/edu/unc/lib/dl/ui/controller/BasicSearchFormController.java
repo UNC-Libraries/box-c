@@ -43,8 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * the previous search state stored in session, and any number of navigation actions.  Constructs
  * a new search state and sends it to the search controller. 
  * @author bbpennel
- * $Id: BasicSearchFormController.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/BasicSearchFormController.java $
  */
 @Controller
 @RequestMapping("/basicSearch")

@@ -43,10 +43,7 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
  * uploading it to Solr in batches. Intended to be run in parallel with other
  * ingest threads reading from the same list of requests.
  * 
- * @author bbpennel $URL:
- *         https://vcs.lib.unc.edu/cdr/cdr-solr-ingest/trunk/src/main
- *         /java/edu/unc/lib/dl/data/ingest/solr/SolrIngestRunnable.java $ $Id:
- *         SolrIngestRunnable.java 1970 2011-04-04 14:46:48Z bbpennel $
+ * @author bbpennel
  */
 public class SolrUpdateRunnable implements Runnable {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateRunnable.class);

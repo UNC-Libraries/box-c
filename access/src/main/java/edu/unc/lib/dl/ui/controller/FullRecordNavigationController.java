@@ -44,8 +44,6 @@ import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
  * Also handles the retrieve of the next page of search results if the user pages to a record outside 
  * of their last search result.
  * @author bbpennel
- * $Id: FullRecordNavigationController.java 2736 2011-08-08 20:04:52Z count0 $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/FullRecordNavigationController.java $
  */
 @Controller
 @RequestMapping("/recordNavigation")

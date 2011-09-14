@@ -34,8 +34,6 @@ import edu.unc.lib.dl.ui.view.XSLViewResolver;
 /**
  * Allows admin users to trigger reloads of various UI specific mappings.
  * @author bbpennel
- * $Id: RefreshMappingsController.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/RefreshMappingsController.java $
  */
 @Controller
 @RequestMapping("/refreshMappings")

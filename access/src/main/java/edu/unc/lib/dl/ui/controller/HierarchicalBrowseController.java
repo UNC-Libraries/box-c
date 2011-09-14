@@ -44,8 +44,6 @@ import edu.unc.lib.dl.ui.model.response.HierarchicalBrowseResultResponse;
  * nodes in the tree it will return, where the max depth is limited by the application wide 
  * structured depth property. 
  * @author bbpennel
- * $Id: HierarchicalBrowseController.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/HierarchicalBrowseController.java $
  */
 @Controller
 @RequestMapping("/browse")

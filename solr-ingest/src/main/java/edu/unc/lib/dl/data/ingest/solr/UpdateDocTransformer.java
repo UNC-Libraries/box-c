@@ -45,8 +45,6 @@ import javax.xml.transform.stream.StreamSource;
  * be exported to a single update document.  Should be thread-safe.
  * 
  * @author bbpennel
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-ingest/src/main/java/edu/unc/lib/dl/data/ingest/solr/UpdateDocTransformer.java $
- * $Id: UpdateDocTransformer.java 2736 2011-08-08 20:04:52Z count0 $
  */
 public class UpdateDocTransformer {
 	private static final Logger LOG = LoggerFactory.getLogger(UpdateDocTransformer.class);

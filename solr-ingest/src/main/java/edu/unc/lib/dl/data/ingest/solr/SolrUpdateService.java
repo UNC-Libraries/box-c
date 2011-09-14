@@ -40,8 +40,6 @@ import edu.unc.lib.dl.security.access.AccessGroupSet;
  * Service which handles ingest and update of a solr index via threaded processors
  * which read from a queue of ordered update requests.
  * @author bbpennel
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-ingest/src/main/java/edu/unc/lib/dl/data/ingest/solr/SolrUpdateService.java $
- * $Id: SolrUpdateService.java 2736 2011-08-08 20:04:52Z count0 $
  */
 public class SolrUpdateService {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateService.class);

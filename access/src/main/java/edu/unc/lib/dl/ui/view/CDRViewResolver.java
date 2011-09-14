@@ -24,8 +24,6 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
  * Extension of InternalResourceViewResolver which performs very basic tiling by resolving
  * the view name provided to be the content panel for the specified base view page.
  * @author bbpennel
- * $Id: CDRViewResolver.java 2736 2011-08-08 20:04:52Z count0 $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/view/CDRViewResolver.java $
  */
 public class CDRViewResolver extends InternalResourceViewResolver {
 	private static final Logger LOG = LoggerFactory.getLogger(CDRViewResolver.class);

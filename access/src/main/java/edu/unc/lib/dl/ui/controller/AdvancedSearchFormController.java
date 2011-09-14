@@ -33,8 +33,6 @@ import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
  * query string parameters set, or constructing a search state and sending the user to 
  * get results if they have populated the form.
  * @author bbpennel
- * $Id: AdvancedSearchFormController.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/AdvancedSearchFormController.java $
  */
 @Controller
 @RequestMapping("/advancedSearch")

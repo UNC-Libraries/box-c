@@ -25,8 +25,6 @@ import org.apache.solr.client.solrj.response.FacetField;
 /**
  * Object containing a list of facets, normal or Hierarchical facet.
  * @author bbpennel
- * $Id: FacetFieldList.java 1682 2010-12-22 19:55:30Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-access/trunk/src/main/java/edu/unc/lib/dl/ui/model/response/FacetFieldList.java $
  */
 public class FacetFieldList extends ArrayList<FacetFieldObject> {
 	private static final long serialVersionUID = 1L;

@@ -29,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Stores properties related to searching retrieved from a properties file. Includes default values
  * and lists of possible field types for validation or lookup purposes.
  * @author bbpennel
- * $Id: SearchSettings.java 2766 2011-08-22 15:29:07Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-search/src/main/java/edu/unc/lib/dl/search/solr/util/SearchSettings.java $
  */
 public class SearchSettings extends AbstractSettings {
 	//Upper limit to the number of characters allowed in a single query field.

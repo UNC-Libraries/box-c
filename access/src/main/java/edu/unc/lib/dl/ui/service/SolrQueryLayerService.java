@@ -48,8 +48,6 @@ import edu.unc.lib.dl.ui.model.response.HierarchicalBrowseResultResponse;
  * Solr query construction layer.  Constructs search states specific to common tasks before passing
  * them on to lower level classes to retrieve the results.
  * @author bbpennel
- * $Id: SolrQueryLayerService.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/service/SolrQueryLayerService.java $
  */
 public class SolrQueryLayerService extends SolrSearchService {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrQueryLayerService.class);

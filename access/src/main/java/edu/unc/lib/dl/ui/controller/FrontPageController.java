@@ -34,8 +34,6 @@ import edu.unc.lib.dl.ui.util.ExternalContentSettings;
  * Controller which populates the dynamic components making up the front page of
  * the public UI
  * @author bbpennel
- * $Id: FrontPageController.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/FrontPageController.java $
  */
 @Controller
 @RequestMapping("/")

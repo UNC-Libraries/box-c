@@ -22,8 +22,6 @@ import java.util.Iterator;
 /**
  * Storage class for a list of access groups related to a single entity.
  * @author bbpennel
- * $Id: AccessGroupSet.java 1900 2011-03-14 20:57:38Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-access/trunk/src/main/java/edu/unc/lib/dl/security/AccessGroupSet.java $
  */
 public class AccessGroupSet extends HashSet<String> {
 	private static final long serialVersionUID = 1L;
