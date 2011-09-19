@@ -16,6 +16,7 @@
 
 --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page trimDirectiveWhitespaces="true" %>
 <div id="footer" class="darkest">
 	<div class="threecol dark">
@@ -23,8 +24,19 @@
 			<p>
 				<a href="${pageContext.request.contextPath}/">Home</a>&nbsp;|&nbsp;
 				<a href="search?types=Collection">Browse Collections</a>&nbsp;|&nbsp;
-				<a href="">About</a>&nbsp;|&nbsp;
-				<a href="">Contact Us</a>&nbsp;|&nbsp;
+				<a href="external?page=about.about">About</a>&nbsp;|&nbsp;
+				<c:url var="contactUrl" scope="page" value="external">
+					<c:param name="page" value="contact" />
+					<c:choose>
+						<c:when test="${param.page == 'contact'}">
+							<c:param name="refer" value="${param.refer}"/>
+						</c:when>
+						<c:otherwise>
+							<c:param name="refer" value="${currentAbsoluteUrl}"/>
+						</c:otherwise>
+					</c:choose>
+				</c:url>
+				<a href="<c:out value='${contactUrl}'/>">Contact Us</a>&nbsp;|&nbsp;
 				<a href="http://www.lib.unc.edu">Library Home</a>&nbsp;|&nbsp;
 			</p>
 		</div>
