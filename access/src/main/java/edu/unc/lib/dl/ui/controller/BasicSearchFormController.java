@@ -17,6 +17,7 @@ package edu.unc.lib.dl.ui.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
+import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.SearchActionService;
@@ -106,7 +107,11 @@ public class BasicSearchFormController {
 			searchState = SearchStateFactory.createSearchState();
 		
 		LOG.debug("Actions:" + actions.toString());
-		searchActionService.executeActions(searchState, actions.toString());
+		try {
+			searchActionService.executeActions(searchState, actions.toString());
+		} catch (InvalidHierarchicalFacetException e){
+			LOG.warn("An invalid facet was provided: " + request.getQueryString(), e);
+		}
 		request.getSession().setAttribute("searchState", searchState);
 		
 		model.addAllAttributes(SearchStateUtil.generateStateParameters(searchState));
