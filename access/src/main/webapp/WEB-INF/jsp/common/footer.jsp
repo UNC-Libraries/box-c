@@ -38,6 +38,7 @@
 				</c:url>
 				<a href="<c:out value='${contactUrl}'/>">Contact Us</a>&nbsp;|&nbsp;
 				<a href="http://www.lib.unc.edu">Library Home</a>&nbsp;|&nbsp;
+				<a href="http://www.lib.unc.edu/aoffice/policies/privacy_policy.html">Privacy Policy</a>
 			</p>
 		</div>
 	</div>
