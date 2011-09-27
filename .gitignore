@@ -3,5 +3,8 @@
 /*/.settings
 /*/target
 /*/bin
+/*/tmp
+/*/dist
+/*/doc
 /.settings
 /*/src/jaxb
