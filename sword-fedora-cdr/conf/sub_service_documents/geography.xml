@@ -1,0 +1,62 @@
+<service_document>
+	<level>1</level>
+	<noOp>true</noOp>
+	<verbose>true</verbose> 
+	<workspace title="Fedora SWORD Workspace">
+		<!-- 
+			collection_pid is the pid of the collection where deposits will end up
+		-->
+		<collection collection_pid="collection:geogr1" mediation="true" mediationSet="true">
+			<!-- 
+				This is the URL which listens for deposit requests
+				##COLLECTION_PID## is overwritten at runtime to contain the value of collection_pid
+			-->
+			<deposit_url>http://glen.dnsalias.org/sword/##COLLECTION_PID##</deposit_url>
+			<users/>
+			<title>Open Geog Collection</title>
+			<abstract>This is a collection of objects which can be freely deposited to. This is aviable for the SWORD test project</abstract>
+			<policy>This collection accepts any deposit from anyone</policy>
+			<treatment>Preservation actions may occur on submited deposits</treatment>
+			<accepts> <!-- list of mime types that are accepted by the collection -->
+				<accept>text/xml</accept>
+				<accept>application/zip</accept>
+				<accept>application/x-zip-compressed</accept> 
+				<accept>application/atom+xml</accept> 
+				<accept>image/gif</accept> 
+				<accept>image/jpeg</accept> 
+				<accept>image/jpg</accept> 
+			</accepts>
+			<packaging>
+				<package quality="0.9">http://purl.org/net/sword-types/METSDSpaceSIP</package>
+			</packaging>
+		</collection>
+		<collection collection_pid="collection:geogr2" mediation="true" mediationSet="true">
+			<deposit_url>http://glen.dnsalias.org/sword/##COLLECTION_PID##</deposit_url>
+			<!-- 
+				This collection only allows deposits from gmr you can deposit as gmr
+				either by setting the on Behalf of parameter as gmr or by using the username gmr. Users are added using
+				the Fedora methods for controlling users.
+			-->
+			<users>
+				<user>gmr</user>
+			</users>
+			<title>Closed Geog Collection</title>
+			<abstract>This is a collection of objects which only allows deposit by gmr. This is aviable for the SWORD test project</abstract>
+			<policy>This collection accepts any deposit from gmr</policy>
+			<treatment>Preservation actions may occur on submited deposits</treatment>
+			<accepts>
+				<accept>text/xml</accept>
+				<accept>application/zip</accept>
+				<accept>application/atom+xml</accept> 
+				<accept>image/gif</accept> 
+				<accept>image/jpeg</accept> 
+				<accept>image/jpg</accept> 
+				<accept>application/x-zip-compressed</accept> 
+			</accepts>
+			<packaging>
+				<package quality="0.9">http://purl.org/net/sword-types/METSDSpaceSIP</package>
+			</packaging>
+		</collection>
+	</workspace>
+</service_document>
+

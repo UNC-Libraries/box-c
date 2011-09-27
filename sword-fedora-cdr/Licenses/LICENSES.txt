@@ -1,0 +1,102 @@
+LICENSES for the Fedora SWORD Server Implementation
+===================================================
+The Fedora SWORD Server Implementation is covered by a BSD style license. 
+The details are found in the source code and in SWORD_BSDLicense.txt. 
+
+The following 3rd party libraries are used by this module. The modules
+are covered by different licenses, as outlined below. The text of the 
+other licenses can be found in the files in this directory. 
+
+activation-1.0.2.jar
+   Containing Project URL: http://java.sun.com/products/javabeans/jaf/downloads/index.html
+   License: Sun License (See Sun.license.txt)
+
+axis.jar
+   Containing Project URL: http://ws.apache.org/axis/
+   License: Apache License (See ApacheSoftwareLicense2.0.txt)
+
+commons-codec-1.3.jar
+   Containing Project URL: http://commons.apache.org/codec/
+   License: Apache License (See ApacheSoftwareLicense2.0.txt)
+
+commons-discovery.jar
+   Containing Project URL: http://commons.apache.org/discovery/
+   License: Apache License (See ApacheSoftwareLicense2.0.txt)
+
+commons-fileupload.jar
+   Containing Project URL: http://commons.apache.org/fileupload/
+   License: Apache License (See ApacheSoftwareLicense2.0.txt)
+
+commons-httpclient-3.1-beta1.jar
+   Containing Project URL: http://jakarta.apache.org/httpcomponents/httpclient-3.x/
+   License: Apache License (See ApacheSoftwareLicense2.0.txt)
+
+commons-io-1.3.2.jar
+   Containing Project URL: http://commons.apache.org/io/
+   License: Apache License (See ApacheSoftwareLicense2.0.txt)
+
+commons-logging.jar
+   Containing Project URL: http://commons.apache.org/logging/
+   License: Apache License (See ApacheSoftwareLicense2.0.txt)
+
+fedora-client.jar
+   License URL: http://www.fedora.info/
+   License: Educational Community License (See FedoraEducationalCommunityLicense.txt)
+
+jdom.jar
+   Containing Project URL: http://www.jdom.org
+   License: Educational Community License (See FedoraEducationalCommunityLicense.txt)
+
+jaxen-core.jar
+   Containing Project URL: http://jaxen.org/
+   License: Educational Community License (See jaxen.license.txt)
+
+jaxrpc.jar
+   Containing Project URL: https://jax-rpc.dev.java.net/
+   License: Common Development and Distribution License 
+            (See CommonDevelopmentAndDistributionLicenseVersion1.0.txt)
+   Source Code: This CDDL license requires that the source code is made available 
+   for the jar that has been used. The binary module used was taken 
+   from the axis project. The saaj code can also be accessed via the 
+   axis project at: http://ws.apache.org/axis/cvs.html - the code is in the 
+   javax/xml/rpc path. 
+
+log4j-1.2.14.jar
+   Containing Project URL: http://logging.apache.org/log4j/1.2/index.html
+   License: Apache License (See ApacheSoftwareLicense2.0.txt)
+
+mail.jar
+   Containing Project URL: http://java.sun.com/products/javamail/
+   License: Sun License (See Sun.license.txt)
+
+saaj.jar 
+   Containing Project URL: https://saaj.dev.java.net/
+   License: Common Development and Distribution License 
+            (see CommondDevelopmentAndDistributionLicenseVersion1.0.txt)
+   Source Code: This CDDL license requires that the source code is made available 
+   for the jar that has been used. The binary module used was taken 
+   from the axis project. The saaj code can also be accessed via the 
+   axis project at: http://ws.apache.org/axis/cvs.html - the code is in the 
+   javax/xml/soap path. 
+   
+
+saxpath.jar
+   License: jaxen.license (see jaxen.license.txt)
+
+swordcommon.jar
+   Containing Project URL: http://sourceforge.net/projects/sword-app/
+   License: BSD Style (See SWORD_BSDLicense.txt)
+
+trippi-1.1.2-core.jar, trippi-1.1.2-kowari.jar,  trippi-1.1.2-mptstore.jar
+   Containing Project URL: http://trippi.sourceforge.net/
+   License: Educational Community License (Developed by Fedora people)
+
+wsdl4j-1.5.1.jar 
+   Containing Project URL: http://sourceforge.net/projects/wsdl4j
+   License: Common Public License (see CommonPublicLicenseVersion1.0.txt) 
+
+xom-1.1.jar
+   Contributing Project URL: http://www.xom.nu/
+   License: LGPL (see LGPL.txt) 
+
+END

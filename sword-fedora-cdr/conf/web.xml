@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
+<web-app>
+  <!-- Configuration Information -->
+  <display-name>SWORD Fedora Implementation</display-name>
+  <description>
+     Implementation of the SWORD framework for Fedora
+  </description>
+
+  <context-param>
+    <param-name>sword-server-class</param-name>
+    <param-value>org.purl.sword.server.fedora.FedoraServer</param-value>
+    <description>
+      The SWORSServer class name
+    </description>
+  </context-param>
+  
+  <context-param>
+    <param-name>authentication-method</param-name>
+    <param-value>Basic</param-value>
+    <description>
+      The type of authentication used : [Basic|None]
+    </description>
+  </context-param>
+  
+  <!-- Servlets -->
+
+  <servlet>
+    <servlet-name>servicedocument</servlet-name>
+    <servlet-class>org.purl.sword.server.ServiceDocumentServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>deposit</servlet-name>
+    <servlet-class>org.purl.sword.server.AtomDocumentServlet</servlet-class>
+  </servlet>
+
+  <servlet>
+    <servlet-name>StartupServlet</servlet-name>
+    <servlet-class>org.purl.sword.server.fedora.utils.StartupServlet</servlet-class>
+    <init-param>
+      <param-name>log-config</param-name>
+      <param-value>WEB-INF/log4j.xml</param-value>
+    </init-param>
+    <init-param>
+      <param-name>project.properties</param-name>
+      <!-- <param-value>/Users/bbpennel/Documents/projects/cdr/settings/properties.xml</param-value>-->
+      <param-value>/opt/repository/sword/properties.xml</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+ </servlet>
+
+<!-- Servlet Mappings -->
+
+  <servlet-mapping>
+    <servlet-name>servicedocument</servlet-name>
+    <url-pattern>/servicedocument/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>deposit</servlet-name>
+    <url-pattern>/*</url-pattern>
+  </servlet-mapping>
+
+</web-app>
