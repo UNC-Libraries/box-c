@@ -19,6 +19,7 @@
 package fedorax.server.module.storage.lowlevel.irods;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,11 +58,11 @@ import org.irods.jargon.core.query.RodsGenQueryEnum;
  */
 public class IrodsIFileSystem {
 
-	public IrodsIFileSystem(int irodsReadBufferSize, IRODSFileSystem irodsFileSystem, IRODSAccount account)
+	public IrodsIFileSystem(int irodsBufferSize, IRODSFileSystem irodsFileSystem, IRODSAccount account)
 			throws LowlevelStorageException {
 		LOG.debug("IrodsIFileSystem.IrodsIFileSystem()");
 		this.account = account;
-		this.irodsReadBufferSize = irodsReadBufferSize;
+		this.irodsBufferSize = irodsBufferSize;
 		this.irodsFileSystem = irodsFileSystem;
 	}
 
@@ -73,11 +74,13 @@ public class IrodsIFileSystem {
 	private IRODSFileSystem irodsFileSystem;
 
 	// private static final int BUFFER_SIZE = 32768;
-	private static final int BUFFER_SIZE = 4194304;
+	//private static final int BUFFER_SIZE = 4194304;
+
 	/** Logger for this class. */
 	private static final Logger LOG = Logger.getLogger(IrodsIFileSystem.class);
 
 	private static final CopyResult stream2streamCopy(InputStream in, OutputStream out) throws IOException {
+		int BUFFER_SIZE = 8192;
 		LOG.debug("IrodsIFileSystem.stream2streamCopy() start");
 		CopyResult result = new CopyResult();
 		byte[] buffer = new byte[BUFFER_SIZE];
@@ -113,7 +116,7 @@ public class IrodsIFileSystem {
 	IRODSAccount account = null;
 	// IRODSFileSystem conn = null;
 
-	int irodsReadBufferSize;
+	int irodsBufferSize;
 
 	// int connectionsUsed = 0;
 	// int currentConnectionUsage = 0;
@@ -219,11 +222,11 @@ public class IrodsIFileSystem {
 	}
 
 	public final InputStream read(File file) throws LowlevelStorageException {
-		LOG.debug("IrodsIFileSystem->read(): " + file.getAbsolutePath() + " with buffer of " + irodsReadBufferSize);
+		LOG.debug("IrodsIFileSystem->read(): " + file.getAbsolutePath() + " with buffer of " + irodsBufferSize);
 		try {
 			SessionClosingIRODSFileInputStream fis = irodsFileSystem.getIRODSFileFactory(account)
 					.instanceSessionClosingIRODSFileInputStream(file.getPath());
-			BufferedInputStream bis = new BufferedInputStream(fis, IrodsIFileSystem.BUFFER_SIZE);
+			BufferedInputStream bis = new BufferedInputStream(fis, irodsBufferSize);
 			return bis;
 		} catch (JargonException e) {
 			LOG.error(e);
@@ -286,7 +289,8 @@ public class IrodsIFileSystem {
 			rollbackLog.append("iRODS FILE REPAIR NEEDED FOR A FAILED REWRITE\n");
 			temp.createNewFile();
 			IRODSFileOutputStream out = irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFileOutputStream(temp);
-			CopyResult copyResult = stream2streamCopy(content, out);
+			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(out, irodsBufferSize);
+			CopyResult copyResult = stream2streamCopy(content, bufferedOutputStream);
 			rollbackLog.append("DELETE: ").append(temp.getAbsolutePath()).append("\n");
 
 			// get IRODS checksum
@@ -347,8 +351,9 @@ public class IrodsIFileSystem {
 			irodsFile.createNewFile();
 			IRODSFileOutputStream irodsFileOutputStream = irodsFileSystem.getIRODSFileFactory(account)
 					.instanceIRODSFileOutputStream(irodsFile);
+			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(irodsFileOutputStream, irodsBufferSize);
 
-			CopyResult copyResult = stream2streamCopy(content, irodsFileOutputStream);
+			CopyResult copyResult = stream2streamCopy(content, bufferedOutputStream);
 			// get IRODS checksum
 			String irodschecksum = this.getMD5ChecksumFromIRODS(irodsFile);
 			if (!copyResult.md5.equals(irodschecksum)) {
