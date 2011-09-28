@@ -30,6 +30,7 @@ import org.irods.jargon.core.pub.io.IRODSFile;
  */
 public abstract class AbstractIrodsObjectEnhancementService extends AbstractFedoraEnhancementService {
 	private IRODSAccount irodsAccount = null;
+	private IRODSFileSystem irodsFileSystem = null;
 
 	public IRODSAccount getIrodsAccount() {
 		return irodsAccount;
@@ -41,57 +42,43 @@ public abstract class AbstractIrodsObjectEnhancementService extends AbstractFedo
 
 	public InputStream remoteExecuteWithPhysicalLocation(String command, String path) throws Exception {
 		RemoteExecutionOfCommandsAO rexecAO = null;
-		rexecAO = IRODSFileSystem.instance().getIRODSAccessObjectFactory()
-				.getRemoteExecutionOfCommandsAO(this.getIrodsAccount());
+		rexecAO = getIrodsFileSystem().getIRODSAccessObjectFactory().getRemoteExecutionOfCommandsAO(
+				this.getIrodsAccount());
 		try {
 			return rexecAO.executeARemoteCommandAndGetStreamAddingPhysicalPathAsFirstArgumentToRemoteScript(command, "",
 					path);
 		} catch (JargonException e) {
-			recycleConnection();
-			return rexecAO.executeARemoteCommandAndGetStreamAddingPhysicalPathAsFirstArgumentToRemoteScript(command, "",
-					path);
+			throw e;
+		} finally {
+			getIrodsFileSystem().closeAndEatExceptions();
 		}
 	}
 
 	public InputStream remoteExecuteWithPhysicalLocation(String command, String arguments, String path) throws Exception {
 		LOG.debug("iexecmd -P " + path + " \"" + command + " " + arguments + "\"");
 		RemoteExecutionOfCommandsAO rexecAO = null;
-		rexecAO = IRODSFileSystem.instance().getIRODSAccessObjectFactory()
-				.getRemoteExecutionOfCommandsAO(this.getIrodsAccount());
+		rexecAO = getIrodsFileSystem().getIRODSAccessObjectFactory().getRemoteExecutionOfCommandsAO(
+				this.getIrodsAccount());
 		try {
 			return rexecAO.executeARemoteCommandAndGetStreamAddingPhysicalPathAsFirstArgumentToRemoteScript(command,
 					arguments, path);
 		} catch (JargonException e) {
-			recycleConnection();
-			return rexecAO.executeARemoteCommandAndGetStreamAddingPhysicalPathAsFirstArgumentToRemoteScript(command, "",
-					path);
+			throw e;
+		} finally {
+			getIrodsFileSystem().closeAndEatExceptions();
 		}
-	}
-
-	/**
-	 *
-	 */
-	private void recycleConnection() {
-			try {
-				IRODSFileSystem.instance().closeAndEatExceptions(this.getIrodsAccount());
-			} catch (JargonException e) {
-				LOG.error("Trouble recycling iRODS connection "+e.getLocalizedMessage(), e);
-				e.printStackTrace();
-			}
 	}
 
 	// TODO Implement iRods API call to delete a file from the staging area.
 	public void deleteIRODSFile(String path) throws JargonException {
-		IRODSFileSystem irodsFileSystem;
+		IRODSFile irodsFile = getIrodsFileSystem().getIRODSFileFactory(irodsAccount).instanceIRODSFile(path);
 		try {
-			irodsFileSystem = IRODSFileSystem.instance();
-			IRODSFile irodsFile = irodsFileSystem.getIRODSFileFactory(irodsAccount).instanceIRODSFile(path);
-			irodsFileSystem.getIRODSAccessObjectFactory().getIRODSFileSystemAO(irodsAccount).fileDeleteNoForce(irodsFile);
+			getIrodsFileSystem().getIRODSAccessObjectFactory().getIRODSFileSystemAO(irodsAccount)
+					.fileDeleteNoForce(irodsFile);
 		} catch (JargonException e) {
-			recycleConnection();
-			irodsFileSystem = IRODSFileSystem.instance();
-			IRODSFile irodsFile = irodsFileSystem.getIRODSFileFactory(irodsAccount).instanceIRODSFile(path);
-			irodsFileSystem.getIRODSAccessObjectFactory().getIRODSFileSystemAO(irodsAccount).fileDeleteNoForce(irodsFile);
+			throw e;
+		} finally {
+			getIrodsFileSystem().closeAndEatExceptions();
 		}
 	}
 
@@ -100,6 +87,14 @@ public abstract class AbstractIrodsObjectEnhancementService extends AbstractFedo
 		sb.append("irods://").append(this.getIrodsAccount().getUserName()).append("@")
 				.append(this.getIrodsAccount().getHost()).append(":").append(this.getIrodsAccount().getPort()).append(path);
 		return sb.toString();
+	}
+
+	public IRODSFileSystem getIrodsFileSystem() {
+		return irodsFileSystem;
+	}
+
+	public void setIrodsFileSystem(IRODSFileSystem irodsFileSystem) {
+		this.irodsFileSystem = irodsFileSystem;
 	}
 
 }
