@@ -83,6 +83,7 @@
 		<module>services</module>
 		<module>solr-ingest</module>
 		<module>solr-search</module>
+		<module>sword-server</module>
 	</modules>
 
 	<reporting>

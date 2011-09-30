@@ -18,7 +18,7 @@
 
     <context-param>
         <param-name>service-document-impl</param-name>
-        <param-value>org.swordapp.server.ServiceDocumentManagerImpl</param-value>
+        <param-value>edu.unc.lib.dl.sword.server.ServiceDocumentManagerImpl</param-value>
         <description>
             The ServiceDocumentManager server implementation class name
         </description>
@@ -69,7 +69,7 @@
         contains some default values -->
     <context-param>
         <param-name>config-impl</param-name>
-        <param-value>org.swordapp.server.SwordConfigurationDefault</param-value>
+        <param-value>org.swordapp.server.impl.SwordConfigurationImpl</param-value>
         <description>
             The SwordConfiguration server implementation class name
         </description>
@@ -87,7 +87,7 @@
     <!-- Servlets -->
     <servlet>
         <servlet-name>servicedocument</servlet-name>
-        <servlet-class>org.swordapp.server.servlets.ServiceDocumentServletDefault</servlet-class>
+        <servlet-class>edu.unc.lib.dl.sword.server.servlets.ServiceDocumentServlet</servlet-class>
     </servlet>
 
     <servlet>
