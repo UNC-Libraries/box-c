@@ -25,8 +25,6 @@ import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 /**
  * Retrieves metadata for an objects full record description.
  * @author bbpennel
- * $Id: FullObjectMetadataFactory.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/service/FullObjectMetadataFactory.java $
  */
 public class FullObjectMetadataFactory {
 	private static final Logger LOG = LoggerFactory.getLogger(FullObjectMetadataFactory.class);

@@ -26,8 +26,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Utility class which stores Solr index addressing and instantiation settings from a properties file.
  * @author bbpennel
- * $Id: SolrSettings.java 2799 2011-08-30 18:51:44Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-search/src/main/java/edu/unc/lib/dl/search/solr/util/SolrSettings.java $
  */
 public class SolrSettings extends AbstractSettings  {
 	private final Logger LOG = LoggerFactory.getLogger(SolrSettings.class);

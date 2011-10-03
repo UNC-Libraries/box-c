@@ -42,8 +42,6 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  * Controller for requests related to accessing jp2's through djatoka.  Applies 
  * cdr access control as a prerequisite to connecting with djatoka.
  * @author bbpennel
- * $Id: DjatokaContentController.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/DjatokaContentController.java $
  */
 @Controller
 public class DjatokaContentController extends AbstractSolrSearchController {

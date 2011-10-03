@@ -43,10 +43,7 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
  * uploading it to Solr in batches. Intended to be run in parallel with other
  * ingest threads reading from the same list of requests.
  * 
- * @author bbpennel $URL:
- *         https://vcs.lib.unc.edu/cdr/cdr-solr-ingest/trunk/src/main
- *         /java/edu/unc/lib/dl/data/ingest/solr/SolrIngestRunnable.java $ $Id:
- *         SolrIngestRunnable.java 1970 2011-04-04 14:46:48Z bbpennel $
+ * @author bbpennel
  */
 public class SolrUpdateRunnable implements Runnable {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateRunnable.class);
@@ -203,22 +200,25 @@ public class SolrUpdateRunnable implements Runnable {
 				return;
 			}
 			DeleteChildrenPriorToTimestampRequest cleanupRequest = (DeleteChildrenPriorToTimestampRequest)updateRequest;
-			//Get the path facet value for the starting point, since we need the hierarchy tier.
-			BriefObjectMetadataBean ancestorPathBean = getRootAncestorPath(updateRequest);
-			//If no ancestor path was returned, then this item is either doesn't exist or can't have children, so exit
-			if (ancestorPathBean == null){
-				LOG.debug("Canceling deleteChildrenPriorToTimestamp, the root object was not found.");
-				return;
-			}
+
 			// Query Solr for the full list of items that will be deleted
 			SearchState searchState = SearchStateFactory.createIDSearchState();
 			
-			//If the starting pid is NOT the Collections object, then limit results to children of starting pid
-			if (!solrUpdateService.getCollectionsPid().equals(updateRequest.getPid())){
+			//If the root is not the all target then restrict the delete query to its path.
+			if (!SolrUpdateService.TARGET_ALL.equals(updateRequest.getPid())){
+				//Get the path facet value for the starting point, since we need the hierarchy tier.
+				BriefObjectMetadataBean ancestorPathBean = getRootAncestorPath(updateRequest);
+				//If no ancestor path was returned, then this item is either doesn't exist or can't have children, so exit
+				if (ancestorPathBean == null){
+					LOG.debug("Canceling deleteChildrenPriorToTimestamp, the root object was not found.");
+					return;
+				}
+				
 				HashMap<String,Object> facets = new HashMap<String,Object>();
 				facets.put(SearchFieldKeys.ANCESTOR_PATH, ancestorPathBean.getPath());
 				searchState.setFacets(facets);
 			}
+			
 			//Override default resource types to include folder as well.
 			searchState.setResourceTypes(solrUpdateService.getSearchSettings().getResourceTypes());
 			
@@ -246,15 +246,18 @@ public class SolrUpdateRunnable implements Runnable {
 	 * @throws Exception
 	 */
 	private void deleteSolrTree(SolrUpdateRequest updateRequest) throws Exception {
-		//If the Collections object is being deleted, then delete everything
-		if (solrUpdateService.getCollectionsPid().equals(updateRequest.getPid())){
+		//If the all target is being deleted, then delete everything
+		if (SolrUpdateService.TARGET_ALL.equals(updateRequest.getPid())){
+			LOG.debug("Delete Solr Tree, targeting all object.");
 			solrUpdateService.getUpdateDocTransformer().deleteQuery("*:*");
 			return;
 		}
 		
 		BriefObjectMetadataBean ancestorPathBean = getRootAncestorPath(updateRequest);
-		if (ancestorPathBean == null)
+		if (ancestorPathBean == null){
+			LOG.debug("Root object " + updateRequest.getPid() + " was not found while attempting to delete tree.");
 			return;
+		}
 	
 		//Determine if the starting node is a container.
 		if (ancestorPathBean.getResourceType().equals(solrUpdateService.getSearchSettings().getResourceTypeCollection()) 

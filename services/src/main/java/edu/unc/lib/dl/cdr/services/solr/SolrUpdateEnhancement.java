@@ -29,8 +29,6 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 /**
  * Enhancement tells the solr ingest service to update the affected pids.
  * 
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/services/src/main/java/edu/unc/lib/dl/cdr/services/solr/SolrUpdateEnhancement.java $ 
- * $Id: SolrUpdateEnhancement.java 2736 2011-08-08 20:04:52Z count0 $
  * @author bbpennel 
  */
 public class SolrUpdateEnhancement extends Enhancement<Element> {

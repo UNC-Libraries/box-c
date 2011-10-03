@@ -41,9 +41,6 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 /**
  * Central service conductor class which stores and processes a queue of messages indicating updates to Fedora objects.
  *
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-services/trunk/src/main/java/edu/unc/lib/dl/cdr/services/ServicesConductor.java
- * $ $Id: ServicesConductor.java 2789 2011-08-26 19:45:27Z bbpennel $
- *
  * @author Gregory Jansen, Ben Pennell
  */
 public class ServicesConductor {

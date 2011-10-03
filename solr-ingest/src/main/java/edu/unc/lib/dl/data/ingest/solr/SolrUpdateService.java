@@ -40,8 +40,6 @@ import edu.unc.lib.dl.security.access.AccessGroupSet;
  * Service which handles ingest and update of a solr index via threaded processors
  * which read from a queue of ordered update requests.
  * @author bbpennel
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-ingest/src/main/java/edu/unc/lib/dl/data/ingest/solr/SolrUpdateService.java $
- * $Id: SolrUpdateService.java 2736 2011-08-08 20:04:52Z count0 $
  */
 public class SolrUpdateService {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateService.class);
@@ -53,14 +51,14 @@ public class SolrUpdateService {
 	private String solrPath;
 	@Autowired
 	private SearchSettings searchSettings;
-	private String collectionsPid = null;
+	public static final String TARGET_ALL = "fullIndex";
 
 	private ThreadPoolExecutor executor = null;
 	private BlockingQueue<SolrUpdateRequest> pidQueue = null;
 	private List<SolrUpdateRequest> collisionList = null;
 	private Set<String> lockedPids = null;
 	private int maxIngestThreads = 3;
-
+	
 	public SolrUpdateService() {
 		pidQueue = new LinkedBlockingQueue<SolrUpdateRequest>();
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
@@ -78,14 +76,6 @@ public class SolrUpdateService {
 		//Pass the runnables a reference back to the update service
 		SolrUpdateRunnable.setSolrUpdateService(this);
 		SolrUpdateRunnable.initQueries();
-		
-		PID collectionsPidObject = fedoraDataService.getTripleStoreQueryService().fetchByRepositoryPath("/Collections");
-		if (collectionsPidObject == null){
-			throw new Error("Initialization of SolrUpdateService failed.  It was unable to retrieve Collections object from repository.");
-		} else {
-			collectionsPid = collectionsPidObject.getPid();
-		}
-		
 
 		this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(this.maxIngestThreads);
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
@@ -216,14 +206,6 @@ public class SolrUpdateService {
 		this.lockedPids = lockedPids;
 	}
 
-	public String getCollectionsPid() {
-		return collectionsPid;
-	}
-
-	public void setCollectionsPid(String collectionsPid) {
-		this.collectionsPid = collectionsPid;
-	}
-
 	public int queueSize(){
 		return pidQueue.size();
 	}
@@ -240,8 +222,11 @@ public class SolrUpdateService {
 		return executor.getActiveCount();
 	}
 	
+	public String getTargetAllSelector(){
+		return SolrUpdateService.TARGET_ALL;
+	}
+	
 	public String statusString(){
-		
 		StringBuilder status = new StringBuilder();
 		status.append("\nPid Queue Size: ").append(pidQueue.size())
 				.append("\nCollision List size: ").append(collisionList.size()).append(collisionList.toString())

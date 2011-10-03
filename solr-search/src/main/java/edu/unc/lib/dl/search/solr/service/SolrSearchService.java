@@ -50,8 +50,6 @@ import java.util.Iterator;
  * Performs CDR specific Solr search tasks, using solrj for connecting to the 
  * solr instance.
  * @author bbpennel
- * $Id: SolrSearchService.java 2766 2011-08-22 15:29:07Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-search/src/main/java/edu/unc/lib/dl/search/solr/service/SolrSearchService.java $
  */
 public class SolrSearchService {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrSearchService.class);

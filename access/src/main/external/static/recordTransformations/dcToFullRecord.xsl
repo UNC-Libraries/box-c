@@ -7,8 +7,6 @@
 	Transforms a dublin core record into a table formatted according to the needs of the 
 	full record page in the CDR public UI.  
 	Author: Ben Pennell
-	$Id
-	$URL: https://vcs.lib.unc.edu/cdr/cdr-access/external/recordTransformations/modsToFullRecord.xsl $
 	 -->
 	<xsl:variable name="newline"><xsl:text>&#10;</xsl:text></xsl:variable>
 	

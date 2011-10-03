@@ -29,8 +29,6 @@ import java.util.regex.Pattern;
  * parameters for specifying terms, facets, page/facet sizes, sorts, and filters.
  * 
  * @author bbpennel
- * $Id: SearchState.java 2766 2011-08-22 15:29:07Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-search/src/main/java/edu/unc/lib/dl/search/solr/model/SearchState.java $
  */
 public class SearchState implements Serializable  {
 	private static final long serialVersionUID = 1L;
@@ -129,6 +127,10 @@ public class SearchState implements Serializable  {
 	}
 	
 	public void setStartRow(int startRow) {
+		if (startRow < 0){
+			this.startRow = 0;
+			return;
+		}
 		this.startRow = startRow;
 	}
 	
@@ -137,6 +139,10 @@ public class SearchState implements Serializable  {
 	}
 	
 	public void setRowsPerPage(Integer rowsPerPage) {
+		if (rowsPerPage < 0){
+			this.rowsPerPage = 0;
+			return;
+		}
 		this.rowsPerPage = rowsPerPage;
 	}
 	

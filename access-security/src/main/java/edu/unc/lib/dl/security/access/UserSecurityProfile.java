@@ -23,8 +23,6 @@ import java.util.HashMap;
  * Object stores a single users access control information, including what groups they are
  * a member of and what objects they have already authenticated to in this session.
  * @author bbpennel
- * $Id: UserSecurityProfile.java 1718 2011-01-14 21:08:02Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-access/trunk/src/main/java/edu/unc/lib/dl/security/UserSecurityProfile.java $
  */
 public class UserSecurityProfile implements Serializable {
 	private static final long serialVersionUID = 1L;

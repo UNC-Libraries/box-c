@@ -39,8 +39,6 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 /**
  * Connects to and streams datastreams from Fedora.
  * @author bbpennel
- * $Id: FedoraContentService.java 2802 2011-08-30 20:00:36Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/service/FedoraContentService.java $
  */
 public class FedoraContentService {
 	private static final Logger LOG = LoggerFactory.getLogger(FedoraContentService.class);

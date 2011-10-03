@@ -24,9 +24,6 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 /**
  * Stores navigation state used for moving between items in the full record view.
  * @author bbpennel
- *
- * $Id: RecordNavigationState.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/model/RecordNavigationState.java $
  */
 public class RecordNavigationState {
 	private List<String> recordIdList;

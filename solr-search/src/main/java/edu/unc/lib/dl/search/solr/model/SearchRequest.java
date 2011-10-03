@@ -22,8 +22,6 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 /**
  * Request bean for a brief record search.  Handles basic searches and advanced searches. 
  * @author bbpennel
- * $Id: SearchRequest.java 2766 2011-08-22 15:29:07Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-search/src/main/java/edu/unc/lib/dl/search/solr/model/SearchRequest.java $
  */
 public class SearchRequest implements Serializable {
 	private static final long serialVersionUID = 1L;

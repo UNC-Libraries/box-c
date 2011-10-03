@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
@@ -32,8 +33,6 @@ import edu.unc.lib.dl.search.solr.util.SearchSettings;
 /**
  * Service class which parses and performs any number of actions on a provided SearchState object.
  * @author bbpennel
- * $Id: SearchActionService.java 2766 2011-08-22 15:29:07Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-search/src/main/java/edu/unc/lib/dl/search/solr/service/SearchActionService.java $
  */
 @Component
 public class SearchActionService {
@@ -53,7 +52,7 @@ public class SearchActionService {
 	 * @return
 	 */
 	public SearchState executeActions(SearchState searchState, String actionsString){
-		if (actionsString != null && actionsString.length() > 0){
+		if (searchState != null && actionsString != null && actionsString.length() > 0){
 			ArrayList<ActionPair> actionList = parseActions(actionsString);
 			for (ActionPair action: actionList){
 				LOG.debug("Executing: " + action);
@@ -134,14 +133,53 @@ public class SearchActionService {
 				ArrayList<String> parameters = null;
 				if (actionComponents.length > 1){
 					String actionParametersString = actionComponents[1];
-					Pattern pattern = Pattern.compile("(\"[^\"]*\"|[^,]+)"); 
+					Pattern pattern = Pattern.compile("(^(([^\",]*\"[^\"]*\"[^\",]*){1,})|,(([^\",]*\"[^\"]*\"[^\",]*){1,})|^([^,]+)|,([^,]+)|,|^$)");
 					Matcher matcher = pattern.matcher(actionParametersString); 
 					parameters = new ArrayList<String>();
 					while (matcher.find()){
-						if (matcher.groupCount() == 1){
-							String match = matcher.group(1);
-							parameters.add(match.replaceAll("%2[cC]", ","));
+						int i = 2;
+						for (; i <= matcher.groupCount(); i++){
+							if (matcher.group(i) != null){
+								break;
+							}
 						}
+						if (i <= matcher.groupCount() && matcher.group(i).length() > 0){
+							parameters.add(matcher.group(i).replaceAll("%2[cC]", ","));
+						} else {
+							parameters.add(null);
+						}
+						/*if (matcher.group(2) != null){
+							parameters.add(matcher.group(2).replaceAll("%2[cC]", ","));
+						} else if (matcher.group(4) != null){
+							parameters.add(matcher.group(4).replaceAll("%2[cC]", ","));
+						} else if (matcher.group(6) != null){
+							parameters.add(matcher.group(6).replaceAll("%2[cC]", ","));
+						} else if (matcher.group(7) != null){
+							parameters.add(matcher.group(7).replaceAll("%2[cC]", ","));
+						} else if (matcher.group(8) != null){
+							parameters.add(null);
+						} else if (matcher.group(1).equals("")){
+							parameters.add(null);
+						}*/
+						/*for (int i=2; i < matcher.groupCount(); i++){
+							
+						}*/
+						/*if (matcher.groupCount() > 1){
+							String match = matcher.group(1);
+							if (match.equals("")){
+								parameters.add(null);
+							} else if (match.lastIndexOf(",") == match.length() - 1){
+								for (int i = 0; i<match.length(); i++){
+									parameters.add(null);
+								}
+							} else if (match.contains("\"")){
+								if (match.indexOf(',') == 0){
+									match = match.substring(1).replaceAll("%2[cC]", ",");
+								}
+							} else {
+								parameters.add(match.replaceAll(",", "").replaceAll("%2[cC]", ","));
+							}
+						}*/
 					}
 				}
 				actionList.add(new ActionPair(actionName, parameters));
@@ -151,22 +189,31 @@ public class SearchActionService {
 	}
 	
 	private void setRangeField(SearchState searchState, ArrayList<String> parameters){
-		if (parameters.size() != 3)
+		if (parameters == null || parameters.size() != 3)
 			return;
-		searchState.getRangeFields().put(searchSettings.searchFieldKey(parameters.get(0)), 
+		String key = searchSettings.searchFieldKey(parameters.get(0));
+		if (key == null)
+			return;
+		searchState.getRangeFields().put(key, 
 				new SearchState.RangePair(parameters.get(1), parameters.get(2)));
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void setField(ArrayList<String> parameters, Map collection){
-		if (parameters.size() != 2)
+		if (parameters == null || parameters.size() != 2)
 			return;
-		collection.put(searchSettings.searchFieldKey(parameters.get(0)), parameters.get(1));
+		String key = searchSettings.searchFieldKey(parameters.get(0));
+		if (key == null)
+			return;
+		collection.put(key, parameters.get(1));
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void addField(ArrayList<String> parameters, Map collection){
-		if (parameters.size() != 2)
+		if (parameters == null || parameters.size() != 2)
+			return;
+		String key = searchSettings.searchFieldKey(parameters.get(0));
+		if (key == null)
 			return;
 		String value = (String)collection.get(searchSettings.searchFieldKey(parameters.get(0)));
 		if (value == null){
@@ -174,21 +221,26 @@ public class SearchActionService {
 		} else {
 			value += " " + parameters.get(1);
 		}
-		collection.put(searchSettings.searchFieldKey(parameters.get(0)), value);
+
+		collection.put(key, value);
 	}
 	
 	@SuppressWarnings("rawtypes")
 	private void removeField(ArrayList<String> parameters, Map collection){
-		if (parameters.size() != 1)
+		if (parameters == null || parameters.size() != 1)
 			return;
 		collection.remove(searchSettings.searchFieldKey(parameters.get(0)));
 	}
 	
 	private void setFacet(SearchState searchState, ArrayList<String> parameters){
-		if (parameters.size() < 2)
+		if (parameters == null || parameters.size() < 2)
 			return;
 		String key = searchSettings.searchFieldKey(parameters.get(0));
+		if (key == null)
+			return;
 		String value = parameters.get(1);
+		if (value == null)
+			return;
 		if (value.indexOf('"') == 0){
 			value = value.substring(1);
 		}
@@ -197,22 +249,25 @@ public class SearchActionService {
 		}
 		if (searchSettings.hierarchicalFacets.contains(key)){
 			String[] parameterSubfields = value.split(",");
-			HierarchicalFacet hierFacet = new HierarchicalFacet(key, parameterSubfields[0] + "," + parameterSubfields[1]);
-			if (parameterSubfields.length == 3){
-				try {
-					hierFacet.setCutoffTier(new Integer(parameterSubfields[2]));
-				} catch (NumberFormatException ignored){
-					//Cutoff value was not an integer, so ignore it.
+			HierarchicalFacet hierFacet = null;
+			if (parameterSubfields.length >= 2){
+				hierFacet = new HierarchicalFacet(key, parameterSubfields[0] + "," + parameterSubfields[1]);
+				if (parameterSubfields.length >= 3){
+					try {
+						hierFacet.setCutoffTier(new Integer(parameterSubfields[2]));
+					} catch (NumberFormatException e){
+						throw new InvalidHierarchicalFacetException("Invalid hierarchical facet defined by " + value, e);
+					}
 				}
+				searchState.getFacets().put(key, hierFacet);
 			}
-			searchState.getFacets().put(key, hierFacet);
 		} else {
 			searchState.getFacets().put(key, value);
 		}
 	}
 	
 	private void setFacetLimit(SearchState searchState, ArrayList<String> parameters){
-		if (parameters.size() != 2)
+		if (parameters == null || parameters.size() != 2)
 			return;
 		try {
 			searchState.getFacetLimits().put(searchSettings.searchFieldKey(parameters.get(0)), 
@@ -231,15 +286,19 @@ public class SearchActionService {
 	}
 	
 	private void nextPage(SearchState searchState){
+		if (searchState.getRowsPerPage() == null)
+			return;
 		searchState.setStartRow(searchState.getStartRow() + searchState.getRowsPerPage());
 	}
 	
 	private void previousPage(SearchState searchState){
+		if (searchState.getRowsPerPage() == null)
+			return;
 		searchState.setStartRow(searchState.getStartRow() - searchState.getRowsPerPage());
 	}
 	
 	private void setStartRow(SearchState searchState, ArrayList<String> parameters){
-		if (parameters.size() != 1)
+		if (parameters == null || parameters.size() != 1)
 			return;
 		setStartRow(searchState, Integer.parseInt(parameters.get(0)));
 	}
@@ -249,7 +308,7 @@ public class SearchActionService {
 	}
 	
 	private void setRow(SearchState searchState, ArrayList<String> parameters){
-		if (parameters.size() != 1)
+		if (parameters == null || parameters.size() != 1)
 			return;
 		setRow(searchState, Integer.parseInt(parameters.get(0)));
 	}
@@ -263,16 +322,19 @@ public class SearchActionService {
 	}
 	
 	private void setSort(SearchState searchState, ArrayList<String> parameters){
-		if (parameters.size() != 2)
+		if (parameters == null || parameters.size() != 2)
 			return;
 		searchState.setSortType(parameters.get(0));
 		searchState.setSortOrder(parameters.get(1));
 	}
 	
 	private void setAccessFilter(SearchState searchState, ArrayList<String> parameters){
-		if (parameters.size() < 1)
+		if (parameters == null || parameters.size() < 1)
 			return;
-		searchState.setAccessTypeFilter(searchSettings.searchFieldKey(parameters.get(0)));
+		String key = searchSettings.searchFieldKey(parameters.get(0));
+		if (key == null)
+			return;
+		searchState.setAccessTypeFilter(key);
 	}
 	
 	private void removeAccessFilter(SearchState searchState){
@@ -280,19 +342,21 @@ public class SearchActionService {
 	}
 	
 	private void setResourceType(SearchState searchState, ArrayList<String> parameters){
-		if (parameters.size() < 1)
+		if (parameters == null || parameters.size() < 1)
 			return;
+		while (parameters.contains(null))
+			parameters.remove(null);
 		searchState.setResourceTypes(parameters);
 	}
 	
 	private void removeResourceType(SearchState searchState, ArrayList<String> parameters){
-		if (parameters.size() < 1)
+		if (parameters == null || parameters.size() < 1)
 			return;
 		searchState.getResourceTypes().removeAll(parameters);
 	}
 	
 	private void resetNavigation(SearchState searchState, ArrayList<String> parameters){
-		if (parameters.size() < 1)
+		if (parameters == null || parameters.size() < 1)
 			return;
 		String mode = parameters.get(0); 
 		if (mode.equals("search")){

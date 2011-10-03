@@ -18,9 +18,12 @@ package edu.unc.lib.dl.ui.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -34,10 +37,9 @@ import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 /**
  * Abstract base class for controllers which interact with solr services.
  * @author bbpennel
- * $Id: AbstractSolrSearchController.java 2736 2011-08-08 20:04:52Z count0 $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/AbstractSolrSearchController.java $
  */
 public abstract class AbstractSolrSearchController extends CDRBaseController {
+	private final Logger LOG = LoggerFactory.getLogger(AbstractSolrSearchController.class);
 	
 	@Autowired(required=true)
 	protected SolrQueryLayerService queryLayer;
@@ -95,7 +97,11 @@ public abstract class AbstractSolrSearchController extends CDRBaseController {
 		//Perform actions on search state
 		String actionsParam = request.getParameter(searchSettings.searchStateParams.get("ACTIONS"));
 		if (actionsParam != null){
-			searchActionService.executeActions(searchState, actionsParam);
+			try {
+				searchActionService.executeActions(searchState, actionsParam);
+			} catch (InvalidHierarchicalFacetException e){
+				LOG.warn("An invalid facet was provided: " + request.getQueryString(), e);
+			}
 		}
 		
 		//Validate the search state to make sure that it contains appropriate values and field names

@@ -22,8 +22,6 @@ import edu.unc.lib.dl.security.access.AccessGroupSet;
 /**
  * Request object for a single ID along with access restrictions and requested result data.
  * @author bbpennel
- * $Id: SimpleIdRequest.java 2766 2011-08-22 15:29:07Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-search/src/main/java/edu/unc/lib/dl/search/solr/model/SimpleIdRequest.java $
  */
 public class SimpleIdRequest {
 	private String id;

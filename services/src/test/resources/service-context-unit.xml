@@ -59,6 +59,6 @@
 	<bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
 	</bean>
 	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
-		<value>unc:app:lib:cdr:admin</value>
+		<value>${access.group.admin}</value>
 	</util:set>
 </beans>

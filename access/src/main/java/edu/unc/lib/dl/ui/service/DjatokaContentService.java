@@ -33,8 +33,6 @@ import edu.unc.lib.dl.ui.util.FileIOUtil;
 /**
  * Generates request, connects to, and streams the output from djatoka.  Sets pertinent headers. 
  * @author bbpennel
- * $Id: DjatokaContentService.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/service/DjatokaContentService.java $
  */
 public class DjatokaContentService {
 	private static final Logger LOG = LoggerFactory.getLogger(DjatokaContentService.class);

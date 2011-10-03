@@ -28,8 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * Utility class which transforms search states to other formats.
  * @author bbpennel
- * $Id: SearchStateUtil.java 2766 2011-08-22 15:29:07Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-search/src/main/java/edu/unc/lib/dl/search/solr/util/SearchStateUtil.java $
  */
 public class SearchStateUtil {
 	private static SearchSettings searchSettings;

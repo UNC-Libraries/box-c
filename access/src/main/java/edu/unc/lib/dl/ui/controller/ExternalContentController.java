@@ -32,8 +32,6 @@ import edu.unc.lib.dl.ui.util.ExternalContentSettings;
  * Simple controller for transferring users to an allowed subset of external pages, with support for 
  * redirecting or embedding.
  * @author bbpennel
- * $Id: ExternalContentController.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/ExternalContentController.java $
  */
 @Controller
 @RequestMapping("/external")

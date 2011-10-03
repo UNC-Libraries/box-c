@@ -30,8 +30,6 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 /**
  * Data access layer for connecting to and interacting with the Solr instance.
  * @author bbpennel
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-ingest/src/main/java/edu/unc/lib/dl/data/ingest/solr/SolrDataAccessLayer.java $
- * $Id: SolrDataAccessLayer.java 2736 2011-08-08 20:04:52Z count0 $
  */
 public class SolrDataAccessLayer {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrDataAccessLayer.class);

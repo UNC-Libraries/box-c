@@ -39,8 +39,6 @@ import java.util.List;
  * Controller which interprets the provided search state, from either the last search state in the session or
  * from GET parameters, as well as actions performed on the state, and retrieves search results using it.
  * @author bbpennel
- * $Id: SearchActionController.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/SearchActionController.java $
  */
 @Controller
 @RequestMapping("/search")

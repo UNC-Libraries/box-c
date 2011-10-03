@@ -48,8 +48,6 @@ import edu.unc.lib.dl.search.solr.util.SearchSettings;
  * Controller which handles requests for specific content datastreams from
  * Fedora and streams the results back as the response.
  * @author bbpennel
- * $Id: FedoraContentController.java 2804 2011-08-31 12:02:14Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/FedoraContentController.java $
  */
 @Controller
 public class FedoraContentController extends AbstractSolrSearchController {

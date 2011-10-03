@@ -24,8 +24,6 @@ import edu.unc.lib.dl.ui.model.response.RssFeedBean;
 /**
  * Retrieves and processes RSS feeds
  * @author bbpennel
- * $Id: RssParserService.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/service/RssParserService.java $
  */
 public class RssParserService extends XMLRetrievalService {
 

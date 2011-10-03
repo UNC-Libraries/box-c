@@ -27,8 +27,6 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 /**
  * Validator for SearchState objects
  * @author bbpennel
- * $Id: SearchStateValidator.java 2766 2011-08-22 15:29:07Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-search/src/main/java/edu/unc/lib/dl/search/solr/validator/SearchStateValidator.java $
  */
 public class SearchStateValidator {
 	@Autowired

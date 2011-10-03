@@ -303,7 +303,7 @@
 		<property name="searchSettings" ref="searchSettings" />
 	</bean>
 	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
-		<value>unc:app:lib:cdr:admin</value>
+		<value>${access.group.admin}</value>
 	</util:set>-->
 <!--	<bean id="solrUpdateService" class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateService"
 		init-method="init" destroy-method="destroy">

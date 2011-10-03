@@ -28,8 +28,6 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
  * page, the list of hierarchical and nonhierarchical facets, and the count of the total
  * number of results the query found.
  * @author bbpennel
- * $Id: SearchResultResponse.java 2766 2011-08-22 15:29:07Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-search/src/main/java/edu/unc/lib/dl/search/solr/model/SearchResultResponse.java $
  */
 public class SearchResultResponse {
 	private List<BriefObjectMetadataBean> resultList;

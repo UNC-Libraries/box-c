@@ -17,6 +17,7 @@ package edu.unc.lib.dl.ui.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
+import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.SearchActionService;
@@ -43,8 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * the previous search state stored in session, and any number of navigation actions.  Constructs
  * a new search state and sends it to the search controller. 
  * @author bbpennel
- * $Id: BasicSearchFormController.java 2743 2011-08-12 16:56:19Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/access/src/main/java/edu/unc/lib/dl/ui/controller/BasicSearchFormController.java $
  */
 @Controller
 @RequestMapping("/basicSearch")
@@ -108,7 +107,11 @@ public class BasicSearchFormController {
 			searchState = SearchStateFactory.createSearchState();
 		
 		LOG.debug("Actions:" + actions.toString());
-		searchActionService.executeActions(searchState, actions.toString());
+		try {
+			searchActionService.executeActions(searchState, actions.toString());
+		} catch (InvalidHierarchicalFacetException e){
+			LOG.warn("An invalid facet was provided: " + request.getQueryString(), e);
+		}
 		request.getSession().setAttribute("searchState", searchState);
 		
 		model.addAllAttributes(SearchStateUtil.generateStateParameters(searchState));

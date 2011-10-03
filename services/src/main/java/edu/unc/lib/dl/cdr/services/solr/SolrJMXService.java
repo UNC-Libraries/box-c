@@ -32,6 +32,10 @@ public class SolrJMXService {
 	private SolrUpdateService solrUpdateService;
 	private boolean active;
 	
+	public String getTargetAllSelector(){
+		return SolrUpdateService.TARGET_ALL;
+	}
+	
 	public void reindex(String pid, boolean inplace){
 		if (!active) return;
 		LOG.info("Issuing request to recursively reindex " + pid + ", to be performed inplace:" + inplace + ".");

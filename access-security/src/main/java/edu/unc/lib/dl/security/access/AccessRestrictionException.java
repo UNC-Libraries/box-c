@@ -18,8 +18,6 @@ package edu.unc.lib.dl.security.access;
 /**
  * Access restriction exceptions.
  * @author bbpennel
- * $Id: AccessRestrictionException.java 1612 2010-12-07 14:37:30Z bbpennel $
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-access/trunk/src/main/java/edu/unc/lib/dl/security/AccessRestrictionException.java $
  */
 public class AccessRestrictionException extends Exception {
 	private static final long serialVersionUID = 1L;

@@ -35,11 +35,6 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 /**
  * Service which determines when to update individual items in Solr.
  *
- * $URL:
- * https://vcs.lib.unc.edu/cdr/cdr-services/trunk/src/main/java/edu/unc/lib
- * /dl/cdr/services/solr/SolrUpdateEnhancementService.java $ $Id:
- * SolrUpdateEnhancementService.java 2043 2011-04-13 17:57:00Z bbpennel $
- *
  * @author bbpennel
  */
 public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementService {

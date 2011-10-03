@@ -18,8 +18,6 @@ package edu.unc.lib.dl.data.ingest.solr;
 /**
  * Represents a request to update an object identified by pid.
  * @author bbpennel
- * $URL: https://vcs.lib.unc.edu/cdr/cdr-master/trunk/solr-ingest/src/main/java/edu/unc/lib/dl/data/ingest/solr/SolrUpdateRequest.java $
- * $Id: SolrUpdateRequest.java 2736 2011-08-08 20:04:52Z count0 $
  */
 public class SolrUpdateRequest {
 	protected String pid;
