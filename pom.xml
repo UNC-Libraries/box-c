@@ -192,6 +192,10 @@
 						<year>${project.inceptionYear}</year>
 					</properties>
 					<excludes>
+						<exclude>README</exclude>
+					  <exclude>djatoka-cdr/**</exclude>
+						<exclude>.git/**</exclude>
+						<exclude>**/.gitignore</exclude>
 						<exclude>**/header.txt</exclude>
 						<exclude>**/bin/**</exclude>
 						<exclude>**/bundled/**</exclude>
