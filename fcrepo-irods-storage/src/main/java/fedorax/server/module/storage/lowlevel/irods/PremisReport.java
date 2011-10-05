@@ -43,8 +43,6 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 
-import edu.sdsc.grid.io.MetaDataRecordList;
-
 /**
  * This report builder maps Fedora objects onto the PREMIS object schema with relevant storage metadata from iRODS.
  * It is designed as part of the Fedora32-iRODS low level storage module and therefore only supplies
@@ -342,7 +340,7 @@ public class PremisReport {
 	}
     }
 
-    private static String getMeta(MetaDataRecordList md, String fieldName) {
-	    return md.getStringValue(md.getFieldIndex(fieldName));
-    }
+//    private static String getMeta(MetaDataRecordList md, String fieldName) {
+//	    return md.getStringValue(md.getFieldIndex(fieldName));
+//    }
 }

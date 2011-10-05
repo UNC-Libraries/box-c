@@ -121,6 +121,8 @@
 		<constructor-arg value="${irods.default.resc}"/>
 	</bean> 
 	
+	<bean id="irodsFileSystem" class="org.irods.jargon.core.pub.IRODSFileSystem" factory-method="instance"/>
+	
 	<!-- a pooling based JMS provider -->
 	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
 		<property name="connectionFactory">
@@ -193,6 +195,7 @@
 	<!-- Services -->
 	<bean id="technicalMetadataEnhancementService" class="edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService">
 		<property name="irodsAccount" ref="irodsAccount"/>
+		<property name="irodsFileSystem" ref="irodsFileSystem"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="managementClient" ref="managementClient"/>
 		<property name="active" value="true"/>
@@ -200,6 +203,7 @@
 	
 	<bean id="imageEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService">
 		<property name="irodsAccount" ref="irodsAccount"/>
+		<property name="irodsFileSystem" ref="irodsFileSystem"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="managementClient" ref="managementClient"/>
 		<property name="active" value="true"/>
@@ -207,6 +211,7 @@
 	
 	<bean id="thumbnailEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService">
 		<property name="irodsAccount" ref="irodsAccount"/>
+		<property name="irodsFileSystem" ref="irodsFileSystem"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="managementClient" ref="managementClient"/>
 		<property name="active" value="true"/>
