@@ -8,12 +8,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.swordapp.server.ServiceDocumentAPI;
 import org.swordapp.server.ServiceDocumentManager;
-import org.swordapp.server.servlets.SwordServlet;
 
 import edu.unc.lib.dl.sword.server.SwordConfigurationImpl;
 
 @SuppressWarnings("serial")
-public class ServiceDocumentServlet extends SwordServlet {
+public class ServiceDocumentServlet extends ContextAwareSwordServlet {
 	protected ServiceDocumentManager sdm;
 	protected ServiceDocumentAPI api;
 
