@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>sword-server</artifactId>
+	<parent>
+		<groupId>edu.unc.lib.cdr</groupId>
+		<artifactId>cdr</artifactId>
+		<version>3.0-SNAPSHOT</version>
+	</parent>
+	<packaging>war</packaging>
+	<name>CDR SWORD Server</name>
+	<url>http://cdr-dev.lib.unc.edu/</url>
+	<description>CDR SWORD Server implementation</description>
+
+    <developers>
+        <developer>
+        	<id>bbpennel</id>
+            <name>Ben Pennell</name>
+            <email>ben.pennell@gmail.com</email>
+			<organization>University of North Carolina at Chapel Hill Libraries</organization>
+			<organizationUrl>http://www.lib.unc.edu</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+        </developer>
+    </developers>
+    <dependencies>
+    	<dependency>
+            <groupId>org.swordapp</groupId>
+            <artifactId>server</artifactId>
+            <version>2.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<type>jar</type>
+			<scope>provided</scope>
+		</dependency>
+        <dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.1</version>
+			<scope>compile</scope>
+		</dependency>
+        <dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>fcrepo-clients</artifactId>
+			<version>${cdr.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>persistence</artifactId>
+			<version>${cdr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${spring.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>1.4</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+    </dependencies>
+</project>
