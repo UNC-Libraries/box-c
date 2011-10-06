@@ -67,7 +67,6 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 				workspace.addCollection(collection);
 			}
 			sd.addWorkspace(workspace);
-			sd.setMaxUploadSize(999999999);
 			
 			return sd;
 		} catch (Exception e) {
