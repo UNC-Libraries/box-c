@@ -39,7 +39,7 @@ import edu.unc.lib.dl.fedora.PID;
  * @author bbpennel
  */
 public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements ServiceDocumentManager {
-        public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config) throws SwordError, SwordServerException, SwordAuth
+        public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
                 ServiceDocument sd = new ServiceDocument();
                 SwordWorkspace workspace = new SwordWorkspace();
                 SwordCollection collection = new SwordCollection();
