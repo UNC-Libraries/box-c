@@ -1,12 +1,22 @@
 package edu.unc.lib.dl.sword.server.managers;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.swordapp.server.AuthCredentials;
+import org.swordapp.server.SwordAuthException;
+import org.swordapp.server.SwordServerException;
 import org.w3c.dom.Element;
 
 import edu.unc.lib.dl.fedora.AccessClient;
@@ -47,6 +57,29 @@ public abstract class AbstractFedoraManager implements ApplicationContextAware {
 		swordPath = (String) context.getBean("swordPath");
 	}
 
-	public void authenticates(final String pUsername, final String pPassword) {
+	public void authenticate(AuthCredentials auth) throws SwordAuthException, SwordServerException {
+		HttpClient client = new HttpClient();
+		UsernamePasswordCredentials cred = new UsernamePasswordCredentials(
+				auth.getUsername(), auth.getPassword());
+		client.getState().setCredentials(new AuthScope(null, 443), cred);
+		client.getState().setCredentials(new AuthScope(null, 80), cred);
+
+		GetMethod method = new GetMethod(accessClient.getFedoraContextUrl());
+		
+		try {
+			method.setDoAuthentication(true);
+			client.executeMethod(method);
+			if (method.getStatusCode() == HttpStatus.SC_OK) {
+				return;
+			} else if (method.getStatusCode() == HttpStatus.SC_FORBIDDEN){
+				throw new SwordAuthException();
+			}
+		} catch (HttpException e){
+			throw new SwordServerException(e);
+		} catch (IOException e) {
+			throw new SwordServerException(e);
+		} finally {
+			method.releaseConnection();
+		}
 	}
 }
