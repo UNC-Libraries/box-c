@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.abdera.i18n.iri.IRI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.ServiceDocument;
 import org.swordapp.server.ServiceDocumentManager;
@@ -39,46 +41,64 @@ import edu.unc.lib.dl.fedora.PID;
  * @author bbpennel
  */
 public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements ServiceDocumentManager {
-        public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
-                ServiceDocument sd = new ServiceDocument();
-                SwordWorkspace workspace = new SwordWorkspace();
-                SwordCollection collection = new SwordCollection();
-                collection.setTitle("Test collection");
-                collection.addAcceptPackaging("cdrcore");
-                collection.addAccepts("*/*");
-                collection.setAbstract("This is a test collection");
-                IRI iri = new IRI("http://cdr-alpha.lib.unc.edu/sword/sd-iri/testCollection");
-                collection.addSubService(iri);
-                
-                workspace.addCollection(collection);
-                
-                sd.addWorkspace(workspace);
-                sd.setMaxUploadSize(999999999);
-                
-                return sd;
-        }
-        
-        protected List<SwordCollection> getImmediateContainerChildren(String pid) throws IOException {
-                String query = this.readFileAsString("immediateContainerChildren.sparql");
-                PID pidObject = new PID(pid);
-                query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(), 
-                                pidObject.getURI());
-                List<SwordCollection> result = new ArrayList<SwordCollection>();
-                @SuppressWarnings({ "rawtypes", "unchecked" })
-                List<Map> bindings = (List<Map>) ((Map) tripleStoreQueryService.sendSPARQL(query).get("results"))
-                                .get("bindings");
-                for (Map<?,?> binding : bindings) {
-                        SwordCollection collection = new SwordCollection();
-                        PID containerPID = new PID((String) ((Map<?,?>) binding.get("pid")).get("value"));
-                        String slug = (String) ((Map<?,?>) binding.get("slug")).get("value");
-                        
-                        collection.setHref(swordPath + "collection/" + containerPID.getPid());
-                        collection.setTitle(slug);
-                        collection.setAccept("*/*");
-                        //collection.addAcceptPackaging("cdrcore");
-                        collection.addAcceptPackaging("METSDSpaceSIP");
-                        result.add(collection);
-                }
-                return result;
-        }
+	private static final Logger log = LoggerFactory.getLogger(ServiceDocumentManagerImpl.class);
+	
+	public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config)
+			throws SwordError, SwordServerException, SwordAuthException {
+		ServiceDocument sd = new ServiceDocument();
+		SwordWorkspace workspace = new SwordWorkspace();
+		
+		String pid = null;
+		if (sdUri != null){
+			try {
+				pid = sdUri.substring(sdUri.lastIndexOf("/") + 1);
+			} catch (IndexOutOfBoundsException e){
+				//Ignore
+			}
+		}
+		if (pid == null || "".equals(pid)){
+			pid = ServiceDocumentManagerImpl.collectionsPidObject.getPid();
+		}
+		
+		List<SwordCollection> collections;
+		try {
+			collections = this.getImmediateContainerChildren(pid);
+			for (SwordCollection collection: collections){
+				workspace.addCollection(collection);
+			}
+			sd.addWorkspace(workspace);
+			sd.setMaxUploadSize(999999999);
+			
+			return sd;
+		} catch (Exception e) {
+			log.error("An exception occurred while generating the service document for " + pid, e);
+		}
+
+		return null;
+	}
+
+	protected List<SwordCollection> getImmediateContainerChildren(String pid) throws IOException {
+		String query = this.readFileAsString("immediateContainerChildren.sparql");
+		PID pidObject = new PID(pid);
+		query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(), pidObject.getURI());
+		List<SwordCollection> result = new ArrayList<SwordCollection>();
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		List<Map> bindings = (List<Map>) ((Map) tripleStoreQueryService.sendSPARQL(query).get("results")).get("bindings");
+		for (Map<?, ?> binding : bindings) {
+			SwordCollection collection = new SwordCollection();
+			PID containerPID = new PID((String) ((Map<?, ?>) binding.get("pid")).get("value"));
+			String slug = (String) ((Map<?, ?>) binding.get("slug")).get("value");
+
+			collection.setHref(swordPath + "collection/" + containerPID.getPid());
+			collection.setTitle(slug);
+			collection.setAccept("*/*");
+			// collection.addAcceptPackaging("cdrcore");
+			collection.addAcceptPackaging("http://purl.org/net/sword/terms/METSDSpaceSIP");
+			collection.addAcceptPackaging("http://purl.org/net/sword/terms/SimpleZip");
+			IRI iri = new IRI(swordPath + "servicedocument/" + containerPID.getPid());
+			collection.addSubService(iri);
+			result.add(collection);
+		}
+		return result;
+	}
 }
