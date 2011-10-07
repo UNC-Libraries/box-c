@@ -17,10 +17,12 @@ import org.springframework.context.ApplicationContextAware;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.SwordAuthException;
 import org.swordapp.server.SwordServerException;
+import org.swordapp.server.servlets.SwordServlet;
 import org.w3c.dom.Element;
 
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.sword.server.FedoraAuthException;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public abstract class AbstractFedoraManager implements ApplicationContextAware {
@@ -71,8 +73,10 @@ public abstract class AbstractFedoraManager implements ApplicationContextAware {
 			client.executeMethod(method);
 			if (method.getStatusCode() == HttpStatus.SC_OK) {
 				return;
-			} else if (method.getStatusCode() == HttpStatus.SC_FORBIDDEN){
-				throw new SwordAuthException();
+			} else if (method.getStatusCode() == HttpStatus.SC_UNAUTHORIZED){
+				throw new FedoraAuthException();
+			} else {
+				throw new SwordServerException();
 			}
 		} catch (HttpException e){
 			throw new SwordServerException(e);
