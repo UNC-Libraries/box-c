@@ -6,13 +6,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.swordapp.server.ServiceDocumentAPI;
 import org.swordapp.server.ServiceDocumentManager;
-
 import edu.unc.lib.dl.sword.server.SwordConfigurationImpl;
 
 @SuppressWarnings("serial")
 public class ServiceDocumentServlet extends ContextAwareSwordServlet {
+	private static Logger log = Logger.getLogger(ServiceDocumentServlet.class);
 	protected ServiceDocumentManager sdm;
 	protected ServiceDocumentAPI api;
 

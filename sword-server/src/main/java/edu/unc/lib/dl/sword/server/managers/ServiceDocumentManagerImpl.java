@@ -45,6 +45,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 	
 	public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config)
 			throws SwordError, SwordServerException, SwordAuthException {
+		
 		ServiceDocument sd = new ServiceDocument();
 		SwordWorkspace workspace = new SwordWorkspace();
 		
