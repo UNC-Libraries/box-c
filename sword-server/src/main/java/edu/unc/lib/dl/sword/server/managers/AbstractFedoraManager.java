@@ -22,7 +22,6 @@ import org.w3c.dom.Element;
 
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.sword.server.FedoraAuthException;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public abstract class AbstractFedoraManager implements ApplicationContextAware {
@@ -74,7 +73,7 @@ public abstract class AbstractFedoraManager implements ApplicationContextAware {
 			if (method.getStatusCode() == HttpStatus.SC_OK) {
 				return;
 			} else if (method.getStatusCode() == HttpStatus.SC_UNAUTHORIZED){
-				throw new FedoraAuthException();
+				throw new SwordAuthException(true);
 			} else {
 				throw new SwordServerException();
 			}
