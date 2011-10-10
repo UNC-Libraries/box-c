@@ -92,9 +92,10 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 			collection.setHref(swordPath + "collection/" + containerPID.getPid());
 			collection.setTitle(slug);
 			collection.setAccept("*/*");
-			// collection.addAcceptPackaging("cdrcore");
 			collection.addAcceptPackaging("http://purl.org/net/sword/terms/METSDSpaceSIP");
 			collection.addAcceptPackaging("http://purl.org/net/sword/terms/SimpleZip");
+			collection.addAcceptPackaging("http://cdr.unc.edu/METS/profiles/Simple");
+			collection.addAcceptPackaging("http://cdr.unc.edu/METS/profiles/SimpleZip");
 			IRI iri = new IRI(swordPath + "servicedocument/" + containerPID.getPid());
 			collection.addSubService(iri);
 			result.add(collection);
