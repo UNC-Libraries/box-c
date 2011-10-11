@@ -15,9 +15,10 @@
  */
 package fedorax.server.module.storage;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
-import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -119,9 +120,19 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 			fedoraServerPort = s_server.getParameter("fedoraServerPort");
 			// fedoraServerHost = s_server.getParameter("fedoraServerHost");
 			fedoraServerRedirectPort = s_server.getParameter("fedoraRedirectPort");
+			try {
+			    this.irodsReadBufferSize = Integer.parseInt(getModuleParameter(Parameter.IRODS_READ_BUFFER_SIZE, false));
+			    if (this.irodsReadBufferSize < 1) {
+				throw new ModuleInitializationException("Parameter, \"" + Parameter.IRODS_READ_BUFFER_SIZE
+						+ "\" must be greater than 0", getRole());
+			    }
+			} catch (NumberFormatException e) {
+			    throw new ModuleInitializationException(e.getMessage(), getRole());
+			}
 
 			m_http = new WebClient();
 			// m_http.USER_AGENT = m_userAgent;
+
 
 			// register StagingManagerMBean
 			MBeanServer mbs = this.getMBeanServer();
@@ -218,6 +229,20 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 			IRODSFileFactory ff = IRODSFileSystem.instance().getIRODSFileFactory(account);
 			IRODSFile file = ff.instanceIRODSFile(URLDecoder.decode(uri.getRawPath(), "UTF-8"));
 			InputStream result = ff.instanceIRODSFileInputStream(file);
+			final long start = System.currentTimeMillis();
+			LOG.debug("created buffer at: "+start);
+			result = new BufferedInputStream(result, this.irodsReadBufferSize) {
+
+				@Override
+				public void close() throws IOException {
+					if(LOG.isDebugEnabled()) {
+						long time = System.currentTimeMillis() - start;
+						LOG.debug("closed irods stream:\n"+this.pos+" bytes\n"+time+" millis\n"+(this.pos*1000/time)+" bytes/milli");
+					}
+					super.close();
+				}
+
+			};
 			// irodsSession.closeSession();
 
 			// if mimeType was not given, try to determine it automatically
