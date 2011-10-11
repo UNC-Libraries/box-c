@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 
 /**
  * Retrieves metadata for an objects full record description.
@@ -35,8 +36,21 @@ public class FullObjectMetadataFactory {
 	}
 	
 	public static Document getFoxmlViewXML(SimpleIdRequest idRequest){
+		return getFoxmlViewXML(idRequest, 1);
+	}
+	
+	public static Document getFoxmlViewXML(SimpleIdRequest idRequest, int retries){
 		try {
-			return dataService.getFoxmlViewXML(idRequest.getId());
+			Document foxml = dataService.getFoxmlViewXML(idRequest.getId());
+			for (int i=0; i < retries; i++){
+				if (foxml.getRootElement().getContent().size() == 0){
+					foxml = dataService.getFoxmlViewXML(idRequest.getId());
+				}
+			}
+			if (foxml.getRootElement().getContent().size() == 0){
+				throw new ResourceNotFoundException("Failed to retrieve FOXML for object " + idRequest.getId());
+			}
+			return foxml;
 		} catch (Exception e){
 			LOG.error("Failed to retrieve XML object for " + idRequest.getId(), e);
 		}

@@ -170,6 +170,8 @@ public class SearchState implements Serializable  {
 	 */
 	public ArrayList<String> getSearchTermFragments(String fieldType){
 		String value = this.searchFields.get(fieldType);
+		if (value == null)
+			return null;
 		Pattern pattern = Pattern.compile("(\"[^\"]*\"|[^\" ,':]+)"); 
 		Matcher matcher = pattern.matcher(value); 
 		ArrayList<String> fragments = new ArrayList<String>();
