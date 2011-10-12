@@ -74,7 +74,7 @@ public class IrodsIFileSystem {
 	private IRODSFileSystem irodsFileSystem;
 
 	// private static final int BUFFER_SIZE = 32768;
-	//private static final int BUFFER_SIZE = 4194304;
+	// private static final int BUFFER_SIZE = 4194304;
 
 	/** Logger for this class. */
 	private static final Logger LOG = Logger.getLogger(IrodsIFileSystem.class);
@@ -226,7 +226,33 @@ public class IrodsIFileSystem {
 		try {
 			SessionClosingIRODSFileInputStream fis = irodsFileSystem.getIRODSFileFactory(account)
 					.instanceSessionClosingIRODSFileInputStream(file.getPath());
-			BufferedInputStream bis = new BufferedInputStream(fis, irodsBufferSize);
+			final long start = System.currentTimeMillis();
+			BufferedInputStream bis = new BufferedInputStream(fis, irodsBufferSize) {
+				int bytes = 0;
+
+				@Override
+				public void close() throws IOException {
+					if (LOG.isInfoEnabled()) {
+						long time = System.currentTimeMillis() - start;
+						if (time > 0) {
+							LOG.info("closed irods stream: " + bytes + " bytes at " + (bytes / time) + " kb/sec");
+						}
+					}
+					super.close();
+				}
+
+				@Override
+				public synchronized int read() throws IOException {
+					bytes++;
+					return super.read();
+				}
+
+				@Override
+				public synchronized int read(byte[] b, int off, int len) throws IOException {
+					bytes = bytes + len;
+					return super.read(b, off, len);
+				}
+			};
 			return bis;
 		} catch (JargonException e) {
 			LOG.error(e);
