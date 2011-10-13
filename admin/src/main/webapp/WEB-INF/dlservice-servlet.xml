@@ -616,5 +616,24 @@
 		</property>
 		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
 	</bean>
+	
+	<bean id="loggingExporter" class="org.springframework.jmx.export.MBeanExporter"
+		lazy-init="false">
+		<property name="beans">
+			<map>
+				<entry key="cdradmin:jmxservice=loggingConfiguration" value-ref="loggingMBean" />
+			</map>
+		</property>
+		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
+		<property name="assembler">
+			<bean class="org.springframework.jmx.export.assembler.InterfaceBasedMBeanInfoAssembler">
+				<property name="managedInterfaces">
+					<array value-type="java.lang.Class">
+						<value>de.stefanheintz.log.jmxservice.LoggingConfig</value>
+					</array>
+				</property>				
+			</bean>
+		</property>
+	</bean>
 
 </beans>
