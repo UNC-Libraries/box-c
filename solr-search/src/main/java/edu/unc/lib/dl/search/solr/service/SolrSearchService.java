@@ -168,7 +168,7 @@ public class SolrSearchService {
 		if (accessGroups == null || accessGroups.size() == 0){
 			throw new AccessRestrictionException("No access groups were provided.");
 		}
-		if (!accessType.equals(SearchFieldKeys.RECORD_ACCESS) || (accessType.equals(SearchFieldKeys.RECORD_ACCESS) && !accessGroups.contains(AccessGroupConstants.ADMIN_GROUP))){
+		if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)){
 			query.append(" (").append(accessGroups.joinAccessGroups(" OR ", solrSettings.getFieldName(accessType) + ":", true)).append(')');
 		}
 		return query;
@@ -332,13 +332,15 @@ public class SolrSearchService {
 			while (searchTypeIt.hasNext()){
 				searchType = searchTypeIt.next();
 				List<String> searchFragments = searchState.getSearchTermFragments(searchType);
-				LOG.debug(searchType + ": "+searchFragments);
-				for (String searchFragment: searchFragments){
-					searchFragment = solrSettings.sanitize(searchFragment);
-					if (firstTerm)
-						firstTerm = false;
-					else query.append(' ').append(searchState.getSearchTermOperator()).append(' ');
-					query.append(solrSettings.getFieldName(searchType)).append(':').append(searchFragment).append(' ');
+				if (searchFragments != null){
+					LOG.debug(searchType + ": "+searchFragments);
+					for (String searchFragment: searchFragments){
+						searchFragment = solrSettings.sanitize(searchFragment);
+						if (firstTerm)
+							firstTerm = false;
+						else query.append(' ').append(searchState.getSearchTermOperator()).append(' ');
+						query.append(solrSettings.getFieldName(searchType)).append(':').append(searchFragment).append(' ');
+					}
 				}
 			}
 		}
