@@ -26,10 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
-import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 

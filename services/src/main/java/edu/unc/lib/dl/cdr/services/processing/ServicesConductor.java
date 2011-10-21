@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services;
+package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,6 +30,8 @@ import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.cdr.services.Enhancement;
+import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
@@ -69,6 +71,8 @@ public class ServicesConductor {
 	// Set of pids which failed to process one or more services. Contents of the entry indicate which services have
 	// failed
 	private FailedObjectHashMap failedPids = null;
+	
+	private MessageFilter servicesMessageFilter = null;
 	//List of messages that should be ignored the next time they appear as they are expected resultant 
 	//messages generated as a side effect of 
 	private SideEffectMessageFilterList sideEffectMessageFilterList = null; 
@@ -154,11 +158,16 @@ public class ServicesConductor {
 	 */
 	public void add(PIDMessage pidMsg) {
 		synchronized (pidQueue) {
-			if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated() || !messageApplicable(pidMsg)) {
+			if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated()) {
 				LOG.debug("Ignoring message for pid " + pidMsg.getPIDString());
 				return;
 			}
-			pidQueue.offer(pidMsg);
+			if (servicesMessageFilter.filter(pidMsg)){
+				pidQueue.offer(pidMsg);
+			} else {
+				LOG.debug("Services queue prefilter rejected " + pidMsg.getPIDString());
+			}
+			
 			startProcessing();
 		}
 	}
@@ -466,8 +475,8 @@ public class ServicesConductor {
 				// pids.
 			} while (pidMessage == null && !(pidQueue.size() == 0 && collisionList.size() == 0));
 
-			if (pidMessage != null) {
-				for (ObjectEnhancementService s : services) {
+			if (pidMessage != null && pidMessage.getFilteredServices() != null) {
+				for (ObjectEnhancementService s : pidMessage.getFilteredServices()) {
 					try {
 						this.applyService(pidMessage, s);
 					} catch (RecoverableServiceException e){

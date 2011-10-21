@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import edu.unc.lib.dl.cdr.services.processing.ServicesConductor;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;

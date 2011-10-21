@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services;
+package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +21,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.fedora.PID;
 
 /**

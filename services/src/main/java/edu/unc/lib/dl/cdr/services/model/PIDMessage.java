@@ -20,7 +20,8 @@ import java.util.List;
 import org.jdom.Document;
 import org.jdom.Element;
 
-import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
+import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -40,6 +41,7 @@ public class PIDMessage {
 	private String serviceName = null;
 	private String timestamp = null;
 	private long timeCreated = System.currentTimeMillis();
+	private List<ObjectEnhancementService> filteredServices = null;
 	
 	public PIDMessage(){
 	}
@@ -154,6 +156,14 @@ public class PIDMessage {
 
 	public void setTimeCreated(long timeCreated) {
 		this.timeCreated = timeCreated;
+	}
+
+	public List<ObjectEnhancementService> getFilteredServices() {
+		return filteredServices;
+	}
+
+	public void setFilteredServices(List<ObjectEnhancementService> filteredServices) {
+		this.filteredServices = filteredServices;
 	}
 
 	public void generateCDRMessageContent(){

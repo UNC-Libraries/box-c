@@ -155,7 +155,7 @@
 		<property name="messageTimeoutPeriod" value="1000000"/>
 	</bean>
 	
-	<bean id="servicesConductor"  class="edu.unc.lib.dl.cdr.services.ServicesConductor"
+	<bean id="servicesConductor"  class="edu.unc.lib.dl.cdr.services.processing.ServicesConductor"
 		init-method="init" destroy-method="destroy">
 		<property name="services">
 			<list>
@@ -169,16 +169,16 @@
 		<property name="sideEffectMessageFilterList" ref="sideEffectMessageFilterList"/>
 	</bean>
 	
-	<bean id="cdrServicesMessageListener" class="edu.unc.lib.dl.cdr.services.ServicesMessageListener">
+	<bean id="cdrServicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
 		<property name="servicesConductor" ref="servicesConductor"/>
 	</bean>
 	
-	<bean id="servicesMessageListener" class="edu.unc.lib.dl.cdr.services.ServicesMessageListener">
+	<bean id="servicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
 		<property name="servicesConductor" ref="servicesConductor"/>
 	</bean>
 	
 		
-	<bean id="catchUpServicesConductor" class="edu.unc.lib.dl.cdr.services.CatchUpServicesConductor">
+	<bean id="catchUpServicesConductor" class="edu.unc.lib.dl.cdr.services.processing.CatchUpServicesConductor">
 		<property name="servicesConductor" ref="servicesConductor"/>
 		<property name="services">
 			<list>
