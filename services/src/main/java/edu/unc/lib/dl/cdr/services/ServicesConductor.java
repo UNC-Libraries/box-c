@@ -323,6 +323,10 @@ public class ServicesConductor {
 			this.failedPids.clear();
 		}
 	}
+	
+	public synchronized void removeFailedPid(String pid){
+		this.failedPids.remove(pid);
+	}
 
 	public void reprocessFailedPids() {
 		synchronized (failedPids) {
