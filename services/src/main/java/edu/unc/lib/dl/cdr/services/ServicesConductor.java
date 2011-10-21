@@ -113,6 +113,10 @@ public class ServicesConductor {
 	public void add(PID pid) {
 		add(new PIDMessage(pid, null));
 	}
+	
+	public void add(Document msg) {
+		add(new PIDMessage(msg));
+	}
 
 	public void add(String pid, Document msg) {
 		add(new PIDMessage(pid, msg));

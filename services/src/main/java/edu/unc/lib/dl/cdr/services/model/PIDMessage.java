@@ -20,6 +20,7 @@ import java.util.List;
 import org.jdom.Document;
 import org.jdom.Element;
 
+import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -41,6 +42,11 @@ public class PIDMessage {
 	private long timeCreated = System.currentTimeMillis();
 	
 	public PIDMessage(){
+	}
+	
+	public PIDMessage(Document message){
+		this.pid = new PID(JMSMessageUtil.getPid(message));
+		this.message = message;
 	}
 	
 	public PIDMessage(String pid, Document message){
@@ -98,7 +104,7 @@ public class PIDMessage {
 	public String getAction() {
 		if (action == null){
 			try {
-				action = message.getRootElement().getChildTextTrim("title", JDOMNamespaceUtil.ATOM_NS);
+				action = JMSMessageUtil.getAction(message);
 			} catch (NullPointerException e){
 				//Message was not set, therefore value is null 
 			}
@@ -111,14 +117,7 @@ public class PIDMessage {
 	public String getDatastream() {
 		if (datastream == null){
 			try {
-				@SuppressWarnings("unchecked")
-				List<Element> categories = message.getRootElement().getChildren("category", JDOMNamespaceUtil.ATOM_NS);
-		    	for (Element category: categories){
-		    		String scheme = category.getAttributeValue("scheme");
-		    		if ("fedora-types:dsID".equals(scheme)){
-		    			datastream = category.getAttributeValue("term");
-		    		}
-		    	}
+				datastream = JMSMessageUtil.getDatastream(message);
 			} catch (NullPointerException e){
 				//Message was not set, therefore value is null 
 			}
@@ -131,14 +130,7 @@ public class PIDMessage {
 	public String getRelation(){
 		if (relation == null){
 			try {
-				@SuppressWarnings("unchecked")
-				List<Element> categories = message.getRootElement().getChildren("category", JDOMNamespaceUtil.ATOM_NS);
-		    	for (Element category: categories){
-		    		String scheme = category.getAttributeValue("scheme");
-		    		if ("fedora-types:relationship".equals(scheme)){
-		    			relation = category.getAttributeValue("term");
-		    		}
-		    	}
+				relation = JMSMessageUtil.getPredicate(message);
 			} catch (NullPointerException e){
 				//Message was not set, therefore value is null 
 			}

@@ -74,26 +74,6 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 	}
 
 	/**
-	 * Retrieves the affected datastream field value from the provided message.
-	 *
-	 * @param message
-	 * @return
-	 */
-	protected String getDatastream(Document message) {
-		if (message == null)
-			return null;
-		@SuppressWarnings("unchecked")
-		List<Element> categories = message.getRootElement().getChildren("category", JDOMNamespaceUtil.ATOM_NS);
-		for (Element category : categories) {
-			String scheme = category.getAttributeValue("scheme");
-			if ("fedora-types:dsID".equals(scheme)) {
-				return category.getAttributeValue("term");
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * @param filePath
 	 *           name of file to open. The file can reside anywhere in the classpath
 	 */

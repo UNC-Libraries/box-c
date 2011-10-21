@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.cdr.services.solr;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
+import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.fedora.PID;
@@ -62,6 +62,12 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 		return new SolrUpdateEnhancement(this, pid);
 	}
 
+	@Override
+	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
+		String action = pid.getAction();
+		return JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action);
+	}
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public boolean isApplicable(PIDMessage pid) {

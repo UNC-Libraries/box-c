@@ -30,7 +30,7 @@ import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
  * Enhancement service used for construction of jp2 derived images.
@@ -86,6 +86,23 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 	public Enhancement<Element> getEnhancement(PIDMessage pid) {
 		return new ImageEnhancement(this, pid);
 	}
+	
+	@Override
+	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
+		if (pid.getMessage() == null)
+			return false;
+		
+		String action = pid.getAction();
+		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
+			return true;
+		
+		if (!(JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action) 
+				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)))
+			return false;
+		String datastream = pid.getDatastream();
+		
+		return ContentModelHelper.Datastream.DATA_FILE.equals(datastream);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -96,17 +113,7 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 	@Override
 	public boolean isApplicable(PIDMessage pid) throws EnhancementException {
 		LOG.debug("isApplicable called with " + pid);
-		if (pid.getMessage() != null) {
-			String action = pid.getMessage().getRootElement().getChildTextTrim("title", JDOMNamespaceUtil.ATOM_NS);
-			String datastream = getDatastream(pid.getMessage());
-			// if the message does not indicate a change to an applicable
-			// datastream, then done
-			if (!(((JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action) || JMSMessageUtil.FedoraActions.ADD_DATASTREAM
-					.equals(action)) && "DATA_FILE".equals(datastream)) || JMSMessageUtil.FedoraActions.INGEST
-					.equals(action))) {
-				return false;
-			}
-		}
+
 		String query = null;
 		try {
 			// replace model URI and PID tokens

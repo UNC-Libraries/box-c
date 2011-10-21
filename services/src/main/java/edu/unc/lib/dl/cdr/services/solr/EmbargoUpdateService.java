@@ -97,6 +97,11 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 	public Enhancement<Element> getEnhancement(PIDMessage pid) {
 		return null;
 	}
+	
+	@Override
+	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
+		return false;
+	}
 
 	@Override
 	public boolean isApplicable(PIDMessage pid) {

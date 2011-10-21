@@ -46,8 +46,7 @@ public class ServicesMessageListener implements MessageListener {
 				String msgText = ((TextMessage) message).getText();
 				LOG.debug(msgText);
 				Document msgXML = ClientUtils.parseXML(msgText.getBytes());
-				String pidString = msgXML.getRootElement().getChild("summary", JDOMNamespaceUtil.ATOM_NS).getText();
-				servicesConductor.add(pidString, msgXML);
+				servicesConductor.add(msgXML);
 			} catch (JMSException e) {
 				LOG.error("onMessage failed", e);
 			} catch (SAXException e) {

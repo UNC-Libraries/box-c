@@ -31,7 +31,6 @@ import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * This service will enhance repository objects by extracting technical metadata from source data. It will store
@@ -100,6 +99,23 @@ public class TechnicalMetadataEnhancementService extends AbstractIrodsObjectEnha
 	public Enhancement<Element> getEnhancement(PIDMessage pid) {
 		return new TechnicalMetadataEnhancement(this, pid);
 	}
+	
+	@Override
+	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
+		if (pid.getMessage() == null)
+			return false;
+		
+		String action = pid.getAction();
+		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
+			return true;
+		
+		if (!(JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action) 
+				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)))
+			return false;
+		String datastream = pid.getDatastream();
+		
+		return ContentModelHelper.Datastream.DATA_FILE.equals(datastream);
+	}
 
 	/*
 	 * Tests to see if this enhancement is applicable for the object with the supplied PID. Checks to make sure that the
@@ -111,18 +127,7 @@ public class TechnicalMetadataEnhancementService extends AbstractIrodsObjectEnha
 	@Override
 	public boolean isApplicable(PIDMessage pid) throws EnhancementException {
 		LOG.debug("isApplicable called with " + pid);
-		if (pid.getMessage() != null) {
-			String action = pid.getMessage().getRootElement().getChildTextTrim("title", JDOMNamespaceUtil.ATOM_NS);
-			String datastream = getDatastream(pid.getMessage());
-			// if the message does not indicate a change to an applicable datastream,
-			// then done
-			if (!(((JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
-					|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action) || JMSMessageUtil.FedoraActions.ADD_DATASTREAM
-					.equals(action)) && "DATA_FILE".equals(datastream)) || JMSMessageUtil.FedoraActions.INGEST
-					.equals(action))) {
-				return false;
-			}
-		}
+		
 		String query = null;
 		try {
 			// replace model URI and PID tokens

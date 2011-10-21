@@ -72,6 +72,18 @@ public class JMSMessageUtil {
 		}
 	}
 
+	public static String getPid(Document message){
+		if (message == null)
+			return null;
+		return message.getRootElement().getChild("summary", JDOMNamespaceUtil.ATOM_NS).getText();
+	}
+	
+	public static String getAction(Document message){
+		if (message == null)
+			return null;
+		return message.getRootElement().getChildTextTrim("title", JDOMNamespaceUtil.ATOM_NS);
+	}
+	
 	/**
 	 * Retrieves the affected datastream field value from the provided message.
 	 *
