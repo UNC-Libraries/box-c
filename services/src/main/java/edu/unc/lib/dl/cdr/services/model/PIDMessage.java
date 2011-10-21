@@ -84,7 +84,11 @@ public class PIDMessage {
 	
 	public String getTimestamp() {
 		if (timestamp == null){
-			timestamp = message.getRootElement().getChildTextTrim("updated", JDOMNamespaceUtil.ATOM_NS);
+			try {
+				timestamp = message.getRootElement().getChildTextTrim("updated", JDOMNamespaceUtil.ATOM_NS);
+			} catch (NullPointerException e){
+				//Message was not set, therefore value is null 
+			}
 			if (timestamp == null)
 				timestamp = "";
 		}
@@ -93,7 +97,11 @@ public class PIDMessage {
 	
 	public String getAction() {
 		if (action == null){
-			action = message.getRootElement().getChildTextTrim("title", JDOMNamespaceUtil.ATOM_NS);
+			try {
+				action = message.getRootElement().getChildTextTrim("title", JDOMNamespaceUtil.ATOM_NS);
+			} catch (NullPointerException e){
+				//Message was not set, therefore value is null 
+			}
 			if (action == null)
 				action = "";
 		}
@@ -102,7 +110,7 @@ public class PIDMessage {
 
 	public String getDatastream() {
 		if (datastream == null){
-			if (message != null){
+			try {
 				@SuppressWarnings("unchecked")
 				List<Element> categories = message.getRootElement().getChildren("category", JDOMNamespaceUtil.ATOM_NS);
 		    	for (Element category: categories){
@@ -111,6 +119,8 @@ public class PIDMessage {
 		    			datastream = category.getAttributeValue("term");
 		    		}
 		    	}
+			} catch (NullPointerException e){
+				//Message was not set, therefore value is null 
 			}
 	    	if (datastream == null)
 	    		datastream = "";
@@ -120,7 +130,7 @@ public class PIDMessage {
 	
 	public String getRelation(){
 		if (relation == null){
-			if (message != null){
+			try {
 				@SuppressWarnings("unchecked")
 				List<Element> categories = message.getRootElement().getChildren("category", JDOMNamespaceUtil.ATOM_NS);
 		    	for (Element category: categories){
@@ -129,6 +139,8 @@ public class PIDMessage {
 		    			relation = category.getAttributeValue("term");
 		    		}
 		    	}
+			} catch (NullPointerException e){
+				//Message was not set, therefore value is null 
 			}
 	    	if (relation == null)
 	    		relation = "";

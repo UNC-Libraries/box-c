@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import edu.unc.lib.dl.security.access.AccessGroupSet;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
+import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.ui.model.request.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.ui.model.response.HierarchicalBrowseResultResponse;
@@ -69,19 +70,20 @@ public class FullRecordController extends AbstractSolrSearchController {
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
 		String fullObjectView = null;
 		
-		if (briefObject != null){
+		if (briefObject == null){
+			throw new InvalidRecordRequestException();
+		} else {
 			//Filter the datastreams in the response according to the users permissions
 			DatastreamAccessValidator.filterBriefObject(briefObject, accessGroups);
 			try {
-				Document foxmlView =  FullObjectMetadataFactory.getFoxmlViewXML(idRequest);
-				if (foxmlView.getRootElement().getContent().size() > 0)
-					fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
+				Document foxmlView = FullObjectMetadataFactory.getFoxmlViewXML(idRequest);
+				fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
 			} catch (Exception e) {
-				LOG.error("Failed to render XSL view", e);
+				LOG.error("Failed to render full record view for " + idRequest.getId(), e);
 			}
 		}
 
-		if (briefObject == null || fullObjectView == null){
+		if (fullObjectView == null){
 			throw new InvalidRecordRequestException();
 		}
 		
