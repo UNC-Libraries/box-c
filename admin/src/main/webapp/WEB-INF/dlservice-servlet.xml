@@ -572,6 +572,8 @@
 		<property name="foxmlObjects">
 			<list>
 				<value>classpath:foxml-objects/ContainerModel.xml</value>
+				<value>classpath:foxml-objects/CollectionModel.xml</value>
+				<value>classpath:foxml-objects/DummyTriples.xml</value>
 				<value>classpath:foxml-objects/GroupAgentModel.xml</value>
 				<value>classpath:foxml-objects/PersonAgentModel.xml</value>
 				<value>classpath:foxml-objects/PreservedObjectModel.xml</value>
