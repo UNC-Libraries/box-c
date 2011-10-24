@@ -66,6 +66,10 @@ public class PIDMessage {
 		this.serviceName = serviceName;
 	}
 	
+	public PIDMessage(PID pid){
+		this(pid, null);
+	}
+	
 	public PIDMessage(PID pid, Document message, String serviceName){
 		this(pid, message);
 		this.serviceName = serviceName;

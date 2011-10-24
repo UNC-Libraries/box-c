@@ -200,6 +200,7 @@
 		
 	<bean id="catchUpService" class="edu.unc.lib.dl.cdr.services.processing.CatchUpService">
 		<property name="servicesConductor" ref="servicesConductor"/>
+		<property name="messageDirector" ref="messageDirector"/>
 		<property name="services">
 			<list>
 				<ref bean="technicalMetadataEnhancementService"/>

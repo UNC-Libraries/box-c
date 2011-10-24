@@ -21,13 +21,17 @@ public class MessageDirector {
 	 * it passes the associated prefilter.
 	 * @param message
 	 */
-	public void direct(Document message){
-		PIDMessage pidMessage = new PIDMessage(message);
+	public void direct(PIDMessage pidMessage){
 		for (MessageFilter filter: filters){
 			if (filter.filter(pidMessage)){
 				conductors.get(filter.getConductor()).add(pidMessage);
 			}
 		}
+	}
+	
+	public void direct(Document message){
+		PIDMessage pidMessage = new PIDMessage(message);
+		direct(pidMessage);
 	}
 
 	public Map<String, MessageConductor> getConductors() {

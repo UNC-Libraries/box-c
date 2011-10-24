@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
+import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -34,6 +35,7 @@ import edu.unc.lib.dl.fedora.PID;
 public class CatchUpService {
 	private static final Logger LOG = LoggerFactory.getLogger(CatchUpService.class);
 
+	private MessageDirector messageDirector;
 	private ServicesConductor servicesConductor;
 	// List of services to perform catchup processing on
 	private List<ObjectEnhancementService> services = new ArrayList<ObjectEnhancementService>();
@@ -114,9 +116,11 @@ public class CatchUpService {
 						candidatesFound = true;
 						for (PID candidate : candidates) {
 							if (priorToDate == null){
-								servicesConductor.add(candidate);
+								PIDMessage pidMessage = new PIDMessage(candidate);
+								messageDirector.direct(pidMessage);
 							} else {
-								servicesConductor.add(candidate, null, s.getClass().getName());
+								PIDMessage pidMessage = new PIDMessage(candidate, null, s.getClass().getName());
+								messageDirector.direct(pidMessage);
 							}
 							this.itemsProcessed++;
 							this.itemsProcessedThisSession++;
