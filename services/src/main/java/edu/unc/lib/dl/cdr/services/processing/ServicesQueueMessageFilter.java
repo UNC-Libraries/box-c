@@ -46,7 +46,7 @@ public class ServicesQueueMessageFilter extends MessageFilter {
 	}
 	
 	public ServicesQueueMessageFilter(){
-		MessageFilter.identifier = "servicesQueue";
+		MessageFilter.conductor = "servicesQueue";
 	}
 	
 	@Override

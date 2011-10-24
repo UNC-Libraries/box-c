@@ -31,8 +31,8 @@ import edu.unc.lib.dl.fedora.PID;
  * @author bbpennel
  * 
  */
-public class CatchUpServicesConductor {
-	private static final Logger LOG = LoggerFactory.getLogger(CatchUpServicesConductor.class);
+public class CatchUpService {
+	private static final Logger LOG = LoggerFactory.getLogger(CatchUpService.class);
 
 	private ServicesConductor servicesConductor;
 	// List of services to perform catchup processing on

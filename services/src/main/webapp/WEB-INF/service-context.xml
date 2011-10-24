@@ -155,30 +155,50 @@
 		<property name="messageTimeoutPeriod" value="1000000"/>
 	</bean>
 	
+	<util:list id="servicesList" list-class="java.util.ArrayList" 
+		value-type="edu.unc.lib.dl.cdr.services.ObjectEnhancementService">
+		<ref bean="technicalMetadataEnhancementService"/>
+		<ref bean="imageEnhancementService"/>
+		<ref bean="thumbnailEnhancementService"/>
+		<ref bean="solrUpdateEnhancementService"/>
+	</util:list>
+	
 	<bean id="servicesConductor"  class="edu.unc.lib.dl.cdr.services.processing.ServicesConductor"
 		init-method="init" destroy-method="destroy">
-		<property name="services">
-			<list>
-				<ref bean="technicalMetadataEnhancementService"/>
-				<ref bean="imageEnhancementService"/>
-				<ref bean="thumbnailEnhancementService"/>
-				<ref bean="solrUpdateEnhancementService"/>
-			</list>
-		</property>
+		<property name="services" ref="servicesList"/>
 		<property name="maxThreads" value="${maxServiceThreads}"/>
 		<property name="sideEffectMessageFilterList" ref="sideEffectMessageFilterList"/>
 	</bean>
 	
+	<bean id="servicesMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.ServicesQueueMessageFilter">
+		<property name="services" ref="servicesList"/>
+	</bean>
+	
+	<util:list id="messageFilterList" list-class="java.util.ArrayList" 
+		value-type="edu.unc.lib.dl.cdr.services.processing.MessageFilter">
+		<ref bean="servicesMessageFilter"/>
+	</util:list>
+	
+	<util:list id="messageConductorList" list-class="java.util.ArrayList" 
+		value-type="edu.unc.lib.dl.cdr.services.processing.MessageConductor">
+		<ref bean="servicesConductor"/>
+	</util:list>
+	
+	<bean id="messageDirector" class="edu.unc.lib.dl.cdr.services.processing.MessageDirector">
+		<property name="conductorList" ref="messageConductorList"/>
+		<property name="filters" ref="messageFilterList"/>
+	</bean>
+	
 	<bean id="cdrServicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
-		<property name="servicesConductor" ref="servicesConductor"/>
+		<property name="messageDirector" ref="messageDirector"/>
 	</bean>
 	
 	<bean id="servicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
-		<property name="servicesConductor" ref="servicesConductor"/>
+		<property name="messageDirector" ref="messageDirector"/>
 	</bean>
 	
 		
-	<bean id="catchUpServicesConductor" class="edu.unc.lib.dl.cdr.services.processing.CatchUpServicesConductor">
+	<bean id="catchUpService" class="edu.unc.lib.dl.cdr.services.processing.CatchUpService">
 		<property name="servicesConductor" ref="servicesConductor"/>
 		<property name="services">
 			<list>
@@ -248,12 +268,12 @@
 	</bean>
 	
 	<bean id="catchUpActivateJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-		<property name="targetObject" ref="catchUpServicesConductor" />
+		<property name="targetObject" ref="catchUpService" />
 		<property name="targetMethod" value="activate" />
 	</bean>
 	
 	<bean id="catchUpDeactivateJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-		<property name="targetObject" ref="catchUpServicesConductor" />
+		<property name="targetObject" ref="catchUpService" />
 		<property name="targetMethod" value="deactivate" />
 	</bean>
 	
@@ -321,7 +341,7 @@
 				<entry key="cdr-services:name=servicesConductor" value-ref="servicesConductor" />
 				<entry key="cdr-services:name=solrUpdateService" value-ref="solrUpdateService" />
 				<entry key="cdr-services:name=fedoraDataService" value-ref="fedoraDataService" />
-				<entry key="cdr-services:name=catchUpServicesConductor" value-ref="catchUpServicesConductor" />
+				<entry key="cdr-services:name=catchUpService" value-ref="catchUpService" />
 				<entry key="cdr-services:name=technicalMetadataEnhancementService" value-ref="technicalMetadataEnhancementService" />
 				<entry key="cdr-services:name=thumbnailEnhancementService" value-ref="thumbnailEnhancementService" />
 				<entry key="cdr-services:name=solrUpdateEnhancementService" value-ref="solrUpdateEnhancementService" />

@@ -45,10 +45,10 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  *
  * @author Gregory Jansen, Ben Pennell
  */
-public class ServicesConductor {
-
-	@SuppressWarnings("unused")
+public class ServicesConductor implements MessageConductor {
 	private static final Logger LOG = LoggerFactory.getLogger(ServicesConductor.class);
+	
+	public static final String identifier = "SERVICES";
 
 	/**
 	 * The object enhancement services, in priority order.
@@ -88,6 +88,10 @@ public class ServicesConductor {
 		collisionList = Collections.synchronizedList(new ArrayList<PIDMessage>());
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
 		failedPids = new FailedObjectHashMap();
+	}
+	
+	public String getIdentifier(){
+		return identifier;
 	}
 
 	/**

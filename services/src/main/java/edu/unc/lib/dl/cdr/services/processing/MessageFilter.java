@@ -28,13 +28,13 @@ import edu.unc.lib.dl.cdr.services.model.PIDMessage;
  */
 public abstract class MessageFilter {
 	private static final Logger LOG = LoggerFactory.getLogger(MessageFilter.class);
-	protected static String identifier;
+	protected static String conductor;
 	
 	public boolean filter(PIDMessage msg) {
 		return false;
 	}
 	
-	public String getIdentifier(){
-		return identifier;
+	public String getConductor(){
+		return conductor;
 	}
 }
