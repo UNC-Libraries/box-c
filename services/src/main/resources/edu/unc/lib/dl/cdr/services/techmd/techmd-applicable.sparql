@@ -5,22 +5,16 @@ ASK
 FROM <%1$s>
 WHERE 
 { 
-  { ?pid cdr-base:sourceData ?srcDS . 
+  { 
+    ?pid cdr-base:sourceData ?srcDS . 
     ?srcDS fedora-view:lastModifiedDate ?srcModified . 
     ?pid cdr-base:techData ?techDS . 
     ?techDS fedora-view:lastModifiedDate ?techModified . 
-    FILTER ( 
-      ?srcModified > ?techModified 
-    ) 
-  } UNION { 
-    ?pid cdr-base:sourceData ?srcDS .
-    OPTIONAL { ?pid cdr-base:techData ?techDS . } 
-    FILTER ( !bound(?techDS) ) 
+    FILTER (?pid = <%2$s> && ?srcModified > ?techModified)
   } UNION { 
     ?pid cdr-base:sourceData ?srcDS .
     OPTIONAL { ?pid cdr-base:techData ?techDS . 
       ?techDS fedora-view:lastModifiedDate ?techModified . } 
-    FILTER ( !bound(?techDS) && !bound(?techModified)) 
+    FILTER ( ?pid = <%2$s> && (!bound(?techDS) || !bound(?techModified))) 
   }
-  FILTER ( ?pid = <%2$s> )
 }

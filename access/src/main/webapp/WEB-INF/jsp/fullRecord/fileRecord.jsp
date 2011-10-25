@@ -173,10 +173,10 @@
 </div>
 <div class="onecol shadowtop">
 	<div class="contentarea">
-		<c:if test="${briefObject.abstract != null}">
+		<c:if test="${briefObject['abstract'] != null}">
 			<div class="description">
 				<p>
-					<c:out value="${briefObject.abstract}" />
+					<c:out value="${briefObject['abstract']}" />
 				</p>
 			</div>
 		</c:if>
