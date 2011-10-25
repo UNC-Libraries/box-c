@@ -126,7 +126,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 			this.getManagementClient().addObjectRelationship(pid,
 					ContentModelHelper.CDRProperty.sourceData.getURI().toString(), dataFilePID);
 		}
-		PIDMessage result = new PIDMessage(pid, null);
+		PIDMessage result = new PIDMessage(pid);
 		samples.add(pid);
 		return result;
 	}

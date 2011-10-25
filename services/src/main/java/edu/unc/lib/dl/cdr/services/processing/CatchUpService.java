@@ -193,4 +193,12 @@ public class CatchUpService {
 	public long getItemsProcessedThisSession() {
 		return itemsProcessedThisSession;
 	}
+
+	public MessageDirector getMessageDirector() {
+		return messageDirector;
+	}
+
+	public void setMessageDirector(MessageDirector messageDirector) {
+		this.messageDirector = messageDirector;
+	}
 }

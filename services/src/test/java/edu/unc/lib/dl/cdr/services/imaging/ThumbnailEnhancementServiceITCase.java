@@ -117,7 +117,7 @@ public class ThumbnailEnhancementServiceITCase {
 			this.getManagementClient().addLiteralStatement(pid,
 					ContentModelHelper.CDRProperty.hasSourceMimeType.getURI().toString(), mimetype, null);
 		}
-		PIDMessage result = new PIDMessage(pid, null);
+		PIDMessage result = new PIDMessage(pid);
 		samples.add(pid);
 		return result;
 	}

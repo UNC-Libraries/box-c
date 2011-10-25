@@ -251,7 +251,7 @@
 		<property name="windowSizeHours" value="${scheduled.embargoUpdate.windowHours}" />
 	</bean>
 	
-	<bean id="solrJMXService" class="edu.unc.lib.dl.cdr.services.solr.SolrJMXService">
+	<bean id="solrJMXService" class="edu.unc.lib.dl.cdr.services.jmx.SolrJMXService">
 		<property name="solrUpdateService" ref="solrUpdateService"/>
 		<property name="active" value="true"/>
 	</bean>

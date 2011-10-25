@@ -125,11 +125,6 @@ public class ImageEnhancement extends Enhancement<Element> {
 
 						List<String> jp2rel = rels.get(ContentModelHelper.CDRProperty.derivedJP2.toString());
 						if (jp2rel == null || !jp2rel.contains(newDSPID.getURI())) {
-							//Ignore the add relation message
-							service.getServicesConductor().addSideEffect(pid.getPIDString(), 
-									JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.toString(), null,
-									ContentModelHelper.CDRProperty.derivedJP2.toString());
-							
 							service.getManagementClient().addObjectRelationship(pid.getPID(),
 									ContentModelHelper.CDRProperty.derivedJP2.toString(), newDSPID);
 						}
@@ -138,11 +133,6 @@ public class ImageEnhancement extends Enhancement<Element> {
 						List<String> models = rels.get(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
 						if (models == null
 								|| !models.contains(ContentModelHelper.Model.JP2DERIVEDIMAGE.getPID().getURI().toString())) {
-							//Ignore the add relation message
-							service.getServicesConductor().addSideEffect(pid.getPIDString(), 
-									JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.toString(), null,
-									ContentModelHelper.FedoraProperty.hasModel.toString());
-							
 							LOG.debug("Adding JP2DerivedImage content model relationship");
 							service.getManagementClient().addObjectRelationship(pid.getPID(),
 									ContentModelHelper.FedoraProperty.hasModel.toString(),

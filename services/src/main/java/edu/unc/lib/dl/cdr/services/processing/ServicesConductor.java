@@ -115,42 +115,7 @@ public class ServicesConductor implements MessageConductor {
 	}
 
 	public void add(String pid) {
-		add(new PIDMessage(pid, null));
-	}
-
-	public void add(PID pid) {
-		add(new PIDMessage(pid, null));
-	}
-	
-	public void add(Document msg) {
-		add(new PIDMessage(msg));
-	}
-
-	public void add(String pid, Document msg) {
-		add(new PIDMessage(pid, msg));
-	}
-
-	public void add(PID pid, Document msg) {
-		add(new PIDMessage(pid, msg));
-	}
-
-	/**
-	 * Queues a pid to force the rerunning of a particular service as if it were stale.
-	 * @param pid
-	 * @param serviceName fully qualified name of service to run.  ie,
-	 * 	edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService
-	 */
-	public void add(String pid, String serviceName){
-		add(new PIDMessage(pid, null, serviceName));
-	}
-
-	public void add(PID pid, String serviceName){
-		add(new PIDMessage(pid, null, serviceName));
-	}
-
-
-	public void add(PID pid, Document msg, String serviceName) {
-		add(new PIDMessage(pid, msg, serviceName));
+		add(new PIDMessage(pid));
 	}
 
 	/**

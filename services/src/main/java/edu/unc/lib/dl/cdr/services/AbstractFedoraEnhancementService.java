@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
 import edu.unc.lib.dl.cdr.services.processing.ServicesConductor;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -54,8 +55,8 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 		this.applicationContext = applicationContext;
 	}
 
-	public ServicesConductor getServicesConductor() {
-		return this.applicationContext.getBean(ServicesConductor.class);
+	public MessageDirector getMessageDirector(){
+		return this.applicationContext.getBean(MessageDirector.class);
 	}
 
 	public TripleStoreQueryService getTripleStoreQueryService() {

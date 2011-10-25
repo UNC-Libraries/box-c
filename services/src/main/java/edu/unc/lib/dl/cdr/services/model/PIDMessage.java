@@ -47,31 +47,48 @@ public class PIDMessage {
 	}
 	
 	public PIDMessage(Document message){
-		this.pid = new PID(JMSMessageUtil.getPid(message));
-		this.message = message;
+		this(message, null);
 	}
 	
-	public PIDMessage(String pid, Document message){
-		this.pid = new PID(pid);
-		this.message = message;
-	}
-	
-	public PIDMessage(PID pid, Document message){
-		this.pid = pid;
-		this.message = message;
-	}
-	
-	public PIDMessage(String pid, Document message, String serviceName){
-		this(pid, message);
-		this.serviceName = serviceName;
+	public PIDMessage(String pid){
+		this(pid, null, null);
 	}
 	
 	public PIDMessage(PID pid){
-		this(pid, null);
+		this(pid, null, null);
+	}
+	
+	public PIDMessage(String pid, Document message){
+		this(pid, message, null);
+	}
+	
+	public PIDMessage(PID pid, Document message){
+		this(pid, message, null);
+	}
+	
+	public PIDMessage(String pid, String serviceName){
+		this(pid, null, serviceName);
+	}
+	
+	public PIDMessage(PID pid, String serviceName){
+		this(pid, null, serviceName);
+	}
+	
+	public PIDMessage(String pid, Document message, String serviceName){
+		this.pid = new PID(pid);
+		this.message = message;
+		this.serviceName = serviceName;
+	}
+	
+	public PIDMessage(Document message, String serviceName){
+		this.pid = new PID(JMSMessageUtil.getPid(message));
+		this.message = message;
+		this.serviceName = serviceName;
 	}
 	
 	public PIDMessage(PID pid, Document message, String serviceName){
-		this(pid, message);
+		this.pid = pid;
+		this.message = message;
 		this.serviceName = serviceName;
 	}
 	
