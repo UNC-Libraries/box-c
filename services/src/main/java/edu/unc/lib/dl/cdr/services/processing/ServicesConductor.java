@@ -77,7 +77,6 @@ public class ServicesConductor implements MessageConductor {
 		// Initialize as synchronized collections for thread safety
 		collisionList = Collections.synchronizedList(new ArrayList<PIDMessage>());
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
-		failedPids = new FailedObjectHashMap();
 	}
 	
 	public String getIdentifier(){

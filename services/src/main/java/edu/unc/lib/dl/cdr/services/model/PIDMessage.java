@@ -182,6 +182,14 @@ public class PIDMessage {
 		return cdrMessageContent;
 	}
 
+	public String getNamespace() {
+		return namespace;
+	}
+
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
+
 	public String toString(){
 		return pid.getPid();
 	}

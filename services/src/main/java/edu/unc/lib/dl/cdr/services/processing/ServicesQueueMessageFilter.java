@@ -18,13 +18,16 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 
 /**
  * Determines which services in the Services stack apply to the current message.  If none do, then return false.
@@ -46,7 +49,7 @@ public class ServicesQueueMessageFilter extends MessageFilter {
 	}
 	
 	public ServicesQueueMessageFilter(){
-		MessageFilter.conductor = "servicesQueue";
+		MessageFilter.conductor = ServicesConductor.identifier;
 	}
 	
 	@Override
@@ -59,10 +62,13 @@ public class ServicesQueueMessageFilter extends MessageFilter {
 		
 		//Iterate through the services stack
 		List<ObjectEnhancementService> messageServices = new ArrayList<ObjectEnhancementService>(services.size());
+		message.setFilteredServices(messageServices);
 		for (ObjectEnhancementService s : services) {
 			try {
-				//Add services which pass the prefilter test to this message's service list. 
-				if (s.prefilterMessage(message)){
+				//Add services which match the message's service name or pass prefilter to this message's service list.
+				if ((JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(message.getAction()) 
+						&& s.getClass().getName().equals(message.getServiceName()))
+						|| s.prefilterMessage(message)){
 					messageServices.add(s);
 				}
 			} catch (EnhancementException e) {
@@ -70,10 +76,10 @@ public class ServicesQueueMessageFilter extends MessageFilter {
 			}
 		}
 		
-		if (messageServices.size() > 0){
-			message.setFilteredServices(messageServices);
-			return true;
+		if (messageServices.size() == 0){
+			message.setFilteredServices(null);
+			return false;
 		}
-		return false;
+		return true;
 	}
 }

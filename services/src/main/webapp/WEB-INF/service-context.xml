@@ -151,10 +151,6 @@
 		<property name="sessionTransacted" value="true"/>
 	</bean>  
 	
-	<bean id="sideEffectMessageFilterList" class="edu.unc.lib.dl.cdr.services.model.SideEffectMessageFilterList">
-		<property name="messageTimeoutPeriod" value="1000000"/>
-	</bean>
-	
 	<util:list id="servicesList" list-class="java.util.ArrayList" 
 		value-type="edu.unc.lib.dl.cdr.services.ObjectEnhancementService">
 		<ref bean="technicalMetadataEnhancementService"/>
@@ -163,11 +159,14 @@
 		<ref bean="solrUpdateEnhancementService"/>
 	</util:list>
 	
-	<bean id="servicesConductor"  class="edu.unc.lib.dl.cdr.services.processing.ServicesConductor"
+	<bean id="servicesFailedPids" class="edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap">
+	</bean>
+	
+	<bean id="servicesConductor" class="edu.unc.lib.dl.cdr.services.processing.ServicesConductor"
 		init-method="init" destroy-method="destroy">
 		<property name="services" ref="servicesList"/>
 		<property name="maxThreads" value="${maxServiceThreads}"/>
-		<property name="sideEffectMessageFilterList" ref="sideEffectMessageFilterList"/>
+		<property name="failedPids" ref="servicesFailedPids"/>
 	</bean>
 	
 	<bean id="solrUpdateConductor" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor"
@@ -256,13 +255,13 @@
 	</bean>
 	
 	<bean id="solrUpdateEnhancementService" class="edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService">
-		<property name="solrUpdateService" ref="solrUpdateService"/>
+		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="active" value="true"/>
 	</bean>
 	
 	<bean id="embargoUpdateService" class="edu.unc.lib.dl.cdr.services.solr.EmbargoUpdateService">
-		<property name="solrUpdateService" ref="solrUpdateService"/>
+		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="active" value="true"/>
 		<property name="windowSizeHours" value="${scheduled.embargoUpdate.windowHours}" />
