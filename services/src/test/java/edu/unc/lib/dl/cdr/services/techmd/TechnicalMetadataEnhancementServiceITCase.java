@@ -49,6 +49,7 @@ import org.springframework.web.util.UriUtils;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
@@ -126,7 +127,8 @@ public class TechnicalMetadataEnhancementServiceITCase {
 			this.getManagementClient().addObjectRelationship(pid,
 					ContentModelHelper.CDRProperty.sourceData.getURI().toString(), dataFilePID);
 		}
-		PIDMessage result = new PIDMessage(pid);
+		PIDMessage result = new PIDMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		samples.add(pid);
 		return result;
 	}

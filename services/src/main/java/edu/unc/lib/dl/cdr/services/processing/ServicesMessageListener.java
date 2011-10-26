@@ -32,6 +32,8 @@ public class ServicesMessageListener implements MessageListener {
 	
 	private MessageDirector messageDirector = null;
 	
+	private String messageNamespace = null;
+	
 	public ServicesMessageListener(){
 		
 	}
@@ -44,7 +46,7 @@ public class ServicesMessageListener implements MessageListener {
 				String msgText = ((TextMessage) message).getText();
 				LOG.debug(msgText);
 				Document msgXML = ClientUtils.parseXML(msgText.getBytes());
-				messageDirector.direct(msgXML);
+				messageDirector.direct(msgXML, messageNamespace);
 			} catch (JMSException e) {
 				LOG.error("onMessage failed", e);
 			} catch (SAXException e) {
@@ -62,5 +64,13 @@ public class ServicesMessageListener implements MessageListener {
 
 	public void setMessageDirector(MessageDirector messageDirector) {
 		this.messageDirector = messageDirector;
+	}
+
+	public String getMessageNamespace() {
+		return messageNamespace;
+	}
+
+	public void setMessageNamespace(String messageNamespace) {
+		this.messageNamespace = messageNamespace;
 	}
 }

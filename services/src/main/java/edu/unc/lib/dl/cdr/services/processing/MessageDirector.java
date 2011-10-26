@@ -28,11 +28,11 @@ public class MessageDirector {
 		}
 	}
 	
-	public void direct(Document message){
-		PIDMessage pidMessage = new PIDMessage(message);
+	public void direct(Document message, String namespace){
+		PIDMessage pidMessage = new PIDMessage(message, namespace);
 		direct(pidMessage);
 	}
-
+	
 	public Map<String, MessageConductor> getConductors() {
 		return conductors;
 	}

@@ -16,9 +16,6 @@
 
 package edu.unc.lib.dl.cdr.services.processing;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 
 /**
@@ -27,7 +24,6 @@ import edu.unc.lib.dl.cdr.services.model.PIDMessage;
  * 
  */
 public abstract class MessageFilter {
-	private static final Logger LOG = LoggerFactory.getLogger(MessageFilter.class);
 	protected static String conductor;
 	
 	public boolean filter(PIDMessage msg) {

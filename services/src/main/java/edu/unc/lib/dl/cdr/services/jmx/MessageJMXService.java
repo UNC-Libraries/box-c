@@ -2,11 +2,20 @@ package edu.unc.lib.dl.cdr.services.jmx;
 
 import java.util.List;
 
+import org.jdom.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
+
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
+import edu.unc.lib.dl.fedora.ClientUtils;
 
 public class MessageJMXService {
+	private static final Logger LOG = LoggerFactory.getLogger(MessageJMXService.class);
+	
 	private MessageDirector messageDirector;
 	private List<ObjectEnhancementService> services;
 	
@@ -14,8 +23,9 @@ public class MessageJMXService {
 	 * Pass a pid to the director as a message.
 	 * @param pid
 	 */
-	public void submitMessage(String pid){
-		messageDirector.direct(new PIDMessage(pid));
+	public void submitPidForServices(String pid){
+		messageDirector.direct(new PIDMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName()));
 	}
 	
 	/**
@@ -23,8 +33,35 @@ public class MessageJMXService {
 	 * @param pid
 	 * @param serviceName
 	 */
-	public void submitMessage(String pid, String serviceName){
-		messageDirector.direct(new PIDMessage(pid, null, serviceName));
+	public void submitPidForService(String pid, String serviceName){
+		messageDirector.direct(new PIDMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), serviceName));
+	}
+	
+	/**
+	 * Directly submit a message as text representing an XML document.
+	 * @param messageBody
+	 */
+	public void submitFedoraMessageBody(String messageBody){
+		try {
+			Document message = ClientUtils.parseXML(messageBody.getBytes());
+			messageDirector.direct(message, JMSMessageUtil.fedoraMessageNamespace);
+		} catch (SAXException e) {
+			LOG.error("Failed to parse submitted message body", e);
+		}
+	}
+	
+	/**
+	 * Directly submit a message as text representing an XML document.
+	 * @param messageBody
+	 */
+	public void submitCDRAdminMessageBody(String messageBody){
+		try {
+			Document message = ClientUtils.parseXML(messageBody.getBytes());
+			messageDirector.direct(message, JMSMessageUtil.cdrMessageNamespace);
+		} catch (SAXException e) {
+			LOG.error("Failed to parse submitted message body", e);
+		}
 	}
 	
 	/**

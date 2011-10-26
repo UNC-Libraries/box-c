@@ -34,6 +34,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 public class PIDMessage {
 	private Document message;
 	private PID pid;
+	private String namespace = null;
 	private String action = null;
 	private String datastream = null;
 	private String relation = null;
@@ -46,56 +47,34 @@ public class PIDMessage {
 	public PIDMessage(){
 	}
 	
-	public PIDMessage(Document message){
-		this(message, null);
-	}
-	
-	public PIDMessage(String pid){
-		this(pid, null, null);
-	}
-	
-	public PIDMessage(PID pid){
-		this(pid, null, null);
-	}
-	
-	public PIDMessage(String pid, Document message){
-		this(pid, message, null);
-	}
-	
-	public PIDMessage(PID pid, Document message){
-		this(pid, message, null);
-	}
-	
-	public PIDMessage(String pid, String serviceName){
-		this(pid, null, serviceName);
-	}
-	
-	public PIDMessage(PID pid, String serviceName){
-		this(pid, null, serviceName);
-	}
-	
-	public PIDMessage(String pid, Document message, String serviceName){
-		this.pid = new PID(pid);
-		this.message = message;
-		this.serviceName = serviceName;
-	}
-	
-	public PIDMessage(Document message, String serviceName){
+	public PIDMessage(Document message, String namespace){
 		this.pid = new PID(JMSMessageUtil.getPid(message));
-		this.message = message;
-		this.serviceName = serviceName;
+		this.namespace = namespace;
 	}
 	
-	public PIDMessage(PID pid, Document message, String serviceName){
+	public PIDMessage(String pid, String namespace, String action){
+		this(pid, namespace, action, null);
+	}
+	
+	public PIDMessage(PID pid, String namespace, String action){
+		this(pid, namespace, action, null);
+	}
+	
+	public PIDMessage(String pid, String namespace, String action, String service){
+		this(new PID(pid), namespace, action, service);
+	}
+	
+	public PIDMessage(PID pid, String namespace, String action, String service){
 		this.pid = pid;
-		this.message = message;
-		this.serviceName = serviceName;
+		this.namespace = namespace;
+		setAction(action);
+		this.serviceName = service;
 	}
 	
-	public PIDMessage(String pid, String action, String datastream, String relation){
+	public PIDMessage(String pid, String namespace, String action, String datastream, String relation){
 		this.pid = new PID(pid);
 		this.datastream = datastream;
-		this.action = action;
+		setAction(action);
 		this.relation = relation;
 	}
 	
@@ -124,10 +103,18 @@ public class PIDMessage {
 		return timestamp;
 	}
 	
+	public void setAction(String action){
+		if (this.action != null && this.action.length() > 0 && this.namespace != null){
+			this.action = this.namespace + action;
+		} else {
+			this.action = action;
+		}
+	}
+	
 	public String getAction() {
 		if (action == null){
 			try {
-				action = JMSMessageUtil.getAction(message);
+				setAction(JMSMessageUtil.getAction(message));
 			} catch (NullPointerException e){
 				//Message was not set, therefore value is null 
 			}

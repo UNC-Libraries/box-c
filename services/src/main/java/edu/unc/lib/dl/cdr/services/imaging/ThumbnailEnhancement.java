@@ -32,6 +32,7 @@ import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.Datastream;
@@ -58,7 +59,8 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 		// enqueues objects that use this one as a surrogate.
 		List<PID> usesMeForSurrogate = this.service.getTripleStoreQueryService().fetchPIDsSurrogateFor(pid.getPID());
 		for(PID usesMe: usesMeForSurrogate) {
-			this.service.getMessageDirector().direct(new PIDMessage(usesMe, ThumbnailEnhancementService.class.getName()));
+			this.service.getMessageDirector().direct(new PIDMessage(usesMe, JMSMessageUtil.servicesMessageNamespace, 
+					JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), ThumbnailEnhancementService.class.getName()));
 		}
 
 		// get sourceData data stream IDs

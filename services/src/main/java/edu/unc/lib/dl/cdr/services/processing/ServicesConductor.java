@@ -25,7 +25,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.jdom.Document;
 import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +35,7 @@ import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
-import edu.unc.lib.dl.cdr.services.model.SideEffectMessageFilterList;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 
 /**
  * Central service conductor class which stores and processes a queue of messages indicating updates to Fedora objects.
@@ -71,15 +68,8 @@ public class ServicesConductor implements MessageConductor {
 	// Set of pids which failed to process one or more services. Contents of the entry indicate which services have
 	// failed
 	private FailedObjectHashMap failedPids = null;
-	
-	private MessageFilter servicesMessageFilter = null;
-	//List of messages that should be ignored the next time they appear as they are expected resultant 
-	//messages generated as a side effect of 
-	private SideEffectMessageFilterList sideEffectMessageFilterList = null; 
 
 	private ServicesThreadPoolExecutor executor = null;
-
-	private boolean paused = false;
 
 	public ServicesConductor() {
 		LOG.debug("Starting up Services Conductor");
@@ -114,10 +104,6 @@ public class ServicesConductor implements MessageConductor {
 		this.lockedPids.remove(pid);
 	}
 
-	public void add(String pid) {
-		add(new PIDMessage(pid));
-	}
-
 	/**
 	 * Offers a pid and its message to the queue of messages to be processed. Will start up processing threads if none
 	 * are running or available.
@@ -131,48 +117,87 @@ public class ServicesConductor implements MessageConductor {
 				LOG.debug("Ignoring message for pid " + pidMsg.getPIDString());
 				return;
 			}
-			if (servicesMessageFilter.filter(pidMsg)){
-				pidQueue.offer(pidMsg);
-			} else {
-				LOG.debug("Services queue prefilter rejected " + pidMsg.getPIDString());
-			}
-			
+			pidQueue.offer(pidMsg);
 			startProcessing();
 		}
 	}
-
-	public String getServiceNames(){
-		StringBuilder sb = new StringBuilder();
-		for (ObjectEnhancementService s: this.services){
-			sb.append(s.getClass().getName()).append('\n');
-		}
-		return sb.toString();
+	
+	public void repopulateFailedPids(String dump){
+		this.failedPids.repopulate(dump);
 	}
 
-	public boolean messageApplicable(PIDMessage msg) {
-		if (msg.getMessage() == null)
-			return true;
-		String datastream = msg.getDatastream();
-		
-		return !this.sideEffectMessageFilterList.contains(msg) && 
-			!(ContentModelHelper.Datastream.AUDIT.getName().equals(datastream)
-				|| ContentModelHelper.Datastream.MD_CONTENTS.getName().equals(datastream)
-				|| ContentModelHelper.Datastream.MD_EVENTS.getName().equals(datastream)
-				|| ContentModelHelper.Datastream.MD_TECHNICAL.getName().equals(datastream)
-				|| ContentModelHelper.Datastream.THUMB_LARGE.getName().equals(datastream)
-				|| ContentModelHelper.Datastream.THUMB_SMALL.getName().equals(datastream)
-				|| ContentModelHelper.Datastream.IMAGE_JP2000.getName().equals(datastream));
+	public void setMaxThreadPoolSize(int threadPoolSize){
+		this.executor.setCorePoolSize(threadPoolSize);
+		this.executor.setMaximumPoolSize(threadPoolSize);
+	}
+
+	public void resetMaxThreadPoolSize(){
+		this.executor.setCorePoolSize(this.maxThreads);
+		this.executor.setMaximumPoolSize(this.maxThreads);
+	}
+
+	public boolean isPaused() {
+		return this.executor.isPaused();
+	}
+
+	public void pause(){
+		this.executor.pause();
+	}
+
+	public void resume(){
+		this.executor.resume();
+	}
+
+	public void servicesStatus() {
+		LOG.info("Services Conductor Status:");
+		LOG.info("---------------------------------------");
+		LOG.info("PID Queue: " + this.pidQueue.size());
+		LOG.info("Collision List: " + this.collisionList.size());
+		LOG.info("Locked pids: " + this.lockedPids.size());
+		LOG.info("Failed pids: " + this.failedPids.size());
+	}
+
+	public void logQueues() {
+		LOG.info("Queue Statuses:");
+		LOG.info("---------------------------------------");
+		LOG.info("PID Queue: " + this.pidQueue);
+		LOG.info("Collision List: " + this.collisionList);
+		LOG.info("Locked pids: " + this.lockedPids);
+		LOG.info("Failed pids: \n" + this.failedPids);
+	}
+
+	public synchronized void flushPids(String confirm) {
+		if (confirm.equalsIgnoreCase("yes")) {
+			this.pidQueue.clear();
+			this.collisionList.clear();
+			this.lockedPids.clear();
+		}
+	}
+
+	public synchronized void clearFailedPids(String confirm) {
+		if (confirm.equalsIgnoreCase("yes")) {
+			this.failedPids.clear();
+		}
 	}
 	
-	public void addSideEffect(String pid, String action, String datastream, String relation){
-		LOG.debug("Adding side effect " + pid + " " + action + " " + datastream + " " + relation);
-		this.sideEffectMessageFilterList.add(new PIDMessage(pid, action, datastream, relation));
+	public synchronized void removeFailedPid(String pid){
+		this.failedPids.remove(pid);
+	}
+
+	public void reprocessFailedPids() {
+		synchronized (failedPids) {
+			for (String pid : failedPids.keySet()) {
+				this.add(new PIDMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+						JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName()));
+			}
+			failedPids.clear();
+		}
 	}
 
 	/**
 	 * Kick starts a thread for processing messages if needed
 	 */
-	public void startProcessing() {
+	protected void startProcessing() {
 		executor.submit(new PerformServicesRunnable());
 	}
 
@@ -212,14 +237,6 @@ public class ServicesConductor implements MessageConductor {
 		this.pidQueue = pidQueue;
 	}
 
-	public SideEffectMessageFilterList getSideEffectMessageFilterList() {
-		return sideEffectMessageFilterList;
-	}
-
-	public void setSideEffectMessageFilterList(SideEffectMessageFilterList sideEffectMessageFilterList) {
-		this.sideEffectMessageFilterList = sideEffectMessageFilterList;
-	}
-
 	public Set<String> getLockedPids() {
 		return lockedPids;
 	}
@@ -244,80 +261,7 @@ public class ServicesConductor implements MessageConductor {
 		this.failedPids = failedPids;
 	}
 	
-	public void repopulateFailedPids(String dump){
-		this.failedPids.repopulate(dump);
-	}
 
-	public void setMaxThreadPoolSize(int threadPoolSize){
-		this.executor.setCorePoolSize(threadPoolSize);
-		this.executor.setMaximumPoolSize(threadPoolSize);
-	}
-
-	public void resetMaxThreadPoolSize(){
-		this.executor.setCorePoolSize(this.maxThreads);
-		this.executor.setMaximumPoolSize(this.maxThreads);
-	}
-
-	public boolean isPaused() {
-		return paused;
-	}
-
-	public void pause(){
-		this.paused = true;
-		this.executor.pause();
-	}
-
-	public void resume(){
-		this.paused = false;
-		this.executor.resume();
-	}
-
-	public void servicesStatus() {
-		LOG.info("Services Conductor Status:");
-		LOG.info("---------------------------------------");
-		LOG.info("PID Queue: " + this.pidQueue.size());
-		LOG.info("Collision List: " + this.collisionList.size());
-		LOG.info("Locked pids: " + this.lockedPids.size());
-		LOG.info("Failed pids: " + this.failedPids.size());
-	}
-
-	public void logQueues() {
-		LOG.info("Queue Statuses:");
-		LOG.info("---------------------------------------");
-		LOG.info("PID Queue: " + this.pidQueue);
-		LOG.info("Collision List: " + this.collisionList);
-		LOG.info("Locked pids: " + this.lockedPids);
-		LOG.info("Side effects: " + this.sideEffectMessageFilterList);
-		LOG.info("Failed pids: \n" + this.failedPids);
-	}
-
-	public synchronized void flushPids(String confirm) {
-		if (confirm.equalsIgnoreCase("yes")) {
-			this.pidQueue.clear();
-			this.collisionList.clear();
-			this.lockedPids.clear();
-			this.sideEffectMessageFilterList.clear();
-		}
-	}
-
-	public synchronized void clearFailedPids(String confirm) {
-		if (confirm.equalsIgnoreCase("yes")) {
-			this.failedPids.clear();
-		}
-	}
-	
-	public synchronized void removeFailedPid(String pid){
-		this.failedPids.remove(pid);
-	}
-
-	public void reprocessFailedPids() {
-		synchronized (failedPids) {
-			for (String pid : failedPids.keySet()) {
-				this.add(pid);
-			}
-			failedPids.clear();
-		}
-	}
 
 	/**
 	 * Runnable class which performs the actual processing of messages from the queue. Messages are read if they do not
@@ -419,13 +363,13 @@ public class ServicesConductor implements MessageConductor {
 		@Override
 		public void run() {
 
-			if (paused) {
+			if (executor.isPaused()) {
 				do {
 					try {
 						Thread.sleep(5000L);
 					} catch (Exception e) {
 					}
-				} while (paused);
+				} while (executor.isPaused());
 			}
 
 			LOG.debug("Starting new run of ServiceConductor thread " + this);

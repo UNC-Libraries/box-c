@@ -29,6 +29,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -51,7 +52,7 @@ public class MessageParseTest {
 
 		try {
 			Document doc = readFileAsString("cdrAddMessage.xml");
-			PIDMessage message = new PIDMessage("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744", doc);
+			PIDMessage message = new PIDMessage(doc, JMSMessageUtil.cdrMessageNamespace);
 			message.generateCDRMessageContent();
 			LOG.debug("");
 
@@ -67,7 +68,7 @@ public class MessageParseTest {
 
 		try {
 			Document doc = readFileAsString("moveMessage.xml");
-			PIDMessage message = new PIDMessage("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744", doc);
+			PIDMessage message = new PIDMessage(doc, JMSMessageUtil.cdrMessageNamespace);
 			message.generateCDRMessageContent();
 			LOG.debug("");
 
