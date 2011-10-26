@@ -51,7 +51,7 @@ public enum SolrUpdateAction {
 		this.uri = new URI(namespace + "/" + name);
 	}
 	
-	public String getAction(){
+	public String getName(){
 		return this.name;
 	}
 	
@@ -61,5 +61,20 @@ public enum SolrUpdateAction {
 	
 	public boolean equals(String value){
 		return this.uri.toString().equals(value);
+	}
+	
+	/**
+	 * Finds an action that matches the full action uri provided.
+	 * @param value
+	 * @return
+	 */
+	public static SolrUpdateAction getAction(String value){
+		if (value == null)
+			return null;
+		for (SolrUpdateAction action: values()){
+			if (action.equals(value))
+				return action;
+		}
+		return null;
 	}
 }

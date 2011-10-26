@@ -22,6 +22,7 @@ import java.util.List;
 import org.jdom.Document;
 import org.jdom.Element;
 
+import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class JMSMessageUtil {
@@ -73,6 +74,21 @@ public class JMSMessageUtil {
 		public String toString(){
 			return this.uri.toString();
 		}
+		
+		/**
+		 * Finds an action that matches the full action uri provided.
+		 * @param value
+		 * @return
+		 */
+		public static FedoraActions getAction(String value){
+			if (value == null)
+				return null;
+			for (FedoraActions action: values()){
+				if (action.equals(value))
+					return action;
+			}
+			return null;
+		}
 	}
 
 	public static enum CDRActions {
@@ -108,6 +124,21 @@ public class JMSMessageUtil {
 		public String toString(){
 			return this.uri.toString();
 		}
+		
+		/**
+		 * Finds an action that matches the full action uri provided.
+		 * @param value
+		 * @return
+		 */
+		public static CDRActions getAction(String value){
+			if (value == null)
+				return null;
+			for (CDRActions action: values()){
+				if (action.equals(value))
+					return action;
+			}
+			return null;
+		}
 	}
 	
 	public static enum ServicesActions {
@@ -139,6 +170,21 @@ public class JMSMessageUtil {
 		@Override
 		public String toString(){
 			return this.uri.toString();
+		}
+		
+		/**
+		 * Finds an action that matches the full action uri provided.
+		 * @param value
+		 * @return
+		 */
+		public static ServicesActions getAction(String value){
+			if (value == null)
+				return null;
+			for (ServicesActions action: values()){
+				if (action.equals(value))
+					return action;
+			}
+			return null;
 		}
 	}
 
