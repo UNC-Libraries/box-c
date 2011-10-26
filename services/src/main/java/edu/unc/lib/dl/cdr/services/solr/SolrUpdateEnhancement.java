@@ -22,9 +22,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 
 /**
  * Enhancement tells the solr ingest service to update the affected pids.
@@ -40,42 +38,10 @@ public class SolrUpdateEnhancement extends Enhancement<Element> {
 		Element result = null;
 		LOG.debug("Called Solr update service for " + pid.getPID());
 		
-		if (pid.getMessage() == null){
-			//If there was no message, then perform a single item update
-			service.getSolrUpdateService().offer(new SolrUpdateRequest(pid.getPIDString(), SolrUpdateAction.ADD));
-		} else {
-			//Determine update event based on the type of message being processed.
-			String action = pid.getAction();
-			if (JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)){
-				//Delete item event.
-				service.getSolrUpdateService().offer(pid.getPIDString(), SolrUpdateAction.DELETE_SOLR_TREE);
-			} else if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)
-					|| JMSMessageUtil.CDRActions.REORDER.equals(action)){
-				//Custom messages which contain lists of items for reloading
-				pid.generateCDRMessageContent();
-				if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)){
-					//Move and add are both recursive adds of all subjects, plus a nonrecursive update for reordered children.
-					for (String pidString: pid.getCDRMessageContent().getSubjects()){
-						service.getSolrUpdateService().offer(new SolrUpdateRequest(pidString, SolrUpdateAction.RECURSIVE_ADD));
-					}
-				}
-				// Reorder is a non-recursive add.
-				for (String pidString: pid.getCDRMessageContent().getReordered()){
-					service.getSolrUpdateService().offer(new SolrUpdateRequest(pidString, SolrUpdateAction.ADD));
-				}
-			} else if (JMSMessageUtil.CDRActions.REINDEX.equals(action)){
-				//Determine which kind of reindex to perform based on the mode
-				pid.generateCDRMessageContent();
-				if (pid.getCDRMessageContent().getMode().equals("inplace")){
-					service.getSolrUpdateService().offer(new SolrUpdateRequest(pid.getCDRMessageContent().getParent(), SolrUpdateAction.RECURSIVE_REINDEX));
-				} else {
-					service.getSolrUpdateService().offer(new SolrUpdateRequest(pid.getCDRMessageContent().getParent(), SolrUpdateAction.CLEAN_REINDEX));
-				}
-			} else {
-				//For all other message types, do a single record update
-				service.getSolrUpdateService().offer(pid.getPIDString());
-			}
-		}
+		//Perform a single item update
+		service.getMessageDirector().direct(new PIDMessage(pid.getPIDString(), 
+				SolrUpdateAction.namespace, SolrUpdateAction.ADD.getName()));
+		
 		return result;
 	}
 
