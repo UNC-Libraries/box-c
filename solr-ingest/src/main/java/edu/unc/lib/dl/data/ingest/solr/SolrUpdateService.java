@@ -42,22 +42,22 @@ import edu.unc.lib.dl.security.access.AccessGroupSet;
  * @author bbpennel
  */
 public class SolrUpdateService {
-	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateService.class);
-	private FedoraDataService fedoraDataService;
-	private UpdateDocTransformer updateDocTransformer;
-	private SolrDataAccessLayer solrDataAccessLayer;
-	private SolrSearchService solrSearchService;
-	private AccessGroupSet accessGroups;
-	private String solrPath;
+	protected static final Logger LOG = LoggerFactory.getLogger(SolrUpdateService.class);
+	protected FedoraDataService fedoraDataService;
+	protected UpdateDocTransformer updateDocTransformer;
+	protected SolrDataAccessLayer solrDataAccessLayer;
+	protected SolrSearchService solrSearchService;
+	protected AccessGroupSet accessGroups;
+	protected String solrPath;
 	@Autowired
-	private SearchSettings searchSettings;
+	protected SearchSettings searchSettings;
 	public static final String TARGET_ALL = "fullIndex";
 
-	private ThreadPoolExecutor executor = null;
-	private BlockingQueue<SolrUpdateRequest> pidQueue = null;
-	private List<SolrUpdateRequest> collisionList = null;
-	private Set<String> lockedPids = null;
-	private int maxIngestThreads = 3;
+	protected ThreadPoolExecutor executor = null;
+	protected BlockingQueue<SolrUpdateRequest> pidQueue = null;
+	protected List<SolrUpdateRequest> collisionList = null;
+	protected Set<String> lockedPids = null;
+	protected int maxIngestThreads = 3;
 	
 	public SolrUpdateService() {
 		pidQueue = new LinkedBlockingQueue<SolrUpdateRequest>();
