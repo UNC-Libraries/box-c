@@ -31,7 +31,6 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
  */
 public class SolrJMXService {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrJMXService.class);
-	private SolrUpdateService solrUpdateService;
 	private MessageDirector messageDirector;
 	private boolean active;
 	
@@ -59,14 +58,6 @@ public class SolrJMXService {
 		LOG.info("Issuing request to delete all Solr index contents.");
 		messageDirector.direct(new PIDMessage("", SolrUpdateAction.namespace, SolrUpdateAction.CLEAR_INDEX.getName()));
 	}
-	
-	public SolrUpdateService getSolrUpdateService() {
-		return solrUpdateService;
-	}
-	
-	public void setSolrUpdateService(SolrUpdateService solrUpdateService) {
-		this.solrUpdateService = solrUpdateService;
-	}
 
 	public boolean isActive() {
 		return active;
@@ -74,6 +65,14 @@ public class SolrJMXService {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public MessageDirector getMessageDirector() {
+		return messageDirector;
+	}
+
+	public void setMessageDirector(MessageDirector messageDirector) {
+		this.messageDirector = messageDirector;
 	}
 	
 }

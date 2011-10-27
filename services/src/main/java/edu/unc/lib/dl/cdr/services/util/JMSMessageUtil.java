@@ -30,12 +30,20 @@ public class JMSMessageUtil {
 	public static final String cdrMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS + "/cdrAdmin";
 	public static final String servicesMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS + "/services";
 	
+	public JMSMessageUtil(){
+
+	}
+	
 	public String getFedoraMessageNamespace(){
 		return fedoraMessageNamespace;
 	}
 	
 	public String getCdrMessageNamespace(){
 		return cdrMessageNamespace;
+	}
+	
+	public String getServicesMessageNamespace(){
+		return servicesMessageNamespace;
 	}
 	
 	public static enum FedoraActions {

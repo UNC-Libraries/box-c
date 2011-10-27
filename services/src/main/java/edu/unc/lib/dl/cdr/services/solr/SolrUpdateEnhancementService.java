@@ -29,6 +29,7 @@ import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -62,8 +63,9 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 
 	@Override
 	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
-		//Returns true if any other services have passed the prefilter
-		return pid.getFilteredServices() != null && pid.getFilteredServices().size() > 0;
+		//Returns true if the message was not a Fedora ingest and at least one other service passed prefilter
+		return !JMSMessageUtil.FedoraActions.INGEST.equals(pid.getAction()) 
+			&& pid.getFilteredServices() != null && pid.getFilteredServices().size() > 0;
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })

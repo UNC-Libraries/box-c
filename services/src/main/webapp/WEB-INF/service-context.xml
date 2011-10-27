@@ -200,8 +200,11 @@
 	</util:list>
 	
 	<bean id="messageDirector" class="edu.unc.lib.dl.cdr.services.processing.MessageDirector">
-		<property name="conductorList" ref="messageConductorList"/>
+		<property name="conductorsList" ref="messageConductorList"/>
 		<property name="filters" ref="messageFilterList"/>
+	</bean>
+	
+	<bean id="jmsMessageUtil" class="edu.unc.lib.dl.cdr.services.util.JMSMessageUtil">
 	</bean>
 	
 	<bean id="cdrServicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
@@ -268,7 +271,7 @@
 	</bean>
 	
 	<bean id="solrJMXService" class="edu.unc.lib.dl.cdr.services.jmx.SolrJMXService">
-		<property name="solrUpdateConductor" ref="solrUpdateConductor"/>
+		<property name="messageDirector" ref="messageDirector"/>
 		<property name="active" value="true"/>
 	</bean>
 	
