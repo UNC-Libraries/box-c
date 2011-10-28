@@ -15,9 +15,10 @@
  */
 package fedorax.server.module.storage;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
-import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -119,39 +120,48 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 			fedoraServerPort = s_server.getParameter("fedoraServerPort");
 			// fedoraServerHost = s_server.getParameter("fedoraServerHost");
 			fedoraServerRedirectPort = s_server.getParameter("fedoraRedirectPort");
+			try {
+				this.irodsReadBufferSize = Integer.parseInt(getModuleParameter(Parameter.IRODS_READ_BUFFER_SIZE, false));
+				if (this.irodsReadBufferSize < 1) {
+					throw new ModuleInitializationException("Parameter, \"" + Parameter.IRODS_READ_BUFFER_SIZE
+							+ "\" must be greater than 0", getRole());
+				}
+			} catch (NumberFormatException e) {
+				throw new ModuleInitializationException(e.getMessage(), getRole());
+			}
 
 			m_http = new WebClient();
 			// m_http.USER_AGENT = m_userAgent;
 
 			// register StagingManagerMBean
 			MBeanServer mbs = this.getMBeanServer();
-	      ObjectName name = new ObjectName("edu.unc.lib.cdr:type=StagingManager");
-	      mbs.registerMBean(StagingManager.instance(), name);
+			ObjectName name = new ObjectName("edu.unc.lib.cdr:type=StagingManager");
+			mbs.registerMBean(StagingManager.instance(), name);
 
 		} catch (Throwable th) {
 			th.printStackTrace();
 			throw new ModuleInitializationException("[IrodsExternalContentManager] " + "An external content manager "
-					+ "could not be instantiated. The underlying error was a " + th.getClass()
-					+ "The message was \"" + th.getMessage() + "\".", getRole());
+					+ "could not be instantiated. The underlying error was a " + th.getClass() + "The message was \""
+					+ th.getMessage() + "\".", getRole());
 		}
 	}
 
 	private MBeanServer getMBeanServer() {
-      MBeanServer mbserver = null;
-      ArrayList mbservers = MBeanServerFactory.findMBeanServer(null);
+		MBeanServer mbserver = null;
+		ArrayList mbservers = MBeanServerFactory.findMBeanServer(null);
 
-      if (mbservers.size() > 0) {
-        mbserver = (MBeanServer) mbservers.get(0);
-      }
+		if (mbservers.size() > 0) {
+			mbserver = (MBeanServer) mbservers.get(0);
+		}
 
-      if (mbserver != null) {
-        System.out.println("Found our MBean server");
-      } else {
-        mbserver = MBeanServerFactory.createMBeanServer();
-      }
+		if (mbserver != null) {
+			System.out.println("Found our MBean server");
+		} else {
+			mbserver = MBeanServerFactory.createMBeanServer();
+		}
 
-      return mbserver;
-    }
+		return mbserver;
+	}
 
 	/*
 	 * Retrieves the external content. Currently the protocols <code>file</code> and <code>http[s]</code> are supported.
@@ -167,10 +177,10 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 
 		// TODO rewrite if this is a staging url
 		boolean staged = StagingManager.instance().isStagedLocation(url);
-		if(staged) {
-			LOG.debug("detected a staged url: "+url);
+		if (staged) {
+			LOG.debug("detected a staged url: " + url);
 			url = StagingManager.instance().rewriteStagedLocation(url);
-			LOG.debug("staged url rewritten to: "+url);
+			LOG.debug("staged url rewritten to: " + url);
 
 			URI temp = null;
 			try {
@@ -183,7 +193,7 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 		}
 
 		try {
-			LOG.debug("protocol is "+protocol+", url is "+url);
+			LOG.debug("protocol is " + protocol + ", url is " + url);
 			if (protocol == null && url.startsWith("irods://")) {
 				return getFromIrods(url, params.getMimeType());
 			} else if (protocol == null || protocol.equals("file")) {
@@ -213,12 +223,37 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 		try {
 			// FIXME: cannot construct irods url b/c malformed
 			URI uri = new URI(url);
-			// IRODSProtocolManager irodsConnectionManager = IRODSSimpleProtocolManager.instance();
-			// IRODSSession irodsSession = IRODSSession.instance(irodsConnectionManager);
 			IRODSFileFactory ff = IRODSFileSystem.instance().getIRODSFileFactory(account);
 			IRODSFile file = ff.instanceIRODSFile(URLDecoder.decode(uri.getRawPath(), "UTF-8"));
 			InputStream result = ff.instanceIRODSFileInputStream(file);
-			// irodsSession.closeSession();
+			final long start = System.currentTimeMillis();
+			result = new BufferedInputStream(result, this.irodsReadBufferSize) {
+				int bytes = 0;
+
+				@Override
+				public void close() throws IOException {
+					if (LOG.isInfoEnabled()) {
+						long time = System.currentTimeMillis() - start;
+						if (time > 0) {
+							LOG.info("closed irods stream: " + bytes + " bytes at " + (bytes / time) + " kb/sec");
+						}
+					}
+					super.close();
+				}
+
+				@Override
+				public synchronized int read() throws IOException {
+					bytes++;
+					return super.read();
+				}
+
+				@Override
+				public synchronized int read(byte[] b, int off, int len) throws IOException {
+					bytes = bytes + len;
+					return super.read(b, off, len);
+				}
+
+			};
 
 			// if mimeType was not given, try to determine it automatically
 			if (mimeType == null || mimeType.equalsIgnoreCase("")) {
@@ -326,8 +361,8 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 			// security check
 			if (staged) {
 				// canonical path must be within a stage file location
-				if(!StagingManager.instance().isFileInStagedLocation(cFile)) {
-					throw new AuthzDeniedException("Canonical staged path is not within staging area: "+cFile.toURI());
+				if (!StagingManager.instance().isFileInStagedLocation(cFile)) {
+					throw new AuthzDeniedException("Canonical staged path is not within staging area: " + cFile.toURI());
 				}
 			} else {
 				URI cURI = cFile.toURI();

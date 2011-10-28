@@ -572,7 +572,10 @@
 		<property name="foxmlObjects">
 			<list>
 				<value>classpath:foxml-objects/ContainerModel.xml</value>
+				<value>classpath:foxml-objects/CollectionModel.xml</value>
+				<value>classpath:foxml-objects/DummyTriples.xml</value>
 				<value>classpath:foxml-objects/GroupAgentModel.xml</value>
+				<value>classpath:foxml-objects/JP2DerivedImageModel.xml</value>
 				<value>classpath:foxml-objects/PersonAgentModel.xml</value>
 				<value>classpath:foxml-objects/PreservedObjectModel.xml</value>
 				<value>classpath:foxml-objects/SimpleModel.xml</value>
@@ -616,5 +619,28 @@
 		</property>
 		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
 	</bean>
-
+	
+	<bean id="loggingExporter" class="org.springframework.jmx.export.MBeanExporter"
+		lazy-init="false">
+		<property name="beans">
+			<map>
+				<entry key="cdradmin:jmxservice=loggingConfiguration" value-ref="loggingMBean" />
+			</map>
+		</property>
+		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
+		<property name="assembler">
+			<bean class="org.springframework.jmx.export.assembler.InterfaceBasedMBeanInfoAssembler">
+				<property name="managedInterfaces">
+					<array value-type="java.lang.Class">
+						<value>de.stefanheintz.log.jmxservice.LoggingConfig</value>
+					</array>
+				</property>				
+			</bean>
+		</property>
+	</bean>
+	
+<!-- Logging MBean -->
+	<!-- http://code.google.com/p/logging-jmx-service/wiki/Tutorial -->
+	<bean id="loggingMBean" class="de.stefanheintz.log.jmxservice.LoggingConfigImpl">
+	</bean>
 </beans>

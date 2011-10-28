@@ -41,6 +41,10 @@ public class DjatokaContentService {
 	private ApplicationPathSettings applicationPathSettings;
 	
 	public void getMetadata(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response){
+		this.getMetadata(simplepid, datastream, outStream, response, 1);
+	}
+	
+	public void getMetadata(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response, int retryServerError){
 		HttpClientParams params = new HttpClientParams();
 		params.setContentCharset("UTF-8");
 		HttpClient client = new HttpClient();
@@ -62,8 +66,12 @@ public class DjatokaContentService {
 					FileIOUtil.stream(outStream, method);
 				}
 			} else {
-				LOG.error("Unexpected failure: " + method.getStatusLine().toString());
-				LOG.error("Path was: " + method.getURI().getURI());
+				if ((method.getStatusCode() == 500 || method.getStatusCode() == 404) && retryServerError > 0){
+					this.getMetadata(simplepid, datastream, outStream, response, retryServerError-1);
+				} else {
+					LOG.error("Unexpected failure: " + method.getStatusLine().toString());
+					LOG.error("Path was: " + method.getURI().getURI());
+				}
 			}
 		} catch (Exception e){
 			LOG.error("Problem retrieving metadata for " + path, e);
@@ -72,6 +80,11 @@ public class DjatokaContentService {
 	
 	public void streamJP2(String simplepid, String region, String scale, String rotate, String datastream, 
 			OutputStream outStream, HttpServletResponse response){
+		this.streamJP2(simplepid, region, scale, rotate, datastream, outStream, response, 1);
+	}
+	
+	public void streamJP2(String simplepid, String region, String scale, String rotate, String datastream, 
+			OutputStream outStream, HttpServletResponse response, int retryServerError){
 		HttpClient client = new HttpClient();
 		
 		StringBuilder path = new StringBuilder(applicationPathSettings.getDjatokaPath());
@@ -92,8 +105,12 @@ public class DjatokaContentService {
 					FileIOUtil.stream(outStream, method);
 				}
 			} else {
-				LOG.error("Unexpected failure: " + method.getStatusLine().toString());
-				LOG.error("Path was: " + method.getURI().getURI());
+				if ((method.getStatusCode() == 500 || method.getStatusCode() == 404) && retryServerError > 0){
+					this.getMetadata(simplepid, datastream, outStream, response, retryServerError-1);
+				} else {
+					LOG.error("Unexpected failure: " + method.getStatusLine().toString());
+					LOG.error("Path was: " + method.getURI().getURI());
+				}
 			}
 		} catch (Exception e){
 			LOG.error("Problem retrieving metadata for " + path, e);
