@@ -22,13 +22,12 @@ import java.util.List;
 import org.jdom.Document;
 import org.jdom.Element;
 
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class JMSMessageUtil {
-	public static final String fedoraMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS + "/fedora";
-	public static final String cdrMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS + "/cdrAdmin";
-	public static final String servicesMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS + "/services";
+	public static final String fedoraMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/fedora";
+	public static final String cdrMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/cdrAdmin";
+	public static final String servicesMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/services";
 	
 	public JMSMessageUtil(){
 
@@ -64,9 +63,7 @@ public class JMSMessageUtil {
 			try {
 				this.uri = new URI(fedoraMessageNamespace + "/" + name);
 			} catch (URISyntaxException e) {
-				Error x = new ExceptionInInitializerError("Error creating URI for " + fedoraMessageNamespace + " " + name);
-				x.initCause(e);
-				throw x;
+				throw new RuntimeException("Error creating URI for " + fedoraMessageNamespace + " " + name, e);
 			}
 		}
 		
@@ -114,9 +111,7 @@ public class JMSMessageUtil {
 			try {
 				this.uri = new URI(cdrMessageNamespace + "/" + name);
 			} catch (URISyntaxException e) {
-				Error x = new ExceptionInInitializerError("Error creating URI for " + cdrMessageNamespace + " " + name);
-				x.initCause(e);
-				throw x;
+				throw new RuntimeException("Error creating URI for " + cdrMessageNamespace + " " + name, e);
 			}
 		}
 
@@ -161,9 +156,7 @@ public class JMSMessageUtil {
 			try {
 				this.uri = new URI(servicesMessageNamespace + "/" + name);
 			} catch (URISyntaxException e) {
-				Error x = new ExceptionInInitializerError("Error creating URI for " + servicesMessageNamespace + " " + name);
-				x.initCause(e);
-				throw x;
+				throw new RuntimeException("Error creating URI for " + servicesMessageNamespace + " " + name, e);
 			}
 		}
 

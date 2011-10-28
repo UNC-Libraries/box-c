@@ -104,8 +104,8 @@ public class PIDMessage {
 	}
 	
 	public void setAction(String action){
-		if (this.action != null && this.action.length() > 0 && this.namespace != null){
-			this.action = this.namespace + action;
+		if (action != null && action.length() > 0 && this.namespace != null){
+			this.action = this.namespace + "/" + action;
 		} else {
 			this.action = action;
 		}

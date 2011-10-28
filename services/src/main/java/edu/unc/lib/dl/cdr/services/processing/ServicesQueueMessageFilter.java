@@ -18,14 +18,12 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 
@@ -43,10 +41,6 @@ public class ServicesQueueMessageFilter extends MessageFilter {
 	public void setServices(List<ObjectEnhancementService> services) {
 		this.services = services;
 	}
-
-	public void setServices(ArrayList<ObjectEnhancementService> services) {
-		this.services = services;
-	}
 	
 	public ServicesQueueMessageFilter(){
 		MessageFilter.conductor = ServicesConductor.identifier;
@@ -59,6 +53,11 @@ public class ServicesQueueMessageFilter extends MessageFilter {
 		String pid = message.getPIDString();
 		if (pid == null)
 			return false;
+		
+		//If the message is for a full stack run, then it passes
+		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getAction())){
+			return true;
+		}
 		
 		//Iterate through the services stack
 		List<ObjectEnhancementService> messageServices = new ArrayList<ObjectEnhancementService>(services.size());
