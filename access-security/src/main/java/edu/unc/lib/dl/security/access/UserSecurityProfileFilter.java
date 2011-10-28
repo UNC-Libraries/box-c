@@ -53,7 +53,11 @@ public class UserSecurityProfileFilter extends OncePerRequestFilter implements S
 		
 		try {
 			String userName = request.getRemoteUser();
+			if (userName == null)
+				userName = "";
 			String members = (String) request.getHeader("isMemberOf");
+			if (members == null)
+				members = "";
 			
 			if (user == null || !userName.equals(user.getUserName()) || !members.equals(user.getIsMemeberOf())){
 				LOG.debug("Creating user security profile for " + userName + " as " + members);
