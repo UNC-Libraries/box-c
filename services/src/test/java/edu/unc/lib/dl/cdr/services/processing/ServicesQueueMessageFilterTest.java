@@ -1,7 +1,11 @@
 package edu.unc.lib.dl.cdr.services.processing;
 
+import java.io.InputStreamReader;
+
 import javax.annotation.Resource;
 
+import org.jdom.Document;
+import org.jdom.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,7 +13,9 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 
@@ -61,8 +67,39 @@ public class ServicesQueueMessageFilterTest extends Assert {
 	}
 	
 	@Test
-	public void fedoraMessage(){
+	public void fedoraMessage() throws Exception {
+		Document doc = readFileAsString("ingestMessage.xml");
+		PIDMessage message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		assertTrue(servicesMessageFilter.filter(message));
+		assertTrue(message.getFilteredServices().size() > 0);
+		int i = 0;
+		for (ObjectEnhancementService service: message.getFilteredServices()){
+			if (SolrUpdateEnhancementService.class.equals(service.getClass())){
+				break;
+			}
+			i++;
+		}
+		if (i != message.getFilteredServices().size())
+			fail();
 		
+		doc = readFileAsString("modifyDSMDDescriptive.xml");
+		message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		assertFalse(servicesMessageFilter.filter(message));
+		assertNull(message.getFilteredServices());
+		
+		doc = readFileAsString("modifyDSDataFile.xml");
+		message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		assertTrue(servicesMessageFilter.filter(message));
+		assertTrue(message.getFilteredServices().size() > 0);
+		i = 0;
+		for (ObjectEnhancementService service: message.getFilteredServices()){
+			if (SolrUpdateEnhancementService.class.equals(service.getClass())){
+				break;
+			}
+			i++;
+		}
+		if (i == message.getFilteredServices().size())
+			fail();
 	}
 	
 	@Test
@@ -78,5 +115,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		this.servicesMessageFilter = servicesMessageFilter;
 	}
 
-	
+	private Document readFileAsString(String filePath) throws Exception {
+		return new SAXBuilder().build(new InputStreamReader(this.getClass().getResourceAsStream(filePath)));
+	}
 }

@@ -50,6 +50,7 @@ public class PIDMessage {
 	public PIDMessage(Document message, String namespace){
 		this.pid = new PID(JMSMessageUtil.getPid(message));
 		this.namespace = namespace;
+		this.message = message;
 	}
 	
 	public PIDMessage(String pid, String namespace, String action){
