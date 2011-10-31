@@ -61,15 +61,21 @@
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="sipProcessorFactory" ref="sipProcessorFactory"/>
-		<property name="aipIngestPipeline" ref="aipIngestPipeline"/>
 		<property name="schematronValidator" ref="schematronValidator"/>
-		<property name="containerContentsHelper">
-			<bean class="edu.unc.lib.dl.util.ContainerContentsHelper">
-				<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-			</bean>
-		</property>
-		<property name="mailNotifier" ref="mailNotifier"/>
+		<property name="containerContentsHelper" ref="containerContentsHelper"/>
 		<property name="available" value="true"/>
+	</bean>
+	
+	<bean id="ingestService" class="edu.unc.lib.dl.services.IngestService">
+		<property name="managementClient" ref="managementClient"/>
+		<property name="operationsMessageSender" ref="operationsMessageSender"/>
+		<property name="mailNotifier" ref="mailNotifier"/>
+		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+		<property name="agentManager" ref="agentManager"/>
+	</bean>
+	
+	<bean id="containerContentsHelper" class="edu.unc.lib.dl.util.ContainerContentsHelper">
+				<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 	</bean>
 
 	<bean id="mailNotifier" class="edu.unc.lib.dl.services.MailNotifier">

@@ -51,7 +51,7 @@ public interface DigitalObjectManager {
      *            set true to send ingest outcome email to the user
      * @return a log of ingest events
      */
-    public abstract List<PID> add(SubmissionInformationPackage sip, Agent user, String message, boolean sendEmail) throws IngestException;
+    public abstract void add(SubmissionInformationPackage sip, Agent user, String message, boolean sendEmail) throws IngestException;
 
     /**
      * Creates repository objects in a single transaction with appropriate
@@ -75,7 +75,7 @@ public interface DigitalObjectManager {
      *            a log message for this ingest action
      * @return a log of ingest events
      */
-    public abstract List<PID> add(SubmissionInformationPackage sip, Agent user, String message) throws IngestException;
+    public abstract void add(SubmissionInformationPackage sip, Agent user, String message) throws IngestException;
 
     /**
      * Adds a relationship between two repository objects.

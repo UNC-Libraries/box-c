@@ -21,7 +21,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,17 +47,15 @@ import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
-import edu.unc.lib.dl.fedora.ManagementClient.ControlGroup;
-import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.ManagementClient.State;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
+import edu.unc.lib.dl.ingest.aip.RepositoryPlacement;
 import edu.unc.lib.dl.ingest.sip.SIPProcessor;
 import edu.unc.lib.dl.ingest.sip.SIPProcessorFactory;
 import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
@@ -70,7 +67,6 @@ import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.ModsXmlHelper;
 
@@ -129,8 +125,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	public DigitalObjectManagerImpl() {
 	}
 
-	public List<PID> add(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
-		return this.add(sip, user, message, true);
+	public void add(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
+		this.add(sip, user, message, true);
 	}
 
 	/*
@@ -139,14 +135,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @see edu.unc.lib.dl.services.DigitalObjectManager#add(java.lang.String, java.io.File, edu.unc.lib.dl.agents.Agent,
 	 * edu.unc.lib.dl.agents.PersonAgent, java.lang.String)
 	 */
-	public List<PID> add(SubmissionInformationPackage sip, Agent user, String message, boolean sendEmail)
+	public void add(SubmissionInformationPackage sip, Agent user, String message, boolean sendEmail)
 			throws IngestException {
-		PremisEventLogger logger = null;
-		// the list of objects ingested to Fedora
-		List<PID> ingested = new ArrayList<PID>();
-		PID failedOnPID = null;
-
-		// this try block implements caveman transaction mgmt.
 		Throwable thrown = null;
 		ArchivalInformationPackage aip = null;
 		DateTime time = new DateTime();
@@ -155,196 +145,31 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			if (user == null) {
 				throw new IngestException("A user must be supplied for every ingest");
 			}
-			logger = new PremisEventLogger(user);
-
-			// lookup an appropriate SIP processor
+			// lookup the processor for this SIP
 			SIPProcessor processor = this.getSipProcessorFactory().getSIPProcessor(sip);
 
-			// create standard AIP from this kind of SIP
-			aip = processor.createAIP(sip, logger);
+			// process the SIP into a standard AIP
+			// aip = processor.createAIP(sip);
 
 			// run routine AIP processing steps
 			aip = this.getAipIngestPipeline().processAIP(aip);
 
-			// make sure the underlying implementation object is ready for
-			// Fedora
+			// persist the AIP to disk
 			aip.prepareIngest();
 
-			int fileCount = 0;
-
-			// initial implementation is one object at a time
-			for (PID pid : aip.getPIDs()) {
-				failedOnPID = pid;
-				Document doc = aip.getFOXMLDocument(pid);
-
-				// handle file locations (upload/rewrite/pass-through)
-				for (Element cLocation : FOXMLJDOMUtil.getFileLocators(doc)) {
-					String ref = cLocation.getAttributeValue("REF");
-					try {
-						URI uri = new URI(ref);
-						if (uri.getScheme() != null && !uri.getScheme().contains("file")) {
-							continue;
-						}
-					} catch (URISyntaxException e) {}
-					String newref = null;
-					File file = aip.getFileForUrl(ref);
-					newref = this.getManagementClient().upload(file);
-					cLocation.setAttribute("REF", newref);
-					fileCount++;
-
-					// this save can be avoided if we ingest the JDOM in memory!
-					// context.saveFOXMLDocument(pid, doc);
-					log.debug("uploaded " + ref + " to repository at " + newref + " for " + pid);
-				}
-
-				// log ingest event and upload the MD_EVENTS datastream
-				logger.logEvent(PremisEventLogger.Type.INGESTION, "ingested as PID:" + pid.getPid(), pid);
-				Document MD_EVENTS = new Document(aip.getEventLogger().getObjectEvents(pid));
-				String eventsLoc = this.getManagementClient().upload(MD_EVENTS);
-				if (eventsLoc == null) {
-					throw new IngestException("The CDR failed to upload event metadata for an ingested object.");
-				}
-				Element eventsEl = FOXMLJDOMUtil.makeLocatorDatastream("MD_EVENTS", "M", eventsLoc, "text/xml", "URL",
-						"PREMIS Events Metadata", false, null);
-				doc.getRootElement().addContent(eventsEl);
-
-				// INGEST
-				if (!this.ingestVerifyChecksums(doc, message, ingested)) {
-					throw new IngestException(
-							"Post-ingest checksum verification failed.  An ingested datastream did not match the supplied checksum.");
-				}
-				log.info("objects ingested in this transaction: " + ingested.size());
-			} // end of object loop
-
-			// update parent container object, always
-			List<PID> destinations = new ArrayList<PID>();
-			List<PID> reordered = new ArrayList<PID>();
-			String timestamp = addContainerContents(aip, destinations, reordered);
-			log.info("added " + ingested.size() + " objects with " + fileCount + " datastream uploads to the repository.");
-			this.getOperationsMessageSender().sendAddOperation(user.getName(), timestamp, destinations, aip.getTopPIDs(),
-					reordered);
-			// send successful ingest email
-			if (sendEmail && this.mailNotifier != null)
-				this.mailNotifier.sendIngestSuccessNotice(aip, user);
+			// move the AIP into the ingest queue.
+			// aip.enqueue();
 		} catch (IngestException e) {
 			thrown = e;
 			// exception on AIP preparation, no transaction started
 			log.info("User level exception on ingest, prior to Fedora transaction", e);
-		} catch (FedoraException e) {
-			thrown = e;
-			// fedora still available, but it threw a fault
-			try { // no whammies while logging!
-				Document foxml = aip.getFOXMLDocument(failedOnPID);
-				XMLOutputter out = new XMLOutputter();
-				StringBuffer sb = new StringBuffer();
-				sb.append("FEDORA FAULT ON INGEST OPERATION\nFOXML:");
-				sb.append(out.outputString(foxml));
-				log.error(sb.toString(), e);
-			} catch (RuntimeException ex) {
-				log.error("Unexpected RuntimeException while dumping to log on FedoraException", ex);
-			}
-		} catch (ServiceException e) {
-			thrown = e;
-			// fedora can't be reached for some reason
-			log.error("Cannot reach Fedora Service, UNAVAILABLE", e);
-			this.setAvailable(false);
-		} catch (RuntimeException e) {
-			thrown = e;
-			log.error("Unexpected RuntimeException, UNAVAILABLE", e);
-			// safest thing is to make unavailable when you get an unknown error
-			this.setAvailable(false);
-		} finally {
-			if (thrown != null) {
-				if (ingested.size() > 0) {
-					// MUST purge ingested objects OR dump purge info
-					List<PID> purged = new ArrayList<PID>();
-					try {
-						for (PID pid : ingested) {
-							this.getManagementClient().purgeObject(pid, "purging objects in partially ingested AIP", false);
-							purged.add(pid);
-						}
-					} catch (FedoraException fault) {
-						this.setAvailable(false); // prevent inconsistent states
-						log.error("Fedora fault while purging newly ingested objects", fault);
-					} catch (RuntimeException error) {
-						this.setAvailable(false); // something weird happened
-						log.error("Unexpected exception while purging newly ingested objects", error);
-					} finally {
-						ingested.removeAll(purged);
-						if (ingested.size() > 0) {
-							this.dumpRollbackInfo(time, ingested, "failed to purge newly ingested objects");
-						}
-					}
-				}
-				this.mailNotifier.sendIngestFailureNotice(thrown, user, aip, sip);
-				if (thrown instanceof IngestException) {
-					throw (IngestException) thrown;
-				} else {
-					throw new IngestException("An unexpected system error occurred, cannot ingest.", thrown);
-				}
-			}
-			aip.destroy();
 		}
-		return ingested;
 	}
 
 	private void availableCheck() throws IngestException {
 		if (!this.available) {
 			throw new IngestException(this.availableMessage + "  \nContact repository staff for assistance.");
 		}
-	}
-
-	/**
-	 * Same as ingest, but verifies any supplied checksums against available repository metadata. If the checksums do not
-	 * match, returns false.
-	 *
-	 * @param xml
-	 *           FOXML document to ingest (may include MD5 contentDigest elements)
-	 * @param message
-	 *           ingest log message
-	 * @param ingested
-	 *           the log of ingested objects
-	 * @return
-	 */
-	private boolean ingestVerifyChecksums(Document xml, String message, Collection<PID> ingested) throws FedoraException {
-		// 1. build a map of checksums for the datastreams
-		Map<String, String> dsID2md5 = new HashMap<String, String>();
-		for (Element ds : FOXMLJDOMUtil.getAllDatastreams(xml)) {
-			if (ControlGroup.MANAGED.toString().equals(ds.getAttributeValue("CONTROL_GROUP"))) {
-				Element dsV = ds.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
-				Element contentDigest = dsV.getChild("contentDigest", JDOMNamespaceUtil.FOXML_NS);
-				if (contentDigest != null) { // we have a winner!
-					String dsID = ds.getAttributeValue("ID");
-					ds.getChild("dataStreamVersion", JDOMNamespaceUtil.FOXML_NS);
-					String type = contentDigest.getAttributeValue("TYPE");
-					if (type == null) {
-						contentDigest.setAttribute("TYPE", "MD5");
-					}
-					String digest = contentDigest.getAttributeValue("DIGEST");
-					if (digest != null && !"none".equals(digest)) {
-						// add to verified checksum map
-						log.debug("caching checksum for post-ingest verification: " + dsID + " " + digest);
-						dsID2md5.put(dsID, digest);
-					}
-					contentDigest.setAttribute("DIGEST", "none");
-				}
-			}
-		}
-		// 2. ingest object
-		PID pid = this.getManagementClient().ingest(xml, Format.FOXML_1_1, message);
-		ingested.add(pid);
-		// 3. retrieve object checksums
-		for (String dsID : dsID2md5.keySet()) {
-			Datastream d = this.getManagementClient().getDatastream(pid, dsID);
-			// 4. compare checksums
-			boolean matches = dsID2md5.get(dsID).equals(d.getChecksum());
-			if (!matches) { // datastream doesn't match
-				log.error("Corrupt datastream, post-ingest checksum verification failed: " + pid.getPid() + " " + dsID);
-				return false;
-			}
-			log.debug("Verified post-ingest checksum: " + pid.getPid() + " " + dsID);
-		}
-		return true;
 	}
 
 	/**
@@ -356,110 +181,61 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @param destinations
 	 * @throws IngestException
 	 */
-	private String addContainerContents(ArchivalInformationPackage aip, List<PID> destinations, List<PID> reordered)
-			throws FedoraException {
+	public String addContainerContents(Agent submitter, Collection<RepositoryPlacement> placements, PID container, List<PID> reordered) throws FedoraException {
 		String timestamp = null;
-		Map<String, Set<PID>> containerPath2Children = new HashMap<String, Set<PID>>();
-
-		// build a map of the contents of each container
-		for (PID top : aip.getTopPIDs()) {
-			// figure out the container for each top object
-			String containerPath = aip.getTopPIDPlacement(top).parentPath;
-			if (containerPath == null) {
-				throw new Error("There was a null container path in AIP");
-			}
-			// PID container =
-			// this.getTripleStoreQueryService().fetchByRepositoryPath(containerPath);
-			// if (container == null) {
-			// throw new Error("Could not lookup container path: " +
-			// containerPath);
-			// }
-			if (!containerPath2Children.containsKey(containerPath)) {
-				containerPath2Children.put(containerPath, new HashSet<PID>());
-			}
-			containerPath2Children.get(containerPath).add(top);
-		}
-
-		List<PID> containersModified = new ArrayList<PID>();
 		DateTime time = new DateTime();
-
-		boolean exceptionThrown = false;
-		try { // beginning of container meddling
-				// for each container
-			for (String containerPath : containerPath2Children.keySet()) {
-				PID container = this.getTripleStoreQueryService().fetchByRepositoryPath(containerPath);
-				destinations.add(container);
-				for (PID child : containerPath2Children.get(containerPath)) {
-					this.getManagementClient().addObjectRelationship(container,
-							ContentModelHelper.Relationship.contains.getURI().toString(), child);
-					containersModified.add(container);
-				}
-				List<URI> cmtypes = this.getTripleStoreQueryService().lookupContentModels(container);
-				if (cmtypes.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
-					// edit Contents XML of parent container to append/insert
-					Document newXML;
-					Document oldXML;
-					boolean exists = true;
-					try {
-						MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(container, "MD_CONTENTS",
-								null);
-						ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
-						try {
-							oldXML = new SAXBuilder().build(bais);
-							bais.close();
-						} catch (JDOMException e) {
-							throw new IllegalRepositoryStateException("Cannot parse MD_CONTENTS: " + container);
-						} catch (IOException e) {
-							throw new Error(e);
-						}
-					} catch (NotFoundException e) {
-						oldXML = new Document();
-						Element structMap = new Element("structMap", JDOMNamespaceUtil.METS_NS).addContent(new Element("div",
-								JDOMNamespaceUtil.METS_NS).setAttribute("TYPE", "Container"));
-						oldXML.setRootElement(structMap);
-						exists = false;
-					}
-					// this.getTripleStoreQueryService()..fetchByPredicateAndLiteral(ContentModelHelper.CDRProperty.sortOrder,
-					// literal)
-					newXML = this.getContainerContentsHelper().addChildContentAIP(oldXML, containerPath, aip, reordered);
-					if (exists) {
-						timestamp = this.getManagementClient().modifyInlineXMLDatastream(container, "MD_CONTENTS", false,
-								"adding child resource to container", new ArrayList<String>(), "List of Contents", newXML);
-					} else {
-						timestamp = this.getManagementClient()
-								.addInlineXMLDatastream(container, "MD_CONTENTS", false, "added child resource to container",
-										new ArrayList<String>(), "List of Contents", false, newXML);
-					}
-				}
-
-				// LOG CHANGES TO THE CONTAINER
-				int children = containerPath2Children.get(containerPath).size();
-				aip.getEventLogger().logEvent(PremisEventLogger.Type.INGESTION,
-						"added " + children + " child object(s) to this container", container);
-				writePremisEventsToFedoraObject(aip.getEventLogger(), container);
-			}
-			return timestamp;
-		} catch (FedoraException e) {
-			// something went wrong with a Fedora fault
-			exceptionThrown = true;
-			throw e;
-		} catch (ServiceException e) {
-			// could not reach Fedora..
-			exceptionThrown = true;
-			throw e;
-		} catch (RuntimeException e) {
-			// something unexpected
-			exceptionThrown = true;
-			throw e;
-		} finally {
-			if (exceptionThrown) {
-				if (containersModified.size() > 0) {
-					// dump the rollback log
-					dumpRollbackInfo(time, containersModified, "Container(s) corrupted while adding children");
-				}
-				this.setAvailable(false);
+		// beginning of container meddling
+		// TODO do this in 1 RELS-EXT edit
+		for (RepositoryPlacement p : placements) {
+			if (container.equals(p.parentPID)) {
+				this.getManagementClient().addObjectRelationship(container,
+						ContentModelHelper.Relationship.contains.getURI().toString(), p.pid);
 			}
 		}
+		List<URI> cmtypes = this.getTripleStoreQueryService().lookupContentModels(container);
+		if (cmtypes.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
+			// edit Contents XML of parent container to append/insert
+			Document newXML;
+			Document oldXML;
+			boolean exists = true;
+			try {
+				MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(container, "MD_CONTENTS", null);
+				ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
+				try {
+					oldXML = new SAXBuilder().build(bais);
+					bais.close();
+				} catch (JDOMException e) {
+					throw new IllegalRepositoryStateException("Cannot parse MD_CONTENTS: " + container);
+				} catch (IOException e) {
+					throw new Error(e);
+				}
+			} catch (NotFoundException e) {
+				oldXML = new Document();
+				Element structMap = new Element("structMap", JDOMNamespaceUtil.METS_NS).addContent(new Element("div",
+						JDOMNamespaceUtil.METS_NS).setAttribute("TYPE", "Container"));
+				oldXML.setRootElement(structMap);
+				exists = false;
+			}
+			// this.getTripleStoreQueryService()..fetchByPredicateAndLiteral(ContentModelHelper.CDRProperty.sortOrder,
+			// literal)
+			newXML = this.getContainerContentsHelper().addChildContentAIPInCustomOrder(oldXML, container, placements,
+					reordered);
+			if (exists) {
+				timestamp = this.getManagementClient().modifyInlineXMLDatastream(container, "MD_CONTENTS", false,
+						"adding child resource to container", new ArrayList<String>(), "List of Contents", newXML);
+			} else {
+				timestamp = this.getManagementClient().addInlineXMLDatastream(container, "MD_CONTENTS", false,
+						"added child resource to container", new ArrayList<String>(), "List of Contents", false, newXML);
+			}
+		}
+
+		// LOG CHANGES TO THE CONTAINER
+		int children = placements.size();
+		PremisEventLogger logger = new PremisEventLogger(submitter);
+		logger.logEvent(PremisEventLogger.Type.INGESTION, "added " + children + " child object(s) to this container",
+				container);
+		writePremisEventsToFedoraObject(logger, container);
+		return timestamp;
 	}
 
 	/**

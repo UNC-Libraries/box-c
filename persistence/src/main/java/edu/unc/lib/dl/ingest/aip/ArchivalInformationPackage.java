@@ -24,21 +24,15 @@ import org.jdom.Document;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.AIPImpl.RepositoryPlacement;
+import edu.unc.lib.dl.ingest.aip.RepositoryPlacement;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 public interface ArchivalInformationPackage {
     public void destroy();
 
-    // public String getContainerContentModel();
-
-    // public Integer getContainerOrder(PID pid);
-
     public PremisEventLogger getEventLogger();
 
     public File getFileForUrl(String path);
-
-    // public PID getContainerPID(PID pid);
 
     public Document getFOXMLDocument(PID pid);
 
@@ -48,17 +42,11 @@ public interface ArchivalInformationPackage {
 
     public File getTempFOXDir();
 
-//    public Integer getTopPIDContainerOrder(PID toppid);
-//
-//    public String getTopPIDContainerPath(PID pid);
-
     public Set<PID> getTopPIDs();
 
     public void prepareIngest() throws IngestException;
 
     public void saveFOXMLDocument(PID pid, Document doc);
-
-//    public void setTopPIDLocation(String containerPath, PID topPID, Integer order);
 
     public void setTopPIDs(Set<PID> topPIDs);
 

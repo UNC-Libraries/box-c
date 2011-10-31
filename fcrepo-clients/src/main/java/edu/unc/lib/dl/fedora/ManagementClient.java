@@ -446,8 +446,7 @@ public class ManagementClient extends WebServiceTemplate {
 		CommonsHttpMessageSender messageSender = new CommonsHttpMessageSender();
 		UsernamePasswordCredentials creds = new UsernamePasswordCredentials(this.getUsername(), this.getPassword());
 		messageSender.setCredentials(creds);
-		// TODO: remove the infinite read timeout
-		messageSender.setReadTimeout(30 * 60 * 1000);
+		messageSender.setReadTimeout(60 * 1000);
 		messageSender.afterPropertiesSet();
 		this.setMessageSender(messageSender);
 
@@ -707,6 +706,31 @@ public class ManagementClient extends WebServiceTemplate {
 			throw new ServiceException("Cannot contact iRODS location service.", e);
 		}
 		return result;
+	}
+
+	/**
+	 * Poll Fedora until the PID is found or timeout. This method will blocking until at most
+	 * the specified timeout plus the timeout of the underlying HTTP connection.
+	 * @param pid the PID to look for
+	 * @param delay the delay between Fedora requests in seconds
+	 * @param timeout the total polling time in seconds
+	 * @return true when the object is found within timeout
+	 */
+	public boolean pollForObject(PID pid, int delay, int timeout) {
+		long startTime = System.currentTimeMillis();
+		while(System.currentTimeMillis() - startTime < timeout*1000) {
+			try {
+				Document doc = this.getObjectXML(pid);
+				if(doc != null) return true;
+			} catch(Exception e) {
+				if(log.isDebugEnabled())
+					log.debug("Error while polling fedora", e);
+			}
+			try {
+				Thread.sleep(delay*1000);
+			} catch (InterruptedException e) {}
+		}
+		return false;
 	}
 
 	// @Override
