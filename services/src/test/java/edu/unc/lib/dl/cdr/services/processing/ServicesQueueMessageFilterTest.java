@@ -14,10 +14,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
+import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
+import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
+import edu.unc.lib.dl.util.ContentModelHelper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context-unit.xml" })
@@ -67,39 +70,104 @@ public class ServicesQueueMessageFilterTest extends Assert {
 	}
 	
 	@Test
-	public void fedoraMessage() throws Exception {
+	public void fedoraObjectMessages() throws Exception {
+		
+		//Ingest object message, should partially pass, not pass solr
 		Document doc = readFileAsString("ingestMessage.xml");
 		PIDMessage message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
 		assertTrue(servicesMessageFilter.filter(message));
 		assertTrue(message.getFilteredServices().size() > 0);
-		int i = 0;
-		for (ObjectEnhancementService service: message.getFilteredServices()){
-			if (SolrUpdateEnhancementService.class.equals(service.getClass())){
-				break;
-			}
-			i++;
-		}
-		if (i != message.getFilteredServices().size())
-			fail();
+		assertFalse(message.filteredServicesContains(SolrUpdateEnhancementService.class));
+		assertTrue(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
+		assertTrue(message.filteredServicesContains(ImageEnhancementService.class));
+		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
 		
-		doc = readFileAsString("modifyDSMDDescriptive.xml");
-		message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		//Purge object message, fail
+		message.setAction(JMSMessageUtil.FedoraActions.PURGE_OBJECT.getName());
+		assertFalse(servicesMessageFilter.filter(message));
+	}
+	
+	@Test
+	public void fedoraDatastreamMessages() throws Exception {
+		//Change md descript datastream, should not pass filters
+		Document doc = readFileAsString("modifyDSMDDescriptive.xml");
+		PIDMessage message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
 		assertFalse(servicesMessageFilter.filter(message));
 		assertNull(message.getFilteredServices());
 		
+		message.setAction(JMSMessageUtil.FedoraActions.PURGE_DATASTREAM.getName());
+		assertFalse(servicesMessageFilter.filter(message));
+		
+		message.setAction(JMSMessageUtil.FedoraActions.ADD_DATASTREAM.getName());
+		assertFalse(servicesMessageFilter.filter(message));
+		
+		//Change data file, should pass
 		doc = readFileAsString("modifyDSDataFile.xml");
 		message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
 		assertTrue(servicesMessageFilter.filter(message));
 		assertTrue(message.getFilteredServices().size() > 0);
-		i = 0;
-		for (ObjectEnhancementService service: message.getFilteredServices()){
-			if (SolrUpdateEnhancementService.class.equals(service.getClass())){
-				break;
-			}
-			i++;
-		}
-		if (i == message.getFilteredServices().size())
-			fail();
+		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
+		assertTrue(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
+		assertTrue(message.filteredServicesContains(ImageEnhancementService.class));
+		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
+		
+		message.setAction(JMSMessageUtil.FedoraActions.PURGE_DATASTREAM.getName());
+		assertFalse(servicesMessageFilter.filter(message));
+		
+		message.setAction(JMSMessageUtil.FedoraActions.ADD_DATASTREAM.getName());
+		assertTrue(servicesMessageFilter.filter(message));
+		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
+		assertTrue(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
+		assertTrue(message.filteredServicesContains(ImageEnhancementService.class));
+		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
+	}
+	
+	@Test
+	public void fedoraRelationMessages() throws Exception {
+		//Add relation tests
+		Document doc = readFileAsString("addRelSourceData.xml");
+		PIDMessage message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		assertTrue(servicesMessageFilter.filter(message));
+		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
+		assertFalse(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
+		assertFalse(message.filteredServicesContains(ImageEnhancementService.class));
+		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
+		
+		message.setAction(JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP.getName());
+		assertTrue(servicesMessageFilter.filter(message));
+		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
+		assertFalse(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
+		assertFalse(message.filteredServicesContains(ImageEnhancementService.class));
+		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
+		
+		message.setRelation(ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString());
+		message.setAction(JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.getName());
+		assertTrue(servicesMessageFilter.filter(message));
+		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
+		assertFalse(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
+		assertFalse(message.filteredServicesContains(ImageEnhancementService.class));
+		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
+		
+		message.setAction(JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP.getName());
+		assertTrue(servicesMessageFilter.filter(message));
+		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
+		assertFalse(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
+		assertFalse(message.filteredServicesContains(ImageEnhancementService.class));
+		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
+		
+		message.setRelation(ContentModelHelper.CDRProperty.techData.getURI().toString());
+		message.setAction(JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.getName());
+		assertFalse(servicesMessageFilter.filter(message));
+		
+		message.setAction(JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP.getName());
+		assertFalse(servicesMessageFilter.filter(message));
+		
+		message.setRelation(ContentModelHelper.CDRProperty.thumb.getURI().toString());
+		message.setAction(JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.getName());
+		assertFalse(servicesMessageFilter.filter(message));
+		
+		message.setAction(JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP.getName());
+		assertFalse(servicesMessageFilter.filter(message));
 	}
 	
 	@Test

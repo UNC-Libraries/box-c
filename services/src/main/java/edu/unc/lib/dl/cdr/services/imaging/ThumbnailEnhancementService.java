@@ -108,7 +108,7 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)
 				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action)){
 			String datastream = pid.getDatastream();
-			return ContentModelHelper.Datastream.DATA_FILE.getName().equals(datastream);
+			return ContentModelHelper.Datastream.DATA_FILE.equals(datastream);
 		}
 		
 		if (!(JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.equals(action) 
@@ -117,8 +117,8 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 		}
 
 		String relationship = pid.getRelation();
-		return ContentModelHelper.CDRProperty.sourceData.getURI().toString().equals(relationship) 
-			|| ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString().equals(relationship);
+		return ContentModelHelper.CDRProperty.sourceData.equals(relationship) 
+			|| ContentModelHelper.CDRProperty.hasSurrogate.equals(relationship);
 	}
 
 	/*

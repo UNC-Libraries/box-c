@@ -21,6 +21,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
+import edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -138,6 +139,10 @@ public class PIDMessage {
     	return datastream;
 	}
 	
+	public void setRelation(String relation){
+		this.relation = relation;
+	}
+	
 	public String getRelation(){
 		if (relation == null){
 			try {
@@ -169,6 +174,15 @@ public class PIDMessage {
 
 	public List<ObjectEnhancementService> getFilteredServices() {
 		return filteredServices;
+	}
+	
+	public boolean filteredServicesContains(Class<?> serviceClass){
+		for (ObjectEnhancementService service: this.filteredServices){
+			if (serviceClass.equals(service.getClass())){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void setFilteredServices(List<ObjectEnhancementService> filteredServices) {
