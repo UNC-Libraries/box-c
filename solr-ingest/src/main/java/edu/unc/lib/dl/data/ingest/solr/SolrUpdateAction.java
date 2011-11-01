@@ -63,6 +63,10 @@ public enum SolrUpdateAction {
 		return this.uri.toString().equals(value);
 	}
 	
+	public String toString(){
+		return this.uri.toString();
+	}
+	
 	/**
 	 * Finds an action that matches the full action uri provided.
 	 * @param value

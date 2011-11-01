@@ -19,14 +19,22 @@ package edu.unc.lib.dl.cdr.services.processing;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
+import edu.unc.lib.dl.util.ContentModelHelper;
 
-public class SolrUpdateMessageFilter extends MessageFilter {
+public class SolrUpdateMessageFilter implements MessageFilter {
 	
 	public SolrUpdateMessageFilter(){
-		MessageFilter.conductor = SolrUpdateConductor.identifier;
+	}
+	
+	@Override
+	public String getConductor(){
+		return SolrUpdateConductor.identifier;
 	}
 	
 	public boolean filter(PIDMessage msg) {
+		if (msg == null)
+			return false;
+			
 		if (msg.getNamespace() != null && msg.getNamespace().equals(SolrUpdateAction.namespace)){
 			return true;
 		}
@@ -36,6 +44,10 @@ public class SolrUpdateMessageFilter extends MessageFilter {
 				|| JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)) {
 			return true;
 		}
-		return false;
+		String datastream = msg.getDatastream();
+		return ContentModelHelper.Datastream.MD_DESCRIPTIVE.equals(datastream)
+				&& (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
+				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action)
+				|| JMSMessageUtil.FedoraActions.PURGE_DATASTREAM.equals(action));
 	}
 }

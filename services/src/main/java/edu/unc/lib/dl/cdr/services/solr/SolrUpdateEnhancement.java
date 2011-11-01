@@ -25,7 +25,7 @@ import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 
 /**
- * Enhancement tells the solr ingest service to update the affected pids.
+ * Enhancement issues solr update messages for items that have been modified by the service stack.
  * 
  * @author bbpennel 
  */

@@ -33,7 +33,7 @@ import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
  * @author bbpennel
  *
  */
-public class ServicesQueueMessageFilter extends MessageFilter {
+public class ServicesQueueMessageFilter implements MessageFilter {
 	private static final Logger LOG = LoggerFactory.getLogger(ServicesQueueMessageFilter.class);
 	
 	private List<ObjectEnhancementService> services = new ArrayList<ObjectEnhancementService>();
@@ -43,7 +43,11 @@ public class ServicesQueueMessageFilter extends MessageFilter {
 	}
 	
 	public ServicesQueueMessageFilter(){
-		MessageFilter.conductor = ServicesConductor.identifier;
+	}
+	
+	@Override
+	public String getConductor(){
+		return ServicesConductor.identifier;
 	}
 	
 	@Override

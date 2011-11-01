@@ -19,18 +19,13 @@ package edu.unc.lib.dl.cdr.services.processing;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 
 /**
+ * Message filter interface for determining which conductor a message should filter into.
  * 
  * @author bbpennel
  * 
  */
-public abstract class MessageFilter {
-	protected static String conductor;
+public interface MessageFilter {
+	public boolean filter(PIDMessage msg);
 	
-	public boolean filter(PIDMessage msg) {
-		return false;
-	}
-	
-	public String getConductor(){
-		return conductor;
-	}
+	public String getConductor();
 }
