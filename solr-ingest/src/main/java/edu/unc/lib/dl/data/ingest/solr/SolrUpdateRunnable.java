@@ -357,21 +357,28 @@ public class SolrUpdateRunnable implements Runnable {
 	}
 	
 	private Document getObjectViewXML(SolrUpdateRequest updateRequest, boolean ignoreAllowIndexing){
+		return getObjectViewXML(updateRequest, ignoreAllowIndexing, 2);
+	}
+	
+	private Document getObjectViewXML(SolrUpdateRequest updateRequest, boolean ignoreAllowIndexing, int retries){
 		Document resultDoc = null;
 		try {
-			if (ignoreAllowIndexing || solrUpdateService.getFedoraDataService().getTripleStoreQueryService().allowIndexing(new PID(updateRequest.getPid()))){
+			PID pid = new PID(updateRequest.getPid());
+			if (ignoreAllowIndexing || (!solrUpdateService.getFedoraDataService().getTripleStoreQueryService().isOrphaned(pid)
+					&& solrUpdateService.getFedoraDataService().getTripleStoreQueryService().allowIndexing(pid))){
 				resultDoc = solrUpdateService.getFedoraDataService().getObjectViewXML(updateRequest.getPid());
 			}
 		} catch (Exception e){
 			LOG.warn("Failed to get ObjectViewXML for " + updateRequest.getPid() + ".  Retrying.");
-			try {
-				Thread.sleep(30000L);
-				if (solrUpdateService.getFedoraDataService().getTripleStoreQueryService().allowIndexing(new PID(updateRequest.getPid()))){
-					resultDoc = solrUpdateService.getFedoraDataService().getObjectViewXML(updateRequest.getPid());
+			if (retries > 1){
+				try {
+					Thread.sleep(30000L);
+					return this.getObjectViewXML(updateRequest, ignoreAllowIndexing, retries - 1);
+				} catch (Exception e2){
+					LOG.error("Failed to get ObjectViewXML for " + updateRequest.getPid() + " after two attempts.", e2);
 				}
-			} catch (Exception e2){
-				LOG.error("Failed to get ObjectViewXML for " + updateRequest.getPid() + " after two attempts.", e2);
 			}
+			
 		}
 		return resultDoc;
 	}
