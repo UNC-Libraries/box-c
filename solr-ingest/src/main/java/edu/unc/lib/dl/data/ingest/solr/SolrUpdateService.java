@@ -52,6 +52,7 @@ public class SolrUpdateService {
 	@Autowired
 	protected SearchSettings searchSettings;
 	public static final String TARGET_ALL = "fullIndex";
+	private PID collectionsPid = null;
 
 	protected ThreadPoolExecutor executor = null;
 	protected BlockingQueue<SolrUpdateRequest> pidQueue = null;
@@ -76,6 +77,12 @@ public class SolrUpdateService {
 		//Pass the runnables a reference back to the update service
 		SolrUpdateRunnable.setSolrUpdateService(this);
 		SolrUpdateRunnable.initQueries();
+		
+		collectionsPid = fedoraDataService.getTripleStoreQueryService().fetchByRepositoryPath("/Collections");
+		if (collectionsPid == null){
+			throw new Error("Initialization of SolrUpdateService failed.  It was unable to retrieve Collections object from repository.");
+		}
+		
 
 		this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(this.maxIngestThreads);
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
@@ -204,6 +211,14 @@ public class SolrUpdateService {
 
 	public void setLockedPids(Set<String> lockedPids) {
 		this.lockedPids = lockedPids;
+	}
+
+	public PID getCollectionsPid() {
+		return collectionsPid;
+	}
+
+	public void setCollectionsPid(PID collectionsPid) {
+		this.collectionsPid = collectionsPid;
 	}
 
 	public int queueSize(){
