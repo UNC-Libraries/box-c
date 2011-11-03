@@ -31,37 +31,11 @@ public interface DigitalObjectManager {
      * Creates repository objects in a single transaction with appropriate
      * additions to preservation logs. This method will also upload any local
      * files referenced in the IngestContext. This method will report failure if
-     * any paths conflict with existing objects. This method *may* ingest files
+     * any paths conflict with existing objects. This method will ingest files
      * and objects in batches appropriate to the underlying architecture.
-     * However, the entire method is still be implemented as a single
-     * transaction. This method also updates the parent folder object in the
-     * repository.
-     *
-     * @param containerPath
-     *            a path to the folder which will hold this object
-     * @param sip
-     *            a zip file containing content, metadata and METS manifest.
-     * @param owner
-     *            an agent object, usually a group, that will own this object
-     * @param user
-     *            an agent object representing the user performing ingest
-     * @param message
-     *            a log message for this ingest action
-     * @param sendEmail
-     *            set true to send ingest outcome email to the user
-     * @return a log of ingest events
-     */
-    public abstract void add(SubmissionInformationPackage sip, Agent user, String message, boolean sendEmail) throws IngestException;
-
-    /**
-     * Creates repository objects in a single transaction with appropriate
-     * additions to preservation logs. This method will also upload any local
-     * files referenced in the IngestContext. This method will report failure if
-     * any paths conflict with existing objects. This method *may* ingest files
-     * and objects in batches appropriate to the underlying architecture.
-     * However, the entire method is still be implemented as a single
-     * transaction. This method also updates the parent folder object in the
-     * repository.
+     * The entire method is implemented as a single transaction and will send an email
+     * to specified recipients.
+     * This method also updates the parent folder object in the repository.
      *
      * @param containerPath
      *            a path to the folder which will hold this object
@@ -75,7 +49,7 @@ public interface DigitalObjectManager {
      *            a log message for this ingest action
      * @return a log of ingest events
      */
-    public abstract void add(SubmissionInformationPackage sip, Agent user, String message) throws IngestException;
+    public abstract void addBatch(SubmissionInformationPackage sip, Agent user, String message) throws IngestException;
 
     /**
      * Adds a relationship between two repository objects.
@@ -185,5 +159,14 @@ public interface DigitalObjectManager {
     public abstract void move(List<PID> movingPids, String destinationPath, Agent user, String message) throws IngestException;
 
     public abstract boolean isAvailable();
+
+	/**
+	 * Adds a single object to the repository, without waiting in the queue. This method does not send email.
+	 * @param sip a SingleFileSIP, SingleFolderSIP, MultiFileObjectSIP or AgentSIP
+	 * @param user the submitter
+	 * @param message the ingest message
+	 * @return the PID of the object added
+	 */
+	public abstract PID addSingleObject(SubmissionInformationPackage sip, Agent user, String message) throws IngestException;
 
 }

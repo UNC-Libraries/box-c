@@ -60,7 +60,7 @@ public class SingleFolderSIPProcessor implements SIPProcessor {
 	Set<PID> topPIDs = new HashSet<PID>();
 	topPIDs.add(pid);
 	aip.setTopPIDs(topPIDs);
-	aip.setTopPIDPlacement(sip.getContainerPath(), pid, null, null);
+	aip.setTopPIDPlacement(sip.getContainerPID(), pid, null, null);
 
 	// create FOXML stub document
 	Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(pid.getPid());

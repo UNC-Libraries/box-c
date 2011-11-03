@@ -74,7 +74,7 @@ public class MultiFileObjectSIPProcessor implements SIPProcessor {
 
 
 	// CHECK FOR MISSING OR TRUNCATED SIP DATA
-	if (sip.getContainerPath() == null) {
+	if (sip.getContainerPID() == null) {
 	    throw new IngestException("Please specify a container path");
 	} else if (sip.getOwner() == null) {
 	    throw new IngestException("Please specify a the owner agent");
@@ -89,7 +89,7 @@ public class MultiFileObjectSIPProcessor implements SIPProcessor {
 	Set<PID> topPIDs = new HashSet<PID>();
 	topPIDs.add(pid);
 	aip.setTopPIDs(topPIDs);
-	aip.setTopPIDPlacement(sip.getContainerPath(), pid, null, null);
+	aip.setTopPIDPlacement(sip.getContainerPID(), pid, null, null);
 
 	// create FOXML stub document
 	Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(pid.getPid());
@@ -183,7 +183,8 @@ public class MultiFileObjectSIPProcessor implements SIPProcessor {
 
 	// set slug, detecting sibling slug conflicts and incrementing
 	String slug = PathUtil.makeSlug(label);
-	while (this.getTripleStoreQueryService().fetchByRepositoryPath(sip.getContainerPath() + "/" + slug) != null) {
+	String containerPath = this.getTripleStoreQueryService().lookupRepositoryPath(sip.getContainerPID());
+	while (this.getTripleStoreQueryService().fetchByRepositoryPath(containerPath + "/" + slug) != null) {
 	    slug = PathUtil.incrementSlug(slug);
 	}
 	JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.slug, slug);

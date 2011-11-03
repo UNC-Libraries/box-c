@@ -437,7 +437,7 @@ public class DigitalObjectManagerImplTest {
 	ArrayList<URI> ans = new ArrayList<URI>();
 	ans.add(ContentModelHelper.Model.CONTAINER.getURI());
 	when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
-	this.getDigitalObjectManagerImpl().add(sip, user, "testAdd for a good METS SIP", true);
+	this.getDigitalObjectManagerImpl().addBatch(sip, user, "testAdd for a good METS SIP");
 	// verify ingest called
 	verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));
 	// verify parent updated
@@ -483,7 +483,7 @@ public class DigitalObjectManagerImplTest {
 
 	Throwable thrown = null;
 	try {
-	    this.getDigitalObjectManagerImpl().add(sip, user, "testAdd for a good METS SIP", true);
+	    this.getDigitalObjectManagerImpl().addBatch(sip, user, "testAdd for a good METS SIP");
 	} catch (Throwable e) {
 	    thrown = e;
 	}
@@ -532,7 +532,7 @@ public class DigitalObjectManagerImplTest {
 
 	Throwable thrown = null;
 	try {
-	    this.getDigitalObjectManagerImpl().add(sip, user, "testAdd for a good METS SIP");
+	    this.getDigitalObjectManagerImpl().addBatch(sip, user, "testAdd for a good METS SIP");
 	} catch (Throwable e) {
 	    thrown = e;
 	}

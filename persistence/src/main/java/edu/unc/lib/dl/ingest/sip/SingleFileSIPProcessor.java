@@ -45,172 +45,173 @@ import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.ModsXmlHelper;
 
 public class SingleFileSIPProcessor implements SIPProcessor {
-    private static final Log log = LogFactory.getLog(SingleFileSIPProcessor.class);
+	private static final Log log = LogFactory.getLog(SingleFileSIPProcessor.class);
 
-    private edu.unc.lib.dl.pidgen.PIDGenerator pidGenerator = null;
-    private TripleStoreQueryService tripleStoreQueryService = null;
+	private edu.unc.lib.dl.pidgen.PIDGenerator pidGenerator = null;
+	private TripleStoreQueryService tripleStoreQueryService = null;
 
-    @Override
-    public ArchivalInformationPackage createAIP(SubmissionInformationPackage in, PremisEventLogger logger)
-		    throws IngestException {
-	SingleFileSIP sip = (SingleFileSIP) in;
-	AIPImpl aip = new AIPImpl(sip.getData(), logger);
-	sip.setDiscardFilesOnDestroy(false);
+	@Override
+	public ArchivalInformationPackage createAIP(SubmissionInformationPackage in, PremisEventLogger logger)
+			throws IngestException {
+		SingleFileSIP sip = (SingleFileSIP) in;
+		AIPImpl aip = new AIPImpl(sip.getData(), logger);
+		sip.setDiscardFilesOnDestroy(false);
 
-	// CHECK FOR MISSING OR TRUNCATED SIP DATA
-	if (sip.getContainerPath() == null) {
-	    throw new IngestException("Please specify a container path");
-	} else if (sip.getData() == null || !sip.getData().exists() || sip.getData().length() == 0) {
-	    throw new IngestException("Data file not found");
-	} else if (sip.getOwner() == null) {
-	    throw new IngestException("Please specify a the owner agent");
-	} else if (sip.getModsXML() == null || !sip.getModsXML().exists() || sip.getModsXML().length() == 0) {
-	    throw new IngestException("MODS metadata file not found");
-	}
-
-	aip.setContainerContentModel(ContentModelHelper.Model.CONTAINER.name());
-	PID pid = this.getPidGenerator().getNextPID();
-
-	// place the object within a container path
-	Set<PID> topPIDs = new HashSet<PID>();
-	topPIDs.add(pid);
-	aip.setTopPIDs(topPIDs);
-	aip.setTopPIDPlacement(sip.getContainerPath(), pid, null, null);
-
-	// create FOXML stub document
-	Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(pid.getPid());
-
-	Element locator = null;
-	// TYPE="MD5" and DIGEST="aaaaaa" on datastreamVersion
-	// verify checksum if one is present in SIP, then set it in FOXML
-	if (sip.getMd5checksum() != null && sip.getMd5checksum().trim().length() > 0) {
-	    Checksum checker = new Checksum();
-	    try {
-		String sum = checker.getChecksum(sip.getData());
-		if (!sum.equals(sip.getMd5checksum().toLowerCase())) {
-		    String msg = "Checksum failed for data file (SIP specified '" + sip.getMd5checksum()
-				    + "', but ingest got '" + sum + "'.)";
-		    throw new IngestException(msg);
+		// CHECK FOR MISSING OR TRUNCATED SIP DATA
+		if (sip.getContainerPID() == null) {
+			throw new IngestException("Please specify a container path");
+		} else if (sip.getData() == null || !sip.getData().exists() || sip.getData().length() == 0) {
+			throw new IngestException("Data file not found");
+		} else if (sip.getOwner() == null) {
+			throw new IngestException("Please specify a the owner agent");
+		} else if (sip.getModsXML() == null || !sip.getModsXML().exists() || sip.getModsXML().length() == 0) {
+			throw new IngestException("MODS metadata file not found");
 		}
-		String msg = "Externally supplied checksum verified for data file.";
-		aip.getEventLogger().logEvent(PremisEventLogger.Type.VALIDATION, msg, pid, "DATA_FILE");
-	    } catch (IOException e) {
-		throw new IngestException("Checksum processor failed to find data file.");
-	    }
-	    locator = FOXMLJDOMUtil.makeLocatorDatastream("DATA_FILE", "M", "file:///stub", sip.getMimeType(), "URL",
-			    sip.getFileLabel(), true, sip.getMd5checksum());
-	} else {
-	    locator = FOXMLJDOMUtil.makeLocatorDatastream("DATA_FILE", "M", "file:///stub", sip.getMimeType(), "URL",
-			    sip.getFileLabel(), true, null);
+
+		aip.setContainerContentModel(ContentModelHelper.Model.CONTAINER.name());
+		PID pid = this.getPidGenerator().getNextPID();
+
+		// place the object within a container path
+		Set<PID> topPIDs = new HashSet<PID>();
+		topPIDs.add(pid);
+		aip.setTopPIDs(topPIDs);
+		aip.setTopPIDPlacement(sip.getContainerPID(), pid, null, null);
+
+		// create FOXML stub document
+		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(pid.getPid());
+
+		Element locator = null;
+		// TYPE="MD5" and DIGEST="aaaaaa" on datastreamVersion
+		// verify checksum if one is present in SIP, then set it in FOXML
+		if (sip.getMd5checksum() != null && sip.getMd5checksum().trim().length() > 0) {
+			Checksum checker = new Checksum();
+			try {
+				String sum = checker.getChecksum(sip.getData());
+				if (!sum.equals(sip.getMd5checksum().toLowerCase())) {
+					String msg = "Checksum failed for data file (SIP specified '" + sip.getMd5checksum()
+							+ "', but ingest got '" + sum + "'.)";
+					throw new IngestException(msg);
+				}
+				String msg = "Externally supplied checksum verified for data file.";
+				aip.getEventLogger().logEvent(PremisEventLogger.Type.VALIDATION, msg, pid, "DATA_FILE");
+			} catch (IOException e) {
+				throw new IngestException("Checksum processor failed to find data file.");
+			}
+			locator = FOXMLJDOMUtil.makeLocatorDatastream("DATA_FILE", "M", "file:///stub", sip.getMimeType(), "URL",
+					sip.getFileLabel(), true, sip.getMd5checksum());
+		} else {
+			locator = FOXMLJDOMUtil.makeLocatorDatastream("DATA_FILE", "M", "file:///stub", sip.getMimeType(), "URL",
+					sip.getFileLabel(), true, null);
+		}
+
+		// add the data file
+		foxml.getRootElement().addContent(locator);
+
+		// parse the MODS and insert into FOXML
+		String label = null;
+		try {
+			Document mods = new SAXBuilder().build(sip.getModsXML());
+			if (log.isDebugEnabled()) {
+				XMLOutputter out = new XMLOutputter();
+				String output = out.outputString(mods.getRootElement());
+				log.info("HERE:\n" + output);
+			}
+			label = ModsXmlHelper.getFormattedLabelText(mods.getRootElement());
+			Element root = mods.getRootElement();
+			root.detach();
+			FOXMLJDOMUtil.setDatastreamXmlContent(foxml, "MD_DESCRIPTIVE", "Descriptive Metadata (MODS)", root, true);
+		} catch (JDOMException e) {
+			throw new IngestException("Error parsing MODS xml.", e);
+		} catch (IOException e) {
+			throw new IngestException("Error reading MODS xml file.", e);
+		}
+
+		// set the label
+		FOXMLJDOMUtil.setProperty(foxml, FOXMLJDOMUtil.ObjectProperty.label, label);
+
+		// save FOXML to AIP
+		aip.saveFOXMLDocument(pid, foxml);
+
+		// move over pre-ingest events
+		if (sip.getPreIngestEventLogger().hasEvents()) {
+			for (Element event : sip.getPreIngestEventLogger().getEvents(pid)) {
+				aip.getEventLogger().addEvent(pid, event);
+			}
+		}
+
+		// MAKE RDF AWARE AIP
+		RDFAwareAIPImpl rdfaip = null;
+		try {
+			rdfaip = new RDFAwareAIPImpl(aip);
+			aip = null;
+		} catch (AIPException e) {
+			throw new IngestException("Could not create RDF AIP for simplified RELS-EXT setup of agent", e);
+		}
+
+		// set owner
+		JRDFGraphUtil.addFedoraPIDRelationship(rdfaip.getGraph(), pid, ContentModelHelper.Relationship.owner, sip
+				.getOwner().getPID());
+
+		// set content model
+		JRDFGraphUtil.addFedoraProperty(rdfaip.getGraph(), pid, ContentModelHelper.FedoraProperty.hasModel,
+				ContentModelHelper.Model.SIMPLE.getURI());
+
+		// set slug, detecting sibling slug conflicts and incrementing
+		String slug = PathUtil.makeSlug(label);
+		String containerPath = this.getTripleStoreQueryService().lookupRepositoryPath(sip.getContainerPID());
+		while (this.getTripleStoreQueryService().fetchByRepositoryPath(containerPath + "/" + slug) != null) {
+			slug = PathUtil.incrementSlug(slug);
+		}
+		JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.slug, slug);
+
+		// setup the allowIndexing property
+		if (sip.isAllowIndexing()) {
+			JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.allowIndexing, "yes");
+		} else {
+			JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.allowIndexing, "no");
+		}
+
+		// set default web data to DATA_FILE datastream pid
+		URI dsURI = null;
+		try {
+			dsURI = new URI(pid.getURI() + "/DATA_FILE");
+		} catch (URISyntaxException e) {
+			throw new Error("Unexpected exception creating URI for DATA_FILE datastream.", e);
+		}
+
+		// set sourceData datastream pointers
+		JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.sourceData, dsURI);
+		JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.defaultWebData, dsURI);
+
+		// set indexText when appropriate
+		if (sip.getMimeType() != null && sip.getMimeType().startsWith("text/")) {
+			JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.indexText, dsURI);
+		}
+
+		if (log.isDebugEnabled()) {
+			rdfaip.commitGraphChanges();
+			XMLOutputter out = new XMLOutputter();
+			String output = out.outputString(rdfaip.getFOXMLDocument(pid));
+			log.debug("HEREFOXML:\n" + output);
+		}
+
+		return rdfaip;
 	}
 
-	// add the data file
-	foxml.getRootElement().addContent(locator);
-
-	// parse the MODS and insert into FOXML
-	String label = null;
-	try {
-	    Document mods = new SAXBuilder().build(sip.getModsXML());
-	    if (log.isDebugEnabled()) {
-		XMLOutputter out = new XMLOutputter();
-		String output = out.outputString(mods.getRootElement());
-		log.info("HERE:\n" + output);
-	    }
-	    label = ModsXmlHelper.getFormattedLabelText(mods.getRootElement());
-	    Element root = mods.getRootElement();
-	    root.detach();
-	    FOXMLJDOMUtil.setDatastreamXmlContent(foxml, "MD_DESCRIPTIVE", "Descriptive Metadata (MODS)", root, true);
-	} catch (JDOMException e) {
-	    throw new IngestException("Error parsing MODS xml.", e);
-	} catch (IOException e) {
-	    throw new IngestException("Error reading MODS xml file.", e);
+	public edu.unc.lib.dl.pidgen.PIDGenerator getPidGenerator() {
+		return pidGenerator;
 	}
 
-	// set the label
-	FOXMLJDOMUtil.setProperty(foxml, FOXMLJDOMUtil.ObjectProperty.label, label);
-
-	// save FOXML to AIP
-	aip.saveFOXMLDocument(pid, foxml);
-
-	// move over pre-ingest events
-	if (sip.getPreIngestEventLogger().hasEvents()) {
-	    for (Element event : sip.getPreIngestEventLogger().getEvents(pid)) {
-		aip.getEventLogger().addEvent(pid, event);
-	    }
+	public TripleStoreQueryService getTripleStoreQueryService() {
+		return tripleStoreQueryService;
 	}
 
-	// MAKE RDF AWARE AIP
-	RDFAwareAIPImpl rdfaip = null;
-	try {
-	    rdfaip = new RDFAwareAIPImpl(aip);
-	    aip = null;
-	} catch (AIPException e) {
-	    throw new IngestException("Could not create RDF AIP for simplified RELS-EXT setup of agent", e);
+	public void setPidGenerator(edu.unc.lib.dl.pidgen.PIDGenerator pidGenerator) {
+		this.pidGenerator = pidGenerator;
 	}
 
-	// set owner
-	JRDFGraphUtil.addFedoraPIDRelationship(rdfaip.getGraph(), pid, ContentModelHelper.Relationship.owner, sip
-			.getOwner().getPID());
-
-	// set content model
-	JRDFGraphUtil.addFedoraProperty(rdfaip.getGraph(), pid, ContentModelHelper.FedoraProperty.hasModel,
-			ContentModelHelper.Model.SIMPLE.getURI());
-
-	// set slug, detecting sibling slug conflicts and incrementing
-	String slug = PathUtil.makeSlug(label);
-	while (this.getTripleStoreQueryService().fetchByRepositoryPath(sip.getContainerPath() + "/" + slug) != null) {
-	    slug = PathUtil.incrementSlug(slug);
+	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
-	JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.slug, slug);
-
-	// setup the allowIndexing property
-	if (sip.isAllowIndexing()) {
-	    JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.allowIndexing, "yes");
-	} else {
-	    JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.allowIndexing, "no");
-	}
-
-	// set default web data to DATA_FILE datastream pid
-	URI dsURI = null;
-	try {
-	    dsURI = new URI(pid.getURI() + "/DATA_FILE");
-	} catch (URISyntaxException e) {
-	    throw new Error("Unexpected exception creating URI for DATA_FILE datastream.", e);
-	}
-
-	// set sourceData datastream pointers
-	JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.sourceData, dsURI);
-	JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.defaultWebData, dsURI);
-
-	// set indexText when appropriate
-	if (sip.getMimeType() != null && sip.getMimeType().startsWith("text/")) {
-	    JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.indexText, dsURI);
-	}
-
-	if (log.isDebugEnabled()) {
-	    rdfaip.commitGraphChanges();
-	    XMLOutputter out = new XMLOutputter();
-	    String output = out.outputString(rdfaip.getFOXMLDocument(pid));
-	    log.debug("HEREFOXML:\n" + output);
-	}
-
-	return rdfaip;
-    }
-
-    public edu.unc.lib.dl.pidgen.PIDGenerator getPidGenerator() {
-	return pidGenerator;
-    }
-
-    public TripleStoreQueryService getTripleStoreQueryService() {
-	return tripleStoreQueryService;
-    }
-
-    public void setPidGenerator(edu.unc.lib.dl.pidgen.PIDGenerator pidGenerator) {
-	this.pidGenerator = pidGenerator;
-    }
-
-    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-	this.tripleStoreQueryService = tripleStoreQueryService;
-    }
 
 }

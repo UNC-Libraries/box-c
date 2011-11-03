@@ -18,151 +18,153 @@ package edu.unc.lib.dl.ingest.sip;
 import java.io.File;
 
 import edu.unc.lib.dl.agents.Agent;
+import edu.unc.lib.dl.fedora.PID;
 
 /**
- * This submission package is composed of a single data file, plus MODS
- * metadata. These submissions are normally converted into a single Fedora
- * object.
+ * This submission package is composed of a single data file, plus MODS metadata. These submissions are normally
+ * converted into a single Fedora object.
  *
  * @author count0
  *
  */
 public class SingleFileSIP implements SubmissionInformationPackage {
-    private boolean allowIndexing = true;
-    private String containerPath = null;
-    private File data = null;
-    private String fileLabel = null;
-    private String md5checksum = null;
-    private String mimeType = null;
-    private File modsXML = null;
-    private Agent owner = null;
-    private boolean discardFilesOnDestroy = true;
-    public boolean isDiscardFilesOnDestroy() {
-        return discardFilesOnDestroy;
-    }
+	private boolean allowIndexing = true;
+	private PID containerPID = null;
+	private File data = null;
+	private String fileLabel = null;
+	private String md5checksum = null;
+	private String mimeType = null;
+	private File modsXML = null;
+	private Agent owner = null;
+	private boolean discardFilesOnDestroy = true;
 
-    public void destroy() {
-	if(this.discardFilesOnDestroy) {
-	    this.data.delete();
+	public boolean isDiscardFilesOnDestroy() {
+		return discardFilesOnDestroy;
 	}
-    }
 
-    @Override
-    protected void finalize() throws Throwable {
-	super.finalize();
-	this.destroy();
-    }
+	public void destroy() {
+		if (this.discardFilesOnDestroy) {
+			this.data.delete();
+		}
+	}
 
-    public void setDiscardFilesOnDestroy(boolean discardFilesOnDestroy) {
-        this.discardFilesOnDestroy = discardFilesOnDestroy;
-    }
-    private PreIngestEventLogger preIngestEvents = new PreIngestEventLogger();
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		this.destroy();
+	}
 
-    public PreIngestEventLogger getPreIngestEventLogger() {
-	return this.preIngestEvents;
-    }
+	public void setDiscardFilesOnDestroy(boolean discardFilesOnDestroy) {
+		this.discardFilesOnDestroy = discardFilesOnDestroy;
+	}
 
-    public String getContainerPath() {
-	return containerPath;
-    }
+	private PreIngestEventLogger preIngestEvents = new PreIngestEventLogger();
 
-    public File getData() {
-	return data;
-    }
+	public PreIngestEventLogger getPreIngestEventLogger() {
+		return this.preIngestEvents;
+	}
 
-    public String getFileLabel() {
-	return fileLabel;
-    }
+	public PID getContainerPID() {
+		return containerPID;
+	}
 
-    public String getMd5checksum() {
-	return md5checksum;
-    }
+	public File getData() {
+		return data;
+	}
 
-    public String getMimeType() {
-	return mimeType;
-    }
+	public String getFileLabel() {
+		return fileLabel;
+	}
 
-    public File getModsXML() {
-	return modsXML;
-    }
+	public String getMd5checksum() {
+		return md5checksum;
+	}
 
-    public Agent getOwner() {
-	return this.owner;
-    }
+	public String getMimeType() {
+		return mimeType;
+	}
 
-    public boolean isAllowIndexing() {
-	return allowIndexing;
-    }
+	public File getModsXML() {
+		return modsXML;
+	}
 
-    /**
-     * Tells the repository whether or not to this object. (Default is yes)
-     *
-     * @param allowIndexing
-     */
-    public void setAllowIndexing(boolean allowIndexing) {
-	this.allowIndexing = allowIndexing;
-    }
+	public Agent getOwner() {
+		return this.owner;
+	}
 
-    /**
-     * Set the path to the folder that will contain the entire submission.
-     *
-     * @param containerPath
-     */
-    public void setContainerPath(String containerPath) {
-	this.containerPath = containerPath;
-    }
+	public boolean isAllowIndexing() {
+		return allowIndexing;
+	}
 
-    /**
-     * Set the data file.
-     *
-     * @param data
-     */
-    public void setData(File data) {
-	this.data = data;
-    }
+	/**
+	 * Tells the repository whether or not to this object. (Default is yes)
+	 *
+	 * @param allowIndexing
+	 */
+	public void setAllowIndexing(boolean allowIndexing) {
+		this.allowIndexing = allowIndexing;
+	}
 
-    /**
-     * Set the label for the data file, usually the original file name.
-     *
-     * @param fileLabel
-     */
-    public void setFileLabel(String fileLabel) {
-	this.fileLabel = fileLabel;
-    }
+	/**
+	 * Set the path to the folder that will contain the entire submission.
+	 *
+	 * @param containerPath
+	 */
+	public void setContainerPID(PID containerPID) {
+		this.containerPID = containerPID;
+	}
 
-    /**
-     * Optional: set the checksum for the data file.
-     *
-     * @param md5checksum
-     */
-    public void setMd5checksum(String md5checksum) {
-	this.md5checksum = md5checksum;
-    }
+	/**
+	 * Set the data file.
+	 *
+	 * @param data
+	 */
+	public void setData(File data) {
+		this.data = data;
+	}
 
-    /**
-     * Set the IANA MIME-Type of the data file.
-     *
-     * @param mimeType
-     */
-    public void setMimeType(String mimeType) {
-	this.mimeType = mimeType;
-    }
+	/**
+	 * Set the label for the data file, usually the original file name.
+	 *
+	 * @param fileLabel
+	 */
+	public void setFileLabel(String fileLabel) {
+		this.fileLabel = fileLabel;
+	}
 
-    /**
-     * Set the MODS metadata file.
-     *
-     * @param modsXML
-     */
-    public void setModsXML(File modsXML) {
-	this.modsXML = modsXML;
-    }
+	/**
+	 * Optional: set the checksum for the data file.
+	 *
+	 * @param md5checksum
+	 */
+	public void setMd5checksum(String md5checksum) {
+		this.md5checksum = md5checksum;
+	}
 
-    /**
-     * Set the owner of the submitted objects.
-     *
-     * @param owner
-     */
-    public void setOwner(Agent owner) {
-	this.owner = owner;
-    }
+	/**
+	 * Set the IANA MIME-Type of the data file.
+	 *
+	 * @param mimeType
+	 */
+	public void setMimeType(String mimeType) {
+		this.mimeType = mimeType;
+	}
+
+	/**
+	 * Set the MODS metadata file.
+	 *
+	 * @param modsXML
+	 */
+	public void setModsXML(File modsXML) {
+		this.modsXML = modsXML;
+	}
+
+	/**
+	 * Set the owner of the submitted objects.
+	 *
+	 * @param owner
+	 */
+	public void setOwner(Agent owner) {
+		this.owner = owner;
+	}
 }

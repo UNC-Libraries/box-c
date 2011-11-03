@@ -28,6 +28,7 @@ import edu.unc.lib.dl.ingest.aip.RepositoryPlacement;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 public interface ArchivalInformationPackage {
+	 public static final String DATA_SUBDIR = "data";
     public void destroy();
 
     public PremisEventLogger getEventLogger();
@@ -64,7 +65,7 @@ public interface ArchivalInformationPackage {
      * @param designatedOrder
      * @param sipOrder
      */
-    public void setTopPIDPlacement(String parentPath, PID topPID, Integer designatedOrder, Integer sipOrder);
+    public void setTopPIDPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder);
 
     public RepositoryPlacement getTopPIDPlacement(PID pid);
 

@@ -302,9 +302,9 @@ public class AIPImpl implements ArchivalInformationPackage {
 	// }
 
 	@Override
-	public void setTopPIDPlacement(String parentPath, PID topPID, Integer designatedOrder, Integer sipOrder) {
+	public void setTopPIDPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder) {
 		RepositoryPlacement p = new RepositoryPlacement();
-		p.parentPath = parentPath;
+		p.parentPID = parentPID;
 		p.pid = topPID;
 		p.designatedOrder = designatedOrder;
 		p.sipOrder = sipOrder;

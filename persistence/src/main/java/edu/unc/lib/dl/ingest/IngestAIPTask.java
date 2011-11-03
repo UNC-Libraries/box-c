@@ -18,28 +18,30 @@ package edu.unc.lib.dl.ingest;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogConfigurationException;
 import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
 
 import edu.unc.lib.dl.agents.AgentManager;
 import edu.unc.lib.dl.agents.PersonAgent;
@@ -69,6 +71,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 public class IngestAIPTask implements Runnable {
 	private static final Log log = LogFactory.getLog(IngestAIPTask.class);
 	private static final String INGEST_LOG = "ingested.log";
+	private static final String REORDERED_LOG = "reordered.log";
 	private static final int INGEST_TIMEOUT_SECS = 1200;
 
 	private static final int ST_INIT = 0;
@@ -136,6 +139,8 @@ public class IngestAIPTask implements Runnable {
 	 */
 	private long lastIngestTime = -1;
 
+	private PersonAgent submitterAgent = null;
+
 	private BufferedWriter ingestLogWriter = null;
 
 	// injected dependencies
@@ -202,7 +207,7 @@ public class IngestAIPTask implements Runnable {
 			});
 
 			HashSet<PID> cSet = new HashSet<PID>();
-			for(RepositoryPlacement p : props.getPlacements().values()) {
+			for (RepositoryPlacement p : props.getPlacements().values()) {
 				cSet.add(p.parentPID);
 			}
 			containers = cSet.toArray(new PID[] {});
@@ -259,7 +264,7 @@ public class IngestAIPTask implements Runnable {
 	public void logIngestComplete() {
 		long ingestTime = System.currentTimeMillis() - ((lastIngestTime > 0) ? lastIngestTime : startTime);
 		try {
-			this.ingestLogWriter.write("|"+ingestTime);
+			this.ingestLogWriter.write("|" + ingestTime);
 			this.ingestLogWriter.newLine();
 			this.ingestLogWriter.flush();
 		} catch (IOException e) {
@@ -308,12 +313,8 @@ public class IngestAIPTask implements Runnable {
 					updateNextContainer();
 					break;
 				case ST_SEND_MESSAGES: // send cdr JMS and email for this AIP ingest
-					this.getOperationsMessageSender().sendAddOperation(props.getSubmitter(), timestamp, destinations,
-							props.getPlacements().keySet(), reordered);
-
-					// send successful ingest email
-					if (this.mailNotifier != null)
-						this.mailNotifier.sendIngestSuccessNotice(props);
+					sendIngestMessages();
+					break;
 				case ST_CLEANUP: // if nothing went wrong, then delete the batch directory
 			}
 		}
@@ -322,31 +323,72 @@ public class IngestAIPTask implements Runnable {
 	/**
 	 *
 	 */
+	private void sendIngestMessages() {
+		// load reordered existing children
+		List<PID> reordered = new ArrayList<PID>();
+		BufferedReader r = null;
+		try {
+			r = new BufferedReader(new FileReader(new File(this.baseDir, REORDERED_LOG)));
+			for (String line = r.readLine(); line != null; line = r.readLine()) {
+				reordered.add(new PID(line));
+			}
+		} catch (IOException e) {
+			throw new Error("Unexpected IO error.", e);
+		} finally {
+			try {
+				if(r != null)
+					r.close();
+			} catch (IOException ignored) {
+			}
+		}
+		Set<PID> containerSet = new HashSet<PID>();
+		Collections.addAll(containerSet, this.containers);
+		this.getOperationsMessageSender().sendAddOperation(props.getSubmitter(), containerSet,
+				props.getPlacements().keySet(), reordered);
+
+		// send successful ingest email
+		if (this.mailNotifier != null)
+			this.mailNotifier.sendIngestSuccessNotice(props, this.foxmlFiles.length);
+	}
+
+	/**
+	 *
+	 */
 	private void updateNextContainer() {
 		int next = 0;
-		if(this.lastIngestPID != null) {
-			for(int i = 0; i < containers.length; i++) {
+		if (this.lastIngestPID != null) {
+			for (int i = 0; i < containers.length; i++) {
 				if (containers[i].equals(this.lastIngestPID)) {
-					next = i+1;
+					next = i + 1;
 					break;
 				}
 			}
 		}
-		if(next >= containers.length) { // no more to update
+		if (next >= containers.length) { // no more to update
 			this.state = ST_SEND_MESSAGES;
 			return;
 		}
-
-		PersonAgent submitter = this.getAgentManager().findPersonByOnyen(props.getSubmitter(), false);
-		List<PID> reordered = new ArrayList<PID>();
-		// TODO convert to one container update at a time
+		PrintWriter reorderedWriter = null;
 		try {
+			if (submitterAgent == null) {
+				submitterAgent = this.getAgentManager().findPersonByOnyen(props.getSubmitter(), false);
+			}
+			reorderedWriter = new PrintWriter(new File(this.baseDir, REORDERED_LOG));
 			logIngestAttempt(containers[next], CONTAINER_UPDATE_CODE);
-			String timestamp = this.digitalObjectManager.addContainerContents(submitter, props.getPlacements().values(),
-					containers[next], reordered);
+			List<PID> reordered = this.digitalObjectManager.addContainerContents(submitterAgent, props.getPlacements()
+					.values(), containers[next]);
 			logIngestComplete();
+			for (PID p : reordered) {
+				reorderedWriter.write(p.getPid());
+				reorderedWriter.write("\n");
+			}
 		} catch (FedoraException e) {
-			fail("Cannot update container: "+containers[next], e);
+			fail("Cannot update container: " + containers[next], e);
+		} catch (FileNotFoundException e) {
+			fail("Cannot update container: " + containers[next], e);
+		} finally {
+			reorderedWriter.flush();
+			reorderedWriter.close();
 		}
 	}
 
@@ -354,7 +396,7 @@ public class IngestAIPTask implements Runnable {
 	 * Polls Fedora for the last ingested PID
 	 */
 	private void waitForLastIngest() {
-		if(!this.managementClient.pollForObject(this.lastIngestPID, 60, INGEST_TIMEOUT_SECS)) {
+		if (!this.managementClient.pollForObject(this.lastIngestPID, 60, INGEST_TIMEOUT_SECS)) {
 			// TODO re-attempt last ingest before failing?
 			fail("The last ingest before resuming was never completed. " + this.lastIngestPID + " in "
 					+ this.lastIngestFilename);
@@ -368,16 +410,16 @@ public class IngestAIPTask implements Runnable {
 	 * Checks that Fedora is responding, looks for destination containers.
 	 */
 	private void startBatch() {
-		if(!this.managementClient.pollForObject(ContentModelHelper.Administrative_PID.REPOSITORY.getPID(), 30, 600)) {
+		if (!this.managementClient.pollForObject(ContentModelHelper.Administrative_PID.REPOSITORY.getPID(), 30, 600)) {
 			fail("Cannot contact Fedora");
 		}
 		HashSet<PID> containers = new HashSet<PID>();
-		for(RepositoryPlacement p : props.getPlacements().values()) {
+		for (RepositoryPlacement p : props.getPlacements().values()) {
 			containers.add(p.parentPID);
 		}
-		for(PID container : containers) {
-			if(!this.managementClient.pollForObject(container, 10, 30)) {
-				fail("Cannot find existing container: "+container);
+		for (PID container : containers) {
+			if (!this.managementClient.pollForObject(container, 10, 30)) {
+				fail("Cannot find existing container: " + container);
 			}
 		}
 		this.state = ST_INGEST;
@@ -393,15 +435,15 @@ public class IngestAIPTask implements Runnable {
 
 	private void ingestNextObject() {
 		int next = 0;
-		if(this.lastIngestFilename != null) {
-			for(int i = 0; i < foxmlFiles.length; i++) {
+		if (this.lastIngestFilename != null) {
+			for (int i = 0; i < foxmlFiles.length; i++) {
 				if (foxmlFiles[i].getName().equals(this.lastIngestFilename)) {
-					next = i+1;
+					next = i + 1;
 					break;
 				}
 			}
 		}
-		if(next >= foxmlFiles.length) { // no more to ingest, next step
+		if (next >= foxmlFiles.length) { // no more to ingest, next step
 			this.state = ST_CONTAINER_UPDATE;
 			return;
 		}
@@ -424,7 +466,7 @@ public class IngestAIPTask implements Runnable {
 			try {
 				file = ZipFileUtil.getFileForUrl(ref, dataDir);
 			} catch (IOException e) {
-				fail("Data file missing: "+ref, e);
+				fail("Data file missing: " + ref, e);
 				break;
 			}
 			newref = this.getManagementClient().upload(file);
@@ -452,12 +494,12 @@ public class IngestAIPTask implements Runnable {
 			logIngestAttempt(pidIngested, this.lastIngestFilename);
 			this.state = ST_INGEST_VERIFY_CHECKSUMS;
 		} catch (ServiceException e) { // on timeout poll for the ingested object
-			log.info("Fedora Service Exception: "+e.getLocalizedMessage(), e);
+			log.info("Fedora Service Exception: " + e.getLocalizedMessage(), e);
 			logIngestAttempt(pid, lastIngestFilename);
 			this.state = ST_INGEST_WAIT;
 			return;
-		} catch (FedoraException e) {	// fedora threw a fault, ingest rejected
-			fail("Cannot ingest due to Fedora error: "+pid, e);
+		} catch (FedoraException e) { // fedora threw a fault, ingest rejected
+			fail("Cannot ingest due to Fedora error: " + pid, e);
 			return;
 		}
 	}
@@ -474,7 +516,7 @@ public class IngestAIPTask implements Runnable {
 	 *           the log of ingested objects
 	 * @return
 	 */
-	private void verifyLastIngestChecksums() throws FedoraException {
+	private void verifyLastIngestChecksums() {
 		PID pid = this.lastIngestPID;
 		Document xml = getFOXMLDocument(new File(baseDir, this.lastIngestFilename));
 		// build a map of checksums for the datastreams
@@ -501,7 +543,13 @@ public class IngestAIPTask implements Runnable {
 			}
 		}
 		for (String dsID : dsID2md5.keySet()) {
-			Datastream d = this.getManagementClient().getDatastream(pid, dsID);
+			Datastream d;
+			try {
+				d = this.getManagementClient().getDatastream(pid, dsID);
+			} catch (FedoraException e) {
+				fail("Cannot get datastream metadata for checksum comparison:" + pid + dsID, e);
+				return;
+			}
 			// compare checksums
 			if (!dsID2md5.get(dsID).equals(d.getChecksum())) { // datastream doesn't match
 				// TODO purge datastream and re-upload before failing?

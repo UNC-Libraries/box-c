@@ -270,15 +270,22 @@ public class RepositoryInitializer {
 			this.getDigitalObjectManager().setAvailable(true, "available");
 
 			try {
-				METSPackageSIP basics = new METSPackageSIP("/", upload, adminGroup, false);
+				METSPackageSIP basics = new METSPackageSIP(ContentModelHelper.Administrative_PID.REPOSITORY.getPID(), upload, adminGroup, false);
 				basics.setAllowIndexing(false);
-				this.getDigitalObjectManager().add(basics, repoSoftware, "adding admin folders objects", false);
+				this.getDigitalObjectManager().addBatch(basics, repoSoftware, "adding admin folders objects");
 				// this.getDigitalObjectManager().add(this.getAdministrorSIP(),
 				// null, "adding administrator agents");
 			} catch (IOException e) {
 				throw new Error("Could not add bootstrap METS file.", e);
 			} catch (IngestException e) {
 				throw new Error("Could not ingest bootstrap METS file.", e);
+			}
+
+			// wait for the batch ingest to finish
+			try {
+				log.info("Waiting 2 mins for batch ingest of admin folders to finish");
+				Thread.sleep(120*1000);
+			} catch (InterruptedException e1) {
 			}
 
 			// Now create the administrative users

@@ -158,10 +158,10 @@ public class METSPackageFileValidator {
 		// manifest)
 		List<String> extraFiles = new ArrayList<String>();
 
-		if (metsPack.getTempSIPDir() != null) {
+		if (metsPack.getSIPDataDir() != null) {
 			int zipPathLength = 0;
 			try {
-				zipPathLength = metsPack.getTempSIPDir().getCanonicalPath().length();
+				zipPathLength = metsPack.getSIPDataDir().getCanonicalPath().length();
 
 				for (File received : metsPack.getDataFiles()) {
 					if (!manifestFiles.contains(received)) {

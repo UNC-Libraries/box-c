@@ -74,7 +74,7 @@ public class ContentModelHelper {
 		public URI getURI() {
 			return this.uri;
 		}
-		
+
 		public boolean equals(String value){
 			return this.uri.toString().equals(value);
 		}
@@ -108,7 +108,7 @@ public class ContentModelHelper {
 		public URI getURI() {
 			return this.uri;
 		}
-		
+
 		public boolean equals(String value){
 			return this.uri.toString().equals(value);
 		}
@@ -168,7 +168,7 @@ public class ContentModelHelper {
 		public boolean equals(String value){
 			return this.uri.toString().equals(value);
 		}
-		
+
 		@Override
 		public String toString() {
 			return this.uri.toString();
@@ -207,11 +207,11 @@ public class ContentModelHelper {
 		public PID getPID() {
 			return this.pid;
 		}
-		
+
 		public boolean equals(String value){
 			return this.uri.toString().equals(value);
 		}
-		
+
 		public boolean equalsPID(String value){
 			return this.pid.getPid().equals(value);
 		}
@@ -246,7 +246,7 @@ public class ContentModelHelper {
 		public URI getURI() {
 			return this.uri;
 		}
-		
+
 		public boolean equals(String value){
 			return this.uri.toString().equals(value);
 		}
@@ -275,7 +275,7 @@ public class ContentModelHelper {
 		public String getName() {
 			return name;
 		}
-		
+
 		public boolean equals(String value){
 			return this.name.equals(value);
 		}

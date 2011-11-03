@@ -125,21 +125,15 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	public DigitalObjectManagerImpl() {
 	}
 
-	public void add(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
-		this.add(sip, user, message, true);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 *
 	 * @see edu.unc.lib.dl.services.DigitalObjectManager#add(java.lang.String, java.io.File, edu.unc.lib.dl.agents.Agent,
 	 * edu.unc.lib.dl.agents.PersonAgent, java.lang.String)
 	 */
-	public void add(SubmissionInformationPackage sip, Agent user, String message, boolean sendEmail)
+	public void addBatch(SubmissionInformationPackage sip, Agent user, String message)
 			throws IngestException {
-		Throwable thrown = null;
 		ArchivalInformationPackage aip = null;
-		DateTime time = new DateTime();
 		try {
 			availableCheck();
 			if (user == null) {
@@ -160,9 +154,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			// move the AIP into the ingest queue.
 			// aip.enqueue();
 		} catch (IngestException e) {
-			thrown = e;
 			// exception on AIP preparation, no transaction started
 			log.info("User level exception on ingest, prior to Fedora transaction", e);
+			throw e;
 		}
 	}
 
@@ -176,14 +170,16 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * Updates the RELS-EXT contains relationships and the MD_CONTENTS datastream. Call this method last, after all other
 	 * transactions, it will roll itself back on failure and throw an IngestException.
 	 *
-	 * @param aip
-	 * @param reordered
-	 * @param destinations
-	 * @throws IngestException
+	 * @param submitter the Agent that submitted this change
+	 * @param placements the container locations of new pids
+	 * @param container the container added to
+	 * @return the list of PIDs reordered by this change
+	 * @throws FedoraException
 	 */
-	public String addContainerContents(Agent submitter, Collection<RepositoryPlacement> placements, PID container, List<PID> reordered) throws FedoraException {
-		String timestamp = null;
+	public List<PID> addContainerContents(Agent submitter, Collection<RepositoryPlacement> placements, PID container) throws FedoraException {
 		DateTime time = new DateTime();
+		List<PID> reordered = new ArrayList<PID>();
+
 		// beginning of container meddling
 		// TODO do this in 1 RELS-EXT edit
 		for (RepositoryPlacement p : placements) {
@@ -221,10 +217,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			newXML = this.getContainerContentsHelper().addChildContentAIPInCustomOrder(oldXML, container, placements,
 					reordered);
 			if (exists) {
-				timestamp = this.getManagementClient().modifyInlineXMLDatastream(container, "MD_CONTENTS", false,
+				this.getManagementClient().modifyInlineXMLDatastream(container, "MD_CONTENTS", false,
 						"adding child resource to container", new ArrayList<String>(), "List of Contents", newXML);
 			} else {
-				timestamp = this.getManagementClient().addInlineXMLDatastream(container, "MD_CONTENTS", false,
+				this.getManagementClient().addInlineXMLDatastream(container, "MD_CONTENTS", false,
 						"added child resource to container", new ArrayList<String>(), "List of Contents", false, newXML);
 			}
 		}
@@ -235,7 +231,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		logger.logEvent(PremisEventLogger.Type.INGESTION, "added " + children + " child object(s) to this container",
 				container);
 		writePremisEventsToFedoraObject(logger, container);
-		return timestamp;
+		return reordered;
 	}
 
 	/**
@@ -330,7 +326,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				}
 			}
 			if (this.getOperationsMessageSender() != null) {
-				this.getOperationsMessageSender().sendRemoveOperation(user.getName(), logTimestamp, container, removed,
+				this.getOperationsMessageSender().sendRemoveOperation(user.getName(), container, removed,
 						reordered);
 			}
 		} catch (FedoraException fault) {
@@ -847,7 +843,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				oldXML.setRootElement(structMap);
 				exists = false;
 			}
-			newXML = this.getContainerContentsHelper().insertChildContentList(oldXML, destinationPath, moving, reordered);
+			newXML = this.getContainerContentsHelper().addChildContentListInCustomOrder(oldXML, destination, moving, reordered);
 			if (exists) {
 				msgTimestamp = this.getManagementClient().modifyInlineXMLDatastream(destination, "MD_CONTENTS", false,
 						"adding " + moving.size() + " child resources to container", new ArrayList<String>(),
@@ -866,7 +862,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 			// send message for the operation
 			if (this.getOperationsMessageSender() != null) {
-				this.getOperationsMessageSender().sendMoveOperation(user.getName(), msgTimestamp, oldParents, destination,
+				this.getOperationsMessageSender().sendMoveOperation(user.getName(), oldParents, destination,
 						moving, reordered);
 			}
 		} catch (FedoraException e) {
@@ -903,5 +899,44 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 	public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
 		this.operationsMessageSender = operationsMessageSender;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.services.DigitalObjectManager#addSingleObject(edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage, edu.unc.lib.dl.agents.Agent, java.lang.String)
+	 */
+	@Override
+	public PID addSingleObject(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
+		// TODO check for proper SIP type
+		boolean reject = true;
+		// normal SIP processing
+		ArchivalInformationPackage aip = null;
+		try {
+			availableCheck();
+			if (user == null) {
+				throw new IngestException("A user must be supplied for every ingest");
+			}
+			// lookup the processor for this SIP
+			SIPProcessor processor = this.getSipProcessorFactory().getSIPProcessor(sip);
+
+			// process the SIP into a standard AIP
+			// aip = processor.createAIP(sip);
+
+			// run routine AIP processing steps
+			aip = this.getAipIngestPipeline().processAIP(aip);
+
+			// persist the AIP to disk
+			aip.prepareIngest();
+
+			// move the AIP into the ingest queue.
+			// TODO Run an ingest task
+			// aip.enqueue();
+		} catch (IngestException e) {
+			// exception on AIP preparation, no transaction started
+			log.info("User level exception on ingest, prior to Fedora transaction", e);
+			throw e;
+		}
+		// TODO run ingest task immediately and wait for it.
+		// TODO return the newly minted pid
+		return null;
 	}
 }

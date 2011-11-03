@@ -61,7 +61,7 @@ public class ContainerContentsHelper {
 	 * @throws IOException
 	 */
 	public Document addChildContentAIPInCustomOrder(Document result, PID containerPID,
-			Map<PID, RepositoryPlacement> placements, List<PID> reordered) {
+			Collection<RepositoryPlacement> placements, List<PID> reordered) {
 		log.debug("adding child content to MD_CONTENTS XML doc");
 
 		// first build a list of existing pid order in the container
@@ -104,11 +104,8 @@ public class ContainerContentsHelper {
 		List<RepositoryPlacement> designatedOrder = new ArrayList<RepositoryPlacement>();
 		List<RepositoryPlacement> sipOrdered = new ArrayList<RepositoryPlacement>();
 		List<RepositoryPlacement> unordered = new ArrayList<RepositoryPlacement>();
-		for (PID pid : placements.keySet()) {
-			RepositoryPlacement place = placements.get(pid);
-			if (containerPID.equals(place.parentPID)) { // only place those
-				// objects that go
-				// with this container
+		for (RepositoryPlacement place : placements) {
+			if (containerPID.equals(place.parentPID)) { // only place those objects that go in this container
 				if (place.designatedOrder != null) {
 					designatedOrder.add(place);
 				} else if (place.sipOrder != null) {
