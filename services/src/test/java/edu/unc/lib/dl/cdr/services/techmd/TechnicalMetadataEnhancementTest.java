@@ -45,7 +45,7 @@ public class TechnicalMetadataEnhancementTest extends Assert {
 		return fileData.toString();
 	}
 	
-	@Test
+	//@Test
 	public void testFITSResponseParsing(){
 		try {
 			java.io.InputStream inStream = this.getClass().getResourceAsStream("fitsOutputMultipleLineBreaks.xml");
