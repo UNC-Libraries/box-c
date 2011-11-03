@@ -654,11 +654,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 	private String sendTQL(String query) {
 		log.debug(query);
 		String result = null;
+		SOAPConnection connection = null;
 		try {
 			// First create the connection
 			SOAPConnectionFactory soapConnFactory = SOAPConnectionFactory.newInstance();
-			SOAPConnection connection = soapConnFactory.createConnection();
-
+			connection = soapConnFactory.createConnection();
+			
 			// Next, create the actual message
 			MessageFactory messageFactory = MessageFactory.newInstance();
 			SOAPMessage message = messageFactory.createMessage();
@@ -693,6 +694,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 			}
 		} catch (SOAPException e) {
 			throw new RuntimeException("Cannot query triple store at " + this.getItqlEndpointURL(), e);
+		} finally {
+			try {
+				connection.close();
+			} catch (SOAPException e) {
+				throw new RuntimeException("Failed to close SOAP connection for triple store at " + this.getItqlEndpointURL(), e);
+			}
 		}
 		return result;
 	}
@@ -702,17 +709,15 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 	}
 
 	public Map sendSPARQL(String query, String format) {
+		PostMethod post = null;
 		try {
 			String postUrl = this.getSparqlEndpointURL();
 			if (format != null) {
 				postUrl += "?format=" + format;
 			}
-			PostMethod post = new PostMethod(postUrl);
+			post = new PostMethod(postUrl);
 			post.setRequestHeader("Content-Type", "application/sparql-query");
 			NameValuePair[] params = new NameValuePair[2];
-			// params[0] = new NameValuePair("format", format);
-			// params[1] = new NameValuePair("query", query);
-			// post.addParameters(params);
 			post.addParameter("query", query);
 			int statusCode = httpClient.executeMethod(post);
 			if (statusCode != HttpStatus.SC_OK) {
@@ -733,6 +738,9 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		} finally {
+			if (post != null)
+				post.releaseConnection();
 		}
 	}
 
