@@ -43,10 +43,14 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.HttpMethodRetryHandler;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.NoHttpResponseException;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -704,11 +708,13 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		return result;
 	}
 
-	public Map sendSPARQL(String query) {
+	@Override
+	public Map<?,?> sendSPARQL(String query) {
 		return sendSPARQL(query, "json");
 	}
 
-	public Map sendSPARQL(String query, String format) {
+	@Override
+	public Map<?,?> sendSPARQL(String query, String format) {
 		PostMethod post = null;
 		try {
 			String postUrl = this.getSparqlEndpointURL();
@@ -717,7 +723,38 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 			}
 			post = new PostMethod(postUrl);
 			post.setRequestHeader("Content-Type", "application/sparql-query");
-			NameValuePair[] params = new NameValuePair[2];
+			
+			HttpMethodRetryHandler retryHandler = new HttpMethodRetryHandler() {
+				public boolean retryMethod(final HttpMethod method, final IOException exception, int executionCount) {
+					if (method == null) {
+						throw new IllegalArgumentException("HTTP method may not be null");
+					}
+					if (exception == null) {
+						throw new IllegalArgumentException("Exception parameter may not be null");
+					}
+					if (method instanceof HttpMethodBase && ((HttpMethodBase) method).isAborted()) {
+						return false;
+					}
+					if (executionCount >= 3) {
+						return false;
+					}
+					if (exception instanceof NoHttpResponseException) {
+						return true;
+					}
+					if (!method.isRequestSent()) {
+						return true;
+					}
+					if (method.getStatusCode() == 500) {
+						log.warn("SPARQL POST method failed, " + executionCount + " attemp: " + method.getStatusLine(), exception);
+						return true;
+					}
+					// otherwise do not retry
+					return false;
+				}
+			};
+			
+			post.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, retryHandler);
+			
 			post.addParameter("query", query);
 			int statusCode = httpClient.executeMethod(post);
 			if (statusCode != HttpStatus.SC_OK) {
@@ -727,7 +764,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 				byte[] resultBytes = post.getResponseBody();
 				log.debug(new String(resultBytes, "utf-8"));
 				if ("json".equals(format)) {
-					return (Map) mapper.readValue(new ByteArrayInputStream(resultBytes), Object.class);
+					return (Map<?,?>) mapper.readValue(new ByteArrayInputStream(resultBytes), Object.class);
 				} else {
 					Map<String, String> resultMap = new HashMap<String, String>();
 					String resultString = new String(resultBytes, "utf-8");
