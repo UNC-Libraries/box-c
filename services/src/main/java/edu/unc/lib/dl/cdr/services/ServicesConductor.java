@@ -464,10 +464,10 @@ public class ServicesConductor {
 						this.applyService(pidMessage, s);
 					} catch (RecoverableServiceException e){
 						retryException(pidMessage, s, "A recoverable service error occurred while attempting to apply service",
-								e, 30000L);
+								e, 20000L);
 					} catch (RuntimeException e) {
 						retryException(pidMessage, s, "An unexpected runtime error occurred while attempting to apply service",
-								e, 120000L);
+								e, 60000L);
 					} catch (Exception e) {
 						LOG.error("An unrecoverable error occurred while attempting to apply service " + s.getClass().getName(), e);
 						failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
