@@ -31,13 +31,15 @@
 	<ul class="crumblist">
 		<c:if test="${not empty searchState.searchFields}">
 			<c:forEach items="${searchState.searchFields}" var="field">
-				<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-					<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_SEARCH_FIELD"]}:${searchSettings.searchFieldParams[field.key]}'/>
-				</c:url>
-				<li>
-					(<a href="<c:out value="${removeUrl}"/>">x</a>)
-					<c:out value="${searchSettings.searchFieldLabels[field.key]}" />: <c:out value="${field.value}" />
-				</li>
+				<c:if test="${not empty field.value}">
+					<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_SEARCH_FIELD"]}:${searchSettings.searchFieldParams[field.key]}'/>
+					</c:url>
+					<li>
+						(<a href="<c:out value="${removeUrl}"/>">x</a>)
+						<c:out value="${searchSettings.searchFieldLabels[field.key]}" />: <c:out value="${field.value}" />
+					</li>
+				</c:if>
 			</c:forEach>
 		</c:if>
 		<c:if test="${not empty searchState.facets}">
