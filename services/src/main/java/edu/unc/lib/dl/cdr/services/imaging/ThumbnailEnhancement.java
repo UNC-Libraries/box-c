@@ -31,9 +31,11 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
+import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.FileSystemException;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -130,11 +132,16 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 					}
 				}
 			}
-		} catch (FedoraException e){
-			throw new RecoverableServiceException("Thumbnail Enhancement failed to process, pid: "+pid.getPIDString()+" surrogateDS: "+surrogateDsId, e);
+		} catch (FileSystemException e) {
+			throw new EnhancementException(e, Severity.FATAL);
+		} catch (NotFoundException e) {
+			throw new EnhancementException(e, Severity.UNRECOVERABLE);
+		} catch (FedoraException e) {
+			throw new EnhancementException("Thumbnail Enhancement failed to process, pid: " + pid.getPIDString() 
+					+ " surrogateDS: "+surrogateDsId, e, Severity.RECOVERABLE);
 		} catch (Exception e) {
-			LOG.error("Thumbnail Enhancement failed to process, pid "+pid.getPIDString()+" surrogateDS: "+surrogateDsId, e);
-			throw new EnhancementException(e);
+			throw new EnhancementException("Thumbnail Enhancement failed to process, pid "+pid.getPIDString()
+					+ " surrogateDS: "+surrogateDsId, e, Severity.UNRECOVERABLE);
 		}
 
 		return result;

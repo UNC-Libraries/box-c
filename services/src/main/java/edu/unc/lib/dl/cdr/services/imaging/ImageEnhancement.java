@@ -31,8 +31,11 @@ import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
+import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.FileSystemException;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -155,10 +158,16 @@ public class ImageEnhancement extends Enhancement<Element> {
 						LOG.debug("Finished JP2 processing");
 					}
 				}
+			}  catch (FileSystemException e) {
+				throw new EnhancementException(e, Severity.FATAL);
+			} catch (NotFoundException e) {
+				throw new EnhancementException(e, Severity.UNRECOVERABLE);
 			} catch (FedoraException e) {
-				throw new RecoverableServiceException("Image Enhancement failed to process " + dsid, e);
+				throw new EnhancementException("Image Enhancement failed to process " + dsid, 
+						e, Severity.RECOVERABLE);
 			} catch (Exception e) {
-				throw new EnhancementException("Image Enhancement failed to process " + dsid, e);
+				throw new EnhancementException("Image Enhancement failed to process " + dsid,
+						e, Severity.UNRECOVERABLE);
 			}
 		}
 
