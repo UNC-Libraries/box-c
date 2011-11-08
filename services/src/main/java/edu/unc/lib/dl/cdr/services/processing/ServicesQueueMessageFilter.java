@@ -17,6 +17,7 @@
 package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -36,10 +37,10 @@ import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 public class ServicesQueueMessageFilter implements MessageFilter {
 	private static final Logger LOG = LoggerFactory.getLogger(ServicesQueueMessageFilter.class);
 	
-	private List<ObjectEnhancementService> services = new ArrayList<ObjectEnhancementService>();
+	private List<ObjectEnhancementService> services;
 	
 	public void setServices(List<ObjectEnhancementService> services) {
-		this.services = services;
+		this.services = Collections.unmodifiableList(services);
 	}
 	
 	public ServicesQueueMessageFilter(){
@@ -60,6 +61,7 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 		
 		//If the message is for a full stack run, then it passes
 		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getAction())){
+			message.setFilteredServices(services);
 			return true;
 		}
 		
