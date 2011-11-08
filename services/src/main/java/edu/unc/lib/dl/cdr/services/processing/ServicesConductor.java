@@ -407,4 +407,12 @@ public class ServicesConductor implements MessageConductor {
 		}
 
 	}
+
+
+
+	@Override
+	public int getQueueSize() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

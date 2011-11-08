@@ -16,6 +16,8 @@
 
 package edu.unc.lib.dl.cdr.services.processing;
 
+import java.util.concurrent.TimeUnit;
+
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
@@ -25,6 +27,12 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 public class SolrUpdateConductor extends SolrUpdateService implements MessageConductor {
 	public static final String identifier = "SOLR_UPDATE";
 
+	@Override
+	public void init(){
+		this.executor = new ServicesThreadPoolExecutor(this.maxIngestThreads);
+		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
+	}
+	
 	@Override
 	public void add(PIDMessage message) {
 		String namespace = message.getNamespace();
@@ -72,4 +80,26 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 		return identifier;
 	}
 
+	public ServicesThreadPoolExecutor getThreadPoolExecutor(){
+		return (ServicesThreadPoolExecutor)this.executor;
+	}
+
+	@Override
+	public void pause() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void resume() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int getQueueSize() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
 }

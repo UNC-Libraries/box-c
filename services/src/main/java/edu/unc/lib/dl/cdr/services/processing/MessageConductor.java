@@ -22,4 +22,12 @@ public interface MessageConductor {
 	void add(PIDMessage message);
 	
 	String getIdentifier();
+	
+	void pause();
+	
+	void resume();
+	
+	int getQueueSize();
+	
+	
 }

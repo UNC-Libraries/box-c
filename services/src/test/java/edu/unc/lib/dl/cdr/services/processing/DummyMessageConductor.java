@@ -50,5 +50,23 @@ public class DummyMessageConductor implements MessageConductor {
 	public void setMessageList(ArrayList<PIDMessage> messageList) {
 		this.messageList = messageList;
 	}
+
+	@Override
+	public void pause() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void resume() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int getQueueSize() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }
 
