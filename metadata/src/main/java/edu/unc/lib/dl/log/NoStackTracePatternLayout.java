@@ -13,18 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.fedora;
+package edu.unc.lib.dl.log;
 
-import org.springframework.ws.soap.client.SoapFaultClientException;
+import org.apache.log4j.PatternLayout;
 
-public class FileSystemException extends FedoraException {
-	private static final long serialVersionUID = -4711418067046583942L;
-
-	public FileSystemException(SoapFaultClientException e) {
-		super(e);
-	}
-
-	public FileSystemException(String message) {
-		super(message);
+public class NoStackTracePatternLayout extends PatternLayout {
+	@Override
+	public boolean ignoresThrowable() {
+		return false;
 	}
 }
