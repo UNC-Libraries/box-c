@@ -117,9 +117,11 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 				Document fits = null;
 				try {
 					fits = runFITS(dsIrodsPath, dsAltIds);
+				} catch (JDOMException e){
+					LOG.warn("Failed to parse FITS response", e);
+					return null;
 				} catch (Exception e) {
-					LOG.error("Run Fits failed", e);
-					throw new EnhancementException(e);
+					throw new EnhancementException(e, Severity.UNRECOVERABLE);
 				}
 
 				// put the FITS document in DS map
