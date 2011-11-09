@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
+import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.fedora.PID;
@@ -63,7 +65,7 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public boolean isApplicable(PIDMessage pid) {
+	public boolean isApplicable(PIDMessage pid) throws EnhancementException {
 		// Get lastModified from Fedora
 		LOG.debug("isApplicable called with " + pid);
 		if (pid.getMessage() != null){
@@ -127,7 +129,7 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 							return true;
 						}
 					} catch (IOException e) {
-						throw new Error(e);
+						throw new EnhancementException(e, Severity.UNRECOVERABLE);
 					}
 				} else {
 					//Message has a updated timestamp, so compare the solr date to when the message's event took place.
@@ -141,7 +143,7 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 				}
 			}
 		} catch (SolrServerException e){
-			throw new RecoverableServiceException("Error determining isApplicable for SolrUpdateEnhancement.", e);
+			throw new EnhancementException("Error determining isApplicable for SolrUpdateEnhancement.", e, Severity.RECOVERABLE);
 		}
 		return false;
 	}

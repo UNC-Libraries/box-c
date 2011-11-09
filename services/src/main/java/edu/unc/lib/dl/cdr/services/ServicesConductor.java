@@ -71,6 +71,9 @@ public class ServicesConductor {
 	private SideEffectMessageFilterList sideEffectMessageFilterList = null; 
 
 	private ServicesThreadPoolExecutor executor = null;
+	
+	private long recoverableDelay = 20000;
+	private long unexpectedExceptionDelay = 60000;
 
 	private boolean paused = false;
 
@@ -202,9 +205,33 @@ public class ServicesConductor {
 	public int getMaxThreads() {
 		return maxThreads;
 	}
+	
+	public ServicesThreadPoolExecutor getExecutor(){
+		return this.executor;
+	}
+	
+	public int getActiveThreadCount() {
+		return this.executor.getActiveCount();
+	}
 
 	public void setMaxThreads(int maxThreads) {
 		this.maxThreads = maxThreads;
+	}
+	
+	public long getRecoverableDelay() {
+		return recoverableDelay;
+	}
+
+	public void setRecoverableDelay(long recoverableDelay) {
+		this.recoverableDelay = recoverableDelay;
+	}
+
+	public long getUnexpectedExceptionDelay() {
+		return unexpectedExceptionDelay;
+	}
+
+	public void setUnexpectedExceptionDelay(long unexpectedExceptionDelay) {
+		this.unexpectedExceptionDelay = unexpectedExceptionDelay;
 	}
 
 	public List<ObjectEnhancementService> getServices() {
@@ -456,44 +483,45 @@ public class ServicesConductor {
 			} while (pidMessage == null && !(pidQueue.size() == 0 && collisionList.size() == 0));
 
 			if (pidMessage != null) {
-				for (ObjectEnhancementService s : services) {
-					try {
-						this.applyService(pidMessage, s);
-					} catch (EnhancementException e){
-						switch (e.getSeverity()) {
-							case RECOVERABLE: 
-								retryException(pidMessage, s, "A recoverable enhancement exception occurred while attempting to apply service "
-										+ s.getClass().getName(), e, 20000L);
-								break;
-							case UNRECOVERABLE:
-								LOG.error("An unrecoverable exception occurred while attempting to apply service " 
-										+ s.getClass().getName() + " for " + pidMessage.getPIDString() + ".  Adding to failure list.", e);
-								failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
-								break;
-							case FATAL:
-								pause();
-								LOG.error("A fatal exception occurred while attempting to apply service " 
-										+ s.getClass().getName() + " for " + pidMessage.getPIDString() +", halting all future services.", e);
-								failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
-								
-								break;
-							default:
-								LOG.error("An exception occurred while attempting to apply service "
-										+ s.getClass().getName() + " for " + pidMessage.getPIDString(), e);
-								failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
-								break;
+				try {
+					for (ObjectEnhancementService s : services) {
+						try {
+							this.applyService(pidMessage, s);
+						} catch (EnhancementException e){
+							switch (e.getSeverity()) {
+								case RECOVERABLE: 
+									retryException(pidMessage, s, "A recoverable enhancement exception occurred while attempting to apply service "
+											+ s.getClass().getName(), e, recoverableDelay);
+									break;
+								case UNRECOVERABLE:
+									LOG.error("An unrecoverable exception occurred while attempting to apply service " 
+											+ s.getClass().getName() + " for " + pidMessage.getPIDString() + ".  Adding to failure list.", e);
+									failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
+									break;
+								case FATAL:
+									pause();
+									LOG.error("A fatal exception occurred while attempting to apply service " 
+											+ s.getClass().getName() + " for " + pidMessage.getPIDString() +", halting all future services.", e);
+									failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
+									return;
+								default:
+									LOG.error("An exception occurred while attempting to apply service "
+											+ s.getClass().getName() + " for " + pidMessage.getPIDString(), e);
+									failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
+									break;
+							}
+						} catch (RuntimeException e) {
+							retryException(pidMessage, s, "A runtime error occurred while attempting to apply service",
+									e, unexpectedExceptionDelay);
+						} catch (Exception e) {
+							LOG.error("An unexpected exception occurred while attempting to apply service " + s.getClass().getName(), e);
+							failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
 						}
-					} catch (RuntimeException e) {
-						retryException(pidMessage, s, "A runtime error occurred while attempting to apply service",
-								e, 60000L);
-					} catch (Exception e) {
-						LOG.error("An unexpected exception occurred while attempting to apply service " + s.getClass().getName(), e);
-						failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
 					}
+				} finally {
+					lockedPids.remove(pidMessage.getPIDString());
 				}
-				lockedPids.remove(pidMessage.getPIDString());
 			}
 		}
-
 	}
 }

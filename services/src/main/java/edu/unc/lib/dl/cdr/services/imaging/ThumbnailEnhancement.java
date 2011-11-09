@@ -56,44 +56,37 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 	public Element call() throws EnhancementException {
 		Element result = null;
 		LOG.debug("Called thumbnail enhancement service for " + pid.getPID());
-
-
-		// enqueues objects that use this one as a surrogate.
-		List<PID> usesMeForSurrogate = this.service.getTripleStoreQueryService().fetchPIDsSurrogateFor(pid.getPID());
-		for(PID usesMe: usesMeForSurrogate) {
-			this.service.getServicesConductor().add(usesMe, ThumbnailEnhancementService.class.getName());
-		}
-
-		// get sourceData data stream IDs
-		List<String> surrogateDSIDs = this.service.getTripleStoreQueryService().getSurrogateData(pid.getPID());
-		if(surrogateDSIDs == null || surrogateDSIDs.size() < 1) {
-			throw new EnhancementException(pid.getPID(), "Cannot find a suitable DSID for making a thumbnail.");
-		}
-		String surrogateDsUri = surrogateDSIDs.get(0);
-		String surrogateDsId = surrogateDsUri.substring(surrogateDsUri.lastIndexOf("/") + 1);
-		PID surrogatePid = new PID(surrogateDsUri.substring(0,surrogateDsUri.lastIndexOf("/")));
-
-		Document foxml = null;
-		try {
-			foxml = service.getManagementClient().getObjectXML(pid.getPID());
-		} catch (Exception e) {
-			LOG.error("Failed to retrieve FOXML for " + pid.getPID(), e);
-		}
-
-		Document surrogateFoxml = null;
-		try {
-			surrogateFoxml = service.getManagementClient().getObjectXML(surrogatePid);
-		} catch (Exception e) {
-			LOG.error("Failed to retrieve FOXML for " + surrogatePid, e);
-		}
-
-		String mimetype = service.getTripleStoreQueryService().lookupSourceMimeType(surrogatePid);
-
+		
+		String surrogateDsUri = null;
+		String surrogateDsId = null;
+		PID surrogatePid = null;
+		
 		String dsLocation = null;
 		String dsIrodsPath = null;
 		String vid = null;
 
 		try {
+		// enqueues objects that use this one as a surrogate.
+			List<PID> usesMeForSurrogate = this.service.getTripleStoreQueryService().fetchPIDsSurrogateFor(pid.getPID());
+			for(PID usesMe: usesMeForSurrogate) {
+				this.service.getServicesConductor().add(usesMe, ThumbnailEnhancementService.class.getName());
+			}
+
+			// get sourceData data stream IDs
+			List<String> surrogateDSIDs = this.service.getTripleStoreQueryService().getSurrogateData(pid.getPID());
+			if(surrogateDSIDs == null || surrogateDSIDs.size() < 1) {
+				throw new EnhancementException(pid.getPID(), "Cannot find a suitable DSID for making a thumbnail.");
+			}
+			surrogateDsUri = surrogateDSIDs.get(0);
+			surrogateDsId = surrogateDsUri.substring(surrogateDsUri.lastIndexOf("/") + 1);
+			surrogatePid = new PID(surrogateDsUri.substring(0,surrogateDsUri.lastIndexOf("/")));
+
+			Document foxml = service.getManagementClient().getObjectXML(pid.getPID());
+
+			Document surrogateFoxml = service.getManagementClient().getObjectXML(surrogatePid);
+
+			String mimetype = service.getTripleStoreQueryService().lookupSourceMimeType(surrogatePid);
+			
 			Datastream ds = service.getManagementClient().getDatastream(surrogatePid, surrogateDsId, "");
 			vid = ds.getVersionID();
 
@@ -132,6 +125,8 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 					}
 				}
 			}
+		} catch (EnhancementException e) {
+			throw e;
 		} catch (FileSystemException e) {
 			throw new EnhancementException(e, Severity.FATAL);
 		} catch (NotFoundException e) {

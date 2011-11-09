@@ -23,11 +23,11 @@ public class EnhancementException extends Exception {
 	private Severity severity = Severity.UNRECOVERABLE;
 	
 	public EnhancementException(Throwable cause){
-		this.setStackTrace(cause.getStackTrace());
+		super(cause);
 	}
 	
 	public EnhancementException(Throwable cause, Severity severity){
-		this.setStackTrace(cause.getStackTrace());
+		super(severity + ": " + cause.getMessage(), cause);
 		this.severity = severity;
 	}
 
