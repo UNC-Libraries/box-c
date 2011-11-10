@@ -162,7 +162,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 				} else {
 					format = "Unknown";
 					LOG.warn("FITS unable to conclusively identify file: " + pid.getPID() + "/" + dsid);
-					LOG.warn(new XMLOutputter().outputString(fits));
+					LOG.info(new XMLOutputter().outputString(fits));
 				}
 
 				if ("DATA_FILE".equals(dsid)) {
@@ -359,7 +359,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 			return result;
 		} catch(JDOMException e) {
 			LOG.warn("Failed to parse FITS output: "+e.getMessage());
-			LOG.warn("FITS returned: \n"+xmlstr+"\n\n"+errstr);
+			LOG.info("FITS returned: \n"+xmlstr+"\n\n"+errstr);
 			throw e;
 		} finally {
 			if (reader != null) {
