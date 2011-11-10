@@ -43,6 +43,8 @@ public class ServicesConductorTest extends Assert {
 	
 	@Resource
 	private ServicesConductor servicesConductor;
+	@Resource
+	private MessageDirector messageDirector;
 	private ServicesThreadPoolExecutor executor; 
 	
 	@Before
@@ -60,12 +62,14 @@ public class ServicesConductorTest extends Assert {
 	@Test
 	public void enhancementFailure(){
 		for (ObjectEnhancementService s : servicesConductor.getServices()) {
-			enhancementFailure(s.getClass().getName());
+			enhancementFailure(s);
 		}
 	}
 	
 	
-	public void enhancementFailure(String serviceName){
+	public void enhancementFailure(ObjectEnhancementService s){
+		String serviceName = s.getClass().getName();
+		
 		LOG.debug("Service failure test of " + serviceName);
 		
 		PIDMessage message = new PIDMessage(ManagementClientMock.PID_FILE_SYSTEM, JMSMessageUtil.servicesMessageNamespace, 
@@ -73,17 +77,15 @@ public class ServicesConductorTest extends Assert {
 		
 		servicesConductor.flushPids("yes");
 		servicesConductor.clearFailedPids("yes");
-		
 		servicesConductor.setRecoverableDelay(500);
 		servicesConductor.setUnexpectedExceptionDelay(0);
 		
 		assertFalse(servicesConductor.isPaused());
 		
 		//Test fatal exceptions
-		servicesConductor.clearFailedPids("yes");
 		servicesConductor.resume();
 		
-		servicesConductor.add(message);
+		messageDirector.direct(message);
 		while (servicesConductor.getPidQueue().size() != 0 || servicesConductor.getLockedPids().size() != 0 
 				|| executor.getActiveCount() != 0);
 		assertTrue(servicesConductor.isPaused());
@@ -97,7 +99,7 @@ public class ServicesConductorTest extends Assert {
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), serviceName);
 		
 		servicesConductor.getFailedPids().clear();
-		servicesConductor.add(message);
+		messageDirector.direct(message);
 		while (servicesConductor.getFailedPids().size() == 0 
 				&& (servicesConductor.getPidQueue().size() == 0 || executor.getActiveCount() == 0));
 		assertTrue(servicesConductor.isPaused());
@@ -118,7 +120,7 @@ public class ServicesConductorTest extends Assert {
 		message = new PIDMessage(ManagementClientMock.PID_FEDORA, JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), serviceName);
 		
-		servicesConductor.add(message);
+		messageDirector.direct(message);
 		while (servicesConductor.getPidQueue().size() == 0);
 		servicesConductor.resume();
 		while (servicesConductor.getLockedPids().size() == 0);
@@ -131,7 +133,7 @@ public class ServicesConductorTest extends Assert {
 		message = new PIDMessage(ManagementClientMock.PID_RUN_TIME, JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), serviceName);
 		
-		servicesConductor.add(message);
+		messageDirector.direct(message);
 		while (servicesConductor.getPidQueue().size() > 0 || executor.getActiveCount() > 0);
 		assertTrue(servicesConductor.getFailedPids().containsKey(ManagementClientMock.PID_RUN_TIME));
 		
@@ -143,6 +145,14 @@ public class ServicesConductorTest extends Assert {
 
 	public void setServicesConductor(ServicesConductor servicesConductor) {
 		this.servicesConductor = servicesConductor;
+	}
+
+	public MessageDirector getMessageDirector() {
+		return messageDirector;
+	}
+
+	public void setMessageDirector(MessageDirector messageDirector) {
+		this.messageDirector = messageDirector;
 	}
 	
 }
