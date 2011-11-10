@@ -51,6 +51,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService.PathInfo;
 import org.fcrepo.server.security.xacml.MelcoeXacmlException;
 import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderConfigUtil;
 import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderException;
+import org.fcrepo.server.security.xacml.util.AttributeFinderConfig;
 import org.fcrepo.server.security.xacml.util.ContextUtil;
 import org.fcrepo.server.security.xacml.util.RelationshipResolver;
 import org.slf4j.Logger;
@@ -65,7 +66,8 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 
 	private RelationshipResolver relationshipResolver = null;
 
-	private Map<Integer, Set<String>> attributes = null;
+	// private Map<Integer, Set<String>> attributes = null;
+	private AttributeFinderConfig attributes = null;
 
 	// Attributes used by the CDR
 	private String[] specialAttributes = {
@@ -81,7 +83,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitDerivativesCreate",
 			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitDerivativesUpdate",
 			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitDerivativesDelete" };
-	
+
 	private AccessControlUtils accessControlUtils;
 
 	public CdrRIAttributeFinder() {
@@ -93,9 +95,10 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("registering the following attributes: ");
-				for (Integer k : attributes.keySet()) {
-					for (String l : attributes.get(k)) {
-						logger.debug(k + ": " + l);
+				for (int desNum : attributes.getDesignatorIds()) {
+					for (String attrName : attributes.get(desNum)
+							.getAttributeNames()) {
+						logger.debug(desNum + ": " + attrName);
 					}
 				}
 			}
@@ -119,8 +122,10 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 			// Load CDR configuration
 			accessControlUtils = new AccessControlUtils();
 			accessControlUtils.loadSettingsFromOptions(options);
-			accessControlUtils.initForFedoraBasedAccessControl(false, attributeFactory);
-			accessControlUtils.startCacheCleanupThreadForFedoraBasedAccessControl();
+			accessControlUtils.initForFedoraBasedAccessControl(false,
+					attributeFactory);
+			accessControlUtils
+					.startCacheCleanupThreadForFedoraBasedAccessControl();
 
 		} catch (AttributeFinderException afe) {
 			logger.error("Attribute finder not initialised:"
@@ -147,7 +152,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 	 */
 	@Override
 	public Set<Integer> getSupportedDesignatorTypes() {
-		return attributes.keySet();
+		return attributes.getDesignatorIds();
 	}
 
 	/**
@@ -188,8 +193,13 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 		}
 
 		if (resourceId == null || resourceId.equals("")) {
-			return new EvaluationResult(BagAttribute
-					.createEmptyBag(attributeType));
+			return new EvaluationResult(
+					BagAttribute.createEmptyBag(attributeType));
+		}
+
+		if (resourceId.equals("/FedoraRepository")) {
+			return new EvaluationResult(
+					BagAttribute.createEmptyBag(attributeType));
 		}
 
 		// figure out which attribute we're looking for
@@ -209,36 +219,39 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 					temp = resourceId;
 				}
 
-				return accessControlUtils.processCdrAccessControl(temp, attrName, attributeType);
+				return accessControlUtils.processCdrAccessControl(temp,
+						attrName, attributeType);
 			}
 		}
 		// we only know about registered attributes from config file
-		if (!attributes.keySet().contains(new Integer(designatorType))) {
+		if (!attributes.getDesignatorIds()
+				.contains(new Integer(designatorType))) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Does not know about designatorType: "
 						+ designatorType);
 			}
-			return new EvaluationResult(BagAttribute
-					.createEmptyBag(attributeType));
+			return new EvaluationResult(
+					BagAttribute.createEmptyBag(attributeType));
 		}
 
-		Set<String> allowedAttributes = attributes.get(new Integer(
-				designatorType));
+		Set<String> allowedAttributes = attributes.get(designatorType)
+				.getAttributeNames();
 		if (!allowedAttributes.contains(attrName)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Does not know about attribute: " + attrName);
 			}
-			return new EvaluationResult(BagAttribute
-					.createEmptyBag(attributeType));
+			return new EvaluationResult(
+					BagAttribute.createEmptyBag(attributeType));
 		}
 
 		EvaluationResult result = null;
 		try {
-			result = getEvaluationResult(resourceId, attrName, attributeType);
+			result = getEvaluationResult(resourceId, attrName, designatorType,
+					attributeType);
 		} catch (Exception e) {
 			logger.error("Error finding attribute: " + e.getMessage(), e);
-			return new EvaluationResult(BagAttribute
-					.createEmptyBag(attributeType));
+			return new EvaluationResult(
+					BagAttribute.createEmptyBag(attributeType));
 		}
 
 		logger.info("Total time for non-CDR call: "
@@ -247,92 +260,130 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 		return result;
 	}
 
-    /**
-    *
-    * @param resourceID - the hierarchical XACML resource ID
-    * @param attribute - attribute to get
-    * @param type
-    * @return
-    * @throws AttributeFinderException
-    */
-   private EvaluationResult getEvaluationResult(String resourceID,
-                                                String attribute,
-                                                URI type)
-           throws AttributeFinderException {
+	/**
+	 * 
+	 * @param resourceID
+	 *            - the hierarchical XACML resource ID
+	 * @param attribute
+	 *            - attribute to get - this is a URI that maps to a Fedora
+	 *            relationship name
+	 * @param type
+	 * @return
+	 * @throws AttributeFinderException
+	 */
+	private EvaluationResult getEvaluationResult(String resourceID,
+			String attribute, int designatorType, URI type)
+			throws AttributeFinderException {
 
-       // split up the path of the hierarchical resource id
-       String resourceParts[] = resourceID.split("/");
+		// split up the path of the hierarchical resource id
+		String resourceParts[] = resourceID.split("/");
+		Set<String> results;
 
-       // either the last part is the pid, or the last-but one is the pid and the last is the datastream
-       // if we have a pid, we query on that, if we have a datastream we query on the datastream
-       String subject;
-       if (resourceParts.length > 1) {
-           if (resourceParts[resourceParts.length - 1].contains(":")) { // ends with a pid, we have pid only
-               subject = resourceParts[resourceParts.length - 1];
-           } else { // datastream
-               String pid = resourceParts[resourceParts.length - 2];
-               subject = pid + "/" + resourceParts[resourceParts.length - 1];
-           }
-       } else {
-           // eg /FedoraRepository, not a valid path to PID or PID/DS
-           logger.debug("Resource ID not valid path to PID or datastream: " + resourceID);
-           return new EvaluationResult(BagAttribute.createEmptyBag(type));
-       }
-
-
-       Map<String, Set<String>> relationships;
-       // FIXME: this is querying for all relationships, and then filtering the one we want
-       // better to query directly on the one we want (but currently no public method on relationship resolver to do this)
-       try {
-           logger.debug("Getting relationships for " + subject);
-           relationships = relationshipResolver.getRelationships(subject);
-       } catch (MelcoeXacmlException e) {
-           throw new AttributeFinderException(e.getMessage(), e);
-       }
-
-       Set<String> results = relationships.get(attribute);
-       if (results == null || results.size() == 0) {
-           return new EvaluationResult(BagAttribute.createEmptyBag(type));
-       }
-
-       Set<AttributeValue> bagValues = new HashSet<AttributeValue>();
-       for (String s : results) {
-           AttributeValue attributeValue = null;
-           try {
-               attributeValue = attributeFactory.createValue(type, s);
-           } catch (Exception e) {
-               logger.error("Error creating attribute: " + e.getMessage(), e);
-               continue;
-           }
-
-           bagValues.add(attributeValue);
-
-           if (logger.isDebugEnabled()) {
-               logger.debug("AttributeValue found: [" + type.toASCIIString()
-                       + "] " + s);
-           }
-       }
-
-       BagAttribute bag = new BagAttribute(type, bagValues);
-
-       return new EvaluationResult(bag);
-   }	
-	
-
-/*	private EvaluationResult getEvaluationResult(String pid, String attribute,
-			URI type) throws AttributeFinderException {
-		Map<String, Set<String>> relationships;
-		try {
-			relationships = relationshipResolver.getRelationships(pid);
-		} catch (MelcoeXacmlException e) {
-			throw new AttributeFinderException(e.getMessage(), e);
-		}
-		Set<String> results = relationships.get(attribute);
-		if (results == null || results.size() == 0) {
+		// either the last part is the pid, or the last-but one is the pid and
+		// the last is the datastream
+		// if we have a pid, we query on that, if we have a datastream we query
+		// on the datastream
+		String subject; // the full subject, ie pid or pid/ds
+		String pid;
+		if (resourceParts.length > 1) {
+			if (resourceParts[resourceParts.length - 1].contains(":")) { 
+				// ends with a pid, we have pid only
+				subject = resourceParts[resourceParts.length - 1];
+				pid = subject;
+			} else { // datastream
+				pid = resourceParts[resourceParts.length - 2];
+				subject = pid + "/" + resourceParts[resourceParts.length - 1];
+			}
+		} else {
+			// eg /FedoraRepository, not a valid path to PID or PID/DS
+			logger.debug("Resource ID not valid path to PID or datastream: "
+					+ resourceID);
 			return new EvaluationResult(BagAttribute.createEmptyBag(type));
 		}
 
+		logger.debug("Getting attribute for resource " + subject);
+
+		// the different types of RI attribute specification...
+		// if there is no "query" option for the attribute
+		String query = attributes.get(designatorType).get(attribute)
+				.get("query");
+		if (query == null) {
+			// it's a simple relationship lookup
+			// see if a relationship is specified, otherwise default to the
+			// attribute name URI
+			String relationship = attributes.get(designatorType).get(attribute)
+					.get("relationship");
+			if (relationship == null) {
+				relationship = attribute; // default to use attribute URI as
+											// relationship if none specified
+			}
+
+			// see if we are querying based on the resource (object, datstream
+			// etc) or just on the object (pid)
+			String target = attributes.get(designatorType).get(attribute)
+					.get("target");
+			String queryTarget;
+			if (target != null && target.equals("object")) {
+				queryTarget = pid;
+			} else {
+				queryTarget = subject;
+			}
+
+			Map<String, Set<String>> relationships;
+
+			try {
+				logger.debug("Getting attribute using relationship "
+						+ relationship);
+				relationships = relationshipResolver.getRelationships(
+						queryTarget, relationship);
+			} catch (MelcoeXacmlException e) {
+				throw new AttributeFinderException(e.getMessage(), e);
+			}
+
+			if (relationships == null || relationships.isEmpty()) {
+				return new EvaluationResult(BagAttribute.createEmptyBag(type));
+			}
+
+			// there will only be results for one attribute, this will get all
+			// the values
+			results = relationships.get(relationship);
+
+		} else {
+			// get the language and query output variable
+			String queryLang = attributes.get(designatorType).get(attribute)
+					.get("queryLang"); // language
+			String variable = attributes.get(designatorType).get(attribute)
+					.get("value"); // query text
+			String resource = attributes.get(designatorType).get(attribute)
+					.get("resource"); // resource marker in query
+			String object = attributes.get(designatorType).get(attribute)
+					.get("object"); // object/pid marker in query
+
+			String subjectURI = "info:fedora/" + subject;
+			String pidURI = "info:fedora/" + pid;
+
+			// replace the resource marker in the query with the subject
+			if (resource != null) {
+				query = query.replace(resource, subjectURI);
+			}
+			// and the pid/object marker
+			if (object != null) {
+				query = query.replace(object, pidURI);
+			}
+
+			// run it
+			try {
+				logger.debug("Using a " + queryLang
+						+ " query to get attribute " + attribute);
+				results = relationshipResolver.getAttributesFromQuery(query,
+						queryLang, variable);
+			} catch (MelcoeXacmlException e) {
+				throw new AttributeFinderException(e.getMessage(), e);
+			}
+		}
+
 		Set<AttributeValue> bagValues = new HashSet<AttributeValue>();
+		logger.debug("Attribute values found: " + results.size());
 		for (String s : results) {
 			AttributeValue attributeValue = null;
 			try {
@@ -348,10 +399,11 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 				logger.debug("AttributeValue found: [" + type.toASCIIString()
 						+ "] " + s);
 			}
+
 		}
 
 		BagAttribute bag = new BagAttribute(type, bagValues);
-
 		return new EvaluationResult(bag);
-	} */
+
+	}
 }
