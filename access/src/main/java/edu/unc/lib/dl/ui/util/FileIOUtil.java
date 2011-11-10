@@ -31,8 +31,12 @@ public class FileIOUtil {
 			reader = new BufferedInputStream(in);
 			byte[] buffer = new byte[4096];
 			int count = 0;
-			while ((count = reader.read(buffer)) >= 0) {
-				outStream.write(buffer, 0, count);
+			int length = 0;
+			while ((length = reader.read(buffer)) >= 0) {
+				outStream.write(buffer, 0, length);
+				if (count++ % 5 == 0){
+					outStream.flush();
+				}
 			}
 			outStream.flush();
 		} finally {

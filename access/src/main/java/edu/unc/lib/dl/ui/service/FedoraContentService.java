@@ -147,13 +147,14 @@ public class FedoraContentService {
 				try {
 					FileIOUtil.stream(outStream, method);
 				} catch (IOException e) {
-					LOG.info("Problem retrieving " + dataUrl + " for " + simplepid, e);
+					LOG.info("Problem retrieving " + dataUrl + " for " + simplepid + ": " + e.getMessage());
 				} finally {
 					method.releaseConnection();
 				}
 			} else {
 				//Retry server errors
 				if (method.getStatusCode() == 500 && retryServerError > 0){
+					LOG.warn("Failed to retrieve " + method.getURI().getURI() + ", retrying.");
 					this.streamData(simplepid, datastream, outStream, response, fileExtension, asAttachment, retryServerError-1);
 				} else {
 					throw new ResourceNotFoundException("Failure to fedora content due to response of: " + method.getStatusLine().toString() + 
