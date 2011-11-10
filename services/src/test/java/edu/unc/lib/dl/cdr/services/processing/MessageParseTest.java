@@ -65,8 +65,8 @@ public class MessageParseTest extends Assert {
 			assertTrue(message.getCDRMessageContent().getParent().equals("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744"));
 			assertTrue(message.getCDRMessageContent().getSubjects().size() == 3);
 			assertNull(message.getCDRMessageContent().getOldParents());
-			assertNull(message.getCDRMessageContent().getOperation());
-			assertNull(message.getCDRMessageContent().getReordered());
+			assertTrue(JMSMessageUtil.CDRActions.ADD.getName().equals(message.getCDRMessageContent().getOperation()));
+			assertTrue(message.getCDRMessageContent().getReordered().size() == 0);
 			assertNull(message.getCDRMessageContent().getMode());
 
 		} catch (Exception e) {
