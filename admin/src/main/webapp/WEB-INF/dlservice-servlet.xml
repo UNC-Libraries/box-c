@@ -575,6 +575,7 @@
 				<value>classpath:foxml-objects/CollectionModel.xml</value>
 				<value>classpath:foxml-objects/DummyTriples.xml</value>
 				<value>classpath:foxml-objects/GroupAgentModel.xml</value>
+				<value>classpath:foxml-objects/JP2DerivedImageModel.xml</value>
 				<value>classpath:foxml-objects/PersonAgentModel.xml</value>
 				<value>classpath:foxml-objects/PreservedObjectModel.xml</value>
 				<value>classpath:foxml-objects/SimpleModel.xml</value>

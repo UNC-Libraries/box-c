@@ -111,9 +111,9 @@
 					<div class="halfwidth">
 						<p>${searchSettings.searchFieldLabels[searchFieldKeys.DATE_UPDATED]}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}" /></p> 
 					</div>
-					<c:if test="${not empty metadata.abstract}">
+					<c:if test="${not empty metadata['abstract']}">
 						<div class="clear"></div>
-						<p>${searchSettings.searchFieldLabels[searchFieldKeys.ABSTRACT]}: <c:out value="${metadata.abstract}"/></p>
+						<p>${searchSettings.searchFieldLabels[searchFieldKeys.ABSTRACT]}: <c:out value="${metadata['abstract']}"/></p>
 					</c:if>
 				</c:when>
 				<%-- Metadata body for items --%>
