@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.util.URIUtil;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -39,10 +40,12 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
+import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.FileSystemException;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -114,9 +117,11 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 				Document fits = null;
 				try {
 					fits = runFITS(dsIrodsPath, dsAltIds);
+				} catch (JDOMException e){
+					LOG.warn("Failed to parse FITS response", e);
+					return null;
 				} catch (Exception e) {
-					LOG.error("Run Fits failed", e);
-					throw new EnhancementException(e);
+					throw new EnhancementException(e, Severity.UNRECOVERABLE);
 				}
 
 				// put the FITS document in DS map
@@ -232,8 +237,12 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 			}
 
 			LOG.debug("Finished MD_TECHNICAL updating for " + pid.getPID());
+		} catch (FileSystemException e) {
+			throw new EnhancementException(e, Severity.FATAL);
+		} catch (NotFoundException e) {
+			throw new EnhancementException(e, Severity.UNRECOVERABLE);
 		} catch (FedoraException e) {
-			throw new RecoverableServiceException("Technical Metadata Service failed", e);
+			throw new EnhancementException(e, Severity.RECOVERABLE);
 		}
 		return result;
 	}

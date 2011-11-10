@@ -29,10 +29,12 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
+import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.FileSystemException;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -43,7 +45,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * Enhancement class for the construction of a jp2 derived datastream based off of all image data_file datastreams
  * attached to the specified object.
  * 
- * @author bbpennel 
+ * @author bbpennel
  */
 public class ImageEnhancement extends Enhancement<Element> {
 	private static final Logger LOG = LoggerFactory.getLogger(ImageEnhancement.class);
@@ -54,26 +56,24 @@ public class ImageEnhancement extends Enhancement<Element> {
 	public Element call() throws EnhancementException {
 		Element result = null;
 		LOG.debug("Called image enhancement service for " + pid.getPID());
-		// get sourceData data stream IDs
-		List<String> srcDSURIs = this.service.getTripleStoreQueryService().getSourceData(pid.getPID());
+
 		Document foxml = null;
+		String dsid = null;
 		try {
+			// get sourceData data stream IDs
+			List<String> srcDSURIs = this.service.getTripleStoreQueryService().getSourceData(pid.getPID());
+
 			foxml = service.getManagementClient().getObjectXML(pid.getPID());
-		} catch (Exception e) {
-			LOG.error("Failed to retrieve FOXML for " + pid.getPID(), e);
-		}
+			String mimetype = service.getTripleStoreQueryService().lookupSourceMimeType(pid.getPID());
 
-		String mimetype = service.getTripleStoreQueryService().lookupSourceMimeType(pid.getPID());
+			// get current DS version paths in iRODS
+			for (String srcURI : srcDSURIs) {
+				dsid = srcURI.substring(srcURI.lastIndexOf("/") + 1);
 
-		// get current DS version paths in iRODS
-		for (String srcURI : srcDSURIs) {
-			String dsid = srcURI.substring(srcURI.lastIndexOf("/") + 1);
+				String dsLocation = null;
+				String dsIrodsPath = null;
+				String vid = null;
 
-			String dsLocation = null;
-			String dsIrodsPath = null;
-			String vid = null;
-
-			try {
 				Datastream ds = service.getManagementClient().getDatastream(pid.getPID(), dsid, "");
 				vid = ds.getVersionID();
 
@@ -86,8 +86,8 @@ public class ImageEnhancement extends Enhancement<Element> {
 						if (o instanceof Element) {
 							Element dsvEl = (Element) o;
 							if (vid.equals(dsvEl.getAttributeValue("ID"))) {
-								dsLocation = dsvEl.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS).getAttributeValue(
-										"REF");
+								dsLocation = dsvEl.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
+										.getAttributeValue("REF");
 								break;
 							}
 						}
@@ -106,7 +106,7 @@ public class ImageEnhancement extends Enhancement<Element> {
 							// Add the datastream for the new derived jp2
 							LOG.debug("Adding managed datastream for JP2");
 							String message = "Adding derived JP2000 image datastream.";
-							String newDSID = service.getManagementClient().addManagedDatastream(pid.getPID(),
+							service.getManagementClient().addManagedDatastream(pid.getPID(),
 									ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
 									new ArrayList<String>(), "Derived JP2000 image", false, "image/jp2", convertResultURI);
 						} else {
@@ -114,14 +114,16 @@ public class ImageEnhancement extends Enhancement<Element> {
 							String message = "Replacing derived JP2000 image datastream.";
 							service.getManagementClient().modifyDatastreamByReference(pid.getPID(),
 									ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
-									new ArrayList<String>(), "Derived JP2000 image", "image/jp2", null, null, convertResultURI);
+									new ArrayList<String>(), "Derived JP2000 image", "image/jp2", null, null,
+									convertResultURI);
 						}
 
 						// Add DATA_JP2, cdr-base:derivedJP2 relation triple
 						LOG.debug("Adding JP2 relationship");
 						PID newDSPID = new PID(pid.getPID().getPid() + "/"
 								+ ContentModelHelper.Datastream.IMAGE_JP2000.getName());
-						Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid.getPID());
+						Map<String, List<String>> rels = service.getTripleStoreQueryService()
+								.fetchAllTriples(pid.getPID());
 
 						List<String> jp2rel = rels.get(ContentModelHelper.CDRProperty.derivedJP2.toString());
 						if (jp2rel == null || !jp2rel.contains(newDSPID.getURI())) {
@@ -145,11 +147,15 @@ public class ImageEnhancement extends Enhancement<Element> {
 						LOG.debug("Finished JP2 processing");
 					}
 				}
-			} catch (FedoraException e) {
-				throw new RecoverableServiceException("Image Enhancement failed to process " + dsid, e);
-			} catch (Exception e) {
-				throw new EnhancementException("Image Enhancement failed to process " + dsid, e);
 			}
+		} catch (FileSystemException e) {
+			throw new EnhancementException(e, Severity.FATAL);
+		} catch (NotFoundException e) {
+			throw new EnhancementException(e, Severity.UNRECOVERABLE);
+		} catch (FedoraException e) {
+			throw new EnhancementException("Image Enhancement failed to process " + dsid, e, Severity.RECOVERABLE);
+		} catch (Exception e) {
+			throw new EnhancementException("Image Enhancement failed to process " + dsid, e, Severity.UNRECOVERABLE);
 		}
 
 		return result;

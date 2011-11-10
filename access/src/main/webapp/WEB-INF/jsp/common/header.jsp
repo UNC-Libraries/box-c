@@ -100,6 +100,9 @@
 	</div>
 	<div class="fourcol darkest">
 		<div class="contentarea">
+			<c:if test="${not empty sessionScope.user && not empty sessionScope.user.userName}">
+				<div id="username_wrap">Welcome, <c:out value="${sessionScope.user.userName}"/></div>
+			</c:if>
 			<c:if test="${contentPage != 'WEB-INF/jsp/frontPage.jsp'}">
 				<form class="right clear_on_submit_without_focus" method="get" action="basicSearch" id="hsearch_form">
 					<input name="queryType" type="hidden" value="${searchSettings.searchFieldParams[searchFieldKeys.DEFAULT_INDEX]}"/>

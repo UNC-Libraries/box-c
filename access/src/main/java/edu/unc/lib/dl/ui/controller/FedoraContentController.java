@@ -126,9 +126,12 @@ public class FedoraContentController extends AbstractSolrSearchController {
 				if (briefObject.getContentType() != null){
 					fileExtension = briefObject.getContentType().getSearchKey();
 				}
-				try {
-					response.setContentLength(Integer.parseInt(briefObject.getFilesize()));
-				} catch (NumberFormatException e){
+				if (briefObject.getFilesize() != null){
+					try {
+						response.setContentLength(Integer.parseInt(briefObject.getFilesize()));
+					} catch (NumberFormatException e){
+						LOG.warn("Non-numerical content length for " + id + " value " + briefObject.getFilesize(), e);
+					}
 				}
 			}
 			
