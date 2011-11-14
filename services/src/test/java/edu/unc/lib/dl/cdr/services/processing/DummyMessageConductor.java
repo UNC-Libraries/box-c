@@ -68,5 +68,77 @@ public class DummyMessageConductor implements MessageConductor {
 		// TODO Auto-generated method stub
 		return 0;
 	}
+
+	@Override
+	public boolean isPaused() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void clearQueue(String confirm) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void clearState(String confirm) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isEmpty() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isIdle() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isReady() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void shutdown(String confirm) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void abort(String confirm) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void restart() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void shutdownNow(String confirm) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String queuesToString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getConductorStatus() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
 

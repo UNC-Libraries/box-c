@@ -90,6 +90,10 @@ public class ServicesConductor implements MessageConductor {
 	 */
 	public void init() {
 		// start up the thread pool
+		initializeExecutor();
+	}
+	
+	private void initializeExecutor(){
 		this.executor = new ServicesThreadPoolExecutor(this.maxThreads);
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
 	}
@@ -98,11 +102,7 @@ public class ServicesConductor implements MessageConductor {
 	 * Deconstructor method, stops the thread pool.
 	 */
 	public void destroy() {
-		this.shutdown();
-	}
-
-	public void unlockPid(String pid) {
-		this.lockedPids.remove(pid);
+		this.executor.shutdown();
 	}
 
 	/**
@@ -112,6 +112,7 @@ public class ServicesConductor implements MessageConductor {
 	 * @param pid
 	 * @param msg
 	 */
+	@Override
 	public void add(PIDMessage pidMsg) {
 		synchronized (pidQueue) {
 			if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated()) {
@@ -122,11 +123,11 @@ public class ServicesConductor implements MessageConductor {
 			startProcessing();
 		}
 	}
-	
-	public void repopulateFailedPids(String dump){
-		this.failedPids.repopulate(dump);
-	}
 
+	public int getMaxThreadPoolSize(){
+		return this.executor.getMaximumPoolSize();
+	}
+	
 	public void setMaxThreadPoolSize(int threadPoolSize){
 		this.executor.setCorePoolSize(threadPoolSize);
 		this.executor.setMaximumPoolSize(threadPoolSize);
@@ -137,48 +138,100 @@ public class ServicesConductor implements MessageConductor {
 		this.executor.setMaximumPoolSize(this.maxThreads);
 	}
 
+	@Override
 	public boolean isPaused() {
 		return this.executor.isPaused();
 	}
 
+	@Override
 	public void pause(){
 		this.executor.pause();
 	}
 
+	@Override
 	public void resume(){
 		this.executor.resume();
 	}
+	
+	@Override
+	public boolean isEmpty() {
+		return this.pidQueue.size() == 0 && this.collisionList.size() == 0 && this.lockedPids.size() == 0;
+	}
+	
+	@Override
+	public boolean isIdle(){
+		return isPaused() || this.lockedPids.size() == 0;
+	}
+	
+	@Override
+	public boolean isReady(){
+		return !this.executor.isShutdown() && !this.executor.isTerminated() && !this.executor.isTerminating();
+	}
 
-	public void servicesStatus() {
-		LOG.info("Services Conductor Status:");
-		LOG.info("---------------------------------------");
-		LOG.info("PID Queue: " + this.pidQueue.size());
-		LOG.info("Collision List: " + this.collisionList.size());
-		LOG.info("Locked pids: " + this.lockedPids.size());
-		LOG.info("Failed pids: " + this.failedPids.size());
+	@Override
+	public String getConductorStatus(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("Services Conductor Status:\n")
+			.append("Paused: " + isPaused() + "\n")
+			.append("PID Queue: " + this.pidQueue.size() + "\n")
+			.append("Collision List: " + this.collisionList.size() + "\n")
+			.append("Locked pids: " + this.lockedPids.size() + "\n")
+			.append("Failed pids: " + this.failedPids.size() + "\n")
+			.append("Executor: " + executor.getActiveCount() + " active workers, " + executor.getQueue().size() + " queued");
+		return sb.toString();
+	}
+	
+	@Override
+	public String queuesToString(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("Services Conductor Queues:\n")
+			.append("PID Queue: " + this.pidQueue + "\n")
+			.append("Collision List: " + this.collisionList + "\n")
+			.append("Locked pids: " + this.lockedPids + "\n")
+			.append("Failed pids: " + this.failedPids + "\n");
+		return sb.toString();
+	}
+	
+	public void logStatus() {
+		LOG.info(getConductorStatus());
 	}
 
 	public void logQueues() {
-		LOG.info("Queue Statuses:");
-		LOG.info("---------------------------------------");
-		LOG.info("PID Queue: " + this.pidQueue);
-		LOG.info("Collision List: " + this.collisionList);
-		LOG.info("Locked pids: " + this.lockedPids);
-		LOG.info("Failed pids: \n" + this.failedPids);
+		LOG.info(queuesToString());
 	}
 
-	public synchronized void flushPids(String confirm) {
+	@Override
+	public synchronized void clearQueue(String confirm) {
+		if (confirm.equalsIgnoreCase("yes")) {
+			this.pidQueue.clear();
+			this.collisionList.clear();
+		}
+	}
+
+	@Override
+	public void clearState(String confirm) {
 		if (confirm.equalsIgnoreCase("yes")) {
 			this.pidQueue.clear();
 			this.collisionList.clear();
 			this.lockedPids.clear();
+			this.failedPids.clear();
+			executor.getQueue().clear();
 		}
 	}
-
+	
 	public synchronized void clearFailedPids(String confirm) {
 		if (confirm.equalsIgnoreCase("yes")) {
 			this.failedPids.clear();
 		}
+	}
+
+	public synchronized void unlockPid(String pid) {
+		this.lockedPids.remove(pid);
+	}
+	
+	
+	public synchronized void repopulateFailedPids(String dump){
+		this.failedPids.repopulate(dump);
 	}
 	
 	public synchronized void removeFailedPid(String pid){
@@ -202,12 +255,41 @@ public class ServicesConductor implements MessageConductor {
 		executor.submit(new PerformServicesRunnable());
 	}
 
-	/**
-	 * Shuts down the thread pool
-	 */
-	public void shutdown() {
-		executor.shutdown();
+	@Override
+	public void shutdown(String confirm) {
+		this.executor.shutdown();
 		LOG.warn("ServiceConductor is shutting down, no further objects will be received");
+	}
+	
+	@Override
+	public void shutdownNow(String confirm) {
+		this.executor.shutdownNow();
+		LOG.warn("ServiceConductor is shutting down, no further objects will be received");
+	}
+
+	@Override
+	public synchronized void abort(String confirm) {
+		if (!"yes".equalsIgnoreCase(confirm))
+			return;
+		this.lockedPids.clear();
+		//Perform hard shutdown and wait for it to finish
+		List<Runnable> runnables = this.executor.shutdownNow();
+		while (this.executor.isTerminating() && !this.executor.isShutdown());
+		//restart and pause the executor
+		initializeExecutor();
+		pause();
+		//Pass the old runnables on to the new executor.
+		if (runnables != null){
+			for (Runnable runnable: runnables){
+				this.executor.submit(runnable);
+			}
+		}
+	}
+
+	@Override
+	public void restart() {
+		if (this.executor == null || this.executor.isShutdown() || this.executor.isTerminated())
+			initializeExecutor();
 	}
 
 	public int getMaxThreads() {
@@ -286,7 +368,10 @@ public class ServicesConductor implements MessageConductor {
 		this.failedPids = failedPids;
 	}
 	
-
+	@Override
+	public int getQueueSize() {
+		return this.pidQueue.size() + this.collisionList.size();
+	}
 
 	/**
 	 * Runnable class which performs the actual processing of messages from the queue. Messages are read if they do not
@@ -309,6 +394,10 @@ public class ServicesConductor implements MessageConductor {
 				this.applyService(pidMessage, s);
 				LOG.info("Second attempt to run " + s.getClass().getName() + " for " + pidMessage.getPIDString()
 						+ " was successful.");
+			} catch (InterruptedException e2) {
+				LOG.warn("Retry attempt for " + s.getClass().getName() + " for " + pidMessage.getPIDString()
+						+ " was interrupted.");
+				Thread.currentThread().interrupt();
 			} catch (Exception e2) {
 				LOG.error("Second attempt to run " + s.getClass().getName() + " for " + pidMessage.getPIDString()
 						+ " failed.");
@@ -317,7 +406,7 @@ public class ServicesConductor implements MessageConductor {
 		}
 
 		/**
-		 * Retrieves the next available message. The request must not effect a pid which is currently locked. If the next
+		 * Retrieves the next available message. The request must not return a pid which is currently locked. If the next
 		 * pid is locked, then it is moved to the collision list, and the next message is polled until an unlocked pid is
 		 * found or the list is empty. If there are any items in the collision list, they are treated as if they were at
 		 * the beginning of message queue, meaning that they are examined before polling of the queue begins in order to
@@ -326,14 +415,14 @@ public class ServicesConductor implements MessageConductor {
 		 * @return the next available message which is not locked, or null if none if available.
 		 */
 		private PIDMessage getNextMessage() {
-			synchronized (collisionList) {
-				synchronized (pidQueue) {
-					PIDMessage pid = null;
+			PIDMessage pid = null;
 
-					do {
+			do {
+				synchronized (collisionList) {
+					synchronized (pidQueue) {
 						// First read from the collision list in case there are items
 						// that were blocked which need to be read
-						if (collisionList != null && !collisionList.isEmpty()) {
+						if (!collisionList.isEmpty()) {
 							Iterator<PIDMessage> collisionIt = collisionList.iterator();
 							while (collisionIt.hasNext()) {
 								pid = collisionIt.next();
@@ -348,79 +437,89 @@ public class ServicesConductor implements MessageConductor {
 							}
 						}
 
-						// There were no usable pids in the collision list, so read
-						// the regular queue.
-						pid = pidQueue.poll();
-						if (pid == null) {
-							return null;
-						}
+						do {
+							// There were no usable pids in the collision list, so read
+							// the regular queue.
+							pid = pidQueue.poll();
 
-						synchronized (lockedPids) {
-							if (lockedPids.contains(pid.getPIDString())) {
-								collisionList.add(pid);
-							} else {
-								lockedPids.add(pid.getPIDString());
-								return pid;
+							if (pid != null){
+								synchronized (lockedPids) {
+									if (lockedPids.contains(pid.getPIDString())) {
+										collisionList.add(pid);
+									} else {
+										lockedPids.add(pid.getPIDString());
+										return pid;
+									}
+								}
 							}
-						}
-					} while (true);
+						} while (pid != null);
+					}
 				}
-			}
+				try {
+					Thread.sleep(200L);
+				} catch (InterruptedException e) {
+					LOG.warn("Services runnable interrupted while waiting to get next message", e);
+					Thread.currentThread().interrupt();
+				}
+			} while (pid == null && !Thread.currentThread().isInterrupted()
+					&& (!pidQueue.isEmpty() || !collisionList.isEmpty()));
+			return pid;
 		}
 
 		public void applyService(PIDMessage pidMessage, ObjectEnhancementService s) throws EnhancementException {
 			// Check if there were any failed services for this pid. If there were, check if the current service
 			// was one of them.
-			Set<String> failedServices = failedPids.get(pidMessage.getPIDString());
-			if (s.isActive() &&
-					((pidMessage.getServiceName() != null && pidMessage.getServiceName().equals(s.getClass().getName()))
-						|| s.isApplicable(pidMessage))
-					&& (failedServices == null || !failedServices.contains(s.getClass().getName()))) {
-				LOG.info("Adding enhancement task: " + s.getClass().getCanonicalName() + " on " + pidMessage.getPIDString());
-				Enhancement<Element> task = s.getEnhancement(pidMessage);
-				// Enhancement services need to be run serially, so
-				// making a direct invocation of call instead of using
-				// an executor.
-				task.call();
+			
+			Set<String> failedServices = null;
+			synchronized(failedPids){
+				failedServices = failedPids.get(pidMessage.getPIDString());
+				//Determine if the service should not be run
+				if (!(s.isActive() &&
+						((pidMessage.getServiceName() != null && pidMessage.getServiceName().equals(s.getClass().getName()))
+							|| s.isApplicable(pidMessage))
+						&& (failedServices == null || !failedServices.contains(s.getClass().getName()))))
+					return;
+			}
+			
+			//Generate the enhancement
+			LOG.info("Adding enhancement task: " + s.getClass().getCanonicalName() + " on " + pidMessage.getPIDString());
+			Enhancement<Element> task = s.getEnhancement(pidMessage);
+			
+			//Pause before applying the service if the executor is paused.
+			pauseWait();
+			//If the thread was interrupted, we're done
+			if (Thread.currentThread().isInterrupted())
+				return;
+			//Enhancement services need to be run serially per pid, so making a direct invocation of call
+			task.call();
+		}
+		
+		private void pauseWait(){
+			while (executor.isPaused() && !Thread.currentThread().isInterrupted()){
+				try {
+					Thread.sleep(1000L);
+				} catch (Exception e) {
+					LOG.debug("Services thread " + Thread.currentThread().getId() + " interrupted while paused");
+					Thread.currentThread().interrupt();
+				}
 			}
 		}
 
 		@Override
 		public void run() {
-
-			if (executor.isPaused()) {
-				do {
-					try {
-						Thread.sleep(5000L);
-					} catch (Exception e) {
-					}
-				} while (executor.isPaused());
-			}
-
 			LOG.debug("Starting new run of ServiceConductor thread " + this);
-			PIDMessage pidMessage = null;
-			do {
-				pidMessage = getNextMessage();
-				if (pidMessage == null) {
-					// Was unable to get an unlocked PID, wait a moment before trying
-					// again
-					try {
-						Thread.sleep(200L);
-					} catch (Exception e) {
-					}
-				}
-				// Loop until an unlocked PID is retrieved or there are no more
-				// pids.
-			} while (pidMessage == null && !(pidQueue.size() == 0 && collisionList.size() == 0));
+			//Get the next message, waiting as long as necessary for one to be free
+			PIDMessage pidMessage = getNextMessage();
 
 			if (pidMessage != null && pidMessage.getFilteredServices() != null) {
 				try {
 					for (ObjectEnhancementService s : pidMessage.getFilteredServices()) {
 						try {
+							//Apply the service
 							this.applyService(pidMessage, s);
 						} catch (EnhancementException e){
 							switch (e.getSeverity()) {
-								case RECOVERABLE: 
+								case RECOVERABLE:
 									retryException(pidMessage, s, "A recoverable enhancement exception occurred while attempting to apply service "
 											+ s.getClass().getName(), e, recoverableDelay);
 									break;
@@ -454,13 +553,5 @@ public class ServicesConductor implements MessageConductor {
 				}
 			}
 		}
-	}
-
-
-
-	@Override
-	public int getQueueSize() {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 }

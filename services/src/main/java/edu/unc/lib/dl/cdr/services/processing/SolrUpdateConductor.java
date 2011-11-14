@@ -16,6 +16,7 @@
 
 package edu.unc.lib.dl.cdr.services.processing;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
@@ -29,6 +30,10 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 
 	@Override
 	public void init(){
+		initializeExecutor();
+	}
+	
+	private void initializeExecutor(){
 		this.executor = new ServicesThreadPoolExecutor(this.maxIngestThreads);
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
 	}
@@ -76,6 +81,119 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	}
 
 	@Override
+	public void pause() {
+		((ServicesThreadPoolExecutor)this.executor).pause();
+		
+	}
+
+	@Override
+	public void resume() {
+		((ServicesThreadPoolExecutor)this.executor).resume();
+	}
+	
+	@Override
+	public boolean isPaused(){
+		return ((ServicesThreadPoolExecutor)this.executor).isPaused();
+	}
+	
+	@Override
+	public String getConductorStatus(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("Solr Update Conductor Status:\n")
+			.append("Paused: " + isPaused() + "\n")
+			.append("PID Queue: " + this.pidQueue.size() + "\n")
+			.append("Collision List: " + this.collisionList.size() + "\n")
+			.append("Locked pids: " + this.lockedPids.size() + "\n")
+			.append("Executor: " + executor.getActiveCount() + " active workers, " + executor.getQueue().size() + " queued");
+		return sb.toString();
+	}
+	
+	@Override
+	public String queuesToString(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("Solr Update Conductor Queues:\n")
+			.append("PID Queue: " + this.pidQueue + "\n")
+			.append("Collision List: " + this.collisionList + "\n")
+			.append("Locked pids: " + this.lockedPids + "\n");
+		return sb.toString();
+	}
+
+	@Override
+	public int getQueueSize() {
+		return this.pidQueue.size() + this.collisionList.size();
+	}
+	
+	@Override
+	public synchronized void clearQueue(String confirm){
+		if (!"yes".equalsIgnoreCase(confirm))
+			return;
+		this.pidQueue.clear();
+		this.collisionList.clear();
+	}
+	
+	@Override
+	public synchronized void clearState(String confirm){
+		if (!"yes".equalsIgnoreCase(confirm))
+			return;
+		this.pidQueue.clear();
+		this.collisionList.clear();
+		this.lockedPids.clear();
+		executor.getQueue().clear();
+	}
+	
+	@Override
+	public boolean isEmpty() {
+		return this.pidQueue.size() == 0 && this.collisionList.size() == 0 && this.lockedPids.size() == 0;
+	}
+	
+	@Override
+	public boolean isIdle(){
+		return isPaused() || this.lockedPids.size() == 0;
+	}
+	
+	@Override
+	public boolean isReady(){
+		return !this.executor.isShutdown() && !this.executor.isTerminated() && !this.executor.isTerminating();
+	}
+
+	@Override
+	public void shutdown(String confirm) {
+		this.executor.shutdown();
+		LOG.warn("Solr Update conductor is shutting down, no further objects will be received");
+	}
+	
+	@Override
+	public void shutdownNow(String confirm) {
+		this.executor.shutdownNow();
+		LOG.warn("Solr Update conductor is shutting down now, interrupting future processing");
+	}
+
+	@Override
+	public synchronized void abort(String confirm) {
+		if (!"yes".equalsIgnoreCase(confirm))
+			return;
+		this.lockedPids.clear();
+		//Perform hard shutdown and wait for it to finish
+		List<Runnable> runnables = this.executor.shutdownNow();
+		while (this.executor.isTerminating() && !this.executor.isShutdown());
+		//restart and pause the executor
+		initializeExecutor();
+		pause();
+		//Pass the old runnables on to the new executor.
+		if (runnables != null){
+			for (Runnable runnable: runnables){
+				this.executor.submit(runnable);
+			}
+		}
+	}
+
+	@Override
+	public void restart() {
+		if (this.executor == null || this.executor.isShutdown() || this.executor.isTerminated())
+			initializeExecutor();
+	}
+	
+	@Override
 	public String getIdentifier() {
 		return identifier;
 	}
@@ -83,23 +201,4 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	public ServicesThreadPoolExecutor getThreadPoolExecutor(){
 		return (ServicesThreadPoolExecutor)this.executor;
 	}
-
-	@Override
-	public void pause() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void resume() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public int getQueueSize() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	
 }
