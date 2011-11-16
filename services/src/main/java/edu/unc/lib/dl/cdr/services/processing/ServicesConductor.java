@@ -201,28 +201,22 @@ public class ServicesConductor implements MessageConductor {
 	}
 
 	@Override
-	public synchronized void clearQueue(String confirm) {
-		if (confirm.equalsIgnoreCase("yes")) {
-			this.pidQueue.clear();
-			this.collisionList.clear();
-		}
+	public synchronized void clearQueue() {
+		this.pidQueue.clear();
+		this.collisionList.clear();
 	}
 
 	@Override
-	public void clearState(String confirm) {
-		if (confirm.equalsIgnoreCase("yes")) {
-			this.pidQueue.clear();
-			this.collisionList.clear();
-			this.lockedPids.clear();
-			this.failedPids.clear();
-			executor.getQueue().clear();
-		}
+	public void clearState() {
+		this.pidQueue.clear();
+		this.collisionList.clear();
+		this.lockedPids.clear();
+		this.failedPids.clear();
+		executor.getQueue().clear();
 	}
 	
-	public synchronized void clearFailedPids(String confirm) {
-		if (confirm.equalsIgnoreCase("yes")) {
-			this.failedPids.clear();
-		}
+	public synchronized void clearFailedPids() {
+		this.failedPids.clear();
 	}
 
 	public synchronized void unlockPid(String pid) {
@@ -256,21 +250,19 @@ public class ServicesConductor implements MessageConductor {
 	}
 
 	@Override
-	public void shutdown(String confirm) {
+	public void shutdown() {
 		this.executor.shutdown();
 		LOG.warn("ServiceConductor is shutting down, no further objects will be received");
 	}
 	
 	@Override
-	public void shutdownNow(String confirm) {
+	public void shutdownNow() {
 		this.executor.shutdownNow();
 		LOG.warn("ServiceConductor is shutting down, no further objects will be received");
 	}
 
 	@Override
-	public synchronized void abort(String confirm) {
-		if (!"yes".equalsIgnoreCase(confirm))
-			return;
+	public synchronized void abort() {
 		this.lockedPids.clear();
 		//Perform hard shutdown and wait for it to finish
 		List<Runnable> runnables = this.executor.shutdownNow();
@@ -452,7 +444,7 @@ public class ServicesConductor implements MessageConductor {
 									}
 								}
 							}
-						} while (pid != null);
+						} while (pid != null && !Thread.currentThread().isInterrupted());
 					}
 				}
 				try {
@@ -463,7 +455,7 @@ public class ServicesConductor implements MessageConductor {
 				}
 			} while (pid == null && !Thread.currentThread().isInterrupted()
 					&& (!pidQueue.isEmpty() || !collisionList.isEmpty()));
-			return pid;
+			return null;
 		}
 
 		public void applyService(PIDMessage pidMessage, ObjectEnhancementService s) throws EnhancementException {
@@ -513,6 +505,9 @@ public class ServicesConductor implements MessageConductor {
 
 			if (pidMessage != null && pidMessage.getFilteredServices() != null) {
 				try {
+					//Quit before doing work if thread was interrupted
+					if (Thread.currentThread().isInterrupted())
+						return;
 					for (ObjectEnhancementService s : pidMessage.getFilteredServices()) {
 						try {
 							//Apply the service

@@ -27,13 +27,10 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 
 public class SolrUpdateConductor extends SolrUpdateService implements MessageConductor {
 	public static final String identifier = "SOLR_UPDATE";
-
-	@Override
-	public void init(){
-		initializeExecutor();
-	}
 	
-	private void initializeExecutor(){
+	@Override
+	protected void initializeExecutor(){
+		LOG.debug("Initializing services thread pool executor with " + this.maxIngestThreads + " threads.");
 		this.executor = new ServicesThreadPoolExecutor(this.maxIngestThreads);
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
 	}
@@ -45,7 +42,7 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 		if (namespace != null && action != null){
 			if (namespace.equals(SolrUpdateAction.namespace)){
 				SolrUpdateAction actionEnum = SolrUpdateAction.getAction(action);
-				if (action != null){
+				if (actionEnum != null){
 					this.offer(message.getPIDString(), actionEnum);
 				}
 			} else {
@@ -124,17 +121,13 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	}
 	
 	@Override
-	public synchronized void clearQueue(String confirm){
-		if (!"yes".equalsIgnoreCase(confirm))
-			return;
+	public synchronized void clearQueue(){
 		this.pidQueue.clear();
 		this.collisionList.clear();
 	}
 	
 	@Override
-	public synchronized void clearState(String confirm){
-		if (!"yes".equalsIgnoreCase(confirm))
-			return;
+	public synchronized void clearState(){
 		this.pidQueue.clear();
 		this.collisionList.clear();
 		this.lockedPids.clear();
@@ -157,21 +150,19 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	}
 
 	@Override
-	public void shutdown(String confirm) {
+	public void shutdown() {
 		this.executor.shutdown();
 		LOG.warn("Solr Update conductor is shutting down, no further objects will be received");
 	}
 	
 	@Override
-	public void shutdownNow(String confirm) {
+	public void shutdownNow() {
 		this.executor.shutdownNow();
 		LOG.warn("Solr Update conductor is shutting down now, interrupting future processing");
 	}
 
 	@Override
-	public synchronized void abort(String confirm) {
-		if (!"yes".equalsIgnoreCase(confirm))
-			return;
+	public synchronized void abort() {
 		this.lockedPids.clear();
 		//Perform hard shutdown and wait for it to finish
 		List<Runnable> runnables = this.executor.shutdownNow();

@@ -76,13 +76,13 @@ public class DummyMessageConductor implements MessageConductor {
 	}
 
 	@Override
-	public void clearQueue(String confirm) {
+	public void clearQueue() {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void clearState(String confirm) {
+	public void clearState() {
 		// TODO Auto-generated method stub
 		
 	}
@@ -106,13 +106,13 @@ public class DummyMessageConductor implements MessageConductor {
 	}
 
 	@Override
-	public void shutdown(String confirm) {
+	public void shutdown() {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void abort(String confirm) {
+	public void abort() {
 		// TODO Auto-generated method stub
 		
 	}
@@ -124,7 +124,7 @@ public class DummyMessageConductor implements MessageConductor {
 	}
 
 	@Override
-	public void shutdownNow(String confirm) {
+	public void shutdownNow() {
 		// TODO Auto-generated method stub
 		
 	}

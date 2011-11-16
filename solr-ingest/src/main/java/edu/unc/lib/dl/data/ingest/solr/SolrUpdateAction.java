@@ -34,21 +34,17 @@ public enum SolrUpdateAction {
 	
 	private final String name;
 	private URI uri;
-	public static final String namespace = JDOMNamespaceUtil.CDR_MESSAGE_NS + "/solr/";
+	public static final String namespace = JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/solr";
 	
 	SolrUpdateAction(String name){
 		this.name = name;
 		try {
-			setUri(name);
+			this.uri = new URI(JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/solr/" + name);
 		} catch (URISyntaxException e) {
 			Error x = new ExceptionInInitializerError("Error creating URI for SolrUpdateAction " + name);
 			x.initCause(e);
 			throw x;
 		}
-	}
-	
-	public void setUri(String name) throws URISyntaxException{
-		this.uri = new URI(namespace + "/" + name);
 	}
 	
 	public String getName(){

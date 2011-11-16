@@ -59,6 +59,7 @@ public class SolrUpdateService {
 	protected List<SolrUpdateRequest> collisionList = null;
 	protected Set<String> lockedPids = null;
 	protected int maxIngestThreads = 3;
+	protected boolean autoCommit = true;
 	
 	public SolrUpdateService() {
 		pidQueue = new LinkedBlockingQueue<SolrUpdateRequest>();
@@ -83,7 +84,11 @@ public class SolrUpdateService {
 			throw new Error("Initialization of SolrUpdateService failed.  It was unable to retrieve Collections object from repository.");
 		}
 		
-
+		initializeExecutor();
+	}
+	
+	protected void initializeExecutor(){
+		LOG.debug("Initializing thread pool executor with " + this.maxIngestThreads + " threads.");
 		this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(this.maxIngestThreads);
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
 	}
@@ -219,6 +224,14 @@ public class SolrUpdateService {
 
 	public void setCollectionsPid(PID collectionsPid) {
 		this.collectionsPid = collectionsPid;
+	}
+
+	public boolean isAutoCommit() {
+		return autoCommit;
+	}
+
+	public void setAutoCommit(boolean autoCommit) {
+		this.autoCommit = autoCommit;
 	}
 
 	public int queueSize(){

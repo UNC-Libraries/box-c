@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view-inputs>
+	<path>
+		<object label="Repository Home" pid="admin:REPOSITORY" slug="REPOSITORY" />
+		<object label="Collections" pid="uuid:493d6c1c-b645-43a8-b301-5c14e2717313"
+			slug="Collections" />
+		<object label="Master's Papers" pid="uuid:2f5733dc-e5d6-4822-ab7f-8832ef66cec8"
+			slug="mp" />
+		<object label="Department of City and Regional Planning" pid="uuid:83991383-2f93-40fd-8f0b-23858bd6f30d"
+			slug="Department_of_City_and_Regional_Planning" />
+		<object
+			label="Local Economic Development through Joint Action:  Latino Businesses and the Greater Mount Airy Chamber of Commerce"
+			pid="uuid:757ac9c1-c90f-42bb-9476-6dda92850b5c" slug="Local_Economic_Development_through_Joint_Action_L" />
+	</path>
+	<permissions>
+		<rights>
+			<permitOriginalsRead>public</permitOriginalsRead>
+			<permitDerivativesRead>public</permitDerivativesRead>
+			<permitMetadataRead>public</permitMetadataRead>
+		</rights>
+	</permissions>
+	<order>4</order>
+	<foxml:digitalObject xmlns:foxml="info:fedora/fedora-system:def/foxml#"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" VERSION="1.1"
+		PID="uuid:757ac9c1-c90f-42bb-9476-6dda92850b5c"
+		xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+		<foxml:objectProperties>
+			<foxml:property NAME="info:fedora/fedora-system:def/model#state"
+				VALUE="Active" />
+			<foxml:property NAME="info:fedora/fedora-system:def/model#label"
+				VALUE="Local Economic Development through Joint Action:  Latino Businesses and the Greater Mount Airy Chamber of Commerce" />
+			<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId"
+				VALUE="" />
+			<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate"
+				VALUE="2010-12-10T17:22:48.551Z" />
+			<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate"
+				VALUE="2011-06-27T18:13:21.049Z" />
+		</foxml:objectProperties>
+		<foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X"
+			VERSIONABLE="false">
+			<foxml:datastreamVersion ID="AUDIT.0"
+				LABEL="Audit Trail for this object" CREATED="2010-12-10T17:22:48.551Z"
+				MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+				<foxml:xmlContent>
+					<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+						<audit:record ID="AUDREC1">
+							<audit:process type="Fedora API-M" />
+							<audit:action>ingest</audit:action>
+							<audit:componentID />
+							<audit:responsibility>fedoraAdmin</audit:responsibility>
+							<audit:date>2010-12-10T17:22:48.551Z</audit:date>
+							<audit:justification>Added through UI</audit:justification>
+						</audit:record>
+						<audit:record ID="AUDREC2">
+							<audit:process type="Fedora API-M" />
+							<audit:action>addDatastream</audit:action>
+							<audit:componentID>MD_TECHNICAL</audit:componentID>
+							<audit:responsibility>fedoraAdmin</audit:responsibility>
+							<audit:date>2011-06-27T18:13:19.692Z</audit:date>
+							<audit:justification>Adding technical metadata derived by FITS</audit:justification>
+						</audit:record>
+					</audit:auditTrail>
+				</foxml:xmlContent>
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+		<foxml:datastream ID="MD_DESCRIPTIVE" STATE="A"
+			CONTROL_GROUP="X" VERSIONABLE="true">
+			<foxml:datastreamVersion ID="MD_DESCRIPTIVE.0"
+				LABEL="Descriptive Metadata" CREATED="2010-12-10T17:22:48.566Z"
+				MIMETYPE="text/xml" SIZE="4911">
+				<foxml:contentDigest TYPE="MD5"
+					DIGEST="43f56068395daebe5dbbced6d207ff6a" />
+				<foxml:xmlContent>
+					<mods:mods xmlns:mods="http://www.loc.gov/mods/v3"
+						xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:dc="http://purl.org/dc/elements/1.1/"
+						xmlns:mets="http://www.loc.gov/METS/">
+						<mods:titleInfo>
+							<mods:title>Local Economic Development through Joint Action:
+								Latino Businesses and the Greater Mount Airy Chamber of Commerce</mods:title>
+						</mods:titleInfo>
+						<mods:name type="personal">
+							<mods:namePart>Bradley, Badi</mods:namePart>
+							<mods:affiliation>City and Regional Planning. University of North
+								Carolina at Chapel Hill.</mods:affiliation>
+						</mods:name>
+						<mods:name type="personal">
+							<mods:namePart>Malizia, Emil E.</mods:namePart>
+							<mods:role>
+								<mods:roleTerm type="text" authority="marcrelator">Faculty
+									Advisor</mods:roleTerm>
+							</mods:role>
+						</mods:name>
+						<mods:originInfo>
+							<mods:dateIssued keyDate="yes" encoding="iso8601">2003</mods:dateIssued>
+						</mods:originInfo>
+						<mods:language>
+							<mods:languageTerm type="code" authority="iso639-2b">eng</mods:languageTerm>
+						</mods:language>
+						<mods:physicalDescription>
+							<mods:extent>71 p.</mods:extent>
+						</mods:physicalDescription>
+						<mods:genre authority="local">http://purl.org/eprint/type/Thesis</mods:genre>
+						<mods:typeOfResource>text</mods:typeOfResource>
+						<mods:subject>
+							<mods:geographic>United States, North Carolina, Surry County, Mt.
+								Airy</mods:geographic>
+						</mods:subject>
+						<mods:genre authority="local">PDF</mods:genre>
+						<mods:typeOfResource>text</mods:typeOfResource>
+						<mods:abstract>Northwest North Carolina is experiencing an
+							economic shock due to dependence on manufacturing and textile
+							industries that are moving abroad. Many of the displaced workers
+							entered the workforce at an early age and are now underprepared
+							for work in the information economy. The institution of the
+							chamber of commerce has the potential to organize businesses
+							through collective efficiency, which includes joint action. By
+							placing a value on place and community rather than the individual
+							entity, the chamber of commerce can lead an area to recover
+							through structural change of the local economy. The Mount Airy
+							Chamber of Commerce is taking steps to address the economic shock
+							in the area. Through participation in the Northwest North
+							Carolina Comprehensive Economic Development Strategy, the chamber
+							is taking an active role in promoting joint action among local
+							industries. A demographic shift during the 1990s introduced a
+							Latino population to Mount Airy and Surry County. A stagnant
+							local population and the national demographic, political and
+							economic expansion of the Latino community are reasons to believe
+							that the Latino community in Mount Airy will be a significant
+							factor in the future of the local economy. This study
+							investigates how the Mount Airy Chamber of Commerce can
+							incorporate Latino businesses in the area. The study has two
+							phases. The first is a survey of all local businesses in Mount
+							Airy. The survey inquires about Minority-owned businesses,
+							chamber membership, familiarity with workforce training options,
+							and specific workforce training needs. The second phase consists
+							of interviews with Latino businesses in Mount Airy, chambers of
+							commerce that deal directly with Latino populations and business
+							training institutions that work with Latinos. This report
+							concludes that the Mount Airy Chamber of Commerce should initiate
+							an effort to coordinate with the Latino businesses. This can be
+							accomplished through simple acts such as scheduling meetings at
+							hours convenient for retail businesses and providing translations
+							in Spanish of important legal documents. The chamber should also
+							continue to support the minority council in order to demonstrate
+							inclusiveness to minority businesses, rather than latently
+							encouraging them to join specific minority-based chambers. Acts
+							of inclusiveness and response to minority business needs are
+							critical towards establishing and maintaining a unified
+							commercial and industrial base in the community. These attitudes
+							and actions are essential for joint action, collective
+							efficiency, and economic recovery.</mods:abstract>
+						<mods:accessCondition type="use">The author has
+							granted the University of North Carolina at Chapel Hill a
+							limited, non-exclusive right to make this publication available
+							to the public. The author retains all other rights.</mods:accessCondition>
+						<mods:accessCondition type="access">Open access</mods:accessCondition>
+					</mods:mods>
+				</foxml:xmlContent>
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+		<foxml:datastream ID="DATA_FILE" STATE="A"
+			CONTROL_GROUP="M" VERSIONABLE="true">
+			<foxml:datastreamVersion ID="DATA_FILE.0"
+				LABEL="PDF File" CREATED="2010-12-10T17:22:48.566Z"
+				ALT_IDS="irods://cdr-vault.libint.unc.edu:3333/cdrZone/home/jill/staging/masters/6.pdf"
+				MIMETYPE="application/pdf" SIZE="-1">
+				<foxml:contentDigest TYPE="MD5"
+					DIGEST="b8f9f2fe8d48acee8f9954acdf44c309" />
+				<foxml:contentLocation TYPE="INTERNAL_ID"
+					REF="uuid:757ac9c1-c90f-42bb-9476-6dda92850b5c+DATA_FILE+DATA_FILE.0" />
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+		<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X"
+			VERSIONABLE="false">
+			<foxml:datastreamVersion ID="DC.0"
+				LABEL="Internal XML Metadata" CREATED="2010-12-10T17:22:48.566Z"
+				MIMETYPE="text/xml" SIZE="3794">
+				<foxml:contentDigest TYPE="MD5"
+					DIGEST="e2e9418d2cfb74d5293b7dbe7b3f29c9" />
+				<foxml:xmlContent>
+					<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+						xmlns:dc="http://purl.org/dc/elements/1.1/"
+						xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+						<dc:title>Local Economic Development through Joint Action: Latino
+							Businesses and the Greater Mount Airy Chamber of Commerce</dc:title>
+						<dc:subject />
+						<dc:description>Northwest North Carolina is experiencing an
+							economic shock due to dependence on manufacturing and textile
+							industries that are moving abroad. Many of the displaced workers
+							entered the workforce at an early age and are now underprepared
+							for work in the information economy. The institution of the
+							chamber of commerce has the potential to organize businesses
+							through collective efficiency, which includes joint action. By
+							placing a value on place and community rather than the individual
+							entity, the chamber of commerce can lead an area to recover
+							through structural change of the local economy. The Mount Airy
+							Chamber of Commerce is taking steps to address the economic shock
+							in the area. Through participation in the Northwest North
+							Carolina Comprehensive Economic Development Strategy, the chamber
+							is taking an active role in promoting joint action among local
+							industries. A demographic shift during the 1990s introduced a
+							Latino population to Mount Airy and Surry County. A stagnant
+							local population and the national demographic, political and
+							economic expansion of the Latino community are reasons to believe
+							that the Latino community in Mount Airy will be a significant
+							factor in the future of the local economy. This study
+							investigates how the Mount Airy Chamber of Commerce can
+							incorporate Latino businesses in the area. The study has two
+							phases. The first is a survey of all local businesses in Mount
+							Airy. The survey inquires about Minority-owned businesses,
+							chamber membership, familiarity with workforce training options,
+							and specific workforce training needs. The second phase consists
+							of interviews with Latino businesses in Mount Airy, chambers of
+							commerce that deal directly with Latino populations and business
+							training institutions that work with Latinos. This report
+							concludes that the Mount Airy Chamber of Commerce should initiate
+							an effort to coordinate with the Latino businesses. This can be
+							accomplished through simple acts such as scheduling meetings at
+							hours convenient for retail businesses and providing translations
+							in Spanish of important legal documents. The chamber should also
+							continue to support the minority council in order to demonstrate
+							inclusiveness to minority businesses, rather than latently
+							encouraging them to join specific minority-based chambers. Acts
+							of inclusiveness and response to minority business needs are
+							critical towards establishing and maintaining a unified
+							commercial and industrial base in the community. These attitudes
+							and actions are essential for joint action, collective
+							efficiency, and economic recovery.</dc:description>
+						<dc:contributor>Bradley, Badi</dc:contributor>
+						<dc:contributor>Malizia, Emil E. (Faculty Advisor)</dc:contributor>
+						<dc:type>http://purl.org/eprint/type/Thesis</dc:type>
+						<dc:type>Text</dc:type>
+						<dc:type>PDF</dc:type>
+						<dc:type>Text</dc:type>
+						<dc:format>71 p.</dc:format>
+						<dc:identifier>uuid:757ac9c1-c90f-42bb-9476-6dda92850b5c</dc:identifier>
+						<dc:language>eng</dc:language>
+						<dc:coverage>United States, North Carolina, Surry County, Mt. Airy</dc:coverage>
+						<dc:rights>The author has granted the University of North Carolina
+							at Chapel Hill a limited, non-exclusive right to make this
+							publication available to the public. The author retains all other
+							rights.</dc:rights>
+						<dc:rights>Open access</dc:rights>
+					</oai_dc:dc>
+				</foxml:xmlContent>
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+		<foxml:datastream ID="MD_EVENTS" STATE="A"
+			CONTROL_GROUP="M" VERSIONABLE="false">
+			<foxml:datastreamVersion ID="MD_EVENTS.0"
+				LABEL="PREMIS Events Metadata" CREATED="2010-12-10T17:22:48.566Z"
+				MIMETYPE="text/xml" SIZE="-1">
+				<foxml:contentDigest TYPE="MD5"
+					DIGEST="c93ab06355cdf9b85ea8abdc9540311d" />
+				<foxml:contentLocation TYPE="INTERNAL_ID"
+					REF="uuid:757ac9c1-c90f-42bb-9476-6dda92850b5c+MD_EVENTS+MD_EVENTS.0" />
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+		<foxml:datastream ID="MD_TECHNICAL" STATE="A"
+			CONTROL_GROUP="M" VERSIONABLE="false">
+			<foxml:datastreamVersion ID="MD_TECHNICAL.0"
+				LABEL="PREMIS Technical Metadata" CREATED="2011-06-27T18:13:19.692Z"
+				MIMETYPE="text/xml" SIZE="4161">
+				<foxml:contentDigest TYPE="MD5"
+					DIGEST="afe03b7e0f3496c31481dd64c27a290d" />
+				<foxml:contentLocation TYPE="INTERNAL_ID"
+					REF="uuid:757ac9c1-c90f-42bb-9476-6dda92850b5c+MD_TECHNICAL+MD_TECHNICAL.0" />
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+		<foxml:datastream ID="RELS-EXT" STATE="A"
+			CONTROL_GROUP="X" VERSIONABLE="false">
+			<foxml:datastreamVersion ID="RELS-EXT.3"
+				LABEL="Fedora Object-to-Object Relationship Metadata" CREATED="2011-06-27T18:13:21.049Z"
+				MIMETYPE="text/xml" SIZE="1555">
+				<foxml:contentDigest TYPE="MD5"
+					DIGEST="44357ea04811c0d0d26ae69d26128e16" />
+				<foxml:xmlContent>
+					<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+						<rdf:Description
+							rdf:about="info:fedora/uuid:757ac9c1-c90f-42bb-9476-6dda92850b5c">
+							<allowIndexing
+								xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">yes</allowIndexing>
+							<defaultWebData
+								xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+								rdf:resource="info:fedora/uuid:757ac9c1-c90f-42bb-9476-6dda92850b5c/DATA_FILE" />
+							<owner xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+								rdf:resource="info:fedora/uuid:d48dc006-0846-431a-9da5-ae8a467656de" />
+							<slug xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">Local_Economic_Development_through_Joint_Action_L</slug>
+							<sourceData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+								rdf:resource="info:fedora/uuid:757ac9c1-c90f-42bb-9476-6dda92850b5c/DATA_FILE" />
+							<hasModel xmlns="info:fedora/fedora-system:def/model#"
+								rdf:resource="info:fedora/cdr-model:PreservedObject" />
+							<hasModel xmlns="info:fedora/fedora-system:def/model#"
+								rdf:resource="info:fedora/cdr-model:Simple" />
+							<hasSourceMimeType
+								xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">application/pdf</hasSourceMimeType>
+							<hasSourceFileSize
+								xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+								rdf:datatype="http://www.w3.org/2001/XMLSchema#long">516551</hasSourceFileSize>
+							<techData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+								rdf:resource="info:fedora/uuid:757ac9c1-c90f-42bb-9476-6dda92850b5c/MD_TECHNICAL" />
+						</rdf:Description>
+
+					</rdf:RDF>
+				</foxml:xmlContent>
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+	</foxml:digitalObject>
+	<parentCollection>uuid:2f5733dc-e5d6-4822-ab7f-8832ef66cec8</parentCollection>
+</view-inputs>

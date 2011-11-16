@@ -51,15 +51,13 @@ public interface MessageConductor {
 	
 	/**
 	 * Clear the queue(s).  confirm parameter must be "yes" for the operation to occur
-	 * @param confirm
 	 */
-	void clearQueue(String confirm);
+	void clearQueue();
 	
 	/**
 	 * Clears message processing state objects.
-	 * @param confirm
 	 */
-	void clearState(String confirm);
+	void clearState();
 	
 	/**
 	 * True if there are no messages being processed or queued to be processed
@@ -82,20 +80,18 @@ public interface MessageConductor {
 	/**
 	 * Shutdown the conductors executor, preventing no future runnables from being added
 	 */
-	void shutdown(String confirm);
+	void shutdown();
 	
 	/**
-	 * Shuts down the executor immediately, aborting and clearing the queue of runnables
-	 * @param confirm
+	 * Shuts down the executor immediately, aborting and clearing the queue of runnables\
 	 */
-	void shutdownNow(String confirm);
+	void shutdownNow();
 	
 	/**
 	 * Attempts to interrupt the currently running workers and stop execution, but retain
 	 * future runnables.
-	 * @param confirm
 	 */
-	void abort(String confirm);
+	void abort();
 	
 	/**
 	 * Restart the executor after a shutdown

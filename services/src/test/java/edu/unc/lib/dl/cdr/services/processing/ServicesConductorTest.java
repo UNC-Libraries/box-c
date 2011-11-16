@@ -72,8 +72,8 @@ public class ServicesConductorTest extends Assert {
 	
 	@Before
 	public void setUp() throws Exception {
-		servicesConductor.clearState("yes");
-		servicesConductor.shutdownNow("yes");
+		servicesConductor.clearState();
+		servicesConductor.shutdownNow();
 		while (servicesConductor.getExecutor().isTerminating() && !servicesConductor.getExecutor().isShutdown());
 		servicesConductor.restart();
 		this.executor = servicesConductor.getExecutor();
@@ -140,7 +140,7 @@ public class ServicesConductorTest extends Assert {
 			messageDirector.direct(message);
 		}
 		
-		servicesConductor.clearState("yes");
+		servicesConductor.clearState();
 		assertTrue(servicesConductor.getPidQueue().size() == 0);
 		assertTrue(servicesConductor.getCollisionList().size() == 0);
 		assertTrue(servicesConductor.getFailedPids().size() == 0);
@@ -196,7 +196,7 @@ public class ServicesConductorTest extends Assert {
 		assertEquals(incompleteServices.get(), servicesConductor.getMaxThreads());
 		
 		//Abort the currently active threads
-		servicesConductor.abort("yes");
+		servicesConductor.abort();
 		
 		while (servicesConductor.getExecutor().isTerminating() || servicesConductor.getExecutor().isShutdown());
 		
@@ -213,7 +213,7 @@ public class ServicesConductorTest extends Assert {
 		
 		assertTrue(servicesCompleted.get() == numberTestMessages - servicesConductor.getMaxThreads());
 		
-		servicesConductor.shutdownNow("yes");
+		servicesConductor.shutdownNow();
 		assertFalse(servicesConductor.isReady());
 		
 		//Try to direct a pid with conductor shutdown
@@ -253,7 +253,7 @@ public class ServicesConductorTest extends Assert {
 		PIDMessage message = new PIDMessage(ManagementClientMock.PID_FILE_SYSTEM, JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), serviceName);
 		
-		servicesConductor.clearState("yes");
+		servicesConductor.clearState();
 		servicesConductor.setRecoverableDelay(500);
 		servicesConductor.setUnexpectedExceptionDelay(0);
 		

@@ -75,62 +75,13 @@ public class SolrUpdateRunnable implements Runnable {
 			LOG.error("Failed to initialize queries", e);
 		}
 	}
+	
+	public static SolrUpdateService getSolrUpdateService() {
+		return solrUpdateService;
+	}
 
-	/**
-	 * Retrieves the next available ingest request. The request must not effect a
-	 * pid which is currently locked. If the next pid is locked, then it is moved
-	 * to the collision list, and the next pid is polled until an unlocked pid is
-	 * found or the list is empty. If there are any items in the collision list,
-	 * they are treated as if they were at the beginning of pid queue, meaning
-	 * that they are examined before polling of the queue begins in order to
-	 * retain operation order.
-	 * 
-	 * @return the next available ingest request which is not locked, or null if
-	 *         none if available.
-	 */
-	private SolrUpdateRequest nextRequest() {
-		synchronized (solrUpdateService.getCollisionList()) {
-			synchronized (solrUpdateService.getPidQueue()) {
-				SolrUpdateRequest updateRequest = null;
-				String pid = null;
-
-				do {
-					// First read from the collision list in case there are items that
-					// were blocked which need to be read
-					if (solrUpdateService.getCollisionList() != null && !solrUpdateService.getCollisionList().isEmpty()) {
-						SolrUpdateRequest collisionRequest;
-						Iterator<SolrUpdateRequest> collisionIt = solrUpdateService.getCollisionList().iterator();
-						while (collisionIt.hasNext()) {
-							collisionRequest = collisionIt.next();
-							synchronized (solrUpdateService.getLockedPids()) {
-								if (!solrUpdateService.getLockedPids().contains(collisionRequest.getPid()) && !collisionRequest.isBlocked()) {
-									solrUpdateService.getLockedPids().add(collisionRequest.getPid());
-									collisionIt.remove();
-									return collisionRequest;
-								}
-							}
-						}
-					}
-				
-					// There were no usable pids in the collision list, so read the
-					// regular queue.
-					updateRequest = solrUpdateService.getPidQueue().poll();
-					if (updateRequest == null) {
-						return null;
-					}
-
-					pid = updateRequest.getPid();
-					synchronized (solrUpdateService.getLockedPids()) {
-						if (solrUpdateService.getLockedPids().contains(pid) || updateRequest.isBlocked()) {
-							solrUpdateService.getCollisionList().add(updateRequest);
-						} else {
-							solrUpdateService.getLockedPids().add(pid);
-							return updateRequest;
-						}
-					}
-				} while (true);
-			}
-		}
+	public static void setSolrUpdateService(SolrUpdateService solrUpdateService) {
+		SolrUpdateRunnable.solrUpdateService = solrUpdateService;
 	}
 	
 	/**
@@ -374,6 +325,9 @@ public class SolrUpdateRunnable implements Runnable {
 				try {
 					Thread.sleep(30000L);
 					return this.getObjectViewXML(updateRequest, ignoreAllowIndexing, retries - 1);
+				} catch (InterruptedException e2) {
+					LOG.warn("Retry attempt to retrieve object view XML was interrupted", e);
+					Thread.currentThread().interrupt();
 				} catch (Exception e2){
 					LOG.error("Failed to get ObjectViewXML for " + updateRequest.getPid() + " after two attempts.", e2);
 				}
@@ -405,126 +359,187 @@ public class SolrUpdateRunnable implements Runnable {
 		solrUpdateService.getUpdateDocTransformer().deleteDocument("*:*");
 		solrUpdateService.offer(new SolrUpdateRequest(updateRequest.getPid(), SolrUpdateAction.COMMIT));
 	}
+	
+	/**
+	 * Retrieves the next available ingest request. The request must not effect a
+	 * pid which is currently locked. If the next pid is locked, then it is moved
+	 * to the collision list, and the next pid is polled until an unlocked pid is
+	 * found or the list is empty. If there are any items in the collision list,
+	 * they are treated as if they were at the beginning of pid queue, meaning
+	 * that they are examined before polling of the queue begins in order to
+	 * retain operation order.
+	 * 
+	 * @return the next available ingest request which is not locked, or null if
+	 *         none if available.
+	 */
+	private SolrUpdateRequest nextRequest() {
+		SolrUpdateRequest updateRequest = null;
+		String pid = null;
+		
+		do {
+			synchronized (solrUpdateService.getCollisionList()) {
+				synchronized (solrUpdateService.getPidQueue()) {
+					// First read from the collision list in case there are items that
+					// were blocked which need to be read
+					if (solrUpdateService.getCollisionList() != null && !solrUpdateService.getCollisionList().isEmpty()) {
+						
+						Iterator<SolrUpdateRequest> collisionIt = solrUpdateService.getCollisionList().iterator();
+						while (collisionIt.hasNext()) {
+							updateRequest = collisionIt.next();
+							synchronized (solrUpdateService.getLockedPids()) {
+								if (!solrUpdateService.getLockedPids().contains(updateRequest.getPid()) && !updateRequest.isBlocked()) {
+									solrUpdateService.getLockedPids().add(updateRequest.getPid());
+									collisionIt.remove();
+									return updateRequest;
+								}
+							}
+						}
+					}
+				
+					do {
+						//There were no usable pids in the collision list, so read the regular queue.
+						updateRequest = solrUpdateService.getPidQueue().poll();
+						if (updateRequest != null) {
+							pid = updateRequest.getPid();
+							synchronized (solrUpdateService.getLockedPids()) {
+								if (solrUpdateService.getLockedPids().contains(pid) || updateRequest.isBlocked()) {
+									solrUpdateService.getCollisionList().add(updateRequest);
+								} else {
+									solrUpdateService.getLockedPids().add(pid);
+									return updateRequest;
+								}
+							}
+						}
+					} while (updateRequest != null && !Thread.currentThread().isInterrupted());
+				}
+			}
+			//There were no usable requests, so wait a moment.
+			try {
+				Thread.sleep(200L);
+			} catch (InterruptedException e) {
+				LOG.warn("Services runnable interrupted while waiting to get next message", e);
+				Thread.currentThread().interrupt();
+			}
+		} while (updateRequest == null && !Thread.currentThread().isInterrupted()
+				&& (solrUpdateService.getPidQueue().size() != 0 || solrUpdateService.getCollisionList().size() != 0));
+		return null;
+	}
+	
+	/**
+	 * Determines if a commit to Solr is needed and performs it if so.
+	 * @param forceCommit
+	 */
+	private void commitSolrChanges(boolean forceCommit){
+		String addDocString = null;
+		ExecutionTimer t = new ExecutionTimer();
+		synchronized(solrUpdateService.getSolrSearchService()){
+			synchronized(solrUpdateService.getSolrDataAccessLayer()){
+				// Process documents into a single update document if there aren't
+				// any more items to process or exceeded page size
+				synchronized (solrUpdateService.getUpdateDocTransformer()) {
+					//Commit if forceCommit is true and there are documents to commit
+					//OR auto commit is on, and there are page size number of documents or no more requests pending
+					if ((forceCommit && solrUpdateService.getUpdateDocTransformer().getDocumentCount() > 0)
+							|| (solrUpdateService.autoCommit && (
+									(solrUpdateService.getUpdateDocTransformer().getDocumentCount() >= INGEST_PAGE_SIZE)
+								|| (solrUpdateService.getPidQueue().size() == 0 && solrUpdateService.getCollisionList().size() == 0)	
+							))){
+						addDocString = solrUpdateService.getUpdateDocTransformer().exportUpdateDocument();
+					}
+				}
+	
+				// If the update document is populated, then upload it to Solr
+				if (addDocString != null) {
+					LOG.debug("Submitting to solr: " + addDocString);
+					t.start();
+					try {
+						solrUpdateService.getSolrDataAccessLayer().updateIndex(addDocString);
+					} catch (Exception e) {
+						LOG.error("Failed to ingest update document to Solr", e);
+						LOG.error(addDocString);
+					}
+					t.end();
+					LOG.info("Uploaded document to Solr: " + t.duration());
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Performs the action indicated by the updateRequest
+	 * @param updateRequest
+	 * @return Whether the action requires an immediate commit to be issued.
+	 */
+	private boolean performAction(SolrUpdateRequest updateRequest){
+		boolean forceCommit = false;
+		try {
+			switch (updateRequest.getAction()) {
+				case DELETE:
+					// Add a delete request to the update document
+					solrUpdateService.getUpdateDocTransformer().deleteDocument(updateRequest.getPid());
+					break;
+				case ADD:
+					addObject(updateRequest);
+					break;
+				case RECURSIVE_ADD:
+					recursiveAdd(updateRequest);
+					break;
+				case DELETE_SOLR_TREE:
+					deleteSolrTree(updateRequest);
+					break;
+				case CLEAN_REINDEX:
+					cleanReindex(updateRequest);
+					break;
+				case RECURSIVE_REINDEX:
+					recursiveReindex(updateRequest);
+					break;
+				case DELETE_CHILDREN_PRIOR_TO_TIMESTAMP:
+					deleteChildrenPriorToTimestamp(updateRequest);
+					break;
+				case COMMIT:
+					forceCommit = true;
+					break;
+				case CLEAR_INDEX:
+					clearIndex(updateRequest);
+					break;
+			}
+		} catch (Exception e) {
+			LOG.error("An error occurred while attempting perform action " + updateRequest.getAction()
+					+ " on object " + updateRequest.getPid(), e);
+		}
+		return forceCommit;
+	}
 
 	@Override
 	public void run() {
-		// For execution time recording
-		ExecutionTimer t = new ExecutionTimer();
 		try {
 			SolrUpdateRequest updateRequest = null;
 			String pid = null;
-			String addDocString = null;
 			boolean forceCommit = false;
-			// Get the next pid and lock it, synchronized so no one else can
-			// sneak in and lock it.
-			do {
-				updateRequest = nextRequest();
-				if (updateRequest == null) {
-					// Was unable to get an unlocked PID, wait a moment before trying
-					// again
-					try {
-						Thread.sleep(100L);
-					} catch (Exception e) {
-					}
-				}
-				// Loop until an unlocked PID is retrieved or there are no more
-				// pids.
-			} while (updateRequest == null && !(solrUpdateService.getPidQueue().size() == 0 && solrUpdateService.getCollisionList().size() == 0));
+			// Get the next pid and lock it
+			updateRequest = nextRequest();
 
 			if (updateRequest != null) {
-				// Get the next available pid
-				LOG.debug("Obtained " + updateRequest.getPid() + "|" + updateRequest.getAction());
-				pid = updateRequest.getPid();
 				try {
-					switch (updateRequest.getAction()) {
-						case DELETE:
-							// Add a delete request to the update document
-							solrUpdateService.getUpdateDocTransformer().deleteDocument(updateRequest.getPid());
-							break;
-						case ADD:
-							addObject(updateRequest);
-							break;
-						case RECURSIVE_ADD:
-							recursiveAdd(updateRequest);
-							break;
-						case DELETE_SOLR_TREE:
-							deleteSolrTree(updateRequest);
-							break;
-						case CLEAN_REINDEX:
-							cleanReindex(updateRequest);
-							break;
-						case RECURSIVE_REINDEX:
-							recursiveReindex(updateRequest);
-							break;
-						case DELETE_CHILDREN_PRIOR_TO_TIMESTAMP:
-							deleteChildrenPriorToTimestamp(updateRequest);
-							break;
-						case COMMIT:
-							forceCommit = true;
-							break;
-						case CLEAR_INDEX:
-							clearIndex(updateRequest);
-							break;
-					}
-				} catch (Exception e) {
-					LOG.error("Error ingesting record for solr", e);
+					//Quit before doing work if thread was interrupted
+					if (Thread.currentThread().isInterrupted())
+						return;
+					// Get the next available pid
+					LOG.debug("Obtained " + updateRequest.getPid() + "|" + updateRequest.getAction());
+					pid = updateRequest.getPid();
+					forceCommit = performAction(updateRequest);
+				} finally {
+					// Finish request and unlock the pid
+					updateRequest.requestCompleted();
+					solrUpdateService.getLockedPids().remove(pid);
+					LOG.debug("Processed pid " + pid);
 				}
 			}
-
-			
-			synchronized(solrUpdateService.getSolrSearchService()){
-				synchronized(solrUpdateService.getSolrDataAccessLayer()){
-					// Process documents into a single update document if there aren't
-					// any more items to process or exceeded page size
-					synchronized (solrUpdateService.getUpdateDocTransformer()) {
-						if (((forceCommit || (solrUpdateService.getPidQueue().size() == 0 && solrUpdateService.getCollisionList().size() == 0)) 
-								&& solrUpdateService.getUpdateDocTransformer().getDocumentCount() > 0)
-								|| solrUpdateService.getUpdateDocTransformer().getDocumentCount() >= INGEST_PAGE_SIZE) {
-							LOG.debug("Generating update document");
-							//addDocString = solrUpdateService.getUpdateDocTransformer().toString();
-							addDocString = solrUpdateService.getUpdateDocTransformer().exportUpdateDocument();
-							LOG.debug("Finished Generating update document");
-							//solrUpdateService.getUpdateDocTransformer().clearDocs();
-						}
-					}
-		
-					// If the update document is populated, then upload it to Solr
-					if (addDocString != null) {
-						LOG.debug("Submitting to solr: " + addDocString);
-						t.start();
-						try {
-							solrUpdateService.getSolrDataAccessLayer().updateIndex(addDocString);
-						} catch (Exception e) {
-							LOG.error("Failed to ingest update document to Solr", e);
-							LOG.error(addDocString);
-						}
-						t.end();
-						LOG.info("Uploaded document to Solr: " + t.duration());
-						addDocString = null;
-					}
-				}
-			}
-			
-			if (updateRequest != null){
-				// Finish request and unlock the pid
-				updateRequest.requestCompleted();
-				solrUpdateService.getLockedPids().remove(pid);
-				LOG.debug("Processed pid " + pid);
-			}
-
+			//Commit changes to solr if they are ready to go
+			commitSolrChanges(forceCommit);
 		} catch (Exception e) {
 			// Encountered an exception
 			LOG.error("Encountered an exception while ingesting to Solr.  Finished SolrIngestThread", e);
 		}
-		LOG.debug("Finished SolrIngestRunnable " + this);
-	}
-
-
-	public static SolrUpdateService getSolrUpdateService() {
-		return solrUpdateService;
-	}
-
-	public static void setSolrUpdateService(SolrUpdateService solrUpdateService) {
-		SolrUpdateRunnable.solrUpdateService = solrUpdateService;
 	}
 }
