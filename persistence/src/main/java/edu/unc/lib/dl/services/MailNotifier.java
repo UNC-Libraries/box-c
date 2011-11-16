@@ -144,8 +144,8 @@ public class MailNotifier {
 			model.put("numberOfObjects", new Integer(ingestedCount));
 			model.put("irBaseUrl", this.irBaseUrl);
 			HashMap<String, String> tops = new HashMap<String, String>();
-			for (PID pid : props.getPlacements().keySet()) {
-				tops.put(props.getPlacements().get(pid).parentPID.getPid(), pid.getPid());
+			for (PID pid : props.getContainerPlacements().keySet()) {
+				tops.put(props.getContainerPlacements().get(pid).parentPID.getPid(), pid.getPid());
 			}
 			model.put("tops", tops);
 

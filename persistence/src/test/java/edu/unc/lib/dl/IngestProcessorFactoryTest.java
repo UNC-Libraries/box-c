@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.SIPProcessorFactory;
@@ -48,7 +49,7 @@ public class IngestProcessorFactoryTest extends Assert {
     public void testFindMETSPackageProcessor() {
 	try {
 	    File test = File.createTempFile("test", ".txt");
-	    METSPackageSIP foo = new METSPackageSIP("/foo", test, null, false);
+	    METSPackageSIP foo = new METSPackageSIP(new PID("test:1"), test, null, false);
 	    this.getSipProcessorFactory().getSIPProcessor(foo);
 	} catch (IOException e) {
 	    log.debug(e);

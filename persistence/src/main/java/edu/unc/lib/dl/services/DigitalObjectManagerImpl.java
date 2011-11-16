@@ -55,7 +55,7 @@ import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
-import edu.unc.lib.dl.ingest.aip.RepositoryPlacement;
+import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
 import edu.unc.lib.dl.ingest.sip.SIPProcessor;
 import edu.unc.lib.dl.ingest.sip.SIPProcessorFactory;
 import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
@@ -176,13 +176,13 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @return the list of PIDs reordered by this change
 	 * @throws FedoraException
 	 */
-	public List<PID> addContainerContents(Agent submitter, Collection<RepositoryPlacement> placements, PID container) throws FedoraException {
+	public List<PID> addContainerContents(Agent submitter, Collection<ContainerPlacement> placements, PID container) throws FedoraException {
 		DateTime time = new DateTime();
 		List<PID> reordered = new ArrayList<PID>();
 
 		// beginning of container meddling
 		// TODO do this in 1 RELS-EXT edit
-		for (RepositoryPlacement p : placements) {
+		for (ContainerPlacement p : placements) {
 			if (container.equals(p.parentPID)) {
 				this.getManagementClient().addObjectRelationship(container,
 						ContentModelHelper.Relationship.contains.getURI().toString(), p.pid);

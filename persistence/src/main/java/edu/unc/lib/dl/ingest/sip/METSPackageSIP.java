@@ -56,7 +56,7 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 		return this.preIngestEvents;
 	}
 
-	public METSPackageSIP(File batchPrepDir, PID containerPID, File sip, Agent owner, boolean isZIP) throws IOException {
+	public METSPackageSIP(PID containerPID, File sip, Agent owner, boolean isZIP) throws IOException {
 		this.batchPrepDir = File.createTempFile("ingest", null);
 		this.batchPrepDir.delete();
 		this.batchPrepDir.mkdir();
@@ -80,7 +80,7 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 		this.owner = owner;
 	}
 
-	public METSPackageSIP(File prepDir, PID containerPID, InputStream sip, Agent owner, boolean isZIP) throws IOException {
+	public METSPackageSIP(PID containerPID, InputStream sip, Agent owner, boolean isZIP) throws IOException {
 		this.batchPrepDir = File.createTempFile("ingest", null);
 		this.batchPrepDir.delete();
 		this.batchPrepDir.mkdir();

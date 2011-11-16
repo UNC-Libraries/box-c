@@ -33,7 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.aip.RepositoryPlacement;
+import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
 
 /**
  * @author Gregory Jansen
@@ -47,7 +47,7 @@ public class IngestProperties {
 	private String submitter = null;
 	private String[] emailRecipients = null;
 	private String message = null;
-	private Map<PID, RepositoryPlacement> placements = null;
+	private Map<PID, ContainerPlacement> containerPlacements = null;
 
 	public IngestProperties(File baseDir) throws IngestException {
 		this.propFile = new File(baseDir, PROPERTIES_FILE);
@@ -75,14 +75,14 @@ public class IngestProperties {
 				this.emailRecipients = er.split(",");
 			}
 			this.message = props.getProperty("message");
-			this.placements = new HashMap<PID, RepositoryPlacement>();
+			this.containerPlacements = new HashMap<PID, ContainerPlacement>();
 			for (Entry<Object, Object> e : props.entrySet()) {
 				String key = (String) e.getKey();
 				if (key.startsWith("placement")) {
 					String s = (String) e.getValue();
 					ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(s.getBytes()));
-					RepositoryPlacement p = (RepositoryPlacement) is.readObject();
-					this.placements.put(p.pid, p);
+					ContainerPlacement p = (ContainerPlacement) is.readObject();
+					this.containerPlacements.put(p.pid, p);
 					is.close();
 				}
 			}
@@ -108,9 +108,9 @@ public class IngestProperties {
 		}
 		if (this.message != null)
 			props.put("message", this.message);
-		if (this.placements != null && this.placements.size() > 0) {
+		if (this.containerPlacements != null && this.containerPlacements.size() > 0) {
 			int count = 0;
-			for (RepositoryPlacement p : this.placements.values()) {
+			for (ContainerPlacement p : this.containerPlacements.values()) {
 				ByteArrayOutputStream ba = new ByteArrayOutputStream();
 				try {
 					ObjectOutputStream os = new ObjectOutputStream(ba);
@@ -163,11 +163,11 @@ public class IngestProperties {
 		this.message = message;
 	}
 
-	public Map<PID, RepositoryPlacement> getPlacements() {
-		return placements;
+	public Map<PID, ContainerPlacement> getContainerPlacements() {
+		return containerPlacements;
 	}
 
-	public void setPlacements(Map<PID, RepositoryPlacement> placements) {
-		this.placements = placements;
+	public void setContainerPlacements(Map<PID, ContainerPlacement> placements) {
+		this.containerPlacements = placements;
 	}
 }

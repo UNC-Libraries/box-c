@@ -64,7 +64,7 @@ import org.jrdf.writer.mem.RdfNamespaceMapImpl;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.RepositoryPlacement;
+import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
 import edu.unc.lib.dl.util.PremisEventLogger;
@@ -485,7 +485,7 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getTopPIDPlacement (edu.unc.lib.dl.fedora.PID)
 	 */
 	@Override
-	public RepositoryPlacement getTopPIDPlacement(PID pid) {
+	public ContainerPlacement getTopPIDPlacement(PID pid) {
 		return this.baseAIP.getTopPIDPlacement(pid);
 	}
 

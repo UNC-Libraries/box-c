@@ -16,12 +16,16 @@
 package edu.unc.lib.dl.services;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
 import edu.unc.lib.dl.agents.Agent;
+import edu.unc.lib.dl.agents.PersonAgent;
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
 import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
@@ -168,5 +172,14 @@ public interface DigitalObjectManager {
 	 * @return the PID of the object added
 	 */
 	public abstract PID addSingleObject(SubmissionInformationPackage sip, Agent user, String message) throws IngestException;
+
+	/**
+	 * @param submitterAgent
+	 * @param values
+	 * @param pid
+	 * @return
+	 */
+	public abstract List<PID> addContainerContents(Agent submitterAgent, Collection<ContainerPlacement> values,
+			PID pid) throws FedoraException;
 
 }

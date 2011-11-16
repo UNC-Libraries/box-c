@@ -430,9 +430,10 @@ public class DigitalObjectManagerImplTest {
 	test.deleteOnExit();
 	FileUtils.copyFile(orig, test);
 	Agent user = AgentManager.getAdministrativeGroupAgentStub();
-	METSPackageSIP sip = new METSPackageSIP("/test/container/path", test, user, true);
-
 	PID container = new PID("test:container");
+	METSPackageSIP sip = new METSPackageSIP(container, test, user, true);
+
+	when(this.tripleStoreQueryService.lookupRepositoryPath(eq(container))).thenReturn("/test/container/path");
 	when(this.tripleStoreQueryService.fetchByRepositoryPath(eq("/test/container/path"))).thenReturn(container);
 	ArrayList<URI> ans = new ArrayList<URI>();
 	ans.add(ContentModelHelper.Model.CONTAINER.getURI());
@@ -462,9 +463,10 @@ public class DigitalObjectManagerImplTest {
 	test.deleteOnExit();
 	FileUtils.copyFile(orig, test);
 	Agent user = AgentManager.getAdministrativeGroupAgentStub();
-	METSPackageSIP sip = new METSPackageSIP("/test/container/path", test, user, true);
-
 	PID container = new PID("test:container");
+	METSPackageSIP sip = new METSPackageSIP(container, test, user, true);
+
+	when(this.tripleStoreQueryService.lookupRepositoryPath(eq(container))).thenReturn("/test/container/path");
 	when(this.tripleStoreQueryService.fetchByRepositoryPath(eq("/test/container/path"))).thenReturn(container);
 	ArrayList<URI> ans = new ArrayList<URI>();
 	ans.add(ContentModelHelper.Model.CONTAINER.getURI());
@@ -510,9 +512,9 @@ public class DigitalObjectManagerImplTest {
 	test.deleteOnExit();
 	FileUtils.copyFile(orig, test);
 	Agent user = AgentManager.getAdministrativeGroupAgentStub();
-	METSPackageSIP sip = new METSPackageSIP("/test/container/path", test, user, true);
-
 	PID container = new PID("test:container");
+	METSPackageSIP sip = new METSPackageSIP(container, test, user, true);
+	when(this.tripleStoreQueryService.lookupRepositoryPath(eq(container))).thenReturn("/test/container/path");
 	when(this.tripleStoreQueryService.fetchByRepositoryPath(eq("/test/container/path"))).thenReturn(container);
 	ArrayList<URI> ans = new ArrayList<URI>();
 	ans.add(ContentModelHelper.Model.CONTAINER.getURI());

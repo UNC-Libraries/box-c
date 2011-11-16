@@ -53,9 +53,9 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
-import edu.unc.lib.dl.ingest.aip.RepositoryPlacement;
+import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
+import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.services.DigitalObjectManagerImpl;
-import edu.unc.lib.dl.services.IngestService;
 import edu.unc.lib.dl.services.MailNotifier;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -68,28 +68,25 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author Gregory Jansen
  *
  */
-public class IngestAIPTask implements Runnable {
-	private static final Log log = LogFactory.getLog(IngestAIPTask.class);
+public class BatchIngestTask implements Runnable {
+	private static final Log log = LogFactory.getLog(BatchIngestTask.class);
 	private static final String INGEST_LOG = "ingested.log";
 	private static final String REORDERED_LOG = "reordered.log";
-	private static final int INGEST_TIMEOUT_SECS = 1200;
+	private int ingestPollingTimeoutSeconds = -1;
+	private int ingestPollingDelaySeconds = -1;
 
-	private static final int ST_INIT = 0;
-	private static final int ST_STARTING = 1;
-	private static final int ST_INGEST = 2;
-	private static final int ST_INGEST_WAIT = 3;
-	private static final int ST_INGEST_VERIFY_CHECKSUMS = 4;
-	private static final int ST_CONTAINER_UPDATE = 5;
-	private static final int ST_SEND_MESSAGES = 6;
-	private static final int ST_CLEANUP = 7;
-	private static final int ST_FINISHED = 8;
+	public enum STATE {
+		INIT, STARTING, INGEST, INGEST_WAIT, INGEST_VERIFY_CHECKSUMS, CONTAINER_UPDATES, SEND_MESSAGES, CLEANUP, FINISHED
+	}
 
-	private int state = ST_INIT;
+	private STATE state = STATE.INIT;
+
+	private boolean stopped = false;
 
 	/**
 	 * This code indicates a container update in the ingest log.
 	 */
-	private static final String CONTAINER_UPDATE_CODE = "CONTAINER UPDATED";
+	private static final String CONTAINER_UPDATED_CODE = "CONTAINER UPDATED";
 
 	/**
 	 * Base directory of this ingest batch
@@ -148,7 +145,7 @@ public class IngestAIPTask implements Runnable {
 	private ManagementClient managementClient = null;
 	private OperationsMessageSender operationsMessageSender = null;
 	private MailNotifier mailNotifier = null;
-	private DigitalObjectManagerImpl digitalObjectManager = null;
+	private DigitalObjectManager digitalObjectManager = null;
 	private AgentManager agentManager = null;
 
 	public AIPIngestPipeline getAipIngestPipeline() {
@@ -183,13 +180,13 @@ public class IngestAIPTask implements Runnable {
 		this.mailNotifier = mailNotifier;
 	}
 
-	public IngestAIPTask(IngestService service, String baseDir) {
-		this.baseDir = new File(baseDir);
-		log.debug("Ingest task created for " + this.baseDir.getAbsolutePath());
+	public BatchIngestTask() {
 	}
 
-	public void init() {
+	public void init(File baseDir) {
+		log.debug("Ingest task created for " + this.baseDir.getAbsolutePath());
 		try {
+			this.baseDir = baseDir;
 			dataDir = new File(this.baseDir, "data");
 			File ingestLog = new File(this.baseDir, INGEST_LOG);
 			props = new IngestProperties(this.baseDir);
@@ -207,13 +204,12 @@ public class IngestAIPTask implements Runnable {
 			});
 
 			HashSet<PID> cSet = new HashSet<PID>();
-			for (RepositoryPlacement p : props.getPlacements().values()) {
+			for (ContainerPlacement p : props.getContainerPlacements().values()) {
 				cSet.add(p.parentPID);
 			}
 			containers = cSet.toArray(new PID[] {});
 			Arrays.sort(containers);
 
-			this.state = ST_STARTING;
 			if (ingestLog.exists()) { // this is a resume, find next foxml
 				BufferedReader r = new BufferedReader(new FileReader(ingestLog));
 				String lastLine = null;
@@ -224,32 +220,24 @@ public class IngestAIPTask implements Runnable {
 				if (lastLine != null) {
 					// format is <pid>|path
 					String[] l = lastLine.split("|");
-					if (CONTAINER_UPDATE_CODE.equals(l[1])) {
-						this.state = ST_CONTAINER_UPDATE;
+					if (CONTAINER_UPDATED_CODE.equals(l[1])) {
+						this.state = STATE.CONTAINER_UPDATES;
 						this.lastIngestPID = new PID(l[0]);
 					} else {
 						this.lastIngestFilename = l[1];
 						this.lastIngestPID = new PID(l[0]);
-						this.state = ST_INGEST_WAIT;
+						this.state = STATE.INGEST_WAIT;
 						log.info("Resuming ingest from " + this.lastIngestFilename + " in " + this.baseDir.getName());
 					}
 				}
 			}
 			ingestLogWriter = new BufferedWriter(new FileWriter(ingestLog));
 
+			this.state = STATE.STARTING;
 			startTime = System.currentTimeMillis();
 		} catch (Exception e) {
 			fail("Cannot initialize the ingest task.", e);
 		}
-	}
-
-	/**
-	 * @param string
-	 * @param e
-	 */
-	private void fail(String string, Throwable e) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public void logIngestAttempt(PID pid, String filename) {
@@ -277,13 +265,8 @@ public class IngestAIPTask implements Runnable {
 	 * Interrupts the batch ingest task as soon as possible. This task, or a new one for the same base dir, may be
 	 * resumed.
 	 */
-	public void pause() {
-	}
-
-	/**
-	 * Interrupts the batch ingest task, if running, and backs out objects already ingested.
-	 */
-	public void cancel(boolean purgeIngests) {
+	public void stop() {
+		this.stopped = true;
 	}
 
 	/*
@@ -293,29 +276,30 @@ public class IngestAIPTask implements Runnable {
 	 */
 	@Override
 	public void run() {
-		init();
-
-		while (this.state != ST_FINISHED) {
+		while (this.state != STATE.FINISHED) {
+			if(this.stopped && (this.state == STATE.SEND_MESSAGES || this.state == STATE.CLEANUP)) {
+				return; // stop immediately as long as not sending msgs or cleaning up.
+			}
 			switch (this.state) {
-				case ST_STARTING: // wait for fedora availability, check containers, move to ingesting state
+				case STARTING: // wait for fedora availability, check containers, move to ingesting state
 					startBatch();
 					break;
-				case ST_INGEST: // ingest the next foxml file, until none left
+				case INGEST: // ingest the next foxml file, until none left
 					ingestNextObject();
 					break;
-				case ST_INGEST_WAIT: // poll for last ingested pid (and fedora availability)
+				case INGEST_WAIT: // poll for last ingested pid (and fedora availability)
 					waitForLastIngest();
 					break;
-				case ST_INGEST_VERIFY_CHECKSUMS: // match local checksums against those generated by Fedora
+				case INGEST_VERIFY_CHECKSUMS: // match local checksums against those generated by Fedora
 					verifyLastIngestChecksums();
 					break;
-				case ST_CONTAINER_UPDATE: // update parent container object
+				case CONTAINER_UPDATES: // update parent container object
 					updateNextContainer();
 					break;
-				case ST_SEND_MESSAGES: // send cdr JMS and email for this AIP ingest
+				case SEND_MESSAGES: // send cdr JMS and email for this AIP ingest
 					sendIngestMessages();
 					break;
-				case ST_CLEANUP: // if nothing went wrong, then delete the batch directory
+				case CLEANUP: // if nothing went wrong, then delete the batch directory
 			}
 		}
 	}
@@ -344,7 +328,7 @@ public class IngestAIPTask implements Runnable {
 		Set<PID> containerSet = new HashSet<PID>();
 		Collections.addAll(containerSet, this.containers);
 		this.getOperationsMessageSender().sendAddOperation(props.getSubmitter(), containerSet,
-				props.getPlacements().keySet(), reordered);
+				props.getContainerPlacements().keySet(), reordered);
 
 		// send successful ingest email
 		if (this.mailNotifier != null)
@@ -365,7 +349,7 @@ public class IngestAIPTask implements Runnable {
 			}
 		}
 		if (next >= containers.length) { // no more to update
-			this.state = ST_SEND_MESSAGES;
+			this.state = STATE.SEND_MESSAGES;
 			return;
 		}
 		PrintWriter reorderedWriter = null;
@@ -374,8 +358,8 @@ public class IngestAIPTask implements Runnable {
 				submitterAgent = this.getAgentManager().findPersonByOnyen(props.getSubmitter(), false);
 			}
 			reorderedWriter = new PrintWriter(new File(this.baseDir, REORDERED_LOG));
-			logIngestAttempt(containers[next], CONTAINER_UPDATE_CODE);
-			List<PID> reordered = this.digitalObjectManager.addContainerContents(submitterAgent, props.getPlacements()
+			logIngestAttempt(containers[next], CONTAINER_UPDATED_CODE);
+			List<PID> reordered = this.digitalObjectManager.addContainerContents(submitterAgent, props.getContainerPlacements()
 					.values(), containers[next]);
 			logIngestComplete();
 			for (PID p : reordered) {
@@ -396,13 +380,13 @@ public class IngestAIPTask implements Runnable {
 	 * Polls Fedora for the last ingested PID
 	 */
 	private void waitForLastIngest() {
-		if (!this.managementClient.pollForObject(this.lastIngestPID, 60, INGEST_TIMEOUT_SECS)) {
+		if (!this.managementClient.pollForObject(this.lastIngestPID, ingestPollingDelaySeconds, ingestPollingTimeoutSeconds)) {
 			// TODO re-attempt last ingest before failing?
 			fail("The last ingest before resuming was never completed. " + this.lastIngestPID + " in "
 					+ this.lastIngestFilename);
 			return;
 		} else {
-			this.state = ST_INGEST_VERIFY_CHECKSUMS;
+			this.state = STATE.INGEST_VERIFY_CHECKSUMS;
 		}
 	}
 
@@ -414,7 +398,7 @@ public class IngestAIPTask implements Runnable {
 			fail("Cannot contact Fedora");
 		}
 		HashSet<PID> containers = new HashSet<PID>();
-		for (RepositoryPlacement p : props.getPlacements().values()) {
+		for (ContainerPlacement p : props.getContainerPlacements().values()) {
 			containers.add(p.parentPID);
 		}
 		for (PID container : containers) {
@@ -422,15 +406,7 @@ public class IngestAIPTask implements Runnable {
 				fail("Cannot find existing container: " + container);
 			}
 		}
-		this.state = ST_INGEST;
-	}
-
-	/**
-	 * @param string
-	 */
-	private void fail(String string) {
-		// TODO Auto-generated method stub
-
+		this.state = STATE.INGEST;
 	}
 
 	private void ingestNextObject() {
@@ -444,7 +420,7 @@ public class IngestAIPTask implements Runnable {
 			}
 		}
 		if (next >= foxmlFiles.length) { // no more to ingest, next step
-			this.state = ST_CONTAINER_UPDATE;
+			this.state = STATE.CONTAINER_UPDATES;
 			return;
 		}
 
@@ -492,11 +468,11 @@ public class IngestAIPTask implements Runnable {
 			this.lastIngestPID = pid;
 			pidIngested = this.getManagementClient().ingest(doc, Format.FOXML_1_1, props.getMessage());
 			logIngestAttempt(pidIngested, this.lastIngestFilename);
-			this.state = ST_INGEST_VERIFY_CHECKSUMS;
+			this.state = STATE.INGEST_VERIFY_CHECKSUMS;
 		} catch (ServiceException e) { // on timeout poll for the ingested object
 			log.info("Fedora Service Exception: " + e.getLocalizedMessage(), e);
 			logIngestAttempt(pid, lastIngestFilename);
-			this.state = ST_INGEST_WAIT;
+			this.state = STATE.INGEST_WAIT;
 			return;
 		} catch (FedoraException e) { // fedora threw a fault, ingest rejected
 			fail("Cannot ingest due to Fedora error: " + pid, e);
@@ -559,10 +535,10 @@ public class IngestAIPTask implements Runnable {
 			log.debug("Verified post-ingest checksum: " + pid.getPid() + " " + dsID);
 		}
 		logIngestComplete();
-		this.state = ST_INGEST;
+		this.state = STATE.INGEST;
 	}
 
-	public DigitalObjectManagerImpl getDigitalObjectManager() {
+	public DigitalObjectManager getDigitalObjectManager() {
 		return digitalObjectManager;
 	}
 
@@ -583,12 +559,45 @@ public class IngestAIPTask implements Runnable {
 		return result;
 	}
 
+	/**
+	 * @param string
+	 */
+	private void fail(String string) {
+		// TODO Auto-generated method stub
+
+	}
+
+	/**
+	 * @param string
+	 * @param e
+	 */
+	private void fail(String string, Throwable e) {
+		// TODO Auto-generated method stub
+
+	}
+
 	public AgentManager getAgentManager() {
 		return agentManager;
 	}
 
 	public void setAgentManager(AgentManager agentManager) {
 		this.agentManager = agentManager;
+	}
+
+	public int getIngestPollingTimeoutSeconds() {
+		return ingestPollingTimeoutSeconds;
+	}
+
+	public void setIngestPollingTimeoutSeconds(int ingestPollingTimeoutSeconds) {
+		this.ingestPollingTimeoutSeconds = ingestPollingTimeoutSeconds;
+	}
+
+	public int getIngestPollingDelaySeconds() {
+		return ingestPollingDelaySeconds;
+	}
+
+	public void setIngestPollingDelaySeconds(int ingestPollingDelaySeconds) {
+		this.ingestPollingDelaySeconds = ingestPollingDelaySeconds;
 	}
 
 }

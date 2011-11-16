@@ -32,7 +32,7 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.aip.RepositoryPlacement;
+import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -61,7 +61,7 @@ public class ContainerContentsHelper {
 	 * @throws IOException
 	 */
 	public Document addChildContentAIPInCustomOrder(Document result, PID containerPID,
-			Collection<RepositoryPlacement> placements, List<PID> reordered) {
+			Collection<ContainerPlacement> placements, List<PID> reordered) {
 		log.debug("adding child content to MD_CONTENTS XML doc");
 
 		// first build a list of existing pid order in the container
@@ -101,10 +101,10 @@ public class ContainerContentsHelper {
 
 		// build a list of things with designated order and things with only sip
 		// order
-		List<RepositoryPlacement> designatedOrder = new ArrayList<RepositoryPlacement>();
-		List<RepositoryPlacement> sipOrdered = new ArrayList<RepositoryPlacement>();
-		List<RepositoryPlacement> unordered = new ArrayList<RepositoryPlacement>();
-		for (RepositoryPlacement place : placements) {
+		List<ContainerPlacement> designatedOrder = new ArrayList<ContainerPlacement>();
+		List<ContainerPlacement> sipOrdered = new ArrayList<ContainerPlacement>();
+		List<ContainerPlacement> unordered = new ArrayList<ContainerPlacement>();
+		for (ContainerPlacement place : placements) {
 			if (containerPID.equals(place.parentPID)) { // only place those objects that go in this container
 				if (place.designatedOrder != null) {
 					designatedOrder.add(place);
@@ -119,9 +119,9 @@ public class ContainerContentsHelper {
 		// sipOrdered.size());
 
 		// sort designated ordered stuff by that order
-		Comparator<RepositoryPlacement> designatedSort = new Comparator<RepositoryPlacement>() {
+		Comparator<ContainerPlacement> designatedSort = new Comparator<ContainerPlacement>() {
 			@Override
-			public int compare(RepositoryPlacement o1, RepositoryPlacement o2) {
+			public int compare(ContainerPlacement o1, ContainerPlacement o2) {
 				if (o1.designatedOrder > o2.designatedOrder) {
 					return 1;
 				} else if (o1.designatedOrder < o2.designatedOrder) {
@@ -140,7 +140,7 @@ public class ContainerContentsHelper {
 		int capacityEstimate = Math.max(maxDesignatedOrder, maxExistingOrder) + sipOrdered.size() + 10;
 		order.ensureCapacity(capacityEstimate);
 		// insert the objects with designated order
-		for (RepositoryPlacement place : designatedOrder) {
+		for (ContainerPlacement place : designatedOrder) {
 			int pos = place.designatedOrder.intValue();
 			if (pos >= order.size()) {
 				while (pos > order.size()) { // index out of bounds, insert nulls
@@ -154,9 +154,9 @@ public class ContainerContentsHelper {
 
 		// append the objects with sip sibling order
 		// sort sip ordered stuff by that order
-		Comparator<RepositoryPlacement> sipSort = new Comparator<RepositoryPlacement>() {
+		Comparator<ContainerPlacement> sipSort = new Comparator<ContainerPlacement>() {
 			@Override
-			public int compare(RepositoryPlacement o1, RepositoryPlacement o2) {
+			public int compare(ContainerPlacement o1, ContainerPlacement o2) {
 				if (o2.sipOrder == null || o1.sipOrder > o2.sipOrder) {
 					return 1;
 				} else if (o1.sipOrder == null || o1.sipOrder < o2.sipOrder) {
@@ -167,11 +167,11 @@ public class ContainerContentsHelper {
 		};
 		Collections.sort(sipOrdered, sipSort);
 		// add SIP ordered
-		for (RepositoryPlacement place : sipOrdered) {
+		for (ContainerPlacement place : sipOrdered) {
 			order.add(place.pid);
 		}
 		// add unordered
-		for (RepositoryPlacement place : unordered) {
+		for (ContainerPlacement place : unordered) {
 			order.add(place.pid);
 		}
 

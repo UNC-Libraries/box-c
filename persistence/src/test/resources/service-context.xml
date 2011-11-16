@@ -66,12 +66,24 @@
 		<property name="available" value="true"/>
 	</bean>
 	
-	<bean id="ingestService" class="edu.unc.lib.dl.services.IngestService">
+	<bean id="batchIngestService" class="edu.unc.lib.dl.services.BatchIngestService">
 		<property name="managementClient" ref="managementClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="agentManager" ref="agentManager"/>
+		<lookup-method name="createTask" bean="batchIngestTask"/>
+	</bean>
+	
+	<bean id="batchIngestTask" class="edu.unc.lib.services.ingest.BatchIngestTask" scope="prototype">
+		<property name="managementClient" ref="managementClient"/>
+		<property name="operationsMessageSender" ref="operationsMessageSender"/>
+		<property name="mailNotifier" ref="mailNotifier"/>
+		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+		<property name="agentManager" ref="agentManager"/>
+		<property name="aipIngestPipeline" ref="aipIngestPipeline"/>
+		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
+		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
 	</bean>
 	
 	<bean id="containerContentsHelper" class="edu.unc.lib.dl.util.ContainerContentsHelper">
@@ -180,18 +192,7 @@
 			</map>
 		</property>
 		<property name="autoinitialize" value="no"/>
-		<property name="foxmlObjects">
-			<list>
-				<value>classpath:foxml-objects/ContainerModel.xml</value>
-				<value>classpath:foxml-objects/GroupAgentModel.xml</value>
-				<value>classpath:foxml-objects/PersonAgentModel.xml</value>
-				<value>classpath:foxml-objects/PreservedObjectModel.xml</value>
-				<value>classpath:foxml-objects/SimpleModel.xml</value>
-				<value>classpath:foxml-objects/SoftwareAgentModel.xml</value>
-				<value>classpath:foxml-objects/StorageReportSDef.xml</value>
-				<value>classpath:foxml-objects/StorageReportSDep.xml</value>
-			</list>
-		</property>
+		<property name="initialBatchIngestDir" value="${initial.batch.ingest.dir}"/>
 	</bean>
 
 	<bean name="agentManager" class="edu.unc.lib.dl.agents.AgentManager">

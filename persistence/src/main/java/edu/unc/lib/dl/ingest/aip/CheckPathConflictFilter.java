@@ -121,7 +121,7 @@ public class CheckPathConflictFilter implements AIPIngestFilter {
 		} while (step != null);
 
 		// got all the parents in the graph, make result
-		String containerPath = rdfaip.getTopPIDPlacement(top).parentPath;
+		String containerPath = getTripleStoreQueryService().lookupRepositoryPath(rdfaip.getTopPIDPlacement(top).parentPID);
 		if (containerPath.endsWith("/")) {
 			containerPath = containerPath.substring(0, containerPath.length() - 1);
 		}

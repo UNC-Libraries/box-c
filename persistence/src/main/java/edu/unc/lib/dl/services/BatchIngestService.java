@@ -21,8 +21,10 @@ import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.unc.lib.dl.ingest.BatchIngestTask;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.IngestProperties;
+import edu.unc.lib.dl.util.ZipFileUtil;
 
 /**
  * The IngestService runs a single-threaded ingest queue, based on archival information prearranged in the file system.
@@ -32,7 +34,7 @@ import edu.unc.lib.dl.ingest.IngestProperties;
  *
  */
 public abstract class BatchIngestService {
-	private static final Log log = LogFactory.getLog(BatchIngestService.class);
+	private static final Log LOG = LogFactory.getLog(BatchIngestService.class);
 	private static final String PREP_SUBDIR = "batch-prep";
 	private static final String QUEUE_SUBDIR = "batch-queue";
 	private static final String READY_FOR_INGEST = "READY";
@@ -56,6 +58,15 @@ public abstract class BatchIngestService {
 		}
 	}
 
+	public void pauseQueue() {
+		// stop queuing thread
+		// stop current task
+	}
+
+	public void resumeQueue() {
+		// start queueing thread
+	}
+
 	/**
 	 * Adds a prepared batch ingest to the queue. The directory and all files will be renamed to a new location,
 	 * managed by this service.
@@ -63,21 +74,62 @@ public abstract class BatchIngestService {
 	 * @param prepDir
 	 *           the directory for the prepared batch.
 	 */
-	public void addBatch(File prepDir) throws IngestException {
-		IngestProperties props = new IngestProperties(prepDir);
-		File target = new File(this.queueDirectory, props.getSubmitter()+"-"+System.currentTimeMillis());
-		if(target.exists()) throw new Error("Queue folder conflict (Unexpected)");
-		prepDir.renameTo(target);
+	public void queueBatch(File prepDir) throws IngestException {
+		File queuedDir = moveToQueue(prepDir);
 		// rename is not atomic, so we need to add a marker file
 		try {
-			new File(target, READY_FOR_INGEST).createNewFile();
+			new File(queuedDir, READY_FOR_INGEST).createNewFile();
 		} catch (IOException e) {
 			throw new Error("Cannot create READY file.", e);
 		}
-		log.info("Added ingest batch: "+target.getAbsolutePath());
+		LOG.info("Added ingest batch: "+queuedDir.getAbsolutePath());
 	}
 
+	/**
+	 * Begins ingesting a batch of objects immediately, in parallel with other batches in the queue.
+	 * @param prepDir
+	 * @throws IngestException
+	 */
+	public void ingestBatchNow(File prepDir) throws IngestException {
+		File queuedDir = moveToQueue(prepDir);
+		// do not set marker file!
+		LOG.info("Ingesting batch now, in parallel with queue: "+queuedDir.getAbsolutePath());
+		BatchIngestTask task = createTask(); //obtain from Spring prototype
+		task.init(queuedDir);
+		task.run();
+		// return after ingest complete..
+	}
 
+	/**
+	 * @param prepDir
+	 * @return the directory where the batch is queued
+	 * @throws IngestException
+	 * @throws IOException
+	 */
+	private File moveToQueue(File prepDir) throws IngestException {
+		IngestProperties props = new IngestProperties(prepDir);
+		File result = new File(this.queueDirectory, props.getSubmitter()+"-"+System.currentTimeMillis());
+		if(result.exists()) throw new Error("Queue folder conflict (Unexpected)");
+		if(!prepDir.renameTo(result)) {
+			// cannot rename, try copy and delete
+			LOG.warn("Cannot rename directory "+prepDir+" to queue location "+result+", forced to perform slower copy and delete operations.");
+			try {
+				ZipFileUtil.copyFolder(prepDir, result);
+			} catch(IOException e) {
+				throw new IngestException("Cannot rename or copy batch ingest to queue.", e);
+			}
+			if(!prepDir.delete()) {
+				LOG.warn("Cannot delete original, non-queue, location of a batch ingest.");
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Container may override this method to return a task bean
+	 * @return a BatchIngestTask bean configured for this repository
+	 */
+	public abstract BatchIngestTask createTask();
 
 	public String getServiceDirectoryPath() {
 		return serviceDirectoryPath;

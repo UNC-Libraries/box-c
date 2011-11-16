@@ -37,6 +37,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentManager;
 import edu.unc.lib.dl.agents.GroupAgent;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
 import edu.unc.lib.dl.ingest.sip.InvalidMETSException;
@@ -47,6 +48,7 @@ import edu.unc.lib.dl.util.PremisEventLogger;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class METSPackageSIPProcessorTest extends Assert {
+	PID containerPID = new PID("test:1");
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -65,7 +67,7 @@ public class METSPackageSIPProcessorTest extends Assert {
 		PremisEventLogger logger = new PremisEventLogger(adminGroup);
 		METSPackageSIP sip = null;
 		try {
-			sip = new METSPackageSIP("/test/container/path", testFile, adminGroup, true);
+			sip = new METSPackageSIP(containerPID, testFile, adminGroup, true);
 			sip.setDiscardDataFilesOnDestroy(false);
 		} catch (IOException e) {
 			fail("EXPECTED: " + testMsg + "\nTHROWN: " + e.getMessage());
@@ -124,7 +126,7 @@ public class METSPackageSIPProcessorTest extends Assert {
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		try {
-			sip = new METSPackageSIP("/test/container/path", testFile, user, false);
+			sip = new METSPackageSIP(containerPID, testFile, user, false);
 			sip.setDiscardDataFilesOnDestroy(false);
 		} catch (IOException e) {
 			throw new Error(e);
@@ -175,7 +177,7 @@ public class METSPackageSIPProcessorTest extends Assert {
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		try {
-			sip = new METSPackageSIP("/test/container/path", testFile, user, true);
+			sip = new METSPackageSIP(containerPID, testFile, user, true);
 			sip.setDiscardDataFilesOnDestroy(false);
 			sip.getPreIngestEventLogger().addMD5ChecksumCalculation(new Date(System.currentTimeMillis()), "ClamAV v2.1",
 					"Jane Smith");
@@ -221,7 +223,7 @@ public class METSPackageSIPProcessorTest extends Assert {
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		try {
-			sip = new METSPackageSIP("/test/container/path", upload, user, false);
+			sip = new METSPackageSIP(containerPID, upload, user, false);
 			sip.setDiscardDataFilesOnDestroy(false); // don't delete test files!
 		} catch (IOException e) {
 			throw new Error(e);
@@ -281,12 +283,5 @@ public class METSPackageSIPProcessorTest extends Assert {
 			fail("Expected FilesDoNotMatchManifestException got \n  " + e);
 		}
 	}
-
-	// @Test
-	// public void testMissingFPTRReferencedInMETS() {
-	// TODO add one schematron-based exception test
-	// exceptionTest("src/test/resources/missing_fptr_ref.zip",
-	// "missing fptr element referenced in METS");
-	// }
 
 }

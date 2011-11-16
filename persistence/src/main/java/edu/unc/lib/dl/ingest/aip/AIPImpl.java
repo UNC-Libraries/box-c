@@ -57,7 +57,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 	// private final Map<PID, Integer> topPID2Order = new HashMap<PID,
 	// Integer>();
 	// private final Map<PID, String> topPID2Path = new HashMap<PID, String>();
-	private final Map<PID, RepositoryPlacement> topPID2Placement = new HashMap<PID, RepositoryPlacement>();
+	private final Map<PID, ContainerPlacement> topPID2Placement = new HashMap<PID, ContainerPlacement>();
 	private boolean deleteFilesOnDestroy = true;
 	private boolean sendEmail = false;
 	private List<URI> emailRecipients = new ArrayList<URI>();
@@ -303,7 +303,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 
 	@Override
 	public void setTopPIDPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder) {
-		RepositoryPlacement p = new RepositoryPlacement();
+		ContainerPlacement p = new ContainerPlacement();
 		p.parentPID = parentPID;
 		p.pid = topPID;
 		p.designatedOrder = designatedOrder;
@@ -368,7 +368,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getTopPIDPlacement (edu.unc.lib.dl.fedora.PID)
 	 */
 	@Override
-	public RepositoryPlacement getTopPIDPlacement(PID pid) {
+	public ContainerPlacement getTopPIDPlacement(PID pid) {
 		return this.topPID2Placement.get(pid);
 	}
 

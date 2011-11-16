@@ -23,7 +23,7 @@ import edu.unc.lib.dl.fedora.PID;
  * @author Gregory Jansen
  *
  */
-public class RepositoryPlacement implements Serializable {
+public class ContainerPlacement implements Serializable {
 	private static final long serialVersionUID = -6481661187173513169L;
 	public PID parentPID;
 	public PID pid;

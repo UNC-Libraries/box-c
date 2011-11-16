@@ -24,7 +24,7 @@ import org.jdom.Document;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.RepositoryPlacement;
+import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 public interface ArchivalInformationPackage {
@@ -67,7 +67,7 @@ public interface ArchivalInformationPackage {
      */
     public void setTopPIDPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder);
 
-    public RepositoryPlacement getTopPIDPlacement(PID pid);
+    public ContainerPlacement getTopPIDPlacement(PID pid);
 
     public void setDeleteFilesOnDestroy(boolean delete);
 

@@ -133,7 +133,7 @@ public class AIPIngestPipelineTest {
 	String containerPath = "/test/container/path";
 	PID containerPID = new PID("test:1");
 	try {
-	    sip = new METSPackageSIP(containerPath, testFile, user, true);
+	    sip = new METSPackageSIP(containerPID, testFile, user, true);
 	    sip.setDiscardDataFilesOnDestroy(false);
 	} catch (IOException e) {
 	    throw new Error(e);
@@ -189,7 +189,7 @@ public class AIPIngestPipelineTest {
 	String containerPath = "/test/container/path";
 	PID containerPID = new PID("test:1");
 	try {
-	    sip = new METSPackageSIP(containerPath, testFile, user, true);
+	    sip = new METSPackageSIP(containerPID, testFile, user, true);
 	    sip.setDiscardDataFilesOnDestroy(false);
 	} catch (IOException e) {
 	    throw new Error(e);
@@ -228,7 +228,7 @@ public class AIPIngestPipelineTest {
 	String containerPath = "/collections";
 	PID containerPID = new PID("test:Foo");
 	try {
-	    sip = new METSPackageSIP(containerPath, testFile, user, false);
+	    sip = new METSPackageSIP(containerPID, testFile, user, false);
 	    sip.setDiscardDataFilesOnDestroy(false);
 	} catch (IOException e) {
 	    throw new Error(e);
@@ -290,7 +290,7 @@ public class AIPIngestPipelineTest {
 	data.add(webdata);
 	data.add(sip.new Datastream(file3, "file 3", null, "archive/zip"));
 	sip.setAllowIndexing(true);
-	sip.setContainerPath(containerPath);
+	sip.setContainerPID(containerPID);
 	sip.setDatastreams(data);
 	sip.setDefaultWebData(webdata);
 	sip.setModsXML(new File("src/test/resources/testmods.xml"));
@@ -332,7 +332,7 @@ public class AIPIngestPipelineTest {
 	String containerPath = "/test/container/path";
 	PID containerPID = new PID("test:1");
 	sip = new SingleFolderSIP();
-	sip.setContainerPath(containerPath);
+	sip.setContainerPID(containerPID);
 	sip.setSlug("etd");
 	sip.setModsXML(testFile);
 	sip.setOwner(user);
