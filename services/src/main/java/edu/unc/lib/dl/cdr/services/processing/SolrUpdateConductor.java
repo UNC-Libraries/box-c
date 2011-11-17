@@ -152,12 +152,16 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	@Override
 	public void shutdown() {
 		this.executor.shutdown();
+		this.clearQueue();
+		this.lockedPids.clear();
 		LOG.warn("Solr Update conductor is shutting down, no further objects will be received");
 	}
 	
 	@Override
 	public void shutdownNow() {
 		this.executor.shutdownNow();
+		this.clearQueue();
+		this.lockedPids.clear();
 		LOG.warn("Solr Update conductor is shutting down now, interrupting future processing");
 	}
 

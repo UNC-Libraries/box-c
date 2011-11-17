@@ -92,4 +92,20 @@
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="active" value="true"/>
 	</bean>
+	
+	<bean id="updateDocTransformer" class="edu.unc.lib.dl.data.ingest.solr.UpdateDocTransformer"
+		init-method="init">
+		<property name="xslName" value="${addDocXslName}"/>
+	</bean>
+	
+	<bean id="solrUpdateConductor" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor"
+		init-method="init" destroy-method="destroy">
+		<property name="fedoraDataService" ref="fedoraDataService" />
+		<property name="updateDocTransformer" ref="updateDocTransformer" />
+		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
+		<property name="solrSearchService" ref="solrSearchService" />
+		<property name="maxIngestThreads" value="${maxSolrIngestThreads}" />
+		<property name="accessGroups" ref="accessGroups" />
+		<property name="searchSettings" ref="searchSettings" />
+	</bean>
 </beans>

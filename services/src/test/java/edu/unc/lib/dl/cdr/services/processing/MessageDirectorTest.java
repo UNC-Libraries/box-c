@@ -15,76 +15,114 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
+import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
+import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductorTest.IsMatchingPID;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
+import edu.unc.lib.dl.fedora.PID;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.*;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/service-context-unit.xml" })
 public class MessageDirectorTest extends Assert {
 
-	@Resource
 	private MessageDirector messageDirector;
-	@Resource
-	private DummyMessageConductor solrDummyConductor;
-	@Resource
-	private DummyMessageConductor servicesDummyConductor;
+	private SolrUpdateConductor solrConductor;
+	private ServicesConductor servicesConductor;
+	private List<ObjectEnhancementService> services;
 
+	public MessageDirectorTest(){
+		this.messageDirector = new MessageDirector();
+		
+		services = new ArrayList<ObjectEnhancementService>();
+		services.add(new TechnicalMetadataEnhancementService());
+		services.add(new ThumbnailEnhancementService());
+		services.add(new ImageEnhancementService());
+		
+		List<MessageFilter> filters = new ArrayList<MessageFilter>();
+		filters.add(new SolrUpdateMessageFilter());
+		ServicesQueueMessageFilter servicesFilter = new ServicesQueueMessageFilter();
+		servicesFilter.setServices(services);
+		filters.add(servicesFilter);
+		messageDirector.setFilters(filters);
+	}
+
+	@Before
+	public void setup(){
+		List<MessageConductor> conductors = new ArrayList<MessageConductor>();
+		
+		solrConductor = mock(SolrUpdateConductor.class);
+		when(solrConductor.getIdentifier()).thenReturn(SolrUpdateConductor.identifier);
+		servicesConductor = mock(ServicesConductor.class);
+		when(servicesConductor.getIdentifier()).thenReturn(ServicesConductor.identifier);
+		//servicesConductor.setServices(services);
+		
+		conductors.add(servicesConductor);
+		conductors.add(solrConductor);
+		
+		messageDirector.setConductorsList(conductors);
+	}
+	
+	class IsMatchingPID extends ArgumentMatcher<PIDMessage> {
+		private String pid;
+		
+		public IsMatchingPID(String pid){
+			this.pid = pid;
+		}
+		
+      public boolean matches(Object pid) {
+      	return ((PIDMessage) pid).getPIDString().startsWith(this.pid);
+      }
+   }
+	
 	@Test
-	public void directTest(){
+	public void noServiceMessage(){
 		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), "");
 		messageDirector.direct(message);
 		
-		assertTrue(solrDummyConductor.getMessageList().size() == 0);
-		assertTrue(servicesDummyConductor.getMessageList().size() == 0);
-		
-		message.setServiceName(TechnicalMetadataEnhancementService.class.getName());
-		messageDirector.direct(message);
-		assertTrue(solrDummyConductor.getMessageList().size() == 0);
-		assertTrue(servicesDummyConductor.getMessageList().size() == 1);
-		
-		message = new PIDMessage("cdr:test", SolrUpdateAction.namespace, SolrUpdateAction.ADD.getName());
-		messageDirector.direct(message);
-		assertTrue(solrDummyConductor.getMessageList().size() == 1);
-		assertTrue(servicesDummyConductor.getMessageList().size() == 1);
-		
-		message = null;
-		messageDirector.direct(message);
-		assertTrue(solrDummyConductor.getMessageList().size() == 1);
-		assertTrue(servicesDummyConductor.getMessageList().size() == 1);
+		verify(solrConductor, never()).add(any(PIDMessage.class));
+		verify(servicesConductor, never()).add(any(PIDMessage.class));
 	}
 	
-	public MessageDirector getMessageDirector() {
-		return messageDirector;
+	@Test
+	public void techmdServiceMessage(){
+		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), TechnicalMetadataEnhancementService.class.getName());
+		messageDirector.direct(message);
+		verify(solrConductor, never()).add(any(PIDMessage.class));
+		verify(servicesConductor).add(any(PIDMessage.class));
 	}
-
-	public void setMessageDirector(MessageDirector messageDirector) {
-		this.messageDirector = messageDirector;
+	
+	@Test
+	public void solrAddMessage(){
+		PIDMessage message = new PIDMessage("cdr:test", SolrUpdateAction.namespace, SolrUpdateAction.ADD.getName());
+		messageDirector.direct(message);
+		verify(solrConductor).add(any(PIDMessage.class));
+		verify(servicesConductor, never()).add(any(PIDMessage.class));
 	}
-
-	public DummyMessageConductor getSolrDummyConductor() {
-		return solrDummyConductor;
-	}
-
-	public void setSolrDummyConductor(DummyMessageConductor solrDummyConductor) {
-		this.solrDummyConductor = solrDummyConductor;
-	}
-
-	public DummyMessageConductor getServicesDummyConductor() {
-		return servicesDummyConductor;
-	}
-
-	public void setServicesDummyConductor(DummyMessageConductor servicesDummyConductor) {
-		this.servicesDummyConductor = servicesDummyConductor;
+	
+	@Test
+	public void nullMessage(){
+		PIDMessage message = null;
+		messageDirector.direct(message);
+		verify(solrConductor, never()).add(any(PIDMessage.class));
+		verify(servicesConductor, never()).add(any(PIDMessage.class));
 	}
 }

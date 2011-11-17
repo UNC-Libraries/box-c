@@ -252,12 +252,16 @@ public class ServicesConductor implements MessageConductor {
 	@Override
 	public void shutdown() {
 		this.executor.shutdown();
+		this.clearQueue();
+		this.lockedPids.clear();
 		LOG.warn("ServiceConductor is shutting down, no further objects will be received");
 	}
 	
 	@Override
 	public void shutdownNow() {
 		this.executor.shutdownNow();
+		this.clearQueue();
+		this.lockedPids.clear();
 		LOG.warn("ServiceConductor is shutting down, no further objects will be received");
 	}
 
