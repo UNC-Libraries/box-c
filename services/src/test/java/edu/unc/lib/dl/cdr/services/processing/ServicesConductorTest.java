@@ -36,7 +36,6 @@ import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
-import edu.unc.lib.dl.cdr.services.test.ManagementClientMock;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -64,54 +63,73 @@ public class ServicesConductorTest extends Assert {
 	
 	public long delayServiceTime = 0;
 	
+	private int numberTestMessages;
+	
 	public ServicesConductorTest(){
 		delayServices = new ArrayList<ObjectEnhancementService>();
 		DelayService delayService = new DelayService();
 		delayServices.add(delayService);
+		
 	}
 	
 	@Before
 	public void setUp() throws Exception {
-		servicesConductor.clearState();
+		servicesConductor.resume();
+		while (!servicesConductor.isEmpty());
 		servicesConductor.shutdownNow();
 		while (servicesConductor.getExecutor().isTerminating() && !servicesConductor.getExecutor().isShutdown());
-		servicesConductor.restart();
+		servicesConductor.init();
+		servicesConductor.clearState();
 		this.executor = servicesConductor.getExecutor();
 		inIsApplicable = new AtomicInteger(0);
 		incompleteServices = new AtomicInteger(0);
 		betweenApplicableAndEnhancement = new AtomicInteger(0);
 		servicesCompleted = new AtomicInteger(0);
+		numberTestMessages = 10;
+		delayServiceTime = 300;
 	}
 	
 	
-	/*@Test
+	//@Test
 	public void stressQueueOperations() throws Exception {
-		for (int i=0; i<20; i++){
+		while (this.executor.isShutdown() || this.executor.isTerminated() || this.executor.isTerminating());
+		
+		for (int i=0; i<500; i++){
+			addMessages();
+			while (!servicesConductor.isEmpty());
 			setUp();
-			queueOperations();
 		}
 		while (!servicesConductor.isIdle());
-	}*/
+	}
 	
 	@Test
-	public void queueOperations() {
+	public void addMessages() throws InterruptedException{
 		servicesConductor.setServices(delayServices);
 		servicesMessageFilter.setServices(delayServices);
 		
 		delayServiceTime = 0;
-		
-		int numberTestMessages = 10;
-		
+
 		//Add messages and check that they all ran
 		for (int i=0; i<numberTestMessages; i++){
 			PIDMessage message = new PIDMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 			messageDirector.direct(message);
+			message = new PIDMessage("uuid:" + i + "d", JMSMessageUtil.servicesMessageNamespace, 
+					JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), DelayService.class.getName());
+			messageDirector.direct(message);
 		}
 		while (!servicesConductor.isEmpty());
 		
-		assertTrue(servicesCompleted.get() == numberTestMessages);
-		
+		if (servicesCompleted.get() != numberTestMessages * 2){
+			LOG.debug(servicesConductor.queuesToString());
+		}
+		assertEquals(servicesCompleted.get(), numberTestMessages * 2);
+	}
+	
+	@Test
+	public void addCollisions(){
+		servicesConductor.setServices(delayServices);
+		servicesMessageFilter.setServices(delayServices);
 		
 		//Add messages which contain a lot of duplicates
 		delayServiceTime = 300;
@@ -124,14 +142,23 @@ public class ServicesConductorTest extends Assert {
 			messageDirector.direct(message);
 		}
 		
-		assertTrue(servicesConductor.getPidQueue().size() == numberTestMessages * 3);
+		assertEquals(servicesConductor.getPidQueue().size(), numberTestMessages * 3);
 		
 		//Let max threads number of threads start, make sure that collision list is properly populated
 		servicesConductor.resume();
 		while (servicesConductor.getLockedPids().size() < servicesConductor.getMaxThreads());
 		servicesConductor.pause();
 		
-		assertTrue(servicesConductor.getCollisionList().size() == (servicesConductor.getMaxThreads() - 1) * 2);
+		assertEquals(servicesConductor.getCollisionList().size(), (servicesConductor.getMaxThreads() - 1) * 2);
+		servicesConductor.resume();
+	}
+	
+	@Test
+	public void clearState(){
+		servicesConductor.setServices(delayServices);
+		servicesMessageFilter.setServices(delayServices);
+		
+		servicesConductor.pause();
 		
 		//Add messages then clear the conductors state
 		for (int i=0; i<numberTestMessages; i++){
@@ -146,6 +173,7 @@ public class ServicesConductorTest extends Assert {
 		assertTrue(servicesConductor.getFailedPids().size() == 0);
 		assertTrue(servicesConductor.getLockedPids().size() == 0);
 		assertTrue(executor.getQueue().size() == 0);
+		servicesConductor.resume();
 	}
 	
 	/*@Test
@@ -157,11 +185,11 @@ public class ServicesConductorTest extends Assert {
 	}*/
 	
 	@Test
-	public void executorOperations() throws InterruptedException {
+	public void abortPause() throws InterruptedException {
 		servicesConductor.setServices(delayServices);
 		servicesMessageFilter.setServices(delayServices);
 		
-		delayServiceTime = 500;
+		delayServiceTime = 200;
 		
 		assertTrue(servicesConductor.isReady());
 		servicesConductor.pause();
@@ -192,9 +220,7 @@ public class ServicesConductorTest extends Assert {
 		while (betweenApplicableAndEnhancement.get() < servicesConductor.getMaxThreads());
 		
 		assertTrue(servicesConductor.getLockedPids().size() == servicesConductor.getMaxThreads());
-		LOG.debug("Incomplete: " + incompleteServices.get());
 		assertEquals(incompleteServices.get(), servicesConductor.getMaxThreads());
-		
 		//Abort the currently active threads
 		servicesConductor.abort();
 		
@@ -211,8 +237,11 @@ public class ServicesConductorTest extends Assert {
 		servicesConductor.resume();
 		while (servicesConductor.getLockedPids().size() > 0 || servicesConductor.getQueueSize() > 0);
 		
-		assertTrue(servicesCompleted.get() == numberTestMessages - servicesConductor.getMaxThreads());
-		
+		assertEquals(servicesCompleted.get(), numberTestMessages - servicesConductor.getMaxThreads());
+	}
+	
+	@Test
+	public void addToShutdownExecutor(){
 		servicesConductor.shutdownNow();
 		assertFalse(servicesConductor.isReady());
 		
@@ -225,95 +254,6 @@ public class ServicesConductorTest extends Assert {
 		assertTrue(servicesCompleted.get() == 0);
 		assertTrue(servicesConductor.getQueueSize() == 0);
 		assertTrue(servicesConductor.getLockedPids().size() == 0);
-	}
-	
-	/*@Test
-	public void stressEnhancementFailure(){
-		for (int i=0; i<50; i++){
-			enhancementFailure();
-		}
-	}*/
-	
-	@Test
-	public void enhancementFailure(){
-		servicesConductor.setServices(servicesList);
-		servicesMessageFilter.setServices(servicesList);
-		
-		for (ObjectEnhancementService s : servicesConductor.getServices()) {
-			enhancementFailure(s);
-		}
-	}
-	
-	
-	public void enhancementFailure(ObjectEnhancementService s){
-		String serviceName = s.getClass().getName();
-		
-		LOG.debug("Service failure test of " + serviceName);
-		
-		PIDMessage message = new PIDMessage(ManagementClientMock.PID_FILE_SYSTEM, JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), serviceName);
-		
-		servicesConductor.clearState();
-		servicesConductor.setRecoverableDelay(500);
-		servicesConductor.setUnexpectedExceptionDelay(0);
-		
-		assertFalse(servicesConductor.isPaused());
-		
-		//Test fatal exceptions
-		servicesConductor.resume();
-		
-		messageDirector.direct(message);
-		while (servicesConductor.getPidQueue().size() != 0 || servicesConductor.getLockedPids().size() != 0 
-				|| executor.getActiveCount() != 0);
-		assertTrue(servicesConductor.isPaused());
-		assertTrue(servicesConductor.getFailedPids().containsKey(ManagementClientMock.PID_FILE_SYSTEM));
-		
-		
-		assertTrue(executor.getActiveCount() == 0);
-		
-		//Test unrecoverable
-		message = new PIDMessage(ManagementClientMock.PID_NOT_FOUND, JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), serviceName);
-		
-		servicesConductor.getFailedPids().clear();
-		messageDirector.direct(message);
-		while (servicesConductor.getFailedPids().size() == 0 
-				&& (servicesConductor.getPidQueue().size() == 0 || executor.getActiveCount() == 0));
-		assertTrue(servicesConductor.isPaused());
-		assertTrue(servicesConductor.getPidQueue().size() == 1 && executor.getActiveCount() == 1);
-		assertFalse(servicesConductor.getFailedPids().containsKey(ManagementClientMock.PID_NOT_FOUND));
-		
-		servicesConductor.resume();
-		assertFalse(servicesConductor.isPaused());
-		
-		while (servicesConductor.getPidQueue().size() != 0 || servicesConductor.getLockedPids().size() != 0 
-				|| executor.getActiveCount() != 0);
-		assertTrue(servicesConductor.getFailedPids().containsKey(ManagementClientMock.PID_NOT_FOUND));
-		assertFalse(servicesConductor.isPaused());
-		
-		servicesConductor.pause();
-		
-		//Test recoverable
-		message = new PIDMessage(ManagementClientMock.PID_FEDORA, JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), serviceName);
-		
-		messageDirector.direct(message);
-		while (servicesConductor.getPidQueue().size() == 0);
-		servicesConductor.resume();
-		while (servicesConductor.getLockedPids().size() == 0);
-		assertTrue(servicesConductor.getLockedPids().contains(ManagementClientMock.PID_FEDORA));
-		assertFalse(servicesConductor.getFailedPids().containsKey(ManagementClientMock.PID_FEDORA));
-		while (servicesConductor.getLockedPids().size() == 1);
-		assertTrue(servicesConductor.getFailedPids().containsKey(ManagementClientMock.PID_FEDORA));
-		
-		//Test run time
-		message = new PIDMessage(ManagementClientMock.PID_RUN_TIME, JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), serviceName);
-		
-		messageDirector.direct(message);
-		while (servicesConductor.getPidQueue().size() > 0 || executor.getActiveCount() > 0);
-		assertTrue(servicesConductor.getFailedPids().containsKey(ManagementClientMock.PID_RUN_TIME));
-		
 	}
 
 	public ServicesConductor getServicesConductor() {
@@ -407,17 +347,15 @@ public class ServicesConductorTest extends Assert {
 		
 		@Override
 		public Element call() throws EnhancementException {
+			betweenApplicableAndEnhancement.decrementAndGet();
 			try {
-				betweenApplicableAndEnhancement.decrementAndGet();
-				try {
-					Thread.sleep(delayServiceTime);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
-			} finally {
-				incompleteServices.decrementAndGet();
-				servicesCompleted.incrementAndGet();
+				Thread.sleep(delayServiceTime);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return null;
 			}
+			incompleteServices.decrementAndGet();
+			servicesCompleted.incrementAndGet();
 			return null;
 		}
 		

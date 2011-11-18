@@ -115,12 +115,17 @@ public class ServicesConductor implements MessageConductor {
 	@Override
 	public void add(PIDMessage pidMsg) {
 		synchronized (pidQueue) {
-			if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated()) {
-				LOG.debug("Ignoring message for pid " + pidMsg.getPIDString());
-				return;
+			synchronized (executor) {
+				if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated()) {
+					LOG.debug("Ignoring message for pid " + pidMsg.getPIDString());
+					return;
+				}
+				boolean success = pidQueue.offer(pidMsg);
+				if (!success){
+					LOG.error("Failure to queue pid " + pidMsg.getPIDString());
+				}
+				startProcessing();
 			}
-			pidQueue.offer(pidMsg);
-			startProcessing();
 		}
 	}
 
@@ -429,7 +434,6 @@ public class ServicesConductor implements MessageConductor {
 										return pid;
 									}
 								}
-
 							}
 						}
 
@@ -454,7 +458,7 @@ public class ServicesConductor implements MessageConductor {
 				try {
 					Thread.sleep(200L);
 				} catch (InterruptedException e) {
-					LOG.warn("Services runnable interrupted while waiting to get next message", e);
+					LOG.warn("Services runnable interrupted while waiting to get next message.");
 					Thread.currentThread().interrupt();
 				}
 			} while (pid == null && !Thread.currentThread().isInterrupted()
@@ -484,8 +488,11 @@ public class ServicesConductor implements MessageConductor {
 			//Pause before applying the service if the executor is paused.
 			pauseWait();
 			//If the thread was interrupted, we're done
-			if (Thread.currentThread().isInterrupted())
+			if (Thread.currentThread().isInterrupted()){
+				LOG.warn("Services thread " + Thread.currentThread().getId() + " for " + pidMessage.getPIDString() 
+						+ " interrupted before calling enhancement");
 				return;
+			}
 			//Enhancement services need to be run serially per pid, so making a direct invocation of call
 			task.call();
 		}
@@ -514,6 +521,9 @@ public class ServicesConductor implements MessageConductor {
 						return;
 					for (ObjectEnhancementService s : pidMessage.getFilteredServices()) {
 						try {
+							if (Thread.currentThread().isInterrupted()){
+								return;
+							}
 							//Apply the service
 							this.applyService(pidMessage, s);
 						} catch (EnhancementException e){

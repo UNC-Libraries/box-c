@@ -25,13 +25,6 @@
 		http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-3.0.xsd
 		http://www.springframework.org/schema/util 
 		http://www.springframework.org/schema/util/spring-util.xsd">
-
-	<bean id="tripleStoreQueryService"
-		class="edu.unc.lib.dl.cdr.services.test.TripleStoreQueryServiceMock">
-	</bean>
-	
-	<bean id="managementClient" class="edu.unc.lib.dl.cdr.services.test.ManagementClientMock">
-	</bean>  
 	
 	<bean id="servicesFailedPids" class="edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap">
 	</bean>
@@ -71,41 +64,18 @@
 	
 	<!-- Services -->
 	<bean id="technicalMetadataEnhancementService" class="edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="managementClient" ref="managementClient"/>
 		<property name="active" value="true"/>
 	</bean>
 	
 	<bean id="imageEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="managementClient" ref="managementClient"/>
 		<property name="active" value="true"/>
 	</bean>
 	
 	<bean id="thumbnailEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="managementClient" ref="managementClient"/>
 		<property name="active" value="true"/>
 	</bean>
 	
 	<bean id="solrUpdateEnhancementService" class="edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="active" value="true"/>
-	</bean>
-	
-	<bean id="updateDocTransformer" class="edu.unc.lib.dl.data.ingest.solr.UpdateDocTransformer"
-		init-method="init">
-		<property name="xslName" value="${addDocXslName}"/>
-	</bean>
-	
-	<bean id="solrUpdateConductor" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor"
-		init-method="init" destroy-method="destroy">
-		<property name="fedoraDataService" ref="fedoraDataService" />
-		<property name="updateDocTransformer" ref="updateDocTransformer" />
-		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
-		<property name="solrSearchService" ref="solrSearchService" />
-		<property name="maxIngestThreads" value="${maxSolrIngestThreads}" />
-		<property name="accessGroups" ref="accessGroups" />
-		<property name="searchSettings" ref="searchSettings" />
 	</bean>
 </beans>

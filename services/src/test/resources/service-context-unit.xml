@@ -47,23 +47,4 @@
 		<ref bean="servicesMessageFilter"/>
 		<ref bean="solrUpdateMessageFilter"/>
 	</util:list>
-	
-	<bean id="servicesDummyConductor" class="edu.unc.lib.dl.cdr.services.processing.DummyMessageConductor">
-		<property name="identifier" value="SERVICES"/>
-	</bean>
-	
-	<bean id="solrDummyConductor" class="edu.unc.lib.dl.cdr.services.processing.DummyMessageConductor">
-		<property name="identifier" value="SOLR_UPDATE"/>
-	</bean>
-	
-	<util:list id="dummyConductorList" list-class="java.util.ArrayList" 
-		value-type="edu.unc.lib.dl.cdr.services.processing.MessageConductor">
-		<ref bean="servicesDummyConductor"/>
-		<ref bean="solrDummyConductor"/>
-	</util:list>
-	
-	<bean id="messageDummyDirector" class="edu.unc.lib.dl.cdr.services.processing.MessageDirector">
-		<property name="conductorsList" ref="dummyConductorList"/>
-		<property name="filters" ref="messageFilterList"/>
-	</bean>
 </beans>
