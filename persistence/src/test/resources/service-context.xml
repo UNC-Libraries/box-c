@@ -58,36 +58,42 @@
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
 		<property name="managementClient" ref="managementClient"/>
 		<property name="accessClient" ref="accessClient"/>
+		<property name="aipIngestPipeline" ref="aipIngestPipeline"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="sipProcessorFactory" ref="sipProcessorFactory"/>
+		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="schematronValidator" ref="schematronValidator"/>
-		<property name="containerContentsHelper" ref="containerContentsHelper"/>
+		<property name="batchIngestService" ref="batchIngestService"/>
 		<property name="available" value="true"/>
 	</bean>
-	
-	<bean id="batchIngestService" class="edu.unc.lib.dl.services.BatchIngestService">
-		<property name="managementClient" ref="managementClient"/>
-		<property name="operationsMessageSender" ref="operationsMessageSender"/>
-		<property name="mailNotifier" ref="mailNotifier"/>
-		<property name="digitalObjectManager" ref="digitalObjectManager"/>
-		<property name="agentManager" ref="agentManager"/>
-		<lookup-method name="createTask" bean="batchIngestTask"/>
+
+  <bean id="batchIngestService" class="org.mockito.Mockito" factory-method="mock">
+		  	<constructor-arg index="0" value="edu.unc.lib.dl.services.BatchIngestService"/>		
+<!-- 		<constructor-arg index="0">
+			<bean factory-bean="batchIngestServiceClass" factory-method="cast">
+		  	<constructor-arg index="0" ref="realBatchIngestService"/>		  
+			</bean>
+		</constructor-arg> -->
 	</bean>
 	
-	<bean id="batchIngestTask" class="edu.unc.lib.services.ingest.BatchIngestTask" scope="prototype">
+<!-- 	<bean id="batchIngestServiceClass" class="java.lang.Class" factory-method="forName">
+	  <constructor-arg index="0" value="edu.unc.lib.dl.services.BatchIngestService"/>
+	</bean>
+	
+	<bean id="realBatchIngestService" class="edu.unc.lib.dl.services.BatchIngestServiceImpl" init-method="init">
+	  <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
+		<lookup-method name="createTask" bean="batchIngestTask"/>
+	</bean> -->
+	
+	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">
 		<property name="managementClient" ref="managementClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="agentManager" ref="agentManager"/>
-		<property name="aipIngestPipeline" ref="aipIngestPipeline"/>
 		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
-	</bean>
-	
-	<bean id="containerContentsHelper" class="edu.unc.lib.dl.util.ContainerContentsHelper">
-				<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 	</bean>
 
 	<bean id="mailNotifier" class="edu.unc.lib.dl.services.MailNotifier">
@@ -118,8 +124,6 @@
 				<entry key="edu.unc.lib.dl.ingest.sip.AgentSIP" value-ref="personAgentSIPProcessor"/>
 				<entry key="edu.unc.lib.dl.ingest.sip.SingleFileSIP"
 					value-ref="singleFileSIPProcessor"/>
-				<entry key="edu.unc.lib.dl.ingest.sip.MultiFileObjectSIP"
-					value-ref="multiFileObjectSIPProcessor"/>
 				<entry key="edu.unc.lib.dl.ingest.sip.SingleFolderSIP"
 					value-ref="singleFolderSIPProcessor"/>
 			</map>
@@ -137,12 +141,6 @@
 	</bean>
 
 	<bean id="singleFileSIPProcessor" class="edu.unc.lib.dl.ingest.sip.SingleFileSIPProcessor">
-		<property name="pidGenerator" ref="pidGenerator"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-	</bean>
-
-	<bean id="multiFileObjectSIPProcessor"
-		class="edu.unc.lib.dl.ingest.sip.MultiFileObjectSIPProcessor">
 		<property name="pidGenerator" ref="pidGenerator"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 	</bean>

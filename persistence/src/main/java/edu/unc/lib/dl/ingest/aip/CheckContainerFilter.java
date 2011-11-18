@@ -29,7 +29,7 @@ public class CheckContainerFilter implements AIPIngestFilter {
 	public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException {
 		StringBuffer unknownPaths = new StringBuffer();
 		for (PID topPID : aip.getTopPIDs()) {
-			PID container = aip.getTopPIDPlacement(topPID).parentPID;
+			PID container = aip.getContainerPlacement(topPID).parentPID;
 			PID verifiedContainer = this.getTripleStoreQueryService().verify(container);
 			if (verifiedContainer == null) {
 				unknownPaths.append("\t").append(container);

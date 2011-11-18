@@ -62,7 +62,6 @@ import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
 import edu.unc.lib.dl.util.PathUtil;
-import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -111,7 +110,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 	}
 
 	@Override
-	public ArchivalInformationPackage createAIP(SubmissionInformationPackage sip, PremisEventLogger logger)
+	public ArchivalInformationPackage createAIP(SubmissionInformationPackage sip)
 			throws IngestException {
 		METSPackageSIP metsPack = (METSPackageSIP) sip;
 
@@ -130,14 +129,18 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		}
 
 		// VALIDATE METS AGAINST A PROFILE
-		String profile = validateProfile(mets, logger);
+		String profile = validateProfile(mets);
+
+		// VALIDATE PACKAGED FILES AGAINST METS MANIFEST
+		this.getMetsPackageFileValidator().validateFiles(mets, metsPack);
+
 		// TODO: replace named repository with an agent object representing ingest
 		// log this in the main event logger with a proper PID for the repo
 		metsPack.getPreIngestEventLogger().addEvent(Type.VALIDATION, "Repository",
 				"METS manifest validated against profile: " + profile, new Date(System.currentTimeMillis()));
 
 		// CONVERT METS DOCUMENT INTO AN AIP
-		ArchivalInformationPackage aip = transformMETS(logger, metsPack, mets, metsPack.isAllowIndexing());
+		ArchivalInformationPackage aip = transformMETS(metsPack, mets, metsPack.isAllowIndexing());
 
 		// increment any duplicate slugs
 		RDFAwareAIPImpl rdfaip = null;
@@ -181,10 +184,6 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 			}
 		}
 
-		// VALIDATE PACKAGED FILES AGAINST METS MANIFEST
-		this.getMetsPackageFileValidator().validateFiles(mets, metsPack, rdfaip);
-
-		metsPack.destroy(); // this does not delete any unpacked ZIP data
 		return rdfaip;
 	}
 
@@ -212,14 +211,13 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		this.schematronValidator = schematronValidator;
 	}
 
-	private AIPImpl transformMETS(PremisEventLogger logger, METSPackageSIP metsPack, Document mets, boolean allowIndexing)
+	private AIPImpl transformMETS(METSPackageSIP metsPack, Document mets, boolean allowIndexing)
 			throws IngestException {
 
-		AIPImpl aip = new AIPImpl(metsPack.getSIPDataDir(), logger);
-		metsPack.setDiscardDataFilesOnDestroy(false);
-		if (log.isDebugEnabled()) {
-			aip.setDeleteFilesOnDestroy(false);
-		}
+
+
+
+		AIPImpl aip = new AIPImpl(metsPack.getBatchPrepDir());
 
 		// count the object divs in METS
 		int num = 0;
@@ -306,7 +304,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 						throw new IngestException("METS problem: sipOrder attribute must be an integer.", nfe);
 					}
 				}
-				aip.setTopPIDPlacement(metsPack.getContainerPID(), pid, designatedOrder, sipOrder);
+				aip.setContainerPlacement(metsPack.getContainerPID(), pid, designatedOrder, sipOrder);
 			}
 			aip.setFOXMLFile(pid, new File(output));
 		}
@@ -325,7 +323,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 	 * @throws InvalidMETSException
 	 *            when the METS cannot be validated
 	 */
-	public String validateProfile(Document mets, PremisEventLogger logger) throws InvalidMETSException {
+	public String validateProfile(Document mets) throws InvalidMETSException {
 		// extract the profileUrl from METS
 		Attribute profileAtt = mets.getRootElement().getAttribute("PROFILE");
 		if (profileAtt == null || profileAtt.getValue() == null) {

@@ -41,7 +41,7 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public class OperationsMessageSender {
 
@@ -52,11 +52,17 @@ public class OperationsMessageSender {
 
 	/**
 	 * Sends a message about a repository add operation
-	 * @param userid the submitter
-	 * @param timestamp time of the add in ISO8601
-	 * @param destinations containers added to
-	 * @param added objects added
-	 * @param reordered objects reordered by this add
+	 * 
+	 * @param userid
+	 *           the submitter
+	 * @param timestamp
+	 *           time of the add in ISO8601
+	 * @param destinations
+	 *           containers added to
+	 * @param added
+	 *           objects added
+	 * @param reordered
+	 *           objects reordered by this add
 	 */
 	public void sendAddOperation(String userid, Collection<PID> destinations, Collection<PID> added,
 			Collection<PID> reordered) {
@@ -96,8 +102,7 @@ public class OperationsMessageSender {
 		LOG.debug("sent add operation JMS message using JMS template:" + this.getJmsTemplate().toString());
 	}
 
-	public void sendRemoveOperation(String userid, PID destination, Collection<PID> removed,
-			Collection<PID> reordered) {
+	public void sendRemoveOperation(String userid, PID destination, Collection<PID> removed, Collection<PID> reordered) {
 		Document msg = new Document();
 		Element contentEl = createAtomEntry(msg, userid, destination, "remove");
 		Element remove = new Element("remove", CDR_MESSAGE_NS);
@@ -131,8 +136,8 @@ public class OperationsMessageSender {
 		});
 	}
 
-	public void sendMoveOperation(String userid, Collection<PID> sources, PID destination,
-			Collection<PID> moved, Collection<PID> reordered) {
+	public void sendMoveOperation(String userid, Collection<PID> sources, PID destination, Collection<PID> moved,
+			Collection<PID> reordered) {
 		Document msg = new Document();
 		Element contentEl = createAtomEntry(msg, userid, destination, "move");
 		Element move = new Element("move", CDR_MESSAGE_NS);

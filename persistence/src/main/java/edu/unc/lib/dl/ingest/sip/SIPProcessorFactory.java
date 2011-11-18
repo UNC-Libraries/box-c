@@ -21,49 +21,49 @@ import java.util.Map;
 import edu.unc.lib.dl.ingest.IngestException;
 
 public class SIPProcessorFactory {
-    private Map<String, SIPProcessor> sipProcessors = null;
+	private Map<String, SIPProcessor> sipProcessors = null;
 
-    private Map<String, Class<SIPProcessor>> sipClasses = null;
+	private Map<String, Class<SIPProcessor>> sipClasses = null;
 
-    /**
-     * Finds an appropriate processor for the given sip.
-     * 
-     * @param sip
-     *            a SIP
-     * @return a processor that can handle the sip
-     */
-    public SIPProcessor getSIPProcessor(SubmissionInformationPackage sip) throws IngestException {
-	for (String classname : this.sipClasses.keySet()) {
-	    Class<SIPProcessor> c = this.sipClasses.get(classname);
-	    if (c.isInstance(sip)) {
-		return this.getSipProcessors().get(classname);
-	    }
+	/**
+	 * Finds an appropriate processor for the given sip.
+	 * 
+	 * @param sip
+	 *           a SIP
+	 * @return a processor that can handle the sip
+	 */
+	public SIPProcessor getSIPProcessor(SubmissionInformationPackage sip) throws IngestException {
+		for (String classname : this.sipClasses.keySet()) {
+			Class<SIPProcessor> c = this.sipClasses.get(classname);
+			if (c.isInstance(sip)) {
+				return this.getSipProcessors().get(classname);
+			}
+		}
+		throw new IngestException("Could not find an ingest processor for the given sip.");
 	}
-	throw new IngestException("Could not find an ingest processor for the given sip.");
-    }
 
-    public Map<String, SIPProcessor> getSipProcessors() {
-	return sipProcessors;
-    }
-
-    public void setSipProcessors(Map<String, SIPProcessor> sipProcessors) {
-	this.sipProcessors = sipProcessors;
-    }
-
-    public void init() {
-	this.sipClasses = new HashMap<String, Class<SIPProcessor>>();
-	try {
-	    for (String classname : this.sipProcessors.keySet()) {
-		Class<SIPProcessor> c = extracted(classname);
-		this.sipClasses.put(classname, c);
-	    }
-	} catch (ClassNotFoundException e) {
-	    throw new Error("Cannot initialize ingest processor factory.", e);
+	public Map<String, SIPProcessor> getSipProcessors() {
+		return sipProcessors;
 	}
-    }
 
-    @SuppressWarnings("unchecked")
-    private Class<SIPProcessor> extracted(String classname) throws ClassNotFoundException {
-	return (Class<SIPProcessor>) Class.forName(classname, false, this.getClass().getClassLoader());
-    }
+	public void setSipProcessors(Map<String, SIPProcessor> sipProcessors) {
+		this.sipProcessors = sipProcessors;
+	}
+
+	public void init() {
+		this.sipClasses = new HashMap<String, Class<SIPProcessor>>();
+		try {
+			for (String classname : this.sipProcessors.keySet()) {
+				Class<SIPProcessor> c = extracted(classname);
+				this.sipClasses.put(classname, c);
+			}
+		} catch (ClassNotFoundException e) {
+			throw new Error("Cannot initialize ingest processor factory.", e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private Class<SIPProcessor> extracted(String classname) throws ClassNotFoundException {
+		return (Class<SIPProcessor>) Class.forName(classname, false, this.getClass().getClassLoader());
+	}
 }

@@ -39,7 +39,6 @@ import edu.unc.lib.dl.pidgen.PIDGenerator;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
 import edu.unc.lib.dl.util.PathUtil;
-import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
@@ -55,28 +54,28 @@ public class AgentSIPProcessor implements SIPProcessor {
 	private PID softwareContainer = null;
 
 	public PID getPeopleContainer() {
-		if(this.peopleContainer == null) {
+		if (this.peopleContainer == null) {
 			this.peopleContainer = this.getTripleStoreQueryService().fetchByRepositoryPath("/admin/people");
 		}
 		return this.peopleContainer;
 	}
 
 	public PID getGroupContainer() {
-		if(this.groupContainer == null) {
+		if (this.groupContainer == null) {
 			this.groupContainer = this.getTripleStoreQueryService().fetchByRepositoryPath("/admin/groups");
 		}
 		return this.groupContainer;
 	}
 
 	public PID getSoftwareContainer() {
-		if(this.softwareContainer == null) {
+		if (this.softwareContainer == null) {
 			this.softwareContainer = this.getTripleStoreQueryService().fetchByRepositoryPath("/admin/software");
 		}
 		return this.softwareContainer;
 	}
 
 	@Override
-	public ArchivalInformationPackage createAIP(SubmissionInformationPackage in, PremisEventLogger logger)
+	public ArchivalInformationPackage createAIP(SubmissionInformationPackage in)
 			throws IngestException {
 		log.debug("starting AgentSIPProcessor");
 		AgentSIP sip = (AgentSIP) in;
@@ -86,7 +85,7 @@ public class AgentSIPProcessor implements SIPProcessor {
 		HashMap<PID, Agent> pid2agent = new HashMap<PID, Agent>();
 
 		// MAKE AND SAVE FOXML DOCS, set all as top pids
-		AIPImpl aip = new AIPImpl(logger);
+		AIPImpl aip = new AIPImpl();
 		for (Agent p : sip.getAgents()) {
 			PID pid = newpids.next();
 			if (p.getPID() != null) {
@@ -99,11 +98,11 @@ public class AgentSIPProcessor implements SIPProcessor {
 			FOXMLJDOMUtil.setProperty(pdoc, ObjectProperty.label, p.getName());
 			aip.saveFOXMLDocument(pid, pdoc);
 			if (p instanceof PersonAgent) {
-				aip.setTopPIDPlacement(this.getPeopleContainer(), pid, null, null);
+				aip.setContainerPlacement(this.getPeopleContainer(), pid, null, null);
 			} else if (p instanceof GroupAgent) {
-				aip.setTopPIDPlacement(this.getGroupContainer(), pid, null, null);
+				aip.setContainerPlacement(this.getGroupContainer(), pid, null, null);
 			} else if (p instanceof SoftwareAgent) {
-				aip.setTopPIDPlacement(this.getSoftwareContainer(), pid, null, null);
+				aip.setContainerPlacement(this.getSoftwareContainer(), pid, null, null);
 			}
 		}
 

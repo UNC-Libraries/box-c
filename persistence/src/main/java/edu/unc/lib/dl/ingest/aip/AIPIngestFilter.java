@@ -15,14 +15,14 @@
  */
 package edu.unc.lib.dl.ingest.aip;
 
-
 /**
- * An ingest filter performs some piece of pre-ingest work on an ReportingIngestBundle.  Filters should also
- * log their actions in the PremisEventLogger.  Only one instance of a filter is created per application context,
- * therefore the doFilter method must be thread-safe.
+ * An ingest filter performs some piece of pre-ingest work on an ReportingIngestBundle. Filters should also log their
+ * actions in the PremisEventLogger. Only one instance of a filter is created per application context, therefore the
+ * doFilter method must be thread-safe.
+ * 
  * @author count0
- *
+ * 
  */
 public interface AIPIngestFilter {
-    public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException;
+	public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException;
 }

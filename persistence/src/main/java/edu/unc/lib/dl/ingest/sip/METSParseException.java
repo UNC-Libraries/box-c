@@ -26,64 +26,69 @@ import edu.unc.lib.dl.ingest.IngestException;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public class METSParseException extends IngestException implements ErrorHandler {
 
-    /**
+	/**
      *
      */
-    private static final long serialVersionUID = 1L;
-    private List<SAXParseException> warnings = new ArrayList<SAXParseException>();
-    public List<SAXParseException> getWarnings() {
-        return warnings;
-    }
+	private static final long serialVersionUID = 1L;
+	private List<SAXParseException> warnings = new ArrayList<SAXParseException>();
 
-    public List<SAXParseException> getErrors() {
-        return errors;
-    }
+	public List<SAXParseException> getWarnings() {
+		return warnings;
+	}
 
-    public List<SAXParseException> getFatalErrors() {
-        return fatalErrors;
-    }
+	public List<SAXParseException> getErrors() {
+		return errors;
+	}
 
-    private List<SAXParseException> errors = new ArrayList<SAXParseException>();
-    private List<SAXParseException> fatalErrors = new ArrayList<SAXParseException>();
+	public List<SAXParseException> getFatalErrors() {
+		return fatalErrors;
+	}
 
-    /**
-     * @param msg
-     */
-    public METSParseException(String msg) {
-	super(msg);
-    }
+	private List<SAXParseException> errors = new ArrayList<SAXParseException>();
+	private List<SAXParseException> fatalErrors = new ArrayList<SAXParseException>();
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
-     */
-    @Override
-    public void error(SAXParseException exception) throws SAXException {
-	this.errors.add(exception);
-	throw exception;
-    }
+	/**
+	 * @param msg
+	 */
+	public METSParseException(String msg) {
+		super(msg);
+	}
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException)
-     */
-    @Override
-    public void fatalError(SAXParseException exception) throws SAXException {
-	this.fatalErrors.add(exception);
-	throw exception;
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
+	 */
+	@Override
+	public void error(SAXParseException exception) throws SAXException {
+		this.errors.add(exception);
+		throw exception;
+	}
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)
-     */
-    @Override
-    public void warning(SAXParseException exception) throws SAXException {
-	this.warnings.add(exception);
-	throw exception;
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException)
+	 */
+	@Override
+	public void fatalError(SAXParseException exception) throws SAXException {
+		this.fatalErrors.add(exception);
+		throw exception;
+	}
 
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)
+	 */
+	@Override
+	public void warning(SAXParseException exception) throws SAXException {
+		this.warnings.add(exception);
+		throw exception;
+	}
 
 }

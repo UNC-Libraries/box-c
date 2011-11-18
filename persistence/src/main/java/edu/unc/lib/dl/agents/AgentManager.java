@@ -56,7 +56,7 @@ public class AgentManager {
 
 	/**
 	 * This add a person agent object to Fedora and returning the new PersonAgent.
-	 *
+	 * 
 	 * @param name
 	 *           name of the person
 	 * @param apim
@@ -87,7 +87,7 @@ public class AgentManager {
 
 	/**
 	 * Adds a member to a group.
-	 *
+	 * 
 	 * @param group
 	 *           the GroupAgent
 	 * @param member
@@ -103,7 +103,7 @@ public class AgentManager {
 
 	/**
 	 * This add a person agent object to Fedora and returning the new PersonAgent.
-	 *
+	 * 
 	 * @param name
 	 *           name of the person
 	 * @param apim
@@ -146,7 +146,7 @@ public class AgentManager {
 
 	/**
 	 * This add a person agent object to Fedora and returning the new PersonAgent.
-	 *
+	 * 
 	 * @param name
 	 *           name of the person
 	 * @param apim
@@ -515,7 +515,7 @@ public class AgentManager {
 
 	/**
 	 * Removes a member to a group.
-	 *
+	 * 
 	 * @param group
 	 *           the GroupAgent
 	 * @param member

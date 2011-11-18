@@ -172,7 +172,7 @@
         <xsl:for-each
             select="/m:mets/m:structMap/descendant::m:div[not(@TYPE = 'Reference' or @TYPE = 'Bag')]">
             <xsl:variable name="pos" select="position()"/>
-            <xsl:variable name="output" select="concat($output.directory,'/',generate-id(),'.xml')"/>
+            <xsl:variable name="output" select="concat($output.directory,'/',generate-id(),'.foxml')"/>
             <object>
                 <xsl:attribute name="DIVID" select="generate-id()"/>
                 <xsl:attribute name="PID" select="$pids//pid[position() = $pos]"/>

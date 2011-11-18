@@ -30,9 +30,9 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 /**
  * Looks for objects in the repository with matching repository paths. Conflict information is then passed to a merge
  * strategy class that performs required merging logic or throws a MergeException.
- *
+ * 
  * @author count0
- *
+ * 
  */
 public class CheckPathConflictFilter implements AIPIngestFilter {
 	private static final Log log = LogFactory.getLog(CheckPathConflictFilter.class);
@@ -41,7 +41,7 @@ public class CheckPathConflictFilter implements AIPIngestFilter {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.ingest.IngestFilter#doFilter(edu.unc.lib.dl.ingest.IngestContextImpl)
 	 */
 	public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException {
@@ -121,7 +121,8 @@ public class CheckPathConflictFilter implements AIPIngestFilter {
 		} while (step != null);
 
 		// got all the parents in the graph, make result
-		String containerPath = getTripleStoreQueryService().lookupRepositoryPath(rdfaip.getTopPIDPlacement(top).parentPID);
+		String containerPath = getTripleStoreQueryService()
+				.lookupRepositoryPath(rdfaip.getContainerPlacement(top).parentPID);
 		if (containerPath.endsWith("/")) {
 			containerPath = containerPath.substring(0, containerPath.length() - 1);
 		}

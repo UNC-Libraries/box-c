@@ -21,16 +21,16 @@ import edu.unc.lib.dl.fedora.PID;
  * Represents an agent that is actually a process or piece of software.
  */
 public class SoftwareAgent extends AbstractAgent {
-    // no extra methods currently defined. None may be necessary.
+	// no extra methods currently defined. None may be necessary.
 
-    // TODO add an optional release/build info file to Software Agents
+	// TODO add an optional release/build info file to Software Agents
 
-    public SoftwareAgent() {
-	super();
-    }
+	public SoftwareAgent() {
+		super();
+	}
 
-    SoftwareAgent(PID pid, String name) {
-	setPID(pid);
-	setName(name);
-    }
+	SoftwareAgent(PID pid, String name) {
+		setPID(pid);
+		setName(name);
+	}
 }

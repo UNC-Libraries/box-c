@@ -64,7 +64,7 @@ import org.jrdf.writer.mem.RdfNamespaceMapImpl;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
+import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
 import edu.unc.lib.dl.util.PremisEventLogger;
@@ -175,11 +175,11 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 	}
 
 	@Override
-	public void destroy() {
+	public void delete() {
 		// cleanup graph, etc.
 		this.graph.close();
 		this.graph = null;
-		this.baseAIP.destroy();
+		this.baseAIP.delete();
 	}
 
 	@Override
@@ -485,8 +485,8 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getTopPIDPlacement (edu.unc.lib.dl.fedora.PID)
 	 */
 	@Override
-	public ContainerPlacement getTopPIDPlacement(PID pid) {
-		return this.baseAIP.getTopPIDPlacement(pid);
+	public ContainerPlacement getContainerPlacement(PID pid) {
+		return this.baseAIP.getContainerPlacement(pid);
 	}
 
 	/*
@@ -496,17 +496,7 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 	 * edu.unc.lib.dl.fedora.PID, java.lang.Integer, java.lang.Integer)
 	 */
 	@Override
-	public void setTopPIDPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder) {
-		this.baseAIP.setTopPIDPlacement(parentPID, topPID, designatedOrder, sipOrder);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#setDeleteFilesOnDestroy(boolean)
-	 */
-	@Override
-	public void setDeleteFilesOnDestroy(boolean delete) {
-		this.baseAIP.setDeleteFilesOnDestroy(delete);
+	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder) {
+		this.baseAIP.setContainerPlacement(parentPID, topPID, designatedOrder, sipOrder);
 	}
 }

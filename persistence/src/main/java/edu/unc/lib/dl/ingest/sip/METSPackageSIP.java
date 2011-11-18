@@ -15,12 +15,8 @@
  */
 package edu.unc.lib.dl.ingest.sip;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.ZipFileUtil;
 
 public class METSPackageSIP implements SubmissionInformationPackage {
@@ -57,60 +54,21 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 	}
 
 	public METSPackageSIP(PID containerPID, File sip, Agent owner, boolean isZIP) throws IOException {
-		this.batchPrepDir = File.createTempFile("ingest", null);
-		this.batchPrepDir.delete();
-		this.batchPrepDir.mkdir();
+		this.batchPrepDir = FileUtils.createTempDirectory("ingest-prep");
 		this.sipDataSubDir = new File(this.batchPrepDir, "data");
+		this.sipDataSubDir.mkdir();
 		if (isZIP) {
 			ZipFileUtil.unzipToDir(sip, this.sipDataSubDir);
 			metsFile = new File(sipDataSubDir, metsLocation);
 			if (!metsFile.exists()) {
 				metsFile = new File(sipDataSubDir, metsLocation2);
 			}
-			if (!metsFile.exists()) {
-				throw new IOException("SIP must contain a METS file named METS.xml or mets.xml");
-			}
 		} else { // NOT A ZIP, JUST METS FILE
-			metsFile = sip;
-			if (!metsFile.exists()) {
-				throw new IOException("METS file " + metsFile.getPath() + " not found.");
-			}
+			this.metsFile = new File(this.sipDataSubDir, "mets.xml");
+			FileUtils.renameOrMoveTo(sip, metsFile);
 		}
-		this.containerPID = containerPID;
-		this.owner = owner;
-	}
-
-	public METSPackageSIP(PID containerPID, InputStream sip, Agent owner, boolean isZIP) throws IOException {
-		this.batchPrepDir = File.createTempFile("ingest", null);
-		this.batchPrepDir.delete();
-		this.batchPrepDir.mkdir();
-		this.sipDataSubDir = new File(this.batchPrepDir, "data");
-		if (isZIP) {
-			ZipFileUtil.unzipToTemp(this.sipDataSubDir);
-			metsFile = new File(sipDataSubDir, metsLocation);
-			if (!metsFile.exists()) {
-				metsFile = new File(sipDataSubDir, metsLocation2);
-			}
-			if (!metsFile.exists()) {
-				throw new IOException("SIP must contain a METS file named METS.xml or mets.xml");
-			}
-		} else { // NOT A ZIP, JUST METS Stream
-			metsFile = new File(this.sipDataSubDir, metsLocation);
-			OutputStream os = new BufferedOutputStream(new FileOutputStream(metsFile));
-			try {
-				byte[] buf = new byte[4096];
-				int len;
-				while ((len = sip.read(buf)) != -1) {
-					os.write(buf, 0, len);
-				}
-			} finally {
-				sip.close();
-				os.flush();
-				os.close();
-			}
-			if (!metsFile.exists()) {
-				throw new IOException("METS file " + metsFile.getPath() + " not found.");
-			}
+		if (!metsFile.exists()) {
+			throw new IOException("METS file " + metsFile.getPath() + " not found.");
 		}
 		this.containerPID = containerPID;
 		this.owner = owner;
@@ -127,7 +85,7 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 	public List<File> getDataFiles() {
 		List<File> result = null;
 		if (this.sipDataSubDir != null) {
-			result = ZipFileUtil.getFilesInDir(this.sipDataSubDir);
+			result = FileUtils.getFilesInDir(this.sipDataSubDir);
 			File mets = null;
 			for (File f : result) {
 				if (this.getMetsFile().equals(f)) {
@@ -153,7 +111,7 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 
 	public File getFileForLocator(String url) throws IOException {
 		if (getSIPDataDir() != null) {
-			return ZipFileUtil.getFileForUrl(url, getSIPDataDir());
+			return FileUtils.getFileForUrl(url, getSIPDataDir());
 		} else {
 			throw new IOException("There are no zipped files associated with this METS");
 		}
@@ -166,19 +124,14 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 	@Override
 	protected void finalize() throws Throwable {
 		super.finalize();
-		this.destroy();
+		//this.destroy();
 	}
 
-	public void destroy() {
-		log.debug("destroy called");
+	public void delete() {
+		log.debug("delete called");
 		// cleanup *any* remaining files
-		if (discardDataFilesOnDestroy) {
-			if (sipDataSubDir != null && sipDataSubDir.exists()) {
-				ZipFileUtil.deleteDir(sipDataSubDir);
-			}
-			if (metsFile != null && metsFile.exists()) {
-				metsFile.delete();
-			}
+		if (this.batchPrepDir != null && batchPrepDir.exists()) {
+			FileUtils.deleteDir(batchPrepDir);
 		}
 	}
 

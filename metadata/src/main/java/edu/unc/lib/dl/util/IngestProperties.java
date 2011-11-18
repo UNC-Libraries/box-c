@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.ingest;
+package edu.unc.lib.dl.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,7 +33,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
 
 /**
  * @author Gregory Jansen
@@ -49,7 +48,7 @@ public class IngestProperties {
 	private String message = null;
 	private Map<PID, ContainerPlacement> containerPlacements = null;
 
-	public IngestProperties(File baseDir) throws IngestException {
+	public IngestProperties(File baseDir) throws Exception {
 		this.propFile = new File(baseDir, PROPERTIES_FILE);
 		if (this.propFile.exists()) {
 			load();
@@ -62,38 +61,34 @@ public class IngestProperties {
 	 * @throws ClassNotFoundException
 	 *
 	 */
-	private void load() throws IngestException {
-		if(log.isDebugEnabled()) {
-			log.debug("loading ingest properties from "+this.propFile.getAbsolutePath());
+	private void load() throws Exception {
+		if (log.isDebugEnabled()) {
+			log.debug("loading ingest properties from " + this.propFile.getAbsolutePath());
 		}
-		try {
-			Properties props = new Properties();
-			props.load(new FileInputStream(propFile));
-			this.submitter = props.getProperty("submitter");
-			String er = props.getProperty("email.recipients");
-			if (er != null) {
-				this.emailRecipients = er.split(",");
+		Properties props = new Properties();
+		props.load(new FileInputStream(propFile));
+		this.submitter = props.getProperty("submitter");
+		String er = props.getProperty("email.recipients");
+		if (er != null) {
+			this.emailRecipients = er.split(",");
+		}
+		this.message = props.getProperty("message");
+		this.containerPlacements = new HashMap<PID, ContainerPlacement>();
+		for (Entry<Object, Object> e : props.entrySet()) {
+			String key = (String) e.getKey();
+			if (key.startsWith("placement")) {
+				String s = (String) e.getValue();
+				ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(s.getBytes()));
+				ContainerPlacement p = (ContainerPlacement) is.readObject();
+				this.containerPlacements.put(p.pid, p);
+				is.close();
 			}
-			this.message = props.getProperty("message");
-			this.containerPlacements = new HashMap<PID, ContainerPlacement>();
-			for (Entry<Object, Object> e : props.entrySet()) {
-				String key = (String) e.getKey();
-				if (key.startsWith("placement")) {
-					String s = (String) e.getValue();
-					ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(s.getBytes()));
-					ContainerPlacement p = (ContainerPlacement) is.readObject();
-					this.containerPlacements.put(p.pid, p);
-					is.close();
-				}
-			}
-		} catch (Exception e) {
-			throw new IngestException("Problem loading ingest properties file", e);
 		}
 	}
 
 	public void save() {
-		if(log.isDebugEnabled()) {
-			log.debug("saving ingest properties to "+this.propFile.getAbsolutePath());
+		if (log.isDebugEnabled()) {
+			log.debug("saving ingest properties to " + this.propFile.getAbsolutePath());
 		}
 		Properties props = new Properties();
 		if (this.submitter != null)

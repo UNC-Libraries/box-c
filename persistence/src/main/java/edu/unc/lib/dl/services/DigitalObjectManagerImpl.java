@@ -55,13 +55,13 @@ import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
-import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
 import edu.unc.lib.dl.ingest.sip.SIPProcessor;
 import edu.unc.lib.dl.ingest.sip.SIPProcessorFactory;
 import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.Checksum;
 import edu.unc.lib.dl.util.ContainerContentsHelper;
+import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
@@ -87,15 +87,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private OperationsMessageSender operationsMessageSender = null;
 	private TripleStoreQueryService tripleStoreQueryService = null;
 	private SchematronValidator schematronValidator = null;
-	private ContainerContentsHelper containerContentsHelper = null;
+	private BatchIngestService batchIngestService = null;
 	private MailNotifier mailNotifier;
 
 	public void setMailNotifier(MailNotifier mailNotifier) {
 		this.mailNotifier = mailNotifier;
-	}
-
-	public ContainerContentsHelper getContainerContentsHelper() {
-		return containerContentsHelper;
 	}
 
 	public synchronized void setAvailable(boolean available, String message) {
@@ -108,10 +104,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 	public synchronized void setAvailable(boolean available) {
 		this.setAvailable(available, "Repository undergoing maintenance, please contact staff for more information.");
-	}
-
-	public void setContainerContentsHelper(ContainerContentsHelper containerContentsHelper) {
-		this.containerContentsHelper = containerContentsHelper;
 	}
 
 	public SchematronValidator getSchematronValidator() {
@@ -131,8 +123,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @see edu.unc.lib.dl.services.DigitalObjectManager#add(java.lang.String, java.io.File, edu.unc.lib.dl.agents.Agent,
 	 * edu.unc.lib.dl.agents.PersonAgent, java.lang.String)
 	 */
-	public void addBatch(SubmissionInformationPackage sip, Agent user, String message)
-			throws IngestException {
+	public void addBatch(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
 		ArchivalInformationPackage aip = null;
 		try {
 			availableCheck();
@@ -143,7 +134,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			SIPProcessor processor = this.getSipProcessorFactory().getSIPProcessor(sip);
 
 			// process the SIP into a standard AIP
-			// aip = processor.createAIP(sip);
+			aip = processor.createAIP(sip);
 
 			// run routine AIP processing steps
 			aip = this.getAipIngestPipeline().processAIP(aip);
@@ -152,10 +143,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			aip.prepareIngest();
 
 			// move the AIP into the ingest queue.
-			// aip.enqueue();
+			this.getBatchIngestService().queueBatch(aip.getTempFOXDir());
 		} catch (IngestException e) {
 			// exception on AIP preparation, no transaction started
 			log.info("User level exception on ingest, prior to Fedora transaction", e);
+			aip.delete();
 			throw e;
 		}
 	}
@@ -170,13 +162,17 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * Updates the RELS-EXT contains relationships and the MD_CONTENTS datastream. Call this method last, after all other
 	 * transactions, it will roll itself back on failure and throw an IngestException.
 	 *
-	 * @param submitter the Agent that submitted this change
-	 * @param placements the container locations of new pids
-	 * @param container the container added to
+	 * @param submitter
+	 *           the Agent that submitted this change
+	 * @param placements
+	 *           the container locations of new pids
+	 * @param container
+	 *           the container added to
 	 * @return the list of PIDs reordered by this change
 	 * @throws FedoraException
 	 */
-	public List<PID> addContainerContents(Agent submitter, Collection<ContainerPlacement> placements, PID container) throws FedoraException {
+	public List<PID> addContainerContents(Agent submitter, Collection<ContainerPlacement> placements, PID container)
+			throws FedoraException {
 		DateTime time = new DateTime();
 		List<PID> reordered = new ArrayList<PID>();
 
@@ -214,8 +210,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			}
 			// this.getTripleStoreQueryService()..fetchByPredicateAndLiteral(ContentModelHelper.CDRProperty.sortOrder,
 			// literal)
-			newXML = this.getContainerContentsHelper().addChildContentAIPInCustomOrder(oldXML, container, placements,
-					reordered);
+			newXML = ContainerContentsHelper.addChildContentAIPInCustomOrder(oldXML, container, placements, reordered);
 			if (exists) {
 				this.getManagementClient().modifyInlineXMLDatastream(container, "MD_CONTENTS", false,
 						"adding child resource to container", new ArrayList<String>(), "List of Contents", newXML);
@@ -326,8 +321,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				}
 			}
 			if (this.getOperationsMessageSender() != null) {
-				this.getOperationsMessageSender().sendRemoveOperation(user.getName(), container, removed,
-						reordered);
+				this.getOperationsMessageSender().sendRemoveOperation(user.getName(), container, removed, reordered);
 			}
 		} catch (FedoraException fault) {
 			log.error("Fedora threw an unexpected fault while deleting " + pid.getPid(), fault);
@@ -491,7 +485,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
 				oldXML = new SAXBuilder().build(bais);
 				bais.close();
-				newXML = this.getContainerContentsHelper().remove(oldXML, pid);
+				newXML = ContainerContentsHelper.remove(oldXML, pid);
 				this.getManagementClient().modifyInlineXMLDatastream(parent, "MD_CONTENTS", false,
 						"removing child object from this container", new ArrayList<String>(), "List of Contents", newXML);
 			}
@@ -843,7 +837,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				oldXML.setRootElement(structMap);
 				exists = false;
 			}
-			newXML = this.getContainerContentsHelper().addChildContentListInCustomOrder(oldXML, destination, moving, reordered);
+			newXML = ContainerContentsHelper.addChildContentListInCustomOrder(oldXML, destination, moving, reordered);
 			if (exists) {
 				msgTimestamp = this.getManagementClient().modifyInlineXMLDatastream(destination, "MD_CONTENTS", false,
 						"adding " + moving.size() + " child resources to container", new ArrayList<String>(),
@@ -862,8 +856,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 			// send message for the operation
 			if (this.getOperationsMessageSender() != null) {
-				this.getOperationsMessageSender().sendMoveOperation(user.getName(), oldParents, destination,
-						moving, reordered);
+				this.getOperationsMessageSender().sendMoveOperation(user.getName(), oldParents, destination, moving,
+						reordered);
 			}
 		} catch (FedoraException e) {
 			thrown = e;
@@ -901,8 +895,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		this.operationsMessageSender = operationsMessageSender;
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.unc.lib.dl.services.DigitalObjectManager#addSingleObject(edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage, edu.unc.lib.dl.agents.Agent, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see
+	 * edu.unc.lib.dl.services.DigitalObjectManager#addSingleObject(edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage
+	 * , edu.unc.lib.dl.agents.Agent, java.lang.String)
 	 */
 	@Override
 	public PID addSingleObject(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
@@ -938,5 +936,13 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		// TODO run ingest task immediately and wait for it.
 		// TODO return the newly minted pid
 		return null;
+	}
+
+	public BatchIngestService getBatchIngestService() {
+		return batchIngestService;
+	}
+
+	public void setBatchIngestService(BatchIngestService batchIngestService) {
+		this.batchIngestService = batchIngestService;
 	}
 }

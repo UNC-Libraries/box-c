@@ -21,21 +21,25 @@ import edu.unc.lib.dl.fedora.PID;
 
 public interface SolrIndexService {
 
-    /**
-     * Adds new objects to the search index, or updates objects already indexed.
-     * @param pids a collection of pids to index
-     */
-    public abstract boolean add(Collection<PID> ids);
+	/**
+	 * Adds new objects to the search index, or updates objects already indexed.
+	 * 
+	 * @param pids
+	 *           a collection of pids to index
+	 */
+	public abstract boolean add(Collection<PID> ids);
 
-    /**
-     * Removes objects from the search index.
-     * @param pids a collection of PIDs to remove from search.
-     */
-    public abstract boolean remove(Collection<PID> ids);
+	/**
+	 * Removes objects from the search index.
+	 * 
+	 * @param pids
+	 *           a collection of PIDs to remove from search.
+	 */
+	public abstract boolean remove(Collection<PID> ids);
 
-    /**
-     * Removes everything from the index and re-adds everything found in Fedora.
-     */
-    public abstract boolean reindexEverything();
+	/**
+	 * Removes everything from the index and re-adds everything found in Fedora.
+	 */
+	public abstract boolean reindexEverything();
 
 }

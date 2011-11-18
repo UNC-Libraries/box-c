@@ -40,7 +40,7 @@ public class FolderManager {
 
 	/**
 	 * Given a repository path string, creates any folders that do not yet exist along this path.
-	 *
+	 * 
 	 * @param path
 	 *           the desired folder path
 	 * @throws IngestException

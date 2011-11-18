@@ -19,52 +19,52 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Abstract implementation of the {@link Agent} interface.
- *
+ * 
  */
 public abstract class AbstractAgent implements Agent, Comparable<Agent> {
 
-    private String _name;
+	private String _name;
 
-    private PID _pid;
+	private PID _pid;
 
-    @Override
-    public int compareTo(Agent obj) {
-	if (this.getName() != null) {
-	    return this.getName().compareTo(obj.getName());
+	@Override
+	public int compareTo(Agent obj) {
+		if (this.getName() != null) {
+			return this.getName().compareTo(obj.getName());
+		}
+		return 0;
 	}
-	return 0;
-    }
 
-    @Override
-    public boolean equals(Object o) {
-	boolean result = false;
-	if (o instanceof Agent) {
-	    if (this.getPID() != null) {
-		result = this.getPID().equals(((Agent) o).getPID());
-	    }
+	@Override
+	public boolean equals(Object o) {
+		boolean result = false;
+		if (o instanceof Agent) {
+			if (this.getPID() != null) {
+				result = this.getPID().equals(((Agent) o).getPID());
+			}
+		}
+		return result;
 	}
-	return result;
-    }
 
-    /**
-     * @inheritDoc
-     */
-    public String getName() {
-	return _name;
-    }
+	/**
+	 * @inheritDoc
+	 */
+	public String getName() {
+		return _name;
+	}
 
-    /**
-     * @inheritDoc
-     */
-    public PID getPID() {
-	return _pid;
-    }
+	/**
+	 * @inheritDoc
+	 */
+	public PID getPID() {
+		return _pid;
+	}
 
-    void setName(final String name) {
-	this._name = name;
-    }
+	void setName(final String name) {
+		this._name = name;
+	}
 
-    void setPID(PID pid) {
-	this._pid = pid;
-    }
+	void setPID(PID pid) {
+		this._pid = pid;
+	}
 }

@@ -48,12 +48,12 @@ import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.IngestProperties;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
 import edu.unc.lib.dl.ingest.sip.InvalidMETSException;
 import edu.unc.lib.dl.ingest.sip.METSParseException;
 import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
+import edu.unc.lib.dl.util.IngestProperties;
 import freemarker.ext.dom.NodeModel;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -71,7 +71,7 @@ import freemarker.template.TemplateException;
  */
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public class MailNotifier {
 	private static final Log log = LogFactory.getLog(MailNotifier.class);
@@ -126,7 +126,7 @@ public class MailNotifier {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.springframework.mail.javamail.MimeMessagePreparator#prepare(javax .mail.internet.MimeMessage)
 	 */
 	public void sendIngestSuccessNotice(IngestProperties props, int ingestedCount) {
@@ -361,7 +361,7 @@ public class MailNotifier {
 
 	/**
 	 * Sends a plain text email to the repository administrator.
-	 *
+	 * 
 	 * @param subject
 	 * @param text
 	 */

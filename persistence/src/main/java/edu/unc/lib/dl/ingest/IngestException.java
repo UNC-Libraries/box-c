@@ -20,42 +20,41 @@ import org.jdom.Element;
 import edu.unc.lib.dl.ingest.aip.AIPException;
 
 /**
- * This exception captures any failure to complete the ingest pipeline. It can
- * encapsulate the reason for the failure through getCause() and it also bundles
- * an ingest report XML document. This document contains the complete record of
+ * This exception captures any failure to complete the ingest pipeline. It can encapsulate the reason for the failure
+ * through getCause() and it also bundles an ingest report XML document. This document contains the complete record of
  * ingest processing by all filters up to the point of failure.
  * 
- * This exception is created from a lower level IngestFilterException which
- * represents failure in a particular processing step.
+ * This exception is created from a lower level IngestFilterException which represents failure in a particular
+ * processing step.
  * 
  * @author count0
  * 
  */
 public class IngestException extends Exception {
 
-    private static final long serialVersionUID = -4065348103957132332L;
+	private static final long serialVersionUID = -4065348103957132332L;
 
-    Element errorXML = null;
+	Element errorXML = null;
 
-    public IngestException(String msg) {
-	super(msg);
-    }
-
-    public IngestException(String msg, Throwable e) {
-	super(msg, e);
-	if (e instanceof AIPException) {
-	    this.errorXML = ((AIPException) e).getErrorXML();
-	} else if (e instanceof IngestException) {
-	    this.errorXML = ((IngestException) e).getErrorXML();
+	public IngestException(String msg) {
+		super(msg);
 	}
-    }
 
-    public Element getErrorXML() {
-	return errorXML;
-    }
+	public IngestException(String msg, Throwable e) {
+		super(msg, e);
+		if (e instanceof AIPException) {
+			this.errorXML = ((AIPException) e).getErrorXML();
+		} else if (e instanceof IngestException) {
+			this.errorXML = ((IngestException) e).getErrorXML();
+		}
+	}
 
-    public void setErrorXML(Element errorXML) {
-	this.errorXML = errorXML;
-    }
+	public Element getErrorXML() {
+		return errorXML;
+	}
+
+	public void setErrorXML(Element errorXML) {
+		this.errorXML = errorXML;
+	}
 
 }

@@ -35,9 +35,9 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import edu.unc.lib.dl.util.ZipFileUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
 public class RepositoryInitializer implements Runnable {
@@ -228,17 +228,17 @@ public class RepositoryInitializer implements Runnable {
 
 	/**
 	 * loads every XML file in foxml-objects, purges their pids and ingests them.
-	 *
+	 * 
 	 * @throws FedoraException
 	 */
 	private void ingestContentModelsServices() {
 		try {
 			File tmpDir = File.createTempFile("RepositoryInitializerBatch", "");
-			ZipFileUtil.copyFolder(getInitialBatchIngestDir(), tmpDir);
+			FileUtils.copyFolder(getInitialBatchIngestDir(), tmpDir);
 			getBatchIngestService().ingestBatchNow(tmpDir);
 		} catch (IngestException e) {
 			throw new Error("Cannot ingest content models and services.", e);
-		} catch(IOException e) {
+		} catch (IOException e) {
 			throw new Error("Cannot copy initial content models and services ingest batch.", e);
 		}
 	}

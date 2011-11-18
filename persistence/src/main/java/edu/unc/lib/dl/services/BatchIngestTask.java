@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.ingest;
+package edu.unc.lib.dl.services;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -52,15 +53,11 @@ import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.Datastream;
-import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
-import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
-import edu.unc.lib.dl.services.DigitalObjectManager;
-import edu.unc.lib.dl.services.DigitalObjectManagerImpl;
-import edu.unc.lib.dl.services.MailNotifier;
-import edu.unc.lib.dl.services.OperationsMessageSender;
+import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.FileUtils;
+import edu.unc.lib.dl.util.IngestProperties;
 import edu.unc.lib.dl.util.PremisEventLogger;
-import edu.unc.lib.dl.util.ZipFileUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -72,16 +69,30 @@ public class BatchIngestTask implements Runnable {
 	private static final Log log = LogFactory.getLog(BatchIngestTask.class);
 	private static final String INGEST_LOG = "ingested.log";
 	private static final String REORDERED_LOG = "reordered.log";
+	private static final String FAIL_LOG = "fail.log";
 	private int ingestPollingTimeoutSeconds = -1;
 	private int ingestPollingDelaySeconds = -1;
 
+	/**
+	 * States for this task. The ingest states loop until the last object is verified. Container update state
+	 * repeats until all containers are updated.
+	 *
+	 */
 	public enum STATE {
 		INIT, STARTING, INGEST, INGEST_WAIT, INGEST_VERIFY_CHECKSUMS, CONTAINER_UPDATES, SEND_MESSAGES, CLEANUP, FINISHED
 	}
 
 	private STATE state = STATE.INIT;
 
-	private boolean stopped = false;
+	/**
+	 * Marks this tasks as halting. (Another task may resume ingest later.)
+	 */
+	private boolean halting = false;
+
+	/**
+	 * Marks this task as having failed for collaborators.
+	 */
+	private boolean failed = false;
 
 	/**
 	 * This code indicates a container update in the ingest log.
@@ -141,20 +152,11 @@ public class BatchIngestTask implements Runnable {
 	private BufferedWriter ingestLogWriter = null;
 
 	// injected dependencies
-	private AIPIngestPipeline aipIngestPipeline = null;
 	private ManagementClient managementClient = null;
 	private OperationsMessageSender operationsMessageSender = null;
 	private MailNotifier mailNotifier = null;
 	private DigitalObjectManager digitalObjectManager = null;
 	private AgentManager agentManager = null;
-
-	public AIPIngestPipeline getAipIngestPipeline() {
-		return aipIngestPipeline;
-	}
-
-	public void setAipIngestPipeline(AIPIngestPipeline aipIngestPipeline) {
-		this.aipIngestPipeline = aipIngestPipeline;
-	}
 
 	public ManagementClient getManagementClient() {
 		return managementClient;
@@ -236,7 +238,7 @@ public class BatchIngestTask implements Runnable {
 			this.state = STATE.STARTING;
 			startTime = System.currentTimeMillis();
 		} catch (Exception e) {
-			fail("Cannot initialize the ingest task.", e);
+			throw fail("Cannot initialize the ingest task.", e);
 		}
 	}
 
@@ -266,7 +268,7 @@ public class BatchIngestTask implements Runnable {
 	 * resumed.
 	 */
 	public void stop() {
-		this.stopped = true;
+		this.halting = true;
 	}
 
 	/*
@@ -277,7 +279,7 @@ public class BatchIngestTask implements Runnable {
 	@Override
 	public void run() {
 		while (this.state != STATE.FINISHED) {
-			if(this.stopped && (this.state == STATE.SEND_MESSAGES || this.state == STATE.CLEANUP)) {
+			if (this.halting && (this.state == STATE.SEND_MESSAGES || this.state == STATE.CLEANUP)) {
 				return; // stop immediately as long as not sending msgs or cleaning up.
 			}
 			switch (this.state) {
@@ -320,7 +322,7 @@ public class BatchIngestTask implements Runnable {
 			throw new Error("Unexpected IO error.", e);
 		} finally {
 			try {
-				if(r != null)
+				if (r != null)
 					r.close();
 			} catch (IOException ignored) {
 			}
@@ -359,17 +361,17 @@ public class BatchIngestTask implements Runnable {
 			}
 			reorderedWriter = new PrintWriter(new File(this.baseDir, REORDERED_LOG));
 			logIngestAttempt(containers[next], CONTAINER_UPDATED_CODE);
-			List<PID> reordered = this.digitalObjectManager.addContainerContents(submitterAgent, props.getContainerPlacements()
-					.values(), containers[next]);
+			List<PID> reordered = this.digitalObjectManager.addContainerContents(submitterAgent, props
+					.getContainerPlacements().values(), containers[next]);
 			logIngestComplete();
 			for (PID p : reordered) {
 				reorderedWriter.write(p.getPid());
 				reorderedWriter.write("\n");
 			}
 		} catch (FedoraException e) {
-			fail("Cannot update container: " + containers[next], e);
+			throw fail("Cannot update container: " + containers[next], e);
 		} catch (FileNotFoundException e) {
-			fail("Cannot update container: " + containers[next], e);
+			throw fail("Cannot update container: " + containers[next], e);
 		} finally {
 			reorderedWriter.flush();
 			reorderedWriter.close();
@@ -380,7 +382,8 @@ public class BatchIngestTask implements Runnable {
 	 * Polls Fedora for the last ingested PID
 	 */
 	private void waitForLastIngest() {
-		if (!this.managementClient.pollForObject(this.lastIngestPID, ingestPollingDelaySeconds, ingestPollingTimeoutSeconds)) {
+		if (!this.managementClient.pollForObject(this.lastIngestPID, ingestPollingDelaySeconds,
+				ingestPollingTimeoutSeconds)) {
 			// TODO re-attempt last ingest before failing?
 			fail("The last ingest before resuming was never completed. " + this.lastIngestPID + " in "
 					+ this.lastIngestFilename);
@@ -440,10 +443,9 @@ public class BatchIngestTask implements Runnable {
 			String newref = null;
 			File file;
 			try {
-				file = ZipFileUtil.getFileForUrl(ref, dataDir);
+				file = FileUtils.getFileForUrl(ref, dataDir);
 			} catch (IOException e) {
-				fail("Data file missing: " + ref, e);
-				break;
+				throw fail("Data file missing: " + ref, e);
 			}
 			newref = this.getManagementClient().upload(file);
 			cLocation.setAttribute("REF", newref);
@@ -475,8 +477,7 @@ public class BatchIngestTask implements Runnable {
 			this.state = STATE.INGEST_WAIT;
 			return;
 		} catch (FedoraException e) { // fedora threw a fault, ingest rejected
-			fail("Cannot ingest due to Fedora error: " + pid, e);
-			return;
+			throw fail("Cannot ingest due to Fedora error: " + pid, e);
 		}
 	}
 
@@ -523,8 +524,7 @@ public class BatchIngestTask implements Runnable {
 			try {
 				d = this.getManagementClient().getDatastream(pid, dsID);
 			} catch (FedoraException e) {
-				fail("Cannot get datastream metadata for checksum comparison:" + pid + dsID, e);
-				return;
+				throw fail("Cannot get datastream metadata for checksum comparison:" + pid + dsID, e);
 			}
 			// compare checksums
 			if (!dsID2md5.get(dsID).equals(d.getChecksum())) { // datastream doesn't match
@@ -562,18 +562,36 @@ public class BatchIngestTask implements Runnable {
 	/**
 	 * @param string
 	 */
-	private void fail(String string) {
-		// TODO Auto-generated method stub
-
+	private RuntimeException fail(String message) {
+		return fail(message, null);
 	}
 
 	/**
 	 * @param string
 	 * @param e
 	 */
-	private void fail(String string, Throwable e) {
-		// TODO Auto-generated method stub
-
+	private RuntimeException fail(String message, Throwable e) {
+		this.failed = true;
+		File failLog = new File(this.baseDir, FAIL_LOG);
+		PrintWriter w = null;
+		try {
+			failLog.createNewFile();
+			w = new PrintWriter(new FileOutputStream(failLog));
+			w.println(message);
+			if(e != null) {
+				e.printStackTrace(w);
+			}
+		} catch (IOException e1) {
+			throw new Error("Unexpected error", e1);
+		} finally {
+			if(w != null) {
+				try {
+					w.flush();
+					w.close();
+				} catch(Exception ignored) {}
+			}
+		}
+		return new RuntimeException("Batch ingest failed: "+this.baseDir);
 	}
 
 	public AgentManager getAgentManager() {
@@ -598,6 +616,10 @@ public class BatchIngestTask implements Runnable {
 
 	public void setIngestPollingDelaySeconds(int ingestPollingDelaySeconds) {
 		this.ingestPollingDelaySeconds = ingestPollingDelaySeconds;
+	}
+
+	public boolean isFailed() {
+		return failed;
 	}
 
 }

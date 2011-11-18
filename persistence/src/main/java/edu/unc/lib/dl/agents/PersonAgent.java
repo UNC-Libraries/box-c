@@ -22,61 +22,59 @@ import java.util.Set;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
- * Represents an {@link Agent} that is some person who interacts with the
- * repository.
+ * Represents an {@link Agent} that is some person who interacts with the repository.
  */
 public class PersonAgent extends AbstractAgent {
-    // private Set<String> roles = new HashSet<String>();
-    private Set<GroupAgent> groups = new HashSet<GroupAgent>();
+	// private Set<String> roles = new HashSet<String>();
+	private Set<GroupAgent> groups = new HashSet<GroupAgent>();
 
-    private String onyen = null;
+	private String onyen = null;
 
-    PersonAgent(PID pid, String name, String onyen) {
-	this.setName(name);
-	this.setPID(pid);
-	this.setOnyen(onyen);
-    }
+	PersonAgent(PID pid, String name, String onyen) {
+		this.setName(name);
+		this.setPID(pid);
+		this.setOnyen(onyen);
+	}
 
-    public PersonAgent(String name, String onyen) {
-	this.setName(name);
-	this.setOnyen(onyen);
-    }
+	public PersonAgent(String name, String onyen) {
+		this.setName(name);
+		this.setOnyen(onyen);
+	}
 
-    /**
-     * Gets the roles played by this person in the repository. This may or may
-     * not be advisable to keep around ...
-     *
-     * @return this person's roles
-     */
-    // public Set<String> getRoles() {
-    // return Collections.unmodifiableSet(_roles);
-    // }
-    void addGroup(GroupAgent group) {
-	this.groups.add(group);
-    }
+	/**
+	 * Gets the roles played by this person in the repository. This may or may not be advisable to keep around ...
+	 * 
+	 * @return this person's roles
+	 */
+	// public Set<String> getRoles() {
+	// return Collections.unmodifiableSet(_roles);
+	// }
+	void addGroup(GroupAgent group) {
+		this.groups.add(group);
+	}
 
-    /**
-     * Sets this person's roles.
-     *
-     * @param roles
-     *                a set of roles played by this person in the repository.
-     */
-    // void setRoles(final Set<String> roles) {
-    // _roles.addAll(roles);
-    // }
-    public Set<GroupAgent> getGroups() {
-	return Collections.unmodifiableSet(groups);
-    }
+	/**
+	 * Sets this person's roles.
+	 * 
+	 * @param roles
+	 *           a set of roles played by this person in the repository.
+	 */
+	// void setRoles(final Set<String> roles) {
+	// _roles.addAll(roles);
+	// }
+	public Set<GroupAgent> getGroups() {
+		return Collections.unmodifiableSet(groups);
+	}
 
-    public String getOnyen() {
-	return onyen;
-    }
+	public String getOnyen() {
+		return onyen;
+	}
 
-    void setGroups(Set<GroupAgent> groups) {
-	this.groups = groups;
-    }
+	void setGroups(Set<GroupAgent> groups) {
+		this.groups = groups;
+	}
 
-    void setOnyen(String onyen) {
-	this.onyen = onyen;
-    }
+	void setOnyen(String onyen) {
+		this.onyen = onyen;
+	}
 }

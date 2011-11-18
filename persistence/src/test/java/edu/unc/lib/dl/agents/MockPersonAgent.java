@@ -19,10 +19,10 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public class MockPersonAgent extends PersonAgent {
-    public MockPersonAgent(String name, String onyen, PID pid) {
-	super(pid, name, onyen);
-    }
+	public MockPersonAgent(String name, String onyen, PID pid) {
+		super(pid, name, onyen);
+	}
 }

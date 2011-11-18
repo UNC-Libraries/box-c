@@ -23,9 +23,9 @@ import edu.unc.lib.dl.fedora.PID;
 /**
  * This submission package is composed of a single data file, plus MODS metadata. These submissions are normally
  * converted into a single Fedora object.
- *
+ * 
  * @author count0
- *
+ * 
  */
 public class SingleFileSIP implements SubmissionInformationPackage {
 	private boolean allowIndexing = true;
@@ -98,7 +98,7 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 
 	/**
 	 * Tells the repository whether or not to this object. (Default is yes)
-	 *
+	 * 
 	 * @param allowIndexing
 	 */
 	public void setAllowIndexing(boolean allowIndexing) {
@@ -107,7 +107,7 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 
 	/**
 	 * Set the path to the folder that will contain the entire submission.
-	 *
+	 * 
 	 * @param containerPath
 	 */
 	public void setContainerPID(PID containerPID) {
@@ -116,7 +116,7 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 
 	/**
 	 * Set the data file.
-	 *
+	 * 
 	 * @param data
 	 */
 	public void setData(File data) {
@@ -125,7 +125,7 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 
 	/**
 	 * Set the label for the data file, usually the original file name.
-	 *
+	 * 
 	 * @param fileLabel
 	 */
 	public void setFileLabel(String fileLabel) {
@@ -134,7 +134,7 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 
 	/**
 	 * Optional: set the checksum for the data file.
-	 *
+	 * 
 	 * @param md5checksum
 	 */
 	public void setMd5checksum(String md5checksum) {
@@ -143,7 +143,7 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 
 	/**
 	 * Set the IANA MIME-Type of the data file.
-	 *
+	 * 
 	 * @param mimeType
 	 */
 	public void setMimeType(String mimeType) {
@@ -152,7 +152,7 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 
 	/**
 	 * Set the MODS metadata file.
-	 *
+	 * 
 	 * @param modsXML
 	 */
 	public void setModsXML(File modsXML) {
@@ -161,7 +161,7 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 
 	/**
 	 * Set the owner of the submitted objects.
-	 *
+	 * 
 	 * @param owner
 	 */
 	public void setOwner(Agent owner) {

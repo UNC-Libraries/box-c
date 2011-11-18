@@ -32,15 +32,14 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * A set of functions that are useful for reading, interpreting and writing the container contents XML stream.
  * (MD_CONTENTS)
- *
+ * 
  * @author count0
- *
+ * 
  */
 public class ContainerContentsHelper {
 	private static final Log log = LogFactory.getLog(ContainerContentsHelper.class);
@@ -48,9 +47,9 @@ public class ContainerContentsHelper {
 	/**
 	 * Adds new children to the content index. If there is an order specified for a new child, then it will insert the
 	 * child at the specified position. Any existing children after the specified position will be shifted if neccessary.
-	 *
+	 * 
 	 * @param reordered
-	 *
+	 * 
 	 * @param oldContents
 	 *           bytes for the old XML CONTENTS stream
 	 * @param topPid
@@ -60,7 +59,7 @@ public class ContainerContentsHelper {
 	 * @throws JDOMException
 	 * @throws IOException
 	 */
-	public Document addChildContentAIPInCustomOrder(Document result, PID containerPID,
+	public static Document addChildContentAIPInCustomOrder(Document result, PID containerPID,
 			Collection<ContainerPlacement> placements, List<PID> reordered) {
 		log.debug("adding child content to MD_CONTENTS XML doc");
 
@@ -187,7 +186,7 @@ public class ContainerContentsHelper {
 		return result;
 	}
 
-	public Document remove(Document oldXML, PID pid) {
+	public static Document remove(Document oldXML, PID pid) {
 		Element parentDiv = oldXML.getRootElement().getChild("div", JDOMNamespaceUtil.METS_NS);
 		List<Element> childDivs = parentDiv.getChildren();
 		Element remove = null;
@@ -202,7 +201,7 @@ public class ContainerContentsHelper {
 		return oldXML;
 	}
 
-	private void replaceContent(Document result, SortedSet<String[]> records) {
+	private static void replaceContent(Document result, SortedSet<String[]> records) {
 		Element parentDiv = result.getRootElement().getChild("div", JDOMNamespaceUtil.METS_NS);
 		parentDiv.removeContent();
 		int ord = 1;
@@ -220,7 +219,7 @@ public class ContainerContentsHelper {
 	 * @param children
 	 * @return
 	 */
-	public Document addChildContentListInCustomOrder(Document oldXML, PID container, List<PID> children,
+	public static Document addChildContentListInCustomOrder(Document oldXML, PID container, List<PID> children,
 			Collection<PID> reorderedPids) {
 		log.debug("HERE incoming children:");
 		for (int i = 0; i < children.size(); i++) {

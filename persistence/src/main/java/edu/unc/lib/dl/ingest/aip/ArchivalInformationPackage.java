@@ -24,51 +24,50 @@ import org.jdom.Document;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.ContainerPlacement;
+import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 public interface ArchivalInformationPackage {
-	 public static final String DATA_SUBDIR = "data";
-    public void destroy();
+	public static final String DATA_SUBDIR = "data";
 
-    public PremisEventLogger getEventLogger();
+	public void delete();
 
-    public File getFileForUrl(String path);
+	public PremisEventLogger getEventLogger();
 
-    public Document getFOXMLDocument(PID pid);
+	public File getFileForUrl(String path);
 
-    public File getFOXMLFile(PID pid);
+	public Document getFOXMLDocument(PID pid);
 
-    public Set<PID> getPIDs();
+	public File getFOXMLFile(PID pid);
 
-    public File getTempFOXDir();
+	public Set<PID> getPIDs();
 
-    public Set<PID> getTopPIDs();
+	public File getTempFOXDir();
 
-    public void prepareIngest() throws IngestException;
+	public Set<PID> getTopPIDs();
 
-    public void saveFOXMLDocument(PID pid, Document doc);
+	public void prepareIngest() throws IngestException;
 
-    public void setTopPIDs(Set<PID> topPIDs);
+	public void saveFOXMLDocument(PID pid, Document doc);
 
-    public void setSendEmail(boolean sendEmail);
+	public void setTopPIDs(Set<PID> topPIDs);
 
-    public boolean getSendEmail();
+	public void setSendEmail(boolean sendEmail);
 
-    public void setEmailRecipients(List<URI> recipients);
+	public boolean getSendEmail();
 
-    public List<URI> getEmailRecipients();
+	public void setEmailRecipients(List<URI> recipients);
 
-    /**
-     * @param parentPath
-     * @param topPID
-     * @param designatedOrder
-     * @param sipOrder
-     */
-    public void setTopPIDPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder);
+	public List<URI> getEmailRecipients();
 
-    public ContainerPlacement getTopPIDPlacement(PID pid);
+	/**
+	 * @param parentPath
+	 * @param topPID
+	 * @param designatedOrder
+	 * @param sipOrder
+	 */
+	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder);
 
-    public void setDeleteFilesOnDestroy(boolean delete);
+	public ContainerPlacement getContainerPlacement(PID pid);
 
 }

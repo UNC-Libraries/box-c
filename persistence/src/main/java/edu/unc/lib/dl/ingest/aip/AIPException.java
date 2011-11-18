@@ -19,29 +19,29 @@ import org.jdom.Element;
 
 /**
  * Used for exceptional behavior that can be expected while trying to complete the AIP pipeline.
- *
+ * 
  * @author count0
- *
+ * 
  */
 public class AIPException extends Exception {
-    private static final long serialVersionUID = 8226934671033531955L;
+	private static final long serialVersionUID = 8226934671033531955L;
 
-    Element errorXML = null;
-    public String myMessage;
+	Element errorXML = null;
+	public String myMessage;
 
-    public AIPException(final String msg) {
-	super(msg);
-    }
+	public AIPException(final String msg) {
+		super(msg);
+	}
 
-    public AIPException(final String msg, final Throwable e) {
-	super(msg, e);
-    }
+	public AIPException(final String msg, final Throwable e) {
+		super(msg, e);
+	}
 
-    public Element getErrorXML() {
-	return this.errorXML;
-    }
+	public Element getErrorXML() {
+		return this.errorXML;
+	}
 
-    public void setErrorXML(Element errorXML) {
-	this.errorXML = errorXML;
-    }
+	public void setErrorXML(Element errorXML) {
+		this.errorXML = errorXML;
+	}
 }

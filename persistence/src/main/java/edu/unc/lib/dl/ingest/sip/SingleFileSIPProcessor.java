@@ -51,10 +51,10 @@ public class SingleFileSIPProcessor implements SIPProcessor {
 	private TripleStoreQueryService tripleStoreQueryService = null;
 
 	@Override
-	public ArchivalInformationPackage createAIP(SubmissionInformationPackage in, PremisEventLogger logger)
+	public ArchivalInformationPackage createAIP(SubmissionInformationPackage in)
 			throws IngestException {
 		SingleFileSIP sip = (SingleFileSIP) in;
-		AIPImpl aip = new AIPImpl(sip.getData(), logger);
+		AIPImpl aip = new AIPImpl(sip.getData());
 		sip.setDiscardFilesOnDestroy(false);
 
 		// CHECK FOR MISSING OR TRUNCATED SIP DATA
@@ -68,14 +68,13 @@ public class SingleFileSIPProcessor implements SIPProcessor {
 			throw new IngestException("MODS metadata file not found");
 		}
 
-		aip.setContainerContentModel(ContentModelHelper.Model.CONTAINER.name());
 		PID pid = this.getPidGenerator().getNextPID();
 
 		// place the object within a container path
 		Set<PID> topPIDs = new HashSet<PID>();
 		topPIDs.add(pid);
 		aip.setTopPIDs(topPIDs);
-		aip.setTopPIDPlacement(sip.getContainerPID(), pid, null, null);
+		aip.setContainerPlacement(sip.getContainerPID(), pid, null, null);
 
 		// create FOXML stub document
 		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(pid.getPid());

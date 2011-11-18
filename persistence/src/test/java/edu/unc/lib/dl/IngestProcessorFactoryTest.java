@@ -36,35 +36,35 @@ import edu.unc.lib.dl.ingest.sip.SIPProcessorFactory;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml", "/remotes-context-test.xml" })
 public class IngestProcessorFactoryTest extends Assert {
-    private static final Log log = LogFactory.getLog(IngestProcessorFactoryTest.class);
+	private static final Log log = LogFactory.getLog(IngestProcessorFactoryTest.class);
 
-    @Autowired
-    private SIPProcessorFactory sipProcessorFactory = null;
+	@Autowired
+	private SIPProcessorFactory sipProcessorFactory = null;
 
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @Test
-    public void testFindMETSPackageProcessor() {
-	try {
-	    File test = File.createTempFile("test", ".txt");
-	    METSPackageSIP foo = new METSPackageSIP(new PID("test:1"), test, null, false);
-	    this.getSipProcessorFactory().getSIPProcessor(foo);
-	} catch (IOException e) {
-	    log.debug(e);
-	    fail(e.getMessage());
-	} catch(IngestException e) {
-	    log.debug(e);
-	    fail(e.getMessage());
+	@Before
+	public void setUp() throws Exception {
 	}
-    }
 
-    public SIPProcessorFactory getSipProcessorFactory() {
-	return sipProcessorFactory;
-    }
+	@Test
+	public void testFindMETSPackageProcessor() {
+		try {
+			File test = File.createTempFile("test", ".txt");
+			METSPackageSIP foo = new METSPackageSIP(new PID("test:1"), test, null, false);
+			this.getSipProcessorFactory().getSIPProcessor(foo);
+		} catch (IOException e) {
+			log.debug(e);
+			fail(e.getMessage());
+		} catch (IngestException e) {
+			log.debug(e);
+			fail(e.getMessage());
+		}
+	}
 
-    public void setSipProcessorFactory(SIPProcessorFactory sipProcessorFactory) {
-	this.sipProcessorFactory = sipProcessorFactory;
-    }
+	public SIPProcessorFactory getSipProcessorFactory() {
+		return sipProcessorFactory;
+	}
+
+	public void setSipProcessorFactory(SIPProcessorFactory sipProcessorFactory) {
+		this.sipProcessorFactory = sipProcessorFactory;
+	}
 }
