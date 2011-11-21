@@ -74,7 +74,6 @@ public class ServicesThreadPoolExecutor extends ThreadPoolExecutor {
 	}
 
 	public void resume() {
-		this.
 		pauseLock.lock();
 		try {
 			isPaused = false;

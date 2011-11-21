@@ -48,14 +48,11 @@ public class ServicesConductorExceptionHandlingTest extends Assert{
 	private ImageEnhancement imageEnhancement;
 	private ServicesConductor servicesConductor;
 	private List<ObjectEnhancementService> services;
-	private Throwable silentThrowable;
 	
 	int numberTestMessages;
 	
 	@Before
 	public void setUp() throws Exception {
-		silentThrowable = mock(Throwable.class);
-		
 		techmd = mock(TechnicalMetadataEnhancementService.class);
 		thumb = mock(ThumbnailEnhancementService.class);
 		image = mock(ImageEnhancementService.class);

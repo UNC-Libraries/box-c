@@ -18,26 +18,18 @@ package edu.unc.lib.dl.cdr.services.processing;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
-import edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductorTest.IsMatchingPID;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
-import edu.unc.lib.dl.fedora.PID;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.*;
 
 public class MessageDirectorTest extends Assert {
