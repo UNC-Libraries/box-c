@@ -40,7 +40,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
+import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.DataResponse;
 import edu.unc.lib.dl.schema.DeleteObjectDAO;
@@ -63,7 +63,7 @@ public class AbstractItemListingController extends SimpleFormController {
 
 	private UiWebService uiWebService;
 	private FolderManager folderManager;
-	private AgentManager agentManager;
+	private AgentFactory agentManager;
 	private TripleStoreQueryService tripleStoreQueryService;
 	private String deleteObjectUrl;
 	private DigitalObjectManager digitalObjectManager;
@@ -257,11 +257,11 @@ public class AbstractItemListingController extends SimpleFormController {
 		this.folderManager = folderManager;
 	}
 
-	public AgentManager getAgentManager() {
+	public AgentFactory getAgentManager() {
 		return agentManager;
 	}
 
-	public void setAgentManager(AgentManager agentManager) {
+	public void setAgentManager(AgentFactory agentManager) {
 		this.agentManager = agentManager;
 	}
 

@@ -46,8 +46,6 @@ public interface ArchivalInformationPackage {
 
 	public Set<PID> getTopPIDs();
 
-	public void prepareIngest() throws IngestException;
-
 	public void saveFOXMLDocument(PID pid, Document doc);
 
 	public void setTopPIDs(Set<PID> topPIDs);
@@ -69,5 +67,12 @@ public interface ArchivalInformationPackage {
 	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder);
 
 	public ContainerPlacement getContainerPlacement(PID pid);
+
+	/**
+	 * @param message
+	 * @param submitter
+	 * @throws IngestException
+	 */
+	void prepareIngest(String message, String submitter) throws IngestException;
 
 }

@@ -15,13 +15,19 @@
  */
 package edu.unc.lib.dl.fedora;
 
-public class PID {
-    private static final String uriPrefix = "info:fedora/";
+import java.io.Serializable;
+
+public class PID implements Serializable {
+    /**
+	 *
+	 */
+	private static final long serialVersionUID = 6597515249960543107L;
+	private static final String uriPrefix = "info:fedora/";
     private String pid;
 
     /**
      * Construct an immutable digital object ID from a PID or a PID URI string.
-     * 
+     *
      * @param pid
      *                pid or pid URI string
      * @throws IllegalArgumentException

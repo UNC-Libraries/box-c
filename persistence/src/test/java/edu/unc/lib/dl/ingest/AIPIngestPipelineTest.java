@@ -46,7 +46,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
 import edu.unc.lib.dl.agents.MockPersonAgent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
@@ -55,6 +54,7 @@ import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
 import edu.unc.lib.dl.ingest.sip.SingleFolderSIP;
 import edu.unc.lib.dl.ingest.sip.SingleFolderSIPProcessor;
+import edu.unc.lib.dl.services.AgentManager;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -142,7 +142,7 @@ public class AIPIngestPipelineTest {
 
 		try {
 			aip = this.getAipIngestPipeline().processAIP(aip);
-			aip.prepareIngest();
+			aip.prepareIngest("this is a test", "testuser");
 		} catch (IngestException e) {
 			log.error("ingest exception during test", e);
 			fail("get exception processing AIP" + e.getMessage());
@@ -193,7 +193,7 @@ public class AIPIngestPipelineTest {
 			int count = aip.getPIDs().size();
 			assertTrue("There should be 13 PIDs in the resulting AIP, found " + count, count == 13);
 			aip = this.getAipIngestPipeline().processAIP(aip);
-			aip.prepareIngest();
+			aip.prepareIngest("this is a test", "testuser");
 			fail("Failed to throw an IngestException for the extrafiles.zip");
 		} catch (IngestException e) { // expected test path
 			// exercise the email code (via a mock in this spring config)
@@ -235,7 +235,7 @@ public class AIPIngestPipelineTest {
 
 		try {
 			aip = this.getAipIngestPipeline().processAIP(aip);
-			aip.prepareIngest();
+			aip.prepareIngest("this is a test", "testuser");
 		} catch (IngestException e) {
 			log.error("ingest exception during test", e);
 			Element error = e.getErrorXML();
@@ -287,7 +287,7 @@ public class AIPIngestPipelineTest {
 
 		try {
 			aip = this.getAipIngestPipeline().processAIP(aip);
-			aip.prepareIngest();
+			aip.prepareIngest("this is a test", "testuser");
 		} catch (IngestException e) {
 			log.error("ingest exception during test", e);
 			fail("get exception processing AIP" + e.getMessage());

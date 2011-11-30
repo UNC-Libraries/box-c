@@ -140,7 +140,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			aip = this.getAipIngestPipeline().processAIP(aip);
 
 			// persist the AIP to disk
-			aip.prepareIngest();
+			aip.prepareIngest(message, user.getName());
 
 			// move the AIP into the ingest queue.
 			this.getBatchIngestService().queueBatch(aip.getTempFOXDir());
@@ -156,77 +156,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		if (!this.available) {
 			throw new IngestException(this.availableMessage + "  \nContact repository staff for assistance.");
 		}
-	}
-
-	/**
-	 * Updates the RELS-EXT contains relationships and the MD_CONTENTS datastream. Call this method last, after all other
-	 * transactions, it will roll itself back on failure and throw an IngestException.
-	 *
-	 * @param submitter
-	 *           the Agent that submitted this change
-	 * @param placements
-	 *           the container locations of new pids
-	 * @param container
-	 *           the container added to
-	 * @return the list of PIDs reordered by this change
-	 * @throws FedoraException
-	 */
-	public List<PID> addContainerContents(Agent submitter, Collection<ContainerPlacement> placements, PID container)
-			throws FedoraException {
-		DateTime time = new DateTime();
-		List<PID> reordered = new ArrayList<PID>();
-
-		// beginning of container meddling
-		// TODO do this in 1 RELS-EXT edit
-		for (ContainerPlacement p : placements) {
-			if (container.equals(p.parentPID)) {
-				this.getManagementClient().addObjectRelationship(container,
-						ContentModelHelper.Relationship.contains.getURI().toString(), p.pid);
-			}
-		}
-		List<URI> cmtypes = this.getTripleStoreQueryService().lookupContentModels(container);
-		if (cmtypes.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
-			// edit Contents XML of parent container to append/insert
-			Document newXML;
-			Document oldXML;
-			boolean exists = true;
-			try {
-				MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(container, "MD_CONTENTS", null);
-				ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
-				try {
-					oldXML = new SAXBuilder().build(bais);
-					bais.close();
-				} catch (JDOMException e) {
-					throw new IllegalRepositoryStateException("Cannot parse MD_CONTENTS: " + container);
-				} catch (IOException e) {
-					throw new Error(e);
-				}
-			} catch (NotFoundException e) {
-				oldXML = new Document();
-				Element structMap = new Element("structMap", JDOMNamespaceUtil.METS_NS).addContent(new Element("div",
-						JDOMNamespaceUtil.METS_NS).setAttribute("TYPE", "Container"));
-				oldXML.setRootElement(structMap);
-				exists = false;
-			}
-			// this.getTripleStoreQueryService()..fetchByPredicateAndLiteral(ContentModelHelper.CDRProperty.sortOrder,
-			// literal)
-			newXML = ContainerContentsHelper.addChildContentAIPInCustomOrder(oldXML, container, placements, reordered);
-			if (exists) {
-				this.getManagementClient().modifyInlineXMLDatastream(container, "MD_CONTENTS", false,
-						"adding child resource to container", new ArrayList<String>(), "List of Contents", newXML);
-			} else {
-				this.getManagementClient().addInlineXMLDatastream(container, "MD_CONTENTS", false,
-						"added child resource to container", new ArrayList<String>(), "List of Contents", false, newXML);
-			}
-		}
-
-		// LOG CHANGES TO THE CONTAINER
-		int children = placements.size();
-		PremisEventLogger logger = new PremisEventLogger(submitter);
-		logger.logEvent(PremisEventLogger.Type.INGESTION, "added " + children + " child object(s) to this container",
-				container);
-		writePremisEventsToFedoraObject(logger, container);
-		return reordered;
 	}
 
 	/**
@@ -917,25 +846,25 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			SIPProcessor processor = this.getSipProcessorFactory().getSIPProcessor(sip);
 
 			// process the SIP into a standard AIP
-			// aip = processor.createAIP(sip);
+			aip = processor.createAIP(sip);
 
 			// run routine AIP processing steps
 			aip = this.getAipIngestPipeline().processAIP(aip);
 
 			// persist the AIP to disk
-			aip.prepareIngest();
+			aip.prepareIngest(message, user.getName());
 
 			// move the AIP into the ingest queue.
-			// TODO Run an ingest task
-			// aip.enqueue();
+			// run ingest task immediately and wait for it.
+			this.getBatchIngestService().ingestBatchNow(aip.getTempFOXDir());
+
+			// return the newly minted pid
+			return aip.getPIDs().iterator().next();
 		} catch (IngestException e) {
 			// exception on AIP preparation, no transaction started
 			log.info("User level exception on ingest, prior to Fedora transaction", e);
 			throw e;
 		}
-		// TODO run ingest task immediately and wait for it.
-		// TODO return the newly minted pid
-		return null;
 	}
 
 	public BatchIngestService getBatchIngestService() {

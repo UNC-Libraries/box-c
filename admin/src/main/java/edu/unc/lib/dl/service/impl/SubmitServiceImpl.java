@@ -28,7 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
+import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
@@ -50,7 +50,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  */
 public class SubmitServiceImpl implements SubmitService {
 	protected final Log logger = LogFactory.getLog(getClass());
-	private AgentManager agentManager;
+	private AgentFactory agentManager;
 	private DigitalObjectManager digitalObjectManager;
 	private TripleStoreQueryService tripleStoreQueryService;
 
@@ -132,11 +132,11 @@ public class SubmitServiceImpl implements SubmitService {
 		}
 	}
 
-	public AgentManager getAgentManager() {
+	public AgentFactory getAgentManager() {
 		return agentManager;
 	}
 
-	public void setAgentManager(AgentManager agentManager) {
+	public void setAgentManager(AgentFactory agentManager) {
 		this.agentManager = agentManager;
 	}
 
@@ -182,11 +182,6 @@ public class SubmitServiceImpl implements SubmitService {
 
 			e.printStackTrace();
 
-			return request;
-		} catch (NotFoundException e) {
-			request.setMessage(Constants.FAILURE);
-
-			e.printStackTrace();
 			return request;
 		} catch (IngestException e) {
 			request.setMessage(Constants.FAILURE);
@@ -236,8 +231,6 @@ public class SubmitServiceImpl implements SubmitService {
 
     			digitalObjectManager.addBatch(sip, agent, "Added through UI");
     		} catch (IOException e) {
-    			e.printStackTrace();
-    		} catch (NotFoundException e) {
     			e.printStackTrace();
     		} catch (IngestException e) {
     			e.printStackTrace();
@@ -292,8 +285,6 @@ public class SubmitServiceImpl implements SubmitService {
     			sip.setOwner(owner);
 
     			digitalObjectManager.addBatch(sip, agent, "Added through UI");
-    		} catch (NotFoundException e) {
-    			e.printStackTrace();
     		} catch (IngestException e) {
     			e.printStackTrace();
     		} catch (Exception e) {

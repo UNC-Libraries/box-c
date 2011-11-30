@@ -64,34 +64,25 @@
 		<property name="sipProcessorFactory" ref="sipProcessorFactory"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="schematronValidator" ref="schematronValidator"/>
-		<property name="batchIngestService" ref="batchIngestService"/>
+		<property name="batchIngestService" ref="batchIngestServiceMock"/>
 		<property name="available" value="true"/>
 	</bean>
 
-  <bean id="batchIngestService" class="org.mockito.Mockito" factory-method="mock">
-		  	<constructor-arg index="0" value="edu.unc.lib.dl.services.BatchIngestService"/>		
-<!-- 		<constructor-arg index="0">
-			<bean factory-bean="batchIngestServiceClass" factory-method="cast">
-		  	<constructor-arg index="0" ref="realBatchIngestService"/>		  
-			</bean>
-		</constructor-arg> -->
-	</bean>
-	
-<!-- 	<bean id="batchIngestServiceClass" class="java.lang.Class" factory-method="forName">
-	  <constructor-arg index="0" value="edu.unc.lib.dl.services.BatchIngestService"/>
+  <bean id="batchIngestServiceMock" class="org.mockito.Mockito" factory-method="mock">
+		  	<constructor-arg index="0" value="edu.unc.lib.dl.services.BatchIngestService"/>
 	</bean>
 	
 	<bean id="realBatchIngestService" class="edu.unc.lib.dl.services.BatchIngestServiceImpl" init-method="init">
 	  <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
 		<lookup-method name="createTask" bean="batchIngestTask"/>
-	</bean> -->
+	</bean>
 	
 	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">
 		<property name="managementClient" ref="managementClient"/>
+		<property name="accessClient" ref="accessClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
-		<property name="digitalObjectManager" ref="digitalObjectManager"/>
-		<property name="agentManager" ref="agentManager"/>
+		<property name="agentFactory" ref="agentManager"/>
 		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
 	</bean>
@@ -193,7 +184,7 @@
 		<property name="initialBatchIngestDir" value="${initial.batch.ingest.dir}"/>
 	</bean>
 
-	<bean name="agentManager" class="edu.unc.lib.dl.agents.AgentManager">
+	<bean name="agentManager" class="edu.unc.lib.dl.services.AgentManager">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 	</bean>

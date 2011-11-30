@@ -36,13 +36,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
 import edu.unc.lib.dl.ingest.sip.InvalidMETSException;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
+import edu.unc.lib.dl.services.AgentManager;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 @RunWith(SpringJUnit4ClassRunner.class)

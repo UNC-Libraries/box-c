@@ -23,7 +23,7 @@ import java.util.Calendar;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
-import edu.unc.lib.dl.agents.AgentManager;
+import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.services.FolderManager;
 import edu.unc.lib.dl.ui.util.UiUtilityMethods;
 import edu.unc.lib.dl.ui.ws.UiWebService;
@@ -32,7 +32,7 @@ public abstract class AbstractFileUploadController extends SimpleFormController 
 
 	protected UiWebService uiWebService;
 	protected FolderManager folderManager;
-	protected AgentManager agentManager;
+	protected AgentFactory agentManager;
 	protected UiUtilityMethods uiUtilityMethods;
 
 	protected String writeFile(MultipartFile file, String extension) {
@@ -74,11 +74,11 @@ public abstract class AbstractFileUploadController extends SimpleFormController 
 		this.folderManager = folderManager;
 	}
 
-	public AgentManager getAgentManager() {
+	public AgentFactory getAgentManager() {
 		return agentManager;
 	}
 
-	public void setAgentManager(AgentManager agentManager) {
+	public void setAgentManager(AgentFactory agentManager) {
 		this.agentManager = agentManager;
 	}
 

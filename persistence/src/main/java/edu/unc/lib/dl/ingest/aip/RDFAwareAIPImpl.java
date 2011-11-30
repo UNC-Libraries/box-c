@@ -176,9 +176,6 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 
 	@Override
 	public void delete() {
-		// cleanup graph, etc.
-		this.graph.close();
-		this.graph = null;
 		this.baseAIP.delete();
 	}
 
@@ -287,10 +284,10 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 	 * @see edu.unc.lib.dl.ingest.ReportingIngestBundle#prepareIngest()
 	 */
 	@Override
-	public void prepareIngest() throws IngestException {
+	public void prepareIngest(String message, String submitter) throws IngestException {
 		log.debug("RDFIngestContext preparing for ingest");
 		commitGraphChanges();
-		this.baseAIP.prepareIngest();
+		this.baseAIP.prepareIngest(message, submitter);
 	}
 
 	public void printGraph() {
@@ -498,5 +495,15 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 	@Override
 	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder) {
 		this.baseAIP.setContainerPlacement(parentPID, topPID, designatedOrder, sipOrder);
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		// cleanup graph, etc.
+		if (this.graph != null) {
+			this.graph.close();
+			this.graph = null;
+		}
 	}
 }

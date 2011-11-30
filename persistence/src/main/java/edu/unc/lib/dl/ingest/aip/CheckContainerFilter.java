@@ -29,14 +29,14 @@ public class CheckContainerFilter implements AIPIngestFilter {
 	public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException {
 		StringBuffer unknownPaths = new StringBuffer();
 		for (PID topPID : aip.getTopPIDs()) {
-			PID container = aip.getContainerPlacement(topPID).parentPID;
-			PID verifiedContainer = this.getTripleStoreQueryService().verify(container);
+			PID containerPID = aip.getContainerPlacement(topPID).parentPID;
+			PID verifiedContainer = this.getTripleStoreQueryService().verify(containerPID);
 			if (verifiedContainer == null) {
-				unknownPaths.append("\t").append(container);
+				unknownPaths.append("\t").append(containerPID);
 			} else {
-				List<URI> containerModels = this.getTripleStoreQueryService().lookupContentModels(container);
+				List<URI> containerModels = this.getTripleStoreQueryService().lookupContentModels(containerPID);
 				if (containerModels == null || !containerModels.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
-					throw new AIPException("Object specified as the container for this SIP is not a Container:" + container);
+					throw new AIPException("Object specified as the container for this SIP is not a Container:" + containerPID);
 				}
 			}
 		}

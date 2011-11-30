@@ -78,10 +78,17 @@ public class IngestProperties {
 			String key = (String) e.getKey();
 			if (key.startsWith("placement")) {
 				String s = (String) e.getValue();
-				ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(s.getBytes()));
-				ContainerPlacement p = (ContainerPlacement) is.readObject();
+				String[] vals = s.split(",");
+				ContainerPlacement p = new ContainerPlacement();
+				p.pid = new PID(vals[0]);
+				p.parentPID = new PID(vals[1]);
+				if(vals[2] != null && !"null".equals(vals[2])) {
+					p.designatedOrder = Integer.parseInt(vals[2]);
+				}
+				if(vals[3] != null && !"null".equals(vals[3])) {
+					p.sipOrder = Integer.parseInt(vals[3]);
+				}
 				this.containerPlacements.put(p.pid, p);
-				is.close();
 			}
 		}
 	}
@@ -106,17 +113,11 @@ public class IngestProperties {
 		if (this.containerPlacements != null && this.containerPlacements.size() > 0) {
 			int count = 0;
 			for (ContainerPlacement p : this.containerPlacements.values()) {
-				ByteArrayOutputStream ba = new ByteArrayOutputStream();
-				try {
-					ObjectOutputStream os = new ObjectOutputStream(ba);
-					os.writeObject(p);
-					os.flush();
-					os.close();
-					props.put("placement." + count, ba.toString());
-					count++;
-				} catch (IOException e) {
-					throw new Error("Unexpected exception", e);
-				}
+				StringBuilder sb = new StringBuilder();
+				sb.append(p.pid).append(',').append(p.parentPID).append(',').append(p.designatedOrder).append(',')
+						.append(p.sipOrder);
+				props.put("placement." + count, sb.toString());
+				count++;
 			}
 		}
 		try {

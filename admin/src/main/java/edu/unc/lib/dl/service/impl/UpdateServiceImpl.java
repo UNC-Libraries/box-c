@@ -25,7 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
+import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
@@ -41,7 +41,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class UpdateServiceImpl implements UpdateService {
 	protected final Log logger = LogFactory.getLog(getClass());
-	private AgentManager agentManager;
+	private AgentFactory agentManager;
 	private DigitalObjectManager digitalObjectManager;
 	private TripleStoreQueryService tripleStoreQueryService;
 
@@ -107,11 +107,6 @@ public class UpdateServiceImpl implements UpdateService {
 			e.printStackTrace();
 
 			return request;
-		} catch (NotFoundException e) {
-			request.setMessage(Constants.FAILURE);
-
-			e.printStackTrace();
-			return request;
 		} catch (IngestException e) {
 			request.setMessage(Constants.FAILURE);
 
@@ -154,11 +149,11 @@ public class UpdateServiceImpl implements UpdateService {
 		return true;
 	}
 
-	public AgentManager getAgentManager() {
+	public AgentFactory getAgentManager() {
 		return agentManager;
 	}
 
-	public void setAgentManager(AgentManager agentManager) {
+	public void setAgentManager(AgentFactory agentManager) {
 		this.agentManager = agentManager;
 	}
 
@@ -183,6 +178,7 @@ public class UpdateServiceImpl implements UpdateService {
 	class MoveObjectThread extends Thread {
 		MoveObjectRequest moveObjectRequest;
 
+		@Override
 		public void run() {
 			try {
 

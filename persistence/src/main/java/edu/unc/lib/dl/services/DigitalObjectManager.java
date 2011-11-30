@@ -37,7 +37,7 @@ public interface DigitalObjectManager {
 	 * conflict with existing objects. This method will ingest files and objects in batches appropriate to the underlying
 	 * architecture. The entire method is implemented as a single transaction and will send an email to specified
 	 * recipients. This method also updates the parent folder object in the repository.
-	 * 
+	 *
 	 * @param containerPath
 	 *           a path to the folder which will hold this object
 	 * @param sip
@@ -54,7 +54,7 @@ public interface DigitalObjectManager {
 
 	/**
 	 * Adds a relationship between two repository objects.
-	 * 
+	 *
 	 * @param subject
 	 *           the subject PID
 	 * @param rel
@@ -70,7 +70,7 @@ public interface DigitalObjectManager {
 
 	/**
 	 * Completely removes the specified objects and any children. Updates containing objects to remove any references.
-	 * 
+	 *
 	 * @param pids
 	 *           the PIDs of the objects to purge
 	 * @param message
@@ -82,7 +82,7 @@ public interface DigitalObjectManager {
 	/**
 	 * Inactivates (remove without purge) the specified object and updates any ancillary services. If a container is
 	 * specified, then all its parts will also be made inactive.
-	 * 
+	 *
 	 * @param pids
 	 *           the PIDs of the objects to inactive
 	 */
@@ -90,7 +90,7 @@ public interface DigitalObjectManager {
 
 	/**
 	 * Removes a relationship between two repository objects
-	 * 
+	 *
 	 * @param subject
 	 *           the subject PID
 	 * @param rel
@@ -107,7 +107,7 @@ public interface DigitalObjectManager {
 	/**
 	 * Updates the specified source datastream on an object with appropriate additions to preservation logs. Note that
 	 * this method will only update user supplied datastreams. For updates to MD_DESCRIPTIVE, see updateDescription.
-	 * 
+	 *
 	 * @param pid
 	 *           PID of the object to update
 	 * @param datastreamName
@@ -123,7 +123,7 @@ public interface DigitalObjectManager {
 	/**
 	 * Updates the descriptive metadata for an object. The supplied file must be valid MODS XML and conform with
 	 * additional CDR MODS requirements.
-	 * 
+	 *
 	 * @param pid
 	 *           PID of the object to update
 	 * @param newMODSFile
@@ -142,7 +142,7 @@ public interface DigitalObjectManager {
 	 * correspond to a object having the Container model. Note that the List may include PIDs from a variety of different
 	 * containers. The items in the List are inserted among children in the new parent according to their index within
 	 * the List, unless some other sort is specified on the parent.
-	 * 
+	 *
 	 * @param movingPids
 	 *           a List of PIDs to move, in order for insert
 	 * @param destinationPath
@@ -160,7 +160,7 @@ public interface DigitalObjectManager {
 
 	/**
 	 * Adds a single object to the repository, without waiting in the queue. This method does not send email.
-	 * 
+	 *
 	 * @param sip
 	 *           a SingleFileSIP, SingleFolderSIP, MultiFileObjectSIP or AgentSIP
 	 * @param user
@@ -171,14 +171,5 @@ public interface DigitalObjectManager {
 	 */
 	public abstract PID addSingleObject(SubmissionInformationPackage sip, Agent user, String message)
 			throws IngestException;
-
-	/**
-	 * @param submitterAgent
-	 * @param values
-	 * @param pid
-	 * @return
-	 */
-	public abstract List<PID> addContainerContents(Agent submitterAgent, Collection<ContainerPlacement> values, PID pid)
-			throws FedoraException;
 
 }

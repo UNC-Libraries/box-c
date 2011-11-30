@@ -25,10 +25,6 @@ import edu.unc.lib.dl.ingest.IngestException;
  */
 public interface BatchIngestService {
 
-	public abstract void pauseQueue();
-
-	public abstract void resumeQueue();
-
 	/**
 	 * Adds a prepared batch ingest to the queue. The directory and all files will be renamed to a new location, managed
 	 * by this service.
@@ -45,5 +41,13 @@ public interface BatchIngestService {
 	 * @throws IngestException
 	 */
 	public abstract void ingestBatchNow(File prepDir) throws IngestException;
+
+	public abstract void startQueue();
+
+	public abstract void waitUntilActive();
+
+	public abstract void waitUntilIdle();
+
+	public abstract void pauseQueue();
 
 }

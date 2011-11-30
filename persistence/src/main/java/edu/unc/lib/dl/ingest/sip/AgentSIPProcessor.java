@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
 import edu.unc.lib.dl.agents.GroupAgent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.agents.SoftwareAgent;
@@ -36,6 +35,7 @@ import edu.unc.lib.dl.ingest.aip.AIPImpl;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.ingest.aip.RDFAwareAIPImpl;
 import edu.unc.lib.dl.pidgen.PIDGenerator;
+import edu.unc.lib.dl.services.AgentManager;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
 import edu.unc.lib.dl.util.PathUtil;

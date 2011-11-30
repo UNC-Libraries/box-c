@@ -24,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 
-import edu.unc.lib.dl.agents.AgentManager;
 import edu.unc.lib.dl.agents.GroupAgent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.agents.SoftwareAgent;

@@ -30,7 +30,6 @@ import org.jdom.Namespace;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.aip.AIPException;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -45,7 +44,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  */
 /**
  * @author Gregory Jansen
- * 
+ *
  */
 public class PremisEventLogger {
 	public static final String PID_TYPE = "PID";
@@ -109,7 +108,7 @@ public class PremisEventLogger {
 
 	/**
 	 * Creates a PREMIS Event Logger.
-	 * 
+	 *
 	 * @param agent
 	 *           the default initiator of events
 	 */
@@ -119,7 +118,7 @@ public class PremisEventLogger {
 
 	/**
 	 * Logs an event, adding supplied XML to an event outcome detail note.
-	 * 
+	 *
 	 * @param type
 	 *           the type of event
 	 * @param message
@@ -163,7 +162,7 @@ public class PremisEventLogger {
 
 	/**
 	 * Appends events for the specified PID to the events Document.
-	 * 
+	 *
 	 * @param pid
 	 *           the PID of the object
 	 * @param oldXML
@@ -185,7 +184,7 @@ public class PremisEventLogger {
 
 	/**
 	 * Compile a PREMIS XML report of all events logged to this logger.
-	 * 
+	 *
 	 * @return PREMIS events JDOM Element
 	 */
 	public Element getAllEvents() {
@@ -208,7 +207,7 @@ public class PremisEventLogger {
 
 	/**
 	 * Compile a PREMIS XML report of all events logged for the object.
-	 * 
+	 *
 	 * @param pid
 	 *           the object pid
 	 * @return PREMIS events JDOM Element
@@ -219,7 +218,7 @@ public class PremisEventLogger {
 
 	/**
 	 * Creates a basic PREMIS Object record for the event log.
-	 * 
+	 *
 	 * @param pid
 	 *           the PID
 	 * @return object Element
@@ -336,8 +335,8 @@ public class PremisEventLogger {
 
 		// create event detail note if applicable
 		Element detailExtension = null;
-		if (e instanceof AIPException) {
-			AIPException ie = (AIPException) e;
+		if (e instanceof XMLAttachedException) {
+			XMLAttachedException ie = (XMLAttachedException) e;
 			detailExtension = ie.getErrorXML();
 		}
 

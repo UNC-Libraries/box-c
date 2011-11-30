@@ -32,11 +32,12 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
-import edu.unc.lib.dl.agents.AgentManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.services.AgentManager;
 import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.FileUtils;
+import edu.unc.lib.dl.util.IngestProperties;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 /**
@@ -147,8 +148,23 @@ public class AIPImpl implements ArchivalInformationPackage {
 	}
 
 	@Override
-	public void prepareIngest() throws IngestException {
-		// nothing to do
+	public void prepareIngest(String message, String submitter) throws IngestException {
+		// write ingest properties
+		try {
+			IngestProperties props = new IngestProperties(this.prepDir);
+			List<String> recipients = new ArrayList<String>();
+			for(URI r : this.emailRecipients) {
+				recipients.add(r.toString());
+			}
+			props.setEmailRecipients(recipients.toArray(new String[1]));
+			props.setContainerPlacements(topPID2Placement);
+			props.setMessage(message);
+			props.setSubmitter(submitter);
+			props.save();
+		} catch (Exception e) {
+			throw new IngestException("Cannot create ingest properties.", e);
+		}
+
 	}
 
 	public void saveFOXMLDocument(PID pid, Document doc) {
@@ -157,7 +173,9 @@ public class AIPImpl implements ArchivalInformationPackage {
 		try {
 			File out = this.getFOXMLFile(pid);
 			if (out == null) {
-				out = File.createTempFile("foxml", ".xml", this.prepDir);
+				out = File.createTempFile("foxml", ".foxml", this.prepDir);
+				out.delete();
+				out = new File(this.prepDir, out.getName());
 				this.setFOXMLFile(pid, out);
 			}
 			fw = new FileWriter(out);

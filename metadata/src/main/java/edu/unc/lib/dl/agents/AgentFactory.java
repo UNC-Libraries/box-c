@@ -1,11 +1,11 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2011 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,25 +17,20 @@ package edu.unc.lib.dl.agents;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.sip.AgentSIP;
-import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
-public class AgentManager {
-	private static final Log log = LogFactory.getLog(AgentManager.class);
+/**
+ * @author Gregory Jansen
+ *
+ */
+public class AgentFactory {
 
 	public static GroupAgent getAdministrativeGroupAgentStub() {
 		GroupAgent result = new GroupAgent("Administrator Group");
@@ -50,176 +45,13 @@ public class AgentManager {
 		return result;
 	}
 
-	private DigitalObjectManager digitalObjectManager = null;
-
 	private TripleStoreQueryService tripleStoreQueryService = null;
 
 	/**
-	 * This add a person agent object to Fedora and returning the new PersonAgent.
-	 * 
-	 * @param name
-	 *           name of the person
-	 * @param apim
-	 *           fedora mgt. client
-	 * @return a person agent
-	 * @throws IngestException
+	 *
 	 */
-	public GroupAgent addGroupAgent(GroupAgent group, Agent user, String message) throws IngestException {
-		AgentSIP sip = new AgentSIP();
-
-		// check for duplicates by name
-		try {
-			GroupAgent conflict = this.findGroupByName(group.getName(), false);
-			throw new IngestException("A group named '" + group.getName() + "' already exists: " + conflict.getPID());
-		} catch (NotFoundException expected) {
-			// this exception is expected, if there are no duplicates we
-			// proceed.
-		}
-
-		List<Agent> addlist = new ArrayList<Agent>();
-		addlist.add(group);
-		sip.setAgents(addlist);
-
-		PID resp = this.getDigitalObjectManager().addSingleObject(sip, user, message);
-		log.debug("response is:" + resp);
-		return this.getGroupAgents(Collections.singletonList(resp), false).get(0);
-	}
-
-	/**
-	 * Adds a member to a group.
-	 * 
-	 * @param group
-	 *           the GroupAgent
-	 * @param member
-	 *           the member PersonAgent
-	 * @throws NotFoundException
-	 *            if either object are not found in the repository
-	 */
-	public void addMembership(GroupAgent group, PersonAgent member, Agent user) throws NotFoundException,
-			IngestException {
-		this.getDigitalObjectManager().addRelationship(group.getPID(), ContentModelHelper.Relationship.member,
-				member.getPID());
-	}
-
-	/**
-	 * This add a person agent object to Fedora and returning the new PersonAgent.
-	 * 
-	 * @param name
-	 *           name of the person
-	 * @param apim
-	 *           fedora mgt. client
-	 * @return a person agent
-	 * @throws IngestException
-	 */
-	public PersonAgent addPersonAgent(PersonAgent person, Agent user, String message) throws IngestException {
-		AgentSIP sip = new AgentSIP();
-
-		// check for duplicates by name
-		PersonAgent conflict = null;
-		try {
-			conflict = this.findPersonByName(person.getName(), false);
-		} catch (NotFoundException expected) {
-		}
-		if (conflict != null) {
-			throw new IngestException("A person named '" + person.getName() + "' already exists: " + conflict.getPID());
-		}
-
-		// check for duplicates by onyen
-		conflict = null;
-		try {
-			conflict = this.findPersonByOnyen(person.getOnyen(), false);
-		} catch (NotFoundException expected) {
-		}
-		if (conflict != null) {
-			throw new IngestException("A person with the Onyen '" + person.getOnyen() + "' already exists: "
-					+ conflict.getOnyen() + ", " + conflict.getPID());
-		}
-
-		List<Agent> addlist = new ArrayList<Agent>();
-		addlist.add(person);
-		sip.setAgents(addlist);
-
-		PID resp = this.getDigitalObjectManager().addSingleObject(sip, user, message);
-		log.debug("response is:" + resp);
-		return this.getPersonAgents(Collections.singletonList(resp), false).get(0);
-	}
-
-	/**
-	 * This add a person agent object to Fedora and returning the new PersonAgent.
-	 * 
-	 * @param name
-	 *           name of the person
-	 * @param apim
-	 *           fedora mgt. client
-	 * @return a person agent
-	 * @throws IngestException
-	 */
-	public SoftwareAgent addSoftwareAgent(SoftwareAgent software, Agent user, String message) throws IngestException {
-		AgentSIP sip = new AgentSIP();
-
-		// check for duplicates by name
-		try {
-			SoftwareAgent conflict = this.findSoftwareByName(software.getName());
-			throw new IngestException("A software agent named '" + software.getName() + "' already exists: "
-					+ conflict.getPID());
-		} catch (NotFoundException expected) {
-			// this exception is expected, if there are no duplicates we
-			// proceed.
-		}
-
-		List<Agent> addlist = new ArrayList<Agent>();
-		addlist.add(software);
-		sip.setAgents(addlist);
-
-		PID resp = this.getDigitalObjectManager().addSingleObject(sip, user, message);
-		log.debug("response is:" + resp);
-		return this.getSoftwareAgents(Collections.singletonList(resp)).get(0);
-	}
-
-	public void deleteAgent(Agent agent, Agent user) throws IngestException, NotFoundException {
-		// if they own *anything* then throw exception
-		ArrayList<PID> pids = new ArrayList<PID>();
-		pids.add(agent.getPID());
-		if (agent instanceof PersonAgent) {
-			// make sure we can find the agent
-			List<PersonAgent> peopleList = this.getPersonAgents(pids, true);
-			if (peopleList.size() < 1) {
-				throw new NotFoundException("Cannot find the object to delete: " + agent.getPID());
-			}
-			// remove memberships
-			// PersonAgent person = peopleList.get(0);
-			// for (GroupAgent group : person.getGroups()) {
-			// try {
-			// this.removeMembership(group, person, user);
-			// } catch (NotFoundException e) {
-			// log.error("Unexpected error finding known group membership.", e);
-			// throw new Error("Unexpected error finding known group
-			// membership.", e);
-			// }
-			// }
-			// } else if (agent instanceof SoftwareAgent) {
-			// make sure we can find the agent
-			// remove any rels??
-		} else if (agent instanceof GroupAgent) {
-			// make sure we can find the agent
-			List<GroupAgent> groups = this.getGroupAgents(pids, false);
-			if (groups.size() < 1) {
-				throw new NotFoundException("Cannot find the group to delete: " + agent.getPID());
-			}
-			// remove any rels??
-		} else if (agent instanceof SoftwareAgent) {
-			// make sure we can find the agent
-			List<SoftwareAgent> groups = this.getSoftwareAgents(pids);
-			if (groups.size() < 1) {
-				throw new NotFoundException("Cannot find the software agent to delete: " + agent.getPID());
-			}
-			// remove any rels??
-		} else {
-			throw new UnsupportedOperationException("Don't know how to delete that kind of agent:" + agent.getName() + " "
-					+ agent.getPID());
-		}
-		this.getDigitalObjectManager().delete(agent.getPID(), AgentManager.getAdministrativeGroupAgentStub(),
-				"Deleting agent through AgentManager");
+	public AgentFactory() {
+		super();
 	}
 
 	private List<GroupAgent> findGroupAgents(String whereClause, boolean loadMembership) {
@@ -248,13 +80,13 @@ public class AgentManager {
 		return result;
 	}
 
-	public GroupAgent findGroupByName(String name, boolean loadMembership) throws NotFoundException {
+	public GroupAgent findGroupByName(String name, boolean loadMembership) {
 		String whereClause = String.format(" $pid <%1$s> '%2$s' ", ContentModelHelper.FedoraProperty.label, name);
 		List<GroupAgent> resp = this.findGroupAgents(whereClause, loadMembership);
 		if (resp.size() > 1) {
 			throw new IllegalRepositoryStateException("There cannot be more than one group with the same name.");
 		} else if (resp.size() == 0) {
-			throw new NotFoundException("No group found by the name: " + name);
+			return null;
 		} else {
 			return resp.get(0);
 		}
@@ -293,11 +125,11 @@ public class AgentManager {
 		return result;
 	}
 
-	public PersonAgent findPersonByName(String name, boolean loadGroupMembership) throws NotFoundException {
+	public PersonAgent findPersonByName(String name, boolean loadGroupMembership) {
 		String whereClause = String.format(" $pid <%1$s> '%2$s' ", ContentModelHelper.FedoraProperty.label, name);
 		List<PersonAgent> resp = this.findPersonAgents(whereClause, loadGroupMembership);
 		if (resp == null || resp.size() == 0) {
-			throw new NotFoundException("No person found by the name: " + name);
+			return null;
 		} else if (resp.size() > 1) {
 			throw new IllegalRepositoryStateException("There cannot be more than one person with the same name.");
 		} else {
@@ -305,11 +137,11 @@ public class AgentManager {
 		}
 	}
 
-	public PersonAgent findPersonByOnyen(String onyen, boolean loadGroupMembership) throws NotFoundException {
+	public PersonAgent findPersonByOnyen(String onyen, boolean loadGroupMembership) {
 		String whereClause = String.format(" $pid <%1$s> '%2$s' ", ContentModelHelper.CDRProperty.onyen, onyen);
 		List<PersonAgent> resp = this.findPersonAgents(whereClause, loadGroupMembership);
 		if (resp == null || resp.size() == 0) {
-			throw new NotFoundException("No person found with the onyen: " + onyen);
+			return null;
 		} else if (resp.size() > 1) {
 			throw new IllegalRepositoryStateException("There cannot be more than one person with the same onyen.");
 		} else {
@@ -338,19 +170,19 @@ public class AgentManager {
 		return result;
 	}
 
-	public SoftwareAgent findSoftwareByName(String name) throws NotFoundException {
+	public SoftwareAgent findSoftwareByName(String name) {
 		String whereClause = String.format(" $pid <%1$s> '%2$s' ", ContentModelHelper.FedoraProperty.label, name);
 		List<SoftwareAgent> resp = this.findSoftwareAgents(whereClause);
 		if (resp.size() > 1) {
 			throw new IllegalRepositoryStateException("There cannot be more than one group with the same name.");
 		} else if (resp.size() == 0) {
-			throw new NotFoundException("No group found by the name: " + name);
+			return null;
 		} else {
 			return resp.get(0);
 		}
 	}
 
-	public Agent getAgent(PID pid, boolean loadMembership) throws NotFoundException {
+	public Agent getAgent(PID pid, boolean loadMembership) {
 		List<URI> types = this.getTripleStoreQueryService().lookupContentModels(pid);
 		List<PID> list = new ArrayList<PID>();
 		Agent result = null;
@@ -364,7 +196,7 @@ public class AgentManager {
 				result = this.getSoftwareAgents(list).get(0);
 			}
 		} catch (IndexOutOfBoundsException e) {
-			throw new NotFoundException("No agent was found for the pid " + pid);
+			return null;
 		}
 		return result;
 	}
@@ -377,10 +209,6 @@ public class AgentManager {
 	public List<PersonAgent> getAllPersonAgents(boolean loadGroupMembership) {
 		String where = " $foo <mulgara:is> 'foo'";
 		return this.findPersonAgents(where, loadGroupMembership);
-	}
-
-	public DigitalObjectManager getDigitalObjectManager() {
-		return digitalObjectManager;
 	}
 
 	public List<GroupAgent> getGroupAgents(List<PID> pids, boolean loadMembership) {
@@ -513,27 +341,8 @@ public class AgentManager {
 		}
 	}
 
-	/**
-	 * Removes a member to a group.
-	 * 
-	 * @param group
-	 *           the GroupAgent
-	 * @param member
-	 *           the member PersonAgent
-	 * @throws NotFoundException
-	 *            if either object are not found in the repository
-	 */
-	public void removeMembership(GroupAgent group, PersonAgent member, Agent user) throws NotFoundException,
-			IngestException {
-		this.getDigitalObjectManager().purgeRelationship(group.getPID(), ContentModelHelper.Relationship.member,
-				member.getPID());
-	}
-
-	public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
-		this.digitalObjectManager = digitalObjectManager;
-	}
-
 	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
 		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
+
 }

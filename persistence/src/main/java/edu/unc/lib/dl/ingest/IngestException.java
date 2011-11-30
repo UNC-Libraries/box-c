@@ -17,20 +17,20 @@ package edu.unc.lib.dl.ingest;
 
 import org.jdom.Element;
 
-import edu.unc.lib.dl.ingest.aip.AIPException;
+import edu.unc.lib.dl.util.XMLAttachedException;
 
 /**
  * This exception captures any failure to complete the ingest pipeline. It can encapsulate the reason for the failure
  * through getCause() and it also bundles an ingest report XML document. This document contains the complete record of
  * ingest processing by all filters up to the point of failure.
- * 
+ *
  * This exception is created from a lower level IngestFilterException which represents failure in a particular
  * processing step.
- * 
+ *
  * @author count0
- * 
+ *
  */
-public class IngestException extends Exception {
+public class IngestException extends Exception implements XMLAttachedException {
 
 	private static final long serialVersionUID = -4065348103957132332L;
 
@@ -42,13 +42,12 @@ public class IngestException extends Exception {
 
 	public IngestException(String msg, Throwable e) {
 		super(msg, e);
-		if (e instanceof AIPException) {
-			this.errorXML = ((AIPException) e).getErrorXML();
-		} else if (e instanceof IngestException) {
-			this.errorXML = ((IngestException) e).getErrorXML();
+		if (e instanceof XMLAttachedException) {
+			this.errorXML = ((XMLAttachedException) e).getErrorXML();
 		}
 	}
 
+	@Override
 	public Element getErrorXML() {
 		return errorXML;
 	}

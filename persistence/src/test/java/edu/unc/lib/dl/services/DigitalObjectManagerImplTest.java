@@ -54,13 +54,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
 import edu.unc.lib.dl.agents.MockPersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
-import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
@@ -80,18 +78,10 @@ public class DigitalObjectManagerImplTest {
 	@Resource
 	private DigitalObjectManagerImpl digitalObjectManagerImpl = null;
 
-	public DigitalObjectManagerImpl getDigitalObjectManagerImpl() {
-		return digitalObjectManagerImpl;
-	}
-
-	public void setDigitalObjectManagerImpl(DigitalObjectManagerImpl digitalObjectManagerImpl) {
-		this.digitalObjectManagerImpl = digitalObjectManagerImpl;
-	}
-
 	@Resource
 	ManagementClient managementClient = null;
 
-	@Resource
+	@Resource(name = "batchIngestServiceMock")
 	BatchIngestService batchIngestService = null;
 
 	@Resource
@@ -179,6 +169,13 @@ public class DigitalObjectManagerImplTest {
 		};
 		doAnswer(dumpMessage).when(this.javaMailSender).send(any(MimeMessage.class));
 		doAnswer(dumpMessage).when(this.javaMailSender).send(any(SimpleMailMessage.class));
+	}
+
+	/**
+	 * @return
+	 */
+	private DigitalObjectManagerImpl getDigitalObjectManagerImpl() {
+		return this.digitalObjectManagerImpl;
 	}
 
 	/**

@@ -17,13 +17,15 @@ package edu.unc.lib.dl.ingest.aip;
 
 import org.jdom.Element;
 
+import edu.unc.lib.dl.util.XMLAttachedException;
+
 /**
  * Used for exceptional behavior that can be expected while trying to complete the AIP pipeline.
- * 
+ *
  * @author count0
- * 
+ *
  */
-public class AIPException extends Exception {
+public class AIPException extends Exception implements XMLAttachedException {
 	private static final long serialVersionUID = 8226934671033531955L;
 
 	Element errorXML = null;
@@ -37,6 +39,10 @@ public class AIPException extends Exception {
 		super(msg, e);
 	}
 
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.ingest.aip.XMLAttachedException#getErrorXML()
+	 */
+	@Override
 	public Element getErrorXML() {
 		return this.errorXML;
 	}
