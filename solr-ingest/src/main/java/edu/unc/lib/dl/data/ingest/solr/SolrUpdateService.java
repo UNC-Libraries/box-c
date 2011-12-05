@@ -78,14 +78,14 @@ public class SolrUpdateService {
 		SolrUpdateRunnable.setSolrUpdateService(this);
 		SolrUpdateRunnable.initQueries();
 		
-		collectionsPid = fedoraDataService.getTripleStoreQueryService().fetchByRepositoryPath("/Collections");
-		if (collectionsPid == null){
-			throw new Error("Initialization of SolrUpdateService failed.  It was unable to retrieve Collections object from repository.");
-		}
-		
-
 		this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(this.maxIngestThreads);
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
+		
+		collectionsPid = fedoraDataService.getTripleStoreQueryService().fetchByRepositoryPath("/Collections");
+		if (collectionsPid == null){
+			LOG.error("Initialization of SolrUpdateService failed.  It was unable to retrieve Collections object from repository.  Shutting down.");
+			this.executor.shutdownNow();
+		}
 	}
 	
 	public void destroy() {
