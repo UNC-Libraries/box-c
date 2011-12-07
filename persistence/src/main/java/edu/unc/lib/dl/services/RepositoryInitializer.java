@@ -57,7 +57,6 @@ public class RepositoryInitializer implements Runnable {
 	}
 
 	private FolderManager folderManager = null;
-	private BatchIngestService batchIngestService = null;
 	private Map<String, String> initialAdministrators = null;
 	private File initialBatchIngestDir = null;
 
@@ -227,14 +226,14 @@ public class RepositoryInitializer implements Runnable {
 
 	/**
 	 * loads every XML file in foxml-objects, purges their pids and ingests them.
-	 * 
+	 *
 	 * @throws FedoraException
 	 */
 	private void ingestContentModelsServices() {
 		try {
 			File tmpDir = File.createTempFile("RepositoryInitializerBatch", "");
 			FileUtils.copyFolder(getInitialBatchIngestDir(), tmpDir);
-			getBatchIngestService().ingestBatchNow(tmpDir);
+			getDigitalObjectManager().ingestBatchNow(tmpDir);
 		} catch (IngestException e) {
 			throw new Error("Cannot ingest content models and services.", e);
 		} catch (IOException e) {
@@ -276,14 +275,6 @@ public class RepositoryInitializer implements Runnable {
 
 	public void setInitialBatchIngestDir(File initialBatchIngestDir) {
 		this.initialBatchIngestDir = initialBatchIngestDir;
-	}
-
-	public BatchIngestService getBatchIngestService() {
-		return batchIngestService;
-	}
-
-	public void setBatchIngestService(BatchIngestService batchIngestService) {
-		this.batchIngestService = batchIngestService;
 	}
 
 }

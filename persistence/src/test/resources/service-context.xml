@@ -64,17 +64,21 @@
 		<property name="sipProcessorFactory" ref="sipProcessorFactory"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="schematronValidator" ref="schematronValidator"/>
-		<property name="batchIngestService" ref="batchIngestServiceMock"/>
+		<property name="batchIngestQueue" ref="batchIngestQueue"/>
 		<property name="available" value="true"/>
 	</bean>
 
   <bean id="batchIngestServiceMock" class="org.mockito.Mockito" factory-method="mock">
-		  	<constructor-arg index="0" value="edu.unc.lib.dl.services.BatchIngestService"/>
+		  	<constructor-arg index="0" value="edu.unc.lib.dl.cdr.services.BatchIngestService"/>
 	</bean>
 	
-	<bean id="realBatchIngestService" class="edu.unc.lib.dl.services.BatchIngestServiceImpl" init-method="init">
-	  <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
+	<bean id="realBatchIngestService" class="edu.unc.lib.dl.cdr.services.BatchIngestService" init-method="init">
+	  <property name="batchIngestQueue" ref="batchIngestQueue"/>
 		<lookup-method name="createTask" bean="batchIngestTask"/>
+	</bean>
+	
+	<bean id="batchIngestQueue" class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">
+	  <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
 	</bean>
 	
 	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">

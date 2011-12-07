@@ -71,7 +71,7 @@ import freemarker.template.TemplateException;
  */
 /**
  * @author Gregory Jansen
- * 
+ *
  */
 public class MailNotifier {
 	private static final Log log = LogFactory.getLog(MailNotifier.class);
@@ -126,7 +126,7 @@ public class MailNotifier {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.springframework.mail.javamail.MimeMessagePreparator#prepare(javax .mail.internet.MimeMessage)
 	 */
 	public void sendIngestSuccessNotice(IngestProperties props, int ingestedCount) {
@@ -361,7 +361,7 @@ public class MailNotifier {
 
 	/**
 	 * Sends a plain text email to the repository administrator.
-	 * 
+	 *
 	 * @param subject
 	 * @param text
 	 */

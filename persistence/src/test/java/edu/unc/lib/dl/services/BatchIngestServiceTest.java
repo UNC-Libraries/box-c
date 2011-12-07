@@ -149,7 +149,7 @@ public class BatchIngestServiceTest {
 	}
 
 	/**
-	 * Test method for {@link edu.unc.lib.dl.services.BatchIngestServiceImpl#pauseQueue()}.
+	 * Test method for {@link edu.unc.lib.dl.services.BatchIngestService#pauseQueue()}.
 	 */
 	@Test
 	public void testPauseResumeQueue() {
@@ -206,7 +206,7 @@ public class BatchIngestServiceTest {
 	}
 
 	/**
-	 * Test method for {@link edu.unc.lib.dl.services.BatchIngestServiceImpl#queueBatch(java.io.File)}.
+	 * Test method for {@link edu.unc.lib.dl.services.BatchIngestService#queueBatch(java.io.File)}.
 	 */
 	@Test
 	public void testQueueBatch() {
@@ -250,7 +250,7 @@ public class BatchIngestServiceTest {
 	}
 
 	/**
-	 * Test method for {@link edu.unc.lib.dl.services.BatchIngestServiceImpl#ingestBatchNow(java.io.File)}.
+	 * Test method for {@link edu.unc.lib.dl.services.BatchIngestService#ingestBatchNow(java.io.File)}.
 	 */
 	@Test
 	public void testIngestBatchNow() {

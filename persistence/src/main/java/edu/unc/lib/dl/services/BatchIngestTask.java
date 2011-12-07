@@ -110,7 +110,7 @@ public class BatchIngestTask implements Runnable {
 	/**
 	 * Base directory of this ingest batch
 	 */
-	File baseDir = null;
+	private File baseDir = null;
 
 	/**
 	 * Directory for data files in this ingest batch
@@ -249,7 +249,7 @@ public class BatchIngestTask implements Runnable {
 	private BatchFailedException fail(String message, Throwable e) {
 		this.failed = true;
 		this.state = STATE.FINISHED;
-		File failLog = new File(this.baseDir, FAIL_LOG);
+		File failLog = new File(this.getBaseDir(), FAIL_LOG);
 		PrintWriter w = null;
 		try {
 			failLog.createNewFile();
@@ -387,11 +387,11 @@ public class BatchIngestTask implements Runnable {
 	public void init(File baseDir) {
 		log.info("Ingest task created for " + baseDir.getAbsolutePath());
 		try {
-			this.baseDir = baseDir;
-			dataDir = new File(this.baseDir, "data");
-			File ingestLog = new File(this.baseDir, INGEST_LOG);
-			props = new IngestProperties(this.baseDir);
-			foxmlFiles = this.baseDir.listFiles(new FilenameFilter() {
+			this.setBaseDir(baseDir);
+			dataDir = new File(this.getBaseDir(), "data");
+			File ingestLog = new File(this.getBaseDir(), INGEST_LOG);
+			props = new IngestProperties(this.getBaseDir());
+			foxmlFiles = this.getBaseDir().listFiles(new FilenameFilter() {
 				@Override
 				public boolean accept(File dir, String name) {
 					return name.endsWith(".foxml");
@@ -428,7 +428,7 @@ public class BatchIngestTask implements Runnable {
 						this.lastIngestFilename = l[1];
 						this.lastIngestPID = new PID(l[0]);
 						this.state = STATE.INGEST_WAIT;
-						log.info("Resuming ingest from " + this.lastIngestFilename + " in " + this.baseDir.getName());
+						log.info("Resuming ingest from " + this.lastIngestFilename + " in " + this.getBaseDir().getName());
 					}
 				}
 			}
@@ -474,9 +474,9 @@ public class BatchIngestTask implements Runnable {
 	@Override
 	public void run() {
 		while (this.state != STATE.FINISHED) {
-			log.debug("Batch ingest: state=" + this.state + ", dir=" + this.baseDir);
+			log.debug("Batch ingest: state=" + this.state + ", dir=" + this.getBaseDir());
 			if (this.halting && (this.state != STATE.SEND_MESSAGES && this.state != STATE.CLEANUP)) {
-				log.debug("Halting this batch ingest task: state=" + this.state + ", dir=" + this.baseDir);
+				log.debug("Halting this batch ingest task: state=" + this.state + ", dir=" + this.getBaseDir());
 				break; // stop immediately as long as not sending msgs or cleaning up.
 			}
 			try {
@@ -517,7 +517,7 @@ public class BatchIngestTask implements Runnable {
 		List<PID> reordered = new ArrayList<PID>();
 		BufferedReader r = null;
 		try {
-			r = new BufferedReader(new FileReader(new File(this.baseDir, REORDERED_LOG)));
+			r = new BufferedReader(new FileReader(new File(this.getBaseDir(), REORDERED_LOG)));
 			for (String line = r.readLine(); line != null; line = r.readLine()) {
 				reordered.add(new PID(line));
 			}
@@ -621,7 +621,7 @@ public class BatchIngestTask implements Runnable {
 			if (submitterAgent == null) {
 				submitterAgent = this.getAgentFactory().findPersonByOnyen(props.getSubmitter(), false);
 			}
-			reorderedWriter = new PrintWriter(new File(this.baseDir, REORDERED_LOG));
+			reorderedWriter = new PrintWriter(new File(this.getBaseDir(), REORDERED_LOG));
 			logIngestAttempt(containers[next], CONTAINER_UPDATED_CODE);
 			this.lastIngestPID = containers[next];
 			// add RELS-EXT triples
@@ -658,7 +658,7 @@ public class BatchIngestTask implements Runnable {
 	 */
 	private void verifyLastIngestChecksums() {
 		PID pid = this.lastIngestPID;
-		Document xml = getFOXMLDocument(new File(baseDir, this.lastIngestFilename));
+		Document xml = getFOXMLDocument(new File(getBaseDir(), this.lastIngestFilename));
 		// build a map of checksums for the datastreams
 		Map<String, String> dsID2md5 = new HashMap<String, String>();
 		for (Element ds : FOXMLJDOMUtil.getAllDatastreams(xml)) {
@@ -720,6 +720,20 @@ public class BatchIngestTask implements Runnable {
 
 	public void setAccessClient(AccessClient accessClient) {
 		this.accessClient = accessClient;
+	}
+
+	/**
+	 * @param baseDir the baseDir to set
+	 */
+	public void setBaseDir(File baseDir) {
+		this.baseDir = baseDir;
+	}
+
+	/**
+	 * @return the baseDir
+	 */
+	public File getBaseDir() {
+		return baseDir;
 	}
 
 }

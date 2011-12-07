@@ -63,6 +63,7 @@ import edu.unc.lib.dl.util.Checksum;
 import edu.unc.lib.dl.util.ContainerContentsHelper;
 import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
@@ -76,7 +77,7 @@ import edu.unc.lib.dl.xml.ModsXmlHelper;
  * @author count0
  *
  */
-public class DigitalObjectManagerImpl implements DigitalObjectManager {
+public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private static final Log log = LogFactory.getLog(DigitalObjectManagerImpl.class);
 	private boolean available = false;
 	private String availableMessage = "The repository manager is not available yet.";
@@ -87,7 +88,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private OperationsMessageSender operationsMessageSender = null;
 	private TripleStoreQueryService tripleStoreQueryService = null;
 	private SchematronValidator schematronValidator = null;
-	private BatchIngestService batchIngestService = null;
+	private BatchIngestQueue batchIngestQueue = null;
 	private MailNotifier mailNotifier;
 
 	public void setMailNotifier(MailNotifier mailNotifier) {
@@ -143,7 +144,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			aip.prepareIngest(message, user.getName());
 
 			// move the AIP into the ingest queue.
-			this.getBatchIngestService().queueBatch(aip.getTempFOXDir());
+			this.getBatchIngestQueue().add(aip.getTempFOXDir());
 		} catch (IngestException e) {
 			// exception on AIP preparation, no transaction started
 			log.info("User level exception on ingest, prior to Fedora transaction", e);
@@ -856,7 +857,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 			// move the AIP into the ingest queue.
 			// run ingest task immediately and wait for it.
-			this.getBatchIngestService().ingestBatchNow(aip.getTempFOXDir());
+			this.ingestBatchNow(aip.getTempFOXDir());
 
 			// return the newly minted pid
 			return aip.getPIDs().iterator().next();
@@ -867,11 +868,33 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 	}
 
-	public BatchIngestService getBatchIngestService() {
-		return batchIngestService;
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see edu.unc.lib.dl.services.BatchIngestServiceInterface#ingestBatchNow(java.io.File)
+	 */
+	public void ingestBatchNow(File prepDir) throws IngestException {
+		// File queuedDir = moveToInstant(prepDir);
+		// do not set marker file!
+		log.info("Ingesting batch now, in parallel with queue: " + prepDir.getAbsolutePath());
+		BatchIngestTask task = createBatchIngestTask(); // obtain from Spring prototype
+		task.init(prepDir);
+		task.run();
+		task = null;
+		FileUtils.deleteDir(prepDir);
 	}
 
-	public void setBatchIngestService(BatchIngestService batchIngestService) {
-		this.batchIngestService = batchIngestService;
+	/**
+	 * Creates a new batch ingest task.
+	 * @return
+	 */
+	public abstract BatchIngestTask createBatchIngestTask();
+
+	public BatchIngestQueue getBatchIngestQueue() {
+		return batchIngestQueue;
+	}
+
+	public void setBatchIngestQueue(BatchIngestQueue batchIngestQueue) {
+		this.batchIngestQueue = batchIngestQueue;
 	}
 }
