@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services;
+package edu.unc.lib.dl.cdr.services;
 
 import static edu.unc.lib.dl.util.FileUtils.tempCopy;
 import static org.junit.Assert.fail;
@@ -21,14 +21,11 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.never;
 
 import java.io.File;
 import java.net.URI;
@@ -51,7 +48,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.ws.client.WebServiceTransportException;
 
-import edu.unc.lib.dl.agents.MockPersonAgent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
@@ -61,6 +57,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.SingleFolderSIP;
+import edu.unc.lib.dl.services.DigitalObjectManagerImpl;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -69,26 +66,21 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/service-context.xml" })
+@ContextConfiguration(locations = { "/bean-context-ingest-junit.xml" })
 public class BatchIngestServiceTest {
 	public static final String batchDir = "/tmp/batch-ingest";
 
 	@Resource
 	private DigitalObjectManagerImpl digitalObjectManagerImpl = null;
 
-	@Resource(name = "realBatchIngestService")
-	private BatchIngestService realBatchIngestService = null;
-
-	private BatchIngestService originalMockService = null;
+	@Resource
+	private BatchIngestService batchIngestService = null;
 
 	@Resource
 	private TripleStoreQueryService tripleStoreQueryService;
 
 	@Resource
 	private ManagementClient managementClient = null;
-
-	@Resource
-	private String propertiesURI = null;
 
 	@Resource AccessClient accessClient = null;
 
@@ -122,9 +114,6 @@ public class BatchIngestServiceTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		originalMockService = digitalObjectManagerImpl.getBatchIngestService();
-		digitalObjectManagerImpl.setBatchIngestService(realBatchIngestService);
-
 		MIMETypedStream mts = mock(MIMETypedStream.class);
 		when(mts.getStream()).thenReturn(MD_CONTENTS.getBytes());
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq("MD_CONTENTS"), anyString())).thenReturn(mts);
@@ -134,8 +123,6 @@ public class BatchIngestServiceTest {
 		when(mts2.getStream()).thenReturn(MD_EVENTS.getBytes());
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq("MD_EVENTS"), any(String.class)))
 				.thenReturn(mts2);
-		//FileUtils.deleteDir(new File(batchDir));
-		//new File(batchDir).mkdir();
 	}
 
 	/**
@@ -143,9 +130,6 @@ public class BatchIngestServiceTest {
 	 */
 	@After
 	public void tearDown() throws Exception {
-		if (originalMockService != null) {
-			digitalObjectManagerImpl.setBatchIngestService(originalMockService);
-		}
 	}
 
 	/**
@@ -156,7 +140,7 @@ public class BatchIngestServiceTest {
 		try {
 			reset(this.managementClient);
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
-			PersonAgent user = new MockPersonAgent("TestyTess", "testonyen", new PID("test:person"));
+			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
 			PID container = new PID("test:container");
 			METSPackageSIP sip1 = new METSPackageSIP(container, test, user, true);
 
@@ -184,22 +168,21 @@ public class BatchIngestServiceTest {
 			ans.add(ContentModelHelper.Model.CONTAINER.getURI());
 			when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
 
-			this.realBatchIngestService.pauseQueue();
+			this.batchIngestService.pause();
 			digitalObjectManagerImpl.addBatch(sip1, user, "testAdd1 for a good METS SIP");
 			Thread.sleep(5*1000);
 			verify(this.managementClient, never()).ingest(any(Document.class), any(Format.class), any(String.class));
 
-			this.realBatchIngestService.startQueue();
-			this.realBatchIngestService.waitUntilActive();
-			this.realBatchIngestService.waitUntilIdle();
+			this.batchIngestService.start();
+			this.batchIngestService.waitUntilActive();
+			this.batchIngestService.waitUntilIdle();
 			verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));
 
 			digitalObjectManagerImpl.addBatch(sip2, user, "testAdd2 for a good METS SIP");
-			this.realBatchIngestService.waitUntilActive();
-			this.realBatchIngestService.waitUntilIdle();
+			this.batchIngestService.waitUntilActive();
+			this.batchIngestService.waitUntilIdle();
 			verify(this.managementClient, times(28)).ingest(any(Document.class), any(Format.class), any(String.class));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new Error(e);
 		}
@@ -213,7 +196,7 @@ public class BatchIngestServiceTest {
 		try {
 			reset(this.managementClient);
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
-			PersonAgent user = new MockPersonAgent("TestyTess", "testonyen", new PID("test:person"));
+			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
 			PID container = new PID("test:container");
 			METSPackageSIP sip = new METSPackageSIP(container, test, user, true);
 
@@ -237,13 +220,12 @@ public class BatchIngestServiceTest {
 
 			digitalObjectManagerImpl.addBatch(sip, user, "testAdd for a good METS SIP");
 
-			this.realBatchIngestService.waitUntilActive();
-			this.realBatchIngestService.waitUntilIdle();
+			this.batchIngestService.waitUntilActive();
+			this.batchIngestService.waitUntilIdle();
 
 			// verify batch ingest called
 			verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new Error(e);
 		}
@@ -256,7 +238,7 @@ public class BatchIngestServiceTest {
 	public void testIngestBatchNow() {
 		try {
 			reset(this.managementClient);
-			PersonAgent user = new MockPersonAgent("Testy Tess", "testonyen", new PID("test:person"));
+			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
 			PID container = new PID("test:container");
 			SingleFolderSIP sip = new SingleFolderSIP();
 			sip.setContainerPID(container);
@@ -286,7 +268,6 @@ public class BatchIngestServiceTest {
 			// verify batch ingest called
 			verify(this.managementClient, times(1)).ingest(any(Document.class), any(Format.class), any(String.class));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new Error(e);
 		}
@@ -307,7 +288,7 @@ public class BatchIngestServiceTest {
 
 			});
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
-			PersonAgent user = new MockPersonAgent("TestyTess", "testonyen", new PID("test:person"));
+			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
 			PID container = new PID("test:container");
 			METSPackageSIP sip = new METSPackageSIP(container, test, user, true);
 
@@ -336,17 +317,19 @@ public class BatchIngestServiceTest {
 
 			digitalObjectManagerImpl.addBatch(sip, user, "testAdd for a good METS SIP");
 
-			this.realBatchIngestService.waitUntilActive();
-			this.realBatchIngestService.waitUntilIdle();
+			this.batchIngestService.waitUntilActive();
+			this.batchIngestService.waitUntilIdle();
 
 			// verify batch ingest called
 			verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new Error(e);
 		}
 	}
+
+	// TODO verify mail and jms
+	// TODO verify container operations
 
 	@Test
 	public void testWithFedoraUnavailable() {

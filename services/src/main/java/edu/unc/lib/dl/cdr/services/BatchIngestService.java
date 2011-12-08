@@ -26,7 +26,7 @@ import edu.unc.lib.dl.services.BatchIngestTask;
 import edu.unc.lib.dl.util.FileUtils;
 
 /**
- * The IngestService runs a single-threaded ingest queue, based on archival information prearranged in the file system.
+ * The IngestService runs a single-threaded ingest service, based on information prearranged in a file system queue.
  * The service will pick up where it left off after a server crash or interruption, including halfway through a batch.
  *
  * @author Gregory Jansen
@@ -39,7 +39,7 @@ public abstract class BatchIngestService {
 
 	private ReentrantLock pauseLock = new ReentrantLock();
 
-	private Thread qThread = null;
+	private Thread serviceThread = null;
 	private Thread taskThread = null;
 	private BatchIngestQueue batchIngestQueue = null;
 	private BatchIngestTask batchIngestTask = null;
@@ -57,19 +57,19 @@ public abstract class BatchIngestService {
 		this.pauseLock.lock();
 		try {
 			LOG.info("Starting Batch Ingest Service...");
-			qThread = new Thread(newQRunner(), "BatchIngestThread");
-			qThread.start();
+			serviceThread = new Thread(newServiceRunner(), "BatchIngestThread");
+			serviceThread.start();
 		} finally {
 			pauseLock.unlock();
 		}
 	}
 
-	private Runnable newQRunner() {
+	private Runnable newServiceRunner() {
 		return new Runnable() {
 
 			@Override
 			public void run() {
-				LOG.debug("Queue thread started.");
+				LOG.debug("Batch Ingest Service thread started.");
 				while (true) {
 					try {
 						if (taskThread == null || !taskThread.isAlive()) {
@@ -119,8 +119,8 @@ public abstract class BatchIngestService {
 		this.pauseLock.lock();
 		try {
 			LOG.info("Pausing Batch Ingest Service..");
-			if (this.qThread != null && this.qThread.isAlive()) {
-				this.qThread.interrupt();
+			if (this.serviceThread != null && this.serviceThread.isAlive()) {
+				this.serviceThread.interrupt();
 			}
 			if (this.batchIngestTask != null) {
 				this.batchIngestTask.stop();

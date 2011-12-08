@@ -46,7 +46,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.MockPersonAgent;
+import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
@@ -111,7 +111,7 @@ public class AIPIngestPipelineTest {
 	public void testProcessAIP() {
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/simple.zip"));
-		Agent user = new MockPersonAgent("Testy Testerson", "test", new PID("cdr-test:142"));
+		Agent user = new PersonAgent(new PID("cdr-test:142"), "Testy Testerson", "test");
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/test/container/path";
@@ -167,7 +167,7 @@ public class AIPIngestPipelineTest {
 	public void testProcessBadAIP(String testfile) {
 		// testing for failed conversion of SIP w/simple content model
 		File testFile = tempCopy(new File(testfile));
-		Agent user = new MockPersonAgent("Testy Testerson", "test", new PID("cdr-test:142"));
+		Agent user = new PersonAgent(new PID("cdr-test:142"), "Testy Testerson", "test");
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/test/container/path";
@@ -257,7 +257,7 @@ public class AIPIngestPipelineTest {
 	public void testProcessCollectionFolder() {
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/coll_mods.xml"));
-		Agent user = new MockPersonAgent("Testy Testerson", "test", new PID("cdr-test:142"));
+		Agent user = new PersonAgent(new PID("cdr-test:142"), "Testy Testerson", "test");
 		SingleFolderSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/test/container/path";

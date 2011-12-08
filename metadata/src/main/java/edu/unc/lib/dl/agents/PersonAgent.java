@@ -30,7 +30,7 @@ public class PersonAgent extends AbstractAgent {
 
 	private String onyen = null;
 
-	PersonAgent(PID pid, String name, String onyen) {
+	public PersonAgent(PID pid, String name, String onyen) {
 		this.setName(name);
 		this.setPID(pid);
 		this.setOnyen(onyen);
@@ -43,7 +43,7 @@ public class PersonAgent extends AbstractAgent {
 
 	/**
 	 * Gets the roles played by this person in the repository. This may or may not be advisable to keep around ...
-	 * 
+	 *
 	 * @return this person's roles
 	 */
 	// public Set<String> getRoles() {
@@ -55,7 +55,7 @@ public class PersonAgent extends AbstractAgent {
 
 	/**
 	 * Sets this person's roles.
-	 * 
+	 *
 	 * @param roles
 	 *           a set of roles played by this person in the repository.
 	 */

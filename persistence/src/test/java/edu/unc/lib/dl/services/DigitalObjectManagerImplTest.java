@@ -54,7 +54,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.MockPersonAgent;
+import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -81,8 +81,8 @@ public class DigitalObjectManagerImplTest {
 	@Resource
 	ManagementClient managementClient = null;
 
-	@Resource(name = "batchIngestServiceMock")
-	BatchIngestService batchIngestService = null;
+	@Resource
+	BatchIngestQueue batchIngestQueue = null;
 
 	@Resource
 	AccessClient accessClient = null;
@@ -213,7 +213,7 @@ public class DigitalObjectManagerImplTest {
 	public void testDelete() throws Exception {
 		// verify works with references internal to delete contents
 		// verify works with container reference
-		Agent tron = new MockPersonAgent("Tester Tron", "tron", new PID("tes:tron"));
+		Agent tron = new PersonAgent(new PID("tes:tron"), "Tester Tron", "tron");
 		// setup mocks
 		when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
 		PID container = new PID("test:container");
@@ -251,7 +251,7 @@ public class DigitalObjectManagerImplTest {
 	@Test(expected = IngestException.class)
 	public void testDeleteReferencedPIDException() throws Exception {
 		// setup mocks
-		Agent tron = new MockPersonAgent("Tester Tron", "tron", new PID("tes:tron"));
+		Agent tron = new PersonAgent(new PID("tes:tron"), "Tester Tron", "tron");
 		when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
 		PID container = new PID("test:container");
 		ArrayList<PID> refs = new ArrayList<PID>();
@@ -272,7 +272,7 @@ public class DigitalObjectManagerImplTest {
 	public void testDeleteForFedoraFault() throws Exception {
 		// verify works with references internal to delete contents
 		// verify works with container reference
-		Agent tron = new MockPersonAgent("Tester Tron", "tron", new PID("tes:tron"));
+		Agent tron = new PersonAgent(new PID("tes:tron"), "Tester Tron", "tron");
 		// setup mocks
 		when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
 		PID container = new PID("test:container");
@@ -325,7 +325,7 @@ public class DigitalObjectManagerImplTest {
 	public void testDeleteForFedoraGone() throws Exception {
 		// verify works with references internal to delete contents
 		// verify works with container reference
-		Agent tron = new MockPersonAgent("Tester Tron", "tron", new PID("tes:tron"));
+		Agent tron = new PersonAgent(new PID("tes:tron"), "Tester Tron", "tron");
 		// setup mocks
 		when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
 		PID container = new PID("test:container");
@@ -451,6 +451,6 @@ public class DigitalObjectManagerImplTest {
 		when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
 		this.getDigitalObjectManagerImpl().addBatch(sip, user, "testAdd for a good METS SIP");
 		// verify batch ingest called
-		verify(this.batchIngestService, times(1)).queueBatch(any(File.class));
+		verify(this.batchIngestQueue, times(1)).add(any(File.class));
 	}
 }
