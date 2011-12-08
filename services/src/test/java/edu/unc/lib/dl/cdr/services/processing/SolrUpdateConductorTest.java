@@ -69,6 +69,7 @@ public class SolrUpdateConductorTest extends Assert {
 		
 		FedoraDataService fedoraDataService = mock(FedoraDataService.class);
 		when(fedoraDataService.getObjectViewXML(startsWith("uuid:"))).thenReturn(simpleObject);
+		when(fedoraDataService.getObjectViewXML(startsWith("uuid:"), anyBoolean())).thenReturn(simpleObject);
 		
 		TripleStoreQueryService tripleStoreQueryService = mock(TripleStoreQueryService.class);
 		when(tripleStoreQueryService.isOrphaned(argThat(new IsMatchingPID("uuid:")))).thenReturn(false);
