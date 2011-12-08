@@ -79,12 +79,13 @@ public class SolrUpdateService {
 		SolrUpdateRunnable.setSolrUpdateService(this);
 		SolrUpdateRunnable.initQueries();
 		
+		initializeExecutor();
+		
 		collectionsPid = fedoraDataService.getTripleStoreQueryService().fetchByRepositoryPath("/Collections");
 		if (collectionsPid == null){
-			throw new Error("Initialization of SolrUpdateService failed.  It was unable to retrieve Collections object from repository.");
+			LOG.error("Initialization of SolrUpdateService failed.  It was unable to retrieve Collections object from repository.  Shutting down.");
+			this.executor.shutdownNow();
 		}
-		
-		initializeExecutor();
 	}
 	
 	protected void initializeExecutor(){
