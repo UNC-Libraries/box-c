@@ -565,7 +565,7 @@
 		<property name="mailNotifier" ref="mailNotifier" />
 		<property name="initialAdministrators">
 			<map>
-				<entry key="${admin.initial.1.key}" value="admin.initial.1.value" />
+				<entry key="${admin.initial.1.key}" value="${admin.initial.1.value}" />
 			</map>
 		</property>
 		<property name="autoinitialize" value="no" />
