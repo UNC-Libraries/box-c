@@ -63,9 +63,9 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 
 	@Override
 	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
-		//Returns true if the message was not a Fedora ingest and at least one other service passed prefilter
-		return !JMSMessageUtil.FedoraActions.INGEST.equals(pid.getAction()) 
-			&& pid.getFilteredServices() != null && pid.getFilteredServices().size() > 0;
+		//Returns true if at least one other service passed prefilter
+		//It is okay for ingest messages to pass here since if they are still orphaned they are not indexed.
+		return pid.getFilteredServices() != null && pid.getFilteredServices().size() > 0;
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })

@@ -118,12 +118,9 @@ public class ServicesConductorTest extends Assert {
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), DelayService.class.getName());
 			messageDirector.direct(message);
 		}
-		while (!servicesConductor.isEmpty());
 		
-		if (servicesCompleted.get() != numberTestMessages * 2){
-			Thread.sleep(1000L);
-			LOG.debug(servicesConductor.queuesToString());
-		}
+		while (servicesCompleted.get() != numberTestMessages * 2);
+
 		assertEquals(servicesCompleted.get(), numberTestMessages * 2);
 	}
 	

@@ -91,7 +91,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		PIDMessage message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
 		assertTrue(servicesMessageFilter.filter(message));
 		assertTrue(message.getFilteredServices().size() > 0);
-		assertFalse(message.filteredServicesContains(SolrUpdateEnhancementService.class));
+		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
 		assertTrue(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
 		assertTrue(message.filteredServicesContains(ImageEnhancementService.class));
 		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));

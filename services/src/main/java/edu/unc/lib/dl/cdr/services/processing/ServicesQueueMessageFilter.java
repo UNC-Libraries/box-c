@@ -85,6 +85,16 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 			message.setFilteredServices(null);
 			return false;
 		}
+		
+		if (LOG.isDebugEnabled()){
+			StringBuilder sb = new StringBuilder();
+			sb.append("Service filter for ").append(message.getPIDString()).append(":");
+			for (ObjectEnhancementService s: messageServices){
+				sb.append(s.getClass().getSimpleName());
+			}
+			LOG.debug(sb.toString());
+		}
+		
 		return true;
 	}
 }

@@ -77,22 +77,12 @@ public class FedoraDataService {
 		final Element inputs = new Element("view-inputs");
 		result.setRootElement(inputs);
 
-		ExecutorService executor = Executors.newFixedThreadPool(1);
-
-		Callable<Content> callable = new GetFoxml(pid);
-		Future<Content> future = executor.submit(callable);
-
-		try {
-			Content foxml = future.get(5000, TimeUnit.MILLISECONDS);
-			if (foxml != null) {
-				inputs.addContent(foxml);
-				return result;
-			}
-		} catch (Exception e) {
-			throw new ServiceException("Failed to get FOXML body for " + pid.getPid() + ".", e);
-		}
-
-		return null;
+		List<Callable<Content>> callables = new ArrayList<Callable<Content>>();
+		callables.add(new GetFoxml(pid));
+		
+		this.retrieveAsynchronousResults(inputs, callables, pid, true);
+		
+		return result;
 	}
 
 	/**
@@ -108,22 +98,12 @@ public class FedoraDataService {
 		final Element inputs = new Element("view-inputs");
 		result.setRootElement(inputs);
 
-		ExecutorService executor = Executors.newFixedThreadPool(1);
-
-		Callable<Content> callable = new GetMods(pid);
-		Future<Content> future = executor.submit(callable);
-
-		try {
-			Content mods = future.get(5000, TimeUnit.MILLISECONDS);
-			if (mods != null) {
-				inputs.addContent(mods);
-				return result;
-			}
-		} catch (Exception e) {
-			throw new ServiceException("Failed to get MODS data for " + pid.getPid() + ".", e);
-		}
-
-		return null;
+		List<Callable<Content>> callables = new ArrayList<Callable<Content>>();
+		callables.add(new GetMods(pid));
+		
+		this.retrieveAsynchronousResults(inputs, callables, pid, true);
+		
+		return result;
 	}
 
 	public Document getObjectViewXML(String simplepid) throws FedoraException {
@@ -141,6 +121,7 @@ public class FedoraDataService {
 	public Document getObjectViewXML(String simplepid, boolean failOnException) throws FedoraException {
 		final PID pid = new PID(simplepid);
 		Document result = new Document();
+		
 		final Element inputs = new Element("view-inputs");
 		result.setRootElement(inputs);
 
@@ -151,30 +132,39 @@ public class FedoraDataService {
 		callables.add(new GetParentCollection(pid));
 		callables.add(new GetPermissions(pid));
 		callables.add(new GetOrderWithinParent(pid));
-
-		ExecutorService executor = Executors.newFixedThreadPool(callables.size());
-
-		Collection<Future<Content>> futures = new ArrayList<Future<Content>>(callables.size());
-
-		for (Callable<Content> callable : callables) {
-			futures.add(executor.submit(callable));
-		}
-
-		for (Future<Content> future : futures) {
-			try {
-				Content results = future.get(10000L, TimeUnit.MILLISECONDS);
-				if (results != null) {
-					inputs.addContent(results);
-				}
-			} catch (Exception e) {
-				if (failOnException) {
-					throw new ServiceException("Failed to getObjectViewXML for " + pid.getPid(), e);
-				}
-				LOG.error("Failed to getObjectViewXML for " + pid.getPid() + ", continuing.", e);
-			}
-		}
-
+		
+		this.retrieveAsynchronousResults(inputs, callables, pid, failOnException);
+		
 		return result;
+	}
+	
+	private void retrieveAsynchronousResults(Element inputs, List<Callable<Content>> callables, PID pid, boolean failOnException) throws FedoraException {
+		ExecutorService executor = null;
+		try {
+			executor = Executors.newFixedThreadPool(callables.size());
+	
+			Collection<Future<Content>> futures = new ArrayList<Future<Content>>(callables.size());
+			
+			futures = executor.invokeAll(callables, 10000L, TimeUnit.MILLISECONDS);
+			for (Future<Content> future : futures) {
+				try {
+					Content results = future.get();
+					if (results != null) {
+						inputs.addContent(results);
+					}
+				} catch (Exception e) {
+					if (failOnException) {
+						throw new ServiceException("Failed to get asynchronous results for " + pid.getPid(), e);
+					}
+					LOG.error("Failed to get asynchronous results for " + pid.getPid() + ", continuing.", e);
+				}
+			}
+		}  catch (InterruptedException e){
+			LOG.warn("Attempt to get asynchronous results was interrupted for " + pid.getPid(), e);
+		}finally {
+			if (executor != null)
+				executor.shutdown();
+		}
 	}
 
 	public edu.unc.lib.dl.fedora.ManagementClient getManagementClient() {
