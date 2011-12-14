@@ -34,9 +34,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jdom.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.attr.AttributeValue;
@@ -48,9 +48,12 @@ import edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl;
 public class AccessControlUtils {
 
 	boolean initComplete = false;
+	boolean onlyCacheReadPermissions = false;
 
 	// Cache to hold UUID, map of permissions
 	private Map<String, Map> permissionMap = null;
+
+	private AttributeFactory attributeFactory = null;
 
 	// Cache to hold UUID, list of ancestor UUIDs
 	private Map<String, List<PID>> ancestorMap = null;
@@ -78,10 +81,7 @@ public class AccessControlUtils {
 
 	private HashMap<String, List<String>> rolePermissions = null;
 
-	private static final Logger LOG = LoggerFactory
-			.getLogger(AccessControlUtils.class);
-
-	private AttributeFactory attributeFactory = null;
+	private static final Log LOG = LogFactory.getLog(AccessControlUtils.class);
 
 	private edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService = null;
 
@@ -89,8 +89,7 @@ public class AccessControlUtils {
 		return tripleStoreQueryService;
 	}
 
-	public void setTripleStoreQueryService(
-			edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService) {
+	public void setTripleStoreQueryService(edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService) {
 		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
 
@@ -110,85 +109,22 @@ public class AccessControlUtils {
 		this.accessControlProperties = accessControlProperties;
 	}
 
-	public void loadSettingsFromOptions(Map<String, String> options) {
-
-		// load roles from config
-		accessControlProperties = new Properties();
-
-		String roleString = options.get("cdr.roles");
-		String rolePrefix = options.get("cdr.role.prefix");
-		String tripleStorePrefix = options.get("cdr.role.triplestore.prefix");
-
-		String[] roles = roleString.split(" ");
-
-		LOG.debug("loadSettingsFromOptions: roleString: "+roleString);
-		LOG.debug("loadSettingsFromOptions: rolePrefix: "+rolePrefix);
-		LOG.debug("loadSettingsFromOptions: tripleStorePrefix: "+tripleStorePrefix);
-
-		
-		for (String role : roles) {
-			LOG.debug("loadSettingsFromOptions: role: "+role);
-			String permissionString = options.get(rolePrefix + role);
-			accessControlProperties.put(tripleStorePrefix + role,
-					permissionString);
-		}
-
-		// load caching settings and tripleStore
-		username = options.get("cdr.username");
-		password = options.get("cdr.password");
-		itqlEndpointURL = options.get("cdr.itql.endpoint.url");
-		serverModelUri = options.get("cdr.server.model.uri");
-		cacheDepth = convertStringToIntOtherwiseReturnZero(options
-				.get("cdr.cache.depth"));
-		cacheLimit = convertStringToIntOtherwiseReturnZero(options
-				.get("cdr.cache.limit"));
-		cacheResetTime = convertStringToIntOtherwiseReturnZero(options
-				.get("cdr.cache.reset.time.hours"));
-
-		TripleStoreQueryServiceMulgaraImpl tripleStoreQueryService = new TripleStoreQueryServiceMulgaraImpl();
-		tripleStoreQueryService.setName(username); 
-		tripleStoreQueryService.setPass(password); 
-		tripleStoreQueryService.setItqlEndpointURL(itqlEndpointURL); 
-		tripleStoreQueryService.setServerModelUri(serverModelUri); 
-
-		if (tripleStoreQueryService == null) {
-			LOG.error("tripleStore is NULL!");
-		}
-
-		this.tripleStoreQueryService = tripleStoreQueryService;
-
-	}
-
-	public void initForFedoraBasedAccessControl(boolean readPermissionOnly,
-			AttributeFactory attributeFactory) {
-
-		init(readPermissionOnly);
-		
-		
-		this.attributeFactory = attributeFactory;
-	}
-
 	public void startCacheCleanupThreadForFedoraBasedAccessControl() {
 		if (cacheResetTime > 0) {
 			Timer timer = new Timer();
-
 			timer.scheduleAtFixedRate(new TimerTask() {
+				@Override
 				public void run() {
-					clearAndPreloadCdrCaches(cacheDepth, cacheLimit,
-							collectionsPid);
+					clearAndPreloadCdrCaches(cacheDepth, cacheLimit, collectionsPid);
 				}
 			}, 0, cacheResetTime * 3600000);
 		}
 	}
 
-	public void init(boolean readPermissionOnly) {
-
+	public void init() {
 		LOG.debug("init entry");
-
 		if (initComplete) { // only initialize once
-
 			LOG.debug("init exit; was already initialized");
-
 			return;
 		}
 
@@ -200,29 +136,19 @@ public class AccessControlUtils {
 			LOG.error("tripleStoreQueryService is NULL");
 		}
 
-		collectionsPid = tripleStoreQueryService
-				.fetchByRepositoryPath("/Collections");
+		collectionsPid = tripleStoreQueryService.fetchByRepositoryPath("/Collections");
 
-		cachePermissionsForRoles(readPermissionOnly);
+		if (collectionsPid != null) {
+			cachePermissionsForRoles();
+		}
 
 		initComplete = true;
 
 		LOG.debug("init exit");
 	}
 
-	public void startCacheCleanupThreadForCdrBasedAccessControl() {
-
-		if (cacheResetTime > 0) {
-			Timer timer = new Timer();
-
-			timer.scheduleAtFixedRate(new TimerTask() {
-				public void run() {
-					clearAndPreloadCdrCaches(cacheDepth, cacheLimit,
-							collectionsPid);
-				}
-			}, 0, cacheResetTime * 3600000);
-		}
-
+	public void cacheCleanupForCdrBasedAccessControl() {
+		clearAndPreloadCdrCaches(cacheDepth, cacheLimit, collectionsPid);
 	}
 
 	public AccessControlUtils() {
@@ -230,28 +156,27 @@ public class AccessControlUtils {
 
 	/*
 	 * Needs to get all active embargoes
-	 * 
+	 *
 	 * Needs to get role/group pairs from rels-ext
-	 * 
+	 *
 	 * Needs to calculate access control based on no-inherit, etc.
-	 * 
+	 *
 	 * Needs to build cache of access control
-	 * 
+	 *
 	 * Needs to clear out cache every hour
-	 * 
+	 *
 	 * Needs to return xml in the format described on March 14th.
-	 * 
-	 * 
+	 *
+	 *
 	 * Get permissions for roles
-	 * 
+	 *
 	 * put set of permissions for group in cache
-	 * 
+	 *
 	 * process normally
 	 */
 
 	// Given a complete RELS-EXT, extract access control information
-	private Map<String, List<String>> getAccessControlFromRelsExt(
-			Map<String, List<String>> relsext) {
+	private Map<String, List<String>> getAccessControlFromRelsExt(Map<String, List<String>> relsext) {
 
 		LOG.debug("getAccessControlFromRelsExt entry");
 
@@ -280,16 +205,15 @@ public class AccessControlUtils {
 			if (roles.contains(key)) { // found a role
 
 				List<String> groups = relsext.get(key); // get groups for the
-														// role
+				// role
 				List<String> permissions = rolePermissions.get(key); // get
-																		// permissions
-																		// for a
-																		// role
+				// permissions
+				// for a
+				// role
 
 				for (String permission : permissions) {
 
-					LOG.debug("getAccessControlFromRelsExt permission: "
-							+ permission);
+					LOG.debug("getAccessControlFromRelsExt permission: " + permission);
 
 					// need to build a cache of permissions with lists of groups
 					// need to update the list of groups for each permission as
@@ -309,8 +233,7 @@ public class AccessControlUtils {
 
 					permissionGroupSets.put(permission, temp);
 				}
-			} else if ("http://cdr.unc.edu/definitions/acl#inheritPermissions"
-					.equals(key)) {
+			} else if ("http://cdr.unc.edu/definitions/acl#inheritPermissions".equals(key)) {
 				map.put(key, relsext.get(key));
 			} else if ("http://cdr.unc.edu/definitions/acl#embargo".equals(key)) {
 				map.put(key, relsext.get(key));
@@ -326,8 +249,7 @@ public class AccessControlUtils {
 		while (permissionIterator.hasNext()) {
 			String permission = permissionIterator.next();
 
-			List groups = Arrays.asList(permissionGroupSets.get(permission)
-					.toArray());
+			List groups = Arrays.asList(permissionGroupSets.get(permission).toArray());
 
 			map.put(permission, groups);
 		}
@@ -361,7 +283,7 @@ public class AccessControlUtils {
 		return map;
 	}
 
-	private void cachePermissionsForRoles(boolean readPermissionsOnly) {
+	private void cachePermissionsForRoles() {
 
 		LOG.debug("cachePermissionsForRoles entry");
 
@@ -378,25 +300,20 @@ public class AccessControlUtils {
 			while (keys.hasMoreElements()) {
 				String role = (String) keys.nextElement();
 
-				String tempPermissions = (String) accessControlProperties
-						.getProperty(role);
+				String tempPermissions = accessControlProperties.getProperty(role);
 				if ((tempPermissions == null) || (tempPermissions.equals(""))) {
-					LOG.error("cachePermissionsForRoles: No permissions found for role: "
-							+ role);
+					LOG.error("cachePermissionsForRoles: No permissions found for role: " + role);
 				} else {
 					String[] temp = tempPermissions.split(" ");
 					if ((temp == null) || (temp.length < 1)) {
-						LOG.error("cachePermissionsForRoles: No permissions found for role: "
-								+ role);
+						LOG.error("cachePermissionsForRoles: No permissions found for role: " + role);
 					} else {
-						List<String> tempList = (List<String>) (readPermissionsOnly ? new ArrayList<String>(
-								1) : new ArrayList<String>(12));
+						List<String> tempList = (this.isOnlyCacheReadPermissions() ? new ArrayList<String>(1) : new ArrayList<String>(12));
 
 						for (String permission : temp) {
 							// Are we only interested in read permissions?
-							if (readPermissionsOnly) {
-								if ((permission != null)
-										&& (permission.endsWith("Read"))) {
+							if (this.isOnlyCacheReadPermissions()) {
+								if ((permission != null) && (permission.endsWith("Read"))) {
 									tempList.add(permission);
 								}
 							} else // Add all permissions
@@ -417,18 +334,15 @@ public class AccessControlUtils {
 	 * Clear and reload the CDR-related caches for access control
 	 */
 
-	private synchronized void clearAndPreloadCdrCaches(int depth, int cacheLimit,
-			PID collectionsPid) {
-		LOG.debug("clearAndPreloadCdrPermissionCache entry depth: " + depth
-				+ " cachelimit: " + cacheLimit);
-		
+	private synchronized void clearAndPreloadCdrCaches(int depth, int cacheLimit, PID collectionsPid) {
+		LOG.debug("clearAndPreloadCdrPermissionCache entry depth: " + depth + " cachelimit: " + cacheLimit);
+
 		ancestorMap.clear();
 		permissionMap.clear();
 
 		if (depth > 0) {
 			// getCollections
-			List<PID> collections = tripleStoreQueryService
-					.fetchChildContainers(collectionsPid);
+			List<PID> collections = tripleStoreQueryService.fetchChildContainers(collectionsPid);
 
 			List<PID> parents = new ArrayList(collections.size());
 			parents.addAll(collections);
@@ -441,8 +355,7 @@ public class AccessControlUtils {
 			while (tempDepth > 0 && permissionMap.size() < cacheLimit) {
 
 				for (PID pid : parents) {
-					List<PID> containers = tripleStoreQueryService
-							.fetchChildContainers(pid);
+					List<PID> containers = tripleStoreQueryService.fetchChildContainers(pid);
 					tempContainers.addAll(containers);
 
 					addContainersToPermissionMap(containers);
@@ -466,15 +379,13 @@ public class AccessControlUtils {
 
 		for (PID pid : containers) {
 			try {
-				map = getAccessControlFromRelsExt(tripleStoreQueryService
-						.fetchAllTriples(pid));
+				map = getAccessControlFromRelsExt(tripleStoreQueryService.fetchAllTriples(pid));
 
 				permissionMap.put(pid.getPid(), map);
 			} catch (NullPointerException npe) {
 				// Some items in the repository will not have our access
 				// control
-				LOG.debug("addContainersToPermissionMap: Could not find permission for: "
-						+ pid);
+				LOG.debug("addContainersToPermissionMap: Could not find permission for: " + pid);
 				LOG.debug(npe.getMessage());
 			}
 		}
@@ -486,8 +397,7 @@ public class AccessControlUtils {
 	 * Given the pid, return the appropriate set of access control
 	 */
 
-	public synchronized EvaluationResult processCdrAccessControl(String pid,
-			String attribute, URI type) {
+	public synchronized EvaluationResult processCdrAccessControl(String pid, String attribute, URI type) {
 
 		LOG.debug("processCdrAccessControl entry");
 
@@ -501,7 +411,7 @@ public class AccessControlUtils {
 
 		// String pid = inputPid.getPid();
 
-		init(false); // initialize if necessary
+		init(); // initialize if necessary
 
 		long processTotalTime = System.currentTimeMillis();
 
@@ -528,8 +438,7 @@ public class AccessControlUtils {
 		List<PID> ancestors = getListOfAncestors(pid);
 
 		LOG.debug("processCdrAccessControl Time in tripleStore getting repository path: "
-				+ (System.currentTimeMillis() - repositoryPathInfoTime)
-				+ " milliseconds");
+				+ (System.currentTimeMillis() - repositoryPathInfoTime) + " milliseconds");
 
 		// March backwards (upwards) through the resource and its ancestors to
 		// get access
@@ -543,8 +452,7 @@ public class AccessControlUtils {
 		// TODO: check boundary condition of size() == 0
 		for (int i = (ancestors.size() - 1); i >= 0; i--) {
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("processCdrAccessControl ancestor and pid: " + i
-						+ " " + ancestors.get(i).getPid());
+				LOG.debug("processCdrAccessControl ancestor and pid: " + i + " " + ancestors.get(i).getPid());
 			}
 
 			if (noInherit) {
@@ -556,11 +464,9 @@ public class AccessControlUtils {
 			String ancestorPid = ancestors.get(i).getPid();
 
 			map = getAncestorPermissions(map, ancestors, i, ancestorPid);
-			
-			LOG.debug("processCdrAccessControl Time in tripleStoreQuery for "
-					+ ancestors.get(i).getPid() + ": "
-					+ (System.currentTimeMillis() - tripleStoreTime)
-					+ " milliseconds");
+
+			LOG.debug("processCdrAccessControl Time in tripleStoreQuery for " + ancestors.get(i).getPid() + ": "
+					+ (System.currentTimeMillis() - tripleStoreTime) + " milliseconds");
 
 			// Look through the map for the requested permission
 			if (map != null) {
@@ -577,35 +483,29 @@ public class AccessControlUtils {
 
 					String foundPermission = (String) keyArray[j];
 
-					LOG.debug("processCdrAccessControl foundPermission: "
-							+ foundPermission);
+					LOG.debug("processCdrAccessControl foundPermission: " + foundPermission);
 
 					// Should we stop looking at ancestors above the current
 					// ancestor?
-					if (foundPermission
-							.equals("http://cdr.unc.edu/definitions/acl#inheritPermissions")) {
+					if (foundPermission.equals("http://cdr.unc.edu/definitions/acl#inheritPermissions")) {
 						LOG.debug("processCdrAccessControl 'No Inherit' found");
 						noInherit = true;
-					} else if (foundPermission
-							.equals("http://cdr.unc.edu/definitions/acl#embargo")) {
+					} else if (foundPermission.equals("http://cdr.unc.edu/definitions/acl#embargo")) {
 						// embargoes processed differently
 					} else {
 
 						// Only return permissions appropriate for the resource
 						// type
 
-						if ((resourceType == METADATA)
-								&& (foundPermission != null)
+						if ((resourceType == METADATA) && (foundPermission != null)
 								&& (!foundPermission.contains("Metadata"))) {
 							LOG.debug("metadata if");
 							continue;
-						} else if ((resourceType == DERIVATIVE)
-								&& (foundPermission != null)
+						} else if ((resourceType == DERIVATIVE) && (foundPermission != null)
 								&& (!foundPermission.contains("Derivative"))) {
 							LOG.debug("derivative if");
 							continue;
-						} else if ((resourceType == ORIGINAL)
-								&& (foundPermission != null)
+						} else if ((resourceType == ORIGINAL) && (foundPermission != null)
 								&& (!foundPermission.contains("Original"))) {
 							LOG.debug("original if");
 							continue;
@@ -615,8 +515,7 @@ public class AccessControlUtils {
 						// add read set of read permissions for each group to
 						// xml
 
-						List<String> groupsForPermission = (List<String>) map
-								.get(foundPermission);
+						List<String> groupsForPermission = (List<String>) map.get(foundPermission);
 
 						if (groupsForPermission == null) {
 							LOG.debug("processCdrAccessControl permissions list is NULL");
@@ -628,12 +527,9 @@ public class AccessControlUtils {
 								if (embargo) {
 									LOG.debug("processCdrAccessControl embargo in effect");
 									String group = groupsForPermission.get(k);
-									LOG.debug("processCdrAccessControl group: "
-											+ group);
-									if ((group != null)
-											&& !groups.contains(group)) {
-										LOG.debug("processCdrAccessControl "
-												+ group
+									LOG.debug("processCdrAccessControl group: " + group);
+									if ((group != null) && !groups.contains(group)) {
+										LOG.debug("processCdrAccessControl " + group
 												+ " is not a group which can bypass the embargo");
 										addPermission = false;
 									}
@@ -645,13 +541,10 @@ public class AccessControlUtils {
 									try {
 
 										AttributeValue attributeValue = null;
-										attributeValue = attributeFactory
-												.createValue(type, groupsForPermission.get(k));
+										attributeValue = attributeFactory.createValue(type, groupsForPermission.get(k));
 										bagValues.add(attributeValue);
 									} catch (Exception e) {
-										LOG.error(
-												"processCdrAccessControl Error creating attribute: "
-														+ e.getMessage(), e);
+										LOG.error("processCdrAccessControl Error creating attribute: " + e.getMessage(), e);
 										// continue;
 									}
 								}
@@ -665,8 +558,7 @@ public class AccessControlUtils {
 		BagAttribute bag = new BagAttribute(type, bagValues);
 
 		LOG.debug("processCdrAccessControl Total time in CDR function: "
-				+ (System.currentTimeMillis() - processTotalTime)
-				+ " milliseconds");
+				+ (System.currentTimeMillis() - processTotalTime) + " milliseconds");
 
 		LOG.debug("processCdrAccessControl exit");
 
@@ -674,8 +566,7 @@ public class AccessControlUtils {
 
 	}
 
-	private Map getAncestorPermissions(Map map, List<PID> ancestors, int i,
-			String ancestorPid) {
+	private Map getAncestorPermissions(Map map, List<PID> ancestors, int i, String ancestorPid) {
 		// Check the permissions cache to see if it has the permissions for
 		// the current UUID
 		if (permissionMap.containsKey(ancestorPid)) {
@@ -684,15 +575,13 @@ public class AccessControlUtils {
 			// Get the permissions for the current UUID and add them to the
 			// cache with UUID as the key
 			try {
-				map = getAccessControlFromRelsExt(tripleStoreQueryService
-						.fetchAllTriples(ancestors.get(i)));
+				map = getAccessControlFromRelsExt(tripleStoreQueryService.fetchAllTriples(ancestors.get(i)));
 
 				permissionMap.put(ancestorPid, map);
 			} catch (NullPointerException npe) {
 				// Some items in the repository will not have our access
 				// control
-				LOG.debug("getAncestorPermissions Could not find permission for: "
-						+ ancestors.get(i));
+				LOG.debug("getAncestorPermissions Could not find permission for: " + ancestors.get(i));
 				LOG.debug(npe.getMessage());
 			}
 		}
@@ -709,9 +598,7 @@ public class AccessControlUtils {
 		} else {
 			// Get the list of ancestors for the current UUID and add them to
 			// the cache with UUID as the key
-			ancestors = tripleStoreQueryService
-					.lookupRepositoryAncestorPids(new edu.unc.lib.dl.fedora.PID(
-							pid));
+			ancestors = tripleStoreQueryService.lookupRepositoryAncestorPids(new edu.unc.lib.dl.fedora.PID(pid));
 			ancestorMap.put(pid, ancestors);
 		}
 		return ancestors;
@@ -764,7 +651,7 @@ public class AccessControlUtils {
 			LOG.debug("resourceType is ORIGINAL");
 		else if (resourceType == DERIVATIVE)
 			LOG.debug("resourceType is DERIVATIVE");
-		
+
 		return resourceType;
 	}
 
@@ -783,7 +670,7 @@ public class AccessControlUtils {
 
 		String pid = inputPid.getPid();
 
-		init(true); // initialize if necessary, only record Read permissions
+		init(); // initialize if necessary, only record Read permissions
 
 		long processTotalTime = System.currentTimeMillis();
 
@@ -804,8 +691,7 @@ public class AccessControlUtils {
 		List<PID> ancestors = getListOfAncestors(pid);
 
 		LOG.debug("processCdrAccessControl Time in tripleStore getting repository path: "
-				+ (System.currentTimeMillis() - repositoryPathInfoTime)
-				+ " milliseconds");
+				+ (System.currentTimeMillis() - repositoryPathInfoTime) + " milliseconds");
 
 		// March backwards (upwards) through the resource and its ancestors to
 		// get access
@@ -819,8 +705,7 @@ public class AccessControlUtils {
 		// TODO: check boundary condition of size() == 0
 		for (int i = (ancestors.size() - 1); i >= 0; i--) {
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("processCdrAccessControl ancestor and pid: " + i
-						+ " " + ancestors.get(i).getPid());
+				LOG.debug("processCdrAccessControl ancestor and pid: " + i + " " + ancestors.get(i).getPid());
 			}
 
 			if (noInherit) {
@@ -832,11 +717,9 @@ public class AccessControlUtils {
 			String ancestorPid = ancestors.get(i).getPid();
 
 			map = getAncestorPermissions(map, ancestors, i, ancestorPid);
-			
-			LOG.debug("processCdrAccessControl Time in tripleStoreQuery for "
-					+ ancestors.get(i).getPid() + ": "
-					+ (System.currentTimeMillis() - tripleStoreTime)
-					+ " milliseconds");
+
+			LOG.debug("processCdrAccessControl Time in tripleStoreQuery for " + ancestors.get(i).getPid() + ": "
+					+ (System.currentTimeMillis() - tripleStoreTime) + " milliseconds");
 
 			// Look through the map for the requested permission
 			if (map != null) {
@@ -853,66 +736,56 @@ public class AccessControlUtils {
 
 					String foundPermission = (String) keyArray[j];
 
-					LOG.debug("processCdrAccessControl foundPermission: "
-							+ foundPermission);
+					LOG.debug("processCdrAccessControl foundPermission: " + foundPermission);
 
 					// Should we stop looking at ancestors above the current
 					// ancestor?
-					if (foundPermission
-							.equals("http://cdr.unc.edu/definitions/acl#inheritPermissions")) {
+					if (foundPermission.equals("http://cdr.unc.edu/definitions/acl#inheritPermissions")) {
 						LOG.debug("processCdrAccessControl 'No Inherit' found");
 						noInherit = true;
-					} else if (foundPermission
-							.equals("http://cdr.unc.edu/definitions/acl#embargo")) {
+					} else if (foundPermission.equals("http://cdr.unc.edu/definitions/acl#embargo")) {
 						// embargoes processed differently
 					} else {
 
-						// Have a permission, need to write out access control for it
-						if (!permissionGroupSets
-								.containsKey(foundPermission)) {
+						// Have a permission, need to write out access control
+						// for it
+						if (!permissionGroupSets.containsKey(foundPermission)) {
 							Set<String> temp = new HashSet<String>();
-							permissionGroupSets.put(
-									foundPermission, temp);
+							permissionGroupSets.put(foundPermission, temp);
 						}
-				
-						
-						
+
 						// need to convert groups to permissions
 						// add read set of read permissions for each group to
 						// xml
 
-						List<String> groupsForPermission = (List<String>) map
-								.get(foundPermission);
+						List<String> groupsForPermission = (List<String>) map.get(foundPermission);
 
 						if (groupsForPermission == null) {
 							LOG.debug("processCdrAccessControl permissions list is NULL");
 						} else {
 							for (String group : groupsForPermission) {
 								// add groups to result
-								LOG.debug("processCdrAccessControl group: "
-										+ group);
+								LOG.debug("processCdrAccessControl group: " + group);
 
 								if (embargo) {
 									LOG.debug("processCdrAccessControl embargo in effect");
-									
-									if ((group != null)
-											&& !groups.contains(group)) {
-										LOG.debug("processCdrAccessControl "
-												+ group
+
+									if ((group != null) && !groups.contains(group)) {
+										LOG.debug("processCdrAccessControl " + group
 												+ " is not a group which can bypass the embargo");
 									}
-									
-									if(groups.contains(group)) {
+
+									if (groups.contains(group)) {
 										Set<String> temp = permissionGroupSets.get(foundPermission);
 
 										temp.add(group);
-										permissionGroupSets.put(foundPermission, temp);		
+										permissionGroupSets.put(foundPermission, temp);
 									}
 								} else { // no embargo
 									Set<String> temp = permissionGroupSets.get(foundPermission);
 
 									temp.add(group);
-									permissionGroupSets.put(foundPermission, temp);	
+									permissionGroupSets.put(foundPermission, temp);
 								}
 							}
 						}
@@ -922,8 +795,8 @@ public class AccessControlUtils {
 		}
 
 		/*
-		 * <permissions> <rights> <originalsRead>rla</originalsRead>
-		 * <originalsRead>abc</originalsRead> </rights> </permissions>
+		 * <permissions> <rights> <originalsRead>rla</originalsRead> <originalsRead>abc</originalsRead> </rights>
+		 * </permissions>
 		 */
 		// turn permission sets into lists
 
@@ -938,14 +811,13 @@ public class AccessControlUtils {
 
 		while (permissionIterator.hasNext()) {
 			String permission = permissionIterator.next();
-			LOG.debug("processCdrAccessControl permission element: "+ permission);
-			List permittedGroups = Arrays.asList(permissionGroupSets.get(
-					permission).toArray());
+			LOG.debug("processCdrAccessControl permission element: " + permission);
+			List permittedGroups = Arrays.asList(permissionGroupSets.get(permission).toArray());
 
 			for (Object group : permittedGroups) {
 				String groupName = (String) group;
 
-				LOG.debug("processCdrAccessControl group element: "+ groupName);
+				LOG.debug("processCdrAccessControl group element: " + groupName);
 				Element permissionEl = new Element(permission);
 				permissionEl.addContent(groupName);
 				rightsEl.addContent(permissionEl);
@@ -968,8 +840,7 @@ public class AccessControlUtils {
 		// }
 
 		LOG.debug("processCdrAccessControl Total time in CDR function: "
-				+ (System.currentTimeMillis() - processTotalTime)
-				+ " milliseconds");
+				+ (System.currentTimeMillis() - processTotalTime) + " milliseconds");
 
 		LOG.debug("processCdrAccessControl exit");
 	}
@@ -985,8 +856,7 @@ public class AccessControlUtils {
 		// TODO: check boundary condition of size() == 0
 		for (int i = (ancestors.size() - 1); i >= 0; i--) {
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("getEmbargoGroups: ancestors " + i + " "
-						+ ancestors.get(i).getPid());
+				LOG.debug("getEmbargoGroups: ancestors " + i + " " + ancestors.get(i).getPid());
 			}
 
 			long tripleStoreTime = System.currentTimeMillis();
@@ -1001,22 +871,18 @@ public class AccessControlUtils {
 				// Get the permissions for the current UUID and add them to the
 				// cache with UUID as the key
 				try {
-					map = getAccessControlFromRelsExt(tripleStoreQueryService
-							.fetchAllTriples(ancestors.get(i)));
+					map = getAccessControlFromRelsExt(tripleStoreQueryService.fetchAllTriples(ancestors.get(i)));
 
 					permissionMap.put(ancestorPid, map);
 				} catch (NullPointerException npe) {
 					// Some items in the repository will not have our access
 					// control
-					LOG.error("getEmbargoGroups: Could not find permission for: "
-							+ ancestors.get(i));
+					LOG.error("getEmbargoGroups: Could not find permission for: " + ancestors.get(i));
 					LOG.error(npe.getMessage());
 				}
 			}
-			LOG.debug("getEmbargoGroups: Time in tripleStoreQuery for "
-					+ ancestors.get(i).getPid() + ": "
-					+ (System.currentTimeMillis() - tripleStoreTime)
-					+ " milliseconds");
+			LOG.debug("getEmbargoGroups: Time in tripleStoreQuery for " + ancestors.get(i).getPid() + ": "
+					+ (System.currentTimeMillis() - tripleStoreTime) + " milliseconds");
 
 			// Look through the map for embargos
 			if (map != null) {
@@ -1036,8 +902,7 @@ public class AccessControlUtils {
 					// content type
 					String foundPermission = (String) keyArray[j];
 
-					LOG.debug("getEmbargoGroups: foundPermission: "
-							+ foundPermission);
+					LOG.debug("getEmbargoGroups: foundPermission: " + foundPermission);
 
 					// Should we stop looking at ancestors above the current
 					// ancestor?
@@ -1049,8 +914,7 @@ public class AccessControlUtils {
 					// if the requested permission equals the one in the map,
 					// get the list of associated groups
 					if (embargoFound) {
-						List<String> list = (List<String>) map
-								.get(foundPermission);
+						List<String> list = (List<String>) map.get(foundPermission);
 
 						if (list == null) {
 							LOG.debug("getEmbargoGroups: list of groups for embargo is NULL");
@@ -1067,30 +931,25 @@ public class AccessControlUtils {
 
 								String[] result = temp.split("\\s");
 
-								LOG.debug("getEmbargoGroups: word count: "
-										+ result.length);
+								LOG.debug("getEmbargoGroups: word count: " + result.length);
 								for (String word : result) {
-									LOG.debug("getEmbargoGroups: list value: "
-											+ word);
+									LOG.debug("getEmbargoGroups: list value: " + word);
 								}
 
 								if (result.length < 2) {
-									LOG.debug("getEmbargoGroups: list is not complete: "
-											+ temp);
+									LOG.debug("getEmbargoGroups: list is not complete: " + temp);
 									continue;
 								}
 
 								// parse date. If date > today, continue
 								String stringDate = result[0];
-								DateFormat df = new SimpleDateFormat(
-										"yyyy-MM-dd");
+								DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 								Date embargo;
 
 								try {
 									embargo = df.parse(stringDate);
 								} catch (ParseException e) {
-									LOG.error("getEmbargoGroups: error parsing embargo date: "
-											+ stringDate);
+									LOG.error("getEmbargoGroups: error parsing embargo date: " + stringDate);
 									e.printStackTrace();
 									continue;
 								}
@@ -1100,9 +959,7 @@ public class AccessControlUtils {
 								// if the embargo has passed
 								if (!today.before(embargo)) {
 
-									LOG.debug("getEmbargoGroups: embargo date of "
-											+ embargo.toString()
-											+ " has passed");
+									LOG.debug("getEmbargoGroups: embargo date of " + embargo.toString() + " has passed");
 									continue;
 								}
 
@@ -1110,8 +967,7 @@ public class AccessControlUtils {
 									// if active, parse groups and add to list
 									// of
 									// groups (de duplicate)
-									LOG.debug("getEmbargoGroups: adding group to bypass embargo: "
-											+ result[x]);
+									LOG.debug("getEmbargoGroups: adding group to bypass embargo: " + result[x]);
 									groups.add(result[x]);
 								}
 							}
@@ -1121,8 +977,8 @@ public class AccessControlUtils {
 			}
 		}
 
-		LOG.debug("getEmbargoGroupsTotal time in CDR embargo function: "
-				+ (System.currentTimeMillis() - start) + " milliseconds");
+		LOG.debug("getEmbargoGroupsTotal time in CDR embargo function: " + (System.currentTimeMillis() - start)
+				+ " milliseconds");
 
 		if (LOG.isDebugEnabled()) {
 			for (String group : groups) {
@@ -1193,15 +1049,19 @@ public class AccessControlUtils {
 		LOG.debug("logPermissions exit");
 	}
 
-	private int convertStringToIntOtherwiseReturnZero(String value) {
-		int result = 0;
+	public boolean isOnlyCacheReadPermissions() {
+		return onlyCacheReadPermissions;
+	}
 
-		try {
-			result = Integer.parseInt(value);
-		} catch (Exception e) {
-			return 0;
-		}
+	public void setOnlyCacheReadPermissions(boolean readOnlyPermissions) {
+		this.onlyCacheReadPermissions = readOnlyPermissions;
+	}
 
-		return result;
+	public AttributeFactory getAttributeFactory() {
+		return attributeFactory;
+	}
+
+	public void setAttributeFactory(AttributeFactory attributeFactory) {
+		this.attributeFactory = attributeFactory;
 	}
 }

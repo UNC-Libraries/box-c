@@ -27,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.agents.GroupAgent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -333,7 +332,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 		return request;
 	}
 
-	public AgentFactory getAgentManager() {
+	public AgentManager getAgentManager() {
 		return agentManager;
 	}
 

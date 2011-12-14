@@ -176,7 +176,7 @@
 				<entry key="smbarr" value="Steve Barr"/>
 			</map>
 		</property>
-		<property name="autoinitialize" value="no"/>
+		<property name="autoinitialize" value="${auto.initialize.repo}"/>
 		<property name="initialBatchIngestDir" value="${initial.batch.ingest.dir}"/>
 	</bean>
 

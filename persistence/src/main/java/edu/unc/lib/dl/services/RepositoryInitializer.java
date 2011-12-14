@@ -110,6 +110,9 @@ public class RepositoryInitializer implements Runnable {
 				throw new Error("RepositoryInitializer is missing dependencies and cannot run as configured.");
 			}
 
+			log.warn("Waiting on Fedora startup to initialize repository, polling..");
+			this.managementClient.pollForObject(ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID(), 30, 600);
+
 			ingestContentModelsServices();
 
 			ingestRepositoryFolder();
@@ -122,13 +125,11 @@ public class RepositoryInitializer implements Runnable {
 			ingestGroupsUsersAgents();
 
 			this.digitalObjectManager.setAvailable(true);
-			log.info("Repository initialized");
+			log.warn("Repository was initialized");
 		} catch (ServiceException e) {
-			log.error("Fedora service misconfigured or unavailable during initialization", e);
-			throw new Error("Fedora service misconfigured or unavailable during initialization", e);
+			log.fatal("Fedora service misconfigured or unavailable during initialization", e);
 		} catch (RuntimeException e) {
-			log.error("Could not initialize repository, unexpected exception", e);
-			throw new Error("Could not initialize repository, unexpected exception", e);
+			log.fatal("Could not initialize repository, unexpected exception", e);
 		}
 	}
 
@@ -159,10 +160,8 @@ public class RepositoryInitializer implements Runnable {
 				a = this.getAgentManager().addPersonAgent(a, repoAgent, "initializing administrators");
 				this.getAgentManager().addMembership(adminGroup, a, adminGroup);
 			}
-		} catch (IngestException e) {
-			throw new Error("Cannot initialize administrators, see log", e);
-		} catch (NotFoundException e) {
-			throw new Error("Cannot initialize administrators, see log", e);
+		} catch (Exception e) {
+			log.error("Cannot initialize administrators, see log", e);
 		}
 	}
 
@@ -179,7 +178,7 @@ public class RepositoryInitializer implements Runnable {
 			this.getFolderManager().createPath("/admin/software", adminGroup, repoAgent);
 			this.getFolderManager().createPath("/Collections", adminGroup, repoAgent);
 		} catch (IngestException e) {
-			throw new Error("Cannot create administrative folders", e);
+			log.error("Cannot create administrative folders", e);
 		}
 	}
 
@@ -232,12 +231,12 @@ public class RepositoryInitializer implements Runnable {
 	private void ingestContentModelsServices() {
 		try {
 			File tmpDir = File.createTempFile("RepositoryInitializerBatch", "");
+			tmpDir.delete();
+			tmpDir.mkdir();
 			FileUtils.copyFolder(getInitialBatchIngestDir(), tmpDir);
 			getDigitalObjectManager().ingestBatchNow(tmpDir);
-		} catch (IngestException e) {
-			throw new Error("Cannot ingest content models and services.", e);
-		} catch (IOException e) {
-			throw new Error("Cannot copy initial content models and services ingest batch.", e);
+		} catch (Exception e) {
+			log.error("Cannot copy initial content models and services ingest batch.", e);
 		}
 	}
 

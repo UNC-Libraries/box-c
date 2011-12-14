@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Resource;
+import javax.mail.internet.MimeMessage;
 
 import org.jdom.Document;
 import org.junit.After;
@@ -44,6 +45,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.ws.client.WebServiceTransportException;
@@ -70,19 +74,19 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 public class BatchIngestServiceTest {
 	public static final String batchDir = "/tmp/batch-ingest";
 
-	@Resource
-	private DigitalObjectManagerImpl digitalObjectManagerImpl = null;
+	@Resource private DigitalObjectManagerImpl digitalObjectManagerImpl;
 
-	@Resource
-	private BatchIngestService batchIngestService = null;
+	@Resource private BatchIngestService batchIngestService;
 
-	@Resource
-	private TripleStoreQueryService tripleStoreQueryService;
+	@Resource private TripleStoreQueryService tripleStoreQueryService;
 
-	@Resource
-	private ManagementClient managementClient = null;
+	@Resource private ManagementClient managementClient;
 
-	@Resource AccessClient accessClient = null;
+	@Resource AccessClient accessClient;
+
+	@Resource(name="javaMailSender") JavaMailSender mailSender;
+
+	@Resource JmsTemplate jmsTemplate;
 
 	private static final String MD_CONTENTS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 		+ "<m:structMap xmlns:m=\"http://www.loc.gov/METS/\">" + "<m:div TYPE=\"Container\">"
@@ -195,6 +199,8 @@ public class BatchIngestServiceTest {
 	public void testQueueBatch() {
 		try {
 			reset(this.managementClient);
+			reset(this.jmsTemplate);
+			reset(this.mailSender);
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
 			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
 			PID container = new PID("test:container");
@@ -225,48 +231,8 @@ public class BatchIngestServiceTest {
 
 			// verify batch ingest called
 			verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new Error(e);
-		}
-	}
-
-	/**
-	 * Test method for {@link edu.unc.lib.dl.services.BatchIngestService#ingestBatchNow(java.io.File)}.
-	 */
-	@Test
-	public void testIngestBatchNow() {
-		try {
-			reset(this.managementClient);
-			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
-			PID container = new PID("test:container");
-			SingleFolderSIP sip = new SingleFolderSIP();
-			sip.setContainerPID(container);
-			sip.setOwner(user);
-			sip.setSlug("testslug");
-
-			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
-			List<String> personrow = new ArrayList<String>();
-			personrow.add(user.getPID().getURI());
-			personrow.add(user.getName());
-			personrow.add(user.getOnyen());
-			List<List<String>> answer = new ArrayList<List<String>>();
-			answer.add(personrow);
-			when(this.tripleStoreQueryService.queryResourceIndex(any(String.class))).thenReturn(answer);
-			when(this.tripleStoreQueryService.lookupRepositoryPath(eq(container))).thenReturn("/test/container/path");
-			when(this.tripleStoreQueryService.fetchByRepositoryPath(eq("/test/container/path"))).thenReturn(container);
-			when(this.tripleStoreQueryService.verify(any(PID.class))).thenReturn(container);
-
-			when(this.managementClient.upload(any(File.class))).thenReturn("upload:19238");
-
-			ArrayList<URI> ans = new ArrayList<URI>();
-			ans.add(ContentModelHelper.Model.CONTAINER.getURI());
-			when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
-
-			digitalObjectManagerImpl.addSingleObject(sip, user, "testing add single object (now)");
-
-			// verify batch ingest called
-			verify(this.managementClient, times(1)).ingest(any(Document.class), any(Format.class), any(String.class));
+			verify(this.jmsTemplate, times(1)).send(any(MessageCreator.class));
+			verify(this.mailSender, times(1)).send(any(MimeMessage.class));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Error(e);
@@ -277,6 +243,8 @@ public class BatchIngestServiceTest {
 	public void testIngestWithFedora503Timeout() {
 		try {
 			reset(this.managementClient);
+			reset(this.jmsTemplate);
+			reset(this.mailSender);
 			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenAnswer(new Answer<Boolean>() {
 
 				@Override
@@ -322,6 +290,11 @@ public class BatchIngestServiceTest {
 
 			// verify batch ingest called
 			verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));
+			//verify(this.managementClient, times(1)).addObjectRelationship(container, anyString(), any(PID.class));
+			//verify(this.managementClient, times(1)).modifyDatastreamByReference(container, "MD_EVENTS", any(Boolean.class), anyString(),
+					//any(List<String>.class), anyString(), anyString(), anyString(), anyString(), anyString());
+			verify(this.jmsTemplate, times(1)).send(any(MessageCreator.class));
+			verify(this.mailSender, times(1)).send(any(MimeMessage.class));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Error(e);
@@ -331,13 +304,13 @@ public class BatchIngestServiceTest {
 	// TODO verify mail and jms
 	// TODO verify container operations
 
-	@Test
-	public void testWithFedoraUnavailable() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	@Test
-	public void testWithMismatchedChecksum() {
-		fail("Not yet implemented"); // TODO
-	}
+//	@Test
+//	public void testWithFedoraUnavailable() {
+//		fail("Not yet implemented"); // TODO
+//	}
+//
+//	@Test
+//	public void testWithMismatchedChecksum() {
+//		fail("Not yet implemented"); // TODO
+//	}
 }

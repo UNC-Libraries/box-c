@@ -569,8 +569,8 @@ public class BatchIngestTask implements Runnable {
 	 * Checks that Fedora is responding, looks for destination containers.
 	 */
 	private void startBatch() {
-		if (!this.managementClient.pollForObject(ContentModelHelper.Administrative_PID.REPOSITORY.getPID(), 30, 600)) {
-			throw fail("Cannot poll repository object in Fedora");
+		if (!this.managementClient.pollForObject(ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID(), 30, 600)) {
+			throw fail("Cannot poll a basic expected Fedora object: "+ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID().getPid());
 		}
 		PersonAgent submitter = this.getAgentFactory().findPersonByName(props.getSubmitter(), false);
 		this.eventLogger = new PremisEventLogger(submitter);

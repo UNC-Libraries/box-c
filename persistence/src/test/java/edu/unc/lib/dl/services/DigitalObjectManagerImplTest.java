@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -46,6 +47,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.mail.SimpleMailMessage;
@@ -59,11 +61,13 @@ import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
+import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
+import edu.unc.lib.dl.ingest.sip.SingleFolderSIP;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -452,5 +456,47 @@ public class DigitalObjectManagerImplTest {
 		this.getDigitalObjectManagerImpl().addBatch(sip, user, "testAdd for a good METS SIP");
 		// verify batch ingest called
 		verify(this.batchIngestQueue, times(1)).add(any(File.class));
+	}
+
+	/**
+	 * Test method for {@link edu.unc.lib.dl.services.BatchIngestService#ingestBatchNow(java.io.File)}.
+	 */
+	@Test
+	public void testSingleIngestNow() {
+		try {
+			reset(this.managementClient);
+			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
+			PID container = new PID("test:container");
+			SingleFolderSIP sip = new SingleFolderSIP();
+			sip.setContainerPID(container);
+			sip.setOwner(user);
+			sip.setSlug("testslug");
+
+			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
+			List<String> personrow = new ArrayList<String>();
+			personrow.add(user.getPID().getURI());
+			personrow.add(user.getName());
+			personrow.add(user.getOnyen());
+			List<List<String>> answer = new ArrayList<List<String>>();
+			answer.add(personrow);
+			when(this.tripleStoreQueryService.queryResourceIndex(any(String.class))).thenReturn(answer);
+			when(this.tripleStoreQueryService.lookupRepositoryPath(eq(container))).thenReturn("/test/container/path");
+			when(this.tripleStoreQueryService.fetchByRepositoryPath(eq("/test/container/path"))).thenReturn(container);
+			when(this.tripleStoreQueryService.verify(any(PID.class))).thenReturn(container);
+
+			when(this.managementClient.upload(any(File.class))).thenReturn("upload:19238");
+
+			ArrayList<URI> ans = new ArrayList<URI>();
+			ans.add(ContentModelHelper.Model.CONTAINER.getURI());
+			when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
+
+			digitalObjectManagerImpl.addSingleObject(sip, user, "testing add single object (now)");
+
+			// verify batch ingest called
+			verify(this.managementClient, times(1)).ingest(any(Document.class), any(Format.class), any(String.class));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Error(e);
+		}
 	}
 }

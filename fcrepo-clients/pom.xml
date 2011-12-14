@@ -112,11 +112,6 @@
 			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.fcrepo</groupId>
-			<artifactId>sunxacml</artifactId>
-			<version>1.2-PATCHED</version>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.2</version>
