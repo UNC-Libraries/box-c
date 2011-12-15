@@ -35,26 +35,26 @@ import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
+import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
+import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/service-context-unit-conductor.xml" })
+//@RunWith(SpringJUnit4ClassRunner.class)
+//@ContextConfiguration(locations = { "/service-context-unit-conductor.xml" })
 public class ServicesConductorTest extends Assert {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ServicesConductorTest.class);
+	protected static final Logger LOG = LoggerFactory.getLogger(ServicesConductorTest.class);
 	
-	@Resource
-	private ServicesConductor servicesConductor;
-	@Resource
-	private MessageDirector messageDirector;
-	private ServicesThreadPoolExecutor executor;
-	@Resource
-	private List<ObjectEnhancementService> servicesList = null;
-	private List<ObjectEnhancementService> delayServices;
-	@Resource
-	private ServicesQueueMessageFilter servicesMessageFilter;
+	protected ServicesConductor servicesConductor;
+	protected MessageDirector messageDirector;
+	protected ServicesThreadPoolExecutor executor;
+	protected List<ObjectEnhancementService> servicesList = null;
+	protected List<ObjectEnhancementService> delayServices;
+	protected ServicesQueueMessageFilter servicesMessageFilter;
 	
 	public static AtomicInteger inIsApplicable;
 	public static AtomicInteger incompleteServices;
@@ -62,24 +62,40 @@ public class ServicesConductorTest extends Assert {
 	public static AtomicInteger servicesCompleted;
 	
 	public long delayServiceTime = 0;
-	
-	private int numberTestMessages;
+	protected int numberTestMessages;
 	
 	public ServicesConductorTest(){
 		delayServices = new ArrayList<ObjectEnhancementService>();
 		DelayService delayService = new DelayService();
 		delayServices.add(delayService);
 		
+		servicesList = new ArrayList<ObjectEnhancementService>();
+		servicesList.add(new TechnicalMetadataEnhancementService());
+		servicesList.add(new ImageEnhancementService());
+		servicesList.add(new ThumbnailEnhancementService());
+		
 	}
 	
 	@Before
 	public void setUp() throws Exception {
-		servicesConductor.resume();
-		while (!servicesConductor.isEmpty());
-		servicesConductor.shutdownNow();
-		while (servicesConductor.getExecutor().isTerminating() && !servicesConductor.getExecutor().isShutdown());
+		servicesConductor = new ServicesConductor();
+		servicesConductor.setRecoverableDelay(0);
+		servicesConductor.setUnexpectedExceptionDelay(0);
+		servicesConductor.setMaxThreads(3);
+		servicesConductor.setFailedPids(new FailedObjectHashMap());
 		servicesConductor.init();
-		servicesConductor.clearState();
+		
+		List<MessageConductor> conductors = new ArrayList<MessageConductor>(1);
+		conductors.add(servicesConductor);
+		
+		messageDirector = new MessageDirector();
+		messageDirector.setConductorsList(conductors);
+		
+		servicesMessageFilter = new ServicesQueueMessageFilter();
+		List<MessageFilter> filters = new ArrayList<MessageFilter>();
+		filters.add(servicesMessageFilter);
+		messageDirector.setFilters(filters);
+		
 		this.executor = servicesConductor.getExecutor();
 		inIsApplicable = new AtomicInteger(0);
 		incompleteServices = new AtomicInteger(0);
@@ -119,8 +135,12 @@ public class ServicesConductorTest extends Assert {
 			messageDirector.direct(message);
 		}
 		
-		while (servicesCompleted.get() != numberTestMessages * 2);
+		while (!servicesConductor.isEmpty());
 
+		if (servicesCompleted.get() != numberTestMessages * 2){
+			LOG.warn("Number of services completed (" + servicesCompleted.get() + 
+					") does not match number of test messages (" + (numberTestMessages * 2) + ")");
+		}
 		assertEquals(servicesCompleted.get(), numberTestMessages * 2);
 	}
 	
@@ -174,71 +194,9 @@ public class ServicesConductorTest extends Assert {
 		servicesConductor.resume();
 	}
 	
-	/*@Test
-	public void stressExecutorOperations() throws Exception {
-		for (int i=0; i<50; i++){
-			setUp();
-			executorOperations();
-		}
-	}*/
 	
-	@Test
-	public void abortPause() throws InterruptedException {
-		servicesConductor.setServices(delayServices);
-		servicesMessageFilter.setServices(delayServices);
-		
-		delayServiceTime = 200;
-		
-		assertTrue(servicesConductor.isReady());
-		servicesConductor.pause();
-		assertTrue(servicesConductor.isReady());
-		assertTrue(servicesConductor.isIdle());
-		int numberTestMessages = 10;
-		//queue items while paused, make sure they aren't moving
-		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
-					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
-			messageDirector.direct(message);
-		}
-		
-		Thread.sleep(100);
-		
-		assertTrue(servicesConductor.getQueueSize() == numberTestMessages);
-		assertTrue(servicesConductor.getLockedPids().size() == 0);
-		
-		//Unpause and let the first max threads number of messages start processing, then pause mid-way
-		servicesConductor.resume();
-		while (servicesConductor.getLockedPids().size() < servicesConductor.getMaxThreads() 
-				&& servicesConductor.getQueueSize() > 0);
-		synchronized(servicesConductor.getPidQueue()){
-			servicesConductor.pause();
-		}
-		
-		//Wait for isApplicables to finish so that services are paused midway
-		while (betweenApplicableAndEnhancement.get() < servicesConductor.getMaxThreads());
-		
-		assertTrue(servicesConductor.getLockedPids().size() == servicesConductor.getMaxThreads());
-		assertEquals(incompleteServices.get(), servicesConductor.getMaxThreads());
-		//Abort the currently active threads
-		servicesConductor.abort();
-		
-		while (servicesConductor.getExecutor().isTerminating() || servicesConductor.getExecutor().isShutdown());
-		
-		executor = servicesConductor.getExecutor();
-		//Verify that current threads died but that the remaining items are still ready to go
-		assertTrue(servicesConductor.getLockedPids().size() == 0);
-		assertTrue(servicesConductor.getQueueSize() == numberTestMessages - servicesConductor.getMaxThreads());
-		//LOG.debug("Queue: " + executor.getQueue().size() + " Active:" + executor.getActiveCount());
-		//assertTrue(executor.getQueue().size() + executor.getActiveCount() == numberTestMessages - servicesConductor.getMaxThreads());
-		
-		//Process remaining message queue, then shut down conductor
-		servicesConductor.resume();
-		while (servicesConductor.getLockedPids().size() > 0 || servicesConductor.getQueueSize() > 0);
-		
-		assertEquals(servicesCompleted.get(), numberTestMessages - servicesConductor.getMaxThreads());
-	}
 	
-	@Test
+	//@Test
 	public void addToShutdownExecutor(){
 		servicesConductor.shutdownNow();
 		assertFalse(servicesConductor.isReady());
@@ -281,8 +239,6 @@ public class ServicesConductorTest extends Assert {
 	public List<ObjectEnhancementService> getServicesList() {
 		return servicesList;
 	}
-
-
 
 	public void setServicesList(List<ObjectEnhancementService> servicesList) {
 		this.servicesList = servicesList;

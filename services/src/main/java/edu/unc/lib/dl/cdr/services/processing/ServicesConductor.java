@@ -470,6 +470,9 @@ public class ServicesConductor implements MessageConductor {
 			// Check if there were any failed services for this pid. If there were, check if the current service
 			// was one of them.
 			
+			if (LOG.isDebugEnabled())
+				LOG.debug("Applying service " + s.getClass().getCanonicalName() + " to " + pidMessage.getPIDString());
+			
 			Set<String> failedServices = null;
 			synchronized(failedPids){
 				failedServices = failedPids.get(pidMessage.getPIDString());
@@ -477,8 +480,11 @@ public class ServicesConductor implements MessageConductor {
 				if (!(s.isActive() &&
 						((pidMessage.getServiceName() != null && pidMessage.getServiceName().equals(s.getClass().getName()))
 							|| s.isApplicable(pidMessage))
-						&& (failedServices == null || !failedServices.contains(s.getClass().getName()))))
+						&& (failedServices == null || !failedServices.contains(s.getClass().getName())))){
+					if (LOG.isDebugEnabled())
+						LOG.debug("Enhancement not run: " + s.getClass().getCanonicalName() + " on " + pidMessage.getPIDString());
 					return;
+				}
 			}
 			
 			//Generate the enhancement
@@ -513,15 +519,21 @@ public class ServicesConductor implements MessageConductor {
 			LOG.debug("Starting new run of ServiceConductor thread " + this);
 			//Get the next message, waiting as long as necessary for one to be free
 			PIDMessage pidMessage = getNextMessage();
+			
+			if (LOG.isDebugEnabled())
+				LOG.debug("Received pid " + pidMessage.getPIDString() + ": " + pidMessage.getFilteredServices());
 
 			if (pidMessage != null && pidMessage.getFilteredServices() != null) {
 				try {
 					//Quit before doing work if thread was interrupted
-					if (Thread.currentThread().isInterrupted())
+					if (Thread.currentThread().isInterrupted()){
+						LOG.debug("Thread was interrupted");
 						return;
+					}
 					for (ObjectEnhancementService s : pidMessage.getFilteredServices()) {
 						try {
 							if (Thread.currentThread().isInterrupted()){
+								LOG.debug("Thread was interrupted");
 								return;
 							}
 							//Apply the service
