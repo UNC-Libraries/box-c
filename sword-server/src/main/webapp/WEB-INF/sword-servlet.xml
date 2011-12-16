@@ -68,6 +68,11 @@
 		<property name="password" value="${fedora.admin.password}" />
 	</bean>
 	
+	<bean name="agentManager" class="edu.unc.lib.dl.agents.AgentManager">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="digitalObjectManager" ref="digitalObjectManager" />
+	</bean>
+	
 	<bean id="contextAwareSwordServlet" class="edu.unc.lib.dl.sword.server.servlets.ContextAwareSwordServlet"/>
 	
 	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.sword.server.managers.ServiceDocumentManagerImpl">
