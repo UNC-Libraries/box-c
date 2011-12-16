@@ -109,7 +109,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 	 * @param itemResults
 	 */
 	public void populateItemResults(List<BriefObjectMetadataBean> itemResults){
-		if (this.getResultList().size() > 0){
+		if (this.getResultList().size() > 0 && this.getResultList().get(0).getPath() != null){
 			for (HierarchicalFacetTier rootTier: this.getResultList().get(0).getPath().getFacetTiers()){
 				Long count = this.subcontainerCounts.get(rootTier.getIdentifier());
 				if (count == null){

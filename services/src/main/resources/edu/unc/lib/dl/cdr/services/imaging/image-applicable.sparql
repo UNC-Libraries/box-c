@@ -11,27 +11,20 @@ WHERE
     ?pid cdr-base:hasSourceMimeType ?srcMime .
     ?pid <%3$s> ?jp2DS . 
     ?jp2DS fedora-view:lastModifiedDate ?jp2Modified . 
-    FILTER ( 
-      regex( str(?srcMime), 'image/')
+    FILTER (
+      ?pid = <%2$s> 
+      && regex( str(?srcMime), 'image/')
       && ?srcModified > ?jp2Modified 
     ) 
-  } UNION { 
-    ?pid <info:fedora/fedora-system:def/model#hasModel> <info:fedora/cdr-model:Simple> .
-    ?pid cdr-base:sourceData ?srcDS .
-    ?pid cdr-base:hasSourceMimeType ?srcMime .
-    OPTIONAL { ?pid <%3$s> ?jp2DS . } 
-    FILTER ( 
-      regex( str(?srcMime), 'image/')
-      && !bound(?jp2DS) ) 
   } UNION {
     ?pid <info:fedora/fedora-system:def/model#hasModel> <info:fedora/cdr-model:Simple> .
     ?pid cdr-base:sourceData ?srcDS .
     ?pid cdr-base:hasSourceMimeType ?srcMime .
     OPTIONAL { ?pid <%3$s> ?jp2DS . 
       ?jp2DS fedora-view:lastModifiedDate ?jp2Modified . } 
-    FILTER ( 
-      regex( str(?srcMime), 'image/')
-      && !bound(?jp2DS) && !bound(?jp2Modified) ) 
+    FILTER (
+      ?pid = <%2$s> 
+      && regex( str(?srcMime), 'image/')
+      && (!bound(?jp2DS) || !bound(?jp2Modified)) ) 
   }
-  FILTER ( ?pid = <%2$s> )
 }

@@ -57,7 +57,7 @@ public class UserSecurityProfileFilterTest {
 			UserSecurityProfile user = (UserSecurityProfile)request.getSession().getAttribute("user");
 			Assert.assertNotNull(user);
 			
-			Assert.assertNull(user.getUserName());
+			Assert.assertTrue(user.getUserName().equals(""));
 			Assert.assertNotNull(user.getAccessGroups());
 			Assert.assertEquals(user.getAccessGroups().size(), 1);
 			Assert.assertTrue(user.getAccessGroups().contains(AccessGroupConstants.PUBLIC_GROUP));

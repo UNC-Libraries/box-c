@@ -29,7 +29,7 @@
 				</c:catch>
 				<c:choose>
 					<c:when test="${previousException!=null}">
-						<a href="recordNavigation?${searchSettings.searchStateParams['ACTIONS']}=${searchSettings.actions['PREVIOUS_PAGE']}">&lt; Previous</a>
+						<a href="recordNavigation?${searchSettings.searchStateParams['ACTIONS']}=${searchSettings.actions['PREVIOUS_PAGE']}&${searchSettings.searchStateParams['ID']}=${briefObject.id}">&lt; Previous</a>
 					</c:when>
 					<c:when test="${empty previousId}">
 						&lt; Previous
@@ -44,7 +44,7 @@
 				</c:catch>
 				<c:choose>
 					<c:when test="${nextException!=null}">
-						<a href="recordNavigation?${searchSettings.searchStateParams['ACTIONS']}=${searchSettings.actions['NEXT_PAGE']}">Next &gt;</a>
+						<a href="recordNavigation?${searchSettings.searchStateParams['ACTIONS']}=${searchSettings.actions['NEXT_PAGE']}&${searchSettings.searchStateParams['ID']}=${briefObject.id}">Next &gt;</a>
 					</c:when>
 					<c:when test="${empty nextId}">
 						Next &gt;

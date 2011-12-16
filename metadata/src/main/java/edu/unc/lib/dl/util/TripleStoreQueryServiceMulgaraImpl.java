@@ -45,7 +45,6 @@ import javax.xml.stream.events.XMLEvent;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -393,7 +392,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private List<Element> extracted(List children) {
 		return children;
 	}
@@ -654,11 +653,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 	private String sendTQL(String query) {
 		log.debug(query);
 		String result = null;
+		SOAPConnection connection = null;
 		try {
 			// First create the connection
 			SOAPConnectionFactory soapConnFactory = SOAPConnectionFactory.newInstance();
-			SOAPConnection connection = soapConnFactory.createConnection();
-
+			connection = soapConnFactory.createConnection();
+			
 			// Next, create the actual message
 			MessageFactory messageFactory = MessageFactory.newInstance();
 			SOAPMessage message = messageFactory.createMessage();
@@ -693,27 +693,37 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 			}
 		} catch (SOAPException e) {
 			throw new RuntimeException("Cannot query triple store at " + this.getItqlEndpointURL(), e);
+		} finally {
+			try {
+				connection.close();
+			} catch (SOAPException e) {
+				throw new RuntimeException("Failed to close SOAP connection for triple store at " + this.getItqlEndpointURL(), e);
+			}
 		}
 		return result;
 	}
 
-	public Map sendSPARQL(String query) {
+	@Override
+	public Map<?,?> sendSPARQL(String query) {
 		return sendSPARQL(query, "json");
 	}
 
-	public Map sendSPARQL(String query, String format) {
+	@Override
+	public Map<?,?> sendSPARQL(String query, String format) {
+		return sendSPARQL(query, format, 3);
+	}
+		
+	public Map<?,?> sendSPARQL(String query, String format, int retries) {
+		PostMethod post = null;
 		try {
 			String postUrl = this.getSparqlEndpointURL();
 			if (format != null) {
 				postUrl += "?format=" + format;
 			}
-			PostMethod post = new PostMethod(postUrl);
+			post = new PostMethod(postUrl);
 			post.setRequestHeader("Content-Type", "application/sparql-query");
-			NameValuePair[] params = new NameValuePair[2];
-			// params[0] = new NameValuePair("format", format);
-			// params[1] = new NameValuePair("query", query);
-			// post.addParameters(params);
 			post.addParameter("query", query);
+			
 			int statusCode = httpClient.executeMethod(post);
 			if (statusCode != HttpStatus.SC_OK) {
 				throw new RuntimeException("SPARQL POST method failed: " + post.getStatusLine());
@@ -722,17 +732,19 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 				byte[] resultBytes = post.getResponseBody();
 				log.debug(new String(resultBytes, "utf-8"));
 				if ("json".equals(format)) {
-					return (Map) mapper.readValue(new ByteArrayInputStream(resultBytes), Object.class);
+					return (Map<?,?>) mapper.readValue(new ByteArrayInputStream(resultBytes), Object.class);
 				} else {
 					Map<String, String> resultMap = new HashMap<String, String>();
 					String resultString = new String(resultBytes, "utf-8");
 					resultMap.put("results", resultString);
 					return resultMap;
 				}
-
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		} finally {
+			if (post != null)
+				post.releaseConnection();
 		}
 	}
 

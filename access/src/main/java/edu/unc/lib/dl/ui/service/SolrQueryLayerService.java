@@ -62,7 +62,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 		searchRequest.setAccessGroups(accessGroups);
 		
 		SearchState searchState = SearchStateFactory.createTitleListSearchState();
-		searchState.setResourceTypes(searchSettings.defaultResourceTypes);
+		List<String> resourceTypes = new ArrayList<String>();
+		resourceTypes.add(searchSettings.resourceTypeCollection);
+		searchState.setResourceTypes(resourceTypes);
 		searchState.setRowsPerPage(searchSettings.defaultListResultsPerPage);
 		searchState.setSortType("dateAdded");
 		

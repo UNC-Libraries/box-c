@@ -18,16 +18,10 @@ WHERE
  } UNION { 
    ?pid <info:fedora/fedora-system:def/model#hasModel> <info:fedora/cdr-model:Simple> .
    ?pid cdr-base:sourceData ?srcDS . 
-   ?pid cdr-base:hasSourceMimeType ?srcMime . 
-   OPTIONAL { ?pid cdr-base:derivedJP2 ?jp2DS . } 
-   FILTER ( regex( str(?srcMime), 'image/') &&  !bound(?jp2DS) ) 
- } UNION { 
-   ?pid <info:fedora/fedora-system:def/model#hasModel> <info:fedora/cdr-model:Simple> .
-   ?pid cdr-base:sourceData ?srcDS . 
    ?pid cdr-base:hasSourceMimeType ?srcMime .
    OPTIONAL { ?pid cdr-base:derivedJP2 ?jp2DS . 
      ?jp2DS fedora-view:lastModifiedDate ?jp2Modified . } 
-   FILTER ( regex( str(?srcMime), 'image/') && !bound(?jp2DS) && !bound(?jp2Modified) ) 
+   FILTER ( regex( str(?srcMime), 'image/') && (!bound(?jp2DS) || !bound(?jp2Modified)) ) 
  }
 }
 LIMIT %2$s

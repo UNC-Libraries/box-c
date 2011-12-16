@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
+import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.fedora.PID;
@@ -63,7 +65,7 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public boolean isApplicable(PIDMessage pid) {
+	public boolean isApplicable(PIDMessage pid) throws EnhancementException {
 		// Get lastModified from Fedora
 		LOG.debug("isApplicable called with " + pid);
 		if (pid.getMessage() != null){
@@ -105,18 +107,45 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 				return true;
 			} else {
 				String solrDateModifiedString = org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(solrDateModified);
-				//Compare the solr date to when the message's event took place.
-				if (solrDateModifiedString.compareTo(pid.getTimestamp()) > 0){
-					LOG.debug("Message timestamp: " + pid.getTimestamp() + " | Solr date: " + solrDateModifiedString);
-					return false;
+				
+				if (pid.getTimestamp() == null || pid.getTimestamp().length() == 0){
+					//This message was not created as a result of the record being changed, so need to get Fedora updated timestamp
+					String query = null;
+					String fedoraDateModified = null;
+					try {
+						// replace model URI and PID tokens
+						query = super.readFileAsString("solr-update-applicable.sparql");
+						query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid.getPID()
+								.getURI());
+
+						List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results"))
+								.get("bindings");
+						// Couldn't find the date modified, item likely no longer exists.
+						if (bindings.size() == 0)
+							return false;
+						//Compare Solr updated timestamp to Fedora's.  If Solr is older, than need to update.
+						fedoraDateModified = (String) ((Map) bindings.get(0).get("modifiedDate")).get("value");
+						if (solrDateModifiedString.compareTo(fedoraDateModified) < 0) {
+							return true;
+						}
+					} catch (IOException e) {
+						throw new EnhancementException(e, Severity.UNRECOVERABLE);
+					}
 				} else {
-					LOG.debug("Message timestamp: " + pid.getTimestamp() + " | Solr date: " + solrDateModifiedString);
-					return true;
+					//Message has a updated timestamp, so compare the solr date to when the message's event took place.
+					if (solrDateModifiedString.compareTo(pid.getTimestamp()) > 0){
+						LOG.debug("Message timestamp: " + pid.getTimestamp() + " | Solr date: " + solrDateModifiedString);
+						return false;
+					} else {
+						LOG.debug("Message timestamp: " + pid.getTimestamp() + " | Solr date: " + solrDateModifiedString);
+						return true;
+					}
 				}
 			}
 		} catch (SolrServerException e){
-			throw new RecoverableServiceException("Error determining isApplicable for SolrUpdateEnhancement.", e);
+			throw new EnhancementException("Error determining isApplicable for SolrUpdateEnhancement.", e, Severity.RECOVERABLE);
 		}
+		return false;
 	}
 
 	@Override
