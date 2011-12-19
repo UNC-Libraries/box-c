@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.sword.server.managers;
+package edu.unc.lib.dl.cdr.services.sword.managers;
 
-import org.apache.abdera.i18n.iri.IRI;
-import org.apache.abdera.model.Feed;
 import org.swordapp.server.AuthCredentials;
+import org.swordapp.server.CollectionDepositManager;
 import org.swordapp.server.CollectionListManager;
+import org.swordapp.server.Deposit;
+import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordAuthException;
 import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
@@ -29,11 +30,11 @@ import org.swordapp.server.SwordServerException;
  * @author bbpennel
  *
  */
-public class CollectionListManagerImpl extends AbstractFedoraManager implements CollectionListManager {
+public class CollectionDepositManagerImpl extends AbstractFedoraManager implements CollectionDepositManager {
 
 	@Override
-	public Feed listCollectionContents(IRI collectionIRI, AuthCredentials auth, SwordConfiguration config)
-			throws SwordServerException, SwordAuthException, SwordError {
+	public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
+			SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
 		// TODO Auto-generated method stub
 		return null;
 	}

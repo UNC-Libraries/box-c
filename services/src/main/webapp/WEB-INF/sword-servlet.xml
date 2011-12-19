@@ -177,12 +177,34 @@
 			</map>
 		</property>
 	</bean>
+	
+	<!-- SWORD config -->
+
+	<bean id="swordConfigurationImpl" class="edu.unc.lib.dl.cdr.services.sword.SwordConfigurationImpl"
+		init-method="init">
+		<property name="authType" value="Basic"/>
+	</bean>
+	
+	<bean id="collectionListManager" class="edu.unc.lib.dl.cdr.services.sword.managers.CollectionListManagerImpl">
+	</bean>
+	
+	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.services.sword.managers.CollectionDepositManagerImpl">
+	</bean>
+	
+	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.services.sword.managers.ServiceDocumentManagerImpl">
+	</bean>
 
 	<bean id="contextAwareSwordServlet"
-		class="edu.unc.lib.dl.cdr.services.sword.server.servlets.ContextAwareSwordServlet" />
+		class="edu.unc.lib.dl.cdr.services.sword.servlets.ContextAwareSwordServlet" />
 
 	<bean id="serviceDocumentManager"
 		class="edu.unc.lib.dl.cdr.services.sword.server.managers.ServiceDocumentManagerImpl">
 	</bean>
+	
+	<context:annotation-config />
+	
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
+	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"></bean>
+	<context:component-scan base-package="edu.unc.lib.dl.cdr.services.sword.servlets" />
 
 </beans>

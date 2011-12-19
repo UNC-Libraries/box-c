@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.sword.server.managers;
+package edu.unc.lib.dl.cdr.services.sword.managers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,6 +27,7 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.swordapp.server.AuthCredentials;
@@ -44,11 +45,14 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  * @author bbpennel
  *
  */
-public abstract class AbstractFedoraManager implements ApplicationContextAware {
-	protected static ApplicationContext context;
+public abstract class AbstractFedoraManager {
+	@Autowired
 	protected static AccessClient accessClient;
+	@Autowired
 	protected static TripleStoreQueryService tripleStoreQueryService;
+	@Autowired
 	protected static PID collectionsPidObject;
+	@Autowired
 	protected static String swordPath;
 
 	protected String readFileAsString(String filePath) throws java.io.IOException {
@@ -67,15 +71,6 @@ public abstract class AbstractFedoraManager implements ApplicationContextAware {
 		}
 		reader.close();
 		return fileData.toString();
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext arg0) throws BeansException {
-		context = arg0;
-		accessClient = (AccessClient) context.getBean("accessClient");
-		tripleStoreQueryService = (TripleStoreQueryService) context.getBean("tripleStoreQueryService");
-		collectionsPidObject = tripleStoreQueryService.fetchByRepositoryPath("/Collections");
-		swordPath = (String) context.getBean("swordPath");
 	}
 
 	public void authenticate(AuthCredentials auth) throws SwordAuthException, SwordServerException {
