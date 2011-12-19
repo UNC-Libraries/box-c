@@ -32,6 +32,8 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 import org.fcrepo.server.errors.LowlevelStorageException;
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.connection.JargonProperties;
+import org.irods.jargon.core.connection.SettableJargonProperties;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
@@ -74,7 +76,7 @@ public class IrodsIFileSystem {
 	private IRODSFileSystem irodsFileSystem;
 
 	// private static final int BUFFER_SIZE = 32768;
-	//private static final int BUFFER_SIZE = 4194304;
+	// private static final int BUFFER_SIZE = 4194304;
 
 	/** Logger for this class. */
 	private static final Logger LOG = Logger.getLogger(IrodsIFileSystem.class);
@@ -100,14 +102,18 @@ public class IrodsIFileSystem {
 				// buffer[0] = '!';
 				out.write(buffer, 0, bytesRead);
 			}
+			out.flush();
 			Hex hex = new Hex();
 			result.md5 = new String(hex.encode(messageDigest.digest()));
 		} catch (IOException e) {
 			LOG.error(e);
 			throw e;
 		} finally {
-			out.flush();
-			out.close();
+			try {
+				out.close();
+			} catch (IOException e) {
+				LOG.warn("Exception while trying to close jargon output stream", e);
+			}
 		}
 		LOG.debug("IrodsIFileSystem.stream2streamCopy() end");
 		return result;
@@ -226,7 +232,33 @@ public class IrodsIFileSystem {
 		try {
 			SessionClosingIRODSFileInputStream fis = irodsFileSystem.getIRODSFileFactory(account)
 					.instanceSessionClosingIRODSFileInputStream(file.getPath());
-			BufferedInputStream bis = new BufferedInputStream(fis, irodsBufferSize);
+			final long start = System.currentTimeMillis();
+			BufferedInputStream bis = new BufferedInputStream(fis, irodsBufferSize) {
+				int bytes = 0;
+
+				@Override
+				public void close() throws IOException {
+					if (LOG.isInfoEnabled()) {
+						long time = System.currentTimeMillis() - start;
+						if (time > 0) {
+							LOG.info("closed irods stream: " + bytes + " bytes at " + (bytes / time) + " kb/sec");
+						}
+					}
+					super.close();
+				}
+
+				@Override
+				public synchronized int read() throws IOException {
+					bytes++;
+					return super.read();
+				}
+
+				@Override
+				public synchronized int read(byte[] b, int off, int len) throws IOException {
+					bytes = bytes + len;
+					return super.read(b, off, len);
+				}
+			};
 			return bis;
 		} catch (JargonException e) {
 			LOG.error(e);
@@ -369,12 +401,10 @@ public class IrodsIFileSystem {
 			return copyResult.size;
 		} catch (JargonException e) {
 			LOG.error(e);
-			throw new LowlevelStorageException(true, "IRODSFedoraFileSystem.write(): couldn't make directories for ["
-					+ file.getPath() + "]", e);
+			throw new LowlevelStorageException(true, "IRODSFedoraFileSystem.write(): [" + file.getPath() + "]", e);
 		} catch (IOException e) {
 			LOG.error(e);
-			throw new LowlevelStorageException(true, "IRODSFedoraFileSystem.write(): couldn't make directories for ["
-					+ file.getPath() + "]", e);
+			throw new LowlevelStorageException(true, "IRODSFedoraFileSystem.write(): [" + file.getPath() + "]", e);
 		} finally {
 			if (irodsFileSystem != null) {
 				try {

@@ -28,6 +28,27 @@
 			</roles>
 			<timezone>-5</timezone>
 		</developer>
+		<developer>
+			<id>bbpennel</id>
+			<name>Ben Pennell</name>
+			<email>ben.pennell@gmail.com</email>
+			<organization>University of North Carolina at Chapel Hill Libraries</organization>
+			<organizationUrl>http://www.lib.unc.edu</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>smbarr</id>
+			<name>Steve Barr</name>
+			<organization>University of North Carolina at Chapel Hill Libraries</organization>
+			<organizationUrl>http://www.lib.unc.edu</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
 	</developers>
 
 	<licenses>
@@ -120,12 +141,12 @@
 				<mulgaraHost>localhost</mulgaraHost>
 				<mulgaraPort>:8080</mulgaraPort>
 				<mulgaraContext></mulgaraContext>
-				
+
 				<solrProtocol>https</solrProtocol>
 				<solrHost>localhost</solrHost>
 				<solrPort></solrPort>
 				<solrContext>solr</solrContext>
-				
+
 				<externalBaseUrl>http://localhost/static/</externalBaseUrl>
 
 				<jmsHost>localhost</jmsHost>
@@ -194,10 +215,10 @@
 					</properties>
 					<excludes>
 						<exclude>README</exclude>
-					  <exclude>djatoka-cdr/**</exclude>
+						<exclude>djatoka-cdr/**</exclude>
+						<exclude>**/header.txt</exclude>
 						<exclude>.git/**</exclude>
 						<exclude>**/.gitignore</exclude>
-						<exclude>**/header.txt</exclude>
 						<exclude>**/bin/**</exclude>
 						<exclude>**/bundled/**</exclude>
 						<exclude>**/standards/**</exclude>
@@ -237,25 +258,10 @@
 				</executions>
 			</plugin>
 
-			<!-- <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.8</version>
-				<executions>
-					<execution>
-						<id>integration-test</id>
-						<goals>
-							<goal>integration-test</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>verify</id>
-						<goals>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin> -->
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-failsafe-plugin</artifactId> 
+				<version>2.8</version> <executions> <execution> <id>integration-test</id> 
+				<goals> <goal>integration-test</goal> </goals> </execution> <execution> <id>verify</id> 
+				<goals> <goal>verify</goal> </goals> </execution> </executions> </plugin> -->
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -314,8 +320,9 @@
 			<name>Java.net Maven 2 Repository</name>
 			<url>http://download.java.net/maven/2</url>
 		</pluginRepository>
-		<!-- <pluginRepository> <id>maven-repository.dev.java.net</id> <name>Java.net Maven 1 Repository (legacy)</name> 
-			<url>http://download.java.net/maven/1</url> <layout>legacy</layout> </pluginRepository> -->
+		<!-- <pluginRepository> <id>maven-repository.dev.java.net</id> <name>Java.net 
+			Maven 1 Repository (legacy)</name> <url>http://download.java.net/maven/1</url> 
+			<layout>legacy</layout> </pluginRepository> -->
 	</pluginRepositories>
 
 </project>

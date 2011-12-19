@@ -31,13 +31,15 @@
 	<ul class="crumblist">
 		<c:if test="${not empty searchState.searchFields}">
 			<c:forEach items="${searchState.searchFields}" var="field">
-				<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-					<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_SEARCH_FIELD"]}:${searchSettings.searchFieldParams[field.key]}'/>
-				</c:url>
-				<li>
-					(<a href="<c:out value="${removeUrl}"/>">x</a>)
-					<c:out value="${searchSettings.searchFieldLabels[field.key]}" />: <c:out value="${field.value}" />
-				</li>
+				<c:if test="${not empty field.value}">
+					<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_SEARCH_FIELD"]}:${searchSettings.searchFieldParams[field.key]}'/>
+					</c:url>
+					<li>
+						(<a href="<c:out value="${removeUrl}"/>">x</a>)
+						<c:out value="${searchSettings.searchFieldLabels[field.key]}" />: <c:out value="${field.value}" />
+					</li>
+				</c:if>
 			</c:forEach>
 		</c:if>
 		<c:if test="${not empty searchState.facets}">
@@ -49,7 +51,7 @@
 					(<a href="<c:out value="${removeUrl}"/>">x</a>)
 					<c:out value="${searchSettings.searchFieldLabels[field.key]}" />: 
 					<c:choose>
-						<c:when test='${field.value.class.name == "edu.unc.lib.dl.search.solr.model.HierarchicalFacet"}'>
+						<c:when test='${field.value["class"].name == "edu.unc.lib.dl.search.solr.model.HierarchicalFacet"}'>
 							<c:set var="facetTiers" scope="request" value="${field.value.facetTiers}"/>
 							<c:import url="WEB-INF/jsp/common/hierarchyTrail.jsp">
 								<c:param name="fieldKey"><c:out value="${field.key}"/></c:param>

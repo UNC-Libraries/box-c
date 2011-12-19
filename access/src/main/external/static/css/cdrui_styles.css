@@ -268,6 +268,16 @@ ul.secondarymenu li a.active {
 	border-top: 1px solid #f3f3f3;	
 }
 
+div#username_wrap {
+	position: relative; 
+	top:-10px; 
+	left: 0px; 
+	text-align: right; 
+	height: 0px; 
+	font-size: 12px; 
+	color: #FFF;
+}
+
 .browseitem, .searchitem {
 	float: left;
 	width: 100%;
@@ -1242,6 +1252,21 @@ ul.crumblist li a {
 
 .about_page p, .about_page ul {
 	padding: 0px 10px;	
+}
+
+.about_page h3 {
+	font-size: 15px;
+	margin-bottom: 10px;
+	color: #484848;
+	font-weight: normal;
+}
+
+.about_page h4 {
+	font-size: 14px;
+	margin-bottom: 6px;
+	padding-left: 10px;
+	color: #484848;
+	font-weight: normal;
 }
 
 .about_page a {

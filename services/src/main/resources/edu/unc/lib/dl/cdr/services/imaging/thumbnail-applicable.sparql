@@ -10,8 +10,9 @@ WHERE
     ?pid cdr-base:hasSourceMimeType ?srcMime .
     ?pid <%3$s> ?thumbDS . 
     ?thumbDS fedora-view:lastModifiedDate ?thumbModified . 
-    FILTER ( 
-      regex( str(?srcMime), 'image/')
+    FILTER (
+      ?pid = <%2$s> 
+      && regex( str(?srcMime), 'image/')
       && ?srcModified > ?thumbModified 
     ) 
   } UNION { # 2) image source data with no thumb predicate and no thumb data
@@ -19,15 +20,17 @@ WHERE
     ?pid cdr-base:hasSourceMimeType ?srcMime .
     OPTIONAL { ?pid <%3$s> ?thumbDS . 
       ?thumbDS fedora-view:lastModifiedDate ?thumbModified . } 
-    FILTER ( 
-      regex( str(?srcMime), 'image/')
+    FILTER (
+      ?pid = <%2$s> 
+      && regex( str(?srcMime), 'image/')
       && !bound(?thumbDS) && !bound(?thumbModified) )
   } UNION { # 3) image source data with no thumb data
     ?pid cdr-base:sourceData ?srcDS .
     ?pid cdr-base:hasSourceMimeType ?srcMime .
     OPTIONAL { ?pid <%3$s> ?thumbDS . } 
-    FILTER ( 
-      regex( str(?srcMime), 'image/')
+    FILTER (
+      ?pid = <%2$s> 
+      && regex( str(?srcMime), 'image/')
       && !bound(?thumbDS) )
   } UNION { # 1b) surrogate has image source data more recent than thumb data
     ?pid cdr-base:hasSurrogate ?srg .
@@ -36,8 +39,9 @@ WHERE
     ?srg cdr-base:hasSourceMimeType ?srcMime .
     ?pid <%3$s> ?thumbDS . 
     ?thumbDS fedora-view:lastModifiedDate ?thumbModified . 
-    FILTER ( 
-      regex( str(?srcMime), 'image/')
+    FILTER (
+      ?pid = <%2$s> 
+      && regex( str(?srcMime), 'image/')
       && ?srcModified > ?thumbModified 
     ) 
   } UNION { # 2b) surrogate has image source data with no thumb predicate and no thumb data
@@ -46,17 +50,18 @@ WHERE
     ?srg cdr-base:hasSourceMimeType ?srcMime .
     OPTIONAL { ?pid <%3$s> ?thumbDS . 
       ?thumbDS fedora-view:lastModifiedDate ?thumbModified . } 
-    FILTER ( 
-      regex( str(?srcMime), 'image/')
+    FILTER (
+      ?pid = <%2$s> 
+      && regex( str(?srcMime), 'image/')
       && !bound(?thumbDS) && !bound(?thumbModified) )
   } UNION { # 3b) surrogate has image source data, pid has no thumb ds
     ?pid cdr-base:hasSurrogate ?srg .
     ?srg cdr-base:sourceData ?srcDS .
     ?srg cdr-base:hasSourceMimeType ?srcMime .
     OPTIONAL { ?pid <%3$s> ?thumbDS . } 
-    FILTER ( 
-      regex( str(?srcMime), 'image/')
+    FILTER (
+      ?pid = <%2$s> 
+      && regex( str(?srcMime), 'image/')
       && !bound(?thumbDS) )
   }
-  FILTER ( ?pid = <%2$s> )
 }

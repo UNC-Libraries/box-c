@@ -12,13 +12,9 @@ WHERE
     FILTER ( ?srcModified > ?techModified )
   } UNION { 
     ?pid cdr-base:sourceData ?srcDS . 
-    OPTIONAL { ?pid cdr-base:techData ?techDS . } 
-    FILTER ( !bound(?techDS) ) 
-  } UNION { 
-    ?pid cdr-base:sourceData ?srcDS . 
     OPTIONAL { ?pid cdr-base:techData ?techDS . 
       ?techDS fedora-view:lastModifiedDate ?techModified . } 
-    FILTER ( !bound(?techDS) && !bound(?techModified)) 
+    FILTER ( !bound(?techDS) || !bound(?techModified)) 
   }
 }
 LIMIT %2$s

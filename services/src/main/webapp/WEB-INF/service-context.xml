@@ -98,7 +98,7 @@
 	
 	<bean id="accessControlUtils" class="edu.unc.lib.dl.fedora.AccessControlUtils" init-method="initReadPermissionOnly">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="cacheDepth" value="4"/>
+		<property name="cacheDepth" value="1"/>
 		<property name="cacheLimit" value="5000"/>
 		<property name="accessControlProperties">
 			<props>
@@ -298,7 +298,7 @@
 		lazy-init="false">
 		<property name="beans">
 			<map>
-				<entry key="de.stefanheintz.log:jmxservice=loggingConfiguration" value-ref="loggingMBean" />
+				<entry key="cdr-services:jmxservice=loggingConfiguration" value-ref="loggingMBean" />
 			</map>
 		</property>
 		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>

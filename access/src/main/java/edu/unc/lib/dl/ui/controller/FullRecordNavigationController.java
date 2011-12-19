@@ -60,20 +60,15 @@ public class FullRecordNavigationController extends AbstractSolrSearchController
 		if (recordNavigationState != null)
 			searchState = recordNavigationState.getSearchState();
 		
-		String searchWithin = request.getParameter(searchSettings.searchStateParam("SEARCH_WITHIN"));
-		
-		LOG.debug("Search Within:" + searchWithin);
-		if (searchWithin != null && searchWithin.length() > 0){
-			try {
-				searchWithin = URLDecoder.decode(searchWithin, "UTF-8");
-			} catch (Exception e){
-				e.printStackTrace();
-			}
-			if (recordNavigationState == null || recordNavigationState.getSearchStateUrl().equals(searchWithin)){
-				HashMap<String,String[]> parameters = SearchStateUtil.getParametersAsHashMap(searchWithin);
-				searchState = SearchStateFactory.createSearchState(parameters);
-				recordNavigationState.setSearchStateUrl(searchWithin);
-				recordNavigationState.setSearchState(searchState);
+		if (searchState == null){
+			String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID));
+			if (id == null){
+				//Don't have anywhere to go, so go home
+				return "redirect:/";
+			} else {
+				//Forward back to self since users session timed out
+				model.addAttribute(searchSettings.searchStateParam(SearchFieldKeys.ID), id);
+				return "redirect:/record";
 			}
 		}
 		

@@ -162,12 +162,21 @@ public class SolrUpdateRunnable implements Runnable {
 	 */
 	private void recursiveAdd(SolrUpdateRequest updateRequest) throws Exception{
 		try {
-			Document resultDoc = getObjectViewXML(updateRequest);
+			boolean targetAll = false;
+			if (SolrUpdateService.TARGET_ALL.equals(updateRequest.getPid())){
+				updateRequest.setPid(solrUpdateService.getCollectionsPid().getPid());
+				targetAll = true;
+			}
+			
+			Document resultDoc = getObjectViewXML(updateRequest, targetAll);
 			LOG.debug("Recursively adding " + updateRequest.getPid());
 
 			if (resultDoc != null && resultDoc.getRootElement().getChild("digitalObject", foxmlNS) != null) {
-				LOG.debug("Adding " + resultDoc.hashCode());
-				solrUpdateService.getUpdateDocTransformer().addDocument(resultDoc);
+				//Do no index the current document if it is a full index flag
+				if (!targetAll){
+					LOG.debug("Adding " + resultDoc.hashCode());
+					solrUpdateService.getUpdateDocTransformer().addDocument(resultDoc);
+				}
 
 				Element relsExt = (Element) relsExtXpath.selectSingleNode(resultDoc);
 				if (relsExt != null && containerXpath.selectSingleNode(relsExt) != null) {
@@ -299,11 +308,20 @@ public class SolrUpdateRunnable implements Runnable {
 	 */
 	private void recursiveReindex(SolrUpdateRequest updateRequest) {
 		try {
+			boolean targetAll = false;
+			if (SolrUpdateService.TARGET_ALL.equals(updateRequest.getPid())){
+				updateRequest.setPid(solrUpdateService.getCollectionsPid().getPid());
+				targetAll = true;
+			}
+			
 			long startTime = System.currentTimeMillis();
-			Document resultDoc = getObjectViewXML(updateRequest);
+			Document resultDoc = getObjectViewXML(updateRequest, targetAll);
 
 			if (resultDoc != null && resultDoc.getRootElement().getChild("digitalObject", foxmlNS) != null) {
-				solrUpdateService.getUpdateDocTransformer().addDocument(resultDoc);
+				//Skip indexing current item if it is the target all flag
+				if (!targetAll){
+					solrUpdateService.getUpdateDocTransformer().addDocument(resultDoc);
+				}
 
 				Element relsExt = (Element) relsExtXpath.selectSingleNode(resultDoc);
 				if (relsExt != null && containerXpath.selectSingleNode(relsExt) != null) {
@@ -338,10 +356,10 @@ public class SolrUpdateRunnable implements Runnable {
 		}
 	}
 	
-	private Document getObjectViewXML(SolrUpdateRequest updateRequest){
+	private Document getObjectViewXML(SolrUpdateRequest updateRequest, boolean ignoreAllowIndexing){
 		Document resultDoc = null;
 		try {
-			if (solrUpdateService.getFedoraDataService().getTripleStoreQueryService().allowIndexing(new PID(updateRequest.getPid()))){
+			if (ignoreAllowIndexing || solrUpdateService.getFedoraDataService().getTripleStoreQueryService().allowIndexing(new PID(updateRequest.getPid()))){
 				resultDoc = solrUpdateService.getFedoraDataService().getObjectViewXML(updateRequest.getPid());
 			}
 		} catch (Exception e){
@@ -365,7 +383,7 @@ public class SolrUpdateRunnable implements Runnable {
 	 */
 	private void addObject(SolrUpdateRequest updateRequest) throws Exception {
 		// Retrieve object metadata from Fedora and add to update document list
-		Document resultDoc = getObjectViewXML(updateRequest);
+		Document resultDoc = getObjectViewXML(updateRequest, false);
 		if (resultDoc != null && resultDoc.getRootElement().getChild("digitalObject", foxmlNS) != null) {
 			solrUpdateService.getUpdateDocTransformer().addDocument(resultDoc);
 		}
