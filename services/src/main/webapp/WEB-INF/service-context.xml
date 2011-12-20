@@ -89,7 +89,7 @@
 		<property name="password" value="${fedora.admin.password}" />
 	</bean>
 	
-	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService">
+	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService" init-method="init">
 		<property name="accessClient" ref="accessClient"/>
 		<property name="managementClient" ref="managementClient"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
