@@ -55,6 +55,19 @@ public class FedoraDataService {
 	private edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService = null;
 
 	private edu.unc.lib.dl.fedora.AccessControlUtils accessControlUtils = null;
+	
+	private ExecutorService executor;
+	private int maxThreads;
+	private long serviceTimeout;
+	
+	public FedoraDataService(){
+		maxThreads = 0;
+		serviceTimeout = 5000L;
+	}
+	
+	public void init(){
+		executor = Executors.newFixedThreadPool(maxThreads);
+	}
 
 	public edu.unc.lib.dl.fedora.AccessClient getAccessClient() {
 		return accessClient;
@@ -138,32 +151,29 @@ public class FedoraDataService {
 		return result;
 	}
 	
-	private void retrieveAsynchronousResults(Element inputs, List<Callable<Content>> callables, PID pid, boolean failOnException) throws FedoraException {
-		ExecutorService executor = null;
-		try {
-			executor = Executors.newFixedThreadPool(callables.size());
-	
-			Collection<Future<Content>> futures = new ArrayList<Future<Content>>(callables.size());
-			
-			futures = executor.invokeAll(callables, 10000L, TimeUnit.MILLISECONDS);
-			for (Future<Content> future : futures) {
-				try {
-					Content results = future.get();
-					if (results != null) {
-						inputs.addContent(results);
-					}
-				} catch (Exception e) {
-					if (failOnException) {
-						throw new ServiceException("Failed to get asynchronous results for " + pid.getPid(), e);
-					}
-					LOG.error("Failed to get asynchronous results for " + pid.getPid() + ", continuing.", e);
+	private void retrieveAsynchronousResults(Element inputs, List<Callable<Content>> callables, PID pid, 
+			boolean failOnException) throws FedoraException {
+		Collection<Future<Content>> futures = new ArrayList<Future<Content>>(callables.size());
+		
+		for (Callable<Content> callable: callables){
+			futures.add(executor.submit(callable));
+		}
+		
+		for (Future<Content> future : futures) {
+			try {
+				Content results = future.get(serviceTimeout, TimeUnit.MILLISECONDS);
+				if (results != null) {
+					inputs.addContent(results);
 				}
+			} catch (InterruptedException e){
+				LOG.warn("Attempt to get asynchronous results was interrupted for " + pid.getPid(), e);
+				return;
+			} catch (Exception e) {
+				if (failOnException) {
+					throw new ServiceException("Failed to get asynchronous results for " + pid.getPid(), e);
+				}
+				LOG.error("Failed to get asynchronous results for " + pid.getPid() + ", continuing.", e);
 			}
-		}  catch (InterruptedException e){
-			LOG.warn("Attempt to get asynchronous results was interrupted for " + pid.getPid(), e);
-		}finally {
-			if (executor != null)
-				executor.shutdown();
 		}
 	}
 
@@ -181,6 +191,22 @@ public class FedoraDataService {
 
 	public void setTripleStoreQueryService(edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService) {
 		this.tripleStoreQueryService = tripleStoreQueryService;
+	}
+
+	public int getMaxThreads() {
+		return maxThreads;
+	}
+
+	public void setMaxThreads(int maxThreads) {
+		this.maxThreads = maxThreads;
+	}
+
+	public long getServiceTimeout() {
+		return serviceTimeout;
+	}
+
+	public void setServiceTimeout(long serviceTimeout) {
+		this.serviceTimeout = serviceTimeout;
 	}
 
 	public void setAccessControlUtils(edu.unc.lib.dl.fedora.AccessControlUtils accessControlUtils) {
