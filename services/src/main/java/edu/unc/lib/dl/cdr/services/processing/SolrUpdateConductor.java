@@ -28,11 +28,14 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 public class SolrUpdateConductor extends SolrUpdateService implements MessageConductor {
 	public static final String identifier = "SOLR_UPDATE";
 	
+	private long beforeExecuteDelay = 50;
+	
 	@Override
 	protected void initializeExecutor(){
-		LOG.debug("Initializing services thread pool executor with " + this.maxIngestThreads + " threads.");
-		this.executor = new ServicesThreadPoolExecutor(this.maxIngestThreads);
+		LOG.debug("Initializing services thread pool executor with " + this.maxThreads + " threads.");
+		this.executor = new ServicesThreadPoolExecutor(this.maxThreads);
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
+		((ServicesThreadPoolExecutor)this.executor).setBeforeExecuteDelay(beforeExecuteDelay);
 	}
 	
 	@Override

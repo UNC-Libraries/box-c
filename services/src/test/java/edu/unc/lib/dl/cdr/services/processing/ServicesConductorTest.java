@@ -17,19 +17,15 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.Resource;
 
 import org.jdom.Element;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
@@ -43,8 +39,6 @@ import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
-//@RunWith(SpringJUnit4ClassRunner.class)
-//@ContextConfiguration(locations = { "/service-context-unit-conductor.xml" })
 public class ServicesConductorTest extends Assert {
 
 	protected static final Logger LOG = LoggerFactory.getLogger(ServicesConductorTest.class);
@@ -61,8 +55,10 @@ public class ServicesConductorTest extends Assert {
 	public static AtomicInteger betweenApplicableAndEnhancement;
 	public static AtomicInteger servicesCompleted;
 	
-	public long delayServiceTime = 0;
 	protected int numberTestMessages;
+	
+	public AtomicBoolean flag;
+	public Object blockingObject;
 	
 	public ServicesConductorTest(){
 		delayServices = new ArrayList<ObjectEnhancementService>();
@@ -102,7 +98,9 @@ public class ServicesConductorTest extends Assert {
 		betweenApplicableAndEnhancement = new AtomicInteger(0);
 		servicesCompleted = new AtomicInteger(0);
 		numberTestMessages = 10;
-		delayServiceTime = 300;
+		
+		this.blockingObject = new Object();
+		this.flag = new AtomicBoolean(true);
 	}
 	
 	
@@ -123,7 +121,7 @@ public class ServicesConductorTest extends Assert {
 		servicesConductor.setServices(delayServices);
 		servicesMessageFilter.setServices(delayServices);
 		
-		delayServiceTime = 0;
+		flag.set(false);
 
 		//Add messages and check that they all ran
 		for (int i=0; i<numberTestMessages; i++){
@@ -149,26 +147,34 @@ public class ServicesConductorTest extends Assert {
 		servicesConductor.setServices(delayServices);
 		servicesMessageFilter.setServices(delayServices);
 		
+		numberTestMessages = 5;
+		
 		//Add messages which contain a lot of duplicates
-		delayServiceTime = 300;
-		servicesConductor.pause();
 		for (int i=0; i<numberTestMessages; i++){
 			PIDMessage message = new PIDMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
-			messageDirector.direct(message);
-			messageDirector.direct(message);
-			messageDirector.direct(message);
+			for (int j=0; j<numberTestMessages; j++){
+				messageDirector.direct(message);
+			}
 		}
 		
-		assertEquals(servicesConductor.getPidQueue().size(), numberTestMessages * 3);
-		
-		//Let max threads number of threads start, make sure that collision list is properly populated
-		servicesConductor.resume();
 		while (servicesConductor.getLockedPids().size() < servicesConductor.getMaxThreads());
-		servicesConductor.pause();
 		
-		assertEquals(servicesConductor.getCollisionList().size(), (servicesConductor.getMaxThreads() - 1) * 2);
-		servicesConductor.resume();
+		assertEquals(servicesConductor.getLockedPids().size(), servicesConductor.getMaxThreads());
+		assertEquals(servicesConductor.getCollisionList().size(), 
+				(servicesConductor.getMaxThreads() - 1) * (numberTestMessages - 1));
+		assertEquals(servicesConductor.getPidQueue().size(), 
+				(numberTestMessages * numberTestMessages - (servicesConductor.getMaxThreads() - 1) * numberTestMessages) - 1);
+		assertEquals(servicesConductor.getQueueSize(), (numberTestMessages * numberTestMessages) - servicesConductor.getMaxThreads());
+		
+		//Process the remaining items to make sure all messages get processed.
+		synchronized(blockingObject){
+			flag.set(false);
+			blockingObject.notifyAll();
+		}
+		
+		while (!servicesConductor.isEmpty());
+		assertEquals(servicesCompleted.get(), numberTestMessages * numberTestMessages);
 	}
 	
 	@Test
@@ -244,7 +250,7 @@ public class ServicesConductorTest extends Assert {
 		this.servicesList = servicesList;
 	}
 
-	public class DelayService extends AbstractFedoraEnhancementService {
+public class DelayService extends AbstractFedoraEnhancementService {
 		
 		public DelayService(){
 			this.active = true;
@@ -268,16 +274,8 @@ public class ServicesConductorTest extends Assert {
 		@Override
 		public boolean isApplicable(PIDMessage pid) throws EnhancementException {
 			incompleteServices.incrementAndGet();
-			inIsApplicable.incrementAndGet();
-			try {
-				Thread.sleep(delayServiceTime);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			} finally {
-				inIsApplicable.decrementAndGet();
-				betweenApplicableAndEnhancement.incrementAndGet();
-				LOG.debug("Completed isApplicable for " + pid.getPIDString());	
-			}
+			betweenApplicableAndEnhancement.incrementAndGet();
+			LOG.debug("Completed isApplicable for " + pid.getPIDString());	
 			return true;
 		}
 
@@ -294,19 +292,24 @@ public class ServicesConductorTest extends Assert {
 	}
 	
 	public class DelayEnhancement extends Enhancement<Element> {
-
 		public DelayEnhancement(ObjectEnhancementService service, PIDMessage pid) {
 			super(pid);
 		}
 		
 		@Override
 		public Element call() throws EnhancementException {
+			LOG.debug("Call invoked for " + this.pid.getPIDString());
 			betweenApplicableAndEnhancement.decrementAndGet();
-			try {
-				Thread.sleep(delayServiceTime);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				return null;
+			//inService.incrementAndGet();
+			while (flag.get()){
+				synchronized(blockingObject){
+					try {
+						blockingObject.wait();
+					} catch (InterruptedException e){
+						Thread.currentThread().interrupt();
+						return null;
+					}
+				}
 			}
 			incompleteServices.decrementAndGet();
 			servicesCompleted.incrementAndGet();

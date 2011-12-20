@@ -20,6 +20,8 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.mockito.Mockito.*;
 
@@ -29,6 +31,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.data.ingest.solr.CountDownUpdateRequest;
@@ -46,6 +50,7 @@ public class SolrUpdateConductorTest extends Assert {
 
 	private SolrUpdateConductor solrUpdateConductor;
 	private MessageDirector messageDirector;
+	private TripleStoreQueryService tripleStoreQueryService;
 	private Document simpleObject;
 	private int numberTestMessages;
 	private List<MessageFilter> filters;
@@ -71,7 +76,7 @@ public class SolrUpdateConductorTest extends Assert {
 		when(fedoraDataService.getObjectViewXML(startsWith("uuid:"))).thenReturn(simpleObject);
 		when(fedoraDataService.getObjectViewXML(startsWith("uuid:"), anyBoolean())).thenReturn(simpleObject);
 		
-		TripleStoreQueryService tripleStoreQueryService = mock(TripleStoreQueryService.class);
+		tripleStoreQueryService = mock(TripleStoreQueryService.class);
 		when(tripleStoreQueryService.isOrphaned(argThat(new IsMatchingPID("uuid:")))).thenReturn(false);
 		when(tripleStoreQueryService.allowIndexing(argThat(new IsMatchingPID("uuid:")))).thenReturn(true);
 		when(tripleStoreQueryService.fetchByRepositoryPath("/Collections")).thenReturn(new PID("collections"));
@@ -85,7 +90,7 @@ public class SolrUpdateConductorTest extends Assert {
 		solrUpdateConductor.setFedoraDataService(fedoraDataService);
 		solrUpdateConductor.setUpdateDocTransformer(updateDocTransformer);
 		solrUpdateConductor.setAutoCommit(false);
-		solrUpdateConductor.setMaxIngestThreads(3);
+		solrUpdateConductor.setMaxThreads(3);
 		
 		List<MessageConductor> conductorsList = new ArrayList<MessageConductor>();
 		conductorsList.add(solrUpdateConductor);
@@ -116,7 +121,12 @@ public class SolrUpdateConductorTest extends Assert {
 	}
 	
 	@Test
-	public void addCollisions() throws Exception{
+	public synchronized void addCollisions() throws Exception{
+		numberTestMessages = 4;
+		
+		BlockingFedoraDataService fds = new BlockingFedoraDataService();
+		solrUpdateConductor.setFedoraDataService(fds);
+		
 		//Check that collision list gets populated
 		for (int i=0; i<numberTestMessages; i++){
 			PIDMessage message = new PIDMessage("uuid:" + i, SolrUpdateAction.namespace, 
@@ -124,15 +134,34 @@ public class SolrUpdateConductorTest extends Assert {
 			for (int j=0; j<numberTestMessages; j++){
 				messageDirector.direct(message);
 				assertTrue(solrUpdateConductor.getLockedPids().size() <= i + 1
-						&& solrUpdateConductor.getLockedPids().size() <= solrUpdateConductor.getMaxIngestThreads());
+						&& solrUpdateConductor.getLockedPids().size() <= solrUpdateConductor.getMaxThreads());
 			}
 		}
+		
+		while (solrUpdateConductor.getLockedPids().size() < solrUpdateConductor.getMaxThreads());
+		
+		assertEquals(solrUpdateConductor.getLockedPids().size(), solrUpdateConductor.getMaxThreads());
+		assertEquals(solrUpdateConductor.getCollisionList().size(), 
+				(solrUpdateConductor.getMaxThreads() - 1) * (numberTestMessages - 1));
+		assertEquals(solrUpdateConductor.getPidQueue().size(), 
+				(numberTestMessages * numberTestMessages - (solrUpdateConductor.getMaxThreads() - 1) * numberTestMessages) - 1);
+		assertEquals(solrUpdateConductor.getQueueSize(), (numberTestMessages * numberTestMessages) - solrUpdateConductor.getMaxThreads());
+		
+		while (fds.count.get() < solrUpdateConductor.getMaxThreads());
+		
+		//Process the remaining items to make sure all messages get processed.
+		synchronized(fds.blockingObject){
+			fds.flag.set(false);
+			fds.blockingObject.notifyAll();
+		}
+		
 		while (!solrUpdateConductor.isEmpty());
+		
 		verify(solrUpdateConductor.getUpdateDocTransformer(), 
 				times(numberTestMessages * numberTestMessages)).addDocument(any(Document.class));
 	}
 	
-	//@Test
+	@Test
 	public void clearState() throws InterruptedException{
 		solrUpdateConductor.pause();
 		for (int i=0; i<numberTestMessages; i++){
@@ -232,7 +261,7 @@ public class SolrUpdateConductorTest extends Assert {
 		}
 		
 		assertEquals(solrUpdateConductor.getThreadPoolExecutor().getQueue().size(), 
-				numberTestMessages - solrUpdateConductor.getMaxIngestThreads());
+				numberTestMessages - solrUpdateConductor.getMaxThreads());
 		
 		solrUpdateConductor.shutdownNow();
 		while (solrUpdateConductor.getThreadPoolExecutor().isTerminating()
@@ -251,21 +280,29 @@ public class SolrUpdateConductorTest extends Assert {
 	
 	@Test
 	public void abortOperation(){
-		int numberTestMessages = 50;
+		int numberTestMessages = 20;
 		
-		solrUpdateConductor.pause();
+		BlockingFedoraDataService fds = new BlockingFedoraDataService();
+		solrUpdateConductor.setFedoraDataService(fds);
+		
 		//Add messages and check that they all ran
 		for (int i=0; i<numberTestMessages; i++){
 			PIDMessage message = new PIDMessage("uuid:" + i, SolrUpdateAction.namespace, 
 					SolrUpdateAction.ADD.getName());
 			messageDirector.direct(message);
 		}
-		solrUpdateConductor.resume();
-		while (solrUpdateConductor.getLockedPids().size() < solrUpdateConductor.getMaxIngestThreads()
+
+		while (solrUpdateConductor.getLockedPids().size() < solrUpdateConductor.getMaxThreads()
 				&& !solrUpdateConductor.isEmpty());
 		solrUpdateConductor.abort();
 		assertTrue(solrUpdateConductor.isIdle());
 		assertEquals(solrUpdateConductor.getLockedPids().size(), 0);
+		
+		//Process the remaining items to make sure all messages get processed.
+		synchronized(fds.blockingObject){
+			fds.flag.set(false);
+			fds.blockingObject.notifyAll();
+		}
 		
 		solrUpdateConductor.resume();
 		while (!solrUpdateConductor.isEmpty());
@@ -302,4 +339,37 @@ public class SolrUpdateConductorTest extends Assert {
 		reader.close();
 		return fileData.toString();
 	}
+	
+	public class BlockingFedoraDataService extends FedoraDataService {
+		public AtomicInteger count;
+		public AtomicBoolean flag;
+		public Object blockingObject;
+		
+		public BlockingFedoraDataService(){
+			count = new AtomicInteger(0);
+			flag = new AtomicBoolean(true);
+			blockingObject = new Object();
+		}
+		
+		@Override
+		public TripleStoreQueryService getTripleStoreQueryService(){
+			return tripleStoreQueryService;
+		}
+		
+		@Override
+		public Document getObjectViewXML(String pid, boolean fail){
+			count.incrementAndGet();
+			while (flag.get()){
+				synchronized(blockingObject){
+					try {
+						blockingObject.wait();
+					} catch (InterruptedException e){
+						Thread.currentThread().interrupt();
+						return null;
+					}
+				}
+			}
+			return simpleObject;
+		}
+	};
 }

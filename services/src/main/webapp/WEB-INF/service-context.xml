@@ -98,8 +98,8 @@
 	
 	<bean id="accessControlUtils" class="edu.unc.lib.dl.fedora.AccessControlUtils" init-method="initReadPermissionOnly">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="cacheDepth" value="1"/>
-		<property name="cacheLimit" value="5000"/>
+		<property name="cacheDepth" value="${access.cache.depth}"/>
+		<property name="cacheLimit" value="${access.cache.limit}"/>
 		<property name="accessControlProperties">
 			<props>
 				<prop key="http://cdr.unc.edu/definitions/roles#patron">permitMetadataRead permitOriginalsRead permitDerivativesRead</prop>
@@ -165,7 +165,10 @@
 	<bean id="servicesConductor" class="edu.unc.lib.dl.cdr.services.processing.ServicesConductor"
 		init-method="init" destroy-method="destroy">
 		<property name="services" ref="servicesList"/>
-		<property name="maxThreads" value="${maxServiceThreads}"/>
+		<property name="maxThreads" value="${conductor.services.maxThreads}"/>
+		<property name="recoverableDelay" value="${conductor.services.recoverableDelay}"/>
+		<property name="unexpectedExceptionDelay" value="${conductor.services.unexpectedExceptionDelay}"/>
+		<property name="beforeExecuteDelay" value="${conductor.services.beforeExecuteDelay}"/>
 		<property name="failedPids" ref="servicesFailedPids"/>
 	</bean>
 	
@@ -175,7 +178,9 @@
 		<property name="updateDocTransformer" ref="updateDocTransformer" />
 		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
 		<property name="solrSearchService" ref="solrSearchService" />
-		<property name="maxIngestThreads" value="${maxSolrIngestThreads}" />
+		<property name="maxThreads" value="${conductor.solr.maxThreads}" />
+		<property name="recoverableDelay" value="${conductor.solr.recoverableDelay}"/>
+		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecutionDelay}"/>
 		<property name="accessGroups" ref="accessGroups" />
 		<property name="searchSettings" ref="searchSettings" />
 	</bean>

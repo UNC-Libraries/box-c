@@ -317,10 +317,12 @@ public class SolrUpdateRunnable implements Runnable {
 			PID pid = new PID(updateRequest.getPid());
 			if (ignoreAllowIndexing || (!solrUpdateService.getFedoraDataService().getTripleStoreQueryService().isOrphaned(pid)
 					&& solrUpdateService.getFedoraDataService().getTripleStoreQueryService().allowIndexing(pid))){
+				LOG.debug("Preparing to retrieve object view for " + updateRequest.getPid());
 				resultDoc = solrUpdateService.getFedoraDataService().getObjectViewXML(updateRequest.getPid(), true);
 			}
 		} catch (Exception e){
 			LOG.warn("Failed to get ObjectViewXML for " + updateRequest.getPid() + ".  Retrying.");
+			LOG.debug("", e);
 			if (retries > 1){
 				try {
 					Thread.sleep(30000L);

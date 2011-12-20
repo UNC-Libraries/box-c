@@ -1,7 +1,23 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jdom.Element;
@@ -34,11 +50,10 @@ public class ServicesConductorInterruptTest extends Assert {
 	public static AtomicInteger servicesCompleted;
 	public static AtomicInteger inService;
 	
-	private boolean blockingService;
-	
-	public int parallelServices;
-	public long delayServiceTime = 0;
 	protected int numberTestMessages;
+	
+	public AtomicBoolean flag;
+	public Object blockingObject;
 	
 	public ServicesConductorInterruptTest(){
 		
@@ -65,19 +80,14 @@ public class ServicesConductorInterruptTest extends Assert {
 		servicesCompleted = new AtomicInteger(0);
 		inService = new AtomicInteger(0);
 		numberTestMessages = 10;
-		delayServiceTime = 300;
-		parallelServices = 3;
-		blockingService = false;
+		
+		this.blockingObject = new Object();
+		this.flag = new AtomicBoolean(true);
 	}
 	
 	@Test
 	public void abortPause() throws InterruptedException {
-		delayServiceTime = 200;
-		
 		assertTrue(servicesConductor.isReady());
-		servicesConductor.pause();
-		
-		blockingService = true;
 		
 		assertTrue(servicesConductor.isReady());
 		assertTrue(servicesConductor.isIdle());
@@ -90,19 +100,10 @@ public class ServicesConductorInterruptTest extends Assert {
 			servicesConductor.add(message);
 		}
 		
-		while (servicesConductor.getQueueSize() != numberTestMessages);
+		while (inService.get() != servicesConductor.getMaxThreads());
 
-		assertTrue(servicesConductor.getLockedPids().size() == 0);
+		assertTrue(servicesConductor.getLockedPids().size() == servicesConductor.getMaxThreads());
 		
-		//Unpause and let the first max threads number of messages start processing, then pause
-		servicesConductor.resume();
-		
-		//Wait for isApplicables to finish so that services are paused midway
-		while (inService.get() < servicesConductor.getMaxThreads());
-		
-		servicesConductor.pause();
-		
-		assertEquals(servicesConductor.getLockedPids().size(), servicesConductor.getMaxThreads());
 		//assertEquals(incompleteServices.get(), servicesConductor.getMaxThreads());
 		assertEquals(incompleteServices.get(), numberTestMessages - servicesConductor.getQueueSize());
 		//Abort the currently active threads
@@ -114,11 +115,12 @@ public class ServicesConductorInterruptTest extends Assert {
 		//Verify that current threads died but that the remaining items are still ready to go
 		assertTrue(servicesConductor.getLockedPids().size() == 0);
 		assertTrue(servicesConductor.getQueueSize() == numberTestMessages - servicesConductor.getMaxThreads());
-		//LOG.debug("Queue: " + executor.getQueue().size() + " Active:" + executor.getActiveCount());
-		//assertTrue(executor.getQueue().size() + executor.getActiveCount() == numberTestMessages - servicesConductor.getMaxThreads());
 		
 		//Process remaining message queue, then shut down conductor
-		blockingService = false;
+		synchronized(blockingObject){
+			flag.set(false);
+			blockingObject.notifyAll();
+		}
 		servicesConductor.resume();
 		while (servicesConductor.getLockedPids().size() > 0 || servicesConductor.getQueueSize() > 0);
 		
@@ -167,7 +169,6 @@ public class ServicesConductorInterruptTest extends Assert {
 	}
 	
 	public class DelayEnhancement extends Enhancement<Element> {
-
 		public DelayEnhancement(ObjectEnhancementService service, PIDMessage pid) {
 			super(pid);
 		}
@@ -177,14 +178,15 @@ public class ServicesConductorInterruptTest extends Assert {
 			LOG.debug("Call invoked for " + this.pid.getPIDString());
 			betweenApplicableAndEnhancement.decrementAndGet();
 			inService.incrementAndGet();
-			try {
-				while (blockingService){
-					if (Thread.currentThread().isInterrupted())
-						throw new InterruptedException();
+			while (flag.get()){
+				synchronized(blockingObject){
+					try {
+						blockingObject.wait();
+					} catch (InterruptedException e){
+						Thread.currentThread().interrupt();
+						return null;
+					}
 				}
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				return null;
 			}
 			incompleteServices.decrementAndGet();
 			servicesCompleted.incrementAndGet();

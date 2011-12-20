@@ -70,8 +70,9 @@ public class ServicesConductor implements MessageConductor {
 
 	private ServicesThreadPoolExecutor executor = null;
 	
-	private long recoverableDelay = 20000;
-	private long unexpectedExceptionDelay = 60000;
+	private long recoverableDelay = 0;
+	private long unexpectedExceptionDelay = 0;
+	private long beforeExecuteDelay = 0;
 
 	public ServicesConductor() {
 		LOG.debug("Starting up Services Conductor");
@@ -96,6 +97,7 @@ public class ServicesConductor implements MessageConductor {
 	private void initializeExecutor(){
 		this.executor = new ServicesThreadPoolExecutor(this.maxThreads);
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
+		this.executor.setBeforeExecuteDelay(beforeExecuteDelay);
 	}
 
 	/**
@@ -323,6 +325,14 @@ public class ServicesConductor implements MessageConductor {
 
 	public void setUnexpectedExceptionDelay(long unexpectedExceptionDelay) {
 		this.unexpectedExceptionDelay = unexpectedExceptionDelay;
+	}
+
+	public long getBeforeExecuteDelay() {
+		return beforeExecuteDelay;
+	}
+
+	public void setBeforeExecuteDelay(long beforeExecuteDelay) {
+		this.beforeExecuteDelay = beforeExecuteDelay;
 	}
 
 	public List<ObjectEnhancementService> getServices() {

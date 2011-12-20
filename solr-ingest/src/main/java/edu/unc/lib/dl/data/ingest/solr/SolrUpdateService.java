@@ -58,7 +58,8 @@ public class SolrUpdateService {
 	protected BlockingQueue<SolrUpdateRequest> pidQueue = null;
 	protected List<SolrUpdateRequest> collisionList = null;
 	protected Set<String> lockedPids = null;
-	protected int maxIngestThreads = 3;
+	protected int maxThreads = 3;
+	protected long recoverableDelay = 0;
 	protected boolean autoCommit = true;
 	
 	public SolrUpdateService() {
@@ -89,8 +90,8 @@ public class SolrUpdateService {
 	}
 	
 	protected void initializeExecutor(){
-		LOG.debug("Initializing thread pool executor with " + this.maxIngestThreads + " threads.");
-		this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(this.maxIngestThreads);
+		LOG.debug("Initializing thread pool executor with " + this.maxThreads + " threads.");
+		this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(this.maxThreads);
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
 	}
 	
@@ -179,14 +180,22 @@ public class SolrUpdateService {
 		this.solrPath = solrPath;
 	}
 	
-	public int getMaxIngestThreads() {
-		return maxIngestThreads;
+	public int getMaxThreads() {
+		return maxThreads;
 	}
 
-	public void setMaxIngestThreads(int maxIngestThreads) {
-		this.maxIngestThreads = maxIngestThreads;
+	public void setMaxThreads(int maxThreads) {
+		this.maxThreads = maxThreads;
 	}
 	
+	public long getRecoverableDelay() {
+		return recoverableDelay;
+	}
+
+	public void setRecoverableDelay(long recoverableDelay) {
+		this.recoverableDelay = recoverableDelay;
+	}
+
 	public SearchSettings getSearchSettings() {
 		return searchSettings;
 	}
