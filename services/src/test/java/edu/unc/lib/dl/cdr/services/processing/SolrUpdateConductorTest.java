@@ -107,6 +107,7 @@ public class SolrUpdateConductorTest extends Assert {
 	
 	@Test
 	public void addRequests() throws Exception{
+		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		//Add messages and check that they all ran
 		for (int i=0; i<numberTestMessages; i++){
 			PIDMessage message = new PIDMessage("uuid:" + i, SolrUpdateAction.namespace, 
@@ -122,6 +123,7 @@ public class SolrUpdateConductorTest extends Assert {
 	
 	@Test
 	public synchronized void addCollisions() throws Exception{
+		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		numberTestMessages = 4;
 		
 		BlockingFedoraDataService fds = new BlockingFedoraDataService();
@@ -163,6 +165,7 @@ public class SolrUpdateConductorTest extends Assert {
 	
 	@Test
 	public void clearState() throws InterruptedException{
+		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
 		for (int i=0; i<numberTestMessages; i++){
 			PIDMessage message = new PIDMessage("uuid:" + i, SolrUpdateAction.namespace, 
@@ -190,6 +193,7 @@ public class SolrUpdateConductorTest extends Assert {
 	
 	@Test
 	public void blockingRequests() throws Exception{
+		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
 		
 		//Create a blocked message and make sure that it doesn't get picked up until
@@ -230,6 +234,7 @@ public class SolrUpdateConductorTest extends Assert {
 	
 	@Test
 	public void pauseExecutor() throws Exception{
+		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		//Test that nothing processes while paused
 		solrUpdateConductor.pause();
 		for (int i=0; i<numberTestMessages; i++){
@@ -253,6 +258,7 @@ public class SolrUpdateConductorTest extends Assert {
 	
 	@Test
 	public void executorShutdown(){
+		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
 		for (int i=0; i<numberTestMessages; i++){
 			PIDMessage message = new PIDMessage("uuid:" + i, SolrUpdateAction.namespace, 
@@ -280,6 +286,7 @@ public class SolrUpdateConductorTest extends Assert {
 	
 	@Test
 	public void abortOperation(){
+		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		int numberTestMessages = 20;
 		
 		BlockingFedoraDataService fds = new BlockingFedoraDataService();
@@ -294,7 +301,9 @@ public class SolrUpdateConductorTest extends Assert {
 
 		while (solrUpdateConductor.getLockedPids().size() < solrUpdateConductor.getMaxThreads()
 				&& !solrUpdateConductor.isEmpty());
+		solrUpdateConductor.pause();
 		solrUpdateConductor.abort();
+		while (solrUpdateConductor.getThreadPoolExecutor().getQueue().size() == 0);
 		assertTrue(solrUpdateConductor.isIdle());
 		assertEquals(solrUpdateConductor.getLockedPids().size(), 0);
 		

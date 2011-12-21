@@ -199,4 +199,12 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	public ServicesThreadPoolExecutor getThreadPoolExecutor(){
 		return (ServicesThreadPoolExecutor)this.executor;
 	}
+
+	public long getBeforeExecuteDelay() {
+		return beforeExecuteDelay;
+	}
+
+	public void setBeforeExecuteDelay(long beforeExecuteDelay) {
+		this.beforeExecuteDelay = beforeExecuteDelay;
+	}
 }

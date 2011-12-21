@@ -181,7 +181,7 @@
 		<property name="solrSearchService" ref="solrSearchService" />
 		<property name="maxThreads" value="${conductor.solr.maxThreads}" />
 		<property name="recoverableDelay" value="${conductor.solr.recoverableDelay}"/>
-		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecutionDelay}"/>
+		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecuteDelay}"/>
 		<property name="accessGroups" ref="accessGroups" />
 		<property name="searchSettings" ref="searchSettings" />
 	</bean>
