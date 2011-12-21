@@ -112,6 +112,7 @@ public class ServicesConductorInterruptTest extends Assert {
 		while (servicesConductor.getExecutor().isTerminating() || servicesConductor.getExecutor().isShutdown());
 		
 		executor = servicesConductor.getExecutor();
+		while (executor.getQueue().size() < numberTestMessages - servicesConductor.getQueueSize());
 		//Verify that current threads died but that the remaining items are still ready to go
 		assertTrue(servicesConductor.getLockedPids().size() == 0);
 		assertTrue(servicesConductor.getQueueSize() == numberTestMessages - servicesConductor.getMaxThreads());
