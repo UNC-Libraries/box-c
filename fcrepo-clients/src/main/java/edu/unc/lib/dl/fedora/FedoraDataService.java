@@ -15,34 +15,22 @@
  */
 package edu.unc.lib.dl.fedora;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
+import org.jdom.Content;
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,16 +38,15 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService.PathInfo;
 
 /**
- * Fedora data retrieval class used for accessing data streams and performing Mulgara queries
- * to generate XML views of Fedora objects for outside usage.
+ * Fedora data retrieval class used for accessing data streams and performing Mulgara queries to generate XML views of
+ * Fedora objects for outside usage.
  * 
  * @author Gregory Jansen
  * @author Ben Pennell
  */
 public class FedoraDataService {
 
-	private static final Logger LOG = LoggerFactory
-			.getLogger(FedoraDataService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(FedoraDataService.class);
 
 	private edu.unc.lib.dl.fedora.AccessClient accessClient = null;
 
@@ -69,6 +56,19 @@ public class FedoraDataService {
 
 	private edu.unc.lib.dl.fedora.AccessControlUtils accessControlUtils = null;
 	
+	private ExecutorService executor;
+	private int maxThreads;
+	private long serviceTimeout;
+	
+	public FedoraDataService(){
+		maxThreads = 0;
+		serviceTimeout = 5000L;
+	}
+	
+	public void init(){
+		executor = Executors.newFixedThreadPool(maxThreads);
+	}
+
 	public edu.unc.lib.dl.fedora.AccessClient getAccessClient() {
 		return accessClient;
 	}
@@ -78,10 +78,10 @@ public class FedoraDataService {
 	}
 
 	/**
-	 * Retrieves a view-inputs document containing the FOXML datastream for the object
-	 * identified by simplepid 
+	 * Retrieves a view-inputs document containing the FOXML datastream for the object identified by simplepid
+	 * 
 	 * @param simplepid
-	 * @return 
+	 * @return
 	 * @throws FedoraException
 	 */
 	public Document getFoxmlViewXML(String simplepid) throws FedoraException {
@@ -89,21 +89,20 @@ public class FedoraDataService {
 		Document result = new Document();
 		final Element inputs = new Element("view-inputs");
 		result.setRootElement(inputs);
-		CountDownLatch cdl = new CountDownLatch(1);
-		new StopLatchedThread(cdl, new GetFoxml(pid, inputs)).start();
-		try {
-			cdl.await(5000, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException expected) {
-		}
 
+		List<Callable<Content>> callables = new ArrayList<Callable<Content>>();
+		callables.add(new GetFoxml(pid));
+		
+		this.retrieveAsynchronousResults(inputs, callables, pid, true);
+		
 		return result;
 	}
-	
+
 	/**
-	 * Retrieves a view-inputs document containing the Mods datastream for the object
-	 * identified by simplepid 
+	 * Retrieves a view-inputs document containing the Mods datastream for the object identified by simplepid
+	 * 
 	 * @param simplepid
-	 * @return 
+	 * @return
 	 * @throws FedoraException
 	 */
 	public Document getModsViewXML(String simplepid) throws FedoraException {
@@ -111,51 +110,78 @@ public class FedoraDataService {
 		Document result = new Document();
 		final Element inputs = new Element("view-inputs");
 		result.setRootElement(inputs);
-		CountDownLatch cdl = new CountDownLatch(1);
-		new StopLatchedThread(cdl, new GetMods(pid, inputs)).start();
-		try {
-			cdl.await(5000, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException expected) {
-		}
 
+		List<Callable<Content>> callables = new ArrayList<Callable<Content>>();
+		callables.add(new GetMods(pid));
+		
+		this.retrieveAsynchronousResults(inputs, callables, pid, true);
+		
 		return result;
 	}
-	
+
+	public Document getObjectViewXML(String simplepid) throws FedoraException {
+		return getObjectViewXML(simplepid, false);
+	}
+
 	/**
-	 * Retrieves a view-inputs document containing the FOXML, Fedora path information,
-	 * parent collection pid, permissions and order within parent folder for the object
-	 * identified by simplepid
+	 * Retrieves a view-inputs document containing the FOXML, Fedora path information, parent collection pid, permissions
+	 * and order within parent folder for the object identified by simplepid
+	 * 
 	 * @param simplepid
-	 * @return 
+	 * @return
 	 * @throws FedoraException
 	 */
-	public Document getObjectViewXML(String simplepid) throws FedoraException {
+	public Document getObjectViewXML(String simplepid, boolean failOnException) throws FedoraException {
 		final PID pid = new PID(simplepid);
 		Document result = new Document();
+		
 		final Element inputs = new Element("view-inputs");
 		result.setRootElement(inputs);
 
-		// parallel threads for speed
-		CountDownLatch cdl = new CountDownLatch(5);
-		new StopLatchedThread(cdl, new GetFoxml(pid, inputs)).start();
-		new StopLatchedThread(cdl, new GetPathInfo(pid, inputs)).start();
-		new StopLatchedThread(cdl, new GetParentCollection(pid, inputs)).start();
-		new StopLatchedThread(cdl, new GetPermissions(pid, inputs)).start();
-		new StopLatchedThread(cdl, new GetOrderWithinParent(pid, inputs)).start();
-		try {
-			cdl.await(16000, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException expected) {
-		}
+		List<Callable<Content>> callables = new ArrayList<Callable<Content>>();
 
+		callables.add(new GetFoxml(pid));
+		callables.add(new GetPathInfo(pid));
+		callables.add(new GetParentCollection(pid));
+		callables.add(new GetPermissions(pid));
+		callables.add(new GetOrderWithinParent(pid));
+		
+		this.retrieveAsynchronousResults(inputs, callables, pid, failOnException);
+		
 		return result;
+	}
+	
+	private void retrieveAsynchronousResults(Element inputs, List<Callable<Content>> callables, PID pid, 
+			boolean failOnException) throws FedoraException {
+		Collection<Future<Content>> futures = new ArrayList<Future<Content>>(callables.size());
+		
+		for (Callable<Content> callable: callables){
+			futures.add(executor.submit(callable));
+		}
+		
+		for (Future<Content> future : futures) {
+			try {
+				Content results = future.get(serviceTimeout, TimeUnit.MILLISECONDS);
+				if (results != null) {
+					inputs.addContent(results);
+				}
+			} catch (InterruptedException e){
+				LOG.warn("Attempt to get asynchronous results was interrupted for " + pid.getPid(), e);
+				return;
+			} catch (Exception e) {
+				if (failOnException) {
+					throw new ServiceException("Failed to get asynchronous results for " + pid.getPid(), e);
+				}
+				LOG.error("Failed to get asynchronous results for " + pid.getPid() + ", continuing.", e);
+			}
+		}
 	}
 
 	public edu.unc.lib.dl.fedora.ManagementClient getManagementClient() {
 		return managementClient;
 	}
 
-	public void setManagementClient(
-			edu.unc.lib.dl.fedora.ManagementClient managementClient) {
+	public void setManagementClient(edu.unc.lib.dl.fedora.ManagementClient managementClient) {
 		this.managementClient = managementClient;
 	}
 
@@ -163,71 +189,52 @@ public class FedoraDataService {
 		return tripleStoreQueryService;
 	}
 
-	public void setTripleStoreQueryService(
-			edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService) {
+	public void setTripleStoreQueryService(edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService) {
 		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
 
-	public void setAccessControlUtils(
-			edu.unc.lib.dl.fedora.AccessControlUtils accessControlUtils) {
+	public int getMaxThreads() {
+		return maxThreads;
+	}
+
+	public void setMaxThreads(int maxThreads) {
+		this.maxThreads = maxThreads;
+	}
+
+	public long getServiceTimeout() {
+		return serviceTimeout;
+	}
+
+	public void setServiceTimeout(long serviceTimeout) {
+		this.serviceTimeout = serviceTimeout;
+	}
+
+	public void setAccessControlUtils(edu.unc.lib.dl.fedora.AccessControlUtils accessControlUtils) {
 		this.accessControlUtils = accessControlUtils;
 	}
 
-	public class StopLatchedThread extends Thread {
-		private final CountDownLatch stopLatch;
-
-		public StopLatchedThread(CountDownLatch stopLatch, Runnable task) {
-			super(task);
-			this.stopLatch = stopLatch;
-		}
-
-		@Override
-		public void run() {
-			try {
-				super.run();
-			} finally {
-				stopLatch.countDown();
-			}
-		}
-	}
-	
 	/**
-	 * Super class for Runnable objects used for retrieving metadata related
-	 * to a specific Fedora object.
-	 * @author bbpennel
-	 *
+	 * Retrieves FOXML and adds the results as a child of inputs.
+	 * 
 	 */
-	private abstract class DataThread implements Runnable {
-		protected PID pid;
-		protected Element inputs;
-		
-		public DataThread(PID pid, Element inputs){
+	private class GetFoxml implements Callable<Content> {
+		private PID pid;
+
+		public GetFoxml(PID pid) {
 			this.pid = pid;
-			this.inputs = inputs;
 		}
-		
-	}
-	
-	/**
-	 * Retrieves FOXML and adds the results as a child of inputs. 
-	 *
-	 */
-	private class GetFoxml extends DataThread {
-		public GetFoxml(PID pid, Element inputs){
-			super(pid, inputs);
-		}
-		
+
 		@Override
-		public void run() {
+		public Content call() {
 			try {
-				
+
 				LOG.debug("Get FOXML for pid " + pid.getPid());
-				
+
 				// add foxml
 				Document foxml;
-				foxml = getManagementClient().getObjectXML(pid);
-				
-				inputs.addContent(foxml.getRootElement().detach());
+				foxml = managementClient.getObjectXML(pid);
+
+				return foxml.getRootElement().detach();
 			} catch (FedoraException e) {
 				throw new ServiceException("Failed to retrieve FOXML for " + pid.getPid() + " due to Fedora Exception", e);
 			} catch (Exception e) {
@@ -235,24 +242,27 @@ public class FedoraDataService {
 			}
 		}
 	}
-	
+
 	/**
-	 * Retrieves object path information indicating the object hierarchy leading up to the
-	 * specified object and adds the results as a child of inputs named "path". 
-	 *
+	 * Retrieves object path information indicating the object hierarchy leading up to the specified object and adds the
+	 * results as a child of inputs named "path".
+	 * 
 	 */
-	private class GetPathInfo extends DataThread {
-		public GetPathInfo(PID pid, Element inputs){
-			super(pid, inputs);
+	private class GetPathInfo implements Callable<Content> {
+		private PID pid;
+
+		public GetPathInfo(PID pid) {
+			this.pid = pid;
 		}
-		
+
 		@Override
-		public void run() {
+		public Content call() {
+			LOG.debug("Get path info for " + pid.getPid());
 			// add path info
-			List<PathInfo> path = getTripleStoreQueryService()
-					.lookupRepositoryPathInfo(pid);
+			List<PathInfo> path = tripleStoreQueryService.lookupRepositoryPathInfo(pid);
+			if (path == null || path.size() == 0)
+				throw new ServiceException("No path information was returned for " + pid.getPid());
 			Element pathEl = new Element("path");
-			inputs.addContent(pathEl);
 			for (PathInfo i : path) {
 				Element p = new Element("object");
 				p.setAttribute("label", i.getLabel());
@@ -260,106 +270,113 @@ public class FedoraDataService {
 				p.setAttribute("slug", i.getSlug());
 				pathEl.addContent(p);
 			}
+			return pathEl;
 		}
 	}
-	
+
 	/**
-	 * Retrieves Mods datastream for pid and adds the results as a child of inputs. 
-	 *
-	 */
-	private class GetMods extends DataThread {
-		public GetMods(PID pid, Element inputs){
-			super(pid, inputs);
-		}
-		
-		@Override
-		public void run() {
-			// add MODS
-			try {
-				byte[] modsBytes = getAccessClient().getDatastreamDissemination(pid, "MD_DESCRIPTIVE", null).getStream();
-				Document mods = edu.unc.lib.dl.fedora.ClientUtils
-						.parseXML(modsBytes);
-				inputs.addContent(mods.getRootElement().detach());
-			} catch (Exception e) {
-				throw new ServiceException(e);
-			}
-		}
-	}
-	
-	/**
-	 * Retrieves the pid identifying the most immediate collection containing the object
-	 * identified and adds the results as a child of inputs named "parentCollection". 
-	 *
-	 */
-	private class GetParentCollection extends DataThread {
-		public GetParentCollection(PID pid, Element inputs){
-			super(pid, inputs);
-		}
-		
-		@Override
-		public void run() {
-			try {
-				PID parentCollection = getTripleStoreQueryService()
-						.fetchParentCollection(pid);
-				if (parentCollection == null)
-					return;
-				Element parentColEl = new Element("parentCollection");
-				parentColEl.setText(parentCollection.getPid());
-				inputs.addContent(parentColEl);
-			} catch (Exception e) {
-				throw new ServiceException(e);
-			}
-		}
-	}
-	
-	/**
-	 * Calculates and returns the effective permissions for the given pid, taking into 
-	 * account inherited permissions.  Results are added as a child of inputs named "permissions". 
-	 *
-	 */
-	private class GetPermissions extends DataThread {
-		public GetPermissions(PID pid, Element inputs){
-			super(pid, inputs);
-		}
-		
-		@Override
-		public void run() {
-			accessControlUtils.processCdrAccessControl(pid, inputs);
-		}
-	}
-	
-	/**
-	 * Retrieves the internal sort order value for the default sort within
-	 * the folder/collection containing the object identified by pid and stores
-	 * the results as a child of inputs named "order".
+	 * Retrieves Mods datastream for pid and adds the results as a child of inputs.
 	 * 
 	 */
-	private class GetOrderWithinParent extends DataThread {
-		public GetOrderWithinParent(PID pid, Element inputs){
-			super(pid, inputs);
+	private class GetMods implements Callable<Content> {
+		private PID pid;
+
+		public GetMods(PID pid) {
+			this.pid = pid;
 		}
-		
+
 		@Override
-		public void run() {
+		public Content call() {
+			// add MODS
 			try {
-				PID container = getTripleStoreQueryService()
-						.fetchContainer(pid);
-				byte[] structMapBytes = getAccessClient()
-						.getDatastreamDissemination(container,
-								"MD_CONTENTS", null).getStream();
+				LOG.debug("Get mods for " + pid.getPid());
+				byte[] modsBytes = getAccessClient().getDatastreamDissemination(pid, "MD_DESCRIPTIVE", null).getStream();
+				Document mods = edu.unc.lib.dl.fedora.ClientUtils.parseXML(modsBytes);
+				return mods.getRootElement().detach();
+			} catch (Exception e) {
+				throw new ServiceException(e);
+			}
+		}
+	}
+
+	/**
+	 * Retrieves the pid identifying the most immediate collection containing the object identified and adds the results
+	 * as a child of inputs named "parentCollection".
+	 * 
+	 */
+	private class GetParentCollection implements Callable<Content> {
+		private PID pid;
+
+		public GetParentCollection(PID pid) {
+			this.pid = pid;
+		}
+
+		@Override
+		public Content call() {
+			try {
+				LOG.debug("Get parent collection for " + pid.getPid());
+				PID parentCollection = tripleStoreQueryService.fetchParentCollection(pid);
+				if (parentCollection == null)
+					return null;
+				Element parentColEl = new Element("parentCollection");
+				parentColEl.setText(parentCollection.getPid());
+				return parentColEl;
+			} catch (Exception e) {
+				throw new ServiceException(e);
+			}
+		}
+	}
+
+	/**
+	 * Calculates and returns the effective permissions for the given pid, taking into account inherited permissions.
+	 * Results are added as a child of inputs named "permissions".
+	 * 
+	 */
+	private class GetPermissions implements Callable<Content> {
+		private PID pid;
+
+		public GetPermissions(PID pid) {
+			this.pid = pid;
+		}
+
+		@Override
+		public Content call() {
+			LOG.debug("Get access control for " + pid.getPid());
+			return accessControlUtils.processCdrAccessControl(pid);
+		}
+	}
+
+	/**
+	 * Retrieves the internal sort order value for the default sort within the folder/collection containing the object
+	 * identified by pid and stores the results as a child of inputs named "order".
+	 * 
+	 */
+	private class GetOrderWithinParent implements Callable<Content> {
+		private PID pid;
+
+		public GetOrderWithinParent(PID pid) {
+			this.pid = pid;
+		}
+
+		@Override
+		public Content call() {
+			try {
+				LOG.debug("Get Order within Parent for " + pid.getPid());
+				PID container = tripleStoreQueryService.fetchContainer(pid);
+				byte[] structMapBytes = getAccessClient().getDatastreamDissemination(container, "MD_CONTENTS", null)
+						.getStream();
 				SAXParserFactory factory = SAXParserFactory.newInstance();
 				factory.setNamespaceAware(true);
 				factory.setValidating(false);
 				SAXParser saxParser = factory.newSAXParser();
-				StructMapOrderExtractor handler = new StructMapOrderExtractor(
-						pid);
-				saxParser.parse(new ByteArrayInputStream(structMapBytes),
-						handler);
+				StructMapOrderExtractor handler = new StructMapOrderExtractor(pid);
+				saxParser.parse(new ByteArrayInputStream(structMapBytes), handler);
 				if (handler.getOrder() != null) {
 					Element orderEl = new Element("order");
 					orderEl.setText(handler.getOrder());
-					inputs.addContent(orderEl);
+					return orderEl;
 				}
+				return null;
 			} catch (Exception e) {
 				throw new ServiceException(e);
 			}

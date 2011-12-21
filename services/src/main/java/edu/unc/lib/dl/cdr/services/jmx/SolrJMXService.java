@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.solr;
+package edu.unc.lib.dl.cdr.services.jmx;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 
@@ -29,35 +31,32 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
  */
 public class SolrJMXService {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrJMXService.class);
-	private SolrUpdateService solrUpdateService;
+	private MessageDirector messageDirector;
 	private boolean active;
 	
 	public String getTargetAllSelector(){
 		return SolrUpdateService.TARGET_ALL;
 	}
 	
+	public void update(String pid){
+		if (!active) return;
+		messageDirector.direct(new PIDMessage(pid, SolrUpdateAction.namespace, SolrUpdateAction.ADD.getName()));
+	}
+	
 	public void reindex(String pid, boolean inplace){
 		if (!active) return;
 		LOG.info("Issuing request to recursively reindex " + pid + ", to be performed inplace:" + inplace + ".");
 		if (inplace){
-			solrUpdateService.offer(pid, SolrUpdateAction.RECURSIVE_REINDEX);
+			messageDirector.direct(new PIDMessage(pid, SolrUpdateAction.namespace, SolrUpdateAction.RECURSIVE_REINDEX.getName()));
 		} else {
-			solrUpdateService.offer(pid, SolrUpdateAction.CLEAN_REINDEX);
+			messageDirector.direct(new PIDMessage(pid, SolrUpdateAction.namespace, SolrUpdateAction.CLEAN_REINDEX.getName()));
 		}
 	}
 	
 	public void clearIndex(String confirmation){
 		if (!active || !confirmation.equalsIgnoreCase("yes")) return;
 		LOG.info("Issuing request to delete all Solr index contents.");
-		solrUpdateService.offer("", SolrUpdateAction.CLEAR_INDEX);
-	}
-	
-	public SolrUpdateService getSolrUpdateService() {
-		return solrUpdateService;
-	}
-	
-	public void setSolrUpdateService(SolrUpdateService solrUpdateService) {
-		this.solrUpdateService = solrUpdateService;
+		messageDirector.direct(new PIDMessage("", SolrUpdateAction.namespace, SolrUpdateAction.CLEAR_INDEX.getName()));
 	}
 
 	public boolean isActive() {
@@ -66,6 +65,14 @@ public class SolrJMXService {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public MessageDirector getMessageDirector() {
+		return messageDirector;
+	}
+
+	public void setMessageDirector(MessageDirector messageDirector) {
+		this.messageDirector = messageDirector;
 	}
 	
 }

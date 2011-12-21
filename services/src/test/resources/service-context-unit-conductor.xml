@@ -25,52 +25,57 @@
 		http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-3.0.xsd
 		http://www.springframework.org/schema/util 
 		http://www.springframework.org/schema/util/spring-util.xsd">
-
-	<bean id="tripleStoreQueryService"
-		class="edu.unc.lib.dl.cdr.services.test.TripleStoreQueryServiceMock">
+	
+	<bean id="servicesFailedPids" class="edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap">
 	</bean>
 	
-	<bean id="managementClient" class="edu.unc.lib.dl.cdr.services.test.ManagementClientMock">
-	</bean>  
+	<util:list id="servicesList" list-class="java.util.ArrayList" 
+		value-type="edu.unc.lib.dl.cdr.services.ObjectEnhancementService">
+		<ref bean="technicalMetadataEnhancementService"/>
+		<ref bean="imageEnhancementService"/>
+		<ref bean="thumbnailEnhancementService"/>
+	</util:list>
 	
-	<bean id="sideEffectMessageFilterList" class="edu.unc.lib.dl.cdr.services.model.SideEffectMessageFilterList">
-		<property name="messageTimeoutPeriod" value="1000000"/>
-	</bean>
-	
-	<bean id="servicesConductor"  class="edu.unc.lib.dl.cdr.services.ServicesConductor"
+	<bean id="servicesConductor"  class="edu.unc.lib.dl.cdr.services.processing.ServicesConductor"
 		init-method="init" destroy-method="destroy">
-		<property name="services">
-			<list>
-				<ref bean="technicalMetadataEnhancementService"/>
-				<ref bean="imageEnhancementService"/>
-				<ref bean="thumbnailEnhancementService"/>
-			</list>
-		</property>
+		<property name="services" ref="servicesList"/>
 		<property name="maxThreads" value="3"/>
-		<property name="sideEffectMessageFilterList" ref="sideEffectMessageFilterList"/>
+		<property name="failedPids" ref="servicesFailedPids"/>
+	</bean>
+	
+	<util:list id="conductorList" list-class="java.util.ArrayList" 
+		value-type="edu.unc.lib.dl.cdr.services.processing.MessageConductor">
+		<ref bean="servicesConductor"/>
+	</util:list>
+	
+	<bean id="servicesMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.ServicesQueueMessageFilter">
+		<property name="services" ref="servicesList"/>
+	</bean>
+	
+	<util:list id="messageFilterList" list-class="java.util.ArrayList" 
+		value-type="edu.unc.lib.dl.cdr.services.processing.MessageFilter">
+		<ref bean="servicesMessageFilter"/>
+	</util:list>
+	
+	<bean id="messageDirector" class="edu.unc.lib.dl.cdr.services.processing.MessageDirector">
+		<property name="conductorsList" ref="conductorList"/>
+		<property name="filters" ref="messageFilterList"/>
 	</bean>
 	
 	<!-- Services -->
 	<bean id="technicalMetadataEnhancementService" class="edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="managementClient" ref="managementClient"/>
 		<property name="active" value="true"/>
 	</bean>
 	
 	<bean id="imageEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="managementClient" ref="managementClient"/>
 		<property name="active" value="true"/>
 	</bean>
 	
 	<bean id="thumbnailEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="managementClient" ref="managementClient"/>
 		<property name="active" value="true"/>
 	</bean>
 	
 	<bean id="solrUpdateEnhancementService" class="edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="active" value="true"/>
 	</bean>
 </beans>

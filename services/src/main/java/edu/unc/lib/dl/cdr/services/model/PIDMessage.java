@@ -20,6 +20,9 @@ import java.util.List;
 import org.jdom.Document;
 import org.jdom.Element;
 
+import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
+import edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -32,6 +35,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 public class PIDMessage {
 	private Document message;
 	private PID pid;
+	private String namespace = null;
 	private String action = null;
 	private String datastream = null;
 	private String relation = null;
@@ -39,34 +43,40 @@ public class PIDMessage {
 	private String serviceName = null;
 	private String timestamp = null;
 	private long timeCreated = System.currentTimeMillis();
+	private List<ObjectEnhancementService> filteredServices = null;
 	
 	public PIDMessage(){
 	}
 	
-	public PIDMessage(String pid, Document message){
-		this.pid = new PID(pid);
+	public PIDMessage(Document message, String namespace){
+		this.pid = new PID(JMSMessageUtil.getPid(message));
+		this.namespace = namespace;
 		this.message = message;
 	}
 	
-	public PIDMessage(PID pid, Document message){
+	public PIDMessage(String pid, String namespace, String action){
+		this(pid, namespace, action, null);
+	}
+	
+	public PIDMessage(PID pid, String namespace, String action){
+		this(pid, namespace, action, null);
+	}
+	
+	public PIDMessage(String pid, String namespace, String action, String service){
+		this(new PID(pid), namespace, action, service);
+	}
+	
+	public PIDMessage(PID pid, String namespace, String action, String service){
 		this.pid = pid;
-		this.message = message;
+		this.namespace = namespace;
+		setAction(action);
+		this.serviceName = service;
 	}
 	
-	public PIDMessage(String pid, Document message, String serviceName){
-		this(pid, message);
-		this.serviceName = serviceName;
-	}
-	
-	public PIDMessage(PID pid, Document message, String serviceName){
-		this(pid, message);
-		this.serviceName = serviceName;
-	}
-	
-	public PIDMessage(String pid, String action, String datastream, String relation){
+	public PIDMessage(String pid, String namespace, String action, String datastream, String relation){
 		this.pid = new PID(pid);
 		this.datastream = datastream;
-		this.action = action;
+		setAction(action);
 		this.relation = relation;
 	}
 	
@@ -95,10 +105,18 @@ public class PIDMessage {
 		return timestamp;
 	}
 	
+	public void setAction(String action){
+		if (action != null && action.length() > 0 && this.namespace != null){
+			this.action = this.namespace + "/" + action;
+		} else {
+			this.action = action;
+		}
+	}
+	
 	public String getAction() {
 		if (action == null){
 			try {
-				action = message.getRootElement().getChildTextTrim("title", JDOMNamespaceUtil.ATOM_NS);
+				setAction(JMSMessageUtil.getAction(message));
 			} catch (NullPointerException e){
 				//Message was not set, therefore value is null 
 			}
@@ -111,14 +129,7 @@ public class PIDMessage {
 	public String getDatastream() {
 		if (datastream == null){
 			try {
-				@SuppressWarnings("unchecked")
-				List<Element> categories = message.getRootElement().getChildren("category", JDOMNamespaceUtil.ATOM_NS);
-		    	for (Element category: categories){
-		    		String scheme = category.getAttributeValue("scheme");
-		    		if ("fedora-types:dsID".equals(scheme)){
-		    			datastream = category.getAttributeValue("term");
-		    		}
-		    	}
+				datastream = JMSMessageUtil.getDatastream(message);
 			} catch (NullPointerException e){
 				//Message was not set, therefore value is null 
 			}
@@ -128,17 +139,14 @@ public class PIDMessage {
     	return datastream;
 	}
 	
+	public void setRelation(String relation){
+		this.relation = relation;
+	}
+	
 	public String getRelation(){
 		if (relation == null){
 			try {
-				@SuppressWarnings("unchecked")
-				List<Element> categories = message.getRootElement().getChildren("category", JDOMNamespaceUtil.ATOM_NS);
-		    	for (Element category: categories){
-		    		String scheme = category.getAttributeValue("scheme");
-		    		if ("fedora-types:relationship".equals(scheme)){
-		    			relation = category.getAttributeValue("term");
-		    		}
-		    	}
+				relation = JMSMessageUtil.getPredicate(message);
 			} catch (NullPointerException e){
 				//Message was not set, therefore value is null 
 			}
@@ -164,12 +172,37 @@ public class PIDMessage {
 		this.timeCreated = timeCreated;
 	}
 
+	public List<ObjectEnhancementService> getFilteredServices() {
+		return filteredServices;
+	}
+	
+	public boolean filteredServicesContains(Class<?> serviceClass){
+		for (ObjectEnhancementService service: this.filteredServices){
+			if (serviceClass.equals(service.getClass())){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void setFilteredServices(List<ObjectEnhancementService> filteredServices) {
+		this.filteredServices = filteredServices;
+	}
+
 	public void generateCDRMessageContent(){
 		cdrMessageContent = new CDRMessageContent(message);
 	}
 	
 	public CDRMessageContent getCDRMessageContent(){
 		return cdrMessageContent;
+	}
+
+	public String getNamespace() {
+		return namespace;
+	}
+
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
 	}
 
 	public String toString(){

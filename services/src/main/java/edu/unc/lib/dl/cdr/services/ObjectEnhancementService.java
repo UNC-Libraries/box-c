@@ -54,6 +54,14 @@ public interface ObjectEnhancementService {
 	 * @return true if the service is applicable
 	 */
 	public boolean isApplicable(PIDMessage pid) throws EnhancementException;
+	
+	/**
+	 * Does this message apply to this service?
+	 * @param pid
+	 * @return
+	 * @throws EnhancementException
+	 */
+	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException;
 
 	/**
 	 * Checks to see if the enhancement should be re-applied. Generally a comparison of timestamps or software agent

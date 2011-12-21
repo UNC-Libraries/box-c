@@ -27,17 +27,17 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
-import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Generates surrogate thumbnail images of items with data_files of image format types.
+ * 
  * @author Gregory Jansen, bbpennel
- *
+ * 
  */
 public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementService {
 	private static final Logger LOG = LoggerFactory.getLogger(ThumbnailEnhancementService.class);
@@ -49,7 +49,7 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#findCandidateObjects (int)
 	 */
 	@Override
@@ -59,7 +59,7 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#findCandidateObjects (int)
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -95,9 +95,35 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 		return new ThumbnailEnhancement(this, pid);
 	}
 
+	@Override
+	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
+		if (pid.getMessage() == null)
+			return false;
+
+		String action = pid.getAction();
+		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
+			return true;
+
+		if (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action) 
+				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)
+				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action)){
+			String datastream = pid.getDatastream();
+			return ContentModelHelper.Datastream.DATA_FILE.equals(datastream);
+		}
+		
+		if (!(JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.equals(action) 
+				|| JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP.equals(action))){
+			return false;
+		}
+
+		String relationship = pid.getRelation();
+		return ContentModelHelper.CDRProperty.sourceData.equals(relationship) 
+			|| ContentModelHelper.CDRProperty.hasSurrogate.equals(relationship);
+	}
+
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#isApplicable(edu .unc.lib.dl.fedora.PID)
 	 */
 	@SuppressWarnings({ "unchecked" })
@@ -107,27 +133,7 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 		if (pid.getMessage() != null) {
 			LOG.debug("isApplicable called with message:\n " + new XMLOutputter().outputString(pid.getMessage()));
 		}
-		if (pid.getMessage() != null) {
-			String action = pid.getMessage().getRootElement().getChildTextTrim("title", JDOMNamespaceUtil.ATOM_NS);
-			String datastream = JMSMessageUtil.getDatastream(pid.getMessage());
-			String relationship = JMSMessageUtil.getPredicate(pid.getMessage());
-			// if the message does not indicate a change to an applicable
-			// datastream, then done
-			if (!(
-					((JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action) || JMSMessageUtil.FedoraActions.ADD_DATASTREAM
-					.equals(action) || JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE
-					.equals(action)) && (ContentModelHelper.Datastream.DATA_FILE.getName().equals(datastream) || ContentModelHelper.Datastream.RELS_EXT.getName().equals(datastream) ))
-					||
-					JMSMessageUtil.FedoraActions.INGEST.equals(action)
-					||
-					((JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP
-					.equals(action) || JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP.equals(action)) && (ContentModelHelper.CDRProperty.sourceData
-					.getURI().toString().equals(relationship) || ContentModelHelper.CDRProperty.hasSurrogate.getURI()
-					.toString().equals(relationship)))
-					)) {
-				return false;
-			}
-		}
+		
 		boolean needsThumb = false;
 		boolean isThumbForOthers = false;
 		String query = null;
@@ -156,7 +162,7 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#isStale(edu.unc. lib.dl.fedora.PID)
 	 */
 	@Override

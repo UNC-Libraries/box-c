@@ -43,9 +43,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
-import edu.unc.lib.dl.cdr.services.ServicesConductor;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.processing.ServicesConductor;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
@@ -122,7 +123,8 @@ public class ImageEnhancementServiceITCase {
 			this.getManagementClient().addLiteralStatement(pid,
 					ContentModelHelper.CDRProperty.hasSourceMimeType.getURI().toString(), mimetype, null);
 		}
-		PIDMessage result = new PIDMessage(pid, null);
+		PIDMessage result = new PIDMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		samples.add(pid);
 		return result;
 	}

@@ -51,7 +51,8 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 		List<PID> candidates = this.findCandidateObjects(-1);
 		if (candidates != null){
 			for (PID candidate: candidates){
-				solrUpdateService.offer(candidate.getPid(), SolrUpdateAction.RECURSIVE_ADD);
+				getMessageDirector().direct(new PIDMessage(candidate.getPid(), 
+						SolrUpdateAction.namespace, SolrUpdateAction.RECURSIVE_ADD.getName()));
 			}
 		}	
 	}
@@ -96,6 +97,11 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 	@Override
 	public Enhancement<Element> getEnhancement(PIDMessage pid) {
 		return null;
+	}
+	
+	@Override
+	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
+		return false;
 	}
 
 	@Override

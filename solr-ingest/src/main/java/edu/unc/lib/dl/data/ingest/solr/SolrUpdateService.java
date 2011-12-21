@@ -42,23 +42,25 @@ import edu.unc.lib.dl.security.access.AccessGroupSet;
  * @author bbpennel
  */
 public class SolrUpdateService {
-	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateService.class);
-	private FedoraDataService fedoraDataService;
-	private UpdateDocTransformer updateDocTransformer;
-	private SolrDataAccessLayer solrDataAccessLayer;
-	private SolrSearchService solrSearchService;
-	private AccessGroupSet accessGroups;
-	private String solrPath;
+	protected static final Logger LOG = LoggerFactory.getLogger(SolrUpdateService.class);
+	protected FedoraDataService fedoraDataService;
+	protected UpdateDocTransformer updateDocTransformer;
+	protected SolrDataAccessLayer solrDataAccessLayer;
+	protected SolrSearchService solrSearchService;
+	protected AccessGroupSet accessGroups;
+	protected String solrPath;
 	@Autowired
-	private SearchSettings searchSettings;
+	protected SearchSettings searchSettings;
 	public static final String TARGET_ALL = "fullIndex";
 	private PID collectionsPid = null;
 
-	private ThreadPoolExecutor executor = null;
-	private BlockingQueue<SolrUpdateRequest> pidQueue = null;
-	private List<SolrUpdateRequest> collisionList = null;
-	private Set<String> lockedPids = null;
-	private int maxIngestThreads = 3;
+	protected ThreadPoolExecutor executor = null;
+	protected BlockingQueue<SolrUpdateRequest> pidQueue = null;
+	protected List<SolrUpdateRequest> collisionList = null;
+	protected Set<String> lockedPids = null;
+	protected int maxThreads = 3;
+	protected long recoverableDelay = 0;
+	protected boolean autoCommit = true;
 	
 	public SolrUpdateService() {
 		pidQueue = new LinkedBlockingQueue<SolrUpdateRequest>();
@@ -78,14 +80,19 @@ public class SolrUpdateService {
 		SolrUpdateRunnable.setSolrUpdateService(this);
 		SolrUpdateRunnable.initQueries();
 		
-		this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(this.maxIngestThreads);
-		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
+		initializeExecutor();
 		
 		collectionsPid = fedoraDataService.getTripleStoreQueryService().fetchByRepositoryPath("/Collections");
 		if (collectionsPid == null){
 			LOG.error("Initialization of SolrUpdateService failed.  It was unable to retrieve Collections object from repository.  Shutting down.");
 			this.executor.shutdownNow();
 		}
+	}
+	
+	protected void initializeExecutor(){
+		LOG.debug("Initializing thread pool executor with " + this.maxThreads + " threads.");
+		this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(this.maxThreads);
+		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
 	}
 	
 	public void destroy() {
@@ -173,14 +180,22 @@ public class SolrUpdateService {
 		this.solrPath = solrPath;
 	}
 	
-	public int getMaxIngestThreads() {
-		return maxIngestThreads;
+	public int getMaxThreads() {
+		return maxThreads;
 	}
 
-	public void setMaxIngestThreads(int maxIngestThreads) {
-		this.maxIngestThreads = maxIngestThreads;
+	public void setMaxThreads(int maxThreads) {
+		this.maxThreads = maxThreads;
 	}
 	
+	public long getRecoverableDelay() {
+		return recoverableDelay;
+	}
+
+	public void setRecoverableDelay(long recoverableDelay) {
+		this.recoverableDelay = recoverableDelay;
+	}
+
 	public SearchSettings getSearchSettings() {
 		return searchSettings;
 	}
@@ -219,6 +234,14 @@ public class SolrUpdateService {
 
 	public void setCollectionsPid(PID collectionsPid) {
 		this.collectionsPid = collectionsPid;
+	}
+
+	public boolean isAutoCommit() {
+		return autoCommit;
+	}
+
+	public void setAutoCommit(boolean autoCommit) {
+		this.autoCommit = autoCommit;
 	}
 
 	public int queueSize(){

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:fedora-types="http://www.fedora.info/definitions/1/0/types/">
+  <id>urn:uuid:86c1aef0-7832-4fd3-97dd-d7fca687cd60</id>
+  <updated>2011-05-23T16:12:41.942Z</updated>
+  <author>
+    <name>fedoraAdmin</name>
+    <uri>http://cdr-alpha.lib.unc.edu:80/fedora</uri>
+  </author>
+  <title type="text">addRelationship</title>
+  <category term="http://cdr.unc.edu/definitions/1.0/base-model.xml#techData" scheme="fedora-types:relationship" label="xsd:string"></category>
+  <category term="info:fedora/uuid:010bba53-f7d0-4b7f-97e9-ef326a52592f/MD_TECHNICAL" scheme="fedora-types:object" label="xsd:string"></category>
+  <category term="false" scheme="fedora-types:isLiteral" label="xsd:boolean"></category>
+  <category term="null" scheme="fedora-types:datatype" label="xsd:string"></category>
+  <summary type="text">uuid:010bba53-f7d0-4b7f-97e9-ef326a52592f</summary>
+  <content type="text">true</content>
+  <category term="3.4.3-SNAPSHOT" scheme="info:fedora/fedora-system:def/view#version"></category>
+  <category term="info:fedora/fedora-system:ATOM-APIM-1.0" scheme="http://www.fedora.info/definitions/1/0/types/formatURI"></category>
+</entry>

@@ -138,6 +138,13 @@ public interface TripleStoreQueryService {
 	public abstract PID fetchContainer(PID key);
 
 	/**
+	 * Returns whether the object's path can be traced back to the Collections object
+	 * @param key
+	 * @return
+	 */
+	public boolean isOrphaned(PID key);
+	
+	/**
 	 * Retrieves the nearest collection that directly or indirectly contains the specified object.
 	 *
 	 * @param key

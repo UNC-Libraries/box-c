@@ -81,6 +81,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 	private String serverModelUri;
 	private HttpClient httpClient;
 	private ObjectMapper mapper;
+	private PID collections;
 
 	private MultiThreadedHttpConnectionManager multiThreadedHttpConnectionManager;
 
@@ -88,6 +89,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		this.multiThreadedHttpConnectionManager = new MultiThreadedHttpConnectionManager();
 		this.httpClient = new HttpClient(this.multiThreadedHttpConnectionManager);
 		this.mapper = new ObjectMapper();
+		this.collections = null;
 		// copies the classpath resources to the temp folder for access by the
 		// itql client.
 		// yeah, it's a hack, but better than relying on files placed in
@@ -233,6 +235,17 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 	// return result;
 	// }
 
+	private PID fetchCollectionsObject(){
+		return fetchCollectionsObject(false);
+	}
+	
+	private PID fetchCollectionsObject(boolean refresh){
+		if (refresh || collections == null){
+			collections = this.fetchByRepositoryPath("/Collections");
+		}
+		return collections;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 *
@@ -880,7 +893,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		// TODO needs many CDRs one Fedora fix
 		List<String> result = new ArrayList<String>(256);
 
-		PID collections = this.fetchByRepositoryPath("/Collections");
+		PID collections = this.fetchCollectionsObject();
 
 		// construct path from contains relationships
 		StringBuffer query = new StringBuffer();
@@ -1178,6 +1191,21 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 			log.debug("found " + result.size() + " source datastreams");
 		}
 		return result;
+	}
+	
+	@Override
+	public boolean isOrphaned(PID key) {
+		PID collections = fetchCollectionsObject();
+		StringBuffer query = new StringBuffer();
+		query.append("select $p from <%1$s>")
+				.append(" where walk( $p <%2$s> <%3$s> and $p <%2$s> $c) ");
+		query.append(" and <%4$s> <%2$s> $c;");
+		String q = String.format(query.toString(), this.getResourceIndexModelUri(),
+				ContentModelHelper.Relationship.contains.getURI(), key.getURI(),
+				collections.getURI());
+
+		List<List<String>> response = this.lookupStrings(q);
+		return response.isEmpty() || response.get(0).isEmpty();
 	}
 
 	/*
