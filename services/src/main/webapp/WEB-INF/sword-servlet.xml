@@ -39,6 +39,8 @@
 		<property name="locations">
 			<list>
 				<ref bean="propertiesURI" />
+				<value>classpath:cdr-services.properties</value>
+				<value>classpath:scheduled-events.properties</value>
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="false" />
@@ -192,13 +194,6 @@
 	</bean>
 	
 	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.services.sword.managers.ServiceDocumentManagerImpl">
-	</bean>
-
-	<bean id="contextAwareSwordServlet"
-		class="edu.unc.lib.dl.cdr.services.sword.servlets.ContextAwareSwordServlet" />
-
-	<bean id="serviceDocumentManager"
-		class="edu.unc.lib.dl.cdr.services.sword.server.managers.ServiceDocumentManagerImpl">
 	</bean>
 	
 	<context:annotation-config />

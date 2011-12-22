@@ -19,7 +19,6 @@
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
-			/WEB-INF/cdr-services-servlet.xml
 			/WEB-INF/service-context.xml
 			/WEB-INF/sword-servlet.xml
 		</param-value>

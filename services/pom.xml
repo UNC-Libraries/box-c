@@ -91,6 +91,11 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>persistence</artifactId>
+			<version>${cdr.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-core</artifactId>
 			<version>5.4.2</version>
