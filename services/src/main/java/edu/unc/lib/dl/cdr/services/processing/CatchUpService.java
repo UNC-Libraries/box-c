@@ -13,14 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services;
+package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
+import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -30,14 +34,19 @@ import edu.unc.lib.dl.fedora.PID;
  * @author bbpennel
  * 
  */
-public class CatchUpServicesConductor {
-	private static final Logger LOG = LoggerFactory.getLogger(CatchUpServicesConductor.class);
+public class CatchUpService {
+	private static final Logger LOG = LoggerFactory.getLogger(CatchUpService.class);
 
+	private MessageDirector messageDirector;
 	private ServicesConductor servicesConductor;
 	// List of services to perform catchup processing on
 	private List<ObjectEnhancementService> services = new ArrayList<ObjectEnhancementService>();
-	// If this conductor is active
+	// If the catchup service is allowed to run
+	private boolean isEnabled;
+	// If catchup is actively running
 	private boolean isActive;
+	// Indicates if the catchup method is currently running.
+	private boolean inCatchUp;
 	// Number of items to get from each service per page.
 	private int pageSize = 100;
 	// Delay between checks to see if more candidates need to be retrieved.
@@ -45,15 +54,44 @@ public class CatchUpServicesConductor {
 
 	private long itemsProcessed = 0;
 	private long itemsProcessedThisSession = 0;
-	
-	private String priorToDate = null;
 
-	public void activate(){
-		LOG.info("Activating CatchUp Service");
-		isActive = true;
-		catchUp();
+	public CatchUpService(){
+		inCatchUp = false;
 	}
 	
+	/**
+	 * Turns on catchup services if they are enabled.  Return true if catchup ran, false if it was unable to.
+	 */
+	public boolean activate(){
+		return activate(null);
+	}
+	
+	/**
+	 * Turns on catchup services if they are enabled.  If a date is provided, then services run in stale mode.
+	 * Return true if catchup ran, false if it was unable to.
+	 * @param priorToDate
+	 */
+	public boolean activate(String priorToDate){
+		if (!isEnabled){
+			LOG.info("Catchup services are disabled.");
+			return false;
+		}
+		if (priorToDate != null){
+			// Validate that the date is actually a date.
+			Pattern p = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}([.]\\d{3})?Z$");
+			if (!p.matcher(priorToDate).matches()){
+				throw new IllegalArgumentException("Catchup activation failed, " + priorToDate 
+						+ " is not a valid date.  Please use iso8601 format, ie 2011-05-23T16:13:07.126Z.");
+			}
+		}
+		LOG.info("Activating CatchUp Service");
+		isActive = true;
+		return catchUp(priorToDate);
+	}
+	
+	/**
+	 * Sets isActive to false, deactivating the service so that no more candidates will be sought.
+	 */
 	public void deactivate(){
 		LOG.info("Deactivating CatchUp Service");
 		isActive = false;
@@ -62,31 +100,40 @@ public class CatchUpServicesConductor {
 	/**
 	 * Queues batches of candidates from each service for processing. New batches of candidates are retrieved when there
 	 * until the conductor becomes inactive or there are no more candidates retrieved while the processing queue is
-	 * empty.
+	 * empty.  
+	 * @param priorToDate - if supplied, then catchup services are run in stale mode, where all suitable objects
+	 * 	with modification dates prior to this parameter are selected as candidates.
+	 * @return Return true if catchup ran, false if it was blocked.
 	 */
-	public void catchUp() {
-		if (!isActive) {
-			return;
+	private boolean catchUp(String priorToDate) {
+		if (!isActive || !isEnabled || inCatchUp) {
+			return false;
 		}
-		itemsProcessedThisSession = 0;
-		LOG.info("Catchup Services starting");
-
-		boolean candidatesFound = false;
-		boolean pidsQueued = false;
-
-		do {
-			pidsQueued = servicesConductor.getPidQueue().size() != 0 || servicesConductor.getCollisionList().size() != 0;
-			if (!pidsQueued) {
-				LOG.debug("Searching for new candidate batch");
-				candidatesFound = addBatch();
-			}
-			try {
-				Thread.sleep(catchUpCheckDelay);
-			} catch (Exception e) {
-
-			}
-		} while (isActive && (candidatesFound || pidsQueued));
-		LOG.info("Catchup Services ending.  " + itemsProcessedThisSession + " items were queued/processed.");
+		try {
+			inCatchUp = true;
+			itemsProcessedThisSession = 0;
+			LOG.info("Catchup Services starting");
+	
+			boolean candidatesFound = false;
+			boolean pidsQueued = false;
+	
+			do {
+				pidsQueued = !servicesConductor.isEmpty();
+				if (!pidsQueued) {
+					LOG.debug("Searching for new candidate batch");
+					candidatesFound = addBatch(priorToDate);
+				}
+				try {
+					Thread.sleep(catchUpCheckDelay);
+				} catch (InterruptedException e) {
+					Thread.currentThread().isInterrupted();
+				}
+			} while (isActive && (candidatesFound || pidsQueued));
+			LOG.info("Catchup Services ending.  " + itemsProcessedThisSession + " items were queued/processed.");
+		} finally {
+			inCatchUp = false;
+		}
+		return true;
 	}
 
 	/**
@@ -94,14 +141,14 @@ public class CatchUpServicesConductor {
 	 * 
 	 * @return true if any candidate items were queued.
 	 */
-	private boolean addBatch() {
+	private boolean addBatch(String priorToDate) {
 		boolean candidatesFound = false;
 		for (ObjectEnhancementService s : services) {
 			try {
 				if (s.isActive()) {
 					int pageSize = this.pageSize + servicesConductor.getFailedPids().size();
 	
-					List<PID> candidates = s.findCandidateObjects(pageSize);
+					List<PID> candidates = null;
 					if (priorToDate == null){
 						candidates = s.findCandidateObjects(pageSize);
 					} else {
@@ -113,9 +160,13 @@ public class CatchUpServicesConductor {
 						candidatesFound = true;
 						for (PID candidate : candidates) {
 							if (priorToDate == null){
-								servicesConductor.add(candidate);
+								PIDMessage pidMessage = new PIDMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
+										JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
+								messageDirector.direct(pidMessage);
 							} else {
-								servicesConductor.add(candidate, null, s.getClass().getName());
+								PIDMessage pidMessage = new PIDMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
+										JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), s.getClass().getName());
+								messageDirector.direct(pidMessage);
 							}
 							this.itemsProcessed++;
 							this.itemsProcessedThisSession++;
@@ -145,12 +196,30 @@ public class CatchUpServicesConductor {
 		this.services = services;
 	}
 
+	public boolean isInCatchUp(){
+		return inCatchUp;
+	}
+	
+	public void setInCatchUp(boolean inCatchUp){
+		this.inCatchUp = inCatchUp;
+	}
+	
 	public boolean isActive() {
 		return isActive;
 	}
 
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
+	}
+
+	public boolean isEnabled() {
+		return isEnabled;
+	}
+
+	public void setEnabled(boolean isEnabled) {
+		this.isEnabled = isEnabled;
+		if (!this.isEnabled)
+			this.isActive = false;
 	}
 
 	public int getPageSize() {
@@ -168,18 +237,6 @@ public class CatchUpServicesConductor {
 	public void setCatchUpCheckDelay(long catchUpCheckDelay) {
 		this.catchUpCheckDelay = catchUpCheckDelay;
 	}
-	
-	public String getPriorToDate() {
-		return priorToDate;
-	}
-
-	public void setPriorToDate(String priorToDate) {
-		this.priorToDate = priorToDate;
-	}
-	
-	public void clearPriorToDate(){
-		this.priorToDate = null;
-	}
 
 	public long getItemsProcessed() {
 		return itemsProcessed;
@@ -187,5 +244,13 @@ public class CatchUpServicesConductor {
 
 	public long getItemsProcessedThisSession() {
 		return itemsProcessedThisSession;
+	}
+
+	public MessageDirector getMessageDirector() {
+		return messageDirector;
+	}
+
+	public void setMessageDirector(MessageDirector messageDirector) {
+		this.messageDirector = messageDirector;
 	}
 }

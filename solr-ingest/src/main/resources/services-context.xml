@@ -45,11 +45,12 @@
 		<property name="username" value="${fedora.admin.username}" />
 		<property name="password" value="${fedora.admin.password}" />
 	</bean>
-	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService">
-		<property name="accessClient" ref="accessClient" />
-		<property name="managementClient" ref="managementClient" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService" init-method="init">
+		<property name="accessClient" ref="accessClient"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="accessControlUtils" ref="accessControlUtils"/>
+		<property name="maxThreads" value="5"/>
 	</bean>
 	
 	<bean id="accessControlUtils" class="edu.unc.lib.dl.fedora.AccessControlUtils">
@@ -115,7 +116,7 @@
 		<property name="updateDocTransformer" ref="updateDocTransformer" />
 		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
 		<property name="solrSearchService" ref="solrSearchService" />
-		<property name="maxIngestThreads" value="${maxSolrIngestThreads}" />
+		<property name="maxThreads" value="${maxSolrIngestThreads}" />
 		<property name="accessGroups" ref="accessGroups" />
 	</bean>
 </beans>

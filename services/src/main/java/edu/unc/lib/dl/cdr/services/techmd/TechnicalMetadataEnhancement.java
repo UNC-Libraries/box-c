@@ -39,10 +39,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
-import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -213,23 +213,13 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 
 			// Add or replace the MD_TECHNICAL datastream for the object
 			if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.MD_TECHNICAL.getName()) == null) {
-				LOG.debug("Adding FITS output to MD_TECHNICAL");
-				//Ignore the add DS message
-				service.getServicesConductor().addSideEffect(pid.getPIDString(), 
-						JMSMessageUtil.FedoraActions.ADD_DATASTREAM.toString(), null,
-						ContentModelHelper.Datastream.MD_TECHNICAL.toString());
-				
+				LOG.debug("Adding FITS output to MD_TECHNICAL");				
 				String message = "Adding technical metadata derived by FITS";
 				String newDSID = service.getManagementClient().addManagedDatastream(pid.getPID(),
 						ContentModelHelper.Datastream.MD_TECHNICAL.getName(), false, message, new ArrayList<String>(),
 						"PREMIS Technical Metadata", false, "text/xml", premisTechURL);
 			} else {
 				LOG.debug("Replacing MD_TECHNICAL with new FITS output");
-				//Ignore modify DS message
-				service.getServicesConductor().addSideEffect(pid.getPIDString(), 
-						JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.toString(), null,
-						ContentModelHelper.Datastream.MD_TECHNICAL.toString());
-				
 				String message = "Replacing technical metadata derived by FITS";
 				service.getManagementClient().modifyDatastreamByReference(pid.getPID(),
 						ContentModelHelper.Datastream.MD_TECHNICAL.getName(), false, message, new ArrayList<String>(),
@@ -242,11 +232,6 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 
 			List<String> techrel = rels.get(ContentModelHelper.CDRProperty.techData.toString());
 			if (techrel == null || !techrel.contains(newDSPID.getURI())) {
-				//Ignore the add relation message
-				service.getServicesConductor().addSideEffect(pid.getPIDString(), 
-						JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.toString(), null,
-						ContentModelHelper.CDRProperty.techData.toString());
-				
 				service.getManagementClient().addObjectRelationship(pid.getPID(),
 						ContentModelHelper.CDRProperty.techData.toString(), newDSPID);
 			}
@@ -277,21 +262,14 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 			if (rel.contains(newExclusiveValue)) {
 				rel.remove(newExclusiveValue);
 			} else {
-				//Ignore the add relation message
-				service.getServicesConductor().addSideEffect(pid.getPid(), 
-						JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.toString(), null, predicate);
 				// add missing rel
 				service.getManagementClient().addLiteralStatement(pid, predicate, newExclusiveValue, datatype);
 			}
 			// remove any other same predicate triples
 			for (String oldValue : rel) {
-				service.getServicesConductor().addSideEffect(pid.getPid(), 
-						JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP.toString(), null, predicate);
 				service.getManagementClient().purgeLiteralStatement(pid, predicate, oldValue, datatype);
 			}
 		} else {
-			service.getServicesConductor().addSideEffect(pid.getPid(), 
-					JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.toString(), null, predicate);
 			// add missing rel
 			service.getManagementClient().addLiteralStatement(pid, predicate, newExclusiveValue, datatype);
 		}

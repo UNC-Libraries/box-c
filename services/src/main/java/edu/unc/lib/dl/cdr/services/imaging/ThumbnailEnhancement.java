@@ -29,10 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
-import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -69,7 +69,8 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 		// enqueues objects that use this one as a surrogate.
 			List<PID> usesMeForSurrogate = this.service.getTripleStoreQueryService().fetchPIDsSurrogateFor(pid.getPID());
 			for(PID usesMe: usesMeForSurrogate) {
-				this.service.getServicesConductor().add(usesMe, ThumbnailEnhancementService.class.getName());
+				this.service.getMessageDirector().direct(new PIDMessage(usesMe, JMSMessageUtil.servicesMessageNamespace, 
+						JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), ThumbnailEnhancementService.class.getName()));
 			}
 
 			// get sourceData data stream IDs
@@ -157,11 +158,6 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 		}
 		PID newDSPID = new PID(pid.getPID().getPid() + "/" + dsname);
 		if (thumbRels == null || !thumbRels.contains(newDSPID.getURI())) {
-			//Ignore the thumb add relation
-			service.getServicesConductor().addSideEffect(pid.getPIDString(), 
-					JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.toString(), null,
-					ContentModelHelper.CDRProperty.thumb.toString());
-			
 			service.getManagementClient().addObjectRelationship(pid.getPID(),
 					ContentModelHelper.CDRProperty.thumb.toString(), newDSPID);
 		}

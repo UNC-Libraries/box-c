@@ -565,7 +565,7 @@
 		<property name="mailNotifier" ref="mailNotifier" />
 		<property name="initialAdministrators">
 			<map>
-				<entry key="${admin.initial.1.key}" value="admin.initial.1.value" />
+				<entry key="${admin.initial.1.key}" value="${admin.initial.1.value}" />
 			</map>
 		</property>
 		<property name="autoinitialize" value="no" />
@@ -575,6 +575,7 @@
 				<value>classpath:foxml-objects/CollectionModel.xml</value>
 				<value>classpath:foxml-objects/DummyTriples.xml</value>
 				<value>classpath:foxml-objects/GroupAgentModel.xml</value>
+				<value>classpath:foxml-objects/JP2DerivedImageModel.xml</value>
 				<value>classpath:foxml-objects/PersonAgentModel.xml</value>
 				<value>classpath:foxml-objects/PreservedObjectModel.xml</value>
 				<value>classpath:foxml-objects/SimpleModel.xml</value>

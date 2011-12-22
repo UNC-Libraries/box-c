@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services;
+package edu.unc.lib.dl.cdr.services.processing;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -26,13 +26,13 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.fedora.ClientUtils;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class ServicesMessageListener implements MessageListener {
-	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(ServicesMessageListener.class);
 	
-	private ServicesConductor servicesConductor = null;
+	private MessageDirector messageDirector = null;
+	
+	private String messageNamespace = null;
 	
 	public ServicesMessageListener(){
 		
@@ -46,8 +46,7 @@ public class ServicesMessageListener implements MessageListener {
 				String msgText = ((TextMessage) message).getText();
 				LOG.debug(msgText);
 				Document msgXML = ClientUtils.parseXML(msgText.getBytes());
-				String pidString = msgXML.getRootElement().getChild("summary", JDOMNamespaceUtil.ATOM_NS).getText();
-				servicesConductor.add(pidString, msgXML);
+				messageDirector.direct(msgXML, messageNamespace);
 			} catch (JMSException e) {
 				LOG.error("onMessage failed", e);
 			} catch (SAXException e) {
@@ -58,11 +57,20 @@ public class ServicesMessageListener implements MessageListener {
 		}
 	}
 
-	public ServicesConductor getServicesConductor() {
-		return servicesConductor;
+	
+	public MessageDirector getMessageDirector() {
+		return messageDirector;
 	}
 
-	public void setServicesConductor(ServicesConductor servicesConductor) {
-		this.servicesConductor = servicesConductor;
+	public void setMessageDirector(MessageDirector messageDirector) {
+		this.messageDirector = messageDirector;
+	}
+
+	public String getMessageNamespace() {
+		return messageNamespace;
+	}
+
+	public void setMessageNamespace(String messageNamespace) {
+		this.messageNamespace = messageNamespace;
 	}
 }

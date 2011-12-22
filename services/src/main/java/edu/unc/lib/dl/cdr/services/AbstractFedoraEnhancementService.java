@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
+import edu.unc.lib.dl.cdr.services.processing.ServicesConductor;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -53,8 +55,8 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 		this.applicationContext = applicationContext;
 	}
 
-	public ServicesConductor getServicesConductor() {
-		return this.applicationContext.getBean(ServicesConductor.class);
+	public MessageDirector getMessageDirector(){
+		return this.applicationContext.getBean(MessageDirector.class);
 	}
 
 	public TripleStoreQueryService getTripleStoreQueryService() {
@@ -71,26 +73,6 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 
 	public void setManagementClient(ManagementClient managementClient) {
 		this.managementClient = managementClient;
-	}
-
-	/**
-	 * Retrieves the affected datastream field value from the provided message.
-	 *
-	 * @param message
-	 * @return
-	 */
-	protected String getDatastream(Document message) {
-		if (message == null)
-			return null;
-		@SuppressWarnings("unchecked")
-		List<Element> categories = message.getRootElement().getChildren("category", JDOMNamespaceUtil.ATOM_NS);
-		for (Element category : categories) {
-			String scheme = category.getAttributeValue("scheme");
-			if ("fedora-types:dsID".equals(scheme)) {
-				return category.getAttributeValue("term");
-			}
-		}
-		return null;
 	}
 
 	/**

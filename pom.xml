@@ -104,7 +104,6 @@
 		<module>services</module>
 		<module>solr-ingest</module>
 		<module>solr-search</module>
-		<module>sword-server</module>
 	</modules>
 
 	<reporting>
@@ -216,9 +215,9 @@
 					<excludes>
 						<exclude>README</exclude>
 						<exclude>djatoka-cdr/**</exclude>
-						<exclude>**/header.txt</exclude>
 						<exclude>.git/**</exclude>
 						<exclude>**/.gitignore</exclude>
+						<exclude>**/header.txt</exclude>
 						<exclude>**/bin/**</exclude>
 						<exclude>**/bundled/**</exclude>
 						<exclude>**/standards/**</exclude>
@@ -240,6 +239,7 @@
 						<exclude>**/*.r</exclude>
 						<exclude>**/*.ir</exclude>
 						<exclude>**/*.xcf</exclude>
+						<exclude>**/*.pl</exclude>
 						<exclude>**/robots.txt</exclude>
 					</excludes>
 					<mapping>

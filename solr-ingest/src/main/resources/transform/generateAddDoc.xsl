@@ -314,14 +314,9 @@
 				</field>
 				
 				<field name="parentCollection">
-					<xsl:choose>
-						<xsl:when test="boolean(/view-inputs/parentCollection)">
+						<xsl:if test="boolean(/view-inputs/parentCollection)">
 							<xsl:value-of select="/view-inputs/parentCollection"/>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:value-of select="/view-inputs/path/object[last()-1]/@pid"/>
-						</xsl:otherwise>
-					</xsl:choose>
+						</xsl:if>
 				</field>
 				
 				<xsl:variable name="pathObjects" select="/view-inputs/path/object"/>

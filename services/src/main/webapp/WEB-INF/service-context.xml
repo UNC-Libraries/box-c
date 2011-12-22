@@ -89,17 +89,18 @@
 		<property name="password" value="${fedora.admin.password}" />
 	</bean>
 	
-	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService">
+	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService" init-method="init">
 		<property name="accessClient" ref="accessClient"/>
 		<property name="managementClient" ref="managementClient"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="accessControlUtils" ref="accessControlUtils"/>
+		<property name="maxThreads" value="${fedoraDataService.maxThreads}"/>
 	</bean>
 	
 	<bean id="accessControlUtils" class="edu.unc.lib.dl.fedora.AccessControlUtils" init-method="initReadPermissionOnly">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="cacheDepth" value="1"/>
-		<property name="cacheLimit" value="5000"/>
+		<property name="cacheDepth" value="${access.cache.depth}"/>
+		<property name="cacheLimit" value="${access.cache.limit}"/>
 		<property name="accessControlProperties">
 			<props>
 				<prop key="http://cdr.unc.edu/definitions/roles#patron">permitMetadataRead permitOriginalsRead permitDerivativesRead</prop>
@@ -151,35 +152,80 @@
 		<property name="sessionTransacted" value="true"/>
 	</bean>  
 	
-	<bean id="sideEffectMessageFilterList" class="edu.unc.lib.dl.cdr.services.model.SideEffectMessageFilterList">
-		<property name="messageTimeoutPeriod" value="1000000"/>
+	<util:list id="servicesList" list-class="java.util.ArrayList" 
+		value-type="edu.unc.lib.dl.cdr.services.ObjectEnhancementService">
+		<ref bean="technicalMetadataEnhancementService"/>
+		<ref bean="imageEnhancementService"/>
+		<ref bean="thumbnailEnhancementService"/>
+		<ref bean="solrUpdateEnhancementService"/>
+	</util:list>
+	
+	<bean id="servicesFailedPids" class="edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap">
 	</bean>
 	
-	<bean id="servicesConductor"  class="edu.unc.lib.dl.cdr.services.ServicesConductor"
+	<bean id="servicesConductor" class="edu.unc.lib.dl.cdr.services.processing.ServicesConductor"
 		init-method="init" destroy-method="destroy">
-		<property name="services">
-			<list>
-				<ref bean="technicalMetadataEnhancementService"/>
-				<ref bean="imageEnhancementService"/>
-				<ref bean="thumbnailEnhancementService"/>
-				<ref bean="solrUpdateEnhancementService"/>
-			</list>
-		</property>
-		<property name="maxThreads" value="${maxServiceThreads}"/>
-		<property name="sideEffectMessageFilterList" ref="sideEffectMessageFilterList"/>
+		<property name="services" ref="servicesList"/>
+		<property name="maxThreads" value="${conductor.services.maxThreads}"/>
+		<property name="recoverableDelay" value="${conductor.services.recoverableDelay}"/>
+		<property name="unexpectedExceptionDelay" value="${conductor.services.unexpectedExceptionDelay}"/>
+		<property name="beforeExecuteDelay" value="${conductor.services.beforeExecuteDelay}"/>
+		<property name="failedPids" ref="servicesFailedPids"/>
 	</bean>
 	
-	<bean id="cdrServicesMessageListener" class="edu.unc.lib.dl.cdr.services.ServicesMessageListener">
-		<property name="servicesConductor" ref="servicesConductor"/>
+	<bean id="solrUpdateConductor" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor"
+		init-method="init" destroy-method="destroy">
+		<property name="fedoraDataService" ref="fedoraDataService" />
+		<property name="updateDocTransformer" ref="updateDocTransformer" />
+		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
+		<property name="solrSearchService" ref="solrSearchService" />
+		<property name="maxThreads" value="${conductor.solr.maxThreads}" />
+		<property name="recoverableDelay" value="${conductor.solr.recoverableDelay}"/>
+		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecuteDelay}"/>
+		<property name="accessGroups" ref="accessGroups" />
+		<property name="searchSettings" ref="searchSettings" />
 	</bean>
 	
-	<bean id="servicesMessageListener" class="edu.unc.lib.dl.cdr.services.ServicesMessageListener">
-		<property name="servicesConductor" ref="servicesConductor"/>
+	<util:list id="messageConductorList" list-class="java.util.ArrayList" 
+		value-type="edu.unc.lib.dl.cdr.services.processing.MessageConductor">
+		<ref bean="servicesConductor"/>
+		<ref bean="solrUpdateConductor"/>
+	</util:list>
+	
+	<bean id="servicesMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.ServicesQueueMessageFilter">
+		<property name="services" ref="servicesList"/>
 	</bean>
 	
+	<bean id="solrUpdateMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateMessageFilter">
+	</bean>
+	
+	<util:list id="messageFilterList" list-class="java.util.ArrayList" 
+		value-type="edu.unc.lib.dl.cdr.services.processing.MessageFilter">
+		<ref bean="servicesMessageFilter"/>
+		<ref bean="solrUpdateMessageFilter"/>
+	</util:list>
+	
+	<bean id="messageDirector" class="edu.unc.lib.dl.cdr.services.processing.MessageDirector">
+		<property name="conductorsList" ref="messageConductorList"/>
+		<property name="filters" ref="messageFilterList"/>
+	</bean>
+	
+	<bean id="jmsMessageUtil" class="edu.unc.lib.dl.cdr.services.util.JMSMessageUtil">
+	</bean>
+	
+	<bean id="cdrServicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
+		<property name="messageDirector" ref="messageDirector"/>
+		<property name="messageNamespace" value="#{jmsMessageUtil.cdrMessageNamespace}"/>
+	</bean>
+	
+	<bean id="servicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
+		<property name="messageDirector" ref="messageDirector"/>
+		<property name="messageNamespace" value="#{jmsMessageUtil.fedoraMessageNamespace}"/>
+	</bean>
 		
-	<bean id="catchUpServicesConductor" class="edu.unc.lib.dl.cdr.services.CatchUpServicesConductor">
+	<bean id="catchUpService" class="edu.unc.lib.dl.cdr.services.processing.CatchUpService">
 		<property name="servicesConductor" ref="servicesConductor"/>
+		<property name="messageDirector" ref="messageDirector"/>
 		<property name="services">
 			<list>
 				<ref bean="technicalMetadataEnhancementService"/>
@@ -188,6 +234,7 @@
 			</list>
 		</property>
 		<property name="active" value="false"/>
+		<property name="enabled" value="true"/>
 		<property name="pageSize" value="${catchup.pageSize}"/>
 		<property name="catchUpCheckDelay" value="${catchup.catchUpCheckDelay}"/>
 	</bean>
@@ -218,21 +265,26 @@
 	</bean>
 	
 	<bean id="solrUpdateEnhancementService" class="edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService">
-		<property name="solrUpdateService" ref="solrUpdateService"/>
+		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="active" value="true"/>
 	</bean>
 	
 	<bean id="embargoUpdateService" class="edu.unc.lib.dl.cdr.services.solr.EmbargoUpdateService">
-		<property name="solrUpdateService" ref="solrUpdateService"/>
+		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="active" value="true"/>
 		<property name="windowSizeHours" value="${scheduled.embargoUpdate.windowHours}" />
 	</bean>
 	
-	<bean id="solrJMXService" class="edu.unc.lib.dl.cdr.services.solr.SolrJMXService">
-		<property name="solrUpdateService" ref="solrUpdateService"/>
+	<bean id="solrJMXService" class="edu.unc.lib.dl.cdr.services.jmx.SolrJMXService">
+		<property name="messageDirector" ref="messageDirector"/>
 		<property name="active" value="true"/>
+	</bean>
+	
+	<bean id="messageJMXService" class="edu.unc.lib.dl.cdr.services.jmx.MessageJMXService">
+		<property name="messageDirector" ref="messageDirector"/>
+		<property name="services" ref="servicesList"/>
 	</bean>
 	
 	<!-- Scheduler -->
@@ -248,12 +300,12 @@
 	</bean>
 	
 	<bean id="catchUpActivateJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-		<property name="targetObject" ref="catchUpServicesConductor" />
+		<property name="targetObject" ref="catchUpService" />
 		<property name="targetMethod" value="activate" />
 	</bean>
 	
 	<bean id="catchUpDeactivateJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-		<property name="targetObject" ref="catchUpServicesConductor" />
+		<property name="targetObject" ref="catchUpService" />
 		<property name="targetMethod" value="deactivate" />
 	</bean>
 	
@@ -317,11 +369,12 @@
 		lazy-init="false">
 		<property name="beans">
 			<map>
+				<entry key="cdr-services:name=messageJMXService" value-ref="messageJMXService" />
 				<entry key="cdr-services:name=solrJMXService" value-ref="solrJMXService" />
 				<entry key="cdr-services:name=servicesConductor" value-ref="servicesConductor" />
-				<entry key="cdr-services:name=solrUpdateService" value-ref="solrUpdateService" />
+				<entry key="cdr-services:name=solrUpdateConductor" value-ref="solrUpdateConductor" />
 				<entry key="cdr-services:name=fedoraDataService" value-ref="fedoraDataService" />
-				<entry key="cdr-services:name=catchUpServicesConductor" value-ref="catchUpServicesConductor" />
+				<entry key="cdr-services:name=catchUpService" value-ref="catchUpService" />
 				<entry key="cdr-services:name=technicalMetadataEnhancementService" value-ref="technicalMetadataEnhancementService" />
 				<entry key="cdr-services:name=thumbnailEnhancementService" value-ref="thumbnailEnhancementService" />
 				<entry key="cdr-services:name=solrUpdateEnhancementService" value-ref="solrUpdateEnhancementService" />
@@ -378,15 +431,4 @@
 	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
 		<value>${access.group.admin}</value>
 	</util:set>
-	
-	<bean id="solrUpdateService" class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateService"
-		init-method="init" destroy-method="destroy">
-		<property name="fedoraDataService" ref="fedoraDataService" />
-		<property name="updateDocTransformer" ref="updateDocTransformer" />
-		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
-		<property name="solrSearchService" ref="solrSearchService" />
-		<property name="maxIngestThreads" value="${maxSolrIngestThreads}" />
-		<property name="accessGroups" ref="accessGroups" />
-		<property name="searchSettings" ref="searchSettings" />
-	</bean>
 </beans>

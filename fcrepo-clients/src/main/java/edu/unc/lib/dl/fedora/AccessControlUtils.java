@@ -34,6 +34,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jdom.Content;
 import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -770,7 +771,7 @@ public class AccessControlUtils {
 	 * Given the pid, return the appropriate set of access control
 	 */
 
-	public void processCdrAccessControl(PID inputPid, Element inputs) {
+	public Content processCdrAccessControl(PID inputPid) {
 		// EvaluationResult result = null;
 
 		LOG.debug("processCdrAccessControl entry");
@@ -931,7 +932,6 @@ public class AccessControlUtils {
 		Iterator<String> permissionIterator = permissionKeys.iterator();
 
 		Element permsEl = new Element("permissions");
-		inputs.addContent(permsEl);
 		Element rightsEl = new Element("rights");
 		permsEl.addContent(rightsEl);
 
@@ -972,6 +972,8 @@ public class AccessControlUtils {
 				+ " milliseconds");
 
 		LOG.debug("processCdrAccessControl exit");
+		
+		return permsEl;
 	}
 
 	private Set<String> getEmbargoGroups(List<PID> ancestors) {

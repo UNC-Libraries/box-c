@@ -17,24 +17,15 @@ package edu.unc.lib.dl.cdr.services.solr;
 
 import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancementService;
 import edu.unc.lib.dl.data.ingest.solr.SolrDataAccessLayer;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 
 public abstract class AbstractSolrObjectEnhancementService extends AbstractFedoraEnhancementService {
-	protected SolrUpdateService solrUpdateService;
-	
-	public SolrUpdateService getSolrUpdateService() {
-		return solrUpdateService;
-	}
-
-	public void setSolrUpdateService(SolrUpdateService solrUpdateService) {
-		this.solrUpdateService = solrUpdateService;
-	}
+	protected SolrDataAccessLayer solrDataAccessLayer;
 	
 	public SolrDataAccessLayer getSolrDataAccessLayer() {
-		return solrUpdateService.getSolrDataAccessLayer();
+		return solrDataAccessLayer;
 	}
 
 	public void setSolrDataAccessLayer(SolrDataAccessLayer solrDataAccessLayer) {
-		this.solrUpdateService.setSolrDataAccessLayer(solrDataAccessLayer);
+		this.solrDataAccessLayer = solrDataAccessLayer;
 	}
 }
