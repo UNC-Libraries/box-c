@@ -367,10 +367,14 @@ public class SolrUpdateConductorTest extends Assert {
 		
 		@Override
 		public Document getObjectViewXML(String pid, boolean fail){
-			count.incrementAndGet();
+			boolean first = true;
 			while (flag.get()){
 				synchronized(blockingObject){
 					try {
+						if (first){
+							count.incrementAndGet();
+							first = false;
+						}
 						blockingObject.wait();
 					} catch (InterruptedException e){
 						Thread.currentThread().interrupt();
