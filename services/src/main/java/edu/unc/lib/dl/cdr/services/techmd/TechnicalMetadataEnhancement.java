@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.util.URIUtil;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -38,11 +39,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
-import edu.unc.lib.dl.cdr.services.JMSMessageUtil;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.exception.RecoverableServiceException;
+import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.FileSystemException;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -114,9 +117,11 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 				Document fits = null;
 				try {
 					fits = runFITS(dsIrodsPath, dsAltIds);
+				} catch (JDOMException e){
+					LOG.warn("Failed to parse FITS response", e);
+					return null;
 				} catch (Exception e) {
-					LOG.error("Run Fits failed", e);
-					throw new EnhancementException(e);
+					throw new EnhancementException(e, Severity.UNRECOVERABLE);
 				}
 
 				// put the FITS document in DS map
@@ -157,7 +162,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 				} else {
 					format = "Unknown";
 					LOG.warn("FITS unable to conclusively identify file: " + pid.getPID() + "/" + dsid);
-					LOG.warn(new XMLOutputter().outputString(fits));
+					LOG.info(new XMLOutputter().outputString(fits));
 				}
 
 				if ("DATA_FILE".equals(dsid)) {
@@ -208,23 +213,13 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 
 			// Add or replace the MD_TECHNICAL datastream for the object
 			if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.MD_TECHNICAL.getName()) == null) {
-				LOG.debug("Adding FITS output to MD_TECHNICAL");
-				//Ignore the add DS message
-				service.getServicesConductor().addSideEffect(pid.getPIDString(), 
-						JMSMessageUtil.FedoraActions.ADD_DATASTREAM.toString(), null,
-						ContentModelHelper.Datastream.MD_TECHNICAL.toString());
-				
+				LOG.debug("Adding FITS output to MD_TECHNICAL");				
 				String message = "Adding technical metadata derived by FITS";
 				String newDSID = service.getManagementClient().addManagedDatastream(pid.getPID(),
 						ContentModelHelper.Datastream.MD_TECHNICAL.getName(), false, message, new ArrayList<String>(),
 						"PREMIS Technical Metadata", false, "text/xml", premisTechURL);
 			} else {
 				LOG.debug("Replacing MD_TECHNICAL with new FITS output");
-				//Ignore modify DS message
-				service.getServicesConductor().addSideEffect(pid.getPIDString(), 
-						JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.toString(), null,
-						ContentModelHelper.Datastream.MD_TECHNICAL.toString());
-				
 				String message = "Replacing technical metadata derived by FITS";
 				service.getManagementClient().modifyDatastreamByReference(pid.getPID(),
 						ContentModelHelper.Datastream.MD_TECHNICAL.getName(), false, message, new ArrayList<String>(),
@@ -237,18 +232,17 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 
 			List<String> techrel = rels.get(ContentModelHelper.CDRProperty.techData.toString());
 			if (techrel == null || !techrel.contains(newDSPID.getURI())) {
-				//Ignore the add relation message
-				service.getServicesConductor().addSideEffect(pid.getPIDString(), 
-						JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.toString(), null,
-						ContentModelHelper.CDRProperty.techData.toString());
-				
 				service.getManagementClient().addObjectRelationship(pid.getPID(),
 						ContentModelHelper.CDRProperty.techData.toString(), newDSPID);
 			}
 
 			LOG.debug("Finished MD_TECHNICAL updating for " + pid.getPID());
+		} catch (FileSystemException e) {
+			throw new EnhancementException(e, Severity.FATAL);
+		} catch (NotFoundException e) {
+			throw new EnhancementException(e, Severity.UNRECOVERABLE);
 		} catch (FedoraException e) {
-			throw new RecoverableServiceException("Technical Metadata Service failed", e);
+			throw new EnhancementException(e, Severity.RECOVERABLE);
 		}
 		return result;
 	}
@@ -268,21 +262,14 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 			if (rel.contains(newExclusiveValue)) {
 				rel.remove(newExclusiveValue);
 			} else {
-				//Ignore the add relation message
-				service.getServicesConductor().addSideEffect(pid.getPid(), 
-						JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.toString(), null, predicate);
 				// add missing rel
 				service.getManagementClient().addLiteralStatement(pid, predicate, newExclusiveValue, datatype);
 			}
 			// remove any other same predicate triples
 			for (String oldValue : rel) {
-				service.getServicesConductor().addSideEffect(pid.getPid(), 
-						JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP.toString(), null, predicate);
 				service.getManagementClient().purgeLiteralStatement(pid, predicate, oldValue, datatype);
 			}
 		} else {
-			service.getServicesConductor().addSideEffect(pid.getPid(), 
-					JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.toString(), null, predicate);
 			// add missing rel
 			service.getManagementClient().addLiteralStatement(pid, predicate, newExclusiveValue, datatype);
 		}
@@ -350,7 +337,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 			return result;
 		} catch(JDOMException e) {
 			LOG.warn("Failed to parse FITS output: "+e.getMessage());
-			LOG.warn("FITS returned: \n"+xmlstr+"\n\n"+errstr);
+			LOG.info("FITS returned: \n"+xmlstr+"\n\n"+errstr);
 			throw e;
 		} finally {
 			if (reader != null) {

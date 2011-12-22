@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services;
+package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -31,6 +31,8 @@ public class ServicesThreadPoolExecutor extends ThreadPoolExecutor {
 	private boolean isPaused;
 	private ReentrantLock pauseLock = new ReentrantLock();
 	private Condition unpaused = pauseLock.newCondition();
+	//Delay before a new thread will begin processing, in milliseconds
+	private long beforeExecuteDelay = 0;
 	
 	public ServicesThreadPoolExecutor(int nThreads){
 		super(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue <Runnable>());
@@ -51,6 +53,8 @@ public class ServicesThreadPoolExecutor extends ThreadPoolExecutor {
 		//Pause the adding of new threads until the pause flag is off.
 		pauseLock.lock();
 		try {
+			if (beforeExecuteDelay > 0)
+				Thread.sleep(beforeExecuteDelay);
 			while (isPaused)
 				unpaused.await();
 		} catch (InterruptedException ie) {
@@ -77,5 +81,17 @@ public class ServicesThreadPoolExecutor extends ThreadPoolExecutor {
 		} finally {
 			pauseLock.unlock();
 		}
+	}
+	
+	public boolean isPaused(){
+		return this.isPaused;
+	}
+
+	public long getBeforeExecuteDelay() {
+		return beforeExecuteDelay;
+	}
+
+	public void setBeforeExecuteDelay(long beforeExecuteDelay) {
+		this.beforeExecuteDelay = beforeExecuteDelay;
 	}
 }

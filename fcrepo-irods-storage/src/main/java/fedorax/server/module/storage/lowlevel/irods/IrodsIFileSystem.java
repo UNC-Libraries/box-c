@@ -32,6 +32,8 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 import org.fcrepo.server.errors.LowlevelStorageException;
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.connection.JargonProperties;
+import org.irods.jargon.core.connection.SettableJargonProperties;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
@@ -100,14 +102,18 @@ public class IrodsIFileSystem {
 				// buffer[0] = '!';
 				out.write(buffer, 0, bytesRead);
 			}
+			out.flush();
 			Hex hex = new Hex();
 			result.md5 = new String(hex.encode(messageDigest.digest()));
 		} catch (IOException e) {
 			LOG.error(e);
 			throw e;
 		} finally {
-			out.flush();
-			out.close();
+			try {
+				out.close();
+			} catch (IOException e) {
+				LOG.warn("Exception while trying to close jargon output stream", e);
+			}
 		}
 		LOG.debug("IrodsIFileSystem.stream2streamCopy() end");
 		return result;
@@ -395,12 +401,10 @@ public class IrodsIFileSystem {
 			return copyResult.size;
 		} catch (JargonException e) {
 			LOG.error(e);
-			throw new LowlevelStorageException(true, "IRODSFedoraFileSystem.write(): couldn't make directories for ["
-					+ file.getPath() + "]", e);
+			throw new LowlevelStorageException(true, "IRODSFedoraFileSystem.write(): [" + file.getPath() + "]", e);
 		} catch (IOException e) {
 			LOG.error(e);
-			throw new LowlevelStorageException(true, "IRODSFedoraFileSystem.write(): couldn't make directories for ["
-					+ file.getPath() + "]", e);
+			throw new LowlevelStorageException(true, "IRODSFedoraFileSystem.write(): [" + file.getPath() + "]", e);
 		} finally {
 			if (irodsFileSystem != null) {
 				try {

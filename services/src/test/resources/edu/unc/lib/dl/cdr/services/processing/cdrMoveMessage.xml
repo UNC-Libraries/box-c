@@ -6,16 +6,14 @@
 		<atom:uri>http://cdr.lib.unc.edu/schema/message#author</atom:uri>
 	</atom:author>
 	<atom:title type="text">move</atom:title>
-	<atom:summary type="text">uuid:a7ac047d-7991-462c-a024-897c36280b83
-	</atom:summary>
+	<atom:summary type="text">uuid:a7ac047d-7991-462c-a024-897c36280b83</atom:summary>
 	<atom:content type="text/xml">
 		<cdrmsg:move xmlns:cdrmsg="http://cdr.unc.edu/schema/message">
-			<cdrmsg:parent>uuid:a7ac047d-7991-462c-a024-897c36280b83
-			</cdrmsg:parent>
-			<cdrmsg:oldParent>uuid:f0987d06-b6ee-4aa6-b37f-dfaa5134d5d7
-			</cdrmsg:oldParent>
-			<cdrmsg:oldParent>uuid:f0987d06-b6ee-4aa6-b37f-dfaa5134d5d7
-			</cdrmsg:oldParent>
+			<cdrmsg:parent>uuid:a7ac047d-7991-462c-a024-897c36280b83</cdrmsg:parent>
+			<cdrmsg:oldParents>
+				<cdrmsg:pid>uuid:f0987d06-b6ee-4aa6-b37f-dfaa5134d5d7</cdrmsg:pid>
+				<cdrmsg:pid>uuid:f0987d06-b6ee-4aa6-b37f-dfaa5134d5d7</cdrmsg:pid>
+			</cdrmsg:oldParents>
 			<cdrmsg:subjects>
 				<cdrmsg:pid>uuid:fd1a05f3-0cb7-40f0-9447-2113e8d7d8c6</cdrmsg:pid>
 				<cdrmsg:pid>uuid:cb6ae00b-7487-4abb-b4d7-267398776061</cdrmsg:pid>

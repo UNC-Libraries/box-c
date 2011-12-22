@@ -202,12 +202,12 @@ public class SolrIngestByHand {
 		solrIngestService.shutdown();
 	}
 	
-	//@Test
+	@Test
 	public void testFedoraDataService() {
 		Document doc;
 		try {
 			//doc = fedoraDataService.getObjectViewXML("uuid:0a045247-996e-4bfc-a2db-11925e5bad58");
-			doc = fedoraDataService.getObjectViewXML("uuid:34ccdade-102b-4004-afea-28590c1fa012");
+			doc = fedoraDataService.getObjectViewXML("uuid:757ac9c1-c90f-42bb-9476-6dda92850b5c");
 			
 			XMLOutputter out = new XMLOutputter();
 			out.output(doc, System.out);

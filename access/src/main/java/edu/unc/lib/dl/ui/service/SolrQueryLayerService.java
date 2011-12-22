@@ -62,7 +62,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 		searchRequest.setAccessGroups(accessGroups);
 		
 		SearchState searchState = SearchStateFactory.createTitleListSearchState();
-		searchState.setResourceTypes(searchSettings.defaultResourceTypes);
+		List<String> resourceTypes = new ArrayList<String>();
+		resourceTypes.add(searchSettings.resourceTypeCollection);
+		searchState.setResourceTypes(resourceTypes);
 		searchState.setRowsPerPage(searchSettings.defaultListResultsPerPage);
 		searchState.setSortType("dateAdded");
 		
@@ -408,24 +410,14 @@ public class SolrQueryLayerService extends SolrSearchService {
 			return;
 		}
 		
-		StringBuilder filterQuery = new StringBuilder();
-		filterQuery.append("!").append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH))
-				.append(':').append(searchSettings.resourceTypeFile);
-		
-		solrQuery.addFilterQuery(filterQuery.toString());
-		
 		try {
-			queryResponse = this.executeQuery(solrQuery);
-			
-			solrQuery.removeFilterQuery(filterQuery.toString());
-			
 			solrQuery.setFacet(true);
 			solrQuery.setFacetMinCount(1);
 			solrQuery.addFacetField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH));
 			
-			//Set the limit on number of facets to return very high since its not possible to predict the # values without a second query
+			//Retrieve as many ancestor paths as we can get 
 			solrQuery.add("f." + solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH) + ".facet.limit", 
-					String.valueOf(queryResponse.getResults().getNumFound()));
+					String.valueOf(Integer.MAX_VALUE));
 			
 			//Don't return any facets past the max tier in the contain set, but don't filter to this since that'd effect counts
 			StringBuilder facetQuery = new StringBuilder();

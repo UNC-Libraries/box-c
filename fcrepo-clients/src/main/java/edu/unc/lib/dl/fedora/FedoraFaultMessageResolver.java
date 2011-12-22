@@ -19,26 +19,26 @@ import org.springframework.ws.soap.client.SoapFaultClientException;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public class FedoraFaultMessageResolver {
 
-    static void resolveFault(SoapFaultClientException e) throws FedoraException {
-	if (e.getFaultStringOrReason() != null) {
-	    String r = e.getFaultStringOrReason();
-	    if (
-		r.contains("ObjectNotFoundException") ||
-		r.contains("ObjectNotInLowlevelStorageException") ||
-		r.contains("DatastreamNotFoundException")) {
-		throw new NotFoundException(e);
-	    } else if (r.contains("ObjectExistsException")) {
-		throw new ObjectExistsException(e);
-	    } else {
-		throw new FedoraException(e);
-	    }
-	} else {
-	    throw new FedoraException(e);
+	static void resolveFault(SoapFaultClientException e) throws FedoraException {
+		if (e.getFaultStringOrReason() != null) {
+			String r = e.getFaultStringOrReason();
+			if (r.contains("ObjectNotFoundException") || r.contains("ObjectNotInLowlevelStorageException")
+					|| r.contains("DatastreamNotFoundException")) {
+				throw new NotFoundException(e);
+			} else if (r.contains("ObjectExistsException")) {
+				throw new ObjectExistsException(e);
+			} else if (r.contains("LowlevelStorageException")) {
+				throw new FileSystemException(e);
+			} else {
+				throw new FedoraException(e);
+			}
+		} else {
+			throw new FedoraException(e);
+		}
 	}
-    }
 
 }

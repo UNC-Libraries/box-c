@@ -129,6 +129,7 @@
 			<c:set var="viewAllResultsLink" value=""/>
 			<c:set var="leadupIndent" value="" scope="page"/>
 			<c:if test="${not empty param.indentCode}">
+				<c:set var="indentCode" value="<c:out value='${param.indentCode}'/>${indentCode}"/>
 				<c:forEach var="i" begin="0" end="${fn:length(param.indentCode)}" step="1">
 					<c:choose>
 						<c:when test="${fn:substring(param.indentCode, i, i + 1) == '1'}">

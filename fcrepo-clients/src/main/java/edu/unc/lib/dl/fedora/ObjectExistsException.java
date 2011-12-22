@@ -19,16 +19,20 @@ import org.springframework.ws.soap.client.SoapFaultClientException;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public class ObjectExistsException extends FedoraException {
-    /**
+	/**
      *
      */
-    private static final long serialVersionUID = 2177327948413175683L;
+	private static final long serialVersionUID = 2177327948413175683L;
 
-    public ObjectExistsException(SoapFaultClientException e) {
-	super(e);
-    }
+	public ObjectExistsException(String message) {
+		super(message);
+	}
+	
+	public ObjectExistsException(SoapFaultClientException e) {
+		super(e);
+	}
 
 }

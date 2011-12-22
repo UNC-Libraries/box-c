@@ -268,6 +268,16 @@ ul.secondarymenu li a.active {
 	border-top: 1px solid #f3f3f3;	
 }
 
+div#username_wrap {
+	position: relative; 
+	top:-10px; 
+	left: 0px; 
+	text-align: right; 
+	height: 0px; 
+	font-size: 12px; 
+	color: #FFF;
+}
+
 .browseitem, .searchitem {
 	float: left;
 	width: 100%;
@@ -1196,6 +1206,10 @@ ul.crumblist li a {
 	*display: inline;
 }
 
+#facet_field_path_structure .indent_unit.hier_with_siblings {
+	background-position: -27px 0;
+}
+
 .indent_unit.hier_with_siblings {
 	background-image: url('/static/images/hier_vertical_line.png');
 	background-position: -27px 0;
@@ -1207,7 +1221,7 @@ ul.crumblist li a {
 }
 
 #facet_field_path_structure .indent_unit.hier_container {
-	background-position: -28px -21px;
+	background-position: -27px -21px;
 } 
 
 .indent_unit.hier_container.hier_with_siblings {
@@ -1216,7 +1230,7 @@ ul.crumblist li a {
 }
 
 #facet_field_path_structure .indent_unit.hier_container.hier_with_siblings {
-	background-position: -28px -21px;
+	background-position: -27px -21px;
 } 
 
 .results_header_hierarchy_path {
@@ -1242,6 +1256,21 @@ ul.crumblist li a {
 
 .about_page p, .about_page ul {
 	padding: 0px 10px;	
+}
+
+.about_page h3 {
+	font-size: 15px;
+	margin-bottom: 10px;
+	color: #484848;
+	font-weight: normal;
+}
+
+.about_page h4 {
+	font-size: 14px;
+	margin-bottom: 6px;
+	padding-left: 10px;
+	color: #484848;
+	font-weight: normal;
 }
 
 .about_page a {

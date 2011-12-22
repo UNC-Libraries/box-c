@@ -1,7 +1,7 @@
 PREFIX fedora-view: <info:fedora/fedora-system:def/view#> 
 PREFIX fedora-model: <info:fedora/fedora-system:def/model#> 
 PREFIX cdr-base: <http://cdr.unc.edu/definitions/1.0/base-model.xml#> 
-SELECT ?pid ?srcDS ?srcMime ?thumbDS ?lastMod
+SELECT ?pid ?srcDS ?srcMime ?thumbDS
 FROM <%1$s>
 WHERE 
 { 
@@ -53,7 +53,5 @@ WHERE
      ?thumbDS fedora-view:lastModifiedDate ?thumbModified . } 
    FILTER ( regex( str(?srcMime), 'image/') && !bound(?thumbDS) && !bound(?thumbModified) ) 
  }
- ?pid fedora-view:lastModifiedDate ?lastMod
 }
-ORDER BY ASC(?lastMod)
 LIMIT %3$s

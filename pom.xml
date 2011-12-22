@@ -218,6 +218,7 @@
 						<exclude>**/*.r</exclude>
 						<exclude>**/*.ir</exclude>
 						<exclude>**/*.xcf</exclude>
+						<exclude>**/*.pl</exclude>
 						<exclude>**/robots.txt</exclude>
 					</excludes>
 					<mapping>
