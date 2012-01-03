@@ -161,7 +161,7 @@ public class CatchUpService {
 						for (PID candidate : candidates) {
 							if (priorToDate == null){
 								PIDMessage pidMessage = new PIDMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
-										JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
+										JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), s.getClass().getName());
 								messageDirector.direct(pidMessage);
 							} else {
 								PIDMessage pidMessage = new PIDMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 

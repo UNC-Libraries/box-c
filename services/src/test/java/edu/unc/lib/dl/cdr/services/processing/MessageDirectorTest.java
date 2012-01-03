@@ -26,10 +26,12 @@ import org.mockito.ArgumentMatcher;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
+import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 public class MessageDirectorTest extends Assert {
@@ -40,33 +42,36 @@ public class MessageDirectorTest extends Assert {
 	private List<ObjectEnhancementService> services;
 
 	public MessageDirectorTest(){
-		this.messageDirector = new MessageDirector();
-		
 		services = new ArrayList<ObjectEnhancementService>();
 		services.add(new TechnicalMetadataEnhancementService());
 		services.add(new ThumbnailEnhancementService());
 		services.add(new ImageEnhancementService());
-		
-		List<MessageFilter> filters = new ArrayList<MessageFilter>();
-		filters.add(new SolrUpdateMessageFilter());
-		ServicesQueueMessageFilter servicesFilter = new ServicesQueueMessageFilter();
-		servicesFilter.setServices(services);
-		filters.add(servicesFilter);
-		messageDirector.setFilters(filters);
 	}
 
 	@Before
 	public void setup(){
+		this.messageDirector = new MessageDirector();
+		
 		List<MessageConductor> conductors = new ArrayList<MessageConductor>();
 		
 		solrConductor = mock(SolrUpdateConductor.class);
 		when(solrConductor.getIdentifier()).thenReturn(SolrUpdateConductor.identifier);
 		servicesConductor = mock(ServicesConductor.class);
 		when(servicesConductor.getIdentifier()).thenReturn(ServicesConductor.identifier);
-		//servicesConductor.setServices(services);
+		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
+		when(failedPids.get(anyString())).thenReturn(null);
+		when(servicesConductor.getFailedPids()).thenReturn(failedPids);
 		
 		conductors.add(servicesConductor);
 		conductors.add(solrConductor);
+		
+		List<MessageFilter> filters = new ArrayList<MessageFilter>();
+		filters.add(new SolrUpdateMessageFilter());
+		ServicesQueueMessageFilter servicesFilter = new ServicesQueueMessageFilter();
+		servicesFilter.setServices(services);
+		servicesFilter.setServicesConductor(servicesConductor);
+		filters.add(servicesFilter);
+		messageDirector.setFilters(filters);
 		
 		messageDirector.setConductorsList(conductors);
 	}
@@ -98,6 +103,7 @@ public class MessageDirectorTest extends Assert {
 		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), TechnicalMetadataEnhancementService.class.getName());
 		messageDirector.direct(message);
+		
 		verify(solrConductor, never()).add(any(PIDMessage.class));
 		verify(servicesConductor).add(any(PIDMessage.class));
 	}

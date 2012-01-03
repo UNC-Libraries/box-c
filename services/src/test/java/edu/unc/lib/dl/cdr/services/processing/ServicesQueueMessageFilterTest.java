@@ -15,7 +15,13 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static org.mockito.Mockito.*;
+
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -24,27 +30,41 @@ import org.jdom.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
+import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/service-context-unit.xml" })
 public class ServicesQueueMessageFilterTest extends Assert {
 
-	@Resource
 	private ServicesQueueMessageFilter servicesMessageFilter;
+	private List<ObjectEnhancementService> services;
+	
+	public ServicesQueueMessageFilterTest(){
+		services = new ArrayList<ObjectEnhancementService>();
+		services.add(new TechnicalMetadataEnhancementService());
+		services.add(new ThumbnailEnhancementService());
+		services.add(new ImageEnhancementService());
+		services.add(new SolrUpdateEnhancementService());
+	}
 	
 	@Before
    public void setUp() throws Exception {
+		servicesMessageFilter = new ServicesQueueMessageFilter();
+		servicesMessageFilter.setServices(services);
+		
+		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
+		when(failedPids.get(anyString())).thenReturn(null);
+		
+		ServicesConductor servicesConductor = mock(ServicesConductor.class);
+		when(servicesConductor.getFailedPids()).thenReturn(failedPids);
+		servicesMessageFilter.setServicesConductor(servicesConductor);
 	}
 	
 	@Test
@@ -63,9 +83,6 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		//Full stack run
 		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
-		assertTrue(servicesMessageFilter.filter(message));
-		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), "");
 		assertTrue(servicesMessageFilter.filter(message));
 	}
 	
@@ -185,8 +202,118 @@ public class ServicesQueueMessageFilterTest extends Assert {
 	}
 	
 	@Test
-	public void unacceptableValidMessages(){
+	public void applyStackStartingServicesFailures(){
+		Set<String> failedServices = new HashSet<String>();
+		failedServices.add(TechnicalMetadataEnhancementService.class.getName());
 		
+		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
+		when(failedPids.get(anyString())).thenReturn(failedServices);
+		
+		ServicesConductor servicesConductor = mock(ServicesConductor.class);
+		when(servicesConductor.getFailedPids()).thenReturn(failedPids);
+		servicesMessageFilter.setServicesConductor(servicesConductor);
+		
+		//Full stack run with the first service failing but no starting service
+		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
+		
+		assertTrue(servicesMessageFilter.filter(message));
+		assertFalse(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
+		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
+		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
+		
+		//Invalid starting service
+		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), "");
+		assertFalse(servicesMessageFilter.filter(message));
+		assertNull(message.getFilteredServices());
+		
+		//Fail on the starting point
+		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), TechnicalMetadataEnhancementService.class.getName());
+		assertFalse(servicesMessageFilter.filter(message));
+		assertNull(message.getFilteredServices());
+		
+		//Fail before the starting point
+		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), ThumbnailEnhancementService.class.getName());
+		assertTrue(servicesMessageFilter.filter(message));
+		assertFalse(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
+		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
+		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
+		
+		//Fail after the starting point
+		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), TechnicalMetadataEnhancementService.class.getName());
+		failedServices.clear();
+		failedServices.add(ThumbnailEnhancementService.class.getName());
+		assertTrue(servicesMessageFilter.filter(message));
+		assertTrue(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
+		assertFalse(message.filteredServicesContains(ThumbnailEnhancementService.class));
+		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
+	}
+	
+	@Test
+	public void applyServicesFailure(){
+		Set<String> failedServices = new HashSet<String>();
+		failedServices.add(TechnicalMetadataEnhancementService.class.getName());
+		failedServices.add(ThumbnailEnhancementService.class.getName());
+		failedServices.add(ImageEnhancementService.class.getName());
+		failedServices.add(SolrUpdateEnhancementService.class.getName());
+		
+		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
+		when(failedPids.get(anyString())).thenReturn(failedServices);
+		
+		ServicesConductor servicesConductor = mock(ServicesConductor.class);
+		when(servicesConductor.getFailedPids()).thenReturn(failedPids);
+		servicesMessageFilter.setServicesConductor(servicesConductor);
+		
+		//fail techmd call
+		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), TechnicalMetadataEnhancementService.class.getName());
+		
+		assertFalse(servicesMessageFilter.filter(message));
+		assertNull(message.getFilteredServices());
+		
+		//fail full stack
+		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
+		
+		assertFalse(servicesMessageFilter.filter(message));
+		assertNull(message.getFilteredServices());
+		
+		//fail full stack, without solr being present in fail list.
+		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
+		
+		failedServices.clear();
+		failedServices.add(TechnicalMetadataEnhancementService.class.getName());
+		failedServices.add(ThumbnailEnhancementService.class.getName());
+		failedServices.add(ImageEnhancementService.class.getName());
+		
+		assertFalse(servicesMessageFilter.filter(message));
+		assertNull(message.getFilteredServices());
+		
+		//pass techmd call
+		failedServices.clear();
+		failedServices.add(ThumbnailEnhancementService.class.getName());
+		failedServices.add(ImageEnhancementService.class.getName());
+		
+		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), TechnicalMetadataEnhancementService.class.getName());
+		
+		assertTrue(servicesMessageFilter.filter(message));
+		assertTrue(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
+		assertFalse(message.filteredServicesContains(ThumbnailEnhancementService.class));
+		assertFalse(message.filteredServicesContains(SolrUpdateEnhancementService.class));
+		
+		//pass only techmd and solr from full stack
+		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
+		assertTrue(servicesMessageFilter.filter(message));
+		assertTrue(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
+		assertFalse(message.filteredServicesContains(ThumbnailEnhancementService.class));
+		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
 	}
 
 	public ServicesQueueMessageFilter getServicesMessageFilter() {
