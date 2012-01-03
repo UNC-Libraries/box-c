@@ -301,7 +301,7 @@ public class FOXMLJDOMUtil {
 			Element xmlContent = null;
 			if (o == null) { // there's no datastream w/ID, so make one and
 				// add it!
-				Element dsContent = makeXMLDatastreamElement(datastreamId, label, newContent, versioned);
+				Element dsContent = makeXMLManagedDatastreamElement(datastreamId, label, datastreamId+".0", newContent, versioned);
 				foxml.getRootElement().addContent(dsContent);
 			} else if (o instanceof Element) {
 				xmlContent = (Element) o;

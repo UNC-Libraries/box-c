@@ -30,9 +30,9 @@ import edu.unc.lib.dl.xml.ModsXmlHelper;
 
 /**
  * Copies certain ingest metadata into Fedora locations, such as the MODS and RELS-EXT datastreams
- * 
+ *
  * @author count0
- * 
+ *
  */
 public class DublinCoreCrosswalkFilter implements AIPIngestFilter {
 	private static final Log log = LogFactory.getLog(DublinCoreCrosswalkFilter.class);

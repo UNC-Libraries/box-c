@@ -72,7 +72,7 @@
 
 	<bean id="tripleStoreQueryService"
 		class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl" destroy-method="destroy">
-		<property name="itqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/webservices/services/ItqlBeanService"/>
+		<property name="itqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService"/>
 		<property name="sparqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/sparql/"/>
 		<property name="serverModelUri" value="rmi://${mulgara.host}/server1#"/>
 	</bean>

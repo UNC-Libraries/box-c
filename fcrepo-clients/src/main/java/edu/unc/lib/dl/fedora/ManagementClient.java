@@ -463,7 +463,7 @@ public class ManagementClient extends WebServiceTemplate {
 		CommonsHttpMessageSender messageSender = new CommonsHttpMessageSender();
 		UsernamePasswordCredentials creds = new UsernamePasswordCredentials(this.getUsername(), this.getPassword());
 		messageSender.setCredentials(creds);
-		messageSender.setReadTimeout(60 * 1000);
+		messageSender.setReadTimeout(30 * 1000);
 		messageSender.afterPropertiesSet();
 		this.setMessageSender(messageSender);
 
@@ -735,7 +735,7 @@ public class ManagementClient extends WebServiceTemplate {
 	 *           the delay between Fedora requests in seconds
 	 * @param timeout
 	 *           the total polling time in seconds
-	 * @return true when the object is found within timeout
+	 * @return true when the object is found within timeout, false on timeout
 	 */
 	public boolean pollForObject(PID pid, int delay, int timeout) {
 		long startTime = System.currentTimeMillis();
@@ -749,9 +749,10 @@ public class ManagementClient extends WebServiceTemplate {
 					log.debug("Expected service exception while polling fedora", e);
 			} catch (FedoraException e) {
 				// fedora responded, but object not found
-				return false;
+				log.debug("got exception from fedora", e);
 			}
 			try {
+				log.info(pid+ " not found, waiting "+delay+" seconds..");
 				Thread.sleep(delay * 1000);
 			} catch (InterruptedException e) {
 			}
@@ -772,9 +773,8 @@ public class ManagementClient extends WebServiceTemplate {
 			throw new Error(e);
 		}
 		dom = eventLogger.appendLogEvents(pid, dom);
-		String eventsLoc = this.upload(dom);
-		String logTimestamp = this.modifyDatastreamByReference(pid, "MD_EVENTS", false, "adding PREMIS events",
-				new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, eventsLoc);
+		String logTimestamp = this.modifyDatastreamByValue(pid, "MD_EVENTS", false, "adding PREMIS events",
+				new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, ClientUtils.serializeXML(dom));
 		return logTimestamp;
 	}
 	// @Override

@@ -82,6 +82,7 @@ public class BatchIngestTask implements Runnable {
 	public enum STATE {
 		INIT, STARTING, INGEST, INGEST_WAIT, INGEST_VERIFY_CHECKSUMS, CONTAINER_UPDATES, SEND_MESSAGES, CLEANUP, FINISHED
 	}
+
 	private static final Log log = LogFactory.getLog(BatchIngestTask.class);
 	private static final String INGEST_LOG = "ingested.log";
 	private static final String REORDERED_LOG = "reordered.log";
@@ -164,6 +165,8 @@ public class BatchIngestTask implements Runnable {
 	private OperationsMessageSender operationsMessageSender = null;
 	private MailNotifier mailNotifier = null;
 	private AgentFactory agentFactory = null;
+	private boolean sendJmsMessages = true;
+	private boolean sendEmailMessages = true;
 
 	public BatchIngestTask() {
 	}
@@ -228,10 +231,9 @@ public class BatchIngestTask implements Runnable {
 
 		// LOG CHANGES TO THE CONTAINER
 		int children = placements.size();
-		PremisEventLogger logger = new PremisEventLogger(submitter);
-		logger.logEvent(PremisEventLogger.Type.INGESTION, "added " + children + " child object(s) to this container",
+		this.eventLogger.logEvent(PremisEventLogger.Type.INGESTION, "added " + children + " child object(s) to this container",
 				container);
-		this.getManagementClient().writePremisEventsToFedoraObject(logger, container);
+		this.getManagementClient().writePremisEventsToFedoraObject(this.eventLogger, container);
 		return reordered;
 	}
 
@@ -360,8 +362,8 @@ public class BatchIngestTask implements Runnable {
 		this.eventLogger.logEvent(PremisEventLogger.Type.INGESTION, "ingested as PID:" + pid.getPid(), pid);
 		if (FOXMLJDOMUtil.getDatastream(doc, "MD_EVENTS") == null) {
 			Element events = this.eventLogger.getObjectEvents(pid);
-			Element eventsEl = FOXMLJDOMUtil.makeXMLManagedDatastreamElement("MD_EVENTS", "PREMIS Events Metadata", ".0",
-					events, false);
+			Element eventsEl = FOXMLJDOMUtil.makeXMLManagedDatastreamElement("MD_EVENTS", "PREMIS Events Metadata",
+					"MD_EVENTS1.0", events, false);
 			doc.getRootElement().addContent(eventsEl);
 		} else {
 			this.eventLogger.appendLogEvents(pid, doc);
@@ -380,7 +382,7 @@ public class BatchIngestTask implements Runnable {
 			this.state = STATE.INGEST_WAIT;
 			return;
 		} catch (FedoraException e) { // fedora threw a fault, ingest rejected
-			throw fail("Cannot ingest due to Fedora error: " + pid, e);
+			throw fail("Cannot ingest due to Fedora error: " + pid + " " + foxmlFiles[next].getAbsolutePath(), e);
 		}
 	}
 
@@ -514,29 +516,34 @@ public class BatchIngestTask implements Runnable {
 	 */
 	private void sendIngestMessages() {
 		// load reordered existing children
-		List<PID> reordered = new ArrayList<PID>();
-		BufferedReader r = null;
-		try {
-			r = new BufferedReader(new FileReader(new File(this.getBaseDir(), REORDERED_LOG)));
-			for (String line = r.readLine(); line != null; line = r.readLine()) {
-				reordered.add(new PID(line));
-			}
-		} catch (IOException e) {
-			throw new Error("Unexpected IO error.", e);
-		} finally {
+		File reorderedFile = new File(this.getBaseDir(), REORDERED_LOG);
+		if (reorderedFile.exists()) {
+			List<PID> reordered = new ArrayList<PID>();
+			BufferedReader r = null;
 			try {
-				if (r != null)
-					r.close();
-			} catch (IOException ignored) {
+
+				r = new BufferedReader(new FileReader(reorderedFile));
+				for (String line = r.readLine(); line != null; line = r.readLine()) {
+					reordered.add(new PID(line));
+				}
+			} catch (IOException e) {
+				throw new Error("Unexpected IO error.", e);
+			} finally {
+				try {
+					if (r != null)
+						r.close();
+				} catch (IOException ignored) {
+				}
+			}
+			Set<PID> containerSet = new HashSet<PID>();
+			Collections.addAll(containerSet, this.containers);
+			if(this.sendJmsMessages) {
+			this.getOperationsMessageSender().sendAddOperation(props.getSubmitter(), containerSet,
+					props.getContainerPlacements().keySet(), reordered);
 			}
 		}
-		Set<PID> containerSet = new HashSet<PID>();
-		Collections.addAll(containerSet, this.containers);
-		this.getOperationsMessageSender().sendAddOperation(props.getSubmitter(), containerSet,
-				props.getContainerPlacements().keySet(), reordered);
-
 		// send successful ingest email
-		if (this.mailNotifier != null)
+		if (this.sendEmailMessages && this.mailNotifier != null && props.getEmailRecipients() != null)
 			this.mailNotifier.sendIngestSuccessNotice(props, this.foxmlFiles.length);
 		this.state = STATE.CLEANUP;
 	}
@@ -570,13 +577,19 @@ public class BatchIngestTask implements Runnable {
 	 */
 	private void startBatch() {
 		if (!this.managementClient.pollForObject(ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID(), 30, 600)) {
-			throw fail("Cannot poll a basic expected Fedora object: "+ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID().getPid());
+			throw fail("Cannot poll a basic expected Fedora object: "
+					+ ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID().getPid());
 		}
-		PersonAgent submitter = this.getAgentFactory().findPersonByName(props.getSubmitter(), false);
-		this.eventLogger = new PremisEventLogger(submitter);
+		Agent submitter = this.getAgentFactory().findPersonByOnyen(props.getSubmitter(), false);
 		if (submitter == null) {
-			throw fail("Cannot look up submitter");
+			submitter = this.getAgentFactory().findSoftwareByName(props.getSubmitter());
+			if (submitter == null) {
+				throw fail("Cannot look up submitter");
+			} else {
+				log.warn("Ingest submitter is a software agent: " + submitter.getName() + " (" + submitter.getPID() + ")");
+			}
 		}
+		this.eventLogger = new PremisEventLogger(submitter);
 
 		HashSet<PID> containers = new HashSet<PID>();
 		for (ContainerPlacement p : props.getContainerPlacements().values()) {
@@ -723,7 +736,8 @@ public class BatchIngestTask implements Runnable {
 	}
 
 	/**
-	 * @param baseDir the baseDir to set
+	 * @param baseDir
+	 *           the baseDir to set
 	 */
 	public void setBaseDir(File baseDir) {
 		this.baseDir = baseDir;
@@ -734,6 +748,22 @@ public class BatchIngestTask implements Runnable {
 	 */
 	public File getBaseDir() {
 		return baseDir;
+	}
+
+	public boolean isSendJmsMessages() {
+		return sendJmsMessages;
+	}
+
+	public void setSendJmsMessages(boolean sendJmsMessages) {
+		this.sendJmsMessages = sendJmsMessages;
+	}
+
+	public boolean isSendEmailMessages() {
+		return sendEmailMessages;
+	}
+
+	public void setSendEmailMessages(boolean sendEmailMessages) {
+		this.sendEmailMessages = sendEmailMessages;
 	}
 
 }

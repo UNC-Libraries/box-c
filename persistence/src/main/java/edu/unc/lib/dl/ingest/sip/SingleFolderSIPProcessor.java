@@ -66,7 +66,7 @@ public class SingleFolderSIPProcessor implements SIPProcessor {
 		// add the contents file
 		Element structMap = new Element("structMap", JDOMNamespaceUtil.METS_NS);
 		structMap.addContent(new Element("div", JDOMNamespaceUtil.METS_NS).setAttribute("TYPE", "Container"));
-		Element contents = FOXMLJDOMUtil.makeXMLDatastreamElement("MD_CONTENTS", "List of Contents", structMap, false);
+		Element contents = FOXMLJDOMUtil.makeXMLManagedDatastreamElement("MD_CONTENTS", "List of Contents", "MD_CONTENTS.0", structMap, false);
 		foxml.getRootElement().addContent(contents);
 
 		// Note: either slug or label or MODS title must be set.

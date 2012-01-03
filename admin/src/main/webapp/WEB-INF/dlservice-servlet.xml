@@ -414,7 +414,7 @@
 	<!-- spring-context.xml contents here -->
 	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl">
 		<property name="itqlEndpointURL"
-			value="http://${mulgara.host}${mulgara.port}/webservices/services/ItqlBeanService" />
+			value="http://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService" />
 		<property name="serverModelUri" value="rmi://${mulgara.host}/server1#" />
 		<property name="name" value="${fedora.admin.username}" />
 		<property name="pass" value="${fedora.admin.password}" />
@@ -424,6 +424,7 @@
 		<property name="fedoraContextUrl" value="https://${fedora.host}${fedora.port}/fedora" />
 		<property name="username" value="${fedora.admin.username}" />
 		<property name="password" value="${fedora.admin.password}" />
+		<property name="accessClient" ref="accessClient"/>
 	</bean>
 	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient"
 		init-method="init">

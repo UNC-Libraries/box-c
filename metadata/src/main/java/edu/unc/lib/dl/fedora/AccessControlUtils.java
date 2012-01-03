@@ -68,10 +68,10 @@ public class AccessControlUtils {
 	private String[] originalNames = { "DATA_" };
 
 	// CDR options loaded from configuration
-	private String username;
-	private String password;
-	private String itqlEndpointURL;
-	private String serverModelUri;
+//	private String username;
+//	private String password;
+//	private String itqlEndpointURL;
+//	private String serverModelUri;
 	private int cacheDepth;
 	private int cacheLimit;
 	private long cacheResetTime;

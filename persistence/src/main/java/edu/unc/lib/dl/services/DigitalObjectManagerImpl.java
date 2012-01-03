@@ -880,8 +880,10 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 		BatchIngestTask task = createBatchIngestTask(); // obtain from Spring prototype
 		task.init(prepDir);
 		task.run();
+		if(!task.isFailed()) {
+			FileUtils.deleteDir(prepDir);
+		}
 		task = null;
-		FileUtils.deleteDir(prepDir);
 	}
 
 	/**

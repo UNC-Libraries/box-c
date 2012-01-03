@@ -1113,7 +1113,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		List<PID> result = new ArrayList<PID>();
 
 		// add the REPOSITORY PID
-		result.add(ContentModelHelper.Administrative_PID.REPOSITORY.getPID());
+		//result.add(ContentModelHelper.Administrative_PID.REPOSITORY.getPID());
 
 		// construct path from contains relationships
 		StringBuffer query = new StringBuffer();
@@ -1131,9 +1131,9 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 			// follow REPOSITORY through all children, building path
 			StringBuffer sb = new StringBuffer();
-			for (String step = "info:fedora/admin:REPOSITORY"; parent2child.containsKey(step); step = parent2child
+			for (String step = ContentModelHelper.Administrative_PID.REPOSITORY.getPID().getURI(); parent2child.containsKey(step); step = parent2child
 					.get(step)) {
-				result.add(new PID(parent2child.get(step)));
+				result.add(new PID(step));
 			}
 		}
 		return result;

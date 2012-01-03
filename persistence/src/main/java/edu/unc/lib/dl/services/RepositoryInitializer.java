@@ -24,11 +24,13 @@ import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 
+import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.agents.GroupAgent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.agents.SoftwareAgent;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
+import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
@@ -38,6 +40,7 @@ import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
 
 public class RepositoryInitializer implements Runnable {
 
@@ -113,6 +116,8 @@ public class RepositoryInitializer implements Runnable {
 			log.warn("Waiting on Fedora startup to initialize repository, polling..");
 			this.managementClient.pollForObject(ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID(), 30, 600);
 
+			ingestRepositoryManagementSoftwareAgent();
+
 			ingestContentModelsServices();
 
 			ingestRepositoryFolder();
@@ -125,10 +130,12 @@ public class RepositoryInitializer implements Runnable {
 			ingestGroupsUsersAgents();
 
 			this.digitalObjectManager.setAvailable(true);
-			log.warn("Repository was initialized");
+			log.info("Repository was initialized");
 		} catch (ServiceException e) {
 			log.fatal("Fedora service misconfigured or unavailable during initialization", e);
 		} catch (RuntimeException e) {
+			log.fatal("Could not initialize repository, unexpected exception", e);
+		} catch(Error e) {
 			log.fatal("Could not initialize repository, unexpected exception", e);
 		}
 	}
@@ -136,7 +143,27 @@ public class RepositoryInitializer implements Runnable {
 	/**
 	 *
 	 */
+	private void ingestRepositoryManagementSoftwareAgent() {
+		log.info("Ingesting repository software agent..");
+		SoftwareAgent repo = AgentFactory.getRepositorySoftwareAgentStub();
+		PID pid = repo.getPID();
+		Document doc = FOXMLJDOMUtil.makeFOXMLDocument(pid.getPid());
+		FOXMLJDOMUtil.setProperty(doc, ObjectProperty.label, repo.getName());
+		try {
+			this.managementClient.ingest(doc, Format.FOXML_1_1, "initial ingest of repository software agent record");
+			this.managementClient.addLiteralStatement(pid, ContentModelHelper.CDRProperty.slug.getURI().toString(), "reposoftware", null);
+			this.managementClient.addObjectRelationship(pid, ContentModelHelper.FedoraProperty.hasModel.getURI().toString(),
+			ContentModelHelper.Model.SOFTWAREAGENT.getPID());
+		} catch (FedoraException e) {
+			throw new Error("Cannot create repository software agent", e);
+		}
+	}
+
+	/**
+	 *
+	 */
 	private void ingestGroupsUsersAgents() {
+		log.info("Ingesting groups, users and agents...");
 		GroupAgent adminGroup = AgentManager.getAdministrativeGroupAgentStub();
 		SoftwareAgent repoAgent = AgentManager.getRepositorySoftwareAgentStub();
 		// Now create the administrative users
@@ -144,14 +171,6 @@ public class RepositoryInitializer implements Runnable {
 			adminGroup = this.getAgentManager().addGroupAgent(adminGroup, repoAgent, "creating admin group");
 		} catch (IngestException e) {
 			throw new Error("Could not create administrator group.", e);
-		}
-
-		// create the repository management software agent
-		try {
-			repoAgent = this.getAgentManager().addSoftwareAgent(repoAgent, repoAgent,
-					"creating repository management software agent");
-		} catch (IngestException e) {
-			throw new Error("Could not create repository management software agent.", e);
 		}
 
 		try {
@@ -169,6 +188,7 @@ public class RepositoryInitializer implements Runnable {
 	 * Creates the initial set of folder for the repository.
 	 */
 	private void ingestAdminFolders() {
+		log.info("Adding Admin Containers...");
 		try {
 			GroupAgent adminGroup = AgentManager.getAdministrativeGroupAgentStub();
 			SoftwareAgent repoAgent = AgentManager.getRepositorySoftwareAgentStub();
@@ -190,10 +210,11 @@ public class RepositoryInitializer implements Runnable {
 		PID root = this.getTripleStoreQueryService().fetchByRepositoryPath("/");
 		if (root != null) {
 			this.digitalObjectManager.setAvailable(true);
-			log.warn("Repository object already exists (previously initialized).  You can disable RepositoryInitializer in Spring config.");
+			log.warn("Repository object already exists (previously initialized).  You can disable RepositoryInitializer.autoinitialize in Spring config.");
 			return;
 		}
 
+		log.info("Creating REPOSITORY Container..");
 		// create REPOSITORY folder
 		String slug = "REPOSITORY";
 		PID pid = ContentModelHelper.Administrative_PID.REPOSITORY.getPID();
@@ -229,6 +250,7 @@ public class RepositoryInitializer implements Runnable {
 	 * @throws FedoraException
 	 */
 	private void ingestContentModelsServices() {
+		log.info("Ingesting content models and services..");
 		try {
 			File tmpDir = File.createTempFile("RepositoryInitializerBatch", "");
 			tmpDir.delete();

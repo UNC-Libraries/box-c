@@ -168,15 +168,10 @@ public class MailNotifier {
 			mimeMessage = mailSender.createMimeMessage();
 			MimeMessageHelper message = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
 
-			// Addressing: to initiator if a person, otherwise to all members of
-			// admin group
-			if (props.getSubmitter() != null) {
-				message.setSubject("CDR ingest successful");
-				message.addTo(props.getSubmitter() + "@email.unc.edu", props.getSubmitter());
-			} else {
-				message.setSubject("CDR non-user initiated ingest successful");
-				message.addTo("cdr@unc.edu", "CDR Administrators");
+			for(String addy : props.getEmailRecipients()) {
+				message.addTo(addy);
 			}
+			message.setSubject("CDR ingest complete");
 
 			message.setFrom("cdr@unc.edu");
 			message.setText(text, html);
@@ -187,8 +182,6 @@ public class MailNotifier {
 			this.mailSender.send(mimeMessage);
 			logEmail = false;
 		} catch (MessagingException e) {
-			log.error("Unable to send ingest success email.", e);
-		} catch (UnsupportedEncodingException e) {
 			log.error("Unable to send ingest success email.", e);
 		} catch (RuntimeException e) {
 			log.error(e);

@@ -24,6 +24,8 @@ import java.util.Set;
 import org.fcrepo.server.security.xacml.MelcoeXacmlException;
 import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderConfigUtil;
 import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderException;
+import org.fcrepo.server.security.xacml.util.AttributeFinderConfig;
+import org.fcrepo.server.security.xacml.util.AttributeFinderConfig.Designator;
 import org.fcrepo.server.security.xacml.util.ContextUtil;
 import org.fcrepo.server.security.xacml.util.RelationshipResolver;
 import org.slf4j.Logger;
@@ -49,7 +51,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 
 	private RelationshipResolver relationshipResolver = null;
 
-	private Map<Integer, Set<String>> attributes = null;
+	private AttributeFinderConfig attributes = null;
 
 	// Attributes used by the CDR
 	private String[] specialAttributes = {
@@ -72,14 +74,15 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 		try {
 			attributes = AttributeFinderConfigUtil
 					.getAttributeFinderConfig(this.getClass().getName());
-			log.info("Initialised AttributeFinder:"
+			log.info("Initialising AttributeFinder:"
 					+ this.getClass().getName());
 
 			if (log.isDebugEnabled()) {
 				log.debug("registering the following attributes: ");
-				for (Integer k : attributes.keySet()) {
-					for (String l : attributes.get(k)) {
-						log.debug(k + ": " + l);
+				for (Integer k : attributes.getDesignatorIds()) {
+					Designator l = attributes.get(k);
+					for(String a : l.getAttributeNames()) {
+						log.debug(a + ": " + l.get(a));
 					}
 				}
 			}
@@ -141,6 +144,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 			accessControlUtils.setCacheDepth(cacheDepth);
 			accessControlUtils.setCacheLimit(cacheLimit);
 			accessControlUtils.setCacheResetTime(cacheResetTime);
+			accessControlUtils.setAccessControlProperties(accessControlProperties);
 			accessControlUtils.init();
 			accessControlUtils.startCacheCleanupThreadForFedoraBasedAccessControl();
 
@@ -181,7 +185,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 	 */
 	@Override
 	public Set<Integer> getSupportedDesignatorTypes() {
-		return attributes.keySet();
+		return attributes.getDesignatorIds();
 	}
 
 	/**
@@ -247,7 +251,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 			}
 		}
 		// we only know about registered attributes from config file
-		if (!attributes.keySet().contains(new Integer(designatorType))) {
+		if (!attributes.getDesignatorIds().contains(new Integer(designatorType))) {
 			if (log.isDebugEnabled()) {
 				log.debug("Does not know about designatorType: "
 						+ designatorType);
@@ -256,9 +260,9 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 					.createEmptyBag(attributeType));
 		}
 
-		Set<String> allowedAttributes = attributes.get(new Integer(
+		Designator allowedAttributes = attributes.get(new Integer(
 				designatorType));
-		if (!allowedAttributes.contains(attrName)) {
+		if (!allowedAttributes.getAttributeNames().contains(attrName)) {
 			if (log.isDebugEnabled()) {
 				log.debug("Does not know about attribute: " + attrName);
 			}

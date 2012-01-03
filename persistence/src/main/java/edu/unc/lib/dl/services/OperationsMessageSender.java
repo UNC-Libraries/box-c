@@ -41,7 +41,7 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * @author Gregory Jansen
- * 
+ *
  */
 public class OperationsMessageSender {
 
@@ -52,7 +52,7 @@ public class OperationsMessageSender {
 
 	/**
 	 * Sends a message about a repository add operation
-	 * 
+	 *
 	 * @param userid
 	 *           the submitter
 	 * @param timestamp
@@ -67,7 +67,13 @@ public class OperationsMessageSender {
 	public void sendAddOperation(String userid, Collection<PID> destinations, Collection<PID> added,
 			Collection<PID> reordered) {
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, destinations.iterator().next(), "add");
+		PID summaryContext = null;
+		if(destinations.size() > 0) {
+			summaryContext = destinations.iterator().next();
+		} else {
+			summaryContext = added.iterator().next();
+		}
+		Element contentEl = createAtomEntry(msg, userid, summaryContext, "add");
 		Element add = new Element("add", CDR_MESSAGE_NS);
 		contentEl.addContent(add);
 
