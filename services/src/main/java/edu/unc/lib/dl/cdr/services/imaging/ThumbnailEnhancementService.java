@@ -97,10 +97,13 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 
 	@Override
 	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
-		if (pid.getMessage() == null)
-			return false;
-
 		String action = pid.getAction();
+		
+		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(action))
+			return true;
+		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(action))
+			return this.getClass().getName().equals(pid.getServiceName());
+
 		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
 			return true;
 
