@@ -239,12 +239,16 @@ public class CatchUpServiceTest extends Assert {
 	 */
 	@Test
 	public void lockoutCatchUp() throws EnhancementException, InterruptedException, ExecutionException{
+		when(techmd.isActive()).thenReturn(true);
+		when(image.isActive()).thenReturn(true);
+		
 		List<PID> results = getResultSet(catchup.getPageSize()); 
 		when(techmd.findCandidateObjects(anyInt())).thenReturn(results);
 		
 		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 		Runnable activateRunnable = new Runnable() {
 			public void run(){
+				while (!catchup.isActive());
 				boolean response = catchup.activate();
 				assertFalse(response);
 			}
@@ -252,16 +256,20 @@ public class CatchUpServiceTest extends Assert {
 		Runnable deactivateRunnable = new Runnable() {
 			public void run(){
 				catchup.deactivate();
+				System.out.println("Deactivated " + System.currentTimeMillis());
 			}
 		};
 		
 		// Execute a second activation after the original has been running for 100ms
 		ScheduledFuture<?> activateHandler = scheduler.schedule(activateRunnable, 100, TimeUnit.MILLISECONDS);
-		scheduler.schedule(deactivateRunnable, 400, TimeUnit.MILLISECONDS);
+		ScheduledFuture<?> deactivateHandler = scheduler.schedule(deactivateRunnable, 500, TimeUnit.MILLISECONDS);
 		
+		//Begin the first catchup call.
 		boolean response = catchup.activate();
 		assertTrue(response);
+		
 		// Spit out any exceptions from the activateRunnable, in case of assertion failure.
+		deactivateHandler.get();
 		activateHandler.get();
 		scheduler.shutdown();
 	}

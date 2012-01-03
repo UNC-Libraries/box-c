@@ -19,6 +19,7 @@ package edu.unc.lib.dl.cdr.services.processing;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,8 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 	private static final Logger LOG = LoggerFactory.getLogger(ServicesQueueMessageFilter.class);
 	
 	private List<ObjectEnhancementService> services;
+	
+	private ServicesConductor servicesConductor;
 	
 	public void setServices(List<ObjectEnhancementService> services) {
 		this.services = Collections.unmodifiableList(services);
@@ -59,22 +62,35 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 		if (pid == null)
 			return false;
 		
-		//If the message is for a full stack run, then it passes
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getAction())){
-			message.setFilteredServices(services);
-			return true;
-		}
-		
 		//Iterate through the services stack
 		List<ObjectEnhancementService> messageServices = new ArrayList<ObjectEnhancementService>(services.size());
 		message.setFilteredServices(messageServices);
+		
+		Set<String> failedServices = servicesConductor.getFailedPids().get(message.getPIDString());
+		
+		boolean applyServiceStack = JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getAction());
+		boolean serviceReached = !applyServiceStack || message.getServiceName() == null;
+		
 		for (ObjectEnhancementService s : services) {
 			try {
-				//Add services which match the message's service name or pass prefilter to this message's service list.
-				if ((JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(message.getAction()) 
-						&& s.getClass().getName().equals(message.getServiceName()))
-						|| s.prefilterMessage(message)){
-					messageServices.add(s);
+				//If this is a service stack message with a starting service specified, then scan for it
+				if (applyServiceStack && !serviceReached){
+					if (s.getClass().getName().equals(message.getServiceName())){
+						serviceReached = true;
+					}
+				}
+				 
+				if (serviceReached){
+					//add services to the message's service list which have not failed previously and pass the prefilter method.
+					if (!(failedServices != null && failedServices.contains(s.getClass().getName()))
+							&& s.prefilterMessage(message)){
+						messageServices.add(s);
+					} else {
+						//If the starting service doesn't pass, then skip the rest of the stack 
+						if (applyServiceStack && message.getServiceName() != null && messageServices.size() == 0){
+							break;
+						}
+					}
 				}
 			} catch (EnhancementException e) {
 				LOG.error("Error while performing prefilterMessage on " + pid + " for service " + s.getClass().getName(), e);
@@ -97,4 +113,10 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 		
 		return true;
 	}
+
+	public void setServicesConductor(ServicesConductor servicesConductor) {
+		this.servicesConductor = servicesConductor;
+	}
+	
+	
 }

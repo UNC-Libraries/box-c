@@ -88,6 +88,7 @@ public class ServicesConductorTest extends Assert {
 		messageDirector.setConductorsList(conductors);
 		
 		servicesMessageFilter = new ServicesQueueMessageFilter();
+		servicesMessageFilter.setServicesConductor(servicesConductor);
 		List<MessageFilter> filters = new ArrayList<MessageFilter>();
 		filters.add(servicesMessageFilter);
 		messageDirector.setFilters(filters);
