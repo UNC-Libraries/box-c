@@ -30,7 +30,7 @@ import org.swordapp.server.ServiceDocumentAPI;
 import org.swordapp.server.ServiceDocumentManager;
 
 @Controller
-@RequestMapping("/servicedocument/*")
+@RequestMapping("/servicedocument")
 public class ServiceDocumentServlet extends BaseSwordServlet {
 	private static Logger LOG = Logger.getLogger(ServiceDocumentServlet.class);
 	protected ServiceDocumentManager serviceDocumentManager;

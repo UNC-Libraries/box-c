@@ -25,13 +25,13 @@
 	</context-param>
 	
 	<servlet>
-		<servlet-name>cdr-services</servlet-name>
+		<servlet-name>sword</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
 	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>cdr-services</servlet-name>
-		<url-pattern>/</url-pattern>
+		<servlet-name>sword</servlet-name>
+		<url-pattern>/sword/*</url-pattern>
 	</servlet-mapping>
 
 </web-app>
