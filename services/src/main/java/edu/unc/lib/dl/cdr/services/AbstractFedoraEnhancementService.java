@@ -110,6 +110,8 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 			buf = new char[1024];
 		}
 		reader.close();
+		inStreamReader.close();
+		inStream.close();
 		return fileData.toString();
 	}
 }

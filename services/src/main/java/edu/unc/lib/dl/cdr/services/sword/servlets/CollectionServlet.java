@@ -32,7 +32,7 @@ import org.swordapp.server.CollectionDepositManager;
 import org.swordapp.server.CollectionListManager;
 
 @Controller
-@RequestMapping("/collection/*")
+@RequestMapping("/collection")
 public class CollectionServlet extends BaseSwordServlet {
 	private static Logger LOG = Logger.getLogger(CollectionServlet.class);
 
@@ -48,13 +48,13 @@ public class CollectionServlet extends BaseSwordServlet {
 		this.api = new CollectionAPI(this.collectionListManager, this.collectionDepositManager, this.config);
 	}
 
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		LOG.debug("GET request for collection content list");
 		this.api.get(req, resp);
 	}
 
-	@RequestMapping(method = RequestMethod.POST)
+	@RequestMapping(value = "/{pid}", method = RequestMethod.POST)
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		LOG.debug("POST request to submit to collection");
 		this.api.post(req, resp);

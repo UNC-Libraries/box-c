@@ -41,7 +41,7 @@ import edu.unc.lib.dl.fedora.PID;
  * @author bbpennel
  */
 public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements ServiceDocumentManager {
-	private static final Logger log = LoggerFactory.getLogger(ServiceDocumentManagerImpl.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ServiceDocumentManagerImpl.class);
 	
 	public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config)
 			throws SwordError, SwordServerException, SwordAuthException {
@@ -58,7 +58,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 			}
 		}
 		if (pid == null || "".equals(pid)){
-			pid = ServiceDocumentManagerImpl.collectionsPidObject.getPid();
+			pid = collectionsPidObject.getPid();
 		}
 		
 		List<SwordCollection> collections;
@@ -71,7 +71,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 			
 			return sd;
 		} catch (Exception e) {
-			log.error("An exception occurred while generating the service document for " + pid, e);
+			LOG.error("An exception occurred while generating the service document for " + pid, e);
 		}
 
 		return null;

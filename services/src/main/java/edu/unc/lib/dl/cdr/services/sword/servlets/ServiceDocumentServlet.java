@@ -18,12 +18,14 @@ package edu.unc.lib.dl.cdr.services.sword.servlets;
 import java.io.IOException;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.swordapp.server.ServiceDocumentAPI;
@@ -33,6 +35,7 @@ import org.swordapp.server.ServiceDocumentManager;
 @RequestMapping("/servicedocument")
 public class ServiceDocumentServlet extends BaseSwordServlet {
 	private static Logger LOG = Logger.getLogger(ServiceDocumentServlet.class);
+	@Resource
 	protected ServiceDocumentManager serviceDocumentManager;
 	protected ServiceDocumentAPI api;
 
@@ -43,8 +46,22 @@ public class ServiceDocumentServlet extends BaseSwordServlet {
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		LOG.debug("Get request for service document");
+	protected void defaultGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		LOG.debug("Get request for service document root");
 		this.api.get(req, resp);
+	}
+	
+	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp, @PathVariable("pid") String pid) throws ServletException, IOException {
+		LOG.debug("Get request for service document " + pid);
+		this.api.get(req, resp);
+	}
+
+	public ServiceDocumentManager getServiceDocumentManager() {
+		return serviceDocumentManager;
+	}
+
+	public void setServiceDocumentManager(ServiceDocumentManager serviceDocumentManager) {
+		this.serviceDocumentManager = serviceDocumentManager;
 	}
 }

@@ -18,7 +18,6 @@ package edu.unc.lib.dl.cdr.services.sword.managers;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.rmi.RemoteException;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -26,15 +25,11 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.springframework.beans.BeansException;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.SwordAuthException;
 import org.swordapp.server.SwordServerException;
-import org.swordapp.server.servlets.SwordServlet;
-import org.w3c.dom.Element;
 
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.PID;
@@ -46,14 +41,19 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  *
  */
 public abstract class AbstractFedoraManager {
+	private static Logger LOG = Logger.getLogger(AbstractFedoraManager.class);
+	
 	@Autowired
-	protected static AccessClient accessClient;
+	protected AccessClient accessClient;
 	@Autowired
-	protected static TripleStoreQueryService tripleStoreQueryService;
+	protected TripleStoreQueryService tripleStoreQueryService;
 	@Autowired
-	protected static PID collectionsPidObject;
-	@Autowired
-	protected static String swordPath;
+	protected String swordPath;
+	protected PID collectionsPidObject;
+	
+	public void init(){
+		collectionsPidObject = this.tripleStoreQueryService.fetchByRepositoryPath("/Collections");
+	}
 
 	protected String readFileAsString(String filePath) throws java.io.IOException {
 		StringBuffer fileData = new StringBuffer(1000);
@@ -100,4 +100,34 @@ public abstract class AbstractFedoraManager {
 			method.releaseConnection();
 		}
 	}
+
+	public AccessClient getAccessClient() {
+		return accessClient;
+	}
+
+	public void setAccessClient(AccessClient accessClient) {
+		this.accessClient = accessClient;
+	}
+
+	public TripleStoreQueryService getTripleStoreQueryService() {
+		return tripleStoreQueryService;
+	}
+
+	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+		this.tripleStoreQueryService = tripleStoreQueryService;
+	}
+
+	public PID getCollectionsPidObject() {
+		return collectionsPidObject;
+	}
+
+	public String getSwordPath() {
+		return swordPath;
+	}
+
+	public void setSwordPath(String swordPath) {
+		this.swordPath = swordPath;
+	}
+	
+	
 }

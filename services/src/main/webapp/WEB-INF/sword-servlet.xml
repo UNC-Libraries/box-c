@@ -182,7 +182,7 @@
 	
 	<!-- SWORD config -->
 
-	<bean id="swordConfigurationImpl" class="edu.unc.lib.dl.cdr.services.sword.SwordConfigurationImpl"
+	<bean id="config" class="edu.unc.lib.dl.cdr.services.sword.SwordConfigurationImpl"
 		init-method="init">
 		<property name="authType" value="Basic"/>
 	</bean>
@@ -193,7 +193,8 @@
 	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.services.sword.managers.CollectionDepositManagerImpl">
 	</bean>
 	
-	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.services.sword.managers.ServiceDocumentManagerImpl">
+	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.services.sword.managers.ServiceDocumentManagerImpl" 
+		init-method="init">
 	</bean>
 	
 	<context:annotation-config />
