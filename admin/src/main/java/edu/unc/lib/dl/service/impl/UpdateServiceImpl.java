@@ -26,7 +26,6 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
-import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.schema.MoveObjectRequest;
@@ -34,7 +33,6 @@ import edu.unc.lib.dl.schema.MoveObjectResponse;
 import edu.unc.lib.dl.schema.SingleUpdateFile;
 import edu.unc.lib.dl.schema.UpdateIngestObject;
 import edu.unc.lib.dl.service.UpdateService;
-import edu.unc.lib.dl.service.impl.SubmitServiceImpl.MediatedSubmitThread;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.Constants;
 import edu.unc.lib.dl.util.TripleStoreQueryService;

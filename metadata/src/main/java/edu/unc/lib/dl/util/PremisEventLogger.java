@@ -161,25 +161,25 @@ public class PremisEventLogger {
 	}
 
 	/**
-	 * Appends events for the specified PID to the events Document.
+	 * Appends events for the specified PID to the supplied events element.
 	 *
 	 * @param pid
 	 *           the PID of the object
 	 * @param oldXML
-	 *           the MD_EVENTS Document
-	 * @return the modified xml document
+	 *           the PREMIS events Element
+	 * @return the modified xml element
 	 */
-	public Document appendLogEvents(PID pid, Document oldXML) {
+	public Element appendLogEvents(PID pid, Element eventsElement) {
 		List children = this.pid2EventList.get(pid).cloneContent();// .getChildren("event", NS);
 		for (Object child : children) {
 			if (child instanceof Element) {
 				Element el = (Element) child;
 				if ("event".equals(el.getName())) {
-					oldXML.getRootElement().addContent(el);
+					eventsElement.addContent(el);
 				}
 			}
 		}
-		return oldXML;
+		return eventsElement;
 	}
 
 	/**

@@ -553,7 +553,7 @@
         <xsl:param name="div" required="yes"/>
         <xsl:param name="contentModelType" required="yes"/>
         <xsl:param name="statements"/>
-        <f:datastream ID="RELS-EXT" CONTROL_GROUP="X" VERSIONABLE="false">
+        <f:datastream ID="RELS-EXT" CONTROL_GROUP="M" VERSIONABLE="false">
             <f:datastreamVersion MIMETYPE="text/xml"
                 LABEL="Fedora Object-to-Object Relationship Metadata">
                 <xsl:attribute name="ID">RELS-EXT.0</xsl:attribute>
@@ -599,7 +599,7 @@
         <xsl:variable name="admin" select="key('amdid',@ADMID)/m:digiprovMD"/>
         <xsl:choose>
             <xsl:when test="exists($admin/m:mdWrap/m:xmlData)">
-                <f:datastream ID="MD_ADMINISTRATIVE" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+                <f:datastream ID="MD_ADMINISTRATIVE" STATE="A" CONTROL_GROUP="M" VERSIONABLE="true">
                     <f:datastreamVersion LABEL="Administrative Metadata" MIMETYPE="text/xml"
                         ID="MD_ADMINISTRATIVE.0">
                         <f:contentDigest DIGEST="none" TYPE="MD5"/>
@@ -610,7 +610,7 @@
                 </f:datastream>
             </xsl:when>
             <xsl:when test="exists($admin/m:mdRef/@xlink:href)">
-                <f:datastream ID="MD_ADMINISTRATIVE" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+                <f:datastream ID="MD_ADMINISTRATIVE" STATE="A" CONTROL_GROUP="M" VERSIONABLE="true">
                     <f:datastreamVersion LABEL="Administrative Metadata" MIMETYPE="text/xml"
                         ID="MD_ADMINISTRATIVE.0">
                         <f:contentDigest DIGEST="none" TYPE="MD5"/>
@@ -624,7 +624,7 @@
     <!-- Adds descriptive metadata common to all described objects -->
     <xsl:template match="m:div" mode="MD_DESCRIPTIVE">
         <xsl:if test="exists(@DMDID)">
-            <f:datastream ID="MD_DESCRIPTIVE" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+            <f:datastream ID="MD_DESCRIPTIVE" STATE="A" CONTROL_GROUP="M" VERSIONABLE="true">
                 <f:datastreamVersion LABEL="Descriptive Metadata" MIMETYPE="text/xml"
                     ID="MD_DESCRIPTIVE.0">
                     <f:contentDigest DIGEST="none" TYPE="MD5"/>
@@ -647,12 +647,12 @@
 
     <!-- TODO: need better datastreamVersion ids or omit them -->
     <!-- Adds arbitrary xml data to a named datastream -->
-    <xsl:template name="make-inline-xml-datastream">
+    <xsl:template name="make-managed-xml-datastream">
         <xsl:param name="xmldata" required="yes"/>
         <xsl:param name="label" required="yes"/>
         <xsl:param name="id" required="yes"/>
         <xsl:param name="versionable" required="yes"/>
-        <f:datastream ID="{$id}" STATE="A" CONTROL_GROUP="X" VERSIONABLE="{$versionable}">
+        <f:datastream ID="{$id}" STATE="A" CONTROL_GROUP="M" VERSIONABLE="{$versionable}">
             <f:datastreamVersion LABEL="{$label}" MIMETYPE="text/xml" ID="{$id}.0">
                 <f:contentDigest DIGEST="none" TYPE="MD5"/>
                 <f:xmlContent>
@@ -661,6 +661,8 @@
             </f:datastreamVersion>
         </f:datastream>
     </xsl:template>
+    
+    
 
     <!-- Adds arbitrary xml data to a named datastream -->
     <xsl:template name="make-url-xml-datastream">
@@ -668,7 +670,7 @@
         <xsl:param name="label" required="yes"/>
         <xsl:param name="id" required="yes"/>
         <xsl:param name="versionable" required="yes"/>
-        <f:datastream ID="{$id}" STATE="A" CONTROL_GROUP="X" VERSIONABLE="{$versionable}">
+        <f:datastream ID="{$id}" STATE="A" CONTROL_GROUP="M" VERSIONABLE="{$versionable}">
             <f:datastreamVersion LABEL="{$label}" MIMETYPE="text/xml" ID="{$id}.0">
                 <f:contentDigest DIGEST="none" TYPE="MD5"/>
                 <f:contentLocation REF="{$url}" TYPE="URL"/>

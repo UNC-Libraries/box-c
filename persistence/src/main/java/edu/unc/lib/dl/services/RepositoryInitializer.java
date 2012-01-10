@@ -116,6 +116,13 @@ public class RepositoryInitializer implements Runnable {
 			log.warn("Waiting on Fedora startup to initialize repository, polling..");
 			this.managementClient.pollForObject(ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID(), 30, 600);
 
+			try {
+				this.managementClient.getObjectXML(ContentModelHelper.Administrative_PID.REPOSITORY.getPID());
+			} catch(Exception e) {
+				log.warn("Skipping repository initialization due to existing repository.", e);
+				return;
+			}
+
 			ingestRepositoryManagementSoftwareAgent();
 
 			ingestContentModelsServices();

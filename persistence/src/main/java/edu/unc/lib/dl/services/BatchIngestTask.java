@@ -53,6 +53,7 @@ import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.ManagementClient;
+import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
 import edu.unc.lib.dl.fedora.ManagementClient.ControlGroup;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -221,14 +222,14 @@ public class BatchIngestTask implements Runnable {
 		// this.getTripleStoreQueryService()..fetchByPredicateAndLiteral(ContentModelHelper.CDRProperty.sortOrder,
 		// literal)
 		newXML = ContainerContentsHelper.addChildContentAIPInCustomOrder(oldXML, container, placements, reordered);
+		String loc = this.getManagementClient().upload(newXML);
 		if (exists) {
-			this.getManagementClient().modifyInlineXMLDatastream(container, "MD_CONTENTS", false,
-					"adding child resource to container", new ArrayList<String>(), "List of Contents", newXML);
+			this.getManagementClient().modifyDatastreamByReference(container, "MD_CONTENTS", false,
+					"adding child resource to container", new ArrayList<String>(), "List of Contents", "text/xml", null, ChecksumType.MD5, loc);
 		} else {
-			this.getManagementClient().addInlineXMLDatastream(container, "MD_CONTENTS", false,
-					"added child resource to container", new ArrayList<String>(), "List of Contents", false, newXML);
+			this.getManagementClient().addManagedDatastream(container, "MD_CONTENTS", false,
+					"added child resource to container", new ArrayList<String>(), "List of Contents", false, "text/xml", loc);
 		}
-
 		// LOG CHANGES TO THE CONTAINER
 		int children = placements.size();
 		this.eventLogger.logEvent(PremisEventLogger.Type.INGESTION, "added " + children + " child object(s) to this container",
@@ -360,13 +361,14 @@ public class BatchIngestTask implements Runnable {
 
 		// log ingest event to FOXML, creating DS if needed
 		this.eventLogger.logEvent(PremisEventLogger.Type.INGESTION, "ingested as PID:" + pid.getPid(), pid);
-		if (FOXMLJDOMUtil.getDatastream(doc, "MD_EVENTS") == null) {
-			Element events = this.eventLogger.getObjectEvents(pid);
-			Element eventsEl = FOXMLJDOMUtil.makeXMLManagedDatastreamElement("MD_EVENTS", "PREMIS Events Metadata",
-					"MD_EVENTS1.0", events, false);
-			doc.getRootElement().addContent(eventsEl);
+		Element eventsEl = FOXMLJDOMUtil.getDatastream(doc, "MD_EVENTS");
+		if (eventsEl == null) {
+			eventsEl = this.eventLogger.getObjectEvents(pid);
+			Element eventsDS = FOXMLJDOMUtil.makeXMLManagedDatastreamElement("MD_EVENTS", "PREMIS Events Metadata",
+					"MD_EVENTS1.0", eventsEl, false);
+			doc.getRootElement().addContent(eventsDS);
 		} else {
-			this.eventLogger.appendLogEvents(pid, doc);
+			this.eventLogger.appendLogEvents(pid, eventsEl);
 		}
 
 		// FEDORA INGEST CALL

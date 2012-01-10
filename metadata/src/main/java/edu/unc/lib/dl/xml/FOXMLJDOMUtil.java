@@ -232,7 +232,7 @@ public class FOXMLJDOMUtil {
 	}
 
 	public static Element makeXMLDatastreamElement(String id, String label, Element xmlData, boolean versioned) {
-		return makeXMLDatastreamElement(id, label, id + ".0", xmlData, versioned);
+		return makeXMLDatastreamElement(id, label, id + "1.0", xmlData, versioned);
 	}
 
 	public static Element makeXMLDatastreamElement(String id, String label, String versionId, Element xmlData,
@@ -301,7 +301,7 @@ public class FOXMLJDOMUtil {
 			Element xmlContent = null;
 			if (o == null) { // there's no datastream w/ID, so make one and
 				// add it!
-				Element dsContent = makeXMLManagedDatastreamElement(datastreamId, label, datastreamId+".0", newContent, versioned);
+				Element dsContent = makeXMLManagedDatastreamElement(datastreamId, label, datastreamId+"1.0", newContent, versioned);
 				foxml.getRootElement().addContent(dsContent);
 			} else if (o instanceof Element) {
 				xmlContent = (Element) o;

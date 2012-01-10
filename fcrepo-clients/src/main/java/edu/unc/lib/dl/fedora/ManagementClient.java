@@ -772,9 +772,10 @@ public class ManagementClient extends WebServiceTemplate {
 		} catch (IOException e) {
 			throw new Error(e);
 		}
-		dom = eventLogger.appendLogEvents(pid, dom);
-		String logTimestamp = this.modifyDatastreamByValue(pid, "MD_EVENTS", false, "adding PREMIS events",
-				new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, ClientUtils.serializeXML(dom));
+		eventLogger.appendLogEvents(pid, dom.getRootElement());
+		String eventsLoc = this.upload(dom);
+		String logTimestamp = this.modifyDatastreamByReference(pid, "MD_EVENTS", false,
+				"adding PREMIS events", new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, eventsLoc);
 		return logTimestamp;
 	}
 	// @Override

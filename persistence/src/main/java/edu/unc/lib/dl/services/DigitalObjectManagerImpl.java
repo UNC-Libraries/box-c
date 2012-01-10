@@ -239,7 +239,7 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 			Element event = logger.logEvent(PremisEventLogger.Type.DELETION, "Deleted " + deleted.size()
 					+ "contained object(s).", container);
 			logger.addDetailedOutcome(event, "success", "Message: " + message, null);
-			String logTimestamp = this.writePremisEventsToFedoraObject(logger, container);
+			String logTimestamp = this.managementClient.writePremisEventsToFedoraObject(logger, container);
 
 			// delete set of objects
 			for (PID obj : toDelete) {
@@ -416,8 +416,9 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 				oldXML = new SAXBuilder().build(bais);
 				bais.close();
 				newXML = ContainerContentsHelper.remove(oldXML, pid);
-				this.getManagementClient().modifyInlineXMLDatastream(parent, "MD_CONTENTS", false,
-						"removing child object from this container", new ArrayList<String>(), "List of Contents", newXML);
+				String loc = this.getManagementClient().upload(newXML);
+				this.getManagementClient().modifyDatastreamByReference(parent, "MD_CONTENTS", false,
+						"removing child object from this container", new ArrayList<String>(), "List of Contents", "text/xml", null, ChecksumType.MD5, loc);
 			}
 		} catch (JDOMException e) {
 			IllegalRepositoryStateException irs = new IllegalRepositoryStateException(
@@ -448,54 +449,6 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
 		this.tripleStoreQueryService = tripleStoreQueryService;
-	}
-
-	/**
-	 * Appends any logged PREMIS events to the MD_EVENTS datastream on the specified Fedora object.
-	 *
-	 * @param eventLogger
-	 *           the logger that captured the events
-	 * @param pid
-	 *           the pid for the object
-	 * @throws IngestException
-	 *            when append fails for any reason
-	 */
-	private String writePremisEventsToFedoraObject(PremisEventLogger eventLogger, PID pid) throws FedoraException {
-		Document dom = null;
-		// TODO optimize by using SAX to append events to end of stream..
-		DateTime knownGood = new DateTime();
-		Throwable thrown = null;
-		try {
-			MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(pid, "MD_EVENTS", null);
-			ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
-			try {
-				dom = new SAXBuilder().build(bais);
-				bais.close();
-			} catch (JDOMException e) {
-				throw new IllegalRepositoryStateException("Cannot parse MD_EVENTS: " + pid, e);
-			} catch (IOException e) {
-				throw new Error(e);
-			}
-			dom = eventLogger.appendLogEvents(pid, dom);
-			String eventsLoc = this.getManagementClient().upload(dom);
-			String logTimestamp = this.getManagementClient().modifyDatastreamByReference(pid, "MD_EVENTS", false,
-					"adding PREMIS events", new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, eventsLoc);
-			return logTimestamp;
-		} catch (FedoraException e) {
-			thrown = e;
-			throw e;
-		} catch (RuntimeException e) {
-			thrown = e;
-			throw e;
-		} finally {
-			if (thrown != null) {
-				StringBuffer sb = new StringBuffer();
-				sb.append("There was a problem writing events to a Fedora object\n").append("KNOWN GOOD TIME: ")
-						.append(knownGood).append("PID: ").append(pid.getPid()).append("EVENT XML:\n")
-						.append(new XMLOutputter().outputString(dom));
-				log.error(sb.toString(), thrown);
-			}
-		}
 	}
 
 	@Override
@@ -542,7 +495,7 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 			// update PREMIS log
 			logger.logEvent(PremisEventLogger.Type.INGESTION, message, pid, dsid);
-			this.writePremisEventsToFedoraObject(logger, pid);
+			this.managementClient.writePremisEventsToFedoraObject(logger, pid);
 		} catch (FedoraException e) {
 			throw new IngestException("Could not update the specified object.", e);
 		}
@@ -616,13 +569,14 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 
 		try {
+			String loc = this.getManagementClient().upload(modsContent);
 			if (modsExists) {
-				result = this.getManagementClient().modifyInlineXMLDatastream(pid, modsID, false, message,
-						new ArrayList<String>(), modsLabel, modsContent);
+				result = this.getManagementClient().modifyDatastreamByReference(pid, modsID, false, message,
+						new ArrayList<String>(), modsLabel, "text/xml", null, ChecksumType.MD5, loc);
 				logger.logEvent(Type.INGESTION, message, pid, modsID);
 			} else {
-				result = this.getManagementClient().addInlineXMLDatastream(pid, modsID, false, message,
-						new ArrayList<String>(), modsLabel, false, modsContent);
+				result = this.getManagementClient().addManagedDatastream(pid, modsID, false, message,
+						new ArrayList<String>(), modsLabel, true, "text/xml", loc);
 				logger.logEvent(Type.CREATION, message, pid, modsID);
 			}
 		} catch (FedoraException e) {
@@ -655,7 +609,7 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 		// update PREMIS log
 		try {
-			this.writePremisEventsToFedoraObject(logger, pid);
+			this.managementClient.writePremisEventsToFedoraObject(logger, pid);
 		} catch (FedoraException e) {
 			log.error("Cannot log PREMIS events for " + pid.getPid(), e);
 		}
@@ -768,20 +722,20 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 				exists = false;
 			}
 			newXML = ContainerContentsHelper.addChildContentListInCustomOrder(oldXML, destination, moving, reordered);
+			String loc = this.getManagementClient().upload(newXML);
 			if (exists) {
-				msgTimestamp = this.getManagementClient().modifyInlineXMLDatastream(destination, "MD_CONTENTS", false,
+				msgTimestamp = this.getManagementClient().modifyDatastreamByReference(destination, "MD_CONTENTS", false,
 						"adding " + moving.size() + " child resources to container", new ArrayList<String>(),
-						"List of Contents", newXML);
+						"List of Contents", "text/xml", null, ChecksumType.MD5, loc);
 			} else {
-				msgTimestamp = this.getManagementClient().addInlineXMLDatastream(destination, "MD_CONTENTS", false,
+				msgTimestamp = this.getManagementClient().addManagedDatastream(destination, "MD_CONTENTS", false,
 						"added " + moving.size() + " child resources to container", new ArrayList<String>(),
-						"List of Contents", true, newXML);
+						"List of Contents", false, "text/xml", loc);
 			}
 			destContentInventoryUpdated = true;
-
 			// write the log events
 			for (PID pid : moving) {
-				this.writePremisEventsToFedoraObject(logger, pid);
+				this.managementClient.writePremisEventsToFedoraObject(logger, pid);
 			}
 
 			// send message for the operation

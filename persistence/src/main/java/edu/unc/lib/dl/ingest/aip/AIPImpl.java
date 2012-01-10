@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
+import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
@@ -39,6 +40,7 @@ import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IngestProperties;
 import edu.unc.lib.dl.util.PremisEventLogger;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
 /**
  * This is the only implementation of the AIP contract at the moment. Note sure yet if there is a need for more
@@ -151,6 +153,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 	public void prepareIngest(String message, String submitter) throws IngestException {
 		// write ingest properties
 		try {
+			serializeLoggerEventsToFoxml();
 			IngestProperties props = new IngestProperties(this.prepDir);
 			List<String> recipients = new ArrayList<String>();
 			for(URI r : this.emailRecipients) {
@@ -164,7 +167,25 @@ public class AIPImpl implements ArchivalInformationPackage {
 		} catch (Exception e) {
 			throw new IngestException("Cannot create ingest properties.", e);
 		}
+	}
 
+	/**
+	 *
+	 */
+	private void serializeLoggerEventsToFoxml() {
+		for(PID pid : this.getPIDs()) {
+			Document doc = this.getFOXMLDocument(pid);
+			Element eventsEl = FOXMLJDOMUtil.getDatastream(doc, "MD_EVENTS");
+			if (eventsEl == null) {
+				eventsEl = this.eventLogger.getObjectEvents(pid);
+				Element eventsDS = FOXMLJDOMUtil.makeXMLManagedDatastreamElement("MD_EVENTS", "PREMIS Events Metadata",
+						"MD_EVENTS1.0", eventsEl, false);
+				doc.getRootElement().addContent(eventsDS);
+			} else {
+				this.eventLogger.appendLogEvents(pid, eventsEl);
+			}
+			this.saveFOXMLDocument(pid, doc);
+		}
 	}
 
 	public void saveFOXMLDocument(PID pid, Document doc) {

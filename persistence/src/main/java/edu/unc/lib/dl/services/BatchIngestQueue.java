@@ -73,7 +73,7 @@ public class BatchIngestQueue extends AbstractQueue<File> {
 			LOG.error(e);
 			return false;
 		}
-		File result = new File(this.queuedDirectory, props.getSubmitter() + "-" + System.currentTimeMillis());
+		File result = new File(this.queuedDirectory, System.currentTimeMillis() + "-" + props.getSubmitter());
 		if (result.exists()) {
 			LOG.error("queued directory name conflict: "+result.toString());
 			return false;
