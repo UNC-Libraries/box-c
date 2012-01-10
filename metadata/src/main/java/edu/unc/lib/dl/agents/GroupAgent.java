@@ -22,26 +22,26 @@ import java.util.Set;
 import edu.unc.lib.dl.fedora.PID;
 
 public class GroupAgent extends AbstractAgent {
-    private Set<PersonAgent> members = new HashSet<PersonAgent>();
+	private Set<PersonAgent> members = new HashSet<PersonAgent>();
 
-    GroupAgent(PID pid, String name) {
-	this.setName(name);
-	this.setPID(pid);
-    }
+	GroupAgent(PID pid, String name) {
+		this.setName(name);
+		this.setPID(pid);
+	}
 
-    public GroupAgent(String name) {
-	this.setName(name);
-    }
+	public GroupAgent(String name) {
+		this.setName(name);
+	}
 
-    void addMember(PersonAgent member) {
-	this.members.add(member);
-    }
+	void addMember(PersonAgent member) {
+		this.members.add(member);
+	}
 
-    public Set<PersonAgent> getMembers() {
-	return Collections.unmodifiableSet(this.members);
-    }
+	public Set<PersonAgent> getMembers() {
+		return Collections.unmodifiableSet(this.members);
+	}
 
-    void setMembers(Set<PersonAgent> members) {
-	this.members = members;
-    }
+	void setMembers(Set<PersonAgent> members) {
+		this.members = members;
+	}
 }

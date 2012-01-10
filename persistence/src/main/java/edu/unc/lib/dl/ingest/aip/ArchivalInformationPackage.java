@@ -24,62 +24,55 @@ import org.jdom.Document;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.AIPImpl.RepositoryPlacement;
+import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 public interface ArchivalInformationPackage {
-    public void destroy();
+	public static final String DATA_SUBDIR = "data";
 
-    // public String getContainerContentModel();
+	public void delete();
 
-    // public Integer getContainerOrder(PID pid);
+	public PremisEventLogger getEventLogger();
 
-    public PremisEventLogger getEventLogger();
+	public File getFileForUrl(String path);
 
-    public File getFileForUrl(String path);
+	public Document getFOXMLDocument(PID pid);
 
-    // public PID getContainerPID(PID pid);
+	public File getFOXMLFile(PID pid);
 
-    public Document getFOXMLDocument(PID pid);
+	public Set<PID> getPIDs();
 
-    public File getFOXMLFile(PID pid);
+	public File getTempFOXDir();
 
-    public Set<PID> getPIDs();
+	public Set<PID> getTopPIDs();
 
-    public File getTempFOXDir();
+	public void saveFOXMLDocument(PID pid, Document doc);
 
-//    public Integer getTopPIDContainerOrder(PID toppid);
-//
-//    public String getTopPIDContainerPath(PID pid);
+	public void setTopPIDs(Set<PID> topPIDs);
 
-    public Set<PID> getTopPIDs();
+	public void setSendEmail(boolean sendEmail);
 
-    public void prepareIngest() throws IngestException;
+	public boolean getSendEmail();
 
-    public void saveFOXMLDocument(PID pid, Document doc);
+	public void setEmailRecipients(List<URI> recipients);
 
-//    public void setTopPIDLocation(String containerPath, PID topPID, Integer order);
+	public List<URI> getEmailRecipients();
 
-    public void setTopPIDs(Set<PID> topPIDs);
+	/**
+	 * @param parentPath
+	 * @param topPID
+	 * @param designatedOrder
+	 * @param sipOrder
+	 */
+	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder);
 
-    public void setSendEmail(boolean sendEmail);
+	public ContainerPlacement getContainerPlacement(PID pid);
 
-    public boolean getSendEmail();
-
-    public void setEmailRecipients(List<URI> recipients);
-
-    public List<URI> getEmailRecipients();
-
-    /**
-     * @param parentPath
-     * @param topPID
-     * @param designatedOrder
-     * @param sipOrder
-     */
-    public void setTopPIDPlacement(String parentPath, PID topPID, Integer designatedOrder, Integer sipOrder);
-
-    public RepositoryPlacement getTopPIDPlacement(PID pid);
-
-    public void setDeleteFilesOnDestroy(boolean delete);
+	/**
+	 * @param message
+	 * @param submitter
+	 * @throws IngestException
+	 */
+	void prepareIngest(String message, String submitter) throws IngestException;
 
 }

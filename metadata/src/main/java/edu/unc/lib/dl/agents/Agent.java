@@ -22,18 +22,18 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public interface Agent extends Comparable<Agent> {
 
-    /**
-     * Gets the common (user displayable) name of this agent.
-     *
-     * @return a user-facing name for this agent.
-     */
-    public abstract String getName();
+	/**
+	 * Gets the common (user displayable) name of this agent.
+	 * 
+	 * @return a user-facing name for this agent.
+	 */
+	public abstract String getName();
 
-    /**
-     * Gets the Fedora PID of this agent.
-     *
-     * @return the persistent identifier for the Fedora object.
-     */
-    public abstract PID getPID();
+	/**
+	 * Gets the Fedora PID of this agent.
+	 * 
+	 * @return the persistent identifier for the Fedora object.
+	 */
+	public abstract PID getPID();
 
 }

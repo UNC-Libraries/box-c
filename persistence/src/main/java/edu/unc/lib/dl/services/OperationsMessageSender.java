@@ -16,19 +16,22 @@
 package edu.unc.lib.dl.services;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_MESSAGE_AUTHOR_URI;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
+import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_MESSAGE_AUTHOR_URI;
+
 import java.util.Collection;
 import java.util.UUID;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.Queue;
 import javax.jms.Session;
 
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
+import org.joda.time.DateTimeUtils;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.core.JmsTemplate;
@@ -38,7 +41,7 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * @author Gregory Jansen
- * 
+ *
  */
 public class OperationsMessageSender {
 
@@ -47,10 +50,10 @@ public class OperationsMessageSender {
 
 	private JmsTemplate jmsTemplate = null;
 
-	public void sendAddOperation(String userid, String timestamp, Collection<PID> destinations, Collection<PID> added,
+	public void sendAddOperation(String userid, Collection<PID> destinations, Collection<PID> added,
 			Collection<PID> reordered) {
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, timestamp, destinations.iterator().next(), "add");
+		Element contentEl = createAtomEntry(msg, userid, destinations.iterator().next(), "add");
 		Element add = new Element("add", CDR_MESSAGE_NS);
 		contentEl.addContent(add);
 
@@ -85,10 +88,10 @@ public class OperationsMessageSender {
 		LOG.debug("sent add operation JMS message using JMS template:" + this.getJmsTemplate().toString());
 	}
 
-	public void sendRemoveOperation(String userid, String timestamp, PID destination, Collection<PID> removed,
+	public void sendRemoveOperation(String userid, PID destination, Collection<PID> removed,
 			Collection<PID> reordered) {
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, timestamp, destination, "remove");
+		Element contentEl = createAtomEntry(msg, userid, destination, "remove");
 		Element remove = new Element("remove", CDR_MESSAGE_NS);
 		contentEl.addContent(remove);
 
@@ -120,10 +123,10 @@ public class OperationsMessageSender {
 		});
 	}
 
-	public void sendMoveOperation(String userid, String timestamp, Collection<PID> sources, PID destination,
+	public void sendMoveOperation(String userid, Collection<PID> sources, PID destination,
 			Collection<PID> moved, Collection<PID> reordered) {
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, timestamp, destination, "move");
+		Element contentEl = createAtomEntry(msg, userid, destination, "move");
 		Element move = new Element("move", CDR_MESSAGE_NS);
 		contentEl.addContent(move);
 
@@ -162,7 +165,7 @@ public class OperationsMessageSender {
 
 	public void sendReorderOperation(String userid, String timestamp, PID destination, Collection<PID> reordered) {
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, timestamp, destination, "reorder");
+		Element contentEl = createAtomEntry(msg, userid, destination, "reorder");
 		Element reorder = new Element("reorder", CDR_MESSAGE_NS);
 		contentEl.addContent(reorder);
 
@@ -194,10 +197,12 @@ public class OperationsMessageSender {
 	 * @param pid
 	 * @return
 	 */
-	private Element createAtomEntry(Document msg, String userid, String timestamp, PID contextpid, String operation) {
+	private Element createAtomEntry(Document msg, String userid, PID contextpid, String operation) {
 		Element entry = new Element("entry", ATOM_NS);
 		msg.addContent(entry);
 		entry.addContent(new Element("id", ATOM_NS).setText("urn:uuid:" + UUID.randomUUID().toString()));
+		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		String timestamp = fmt.print(DateTimeUtils.currentTimeMillis());
 		entry.addContent(new Element("updated", ATOM_NS).setText(timestamp));
 		entry.addContent(new Element("author", ATOM_NS).addContent(new Element("name", ATOM_NS).setText(userid))
 				.addContent(new Element("uri", ATOM_NS).setText(CDR_MESSAGE_AUTHOR_URI)));

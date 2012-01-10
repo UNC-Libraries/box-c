@@ -44,13 +44,13 @@ public class TechnicalMetadataEnhancementTest extends Assert {
 		reader.close();
 		return fileData.toString();
 	}
-	
-	//@Test
+
+	@Test
 	public void testFITSResponseParsing(){
 		try {
 			java.io.InputStream inStream = this.getClass().getResourceAsStream("fitsOutputMultipleLineBreaks.xml");
 			java.io.BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
-			
+
 			StringBuilder xml = new StringBuilder();
 			StringBuilder err = new StringBuilder();
 			boolean blankReached = false;
@@ -60,7 +60,7 @@ public class TechnicalMetadataEnhancementTest extends Assert {
 					blankReached = true;
 					continue;
 				} else {
-					
+
 					if (blankReached) {
 						err.append(line).append("\n");
 					} else {
@@ -69,7 +69,7 @@ public class TechnicalMetadataEnhancementTest extends Assert {
 					}
 				}
 			}
-			
+
 			String xmlstr = xml.toString();
 			System.out.println("test" + xmlstr);
 			Document result = new SAXBuilder().build(new StringReader(xmlstr));

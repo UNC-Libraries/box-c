@@ -24,40 +24,40 @@ import edu.unc.lib.dl.ingest.IngestException;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public class InvalidMETSException extends IngestException {
 
-    /**
+	/**
      *
      */
-    private static final long serialVersionUID = 7012398949440082066L;
-    private Document svrl;
+	private static final long serialVersionUID = 7012398949440082066L;
+	private Document svrl;
 
-    public Document getSvrl() {
-        return svrl;
-    }
+	public Document getSvrl() {
+		return svrl;
+	}
 
-    /**
-     * @param msg
-     */
-    public InvalidMETSException(String msg) {
-	super(msg);
-    }
+	/**
+	 * @param msg
+	 */
+	public InvalidMETSException(String msg) {
+		super(msg);
+	}
 
-    public InvalidMETSException(String msg, Throwable e) {
-	super(msg, e);
-    }
+	public InvalidMETSException(String msg, Throwable e) {
+		super(msg, e);
+	}
 
-    /**
-     * @param msg error message
-     * @param svrl Schematron validation report Document
-     */
-    public InvalidMETSException(String msg, Document svrl) {
-	super(msg);
-	this.svrl = svrl;
-    }
-
-
+	/**
+	 * @param msg
+	 *           error message
+	 * @param svrl
+	 *           Schematron validation report Document
+	 */
+	public InvalidMETSException(String msg, Document svrl) {
+		super(msg);
+		this.svrl = svrl;
+	}
 
 }

@@ -96,6 +96,11 @@
 			<version>1.5.2</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.fcrepo</groupId>
+			<artifactId>sunxacml</artifactId>
+			<version>1.2-PATCHED</version>
+		</dependency>
 	</dependencies>
 
 </project>

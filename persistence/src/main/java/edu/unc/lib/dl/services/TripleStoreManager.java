@@ -15,26 +15,23 @@
  */
 package edu.unc.lib.dl.services;
 
-
 public interface TripleStoreManager {
 
-    /**
-     * Calling this method will infer the <your site>#ri_inferred, which is the #ri
-     * plus statements implied by the Fedora external relationship ontology.  These
-     * are important (core) relationships and they are transactional in that they
-     * must be updated after each set of objects are added, updated or removed.
-     * 
-     * Note: Many operations rely on being able to query triples that
-     * are not explicit in the #ri graph.  These include the isPartOf relationship
-     * which is a superProperty of relationships used in #ri.  Therefore this
-     * super graph must be re-inferred after any set of RELS-EXT edits.
-     */
-    public abstract void updateEntailedModel();
-    
-    /**
-     * Initialize any triple store functions in addition to the Fedora resource index.
-     * Create additional models and load any necessary data.
-     */
-    public abstract void initialize();
+	/**
+	 * Calling this method will infer the <your site>#ri_inferred, which is the #ri plus statements implied by the Fedora
+	 * external relationship ontology. These are important (core) relationships and they are transactional in that they
+	 * must be updated after each set of objects are added, updated or removed.
+	 * 
+	 * Note: Many operations rely on being able to query triples that are not explicit in the #ri graph. These include
+	 * the isPartOf relationship which is a superProperty of relationships used in #ri. Therefore this super graph must
+	 * be re-inferred after any set of RELS-EXT edits.
+	 */
+	public abstract void updateEntailedModel();
+
+	/**
+	 * Initialize any triple store functions in addition to the Fedora resource index. Create additional models and load
+	 * any necessary data.
+	 */
+	public abstract void initialize();
 
 }

@@ -25,55 +25,56 @@ import edu.unc.lib.dl.ingest.IngestException;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public class FilesDoNotMatchManifestException extends IngestException {
 
-    /**
+	/**
      *
      */
-    private static final long serialVersionUID = -6115709006722472202L;
+	private static final long serialVersionUID = -6115709006722472202L;
 
-    /**
-     * @param msg
-     * @param e
-     */
-    public FilesDoNotMatchManifestException(String msg, Throwable e) {
-	super(msg, e);
-    }
+	/**
+	 * @param msg
+	 * @param e
+	 */
+	public FilesDoNotMatchManifestException(String msg, Throwable e) {
+		super(msg, e);
+	}
 
-    /**
-     * @param msg
-     */
-    public FilesDoNotMatchManifestException(String msg) {
-	super(msg);
-    }
+	/**
+	 * @param msg
+	 */
+	public FilesDoNotMatchManifestException(String msg) {
+		super(msg);
+	}
 
-    private List<String> missingFiles = new ArrayList<String>();
-    public List<String> getMissingFiles() {
-        return missingFiles;
-    }
+	private List<String> missingFiles = new ArrayList<String>();
 
-    public void setMissingFiles(List<String> missingFiles) {
-        this.missingFiles = missingFiles;
-    }
+	public List<String> getMissingFiles() {
+		return missingFiles;
+	}
 
-    public List<String> getExtraFiles() {
-        return extraFiles;
-    }
+	public void setMissingFiles(List<String> missingFiles) {
+		this.missingFiles = missingFiles;
+	}
 
-    public void setExtraFiles(List<String> extraFiles) {
-        this.extraFiles = extraFiles;
-    }
+	public List<String> getExtraFiles() {
+		return extraFiles;
+	}
 
-    public List<String> getBadChecksumFiles() {
-        return badChecksumFiles;
-    }
+	public void setExtraFiles(List<String> extraFiles) {
+		this.extraFiles = extraFiles;
+	}
 
-    public void setBadChecksumFiles(List<String> badChecksumFiles) {
-        this.badChecksumFiles = badChecksumFiles;
-    }
+	public List<String> getBadChecksumFiles() {
+		return badChecksumFiles;
+	}
 
-    private List<String> extraFiles = new ArrayList<String>();
-    private List<String> badChecksumFiles = new ArrayList<String>();
+	public void setBadChecksumFiles(List<String> badChecksumFiles) {
+		this.badChecksumFiles = badChecksumFiles;
+	}
+
+	private List<String> extraFiles = new ArrayList<String>();
+	private List<String> badChecksumFiles = new ArrayList<String>();
 }

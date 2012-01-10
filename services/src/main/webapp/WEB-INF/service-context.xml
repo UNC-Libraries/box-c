@@ -72,7 +72,7 @@
 
 	<bean id="tripleStoreQueryService"
 		class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl" destroy-method="destroy">
-		<property name="itqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/webservices/services/ItqlBeanService"/>
+		<property name="itqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService"/>
 		<property name="sparqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/sparql/"/>
 		<property name="serverModelUri" value="rmi://${mulgara.host}/server1#"/>
 	</bean>
@@ -97,7 +97,8 @@
 		<property name="maxThreads" value="${fedoraDataService.maxThreads}"/>
 	</bean>
 	
-	<bean id="accessControlUtils" class="edu.unc.lib.dl.fedora.AccessControlUtils" init-method="initReadPermissionOnly">
+	<bean id="accessControlUtils" class="edu.unc.lib.dl.fedora.AccessControlUtils" init-method="init">
+	  <property name="onlyCacheReadPermissions" value="true"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="cacheDepth" value="${access.cache.depth}"/>
 		<property name="cacheLimit" value="${access.cache.limit}"/>
@@ -432,4 +433,64 @@
 	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
 		<value>${access.group.admin}</value>
 	</util:set>
+	
+	<!-- Batch Ingest Service -->
+	<bean id="batchIngestQueue" class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">
+		  <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
+	</bean>
+	
+	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">
+		<property name="managementClient" ref="managementClient"/>
+		<property name="accessClient" ref="accessClient"/>
+		<property name="operationsMessageSender" ref="operationsMessageSender"/>
+		<property name="mailNotifier" ref="mailNotifier"/>
+		<property name="agentFactory" ref="agentFactory"/>
+		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
+		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
+	</bean>
+	
+	<bean id="batchIngestService" class="edu.unc.lib.dl.cdr.services.BatchIngestService" init-method="init">
+		<property name="batchIngestQueue" ref="batchIngestQueue"/>
+		<lookup-method name="createTask" bean="batchIngestTask"/>		
+	</bean>
+
+	<bean id="mailNotifier" class="edu.unc.lib.dl.services.MailNotifier">
+		<property name="mailSender" ref="javaMailSender"/>
+		<property name="irBaseUrl"
+			value="http://${repository.host}${repository.port}/${repository.context}"/>
+		<property name="freemarkerConfiguration" ref="freemarkerConfiguration"/>
+		<property name="administratorAddress" value="${administrator.email}"/>
+		<property name="repositoryFromAddress" value="${repository.from.email}"/>
+	</bean>
+
+	<bean id="freemarkerConfiguration" class="freemarker.template.Configuration">
+		<property name="templateLoader">
+			<bean class="freemarker.cache.ClassTemplateLoader">
+				<constructor-arg index="0" type="java.lang.Class"
+					value="edu.unc.lib.dl.services.MailNotifier"/>
+				<constructor-arg index="1" value=""/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="javaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${smtp.host}"/>
+		<property name="port" value="${smtp.port}"/>
+		<property name="defaultEncoding" value="UTF-8"/>
+	</bean>
+	
+	<bean name="agentFactory" class="edu.unc.lib.dl.agents.AgentFactory">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="defaultDestinationName" value="repository.updates" />
+		<property name="pubSubDomain" value="true" />
+	</bean>
+
+	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+		<property name="jmsTemplate" ref="jmsTemplate" />
+	</bean>
+	
 </beans>

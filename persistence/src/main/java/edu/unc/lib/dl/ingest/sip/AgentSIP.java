@@ -20,15 +20,15 @@ import java.util.List;
 import edu.unc.lib.dl.agents.Agent;
 
 public class AgentSIP implements SubmissionInformationPackage {
-    // private static String containerPath = "/admin/people";
-    private List<Agent> agents = null;
+	// private static String containerPath = "/admin/people";
+	private List<Agent> agents = null;
 
-    public List<Agent> getAgents() {
-	return agents;
-    }
+	public List<Agent> getAgents() {
+		return agents;
+	}
 
-    public void setAgents(List<Agent> agents) {
-	this.agents = agents;
-    }
+	public void setAgents(List<Agent> agents) {
+		this.agents = agents;
+	}
 
 }

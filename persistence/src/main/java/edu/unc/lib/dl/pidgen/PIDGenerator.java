@@ -22,13 +22,14 @@ import edu.unc.lib.dl.fedora.PID;
 
 public interface PIDGenerator {
 
-    /**
-     * Get the next unique PID.
-     *
-     * @throws IOException if pid generation failed, for any reason.
-     */
-    public PID getNextPID();
+	/**
+	 * Get the next unique PID.
+	 * 
+	 * @throws IOException
+	 *            if pid generation failed, for any reason.
+	 */
+	public PID getNextPID();
 
-    public List<PID> getNextPIDs(int howMany);
+	public List<PID> getNextPIDs(int howMany);
 
 }

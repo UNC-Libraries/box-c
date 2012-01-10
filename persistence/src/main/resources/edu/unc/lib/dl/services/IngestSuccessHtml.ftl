@@ -26,7 +26,7 @@
   </title>
 </head>
 <body>
-	<img style="float: right;" alt="UNC Libraries logo" src="${irBaseUrl}images/email_logo.png"/>
+	<img style="float: right;" alt="UNC Libraries logo" src="${irBaseUrl}static/images/email_logo.png"/>
   <h3>Carolina Digital Repository</h3>
   <#if 1 < numberOfObjects>
   <p>${numberOfObjects} items were successfully ingested into the repository in <#if 1 < tops?keys?size>these locations<#else>this location</#if>:</p>
@@ -35,7 +35,7 @@
   </#if>
   <ul>
   <#list tops?keys as key>
-    <li><a href="${irBaseUrl}ir/info${key}">${key}</a><br/>PID ${tops[key]}</li>
+    <li><a href="${irBaseUrl}record?id=${key}">${key}</a><br/>PID ${tops[key]}</li>
   </#list>
   </ul>
   <p>Thank you for contributing to the <a href="${irBaseUrl}">Carolina Digital Repository</a>, a service of the <a href="http://www.lib.unc.edu/">University of North Carolina at Chapel Hill Libraries</a>.</p>

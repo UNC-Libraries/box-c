@@ -23,38 +23,36 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class CheckContainerFilter implements AIPIngestFilter {
-    private TripleStoreQueryService tripleStoreQueryService = null;
+	private TripleStoreQueryService tripleStoreQueryService = null;
 
-    @Override
-    public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException {
-	StringBuffer unknownPaths = new StringBuffer();
-	for (PID topPID : aip.getTopPIDs()) {
-	    String path = aip.getTopPIDPlacement(topPID).parentPath;
-	    PID container = this.getTripleStoreQueryService().fetchByRepositoryPath(path);
-	    if (container == null) {
-		unknownPaths.append("\t").append(path);
-	    } else {
-		List<URI> containerModels = this.getTripleStoreQueryService().lookupContentModels(container);
-		if (containerModels == null
-				|| !containerModels.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
-		    throw new AIPException(
-				    "Object specified as the container for this SIP is not a Container:" + container);
+	@Override
+	public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException {
+		StringBuffer unknownPaths = new StringBuffer();
+		for (PID topPID : aip.getTopPIDs()) {
+			PID containerPID = aip.getContainerPlacement(topPID).parentPID;
+			PID verifiedContainer = this.getTripleStoreQueryService().verify(containerPID);
+			if (verifiedContainer == null) {
+				unknownPaths.append("\t").append(containerPID);
+			} else {
+				List<URI> containerModels = this.getTripleStoreQueryService().lookupContentModels(containerPID);
+				if (containerModels == null || !containerModels.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
+					throw new AIPException("Object specified as the container for this SIP is not a Container:" + containerPID);
+				}
+			}
 		}
-	    }
+		if (unknownPaths.length() > 0) {
+			throw new AIPException("Cannot find Container object specified: " + unknownPaths.toString());
+		}
+		// aip.setContainerPID(container);
+		return aip;
 	}
-	if (unknownPaths.length() > 0) {
-	    throw new AIPException("Cannot find Container object specified: " + unknownPaths.toString());
+
+	public TripleStoreQueryService getTripleStoreQueryService() {
+		return tripleStoreQueryService;
 	}
-	// aip.setContainerPID(container);
-	return aip;
-    }
 
-    public TripleStoreQueryService getTripleStoreQueryService() {
-	return tripleStoreQueryService;
-    }
-
-    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-	this.tripleStoreQueryService = tripleStoreQueryService;
-    }
+	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+		this.tripleStoreQueryService = tripleStoreQueryService;
+	}
 
 }

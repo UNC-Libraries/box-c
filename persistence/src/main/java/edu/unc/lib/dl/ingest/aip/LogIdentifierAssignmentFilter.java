@@ -22,26 +22,26 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 /**
- * This filter logs the earlier assignment of a unique identifier to each object being ingested. This
- * identifier scheme is a UUID that is compatible with both the Fedora PID and a URN.
+ * This filter logs the earlier assignment of a unique identifier to each object being ingested. This identifier scheme
+ * is a UUID that is compatible with both the Fedora PID and a URN.
  *
  * @author count0
  *
  */
 public class LogIdentifierAssignmentFilter implements AIPIngestFilter {
-    private static final Log log = LogFactory.getLog(LogIdentifierAssignmentFilter.class);
+	private static final Log log = LogFactory.getLog(LogIdentifierAssignmentFilter.class);
 
-    public LogIdentifierAssignmentFilter() {
-    }
-
-    public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException {
-	log.debug("Starting LogIdentifierAssignmentFilter");
-	for (PID pid : aip.getPIDs()) {
-	    aip.getEventLogger().logEvent(
-			    PremisEventLogger.Type.NORMALIZATION,
-			    "assigned persistently unique Fedora PID with UUID algorithm: " + pid.getPid(), pid);
+	public LogIdentifierAssignmentFilter() {
 	}
-	log.debug("Finished LogIdentifierAssignmentFilter");
-	return aip;
-    }
+
+	public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException {
+		log.debug("Starting LogIdentifierAssignmentFilter");
+		log.debug("TEST: "+ aip.getPIDs());
+		for (PID pid : aip.getPIDs()) {
+			aip.getEventLogger().logEvent(PremisEventLogger.Type.NORMALIZATION,
+					"assigned persistently unique Fedora PID with UUID algorithm: " + pid.getPid(), pid);
+		}
+		log.debug("Finished LogIdentifierAssignmentFilter");
+		return aip;
+	}
 }

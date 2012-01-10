@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.fedora;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +37,10 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
+import org.joda.time.DateTime;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.WebServiceFaultException;
@@ -66,6 +70,7 @@ import edu.unc.lib.dl.fedora.types.GetObjectXML;
 import edu.unc.lib.dl.fedora.types.GetObjectXMLResponse;
 import edu.unc.lib.dl.fedora.types.Ingest;
 import edu.unc.lib.dl.fedora.types.IngestResponse;
+import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.fedora.types.ModifyDatastreamByReference;
 import edu.unc.lib.dl.fedora.types.ModifyDatastreamByReferenceResponse;
 import edu.unc.lib.dl.fedora.types.ModifyDatastreamByValue;
@@ -81,14 +86,18 @@ import edu.unc.lib.dl.fedora.types.PurgeRelationshipResponse;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionable;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionableResponse;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
+import edu.unc.lib.dl.util.IllegalRepositoryStateException;
+import edu.unc.lib.dl.util.PremisEventLogger;
 
 public class ManagementClient extends WebServiceTemplate {
+	private AccessClient accessClient = null;
 	// ENUMS
 	private enum Action {
 		addDatastream("addDatastream"), getDatastream("getDatastream"), addRelationship("addRelationship"), export(
 				"export"), getNextPID("getNextPID"), ingest("ingest"), modifyDatastreamByValue("modifyDatastreamByValue"), modifyDatastreamByReference(
 				"modifyDatastreamByReference"), modifyObject("modifyObject"), purgeDatastream("purgeDatastream"), purgeObject(
-				"purgeObject"), purgeRelationship("purgeRelationship"), getObjectXML("getObjectXML"), setDatastreamVersionable("setDatastreamVersionable");
+				"purgeObject"), purgeRelationship("purgeRelationship"), getObjectXML("getObjectXML"), setDatastreamVersionable(
+				"setDatastreamVersionable");
 		String uri = null;
 
 		Action(String action) {
@@ -280,10 +289,14 @@ public class ManagementClient extends WebServiceTemplate {
 	 * put it another way: No new datastream versions will be made, but all the existing versions will be retained. All
 	 * changes to the datastream will be to the current version.
 	 *
-	 * @param pid The PID of the object.
-	 * @param dsid The datastream ID.
-	 * @param versionable Enable versioning of the datastream.
-	 * @param message A log message.
+	 * @param pid
+	 *           The PID of the object.
+	 * @param dsid
+	 *           The datastream ID.
+	 * @param versionable
+	 *           Enable versioning of the datastream.
+	 * @param message
+	 *           A log message.
 	 * @return timestamp of the current version
 	 * @throws FedoraException
 	 */
@@ -348,12 +361,16 @@ public class ManagementClient extends WebServiceTemplate {
 		try {
 			response = this.marshalSendAndReceive(request, action.callback());
 		} catch (WebServiceTransportException e) {
-			throw new ServiceException(e);
+			if(e.getMessage().contains("503")) {
+				throw new FedoraTimeoutException(e);
+			} else {
+				throw new ServiceException(e);
+			}
 		} catch (WebServiceIOException e) {
 			throw new ServiceException("Fedora ManagementClient bean is misconfigured.", e);
 		} catch (SoapFaultClientException e) {
-			FedoraFaultMessageResolver.resolveFault(e);
 			log.debug("GOT SoapFaultClientException", e);
+			FedoraFaultMessageResolver.resolveFault(e);
 		} catch (WebServiceFaultException e) {
 			throw new ServiceException("Failed to call service", e);
 		}
@@ -446,8 +463,7 @@ public class ManagementClient extends WebServiceTemplate {
 		CommonsHttpMessageSender messageSender = new CommonsHttpMessageSender();
 		UsernamePasswordCredentials creds = new UsernamePasswordCredentials(this.getUsername(), this.getPassword());
 		messageSender.setCredentials(creds);
-		// TODO: remove the infinite read timeout
-		messageSender.setReadTimeout(30 * 60 * 1000);
+		messageSender.setReadTimeout(30 * 1000);
 		messageSender.afterPropertiesSet();
 		this.setMessageSender(messageSender);
 
@@ -709,6 +725,59 @@ public class ManagementClient extends WebServiceTemplate {
 		return result;
 	}
 
+	/**
+	 * Poll Fedora until the PID is found or timeout. This method will blocking until at most the specified timeout plus
+	 * the timeout of the underlying HTTP connection.
+	 *
+	 * @param pid
+	 *           the PID to look for
+	 * @param delay
+	 *           the delay between Fedora requests in seconds
+	 * @param timeout
+	 *           the total polling time in seconds
+	 * @return true when the object is found within timeout, false on timeout
+	 */
+	public boolean pollForObject(PID pid, int delay, int timeout) {
+		long startTime = System.currentTimeMillis();
+		while (System.currentTimeMillis() - startTime < timeout * 1000) {
+			try {
+				Document doc = this.getObjectXML(pid);
+				if (doc != null)
+					return true;
+			} catch (ServiceException e) {
+				if (log.isDebugEnabled())
+					log.debug("Expected service exception while polling fedora", e);
+			} catch (FedoraException e) {
+				// fedora responded, but object not found
+				log.debug("got exception from fedora", e);
+			}
+			try {
+				log.info(pid+ " not found, waiting "+delay+" seconds..");
+				Thread.sleep(delay * 1000);
+			} catch (InterruptedException e) {
+			}
+		}
+		return false;
+	}
+
+	public String writePremisEventsToFedoraObject(PremisEventLogger eventLogger, PID pid) throws FedoraException {
+		Document dom = null;
+		MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(pid, "MD_EVENTS", null);
+		ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
+		try {
+			dom = new SAXBuilder().build(bais);
+			bais.close();
+		} catch (JDOMException e) {
+			throw new IllegalRepositoryStateException("Cannot parse MD_EVENTS: " + pid, e);
+		} catch (IOException e) {
+			throw new Error(e);
+		}
+		eventLogger.appendLogEvents(pid, dom.getRootElement());
+		String eventsLoc = this.upload(dom);
+		String logTimestamp = this.modifyDatastreamByReference(pid, "MD_EVENTS", false,
+				"adding PREMIS events", new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, eventsLoc);
+		return logTimestamp;
+	}
 	// @Override
 	// public Object sendAndReceive(String uriString, WebServiceMessageCallback requestCallback,
 	// WebServiceMessageExtractor responseExtractor) {
@@ -735,4 +804,18 @@ public class ManagementClient extends WebServiceTemplate {
 	// TransportContextHolder.setTransportContext(previousTransportContext);
 	// }
 	// }
+
+	/**
+	 * @param accessClient the accessClient to set
+	 */
+	public void setAccessClient(AccessClient accessClient) {
+		this.accessClient = accessClient;
+	}
+
+	/**
+	 * @return the accessClient
+	 */
+	public AccessClient getAccessClient() {
+		return accessClient;
+	}
 }

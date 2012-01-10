@@ -13,29 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services;
-
-import java.util.Collection;
+package edu.unc.lib.dl.agents;
 
 import edu.unc.lib.dl.fedora.PID;
 
-public interface SolrIndexService {
+/**
+ * Represents an agent that is actually a process or piece of software.
+ */
+public class SoftwareAgent extends AbstractAgent {
+	// no extra methods currently defined. None may be necessary.
 
-    /**
-     * Adds new objects to the search index, or updates objects already indexed.
-     * @param pids a collection of pids to index
-     */
-    public abstract boolean add(Collection<PID> ids);
+	// TODO add an optional release/build info file to Software Agents
 
-    /**
-     * Removes objects from the search index.
-     * @param pids a collection of PIDs to remove from search.
-     */
-    public abstract boolean remove(Collection<PID> ids);
+	public SoftwareAgent() {
+		super();
+	}
 
-    /**
-     * Removes everything from the index and re-adds everything found in Fedora.
-     */
-    public abstract boolean reindexEverything();
-
+	SoftwareAgent(PID pid, String name) {
+		setPID(pid);
+		setName(name);
+	}
 }

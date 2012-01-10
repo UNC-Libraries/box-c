@@ -33,7 +33,7 @@ import org.springframework.web.servlet.mvc.SimpleFormController;
 import org.springframework.web.servlet.support.RequestContext;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
+import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.CreateCollectionObject;
 import edu.unc.lib.dl.schema.UserGroupDAO;
@@ -51,7 +51,7 @@ public class CreateCollectionController extends SimpleFormController {
 
 	private UiWebService uiWebService;
 	private FolderManager folderManager;
-	private AgentManager agentManager;
+	private AgentFactory agentManager;
 	private UiUtilityMethods uiUtilityMethods;
 
 
@@ -203,11 +203,11 @@ public class CreateCollectionController extends SimpleFormController {
 		this.folderManager = folderManager;
 	}
 
-	public AgentManager getAgentManager() {
+	public AgentFactory getAgentManager() {
 		return agentManager;
 	}
 
-	public void setAgentManager(AgentManager agentManager) {
+	public void setAgentManager(AgentFactory agentManager) {
 		this.agentManager = agentManager;
 	}
 

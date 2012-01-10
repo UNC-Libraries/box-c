@@ -48,14 +48,18 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author count0
  */
 public class METSPackageFileValidator {
-	private static XPath _filesXpath;
+	private static XPath fileFinderXpath;
+	private static XPath allFilesXpath;
 	private static final Namespace _METSNamespace = Namespace.getNamespace("m", JDOMNamespaceUtil.METS_NS.getURI());
-	private static final String filesXpath = "/m:mets/m:fileSec/m:fileGrp/m:file[m:FLocat/@xlink:href = $locator]";
+	private static final String fileFinderXpathStr = "//m:file[m:FLocat/@xlink:href = $locator]";
+	private static final String allFilesXpathStr = "//m:file";
 	private static final Log log = LogFactory.getLog(METSPackageFileValidator.class);
 	static {
 		try {
-			_filesXpath = XPath.newInstance(filesXpath);
-			_filesXpath.addNamespace(_METSNamespace);
+			fileFinderXpath = XPath.newInstance(fileFinderXpathStr);
+			fileFinderXpath.addNamespace(_METSNamespace);
+			allFilesXpath = XPath.newInstance(allFilesXpathStr);
+			allFilesXpath.addNamespace(_METSNamespace);
 		} catch (JDOMException e) {
 			throw new java.lang.ExceptionInInitializerError(e);
 		}
@@ -71,7 +75,7 @@ public class METSPackageFileValidator {
 	 * @param aip
 	 * @throws IngestException
 	 */
-	public void validateFiles(Document mets, METSPackageSIP metsPack, ArchivalInformationPackage aip)
+	public void validateFiles(Document mets, METSPackageSIP metsPack)
 			throws IngestException {
 		StringBuffer errors = new StringBuffer();
 		int fileCount = 0;
@@ -80,88 +84,68 @@ public class METSPackageFileValidator {
 		List<String> badChecksumFiles = new ArrayList<String>();
 
 		// find missing or corrupt files listed in manifest
-		for (PID pid : aip.getPIDs()) {
-			Document foxml = aip.getFOXMLDocument(pid);
-			for (Element contentLocation : FOXMLJDOMUtil.getFileLocators(foxml)) {
-				String url = contentLocation.getAttributeValue("REF");
-				// log.debug("PROCESSING FILE LOCATION: " + url);
-				// FIXME: this should whitelist "file:" or no scheme instead
+		try {
+			for(Element fileEl : (List<Element>)allFilesXpath.selectNodes(mets)) {
+				String href = fileEl.getChild("FLocat", JDOMNamespaceUtil.METS_NS).getAttributeValue("href", JDOMNamespaceUtil.XLINK_NS);
 				try {
-					URI uri = new URI(url);
+					URI uri = new URI(href);
 					if (uri.getScheme() != null && !uri.getScheme().contains("file")) {
 						continue;
 					}
-				} catch(URISyntaxException e) {
-					errors.append("Cannot parse file location: "+e.getLocalizedMessage()+" ("+url+")");
-					missingFiles.add(url);
+				} catch (URISyntaxException e) {
+					errors.append("Cannot parse file location: " + e.getLocalizedMessage() + " (" + href + ")");
+					missingFiles.add(href);
 					continue;
 				}
+
 				fileCount++;
 				File file = null;
 				// locate the file and check that it exists
 				try {
 					log.debug("Looking in SIP");
-					file = metsPack.getFileForLocator(url);
+					file = metsPack.getFileForLocator(href);
 					file.equals(file);
 					manifestFiles.add(file);
 					log.debug("FILE IS IN METSPackage: " + file.getPath());
 					if (file == null || !file.exists()) {
-						missingFiles.add(url);
+						missingFiles.add(href);
 						continue;
 					}
 				} catch (IOException e) {
 					log.debug(e);
-					missingFiles.add(url);
+					missingFiles.add(href);
 					errors.append(e.getMessage());
 				}
 
-				// if the file was transported and has a checksum, check it
-				// find matching METS:file element and get relevant attributes
-				_filesXpath.setVariable("locator", url);
-				Element metsFileEl = null;
-				try {
-					Object o = _filesXpath.selectSingleNode(mets);
-					if (o != null && o instanceof Element) {
-						metsFileEl = (Element) o;
-					} else {
-						throw new IngestException("Unexpected null METS file element for locator " + url);
-					}
-				} catch (JDOMException e) {
-					throw new IngestException("Unexpected exception ", e);
-				}
-				// String checksumtype =
-				// metsFileEl.getAttributeValue("CHECKSUMTYPE");
-				String checksum = metsFileEl.getAttributeValue("CHECKSUM");
+				String checksum = fileEl.getAttributeValue("CHECKSUM");
 				if (checksum != null) {
 					log.debug("found a checksum in METS");
-					// TODO: assert same checksum in Fedora on ingest
-					// transaction
 					Checksum checker = new Checksum();
 					try {
 						String sum = checker.getChecksum(file);
 						if (!sum.equals(checksum.toLowerCase())) {
-							log.debug("Checksum failed for file: " + url + " (METS says " + checksum + ", but we got " + sum
+							log.debug("Checksum failed for file: " + href + " (METS says " + checksum + ", but we got " + sum
 									+ ")");
-							badChecksumFiles.add(url);
+							badChecksumFiles.add(href);
 						}
-						String msg = "METS manifest checksum was verified for file: " + url;
-						aip.getEventLogger().logEvent(PremisEventLogger.Type.VALIDATION, msg, pid);
+						String msg = "METS manifest checksum was verified for file: " + href;
 					} catch (IOException e) {
-						throw new IngestException("Checksum failed to find file: " + url);
+						throw new IngestException("Checksum failed to find file: " + href);
 					}
 				}
 			}
+		} catch (JDOMException e1) {
+			throw new Error("Unexpected JDOM Exception", e1);
 		}
 
 		// TODO: account for local (not inline xmlData) MODS files
-		// see if there are extra files in the SIP (submitted files not in
-		// manifest)
+		// see if there are extra files in the SIP
 		List<String> extraFiles = new ArrayList<String>();
 
-		if (metsPack.getTempSIPDir() != null) {
+		if (metsPack.getSIPDataDir() != null) {
 			int zipPathLength = 0;
 			try {
-				zipPathLength = metsPack.getTempSIPDir().getCanonicalPath().length();
+				zipPathLength = metsPack.getSIPDataDir().getCanonicalPath().length();
 
 				for (File received : metsPack.getDataFiles()) {
 					if (!manifestFiles.contains(received)) {
