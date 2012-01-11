@@ -28,154 +28,160 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+//import java.util.zip.ZipEntry;
+//import java.util.zip.ZipInputStream;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class ZipFileUtil {
-    private static final Log log = LogFactory.getLog(ZipFileUtil.class);
-    private static Pattern filePathPattern = null;
+	private static final Log log = LogFactory.getLog(ZipFileUtil.class);
+	private static Pattern filePathPattern = null;
 
-    static {
-	filePathPattern = Pattern.compile("^(file:)?([/\\\\]{0,3})?(.+)$");
-    }
-
-    /**
-     * Create a temporary directory, unzip the contents of the given zip file to
-     * it, and return the directory.
-     *
-     * If anything goes wrong during this process, clean up the temporary
-     * directory and throw an exception.
-     */
-    public static File unzipToTemp(File zipFile) throws IOException {
-	// get a temporary directory to work with
-	File tempDir = File.createTempFile("ingest", null);
-	tempDir.delete();
-	tempDir.mkdir();
-	tempDir.deleteOnExit();
-	log.info("Unzipping to temporary directory: " + tempDir.getPath());
-	try {
-	    unzip(new FileInputStream(zipFile), tempDir);
-	    return tempDir;
-	} catch (IOException e) {
-	    // attempt cleanup, then re-throw
-	    deleteDir(tempDir);
-	    throw e;
+	static {
+		filePathPattern = Pattern.compile("^(file:)?([/\\\\]{0,3})?(.+)$");
 	}
-    }
 
-    /**
-     * Create a temporary directory, unzip the contents of the given zip file to
-     * it, and return the directory.
-     *
-     * If anything goes wrong during this process, clean up the temporary
-     * directory and throw an exception.
-     */
-    public static File unzipToTemp(InputStream zipStream) throws IOException {
-	// get a temporary directory to work with
-	File tempDir = File.createTempFile("ingest", null);
-	tempDir.delete();
-	tempDir.mkdir();
-	tempDir.deleteOnExit();
-	log.info("Unzipping to temporary directory: " + tempDir.getPath());
-	try {
-	    unzip(zipStream, tempDir);
-	    return tempDir;
-	} catch (IOException e) {
-	    // attempt cleanup, then re-throw
-	    deleteDir(tempDir);
-	    throw e;
-	}
-    }
-
-
-    /**
-     * Unzip to the given directory, creating subdirectories as needed, and
-     * ignoring empty directories.
-     */
-    public static void unzip(InputStream is, File destDir) throws IOException {
-	BufferedOutputStream dest = null;
-	ZipInputStream zis = new ZipInputStream(new BufferedInputStream(is));
-	ZipEntry entry;
-	while ((entry = zis.getNextEntry()) != null) {
-	    if (!entry.isDirectory()) {
-		log.info("Extracting: " + entry);
-		File f = new File(destDir, entry.getName());
-		f.getParentFile().mkdirs();
-		int count;
-		byte data[] = new byte[8192];
-		// write the files to the disk
-		FileOutputStream fos = new FileOutputStream(f);
-		dest = new BufferedOutputStream(fos, 8192);
-		while ((count = zis.read(data, 0, 8192)) != -1) {
-		    dest.write(data, 0, count);
+	/**
+	 * Create a temporary directory, unzip the contents of the given zip file to it, and return the directory.
+	 * 
+	 * If anything goes wrong during this process, clean up the temporary directory and throw an exception.
+	 */
+	public static File unzipToTemp(File zipFile) throws IOException {
+		// get a temporary directory to work with
+		File tempDir = File.createTempFile("ingest", null);
+		tempDir.delete();
+		tempDir.mkdir();
+		tempDir.deleteOnExit();
+		log.info("Unzipping to temporary directory: " + tempDir.getPath());
+		try {
+			unzip(new FileInputStream(zipFile), tempDir);
+			return tempDir;
+		} catch (IOException e) {
+			// attempt cleanup, then re-throw
+			deleteDir(tempDir);
+			throw e;
 		}
-		dest.flush();
-		dest.close();
-	    }
 	}
-	zis.close();
-    }
 
-    /**
-     * Delete the given directory and all contents, recursively.
-     */
-    public static void deleteDir(File dir) {
-	File[] files = dir.listFiles();
-	for (int i = 0; i < files.length; i++) {
-	    if (files[i].isDirectory()) {
-		deleteDir(files[i]);
-	    } else {
-		if (!files[i].delete()) {
-		    log.warn("Unable to delete file: " + files[i].getPath());
+	/**
+	 * Create a temporary directory, unzip the contents of the given zip file to it, and return the directory.
+	 * 
+	 * If anything goes wrong during this process, clean up the temporary directory and throw an exception.
+	 */
+	public static File unzipToTemp(InputStream zipStream) throws IOException {
+		// org.apache.commons.compress.archivers.zip.
+
+		// get a temporary directory to work with
+		File tempDir = File.createTempFile("ingest", null);
+		tempDir.delete();
+		tempDir.mkdir();
+		tempDir.deleteOnExit();
+		log.info("Unzipping to temporary directory: " + tempDir.getPath());
+		try {
+			unzip(zipStream, tempDir);
+			return tempDir;
+		} catch (IOException e) {
+			// attempt cleanup, then re-throw
+			deleteDir(tempDir);
+			throw e;
 		}
-	    }
 	}
-	if (!dir.delete()) {
-	    log.warn("Unable to delete directory: " + dir.getPath());
+
+	/**
+	 * Unzip to the given directory, creating subdirectories as needed, and ignoring empty directories.
+	 * Uses apache zip tools until java utilies are updated to support utf-8.
+	 */
+	public static void unzip(InputStream is, File destDir) throws IOException {
+
+		BufferedOutputStream dest = null;
+		ZipArchiveInputStream zis = new ZipArchiveInputStream(new BufferedInputStream(is));
+
+		ArchiveEntry entry = null;
+		while ((entry = zis.getNextZipEntry()) != null) {
+			if (!entry.isDirectory()) {
+				File f = new File(destDir, entry.getName());
+				f.getParentFile().mkdirs();
+				int count;
+				byte data[] = new byte[8192];
+				// write the files to the disk
+				FileOutputStream fos = new FileOutputStream(f);
+				dest = new BufferedOutputStream(fos, 8192);
+				while ((count = zis.read(data, 0, 8192)) != -1) {
+					dest.write(data, 0, count);
+				}
+				dest.flush();
+				dest.close();
+			}
+		}
+		zis.close();
 	}
-    }
 
-    public static List<File> getFilesInDir(File dir) {
-	List<File> result = new ArrayList<File>();
-	File[] contents = dir.listFiles();
-	for (int i = 0; i < contents.length; i++) {
-	    if (contents[i].isDirectory()) {
-		result.addAll(getFilesInDir(contents[i]));
-	    } else {
-		result.add(contents[i]);
-	    }
+	/**
+	 * Delete the given directory and all contents, recursively.
+	 */
+	public static void deleteDir(File dir) {
+		File[] files = dir.listFiles();
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].isDirectory()) {
+				deleteDir(files[i]);
+			} else {
+				if (!files[i].delete()) {
+					log.warn("Unable to delete file: " + files[i].getPath());
+				}
+			}
+		}
+		if (!dir.delete()) {
+			log.warn("Unable to delete directory: " + dir.getPath());
+		}
 	}
-	return result;
-    }
 
-    /**
-     * Safely returns a File object for a "file:" URL.  The base and root directories are
-     * both considered to be the zipDir.  URLs that point outside of that directory
-     * will throw an IOException.
-     * @param url the URL
-     * @param zipDir the directory within which to resolve the "file:" URL.
-     * @return a File object
-     * @throws IOException when URL improperly formatted or points outside of the ZIP dir.
-     */
-    public static File getFileForUrl(String url, File zipDir) throws IOException {
-	File result = null;
-
-	// remove any file: prefix and beginning slashes or backslashes
-	Matcher m = filePathPattern.matcher(url);
-
-	if(m.find()) {
-	    String path = m.group(3); // grab the path group
-	    path = path.replaceAll("\\\\", File.pathSeparator);
-	    result = new File(zipDir, path);
-	    if (result.getCanonicalPath().startsWith(zipDir.getCanonicalPath())) {
+	public static List<File> getFilesInDir(File dir) {
+		List<File> result = new ArrayList<File>();
+		File[] contents = dir.listFiles();
+		for (int i = 0; i < contents.length; i++) {
+			if (contents[i].isDirectory()) {
+				result.addAll(getFilesInDir(contents[i]));
+			} else {
+				result.add(contents[i]);
+			}
+		}
 		return result;
-	    } else {
-		throw new IOException("Bad locator for a file in SIP:" + url);
-	    }
-	} else {
-	    throw new IOException("Bad locator for a file in SIP:" + url);
 	}
-    }
+
+	/**
+	 * Safely returns a File object for a "file:" URL. The base and root directories are both considered to be the
+	 * zipDir. URLs that point outside of that directory will throw an IOException.
+	 * 
+	 * @param url
+	 *           the URL
+	 * @param zipDir
+	 *           the directory within which to resolve the "file:" URL.
+	 * @return a File object
+	 * @throws IOException
+	 *            when URL improperly formatted or points outside of the ZIP dir.
+	 */
+	public static File getFileForUrl(String url, File zipDir) throws IOException {
+		File result = null;
+
+		// remove any file: prefix and beginning slashes or backslashes
+		Matcher m = filePathPattern.matcher(url);
+
+		if (m.find()) {
+			String path = m.group(3); // grab the path group
+			path = path.replaceAll("\\\\", File.pathSeparator);
+			result = new File(zipDir, path);
+			if (result.getCanonicalPath().startsWith(zipDir.getCanonicalPath())) {
+				return result;
+			} else {
+				throw new IOException("Bad locator for a file in SIP:" + url);
+			}
+		} else {
+			throw new IOException("Bad locator for a file in SIP:" + url);
+		}
+	}
 
 }
