@@ -191,6 +191,8 @@
 	</bean>
 	
 	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.services.sword.managers.CollectionDepositManagerImpl">
+		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+		<property name="agentManager" ref="agentManager"/>
 	</bean>
 	
 	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.services.sword.managers.ServiceDocumentManagerImpl" 

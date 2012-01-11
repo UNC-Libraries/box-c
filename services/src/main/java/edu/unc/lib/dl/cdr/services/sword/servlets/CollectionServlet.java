@@ -46,6 +46,7 @@ public class CollectionServlet extends BaseSwordServlet {
 	public void init() throws ServletException {
 		// load the API
 		this.api = new CollectionAPI(this.collectionListManager, this.collectionDepositManager, this.config);
+		//this.api = new CollectionAPIMultipart(this.collectionListManager, this.collectionDepositManager, this.config);
 	}
 
 	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
@@ -56,7 +57,7 @@ public class CollectionServlet extends BaseSwordServlet {
 
 	@RequestMapping(value = "/{pid}", method = RequestMethod.POST)
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		LOG.debug("POST request to submit to collection");
+		LOG.debug("POST request to submit to collection: " + req.getHeader("Content-Type"));
 		this.api.post(req, resp);
 	}
 
