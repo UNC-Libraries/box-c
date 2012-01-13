@@ -122,9 +122,8 @@
 		<property name="available" value="true" />
 	</bean>
 
-	<bean name="agentManager" class="edu.unc.lib.dl.agents.AgentManager">
+	<bean name="agentFactory" class="edu.unc.lib.dl.agents.AgentFactory">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-		<property name="digitalObjectManager" ref="digitalObjectManager" />
 	</bean>
 
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"

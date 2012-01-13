@@ -21,7 +21,7 @@ ${numberOfObjects} items were successfully ingested into the repository in <#if 
 Your item was successfully ingested into the repository in this location:
 </#if>
 <#list tops?keys as key>
- * ${irBaseUrl}ir/info${key} - PID ${tops[key]}
+ * ${irBaseUrl}record?id=${key} - PID ${tops[key]}
 </#list>
 
 Thank you for contributing to the Carolina Digital Repository, a service of the University of North Carolina at Chapel Hill Libraries.

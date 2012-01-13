@@ -20,5 +20,6 @@ import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 public interface SIPProcessor {
-    public ArchivalInformationPackage createAIP(SubmissionInformationPackage sip, PremisEventLogger logger) throws IngestException;
+	public ArchivalInformationPackage createAIP(SubmissionInformationPackage sip)
+			throws IngestException;
 }

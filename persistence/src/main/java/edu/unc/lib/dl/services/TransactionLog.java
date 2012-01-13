@@ -24,31 +24,42 @@ import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 /**
- * This is a log interface for CDR transactions.  Each transaction consists of an API call
- * to the CDR Digital Object Manager.
+ * This is a log interface for CDR transactions. Each transaction consists of an API call to the CDR Digital Object
+ * Manager.
+ * 
  * @author Gregory Jansen
- *
+ * 
  */
 public interface TransactionLog {
-    /**
-     * Adds a successful transaction to the log.
-     * @param methodName name of the method called
-     * @param logger the logger of the transaction
-     */
-    public void log(String methodName, PremisEventLogger logger);
-    /**
-     * Adds a failed transaction to the log.
-     * @param exception the exception
-     */
-    public void log(String methodName, IngestException exception);
-    /**
-     * Retrieves transaction logs from the cache.
-     * @param maximum number of transactions to retrieve
-     * @return a JDOM Document of the last <code>number</code> transactions
-     */
-    public Document getRecent(int max);
-    /**
-     * Cleans up and persists the cache, closes all resources.
-     */
-    public void close();
+	/**
+	 * Adds a successful transaction to the log.
+	 * 
+	 * @param methodName
+	 *           name of the method called
+	 * @param logger
+	 *           the logger of the transaction
+	 */
+	public void log(String methodName, PremisEventLogger logger);
+
+	/**
+	 * Adds a failed transaction to the log.
+	 * 
+	 * @param exception
+	 *           the exception
+	 */
+	public void log(String methodName, IngestException exception);
+
+	/**
+	 * Retrieves transaction logs from the cache.
+	 * 
+	 * @param maximum
+	 *           number of transactions to retrieve
+	 * @return a JDOM Document of the last <code>number</code> transactions
+	 */
+	public Document getRecent(int max);
+
+	/**
+	 * Cleans up and persists the cache, closes all resources.
+	 */
+	public void close();
 }

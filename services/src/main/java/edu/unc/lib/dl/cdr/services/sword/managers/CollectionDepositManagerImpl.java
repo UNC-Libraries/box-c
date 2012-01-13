@@ -17,19 +17,13 @@ package edu.unc.lib.dl.cdr.services.sword.managers;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.abdera.i18n.iri.IRI;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.CollectionDepositManager;
-import org.swordapp.server.CollectionListManager;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordAuthException;
@@ -38,12 +32,9 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
-import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
-import edu.unc.lib.dl.ingest.sip.PreIngestEventLogger;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 
 /**
@@ -55,15 +46,24 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	private static Logger LOG = Logger.getLogger(CollectionDepositManagerImpl.class);
 
 	private DigitalObjectManager digitalObjectManager;
-	private AgentManager agentManager;
+	private AgentFactory agentFactory;
 
 	@Override
 	public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
 			SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
 
 		try {
+			Agent agent = agentFactory.findPersonByOnyen("bbpennel", true);
+
+			PID containerPID = null;
+			if (collectionURI == null || collectionURI.trim().length() == 0){
+				containerPID = collectionsPidObject;
+			} else {
+				containerPID = new PID(collectionURI);
+			}
+			
 			if (deposit.isBinaryOnly()){
-				return this.doBinaryDeposit(collectionURI, deposit, auth, config);
+				return this.doBinaryDeposit(containerPID, deposit, auth, config, agent);
 			} else if (deposit.isMultipart()){
 				
 			} else if (deposit.isEntryOnly()){
@@ -77,23 +77,19 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		return null;
 	}
 	
-	private DepositReceipt doBinaryDeposit(String collectionURI, Deposit deposit, AuthCredentials auth,
-			SwordConfiguration config) throws Exception {
+	private DepositReceipt doBinaryDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
+			SwordConfiguration config, Agent agent) throws Exception {
 		
 		LOG.debug("Preparing to perform a binary deposit");
 		
 		String name = deposit.getFilename();
 		boolean isZip = name.endsWith(".zip");
 		
-		Agent agent = agentManager.findPersonByOnyen("bbpennel", true);
-
-		PID pid = new PID(collectionURI);
-		String containerPath = this.tripleStoreQueryService.lookupRepositoryPath(pid);
-		
-		METSPackageSIP sip = new METSPackageSIP("/Collections/", deposit.getInputStream(), agent, isZip);
+		this.depositInputStreamToFile(deposit);
+		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), agent, isZip);
 		// PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
 
-		digitalObjectManager.add(sip, agent, "Added through SWORD", false);
+		digitalObjectManager.addBatch(sip, agent, "Added through SWORD");
 
 		DepositReceipt receipt = new DepositReceipt();
 		IRI editMediaIRI = new IRI("https://localhost/cdr-services/sword/collection/");
@@ -106,20 +102,20 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		return receipt;
 	}
 	
-	private void outputStreamToFile(Deposit deposit) throws Exception {
-		File metsFile = File.createTempFile("input-", ".zip");
-		OutputStream os = new BufferedOutputStream(new FileOutputStream(metsFile));
+	private void depositInputStreamToFile(Deposit deposit) throws Exception {
+		File depositFile = File.createTempFile("input-", ".zip");
+		OutputStream os = new BufferedOutputStream(new FileOutputStream(depositFile));
 		try {
 			byte[] buf = new byte[4096];
 			int len;
 			while ((len = deposit.getInputStream().read(buf)) != -1) {
 				os.write(buf, 0, len);
 			}
+			deposit.setFile(depositFile);
 		} finally {
 			deposit.getInputStream().close();
 			os.flush();
 			os.close();
-			deposit.setInputStream(new FileInputStream(metsFile));
 		}
 	}
 
@@ -131,11 +127,11 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		this.digitalObjectManager = digitalObjectManager;
 	}
 
-	public AgentManager getAgentManager() {
-		return agentManager;
+	public AgentFactory getAgentFactory() {
+		return agentFactory;
 	}
 
-	public void setAgentManager(AgentManager agentManager) {
-		this.agentManager = agentManager;
+	public void setAgentFactory(AgentFactory agentFactory) {
+		this.agentFactory = agentFactory;
 	}
 }

@@ -25,52 +25,52 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * PIDGenerator that uses a remote Fedora instance to generate PIDs.
- *
+ * 
  * http://localhost:8080/fedora/management/getNextPID?numPIDs=10&namespace=nara&xml=true
  */
 public class RemotePIDGenerator implements PIDGenerator {
-    private ManagementClient managementClient;
+	private ManagementClient managementClient;
 
-    private static final Logger logger = Logger.getLogger(RemotePIDGenerator.class.getName());
+	private static final Logger logger = Logger.getLogger(RemotePIDGenerator.class.getName());
 
-    private String namespace;
+	private String namespace;
 
-    public RemotePIDGenerator() {
-    }
-
-    public PID getNextPID() {
-	return getNextPIDs(1).get(0);
-    }
-
-    public List<PID> getNextPIDs(int howMany) {
-	if(logger.isDebugEnabled()) {
-        if (namespace != null) {
-            logger.debug("Using namespace '" + namespace + "'");
-        } else {
-            logger.debug("No namespace provided; will use default of server");
-        }
+	public RemotePIDGenerator() {
 	}
-	try {
-	    return managementClient.getNextPID(howMany, namespace);
-	} catch(FedoraException e) {
-	    throw new Error("Cannot retrieve PID from Fedora service", e);
+
+	public PID getNextPID() {
+		return getNextPIDs(1).get(0);
 	}
-    }
 
-    public ManagementClient getManagementClient() {
-	return managementClient;
-    }
+	public List<PID> getNextPIDs(int howMany) {
+		if (logger.isDebugEnabled()) {
+			if (namespace != null) {
+				logger.debug("Using namespace '" + namespace + "'");
+			} else {
+				logger.debug("No namespace provided; will use default of server");
+			}
+		}
+		try {
+			return managementClient.getNextPID(howMany, namespace);
+		} catch (FedoraException e) {
+			throw new Error("Cannot retrieve PID from Fedora service", e);
+		}
+	}
 
-    public void setManagementClient(ManagementClient managementClient) {
-	this.managementClient = managementClient;
-    }
+	public ManagementClient getManagementClient() {
+		return managementClient;
+	}
 
-    public String getNamespace() {
-	return namespace;
-    }
+	public void setManagementClient(ManagementClient managementClient) {
+		this.managementClient = managementClient;
+	}
 
-    public void setNamespace(String namespace) {
-	this.namespace = namespace;
-    }
+	public String getNamespace() {
+		return namespace;
+	}
+
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
 
 }

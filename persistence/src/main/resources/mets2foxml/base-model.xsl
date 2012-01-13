@@ -249,7 +249,7 @@
             </xsl:with-param>
             <xsl:with-param name="datastreams">
                 <!-- Create xml data stream for child order -->
-                <xsl:call-template name="make-inline-xml-datastream">
+                <xsl:call-template name="make-managed-xml-datastream">
                     <xsl:with-param name="id">MD_CONTENTS</xsl:with-param>
                     <xsl:with-param name="label">List of Contents</xsl:with-param>
                     <xsl:with-param name="xmldata">
@@ -413,7 +413,7 @@
 
                 <!-- Create xml data stream for child order -->
                 <xsl:if test="count($div/m:div) &gt; 0">
-                    <xsl:call-template name="make-inline-xml-datastream">
+                    <xsl:call-template name="make-managed-xml-datastream">
                         <xsl:with-param name="id">MD_CONTENTS</xsl:with-param>
                         <xsl:with-param name="label">List of Contents</xsl:with-param>
                         <xsl:with-param name="xmldata">

@@ -18,65 +18,66 @@ package edu.unc.lib.dl.ingest.sip;
 import java.io.File;
 
 import edu.unc.lib.dl.agents.Agent;
+import edu.unc.lib.dl.fedora.PID;
 
 public class SingleFolderSIP implements SubmissionInformationPackage {
-    private String containerPath = null;
-    private final String label = null;
-    private File modsXML = null;
-    private Agent owner = null;
-    private String slug = null;
-    private boolean allowIndexing = true;
-    private boolean isCollection = false;
+	private PID containerPID = null;
+	private final String label = null;
+	private File modsXML = null;
+	private Agent owner = null;
+	private String slug = null;
+	private boolean allowIndexing = true;
+	private boolean isCollection = false;
 
-    public boolean isAllowIndexing() {
-        return allowIndexing;
-    }
+	public boolean isAllowIndexing() {
+		return allowIndexing;
+	}
 
-    public void setAllowIndexing(boolean allowIndexing) {
-        this.allowIndexing = allowIndexing;
-    }
+	public void setAllowIndexing(boolean allowIndexing) {
+		this.allowIndexing = allowIndexing;
+	}
 
-    public String getContainerPath() {
-	return containerPath;
-    }
+	public PID getContainerPID() {
+		return containerPID;
+	}
 
-    public String getLabel() {
-	return label;
-    }
+	public String getLabel() {
+		return label;
+	}
 
-    public File getModsXML() {
-	return modsXML;
-    }
+	public File getModsXML() {
+		return modsXML;
+	}
 
-    public Agent getOwner() {
-	return this.owner;
-    }
+	public Agent getOwner() {
+		return this.owner;
+	}
 
-    public String getSlug() {
-	return slug;
-    }
+	public String getSlug() {
+		return slug;
+	}
 
-    public void setContainerPath(String containerPath) {
-	this.containerPath = containerPath;
-    }
+	public void setContainerPID(PID containerPID) {
+		this.containerPID = containerPID;
+	}
 
-    public void setModsXML(File modsXML) {
-	this.modsXML = modsXML;
-    }
+	public void setModsXML(File modsXML) {
+		this.modsXML = modsXML;
+	}
 
-    public void setOwner(Agent owner) {
-	this.owner = owner;
-    }
+	public void setOwner(Agent owner) {
+		this.owner = owner;
+	}
 
-    public void setSlug(String slug) {
-	this.slug = slug;
-    }
+	public void setSlug(String slug) {
+		this.slug = slug;
+	}
 
-    public boolean isCollection() {
-        return isCollection;
-    }
+	public boolean isCollection() {
+		return isCollection;
+	}
 
-    public void setCollection(boolean isCollection) {
-        this.isCollection = isCollection;
-    }
+	public void setCollection(boolean isCollection) {
+		this.isCollection = isCollection;
+	}
 }

@@ -20,12 +20,12 @@ import org.junit.Test;
 
 public class ContextLoadTest extends AbstractSpringContextAwareTest {
 
-    @Before
-    public void setUp() throws Exception {
-    }
+	@Before
+	public void setUp() throws Exception {
+	}
 
-    @Test
-    public void testLookupByCollectionID() {
-	// success if you get here, b/c context was loaded correctly.
-    }
+	@Test
+	public void testLookupByCollectionID() {
+		// success if you get here, b/c context was loaded correctly.
+	}
 }

@@ -21,7 +21,7 @@ import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
+import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.DeleteObjectsRequest;
 import edu.unc.lib.dl.schema.DeleteObjectsResponse;
@@ -31,7 +31,7 @@ import edu.unc.lib.dl.util.Constants;
 @Endpoint
 public class DeleteObjectsEndpoint extends WebServiceGatewaySupport {
 	private final Logger logger = Logger.getLogger(getClass());
-	private AgentManager agentManager;
+	private AgentFactory agentManager;
 	private DigitalObjectManager digitalObjectManager;
 
 	@PayloadRoot(localPart = Constants.DELETE_OBJECTS_REQUEST, namespace = Constants.NAMESPACE)	
@@ -58,17 +58,17 @@ public class DeleteObjectsEndpoint extends WebServiceGatewaySupport {
 		this.digitalObjectManager = digitalObjectManager;
 	}
 
-	public AgentManager getAgentManager() {
+	public AgentFactory getAgentManager() {
 		return agentManager;
 	}
 
-	public void setAgentManager(AgentManager agentManager) {
+	public void setAgentManager(AgentFactory agentManager) {
 		this.agentManager = agentManager;
 	}
 	
     class DeleteObjectsThread extends Thread {
     	private final Logger logger = Logger.getLogger(getClass());
-    	private AgentManager agentManager;
+    	private AgentFactory agentManager;
     	private DigitalObjectManager digitalObjectManager;
     	private DeleteObjectsRequest deleteObjectsRequest;
     	
@@ -97,11 +97,11 @@ public class DeleteObjectsEndpoint extends WebServiceGatewaySupport {
     		this.digitalObjectManager = digitalObjectManager;
     	}
 
-    	public AgentManager getAgentManager() {
+    	public AgentFactory getAgentManager() {
     		return agentManager;
     	}
 
-    	public void setAgentManager(AgentManager agentManager) {
+    	public void setAgentManager(AgentFactory agentManager) {
     		this.agentManager = agentManager;
     	}
 		public void setDeleteObjectsRequest(DeleteObjectsRequest deleteObjectsRequest) {

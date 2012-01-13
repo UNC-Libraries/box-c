@@ -28,374 +28,290 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
+import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.services.AgentManager;
+import edu.unc.lib.dl.util.ContainerPlacement;
+import edu.unc.lib.dl.util.FileUtils;
+import edu.unc.lib.dl.util.IngestProperties;
 import edu.unc.lib.dl.util.PremisEventLogger;
-import edu.unc.lib.dl.util.ZipFileUtil;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
 /**
- * This is the only implementation of the AIP contract at the moment. Note sure
- * yet if there is a need for more implementations of this one. This
- * implementation stores foxml files in a local temporary folder and uses an
- * in-memory PREMIS logger.
+ * This is the only implementation of the AIP contract at the moment. Note sure yet if there is a need for more
+ * implementations of this one. This implementation stores foxml files in a local temporary folder and uses an in-memory
+ * PREMIS logger.
  *
  * @author count0
  *
  */
 public class AIPImpl implements ArchivalInformationPackage {
-    private static final Log log = LogFactory.getLog(AIPImpl.class);
-    private PremisEventLogger eventLogger = null;
-    private String expectedParentContentModel = null;
-    private HashMap<PID, File> pid2FOXMLFile = new HashMap<PID, File>();
-    private File tempDataFile = null;
-    private Set<File> dataFiles = null;
-    private File tempFOXDir = null;
-    private Set<PID> topPID = null;
-    // private final Map<PID, Integer> topPID2Order = new HashMap<PID,
-    // Integer>();
-    // private final Map<PID, String> topPID2Path = new HashMap<PID, String>();
-    private final Map<PID, RepositoryPlacement> topPID2Placement = new HashMap<PID, RepositoryPlacement>();
-    private boolean deleteFilesOnDestroy = true;
-    private boolean sendEmail = false;
-    private List<URI> emailRecipients = new ArrayList<URI>();
+	private static final Log log = LogFactory.getLog(AIPImpl.class);
+	private File prepDir = null;
 
-    public boolean isDeleteFilesOnDestroy() {
-	return deleteFilesOnDestroy;
-    }
-
-    public void setDeleteFilesOnDestroy(boolean deleteFilesOnDestroy) {
-	this.deleteFilesOnDestroy = deleteFilesOnDestroy;
-    }
-
-    /**
-     * Creates an AIP
-     *
-     * @param tempFOXDir
-     *            the temporary directory in which FOXML will reside. (used for
-     *            delete)
-     */
-    /**
-     * @param tempDataFile
-     *            directory containing data file(s) or a single data file
-     * @param logger
-     */
-    public AIPImpl(File tempDataFile, PremisEventLogger logger) {
-	// MAKE A TEMP DIR
-	try {
-	    // get a temporary directory to work with
-	    tempFOXDir = File.createTempFile("foxml", ".tmp");
-	    tempFOXDir.delete();
-	    tempFOXDir.mkdir();
-	    tempFOXDir.deleteOnExit();
-	} catch (IOException e) {
-	    throw new Error(e);
-	}
-	this.tempDataFile = tempDataFile;
-	this.eventLogger = logger;
-    }
-
-    /**
-     * Creates an AIP with a set of data files
-     *
-     * @param tempFOXDir
-     *            the temporary directory in which FOXML will reside. (used for
-     *            delete)
-     */
-    /**
-     * @param tempDataFile
-     *            directory containing data file(s) or a single data file
-     * @param logger
-     */
-    public AIPImpl(Set<File> dataFiles, PremisEventLogger logger) {
-	// MAKE A TEMP DIR
-	try {
-	    // get a temporary directory to work with
-	    tempFOXDir = File.createTempFile("foxml", ".tmp");
-	    tempFOXDir.delete();
-	    tempFOXDir.mkdir();
-	    tempFOXDir.deleteOnExit();
-	} catch (IOException e) {
-	    throw new Error(e);
-	}
-	this.dataFiles = dataFiles;
-	this.eventLogger = logger;
-    }
-
-    public AIPImpl(PremisEventLogger logger) {
-	this.eventLogger = logger;
-	try {
-	    tempFOXDir = File.createTempFile("foxml", null);
-	    tempFOXDir.delete();
-	    tempFOXDir.mkdir();
-	} catch (IOException e) {
-	    throw new Error("Could not create a temporary directory for FOXML.", e);
-	}
-    }
-
-    /**
-     * Destroy this AIP and all relevant resources.
-     */
-    public void destroy() {
-	log.debug("destroy called");
-	// cleanup *any* remaining files
-	if (pid2FOXMLFile != null) {
-	    pid2FOXMLFile.clear();
-	    pid2FOXMLFile = null;
-	}
-	if (tempFOXDir != null && tempFOXDir.exists() && this.deleteFilesOnDestroy) {
-	    ZipFileUtil.deleteDir(tempFOXDir);
-	}
-	if (tempDataFile != null && tempDataFile.exists() && this.deleteFilesOnDestroy) {
-	    if (tempDataFile.isDirectory()) {
-		ZipFileUtil.deleteDir(tempDataFile);
-	    } else {
-		tempDataFile.delete();
-	    }
-	}
-	if (this.dataFiles != null) {
-	    if (this.deleteFilesOnDestroy) {
-		for (File f : this.dataFiles) {
-		    f.delete();
-		}
-	    }
-	    this.dataFiles.clear();
-	    this.dataFiles = null;
-	}
-    }
-
-    public String getContainerContentModel() {
-	return this.expectedParentContentModel;
-    }
-
-    public PremisEventLogger getEventLogger() {
-	return this.eventLogger;
-    }
-
-    public File getFileForUrl(String url) {
-	// TODO: create StagingLocationsResolver for staged locations (or rely
-	// on Fedora/iRODS)
-	if (this.dataFiles != null) { // we have a file map
-	    File f = new File(url); // this url should be a path
-	    if (!this.dataFiles.contains(f)) {
-		log.error("bad file reference for this AIP:" + url);
-		return null;
-	    } else {
-		return f;
-	    }
-	} else if (this.tempDataFile != null) { // directory of data files
-	    if (this.tempDataFile.isDirectory()) {
-		try {
-		    return ZipFileUtil.getFileForUrl(url, this.tempDataFile);
-		} catch (IOException e) {
-		    log.error(e);
-		    return null;
-		}
-	    } else { // just one data file w/o temp dir
-		return this.tempDataFile;
-	    }
-	} else {
-	    log.error("bad file reference for this AIP:" + url);
-	    return null;
-	}
-    }
-
-    public Document getFOXMLDocument(PID pid) {
-	Document result = null;
-	SAXBuilder builder = new SAXBuilder();
-	try {
-	    result = builder.build(this.getFOXMLFile(pid));
-	} catch (JDOMException e) {
-	    throw new Error("The FOXML file in the ingest context is not well-formed XML.", e);
-	} catch (IOException e) {
-	    throw new Error("The FOXML file in the ingest context is not readable.", e);
-	}
-	return result;
-    }
-
-    public File getFOXMLFile(PID pid) {
-	return this.pid2FOXMLFile.get(pid);
-    }
-
-    public Set<PID> getPIDs() {
-	return this.pid2FOXMLFile.keySet();
-    }
-
-    public File getTempFOXDir() {
-	return tempFOXDir;
-    }
-
-    // @Override
-    // public Integer getTopPIDContainerOrder(PID pid) {
-    // return this.topPID2Order.get(pid);
-    // }
-
-    // @Override
-    // public String getTopPIDContainerPath(PID topPID) {
-    // return this.topPID2Path.get(topPID);
-    // }
-
-    public Set<PID> getTopPIDs() {
-	return topPID;
-    }
-
-    @Override
-    public void prepareIngest() throws IngestException {
-	// nothing to do
-    }
-
-    public void saveFOXMLDocument(PID pid, Document doc) {
-	XMLOutputter outputter = new XMLOutputter();
-	FileWriter fw = null;
-	try {
-	    File out = this.getFOXMLFile(pid);
-	    if (out == null) {
-		out = File.createTempFile("foxml", ".xml", this.tempFOXDir);
-		this.setFOXMLFile(pid, out);
-	    }
-	    fw = new FileWriter(out);
-	    outputter.output(doc, fw);
-	} catch (IOException e) {
-	    throw new Error("Failed to rewrite FOXML file.", e);
-	} finally {
-	    if (fw != null) {
-		try {
-		    fw.close();
-		} catch (IOException e) {
-		    throw new Error("Failed to close FOXML file writer.", e);
-		}
-	    }
-	}
-    }
-
-    public void setContainerContentModel(String model) {
-	this.expectedParentContentModel = model;
-    }
-
-    /**
-     * Set the event logger used for this AIP (logger may be used elsewhere
-     * also)
-     *
-     * @param eventLogger
-     *            the PREMIS event logger
-     */
-    // public void setEventLogger(PremisEventLogger eventLogger) {
-    // this.eventLogger = eventLogger;
-    // }
-    /**
-     * Set the foxml for a given object by PID.
-     *
-     * @param pid
-     *            the PID of the object this foxml represents
-     * @param file
-     *            a foxml file
-     */
-    public void setFOXMLFile(PID pid, File file) {
-	this.pid2FOXMLFile.put(pid, file);
-    }
-
-    // @Override
-    // public void setTopPIDLocation(String path, PID topPID, Integer order) {
-    // this.topPID2Path.put(topPID, path);
-    // if (order != null) {
-    // this.topPID2Order.put(topPID, order);
-    // }
-    // }
-
-    @Override
-    public void setTopPIDPlacement(String parentPath, PID topPID, Integer designatedOrder, Integer sipOrder) {
-	RepositoryPlacement p = new RepositoryPlacement();
-	p.parentPath = parentPath;
-	p.pid = topPID;
-	p.designatedOrder = designatedOrder;
-	p.sipOrder = sipOrder;
-	this.topPID2Placement.put(topPID, p);
-    }
-
-    /**
-     * Set the PID of the top object within the AIP
-     *
-     * @param topPID
-     *            the top PID
-     */
-    public void setTopPIDs(Set<PID> topPID) {
-	this.topPID = topPID;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getEmailRecipients()
-     */
-    @Override
-    public List<URI> getEmailRecipients() {
-	return this.emailRecipients;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getSendEmail()
-     */
-    @Override
-    public boolean getSendEmail() {
-	return this.sendEmail;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#setEmailRecipients
-     * (java.util.List)
-     */
-    @Override
-    public void setEmailRecipients(List<URI> recipients) {
-	this.emailRecipients = recipients;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#setSendEmail(boolean
-     * )
-     */
-    @Override
-    public void setSendEmail(boolean sendEmail) {
-	this.sendEmail = sendEmail;
-    }
-
-    public static class RepositoryPlacement {
-	public String parentPath;
-	public PID pid;
+	private PremisEventLogger eventLogger = new PremisEventLogger(AgentManager.getRepositorySoftwareAgentStub());
+	private HashMap<PID, File> pid2FOXMLFile = new HashMap<PID, File>();
+	private Set<PID> topPID = null;
+	private final Map<PID, ContainerPlacement> topPID2Placement = new HashMap<PID, ContainerPlacement>();
+	private boolean sendEmail = false;
+	private List<URI> emailRecipients = new ArrayList<URI>();
 
 	/**
-	 * An explicit position number for this object within the parent's other
-	 * children, designated by the submitter. May be NULL.
+	 * Makes an AIP with a pre-populated prep dir.
+	 * @param prepDir
+	 *           directory containing FOXML files and the data directory
 	 */
-	public Integer designatedOrder = null;
+	public AIPImpl(File prepDir) {
+		this.prepDir = prepDir;
+	}
 
 	/**
-	 * The position of this object within its other incoming siblings.
+	 * Makes an AIP with a empty prep dir
 	 */
-	public Integer sipOrder = null;
-    }
+	public AIPImpl() {
+		try {
+			this.prepDir = FileUtils.createTempDirectory("ingest-prep");
+		} catch (IOException e) {
+			throw new Error("Unexpected", e);
+		}
+	}
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getTopPIDPlacement
-     * (edu.unc.lib.dl.fedora.PID)
-     */
-    @Override
-    public RepositoryPlacement getTopPIDPlacement(PID pid) {
-	return this.topPID2Placement.get(pid);
-    }
+	/**
+	 * Destroy this AIP and all relevant resources.
+	 */
+	public void delete() {
+		log.debug("delete called");
+		// cleanup *any* remaining files
+		if (pid2FOXMLFile != null) {
+			pid2FOXMLFile.clear();
+			pid2FOXMLFile = null;
+		}
+		if (prepDir != null && prepDir.exists()) {
+			FileUtils.deleteDir(prepDir);
+		}
+	}
+
+	public PremisEventLogger getEventLogger() {
+		return this.eventLogger;
+	}
+
+	public File getFileForUrl(String url) {
+		File dataDir = new File(this.prepDir, "data");
+		try {
+			return FileUtils.getFileForUrl(url, dataDir);
+		} catch (IOException e) {
+			log.error(e);
+			return null;
+		}
+	}
+
+	public Document getFOXMLDocument(PID pid) {
+		Document result = null;
+		SAXBuilder builder = new SAXBuilder();
+		try {
+			result = builder.build(this.getFOXMLFile(pid));
+		} catch (JDOMException e) {
+			throw new Error("The FOXML file in the ingest context is not well-formed XML.", e);
+		} catch (IOException e) {
+			throw new Error("The FOXML file in the ingest context is not readable.", e);
+		}
+		return result;
+	}
+
+	public File getFOXMLFile(PID pid) {
+		return this.pid2FOXMLFile.get(pid);
+	}
+
+	public Set<PID> getPIDs() {
+		return this.pid2FOXMLFile.keySet();
+	}
+
+	public File getTempFOXDir() {
+		return prepDir;
+	}
+
+	// @Override
+	// public Integer getTopPIDContainerOrder(PID pid) {
+	// return this.topPID2Order.get(pid);
+	// }
+
+	// @Override
+	// public String getTopPIDContainerPath(PID topPID) {
+	// return this.topPID2Path.get(topPID);
+	// }
+
+	public Set<PID> getTopPIDs() {
+		return topPID;
+	}
+
+	@Override
+	public void prepareIngest(String message, String submitter) throws IngestException {
+		// write ingest properties
+		try {
+			serializeLoggerEventsToFoxml();
+			IngestProperties props = new IngestProperties(this.prepDir);
+			List<String> recipients = new ArrayList<String>();
+			for(URI r : this.emailRecipients) {
+				recipients.add(r.toString());
+			}
+			props.setEmailRecipients(recipients.toArray(new String[1]));
+			props.setContainerPlacements(topPID2Placement);
+			props.setMessage(message);
+			props.setSubmitter(submitter);
+			props.save();
+		} catch (Exception e) {
+			throw new IngestException("Cannot create ingest properties.", e);
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void serializeLoggerEventsToFoxml() {
+		for(PID pid : this.getPIDs()) {
+			Document doc = this.getFOXMLDocument(pid);
+			Element eventsEl = FOXMLJDOMUtil.getDatastream(doc, "MD_EVENTS");
+			if (eventsEl == null) {
+				eventsEl = this.eventLogger.getObjectEvents(pid);
+				Element eventsDS = FOXMLJDOMUtil.makeXMLManagedDatastreamElement("MD_EVENTS", "PREMIS Events Metadata",
+						"MD_EVENTS1.0", eventsEl, false);
+				doc.getRootElement().addContent(eventsDS);
+			} else {
+				this.eventLogger.appendLogEvents(pid, eventsEl);
+			}
+			this.saveFOXMLDocument(pid, doc);
+		}
+	}
+
+	public void saveFOXMLDocument(PID pid, Document doc) {
+		XMLOutputter outputter = new XMLOutputter();
+		FileWriter fw = null;
+		try {
+			File out = this.getFOXMLFile(pid);
+			if (out == null) {
+				out = File.createTempFile("foxml", ".foxml", this.prepDir);
+				out.delete();
+				out = new File(this.prepDir, out.getName());
+				this.setFOXMLFile(pid, out);
+			}
+			fw = new FileWriter(out);
+			outputter.output(doc, fw);
+		} catch (IOException e) {
+			throw new Error("Failed to rewrite FOXML file.", e);
+		} finally {
+			if (fw != null) {
+				try {
+					fw.close();
+				} catch (IOException e) {
+					throw new Error("Failed to close FOXML file writer.", e);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Set the event logger used for this AIP (logger may be used elsewhere also)
+	 *
+	 * @param eventLogger
+	 *           the PREMIS event logger
+	 */
+	// public void setEventLogger(PremisEventLogger eventLogger) {
+	// this.eventLogger = eventLogger;
+	// }
+	/**
+	 * Set the foxml for a given object by PID.
+	 *
+	 * @param pid
+	 *           the PID of the object this foxml represents
+	 * @param file
+	 *           a foxml file
+	 */
+	public void setFOXMLFile(PID pid, File file) {
+		this.pid2FOXMLFile.put(pid, file);
+	}
+
+	// @Override
+	// public void setTopPIDLocation(String path, PID topPID, Integer order) {
+	// this.topPID2Path.put(topPID, path);
+	// if (order != null) {
+	// this.topPID2Order.put(topPID, order);
+	// }
+	// }
+
+	@Override
+	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder) {
+		ContainerPlacement p = new ContainerPlacement();
+		p.parentPID = parentPID;
+		p.pid = topPID;
+		p.designatedOrder = designatedOrder;
+		p.sipOrder = sipOrder;
+		this.topPID2Placement.put(topPID, p);
+	}
+
+	/**
+	 * Set the PID of the top object within the AIP
+	 *
+	 * @param topPID
+	 *           the top PID
+	 */
+	@Override
+	public void setTopPIDs(Set<PID> topPID) {
+		this.topPID = topPID;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getEmailRecipients()
+	 */
+	@Override
+	public List<URI> getEmailRecipients() {
+		return this.emailRecipients;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getSendEmail()
+	 */
+	@Override
+	public boolean getSendEmail() {
+		return this.sendEmail;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#setEmailRecipients (java.util.List)
+	 */
+	@Override
+	public void setEmailRecipients(List<URI> recipients) {
+		this.emailRecipients = recipients;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#setSendEmail(boolean )
+	 */
+	@Override
+	public void setSendEmail(boolean sendEmail) {
+		this.sendEmail = sendEmail;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getTopPIDPlacement (edu.unc.lib.dl.fedora.PID)
+	 */
+	@Override
+	public ContainerPlacement getContainerPlacement(PID pid) {
+		return this.topPID2Placement.get(pid);
+	}
 
 }

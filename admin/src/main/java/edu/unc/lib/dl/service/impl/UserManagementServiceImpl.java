@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package edu.unc.lib.dl.service.impl;
 
@@ -27,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
 import edu.unc.lib.dl.agents.GroupAgent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -35,11 +34,12 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.schema.UserGroupDAO;
 import edu.unc.lib.dl.service.UserManagementService;
+import edu.unc.lib.dl.services.AgentManager;
 import edu.unc.lib.dl.util.Constants;
 
 /**
- * 
- * 
+ *
+ *
  */
 public class UserManagementServiceImpl implements UserManagementService {
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -48,7 +48,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.service.UserManagementService#addUserToGroup(edu.unc.lib
 	 * .dl.schema.UserGroupDAO)
@@ -78,7 +78,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 			request.setMessage(Constants.SUCCESS);
 		} catch (IngestException e) {
 			logger.debug("addMembership failed: ", e);
-			request.setMessage(Constants.FAILURE);			
+			request.setMessage(Constants.FAILURE);
 		} catch (NotFoundException e) {
 			logger.debug("AddUserToGroup error: ", e);
 			request.setMessage(Constants.FAILURE);
@@ -89,7 +89,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.service.UserManagementService#createGroup(edu.unc.lib.
 	 * dl.schema.UserGroupDAO)
@@ -106,8 +106,6 @@ public class UserManagementServiceImpl implements UserManagementService {
 			agentManager.addGroupAgent(groupAgent, agent, "Created through UI");
 
 			request.setMessage(Constants.SUCCESS);
-		} catch (NotFoundException e) {
-			request.setMessage(Constants.FAILURE);
 		} catch (IngestException e) {
 			request.setMessage(Constants.EXISTS);
 		}
@@ -117,7 +115,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.service.UserManagementService#createUser(edu.unc.lib.dl
 	 * .schema.UserGroupDAO)
@@ -138,8 +136,6 @@ public class UserManagementServiceImpl implements UserManagementService {
 			agentManager.addPersonAgent(person, agent, "Created through UI");
 
 			request.setMessage(Constants.SUCCESS);
-		} catch (NotFoundException e) {
-			request.setMessage(Constants.FAILURE);
 		} catch (IngestException e) {
 			request.setMessage(Constants.EXISTS);
 		}
@@ -149,7 +145,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.service.UserManagementService#deleteGroup(edu.unc.lib.
 	 * dl.schema.UserGroupDAO)
@@ -179,7 +175,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.service.UserManagementService#deleteUser(edu.unc.lib.dl
 	 * .schema.UserGroupDAO)
@@ -209,7 +205,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.service.UserManagementService#getGroups(java.lang.String)
 	 */
@@ -237,7 +233,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.service.UserManagementService#getUsers(java.lang.String)
 	 */
@@ -265,20 +261,20 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 			logger.debug(request.getGroupPid());
 
-			List<PersonAgent> users0 = (List<PersonAgent>) agentManager
+			List<PersonAgent> users0 = agentManager
 					.getAllPersonAgents(false);
 
 			PID pid = new PID(request.getGroupPid());
 
-			List<PersonAgent> users1 = (List<PersonAgent>) agentManager
+			List<PersonAgent> users1 = agentManager
 					.findGroupMembers(pid, false);
 
 			for (int i = 0; i < users1.size(); i++) {
 				logger.debug("group members: "
-						+ ((PersonAgent) users1.get(i)).getName());
+						+ (users1.get(i)).getName());
 			}
-			
-			users = (List<PersonAgent>) ListUtils.subtract(users0, users1);
+
+			users = ListUtils.subtract(users0, users1);
 
 			for (int i = 0; i < users.size(); i++) {
 				logger.debug("non group members: " + users.get(i).getName());
@@ -301,7 +297,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.service.UserManagementService#removeUserFromGroup(edu.
 	 * unc.lib.dl.schema.UserGroupDAO)

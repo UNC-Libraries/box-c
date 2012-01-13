@@ -15,10 +15,9 @@
  */
 package edu.unc.lib.dl.ingest;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import static edu.unc.lib.dl.util.FileUtils.tempCopy;
+
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
@@ -31,22 +30,29 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
-import edu.unc.lib.dl.agents.GroupAgent;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
 import edu.unc.lib.dl.ingest.sip.InvalidMETSException;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
+import edu.unc.lib.dl.services.AgentManager;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class METSPackageSIPProcessorTest extends Assert {
+
+@SuppressWarnings("unused")
+private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcessorTest.class);
+
+	PID containerPID = new PID("test:1");
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -60,18 +66,17 @@ public class METSPackageSIPProcessorTest extends Assert {
 	private METSPackageSIPProcessor metsPackageSIPProcessor = null;
 
 	private void exceptionTest(String testFilePath, String testMsg) throws IngestException {
-		File testFile = new File(testFilePath);
+		File testFile = tempCopy(new File(testFilePath));
 		Agent adminGroup = AgentManager.getAdministrativeGroupAgentStub();
 		PremisEventLogger logger = new PremisEventLogger(adminGroup);
 		METSPackageSIP sip = null;
 		try {
-			sip = new METSPackageSIP("/test/container/path", testFile, adminGroup, true);
-			sip.setDiscardDataFilesOnDestroy(false);
+			sip = new METSPackageSIP(containerPID, testFile, adminGroup, true);
 		} catch (IOException e) {
+			LOG.debug("STACK TRACE: ", e);
 			fail("EXPECTED: " + testMsg + "\nTHROWN: " + e.getMessage());
 		}
-		ArchivalInformationPackage aip = this.getMetsPackageSIPProcessor().createAIP(sip, logger);
-		aip.setDeleteFilesOnDestroy(false);
+		ArchivalInformationPackage aip = this.getMetsPackageSIPProcessor().createAIP(sip);
 	}
 
 	public METSPackageSIPProcessor getMetsPackageSIPProcessor() {
@@ -118,20 +123,18 @@ public class METSPackageSIPProcessorTest extends Assert {
 	// @Test
 	public void testBigSIP() {
 		// testing for successful conversion of Large SIP, 2014 objects
-		File testFile = new File("src/test/resources/METS.xml");
+		File testFile = tempCopy(new File("src/test/resources/METS.xml"));
 		Agent user = AgentManager.getAdministrativeGroupAgentStub();
-		PremisEventLogger logger = new PremisEventLogger(new GroupAgent("foo"));
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		try {
-			sip = new METSPackageSIP("/test/container/path", testFile, user, false);
+			sip = new METSPackageSIP(containerPID, testFile, user, false);
 			sip.setDiscardDataFilesOnDestroy(false);
 		} catch (IOException e) {
 			throw new Error(e);
 		}
 		try {
-			aip = this.getMetsPackageSIPProcessor().createAIP(sip, logger);
-			aip.setDeleteFilesOnDestroy(false);
+			aip = this.getMetsPackageSIPProcessor().createAIP(sip);
 		} catch (IngestException e) {
 			throw new Error(e);
 		}
@@ -168,14 +171,12 @@ public class METSPackageSIPProcessorTest extends Assert {
 	@Test
 	public void testGoodSIP() {
 		// testing for successful conversion of SIP w/simple content model
-		File testFile = new File("src/test/resources/simple.zip");
+		File testFile = tempCopy(new File("src/test/resources/simple.zip"));
 		Agent user = AgentManager.getAdministrativeGroupAgentStub();
-		PremisEventLogger logger = new PremisEventLogger(new GroupAgent("foo"));
-		// PersonAgent user = new PersonAgent("Testy Testworthy", "onyen");
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		try {
-			sip = new METSPackageSIP("/test/container/path", testFile, user, true);
+			sip = new METSPackageSIP(containerPID, testFile, user, true);
 			sip.setDiscardDataFilesOnDestroy(false);
 			sip.getPreIngestEventLogger().addMD5ChecksumCalculation(new Date(System.currentTimeMillis()), "ClamAV v2.1",
 					"Jane Smith");
@@ -184,57 +185,13 @@ public class METSPackageSIPProcessorTest extends Assert {
 			throw new Error(e);
 		}
 		try {
-			aip = this.getMetsPackageSIPProcessor().createAIP(sip, logger);
-			aip.setDeleteFilesOnDestroy(false);
+			aip = this.getMetsPackageSIPProcessor().createAIP(sip);
 		} catch (IngestException e) {
 			throw new Error(e);
 		}
 		assertNotNull("The result ingest context is null.", aip);
 		int count = aip.getPIDs().size();
 		assertTrue("There should be 14 PIDs in the resulting AIP, found " + count, count == 14);
-	}
-
-	/**
-	 * Test successful conversion of the repository bootstrap SIP
-	 */
-	@Test
-	public void testRepoBootstrapSIP() {
-		// the METS file will be deleted, so copy it to temp space first..
-		File upload = null;
-		try {
-			upload = File.createTempFile("repoinit", ".xml");
-			BufferedInputStream in = new BufferedInputStream(this.getClass().getClassLoader()
-					.getResourceAsStream("repository_bootstrap_mets.xml"));
-			BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(upload), 4096);
-			byte[] bytes = new byte[4096];
-			for (int len = in.read(bytes); len > 0; len = in.read(bytes)) {
-				out.write(bytes, 0, len);
-			}
-			in.close();
-			out.close();
-		} catch (IOException e) {
-			throw new Error(e);
-		}
-		Agent user = AgentManager.getAdministrativeGroupAgentStub();
-		PremisEventLogger logger = new PremisEventLogger(new GroupAgent("foo"));
-		// PersonAgent user = new PersonAgent("Testy Testworthy", "onyen");
-		METSPackageSIP sip = null;
-		ArchivalInformationPackage aip = null;
-		try {
-			sip = new METSPackageSIP("/test/container/path", upload, user, false);
-			sip.setDiscardDataFilesOnDestroy(false); // don't delete test files!
-		} catch (IOException e) {
-			throw new Error(e);
-		}
-		try {
-			aip = this.getMetsPackageSIPProcessor().createAIP(sip, logger);
-			aip.setDeleteFilesOnDestroy(false);
-		} catch (IngestException e) {
-			throw new Error(e);
-		}
-		assertNotNull("The result ingest context is null.", aip);
-		int count = aip.getPIDs().size();
-		assertTrue("There should be 4 PIDs in the repository bootstrap AIP, found " + count, count == 4);
 	}
 
 	@Test
@@ -281,12 +238,5 @@ public class METSPackageSIPProcessorTest extends Assert {
 			fail("Expected FilesDoNotMatchManifestException got \n  " + e);
 		}
 	}
-
-	// @Test
-	// public void testMissingFPTRReferencedInMETS() {
-	// TODO add one schematron-based exception test
-	// exceptionTest("src/test/resources/missing_fptr_ref.zip",
-	// "missing fptr element referenced in METS");
-	// }
 
 }

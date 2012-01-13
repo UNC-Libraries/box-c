@@ -14,102 +14,161 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package edu.unc.lib.dl.service.impl;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentManager;
-import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.PreIngestEventLogger;
 import edu.unc.lib.dl.ingest.sip.SingleFileSIP;
 import edu.unc.lib.dl.ingest.sip.SingleFolderSIP;
-import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
 import edu.unc.lib.dl.schema.CreateCollectionObject;
 import edu.unc.lib.dl.schema.MediatedSubmitIngestObject;
 import edu.unc.lib.dl.schema.MetsSubmitIngestObject;
 import edu.unc.lib.dl.service.SubmitService;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.Constants;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
  * @author steve
- * 
+ *
  */
 public class SubmitServiceImpl implements SubmitService {
 	protected final Log logger = LogFactory.getLog(getClass());
-	private AgentManager agentManager;
+	private AgentFactory agentManager;
 	private DigitalObjectManager digitalObjectManager;
+	private TripleStoreQueryService tripleStoreQueryService;
+
+	private PID collectionsPID = null;
+
+	private PID getCollectionsPID() {
+		if(this.collectionsPID == null) {
+			this.collectionsPID = this.getTripleStoreQueryService().fetchByRepositoryPath(Constants.COLLECTIONS);
+		}
+		return this.collectionsPID;
+	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.service.SubmitService#metsSubmit(edu.unc.lib.dl.schema
 	 * .MediatedSubmitIngestObject)
 	 */
 	public MetsSubmitIngestObject metsSubmit(MetsSubmitIngestObject request) {
-
-	    // Create and start the thread
-	    MetsSubmitThread thread = new MetsSubmitThread();
-	    thread.setMetsSubmitIngestObject(request);
-	    thread.start();
-
-	    request.setMessage(Constants.IN_PROGRESS_THREADED);
-	    
+		String error = null;
+ 		try {
+ 			String name = request.getFileName();
+ 			boolean zipFlag = false;
+ 			if (name.endsWith(".zip")) {
+ 				zipFlag = true;
+ 			}
+ 			File file = new File(name);
+ 			Agent agent = agentManager.findPersonByOnyen(request.getAdminOnyen(), true);
+ 			PID containerPID = getTripleStoreQueryService().fetchByRepositoryPath(request.getFilePath());
+ 			METSPackageSIP sip = new METSPackageSIP(containerPID,	file, agent, zipFlag);
+ 			PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
+ 			setPremisVirusEvent(eventLogger, request.getVirusDate(), request.getVirusSoftware(), request.getOwnerPid());
+ 			digitalObjectManager.addBatch(sip, agent, "Added through UI");
+ 		} catch (IOException e) {
+ 			logger.error("unexpected io error", e);
+ 			error = "There was an unexpected error processing your ingest:\n <br />"+e.getLocalizedMessage();
+ 		} catch (IngestException e) {
+ 			error = e.getLocalizedMessage();
+ 		} catch (Exception e) {
+ 			logger.error("unexpected exception", e);
+ 			error = e.getLocalizedMessage();
+ 		}
+ 		if(error != null) {
+ 			request.setMessage(error);
+ 		} else {
+ 			request.setMessage(Constants.IN_PROGRESS_THREADED);
+ 		}
 		return request;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.service.SubmitService#mediatedSubmit(edu.unc.lib.dl.schema
 	 * .MediatedSubmitIngestObject)
 	 */
 	public MediatedSubmitIngestObject mediatedSubmit(
-			MediatedSubmitIngestObject request) {
+			MediatedSubmitIngestObject mediatedSubmitIngestObject) {
+		String error = null;
+ 		try {
+ 			File file = new File(mediatedSubmitIngestObject.getFileName());
 
-	    // Create and start the thread
-	    MediatedSubmitThread thread = new MediatedSubmitThread();
-	    thread.setMediatedSubmitIngestObject(request);
-	    thread.start();
+// 			logger.debug("mediatedSubmit: "+mediatedSubmitIngestObject.getFileName());
+// 			logger.debug("mediatedSubmit file exists: "+file.exists());
+// 			logger.debug("mediatedSubmit file: "+file.getAbsolutePath());
+// 			logger.debug("mediatedSubmit file can read: "+file.canRead());
+// 			logger.debug("mediatedSubmit file length: "+file.length());
 
-	    request.setMessage(Constants.IN_PROGRESS_THREADED);
-	    
-		return request;
+ 			File modsFile = new File(mediatedSubmitIngestObject.getMetadataName());
+
+ 			Agent agent = agentManager.findPersonByOnyen(mediatedSubmitIngestObject
+ 					.getAdminOnyen(), true);
+
+ 			PID pid = new PID(mediatedSubmitIngestObject.getOwnerPid());
+ 			Agent owner = agentManager.getAgent(pid, false);
+
+ 			SingleFileSIP sip = new SingleFileSIP();
+ 			PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
+
+ 			setPremisVirusEvent(eventLogger, mediatedSubmitIngestObject.getVirusDate(), mediatedSubmitIngestObject
+ 					.getVirusSoftware(), mediatedSubmitIngestObject.getOwnerPid());
+
+ 			setPremisChecksumEvent(eventLogger, mediatedSubmitIngestObject.getChecksumDate(), mediatedSubmitIngestObject
+ 					.getChecksum(), mediatedSubmitIngestObject.getOwnerPid());
+
+ 			PID containerPID = getTripleStoreQueryService().fetchByRepositoryPath(mediatedSubmitIngestObject.getFilePath());
+ 			sip.setContainerPID(containerPID);
+ 			sip.setData(file);
+ 			sip.setFileLabel(mediatedSubmitIngestObject.getOrigFileName());
+ 			sip.setMimeType(mediatedSubmitIngestObject.getMimetype());
+ 			sip.setModsXML(modsFile);
+ 			sip.setOwner(owner);
+ 			digitalObjectManager.addBatch(sip, agent, "Added through UI");
+ 		} catch (IngestException e) {
+ 			error = e.getLocalizedMessage();
+ 		} catch (Exception e) {
+ 			logger.error("Unexpected ingest exception", e);
+ 			error = "An unexpect error occurred during ingest:\n<br />"+e.getLocalizedMessage();
+ 		}
+ 		if(error != null) {
+ 			mediatedSubmitIngestObject.setMessage(error);
+ 		} else {
+ 			mediatedSubmitIngestObject.setMessage(Constants.IN_PROGRESS_THREADED);
+ 		}
+		return mediatedSubmitIngestObject;
 	}
 
 	private void setPremisVirusEvent(PreIngestEventLogger eventLogger,
 			String date, String software, String person) {
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-		
+
 		if ((date != null) && (software != null) && (person != null)) {
 			try {
 				eventLogger.addVirusScan(sdf.parse(date), software, person);
 			} catch (ParseException e) {
-				e.printStackTrace();
+				logger.error("date parse exception", e);
 			}
 		}
 
@@ -117,24 +176,24 @@ public class SubmitServiceImpl implements SubmitService {
 
 	private void setPremisChecksumEvent(PreIngestEventLogger eventLogger,
 			String date, String checksum, String person) {
-		
+
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        
+
 		if ((date != null) && (checksum != null) && (person != null)) {
 			try {
 				eventLogger.addMD5ChecksumCalculation(sdf.parse(date), checksum,
 						person);
 			} catch (ParseException e) {
-				e.printStackTrace();
+				logger.error("date parse exception", e);
 			}
 		}
 	}
 
-	public AgentManager getAgentManager() {
+	public AgentFactory getAgentManager() {
 		return agentManager;
 	}
 
-	public void setAgentManager(AgentManager agentManager) {
+	public void setAgentManager(AgentFactory agentManager) {
 		this.agentManager = agentManager;
 	}
 
@@ -165,36 +224,27 @@ public class SubmitServiceImpl implements SubmitService {
 
 			SingleFolderSIP sip = new SingleFolderSIP();
 
-			sip.setContainerPath(Constants.COLLECTIONS);
+			sip.setContainerPID(this.getCollectionsPID());
 			sip.setSlug(request.getFilePath());
 			sip.setModsXML(modsFile);
 			sip.setOwner(owner);
 			sip.setCollection(true);
 
-			digitalObjectManager.add(sip, agent, "Added through UI");
+			digitalObjectManager.addSingleObject(sip, agent, "Added through UI");
 
 			request.setMessage(Constants.SUCCESS);
 
 		} catch (IOException e) {
 			request.setMessage(Constants.FAILURE);
-
-			e.printStackTrace();
-
-			return request;
-		} catch (NotFoundException e) {
-			request.setMessage(Constants.FAILURE);
-
-			e.printStackTrace();
+			logger.error("Unexpected IO exception", e);
 			return request;
 		} catch (IngestException e) {
-			request.setMessage(Constants.FAILURE);
-
-			e.printStackTrace();
+			request.setMessage("Error during ingest: "+e.getLocalizedMessage());
+			logger.error("Ingest exception", e);
 			return request;
 		} catch (Exception e) {
 			request.setMessage(Constants.FAILURE);
-
-			e.printStackTrace();
+			logger.error("Unexpected exception", e);
 			return request;
 		}
 
@@ -203,101 +253,12 @@ public class SubmitServiceImpl implements SubmitService {
 
 		return request;
 	}
-	
-    class MetsSubmitThread extends Thread {
- 		MetsSubmitIngestObject metsSubmitIngestObject;
-    	
-        public void run() {
-    		boolean flag = false;
 
-    		try {
+	public TripleStoreQueryService getTripleStoreQueryService() {
+		return tripleStoreQueryService;
+	}
 
-    			String name = metsSubmitIngestObject.getFileName();
-
-    			if (name.endsWith(".zip")) {
-    				flag = true;
-    			}
-
-    			File file = new File(name);
-
-    			Agent agent = agentManager.findPersonByOnyen(metsSubmitIngestObject
-    					.getAdminOnyen(), true);
-    			
-    			METSPackageSIP sip = new METSPackageSIP(metsSubmitIngestObject.getFilePath(),
-    					file, agent, flag);
-    			PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
-
-    			setPremisVirusEvent(eventLogger, metsSubmitIngestObject.getVirusDate(), metsSubmitIngestObject
-    					.getVirusSoftware(), metsSubmitIngestObject.getOwnerPid());
-
-    			digitalObjectManager.add(sip, agent, "Added through UI");
-    		} catch (IOException e) {
-    			e.printStackTrace();
-    		} catch (NotFoundException e) {
-    			e.printStackTrace();
-    		} catch (IngestException e) {
-    			e.printStackTrace();
-    		} catch (Exception e) {
-    			e.printStackTrace();
-    		}
-        }
-
-        public void setMetsSubmitIngestObject(
-				MetsSubmitIngestObject metsSubmitIngestObject) {
-			this.metsSubmitIngestObject = metsSubmitIngestObject;
-		}
-   }
-
-    class MediatedSubmitThread extends Thread {
-    	MediatedSubmitIngestObject mediatedSubmitIngestObject;
-
-    	public void run() {
-    		try {
-    			File file = new File(mediatedSubmitIngestObject.getFileName());
-
-//    			logger.debug("mediatedSubmit: "+mediatedSubmitIngestObject.getFileName());
-//    			logger.debug("mediatedSubmit file exists: "+file.exists());
-//    			logger.debug("mediatedSubmit file: "+file.getAbsolutePath());
-//    			logger.debug("mediatedSubmit file can read: "+file.canRead());
-//    			logger.debug("mediatedSubmit file length: "+file.length());
-    			
-    			File modsFile = new File(mediatedSubmitIngestObject.getMetadataName());
-
-    			Agent agent = agentManager.findPersonByOnyen(mediatedSubmitIngestObject
-    					.getAdminOnyen(), true);
-
-    			PID pid = new PID(mediatedSubmitIngestObject.getOwnerPid());
-    			Agent owner = agentManager.getAgent(pid, false);
-
-    			SingleFileSIP sip = new SingleFileSIP();
-    			PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
-
-    			setPremisVirusEvent(eventLogger, mediatedSubmitIngestObject.getVirusDate(), mediatedSubmitIngestObject
-    					.getVirusSoftware(), mediatedSubmitIngestObject.getOwnerPid());
-
-    			setPremisChecksumEvent(eventLogger, mediatedSubmitIngestObject.getChecksumDate(), mediatedSubmitIngestObject
-    					.getChecksum(), mediatedSubmitIngestObject.getOwnerPid());
-
-    			sip.setContainerPath(mediatedSubmitIngestObject.getFilePath());
-    			sip.setData(file);
-    			sip.setFileLabel(mediatedSubmitIngestObject.getOrigFileName());
-    			sip.setMimeType(mediatedSubmitIngestObject.getMimetype());
-    			sip.setModsXML(modsFile);
-    			sip.setOwner(owner);
-
-    			digitalObjectManager.add(sip, agent, "Added through UI");
-    		} catch (NotFoundException e) {
-    			e.printStackTrace();
-    		} catch (IngestException e) {
-    			e.printStackTrace();
-    		} catch (Exception e) {
-    			e.printStackTrace();
-    		}
-        }
- 
-		public void setMediatedSubmitIngestObject(
-				MediatedSubmitIngestObject mediatedSubmitIngestObject) {
-			this.mediatedSubmitIngestObject = mediatedSubmitIngestObject;
-		}
-    }
+	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+		this.tripleStoreQueryService = tripleStoreQueryService;
+	}
 }

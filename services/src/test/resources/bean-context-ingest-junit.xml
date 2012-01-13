@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd"
+	xmlns="http://www.springframework.org/schema/beans">
+	<!-- REMOTE BEANS (should be in separate file)
+	<import resource="remotes-context-test.xml"/>-->
+	<bean id="propertiesURI" class="java.lang.System" factory-method="getProperty">
+		<constructor-arg index="0" value="server.properties.uri"/>
+		<!-- property name for properties URI location -->
+		<constructor-arg index="1" value="classpath:server.properties"/>
+		<!-- default location for testing -->
+	</bean>
+	<bean id="serverProperties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" ref="propertiesURI"/>
+		<property name="ignoreResourceNotFound" value="false"/>
+	</bean>
+
+	<bean id="tripleStoreQueryService" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.dl.util.TripleStoreQueryService"/>
+	</bean>
+
+	<bean id="managementClient" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg index="0" value="edu.unc.lib.dl.fedora.ManagementClient"/>
+	</bean>
+
+	<bean id="accessClient" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.dl.fedora.AccessClient"/>
+	</bean>
+
+	<bean id="javaMailSender" class="org.mockito.Mockito" factory-method="spy">
+		<constructor-arg ref="realJavaMailSender"/>
+	</bean>
+
+	<bean id="realJavaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${smtp.host}"/>
+		<property name="port" value="${smtp.port}"/>
+		<property name="defaultEncoding" value="UTF-8"/>
+	</bean>
+
+	<!-- a pooling based JMS provider -->
+	<!--bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL">
+			<value>tcp://${jms.host}${jms.port}</value>
+		</property>
+	</bean-->
+
+	<bean id="jmsTemplate" factory-method="mock" class="org.mockito.Mockito">
+		<constructor-arg value="org.springframework.jms.core.JmsTemplate"/>
+	</bean>
+
+	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+		<property name="jmsTemplate" ref="jmsTemplate"/>
+	</bean>
+	<!-- END OF REMOTE BEANS -->
+
+	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
+		<property name="managementClient" ref="managementClient"/>
+		<property name="accessClient" ref="accessClient"/>
+		<property name="aipIngestPipeline" ref="aipIngestPipeline"/>
+		<property name="operationsMessageSender" ref="operationsMessageSender"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="sipProcessorFactory" ref="sipProcessorFactory"/>
+		<property name="mailNotifier" ref="mailNotifier"/>
+		<property name="schematronValidator" ref="schematronValidator"/>
+		<property name="batchIngestQueue" ref="batchIngestQueue"/>
+		<lookup-method name="createBatchIngestTask" bean="batchIngestTask"/>		
+		<property name="available" value="true"/>
+	</bean>
+	
+	<bean id="batchIngestQueue" class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">
+		  <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
+	</bean>
+	
+	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">
+		<property name="managementClient" ref="managementClient"/>
+		<property name="accessClient" ref="accessClient"/>
+		<property name="operationsMessageSender" ref="operationsMessageSender"/>
+		<property name="mailNotifier" ref="mailNotifier"/>
+		<property name="agentFactory" ref="agentManager"/>
+		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
+		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
+	</bean>
+	
+	<bean id="batchIngestService" class="edu.unc.lib.dl.cdr.services.BatchIngestService" init-method="init">
+		<property name="batchIngestQueue" ref="batchIngestQueue"/>
+		<lookup-method name="createTask" bean="batchIngestTask"/>		
+	</bean>
+
+	<bean id="mailNotifier" class="edu.unc.lib.dl.services.MailNotifier">
+		<property name="mailSender" ref="javaMailSender"/>
+		<property name="irBaseUrl"
+			value="http://${repository.host}${repository.port}/${repository.context}"/>
+		<property name="freemarkerConfiguration" ref="freemarkerConfiguration"/>
+		<property name="administratorAddress" value="${administrator.email}"/>
+		<property name="repositoryFromAddress" value="${repository.from.email}"/>
+	</bean>
+
+	<bean id="freemarkerConfiguration" class="freemarker.template.Configuration">
+		<property name="templateLoader">
+			<bean class="freemarker.cache.ClassTemplateLoader">
+				<constructor-arg index="0" type="java.lang.Class"
+					value="edu.unc.lib.dl.services.MailNotifier"/>
+				<constructor-arg index="1" value=""/>
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="sipProcessorFactory" class="edu.unc.lib.dl.ingest.sip.SIPProcessorFactory"
+		init-method="init">
+		<property name="sipProcessors">
+			<map>
+				<entry key="edu.unc.lib.dl.ingest.sip.METSPackageSIP"
+					value-ref="metsPackageSIPProcessor"/>
+				<entry key="edu.unc.lib.dl.ingest.sip.AgentSIP" value-ref="personAgentSIPProcessor"/>
+				<entry key="edu.unc.lib.dl.ingest.sip.SingleFileSIP"
+					value-ref="singleFileSIPProcessor"/>
+				<entry key="edu.unc.lib.dl.ingest.sip.SingleFolderSIP"
+					value-ref="singleFolderSIPProcessor"/>
+			</map>
+		</property>
+	</bean>
+
+	<bean class="edu.unc.lib.dl.pidgen.UUIDPIDGenerator" id="pidGenerator" init-method="init">
+		<property name="verifyUnique" value="false"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+	</bean>
+
+	<bean id="personAgentSIPProcessor" class="edu.unc.lib.dl.ingest.sip.AgentSIPProcessor">
+		<property name="pidGenerator" ref="pidGenerator"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+	</bean>
+
+	<bean id="singleFileSIPProcessor" class="edu.unc.lib.dl.ingest.sip.SingleFileSIPProcessor">
+		<property name="pidGenerator" ref="pidGenerator"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+	</bean>
+
+	<bean id="singleFolderSIPProcessor" class="edu.unc.lib.dl.ingest.sip.SingleFolderSIPProcessor">
+		<property name="pidGenerator" ref="pidGenerator"/>
+	</bean>
+
+	<bean id="metsPackageSIPProcessor" class="edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor">
+		<property name="schematronValidator" ref="schematronValidator"/>
+		<property name="metsPackageFileValidator">
+			<bean class="edu.unc.lib.dl.ingest.sip.METSPackageFileValidator"/>			
+		</property>
+		<property name="pidGenerator" ref="pidGenerator"/>
+	</bean>
+
+	<bean id="aipIngestPipeline" class="edu.unc.lib.dl.ingest.aip.AIPIngestPipeline">
+		<property name="preIngestFilters">
+			<list>
+				<bean class="edu.unc.lib.dl.ingest.aip.LogIdentifierAssignmentFilter"/>
+				<bean class="edu.unc.lib.dl.ingest.aip.CheckAIPRequirementsFilter"/>
+				<bean class="edu.unc.lib.dl.ingest.aip.CheckContainerFilter">
+					<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+				</bean>
+				<bean class="edu.unc.lib.dl.ingest.aip.CheckPathConflictFilter">
+					<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+				</bean>
+				<bean class="edu.unc.lib.dl.ingest.aip.MODSValidationFilter">
+					<property name="schematronValidator" ref="schematronValidator"/>
+				</bean>
+				<bean class="edu.unc.lib.dl.ingest.aip.DublinCoreCrosswalkFilter"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="repositoryInitializer" class="edu.unc.lib.dl.services.RepositoryInitializer"
+		init-method="init">
+		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="folderManager" ref="folderManager"/>
+		<property name="mailNotifier" ref="mailNotifier"/>
+		<property name="initialAdministrators">
+			<map>
+				<entry key="count0" value="Greg Jansen"/>
+				<entry key="smbarr" value="Steve Barr"/>
+			</map>
+		</property>
+		<property name="autoinitialize" value="${auto.initialize.repo}"/>
+		<property name="initialBatchIngestDir" value="${initial.batch.ingest.dir}"/>
+	</bean>
+
+	<bean name="agentManager" class="edu.unc.lib.dl.services.AgentManager">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+	</bean>
+
+	<bean name="folderManager" class="edu.unc.lib.dl.services.FolderManager">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+	</bean>
+
+	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
+		init-method="loadSchemas">
+		<property name="schemas">
+			<map>
+				<entry key="http://cdr.unc.edu/METS/profiles/Simple"
+					value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch"/>
+				<entry key="object-mods" value="classpath:edu/unc/lib/dl/schematron/object-mods.sch"/>
+				<entry key="vocabularies-mods"
+					value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch"/>
+			</map>
+		</property>
+	</bean>
+</beans>

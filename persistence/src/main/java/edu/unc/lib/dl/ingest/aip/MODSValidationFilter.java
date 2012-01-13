@@ -28,84 +28,81 @@ import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
- * Copies certain ingest metadata into Fedora locations, such as the MODS and
- * RELS-EXT datastreams
- *
+ * Copies certain ingest metadata into Fedora locations, such as the MODS and RELS-EXT datastreams
+ * 
  * @author count0
- *
+ * 
  */
 public class MODSValidationFilter implements AIPIngestFilter {
-    private static final Log log = LogFactory.getLog(MODSValidationFilter.class);
-    private SchematronValidator schematronValidator = null;
+	private static final Log log = LogFactory.getLog(MODSValidationFilter.class);
+	private SchematronValidator schematronValidator = null;
 
-    public MODSValidationFilter() {
-    }
-
-    public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException {
-	log.debug("starting MODSValidationFilter");
-	RDFAwareAIPImpl rdfaip;
-	if (aip instanceof RDFAwareAIPImpl) {
-	    rdfaip = (RDFAwareAIPImpl) aip;
-	} else {
-	    rdfaip = new RDFAwareAIPImpl(aip);
+	public MODSValidationFilter() {
 	}
-	filter(rdfaip);
-	log.debug("ending MODSValidationFilter");
-	return rdfaip;
-    }
 
-    public ArchivalInformationPackage filter(RDFAwareAIPImpl aip) throws AIPException {
-	int invalidCounter = 0;
-	for (PID pid : aip.getPIDs()) {
-	    Document doc = aip.getFOXMLDocument(pid);
-
-	    // if MODS exists then validate vocabularies
-	    // ds may be null
-	    Element ds = FOXMLJDOMUtil.getDatastream(doc, "MD_DESCRIPTIVE");
-	    if (ds != null) {
-		String message = "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)";
-		Element event = aip.getEventLogger().logEvent(Type.VALIDATION, message, pid, "MD_DESCRIPTIVE");
-		// extract the mods element from the datastream elements
-		Element modsEl = ds.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS).getChild("xmlContent",
-				JDOMNamespaceUtil.FOXML_NS).getChild("mods", JDOMNamespaceUtil.MODS_V3_NS);
-		// run schematron
-		Document svrl = this.getSchematronValidator().validate(new JDOMSource(modsEl), "vocabularies-mods");
-
-		if (!this.getSchematronValidator().hasFailedAssertions(svrl)) {
-		    aip.getEventLogger().addDetailedOutcome(event, "MODS is valid",
-				    "The supplied MODS metadata meets CDR vocabulary requirements.", null);
+	public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException {
+		log.debug("starting MODSValidationFilter");
+		RDFAwareAIPImpl rdfaip;
+		if (aip instanceof RDFAwareAIPImpl) {
+			rdfaip = (RDFAwareAIPImpl) aip;
 		} else {
-		    aip.getEventLogger().addDetailedOutcome(event, "MODS is not valid",
-				    "The supplied MODS metadata does not meet CDR vocabulary requirements.",
-				    svrl.detachRootElement());
-		    invalidCounter++;
+			rdfaip = new RDFAwareAIPImpl(aip);
 		}
-	    }
-
-	    // future: any content model specific validations
-	    // URI contentModelURI = JRDFGraphUtil.getContentModelType(aip.getGraph(), pid);
-//	    if (contentModelURI.equals(ContentModelHelper.Model.SIMPLE.getURI())) {
-//		// SIMPLE object validation
-//	    } else {
-//		String message = "MODS not valid with respect to content model";
-//		aip.getEventLogger().logEvent(Type.VALIDATION, message, pid, "MD_DESCRIPTIVE");
-//		missingCounter++;
-//	    }
+		filter(rdfaip);
+		log.debug("ending MODSValidationFilter");
+		return rdfaip;
 	}
-	if (invalidCounter > 0) {
-	    String message = "Some descriptive metadata (MODS) did not meet requirements.";
-	    throw new AIPException(message + " (" + invalidCounter
-			    + " MODS invalid)");
+
+	public ArchivalInformationPackage filter(RDFAwareAIPImpl aip) throws AIPException {
+		int invalidCounter = 0;
+		for (PID pid : aip.getPIDs()) {
+			Document doc = aip.getFOXMLDocument(pid);
+
+			// if MODS exists then validate vocabularies
+			// ds may be null
+			Element ds = FOXMLJDOMUtil.getDatastream(doc, "MD_DESCRIPTIVE");
+			if (ds != null) {
+				String message = "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)";
+				Element event = aip.getEventLogger().logEvent(Type.VALIDATION, message, pid, "MD_DESCRIPTIVE");
+				// extract the mods element from the datastream elements
+				Element modsEl = ds.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS)
+						.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS).getChild("mods", JDOMNamespaceUtil.MODS_V3_NS);
+				// run schematron
+				Document svrl = this.getSchematronValidator().validate(new JDOMSource(modsEl), "vocabularies-mods");
+
+				if (!this.getSchematronValidator().hasFailedAssertions(svrl)) {
+					aip.getEventLogger().addDetailedOutcome(event, "MODS is valid",
+							"The supplied MODS metadata meets CDR vocabulary requirements.", null);
+				} else {
+					aip.getEventLogger().addDetailedOutcome(event, "MODS is not valid",
+							"The supplied MODS metadata does not meet CDR vocabulary requirements.", svrl.detachRootElement());
+					invalidCounter++;
+				}
+			}
+
+			// future: any content model specific validations
+			// URI contentModelURI = JRDFGraphUtil.getContentModelType(aip.getGraph(), pid);
+			// if (contentModelURI.equals(ContentModelHelper.Model.SIMPLE.getURI())) {
+			// // SIMPLE object validation
+			// } else {
+			// String message = "MODS not valid with respect to content model";
+			// aip.getEventLogger().logEvent(Type.VALIDATION, message, pid, "MD_DESCRIPTIVE");
+			// missingCounter++;
+			// }
+		}
+		if (invalidCounter > 0) {
+			String message = "Some descriptive metadata (MODS) did not meet requirements.";
+			throw new AIPException(message + " (" + invalidCounter + " MODS invalid)");
+		}
+		return aip;
 	}
-	return aip;
-    }
 
-    public SchematronValidator getSchematronValidator() {
-	return schematronValidator;
-    }
+	public SchematronValidator getSchematronValidator() {
+		return schematronValidator;
+	}
 
-    public void setSchematronValidator(SchematronValidator validator) {
-	this.schematronValidator = validator;
-    }
+	public void setSchematronValidator(SchematronValidator validator) {
+		this.schematronValidator = validator;
+	}
 
 }

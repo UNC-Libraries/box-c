@@ -29,53 +29,50 @@ import edu.unc.lib.dl.ingest.IngestException;
  * @author count0
  */
 public class AIPIngestPipeline {
-    private static Log log = LogFactory.getLog(AIPIngestPipeline.class);
+	private static Log log = LogFactory.getLog(AIPIngestPipeline.class);
 
-    private List<AIPIngestFilter> preIngestFilters;
+	private List<AIPIngestFilter> preIngestFilters;
 
-    public AIPIngestPipeline() {
-    }
-
-    public List<AIPIngestFilter> getPreIngestFilters() {
-	return preIngestFilters;
-    }
-
-    /**
-     * Takes an IngestContext and runs all the configured filters that make up
-     * the ingest processing pipeline. It returns an IngestContext that is ready
-     * for storage in a Fedora repository.
-     *
-     * The repositoryPath may be passed along by the calling context or left
-     * null if the SIP either contains a collection or specifies it's parent in
-     * PREMIS. Any combination of repository path strategies will throw an
-     * error.
-     *
-     * @param sipzip
-     *                a SIP archive file
-     * @param repositoryPath
-     *                this is the path in which the SIP objects are placed.
-     * @return an XML ingest report
-     */
-    public ArchivalInformationPackage processAIP(ArchivalInformationPackage aip) throws IngestException {
-	try {
-	    for (AIPIngestFilter filter : this.preIngestFilters) {
-		aip = filter.doFilter(aip);
-	    }
-	} catch (AIPException e) {
-	    // Log all recognized ingest filter exception cases in the
-	    // IngestException.
-	    aip.getEventLogger().logException("There was an unexpected exception.", e);
-	    Element report = aip.getEventLogger().getAllEvents();
-	    aip.destroy();
-	    IngestException throwing = new IngestException(e.getMessage(), e);
-	    throwing.setErrorXML(report);
-	    throw throwing;
+	public AIPIngestPipeline() {
 	}
-	System.gc();
-	return aip;
-    }
 
-    public void setPreIngestFilters(List<AIPIngestFilter> preIngestFilters) {
-	this.preIngestFilters = preIngestFilters;
-    }
+	public List<AIPIngestFilter> getPreIngestFilters() {
+		return preIngestFilters;
+	}
+
+	/**
+	 * Takes an IngestContext and runs all the configured filters that make up the ingest processing pipeline. It returns
+	 * an IngestContext that is ready for storage in a Fedora repository.
+	 *
+	 * The repositoryPath may be passed along by the calling context or left null if the SIP either contains a collection
+	 * or specifies it's parent in PREMIS. Any combination of repository path strategies will throw an error.
+	 *
+	 * @param sipzip
+	 *           a SIP archive file
+	 * @param repositoryPath
+	 *           this is the path in which the SIP objects are placed.
+	 * @return an XML ingest report
+	 */
+	public ArchivalInformationPackage processAIP(ArchivalInformationPackage aip) throws IngestException {
+		try {
+			for (AIPIngestFilter filter : this.preIngestFilters) {
+				aip = filter.doFilter(aip);
+			}
+		} catch (AIPException e) {
+			// Log all recognized ingest filter exception cases in the
+			// IngestException.
+			aip.getEventLogger().logException("There was an unexpected exception.", e);
+			Element report = aip.getEventLogger().getAllEvents();
+			aip.delete();
+			IngestException throwing = new IngestException(e.getMessage(), e);
+			throwing.setErrorXML(report);
+			throw throwing;
+		}
+		System.gc();
+		return aip;
+	}
+
+	public void setPreIngestFilters(List<AIPIngestFilter> preIngestFilters) {
+		this.preIngestFilters = preIngestFilters;
+	}
 }
