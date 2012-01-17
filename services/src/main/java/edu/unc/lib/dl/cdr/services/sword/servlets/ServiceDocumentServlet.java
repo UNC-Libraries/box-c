@@ -31,8 +31,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.swordapp.server.ServiceDocumentAPI;
 import org.swordapp.server.ServiceDocumentManager;
 
+import edu.unc.lib.dl.cdr.services.sword.SwordConfigurationImpl;
+
 @Controller
-@RequestMapping("/servicedocument")
+@RequestMapping(SwordConfigurationImpl.SERVICE_DOCUMENT_PATH)
 public class ServiceDocumentServlet extends BaseSwordServlet {
 	private static Logger LOG = Logger.getLogger(ServiceDocumentServlet.class);
 	@Resource

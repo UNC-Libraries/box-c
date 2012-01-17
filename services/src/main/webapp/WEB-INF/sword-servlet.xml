@@ -48,7 +48,7 @@
 
 	<bean id="swordPath" class="java.lang.String">
 		<constructor-arg
-			value="${repository.protocol}://${repository.host}${repository.port}/${sword.context}/" />
+			value="${repository.protocol}://${repository.host}${repository.port}/${sword.context}" />
 	</bean>
 
 	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
@@ -184,6 +184,7 @@
 	<bean id="config" class="edu.unc.lib.dl.cdr.services.sword.SwordConfigurationImpl"
 		init-method="init">
 		<property name="authType" value="Basic"/>
+		<property name="basePath" ref="swordPath"/>
 	</bean>
 	
 	<bean id="collectionListManager" class="edu.unc.lib.dl.cdr.services.sword.managers.CollectionListManagerImpl">

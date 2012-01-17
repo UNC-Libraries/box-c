@@ -33,6 +33,8 @@ import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
+import edu.unc.lib.dl.cdr.services.sword.PackagingType;
+import edu.unc.lib.dl.cdr.services.sword.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.services.DigitalObjectManager;
@@ -54,6 +56,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 
 		try {
 			Agent agent = agentFactory.findPersonByOnyen("bbpennel", true);
+			SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
 
 			PID containerPID = null;
 			if (collectionURI == null || collectionURI.trim().length() == 0){
@@ -62,12 +65,8 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 				containerPID = new PID(collectionURI);
 			}
 			
-			if (deposit.isBinaryOnly()){
-				return this.doBinaryDeposit(containerPID, deposit, auth, config, agent);
-			} else if (deposit.isMultipart()){
-				
-			} else if (deposit.isEntryOnly()){
-				
+			if (PackagingType.METS_CDR.equals(deposit.getPackaging())){
+				return doMETSCDRDeposit(containerPID, deposit, auth, configImpl, agent);
 			}
 		} catch (Exception e) {
 			LOG.error("Exception while attempting to deposit", e);
@@ -77,10 +76,10 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		return null;
 	}
 	
-	private DepositReceipt doBinaryDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
-			SwordConfiguration config, Agent agent) throws Exception {
+	private DepositReceipt doMETSCDRDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
+			SwordConfigurationImpl config, Agent agent) throws Exception {
 		
-		LOG.debug("Preparing to perform a binary deposit");
+		LOG.debug("Preparing to perform a CDR METS deposit");
 		
 		String name = deposit.getFilename();
 		boolean isZip = name.endsWith(".zip");
@@ -92,13 +91,25 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		digitalObjectManager.addBatch(sip, agent, "Added through SWORD");
 
 		DepositReceipt receipt = new DepositReceipt();
-		IRI editMediaIRI = new IRI("https://localhost/cdr-services/sword/collection/");
+		IRI editMediaIRI = new IRI(config.getBasePath() + SwordConfigurationImpl.COLLECTION_PATH);
 
 		receipt.addEditMediaIRI(editMediaIRI);
 		receipt.setSwordEditIRI(editMediaIRI);
 		receipt.setEditMediaIRI(editMediaIRI);
 
 		LOG.info("Returning receipt " + receipt);
+		return receipt;
+	}
+	
+	private DepositReceipt doMETSDSpaceDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
+			SwordConfigurationImpl config, Agent agent) throws Exception {
+		
+		String name = deposit.getFilename();
+		boolean isZip = name.endsWith(".zip");
+		
+		this.depositInputStreamToFile(deposit);
+		
+		DepositReceipt receipt = new DepositReceipt();
 		return receipt;
 	}
 	

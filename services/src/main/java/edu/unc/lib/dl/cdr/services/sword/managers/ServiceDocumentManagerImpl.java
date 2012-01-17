@@ -33,6 +33,7 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 import org.swordapp.server.SwordWorkspace;
 
+import edu.unc.lib.dl.cdr.services.sword.PackagingType;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -42,6 +43,8 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements ServiceDocumentManager {
 	private static final Logger LOG = LoggerFactory.getLogger(ServiceDocumentManagerImpl.class);
+	
+	private List<String> acceptablePackaging;
 	
 	public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config)
 			throws SwordError, SwordServerException, SwordAuthException {
@@ -92,9 +95,10 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 			collection.setHref(swordPath + "collection/" + containerPID.getPid());
 			collection.setTitle(slug);
 			collection.setAccept("*/*");
-			// collection.addAcceptPackaging("cdrcore");
-			collection.addAcceptPackaging("http://purl.org/net/sword/terms/METSDSpaceSIP");
-			collection.addAcceptPackaging("http://purl.org/net/sword/terms/SimpleZip");
+			collection.addAcceptPackaging(PackagingType.METS_DSPACE_SIP.toString());
+			collection.addAcceptPackaging(PackagingType.SIMPLE_ZIP.toString());
+			collection.addAcceptPackaging(PackagingType.METS_CDR.toString());
+			//
 			IRI iri = new IRI(swordPath + "servicedocument/" + containerPID.getPid());
 			collection.addSubService(iri);
 			result.add(collection);

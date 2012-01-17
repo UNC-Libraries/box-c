@@ -31,8 +31,10 @@ import org.swordapp.server.CollectionAPI;
 import org.swordapp.server.CollectionDepositManager;
 import org.swordapp.server.CollectionListManager;
 
+import edu.unc.lib.dl.cdr.services.sword.SwordConfigurationImpl;
+
 @Controller
-@RequestMapping("/collection")
+@RequestMapping(SwordConfigurationImpl.COLLECTION_PATH)
 public class CollectionServlet extends BaseSwordServlet {
 	private static Logger LOG = Logger.getLogger(CollectionServlet.class);
 
