@@ -76,6 +76,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 	private edu.unc.lib.dl.pidgen.PIDGenerator pidGenerator = null;
 	private SchematronValidator schematronValidator = null;
 	private final String stylesheetPackage = "/mets2foxml/";
+	private List<String> acceptedProfiles;
 
 	public METSPackageSIPProcessor() {
 		try {
@@ -214,9 +215,6 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 	private AIPImpl transformMETS(METSPackageSIP metsPack, Document mets, boolean allowIndexing)
 			throws IngestException {
 
-
-
-
 		AIPImpl aip = new AIPImpl(metsPack.getBatchPrepDir());
 
 		// count the object divs in METS
@@ -331,6 +329,11 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		}
 		String profileUrl = profileAtt.getValue();
 
+		if (!this.acceptedProfiles.contains(profileUrl)){
+			throw new InvalidMETSException("The mets element MUST provide an accepted PROFILE attribute.  Unacceptable profile: "
+					+ profileUrl);
+		}
+		
 		// is this a known schema?
 		if (!this.schematronValidator.getSchemas().containsKey(profileUrl)) {
 			throw new InvalidMETSException("The mets element MUST have a recognized PROFILE attribute.  Unknown profile: "
@@ -403,5 +406,13 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		} catch (IOException e) {
 			throw new IngestException("The supplied METS file is not readable.", e);
 		}
+	}
+
+	public List<String> getAcceptedProfiles() {
+		return acceptedProfiles;
+	}
+
+	public void setAcceptedProfiles(List<String> acceptedProfiles) {
+		this.acceptedProfiles = acceptedProfiles;
 	}
 }

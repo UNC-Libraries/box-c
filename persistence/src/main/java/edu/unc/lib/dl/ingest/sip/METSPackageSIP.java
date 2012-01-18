@@ -59,12 +59,14 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 		this.sipDataSubDir.mkdir();
 		if (isZIP) {
 			ZipFileUtil.unzipToDir(sip, this.sipDataSubDir);
-			metsFile = new File(sipDataSubDir, metsLocation);
-			if (!metsFile.exists()) {
-				metsFile = new File(sipDataSubDir, metsLocation2);
+			File metsFileTemp = new File(sipDataSubDir, metsLocation);
+			metsFile = new File(sipDataSubDir, metsLocation2);
+			if (metsFileTemp.exists()) {
+				//Rename the mets file to always use the same case, otherwise is fails in Mac OS.
+				FileUtils.renameOrMoveTo(metsFileTemp, metsFile);
 			}
 		} else { // NOT A ZIP, JUST METS FILE
-			this.metsFile = new File(this.sipDataSubDir, "mets.xml");
+			this.metsFile = new File(this.sipDataSubDir, metsLocation2);
 			FileUtils.renameOrMoveTo(sip, metsFile);
 		}
 		if (!metsFile.exists()) {

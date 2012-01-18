@@ -28,6 +28,7 @@
     xmlns:acl="http://cdr.unc.edu/definitions/acl#" xmlns:premis="info:lc/xmlns/premis-v2"
     xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd"
     exclude-result-prefixes="common">
+    <xsl:import href="epdcx2mods.xsl"/>
 
     <!-- METS to FOXML DOCUMENTATION
         OVERVIEW
@@ -131,8 +132,6 @@
     </xsl:param>
 
     <xsl:param name="allowAnyIndexing" required="no" select="'yes'"/>
-
-    <xsl:variable name="profile">http://cdr.unc.edu/METS/profiles/Simple</xsl:variable>
 
     <!-- TODO: revise the prefix that indicates a URL is a DA pointer -->
     <xsl:variable name="darkArchiveURLStartsWith" select="'file://digitalarchive.lib.unc.edu/'"/>
@@ -423,11 +422,6 @@
         <xsl:variable name="topMap" select="/m:mets/m:structMap[1]"/>
         <xsl:variable name="topDiv" select="$topMap/m:div[1]"/>
 
-        <xsl:variable name="suppliedProfile" select="/m:mets/@PROFILE"/>
-        <xsl:if test="not($suppliedProfile = $profile)">
-            <xsl:message terminate="yes">The profile of the supplied METS does not match this
-                converter. <xsl:value-of select="$profile"/></xsl:message>
-        </xsl:if>
         <!-- delegate divs to content model processing -->
         <xsl:apply-templates select="$topDiv" mode="contentModel"/>
 
@@ -447,11 +441,11 @@
     </xsl:template>
 
     <xsl:template match="m:div" mode="contentModel">
-        <xsl:message terminate="yes" xml:space="preserve">
+        <!-- <xsl:message terminate="yes" xml:space="preserve">
             No content model support for this type of structMap and div:
                 structMap/@TYPE = '<xsl:value-of select="ancestor::m:structMap/@TYPE"/>'
                 div/@TYPE = '<xsl:value-of select="@TYPE"/>'
-        </xsl:message>
+        </xsl:message> -->
     </xsl:template>
 
     <xsl:template match="m:div" mode="common:get-files-by-use">
@@ -632,7 +626,20 @@
                     <xsl:choose>
                         <xsl:when test="exists($dmdSec/m:mdWrap)">
                             <f:xmlContent>
-                                <xsl:copy-of select="$dmdSec/m:mdWrap/m:xmlData/*"/>
+                                <xsl:choose>
+                                    <xsl:when test="$dmdSec/m:mdWrap[@MDTYPE='MODS']">
+                                        <xsl:copy-of select="$dmdSec/m:mdWrap/m:xmlData/*"/>
+                                    </xsl:when>
+                                    <xsl:when test="$dmdSec/m:mdWrap[@OTHERMDTYPE='EPDCX']">
+                                        <!-- Transform eprint dc to mods -->
+                                        <xsl:call-template name="epdcx2mods">
+                                            <xsl:with-param name="xmlData" select="$dmdSec/m:mdWrap[@OTHERMDTYPE='EPDCX']/m:xmlData"/>
+                                        </xsl:call-template>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:copy-of select="$dmdSec/m:mdWrap/m:xmlData/*"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
                             </f:xmlContent>
                         </xsl:when>
                         <xsl:otherwise>

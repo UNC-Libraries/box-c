@@ -33,11 +33,11 @@ import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
-import edu.unc.lib.dl.cdr.services.sword.PackagingType;
 import edu.unc.lib.dl.cdr.services.sword.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.services.DigitalObjectManager;
+import edu.unc.lib.dl.util.PackagingType;
 
 /**
  * 

@@ -148,7 +148,7 @@ public class METSPackageFileValidator {
 				zipPathLength = metsPack.getSIPDataDir().getCanonicalPath().length();
 
 				for (File received : metsPack.getDataFiles()) {
-					if (!manifestFiles.contains(received)) {
+					if (!manifestFiles.contains(received) && received.compareTo(metsPack.getMetsFile()) != 0) {
 						extraFiles.add("file://" + received.getCanonicalPath().substring(zipPathLength));
 					}
 				}

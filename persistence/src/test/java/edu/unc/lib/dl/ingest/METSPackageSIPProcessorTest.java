@@ -239,4 +239,37 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		}
 	}
 
+	@Test
+	public void testDSpaceMETS() {
+		//5 files + the container
+		int numberOfPIDs = 6;
+		// testing for successful conversion of SIP w/simple content model
+		File testFile = tempCopy(new File("src/test/resources/dspaceMets.zip"));
+		Agent user = AgentManager.getAdministrativeGroupAgentStub();
+		METSPackageSIP sip = null;
+		ArchivalInformationPackage aip = null;
+		try {
+			sip = new METSPackageSIP(containerPID, testFile, user, true);
+			sip.setDiscardDataFilesOnDestroy(false);
+			sip.getPreIngestEventLogger().addMD5ChecksumCalculation(new Date(System.currentTimeMillis()), "ClamAV v2.1",
+					"Jane Smith");
+			sip.getPreIngestEventLogger().addVirusScan(new Date(System.currentTimeMillis()), "ClamAV", "Bob Smith");
+		} catch (IOException e) {
+			throw new Error(e);
+		}
+		try {
+			java.util.Iterator<String> iterator = this.metsPackageSIPProcessor.getSchematronValidator().getSchemas().keySet().iterator();
+			while (iterator.hasNext()){
+				LOG.info("Schema " + iterator.next());
+			}
+			aip = this.getMetsPackageSIPProcessor().createAIP(sip);
+			
+		} catch (IngestException e) {
+			LOG.error("DSpace mets failed", e);
+			fail();
+		}
+		assertNotNull("The result ingest context is null.", aip);
+		int count = aip.getPIDs().size();
+		assertTrue("There should be " + numberOfPIDs + " PIDs in the resulting AIP, found " + count, count == numberOfPIDs);
+	}
 }

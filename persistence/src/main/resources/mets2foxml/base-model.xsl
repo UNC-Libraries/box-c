@@ -133,6 +133,7 @@
             <!-- Reference is default when the div doesn't contain anything. -->
             <xsl:when test="@TYPE='Reference'">Reference</xsl:when>
             <xsl:when test="@TYPE='Bag'">Bag</xsl:when>
+            <xsl:when test="@TYPE='SWORD Object'">Aggregate</xsl:when>
             <xsl:otherwise>
                 <xsl:message terminate="yes">Unrecognized METS div TYPE (<xsl:value-of
                         select="@TYPE"/>)</xsl:message>
@@ -146,7 +147,7 @@
     <!-- The FileSystem div template captures processing by content model. -->
     <xsl:template
         match="m:div[ ancestor::m:structMap/@TYPE='Basic' or 
-        not(ancestor::m:structMap/@TYPE) ]"
+        not(ancestor::m:structMap/@TYPE) or ancestor::m:structMap/@TYPE='LOGICAL' ]"
         mode="contentModel">
         <xsl:param name="assignedSlug" required="no"/>
 
@@ -181,6 +182,14 @@
                         </xsl:call-template>
                     </xsl:otherwise>
                 </xsl:choose>
+            </xsl:when>
+            
+            <xsl:when test="$role='Aggregate'">
+            	<xsl:call-template name="basic:Container">
+                    <xsl:with-param name="div" select="."/>
+                    <xsl:with-param name="assignedSlug" select="$assignedSlug"/>
+                    <xsl:with-param name="isAggregate" select="'yes'"/>
+                </xsl:call-template>
             </xsl:when>
 
             <!-- Reference is default when the div doesn't contain anything. -->
@@ -225,6 +234,7 @@
         <xsl:param name="assignedSlug" required="no"/>
         <xsl:param name="sort" select="'none'"/>
         <xsl:param name="isCollection" required="no" select="false"/>
+        <xsl:param name="isAggregate" required="no" select="false"/>
 
         <!-- output FOXML -->
         <xsl:apply-templates select="$div" mode="common:write-foxml">
@@ -244,6 +254,12 @@
                     <fmodel:hasModel>
                         <xsl:attribute name="rdf:resource"><xsl:value-of select="$cdr-model"
                             />Collection</xsl:attribute>
+                    </fmodel:hasModel>
+                </xsl:if>
+                <xsl:if test="$isAggregate eq 'yes'">
+                    <fmodel:hasModel>
+                        <xsl:attribute name="rdf:resource"><xsl:value-of select="$cdr-model"
+                            />AggregateWork</xsl:attribute>
                     </fmodel:hasModel>
                 </xsl:if>
             </xsl:with-param>

@@ -33,8 +33,8 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 import org.swordapp.server.SwordWorkspace;
 
-import edu.unc.lib.dl.cdr.services.sword.PackagingType;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.PackagingType;
 
 /**
  * Generates service document from all containers which are the immediate children of the starting path.
