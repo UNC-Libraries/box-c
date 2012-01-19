@@ -98,7 +98,6 @@
 	</bean>
 	
 	<bean id="accessControlUtils" class="edu.unc.lib.dl.fedora.AccessControlUtils" init-method="init">
-	  <property name="onlyCacheReadPermissions" value="true"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="cacheDepth" value="${access.cache.depth}"/>
 		<property name="cacheLimit" value="${access.cache.limit}"/>
