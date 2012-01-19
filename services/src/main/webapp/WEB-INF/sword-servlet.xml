@@ -104,23 +104,35 @@
 			</bean>
 		</property>
 	</bean>
-
+	
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
-		<property name="managementClient" ref="managementClient" />
-		<property name="accessClient" ref="accessClient" />
-		<property name="operationsMessageSender" ref="operationsMessageSender" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-		<property name="sipProcessorFactory" ref="sipProcessorFactory" />
-		<property name="aipIngestPipeline" ref="aipIngestPipeline" />
-		<property name="schematronValidator" ref="schematronValidator" />
-		<property name="containerContentsHelper">
-			<bean class="edu.unc.lib.dl.util.ContainerContentsHelper">
-				<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-			</bean>
-		</property>
-		<property name="mailNotifier" ref="mailNotifier" />
-		<property name="available" value="true" />
+		<property name="managementClient" ref="managementClient"/>
+		<property name="accessClient" ref="accessClient"/>
+		<property name="aipIngestPipeline" ref="aipIngestPipeline"/>
+		<property name="operationsMessageSender" ref="operationsMessageSender"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="sipProcessorFactory" ref="sipProcessorFactory"/>
+		<property name="mailNotifier" ref="mailNotifier"/>
+		<property name="schematronValidator" ref="schematronValidator"/>
+		<property name="batchIngestQueue" ref="batchIngestQueue"/>
+		<lookup-method name="createBatchIngestTask" bean="batchIngestTask"/>		
+		<property name="available" value="true"/>
 	</bean>
+	
+	<bean id="batchIngestQueue" class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">
+		  <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
+	</bean>
+	
+	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">
+		<property name="managementClient" ref="managementClient"/>
+		<property name="accessClient" ref="accessClient"/>
+		<property name="operationsMessageSender" ref="operationsMessageSender"/>
+		<property name="mailNotifier" ref="mailNotifier"/>
+		<property name="agentFactory" ref="agentFactory"/>
+		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
+		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
+	</bean>
+	
 
 	<bean name="agentFactory" class="edu.unc.lib.dl.agents.AgentFactory">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
@@ -199,7 +211,7 @@
 	
 	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
-		<property name="agentManager" ref="agentManager"/>
+		<property name="agentFactory" ref="agentFactory"/>
 	</bean>
 	
 	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ServiceDocumentManagerImpl" 
