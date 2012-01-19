@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.sword.managers;
+package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Feed;

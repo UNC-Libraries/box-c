@@ -1,0 +1,11 @@
+PREFIX fedora-model: <info:fedora/fedora-system:def/model#>
+PREFIX cdr-base: <http://cdr.unc.edu/definitions/1.0/base-model.xml#> 
+SELECT ?pid ?slug
+FROM <%1$s>
+WHERE
+{
+	?containerPid cdr-base:contains ?pid .
+	?pid cdr-base:slug ?slug .
+	?pid fedora-model:hasModel <info:fedora/cdr-model:Container> .
+	FILTER ( ?containerPid = <%2$s>)
+}

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.sword.managers;
+package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -33,7 +33,7 @@ import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
-import edu.unc.lib.dl.cdr.services.sword.SwordConfigurationImpl;
+import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.services.DigitalObjectManager;

@@ -188,21 +188,21 @@
 	
 	<!-- SWORD config -->
 
-	<bean id="config" class="edu.unc.lib.dl.cdr.services.sword.SwordConfigurationImpl"
+	<bean id="config" class="edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl"
 		init-method="init">
 		<property name="authType" value="Basic"/>
 		<property name="basePath" ref="swordPath"/>
 	</bean>
 	
-	<bean id="collectionListManager" class="edu.unc.lib.dl.cdr.services.sword.managers.CollectionListManagerImpl">
+	<bean id="collectionListManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl">
 	</bean>
 	
-	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.services.sword.managers.CollectionDepositManagerImpl">
+	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="agentManager" ref="agentManager"/>
 	</bean>
 	
-	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.services.sword.managers.ServiceDocumentManagerImpl" 
+	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ServiceDocumentManagerImpl" 
 		init-method="init">
 	</bean>
 	
@@ -210,6 +210,6 @@
 	
 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
 	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"></bean>
-	<context:component-scan base-package="edu.unc.lib.dl.cdr.services.sword.servlets" />
+	<context:component-scan base-package="edu.unc.lib.dl.cdr.sword.server.servlets" />
 
 </beans>

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.sword.managers;
+package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import java.io.IOException;
 import java.util.ArrayList;

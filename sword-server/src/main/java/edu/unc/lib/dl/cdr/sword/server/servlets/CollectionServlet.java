@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.sword.servlets;
+package edu.unc.lib.dl.cdr.sword.server.servlets;
 
 import java.io.IOException;
 
@@ -31,7 +31,7 @@ import org.swordapp.server.CollectionAPI;
 import org.swordapp.server.CollectionDepositManager;
 import org.swordapp.server.CollectionListManager;
 
-import edu.unc.lib.dl.cdr.services.sword.SwordConfigurationImpl;
+import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 
 @Controller
 @RequestMapping(SwordConfigurationImpl.COLLECTION_PATH)
