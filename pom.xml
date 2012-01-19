@@ -220,6 +220,9 @@
 						<exclude>**/*.ir</exclude>
 						<exclude>**/*.xcf</exclude>
 						<exclude>**/*.pl</exclude>
+						<exclude>**/*.foxml</exclude>
+						<exclude>**/*.txt</exclude>
+						<exclude>**/*.properties</exclude>
 						<exclude>**/robots.txt</exclude>
 					</excludes>
 					<mapping>
