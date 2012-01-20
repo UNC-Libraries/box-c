@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +38,10 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
 import org.joda.time.DateTime;
 
 import edu.unc.lib.dl.agents.Agent;
+import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -50,7 +49,6 @@ import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
 import edu.unc.lib.dl.fedora.ManagementClient.State;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
@@ -61,7 +59,6 @@ import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.Checksum;
 import edu.unc.lib.dl.util.ContainerContentsHelper;
-import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
@@ -124,7 +121,8 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @see edu.unc.lib.dl.services.DigitalObjectManager#add(java.lang.String, java.io.File, edu.unc.lib.dl.agents.Agent,
 	 * edu.unc.lib.dl.agents.PersonAgent, java.lang.String)
 	 */
-	public void addBatch(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
+	public IngestResult addBatch(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
+		IngestResult result = new IngestResult();
 		ArchivalInformationPackage aip = null;
 		try {
 			availableCheck();
@@ -141,10 +139,20 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 			aip = this.getAipIngestPipeline().processAIP(aip);
 
 			// persist the AIP to disk
-			aip.prepareIngest(message, user.getName());
+			String submitter = null;
+			if(PersonAgent.class.isInstance(user)) {
+				submitter = ((PersonAgent)user).getOnyen();
+			} else {
+				submitter = user.getName();
+			}
+			aip.prepareIngest(message, submitter);
 
 			// move the AIP into the ingest queue.
 			this.getBatchIngestQueue().add(aip.getTempFOXDir());
+
+			result.originalDepositID = aip.getDepositID();
+			result.derivedPIDs = aip.getTopPIDs();
+			return result;
 		} catch (IngestException e) {
 			// exception on AIP preparation, no transaction started
 			log.info("User level exception on ingest, prior to Fedora transaction", e);
@@ -416,9 +424,8 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 				oldXML = new SAXBuilder().build(bais);
 				bais.close();
 				newXML = ContainerContentsHelper.remove(oldXML, pid);
-				String loc = this.getManagementClient().upload(newXML);
-				this.getManagementClient().modifyDatastreamByReference(parent, "MD_CONTENTS", false,
-						"removing child object from this container", new ArrayList<String>(), "List of Contents", "text/xml", null, ChecksumType.MD5, loc);
+				this.getManagementClient().modifyInlineXMLDatastream(parent, "MD_CONTENTS", false,
+						"removing child object from this container", new ArrayList<String>(), "List of Contents", newXML);
 			}
 		} catch (JDOMException e) {
 			IllegalRepositoryStateException irs = new IllegalRepositoryStateException(
@@ -569,14 +576,13 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 
 		try {
-			String loc = this.getManagementClient().upload(modsContent);
 			if (modsExists) {
-				result = this.getManagementClient().modifyDatastreamByReference(pid, modsID, false, message,
-						new ArrayList<String>(), modsLabel, "text/xml", null, ChecksumType.MD5, loc);
+				result = this.getManagementClient().modifyInlineXMLDatastream(pid, modsID, false, message,
+						new ArrayList<String>(), modsLabel, modsContent);
 				logger.logEvent(Type.INGESTION, message, pid, modsID);
 			} else {
-				result = this.getManagementClient().addManagedDatastream(pid, modsID, false, message,
-						new ArrayList<String>(), modsLabel, true, "text/xml", loc);
+				result = this.getManagementClient().addInlineXMLDatastream(pid, modsID, false, message,
+						new ArrayList<String>(), modsLabel, true, modsContent);
 				logger.logEvent(Type.CREATION, message, pid, modsID);
 			}
 		} catch (FedoraException e) {
@@ -722,15 +728,14 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 				exists = false;
 			}
 			newXML = ContainerContentsHelper.addChildContentListInCustomOrder(oldXML, destination, moving, reordered);
-			String loc = this.getManagementClient().upload(newXML);
 			if (exists) {
-				msgTimestamp = this.getManagementClient().modifyDatastreamByReference(destination, "MD_CONTENTS", false,
+				msgTimestamp = this.getManagementClient().modifyInlineXMLDatastream(destination, "MD_CONTENTS", false,
 						"adding " + moving.size() + " child resources to container", new ArrayList<String>(),
-						"List of Contents", "text/xml", null, ChecksumType.MD5, loc);
+						"List of Contents", newXML);
 			} else {
-				msgTimestamp = this.getManagementClient().addManagedDatastream(destination, "MD_CONTENTS", false,
+				msgTimestamp = this.getManagementClient().addInlineXMLDatastream(destination, "MD_CONTENTS", false,
 						"added " + moving.size() + " child resources to container", new ArrayList<String>(),
-						"List of Contents", false, "text/xml", loc);
+						"List of Contents", false, newXML);
 			}
 			destContentInventoryUpdated = true;
 			// write the log events
@@ -807,7 +812,13 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 			aip = this.getAipIngestPipeline().processAIP(aip);
 
 			// persist the AIP to disk
-			aip.prepareIngest(message, user.getName());
+			String submitter = null;
+			if(PersonAgent.class.isInstance(user)) {
+				submitter = ((PersonAgent)user).getOnyen();
+			} else {
+				submitter = user.getName();
+			}
+			aip.prepareIngest(message, submitter);
 
 			// move the AIP into the ingest queue.
 			// run ingest task immediately and wait for it.

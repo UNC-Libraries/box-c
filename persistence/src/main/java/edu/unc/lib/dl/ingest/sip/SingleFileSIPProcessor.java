@@ -70,12 +70,6 @@ public class SingleFileSIPProcessor implements SIPProcessor {
 
 		PID pid = this.getPidGenerator().getNextPID();
 
-		// place the object within a container path
-		Set<PID> topPIDs = new HashSet<PID>();
-		topPIDs.add(pid);
-		aip.setTopPIDs(topPIDs);
-		aip.setContainerPlacement(sip.getContainerPID(), pid, null, null);
-
 		// create FOXML stub document
 		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(pid.getPid());
 
@@ -118,7 +112,7 @@ public class SingleFileSIPProcessor implements SIPProcessor {
 			label = ModsXmlHelper.getFormattedLabelText(mods.getRootElement());
 			Element root = mods.getRootElement();
 			root.detach();
-			FOXMLJDOMUtil.setDatastreamXmlContent(foxml, "MD_DESCRIPTIVE", "Descriptive Metadata (MODS)", root, true);
+			FOXMLJDOMUtil.setInlineXMLDatastreamContent(foxml, "MD_DESCRIPTIVE", "Descriptive Metadata (MODS)", root, true);
 		} catch (JDOMException e) {
 			throw new IngestException("Error parsing MODS xml.", e);
 		} catch (IOException e) {
@@ -127,6 +121,12 @@ public class SingleFileSIPProcessor implements SIPProcessor {
 
 		// set the label
 		FOXMLJDOMUtil.setProperty(foxml, FOXMLJDOMUtil.ObjectProperty.label, label);
+
+		// place the object within a container path
+		Set<PID> topPIDs = new HashSet<PID>();
+		topPIDs.add(pid);
+		aip.setTopPIDs(topPIDs);
+		aip.setContainerPlacement(sip.getContainerPID(), pid, null, null, label);
 
 		// save FOXML to AIP
 		aip.saveFOXMLDocument(pid, foxml);

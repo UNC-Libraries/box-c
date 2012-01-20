@@ -54,20 +54,13 @@ public class SingleFolderSIPProcessor implements SIPProcessor {
 		// Note: container must exist.
 		PID pid = this.getPidGenerator().getNextPID();
 
-		// place the object within a container path
-		Set<PID> topPIDs = new HashSet<PID>();
-		topPIDs.add(pid);
-		aip.setTopPIDs(topPIDs);
-		aip.setContainerPlacement(sip.getContainerPID(), pid, null, null);
-
 		// create FOXML stub document
 		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(pid.getPid());
 
 		// add the contents file
 		Element structMap = new Element("structMap", JDOMNamespaceUtil.METS_NS);
 		structMap.addContent(new Element("div", JDOMNamespaceUtil.METS_NS).setAttribute("TYPE", "Container"));
-		Element contents = FOXMLJDOMUtil.makeXMLManagedDatastreamElement("MD_CONTENTS", "List of Contents", "MD_CONTENTS1.0", structMap, false);
-		foxml.getRootElement().addContent(contents);
+		FOXMLJDOMUtil.setInlineXMLDatastreamContent(foxml, "MD_CONTENTS", "List of Contents", structMap, false);
 
 		// Note: either slug or label or MODS title must be set.
 		// parse the MODS and insert into FOXML
@@ -90,7 +83,7 @@ public class SingleFolderSIPProcessor implements SIPProcessor {
 				}
 				Element root = mods.getRootElement();
 				root.detach();
-				FOXMLJDOMUtil.setDatastreamXmlContent(foxml, "MD_DESCRIPTIVE", "Descriptive Metadata (MODS)", root, true);
+				FOXMLJDOMUtil.setInlineXMLDatastreamContent(foxml, "MD_DESCRIPTIVE", "Descriptive Metadata (MODS)", root, true);
 			} catch (JDOMException e) {
 				throw new IngestException("Error parsing MODS xml.", e);
 			} catch (IOException e) {
@@ -112,6 +105,12 @@ public class SingleFolderSIPProcessor implements SIPProcessor {
 
 		// set the label
 		FOXMLJDOMUtil.setProperty(foxml, FOXMLJDOMUtil.ObjectProperty.label, label);
+
+		// place the object within a container path
+		Set<PID> topPIDs = new HashSet<PID>();
+		topPIDs.add(pid);
+		aip.setTopPIDs(topPIDs);
+		aip.setContainerPlacement(sip.getContainerPID(), pid, null, null, label);
 
 		// save FOXML to AIP
 		aip.saveFOXMLDocument(pid, foxml);

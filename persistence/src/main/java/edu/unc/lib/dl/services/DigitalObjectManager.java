@@ -50,7 +50,7 @@ public interface DigitalObjectManager {
 	 *           a log message for this ingest action
 	 * @return a log of ingest events
 	 */
-	public abstract void addBatch(SubmissionInformationPackage sip, Agent user, String message) throws IngestException;
+	public abstract IngestResult addBatch(SubmissionInformationPackage sip, Agent user, String message) throws IngestException;
 
 	/**
 	 * Adds a relationship between two repository objects.

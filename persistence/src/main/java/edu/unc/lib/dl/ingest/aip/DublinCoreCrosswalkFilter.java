@@ -64,7 +64,7 @@ public class DublinCoreCrosswalkFilter implements AIPIngestFilter {
 				dc.addContent(new Element("title", JDOMNamespaceUtil.DC_NS).setText(FOXMLJDOMUtil.getLabel(doc)));
 			}
 			dc.detach();
-			FOXMLJDOMUtil.setDatastreamXmlContent(doc, dest, "Internal XML Metadata", dc, false);
+			FOXMLJDOMUtil.setInlineXMLDatastreamContent(doc, dest, "Internal XML Metadata", dc, false);
 			aip.saveFOXMLDocument(pid, doc);
 		}
 		return aip;

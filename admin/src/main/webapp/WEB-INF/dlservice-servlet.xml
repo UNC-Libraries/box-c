@@ -88,26 +88,26 @@
 
 	<bean id="idService" class="edu.unc.lib.dl.service.impl.IdServiceImpl">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-		<property name="baseURL" value="https://${fedora.host}${fedora.port}/fedora/" />
+		<property name="baseURL" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}/" />
 		<property name="name" value="${fedora.admin.username}" />
 		<property name="pass" value="${fedora.admin.password}" />
 	</bean>
 
 	<bean id="gatherRelsExtInformationService"
 		class="edu.unc.lib.dl.service.impl.GatherRelsExtInformationServiceImpl">
-		<property name="baseURL" value="https://${fedora.host}${fedora.port}/fedora/" />
+		<property name="baseURL" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}/" />
 		<property name="name" value="${fedora.admin.username}" />
 		<property name="pass" value="${fedora.admin.password}" />
 		<property name="idService" ref="idService" />
 		<property name="dataService" ref="dataService" />
 		<property name="baseIrUrl">
-			<value>https://${repository.host}${repository.port}/${admin.webapp.name}/ir/info/
+			<value>${repository.protocol}://${repository.host}${repository.port}/${admin.webapp.name}/ir/info/
 			</value>
 		</property>
 	</bean>
 
 	<bean id="constituentService" class="edu.unc.lib.dl.service.impl.ConstituentServiceImpl">
-		<property name="baseURL" value="https://${fedora.host}${fedora.port}/fedora/" />
+		<property name="baseURL" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}/" />
 		<property name="name" value="${fedora.admin.username}" />
 		<property name="pass" value="${fedora.admin.password}" />
 		<property name="idService" ref="idService" />
@@ -421,14 +421,14 @@
 	</bean>
 	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
 		init-method="init">
-		<property name="fedoraContextUrl" value="https://${fedora.host}${fedora.port}/fedora" />
+		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
 		<property name="username" value="${fedora.admin.username}" />
 		<property name="password" value="${fedora.admin.password}" />
 		<property name="accessClient" ref="accessClient"/>
 	</bean>
 	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient"
 		init-method="init">
-		<property name="fedoraContextUrl" value="https://${fedora.host}${fedora.port}/fedora" />
+		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
 		<property name="username" value="${fedora.admin.username}" />
 		<property name="password" value="${fedora.admin.password}" />
 	</bean>

@@ -60,6 +60,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 	private final Map<PID, ContainerPlacement> topPID2Placement = new HashMap<PID, ContainerPlacement>();
 	private boolean sendEmail = false;
 	private List<URI> emailRecipients = new ArrayList<URI>();
+	private PID depositID = null;
 
 	/**
 	 * Makes an AIP with a pre-populated prep dir.
@@ -173,17 +174,27 @@ public class AIPImpl implements ArchivalInformationPackage {
 	 *
 	 */
 	private void serializeLoggerEventsToFoxml() {
+		File premisDir = new File(this.prepDir, "premisEvents");
+		premisDir.mkdir();
 		for(PID pid : this.getPIDs()) {
 			Document doc = this.getFOXMLDocument(pid);
-			Element eventsEl = FOXMLJDOMUtil.getDatastream(doc, "MD_EVENTS");
-			if (eventsEl == null) {
-				eventsEl = this.eventLogger.getObjectEvents(pid);
-				Element eventsDS = FOXMLJDOMUtil.makeXMLManagedDatastreamElement("MD_EVENTS", "PREMIS Events Metadata",
-						"MD_EVENTS1.0", eventsEl, false);
-				doc.getRootElement().addContent(eventsDS);
-			} else {
-				this.eventLogger.appendLogEvents(pid, eventsEl);
+			Document premis = new Document(this.eventLogger.getObjectEvents(pid));
+			String filename = pid.getPid().hashCode()+".xml";
+			FileWriter fw = null;
+			try {
+				fw = new FileWriter(new File(premisDir, filename));
+				new XMLOutputter().output(premis, fw);
+			} catch(IOException e) {
+				throw new Error("Cannot write premis events file", e);
+			} finally {
+				if(fw != null) {
+					try {
+						fw.close();
+					} catch (IOException ignored) {}
+				}
 			}
+			Element eventsDS = FOXMLJDOMUtil.makeLocatorDatastream("MD_EVENTS", "M", "premisEvents:"+filename, "text/xml", "URL", "PREMIS Events Metadata", false, null);
+			doc.getRootElement().addContent(eventsDS);
 			this.saveFOXMLDocument(pid, doc);
 		}
 	}
@@ -244,12 +255,13 @@ public class AIPImpl implements ArchivalInformationPackage {
 	// }
 
 	@Override
-	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder) {
+	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder, String label) {
 		ContainerPlacement p = new ContainerPlacement();
 		p.parentPID = parentPID;
 		p.pid = topPID;
 		p.designatedOrder = designatedOrder;
 		p.sipOrder = sipOrder;
+		p.label = label;
 		this.topPID2Placement.put(topPID, p);
 	}
 
@@ -312,6 +324,18 @@ public class AIPImpl implements ArchivalInformationPackage {
 	@Override
 	public ContainerPlacement getContainerPlacement(PID pid) {
 		return this.topPID2Placement.get(pid);
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getDepositID()
+	 */
+	@Override
+	public PID getDepositID() {
+		return this.depositID;
+	}
+
+	public void setDepositID(PID depositID) {
+		this.depositID = depositID;
 	}
 
 }

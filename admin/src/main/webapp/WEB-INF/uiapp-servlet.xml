@@ -292,7 +292,7 @@
 		<property name="dataService" ref="dataService"/>
 		<property name="marshaller" ref="marshaller"/>
 		<property name="unmarshaller" ref="marshaller"/>
-		<property name="defaultUri" value="https://${repository.host}${repository.port}/${admin.webapp.name}/ws"/>
+		<property name="defaultUri" value="${repository.protocol}://${repository.host}${repository.port}/${admin.webapp.name}/ws"/>
 		<property name="messageSenders" ref="commonsMessageSender"/>
 		<property name="utilityMethods" ref="utilityMethods"/>
 	</bean>
