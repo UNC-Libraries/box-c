@@ -64,7 +64,7 @@ public interface ArchivalInformationPackage {
 	 * @param designatedOrder
 	 * @param sipOrder
 	 */
-	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder);
+	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder, String label);
 
 	public ContainerPlacement getContainerPlacement(PID pid);
 
@@ -74,5 +74,17 @@ public interface ArchivalInformationPackage {
 	 * @throws IngestException
 	 */
 	void prepareIngest(String message, String submitter) throws IngestException;
+
+	/**
+	 * Gets the ID of the deposit.
+	 * @return
+	 */
+	public PID getDepositID();
+
+	/**
+	 * Sets the ID of the deposit.
+	 * @param pid
+	 */
+	public void setDepositID(PID pid);
 
 }

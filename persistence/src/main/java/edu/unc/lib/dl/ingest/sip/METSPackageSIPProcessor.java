@@ -175,6 +175,14 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 			metsPack.getPreIngestEventLogger().addAgent(createEvent, name, "Name", role);
 		}
 
+		// extract the METS OBJID, use for depositID if in uuid namespace
+		String objid = mets.getRootElement().getAttributeValue("OBJID");
+		if(objid != null && objid.startsWith("uuid:")) {
+			aip.setDepositID(new PID(objid));
+		} else { // no uuid for deposit, assign one
+			aip.setDepositID(this.getPidGenerator().getNextPID());
+		}
+
 		// move over pre-ingest events
 		if (metsPack.getPreIngestEventLogger().hasEvents()) {
 			for (PID p : rdfaip.getPIDs()) {
@@ -304,7 +312,8 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 						throw new IngestException("METS problem: sipOrder attribute must be an integer.", nfe);
 					}
 				}
-				aip.setContainerPlacement(metsPack.getContainerPID(), pid, designatedOrder, sipOrder);
+				String label = e.getAttributeValue("LABEL");
+				aip.setContainerPlacement(metsPack.getContainerPID(), pid, designatedOrder, sipOrder, label);
 			}
 			aip.setFOXMLFile(pid, new File(output));
 		}

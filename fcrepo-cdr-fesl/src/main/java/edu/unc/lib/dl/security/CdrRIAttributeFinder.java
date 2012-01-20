@@ -27,12 +27,21 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.fcrepo.server.security.xacml.MelcoeXacmlException;
+import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderConfigUtil;
+import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderException;
+import org.fcrepo.server.security.xacml.util.ContextUtil;
+import org.fcrepo.server.security.xacml.util.RelationshipResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AttributeFactory;
@@ -119,18 +128,67 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 			Map<String, String> options = AttributeFinderConfigUtil
 					.getOptionMap(this.getClass().getName());
 
+			String roleString = options.get("cdr.roles");
+			String rolePrefix = options.get("cdr.role.prefix");
+			String tripleStorePrefix = options.get("cdr.role.triplestore.prefix");
+
+			String[] roles = roleString.split(" ");
+
+			logger.debug("loadSettingsFromOptions: roleString: " + roleString);
+			logger.debug("loadSettingsFromOptions: rolePrefix: " + rolePrefix);
+			logger.debug("loadSettingsFromOptions: tripleStorePrefix: " + tripleStorePrefix);
+
+			// load roles from config
+			Properties accessControlProperties = new Properties();
+			for (String role : roles) {
+				logger.debug("loadSettingsFromOptions: role: " + role);
+				String permissionString = options.get(rolePrefix + role);
+				accessControlProperties.put(tripleStorePrefix + role, permissionString);
+			}
+
+			// load caching settings and tripleStore
+			String username = options.get("cdr.username");
+			String password = options.get("cdr.password");
+			String itqlEndpointURL = options.get("cdr.itql.endpoint.url");
+			String serverModelUri = options.get("cdr.server.model.uri");
+			int cacheDepth = convertStringToIntOtherwiseReturnZero(options.get("cdr.cache.depth"));
+			int cacheLimit = convertStringToIntOtherwiseReturnZero(options.get("cdr.cache.limit"));
+			int cacheResetTime = convertStringToIntOtherwiseReturnZero(options.get("cdr.cache.reset.time.hours"));
+
+			TripleStoreQueryServiceMulgaraImpl tripleStoreQueryService = new TripleStoreQueryServiceMulgaraImpl();
+			tripleStoreQueryService.setName(username); // fedoraAdmin
+			tripleStoreQueryService.setPass(password); // inst1repo
+			tripleStoreQueryService.setItqlEndpointURL(itqlEndpointURL); // "http://nagin:8080/webservices/services/ItqlBeanService"
+			tripleStoreQueryService.setServerModelUri(serverModelUri); // "rmi://nagin/server1#"
+
 			// Load CDR configuration
 			accessControlUtils = new AccessControlUtils();
-			accessControlUtils.loadSettingsFromOptions(options);
-			accessControlUtils.initForFedoraBasedAccessControl(false,
-					attributeFactory);
-			accessControlUtils
-					.startCacheCleanupThreadForFedoraBasedAccessControl();
+			accessControlUtils.setAccessControlProperties(accessControlProperties);
+			accessControlUtils.setAttributeFactory(attributeFactory);
+			accessControlUtils.setOnlyCacheReadPermissions(false);
+			accessControlUtils.setTripleStoreQueryService(tripleStoreQueryService);
+			accessControlUtils.setCacheDepth(cacheDepth);
+			accessControlUtils.setCacheLimit(cacheLimit);
+			accessControlUtils.setCacheResetTime(cacheResetTime);
+			accessControlUtils.init();
+			accessControlUtils.startCacheCleanupThreadForFedoraBasedAccessControl();
 
 		} catch (AttributeFinderException afe) {
 			logger.error("Attribute finder not initialised:"
 					+ this.getClass().getName(), afe);
 		}
+	}
+
+	private int convertStringToIntOtherwiseReturnZero(String value) {
+		int result = 0;
+
+		try {
+			result = Integer.parseInt(value);
+		} catch (Exception e) {
+			return 0;
+		}
+
+		return result;
 	}
 
 	/**

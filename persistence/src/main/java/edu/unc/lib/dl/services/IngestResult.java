@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2012 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.util;
+package edu.unc.lib.dl.services;
 
-import java.io.Serializable;
+import java.util.Set;
 
 import edu.unc.lib.dl.fedora.PID;
 
@@ -23,20 +23,13 @@ import edu.unc.lib.dl.fedora.PID;
  * @author Gregory Jansen
  *
  */
-public class ContainerPlacement implements Serializable {
-	private static final long serialVersionUID = -6481661187173513169L;
-	public PID parentPID;
-	public PID pid;
-	public String label;
-
+public class IngestResult {
 	/**
-	 * An explicit position number for this object within the parent's other children, designated by the submitter. May
-	 * be NULL.
+	 * identifier used to track this deposit within ingest queue and later the repository
 	 */
-	public Integer designatedOrder = null;
-
+	public PID originalDepositID = null;
 	/**
-	 * The position of this object within its other incoming siblings.
+	 * identifiers of objects derived from this deposit
 	 */
-	public Integer sipOrder = null;
+	public Set<PID> derivedPIDs = null;
 }

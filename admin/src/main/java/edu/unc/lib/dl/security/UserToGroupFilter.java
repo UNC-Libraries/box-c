@@ -49,17 +49,19 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class UserToGroupFilter extends OncePerRequestFilter implements
 		ServletContextAware {
 
+	// TODO: request wrapper below not needed, use a "cdrRoles" request attribute instead of parameter.
 	class FilteredRequest extends HttpServletRequestWrapper {
 		String groups;
-		
+
         public FilteredRequest(ServletRequest request, String groups) {
                 super((HttpServletRequest)request);
-        		this.groups = groups;        		
+        		this.groups = groups;
         }
 
-        public String getParameter(String paramName) {
+        @Override
+		public String getParameter(String paramName) {
         		logger.debug("in getParameter: "+paramName+ " groups: "+groups);
-        	
+
                 if(("cdrRoles".equals(paramName)) && (groups != null)) {
                         return groups;
                 }
@@ -67,7 +69,7 @@ public class UserToGroupFilter extends OncePerRequestFilter implements
         }
     }
 
-	
+
 	@Override
 	public void doFilterInternal(HttpServletRequest req,
 			HttpServletResponse res, FilterChain chain) throws IOException,
@@ -79,15 +81,15 @@ public class UserToGroupFilter extends OncePerRequestFilter implements
 		List<String> groupList = new ArrayList<String>(1);
 		boolean permitted = hasAccess(req, groupList);
 		groups = groupList.get(0);
-		
+
 		logger.debug("hasAccess groups: "+groups);
-				
+
 		if (permitted) {
 			chain.doFilter(new FilteredRequest(req, groups), res);
 		} else {
 
 			StringBuffer hostUrl = req.getRequestURL();
-			
+
 			req.setAttribute("nopermission", req.getRequestURI());
 			req.setAttribute("hostUrl", hostUrl.toString());
 			req.getRequestDispatcher("/WEB-INF/jsp/nopermission.jsp").forward(
@@ -116,10 +118,10 @@ public class UserToGroupFilter extends OncePerRequestFilter implements
 
 			logger.debug("requestURI: " + path);
 
-			
-			String members = (String) request.getHeader("isMemberOf");
+
+			String members = request.getHeader("isMemberOf");
 			groupList.add(members);
-			
+
 			logger.debug("isMemberOf: " + members);
 
 			Map<String, List<String>> usersAndGroups = null;
@@ -168,7 +170,7 @@ public class UserToGroupFilter extends OncePerRequestFilter implements
 						List<String> roles = null;
 
 						if (usersAndGroups != null) {
-							roles = (ArrayList<String>) usersAndGroups
+							roles = usersAndGroups
 									.get(user);
 						}
 

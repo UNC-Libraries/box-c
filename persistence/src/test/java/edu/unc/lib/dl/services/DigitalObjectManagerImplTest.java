@@ -237,8 +237,8 @@ public class DigitalObjectManagerImplTest {
 		PID test = new PID("test:delete");
 		this.getDigitalObjectManagerImpl().delete(test, tron, "testing delete");
 
-		verify(managementClient, times(1)).modifyDatastreamByReference(any(PID.class), eq("MD_CONTENTS"), eq(false),
-				any(String.class), (ArrayList<String>) any(), any(String.class), any(String.class), any(String.class), any(ChecksumType.class), startsWith("upload://"));
+		verify(managementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"), eq(false),
+				any(String.class), (ArrayList<String>) any(), any(String.class), any(Document.class));
 		verify(managementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class), eq(container));
 		verify(managementClient, times(1)).purgeObject(eq(test), any(String.class), eq(false));
 		verify(managementClient, times(0)).purgeObject(any(PID.class), any(String.class), eq(true));
@@ -307,9 +307,8 @@ public class DigitalObjectManagerImplTest {
 		// unless PID are uncontained)
 
 		// verify container was updated
-		verify(managementClient, times(1)).modifyDatastreamByReference(any(PID.class), eq("MD_CONTENTS"), eq(false),
-				any(String.class), any(new ArrayList<String>().getClass()), any(String.class), any(String.class),
-				any(String.class), any(ChecksumType.class), startsWith("upload://"));
+		verify(managementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"), eq(false),
+				any(String.class), any(new ArrayList<String>().getClass()), any(String.class), any(Document.class));
 		verify(managementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class), eq(container));
 
 		// purge call will fail resulting in a log dump of rollback info
@@ -359,9 +358,8 @@ public class DigitalObjectManagerImplTest {
 		// unless PID are uncontained)
 
 		// verify container was updated
-		verify(managementClient, times(1)).modifyDatastreamByReference(any(PID.class), eq("MD_CONTENTS"), eq(false),
-				any(String.class), any(new ArrayList<String>().getClass()), any(String.class), any(String.class),
-				any(String.class), any(ChecksumType.class), startsWith("upload://"));
+		verify(managementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"), eq(false),
+				any(String.class), any(new ArrayList<String>().getClass()), any(String.class), any(Document.class));
 		verify(managementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class), eq(container));
 
 		// purge call will fail resulting in a log dump of rollback info
@@ -482,6 +480,7 @@ public class DigitalObjectManagerImplTest {
 			when(this.tripleStoreQueryService.verify(any(PID.class))).thenReturn(container);
 
 			when(this.managementClient.upload(any(File.class))).thenReturn("upload:19238");
+			when(this.managementClient.upload(any(Document.class))).thenReturn("upload:19238");
 
 			ArrayList<URI> ans = new ArrayList<URI>();
 			ans.add(ContentModelHelper.Model.CONTAINER.getURI());

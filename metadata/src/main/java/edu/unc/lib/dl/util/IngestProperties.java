@@ -46,6 +46,7 @@ public class IngestProperties {
 	private String submitter = null;
 	private String[] emailRecipients = null;
 	private String message = null;
+	private int managedBytes = -1;
 	private Map<PID, ContainerPlacement> containerPlacements = null;
 
 	public IngestProperties(File baseDir) throws Exception {
@@ -73,6 +74,12 @@ public class IngestProperties {
 			this.emailRecipients = er.split(",");
 		}
 		this.message = props.getProperty("message");
+		String bytes = props.getProperty("managedBytes");
+		if(bytes != null) {
+			try {
+				this.managedBytes = Integer.parseInt(bytes);
+			} catch(NumberFormatException e) {}
+		}
 		this.containerPlacements = new HashMap<PID, ContainerPlacement>();
 		for (Entry<Object, Object> e : props.entrySet()) {
 			String key = (String) e.getKey();
@@ -110,6 +117,9 @@ public class IngestProperties {
 		}
 		if (this.message != null)
 			props.put("message", this.message);
+		if(this.managedBytes != -1) {
+			props.put("managedBytes", String.valueOf(this.managedBytes));
+		}
 		if (this.containerPlacements != null && this.containerPlacements.size() > 0) {
 			int count = 0;
 			for (ContainerPlacement p : this.containerPlacements.values()) {
@@ -165,5 +175,13 @@ public class IngestProperties {
 
 	public void setContainerPlacements(Map<PID, ContainerPlacement> placements) {
 		this.containerPlacements = placements;
+	}
+
+	public int getManagedBytes() {
+		return managedBytes;
+	}
+
+	public void setManagedBytes(int managedBytes) {
+		this.managedBytes = managedBytes;
 	}
 }
