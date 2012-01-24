@@ -64,6 +64,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 
 	/**
 	 * Makes an AIP with a pre-populated prep dir.
+	 *
 	 * @param prepDir
 	 *           directory containing FOXML files and the data directory
 	 */
@@ -154,15 +155,24 @@ public class AIPImpl implements ArchivalInformationPackage {
 	public void prepareIngest(String message, String submitter) throws IngestException {
 		// write ingest properties
 		try {
-			serializeLoggerEventsToFoxml();
+			long managedBytes = 0;
+			File premisDir = new File(this.prepDir, "premisEvents");
+			premisDir.mkdir();
+			for (PID pid : this.getPIDs()) {
+				Document doc = this.getFOXMLDocument(pid);
+				serializeLoggerEvents(doc, pid, premisDir);
+				// TODO countManagedBytes()  how to efficiently calculate?
+				this.saveFOXMLDocument(pid, doc);
+			}
 			IngestProperties props = new IngestProperties(this.prepDir);
 			List<String> recipients = new ArrayList<String>();
-			for(URI r : this.emailRecipients) {
+			for (URI r : this.emailRecipients) {
 				recipients.add(r.toString());
 			}
 			props.setEmailRecipients(recipients.toArray(new String[1]));
 			props.setContainerPlacements(topPID2Placement);
 			props.setMessage(message);
+			// props.setManagedBytes(managedBytes);
 			props.setSubmitter(submitter);
 			props.save();
 		} catch (Exception e) {
@@ -173,30 +183,26 @@ public class AIPImpl implements ArchivalInformationPackage {
 	/**
 	 *
 	 */
-	private void serializeLoggerEventsToFoxml() {
-		File premisDir = new File(this.prepDir, "premisEvents");
-		premisDir.mkdir();
-		for(PID pid : this.getPIDs()) {
-			Document doc = this.getFOXMLDocument(pid);
-			Document premis = new Document(this.eventLogger.getObjectEvents(pid));
-			String filename = pid.getPid().hashCode()+".xml";
-			FileWriter fw = null;
-			try {
-				fw = new FileWriter(new File(premisDir, filename));
-				new XMLOutputter().output(premis, fw);
-			} catch(IOException e) {
-				throw new Error("Cannot write premis events file", e);
-			} finally {
-				if(fw != null) {
-					try {
-						fw.close();
-					} catch (IOException ignored) {}
+	private void serializeLoggerEvents(Document doc, PID pid, File premisDir) {
+		Document premis = new Document(this.eventLogger.getObjectEvents(pid));
+		String filename = pid.getPid().hashCode() + ".xml";
+		FileWriter fw = null;
+		try {
+			fw = new FileWriter(new File(premisDir, filename));
+			new XMLOutputter().output(premis, fw);
+		} catch (IOException e) {
+			throw new Error("Cannot write premis events file", e);
+		} finally {
+			if (fw != null) {
+				try {
+					fw.close();
+				} catch (IOException ignored) {
 				}
 			}
-			Element eventsDS = FOXMLJDOMUtil.makeLocatorDatastream("MD_EVENTS", "M", "premisEvents:"+filename, "text/xml", "URL", "PREMIS Events Metadata", false, null);
-			doc.getRootElement().addContent(eventsDS);
-			this.saveFOXMLDocument(pid, doc);
 		}
+		Element eventsDS = FOXMLJDOMUtil.makeLocatorDatastream("MD_EVENTS", "M", "premisEvents:" + filename, "text/xml",
+				"URL", "PREMIS Events Metadata", false, null);
+		doc.getRootElement().addContent(eventsDS);
 	}
 
 	public void saveFOXMLDocument(PID pid, Document doc) {
@@ -326,7 +332,9 @@ public class AIPImpl implements ArchivalInformationPackage {
 		return this.topPID2Placement.get(pid);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getDepositID()
 	 */
 	@Override

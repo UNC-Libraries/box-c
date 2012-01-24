@@ -21,14 +21,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gregory Jansen
  *
  */
 public class StagingManager implements StagingManagerMBean {
-	private static final Logger LOG = Logger.getLogger(StagingManager.class);
+
+	private static final Logger LOG = LoggerFactory.getLogger(StagingManager.class);
+
 	private static StagingManager _instance = null;
 
 	private Map<String, String> stageToFileMap = new HashMap<String, String>();
@@ -109,12 +112,13 @@ public class StagingManager implements StagingManagerMBean {
 		dumpMappingsToLog();
 	}
 
-	private void dumpMappingsToLog() {
+	public void dumpMappingsToLog() {
 		StringBuilder prn = new StringBuilder();
 		prn.append("StagingManager mappings:\n");
 		for(Entry<String, String> e : this.stageToFileMap.entrySet()) {
 			prn.append(e.getKey()).append(" => ").append(e.getValue());
 		}
+		System.out.println(prn.toString());
 		LOG.info(prn.toString());
 	}
 

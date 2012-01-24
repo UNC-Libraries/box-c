@@ -29,11 +29,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 
 import org.apache.commons.codec.binary.Hex;
-import org.apache.log4j.Logger;
 import org.fcrepo.server.errors.LowlevelStorageException;
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.connection.JargonProperties;
-import org.irods.jargon.core.connection.SettableJargonProperties;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
@@ -46,6 +43,8 @@ import org.irods.jargon.core.query.IRODSGenQuery;
 import org.irods.jargon.core.query.IRODSQueryResultSet;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.RodsGenQueryEnum;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is an adapter to bridge between the Fedora default lowlevel storage file system interface and the iRODS
@@ -59,6 +58,7 @@ import org.irods.jargon.core.query.RodsGenQueryEnum;
  *
  */
 public class IrodsIFileSystem {
+	private static final Logger LOG = LoggerFactory.getLogger(IrodsIFileSystem.class);
 
 	public IrodsIFileSystem(int irodsBufferSize, IRODSFileSystem irodsFileSystem, IRODSAccount account)
 			throws LowlevelStorageException {
@@ -77,9 +77,6 @@ public class IrodsIFileSystem {
 
 	// private static final int BUFFER_SIZE = 32768;
 	// private static final int BUFFER_SIZE = 4194304;
-
-	/** Logger for this class. */
-	private static final Logger LOG = Logger.getLogger(IrodsIFileSystem.class);
 
 	private static final CopyResult stream2streamCopy(InputStream in, OutputStream out) throws IOException {
 		int BUFFER_SIZE = 8192;
@@ -106,7 +103,7 @@ public class IrodsIFileSystem {
 			Hex hex = new Hex();
 			result.md5 = new String(hex.encode(messageDigest.digest()));
 		} catch (IOException e) {
-			LOG.error(e);
+			LOG.error("Unexpected", e);
 			throw e;
 		} finally {
 			try {
@@ -152,7 +149,7 @@ public class IrodsIFileSystem {
 			IRODSFile ifile = irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFile(path);
 			return ifile.delete();
 		} catch (JargonException e) {
-			LOG.error(e);
+			LOG.error("Problem deleting irods file", e);
 			throw new LowlevelStorageException(true, "Problem deleting iRODS file", e);
 		} finally {
 			if (irodsFileSystem != null) {
@@ -168,7 +165,7 @@ public class IrodsIFileSystem {
 		try {
 			return this.delete(directory);
 		} catch (LowlevelStorageException e) {
-			LOG.error(e);
+			LOG.error("Unexpected",e);
 			throw new Error("Unexpected", e);
 		}
 	}
@@ -179,7 +176,7 @@ public class IrodsIFileSystem {
 			DataObjectAO doao = irodsFileSystem.getIRODSAccessObjectFactory().getDataObjectAO(account);
 			return doao.computeMD5ChecksumOnDataObject(file);
 		} catch (JargonException e) {
-			LOG.error(e);
+			LOG.error("Unexpected",e);
 			throw new IOException("Cannot compute checksum for irods file", e);
 		} finally {
 			if (irodsFileSystem != null) {
@@ -196,7 +193,7 @@ public class IrodsIFileSystem {
 			IRODSFile irodsFile = irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFile(file.getPath());
 			return irodsFile.isDirectory();
 		} catch (JargonException e) {
-			LOG.error(e);
+			LOG.error("Unexpected",e);
 			throw new Error("Unexpected", e);
 		} finally {
 			if (irodsFileSystem != null) {
@@ -215,7 +212,7 @@ public class IrodsIFileSystem {
 			String[] subdirs = irodsFile.list();
 			return subdirs;
 		} catch (JargonException e) {
-			LOG.error(e);
+			LOG.error("Unexpected",e);
 			throw new Error("Unexpected error with list", e);
 		} finally {
 			if (irodsFileSystem != null) {
@@ -261,7 +258,7 @@ public class IrodsIFileSystem {
 			};
 			return bis;
 		} catch (JargonException e) {
-			LOG.error(e);
+			LOG.error("Unexpected",e);
 			throw new LowlevelStorageException(true, "could not obtain IRODS File System", e);
 		}
 	}
@@ -355,12 +352,11 @@ public class IrodsIFileSystem {
 			return copyResult.size;
 		} catch (Exception e) {
 			rollback = true;
-			LOG.error(e);
 			throw new LowlevelStorageException(true, "IRODSFedoraFileSystem.rewrite(): [" + file.getAbsolutePath() + "]",
 					e);
 		} finally {
 			if (rollback) {
-				LOG.fatal(rollbackLog.toString());
+				LOG.error(rollbackLog.toString());
 			}
 			try {
 				irodsFileSystem.close();
@@ -400,10 +396,8 @@ public class IrodsIFileSystem {
 			}
 			return copyResult.size;
 		} catch (JargonException e) {
-			LOG.error(e);
 			throw new LowlevelStorageException(true, "IRODSFedoraFileSystem.write(): [" + file.getPath() + "]", e);
 		} catch (IOException e) {
-			LOG.error(e);
 			throw new LowlevelStorageException(true, "IRODSFedoraFileSystem.write(): [" + file.getPath() + "]", e);
 		} finally {
 			if (irodsFileSystem != null) {
@@ -464,10 +458,8 @@ public class IrodsIFileSystem {
 			IRODSQueryResultSet resultSet = irodsGenQueryExecutor.executeIRODSQuery(irodsQuery, 0);
 			return resultSet;
 		} catch (JargonException e) {
-			LOG.error(e);
 			throw new LowlevelStorageException(true, "could not obtain IRODS File System", e);
 		} catch (JargonQueryException e) {
-			LOG.error(e);
 			throw new LowlevelStorageException(true, "could not query IRODS File System", e);
 		} finally {
 			if (irodsFileSystem != null) {

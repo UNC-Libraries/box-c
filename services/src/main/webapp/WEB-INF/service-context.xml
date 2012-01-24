@@ -435,8 +435,14 @@
 	</util:set>
 	
 	<!-- Batch Ingest Service -->
-	<bean id="batchIngestQueue" class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">
-		  <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
+	<bean id="batchIngestService" class="edu.unc.lib.dl.cdr.services.BatchIngestService" init-method="init">
+	  <property name="startOnInit" value="true"/>
+		<property name="batchIngestQueue">
+			<bean class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">
+		    <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
+	    </bean>
+		</property>
+		<lookup-method name="createTask" bean="batchIngestTask"/>
 	</bean>
 	
 	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">
@@ -447,11 +453,6 @@
 		<property name="agentFactory" ref="agentFactory"/>
 		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
-	</bean>
-	
-	<bean id="batchIngestService" class="edu.unc.lib.dl.cdr.services.BatchIngestService" init-method="init">
-		<property name="batchIngestQueue" ref="batchIngestQueue"/>
-		<lookup-method name="createTask" bean="batchIngestTask"/>		
 	</bean>
 
 	<bean id="mailNotifier" class="edu.unc.lib.dl.services.MailNotifier">

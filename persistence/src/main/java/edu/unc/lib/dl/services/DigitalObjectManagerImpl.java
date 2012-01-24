@@ -155,8 +155,10 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 			return result;
 		} catch (IngestException e) {
 			// exception on AIP preparation, no transaction started
-			log.info("User level exception on ingest, prior to Fedora transaction", e);
-			aip.delete();
+			log.error("Exception during submission or enqueuing", e);
+			if(aip != null) {
+				aip.delete();
+			}
 			throw e;
 		}
 	}

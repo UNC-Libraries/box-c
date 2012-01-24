@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.fcrepo.server.Module;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.ConnectionPoolNotFoundException;
@@ -39,6 +38,8 @@ import org.irods.jargon.core.connection.SettableJargonProperties;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.query.IRODSQueryResultSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * iRODS implementation of the Fedora's LowlevelStorage.
@@ -51,7 +52,7 @@ import org.irods.jargon.core.query.IRODSQueryResultSet;
  */
 public class IrodsLowlevelStorageModule extends Module implements ILowlevelStorage, IListable {
 	/** Logger for this class. */
-	private static final Logger LOG = Logger.getLogger(IrodsLowlevelStorageModule.class.getName());
+	private static final Logger LOG = LoggerFactory.getLogger(IrodsLowlevelStorageModule.class.getName());
 
 	private IRODSFileSystem irodsFileSystem;
 
@@ -77,7 +78,7 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 				"path_algorithm"), BACKSLASH_IS_ESCAPE("backslash_is_escape"), CONNECTION_POOL("connectionPool"), PATH_REGISTRY(
 				"path_registry"), IRODS_HOST("irods_host"), IRODS_PORT("irods_port"), IRODS_USERNAME("irods_username"), IRODS_PASSWORD(
 				"irods_password"), IRODS_HOME_DIRECTORY("irods_homeDirectory"), IRODS_ZONE("irods_zone"), IRODS_DEFAULT_RESOURCE(
-				"irods_defaultStorageResource"), IRODS_READ_BUFFER_SIZE("irods_readBufferSize");
+				"irods_defaultStorageResource"), IRODS_READ_BUFFER_SIZE("irods_readBufferSize"), STAGING_LOCATIONS("stagingLocations");
 
 		private final String name;
 
