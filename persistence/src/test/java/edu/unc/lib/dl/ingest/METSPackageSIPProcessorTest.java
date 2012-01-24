@@ -38,10 +38,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
+import edu.unc.lib.dl.ingest.aip.MODSValidationFilter;
 import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
 import edu.unc.lib.dl.ingest.sip.InvalidMETSException;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
+import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.services.AgentManager;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
@@ -64,6 +66,8 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 
 	@Resource
 	private METSPackageSIPProcessor metsPackageSIPProcessor = null;
+	@Resource
+	private SchematronValidator schematronValidator; 
 
 	private void exceptionTest(String testFilePath, String testMsg) throws IngestException {
 		File testFile = tempCopy(new File(testFilePath));
@@ -85,6 +89,14 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 
 	public void setMetsPackageSIPProcessor(METSPackageSIPProcessor metsPackageSIPProcessor) {
 		this.metsPackageSIPProcessor = metsPackageSIPProcessor;
+	}
+
+	public SchematronValidator getSchematronValidator() {
+		return schematronValidator;
+	}
+
+	public void setSchematronValidator(SchematronValidator schematronValidator) {
+		this.schematronValidator = schematronValidator;
 	}
 
 	@Before
@@ -264,12 +276,17 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 			}
 			aip = this.getMetsPackageSIPProcessor().createAIP(sip);
 			
-		} catch (IngestException e) {
+			MODSValidationFilter modsFilter = new MODSValidationFilter();
+			modsFilter.setSchematronValidator(schematronValidator);
+			modsFilter.doFilter(aip);
+		} catch (Exception e) {
 			LOG.error("DSpace mets failed", e);
 			fail();
 		}
 		assertNotNull("The result ingest context is null.", aip);
 		int count = aip.getPIDs().size();
 		assertTrue("There should be " + numberOfPIDs + " PIDs in the resulting AIP, found " + count, count == numberOfPIDs);
+		
+		
 	}
 }

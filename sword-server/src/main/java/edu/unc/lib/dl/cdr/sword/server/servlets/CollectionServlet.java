@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.swordapp.server.CollectionAPI;
@@ -57,9 +58,16 @@ public class CollectionServlet extends BaseSwordServlet {
 		this.api.get(req, resp);
 	}
 
-	@RequestMapping(value = "/{pid}", method = RequestMethod.POST)
+	@RequestMapping(method = RequestMethod.POST)
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		LOG.debug("POST request to submit to collection: " + req.getHeader("Content-Type"));
+		LOG.debug("POST request to submit to root collection");
+		this.api.post(req, resp);
+	}
+	
+	@RequestMapping(value = "/{pid}", method = RequestMethod.POST)
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp, @PathVariable("pid") String pid) throws ServletException, IOException {
+		LOG.debug("POST request to submit to collection: " + pid);
+		LOG.debug("Packaging: " + req.getHeader("Packaging"));
 		this.api.post(req, resp);
 	}
 

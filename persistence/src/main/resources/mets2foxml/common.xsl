@@ -237,9 +237,20 @@
                     </xsl:choose>
                 </xsl:when>
                 <xsl:when test="@DMDID">
-                    <xsl:value-of
-                        select="key('dmdid',@DMDID)/m:mdWrap/m:xmlData/mods:mods/mods:titleInfo/mods:title"
-                    />
+                	<xsl:variable name="mdWrap" select="key('dmdid',@DMDID)/m:mdWrap"/>
+                	<xsl:choose>
+                		<xsl:when test="$mdWrap[@OTHERMDTYPE='EPDCX']">
+                			<xsl:call-template name="getEPDCXTitle">
+                				<xsl:with-param name="xmlData" select="$mdWrap/m:xmlData"/>
+                			</xsl:call-template>
+                			<xsl:value-of
+                        		select="$mdWrap/m:xmlData/mods:mods/mods:titleInfo/mods:title"/>
+                		</xsl:when>
+                		<xsl:when test="$mdWrap[@MDTYPE='MODS'] or $mdWrap[not(exists(@MDTYPE))]">
+                			<xsl:value-of
+                        		select="$mdWrap/m:xmlData/mods:mods/mods:titleInfo/mods:title"/>
+                		</xsl:when>
+                	</xsl:choose>
                 </xsl:when>
                 <xsl:when test="starts-with($href, 'file:') or not(contains($href, ':'))">
                     <xsl:choose>

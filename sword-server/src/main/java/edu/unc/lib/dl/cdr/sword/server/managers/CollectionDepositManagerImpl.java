@@ -54,18 +54,32 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
 			SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
 
+		LOG.debug("Preparing to do collection deposit to " + collectionURI);
+		LOG.debug("Root pid is: " + collectionsPidObject);
+		if (collectionURI == null)
+			throw new SwordServerException("No collection URI was provided");
+		
 		try {
 			Agent agent = agentFactory.findPersonByOnyen("bbpennel", true);
 			SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
-
-			PID containerPID = null;
-			if (collectionURI == null || collectionURI.trim().length() == 0){
-				containerPID = collectionsPidObject;
-			} else {
-				containerPID = new PID(collectionURI);
+			
+			String pidString = null;
+			String collectionPath = SwordConfigurationImpl.COLLECTION_PATH + "/";
+			int pidIndex = collectionURI.indexOf(collectionPath);
+			if (pidIndex > -1){
+				pidString = collectionURI.substring(pidIndex + collectionPath.length());
 			}
 			
-			if (PackagingType.METS_CDR.equals(deposit.getPackaging())){
+			LOG.debug("Collection URI pid is " + pidString);
+
+			PID containerPID = null;
+			if (pidString.trim().length() == 0){
+				containerPID = collectionsPidObject;
+			} else {
+				containerPID = new PID(pidString);
+			}
+			
+			if (PackagingType.METS_CDR.equals(deposit.getPackaging()) || PackagingType.METS_DSPACE_SIP.equals(deposit.getPackaging())){
 				return doMETSCDRDeposit(containerPID, deposit, auth, configImpl, agent);
 			}
 		} catch (Exception e) {
@@ -79,7 +93,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	private DepositReceipt doMETSCDRDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
 			SwordConfigurationImpl config, Agent agent) throws Exception {
 		
-		LOG.debug("Preparing to perform a CDR METS deposit");
+		LOG.debug("Preparing to perform a CDR METS deposit to " + containerPID.getPid());
 		
 		String name = deposit.getFilename();
 		boolean isZip = name.endsWith(".zip");

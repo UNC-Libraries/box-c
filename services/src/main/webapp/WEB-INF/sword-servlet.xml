@@ -206,10 +206,12 @@
 		<property name="basePath" ref="swordPath"/>
 	</bean>
 	
-	<bean id="collectionListManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl">
+	<bean id="collectionListManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl"
+		init-method="init">
 	</bean>
 	
-	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl">
+	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl"
+		init-method="init">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="agentFactory" ref="agentFactory"/>
 	</bean>

@@ -19,6 +19,9 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:mods="http://www.loc.gov/mods/v3" xmlns:epdcx="http://purl.org/eprint/epdcx/2006-11-16/"
 	version="1.0">
+	
+	<xsl:variable name="eprintGenre" select="document('/edu/unc/lib/dl/schematron/genres_eprints_swap.xml')/option-set"/>
+	<xsl:key name="eprintGenreLookup" match="option" use="valueURI"/>
 
 	<xsl:template name="epdcx2mods">
 		<xsl:param name="xmlData"/>
@@ -90,10 +93,22 @@
 
 		<!-- item type element: dc.type -->
 		<xsl:if test="./@epdcx:propertyURI='http://purl.org/dc/elements/1.1/type'">
-			<xsl:if test="./@epdcx:valueURI='http://purl.org/eprint/type/JournalArticle' and ./@epdcx:vesURI='http://purl.org/eprint/terms/Type'">
-				<mods:typeOfResource>Journal Article</mods:typeOfResource>
+			<xsl:variable name="genreValueURI" select="./@epdcx:valueURI"/>
+			<xsl:variable name="eprintGenreName">
+				<xsl:apply-templates select="$eprintGenre">
+					<xsl:with-param name="valueURI" select="$genreValueURI"/>
+				</xsl:apply-templates>
+			</xsl:variable>
+			<xsl:if test="not($eprintGenreName = '')">
+				<mods:typeOfResource><xsl:value-of select="$eprintGenreName"/></mods:typeOfResource>
 			</xsl:if>
-			<mods:genre><xsl:value-of select="./@epdcx:valueURI" /></mods:genre>
+			<xsl:if test="./@epdcx:vesURI = 'http://purl.org/eprint/terms/Type'">
+				<mods:genre>
+					<xsl:attribute name="authorityURI">http://purl.org/eprint/type/</xsl:attribute>
+					<xsl:attribute name="valueURI"><xsl:value-of select="$genreValueURI"></xsl:value-of></xsl:attribute>
+					<xsl:value-of select="$eprintGenreName" />
+				</mods:genre>
+			</xsl:if>
 		</xsl:if>
 
 		<!-- date available element: dc.date.issued -->
@@ -153,6 +168,16 @@
 				</mods:part>
 			</mods:relatedItem>
 		</xsl:if>
+	</xsl:template>
+	
+	<xsl:template match="option-set">
+		<xsl:param name="valueURI" />
+		<xsl:value-of select="key('eprintGenreLookup', $valueURI)/value" />
+	</xsl:template>
+	
+	<xsl:template name="getEPDCXTitle">
+		<xsl:param name="xmlData"/>
+		<xsl:value-of select="$xmlData/epdcx:descriptionSet/epdcx:description/epdcx:statement[@epdcx:propertyURI='http://purl.org/dc/elements/1.1/title']/epdcx:valueString"/>
 	</xsl:template>
 </xsl:stylesheet>
         
