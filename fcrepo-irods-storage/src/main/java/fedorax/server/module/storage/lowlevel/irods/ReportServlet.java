@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.fcrepo.common.Constants;
 import org.fcrepo.server.Context;
 import org.fcrepo.server.ReadOnlyContext;
@@ -37,6 +36,8 @@ import org.fcrepo.server.errors.servletExceptionExtensions.InternalError500Excep
 import org.fcrepo.server.errors.servletExceptionExtensions.NotFound404Exception;
 import org.jdom.Document;
 import org.jdom.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides a REST interface for accessing CDR Reports
@@ -45,61 +46,60 @@ import org.jdom.output.XMLOutputter;
  */
 public class ReportServlet extends HttpServlet implements Constants {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    /** Logger for this class. */
-    private static final Logger LOG = Logger.getLogger(ReportServlet.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ReportServlet.class);
 
-    /** Instance of the Fedora Commons Server */
-    private static Server fcserver = null;
+	/** Instance of the Fedora Commons Server */
+	private static Server fcserver = null;
 
-    public static final String ACTION_LABEL = "CDR Report";
+	public static final String ACTION_LABEL = "CDR Report";
 
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	request.setCharacterEncoding("UTF-8");
-	try {
-	    Context context = ReadOnlyContext.getContext(Constants.HTTP_REQUEST.REST.uri, request);
-	    PremisReport bean = new PremisReport(fcserver, context);
-	    String pid = URLDecoder.decode(request.getParameter("pid"), "utf-8");
-	    LOG.info("got PID of "+pid);
+	@Override
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		request.setCharacterEncoding("UTF-8");
+		try {
+			Context context = ReadOnlyContext.getContext(Constants.HTTP_REQUEST.REST.uri, request);
+			PremisReport bean = new PremisReport(fcserver, context);
+			String pid = URLDecoder.decode(request.getParameter("pid"), "utf-8");
+			LOG.info("got PID of " + pid);
 
-	    // Note: Fedora APIM security check performed by container
-	    // String sessionToken = request.getParameter("sessionToken");
+			// Note: Fedora APIM security check performed by container
+			// String sessionToken = request.getParameter("sessionToken");
 
-	    // returns 404 for unrecognized PIDs
-	    Document report = null;
-	    try {
-		report = bean.getXMLReport(pid);
-	    } catch(ObjectNotFoundException e) {
-		throw new NotFound404Exception("Object Not Found", e, request, ACTION_LABEL, "", new String[0]);
-	    }
+			// returns 404 for unrecognized PIDs
+			Document report = null;
+			try {
+				report = bean.getXMLReport(pid);
+			} catch (ObjectNotFoundException e) {
+				throw new NotFound404Exception("Object Not Found", e, request, ACTION_LABEL, "", new String[0]);
+			}
 
-	    response.setContentType("text/xml; charset=UTF-8");
+			response.setContentType("text/xml; charset=UTF-8");
 
-	    PrintWriter out = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
-	    new XMLOutputter().output(report, out);
-	    out.flush();
-	    out.close();
-	} catch (Throwable th) {
-	    throw new InternalError500Exception("", th, request, ACTION_LABEL, "", new String[0]);
+			PrintWriter out = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
+			new XMLOutputter().output(report, out);
+			out.flush();
+			out.close();
+		} catch (Throwable th) {
+			throw new InternalError500Exception("", th, request, ACTION_LABEL, "", new String[0]);
+		}
 	}
-    }
 
-    /** Unsupported HTTP Method */
-    @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	// unimplemented
-	throw new ServletException("Error: HTTP POST method is not supported, please use GET");
-    }
-
-    /** Gets the Fedora Server instance. */
-    @Override
-    public void init() throws ServletException {
-	try {
-	    fcserver = Server.getInstance(new File(Constants.FEDORA_HOME), false);
-	} catch (InitializationException ie) {
-	    throw new ServletException("Error getting Fedora Server instance: " + ie.getMessage());
+	/** Unsupported HTTP Method */
+	@Override
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// unimplemented
+		throw new ServletException("Error: HTTP POST method is not supported, please use GET");
 	}
-    }
+
+	/** Gets the Fedora Server instance. */
+	@Override
+	public void init() throws ServletException {
+		try {
+			fcserver = Server.getInstance(new File(Constants.FEDORA_HOME), false);
+		} catch (InitializationException ie) {
+			throw new ServletException("Error getting Fedora Server instance: " + ie.getMessage());
+		}
+	}
 }

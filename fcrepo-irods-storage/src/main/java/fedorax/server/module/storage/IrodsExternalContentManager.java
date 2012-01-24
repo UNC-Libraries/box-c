@@ -26,6 +26,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.management.MBeanServer;
@@ -33,7 +34,6 @@ import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
 import org.apache.commons.httpclient.Header;
-import org.apache.log4j.Logger;
 import org.fcrepo.common.http.HttpInputStream;
 import org.fcrepo.common.http.WebClient;
 import org.fcrepo.server.Module;
@@ -59,6 +59,8 @@ import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fedorax.server.module.storage.lowlevel.irods.IrodsLowlevelStorageModule.Parameter;
 
@@ -67,8 +69,8 @@ import fedorax.server.module.storage.lowlevel.irods.IrodsLowlevelStorageModule.P
  *
  */
 public class IrodsExternalContentManager extends Module implements ExternalContentManager {
-	/** Logger for this class. */
-	private static final Logger LOG = Logger.getLogger(IrodsExternalContentManager.class);
+
+	private static final Logger LOG = LoggerFactory.getLogger(IrodsExternalContentManager.class);
 
 	IRODSAccount account;
 
@@ -132,6 +134,24 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 
 			m_http = new WebClient();
 			// m_http.USER_AGENT = m_userAgent;
+
+			String stagingLocations = getModuleParameter(Parameter.STAGING_LOCATIONS, false);
+			if (stagingLocations != null && stagingLocations.length() > 5) {
+				LOG.info("Configuring staging locations: " + stagingLocations);
+				try {
+					String[] stages = stagingLocations.split("[\\s]+");
+					LOG.info("Number of staging locations: " + stages.length);
+					for (String stage : stages) {
+						String[] logical2Path = stage.split("\\|");
+						LOG.info("Adding staging location: " + logical2Path[0] + " => " + logical2Path[1]);
+						StagingManager.instance().addStage(logical2Path[0], logical2Path[1]);
+					}
+				} catch (Exception e) {
+					LOG.warn("Cannot configure staging locations.", e);
+				}
+			} else {
+				LOG.info("No staging locations configured.");
+			}
 
 			// register StagingManagerMBean
 			MBeanServer mbs = this.getMBeanServer();
@@ -470,7 +490,7 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 			ValidationUtility.validateURL("irods://example.com:1247/fooZone/home/foo", "M");
 		} catch (ValidationException e1) {
 			String msg = "Fedora Server is not patched to support the IrodsExternalContentManager";
-			LOG.fatal(msg, e1);
+			LOG.error(msg, e1);
 			throw new ModuleInitializationException(msg, "fedora.server.storage.ExternalContentManager", e1);
 		}
 		LOG.debug("Setting up IRODS account");

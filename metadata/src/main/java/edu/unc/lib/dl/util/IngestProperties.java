@@ -15,15 +15,11 @@
  */
 package edu.unc.lib.dl.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,6 +42,10 @@ public class IngestProperties {
 	private String submitter = null;
 	private String[] emailRecipients = null;
 	private String message = null;
+	private String originalDepositId = null;
+	/**
+	 * Not yet recorded
+	 */
 	private int managedBytes = -1;
 	private Map<PID, ContainerPlacement> containerPlacements = null;
 
@@ -80,6 +80,7 @@ public class IngestProperties {
 				this.managedBytes = Integer.parseInt(bytes);
 			} catch(NumberFormatException e) {}
 		}
+		this.originalDepositId = props.getProperty("originalDepositId");
 		this.containerPlacements = new HashMap<PID, ContainerPlacement>();
 		for (Entry<Object, Object> e : props.entrySet()) {
 			String key = (String) e.getKey();
@@ -117,6 +118,8 @@ public class IngestProperties {
 		}
 		if (this.message != null)
 			props.put("message", this.message);
+		if(this.originalDepositId != null)
+			props.put("originalDepositId", this.originalDepositId);
 		if(this.managedBytes != -1) {
 			props.put("managedBytes", String.valueOf(this.managedBytes));
 		}
@@ -183,5 +186,13 @@ public class IngestProperties {
 
 	public void setManagedBytes(int managedBytes) {
 		this.managedBytes = managedBytes;
+	}
+
+	public String getOriginalDepositId() {
+		return originalDepositId;
+	}
+
+	public void setOriginalDepositId(String originalDepositId) {
+		this.originalDepositId = originalDepositId;
 	}
 }

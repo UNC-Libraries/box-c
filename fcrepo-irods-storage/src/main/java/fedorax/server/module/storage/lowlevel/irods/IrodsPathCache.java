@@ -18,23 +18,26 @@ package fedorax.server.module.storage.lowlevel.irods;
 import java.util.WeakHashMap;
 
 /**
- * This class implements a cache of the iRODS paths to FOXML and data stream files.  The implementation is a simple
- * map with weak keys.
+ * This class implements a cache of the iRODS paths to FOXML and data stream files. The implementation is a simple map
+ * with weak keys.
+ *
  * @author Gregory Jansen
  *
  */
 public class IrodsPathCache {
-    protected WeakHashMap<String, String> map = new WeakHashMap<String, String>();
+	protected WeakHashMap<String, String> map = new WeakHashMap<String, String>();
 
-    /* This put() will return any previous value already at index i. */
-    public void put(String fedoraID, String irodsPath) {
-	map.put(fedoraID, irodsPath);
-    }
+	/* This put() will return any previous value already at index i. */
+	public void put(String fedoraID, String irodsPath) {
+		map.put(fedoraID, irodsPath);
+	}
 
-    /* This get() will return the object at index i, or null if no
-     object was put there, or if the object was garbage collected. */
-    public String get(String fedoraID) {
-	return map.get(fedoraID);
-    }
+	/*
+	 * This get() will return the object at index i, or null if no object was put there, or if the object was garbage
+	 * collected.
+	 */
+	public String get(String fedoraID) {
+		return map.get(fedoraID);
+	}
 
 }

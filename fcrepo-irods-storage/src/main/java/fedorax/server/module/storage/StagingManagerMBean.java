@@ -27,4 +27,6 @@ public interface StagingManagerMBean {
 	public void addStage(String stageBase, String fileBase);
 
 	public void removeStage(String stageBase);
+
+	public void dumpMappingsToLog();
 }

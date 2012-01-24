@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.fcrepo.common.Constants;
 import org.fcrepo.server.Context;
 import org.fcrepo.server.Module;
@@ -34,6 +33,8 @@ import org.fcrepo.server.ReadOnlyContext;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.servletExceptionExtensions.InternalError500Exception;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides a REST interface for accessing CDR Reports
@@ -44,8 +45,7 @@ public class IrodsStorageLocationServlet extends HttpServlet implements Constant
 
     private static final long serialVersionUID = 1345L;
 
-    /** Logger for this class. */
-    private static final Logger LOG = Logger.getLogger(IrodsStorageLocationServlet.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IrodsStorageLocationServlet.class);
 
     /** Instance of the Fedora Commons Server */
     private Server fcserver = null;

@@ -117,6 +117,7 @@
 	<bean id="submitService" class="edu.unc.lib.dl.service.impl.SubmitServiceImpl">
 		<property name="agentManager" ref="agentManager" />
 		<property name="digitalObjectManager" ref="digitalObjectManager" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 
 	<bean id="updateService" class="edu.unc.lib.dl.service.impl.UpdateServiceImpl">
@@ -128,8 +129,6 @@
 	<bean id="userManagementService" class="edu.unc.lib.dl.service.impl.UserManagementServiceImpl">
 		<property name="agentManager" ref="agentManager" />
 	</bean>
-
-
 
 	<bean id="itemInfoService" class="edu.unc.lib.dl.service.impl.ItemInfoServiceImpl">
 		<property name="idService" ref="idService" />
