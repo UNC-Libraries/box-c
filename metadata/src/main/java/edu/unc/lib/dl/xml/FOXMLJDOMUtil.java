@@ -231,11 +231,11 @@ public class FOXMLJDOMUtil {
 		return dcDS;
 	}
 
-	public static Element makeXMLDatastreamElement(String id, String label, Element xmlData, boolean versioned) {
-		return makeXMLDatastreamElement(id, label, id + "1.0", xmlData, versioned);
+	public static Element makeInlineXMLDatastreamElement(String id, String label, Element xmlData, boolean versioned) {
+		return makeInlineXMLDatastreamElement(id, label, id + "1.0", xmlData, versioned);
 	}
 
-	public static Element makeXMLDatastreamElement(String id, String label, String versionId, Element xmlData,
+	public static Element makeInlineXMLDatastreamElement(String id, String label, String versionId, Element xmlData,
 			boolean versioned) {
 		Element dcDS = new Element("datastream", JDOMNamespaceUtil.FOXML_NS);
 		dcDS.setAttribute("ID", id);
@@ -291,7 +291,7 @@ public class FOXMLJDOMUtil {
 	 * @param newContent
 	 *           the new Element content of the datastream (within xmlContent)
 	 */
-	public static void setDatastreamXmlContent(Document foxml, String datastreamId, String label, Element newContent,
+	public static void setInlineXMLDatastreamContent(Document foxml, String datastreamId, String label, Element newContent,
 			boolean versioned) {
 		try {
 			XPath _datastreamXmlContentXpath = XPath.newInstance(datastreamXmlContentXpath.replaceFirst("%DSID%",
@@ -301,7 +301,7 @@ public class FOXMLJDOMUtil {
 			Element xmlContent = null;
 			if (o == null) { // there's no datastream w/ID, so make one and
 				// add it!
-				Element dsContent = makeXMLManagedDatastreamElement(datastreamId, label, datastreamId+"1.0", newContent, versioned);
+				Element dsContent = makeInlineXMLDatastreamElement(datastreamId, label, newContent, versioned);
 				foxml.getRootElement().addContent(dsContent);
 			} else if (o instanceof Element) {
 				xmlContent = (Element) o;

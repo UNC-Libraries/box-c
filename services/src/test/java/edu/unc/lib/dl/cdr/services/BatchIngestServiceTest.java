@@ -167,6 +167,7 @@ public class BatchIngestServiceTest {
 			when(this.tripleStoreQueryService.verify(any(PID.class))).thenReturn(container);
 
 			when(this.managementClient.upload(any(File.class))).thenReturn("upload:19238");
+			when(this.managementClient.upload(any(Document.class))).thenReturn("upload:19238");
 
 			ArrayList<URI> ans = new ArrayList<URI>();
 			ans.add(ContentModelHelper.Model.CONTAINER.getURI());
@@ -219,6 +220,7 @@ public class BatchIngestServiceTest {
 			when(this.tripleStoreQueryService.verify(any(PID.class))).thenReturn(container);
 
 			when(this.managementClient.upload(any(File.class))).thenReturn("upload:19238");
+			when(this.managementClient.upload(any(Document.class))).thenReturn("upload:19238");
 
 			ArrayList<URI> ans = new ArrayList<URI>();
 			ans.add(ContentModelHelper.Model.CONTAINER.getURI());
@@ -278,6 +280,7 @@ public class BatchIngestServiceTest {
 			when(this.tripleStoreQueryService.verify(any(PID.class))).thenReturn(container);
 
 			when(this.managementClient.upload(any(File.class))).thenReturn("upload:19238");
+			when(this.managementClient.upload(any(Document.class))).thenReturn("upload:19238");
 
 			ArrayList<URI> ans = new ArrayList<URI>();
 			ans.add(ContentModelHelper.Model.CONTAINER.getURI());

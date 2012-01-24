@@ -98,11 +98,11 @@ public class AgentSIPProcessor implements SIPProcessor {
 			FOXMLJDOMUtil.setProperty(pdoc, ObjectProperty.label, p.getName());
 			aip.saveFOXMLDocument(pid, pdoc);
 			if (p instanceof PersonAgent) {
-				aip.setContainerPlacement(this.getPeopleContainer(), pid, null, null);
+				aip.setContainerPlacement(this.getPeopleContainer(), pid, null, null, p.getName());
 			} else if (p instanceof GroupAgent) {
-				aip.setContainerPlacement(this.getGroupContainer(), pid, null, null);
+				aip.setContainerPlacement(this.getGroupContainer(), pid, null, null, p.getName());
 			} else if (p instanceof SoftwareAgent) {
-				aip.setContainerPlacement(this.getSoftwareContainer(), pid, null, null);
+				aip.setContainerPlacement(this.getSoftwareContainer(), pid, null, null, p.getName());
 			}
 		}
 

@@ -314,10 +314,10 @@ public class ManagementClient extends WebServiceTemplate {
 
 	public boolean addObjectRelationship(PID pid, String relationship, PID pid2) throws FedoraException {
 		AddRelationship req = new AddRelationship();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getURI());
 		req.setIsLiteral(false);
 		req.setRelationship(relationship);
-		req.setObject("info:fedora/" + pid2.getPid());
+		req.setObject(pid2.getURI());
 		AddRelationshipResponse resp = (AddRelationshipResponse) this.callService(req, Action.addRelationship);
 		return resp.isAdded();
 	}
@@ -343,7 +343,7 @@ public class ManagementClient extends WebServiceTemplate {
 	public boolean addResourceStatement(PID pid, String relationship, String uri) throws FedoraException {
 		try {
 			AddRelationship req = new AddRelationship();
-			req.setPid(pid.getPid());
+			req.setPid(pid.getURI());
 			// req.setDatatype();
 			req.setIsLiteral(false);
 			req.setRelationship(relationship);
@@ -591,7 +591,7 @@ public class ManagementClient extends WebServiceTemplate {
 	public boolean purgeLiteralStatement(PID pid, String relationship, String literal, String datatype)
 			throws FedoraException {
 		PurgeRelationship req = new PurgeRelationship();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getURI());
 		req.setDatatype(datatype);
 		req.setIsLiteral(true);
 		req.setRelationship(relationship);
@@ -611,10 +611,10 @@ public class ManagementClient extends WebServiceTemplate {
 
 	public boolean purgeObjectRelationship(PID pid, String relationship, PID pid2) throws FedoraException {
 		PurgeRelationship req = new PurgeRelationship();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getURI());
 		req.setIsLiteral(false);
 		req.setRelationship(relationship);
-		req.setObject("info:fedora/" + pid2.getPid());
+		req.setObject(pid2.getURI());
 		PurgeRelationshipResponse resp = (PurgeRelationshipResponse) this.callService(req, Action.purgeRelationship);
 		return resp.isPurged();
 	}

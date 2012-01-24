@@ -45,6 +45,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.jdom.output.XMLOutputter;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
@@ -118,6 +119,7 @@ public class BatchIngestTask implements Runnable {
 	 * Directory for data files in this ingest batch
 	 */
 	File dataDir = null;
+	File premisDir = null;
 	IngestProperties props = null;
 
 	/**
@@ -219,16 +221,13 @@ public class BatchIngestTask implements Runnable {
 			oldXML.setRootElement(structMap);
 			exists = false;
 		}
-		// this.getTripleStoreQueryService()..fetchByPredicateAndLiteral(ContentModelHelper.CDRProperty.sortOrder,
-		// literal)
 		newXML = ContainerContentsHelper.addChildContentAIPInCustomOrder(oldXML, container, placements, reordered);
-		String loc = this.getManagementClient().upload(newXML);
 		if (exists) {
-			this.getManagementClient().modifyDatastreamByReference(container, "MD_CONTENTS", false,
-					"adding child resource to container", new ArrayList<String>(), "List of Contents", "text/xml", null, ChecksumType.MD5, loc);
+			this.getManagementClient().modifyInlineXMLDatastream(container, "MD_CONTENTS", false,
+					"adding child resource to container", new ArrayList<String>(), "List of Contents", newXML);
 		} else {
-			this.getManagementClient().addManagedDatastream(container, "MD_CONTENTS", false,
-					"added child resource to container", new ArrayList<String>(), "List of Contents", false, "text/xml", loc);
+			this.getManagementClient().addInlineXMLDatastream(container, "MD_CONTENTS", false,
+					"added child resource to container", new ArrayList<String>(), "List of Contents", false, newXML);
 		}
 		// LOG CHANGES TO THE CONTAINER
 		int children = placements.size();
@@ -337,38 +336,40 @@ public class BatchIngestTask implements Runnable {
 		// handle file locations (upload/rewrite/pass-through)
 		for (Element cLocation : FOXMLJDOMUtil.getFileLocators(doc)) {
 			String ref = cLocation.getAttributeValue("REF");
+			String newref = null;
 			try {
 				URI uri = new URI(ref);
-				if (uri.getScheme() != null && !uri.getScheme().contains("file")) {
+				if(uri.getScheme() == null || uri.getScheme().contains("file")) {
+					try {
+						File file = FileUtils.getFileForUrl(ref, dataDir);
+						newref = this.getManagementClient().upload(file);
+						cLocation.setAttribute("REF", newref);
+					} catch (IOException e) {
+						throw fail("Data file missing: " + ref, e);
+					}
+				} else if(uri.getScheme().contains("premisEvents")) {
+					try {
+						File file = new File(premisDir, ref.substring(ref.indexOf(":")+1));
+						Document premis = new SAXBuilder().build(file);
+						this.eventLogger.logEvent(PremisEventLogger.Type.INGESTION, "ingested as PID:" + pid.getPid(), pid);
+						this.eventLogger.appendLogEvents(pid, premis.getRootElement());
+						newref = this.getManagementClient().upload(premis);
+						cLocation.setAttribute("REF", newref);
+					} catch(Exception e) {
+						throw new Error("there was a problem uploading ingest events", e);
+					}
+				} else {
 					continue;
 				}
 			} catch (URISyntaxException e) {
+				throw new Error(e);
 			}
-			String newref = null;
-			File file;
-			try {
-				file = FileUtils.getFileForUrl(ref, dataDir);
-			} catch (IOException e) {
-				throw fail("Data file missing: " + ref, e);
-			}
-			newref = this.getManagementClient().upload(file);
-			cLocation.setAttribute("REF", newref);
-
-			// this save can be avoided if we ingest the JDOM in memory!
-			// context.saveFOXMLDocument(pid, doc);
 			log.debug("uploaded " + ref + " to Fedora " + newref + " for " + pid);
 		}
 
-		// log ingest event to FOXML, creating DS if needed
-		this.eventLogger.logEvent(PremisEventLogger.Type.INGESTION, "ingested as PID:" + pid.getPid(), pid);
-		Element eventsEl = FOXMLJDOMUtil.getDatastream(doc, "MD_EVENTS");
-		if (eventsEl == null) {
-			eventsEl = this.eventLogger.getObjectEvents(pid);
-			Element eventsDS = FOXMLJDOMUtil.makeXMLManagedDatastreamElement("MD_EVENTS", "PREMIS Events Metadata",
-					"MD_EVENTS1.0", eventsEl, false);
-			doc.getRootElement().addContent(eventsDS);
-		} else {
-			this.eventLogger.appendLogEvents(pid, eventsEl);
+		if(log.isDebugEnabled()) {
+			String xml = new XMLOutputter().outputString(doc);
+			log.debug("INGESTING FOXML:\n"+xml);
 		}
 
 		// FEDORA INGEST CALL
@@ -393,6 +394,7 @@ public class BatchIngestTask implements Runnable {
 		try {
 			this.setBaseDir(baseDir);
 			dataDir = new File(this.getBaseDir(), "data");
+			premisDir = new File(this.getBaseDir(), "premisEvents");
 			File ingestLog = new File(this.getBaseDir(), INGEST_LOG);
 			props = new IngestProperties(this.getBaseDir());
 			foxmlFiles = this.getBaseDir().listFiles(new FilenameFilter() {

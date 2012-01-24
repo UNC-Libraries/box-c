@@ -118,9 +118,10 @@ public class RepositoryInitializer implements Runnable {
 
 			try {
 				this.managementClient.getObjectXML(ContentModelHelper.Administrative_PID.REPOSITORY.getPID());
-			} catch(Exception e) {
-				log.warn("Skipping repository initialization due to existing repository.", e);
+				log.warn("Found an existing repository root, auto-initialization aborted.");
 				return;
+			} catch(Exception e) {
+				log.warn("No existing repository root found, auto-initializing.");
 			}
 
 			ingestRepositoryManagementSoftwareAgent();

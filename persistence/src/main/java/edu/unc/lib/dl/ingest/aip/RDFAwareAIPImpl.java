@@ -354,7 +354,7 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 				rdfDescription.addContent(statement);
 				// log.debug(statement);
 			} // end of triple loop
-			FOXMLJDOMUtil.setDatastreamXmlContent(doc, "RELS-EXT", "Relationship Metadata", rdfElement, false);
+			FOXMLJDOMUtil.setInlineXMLDatastreamContent(doc, "RELS-EXT", "Relationship Metadata", rdfElement, false);
 		} catch (GraphException e) {
 			throw new Error(e);
 		} catch (TripleFactoryException e) {
@@ -493,8 +493,8 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 	 * edu.unc.lib.dl.fedora.PID, java.lang.Integer, java.lang.Integer)
 	 */
 	@Override
-	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder) {
-		this.baseAIP.setContainerPlacement(parentPID, topPID, designatedOrder, sipOrder);
+	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder, String label) {
+		this.baseAIP.setContainerPlacement(parentPID, topPID, designatedOrder, sipOrder, label);
 	}
 
 	@Override
@@ -505,5 +505,21 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 			this.graph.close();
 			this.graph = null;
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getDepositID()
+	 */
+	@Override
+	public PID getDepositID() {
+		return this.baseAIP.getDepositID();
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#setDepositID(edu.unc.lib.dl.fedora.PID)
+	 */
+	@Override
+	public void setDepositID(PID pid) {
+		this.baseAIP.setDepositID(pid);
 	}
 }
