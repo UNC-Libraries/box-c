@@ -15,14 +15,17 @@
  */
 package edu.unc.lib.dl.fedora;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.output.XMLOutputter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +40,7 @@ public class FedoraDataServiceTest extends Assert {
 	private ManagementClient managementClient;
 	private TripleStoreQueryService tripleStoreQueryService;
 	private AccessControlUtils accessControlUtils;
-	
+
 	@Before
 	public void setup(){
 		dataService = new FedoraDataService();
@@ -45,7 +48,7 @@ public class FedoraDataServiceTest extends Assert {
 		managementClient = mock(ManagementClient.class);
 		tripleStoreQueryService = mock(TripleStoreQueryService.class);
 		accessControlUtils = mock(AccessControlUtils.class);
-		
+
 		dataService.setAccessClient(accessClient);
 		dataService.setManagementClient(managementClient);
 		dataService.setTripleStoreQueryService(tripleStoreQueryService);
@@ -53,48 +56,48 @@ public class FedoraDataServiceTest extends Assert {
 		dataService.setMaxThreads(5);
 		dataService.init();
 	}
-	
+
 	@Test
 	public void getFoxmlSuccessful() throws FedoraException {
 		String pid = "uuid:test";
-		
+
 		Document objectXML = new Document();
 		final Element root = new Element("digitalObject");
 		objectXML.addContent(root);
 		when(managementClient.getObjectXML(any(PID.class))).thenReturn(objectXML);
-		
+
 		Document foxml = dataService.getFoxmlViewXML(pid);
-		
+
 		verify(managementClient).getObjectXML(any(PID.class));
 		assertTrue(foxml != null);
 		assertEquals(foxml.getRootElement().getContentSize(), 1);
 	}
-	
+
 	@Test
 	public void getFoxmlEmptyBody() throws FedoraException {
 		String pid = "uuid:test";
-		
+
 		Document objectXML = new Document();
 		when(managementClient.getObjectXML(any(PID.class))).thenReturn(objectXML);
-		
+
 		try {
 			dataService.getFoxmlViewXML(pid);
 			fail();
 		} catch (ServiceException e){
 			//success
 		}
-		
+
 	}
-	
+
 	@Test
 	public void getFoxmlRetrievalException() throws FedoraException {
 		String pid = "uuid:test";
-		
+
 		Document objectXML = new Document();
 		final Element root = new Element("digitalObject");
 		objectXML.addContent(root);
 		when(managementClient.getObjectXML(any(PID.class))).thenThrow(new FedoraException("Fail"));
-		
+
 		try {
 			dataService.getFoxmlViewXML(pid);
 			fail();
@@ -109,13 +112,13 @@ public class FedoraDataServiceTest extends Assert {
 		final Element root = new Element("digitalObject");
 		objectXML.addContent(root);
 		when(managementClient.getObjectXML(any(PID.class))).thenReturn(objectXML);
-		
+
 		//Setup GetPermissions
 		Element accessControl = new Element("permissions");
 		when(accessControlUtils.processCdrAccessControl(any(PID.class))).thenReturn(accessControl);
-		
+
 		PID parent = new PID("uuid:collection");
-		
+
 		//Setup getPathInfo
 		List<PathInfo> pathInfo = new ArrayList<PathInfo>();
 		PathInfo pathNode = new PathInfo();
@@ -123,12 +126,12 @@ public class FedoraDataServiceTest extends Assert {
 		pathNode.setLabel("Collection");
 		pathNode.setSlug("Collection");
 		pathInfo.add(pathNode);
-		
+
 		when(tripleStoreQueryService.lookupRepositoryPathInfo(any(PID.class))).thenReturn(pathInfo);
-		
+
 		//Setup getParentCollection
 		when(tripleStoreQueryService.fetchParentCollection(any(PID.class))).thenReturn(parent);
-		
+
 		//Setup GetOrderWithinParent
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(parent);
 		String mdcontents = "<m:structMap xmlns:m=\"http://www.loc.gov/METS/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
@@ -141,13 +144,13 @@ public class FedoraDataServiceTest extends Assert {
 		when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString()))
 			.thenReturn(mdcontentsDS);
 	}
-	
+
 	@Test
 	public void getObjectViewComplete() throws FedoraException {
 		String pid = "uuid:test";
-		
+
 		this.setupObjectView();
-		
+
 		Document objectView = dataService.getObjectViewXML(pid);
 		assertNotNull(objectView);
 		/*XMLOutputter outputter = new XMLOutputter();;
@@ -160,18 +163,18 @@ public class FedoraDataServiceTest extends Assert {
 		verify(tripleStoreQueryService).fetchParentCollection(any(PID.class));
 		assertEquals(objectView.getRootElement().getContentSize(), 5);
 	}
-	
-	
+
+
 	@Test
 	public void getObjectViewNoPath() throws FedoraException {
 		String pid = "uuid:test";
-		
+
 		this.setupObjectView();
-		
+
 		//Setup getPathInfo, with no path nodes
 		List<PathInfo> pathInfo = new ArrayList<PathInfo>();
 		when(tripleStoreQueryService.lookupRepositoryPathInfo(any(PID.class))).thenReturn(pathInfo);
-		
+
 		Document objectView = dataService.getObjectViewXML(pid);
 		assertNotNull(objectView);
 		/*XMLOutputter outputter = new XMLOutputter();;
@@ -184,17 +187,17 @@ public class FedoraDataServiceTest extends Assert {
 		verify(tripleStoreQueryService).fetchParentCollection(any(PID.class));
 		assertEquals(objectView.getRootElement().getContentSize(), 4);
 	}
-	
+
 	@Test
 	public void getObjectViewNoPathFatal() throws FedoraException {
 		String pid = "uuid:test";
-		
+
 		this.setupObjectView();
-		
+
 		//Setup getPathInfo, with no path nodes
 		List<PathInfo> pathInfo = new ArrayList<PathInfo>();
 		when(tripleStoreQueryService.lookupRepositoryPathInfo(any(PID.class))).thenReturn(pathInfo);
-		
+
 		Document objectView = null;
 		try {
 			objectView = dataService.getObjectViewXML(pid, true);
@@ -204,15 +207,15 @@ public class FedoraDataServiceTest extends Assert {
 			verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		}
 	}
-	
+
 	@Test
 	public void getObjectViewMissingFields() throws FedoraException {
 		String pid = "uuid:test";
-		
+
 		this.setupObjectView();
-		
+
 		when(tripleStoreQueryService.fetchParentCollection(any(PID.class))).thenReturn(null);
-		
+
 		//no md contents match
 		String mdcontents = "<m:structMap xmlns:m=\"http://www.loc.gov/METS/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
 			+ "<m:div TYPE=\"Container\">"
@@ -223,9 +226,9 @@ public class FedoraDataServiceTest extends Assert {
 		when(mdcontentsDS.getStream()).thenReturn(mdcontents.getBytes());
 		when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString()))
 			.thenReturn(mdcontentsDS);
-		
+
 		Document objectView = dataService.getObjectViewXML(pid);
-		
+
 		assertEquals(objectView.getRootElement().getContentSize(), 3);
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(managementClient).getObjectXML(any(PID.class));
@@ -233,15 +236,15 @@ public class FedoraDataServiceTest extends Assert {
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(tripleStoreQueryService).fetchParentCollection(any(PID.class));
 	}
-	
+
 	@Test
 	public void getObjectViewMissingFieldsFatal() throws FedoraException {
 		String pid = "uuid:test";
-		
+
 		this.setupObjectView();
-		
+
 		when(tripleStoreQueryService.fetchParentCollection(any(PID.class))).thenReturn(null);
-		
+
 		//no md contents match
 		String mdcontents = "<m:structMap xmlns:m=\"http://www.loc.gov/METS/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
 			+ "<m:div TYPE=\"Container\">"
@@ -252,14 +255,14 @@ public class FedoraDataServiceTest extends Assert {
 		when(mdcontentsDS.getStream()).thenReturn(mdcontents.getBytes());
 		when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString()))
 			.thenReturn(mdcontentsDS);
-		
+
 		Document objectView = null;
 		try {
 			objectView = dataService.getObjectViewXML(pid, true);
 		} catch (ServiceException e){
 			fail();
 		}
-		
+
 		assertEquals(objectView.getRootElement().getContentSize(), 3);
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(managementClient).getObjectXML(any(PID.class));
@@ -267,15 +270,15 @@ public class FedoraDataServiceTest extends Assert {
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(tripleStoreQueryService).fetchParentCollection(any(PID.class));
 	}
-	
+
 	@Test
 	public void getObjectViewNoFoxmlFatal() throws FedoraException {
 		String pid = "uuid:test";
-		
+
 		this.setupObjectView();
-		
+
 		when(managementClient.getObjectXML(any(PID.class))).thenReturn(new Document());
-		
+
 		Document objectView = null;
 		try {
 			objectView = dataService.getObjectViewXML(pid, true);

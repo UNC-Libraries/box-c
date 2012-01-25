@@ -15,15 +15,15 @@
  */
 package edu.unc.lib.dl.search.solr.util;
 
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
-
 import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.SearchState;
 
 /**
  * Utility class which transforms search states to other formats.

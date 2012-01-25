@@ -109,35 +109,33 @@ public class BatchIngestQueue extends AbstractQueue<File> {
 		return Arrays.asList(batchDirs).iterator();
 	}
 
+	private static class ReadyDirectoriesFilter implements FileFilter {
+		@Override
+		public boolean accept(File arg0) {
+			if(arg0.isDirectory()) {
+				File readyFile = new File(arg0, READY_FOR_INGEST);
+				return readyFile.exists();
+			}
+			return false;
+		}
+	}
+	private static ReadyDirectoriesFilter readyFilter = new ReadyDirectoriesFilter();
+	private static class ModDateComparator implements Comparator<File> {
+		@Override
+		public int compare(File o1, File o2) {
+			if(o1 == null || o2 == null) return 0;
+			return (int)(o1.lastModified() - o2.lastModified());
+		}
+	}
+	private static Comparator<File> earlyFilesFirst = new ModDateComparator();
+
 	/**
 	 * @return
 	 */
 	private File[] getSortedDirectoryArray() {
-		File[] batchDirs = this.queuedDirectory.listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File arg0) {
-				if(arg0.isDirectory()) {
-					String[] readyFiles = arg0.list(new FilenameFilter() {
-						@Override
-						public boolean accept(File dir, String name) {
-							return (READY_FOR_INGEST.equals(name));
-						}
-					});
-					if(readyFiles.length > 0) {
-						return true;
-					}
-				}
-				return false;
-			}
-		});
-		Arrays.sort(batchDirs, new Comparator<File>() {
-			@Override
-			public int compare(File o1, File o2) {
-				if(o1 == null || o2 == null) return 0;
-				return (int)(o1.lastModified() - o2.lastModified());
-			}
-		});
-		return batchDirs;
+		File[] readyDirs = this.queuedDirectory.listFiles(BatchIngestQueue.readyFilter);
+		Arrays.sort(readyDirs, BatchIngestQueue.earlyFilesFirst);
+		return readyDirs;
 	}
 
 	@Override

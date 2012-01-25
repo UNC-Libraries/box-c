@@ -13,27 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-
-import javax.annotation.Resource;
-
-import org.jdom.Document;
-import org.jdom.output.XMLOutputter;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import edu.unc.lib.dl.fedora.FedoraDataService;
-import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
  * Copyright 2010 The University of North Carolina at Chapel Hill
@@ -53,7 +36,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
  * @author Gregory Jansen
- * 
+ *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })

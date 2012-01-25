@@ -17,9 +17,9 @@ package edu.unc.lib.dl.search.solr.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.HashSet;
-import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
+import java.util.List;
+
 import org.apache.solr.client.solrj.response.FacetField;
 
 /**

@@ -15,20 +15,7 @@
  */
 package edu.unc.lib.dl.security.access.test;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,97 +28,97 @@ public class UserSecurityProfileTest extends Assert {
 	@Test
 	public void accessGroupTests(){
 		UserSecurityProfile user = new UserSecurityProfile();
-		
+
 		Assert.assertNull(user.getAccessGroups());
-		
+
 		ArrayList<String> groups = new ArrayList<String>();
 		groups.add("oddGroup");groups.add("testGroup1");
 		groups.add("nonmatchingGroup");groups.add("edu:unc:lib:cdr:admin");
-		
+
 		String members = null;
 		user.setAccessGroups(members);
 		Assert.assertTrue(user.getAccessGroups().size() == 0);
 		Assert.assertTrue("".equals(user.getAccessGroups().joinAccessGroups(";", "", false)));
-		
+
 		Assert.assertTrue(user.getIsMemeberOf() == null);
-		
+
 		members = "testGroup1";
 		user.setAccessGroups(members);
 		Assert.assertTrue(user.getAccessGroups().size() == 1);
-		
+
 		Assert.assertTrue(user.getAccessGroups().contains("testGroup1"));
-		
+
 		members = "testGroup1;testGroup2;testGroup3;oddGroup";
 		user.setAccessGroups(members);
 		Assert.assertTrue(user.getAccessGroups().size() == 4);
 		Assert.assertTrue(user.getAccessGroups().contains("testGroup1"));
 		Assert.assertTrue(user.getAccessGroups().contains("oddGroup"));
-		
+
 		Assert.assertTrue(user.getAccessGroups().containsAny(groups));
-		
+
 		Assert.assertTrue(user.getIsMemeberOf().equals(members));
-		
+
 		members = "testGroup1:testGroupExtended;testGroup2";
 		user.setAccessGroups(members);
 		Assert.assertTrue(user.getAccessGroups().size() == 2);
-		
+
 		members = ";testGroup1;";
 		user.setAccessGroups(members);
 		Assert.assertTrue(user.getAccessGroups().size() == 1);
-		
+
 		members = "";
 		user.setAccessGroups(members);
 		Assert.assertTrue(user.getAccessGroups().size() == 0);
 		Assert.assertFalse(user.getAccessGroups().containsAny(groups));
 		Assert.assertTrue(members.equals(user.getAccessGroups().joinAccessGroups(";", "", false)));
-		
+
 		members = "edu:unc:lib:cdr:admin;edu:unc:lib:cdr:sfc";
 		user.setAccessGroups(members);
 		Assert.assertTrue(user.getAccessGroups().size() == 2);
 		Assert.assertTrue(user.getAccessGroups().containsAny(groups));
-		
+
 		Assert.assertTrue(user.getIsMemeberOf().equals(members));
-		
+
 		Assert.assertTrue(members.equals(user.getAccessGroups().joinAccessGroups(";", "", false)) ||
 				"edu:unc:lib:cdr:sfc;edu:unc:lib:cdr:admin".equals(user.getAccessGroups().joinAccessGroups(";", "", false)));
-		
+
 		user.getAccessGroups().remove("edu:unc:lib:cdr:admin");
 		Assert.assertTrue(user.getAccessGroups().size() == 1);
-		
+
 	}
-	
+
 	@Test
 	public void datastreamAccessCacheTests(){
 		UserSecurityProfile user = new UserSecurityProfile();
-		
+
 		Assert.assertNotNull(user.getDatastreamAccessCache());
 		Assert.assertEquals(user.getDatastreamAccessCache().size(), 0);
-		
+
 		String id = "id";
 		user.getDatastreamAccessCache().put(id, AccessType.FILE);
 		Assert.assertEquals(user.getDatastreamAccessCache().size(), 1);
 		Assert.assertTrue(user.getDatastreamAccessCache().contains(id, AccessType.FILE));
 		Assert.assertFalse(user.getDatastreamAccessCache().contains(id, AccessType.ADMIN));
-		
+
 		id = "uuid:12344578";
 		user.getDatastreamAccessCache().put(id, AccessType.RECORD);
 		user.getDatastreamAccessCache().put(id, AccessType.SURROGATE);
 		user.getDatastreamAccessCache().put(id, AccessType.FILE);
-		
+
 		Assert.assertEquals(user.getDatastreamAccessCache().size(), 2);
 		Assert.assertEquals(user.getDatastreamAccessCache().get(id).size(), 3);
 		Assert.assertTrue(user.getDatastreamAccessCache().contains(id, AccessType.FILE));
 		Assert.assertFalse(user.getDatastreamAccessCache().contains(id, AccessType.ADMIN));
-		
+
 		user.getDatastreamAccessCache().get(id).remove(AccessType.SURROGATE);
 		Assert.assertEquals(user.getDatastreamAccessCache().get(id).size(), 2);
-		
+
 		id = null;
 		user.getDatastreamAccessCache().put(id, AccessType.RECORD);
 		Assert.assertEquals(user.getDatastreamAccessCache().size(), 3);
 		user.getDatastreamAccessCache().remove(id);
 		Assert.assertEquals(user.getDatastreamAccessCache().size(), 2);
-		
+
 		id = "id";
 		user.getDatastreamAccessCache().get(id).remove(AccessType.FILE);
 		Assert.assertEquals(user.getDatastreamAccessCache().get(id).size(), 0);

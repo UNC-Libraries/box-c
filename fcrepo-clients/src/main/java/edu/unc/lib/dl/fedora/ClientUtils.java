@@ -59,7 +59,7 @@ public class ClientUtils {
 	/**
 	 * Serializes the FOXML 1.1 JDOM document to a UTF-8 byte array. This method is responsible for assuring that the
 	 * FOXML output contains "standalone" datastreams with locally declared namespaces as required by Fedora ingest.
-	 * 
+	 *
 	 * @param doc
 	 *           a FOXML 1.1 JDOM document
 	 * @return a byte array serialization of the Document
@@ -77,6 +77,7 @@ public class ClientUtils {
 			// This ensures that any XML datastreams have locally
 			// declared namespaces, which is a Fedora ingest
 			// requirement.
+
 			OutputFormat format = new OutputFormat("XML", "UTF-8", true);
 			format.setIndent(2);
 			format.setIndenting(true);
@@ -117,7 +118,7 @@ public class ClientUtils {
 	/**
 	 * Serializes the FOXML 1.1 JDOM document to a UTF-8 byte array. This method is responsible for assuring that the
 	 * FOXML output contains "standalone" datastreams with locally declared namespaces as required by Fedora ingest.
-	 * 
+	 *
 	 * @param doc
 	 *           a FOXML 1.1 JDOM document
 	 * @return a byte array serialization of the Document
