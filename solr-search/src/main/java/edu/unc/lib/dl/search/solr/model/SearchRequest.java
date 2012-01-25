@@ -16,8 +16,8 @@
 package edu.unc.lib.dl.search.solr.model;
 
 import java.io.Serializable;
+
 import edu.unc.lib.dl.security.access.AccessGroupSet;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 
 /**
  * Request bean for a brief record search.  Handles basic searches and advanced searches. 

@@ -26,7 +26,6 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.management.MBeanServer;
