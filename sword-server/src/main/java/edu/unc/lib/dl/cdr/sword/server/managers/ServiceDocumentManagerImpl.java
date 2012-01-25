@@ -33,6 +33,7 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 import org.swordapp.server.SwordWorkspace;
 
+import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PackagingType;
 
@@ -51,6 +52,11 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 		
 		ServiceDocument sd = new ServiceDocument();
 		SwordWorkspace workspace = new SwordWorkspace();
+		SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
+		
+		sd.setVersion(configImpl.getSwordVersion());
+		if (config.getMaxUploadSize() != -1)
+			sd.setMaxUploadSize(config.getMaxUploadSize());
 		
 		String pid = null;
 		if (sdUri != null){

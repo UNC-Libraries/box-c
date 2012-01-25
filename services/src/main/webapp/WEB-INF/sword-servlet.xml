@@ -204,6 +204,10 @@
 		init-method="init">
 		<property name="authType" value="Basic"/>
 		<property name="basePath" ref="swordPath"/>
+		<property name="tempDirectory" value="${initial.batch.ingest.dir}"/>
+		<property name="swordVersion" value="${sword.version}"/>
+		<property name="generatorVersion" value="${cdr.version}"/>
+		<property name="generator" value="${repository.protocol}://${repository.host}"/>
 	</bean>
 	
 	<bean id="collectionListManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl"

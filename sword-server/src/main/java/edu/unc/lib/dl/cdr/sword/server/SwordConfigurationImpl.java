@@ -32,12 +32,15 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 	public static final String SERVICE_DOCUMENT_PATH = "/serviceDocument";
 	
 	private String authType = null;
-	private int maxUploadSize = 0;
+	private int maxUploadSize = -1;
 	private String tempDirectory = null;
 	@Resource
 	private TripleStoreQueryService tripleStoreQueryService;
 	private PID collectionsPidObject;
 	private String basePath;
+	private String swordVersion = null;
+	private String generator = null;
+	private String generatorVersion = null;
 
 	public SwordConfigurationImpl() {
 	}
@@ -64,12 +67,21 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
 	@Override
 	public String generator() {
-		return "http://www.swordapp.org/";
+		return this.generator;
 	}
+	
 
 	@Override
 	public String generatorVersion() {
-		return "2.0";
+		return this.generatorVersion;
+	}
+
+	public void setGenerator(String generator) {
+		this.generator = generator;
+	}
+
+	public void setGeneratorVersion(String generatorVersion) {
+		this.generatorVersion = generatorVersion;
 	}
 
 	@Override
@@ -88,12 +100,16 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
 	@Override
 	public boolean storeAndCheckBinary() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public String getTempDirectory() {
 		return this.tempDirectory;
+	}
+
+	public void setTempDirectory(String tempDirectory) {
+		this.tempDirectory = tempDirectory;
 	}
 
 	@Override
@@ -119,5 +135,13 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
 	public void setBasePath(String basePath) {
 		this.basePath = basePath;
+	}
+
+	public String getSwordVersion() {
+		return swordVersion;
+	}
+
+	public void setSwordVersion(String swordVersion) {
+		this.swordVersion = swordVersion;
 	}
 }
