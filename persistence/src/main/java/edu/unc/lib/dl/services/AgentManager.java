@@ -61,7 +61,7 @@ public class AgentManager extends AgentFactory {
 		addlist.add(group);
 		sip.setAgents(addlist);
 
-		PID resp = this.getDigitalObjectManager().addSingleObject(sip, user, message);
+		PID resp = this.getDigitalObjectManager().addWhileBlocking(sip, user, message);
 		log.debug("response is:" + resp);
 		return this.getGroupAgents(Collections.singletonList(resp), false).get(0);
 	}
@@ -112,7 +112,7 @@ public class AgentManager extends AgentFactory {
 		addlist.add(person);
 		sip.setAgents(addlist);
 
-		PID resp = this.getDigitalObjectManager().addSingleObject(sip, user, message);
+		PID resp = this.getDigitalObjectManager().addWhileBlocking(sip, user, message);
 		log.debug("response is:" + resp);
 		return this.getPersonAgents(Collections.singletonList(resp), false).get(0);
 	}
@@ -141,7 +141,7 @@ public class AgentManager extends AgentFactory {
 		addlist.add(software);
 		sip.setAgents(addlist);
 
-		PID resp = this.getDigitalObjectManager().addSingleObject(sip, user, message);
+		PID resp = this.getDigitalObjectManager().addWhileBlocking(sip, user, message);
 		log.debug("response is:" + resp);
 		return this.getSoftwareAgents(Collections.singletonList(resp)).get(0);
 	}

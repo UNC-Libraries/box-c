@@ -16,171 +16,140 @@
 package edu.unc.lib.dl.cdr.services;
 
 import java.io.File;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.unc.lib.dl.cdr.services.processing.ServiceConductor;
+import edu.unc.lib.dl.cdr.services.processing.ServicesThreadPoolExecutor;
 import edu.unc.lib.dl.services.BatchIngestQueue;
 import edu.unc.lib.dl.services.BatchIngestTask;
-import edu.unc.lib.dl.util.FileUtils;
+import edu.unc.lib.dl.services.BatchIngestTaskFactory;
 
 /**
- * The IngestService runs a single-threaded ingest service, based on information prearranged in a file system queue.
- * The service will pick up where it left off after a server crash or interruption, including halfway through a batch.
+ * The IngestService runs a single-threaded ingest service, based on information prearranged in a file system queue. The
+ * service will pick up where it left off after a server crash or interruption, including halfway through a batch.
  *
  * @author Gregory Jansen
  *
  */
-public abstract class BatchIngestService {
+public class BatchIngestService implements ServiceConductor {
 	private static final Log LOG = LogFactory.getLog(BatchIngestService.class);
+	private static final String identifier = "BatchIngestService";
 
 	private boolean startOnInit = false;
-
-	private ReentrantLock pauseLock = new ReentrantLock();
-
-	private Thread serviceThread = null;
-	private Thread taskThread = null;
 	private BatchIngestQueue batchIngestQueue = null;
-	private BatchIngestTask batchIngestTask = null;
-
-	public BatchIngestService() {
-	}
+	private BatchIngestTaskFactory batchIngestTaskFactory = null;
+	protected ServicesThreadPoolExecutor executor = null;
+	protected int maxThreads = 1;
+	private Timer pollingTimer = null;
+	private int pollDirectorySeconds = 2;
+	private long beforeExecuteDelay = 50;
 
 	public void init() {
-		if (isStartOnInit()) {
-			start();
+		initializeExecutor();
+		if (!isStartOnInit()) {
+			this.executor.pause();
+		}
+		// queue any new pending ingests
+		queueNewPendingIngests();
+		// add a file system monitor to queue new ingests
+		pollingTimer = new Timer();
+		pollingTimer.schedule(new EnqueueTask(), 0, pollDirectorySeconds * 1000);
+	}
+
+	class EnqueueTask extends TimerTask {
+		@Override
+		public void run() {
+			queueNewPendingIngests();
 		}
 	}
 
-	public void start() {
-		this.pauseLock.lock();
-		try {
-			LOG.info("Starting Batch Ingest Service...");
-			serviceThread = new Thread(newServiceRunner(), "BatchIngestThread");
-			serviceThread.start();
-		} finally {
-			pauseLock.unlock();
-		}
-	}
-
-	private Runnable newServiceRunner() {
-		return new Runnable() {
-
-			@Override
-			public void run() {
-				LOG.debug("Batch Ingest Service thread started.");
-				while (true) {
-					try {
-						if (taskThread == null || !taskThread.isAlive()) {
-							// clean up last batch
-							if (batchIngestTask != null) {
-								if (batchIngestTask.isFailed()) {
-										batchIngestQueue.fail(batchIngestTask.getBaseDir());
-								} else {
-									FileUtils.deleteDir(batchIngestTask.getBaseDir());
-								}
-								batchIngestTask = null;
-							}
-							taskThread = null;
-
-							File nextDir = batchIngestQueue.peek();
-							// start next batch
-							if (nextDir != null) {
-								LOG.info("Creating task for " + nextDir);
-								batchIngestTask = createTask();
-								batchIngestTask.init(nextDir);
-								taskThread = new Thread(batchIngestTask, nextDir.getName());
-								taskThread.start();
-							} else {
-								// queue empty
-							}
-							notifyWaitingThreads();
-						} else {
-							Thread.sleep(10 * 1000);
-						}
-					} catch (InterruptedException e) {
-						LOG.debug("Queue thread interrupted.", e);
-					}
-					if (Thread.interrupted()) {
-						return;
-					}
-				}
-			}
-		};
-	}
-
-	/*
-	 * (non-Javadoc)
+	/**
 	 *
-	 * @see edu.unc.lib.dl.services.BatchIngestServiceInterface#pauseQueue()
 	 */
-	public void pause() {
-		this.pauseLock.lock();
-		try {
-			LOG.info("Pausing Batch Ingest Service..");
-			if (this.serviceThread != null && this.serviceThread.isAlive()) {
-				this.serviceThread.interrupt();
+	private void queueNewPendingIngests() {
+		Set<Runnable> queued = new HashSet<Runnable>();
+		queued.addAll(this.executor.getQueue());
+		queued.addAll(this.executor.getRunningNow());
+		Set<File> handled = new HashSet<File>();
+		for(Runnable task : queued) {
+			if(BatchIngestTask.class.isInstance(task)) {
+				BatchIngestTask bit = (BatchIngestTask)task;
+				handled.add(bit.getBaseDir());
 			}
-			if (this.batchIngestTask != null) {
-				this.batchIngestTask.stop();
+		}
+		for(File dir : this.batchIngestQueue.getReadyIngestDirectories()) {
+			if(!handled.contains(dir)) {
+				BatchIngestTask newtask = this.batchIngestTaskFactory.createTask();
+				newtask.init(dir);
+				this.executor.execute(newtask);
 			}
-			if (this.taskThread != null && this.taskThread.isAlive()) {
-				try {
-					LOG.info("Waiting up to 60 seconds for batch ingest task to stop gracefully..");
-					this.taskThread.join(60 * 1000);
-				} catch (InterruptedException e) {
-					LOG.info("Interrupting batch ingest thread, after giving it time to stop.");
-					this.taskThread.interrupt();
-				}
-			}
-		} finally {
-			pauseLock.unlock();
 		}
 	}
 
-	private synchronized void notifyWaitingThreads() {
-		synchronized (this) {
-			notifyAll();
-		}
+	public void destroy() {
+		this.shutdown();
+		this.pollingTimer.cancel();
+	}
+
+	public void shutdown() {
+		this.executor.shutdown();
+		LOG.warn("Batch Ingest Service is shutting down, no further batches will be processed.");
+	}
+
+	public int getMaxThreads() {
+		return maxThreads;
+	}
+
+	public void setMaxThreads(int maxThreads) {
+		this.maxThreads = maxThreads;
+	}
+
+	public int activeThreadsCount() {
+		return executor.getActiveCount();
+	}
+
+	protected void initializeExecutor() {
+		LOG.debug("Initializing services thread pool executor with " + this.maxThreads + " threads.");
+		this.executor = new ServicesThreadPoolExecutor(this.maxThreads, "SolrUpdates");
+		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
+		(this.executor).setBeforeExecuteDelay(beforeExecuteDelay);
+	}
+
+	@Override
+	public void restart() {
+		if (this.executor == null || this.executor.isShutdown() || this.executor.isTerminated())
+			initializeExecutor();
+	}
+
+	@Override
+	public String getIdentifier() {
+		return identifier;
 	}
 
 	/**
 	 * Blocks the calling thread until the queue is completely empty and ingest task is finished.
 	 */
-	public void waitUntilIdle() {
-		LOG.debug("Thread waiting for idle ingest service: " + Thread.currentThread().getName());
-		synchronized (this) {
-			while (this.batchIngestTask != null) {
-				try {
-					this.wait();
-				} catch (InterruptedException e) {
-				}
-			}
-		}
-	}
+//	public void waitUntilIdle() {
+//		LOG.debug("Thread waiting for idle ingest service: " + Thread.currentThread().getName());
+//		// TODO reimplement
+//	}
 
 	/**
 	 * Blocks the calling thread until an ingest task is active.
 	 */
-	public void waitUntilActive() {
-		LOG.debug("Thread waiting for active ingest service: " + Thread.currentThread().getName());
-		synchronized (this) {
-			while (this.batchIngestTask == null) {
-				try {
-					this.wait();
-				} catch (InterruptedException e) {
-				}
-			}
-		}
-	}
-
-	/**
-	 * Container may override this method to return a task bean
-	 *
-	 * @return a BatchIngestTask bean configured for this repository
-	 */
-	public abstract BatchIngestTask createTask();
+//	public void waitUntilActive() {
+//		LOG.debug("Thread waiting for active ingest service: " + Thread.currentThread().getName());
+//		// TODO reimplement
+//	}
 
 	public boolean isStartOnInit() {
 		return startOnInit;
@@ -196,6 +165,98 @@ public abstract class BatchIngestService {
 
 	public void setBatchIngestQueue(BatchIngestQueue batchIngestQueue) {
 		this.batchIngestQueue = batchIngestQueue;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#pause()
+	 */
+	@Override
+	public void pause() {
+		this.executor.pause();
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#resume()
+	 */
+	@Override
+	public void resume() {
+		this.executor.resume();
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#isPaused()
+	 */
+	@Override
+	public boolean isPaused() {
+		return this.executor.isPaused();
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#isEmpty()
+	 */
+	@Override
+	public boolean isEmpty() {
+		return this.executor.getQueue().isEmpty();
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#isIdle()
+	 */
+	@Override
+	public boolean isIdle() {
+		return this.executor.isPaused() || this.executor.getQueue().isEmpty();
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#shutdownNow()
+	 */
+	@Override
+	public void shutdownNow() {
+		this.executor.shutdownNow();
+		LOG.warn("Batch Ingest Service is shutting down NOW, no further batches will be processed.");
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#abort()
+	 */
+	@Override
+	public void abort() {
+		this.executor.pause();
+		this.executor.shutdownNow();
+		try {
+			this.executor.awaitTermination(5, TimeUnit.MINUTES);
+		} catch (InterruptedException ignored) {}
+		initializeExecutor();
+		pause();
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#getConductorStatus()
+	 */
+	@Override
+	public Map<String, Object> getInfo() {
+		Map<String, Object> result = new HashMap<String, Object>();
+		// TODO set JSON mappings
+		return result;
+	}
+
+	public BatchIngestTaskFactory getBatchIngestTaskFactory() {
+		return batchIngestTaskFactory;
+	}
+
+	public void setBatchIngestTaskFactory(BatchIngestTaskFactory batchIngestTaskFactory) {
+		this.batchIngestTaskFactory = batchIngestTaskFactory;
+	}
+
+	public long getBeforeExecuteDelay() {
+		return beforeExecuteDelay;
+	}
+
+	public void setBeforeExecuteDelay(long beforeExecuteDelay) {
+		this.beforeExecuteDelay = beforeExecuteDelay;
+		if(this.executor != null) {
+			this.executor.setBeforeExecuteDelay(beforeExecuteDelay);
+		}
 	}
 
 }

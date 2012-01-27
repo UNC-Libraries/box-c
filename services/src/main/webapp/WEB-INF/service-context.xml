@@ -441,6 +441,10 @@
 		    <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
 	    </bean>
 		</property>
+		<property name="batchIngestTaskFactory" ref="batchIngestTaskFactory"/>
+	</bean>
+	
+  <bean id="batchIngestTaskFactory" class="edu.unc.lib.dl.services.BatchIngestTaskFactory">
 		<lookup-method name="createTask" bean="batchIngestTask"/>
 	</bean>
 	

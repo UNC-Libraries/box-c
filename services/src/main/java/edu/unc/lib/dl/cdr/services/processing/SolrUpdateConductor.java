@@ -16,7 +16,9 @@
 
 package edu.unc.lib.dl.cdr.services.processing;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
@@ -25,19 +27,19 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 
-public class SolrUpdateConductor extends SolrUpdateService implements MessageConductor {
+public class SolrUpdateConductor extends SolrUpdateService implements MessageConductor, ServiceConductor {
 	public static final String identifier = "SOLR_UPDATE";
-	
+
 	private long beforeExecuteDelay = 50;
-	
+
 	@Override
 	protected void initializeExecutor(){
 		LOG.debug("Initializing services thread pool executor with " + this.maxThreads + " threads.");
-		this.executor = new ServicesThreadPoolExecutor(this.maxThreads);
+		this.executor = new ServicesThreadPoolExecutor(this.maxThreads, this.getIdentifier());
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
 		((ServicesThreadPoolExecutor)this.executor).setBeforeExecuteDelay(beforeExecuteDelay);
 	}
-	
+
 	@Override
 	public void add(PIDMessage message) {
 		String namespace = message.getNamespace();
@@ -83,21 +85,23 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	@Override
 	public void pause() {
 		((ServicesThreadPoolExecutor)this.executor).pause();
-		
+
 	}
 
 	@Override
 	public void resume() {
 		((ServicesThreadPoolExecutor)this.executor).resume();
 	}
-	
+
 	@Override
 	public boolean isPaused(){
 		return ((ServicesThreadPoolExecutor)this.executor).isPaused();
 	}
-	
+
 	@Override
-	public String getConductorStatus(){
+	public Map<String, Object> getInfo() {
+		// TODO put values in separate keys
+		Map<String, Object> result = new HashMap<String, Object>();
 		StringBuilder sb = new StringBuilder();
 		sb.append("Solr Update Conductor Status:\n")
 			.append("Paused: " + isPaused() + "\n")
@@ -105,9 +109,10 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 			.append("Collision List: " + this.collisionList.size() + "\n")
 			.append("Locked pids: " + this.lockedPids.size() + "\n")
 			.append("Executor: " + executor.getActiveCount() + " active workers, " + executor.getQueue().size() + " queued");
-		return sb.toString();
+		result.put("message", sb.toString());
+		return result;
 	}
-	
+
 	@Override
 	public String queuesToString(){
 		StringBuilder sb = new StringBuilder();
@@ -122,13 +127,13 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	public int getQueueSize() {
 		return this.pidQueue.size() + this.collisionList.size();
 	}
-	
+
 	@Override
 	public synchronized void clearQueue(){
 		this.pidQueue.clear();
 		this.collisionList.clear();
 	}
-	
+
 	@Override
 	public synchronized void clearState(){
 		this.pidQueue.clear();
@@ -136,17 +141,17 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 		this.lockedPids.clear();
 		executor.getQueue().clear();
 	}
-	
+
 	@Override
 	public boolean isEmpty() {
 		return this.pidQueue.size() == 0 && this.collisionList.size() == 0 && this.lockedPids.size() == 0;
 	}
-	
+
 	@Override
 	public boolean isIdle(){
 		return isPaused() || this.lockedPids.size() == 0;
 	}
-	
+
 	@Override
 	public boolean isReady(){
 		return !this.executor.isShutdown() && !this.executor.isTerminated() && !this.executor.isTerminating();
@@ -159,7 +164,7 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 		this.lockedPids.clear();
 		LOG.warn("Solr Update conductor is shutting down, no further objects will be received");
 	}
-	
+
 	@Override
 	public void shutdownNow() {
 		this.executor.shutdownNow();
@@ -190,7 +195,7 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 		if (this.executor == null || this.executor.isShutdown() || this.executor.isTerminated())
 			initializeExecutor();
 	}
-	
+
 	@Override
 	public String getIdentifier() {
 		return identifier;

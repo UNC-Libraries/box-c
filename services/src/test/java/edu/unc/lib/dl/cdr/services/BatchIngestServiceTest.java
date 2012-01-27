@@ -174,18 +174,20 @@ public class BatchIngestServiceTest {
 			when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
 
 			this.batchIngestService.pause();
-			digitalObjectManagerImpl.addBatch(sip1, user, "testAdd1 for a good METS SIP");
+			digitalObjectManagerImpl.addToIngestQueue(sip1, user, "testAdd1 for a good METS SIP");
 			Thread.sleep(5*1000);
 			verify(this.managementClient, never()).ingest(any(Document.class), any(Format.class), any(String.class));
 
-			this.batchIngestService.start();
-			this.batchIngestService.waitUntilActive();
-			this.batchIngestService.waitUntilIdle();
+			this.batchIngestService.resume();
+			do {
+				Thread.sleep(5*1000);
+			} while(this.batchIngestService.executor.getQueue().size() + this.batchIngestService.executor.getActiveCount() > 0);
 			verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));
 
-			digitalObjectManagerImpl.addBatch(sip2, user, "testAdd2 for a good METS SIP");
-			this.batchIngestService.waitUntilActive();
-			this.batchIngestService.waitUntilIdle();
+			digitalObjectManagerImpl.addToIngestQueue(sip2, user, "testAdd2 for a good METS SIP");
+			do {
+				Thread.sleep(5*1000);
+			} while(this.batchIngestService.executor.getQueue().size() + this.batchIngestService.executor.getActiveCount() > 0);
 			verify(this.managementClient, times(28)).ingest(any(Document.class), any(Format.class), any(String.class));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -226,10 +228,11 @@ public class BatchIngestServiceTest {
 			ans.add(ContentModelHelper.Model.CONTAINER.getURI());
 			when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
 
-			digitalObjectManagerImpl.addBatch(sip, user, "testAdd for a good METS SIP");
+			digitalObjectManagerImpl.addToIngestQueue(sip, user, "testAdd for a good METS SIP");
 
-			this.batchIngestService.waitUntilActive();
-			this.batchIngestService.waitUntilIdle();
+			do {
+				Thread.sleep(5*1000);
+			} while(this.batchIngestService.executor.getQueue().size() + this.batchIngestService.executor.getActiveCount() > 0);
 
 			// verify batch ingest called
 			verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));
@@ -286,10 +289,11 @@ public class BatchIngestServiceTest {
 			ans.add(ContentModelHelper.Model.CONTAINER.getURI());
 			when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
 
-			digitalObjectManagerImpl.addBatch(sip, user, "testAdd for a good METS SIP");
+			digitalObjectManagerImpl.addToIngestQueue(sip, user, "testAdd for a good METS SIP");
 
-			this.batchIngestService.waitUntilActive();
-			this.batchIngestService.waitUntilIdle();
+			do {
+				Thread.sleep(5*1000);
+			} while(this.batchIngestService.executor.getQueue().size() + this.batchIngestService.executor.getActiveCount() > 0);
 
 			// verify batch ingest called
 			verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));

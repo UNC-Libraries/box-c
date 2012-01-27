@@ -448,7 +448,7 @@ public class DigitalObjectManagerImplTest {
 		ArrayList<URI> ans = new ArrayList<URI>();
 		ans.add(ContentModelHelper.Model.CONTAINER.getURI());
 		when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
-		this.getDigitalObjectManagerImpl().addBatch(sip, user, "testAdd for a good METS SIP");
+		this.getDigitalObjectManagerImpl().addToIngestQueue(sip, user, "testAdd for a good METS SIP");
 		// verify batch ingest called
 		verify(this.batchIngestQueue, times(1)).add(any(File.class));
 	}
@@ -486,7 +486,7 @@ public class DigitalObjectManagerImplTest {
 			ans.add(ContentModelHelper.Model.CONTAINER.getURI());
 			when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
 
-			digitalObjectManagerImpl.addSingleObject(sip, user, "testing add single object (now)");
+			digitalObjectManagerImpl.addWhileBlocking(sip, user, "testing add single object (now)");
 
 			// verify batch ingest called
 			verify(this.managementClient, times(1)).ingest(any(Document.class), any(Format.class), any(String.class));

@@ -15,14 +15,18 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+
 /**
- * Thread pool executor which allows for pausing the pool as well as expanding or 
+ * Thread pool executor which allows for pausing the pool as well as expanding or
  * decreasing the thread pool size on the fly.
  * @author bbpennel
  *
@@ -33,14 +37,20 @@ public class ServicesThreadPoolExecutor extends ThreadPoolExecutor {
 	private Condition unpaused = pauseLock.newCondition();
 	//Delay before a new thread will begin processing, in milliseconds
 	private long beforeExecuteDelay = 0;
-	
-	public ServicesThreadPoolExecutor(int nThreads){
+	Set<Runnable> runningNow = new HashSet<Runnable>();
+
+	public ServicesThreadPoolExecutor(int nThreads, String serviceName){
 		super(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue <Runnable>());
+		CustomizableThreadFactory ctf = new CustomizableThreadFactory();
+		ctf.setThreadGroupName(serviceName);
+		ctf.setThreadNamePrefix("ServicesWorker-");
+		this.setThreadFactory(new CustomizableThreadFactory());
 	}
-	
+
 	@Override
 	protected void afterExecute(Runnable r, Throwable t) {
 		super.afterExecute(r, t);
+		this.runningNow.remove(r);
 		//Check if there are too many threads running, if so then don't allow this one to run.
 		if (this.getActiveCount() > this.getCorePoolSize()){
 			throw new RuntimeException();
@@ -50,6 +60,7 @@ public class ServicesThreadPoolExecutor extends ThreadPoolExecutor {
 	@Override
 	protected void beforeExecute(Thread t, Runnable r) {
 		super.beforeExecute(t, r);
+		this.runningNow.add(r);
 		//Pause the adding of new threads until the pause flag is off.
 		pauseLock.lock();
 		try {
@@ -82,7 +93,7 @@ public class ServicesThreadPoolExecutor extends ThreadPoolExecutor {
 			pauseLock.unlock();
 		}
 	}
-	
+
 	public boolean isPaused(){
 		return this.isPaused;
 	}
@@ -93,5 +104,9 @@ public class ServicesThreadPoolExecutor extends ThreadPoolExecutor {
 
 	public void setBeforeExecuteDelay(long beforeExecuteDelay) {
 		this.beforeExecuteDelay = beforeExecuteDelay;
+	}
+
+	public Set<Runnable> getRunningNow() {
+		return runningNow;
 	}
 }

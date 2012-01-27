@@ -20,85 +20,34 @@ import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 
 public interface MessageConductor {
 	void add(PIDMessage message);
-	
-	/**
-	 * Returns the identifier string for this conductor
-	 * @return
-	 */
-	String getIdentifier();
-	
-	/**
-	 * Halt processing of the conductor queue
-	 */
-	void pause();
-	
-	/**
-	 * Resume processing of the conductor queue
-	 */
-	void resume();
-	
-	/**
-	 * Whether the conductor queue processing is paused or not
-	 * @return
-	 */
-	boolean isPaused();
-	
+
 	/**
 	 * Get the number of messages queued for processing
 	 * @return
 	 */
 	int getQueueSize();
-	
+
+	/**
+	 * Returns the identifier string for this conductor
+	 * @return
+	 */
+	public String getIdentifier();
+
 	/**
 	 * Clear the queue(s).  confirm parameter must be "yes" for the operation to occur
 	 */
 	void clearQueue();
-	
+
 	/**
 	 * Clears message processing state objects.
 	 */
 	void clearState();
-	
-	/**
-	 * True if there are no messages being processed or queued to be processed
-	 * @return
-	 */
-	boolean isEmpty();
-	
-	/**
-	 * True if the conductor is not actively processing messages.
-	 * @return
-	 */
-	boolean isIdle();
-	
+
+	String queuesToString();
+
 	/**
 	 * Indicates if the conductor is ready to receive new messages.
 	 * @return
 	 */
-	boolean isReady();
-	
-	/**
-	 * Shutdown the conductors executor, preventing no future runnables from being added
-	 */
-	void shutdown();
-	
-	/**
-	 * Shuts down the executor immediately, aborting and clearing the queue of runnables\
-	 */
-	void shutdownNow();
-	
-	/**
-	 * Attempts to interrupt the currently running workers and stop execution, but retain
-	 * future runnables.
-	 */
-	void abort();
-	
-	/**
-	 * Restart the executor after a shutdown
-	 */
-	void restart();
-	
-	String queuesToString();
-	
-	String getConductorStatus();
+	public boolean isReady();
 }

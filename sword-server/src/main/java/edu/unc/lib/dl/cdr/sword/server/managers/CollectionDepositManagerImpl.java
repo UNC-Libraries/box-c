@@ -40,9 +40,9 @@ import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.PackagingType;
 
 /**
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class CollectionDepositManagerImpl extends AbstractFedoraManager implements CollectionDepositManager {
 	private static Logger LOG = Logger.getLogger(CollectionDepositManagerImpl.class);
@@ -58,18 +58,18 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		LOG.debug("Root pid is: " + collectionsPidObject);
 		if (collectionURI == null)
 			throw new SwordServerException("No collection URI was provided");
-		
+
 		try {
 			Agent agent = agentFactory.findPersonByOnyen("bbpennel", true);
 			SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
-			
+
 			String pidString = null;
 			String collectionPath = SwordConfigurationImpl.COLLECTION_PATH + "/";
 			int pidIndex = collectionURI.indexOf(collectionPath);
 			if (pidIndex > -1){
 				pidString = collectionURI.substring(pidIndex + collectionPath.length());
 			}
-			
+
 			LOG.debug("Collection URI pid is " + pidString);
 
 			PID containerPID = null;
@@ -78,7 +78,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			} else {
 				containerPID = new PID(pidString);
 			}
-			
+
 			if (PackagingType.METS_CDR.equals(deposit.getPackaging()) || PackagingType.METS_DSPACE_SIP.equals(deposit.getPackaging())){
 				return doMETSCDRDeposit(containerPID, deposit, auth, configImpl, agent);
 			}
@@ -89,20 +89,20 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		}
 		return null;
 	}
-	
+
 	private DepositReceipt doMETSCDRDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
 			SwordConfigurationImpl config, Agent agent) throws Exception {
-		
+
 		LOG.debug("Preparing to perform a CDR METS deposit to " + containerPID.getPid());
-		
+
 		String name = deposit.getFilename();
 		boolean isZip = name.endsWith(".zip");
-		
+
 		this.depositInputStreamToFile(deposit);
 		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), agent, isZip);
 		// PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
 
-		digitalObjectManager.addBatch(sip, agent, "Added through SWORD");
+		digitalObjectManager.addToIngestQueue(sip, agent, "Added through SWORD");
 
 		DepositReceipt receipt = new DepositReceipt();
 		IRI editMediaIRI = new IRI(config.getBasePath() + SwordConfigurationImpl.COLLECTION_PATH);
@@ -114,19 +114,19 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		LOG.info("Returning receipt " + receipt);
 		return receipt;
 	}
-	
+
 	private DepositReceipt doMETSDSpaceDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
 			SwordConfigurationImpl config, Agent agent) throws Exception {
-		
+
 		String name = deposit.getFilename();
 		boolean isZip = name.endsWith(".zip");
-		
+
 		this.depositInputStreamToFile(deposit);
-		
+
 		DepositReceipt receipt = new DepositReceipt();
 		return receipt;
 	}
-	
+
 	private void depositInputStreamToFile(Deposit deposit) throws Exception {
 		File depositFile = File.createTempFile("input-", ".zip");
 		OutputStream os = new BufferedOutputStream(new FileOutputStream(depositFile));

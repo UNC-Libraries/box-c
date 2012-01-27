@@ -90,6 +90,7 @@ public class BatchIngestTask implements Runnable {
 	private static final String REORDERED_LOG = "reordered.log";
 	private static final String FAIL_LOG = "fail.log";
 	private int ingestPollingTimeoutSeconds = -1;
+	private boolean saveFinishedBatches = true;
 
 	private int ingestPollingDelaySeconds = -1;
 
@@ -231,8 +232,8 @@ public class BatchIngestTask implements Runnable {
 		}
 		// LOG CHANGES TO THE CONTAINER
 		int children = placements.size();
-		this.eventLogger.logEvent(PremisEventLogger.Type.INGESTION, "added " + children + " child object(s) to this container",
-				container);
+		this.eventLogger.logEvent(PremisEventLogger.Type.INGESTION, "added " + children
+				+ " child object(s) to this container", container);
 		this.getManagementClient().writePremisEventsToFedoraObject(this.eventLogger, container);
 		return reordered;
 	}
@@ -270,6 +271,14 @@ public class BatchIngestTask implements Runnable {
 				} catch (Exception ignored) {
 				}
 			}
+		}
+		// move batch to failed dir
+		try {
+			File failedFolder = new File(this.baseDir.getParentFile(), BatchIngestQueue.FAILED_SUBDIR);
+			File dest = new File(failedFolder, this.baseDir.getName());
+			FileUtils.renameOrMoveTo(this.baseDir, dest);
+		} catch (IOException ioe) {
+			throw new Error("Unexpected IO error on moving completed ingest batch.", ioe);
 		}
 		if (e != null) {
 			return new BatchFailedException(message, e);
@@ -339,7 +348,7 @@ public class BatchIngestTask implements Runnable {
 			String newref = null;
 			try {
 				URI uri = new URI(ref);
-				if(uri.getScheme() == null || uri.getScheme().contains("file")) {
+				if (uri.getScheme() == null || uri.getScheme().contains("file")) {
 					try {
 						File file = FileUtils.getFileForUrl(ref, dataDir);
 						newref = this.getManagementClient().upload(file);
@@ -347,15 +356,15 @@ public class BatchIngestTask implements Runnable {
 					} catch (IOException e) {
 						throw fail("Data file missing: " + ref, e);
 					}
-				} else if(uri.getScheme().contains("premisEvents")) {
+				} else if (uri.getScheme().contains("premisEvents")) {
 					try {
-						File file = new File(premisDir, ref.substring(ref.indexOf(":")+1));
+						File file = new File(premisDir, ref.substring(ref.indexOf(":") + 1));
 						Document premis = new SAXBuilder().build(file);
 						this.eventLogger.logEvent(PremisEventLogger.Type.INGESTION, "ingested as PID:" + pid.getPid(), pid);
 						this.eventLogger.appendLogEvents(pid, premis.getRootElement());
 						newref = this.getManagementClient().upload(premis);
 						cLocation.setAttribute("REF", newref);
-					} catch(Exception e) {
+					} catch (Exception e) {
 						throw new Error("there was a problem uploading ingest events", e);
 					}
 				} else {
@@ -367,9 +376,9 @@ public class BatchIngestTask implements Runnable {
 			log.debug("uploaded " + ref + " to Fedora " + newref + " for " + pid);
 		}
 
-		if(log.isDebugEnabled()) {
+		if (log.isDebugEnabled()) {
 			String xml = new XMLOutputter().outputString(doc);
-			log.debug("INGESTING FOXML:\n"+xml);
+			log.debug("INGESTING FOXML:\n" + xml);
 		}
 
 		// FEDORA INGEST CALL
@@ -439,9 +448,6 @@ public class BatchIngestTask implements Runnable {
 				}
 			}
 			this.ingestLogWriter = new BufferedWriter(new FileWriter(ingestLog));
-
-			this.state = STATE.STARTING;
-			startTime = System.currentTimeMillis();
 		} catch (Exception e) {
 			throw fail("Cannot initialize the ingest task.", e);
 		}
@@ -479,8 +485,13 @@ public class BatchIngestTask implements Runnable {
 	 */
 	@Override
 	public void run() {
+		this.state = STATE.STARTING;
+		startTime = System.currentTimeMillis();
 		while (this.state != STATE.FINISHED) {
 			log.debug("Batch ingest: state=" + this.state + ", dir=" + this.getBaseDir());
+			if (Thread.interrupted()) {
+				this.halting = true;
+			}
 			if (this.halting && (this.state != STATE.SEND_MESSAGES && this.state != STATE.CLEANUP)) {
 				log.debug("Halting this batch ingest task: state=" + this.state + ", dir=" + this.getBaseDir());
 				break; // stop immediately as long as not sending msgs or cleaning up.
@@ -505,13 +516,46 @@ public class BatchIngestTask implements Runnable {
 					case SEND_MESSAGES: // send cdr JMS and email for this AIP ingest
 						sendIngestMessages();
 						break;
-					case CLEANUP: // nothing here yet
+					case CLEANUP:
+						deleteDataFiles();
+						handleFinishedDir();
 						this.state = STATE.FINISHED;
 						break;
 				}
 			} catch (BatchFailedException e) {
 				log.error("Batch Ingest Task failed: " + e.getLocalizedMessage(), e);
 			}
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void handleFinishedDir() {
+		try {
+			if (this.saveFinishedBatches) {
+				File finishedFolder = new File(this.baseDir.getParentFile().getParentFile(), BatchIngestQueue.FINISHED_SUBDIR);
+				File dest = new File(finishedFolder, this.baseDir.getName());
+				FileUtils.renameOrMoveTo(this.baseDir, dest);
+			} else {
+				FileUtils.deleteDir(baseDir);
+			}
+		} catch (IOException e) {
+			throw new Error("Unexpected IO error on moving completed ingest batch.", e);
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void deleteDataFiles() {
+		if (this.dataDir != null) {
+			log.debug("Deleting batch ingest data files: " + this.dataDir.getAbsolutePath());
+			FileUtils.deleteDir(this.dataDir);
+		}
+		if (this.premisDir != null) {
+			log.debug("Deleting batch ingest premis events files: " + this.premisDir.getAbsolutePath());
+			FileUtils.deleteDir(this.premisDir);
 		}
 	}
 
@@ -541,9 +585,9 @@ public class BatchIngestTask implements Runnable {
 			}
 			Set<PID> containerSet = new HashSet<PID>();
 			Collections.addAll(containerSet, this.containers);
-			if(this.sendJmsMessages) {
-			this.getOperationsMessageSender().sendAddOperation(props.getSubmitter(), containerSet,
-					props.getContainerPlacements().keySet(), reordered);
+			if (this.sendJmsMessages) {
+				this.getOperationsMessageSender().sendAddOperation(props.getSubmitter(), containerSet,
+						props.getContainerPlacements().keySet(), reordered);
 			}
 		}
 		// send successful ingest email
@@ -768,6 +812,14 @@ public class BatchIngestTask implements Runnable {
 
 	public void setSendEmailMessages(boolean sendEmailMessages) {
 		this.sendEmailMessages = sendEmailMessages;
+	}
+
+	public boolean isSaveFinishedBatches() {
+		return saveFinishedBatches;
+	}
+
+	public void setSaveFinishedBatches(boolean saveFinishedBatches) {
+		this.saveFinishedBatches = saveFinishedBatches;
 	}
 
 }

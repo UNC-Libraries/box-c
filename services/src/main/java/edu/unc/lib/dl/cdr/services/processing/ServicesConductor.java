@@ -17,9 +17,11 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -41,9 +43,9 @@ import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
  *
  * @author Gregory Jansen, Ben Pennell
  */
-public class ServicesConductor implements MessageConductor {
+public class ServicesConductor implements MessageConductor, ServiceConductor {
 	private static final Logger LOG = LoggerFactory.getLogger(ServicesConductor.class);
-	
+
 	public static final String identifier = "SERVICES";
 
 	/**
@@ -69,7 +71,7 @@ public class ServicesConductor implements MessageConductor {
 	private FailedObjectHashMap failedPids = null;
 
 	private ServicesThreadPoolExecutor executor = null;
-	
+
 	private long recoverableDelay = 0;
 	private long unexpectedExceptionDelay = 0;
 	private long beforeExecuteDelay = 0;
@@ -81,7 +83,7 @@ public class ServicesConductor implements MessageConductor {
 		collisionList = Collections.synchronizedList(new ArrayList<PIDMessage>());
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
 	}
-	
+
 	public String getIdentifier(){
 		return identifier;
 	}
@@ -93,9 +95,9 @@ public class ServicesConductor implements MessageConductor {
 		// start up the thread pool
 		initializeExecutor();
 	}
-	
+
 	private void initializeExecutor(){
-		this.executor = new ServicesThreadPoolExecutor(this.maxThreads);
+		this.executor = new ServicesThreadPoolExecutor(this.maxThreads, this.getIdentifier());
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
 		this.executor.setBeforeExecuteDelay(beforeExecuteDelay);
 	}
@@ -134,7 +136,7 @@ public class ServicesConductor implements MessageConductor {
 	public int getMaxThreadPoolSize(){
 		return this.executor.getMaximumPoolSize();
 	}
-	
+
 	public void setMaxThreadPoolSize(int threadPoolSize){
 		this.executor.setCorePoolSize(threadPoolSize);
 		this.executor.setMaximumPoolSize(threadPoolSize);
@@ -159,24 +161,26 @@ public class ServicesConductor implements MessageConductor {
 	public void resume(){
 		this.executor.resume();
 	}
-	
+
 	@Override
 	public boolean isEmpty() {
 		return this.pidQueue.size() == 0 && this.collisionList.size() == 0 && this.lockedPids.size() == 0;
 	}
-	
+
 	@Override
 	public boolean isIdle(){
 		return isPaused() || this.lockedPids.size() == 0;
 	}
-	
+
 	@Override
 	public boolean isReady(){
 		return !this.executor.isShutdown() && !this.executor.isTerminated() && !this.executor.isTerminating();
 	}
 
 	@Override
-	public String getConductorStatus(){
+	public Map<String, Object> getInfo(){
+		// TODO put values in separate keys
+		Map<String, Object> result = new HashMap<String, Object>();
 		StringBuilder sb = new StringBuilder();
 		sb.append("Services Conductor Status:\n")
 			.append("Paused: " + isPaused() + "\n")
@@ -185,9 +189,10 @@ public class ServicesConductor implements MessageConductor {
 			.append("Locked pids: " + this.lockedPids.size() + "\n")
 			.append("Failed pids: " + this.failedPids.size() + "\n")
 			.append("Executor: " + executor.getActiveCount() + " active workers, " + executor.getQueue().size() + " queued");
-		return sb.toString();
+		result.put("message", sb.toString());
+		return result;
 	}
-	
+
 	@Override
 	public String queuesToString(){
 		StringBuilder sb = new StringBuilder();
@@ -198,9 +203,9 @@ public class ServicesConductor implements MessageConductor {
 			.append("Failed pids: " + this.failedPids + "\n");
 		return sb.toString();
 	}
-	
+
 	public void logStatus() {
-		LOG.info(getConductorStatus());
+		LOG.info((String)getInfo().get("message"));
 	}
 
 	public void logQueues() {
@@ -221,7 +226,7 @@ public class ServicesConductor implements MessageConductor {
 		this.failedPids.clear();
 		executor.getQueue().clear();
 	}
-	
+
 	public synchronized void clearFailedPids() {
 		this.failedPids.clear();
 	}
@@ -229,12 +234,12 @@ public class ServicesConductor implements MessageConductor {
 	public synchronized void unlockPid(String pid) {
 		this.lockedPids.remove(pid);
 	}
-	
-	
+
+
 	public synchronized void repopulateFailedPids(String dump){
 		this.failedPids.repopulate(dump);
 	}
-	
+
 	public synchronized void removeFailedPid(String pid){
 		this.failedPids.remove(pid);
 	}
@@ -242,7 +247,7 @@ public class ServicesConductor implements MessageConductor {
 	public void reprocessFailedPids() {
 		synchronized (failedPids) {
 			for (String pid : failedPids.keySet()) {
-				this.add(new PIDMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+				this.add(new PIDMessage(pid, JMSMessageUtil.servicesMessageNamespace,
 						JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName()));
 			}
 			failedPids.clear();
@@ -263,7 +268,7 @@ public class ServicesConductor implements MessageConductor {
 		this.lockedPids.clear();
 		LOG.warn("ServiceConductor is shutting down, no further objects will be received");
 	}
-	
+
 	@Override
 	public void shutdownNow() {
 		this.executor.shutdownNow();
@@ -298,11 +303,11 @@ public class ServicesConductor implements MessageConductor {
 	public int getMaxThreads() {
 		return maxThreads;
 	}
-	
+
 	public ServicesThreadPoolExecutor getExecutor(){
 		return this.executor;
 	}
-	
+
 	public int getActiveThreadCount() {
 		return this.executor.getActiveCount();
 	}
@@ -310,7 +315,7 @@ public class ServicesConductor implements MessageConductor {
 	public void setMaxThreads(int maxThreads) {
 		this.maxThreads = maxThreads;
 	}
-	
+
 	public long getRecoverableDelay() {
 		return recoverableDelay;
 	}
@@ -378,7 +383,7 @@ public class ServicesConductor implements MessageConductor {
 	public void setFailedPids(FailedObjectHashMap failedPids) {
 		this.failedPids = failedPids;
 	}
-	
+
 	@Override
 	public int getQueueSize() {
 		return this.pidQueue.size() + this.collisionList.size();
@@ -479,10 +484,10 @@ public class ServicesConductor implements MessageConductor {
 		public void applyService(PIDMessage pidMessage, ObjectEnhancementService s) throws EnhancementException {
 			// Check if there were any failed services for this pid. If there were, check if the current service
 			// was one of them.
-			
+
 			if (LOG.isDebugEnabled())
 				LOG.debug("Applying service " + s.getClass().getCanonicalName() + " to " + pidMessage.getPIDString());
-			
+
 			Set<String> failedServices = null;
 			synchronized(failedPids){
 				failedServices = failedPids.get(pidMessage.getPIDString());
@@ -496,23 +501,23 @@ public class ServicesConductor implements MessageConductor {
 					return;
 				}
 			}
-			
+
 			//Generate the enhancement
 			LOG.info("Adding enhancement task: " + s.getClass().getCanonicalName() + " on " + pidMessage.getPIDString());
 			Enhancement<Element> task = s.getEnhancement(pidMessage);
-			
+
 			//Pause before applying the service if the executor is paused.
 			pauseWait();
 			//If the thread was interrupted, we're done
 			if (Thread.currentThread().isInterrupted()){
-				LOG.warn("Services thread " + Thread.currentThread().getId() + " for " + pidMessage.getPIDString() 
+				LOG.warn("Services thread " + Thread.currentThread().getId() + " for " + pidMessage.getPIDString()
 						+ " interrupted before calling enhancement");
 				return;
 			}
 			//Enhancement services need to be run serially per pid, so making a direct invocation of call
 			task.call();
 		}
-		
+
 		private void pauseWait(){
 			while (executor.isPaused() && !Thread.currentThread().isInterrupted()){
 				try {
@@ -529,7 +534,7 @@ public class ServicesConductor implements MessageConductor {
 			LOG.debug("Starting new run of ServiceConductor thread " + this);
 			//Get the next message, waiting as long as necessary for one to be free
 			PIDMessage pidMessage = getNextMessage();
-			
+
 			if (LOG.isDebugEnabled())
 				LOG.debug("Received pid " + pidMessage.getPIDString() + ": " + pidMessage.getFilteredServices());
 
@@ -555,13 +560,13 @@ public class ServicesConductor implements MessageConductor {
 											+ s.getClass().getName(), e, recoverableDelay);
 									break;
 								case UNRECOVERABLE:
-									LOG.error("An unrecoverable exception occurred while attempting to apply service " 
+									LOG.error("An unrecoverable exception occurred while attempting to apply service "
 											+ s.getClass().getName() + " for " + pidMessage.getPIDString() + ".  Adding to failure list.", e);
 									failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
 									break;
 								case FATAL:
 									pause();
-									LOG.error("A fatal exception occurred while attempting to apply service " 
+									LOG.error("A fatal exception occurred while attempting to apply service "
 											+ s.getClass().getName() + " for " + pidMessage.getPIDString() +", halting all future services.", e);
 									failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
 									return;

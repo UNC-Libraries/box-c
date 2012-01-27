@@ -189,17 +189,19 @@ public class FileUtils {
 	 */
 	public static void deleteDir(File dir) {
 		File[] files = dir.listFiles();
-		for (int i = 0; i < files.length; i++) {
-			if (files[i].isDirectory()) {
-				deleteDir(files[i]);
-			} else {
-				if (!files[i].delete()) {
-					log.warn("Unable to delete file: " + files[i].getPath());
+		if (files != null) {
+			for (int i = 0; i < files.length; i++) {
+				if (files[i].isDirectory()) {
+					deleteDir(files[i]);
+				} else {
+					if (!files[i].delete()) {
+						log.warn("Unable to delete file: " + files[i].getPath());
+					}
 				}
 			}
 		}
 		if (!dir.delete()) {
-			log.warn("Unable to delete directory: " + dir.getPath());
+			log.warn("Unable to delete data at: " + dir.getPath());
 		}
 	}
 }

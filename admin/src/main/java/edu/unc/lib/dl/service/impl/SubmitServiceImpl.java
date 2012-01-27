@@ -83,7 +83,7 @@ public class SubmitServiceImpl implements SubmitService {
  			METSPackageSIP sip = new METSPackageSIP(containerPID,	file, agent, zipFlag);
  			PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
  			setPremisVirusEvent(eventLogger, request.getVirusDate(), request.getVirusSoftware(), request.getOwnerPid());
- 			digitalObjectManager.addBatch(sip, agent, "Added through UI");
+ 			digitalObjectManager.addToIngestQueue(sip, agent, "Added through UI");
  		} catch (IOException e) {
  			logger.error("unexpected io error", e);
  			error = "There was an unexpected error processing your ingest:\n <br />"+e.getLocalizedMessage();
@@ -144,7 +144,7 @@ public class SubmitServiceImpl implements SubmitService {
  			sip.setMimeType(mediatedSubmitIngestObject.getMimetype());
  			sip.setModsXML(modsFile);
  			sip.setOwner(owner);
- 			digitalObjectManager.addBatch(sip, agent, "Added through UI");
+ 			digitalObjectManager.addToIngestQueue(sip, agent, "Added through UI");
  		} catch (IngestException e) {
  			error = e.getLocalizedMessage();
  		} catch (Exception e) {
@@ -230,7 +230,7 @@ public class SubmitServiceImpl implements SubmitService {
 			sip.setOwner(owner);
 			sip.setCollection(true);
 
-			digitalObjectManager.addSingleObject(sip, agent, "Added through UI");
+			digitalObjectManager.addWhileBlocking(sip, agent, "Added through UI");
 
 			request.setMessage(Constants.SUCCESS);
 

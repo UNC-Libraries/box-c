@@ -19,11 +19,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.AbstractQueue;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,23 +32,27 @@ import edu.unc.lib.dl.util.IngestProperties;
  * @author Gregory Jansen
  *
  */
-public class BatchIngestQueue extends AbstractQueue<File> {
+public class BatchIngestQueue {
 	private static final Log LOG = LogFactory.getLog(BatchIngestQueue.class);
-	private static final String FAILED_SUBDIR = "failed";
+	public static final String FAILED_SUBDIR = "failed";
+	public static final String FINISHED_SUBDIR = "finished";
 	private static final String QUEUED_SUBDIR = "queued";
-	private static final String READY_FOR_INGEST = "READY";
+	private static final String READY_FILE = "READY";
 	private String serviceDirectoryPath = null;
 	private File serviceDirectory = null;
-	private File failedDirectory = null;
 	private File queuedDirectory = null;
+	private File failedDirectory = null;
+	private File finishedDirectory = null;
 
 	public void init() {
 		this.serviceDirectory = new File(serviceDirectoryPath);
-		this.failedDirectory = new File(this.serviceDirectory, FAILED_SUBDIR);
 		this.queuedDirectory = new File(this.serviceDirectory, QUEUED_SUBDIR);
+		this.failedDirectory = new File(this.serviceDirectory, FAILED_SUBDIR);
+		this.finishedDirectory = new File(this.serviceDirectory, FINISHED_SUBDIR);
 		if (!this.serviceDirectory.exists()) {
 			this.serviceDirectory.mkdir();
 			this.failedDirectory.mkdir();
+			this.finishedDirectory.mkdir();
 			this.queuedDirectory.mkdir();
 		}
 	}
@@ -64,8 +65,7 @@ public class BatchIngestQueue extends AbstractQueue<File> {
 		this.serviceDirectoryPath = serviceDirectoryPath;
 	}
 
-	@Override
-	public boolean offer(File prepDir) {
+	public boolean add(File prepDir) {
 		IngestProperties props = null;
 		try {
 			props = new IngestProperties(prepDir);
@@ -80,7 +80,7 @@ public class BatchIngestQueue extends AbstractQueue<File> {
 		}
 		try {
 			FileUtils.renameOrMoveTo(prepDir, result);
-			File readyFile = new File(result, READY_FOR_INGEST);
+			File readyFile = new File(result, READY_FILE);
 			readyFile.createNewFile();
 		} catch (IOException e) {
 			LOG.error(e);
@@ -89,30 +89,10 @@ public class BatchIngestQueue extends AbstractQueue<File> {
 		return true;
 	}
 
-	@Override
-	public File peek() {
-		try {
-			return this.iterator().next();
-		} catch(NoSuchElementException e) {
-			return null;
-		}
-	}
-
-	@Override
-	public File poll() {
-		throw new UnsupportedOperationException("poll() operation unsupported for a directory queue");
-	}
-
-	@Override
-	public Iterator<File> iterator() {
-		File[] batchDirs = getSortedDirectoryArray();
-		return Arrays.asList(batchDirs).iterator();
-	}
-
 	/**
 	 * @return
 	 */
-	private File[] getSortedDirectoryArray() {
+	public File[] getReadyIngestDirectories() {
 		File[] batchDirs = this.queuedDirectory.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File arg0) {
@@ -120,7 +100,7 @@ public class BatchIngestQueue extends AbstractQueue<File> {
 					String[] readyFiles = arg0.list(new FilenameFilter() {
 						@Override
 						public boolean accept(File dir, String name) {
-							return (READY_FOR_INGEST.equals(name));
+							return (READY_FILE.equals(name));
 						}
 					});
 					if(readyFiles.length > 0) {
@@ -140,15 +120,10 @@ public class BatchIngestQueue extends AbstractQueue<File> {
 		return batchDirs;
 	}
 
-	@Override
-	public int size() {
-		return getSortedDirectoryArray().length;
-	}
-
 	/**
 	 * @param baseDir
 	 */
-	public void fail(File baseDir) {
+	public void moveToFailedDir(File baseDir) {
 		File failedLoc = new File(failedDirectory, baseDir.getName());
 		LOG.info("Moving failed batch ingest to " + failedLoc);
 		try {
@@ -158,6 +133,18 @@ public class BatchIngestQueue extends AbstractQueue<File> {
 		}
 	}
 
+	/**
+	 * @param baseDir
+	 */
+	public void moveToFinishedDir(File baseDir) {
+		File finishedLoc = new File(finishedDirectory, baseDir.getName());
+		LOG.info("Moving finished batch ingest to " + finishedLoc);
+		try {
 
+			FileUtils.renameOrMoveTo(baseDir, finishedLoc);
+		} catch (IOException e) {
+			throw new Error(e);
+		}
+	}
 
 }

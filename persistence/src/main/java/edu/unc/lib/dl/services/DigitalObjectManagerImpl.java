@@ -74,7 +74,7 @@ import edu.unc.lib.dl.xml.ModsXmlHelper;
  * @author count0
  *
  */
-public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
+public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private static final Log log = LogFactory.getLog(DigitalObjectManagerImpl.class);
 	private boolean available = false;
 	private String availableMessage = "The repository manager is not available yet.";
@@ -86,6 +86,7 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private TripleStoreQueryService tripleStoreQueryService = null;
 	private SchematronValidator schematronValidator = null;
 	private BatchIngestQueue batchIngestQueue = null;
+	private BatchIngestTaskFactory batchIngestTaskFactory = null;
 	private MailNotifier mailNotifier;
 
 	public void setMailNotifier(MailNotifier mailNotifier) {
@@ -121,7 +122,7 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @see edu.unc.lib.dl.services.DigitalObjectManager#add(java.lang.String, java.io.File, edu.unc.lib.dl.agents.Agent,
 	 * edu.unc.lib.dl.agents.PersonAgent, java.lang.String)
 	 */
-	public IngestResult addBatch(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
+	public IngestResult addToIngestQueue(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
 		IngestResult result = new IngestResult();
 		ArchivalInformationPackage aip = null;
 		try {
@@ -794,7 +795,7 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * , edu.unc.lib.dl.agents.Agent, java.lang.String)
 	 */
 	@Override
-	public PID addSingleObject(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
+	public PID addWhileBlocking(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
 		// TODO check for proper SIP type
 		boolean reject = true;
 		// normal SIP processing
@@ -844,7 +845,7 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 		// File queuedDir = moveToInstant(prepDir);
 		// do not set marker file!
 		log.info("Ingesting batch now, in parallel with queue: " + prepDir.getAbsolutePath());
-		BatchIngestTask task = createBatchIngestTask(); // obtain from Spring prototype
+		BatchIngestTask task = this.batchIngestTaskFactory.createTask();
 		task.init(prepDir);
 		task.run();
 		if(!task.isFailed()) {
@@ -853,17 +854,19 @@ public abstract class DigitalObjectManagerImpl implements DigitalObjectManager {
 		task = null;
 	}
 
-	/**
-	 * Creates a new batch ingest task.
-	 * @return
-	 */
-	public abstract BatchIngestTask createBatchIngestTask();
-
 	public BatchIngestQueue getBatchIngestQueue() {
 		return batchIngestQueue;
 	}
 
 	public void setBatchIngestQueue(BatchIngestQueue batchIngestQueue) {
 		this.batchIngestQueue = batchIngestQueue;
+	}
+
+	public BatchIngestTaskFactory getBatchIngestTaskFactory() {
+		return batchIngestTaskFactory;
+	}
+
+	public void setBatchIngestTaskFactory(BatchIngestTaskFactory batchIngestTaskFactory) {
+		this.batchIngestTaskFactory = batchIngestTaskFactory;
 	}
 }

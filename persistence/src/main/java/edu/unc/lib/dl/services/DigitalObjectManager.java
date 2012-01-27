@@ -50,7 +50,7 @@ public interface DigitalObjectManager {
 	 *           a log message for this ingest action
 	 * @return a log of ingest events
 	 */
-	public abstract IngestResult addBatch(SubmissionInformationPackage sip, Agent user, String message) throws IngestException;
+	public abstract IngestResult addToIngestQueue(SubmissionInformationPackage sip, Agent user, String message) throws IngestException;
 
 	/**
 	 * Adds a relationship between two repository objects.
@@ -169,7 +169,7 @@ public interface DigitalObjectManager {
 	 *           the ingest message
 	 * @return the PID of the object added
 	 */
-	public abstract PID addSingleObject(SubmissionInformationPackage sip, Agent user, String message)
+	public abstract PID addWhileBlocking(SubmissionInformationPackage sip, Agent user, String message)
 			throws IngestException;
 
 }

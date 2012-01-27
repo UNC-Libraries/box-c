@@ -95,7 +95,7 @@ public class FolderManager {
 			sip.setOwner(owner);
 			sip.setSlug(slug);
 			sip.setAllowIndexing(true);
-			lastpid = this.getDigitalObjectManager().addSingleObject(sip, user, "creating a new folder path");
+			lastpid = this.getDigitalObjectManager().addWhileBlocking(sip, user, "creating a new folder path");
 		}
 		return lastpid;
 	}

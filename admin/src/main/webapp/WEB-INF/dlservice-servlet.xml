@@ -460,12 +460,16 @@
 		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="schematronValidator" ref="schematronValidator"/>
 		<property name="batchIngestQueue" ref="batchIngestQueue"/>
-		<lookup-method name="createBatchIngestTask" bean="batchIngestTask"/>		
+		<property name="batchIngestTaskFactory" ref="batchIngestTaskFactory"/>
 		<property name="available" value="true"/>
 	</bean>
 	
 	<bean id="batchIngestQueue" class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">
 		  <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
+	</bean>
+	
+	<bean id="batchIngestTaskFactory" class="edu.unc.lib.dl.services.BatchIngestTaskFactory">
+		<lookup-method name="createTask" bean="batchIngestTask"/>
 	</bean>
 	
 	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">
@@ -474,6 +478,7 @@
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="agentFactory" ref="agentManager"/>
+		<property name="saveFinishedBatches" value="false"/>
 		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
 	</bean>

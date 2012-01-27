@@ -185,7 +185,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 	 */
 	private void serializeLoggerEvents(Document doc, PID pid, File premisDir) {
 		Document premis = new Document(this.eventLogger.getObjectEvents(pid));
-		String filename = pid.getPid().hashCode() + ".xml";
+		String filename = pid.getPid().replace(":", "_") + ".xml";
 		FileWriter fw = null;
 		try {
 			fw = new FileWriter(new File(premisDir, filename));
