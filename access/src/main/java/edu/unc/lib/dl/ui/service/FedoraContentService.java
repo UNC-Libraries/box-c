@@ -20,17 +20,11 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.DefaultMethodRetryHandler;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpMethodRetryHandler;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NoHttpResponseException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +39,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
  * Connects to and streams datastreams from Fedora.
- * 
+ *
  * @author bbpennel
  */
 public class FedoraContentService {
@@ -91,7 +85,7 @@ public class FedoraContentService {
 			String fileExtension, boolean asAttachment){
 		this.streamData(simplepid, datastream, outStream, response, fileExtension, asAttachment, 1);
 	}
-	
+
 	public void streamData(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response,
 			String fileExtension, boolean asAttachment, int retryServerError) {
 		String dataUrl = fedoraUtil.getFedoraUrl();
@@ -157,7 +151,7 @@ public class FedoraContentService {
 					LOG.warn("Failed to retrieve " + method.getURI().getURI() + ", retrying.");
 					this.streamData(simplepid, datastream, outStream, response, fileExtension, asAttachment, retryServerError-1);
 				} else {
-					throw new ResourceNotFoundException("Failure to fedora content due to response of: " + method.getStatusLine().toString() + 
+					throw new ResourceNotFoundException("Failure to fedora content due to response of: " + method.getStatusLine().toString() +
 							"\nPath was: " + method.getURI().getURI());
 				}
 			}

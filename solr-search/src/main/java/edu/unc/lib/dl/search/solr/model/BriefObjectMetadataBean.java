@@ -15,18 +15,18 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Date;
-import java.util.List;
 import java.util.ArrayList;
-import org.apache.solr.client.solrj.beans.Field;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.dl.security.access.AccessGroupSet;
 
 /**
  * Stores a single Solr tuple representing an object from a search result.  Can be populated 

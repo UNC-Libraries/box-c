@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
-import java.util.ArrayList;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

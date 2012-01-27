@@ -18,7 +18,11 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.util.Arrays;
 
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.log4j.Logger;
@@ -37,6 +41,7 @@ import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.services.DigitalObjectManager;
+import edu.unc.lib.dl.services.IngestResult;
 import edu.unc.lib.dl.util.PackagingType;
 
 /**
@@ -98,50 +103,38 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		String name = deposit.getFilename();
 		boolean isZip = name.endsWith(".zip");
 
-		this.depositInputStreamToFile(deposit);
 		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), agent, isZip);
 		// PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
 
-		digitalObjectManager.addToIngestQueue(sip, agent, "Added through SWORD");
+		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, agent, "Added through SWORD");
 
 		DepositReceipt receipt = new DepositReceipt();
-		IRI editMediaIRI = new IRI(config.getBasePath() + SwordConfigurationImpl.COLLECTION_PATH);
+		receipt.setOriginalDeposit("", deposit.getMimeType());
 
-		receipt.addEditMediaIRI(editMediaIRI);
-		receipt.setSwordEditIRI(editMediaIRI);
-		receipt.setEditMediaIRI(editMediaIRI);
+		if (ingestResult == null || ingestResult.derivedPIDs == null || ingestResult.derivedPIDs.size() == 0){
+			throw new SwordServerException("Add batch request to " + containerPID.getPid() + " did not return any derived results.");
+		}
+
+		PID representativePID = null;
+
+		for (PID resultPID: ingestResult.derivedPIDs){
+			if (representativePID == null){
+				representativePID = resultPID;
+			}
+			receipt.addEditMediaIRI(new IRI(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + resultPID.getPid()));
+		}
+
+		IRI editIRI = new IRI(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + representativePID.getPid() + ".atom");
+
+		receipt.setEditIRI(editIRI);
+		receipt.setSwordEditIRI(editIRI);
+
+		receipt.setSplashUri(config.getBasePath() + "record?id=" + representativePID.getPid());
+
+		receipt.setTreatment("Added to CDR through SWORD");
 
 		LOG.info("Returning receipt " + receipt);
 		return receipt;
-	}
-
-	private DepositReceipt doMETSDSpaceDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
-			SwordConfigurationImpl config, Agent agent) throws Exception {
-
-		String name = deposit.getFilename();
-		boolean isZip = name.endsWith(".zip");
-
-		this.depositInputStreamToFile(deposit);
-
-		DepositReceipt receipt = new DepositReceipt();
-		return receipt;
-	}
-
-	private void depositInputStreamToFile(Deposit deposit) throws Exception {
-		File depositFile = File.createTempFile("input-", ".zip");
-		OutputStream os = new BufferedOutputStream(new FileOutputStream(depositFile));
-		try {
-			byte[] buf = new byte[4096];
-			int len;
-			while ((len = deposit.getInputStream().read(buf)) != -1) {
-				os.write(buf, 0, len);
-			}
-			deposit.setFile(depositFile);
-		} finally {
-			deposit.getInputStream().close();
-			os.flush();
-			os.close();
-		}
 	}
 
 	public DigitalObjectManager getDigitalObjectManager() {
