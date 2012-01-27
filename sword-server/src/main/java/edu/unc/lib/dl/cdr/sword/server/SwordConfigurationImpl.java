@@ -30,6 +30,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 public class SwordConfigurationImpl implements SwordConfiguration {
 	public static final String COLLECTION_PATH = "/collection";
 	public static final String SERVICE_DOCUMENT_PATH = "/serviceDocument";
+	public static final String MEDIA_RESOURCE_PATH = "/em";
 	
 	private String authType = null;
 	private int maxUploadSize = -1;
@@ -38,6 +39,7 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 	private TripleStoreQueryService tripleStoreQueryService;
 	private PID collectionsPidObject;
 	private String basePath;
+	private String swordPath;
 	private String swordVersion = null;
 	private String generator = null;
 	private String generatorVersion = null;
@@ -135,6 +137,14 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
 	public void setBasePath(String basePath) {
 		this.basePath = basePath;
+	}
+
+	public String getSwordPath() {
+		return swordPath;
+	}
+
+	public void setSwordPath(String swordPath) {
+		this.swordPath = swordPath;
 	}
 
 	public String getSwordVersion() {

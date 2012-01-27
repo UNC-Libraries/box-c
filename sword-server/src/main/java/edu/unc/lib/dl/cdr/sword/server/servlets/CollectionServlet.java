@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,22 +50,15 @@ public class CollectionServlet extends BaseSwordServlet {
 	public void init() throws ServletException {
 		// load the API
 		this.api = new CollectionAPI(this.collectionListManager, this.collectionDepositManager, this.config);
-		//this.api = new CollectionAPIMultipart(this.collectionListManager, this.collectionDepositManager, this.config);
 	}
 
-	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
+	@RequestMapping(value = {"/", "/{pid}", "/{pid}/*"}, method = RequestMethod.GET)
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		LOG.debug("GET request for collection content list");
 		this.api.get(req, resp);
 	}
-
-	@RequestMapping(method = RequestMethod.POST)
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		LOG.debug("POST request to submit to root collection");
-		this.api.post(req, resp);
-	}
 	
-	@RequestMapping(value = "/{pid}", method = RequestMethod.POST)
+	@RequestMapping(value = {"/", "/{pid}"}, method = RequestMethod.POST)
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp, @PathVariable("pid") String pid) throws ServletException, IOException {
 		LOG.debug("POST request to submit to collection: " + pid);
 		LOG.debug("Packaging: " + req.getHeader("Packaging"));

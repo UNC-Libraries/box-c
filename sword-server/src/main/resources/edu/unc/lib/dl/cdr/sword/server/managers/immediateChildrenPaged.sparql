@@ -6,6 +6,7 @@ WHERE
 {
 	?containerPid cdr-base:contains ?pid .
 	?pid cdr-base:slug ?slug .
-	?pid fedora-model:hasModel <info:fedora/cdr-model:Container> .
 	FILTER ( ?containerPid = <%2$s>)
 }
+LIMIT %3$s
+OFFSET %4$s

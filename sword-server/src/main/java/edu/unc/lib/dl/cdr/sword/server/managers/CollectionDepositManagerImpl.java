@@ -121,14 +121,18 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			if (representativePID == null){
 				representativePID = resultPID;
 			}
-			receipt.addEditMediaIRI(new IRI(config.getBasePath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + resultPID.getPid()));
+			receipt.addEditMediaIRI(new IRI(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + resultPID.getPid()));
 		}
 
-		IRI editIRI = new IRI(config.getBasePath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + representativePID.getPid() + ".atom");
+		IRI editIRI = new IRI(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + representativePID.getPid() + ".atom");
 		
 		receipt.setEditIRI(editIRI);
 		receipt.setSwordEditIRI(editIRI);
 
+		receipt.setSplashUri(config.getBasePath() + "record?id=" + representativePID.getPid());
+		
+		receipt.setTreatment("Added to CDR through SWORD");
+		
 		LOG.info("Returning receipt " + receipt);
 		return receipt;
 	}

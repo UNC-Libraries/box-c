@@ -203,7 +203,8 @@
 	<bean id="config" class="edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl"
 		init-method="init">
 		<property name="authType" value="Basic"/>
-		<property name="basePath" ref="swordPath"/>
+		<property name="swordPath" ref="swordPath"/>
+		<property name="basePath" value="${repository.protocol}://${repository.host}${repository.port}/${repository.context}"/>
 		<property name="tempDirectory" value="${initial.batch.ingest.dir}"/>
 		<property name="swordVersion" value="${sword.version}"/>
 		<property name="generatorVersion" value="${cdr.version}"/>
@@ -212,6 +213,7 @@
 	
 	<bean id="collectionListManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl"
 		init-method="init">
+		<property name="pageSize" value="50"/>
 	</bean>
 	
 	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl"
@@ -222,6 +224,12 @@
 	
 	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ServiceDocumentManagerImpl" 
 		init-method="init">
+		<property name="acceptedPackaging">
+			<list>
+				<value>#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP.uri}</value>
+				<value>#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR.uri}</value>
+			</list>
+		</property>
 	</bean>
 	
 	<context:annotation-config />
