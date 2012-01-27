@@ -23,8 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Resource;
-
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 import org.junit.Assert;

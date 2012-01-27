@@ -16,28 +16,15 @@
 package edu.unc.lib.dl.security;
 
 import java.net.URI;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.fcrepo.server.security.xacml.MelcoeXacmlException;
 import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderConfigUtil;
 import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderException;
+import org.fcrepo.server.security.xacml.util.AttributeFinderConfig;
 import org.fcrepo.server.security.xacml.util.ContextUtil;
 import org.fcrepo.server.security.xacml.util.RelationshipResolver;
 import org.slf4j.Logger;
@@ -52,19 +39,7 @@ import com.sun.xacml.cond.EvaluationResult;
 import com.sun.xacml.finder.AttributeFinderModule;
 
 import edu.unc.lib.dl.fedora.AccessControlUtils;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl;
-import edu.unc.lib.dl.util.TripleStoreQueryService.PathInfo;
-
-import org.fcrepo.server.security.xacml.MelcoeXacmlException;
-import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderConfigUtil;
-import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderException;
-import org.fcrepo.server.security.xacml.util.AttributeFinderConfig;
-import org.fcrepo.server.security.xacml.util.ContextUtil;
-import org.fcrepo.server.security.xacml.util.RelationshipResolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class CdrRIAttributeFinder extends AttributeFinderModule {
 
@@ -193,7 +168,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 
 	/**
 	 * Returns true always because this module supports designators.
-	 * 
+	 *
 	 * @return true always
 	 */
 	@Override
@@ -204,7 +179,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 	/**
 	 * Returns a <code>Set</code> with a single <code>Integer</code> specifying
 	 * that environment attributes are supported by this module.
-	 * 
+	 *
 	 * @return a <code>Set</code> with
 	 *         <code>AttributeDesignator.ENVIRONMENT_TARGET</code> included
 	 */
@@ -216,7 +191,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 	/**
 	 * Used to get an attribute. If one of those values isn't being asked for,
 	 * or if the types are wrong, then an empty bag is returned.
-	 * 
+	 *
 	 * @param attributeType
 	 *            the datatype of the attributes to find, which must be time,
 	 *            date, or dateTime for this module to resolve a value
@@ -319,7 +294,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param resourceID
 	 *            - the hierarchical XACML resource ID
 	 * @param attribute
@@ -344,7 +319,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 		String subject; // the full subject, ie pid or pid/ds
 		String pid;
 		if (resourceParts.length > 1) {
-			if (resourceParts[resourceParts.length - 1].contains(":")) { 
+			if (resourceParts[resourceParts.length - 1].contains(":")) {
 				// ends with a pid, we have pid only
 				subject = resourceParts[resourceParts.length - 1];
 				pid = subject;

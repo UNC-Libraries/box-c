@@ -15,9 +15,8 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
-import edu.unc.lib.dl.search.solr.model.GenericFacet;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
 import java.util.ArrayList;
+
 import org.apache.solr.client.solrj.response.FacetField;
 
 /**

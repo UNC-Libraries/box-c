@@ -15,14 +15,11 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.test;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
 
 import org.jdom.Document;
 import org.jdom.output.XMLOutputter;
@@ -40,13 +37,10 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.data.ingest.solr.UpdateDocTransformer;
 import edu.unc.lib.dl.fedora.FedoraDataService;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.security.access.AccessGroupConstants;
-import edu.unc.lib.dl.util.ContentModelHelper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/services-context.xml" })

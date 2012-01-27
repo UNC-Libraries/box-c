@@ -15,13 +15,10 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.solr.client.solrj.SolrQuery;
-
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 
 /**
  * Response object for a search request.  Contains the list of results from the selected 

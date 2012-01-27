@@ -46,15 +46,11 @@ public class ServiceDocumentServlet extends BaseSwordServlet {
 		// load the api
 		this.api = new ServiceDocumentAPI(this.serviceDocumentManager, this.config);
 	}
-
-	@RequestMapping(method = RequestMethod.GET)
-	protected void defaultGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		LOG.debug("Get request for service document root");
-		this.api.get(req, resp);
-	}
 	
-	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
+	@RequestMapping(value = {"/", "/{pid}"}, method = RequestMethod.GET)
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp, @PathVariable("pid") String pid) throws ServletException, IOException {
+		if (SwordConfigurationImpl.SERVICE_DOCUMENT_PATH.equals(pid))
+			pid = null;
 		LOG.debug("Get request for service document " + pid);
 		this.api.get(req, resp);
 	}
