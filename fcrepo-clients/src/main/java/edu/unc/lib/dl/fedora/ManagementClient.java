@@ -76,6 +76,7 @@ import edu.unc.lib.dl.fedora.types.ModifyDatastreamByValue;
 import edu.unc.lib.dl.fedora.types.ModifyDatastreamByValueResponse;
 import edu.unc.lib.dl.fedora.types.ModifyObject;
 import edu.unc.lib.dl.fedora.types.ModifyObjectResponse;
+import edu.unc.lib.dl.fedora.types.ObjectProfile;
 import edu.unc.lib.dl.fedora.types.PurgeDatastream;
 import edu.unc.lib.dl.fedora.types.PurgeDatastreamResponse;
 import edu.unc.lib.dl.fedora.types.PurgeObject;
@@ -90,6 +91,7 @@ import edu.unc.lib.dl.util.PremisEventLogger;
 
 public class ManagementClient extends WebServiceTemplate {
 	private AccessClient accessClient = null;
+
 	// ENUMS
 	private enum Action {
 		addDatastream("addDatastream"), getDatastream("getDatastream"), addRelationship("addRelationship"), export(
@@ -359,14 +361,14 @@ public class ManagementClient extends WebServiceTemplate {
 		Object response = null;
 		try {
 			response = this.marshalSendAndReceive(request, action.callback());
-		} catch (WebServiceTransportException e) {
-			if(e.getMessage().contains("503")) {
+		} catch (WebServiceIOException e) {
+			if (e.getMessage().contains("503")) {
+				throw new FedoraTimeoutException(e);
+			} else if(java.net.SocketTimeoutException.class.isInstance(e.getCause())) {
 				throw new FedoraTimeoutException(e);
 			} else {
 				throw new ServiceException(e);
 			}
-		} catch (WebServiceIOException e) {
-			throw new ServiceException("Fedora ManagementClient bean is misconfigured.", e);
 		} catch (SoapFaultClientException e) {
 			log.debug("GOT SoapFaultClientException", e);
 			FedoraFaultMessageResolver.resolveFault(e);
@@ -736,11 +738,12 @@ public class ManagementClient extends WebServiceTemplate {
 	 *           the total polling time in seconds
 	 * @return true when the object is found within timeout, false on timeout
 	 */
-	public boolean pollForObject(PID pid, int delay, int timeout) {
+	public boolean pollForObject(PID pid, int delay, int timeout) throws InterruptedException {
 		long startTime = System.currentTimeMillis();
 		while (System.currentTimeMillis() - startTime < timeout * 1000) {
+			if(Thread.interrupted()) throw new InterruptedException();
 			try {
-				Document doc = this.getObjectXML(pid);
+				ObjectProfile doc = this.getAccessClient().getObjectProfile(pid, null);
 				if (doc != null)
 					return true;
 			} catch (ServiceException e) {
@@ -750,11 +753,9 @@ public class ManagementClient extends WebServiceTemplate {
 				// fedora responded, but object not found
 				log.debug("got exception from fedora", e);
 			}
-			try {
-				log.info(pid+ " not found, waiting "+delay+" seconds..");
-				Thread.sleep(delay * 1000);
-			} catch (InterruptedException e) {
-			}
+			if(Thread.interrupted()) throw new InterruptedException();
+			log.info(pid + " not found, waiting " + delay + " seconds..");
+			Thread.sleep(delay * 1000);
 		}
 		return false;
 	}
@@ -773,10 +774,11 @@ public class ManagementClient extends WebServiceTemplate {
 		}
 		eventLogger.appendLogEvents(pid, dom.getRootElement());
 		String eventsLoc = this.upload(dom);
-		String logTimestamp = this.modifyDatastreamByReference(pid, "MD_EVENTS", false,
-				"adding PREMIS events", new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, eventsLoc);
+		String logTimestamp = this.modifyDatastreamByReference(pid, "MD_EVENTS", false, "adding PREMIS events",
+				new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, eventsLoc);
 		return logTimestamp;
 	}
+
 	// @Override
 	// public Object sendAndReceive(String uriString, WebServiceMessageCallback requestCallback,
 	// WebServiceMessageExtractor responseExtractor) {
@@ -805,7 +807,8 @@ public class ManagementClient extends WebServiceTemplate {
 	// }
 
 	/**
-	 * @param accessClient the accessClient to set
+	 * @param accessClient
+	 *           the accessClient to set
 	 */
 	public void setAccessClient(AccessClient accessClient) {
 		this.accessClient = accessClient;

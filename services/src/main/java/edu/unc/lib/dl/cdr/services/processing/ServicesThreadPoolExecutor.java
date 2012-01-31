@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -31,19 +32,20 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
  * @author bbpennel
  *
  */
-public class ServicesThreadPoolExecutor extends ThreadPoolExecutor {
+public class ServicesThreadPoolExecutor<T extends Runnable> extends ThreadPoolExecutor {
 	private boolean isPaused;
 	private ReentrantLock pauseLock = new ReentrantLock();
 	private Condition unpaused = pauseLock.newCondition();
 	//Delay before a new thread will begin processing, in milliseconds
 	private long beforeExecuteDelay = 0;
-	Set<Runnable> runningNow = new HashSet<Runnable>();
+	private Set<T> runningNow = new HashSet<T>();
 
 	public ServicesThreadPoolExecutor(int nThreads, String serviceName){
 		super(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue <Runnable>());
 		CustomizableThreadFactory ctf = new CustomizableThreadFactory();
 		ctf.setThreadGroupName(serviceName);
 		ctf.setThreadNamePrefix("ServicesWorker-");
+		//ctf.setDaemon(true);
 		this.setThreadFactory(new CustomizableThreadFactory());
 	}
 
@@ -60,7 +62,7 @@ public class ServicesThreadPoolExecutor extends ThreadPoolExecutor {
 	@Override
 	protected void beforeExecute(Thread t, Runnable r) {
 		super.beforeExecute(t, r);
-		this.runningNow.add(r);
+		this.runningNow.add((T)r);
 		//Pause the adding of new threads until the pause flag is off.
 		pauseLock.lock();
 		try {
@@ -106,7 +108,24 @@ public class ServicesThreadPoolExecutor extends ThreadPoolExecutor {
 		this.beforeExecuteDelay = beforeExecuteDelay;
 	}
 
-	public Set<Runnable> getRunningNow() {
-		return runningNow;
+	/**
+	 * @return the set of active runnables
+	 */
+	public Set<T> getRunningNow() {
+		return Collections.unmodifiableSet(runningNow);
+	}
+
+	/**
+	 * Gets the set of runnables that are active or pending. No synchronization.
+	 * @return
+	 */
+	public Set<T> getAllRunningAndQueued() {
+		Set<T> all = new HashSet<T>();
+		// adding queue first to ensure coverage without synchronizing
+		for(Runnable r : getQueue()) {
+			all.add((T)r);
+		}
+		all.addAll(runningNow);
+		return all;
 	}
 }
