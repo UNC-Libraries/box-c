@@ -106,6 +106,12 @@
 			<artifactId>sunxacml</artifactId>
 			<version>1.2-PATCHED</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.8.4</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 </project>

@@ -21,6 +21,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -657,151 +658,85 @@ public class AccessControlUtils {
 		return resourceType;
 	}
 
-	/*
-	 * Given the pid, return the appropriate set of access control
+	/**
+	 * Filters a list of pids, removing PIDs which the set of groups does not have 
+	 * permission to access as the role specified.
+	 * @param pidList
+	 * @param groups
+	 * @param role
+	 * @return
 	 */
-
-	public Content processCdrAccessControl(PID inputPid) {
-		// EvaluationResult result = null;
-
-		LOG.debug("processCdrAccessControl entry");
-
-		Map map = null;
-
-		Map<String, Set<String>> permissionGroupSets = new HashMap<String, Set<String>>();
-
-		String pid = inputPid.getPid();
-
-		init(); // initialize if necessary, only record Read permissions
-
-		long processTotalTime = System.currentTimeMillis();
-
-		enforceCacheLimit();
-
-		LOG.debug("processCdrAccessControl pid: " + pid);
-
-		// lookupRepositoryPathInfo/lookupRepositoryAncestorPids returns:
-		// 0 Repository home, pid: admin:repository
-		// 1 Collections, pid: varies
-		// 2 individual collection, pid: varies
-		// 3 something in a collection, pid: varies
-		// access control checking will stop at 0, start at list.size() (the
-		// current object)
-
-		long repositoryPathInfoTime = System.currentTimeMillis();
-
-		List<PID> ancestors = getListOfAncestors(pid);
-
-		LOG.debug("processCdrAccessControl Time in tripleStore getting repository path: "
-				+ (System.currentTimeMillis() - repositoryPathInfoTime) + " milliseconds");
-
-		// March backwards (upwards) through the resource and its ancestors to
-		// get access
-		// control
-
-		Set<String> groups = getEmbargoGroups(ancestors);
-		boolean embargo = !groups.isEmpty();
-
-		boolean noInherit = false;
-
-		// TODO: check boundary condition of size() == 0
-		for (int i = (ancestors.size() - 1); i >= 0; i--) {
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("processCdrAccessControl ancestor and pid: " + i + " " + ancestors.get(i).getPid());
-			}
-
-			if (noInherit) {
-				break; // no need to look at further ancestors
-			}
-
-			long tripleStoreTime = System.currentTimeMillis();
-
-			String ancestorPid = ancestors.get(i).getPid();
-
-			map = getAncestorPermissions(map, ancestors, i, ancestorPid);
-
-			LOG.debug("processCdrAccessControl Time in tripleStoreQuery for " + ancestors.get(i).getPid() + ": "
-					+ (System.currentTimeMillis() - tripleStoreTime) + " milliseconds");
-
-			// Look through the map for the requested permission
-			if (map != null) {
-				if (LOG.isDebugEnabled()) {
-					logPermissions(map);
-				}
-
-				// Get the keys of the map
-				Set keys = map.keySet();
-				Object[] keyArray = keys.toArray();
-
-				// For each entry in the permissionsMap
-				for (int j = 0; j < keyArray.length; j++) {
-
-					String foundPermission = (String) keyArray[j];
-
-					LOG.debug("processCdrAccessControl foundPermission: " + foundPermission);
-
-					// Should we stop looking at ancestors above the current
-					// ancestor?
-					if (foundPermission.equals("http://cdr.unc.edu/definitions/acl#inheritPermissions")) {
-						LOG.debug("processCdrAccessControl 'No Inherit' found");
-						noInherit = true;
-					} else if (foundPermission.equals("http://cdr.unc.edu/definitions/acl#embargo")) {
-						// embargoes processed differently
-					} else {
-
-						// Have a permission, need to write out access control
-						// for it
-						if (!permissionGroupSets.containsKey(foundPermission)) {
-							Set<String> temp = new HashSet<String>();
-							permissionGroupSets.put(foundPermission, temp);
-						}
-
-						// need to convert groups to permissions
-						// add read set of read permissions for each group to
-						// xml
-
-						List<String> groupsForPermission = (List<String>) map.get(foundPermission);
-
-						if (groupsForPermission == null) {
-							LOG.debug("processCdrAccessControl permissions list is NULL");
-						} else {
-							for (String group : groupsForPermission) {
-								// add groups to result
-								LOG.debug("processCdrAccessControl group: " + group);
-
-								if (embargo) {
-									LOG.debug("processCdrAccessControl embargo in effect");
-
-									if ((group != null) && !groups.contains(group)) {
-										LOG.debug("processCdrAccessControl " + group
-												+ " is not a group which can bypass the embargo");
-									}
-
-									if (groups.contains(group)) {
-										Set<String> temp = permissionGroupSets.get(foundPermission);
-
-										temp.add(group);
-										permissionGroupSets.put(foundPermission, temp);
-									}
-								} else { // no embargo
-									Set<String> temp = permissionGroupSets.get(foundPermission);
-
-									temp.add(group);
-									permissionGroupSets.put(foundPermission, temp);
-								}
-							}
-						}
-					}
-				}
+	public List<PID> filterPIDList(List<PID> pidList, Set<String> groups, String role){
+		List<PID> resultList = new ArrayList<PID>();
+		for (PID pid: pidList){
+			if (hasAccess(pid, groups, role)){
+				resultList.add(pid);
 			}
 		}
-
-		/*
-		 * <permissions> <rights> <originalsRead>rla</originalsRead> <originalsRead>abc</originalsRead> </rights>
-		 * </permissions>
-		 */
+		return resultList;
+	}
+	
+	/**
+	 * Determines if the accumulative permissions for the set of groups submitted matches the permission
+	 * types for the role provided, for the object inputPid.
+	 * @param inputPid
+	 * @param inputGroups
+	 * @param role
+	 * @return
+	 */
+	public boolean hasAccess(PID inputPid, Collection<String> inputGroups, String role){
+		List<String> permissionTypes = rolePermissions.get(role);
+		if (permissionTypes == null || permissionTypes.size() == 0)
+			return false;
+		return hasAccess(inputPid, inputGroups, permissionTypes);
+	}
+	
+	/**
+	 * Determines if the accumulative permissions for the set of groups submitted contains all the specified  
+	 * permission types for the object inputPid.
+	 * @param inputPid
+	 * @param groups
+	 * @param permissionTypes
+	 * @return
+	 */
+	public boolean hasAccess(PID inputPid, Collection<String> inputGroups, Collection<String> permissionTypes){
+		if (inputPid == null || inputGroups == null || permissionTypes == null)
+			return false;
+		//Retrieve the group permissions for this pid
+		Map<String, Set<String>> permissionGroupSets = getPermissionGroupSets(inputPid);
+		for (String permissionType: permissionTypes){
+			if (permissionGroupSets.containsKey(permissionType)){
+				boolean groupFound = false;
+				Set<String> groupSet = permissionGroupSets.get(permissionType);
+				for (String inputGroup: inputGroups){
+					if (groupSet.contains(inputGroup)){
+						groupFound = true;
+						break;
+					}
+				}
+				if (!groupFound)
+					return false;
+			} else {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Given a PID, return the group permissions organized by rights type in an XML structure:
+	 * <permissions> <rights> <originalsRead>rla</originalsRead> <originalsRead>abc</originalsRead> </rights>
+	 * </permissions>
+	 * @param inputPid
+	 * @return XML representation of the access control for this PID.
+	 */
+	public Content processCdrAccessControl(PID inputPid) {
+		
+		//Retrieve the group permissions for this pid
+		Map<String, Set<String>> permissionGroupSets = getPermissionGroupSets(inputPid);
+		
 		// turn permission sets into lists
-
 		Set permissionKeys = permissionGroupSets.keySet();
 
 		Iterator<String> permissionIterator = permissionKeys.iterator();
@@ -825,27 +760,152 @@ public class AccessControlUtils {
 			}
 
 		}
-
-		// Element permsEl = new Element("permissions");
-		// inputs.addContent(permsEl);
-		// for (Map.Entry<String, List<String>> p : permissions.entrySet()) {
-		// String property = p.getKey();
-		// Element permEl = new Element("permission");
-		// permsEl.addContent(permEl);
-		// permEl.setAttribute("name", property);
-		// for (String value : p.getValue()) {
-		// Element valueEl = new Element("value");
-		// permEl.addContent(valueEl);
-		// valueEl.setText(value);
-		// }
-		// }
-
-		LOG.debug("processCdrAccessControl Total time in CDR function: "
-				+ (System.currentTimeMillis() - processTotalTime) + " milliseconds");
-
-		LOG.debug("processCdrAccessControl exit");
 		
 		return permsEl;
+	}
+
+	/**
+	 * Retrieves a map containing the set of permission groups for each resource type.
+	 */
+	private Map<String, Set<String>> getPermissionGroupSets(PID inputPid) {
+		// EvaluationResult result = null;
+
+		LOG.debug("getPermissionGroupSets entry");
+
+		Map map = null;
+
+		Map<String, Set<String>> permissionGroupSets = new HashMap<String, Set<String>>();
+
+		String pid = inputPid.getPid();
+
+		init(); // initialize if necessary, only record Read permissions
+
+		long processTotalTime = System.currentTimeMillis();
+
+		enforceCacheLimit();
+
+		LOG.debug("getPermissionGroupSets pid: " + pid);
+
+		// lookupRepositoryPathInfo/lookupRepositoryAncestorPids returns:
+		// 0 Repository home, pid: admin:repository
+		// 1 Collections, pid: varies
+		// 2 individual collection, pid: varies
+		// 3 something in a collection, pid: varies
+		// access control checking will stop at 0, start at list.size() (the
+		// current object)
+
+		long repositoryPathInfoTime = System.currentTimeMillis();
+
+		List<PID> ancestors = getListOfAncestors(pid);
+
+		LOG.debug("getPermissionGroupSets Time in tripleStore getting repository path: "
+				+ (System.currentTimeMillis() - repositoryPathInfoTime) + " milliseconds");
+
+		// March backwards (upwards) through the resource and its ancestors to
+		// get access
+		// control
+
+		Set<String> groups = getEmbargoGroups(ancestors);
+		boolean embargo = !groups.isEmpty();
+
+		boolean noInherit = false;
+
+		// TODO: check boundary condition of size() == 0
+		for (int i = (ancestors.size() - 1); i >= 0; i--) {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("getPermissionGroupSets ancestor and pid: " + i + " " + ancestors.get(i).getPid());
+			}
+
+			if (noInherit) {
+				break; // no need to look at further ancestors
+			}
+
+			long tripleStoreTime = System.currentTimeMillis();
+
+			String ancestorPid = ancestors.get(i).getPid();
+
+			map = getAncestorPermissions(map, ancestors, i, ancestorPid);
+
+			LOG.debug("getPermissionGroupSets Time in tripleStoreQuery for " + ancestors.get(i).getPid() + ": "
+					+ (System.currentTimeMillis() - tripleStoreTime) + " milliseconds");
+
+			// Look through the map for the requested permission
+			if (map != null) {
+				if (LOG.isDebugEnabled()) {
+					logPermissions(map);
+				}
+
+				// Get the keys of the map
+				Set keys = map.keySet();
+				Object[] keyArray = keys.toArray();
+
+				// For each entry in the permissionsMap
+				for (int j = 0; j < keyArray.length; j++) {
+
+					String foundPermission = (String) keyArray[j];
+
+					LOG.debug("getPermissionGroupSets foundPermission: " + foundPermission);
+
+					// Should we stop looking at ancestors above the current
+					// ancestor?
+					if (foundPermission.equals("http://cdr.unc.edu/definitions/acl#inheritPermissions")) {
+						LOG.debug("getPermissionGroupSets 'No Inherit' found");
+						noInherit = true;
+					} else if (foundPermission.equals("http://cdr.unc.edu/definitions/acl#embargo")) {
+						// embargoes processed differently
+					} else {
+
+						// Have a permission, need to write out access control
+						// for it
+						if (!permissionGroupSets.containsKey(foundPermission)) {
+							Set<String> temp = new HashSet<String>();
+							permissionGroupSets.put(foundPermission, temp);
+						}
+
+						// need to convert groups to permissions
+						// add read set of read permissions for each group to
+						// xml
+
+						List<String> groupsForPermission = (List<String>) map.get(foundPermission);
+
+						if (groupsForPermission == null) {
+							LOG.debug("getPermissionGroupSets permissions list is NULL");
+						} else {
+							for (String group : groupsForPermission) {
+								// add groups to result
+								LOG.debug("getPermissionGroupSets group: " + group);
+
+								if (embargo) {
+									LOG.debug("getPermissionGroupSets embargo in effect");
+
+									if ((group != null) && !groups.contains(group)) {
+										LOG.debug("getPermissionGroupSets " + group
+												+ " is not a group which can bypass the embargo");
+									}
+
+									if (groups.contains(group)) {
+										Set<String> temp = permissionGroupSets.get(foundPermission);
+
+										temp.add(group);
+										permissionGroupSets.put(foundPermission, temp);
+									}
+								} else { // no embargo
+									Set<String> temp = permissionGroupSets.get(foundPermission);
+
+									temp.add(group);
+									permissionGroupSets.put(foundPermission, temp);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		LOG.debug("getPermissionGroupSets Total time in CDR function: "
+				+ (System.currentTimeMillis() - processTotalTime) + " milliseconds");
+		
+		return permissionGroupSets;
 	}
 
 	private Set<String> getEmbargoGroups(List<PID> ancestors) {
