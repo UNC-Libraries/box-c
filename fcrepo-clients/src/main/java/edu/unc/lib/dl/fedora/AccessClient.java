@@ -102,10 +102,14 @@ public class AccessClient extends WebServiceTemplate {
 		Object response = null;
 		try {
 			response = this.marshalSendAndReceive(request, action.callback());
-		} catch (WebServiceTransportException e) {
-			throw new ServiceException(e);
 		} catch (WebServiceIOException e) {
-			throw new ServiceException("Fedora ManagementClient bean is misconfigured.", e);
+			if (e.getMessage().contains("503")) {
+				throw new FedoraTimeoutException(e);
+			} else if(java.net.SocketTimeoutException.class.isInstance(e.getCause())) {
+				throw new FedoraTimeoutException(e);
+			} else {
+				throw new ServiceException(e);
+			}
 		} catch (SoapFaultClientException e) {
 			FedoraFaultMessageResolver.resolveFault(e);
 			log.debug("GOT SoapFaultClientException", e);
