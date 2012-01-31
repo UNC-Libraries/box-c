@@ -429,29 +429,6 @@ public class BatchIngestTask implements Runnable {
 			}
 			containers = cSet.toArray(new PID[] {});
 			Arrays.sort(containers);
-
-			if (ingestLog.exists()) { // this is a resume, find next foxml
-				BufferedReader r = new BufferedReader(new FileReader(ingestLog));
-				String lastLine = null;
-				for (String line = r.readLine(); line != null; line = r.readLine()) {
-					lastLine = line;
-				}
-				r.close();
-				if (lastLine != null) {
-					// format is tab separated: <pid>\tpath
-					String[] l = lastLine.split("\\t");
-					if (CONTAINER_UPDATED_CODE.equals(l[1])) {
-						this.state = STATE.CONTAINER_UPDATES;
-						this.lastIngestPID = new PID(l[0]);
-					} else {
-						this.lastIngestFilename = l[1];
-						this.lastIngestPID = new PID(l[0]);
-						this.state = STATE.INGEST_WAIT;
-						log.info("Resuming ingest from " + this.lastIngestFilename + " in " + this.getBaseDir().getName());
-					}
-				}
-			}
-			this.ingestLogWriter = new BufferedWriter(new FileWriter(ingestLog, true));
 			Agent submitter = this.getAgentFactory().findPersonByOnyen(props.getSubmitter(), false);
 			if (submitter == null) {
 				submitter = this.getAgentFactory().findSoftwareByName(props.getSubmitter());
@@ -477,11 +454,35 @@ public class BatchIngestTask implements Runnable {
 						throw fail("Cannot find existing container: " + container);
 					}
 				}
-				this.state = STATE.INGEST;
 			} catch (InterruptedException e) {
 				log.debug("halting task due to interrupt", e);
 				this.halting = true;
 			}
+
+			if (ingestLog.exists()) { // this is a resume, find next foxml
+				BufferedReader r = new BufferedReader(new FileReader(ingestLog));
+				String lastLine = null;
+				for (String line = r.readLine(); line != null; line = r.readLine()) {
+					lastLine = line;
+				}
+				r.close();
+				if (lastLine != null) {
+					// format is tab separated: <pid>\tpath
+					String[] l = lastLine.split("\\t");
+					if (CONTAINER_UPDATED_CODE.equals(l[1])) {
+						this.state = STATE.CONTAINER_UPDATES;
+						this.lastIngestPID = new PID(l[0]);
+					} else {
+						this.lastIngestFilename = l[1];
+						this.lastIngestPID = new PID(l[0]);
+						this.state = STATE.INGEST_WAIT;
+						log.info("Resuming ingest from " + this.lastIngestFilename + " in " + this.getBaseDir().getName());
+					}
+				}
+			} else {
+				this.state = STATE.INGEST;
+			}
+			this.ingestLogWriter = new BufferedWriter(new FileWriter(ingestLog, true));
 		} catch (Exception e) {
 			throw fail("Cannot initialize the ingest task.", e);
 		}
@@ -557,6 +558,9 @@ public class BatchIngestTask implements Runnable {
 				}
 			} catch (BatchFailedException e) {
 				log.error("Batch Ingest Task failed: " + e.getLocalizedMessage(), e);
+				// send failure email
+				if (this.sendEmailMessages && this.mailNotifier != null && props.getEmailRecipients() != null)
+					this.mailNotifier.sendIngestFailureNotice(e, props);
 				return;
 			} catch(RuntimeException e) {
 				log.error("Unexpected runtime exception", e);

@@ -24,8 +24,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -44,15 +47,11 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.PersonAgent;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
 import edu.unc.lib.dl.ingest.sip.InvalidMETSException;
 import edu.unc.lib.dl.ingest.sip.METSParseException;
-import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
+import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.IngestProperties;
 import freemarker.ext.dom.NodeModel;
 import freemarker.template.Configuration;
@@ -143,9 +142,12 @@ public class MailNotifier {
 			HashMap<String, Object> model = new HashMap<String, Object>();
 			model.put("numberOfObjects", new Integer(ingestedCount));
 			model.put("irBaseUrl", this.irBaseUrl);
-			HashMap<String, String> tops = new HashMap<String, String>();
-			for (PID pid : props.getContainerPlacements().keySet()) {
-				tops.put(props.getContainerPlacements().get(pid).parentPID.getPid(), pid.getPid());
+			List tops = new ArrayList();
+			for(ContainerPlacement p : props.getContainerPlacements().values()) {
+				HashMap om = new HashMap();
+				om.put("pid", p.pid.getPid());
+				om.put("label", p.label);
+				tops.add(om);
 			}
 			model.put("tops", tops);
 
@@ -201,9 +203,7 @@ public class MailNotifier {
 	 * @param e
 	 * @param user
 	 */
-	public void sendIngestFailureNotice(Throwable ex, Agent user, ArchivalInformationPackage aip,
-			SubmissionInformationPackage sip) {
-		// aip or sip may be null
+	public void sendIngestFailureNotice(Throwable ex, IngestProperties props) {
 		String html = null, text = null;
 		MimeMessage mimeMessage = null;
 		boolean logEmail = true;
@@ -224,8 +224,10 @@ public class MailNotifier {
 
 			// put data into the model
 			HashMap<String, Object> model = new HashMap<String, Object>();
-			model.put("aip", aip);
-			model.put("sip", sip);
+			model.put("irBaseUrl", this.irBaseUrl);
+/*			List<ContainerPlacement> tops = new ArrayList<ContainerPlacement>();
+			tops.addAll(props.getContainerPlacements().values());
+			model.put("tops", tops);*/
 
 			if (ex != null && ex.getMessage() != null) {
 				model.put("message", ex.getMessage());
@@ -269,7 +271,7 @@ public class MailNotifier {
 				}
 			}
 
-			model.put("user", user);
+			model.put("user", props.getSubmitter());
 			model.put("irBaseUrl", this.irBaseUrl);
 
 			StringWriter sw = new StringWriter();
@@ -281,9 +283,10 @@ public class MailNotifier {
 
 			// Addressing: to initiator if a person, otherwise to all members of
 			// admin group
-			if (user instanceof PersonAgent) {
-				PersonAgent person = (PersonAgent) user;
-				message.addTo(person.getOnyen() + "@email.unc.edu", person.getName());
+			if(props.getEmailRecipients() != null) {
+				for(String r : props.getEmailRecipients()) {
+					message.addTo(r);
+				}
 				message.setSubject("CDR ingest failed");
 			} else {
 				message.addTo("cdr@unc.edu", "CDR Administrator");
