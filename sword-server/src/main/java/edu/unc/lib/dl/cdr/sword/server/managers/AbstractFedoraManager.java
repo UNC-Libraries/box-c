@@ -32,6 +32,7 @@ import org.swordapp.server.SwordAuthException;
 import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.AccessControlUtils;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -49,6 +50,8 @@ public abstract class AbstractFedoraManager {
 	protected TripleStoreQueryService tripleStoreQueryService;
 	@Autowired
 	protected String swordPath;
+	@Autowired
+	protected AccessControlUtils accessControlUtils;
 	protected PID collectionsPidObject;
 	
 	public void init(){
@@ -90,7 +93,7 @@ public abstract class AbstractFedoraManager {
 			} else if (method.getStatusCode() == HttpStatus.SC_UNAUTHORIZED){
 				throw new SwordAuthException(true);
 			} else {
-				throw new SwordServerException();
+				throw new SwordServerException("Server responded with status " + method.getStatusCode());
 			}
 		} catch (HttpException e){
 			throw new SwordServerException(e);
@@ -128,6 +131,12 @@ public abstract class AbstractFedoraManager {
 	public void setSwordPath(String swordPath) {
 		this.swordPath = swordPath;
 	}
-	
-	
+
+	public AccessControlUtils getAccessControlUtils() {
+		return accessControlUtils;
+	}
+
+	public void setAccessControlUtils(AccessControlUtils accessControlUtils) {
+		this.accessControlUtils = accessControlUtils;
+	}
 }

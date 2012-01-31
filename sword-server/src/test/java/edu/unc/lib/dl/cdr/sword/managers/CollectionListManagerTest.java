@@ -30,6 +30,8 @@ import org.swordapp.server.AuthCredentials;
 
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl;
+import edu.unc.lib.dl.fedora.AccessControlUtils;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import static org.mockito.Mockito.*;
 
@@ -39,10 +41,15 @@ public class CollectionListManagerTest extends Assert {
 	private CollectionListManagerImpl manager;
 	private SwordConfigurationImpl config;
 	private TripleStoreQueryService tripleStoreQueryService;
+	private AccessControlUtils accessControlUtils;
 	
 	@Before
 	public void setUp() throws Exception {
 		manager = new CollectionListManagerImpl();
+		
+		accessControlUtils = mock(AccessControlUtils.class);
+		when(accessControlUtils.hasAccess(any(PID.class), anyCollection(), anyString())).thenReturn(true);
+		manager.setAccessControlUtils(accessControlUtils);
 		
 		tripleStoreQueryService = mock(TripleStoreQueryService.class);
 		

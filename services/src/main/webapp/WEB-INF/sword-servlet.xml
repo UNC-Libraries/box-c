@@ -213,6 +213,7 @@
 		<property name="swordVersion" value="${sword.version}"/>
 		<property name="generatorVersion" value="${cdr.version}"/>
 		<property name="generator" value="${repository.protocol}://${repository.host}"/>
+		<property name="depositorNamespace" value="${sword.depositorNamespace}"/>
 	</bean>
 	
 	<bean id="collectionListManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl"

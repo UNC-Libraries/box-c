@@ -51,6 +51,9 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 	public Feed listCollectionContents(IRI collectionIRI, AuthCredentials auth, SwordConfiguration config)
 			throws SwordServerException, SwordAuthException, SwordError {
 		
+		//Check the provided user/pass
+		//this.authenticate(auth);
+		
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
 		
 		PID containerPID = null;
@@ -85,13 +88,22 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 			containerPID = new PID(pidString);
 		}
 		
+		//Get the users group
+		List<String> groupList = new ArrayList<String>();
+		groupList.add(configImpl.getDepositorNamespace() + auth.getUsername());
+		
+		//Verify access control
+		if (!accessControlUtils.hasAccess(containerPID, groupList, "http://cdr.unc.edu/definitions/roles#metadataOnlyPatron")){
+			throw new SwordAuthException("Insufficient privileges to view the collection list for " + containerPID.getPid());
+		}
+		
 		Feed feed = abdera.getFactory().newFeed();
 		feed.setId(containerPID.getPid());
 		//add in the next page link
 		feed.addLink(configImpl.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + containerPID.getPid() + "/" + (startPage + 1), "next");
 		
 		try {
-			this.getImmediateChildren(containerPID, startPage, feed, configImpl);
+			this.getImmediateChildren(containerPID, startPage, feed, configImpl, groupList);
 		} catch (IOException e){
 			throw new SwordServerException("Failed to retrieve children for " + containerPID.getPid(), e);
 		}
@@ -99,7 +111,7 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 		return feed;
 	}
 	
-	protected List<Entry> getImmediateChildren(PID pid, int startPage, Feed feed, SwordConfigurationImpl config) throws IOException {
+	protected List<Entry> getImmediateChildren(PID pid, int startPage, Feed feed, SwordConfigurationImpl config, List<String> groupList) throws IOException {
 		String query = this.readFileAsString("immediateChildrenPaged.sparql");
 		query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(), pid.getURI(), pageSize, startPage * pageSize);
 		List<Entry> result = new ArrayList<Entry>();
@@ -109,13 +121,15 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 			PID childPID = new PID((String) ((Map<?, ?>) binding.get("pid")).get("value"));
 			String slug = (String) ((Map<?, ?>) binding.get("slug")).get("value");
 			
-			Entry entry = feed.addEntry();
-			entry.addLink(config.getSwordPath() + SwordConfigurationImpl.MEDIA_RESOURCE_PATH + "/" + childPID.getPid() + ".atom", "edit");
-			entry.addLink(config.getSwordPath() + SwordConfigurationImpl.MEDIA_RESOURCE_PATH + "/" + childPID.getPid(), "edit-media");
-			entry.setId(childPID.getURI());
-			entry.setTitle(slug);
+			if (accessControlUtils.hasAccess(childPID, groupList, "http://cdr.unc.edu/definitions/roles#metadataOnlyPatron")){
+				Entry entry = feed.addEntry();
+				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.MEDIA_RESOURCE_PATH + "/" + childPID.getPid() + ".atom", "edit");
+				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.MEDIA_RESOURCE_PATH + "/" + childPID.getPid(), "edit-media");
+				entry.setId(childPID.getURI());
+				entry.setTitle(slug);
 
-			result.add(entry);
+				result.add(entry);
+			}
 		}
 		return result;
 	}

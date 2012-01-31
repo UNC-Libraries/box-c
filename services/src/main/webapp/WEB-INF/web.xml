@@ -34,6 +34,25 @@
 		<url-pattern>/sword/*</url-pattern>
 	</servlet-mapping>
 
+	<!-- SWORD basic authentication configuration -->
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>SWORD Server</web-resource-name>
+			<url-pattern>/sword/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>sword-depositor</role-name>
+		</auth-constraint>
+	</security-constraint>
+	
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>Application</realm-name>
+	</login-config>
+	
+	<security-role>
+		<role-name>sword-depositor</role-name>
+	</security-role>
 </web-app>
 
 

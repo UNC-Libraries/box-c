@@ -43,6 +43,7 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 	private String swordVersion = null;
 	private String generator = null;
 	private String generatorVersion = null;
+	private String depositorNamespace = null;
 
 	public SwordConfigurationImpl() {
 	}
@@ -153,5 +154,13 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
 	public void setSwordVersion(String swordVersion) {
 		this.swordVersion = swordVersion;
+	}
+
+	public String getDepositorNamespace() {
+		return depositorNamespace;
+	}
+
+	public void setDepositorNamespace(String depositorNamespace) {
+		this.depositorNamespace = depositorNamespace;
 	}
 }

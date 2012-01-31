@@ -22,7 +22,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.log4j.Logger;
@@ -58,14 +60,19 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	@Override
 	public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
 			SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
-
+		
 		LOG.debug("Preparing to do collection deposit to " + collectionURI);
-		LOG.debug("Root pid is: " + collectionsPidObject);
 		if (collectionURI == null)
 			throw new SwordServerException("No collection URI was provided");
 
 		try {
-			Agent agent = agentFactory.findPersonByOnyen("bbpennel", true);
+			String agentName = null;
+			if (auth.getOnBehalfOf() != null){
+				agentName = auth.getOnBehalfOf();
+			} else {
+				agentName = auth.getUsername();
+			};
+			Agent agent = agentFactory.findPersonByOnyen(agentName, true);
 			SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
 
 			String pidString = null;
@@ -83,14 +90,20 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			} else {
 				containerPID = new PID(pidString);
 			}
+			
+			//Get the users group
+			List<String> groupList = new ArrayList<String>();
+			groupList.add(configImpl.getDepositorNamespace() + auth.getUsername());
+			
+			if (!accessControlUtils.hasAccess(containerPID, groupList, "http://cdr.unc.edu/definitions/roles#curator")){
+				throw new SwordAuthException("Insufficient privileges to deposit to container " + containerPID.getPid());
+			}
 
 			if (PackagingType.METS_CDR.equals(deposit.getPackaging()) || PackagingType.METS_DSPACE_SIP.equals(deposit.getPackaging())){
 				return doMETSCDRDeposit(containerPID, deposit, auth, configImpl, agent);
 			}
 		} catch (Exception e) {
 			LOG.error("Exception while attempting to deposit", e);
-			System.out.println("Exception while attempting to deposit ");
-			e.printStackTrace();
 		}
 		return null;
 	}

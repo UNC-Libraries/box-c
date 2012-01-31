@@ -36,6 +36,7 @@ import org.swordapp.server.SwordWorkspace;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PackagingType;
+import edu.unc.lib.dl.fedora.AccessControlUtils;
 
 /**
  * Generates service document from all containers which are the immediate children of the starting path.
@@ -58,23 +59,33 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 		if (config.getMaxUploadSize() != -1)
 			sd.setMaxUploadSize(config.getMaxUploadSize());
 		
-		String pid = null;
+		String pidString = null;
+		PID pid = null;
 		if (sdUri != null){
 			try {
-				pid = sdUri.substring(sdUri.lastIndexOf("/") + 1);
+				pidString = sdUri.substring(sdUri.lastIndexOf("/") + 1);
+				pid = new PID(pidString);
 			} catch (IndexOutOfBoundsException e){
 				//Ignore
 			}
 		}
-		if (pid == null || "".equals(pid.trim())){
-			pid = collectionsPidObject.getPid();
+		if (pidString == null || "".equals(pidString.trim())){
+			pid = collectionsPidObject;
+		}
+		
+		//Get the users group
+		List<String> groupList = new ArrayList<String>();
+		groupList.add(configImpl.getDepositorNamespace() + auth.getUsername());
+		
+		if (!accessControlUtils.hasAccess(pid, groupList, "http://cdr.unc.edu/definitions/roles#metadataOnlyPatron")){
+			throw new SwordAuthException("Insufficient privileges to access the service document for " + pid.getPid());
 		}
 		
 		LOG.debug("Retrieving service document for " + pid);
 		
 		List<SwordCollection> collections;
 		try {
-			collections = this.getImmediateContainerChildren(pid);
+			collections = this.getImmediateContainerChildren(pid, groupList, configImpl);
 			for (SwordCollection collection: collections){
 				workspace.addCollection(collection);
 			}
@@ -88,30 +99,34 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 		return null;
 	}
 
-	protected List<SwordCollection> getImmediateContainerChildren(String pid) throws IOException {
+	protected List<SwordCollection> getImmediateContainerChildren(PID pid, List<String> groupList, SwordConfigurationImpl config) throws IOException {
 		String query = this.readFileAsString("immediateContainerChildren.sparql");
-		PID pidObject = new PID(pid);
-		query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(), pidObject.getURI());
+		query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(), pid.getURI());
 		List<SwordCollection> result = new ArrayList<SwordCollection>();
+		
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		List<Map> bindings = (List<Map>) ((Map) tripleStoreQueryService.sendSPARQL(query).get("results")).get("bindings");
 		for (Map<?, ?> binding : bindings) {
 			SwordCollection collection = new SwordCollection();
 			PID containerPID = new PID((String) ((Map<?, ?>) binding.get("pid")).get("value"));
 			String slug = (String) ((Map<?, ?>) binding.get("slug")).get("value");
-
-			collection.setHref(swordPath + "collection/" + containerPID.getPid());
-			collection.setTitle(slug);
-			collection.addAccepts("application/zip");
-			collection.addAccepts("text/xml");
-			collection.addAccepts("application/xml");
-			for (String packaging: acceptedPackaging){
-				collection.addAcceptPackaging(packaging);
+			
+			//Check that the user has curator access to this collection
+			if (accessControlUtils.hasAccess(containerPID, groupList, "http://cdr.unc.edu/definitions/roles#curator")){
+				collection.setHref(swordPath + "collection/" + containerPID.getPid());
+				collection.setTitle(slug);
+				collection.addAccepts("application/zip");
+				collection.addAccepts("text/xml");
+				collection.addAccepts("application/xml");
+				for (String packaging: acceptedPackaging){
+					collection.addAcceptPackaging(packaging);
+				}
+				collection.setMediation(true);
+				//
+				IRI iri = new IRI(swordPath + "servicedocument/" + containerPID.getPid());
+				collection.addSubService(iri);
+				result.add(collection);
 			}
-			//
-			IRI iri = new IRI(swordPath + "servicedocument/" + containerPID.getPid());
-			collection.addSubService(iri);
-			result.add(collection);
 		}
 		return result;
 	}
