@@ -96,6 +96,9 @@ public class IngestProperties {
 				if(vals[3] != null && !"null".equals(vals[3])) {
 					p.sipOrder = Integer.parseInt(vals[3]);
 				}
+				if(vals[4] != null && !"null".equals(vals[4])) {
+					p.label = vals[4];
+				}
 				this.containerPlacements.put(p.pid, p);
 			}
 		}
@@ -128,7 +131,7 @@ public class IngestProperties {
 			for (ContainerPlacement p : this.containerPlacements.values()) {
 				StringBuilder sb = new StringBuilder();
 				sb.append(p.pid).append(',').append(p.parentPID).append(',').append(p.designatedOrder).append(',')
-						.append(p.sipOrder);
+						.append(p.sipOrder).append(",").append(p.label);
 				props.put("placement." + count, sb.toString());
 				count++;
 			}

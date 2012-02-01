@@ -351,7 +351,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 			throw new InvalidMETSException("The mets element MUST provide an accepted PROFILE attribute.  Unacceptable profile: "
 					+ profileUrl);
 		}
-		
+
 		// is this a known schema?
 		if (!this.schematronValidator.getSchemas().containsKey(profileUrl)) {
 			throw new InvalidMETSException("The mets element MUST have a recognized PROFILE attribute.  Unknown profile: "
