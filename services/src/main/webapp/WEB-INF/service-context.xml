@@ -435,7 +435,7 @@
 	</util:set>
 	
 	<!-- Batch Ingest Service -->
-	<bean id="batchIngestService" class="edu.unc.lib.dl.cdr.services.BatchIngestService" init-method="init">
+	<bean id="batchIngestService" class="edu.unc.lib.dl.cdr.services.BatchIngestService" init-method="init" destroy-method="destroy">
 	  <property name="startOnInit" value="true"/>
 		<property name="batchIngestQueue">
 			<bean class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">

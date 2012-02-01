@@ -846,11 +846,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		// do not set marker file!
 		log.info("Ingesting batch now, in parallel with queue: " + prepDir.getAbsolutePath());
 		BatchIngestTask task = this.batchIngestTaskFactory.createTask();
-		task.init(prepDir);
+		task.setBaseDir(prepDir);
 		task.run();
-		if(!task.isFailed()) {
-			FileUtils.deleteDir(prepDir);
-		}
 		task = null;
 	}
 

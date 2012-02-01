@@ -114,7 +114,11 @@ public class RepositoryInitializer implements Runnable {
 			}
 
 			log.warn("Waiting on Fedora startup to initialize repository, polling..");
-			this.managementClient.pollForObject(ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID(), 30, 600);
+			try {
+				this.managementClient.pollForObject(ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID(), 30, 600);
+			} catch (InterruptedException e1) {
+				throw new Error("RepositoryInitializer was interrupted.", e1);
+			}
 
 			try {
 				this.managementClient.getObjectXML(ContentModelHelper.Administrative_PID.REPOSITORY.getPID());

@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.cdr.services;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -47,22 +48,20 @@ public class BatchIngestService implements ServiceConductor {
 	private boolean startOnInit = false;
 	private BatchIngestQueue batchIngestQueue = null;
 	private BatchIngestTaskFactory batchIngestTaskFactory = null;
-	protected ServicesThreadPoolExecutor executor = null;
+	protected ServicesThreadPoolExecutor<BatchIngestTask> executor = null;
 	protected int maxThreads = 1;
 	private Timer pollingTimer = null;
-	private int pollDirectorySeconds = 2;
-	private long beforeExecuteDelay = 50;
+	private int pollDirectorySeconds = 10;
+	private long beforeExecuteDelay = 0;
 
 	public void init() {
 		initializeExecutor();
 		if (!isStartOnInit()) {
 			this.executor.pause();
 		}
-		// queue any new pending ingests
-		queueNewPendingIngests();
 		// add a file system monitor to queue new ingests
 		pollingTimer = new Timer();
-		pollingTimer.schedule(new EnqueueTask(), 0, pollDirectorySeconds * 1000);
+		pollingTimer.schedule(new EnqueueTask(), 20 * 1000, pollDirectorySeconds * 1000);
 	}
 
 	class EnqueueTask extends TimerTask {
@@ -76,20 +75,16 @@ public class BatchIngestService implements ServiceConductor {
 	 *
 	 */
 	private void queueNewPendingIngests() {
-		Set<Runnable> queued = new HashSet<Runnable>();
-		queued.addAll(this.executor.getQueue());
-		queued.addAll(this.executor.getRunningNow());
-		Set<File> handled = new HashSet<File>();
-		for(Runnable task : queued) {
-			if(BatchIngestTask.class.isInstance(task)) {
-				BatchIngestTask bit = (BatchIngestTask)task;
-				handled.add(bit.getBaseDir());
-			}
+		LOG.debug("Checking for new ingests...");
+		Set<String> handled = new HashSet<String>();
+		for (BatchIngestTask task : this.executor.getAllRunningAndQueued()) {
+			handled.add(task.getBaseDir().getName());
 		}
-		for(File dir : this.batchIngestQueue.getReadyIngestDirectories()) {
-			if(!handled.contains(dir)) {
+		for (File dir : this.batchIngestQueue.getReadyIngestDirectories()) {
+			if (!handled.contains(dir.getName())) {
+				LOG.debug("Adding new batch ingest task to the queue: "+dir.getAbsolutePath());
 				BatchIngestTask newtask = this.batchIngestTaskFactory.createTask();
-				newtask.init(dir);
+				newtask.setBaseDir(dir);
 				this.executor.execute(newtask);
 			}
 		}
@@ -101,8 +96,8 @@ public class BatchIngestService implements ServiceConductor {
 	}
 
 	public void shutdown() {
-		this.executor.shutdown();
-		LOG.warn("Batch Ingest Service is shutting down, no further batches will be processed.");
+		this.executor.shutdownNow();
+		LOG.warn("Batch Ingest Service is shutting down now, no further batches will be processed.");
 	}
 
 	public int getMaxThreads() {
@@ -119,7 +114,7 @@ public class BatchIngestService implements ServiceConductor {
 
 	protected void initializeExecutor() {
 		LOG.debug("Initializing services thread pool executor with " + this.maxThreads + " threads.");
-		this.executor = new ServicesThreadPoolExecutor(this.maxThreads, "SolrUpdates");
+		this.executor = new ServicesThreadPoolExecutor<BatchIngestTask>(this.maxThreads, "SolrUpdates");
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
 		(this.executor).setBeforeExecuteDelay(beforeExecuteDelay);
 	}
@@ -138,18 +133,18 @@ public class BatchIngestService implements ServiceConductor {
 	/**
 	 * Blocks the calling thread until the queue is completely empty and ingest task is finished.
 	 */
-//	public void waitUntilIdle() {
-//		LOG.debug("Thread waiting for idle ingest service: " + Thread.currentThread().getName());
-//		// TODO reimplement
-//	}
+	// public void waitUntilIdle() {
+	// LOG.debug("Thread waiting for idle ingest service: " + Thread.currentThread().getName());
+	// // TODO reimplement
+	// }
 
 	/**
 	 * Blocks the calling thread until an ingest task is active.
 	 */
-//	public void waitUntilActive() {
-//		LOG.debug("Thread waiting for active ingest service: " + Thread.currentThread().getName());
-//		// TODO reimplement
-//	}
+	// public void waitUntilActive() {
+	// LOG.debug("Thread waiting for active ingest service: " + Thread.currentThread().getName());
+	// // TODO reimplement
+	// }
 
 	public boolean isStartOnInit() {
 		return startOnInit;
@@ -167,7 +162,9 @@ public class BatchIngestService implements ServiceConductor {
 		this.batchIngestQueue = batchIngestQueue;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#pause()
 	 */
 	@Override
@@ -175,7 +172,9 @@ public class BatchIngestService implements ServiceConductor {
 		this.executor.pause();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#resume()
 	 */
 	@Override
@@ -183,7 +182,9 @@ public class BatchIngestService implements ServiceConductor {
 		this.executor.resume();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#isPaused()
 	 */
 	@Override
@@ -191,7 +192,9 @@ public class BatchIngestService implements ServiceConductor {
 		return this.executor.isPaused();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#isEmpty()
 	 */
 	@Override
@@ -199,7 +202,9 @@ public class BatchIngestService implements ServiceConductor {
 		return this.executor.getQueue().isEmpty();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#isIdle()
 	 */
 	@Override
@@ -207,7 +212,9 @@ public class BatchIngestService implements ServiceConductor {
 		return this.executor.isPaused() || this.executor.getQueue().isEmpty();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#shutdownNow()
 	 */
 	@Override
@@ -216,7 +223,9 @@ public class BatchIngestService implements ServiceConductor {
 		LOG.warn("Batch Ingest Service is shutting down NOW, no further batches will be processed.");
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#abort()
 	 */
 	@Override
@@ -225,12 +234,15 @@ public class BatchIngestService implements ServiceConductor {
 		this.executor.shutdownNow();
 		try {
 			this.executor.awaitTermination(5, TimeUnit.MINUTES);
-		} catch (InterruptedException ignored) {}
+		} catch (InterruptedException ignored) {
+		}
 		initializeExecutor();
 		pause();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#getConductorStatus()
 	 */
 	@Override
@@ -254,7 +266,7 @@ public class BatchIngestService implements ServiceConductor {
 
 	public void setBeforeExecuteDelay(long beforeExecuteDelay) {
 		this.beforeExecuteDelay = beforeExecuteDelay;
-		if(this.executor != null) {
+		if (this.executor != null) {
 			this.executor.setBeforeExecuteDelay(beforeExecuteDelay);
 		}
 	}
