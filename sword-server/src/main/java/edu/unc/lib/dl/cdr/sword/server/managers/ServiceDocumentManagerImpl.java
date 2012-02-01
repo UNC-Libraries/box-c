@@ -35,8 +35,6 @@ import org.swordapp.server.SwordWorkspace;
 
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.PackagingType;
-import edu.unc.lib.dl.fedora.AccessControlUtils;
 
 /**
  * Generates service document from all containers which are the immediate children of the starting path.
@@ -76,8 +74,10 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 		//Get the users group
 		List<String> groupList = new ArrayList<String>();
 		groupList.add(configImpl.getDepositorNamespace() + auth.getUsername());
+		groupList.add("public");
 		
 		if (!accessControlUtils.hasAccess(pid, groupList, "http://cdr.unc.edu/definitions/roles#metadataOnlyPatron")){
+			LOG.debug("Insufficient privileges to access the service document for " + pid.getPid());
 			throw new SwordAuthException("Insufficient privileges to access the service document for " + pid.getPid());
 		}
 		
@@ -123,7 +123,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 				}
 				collection.setMediation(true);
 				//
-				IRI iri = new IRI(swordPath + "servicedocument/" + containerPID.getPid());
+				IRI iri = new IRI(swordPath + SwordConfigurationImpl.SERVICE_DOCUMENT_PATH + "/" + containerPID.getPid());
 				collection.addSubService(iri);
 				result.add(collection);
 			}

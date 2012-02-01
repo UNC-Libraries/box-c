@@ -91,6 +91,7 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 		//Get the users group
 		List<String> groupList = new ArrayList<String>();
 		groupList.add(configImpl.getDepositorNamespace() + auth.getUsername());
+		groupList.add("public");
 		
 		//Verify access control
 		if (!accessControlUtils.hasAccess(containerPID, groupList, "http://cdr.unc.edu/definitions/roles#metadataOnlyPatron")){

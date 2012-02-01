@@ -51,16 +51,16 @@ public class CollectionServlet extends BaseSwordServlet {
 		// load the API
 		this.api = new CollectionAPI(this.collectionListManager, this.collectionDepositManager, this.config);
 	}
-
-	@RequestMapping(value = {"/", "/{pid}", "/{pid}/*"}, method = RequestMethod.GET)
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	
+	@RequestMapping(value = {"", "/", "/{pid}", "/{pid}/*"}, method = RequestMethod.GET)
+	protected void collectionList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		LOG.debug("GET request for collection content list");
 		this.api.get(req, resp);
 	}
 	
-	@RequestMapping(value = {"/", "/{pid}"}, method = RequestMethod.POST)
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp, @PathVariable("pid") String pid) throws ServletException, IOException {
-		LOG.debug("POST request to submit to collection: " + pid);
+	@RequestMapping(value = {"", "/", "/{pid}"}, method = RequestMethod.POST)
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		LOG.debug("POST request to submit to collection: " + req.getQueryString());
 		LOG.debug("Packaging: " + req.getHeader("Packaging"));
 		this.api.post(req, resp);
 	}

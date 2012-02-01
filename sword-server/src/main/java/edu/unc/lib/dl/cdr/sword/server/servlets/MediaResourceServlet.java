@@ -51,7 +51,7 @@ public class MediaResourceServlet extends BaseSwordServlet {
 	 * @param pid
 	 */
 	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
-	public void doRetrieveContent(HttpServletRequest req, HttpServletResponse resp, @PathVariable("pid") String pid){
+	public void doRetrieveContent(HttpServletRequest req, HttpServletResponse resp){
 		resp.setStatus(HttpStatus.NOT_IMPLEMENTED.value());
 	}
 	
@@ -62,7 +62,7 @@ public class MediaResourceServlet extends BaseSwordServlet {
 	 * @param pid
 	 */
 	@RequestMapping(value = "/{pid}", method = RequestMethod.PUT)
-	public void doReplaceFileContent(HttpServletRequest req, HttpServletResponse resp, @PathVariable("pid") String pid){
+	public void doReplaceFileContent(HttpServletRequest req, HttpServletResponse resp){
 		resp.setStatus(HttpStatus.NOT_IMPLEMENTED.value());
 	}
 	
@@ -74,7 +74,7 @@ public class MediaResourceServlet extends BaseSwordServlet {
 	 * @param pid
 	 */
 	@RequestMapping(value = "/{pid}", method = RequestMethod.POST)
-	public void doAddAdditionalContent(HttpServletRequest req, HttpServletResponse resp, @PathVariable("pid") String pid){
+	public void doAddAdditionalContent(HttpServletRequest req, HttpServletResponse resp){
 		resp.setStatus(HttpStatus.NOT_IMPLEMENTED.value());
 	}
 	
@@ -85,7 +85,7 @@ public class MediaResourceServlet extends BaseSwordServlet {
 	 * @param pid
 	 */
 	@RequestMapping(value = "/{pid}", method = RequestMethod.DELETE)
-	public void doDeleteContent(HttpServletRequest req, HttpServletResponse resp, @PathVariable("pid") String pid){
+	public void doDeleteContent(HttpServletRequest req, HttpServletResponse resp){
 		resp.setStatus(HttpStatus.NOT_IMPLEMENTED.value());
 	}
 }

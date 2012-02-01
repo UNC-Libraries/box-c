@@ -15,15 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.abdera.i18n.iri.IRI;
@@ -65,50 +57,51 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		if (collectionURI == null)
 			throw new SwordServerException("No collection URI was provided");
 
-		try {
-			String agentName = null;
-			if (auth.getOnBehalfOf() != null){
-				agentName = auth.getOnBehalfOf();
-			} else {
-				agentName = auth.getUsername();
-			};
-			Agent agent = agentFactory.findPersonByOnyen(agentName, true);
-			SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
+		String agentName = null;
+		if (auth.getOnBehalfOf() != null){
+			agentName = auth.getOnBehalfOf();
+		} else {
+			agentName = auth.getUsername();
+		};
+		Agent agent = agentFactory.findPersonByOnyen(agentName, true);
+		SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
 
-			String pidString = null;
-			String collectionPath = SwordConfigurationImpl.COLLECTION_PATH + "/";
-			int pidIndex = collectionURI.indexOf(collectionPath);
-			if (pidIndex > -1){
-				pidString = collectionURI.substring(pidIndex + collectionPath.length());
-			}
+		String pidString = null;
+		String collectionPath = SwordConfigurationImpl.COLLECTION_PATH + "/";
+		int pidIndex = collectionURI.indexOf(collectionPath);
+		if (pidIndex > -1){
+			pidString = collectionURI.substring(pidIndex + collectionPath.length());
+		}
 
-			LOG.debug("Collection URI pid is " + pidString);
+		LOG.debug("Collection URI pid is " + pidString);
 
-			PID containerPID = null;
-			if (pidString.trim().length() == 0){
-				containerPID = collectionsPidObject;
-			} else {
-				containerPID = new PID(pidString);
-			}
-			
-			//Get the users group
-			List<String> groupList = new ArrayList<String>();
-			groupList.add(configImpl.getDepositorNamespace() + auth.getUsername());
-			
-			if (!accessControlUtils.hasAccess(containerPID, groupList, "http://cdr.unc.edu/definitions/roles#curator")){
-				throw new SwordAuthException("Insufficient privileges to deposit to container " + containerPID.getPid());
-			}
+		PID containerPID = null;
+		if (pidString.trim().length() == 0){
+			containerPID = collectionsPidObject;
+		} else {
+			containerPID = new PID(pidString);
+		}
+		
+		//Get the users group
+		List<String> groupList = new ArrayList<String>();
+		groupList.add(configImpl.getDepositorNamespace() + auth.getUsername());
+		groupList.add("public");
+		
+		if (!accessControlUtils.hasAccess(containerPID, groupList, "http://cdr.unc.edu/definitions/roles#curator")){
+			throw new SwordAuthException("Insufficient privileges to deposit to container " + containerPID.getPid());
+		}
 
-			if (PackagingType.METS_CDR.equals(deposit.getPackaging()) || PackagingType.METS_DSPACE_SIP.equals(deposit.getPackaging())){
-				return doMETSCDRDeposit(containerPID, deposit, auth, configImpl, agent);
+		if (PackagingType.METS_CDR.equals(deposit.getPackaging()) || PackagingType.METS_DSPACE_SIP.equals(deposit.getPackaging())){
+			try {
+				return doMETSDeposit(containerPID, deposit, auth, configImpl, agent);
+			} catch (Exception e) {
+				throw new SwordServerException(e);
 			}
-		} catch (Exception e) {
-			LOG.error("Exception while attempting to deposit", e);
 		}
 		return null;
 	}
 
-	private DepositReceipt doMETSCDRDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
+	private DepositReceipt doMETSDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
 			SwordConfigurationImpl config, Agent agent) throws Exception {
 
 		LOG.debug("Preparing to perform a CDR METS deposit to " + containerPID.getPid());
@@ -116,6 +109,10 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		String name = deposit.getFilename();
 		boolean isZip = name.endsWith(".zip");
 
+		if (LOG.isDebugEnabled()){
+			LOG.debug("Working with temporary file: " + deposit.getFile().getAbsolutePath());
+		}
+		
 		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), agent, isZip);
 		// PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
 
