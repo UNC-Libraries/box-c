@@ -50,9 +50,9 @@ public class AccessControlUtilsTest extends Assert {
 				new ArrayList<String>(Arrays.asList(new String[] { "testgroup", "othergroup" })));
 
 		TripleStoreQueryService tripleStoreQueryService = mock(TripleStoreQueryService.class);
-		when(tripleStoreQueryService.lookupRepositoryAncestorPids(targetPID)).thenReturn(Arrays.asList(new PID[]{parentPID1, parentPID2, targetPID}));
-		when(tripleStoreQueryService.lookupRepositoryAncestorPids(parentPID2)).thenReturn(Arrays.asList(new PID[]{parentPID1, parentPID2}));
-		when(tripleStoreQueryService.lookupRepositoryAncestorPids(parentPID1)).thenReturn(Arrays.asList(new PID[]{parentPID1}));
+		when(tripleStoreQueryService.lookupRepositoryAncestorPids(targetPID)).thenReturn(new ArrayList<PID>(Arrays.asList(new PID[]{parentPID1, parentPID2})));
+		when(tripleStoreQueryService.lookupRepositoryAncestorPids(parentPID2)).thenReturn(new ArrayList<PID>(Arrays.asList(new PID[]{parentPID1})));
+		when(tripleStoreQueryService.lookupRepositoryAncestorPids(parentPID1)).thenReturn(new ArrayList<PID>(Arrays.asList(new PID[]{})));
 		when(tripleStoreQueryService.fetchAllTriples(parentPID1)).thenReturn(parentTriples1);
 		when(tripleStoreQueryService.fetchAllTriples(parentPID2)).thenReturn(parentTriples2);
 		when(tripleStoreQueryService.fetchAllTriples(targetPID)).thenReturn(targetTriples);

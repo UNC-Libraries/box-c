@@ -46,8 +46,6 @@ import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.EvaluationResult;
 
-import edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl;
-
 public class AccessControlUtils {
 
 	boolean initComplete = false;
@@ -71,10 +69,6 @@ public class AccessControlUtils {
 	private String[] originalNames = { "DATA_" };
 
 	// CDR options loaded from configuration
-	private String username;
-	private String password;
-	private String itqlEndpointURL;
-	private String serverModelUri;
 	private int cacheDepth;
 	private int cacheLimit;
 	private long cacheResetTime;
@@ -222,7 +216,7 @@ public class AccessControlUtils {
 					// need to update the list of groups for each permission as
 					// new roles are processed.
 					if (!permissionGroupSets.containsKey(permission)) {
-						Set<String> temp = new HashSet();
+						Set<String> temp = new HashSet<String>();
 						permissionGroupSets.put(permission, temp);
 					}
 
@@ -245,7 +239,7 @@ public class AccessControlUtils {
 
 		// turn permission sets into lists
 
-		Set permissionKeys = permissionGroupSets.keySet();
+		Set<String> permissionKeys = permissionGroupSets.keySet();
 
 		Iterator<String> permissionIterator = permissionKeys.iterator();
 
@@ -293,7 +287,7 @@ public class AccessControlUtils {
 		if (rolePermissions == null) {
 			rolePermissions = new HashMap<String, List<String>>(16);
 
-			Enumeration keys = accessControlProperties.keys();
+			Enumeration<Object> keys = accessControlProperties.keys();
 
 			if (!keys.hasMoreElements()) {
 				LOG.error("cachePermissionsForRoles: No permissions found for roles; cannot determine access control settings.");
@@ -347,7 +341,7 @@ public class AccessControlUtils {
 			// getCollections
 			List<PID> collections = tripleStoreQueryService.fetchChildContainers(collectionsPid);
 
-			List<PID> parents = new ArrayList(collections.size());
+			List<PID> parents = new ArrayList<PID>(collections.size());
 			parents.addAll(collections);
 
 			addContainersToPermissionMap(parents);
@@ -404,13 +398,8 @@ public class AccessControlUtils {
 
 		LOG.debug("processCdrAccessControl entry");
 
-		EvaluationResult result = null;
 		Map map = null;
-		String datastream = null;
-		String basePid = null;
 		int resourceType = -1;
-
-		Map<String, Set<String>> permissionGroupSets = new HashMap<String, Set<String>>();
 
 		// String pid = inputPid.getPid();
 
@@ -439,6 +428,7 @@ public class AccessControlUtils {
 		long repositoryPathInfoTime = System.currentTimeMillis();
 
 		List<PID> ancestors = getListOfAncestors(pid);
+		ancestors.add(new PID(pid));
 
 		LOG.debug("processCdrAccessControl Time in tripleStore getting repository path: "
 				+ (System.currentTimeMillis() - repositoryPathInfoTime) + " milliseconds");
@@ -686,6 +676,10 @@ public class AccessControlUtils {
 	 */
 	public boolean hasAccess(PID inputPid, Collection<String> inputGroups, String role){
 		List<String> permissionTypes = rolePermissions.get(role);
+		if (LOG.isDebugEnabled()){
+			LOG.debug("hasAccess called for pid " + inputPid.getPid() + " groups " + inputGroups + 
+					" role " + role + " permissions " + permissionTypes);
+		}
 		if (permissionTypes == null || permissionTypes.size() == 0)
 			return false;
 		return hasAccess(inputPid, inputGroups, permissionTypes);
@@ -704,6 +698,8 @@ public class AccessControlUtils {
 			return false;
 		//Retrieve the group permissions for this pid
 		Map<String, Set<String>> permissionGroupSets = getPermissionGroupSets(inputPid);
+		if (LOG.isDebugEnabled())
+			LOG.debug("Permission groups for " + inputPid.getPid() + ": " + permissionGroupSets);
 		for (String permissionType: permissionTypes){
 			if (permissionGroupSets.containsKey(permissionType)){
 				boolean groupFound = false;
@@ -714,9 +710,15 @@ public class AccessControlUtils {
 						break;
 					}
 				}
-				if (!groupFound)
+				if (!groupFound){
+					if (LOG.isDebugEnabled())
+						LOG.debug("Permission type " + permissionType + " return groups " + groupSet + " instead of the requested " + 
+								inputGroups + " for " + inputPid.getPid());
 					return false;
+				}
 			} else {
+				if (LOG.isDebugEnabled())
+					LOG.debug("Permission type " + permissionType + " was not found for " + inputPid.getPid());
 				return false;
 			}
 		}
@@ -797,6 +799,8 @@ public class AccessControlUtils {
 		long repositoryPathInfoTime = System.currentTimeMillis();
 
 		List<PID> ancestors = getListOfAncestors(pid);
+		// Add the input pid as part of its ancestor path.
+		ancestors.add(new PID(pid));
 
 		LOG.debug("getPermissionGroupSets Time in tripleStore getting repository path: "
 				+ (System.currentTimeMillis() - repositoryPathInfoTime) + " milliseconds");
