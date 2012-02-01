@@ -181,13 +181,13 @@ public class BatchIngestServiceTest {
 			this.batchIngestService.resume();
 			do {
 				Thread.sleep(5*1000);
-			} while(this.batchIngestService.executor.getQueue().size() + this.batchIngestService.executor.getActiveCount() > 0);
+			} while(this.batchIngestService.executor.getAllRunningAndQueued().size() > 0);
 			verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));
 
 			digitalObjectManagerImpl.addToIngestQueue(sip2, user, "testAdd2 for a good METS SIP");
 			do {
 				Thread.sleep(5*1000);
-			} while(this.batchIngestService.executor.getQueue().size() + this.batchIngestService.executor.getActiveCount() > 0);
+			} while(this.batchIngestService.executor.getAllRunningAndQueued().size() > 0);
 			verify(this.managementClient, times(28)).ingest(any(Document.class), any(Format.class), any(String.class));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -232,7 +232,7 @@ public class BatchIngestServiceTest {
 
 			do {
 				Thread.sleep(5*1000);
-			} while(this.batchIngestService.executor.getQueue().size() + this.batchIngestService.executor.getActiveCount() > 0);
+			} while(this.batchIngestService.executor.getAllRunningAndQueued().size() > 0);
 
 			// verify batch ingest called
 			verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));
@@ -293,7 +293,7 @@ public class BatchIngestServiceTest {
 
 			do {
 				Thread.sleep(5*1000);
-			} while(this.batchIngestService.executor.getQueue().size() + this.batchIngestService.executor.getActiveCount() > 0);
+			} while(this.batchIngestService.executor.getAllRunningAndQueued().size() > 0);
 
 			// verify batch ingest called
 			verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));
