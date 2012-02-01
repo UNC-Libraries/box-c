@@ -51,7 +51,7 @@ public class BatchIngestService implements ServiceConductor {
 	protected ServicesThreadPoolExecutor<BatchIngestTask> executor = null;
 	protected int maxThreads = 1;
 	private Timer pollingTimer = null;
-	private int pollDirectorySeconds = 10;
+	private int pollDirectorySeconds = 2;
 	private long beforeExecuteDelay = 0;
 
 	public void init() {
@@ -61,7 +61,7 @@ public class BatchIngestService implements ServiceConductor {
 		}
 		// add a file system monitor to queue new ingests
 		pollingTimer = new Timer();
-		pollingTimer.schedule(new EnqueueTask(), 20 * 1000, pollDirectorySeconds * 1000);
+		pollingTimer.schedule(new EnqueueTask(), 2 * 1000, pollDirectorySeconds * 1000);
 	}
 
 	class EnqueueTask extends TimerTask {
