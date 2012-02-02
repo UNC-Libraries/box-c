@@ -46,6 +46,7 @@ import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.EvaluationResult;
 
+@SuppressWarnings("rawtypes")
 public class AccessControlUtils {
 
 	boolean initComplete = false;
@@ -125,7 +126,6 @@ public class AccessControlUtils {
 			return;
 		}
 
-		// TODO: reset these every day
 		permissionMap = new ConcurrentHashMap<String, Map>();
 		ancestorMap = new ConcurrentHashMap<String, List<PID>>();
 
@@ -246,7 +246,7 @@ public class AccessControlUtils {
 		while (permissionIterator.hasNext()) {
 			String permission = permissionIterator.next();
 
-			List groups = Arrays.asList(permissionGroupSets.get(permission).toArray());
+			List<String> groups = new ArrayList<String>(permissionGroupSets.get(permission));  
 
 			map.put(permission, groups);
 		}
@@ -390,175 +390,6 @@ public class AccessControlUtils {
 		LOG.debug("addContainersToPermissionMap exit");
 	}
 
-	/*
-	 * Given the pid, return the appropriate set of access control
-	 */
-
-	public synchronized EvaluationResult processCdrAccessControl(String pid, String attribute, URI type) {
-
-		LOG.debug("processCdrAccessControl entry");
-
-		Map map = null;
-		int resourceType = -1;
-
-		// String pid = inputPid.getPid();
-
-		init(); // initialize if necessary
-
-		long processTotalTime = System.currentTimeMillis();
-
-		enforceCacheLimit();
-
-		LOG.debug("processCdrAccessControl pid: " + pid);
-
-		resourceType = determineResourceType(pid, resourceType);
-
-		// Now that we know what we're looking for, get permissions
-
-		Set<AttributeValue> bagValues = new HashSet<AttributeValue>();
-
-		// lookupRepositoryPathInfo/lookupRepositoryAncestorPids returns:
-		// 0 Repository home, pid: admin:repository
-		// 1 Collections, pid: varies
-		// 2 individual collection, pid: varies
-		// 3 something in a collection, pid: varies
-		// access control checking will stop at 0, start at list.size() (the
-		// current object)
-
-		long repositoryPathInfoTime = System.currentTimeMillis();
-
-		List<PID> ancestors = getListOfAncestors(pid);
-		ancestors.add(new PID(pid));
-
-		LOG.debug("processCdrAccessControl Time in tripleStore getting repository path: "
-				+ (System.currentTimeMillis() - repositoryPathInfoTime) + " milliseconds");
-
-		// March backwards (upwards) through the resource and its ancestors to
-		// get access
-		// control
-
-		Set<String> groups = getEmbargoGroups(ancestors);
-		boolean embargo = !groups.isEmpty();
-
-		boolean noInherit = false;
-
-		// TODO: check boundary condition of size() == 0
-		for (int i = (ancestors.size() - 1); i >= 0; i--) {
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("processCdrAccessControl ancestor and pid: " + i + " " + ancestors.get(i).getPid());
-			}
-
-			if (noInherit) {
-				break; // no need to look at further ancestors
-			}
-
-			long tripleStoreTime = System.currentTimeMillis();
-
-			String ancestorPid = ancestors.get(i).getPid();
-
-			map = getAncestorPermissions(map, ancestors, i, ancestorPid);
-
-			LOG.debug("processCdrAccessControl Time in tripleStoreQuery for " + ancestors.get(i).getPid() + ": "
-					+ (System.currentTimeMillis() - tripleStoreTime) + " milliseconds");
-
-			// Look through the map for the requested permission
-			if (map != null) {
-				if (LOG.isDebugEnabled()) {
-					logPermissions(map);
-				}
-
-				// Get the keys of the map
-				Set keys = map.keySet();
-				Object[] keyArray = keys.toArray();
-
-				// For each entry in the permissionsMap
-				for (int j = 0; j < keyArray.length; j++) {
-
-					String foundPermission = (String) keyArray[j];
-
-					LOG.debug("processCdrAccessControl foundPermission: " + foundPermission);
-
-					// Should we stop looking at ancestors above the current
-					// ancestor?
-					if (foundPermission.equals("http://cdr.unc.edu/definitions/acl#inheritPermissions")) {
-						LOG.debug("processCdrAccessControl 'No Inherit' found");
-						noInherit = true;
-					} else if (foundPermission.equals("http://cdr.unc.edu/definitions/acl#embargo")) {
-						// embargoes processed differently
-					} else {
-
-						// Only return permissions appropriate for the resource
-						// type
-
-						if ((resourceType == METADATA) && (foundPermission != null)
-								&& (!foundPermission.contains("Metadata"))) {
-							LOG.debug("metadata if");
-							continue;
-						} else if ((resourceType == DERIVATIVE) && (foundPermission != null)
-								&& (!foundPermission.contains("Derivative"))) {
-							LOG.debug("derivative if");
-							continue;
-						} else if ((resourceType == ORIGINAL) && (foundPermission != null)
-								&& (!foundPermission.contains("Original"))) {
-							LOG.debug("original if");
-							continue;
-						}
-
-						// need to convert groups to permissions
-						// add read set of read permissions for each group to
-						// xml
-
-						List<String> groupsForPermission = (List<String>) map.get(foundPermission);
-
-						if (groupsForPermission == null) {
-							LOG.debug("processCdrAccessControl permissions list is NULL");
-						} else {
-							for (int k = 0; k < groupsForPermission.size(); k++) {
-								// add groups to result
-								boolean addPermission = true;
-
-								if (embargo) {
-									LOG.debug("processCdrAccessControl embargo in effect");
-									String group = groupsForPermission.get(k);
-									LOG.debug("processCdrAccessControl group: " + group);
-									if ((group != null) && !groups.contains(group)) {
-										LOG.debug("processCdrAccessControl " + group
-												+ " is not a group which can bypass the embargo");
-										addPermission = false;
-									}
-								}
-
-								if (addPermission) {
-									LOG.debug("processCdrAccessControl adding permission for group: "
-											+ groupsForPermission.get(k));
-									try {
-
-										AttributeValue attributeValue = null;
-										attributeValue = attributeFactory.createValue(type, groupsForPermission.get(k));
-										bagValues.add(attributeValue);
-									} catch (Exception e) {
-										LOG.error("processCdrAccessControl Error creating attribute: " + e.getMessage(), e);
-										// continue;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		BagAttribute bag = new BagAttribute(type, bagValues);
-
-		LOG.debug("processCdrAccessControl Total time in CDR function: "
-				+ (System.currentTimeMillis() - processTotalTime) + " milliseconds");
-
-		LOG.debug("processCdrAccessControl exit");
-
-		return new EvaluationResult(bag);
-
-	}
-
 	private Map getAncestorPermissions(Map map, List<PID> ancestors, int i, String ancestorPid) {
 		// Check the permissions cache to see if it has the permissions for
 		// the current UUID
@@ -697,7 +528,7 @@ public class AccessControlUtils {
 		if (inputPid == null || inputGroups == null || permissionTypes == null)
 			return false;
 		//Retrieve the group permissions for this pid
-		Map<String, Set<String>> permissionGroupSets = getPermissionGroupSets(inputPid);
+		Map<String, Set<String>> permissionGroupSets = getPermissionGroupSets(inputPid, -1);
 		if (LOG.isDebugEnabled())
 			LOG.debug("Permission groups for " + inputPid.getPid() + ": " + permissionGroupSets);
 		for (String permissionType: permissionTypes){
@@ -734,12 +565,11 @@ public class AccessControlUtils {
 	 * @return XML representation of the access control for this PID.
 	 */
 	public Content processCdrAccessControl(PID inputPid) {
-		
 		//Retrieve the group permissions for this pid
-		Map<String, Set<String>> permissionGroupSets = getPermissionGroupSets(inputPid);
+		Map<String, Set<String>> permissionGroupSets = getPermissionGroupSets(inputPid, -1);
 		
 		// turn permission sets into lists
-		Set permissionKeys = permissionGroupSets.keySet();
+		Set<String> permissionKeys = permissionGroupSets.keySet();
 
 		Iterator<String> permissionIterator = permissionKeys.iterator();
 
@@ -765,11 +595,47 @@ public class AccessControlUtils {
 		
 		return permsEl;
 	}
+	
+	/**
+	 * Given a PID, including an optional datastream, return the group permissions as 
+	 * an EvaluationResult object.
+	 * For use by FESL
+	 * @param pid
+	 * @param attribute - not currently used
+	 * @param type - not currently used
+	 * @return
+	 */
+	public synchronized EvaluationResult processCdrAccessControl(String pid, String attribute, URI type) {
+		int resourceType = -1;
+		resourceType = determineResourceType(pid, resourceType);
+		String basePID = pid;
+		int index = basePID.indexOf("/");
+		if (index > 0){
+			basePID = basePID.substring(0, index);
+		}
+		
+		Map<String, Set<String>> permissionGroupSets = getPermissionGroupSets(new PID(basePID), resourceType);
+		Set<AttributeValue> bagValues = new HashSet<AttributeValue>();
+		for (String permissionType: permissionGroupSets.keySet()){
+			Set<String> groupSet = permissionGroupSets.get(permissionType);
+			for (String group: groupSet){
+				try {
+					AttributeValue attributeValue = attributeFactory.createValue(type, group);
+					bagValues.add(attributeValue);
+				} catch (Exception e) {
+					LOG.error("processCdrAccessControl Error creating attribute: " + e.getMessage(), e);
+				}
+			}
+		}
+		BagAttribute bag = new BagAttribute(type, bagValues);
+		return new EvaluationResult(bag);
+	}
 
 	/**
 	 * Retrieves a map containing the set of permission groups for each resource type.
 	 */
-	private Map<String, Set<String>> getPermissionGroupSets(PID inputPid) {
+	@SuppressWarnings("unchecked")
+	public Map<String, Set<String>> getPermissionGroupSets(PID inputPid, int resourceType) {
 		// EvaluationResult result = null;
 
 		LOG.debug("getPermissionGroupSets entry");
@@ -800,7 +666,7 @@ public class AccessControlUtils {
 
 		List<PID> ancestors = getListOfAncestors(pid);
 		// Add the input pid as part of its ancestor path.
-		ancestors.add(new PID(pid));
+		ancestors.add(inputPid);
 
 		LOG.debug("getPermissionGroupSets Time in tripleStore getting repository path: "
 				+ (System.currentTimeMillis() - repositoryPathInfoTime) + " milliseconds");
@@ -859,6 +725,22 @@ public class AccessControlUtils {
 						// embargoes processed differently
 					} else {
 
+						if (resourceType != -1){
+							if ((resourceType == METADATA) && (foundPermission != null)
+									&& (!foundPermission.contains("Metadata"))) {
+								LOG.debug("metadata if");
+								continue;
+							} else if ((resourceType == DERIVATIVE) && (foundPermission != null)
+									&& (!foundPermission.contains("Derivative"))) {
+								LOG.debug("derivative if");
+								continue;
+							} else if ((resourceType == ORIGINAL) && (foundPermission != null)
+									&& (!foundPermission.contains("Original"))) {
+								LOG.debug("original if");
+								continue;
+							}
+						}
+						
 						// Have a permission, need to write out access control
 						// for it
 						if (!permissionGroupSets.containsKey(foundPermission)) {
@@ -876,26 +758,22 @@ public class AccessControlUtils {
 							LOG.debug("getPermissionGroupSets permissions list is NULL");
 						} else {
 							for (String group : groupsForPermission) {
+								boolean addPermission = true;
 								// add groups to result
 								LOG.debug("getPermissionGroupSets group: " + group);
 
 								if (embargo) {
 									LOG.debug("getPermissionGroupSets embargo in effect");
-
+									LOG.debug("getPermissionGroupSets group: " + group);
 									if ((group != null) && !groups.contains(group)) {
 										LOG.debug("getPermissionGroupSets " + group
 												+ " is not a group which can bypass the embargo");
+										addPermission = false;
 									}
-
-									if (groups.contains(group)) {
-										Set<String> temp = permissionGroupSets.get(foundPermission);
-
-										temp.add(group);
-										permissionGroupSets.put(foundPermission, temp);
-									}
-								} else { // no embargo
+								}
+								
+								if (addPermission) {
 									Set<String> temp = permissionGroupSets.get(foundPermission);
-
 									temp.add(group);
 									permissionGroupSets.put(foundPermission, temp);
 								}
@@ -981,6 +859,7 @@ public class AccessControlUtils {
 					// if the requested permission equals the one in the map,
 					// get the list of associated groups
 					if (embargoFound) {
+						@SuppressWarnings("unchecked")
 						List<String> list = (List<String>) map.get(foundPermission);
 
 						if (list == null) {
@@ -1079,7 +958,7 @@ public class AccessControlUtils {
 
 		LOG.debug("removeCacheEntries entry");
 
-		Set<String> keys = map.keySet();
+		Set keys = map.keySet();
 		Iterator iterator = keys.iterator();
 
 		for (int i = 0; i < 100; i++) {
@@ -1102,7 +981,8 @@ public class AccessControlUtils {
 		for (int i = 0; i < keyArray.length; i++) {
 			LOG.debug("logPermissions: permissions: " + (String) keyArray[i]);
 
-			List<String> list = (List<String>) map.get(keyArray[i]);
+			
+			List list = (List)map.get(keyArray[i]);
 
 			if (list == null) {
 				LOG.debug("logPermissions: permissions list is NULL");
