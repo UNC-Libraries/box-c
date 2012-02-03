@@ -11,7 +11,7 @@
 	<packaging>war</packaging>
 	<name>CDR Services Webapp</name>
 	<build>
-		<finalName>cdr-services</finalName>
+		<finalName>services</finalName>
 		<resources>
 			<resource>
 				<filtering>true</filtering>

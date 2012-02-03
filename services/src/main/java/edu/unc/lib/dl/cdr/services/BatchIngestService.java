@@ -75,7 +75,6 @@ public class BatchIngestService implements ServiceConductor {
 	 *
 	 */
 	private void queueNewPendingIngests() {
-		LOG.debug("Checking for new ingests...");
 		Set<String> handled = new HashSet<String>();
 		for (BatchIngestTask task : this.executor.getAllRunningAndQueued()) {
 			handled.add(task.getBaseDir().getName());
