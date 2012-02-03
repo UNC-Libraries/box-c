@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -32,7 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.sun.xacml.attr.AttributeFactory;
-import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.StandardAttributeFactory;
 import com.sun.xacml.cond.EvaluationResult;
 
@@ -121,6 +121,9 @@ public class AccessControlUtilsTest extends Assert {
 	
 	@Test
 	public void getPermissionGroupSetsWithResourceType() throws URISyntaxException{
+		PID test = new PID("uuid:abfa9b72-ec02-47b1-9066-68ca3a1f64fb/DATA_FILE");
+		System.out.println(test.getPid() + " | " + test.getURI());
+		
 		PID targetPID = new PID("uuid:c");
 		Map<String, List<String>> targetTriples = new HashMap<String, List<String>>();
 		targetTriples.put("http://cdr.unc.edu/definitions/roles#patron",
@@ -130,8 +133,13 @@ public class AccessControlUtilsTest extends Assert {
 		when(tripleStoreQueryService.fetchAllTriples(targetPID)).thenReturn(targetTriples);
 		
 		
-		/*EvaluationResult result = acu.processCdrAccessControl(targetPID.getPid() + "/DATA_FILE", null, new URI("http://cdr.lib.unc.edu/"));
-		List children = result.getAttributeValue().getChildren();*/
+		EvaluationResult result = acu.processCdrAccessControl(targetPID.getPid() + "/DATA_FILE", null, new URI("http://www.w3.org/2001/XMLSchema#string"));
+		assertEquals(1, ((com.sun.xacml.attr.BagAttribute)result.getAttributeValue()).size());
+		Iterator it = ((com.sun.xacml.attr.BagAttribute)result.getAttributeValue()).iterator();
+		while (it.hasNext()){
+			com.sun.xacml.attr.StringAttribute value = (com.sun.xacml.attr.StringAttribute)it.next();
+			assertTrue(value.getValue().equals("testgroup"));
+		}
 		
 		//ORIGINAL
 		Map<String, Set<String>> permissionGroupSets = acu.getPermissionGroupSets(targetPID, 1);
