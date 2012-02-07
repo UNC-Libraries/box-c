@@ -96,7 +96,7 @@ public class SolrUpdateService {
 	}
 	
 	public void destroy() {
-		this.shutdown();
+		executor.shutdownNow();
 	}
 
 	public void shutdown() {

@@ -12,7 +12,7 @@
    aapendices of METS profiles.
 -->
 
-<xsl:stylesheet version="1.0"
+<xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:verb="http://informatik.hu-berlin.de/xmlverbatim"
                 xmlns:xlink="http://www.w3.org/1999/xlink"

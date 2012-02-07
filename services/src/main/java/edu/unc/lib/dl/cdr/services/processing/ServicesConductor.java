@@ -70,7 +70,7 @@ public class ServicesConductor implements MessageConductor, ServiceConductor {
 	// failed
 	private FailedObjectHashMap failedPids = null;
 
-	private ServicesThreadPoolExecutor executor = null;
+	private ServicesThreadPoolExecutor<PerformServicesRunnable> executor = null;
 
 	private long recoverableDelay = 0;
 	private long unexpectedExceptionDelay = 0;
@@ -97,7 +97,7 @@ public class ServicesConductor implements MessageConductor, ServiceConductor {
 	}
 
 	private void initializeExecutor(){
-		this.executor = new ServicesThreadPoolExecutor(this.maxThreads, this.getIdentifier());
+		this.executor = new ServicesThreadPoolExecutor<PerformServicesRunnable>(this.maxThreads, this.getIdentifier());
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
 		this.executor.setBeforeExecuteDelay(beforeExecuteDelay);
 	}
@@ -106,7 +106,7 @@ public class ServicesConductor implements MessageConductor, ServiceConductor {
 	 * Deconstructor method, stops the thread pool.
 	 */
 	public void destroy() {
-		this.executor.shutdown();
+		this.executor.shutdownNow();
 	}
 
 	/**

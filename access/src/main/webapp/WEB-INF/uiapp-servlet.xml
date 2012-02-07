@@ -132,7 +132,7 @@
 		lazy-init="false">
 		<property name="beans">
 			<map>
-				<entry key="bean:name=searchSettings" value-ref="searchSettings" />
+				<entry key="cdr-access:name=searchSettings" value-ref="searchSettings" />
 			</map>
 		</property>
 		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>

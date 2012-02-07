@@ -49,35 +49,6 @@
 		<property name="maxUploadSize" value="1073741824"/>
 		<property name="maxInMemorySize" value="5000000" />
 	</bean>
-
-
-	<!-- Solr -->
-
-	<bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
-		<property name="properties" ref="searchProperties" />
-	</bean>
-	<bean id="solrSettings" class="edu.unc.lib.dl.search.solr.util.SolrSettings">
-		<property name="properties" ref="solrProperties" />
-	</bean>
-	<util:properties id="searchProperties" location="classpath:search.properties" />
-	<util:properties id="solrProperties" location="classpath:solr.properties"
-		local-override="true">
-		<prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
-		</prop>
-	</util:properties>
-	
-	<bean id="hierarchicalFacet" class="edu.unc.lib.dl.search.solr.model.HierarchicalFacet"/>
-
-	<bean id="solrSearchService" class="edu.unc.lib.dl.search.solr.service.SolrSearchService"
-		init-method="initializeSolrServer">
-		<property name="solrSettings" ref="solrSettings"/>
-		<property name="searchSettings" ref="searchSettings"/>
-	</bean>
-
-	<bean id="searchStateFactory"
-		class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
-		<property name="searchSettings" ref="searchSettings"/>
-	</bean>
 	
 	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
 		<value>${admin.access.groups}</value>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<xsl:stylesheet version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:mods="http://www.loc.gov/mods/v3" exclude-result-prefixes="mods"
 	xmlns:dc="http://purl.org/dc/elements/1.1/"
 	xmlns:srw_dc="info:srw/schema/1/dc-schema"

@@ -25,6 +25,7 @@ import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
+import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnable;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 
 public class SolrUpdateConductor extends SolrUpdateService implements MessageConductor, ServiceConductor {
@@ -32,12 +33,13 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 
 	private long beforeExecuteDelay = 50;
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void initializeExecutor(){
 		LOG.debug("Initializing services thread pool executor with " + this.maxThreads + " threads.");
-		this.executor = new ServicesThreadPoolExecutor(this.maxThreads, this.getIdentifier());
+		this.executor = new ServicesThreadPoolExecutor<SolrUpdateRunnable>(this.maxThreads, this.getIdentifier());
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
-		((ServicesThreadPoolExecutor)this.executor).setBeforeExecuteDelay(beforeExecuteDelay);
+		((ServicesThreadPoolExecutor<SolrUpdateRunnable>)this.executor).setBeforeExecuteDelay(beforeExecuteDelay);
 	}
 
 	@Override

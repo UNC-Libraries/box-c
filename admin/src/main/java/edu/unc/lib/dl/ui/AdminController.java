@@ -38,17 +38,6 @@ import org.springframework.web.servlet.mvc.multiaction.MultiActionController;
 import org.springframework.web.servlet.support.RequestContext;
 
 import edu.unc.lib.dl.schema.UserGroupDAO;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-import edu.unc.lib.dl.security.access.AccessGroupConstants;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
-import edu.unc.lib.dl.security.access.UserSecurityProfile;
 import edu.unc.lib.dl.ui.ws.UiWebService;
 import edu.unc.lib.dl.util.Constants;
 

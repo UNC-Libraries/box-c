@@ -102,7 +102,7 @@
 -->
 
 <xsl:stylesheet
-   version="1.0"
+   version="2.0"
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
    xmlns:axsl="http://www.w3.org/1999/XSL/TransformAlias"
@@ -158,6 +158,7 @@
 	<xsl:param name="queryBinding" >xslt1</xsl:param>
 	<xsl:param name="schemaVersion" />
 	<xsl:param name="id" />
+	<xsl:param name="version" />
 	<!-- "Rich" parameters -->
 	<xsl:param name="fpi" />
 	<xsl:param name="icon" />
@@ -368,6 +369,7 @@
 	<xsl:param name="icon"/>
 	<xsl:param name="id"/>
 	<xsl:param name="lang"/>
+	<xsl:param name="class" />
 
 	<svrl:text>
 		<xsl:apply-templates mode="text"/>
@@ -413,7 +415,10 @@
 </xsl:template>
 
 <!-- Overrides skeleton -->
-<xsl:template name="process-message"/> 
+<xsl:template name="process-message">
+	<xsl:param name="pattern" />
+	<xsl:param name="role" />
+</xsl:template> 
 
 
 <!-- =========================================================================== -->

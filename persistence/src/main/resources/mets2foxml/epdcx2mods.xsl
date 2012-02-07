@@ -18,7 +18,7 @@
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:mods="http://www.loc.gov/mods/v3" xmlns:epdcx="http://purl.org/eprint/epdcx/2006-11-16/"
-	version="1.0">
+	version="2.0">
 	
 	<xsl:variable name="eprintGenre" select="document('/edu/unc/lib/dl/schematron/genres_eprints_swap.xml')/option-set"/>
 	<xsl:key name="eprintGenreLookup" match="option" use="valueURI"/>

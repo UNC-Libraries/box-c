@@ -33,6 +33,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService.PathInfo;
@@ -56,6 +57,8 @@ public class FedoraDataService {
 
 	private edu.unc.lib.dl.fedora.AccessControlUtils accessControlUtils = null;
 	
+	private String threadGroupPrefix = "";
+	
 	private ExecutorService executor;
 	private int maxThreads;
 	private long serviceTimeout;
@@ -66,7 +69,14 @@ public class FedoraDataService {
 	}
 	
 	public void init(){
-		executor = Executors.newFixedThreadPool(maxThreads);
+		CustomizableThreadFactory ctf = new CustomizableThreadFactory();
+		ctf.setThreadGroupName(threadGroupPrefix + "FDS");
+		ctf.setThreadNamePrefix(threadGroupPrefix + "FDSWorker-");
+		this.executor = Executors.newFixedThreadPool(maxThreads, ctf);
+	}
+	
+	public void destroy(){
+		executor.shutdownNow();
 	}
 
 	public edu.unc.lib.dl.fedora.AccessClient getAccessClient() {
@@ -211,6 +221,14 @@ public class FedoraDataService {
 
 	public void setAccessControlUtils(edu.unc.lib.dl.fedora.AccessControlUtils accessControlUtils) {
 		this.accessControlUtils = accessControlUtils;
+	}
+
+	public String getThreadGroupPrefix() {
+		return threadGroupPrefix;
+	}
+
+	public void setThreadGroupPrefix(String threadGroupPrefix) {
+		this.threadGroupPrefix = threadGroupPrefix;
 	}
 
 	/**

@@ -53,35 +53,6 @@
 	<!-- _______________________________________________________________________________________________________________________ -->
 	<!-- Add services here -->
 
-	<!-- Solr -->
-
-	<bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
-		<property name="properties" ref="searchProperties" />
-	</bean>
-	<bean id="solrSettings" class="edu.unc.lib.dl.search.solr.util.SolrSettings">
-		<property name="properties" ref="solrProperties" />
-	</bean>
-	<util:properties id="searchProperties" location="classpath:search.properties" />
-	<util:properties id="solrProperties" location="classpath:solr.properties"
-		local-override="true">
-		<prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
-		</prop>
-	</util:properties>
-
-	<bean id="hierarchicalFacet" class="edu.unc.lib.dl.search.solr.model.HierarchicalFacet">
-		<property name="searchSettings" ref="searchSettings" />
-	</bean>
-
-	<bean id="solrSearchService" class="edu.unc.lib.dl.search.solr.service.SolrSearchService"
-		init-method="initializeSolrServer">
-		<property name="solrSettings" ref="solrSettings" />
-		<property name="searchSettings" ref="searchSettings" />
-	</bean>
-
-	<bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
-		<property name="searchSettings" ref="searchSettings" />
-	</bean>
-
 	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
 		<value>${admin.access.groups}</value>
 	</util:set>
@@ -162,8 +133,6 @@
 			<value>https://${repository.host}${repository.port}/${admin.webapp.name}/ir/pagedsearch
 			</value>
 		</property>
-		<property name="searchSettings" ref="searchSettings" />
-		<property name="solrSearchService" ref="solrSearchService" />
 	</bean>
 
 	<bean id="searchIndex" class="edu.unc.lib.dl.search.SearchIndex">
@@ -411,7 +380,7 @@
 		</property> </bean> -->
 
 	<!-- spring-context.xml contents here -->
-	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl">
+	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl" destroy-method="destroy">
 		<property name="itqlEndpointURL"
 			value="http://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService" />
 		<property name="serverModelUri" value="rmi://${mulgara.host}/server1#" />

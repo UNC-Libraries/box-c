@@ -399,11 +399,6 @@
 		</dependency>
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
-			<artifactId>solr-search</artifactId>
-			<version>${cdr.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>access-security</artifactId>
 			<version>${cdr.version}</version>
 		</dependency>

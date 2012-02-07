@@ -46,15 +46,6 @@ import edu.unc.lib.dl.schema.OverviewDataRequest;
 import edu.unc.lib.dl.schema.OverviewDataResponse;
 import edu.unc.lib.dl.schema.PathInfoDao;
 import edu.unc.lib.dl.search.SearchIndex;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.security.access.AccessGroupConstants;
 import edu.unc.lib.dl.security.access.AccessGroupSet;
 import edu.unc.lib.dl.security.access.UserSecurityProfile;
@@ -74,11 +65,6 @@ public class SearchServiceImpl implements SearchService {
 	private String searchUrl;
 	private TripleStoreQueryService tripleStoreQueryService;
 	private SearchIndex searchIndex;
-
-	private SearchSettings searchSettings;
-
-	protected SolrSearchService solrSearchService;
-	
 	
 	public SearchIndex getSearchIndex() {
 		return searchIndex;
@@ -1438,22 +1424,6 @@ public class SearchServiceImpl implements SearchService {
 				TripleStoreQueryService tripleStoreQueryService) {
 			this.tripleStoreQueryService = tripleStoreQueryService;
 		}
-	}
-
-	public SearchSettings getSearchSettings() {
-		return searchSettings;
-	}
-
-	public void setSearchSettings(SearchSettings searchSettings) {
-		this.searchSettings = searchSettings;
-	}
-
-	public SolrSearchService getSolrSearchService() {
-		return solrSearchService;
-	}
-
-	public void setSolrSearchService(SolrSearchService solrSearchService) {
-		this.solrSearchService = solrSearchService;
 	}
 	
 	class IngestIndexThread extends Thread {

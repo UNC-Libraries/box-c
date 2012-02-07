@@ -55,11 +55,12 @@
 		<property name="username" value="${fedora.admin.username}"/>
 		<property name="password" value="${fedora.admin.password}"/>
 	</bean>
-	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService" init-method="init">
+	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService" init-method="init" destroy-method="destroy">
 		<property name="accessClient" ref="accessClient"/>
 		<property name="managementClient" ref="managementClient"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="maxThreads" value="5"/>
+		<property name="threadGroupPrefix" value="Access"/>
 	</bean>
 	<bean id="fullObjectMetadataFactory" class="edu.unc.lib.dl.ui.service.FullObjectMetadataFactory">
 		<property name="dataService" ref="fedoraDataService"/>

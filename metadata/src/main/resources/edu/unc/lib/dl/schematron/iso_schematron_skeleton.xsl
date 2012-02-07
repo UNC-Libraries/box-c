@@ -310,7 +310,7 @@
 
 
 
-<xsl:stylesheet version="1.0" 
+<xsl:stylesheet version="2.0" 
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
 	xmlns:axsl="http://www.w3.org/1999/XSL/TransformAlias" 
 	xmlns:sch="http://www.ascc.net/xml/schematron"
@@ -385,7 +385,7 @@
 	<axsl:stylesheet>
 	    <xsl:apply-templates select="iso:ns"/>
 	    <!-- Handle the namespaces before the version attribute: reported to help SAXON -->
-	    <xsl:attribute name="version">1.0</xsl:attribute>
+	    <xsl:attribute name="version">2.0</xsl:attribute>
 	    
 		<xsl:apply-templates select="." mode="stylesheetbody"/>
 		<!-- was xsl:call-template name="stylesheetbody"/ -->
@@ -408,7 +408,7 @@
 	
         <xsl:apply-templates select="iso:ns"/>
 	    <!-- Handle the namespaces before the version attribute: reported to help SAXON -->
-	    <xsl:attribute name="version">1.0</xsl:attribute>
+	    <xsl:attribute name="version">2.0</xsl:attribute>
 	    
 	    <xsl:apply-templates select="." mode="stylesheetbody"/>
 		<!-- was xsl:call-template name="stylesheetbody"/ -->

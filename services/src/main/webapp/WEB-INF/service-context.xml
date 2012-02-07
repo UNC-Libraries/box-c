@@ -45,7 +45,7 @@
 	</bean>
 	
 	<bean id="broker" class="org.apache.activemq.xbean.BrokerFactoryBean" destroy-method="destroy">
-		<property name="config" value="file:${activemq.home}/activemq.xml" />
+		<property name="config" value="file:${activemq.home}/conf/activemq.xml" />
 		<property name="start" value="true" />
 	</bean>
 	
@@ -90,12 +90,13 @@
 		<property name="password" value="${fedora.admin.password}" />
 	</bean>
 	
-	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService" init-method="init">
+	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService" init-method="init" destroy-method="destroy">
 		<property name="accessClient" ref="accessClient"/>
 		<property name="managementClient" ref="managementClient"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="accessControlUtils" ref="accessControlUtils"/>
 		<property name="maxThreads" value="${fedoraDataService.maxThreads}"/>
+		<property name="threadGroupPrefix" value="Services"/>
 	</bean>
 	
 	<bean id="accessControlUtils" class="edu.unc.lib.dl.fedora.AccessControlUtils" init-method="init">

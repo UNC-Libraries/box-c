@@ -1,6 +1,6 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:p="http://www.loc.gov/METS_Profile/" xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	exclude-result-prefixes="p xs" version="1.0">
+	exclude-result-prefixes="p xs" version="2.0">
 
 	<xs:annotation>
 		<xs:documentation> Creator: Thomas Habing, Grainger Engineering Library Information Center,
