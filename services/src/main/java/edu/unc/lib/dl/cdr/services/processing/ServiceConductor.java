@@ -78,6 +78,6 @@ public interface ServiceConductor {
 	 */
 	public void restart();
 
-	public Map<String, Object> getInfo();
+	public int getActiveThreadCount();
 
 }

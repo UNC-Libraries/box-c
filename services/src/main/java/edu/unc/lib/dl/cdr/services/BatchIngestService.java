@@ -16,10 +16,8 @@
 package edu.unc.lib.dl.cdr.services;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -84,6 +82,7 @@ public class BatchIngestService implements ServiceConductor {
 				LOG.debug("Adding new batch ingest task to the queue: "+dir.getAbsolutePath());
 				BatchIngestTask newtask = this.batchIngestTaskFactory.createTask();
 				newtask.setBaseDir(dir);
+				newtask.init();
 				this.executor.execute(newtask);
 			}
 		}
@@ -107,8 +106,24 @@ public class BatchIngestService implements ServiceConductor {
 		this.maxThreads = maxThreads;
 	}
 
-	public int activeThreadsCount() {
-		return executor.getActiveCount();
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#getActiveThreadCount()
+	 */
+	@Override
+	public int getActiveThreadCount() {
+		return this.executor.getActiveCount();
+	}
+
+	public int getQueuedJobCount() {
+		return this.executor.getQueue().size();
+	}
+
+	public List<BatchIngestTask> getQueuedJobs() {
+		return this.executor.getQueued();
+	}
+
+	public int getFailedJobCount() {
+		return this.batchIngestQueue.getFailedDirectories().length;
 	}
 
 	protected void initializeExecutor() {
@@ -208,7 +223,7 @@ public class BatchIngestService implements ServiceConductor {
 	 */
 	@Override
 	public boolean isIdle() {
-		return this.executor.isPaused() || this.executor.getQueue().isEmpty();
+		return this.executor.isPaused() || this.executor.getAllRunningAndQueued().isEmpty();
 	}
 
 	/*
@@ -239,18 +254,6 @@ public class BatchIngestService implements ServiceConductor {
 		pause();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#getConductorStatus()
-	 */
-	@Override
-	public Map<String, Object> getInfo() {
-		Map<String, Object> result = new HashMap<String, Object>();
-		// TODO set JSON mappings
-		return result;
-	}
-
 	public BatchIngestTaskFactory getBatchIngestTaskFactory() {
 		return batchIngestTaskFactory;
 	}
@@ -268,6 +271,10 @@ public class BatchIngestService implements ServiceConductor {
 		if (this.executor != null) {
 			this.executor.setBeforeExecuteDelay(beforeExecuteDelay);
 		}
+	}
+
+	public Set<BatchIngestTask> getActiveJobs() {
+		return this.executor.getRunningNow();
 	}
 
 }

@@ -177,7 +177,6 @@ public class ServicesConductor implements MessageConductor, ServiceConductor {
 		return !this.executor.isShutdown() && !this.executor.isTerminated() && !this.executor.isTerminating();
 	}
 
-	@Override
 	public Map<String, Object> getInfo(){
 		// TODO put values in separate keys
 		Map<String, Object> result = new HashMap<String, Object>();

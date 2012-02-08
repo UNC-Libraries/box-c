@@ -43,6 +43,7 @@ public class IngestProperties {
 	private String[] emailRecipients = null;
 	private String message = null;
 	private String originalDepositId = null;
+	private long submissionTime = -1;
 	/**
 	 * Not yet recorded
 	 */
@@ -80,6 +81,12 @@ public class IngestProperties {
 				this.managedBytes = Integer.parseInt(bytes);
 			} catch(NumberFormatException e) {}
 		}
+		String subTime = props.getProperty("submissionTime");
+		if(subTime != null) {
+			try {
+				this.submissionTime = Integer.parseInt(subTime);
+			} catch(NumberFormatException e) {}
+		}
 		this.originalDepositId = props.getProperty("originalDepositId");
 		this.containerPlacements = new HashMap<PID, ContainerPlacement>();
 		for (Entry<Object, Object> e : props.entrySet()) {
@@ -90,13 +97,13 @@ public class IngestProperties {
 				ContainerPlacement p = new ContainerPlacement();
 				p.pid = new PID(vals[0]);
 				p.parentPID = new PID(vals[1]);
-				if(vals[2] != null && !"null".equals(vals[2])) {
+				if(2 < vals.length && !"null".equals(vals[2])) {
 					p.designatedOrder = Integer.parseInt(vals[2]);
 				}
-				if(vals[3] != null && !"null".equals(vals[3])) {
+				if(3 < vals.length && !"null".equals(vals[3])) {
 					p.sipOrder = Integer.parseInt(vals[3]);
 				}
-				if(vals[4] != null && !"null".equals(vals[4])) {
+				if(4 < vals.length && !"null".equals(vals[4])) {
 					p.label = vals[4];
 				}
 				this.containerPlacements.put(p.pid, p);
@@ -125,6 +132,9 @@ public class IngestProperties {
 			props.put("originalDepositId", this.originalDepositId);
 		if(this.managedBytes != -1) {
 			props.put("managedBytes", String.valueOf(this.managedBytes));
+		}
+		if(this.submissionTime != -1) {
+			props.put("submissionTime", String.valueOf(this.submissionTime));
 		}
 		if (this.containerPlacements != null && this.containerPlacements.size() > 0) {
 			int count = 0;
@@ -197,5 +207,13 @@ public class IngestProperties {
 
 	public void setOriginalDepositId(String originalDepositId) {
 		this.originalDepositId = originalDepositId;
+	}
+
+	public long getSubmissionTime() {
+		return submissionTime;
+	}
+
+	public void setSubmissionTime(long submissionTime) {
+		this.submissionTime = submissionTime;
 	}
 }

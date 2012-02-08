@@ -89,6 +89,23 @@ public class BatchIngestQueue {
 		return true;
 	}
 
+	public File[] getFailedDirectories() {
+		File[] batchDirs = this.failedDirectory.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File arg0) {
+				return arg0.isDirectory();
+			}
+		});
+		Arrays.sort(batchDirs, new Comparator<File>() {
+			@Override
+			public int compare(File o1, File o2) {
+				if(o1 == null || o2 == null) return 0;
+				return (int)(o1.lastModified() - o2.lastModified());
+			}
+		});
+		return batchDirs;
+	}
+
 	/**
 	 * @return
 	 */
@@ -145,6 +162,26 @@ public class BatchIngestQueue {
 		} catch (IOException e) {
 			throw new Error(e);
 		}
+	}
+
+	/**
+	 * @return
+	 */
+	public File[] getFinishedDirectories() {
+		File[] batchDirs = this.finishedDirectory.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File arg0) {
+				return arg0.isDirectory();
+			}
+		});
+		Arrays.sort(batchDirs, new Comparator<File>() {
+			@Override
+			public int compare(File o1, File o2) {
+				if(o1 == null || o2 == null) return 0;
+				return (int)(o1.lastModified() - o2.lastModified());
+			}
+		});
+		return batchDirs;
 	}
 
 }

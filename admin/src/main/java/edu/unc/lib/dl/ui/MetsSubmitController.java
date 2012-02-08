@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package edu.unc.lib.dl.ui;
 
@@ -39,16 +39,17 @@ import edu.unc.lib.dl.util.Constants;
 import edu.unc.lib.dl.util.MediatedSubmitDAO;
 
 /**
- * 
- * 
+ *
+ *
  */
 public class MetsSubmitController extends AbstractFileUploadController {
 
 
+	@Override
 	protected ModelAndView onSubmit(HttpServletRequest request,
 			HttpServletResponse response, Object command, BindException errors)
 			throws ServletException, IOException {
-		
+
 
 		return onSubmitInternal(request, response, command, errors);
 	}
@@ -150,9 +151,8 @@ public class MetsSubmitController extends AbstractFileUploadController {
 					dao.setMessage(requestContext
 							.getMessage("submit.ingest.progress"));
 				} else {
-					dao.setMessage(requestContext
-							.getMessage("submit.ingest.error"));
-
+					dao.setMessage(wsResponse
+							.getMessage());
 					logger.debug("METS submit failure");
 				}
 
@@ -171,6 +171,7 @@ public class MetsSubmitController extends AbstractFileUploadController {
 		return new ModelAndView("metsubmit", model);
 	}
 
+	@Override
 	protected Object formBackingObject(HttpServletRequest request)
 			throws Exception {
 		MediatedSubmitDAO object = new MediatedSubmitDAO();

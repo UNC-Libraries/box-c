@@ -43,6 +43,7 @@ import edu.unc.lib.dl.util.UtilityMethods;
 public class MetsSubmitByPidController extends CommonAdminObjectNavigationController {
 	private String metsIngestObjectUrl;
 
+	@Override
 	protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object command,
 			BindException errors) throws ServletException, IOException {
 
@@ -152,7 +153,8 @@ public class MetsSubmitByPidController extends CommonAdminObjectNavigationContro
 				} else if (Constants.IN_PROGRESS_THREADED.equals(wsResponse.getMessage())) {
 					dao.setMessage(requestContext.getMessage("submit.ingest.progress"));
 				} else {
-					dao.setMessage(requestContext.getMessage("submit.ingest.error"));
+					dao.setMessage(wsResponse
+							.getMessage());
 
 					logger.debug("METS submit failure");
 				}
@@ -178,6 +180,7 @@ public class MetsSubmitByPidController extends CommonAdminObjectNavigationContro
 		return new ModelAndView("metsubmitbypid", model);
 	}
 
+	@Override
 	protected Object formBackingObject(HttpServletRequest request) throws Exception {
 		MetsSubmitByPidDAO object = new MetsSubmitByPidDAO();
 

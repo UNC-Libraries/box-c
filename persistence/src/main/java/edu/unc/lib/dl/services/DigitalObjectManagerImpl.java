@@ -847,6 +847,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		log.info("Ingesting batch now, in parallel with queue: " + prepDir.getAbsolutePath());
 		BatchIngestTask task = this.batchIngestTaskFactory.createTask();
 		task.setBaseDir(prepDir);
+		task.init();
 		task.run();
 		task = null;
 	}

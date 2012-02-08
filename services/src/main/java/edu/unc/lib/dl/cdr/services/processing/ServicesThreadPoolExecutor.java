@@ -15,8 +15,10 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -119,13 +121,26 @@ public class ServicesThreadPoolExecutor<T extends Runnable> extends ThreadPoolEx
 	 * Gets the set of runnables that are active or pending. No synchronization.
 	 * @return
 	 */
-	public Set<T> getAllRunningAndQueued() {
-		Set<T> all = new HashSet<T>();
+	public List<T> getAllRunningAndQueued() {
+		List<T> all = new ArrayList<T>();
 		// adding queue first to ensure coverage without synchronizing
 		for(Runnable r : getQueue()) {
 			all.add((T)r);
 		}
 		all.addAll(runningNow);
+		return all;
+	}
+
+	/**
+	 * Gets the set of runnables that are active or pending. No synchronization.
+	 * @return
+	 */
+	public List<T> getQueued() {
+		List<T> all = new ArrayList<T>();
+		// adding queue first to ensure coverage without synchronizing
+		for(Runnable r : getQueue()) {
+			all.add((T)r);
+		}
 		return all;
 	}
 }

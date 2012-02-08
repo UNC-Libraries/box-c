@@ -174,6 +174,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 			props.setMessage(message);
 			// props.setManagedBytes(managedBytes);
 			props.setSubmitter(submitter);
+			props.setSubmissionTime(System.currentTimeMillis());
 			props.save();
 		} catch (Exception e) {
 			throw new IngestException("Cannot create ingest properties.", e);

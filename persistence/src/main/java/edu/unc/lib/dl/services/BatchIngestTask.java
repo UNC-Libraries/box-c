@@ -82,13 +82,13 @@ public class BatchIngestTask implements Runnable {
 	 *
 	 */
 	public enum STATE {
-		INIT, INGEST, INGEST_WAIT, INGEST_VERIFY_CHECKSUMS, CONTAINER_UPDATES, SEND_MESSAGES, CLEANUP, FINISHED
+		INIT, CHECK, INGEST, INGEST_WAIT, INGEST_VERIFY_CHECKSUMS, CONTAINER_UPDATES, SEND_MESSAGES, CLEANUP, FINISHED
 	}
 
 	private static final Log log = LogFactory.getLog(BatchIngestTask.class);
-	private static final String INGEST_LOG = "ingested.log";
-	private static final String REORDERED_LOG = "reordered.log";
-	private static final String FAIL_LOG = "fail.log";
+	public static final String INGEST_LOG = "ingested.log";
+	public static final String REORDERED_LOG = "reordered.log";
+	public static final String FAIL_LOG = "fail.log";
 	private int ingestPollingTimeoutSeconds = -1;
 	private boolean saveFinishedBatches = true;
 
@@ -121,7 +121,7 @@ public class BatchIngestTask implements Runnable {
 	 */
 	File dataDir = null;
 	File premisDir = null;
-	IngestProperties props = null;
+	IngestProperties ingestProperties = null;
 
 	/**
 	 * Event Logger for this batch
@@ -153,6 +153,11 @@ public class BatchIngestTask implements Runnable {
 	 * The timestamp at which the batch was started
 	 */
 	private long startTime = -1;
+
+	/**
+	 * The timestamp at which the batch was finished
+	 */
+	private long finishedTime = -1;
 
 	/**
 	 * The timestamp when the last FOXML ingest finished
@@ -392,7 +397,7 @@ public class BatchIngestTask implements Runnable {
 			this.lastIngestFilename = foxmlFiles[next].getName();
 			this.lastIngestPID = pid;
 			logIngestAttempt(pid, this.lastIngestFilename);
-			this.getManagementClient().ingest(doc, Format.FOXML_1_1, props.getMessage());
+			this.getManagementClient().ingest(doc, Format.FOXML_1_1, ingestProperties.getMessage());
 			this.state = STATE.INGEST_VERIFY_CHECKSUMS;
 		} catch (FedoraTimeoutException e) { // on timeout poll for the ingested object
 			log.info("Fedora Timeout Exception: " + e.getLocalizedMessage());
@@ -409,7 +414,7 @@ public class BatchIngestTask implements Runnable {
 			dataDir = new File(this.getBaseDir(), "data");
 			premisDir = new File(this.getBaseDir(), "premisEvents");
 			File ingestLog = new File(this.getBaseDir(), INGEST_LOG);
-			props = new IngestProperties(this.getBaseDir());
+			ingestProperties = new IngestProperties(this.getBaseDir());
 			foxmlFiles = this.getBaseDir().listFiles(new FilenameFilter() {
 				@Override
 				public boolean accept(File dir, String name) {
@@ -424,40 +429,13 @@ public class BatchIngestTask implements Runnable {
 			});
 
 			HashSet<PID> cSet = new HashSet<PID>();
-			for (ContainerPlacement p : props.getContainerPlacements().values()) {
+			for (ContainerPlacement p : ingestProperties.getContainerPlacements().values()) {
 				cSet.add(p.parentPID);
 			}
 			containers = cSet.toArray(new PID[] {});
 			Arrays.sort(containers);
-			Agent submitter = this.getAgentFactory().findPersonByOnyen(props.getSubmitter(), false);
-			if (submitter == null) {
-				submitter = this.getAgentFactory().findSoftwareByName(props.getSubmitter());
-				if (submitter == null) {
-					throw fail("Cannot look up submitter");
-				} else {
-					log.warn("Ingest submitter is a software agent: " + submitter.getName() + " (" + submitter.getPID()
-							+ ")");
-				}
-			}
-			this.eventLogger = new PremisEventLogger(submitter);
-			try {
-				if (!this.managementClient.pollForObject(ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID(), 30, 600)) {
-					throw fail("Cannot poll a basic expected Fedora object: "
-							+ ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID().getPid());
-				}
-				HashSet<PID> containers = new HashSet<PID>();
-				for (ContainerPlacement p : props.getContainerPlacements().values()) {
-					containers.add(p.parentPID);
-				}
-				for (PID container : containers) {
-					if (!this.managementClient.pollForObject(container, 10, 30)) {
-						throw fail("Cannot find existing container: " + container);
-					}
-				}
-			} catch (InterruptedException e) {
-				log.debug("halting task due to interrupt", e);
-				this.halting = true;
-			}
+
+			this.eventLogger = new PremisEventLogger(AgentFactory.getRepositorySoftwareAgentStub());
 
 			if (ingestLog.exists()) { // this is a resume, find next foxml
 				BufferedReader r = new BufferedReader(new FileReader(ingestLog));
@@ -480,7 +458,7 @@ public class BatchIngestTask implements Runnable {
 					}
 				}
 			} else {
-				this.state = STATE.INGEST;
+				this.state = STATE.CHECK;
 			}
 			this.ingestLogWriter = new BufferedWriter(new FileWriter(ingestLog, true));
 		} catch (Exception e) {
@@ -520,9 +498,7 @@ public class BatchIngestTask implements Runnable {
 	 */
 	@Override
 	public void run() {
-		this.state = STATE.INIT;
 		startTime = System.currentTimeMillis();
-		init();
 		while (this.state != STATE.FINISHED) {
 			log.debug("Batch ingest: state=" + this.state + ", dir=" + this.getBaseDir());
 			if (Thread.interrupted()) {
@@ -535,6 +511,9 @@ public class BatchIngestTask implements Runnable {
 			}
 			try {
 				switch (this.state) {
+					case CHECK:
+						checkDestination();
+						break;
 					case INGEST: // ingest the next foxml file, until none left
 						ingestNextObject();
 						break;
@@ -553,20 +532,57 @@ public class BatchIngestTask implements Runnable {
 					case CLEANUP:
 						deleteDataFiles();
 						handleFinishedDir();
+						this.finishedTime = System.currentTimeMillis();
 						this.state = STATE.FINISHED;
 						break;
 				}
 			} catch (BatchFailedException e) {
 				log.error("Batch Ingest Task failed: " + e.getLocalizedMessage(), e);
 				// send failure email
-				if (this.sendEmailMessages && this.mailNotifier != null && props.getEmailRecipients() != null)
-					this.mailNotifier.sendIngestFailureNotice(e, props);
+				if (this.sendEmailMessages && this.mailNotifier != null && ingestProperties.getEmailRecipients() != null)
+					this.mailNotifier.sendIngestFailureNotice(e, ingestProperties);
 				return;
 			} catch(RuntimeException e) {
 				log.error("Unexpected runtime exception", e);
 				return;
 			}
 		}
+	}
+
+	/**
+	 *
+	 */
+	private void checkDestination() {
+		Agent submitter = this.getAgentFactory().findPersonByOnyen(ingestProperties.getSubmitter(), false);
+		if (submitter == null) {
+			submitter = this.getAgentFactory().findSoftwareByName(ingestProperties.getSubmitter());
+			if (submitter == null) {
+				throw fail("Cannot look up submitter");
+			} else {
+				log.warn("Ingest submitter is a software agent: " + submitter.getName() + " (" + submitter.getPID()
+						+ ")");
+			}
+		}
+		this.eventLogger = new PremisEventLogger(submitter);
+		try {
+			if (!this.managementClient.pollForObject(ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID(), 30, 600)) {
+				throw fail("Cannot poll a basic expected Fedora object: "
+						+ ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID().getPid());
+			}
+			HashSet<PID> containers = new HashSet<PID>();
+			for (ContainerPlacement p : ingestProperties.getContainerPlacements().values()) {
+				containers.add(p.parentPID);
+			}
+			for (PID container : containers) {
+				if (!this.managementClient.pollForObject(container, 10, 30)) {
+					throw fail("Cannot find existing container: " + container);
+				}
+			}
+		} catch (InterruptedException e) {
+			log.debug("halting task due to interrupt", e);
+			this.halting = true;
+		}
+		this.state = STATE.INGEST;
 	}
 
 	/**
@@ -628,13 +644,13 @@ public class BatchIngestTask implements Runnable {
 			Set<PID> containerSet = new HashSet<PID>();
 			Collections.addAll(containerSet, this.containers);
 			if (this.sendJmsMessages) {
-				this.getOperationsMessageSender().sendAddOperation(props.getSubmitter(), containerSet,
-						props.getContainerPlacements().keySet(), reordered);
+				this.getOperationsMessageSender().sendAddOperation(ingestProperties.getSubmitter(), containerSet,
+						ingestProperties.getContainerPlacements().keySet(), reordered);
 			}
 		}
 		// send successful ingest email
-		if (this.sendEmailMessages && this.mailNotifier != null && props.getEmailRecipients() != null)
-			this.mailNotifier.sendIngestSuccessNotice(props, this.foxmlFiles.length);
+		if (this.sendEmailMessages && this.mailNotifier != null && ingestProperties.getEmailRecipients() != null)
+			this.mailNotifier.sendIngestSuccessNotice(ingestProperties, this.foxmlFiles.length);
 		this.state = STATE.CLEANUP;
 	}
 
@@ -691,7 +707,7 @@ public class BatchIngestTask implements Runnable {
 		PrintWriter reorderedWriter = null;
 		try {
 			if (submitterAgent == null) {
-				submitterAgent = this.getAgentFactory().findPersonByOnyen(props.getSubmitter(), false);
+				submitterAgent = this.getAgentFactory().findPersonByOnyen(ingestProperties.getSubmitter(), false);
 			}
 			reorderedWriter = new PrintWriter(new FileWriter(new File(this.getBaseDir(), REORDERED_LOG), true));
 			logIngestAttempt(containers[next], CONTAINER_UPDATED_CODE);
@@ -699,7 +715,7 @@ public class BatchIngestTask implements Runnable {
 			// add RELS-EXT triples
 			// update MD_CONTENTS
 			// update MD_EVENTS
-			List<PID> reordered = addContainerContents(submitterAgent, props.getContainerPlacements().values(),
+			List<PID> reordered = addContainerContents(submitterAgent, ingestProperties.getContainerPlacements().values(),
 					containers[next]);
 			logIngestComplete();
 			for (PID p : reordered) {
@@ -780,7 +796,7 @@ public class BatchIngestTask implements Runnable {
 			if (!this.managementClient.pollForObject(this.lastIngestPID, ingestPollingDelaySeconds,
 					ingestPollingTimeoutSeconds)) {
 				// TODO re-attempt last ingest before failing?
-				throw fail("The last ingest before resuming was never completed. " + this.lastIngestPID + " in "
+				throw fail("The last ingest before resuming was not completed within timeout of "+ingestPollingTimeoutSeconds+" - " + this.lastIngestPID + " in "
 						+ this.lastIngestFilename);
 			} else {
 				log.debug("succeeded in finding last ingested fedora object:"+ this.lastIngestPID.getPid());
@@ -837,6 +853,69 @@ public class BatchIngestTask implements Runnable {
 
 	public void setSaveFinishedBatches(boolean saveFinishedBatches) {
 		this.saveFinishedBatches = saveFinishedBatches;
+	}
+
+	public STATE getState() {
+		return state;
+	}
+
+	public File getDataDir() {
+		return dataDir;
+	}
+
+	public IngestProperties getIngestProperties() {
+		return ingestProperties;
+	}
+
+	public PremisEventLogger getEventLogger() {
+		return eventLogger;
+	}
+
+	public File[] getFoxmlFiles() {
+		return foxmlFiles;
+	}
+
+	public PID[] getContainers() {
+		return containers;
+	}
+
+	public PID getLastIngestPID() {
+		return lastIngestPID;
+	}
+
+	public long getStartTime() {
+		return startTime;
+	}
+
+	public long getLastIngestTime() {
+		return lastIngestTime;
+	}
+
+	public int getIngestedCount() {
+		int result = 0;
+		if(this.foxmlFiles != null && this.lastIngestFilename != null) {
+			for(int i = 0; i < foxmlFiles.length; i++) {
+				if(this.lastIngestFilename.equals(foxmlFiles[i].getName())) {
+					result = i;
+				}
+			}
+		}
+		return result;
+	}
+
+	public boolean isRunning() {
+		boolean result = false;
+		if(this.startTime > 0 && this.finishedTime < 0) {
+			result = true;
+		}
+		return result;
+	}
+
+	/**
+	 * @return
+	 */
+	public long getFinishedTime() {
+		return this.finishedTime;
 	}
 
 }

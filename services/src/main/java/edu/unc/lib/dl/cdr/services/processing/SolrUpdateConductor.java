@@ -100,7 +100,6 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 		return ((ServicesThreadPoolExecutor)this.executor).isPaused();
 	}
 
-	@Override
 	public Map<String, Object> getInfo() {
 		// TODO put values in separate keys
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -213,5 +212,13 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 
 	public void setBeforeExecuteDelay(long beforeExecuteDelay) {
 		this.beforeExecuteDelay = beforeExecuteDelay;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#getActiveThreadCount()
+	 */
+	@Override
+	public int getActiveThreadCount() {
+		return this.executor.getActiveCount();
 	}
 }
