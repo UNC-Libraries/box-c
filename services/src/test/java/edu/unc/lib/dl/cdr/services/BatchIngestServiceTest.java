@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.cdr.services;
 
 import static edu.unc.lib.dl.util.FileUtils.tempCopy;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -60,7 +59,6 @@ import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
-import edu.unc.lib.dl.ingest.sip.SingleFolderSIP;
 import edu.unc.lib.dl.services.DigitalObjectManagerImpl;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -150,9 +148,6 @@ public class BatchIngestServiceTest {
 
 			test = tempCopy(new File("src/test/resources/simple.zip"));
 			METSPackageSIP sip2 = new METSPackageSIP(container, test, user, true);
-
-			test = tempCopy(new File("src/test/resources/simple.zip"));
-			METSPackageSIP sip3 = new METSPackageSIP(container, test, user, true);
 
 			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
 			List<String> personrow = new ArrayList<String>();

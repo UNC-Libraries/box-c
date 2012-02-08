@@ -84,17 +84,20 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void pause() {
 		((ServicesThreadPoolExecutor)this.executor).pause();
 
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void resume() {
 		((ServicesThreadPoolExecutor)this.executor).resume();
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean isPaused(){
 		return ((ServicesThreadPoolExecutor)this.executor).isPaused();
@@ -203,8 +206,10 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 		return identifier;
 	}
 
-	public ServicesThreadPoolExecutor getThreadPoolExecutor(){
-		return (ServicesThreadPoolExecutor)this.executor;
+	
+	@SuppressWarnings("unchecked")
+	public ServicesThreadPoolExecutor<SolrUpdateRunnable> getThreadPoolExecutor(){
+		return (ServicesThreadPoolExecutor<SolrUpdateRunnable>)this.executor;
 	}
 
 	public long getBeforeExecuteDelay() {

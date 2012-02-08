@@ -239,7 +239,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 		File dataFile = new File("src/test/resources", "sample.pdf");
 		String uploadURI = this.getManagementClient().upload(dataFile);
 		this.getManagementClient().modifyDatastreamByReference(pid1.getPID(), "DATA_FILE", false, "Thumbnail Test",
-				Collections.EMPTY_LIST, "sample.pdf", "application/pdf", null, ChecksumType.DEFAULT, uploadURI);
+				Collections.<String>emptyList(), "sample.pdf", "application/pdf", null, ChecksumType.DEFAULT, uploadURI);
 		assertTrue("The test pid should be applicable again after source DS is updated: " + pid1, this
 				.getTechnicalMetadataEnhancementService().isApplicable(pid1));
 	}
@@ -295,7 +295,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 		File dataFile = new File("src/test/resources", "sample_fits_no_id_status.png");
 		String uploadURI = this.getManagementClient().upload(dataFile);
 		this.getManagementClient().modifyDatastreamByReference(pidConflict.getPID(), "DATA_FILE", false, "Techmd Test",
-				Collections.EMPTY_LIST, "sample_fits_no_id_status.png", "application/octet-stream", null, ChecksumType.DEFAULT, uploadURI);
+				Collections.<String>emptyList(), "sample_fits_no_id_status.png", "application/octet-stream", null, ChecksumType.DEFAULT, uploadURI);
 		Enhancement<Element> en = this.getTechnicalMetadataEnhancementService().getEnhancement(pidConflict);
 		en.call();
 
@@ -347,6 +347,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 	 * @param filePath
 	 *           name of file to open. The file can reside anywhere in the classpath
 	 */
+	@SuppressWarnings("unused")
 	private Document readFileAsString(String filePath) throws Exception {
 		return new SAXBuilder().build(new InputStreamReader(this.getClass().getResourceAsStream(filePath)));
 	}

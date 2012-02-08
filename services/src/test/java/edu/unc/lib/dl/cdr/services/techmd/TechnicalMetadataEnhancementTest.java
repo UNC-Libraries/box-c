@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 
-import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Test;
@@ -72,11 +71,11 @@ public class TechnicalMetadataEnhancementTest extends Assert {
 
 			String xmlstr = xml.toString();
 			System.out.println("test" + xmlstr);
-			Document result = new SAXBuilder().build(new StringReader(xmlstr));
+			new SAXBuilder().build(new StringReader(xmlstr));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			this.assertFalse(true);
+			assertFalse(true);
 		}
 	}
 }

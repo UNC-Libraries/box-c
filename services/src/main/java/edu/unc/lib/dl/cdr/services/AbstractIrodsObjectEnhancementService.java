@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.cdr.services;
 
 import java.io.InputStream;
-import java.net.SocketException;
 
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;

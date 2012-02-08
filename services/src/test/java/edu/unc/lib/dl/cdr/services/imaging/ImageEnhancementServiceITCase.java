@@ -33,7 +33,6 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,7 +44,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
-import edu.unc.lib.dl.cdr.services.processing.ServicesConductor;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -116,7 +114,7 @@ public class ImageEnhancementServiceITCase {
 			File dataFile = new File("src/test/resources", dataFilename);
 			String uploadURI = this.getManagementClient().upload(dataFile);
 			this.getManagementClient().addManagedDatastream(pid, "DATA_FILE", false, "Image Enhancement Test",
-					Collections.EMPTY_LIST, dataFilename, true, mimetype, uploadURI);
+					Collections.<String>emptyList(), dataFilename, true, mimetype, uploadURI);
 			PID dataFilePID = new PID(pid.getPid() + "/DATA_FILE");
 			this.getManagementClient().addObjectRelationship(pid,
 					ContentModelHelper.CDRProperty.sourceData.getURI().toString(), dataFilePID);
@@ -208,7 +206,7 @@ public class ImageEnhancementServiceITCase {
 		File dataFile = new File("src/test/resources", "sample.tiff");
 		String uploadURI = this.getManagementClient().upload(dataFile);
 		this.getManagementClient().modifyDatastreamByReference(pidTIFF.getPID(), "DATA_FILE", false, "Thumbnail Test",
-				Collections.EMPTY_LIST, "sample.pdf", "image/tiff", null, ChecksumType.DEFAULT, uploadURI);
+				Collections.<String>emptyList(), "sample.pdf", "image/tiff", null, ChecksumType.DEFAULT, uploadURI);
 		assertTrue("The test pid should be applicable again after source DS is updated: " + pidTIFF, this
 				.getImageEnhancementService().isApplicable(pidTIFF));
 
