@@ -31,6 +31,7 @@ import edu.unc.lib.dl.cdr.services.processing.ServicesThreadPoolExecutor;
 import edu.unc.lib.dl.services.BatchIngestQueue;
 import edu.unc.lib.dl.services.BatchIngestTask;
 import edu.unc.lib.dl.services.BatchIngestTaskFactory;
+import edu.unc.lib.dl.util.FileUtils;
 
 /**
  * The IngestService runs a single-threaded ingest service, based on information prearranged in a file system queue. The
@@ -50,7 +51,9 @@ public class BatchIngestService implements ServiceConductor {
 	protected int maxThreads = 1;
 	private Timer pollingTimer = null;
 	private int pollDirectorySeconds = 2;
+	private int sweepFinishedSeconds = 60 * 60;
 	private long beforeExecuteDelay = 0;
+	private long finishedPurgeSeconds = 3600 * 24 * 2;
 
 	public void init() {
 		initializeExecutor();
@@ -59,13 +62,21 @@ public class BatchIngestService implements ServiceConductor {
 		}
 		// add a file system monitor to queue new ingests
 		pollingTimer = new Timer();
-		pollingTimer.schedule(new EnqueueTask(), 2 * 1000, pollDirectorySeconds * 1000);
+		pollingTimer.schedule(new EnqueueTask(), pollDirectorySeconds * 1000, pollDirectorySeconds * 1000);
+		pollingTimer.schedule(new SweepFinishedTask(), 60 * 1000, sweepFinishedSeconds * 1000);
 	}
 
 	class EnqueueTask extends TimerTask {
 		@Override
 		public void run() {
 			queueNewPendingIngests();
+		}
+	}
+
+	class SweepFinishedTask extends TimerTask {
+		@Override
+		public void run() {
+			sweepFinishedIngests();
 		}
 	}
 
@@ -84,6 +95,23 @@ public class BatchIngestService implements ServiceConductor {
 				newtask.setBaseDir(dir);
 				newtask.init();
 				this.executor.execute(newtask);
+			}
+		}
+	}
+
+	/**
+	 *
+	 */
+	public void sweepFinishedIngests() {
+		for(File f : this.batchIngestQueue.getFinishedDirectories()) {
+			try {
+				long touched = new File(f, BatchIngestTask.INGEST_LOG).lastModified();
+				if(touched + finishedPurgeSeconds*1000 < System.currentTimeMillis()) {
+					LOG.debug("Sweeping away finished dir: "+f.getAbsolutePath());
+					FileUtils.deleteDir(f);
+				}
+			} catch(Exception e) {
+				throw new Error("Unexpected exception while sweeping finished dirs.");
 			}
 		}
 	}
