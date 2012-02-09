@@ -183,7 +183,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 			e.printStackTrace();
 		}
 		// check to make sure methods were called.
-		// verify(this.getServicesConductor(), atLeastOnce()).onMessage(any(Message.class));
+		// verify(this.getenhancementConductor(), atLeastOnce()).onMessage(any(Message.class));
 		verify(this.technicalMetadataEnhancementService, atLeastOnce()).getEnhancement(pid1);
 
 		// check to make sure mimetype was updated.

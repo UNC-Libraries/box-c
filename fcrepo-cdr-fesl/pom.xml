@@ -81,9 +81,9 @@
 			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-servlet-api</artifactId>
+			<version>7.0.21</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

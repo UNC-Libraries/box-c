@@ -133,7 +133,7 @@
 		<property name="sessionTransacted" value="true"/>
 	</bean>  
 	
-	<bean id="servicesConductor"  class="edu.unc.lib.dl.cdr.services.ServicesConductor"
+	<bean id="enhancementConductor"  class="edu.unc.lib.dl.cdr.services.EnhancementConductor"
 		init-method="init" destroy-method="destroy">
 		<property name="services">
 			<list>
@@ -146,11 +146,11 @@
 	</bean>
 	
 	<bean id="cdrServicesMessageListener" class="edu.unc.lib.dl.cdr.services.ServicesMessageListener">
-		<property name="servicesConductor" ref="servicesConductor"/>
+		<property name="enhancementConductor" ref="enhancementConductor"/>
 	</bean>
 	
 	<bean id="servicesMessageListener" class="edu.unc.lib.dl.cdr.services.ServicesMessageListener">
-		<property name="servicesConductor" ref="servicesConductor"/>
+		<property name="enhancementConductor" ref="enhancementConductor"/>
 	</bean>
 	
 	<!-- Services -->
@@ -212,7 +212,7 @@
 		<property name="beans">
 			<map>
 				<entry key="bean:name=solrJMXService" value-ref="solrJMXService" />
-				<entry key="bean:name=servicesConductor" value-ref="servicesConductor" />
+				<entry key="bean:name=enhancementConductor" value-ref="enhancementConductor" />
 				<entry key="bean:name=solrUpdateService" value-ref="solrUpdateService" />
 				<entry key="bean:name=fedoraDataService" value-ref="fedoraDataService" />
 			</map>

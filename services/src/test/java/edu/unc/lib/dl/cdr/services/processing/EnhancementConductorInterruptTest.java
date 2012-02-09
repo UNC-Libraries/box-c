@@ -36,11 +36,11 @@ import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
-public class ServicesConductorInterruptTest extends Assert {
+public class EnhancementConductorInterruptTest extends Assert {
 	
-	protected static final Logger LOG = LoggerFactory.getLogger(ServicesConductorInterruptTest.class);
+	protected static final Logger LOG = LoggerFactory.getLogger(EnhancementConductorInterruptTest.class);
 	
-	protected ServicesConductor servicesConductor;
+	protected EnhancementConductor enhancementConductor;
 	@SuppressWarnings("rawtypes")
 	protected ServicesThreadPoolExecutor executor;
 	protected List<ObjectEnhancementService> delayServices;
@@ -56,7 +56,7 @@ public class ServicesConductorInterruptTest extends Assert {
 	public AtomicBoolean flag;
 	public Object blockingObject;
 	
-	public ServicesConductorInterruptTest(){
+	public EnhancementConductorInterruptTest(){
 		
 	}
 	
@@ -66,15 +66,15 @@ public class ServicesConductorInterruptTest extends Assert {
 		DelayService delayService = new DelayService();
 		delayServices.add(delayService);
 		
-		servicesConductor = new ServicesConductor();
-		servicesConductor.setRecoverableDelay(0);
-		servicesConductor.setUnexpectedExceptionDelay(0);
-		servicesConductor.setMaxThreads(3);
-		servicesConductor.setFailedPids(new FailedObjectHashMap());
-		servicesConductor.setServices(delayServices);
-		servicesConductor.init();
+		enhancementConductor = new EnhancementConductor();
+		enhancementConductor.setRecoverableDelay(0);
+		enhancementConductor.setUnexpectedExceptionDelay(0);
+		enhancementConductor.setMaxThreads(3);
+		enhancementConductor.setFailedPids(new FailedObjectHashMap());
+		enhancementConductor.setServices(delayServices);
+		enhancementConductor.init();
 		
-		this.executor = servicesConductor.getExecutor();
+		this.executor = enhancementConductor.getExecutor();
 		inIsApplicable = new AtomicInteger(0);
 		incompleteServices = new AtomicInteger(0);
 		betweenApplicableAndEnhancement = new AtomicInteger(0);
@@ -88,45 +88,45 @@ public class ServicesConductorInterruptTest extends Assert {
 	
 	@Test
 	public void abortPause() throws InterruptedException {
-		assertTrue(servicesConductor.isReady());
+		assertTrue(enhancementConductor.isReady());
 		
-		assertTrue(servicesConductor.isReady());
-		assertTrue(servicesConductor.isIdle());
+		assertTrue(enhancementConductor.isReady());
+		assertTrue(enhancementConductor.isIdle());
 		int numberTestMessages = 10;
 		//queue items while paused, make sure they aren't moving
 		for (int i=0; i<numberTestMessages; i++){
 			PIDMessage message = new PIDMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 			message.setFilteredServices(delayServices);
-			servicesConductor.add(message);
+			enhancementConductor.add(message);
 		}
 		
-		while (inService.get() != servicesConductor.getMaxThreads());
+		while (inService.get() != enhancementConductor.getMaxThreads());
 
-		assertTrue(servicesConductor.getLockedPids().size() == servicesConductor.getMaxThreads());
+		assertTrue(enhancementConductor.getLockedPids().size() == enhancementConductor.getMaxThreads());
 		
-		//assertEquals(incompleteServices.get(), servicesConductor.getMaxThreads());
-		assertEquals(incompleteServices.get(), numberTestMessages - servicesConductor.getQueueSize());
+		//assertEquals(incompleteServices.get(), enhancementConductor.getMaxThreads());
+		assertEquals(incompleteServices.get(), numberTestMessages - enhancementConductor.getQueueSize());
 		//Abort the currently active threads
-		servicesConductor.abort();
+		enhancementConductor.abort();
 		
-		while (servicesConductor.getExecutor().isTerminating() || servicesConductor.getExecutor().isShutdown());
+		while (enhancementConductor.getExecutor().isTerminating() || enhancementConductor.getExecutor().isShutdown());
 		
-		executor = servicesConductor.getExecutor();
-		while (executor.getQueue().size() < numberTestMessages - servicesConductor.getQueueSize());
+		executor = enhancementConductor.getExecutor();
+		while (executor.getQueue().size() < numberTestMessages - enhancementConductor.getQueueSize());
 		//Verify that current threads died but that the remaining items are still ready to go
-		assertTrue(servicesConductor.getLockedPids().size() == 0);
-		assertTrue(servicesConductor.getQueueSize() == numberTestMessages - servicesConductor.getMaxThreads());
+		assertTrue(enhancementConductor.getLockedPids().size() == 0);
+		assertTrue(enhancementConductor.getQueueSize() == numberTestMessages - enhancementConductor.getMaxThreads());
 		
 		//Process remaining message queue, then shut down conductor
 		synchronized(blockingObject){
 			flag.set(false);
 			blockingObject.notifyAll();
 		}
-		servicesConductor.resume();
-		while (servicesConductor.getLockedPids().size() > 0 || servicesConductor.getQueueSize() > 0);
+		enhancementConductor.resume();
+		while (enhancementConductor.getLockedPids().size() > 0 || enhancementConductor.getQueueSize() > 0);
 		
-		//assertEquals(servicesCompleted.get(), numberTestMessages - servicesConductor.getMaxThreads());
+		//assertEquals(servicesCompleted.get(), numberTestMessages - enhancementConductor.getMaxThreads());
 	}
 	
 	public class DelayService extends AbstractFedoraEnhancementService {

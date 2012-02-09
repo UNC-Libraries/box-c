@@ -38,7 +38,7 @@ import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-public class ServicesConductorExceptionHandlingTest extends Assert{
+public class EnhancementConductorExceptionHandlingTest extends Assert{
 
 	private TechnicalMetadataEnhancementService techmd;
 	private ThumbnailEnhancementService thumb;
@@ -46,7 +46,7 @@ public class ServicesConductorExceptionHandlingTest extends Assert{
 	private TechnicalMetadataEnhancement techmdEnhancement;
 	private ThumbnailEnhancement thumbEnhancement;
 	private ImageEnhancement imageEnhancement;
-	private ServicesConductor servicesConductor;
+	private EnhancementConductor enhancementConductor;
 	private List<ObjectEnhancementService> services;
 	
 	int numberTestMessages;
@@ -81,13 +81,13 @@ public class ServicesConductorExceptionHandlingTest extends Assert{
 		services.add(thumb);
 		services.add(image);
 		
-		servicesConductor = new ServicesConductor();
-		servicesConductor.setServices(services);
-		servicesConductor.setRecoverableDelay(0);
-		servicesConductor.setUnexpectedExceptionDelay(0);
-		servicesConductor.setMaxThreads(3);
-		servicesConductor.setFailedPids(new FailedObjectHashMap());
-		servicesConductor.init();
+		enhancementConductor = new EnhancementConductor();
+		enhancementConductor.setServices(services);
+		enhancementConductor.setRecoverableDelay(0);
+		enhancementConductor.setUnexpectedExceptionDelay(0);
+		enhancementConductor.setMaxThreads(3);
+		enhancementConductor.setFailedPids(new FailedObjectHashMap());
+		enhancementConductor.init();
 		
 		numberTestMessages = 10;
 	}
@@ -104,10 +104,10 @@ public class ServicesConductorExceptionHandlingTest extends Assert{
 			PIDMessage message = new PIDMessage("uuid:"+i, JMSMessageUtil.fedoraMessageNamespace, 
 					JMSMessageUtil.FedoraActions.INGEST.getName());
 			message.setFilteredServices(services);
-			servicesConductor.add(message);
+			enhancementConductor.add(message);
 		}
 		
-		while (!servicesConductor.isEmpty());
+		while (!enhancementConductor.isEmpty());
 		
 		verify(exception, times(numberTestMessages * 2)).printStackTrace(any(PrintWriter.class));
 		
@@ -139,25 +139,25 @@ public class ServicesConductorExceptionHandlingTest extends Assert{
 			PIDMessage message = new PIDMessage("uuid:"+i, JMSMessageUtil.fedoraMessageNamespace, 
 					JMSMessageUtil.FedoraActions.INGEST.getName());
 			message.setFilteredServices(unexceptionalServices);
-			servicesConductor.add(message);
+			enhancementConductor.add(message);
 		}
 		
 		for (int i=0; i<numberTestMessages; i++){
 			PIDMessage message = new PIDMessage("uuid:"+(i+numberTestMessages), JMSMessageUtil.fedoraMessageNamespace, 
 					JMSMessageUtil.FedoraActions.INGEST.getName());
 			message.setFilteredServices(services);
-			servicesConductor.add(message);
+			enhancementConductor.add(message);
 		}
 		
-		while (servicesConductor.getLockedPids().size() == servicesConductor.getMaxThreads()
-				|| (!servicesConductor.isPaused() && !servicesConductor.isEmpty()));
+		while (enhancementConductor.getLockedPids().size() == enhancementConductor.getMaxThreads()
+				|| (!enhancementConductor.isPaused() && !enhancementConductor.isEmpty()));
 		
-		assertTrue(servicesConductor.isPaused());
+		assertTrue(enhancementConductor.isPaused());
 		//Give it a moment for all runnables to end or reach pause state.
 		Thread.sleep(100L);
 		
-		int numberAborted = servicesConductor.getFailedPids().size();
-		//System.out.println(servicesConductor.queuesToString());
+		int numberAborted = enhancementConductor.getFailedPids().size();
+		//System.out.println(enhancementConductor.queuesToString());
 		
 		//Each aborted runnable should have printed a stack trace
 		verify(exception, times(numberAborted)).printStackTrace(any(PrintWriter.class));
@@ -166,10 +166,10 @@ public class ServicesConductorExceptionHandlingTest extends Assert{
 		//Image should never be reached.
 		verify(imageEnhancement, never()).call();
 		//Number of thumbs runs depends on order in which threads finish, so only predictable within one window
-		verify(thumbEnhancement, atLeast(numberTestMessages - servicesConductor.getLockedPids().size())).call();
+		verify(thumbEnhancement, atLeast(numberTestMessages - enhancementConductor.getLockedPids().size())).call();
 		verify(thumbEnhancement, atMost(numberTestMessages)).call();
 		
-		assertEquals(servicesConductor.getFailedPids().size(), numberAborted);
+		assertEquals(enhancementConductor.getFailedPids().size(), numberAborted);
 	}
 	
 	@Test
@@ -187,17 +187,17 @@ public class ServicesConductorExceptionHandlingTest extends Assert{
 			PIDMessage message = new PIDMessage("uuid:"+i, JMSMessageUtil.fedoraMessageNamespace, 
 					JMSMessageUtil.FedoraActions.INGEST.getName());
 			message.setFilteredServices(unexceptionalServices);
-			servicesConductor.add(message);
+			enhancementConductor.add(message);
 		}
 		
 		for (int i=0; i<numberTestMessages; i++){
 			PIDMessage message = new PIDMessage("uuid:"+(i+numberTestMessages), JMSMessageUtil.fedoraMessageNamespace, 
 					JMSMessageUtil.FedoraActions.INGEST.getName());
 			message.setFilteredServices(services);
-			servicesConductor.add(message);
+			enhancementConductor.add(message);
 		}
 		
-		while (!servicesConductor.isEmpty());
+		while (!enhancementConductor.isEmpty());
 		
 		//Two failing services
 		verify(exception, times(numberTestMessages * 2)).printStackTrace(any(PrintWriter.class));
@@ -206,9 +206,9 @@ public class ServicesConductorExceptionHandlingTest extends Assert{
 		verify(imageEnhancement, times(numberTestMessages)).call();
 		verify(thumbEnhancement, times(numberTestMessages * 2)).call();
 		
-		assertEquals(servicesConductor.getFailedPids().size(), numberTestMessages);
+		assertEquals(enhancementConductor.getFailedPids().size(), numberTestMessages);
 		
-		assertFalse(servicesConductor.isPaused());
+		assertFalse(enhancementConductor.isPaused());
 	}
 	
 	@Test
@@ -222,10 +222,10 @@ public class ServicesConductorExceptionHandlingTest extends Assert{
 			PIDMessage message = new PIDMessage("uuid:"+i, JMSMessageUtil.fedoraMessageNamespace, 
 					JMSMessageUtil.FedoraActions.INGEST.getName());
 			message.setFilteredServices(services);
-			servicesConductor.add(message);
+			enhancementConductor.add(message);
 		}
 		
-		while (!servicesConductor.isEmpty());
+		while (!enhancementConductor.isEmpty());
 		
 		verify(exception, times(numberTestMessages * 2)).printStackTrace(any(PrintWriter.class));
 		

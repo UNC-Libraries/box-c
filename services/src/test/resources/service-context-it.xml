@@ -136,7 +136,7 @@
 		<property name="sessionTransacted" value="true"/>
 	</bean>  
 	
-	<bean id="servicesConductor"  class="edu.unc.lib.dl.cdr.services.ServicesConductor"
+	<bean id="enhancementConductor"  class="edu.unc.lib.dl.cdr.services.EnhancementConductor"
 		init-method="init" destroy-method="destroy">
 		<property name="services">
 			<list>
@@ -149,11 +149,11 @@
 	</bean>
 	
 	<bean id="cdrServicesMessageListener" class="edu.unc.lib.dl.cdr.services.ServicesMessageListener">
-		<property name="servicesConductor" ref="servicesConductor"/>
+		<property name="enhancementConductor" ref="enhancementConductor"/>
 	</bean>
 	
 	<bean id="servicesMessageListener" class="edu.unc.lib.dl.cdr.services.ServicesMessageListener">
-		<property name="servicesConductor" ref="servicesConductor"/>
+		<property name="enhancementConductor" ref="enhancementConductor"/>
 	</bean>
 	
 	<!-- Services -->
@@ -255,7 +255,7 @@
 		<property name="beans">
 			<map>
 				<!-\-<entry key="cdr-services:name=solrJMXService" value-ref="solrJMXService" />-\->
-				<entry key="cdr-services:name=servicesConductor" value-ref="servicesConductor" />
+				<entry key="cdr-services:name=enhancementConductor" value-ref="enhancementConductor" />
 				<!-\-<entry key="cdr-services:name=solrUpdateService" value-ref="solrUpdateService" />-\->
 				<entry key="cdr-services:name=fedoraDataService" value-ref="fedoraDataService" />
 			</map>

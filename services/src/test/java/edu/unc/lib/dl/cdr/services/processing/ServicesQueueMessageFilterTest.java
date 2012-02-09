@@ -60,9 +60,9 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
 		when(failedPids.get(anyString())).thenReturn(null);
 		
-		ServicesConductor servicesConductor = mock(ServicesConductor.class);
-		when(servicesConductor.getFailedPids()).thenReturn(failedPids);
-		servicesMessageFilter.setServicesConductor(servicesConductor);
+		EnhancementConductor enhancementConductor = mock(EnhancementConductor.class);
+		when(enhancementConductor.getFailedPids()).thenReturn(failedPids);
+		servicesMessageFilter.setenhancementConductor(enhancementConductor);
 	}
 	
 	@Test
@@ -207,9 +207,9 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
 		when(failedPids.get(anyString())).thenReturn(failedServices);
 		
-		ServicesConductor servicesConductor = mock(ServicesConductor.class);
-		when(servicesConductor.getFailedPids()).thenReturn(failedPids);
-		servicesMessageFilter.setServicesConductor(servicesConductor);
+		EnhancementConductor enhancementConductor = mock(EnhancementConductor.class);
+		when(enhancementConductor.getFailedPids()).thenReturn(failedPids);
+		servicesMessageFilter.setenhancementConductor(enhancementConductor);
 		
 		//Full stack run with the first service failing but no starting service
 		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
@@ -262,9 +262,9 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
 		when(failedPids.get(anyString())).thenReturn(failedServices);
 		
-		ServicesConductor servicesConductor = mock(ServicesConductor.class);
-		when(servicesConductor.getFailedPids()).thenReturn(failedPids);
-		servicesMessageFilter.setServicesConductor(servicesConductor);
+		EnhancementConductor enhancementConductor = mock(EnhancementConductor.class);
+		when(enhancementConductor.getFailedPids()).thenReturn(failedPids);
+		servicesMessageFilter.setenhancementConductor(enhancementConductor);
 		
 		//fail techmd call
 		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 

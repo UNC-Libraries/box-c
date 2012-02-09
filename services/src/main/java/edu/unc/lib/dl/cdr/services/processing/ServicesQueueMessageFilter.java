@@ -40,7 +40,7 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 	
 	private List<ObjectEnhancementService> services;
 	
-	private ServicesConductor servicesConductor;
+	private EnhancementConductor enhancementConductor;
 	
 	public void setServices(List<ObjectEnhancementService> services) {
 		this.services = Collections.unmodifiableList(services);
@@ -51,7 +51,7 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 	
 	@Override
 	public String getConductor(){
-		return ServicesConductor.identifier;
+		return EnhancementConductor.identifier;
 	}
 	
 	@Override
@@ -66,7 +66,7 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 		List<ObjectEnhancementService> messageServices = new ArrayList<ObjectEnhancementService>(services.size());
 		message.setFilteredServices(messageServices);
 		
-		Set<String> failedServices = servicesConductor.getFailedPids().get(message.getPIDString());
+		Set<String> failedServices = enhancementConductor.getFailedPids().get(message.getPIDString());
 		
 		boolean applyServiceStack = JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getAction());
 		boolean serviceReached = !applyServiceStack || message.getServiceName() == null;
@@ -114,8 +114,8 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 		return true;
 	}
 
-	public void setServicesConductor(ServicesConductor servicesConductor) {
-		this.servicesConductor = servicesConductor;
+	public void setenhancementConductor(EnhancementConductor enhancementConductor) {
+		this.enhancementConductor = enhancementConductor;
 	}
 	
 	

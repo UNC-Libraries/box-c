@@ -39,11 +39,11 @@ import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
-public class ServicesConductorTest extends Assert {
+public class EnhancementConductorTest extends Assert {
 
-	protected static final Logger LOG = LoggerFactory.getLogger(ServicesConductorTest.class);
+	protected static final Logger LOG = LoggerFactory.getLogger(EnhancementConductorTest.class);
 	
-	protected ServicesConductor servicesConductor;
+	protected EnhancementConductor enhancementConductor;
 	protected MessageDirector messageDirector;
 	@SuppressWarnings("rawtypes")
 	protected ServicesThreadPoolExecutor executor;
@@ -61,7 +61,7 @@ public class ServicesConductorTest extends Assert {
 	public AtomicBoolean flag;
 	public Object blockingObject;
 	
-	public ServicesConductorTest(){
+	public EnhancementConductorTest(){
 		delayServices = new ArrayList<ObjectEnhancementService>();
 		DelayService delayService = new DelayService();
 		delayServices.add(delayService);
@@ -75,26 +75,26 @@ public class ServicesConductorTest extends Assert {
 	
 	@Before
 	public void setUp() throws Exception {
-		servicesConductor = new ServicesConductor();
-		servicesConductor.setRecoverableDelay(0);
-		servicesConductor.setUnexpectedExceptionDelay(0);
-		servicesConductor.setMaxThreads(3);
-		servicesConductor.setFailedPids(new FailedObjectHashMap());
-		servicesConductor.init();
+		enhancementConductor = new EnhancementConductor();
+		enhancementConductor.setRecoverableDelay(0);
+		enhancementConductor.setUnexpectedExceptionDelay(0);
+		enhancementConductor.setMaxThreads(3);
+		enhancementConductor.setFailedPids(new FailedObjectHashMap());
+		enhancementConductor.init();
 		
 		List<MessageConductor> conductors = new ArrayList<MessageConductor>(1);
-		conductors.add(servicesConductor);
+		conductors.add(enhancementConductor);
 		
 		messageDirector = new MessageDirector();
 		messageDirector.setConductorsList(conductors);
 		
 		servicesMessageFilter = new ServicesQueueMessageFilter();
-		servicesMessageFilter.setServicesConductor(servicesConductor);
+		servicesMessageFilter.setenhancementConductor(enhancementConductor);
 		List<MessageFilter> filters = new ArrayList<MessageFilter>();
 		filters.add(servicesMessageFilter);
 		messageDirector.setFilters(filters);
 		
-		this.executor = servicesConductor.getExecutor();
+		this.executor = enhancementConductor.getExecutor();
 		inIsApplicable = new AtomicInteger(0);
 		incompleteServices = new AtomicInteger(0);
 		betweenApplicableAndEnhancement = new AtomicInteger(0);
@@ -112,15 +112,15 @@ public class ServicesConductorTest extends Assert {
 		
 		for (int i=0; i<500; i++){
 			addMessages();
-			while (!servicesConductor.isEmpty());
+			while (!enhancementConductor.isEmpty());
 			setUp();
 		}
-		while (!servicesConductor.isIdle());
+		while (!enhancementConductor.isIdle());
 	}
 	
 	@Test
 	public void addMessages() throws InterruptedException{
-		servicesConductor.setServices(delayServices);
+		enhancementConductor.setServices(delayServices);
 		servicesMessageFilter.setServices(delayServices);
 		
 		flag.set(false);
@@ -135,7 +135,7 @@ public class ServicesConductorTest extends Assert {
 			messageDirector.direct(message);
 		}
 		
-		while (!servicesConductor.isEmpty());
+		while (!enhancementConductor.isEmpty());
 
 		if (servicesCompleted.get() != numberTestMessages * 2){
 			LOG.warn("Number of services completed (" + servicesCompleted.get() + 
@@ -146,7 +146,7 @@ public class ServicesConductorTest extends Assert {
 	
 	@Test
 	public void addCollisions(){
-		servicesConductor.setServices(delayServices);
+		enhancementConductor.setServices(delayServices);
 		servicesMessageFilter.setServices(delayServices);
 		
 		numberTestMessages = 5;
@@ -160,14 +160,14 @@ public class ServicesConductorTest extends Assert {
 			}
 		}
 		
-		while (servicesConductor.getLockedPids().size() < servicesConductor.getMaxThreads());
+		while (enhancementConductor.getLockedPids().size() < enhancementConductor.getMaxThreads());
 		
-		assertEquals(servicesConductor.getLockedPids().size(), servicesConductor.getMaxThreads());
-		assertEquals(servicesConductor.getCollisionList().size(), 
-				(servicesConductor.getMaxThreads() - 1) * (numberTestMessages - 1));
-		assertEquals(servicesConductor.getPidQueue().size(), 
-				(numberTestMessages * numberTestMessages - (servicesConductor.getMaxThreads() - 1) * numberTestMessages) - 1);
-		assertEquals(servicesConductor.getQueueSize(), (numberTestMessages * numberTestMessages) - servicesConductor.getMaxThreads());
+		assertEquals(enhancementConductor.getLockedPids().size(), enhancementConductor.getMaxThreads());
+		assertEquals(enhancementConductor.getCollisionList().size(), 
+				(enhancementConductor.getMaxThreads() - 1) * (numberTestMessages - 1));
+		assertEquals(enhancementConductor.getPidQueue().size(), 
+				(numberTestMessages * numberTestMessages - (enhancementConductor.getMaxThreads() - 1) * numberTestMessages) - 1);
+		assertEquals(enhancementConductor.getQueueSize(), (numberTestMessages * numberTestMessages) - enhancementConductor.getMaxThreads());
 		
 		//Process the remaining items to make sure all messages get processed.
 		synchronized(blockingObject){
@@ -175,16 +175,16 @@ public class ServicesConductorTest extends Assert {
 			blockingObject.notifyAll();
 		}
 		
-		while (!servicesConductor.isEmpty());
+		while (!enhancementConductor.isEmpty());
 		assertEquals(servicesCompleted.get(), numberTestMessages * numberTestMessages);
 	}
 	
 	@Test
 	public void clearState(){
-		servicesConductor.setServices(delayServices);
+		enhancementConductor.setServices(delayServices);
 		servicesMessageFilter.setServices(delayServices);
 		
-		servicesConductor.pause();
+		enhancementConductor.pause();
 		
 		//Add messages then clear the conductors state
 		for (int i=0; i<numberTestMessages; i++){
@@ -193,21 +193,21 @@ public class ServicesConductorTest extends Assert {
 			messageDirector.direct(message);
 		}
 		
-		servicesConductor.clearState();
-		assertTrue(servicesConductor.getPidQueue().size() == 0);
-		assertTrue(servicesConductor.getCollisionList().size() == 0);
-		assertTrue(servicesConductor.getFailedPids().size() == 0);
-		assertTrue(servicesConductor.getLockedPids().size() == 0);
+		enhancementConductor.clearState();
+		assertTrue(enhancementConductor.getPidQueue().size() == 0);
+		assertTrue(enhancementConductor.getCollisionList().size() == 0);
+		assertTrue(enhancementConductor.getFailedPids().size() == 0);
+		assertTrue(enhancementConductor.getLockedPids().size() == 0);
 		assertTrue(executor.getQueue().size() == 0);
-		servicesConductor.resume();
+		enhancementConductor.resume();
 	}
 	
 	
 	
 	//@Test
 	public void addToShutdownExecutor(){
-		servicesConductor.shutdownNow();
-		assertFalse(servicesConductor.isReady());
+		enhancementConductor.shutdownNow();
+		assertFalse(enhancementConductor.isReady());
 		
 		//Try to direct a pid with conductor shutdown
 		servicesCompleted.set(0);
@@ -216,16 +216,16 @@ public class ServicesConductorTest extends Assert {
 		messageDirector.direct(message);
 		
 		assertTrue(servicesCompleted.get() == 0);
-		assertTrue(servicesConductor.getQueueSize() == 0);
-		assertTrue(servicesConductor.getLockedPids().size() == 0);
+		assertTrue(enhancementConductor.getQueueSize() == 0);
+		assertTrue(enhancementConductor.getLockedPids().size() == 0);
 	}
 
-	public ServicesConductor getServicesConductor() {
-		return servicesConductor;
+	public EnhancementConductor getenhancementConductor() {
+		return enhancementConductor;
 	}
 
-	public void setServicesConductor(ServicesConductor servicesConductor) {
-		this.servicesConductor = servicesConductor;
+	public void setenhancementConductor(EnhancementConductor enhancementConductor) {
+		this.enhancementConductor = enhancementConductor;
 	}
 
 	public MessageDirector getMessageDirector() {

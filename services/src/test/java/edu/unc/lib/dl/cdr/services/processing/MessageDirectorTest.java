@@ -38,7 +38,7 @@ public class MessageDirectorTest extends Assert {
 
 	private MessageDirector messageDirector;
 	private SolrUpdateConductor solrConductor;
-	private ServicesConductor servicesConductor;
+	private EnhancementConductor enhancementConductor;
 	private List<ObjectEnhancementService> services;
 
 	public MessageDirectorTest(){
@@ -56,20 +56,20 @@ public class MessageDirectorTest extends Assert {
 		
 		solrConductor = mock(SolrUpdateConductor.class);
 		when(solrConductor.getIdentifier()).thenReturn(SolrUpdateConductor.identifier);
-		servicesConductor = mock(ServicesConductor.class);
-		when(servicesConductor.getIdentifier()).thenReturn(ServicesConductor.identifier);
+		enhancementConductor = mock(EnhancementConductor.class);
+		when(enhancementConductor.getIdentifier()).thenReturn(EnhancementConductor.identifier);
 		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
 		when(failedPids.get(anyString())).thenReturn(null);
-		when(servicesConductor.getFailedPids()).thenReturn(failedPids);
+		when(enhancementConductor.getFailedPids()).thenReturn(failedPids);
 		
-		conductors.add(servicesConductor);
+		conductors.add(enhancementConductor);
 		conductors.add(solrConductor);
 		
 		List<MessageFilter> filters = new ArrayList<MessageFilter>();
 		filters.add(new SolrUpdateMessageFilter());
 		ServicesQueueMessageFilter servicesFilter = new ServicesQueueMessageFilter();
 		servicesFilter.setServices(services);
-		servicesFilter.setServicesConductor(servicesConductor);
+		servicesFilter.setenhancementConductor(enhancementConductor);
 		filters.add(servicesFilter);
 		messageDirector.setFilters(filters);
 		
@@ -95,7 +95,7 @@ public class MessageDirectorTest extends Assert {
 		messageDirector.direct(message);
 		
 		verify(solrConductor, never()).add(any(PIDMessage.class));
-		verify(servicesConductor, never()).add(any(PIDMessage.class));
+		verify(enhancementConductor, never()).add(any(PIDMessage.class));
 	}
 	
 	@Test
@@ -105,7 +105,7 @@ public class MessageDirectorTest extends Assert {
 		messageDirector.direct(message);
 		
 		verify(solrConductor, never()).add(any(PIDMessage.class));
-		verify(servicesConductor).add(any(PIDMessage.class));
+		verify(enhancementConductor).add(any(PIDMessage.class));
 	}
 	
 	@Test
@@ -113,7 +113,7 @@ public class MessageDirectorTest extends Assert {
 		PIDMessage message = new PIDMessage("cdr:test", SolrUpdateAction.namespace, SolrUpdateAction.ADD.getName());
 		messageDirector.direct(message);
 		verify(solrConductor).add(any(PIDMessage.class));
-		verify(servicesConductor, never()).add(any(PIDMessage.class));
+		verify(enhancementConductor, never()).add(any(PIDMessage.class));
 	}
 	
 	@Test
@@ -121,6 +121,6 @@ public class MessageDirectorTest extends Assert {
 		PIDMessage message = null;
 		messageDirector.direct(message);
 		verify(solrConductor, never()).add(any(PIDMessage.class));
-		verify(servicesConductor, never()).add(any(PIDMessage.class));
+		verify(enhancementConductor, never()).add(any(PIDMessage.class));
 	}
 }

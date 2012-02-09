@@ -38,7 +38,7 @@ public class CatchUpService {
 	private static final Logger LOG = LoggerFactory.getLogger(CatchUpService.class);
 
 	private MessageDirector messageDirector;
-	private ServicesConductor servicesConductor;
+	private EnhancementConductor enhancementConductor;
 	// List of services to perform catchup processing on
 	private List<ObjectEnhancementService> services = new ArrayList<ObjectEnhancementService>();
 	// If the catchup service is allowed to run
@@ -118,7 +118,7 @@ public class CatchUpService {
 			boolean pidsQueued = false;
 	
 			do {
-				pidsQueued = !servicesConductor.isEmpty();
+				pidsQueued = !enhancementConductor.isEmpty();
 				if (!pidsQueued) {
 					LOG.debug("Searching for new candidate batch");
 					candidatesFound = addBatch(priorToDate);
@@ -146,7 +146,7 @@ public class CatchUpService {
 		for (ObjectEnhancementService s : services) {
 			try {
 				if (s.isActive()) {
-					int pageSize = this.pageSize + servicesConductor.getFailedPids().size();
+					int pageSize = this.pageSize + enhancementConductor.getFailedPids().size();
 	
 					List<PID> candidates = null;
 					if (priorToDate == null){
@@ -180,12 +180,12 @@ public class CatchUpService {
 		return candidatesFound;
 	}
 
-	public ServicesConductor getServicesConductor() {
-		return servicesConductor;
+	public EnhancementConductor getenhancementConductor() {
+		return enhancementConductor;
 	}
 
-	public void setServicesConductor(ServicesConductor servicesConductor) {
-		this.servicesConductor = servicesConductor;
+	public void setenhancementConductor(EnhancementConductor enhancementConductor) {
+		this.enhancementConductor = enhancementConductor;
 	}
 
 	public List<ObjectEnhancementService> getServices() {

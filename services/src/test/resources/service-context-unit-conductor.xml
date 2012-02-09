@@ -36,7 +36,7 @@
 		<ref bean="thumbnailEnhancementService"/>
 	</util:list>
 	
-	<bean id="servicesConductor"  class="edu.unc.lib.dl.cdr.services.processing.ServicesConductor"
+	<bean id="enhancementConductor"  class="edu.unc.lib.dl.cdr.services.processing.EnhancementConductor"
 		init-method="init" destroy-method="destroy">
 		<property name="services" ref="servicesList"/>
 		<property name="maxThreads" value="3"/>
@@ -45,7 +45,7 @@
 	
 	<util:list id="conductorList" list-class="java.util.ArrayList" 
 		value-type="edu.unc.lib.dl.cdr.services.processing.MessageConductor">
-		<ref bean="servicesConductor"/>
+		<ref bean="enhancementConductor"/>
 	</util:list>
 	
 	<bean id="servicesMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.ServicesQueueMessageFilter">

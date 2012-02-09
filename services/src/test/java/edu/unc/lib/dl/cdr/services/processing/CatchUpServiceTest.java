@@ -46,7 +46,7 @@ public class CatchUpServiceTest extends Assert {
 
 	private CatchUpService catchup;
 	MessageDirector messageDirector;
-	ServicesConductor servicesConductor;
+	EnhancementConductor enhancementConductor;
 	TechnicalMetadataEnhancementService techmd;
 	ImageEnhancementService image;
 
@@ -55,19 +55,19 @@ public class CatchUpServiceTest extends Assert {
 	public void setup() {
 		catchup = new CatchUpService();
 		messageDirector = mock(MessageDirector.class);
-		servicesConductor = mock(ServicesConductor.class);
-		when(servicesConductor.isEmpty()).thenReturn(true);
+		enhancementConductor = mock(EnhancementConductor.class);
+		when(enhancementConductor.isEmpty()).thenReturn(true);
 		List<PIDMessage> collisionList = mock(List.class);
 		when(collisionList.size()).thenReturn(0);
-		when(servicesConductor.getCollisionList()).thenReturn(collisionList);
+		when(enhancementConductor.getCollisionList()).thenReturn(collisionList);
 
 		BlockingQueue<PIDMessage> pidQueue = mock(BlockingQueue.class);
 		when(pidQueue.size()).thenReturn(0);
-		when(servicesConductor.getPidQueue()).thenReturn(pidQueue);
+		when(enhancementConductor.getPidQueue()).thenReturn(pidQueue);
 
 		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
 		when(failedPids.size()).thenReturn(0);
-		when(servicesConductor.getFailedPids()).thenReturn(failedPids);
+		when(enhancementConductor.getFailedPids()).thenReturn(failedPids);
 
 		techmd = mock(TechnicalMetadataEnhancementService.class);
 		image = mock(ImageEnhancementService.class);
@@ -77,7 +77,7 @@ public class CatchUpServiceTest extends Assert {
 		services.add(image);
 
 		catchup.setMessageDirector(messageDirector);
-		catchup.setServicesConductor(servicesConductor);
+		catchup.setenhancementConductor(enhancementConductor);
 		catchup.setServices(services);
 		catchup.setCatchUpCheckDelay(100L);
 		catchup.setEnabled(true);

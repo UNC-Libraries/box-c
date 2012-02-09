@@ -165,7 +165,7 @@
 	<bean id="servicesFailedPids" class="edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap">
 	</bean>
 	
-	<bean id="servicesConductor" class="edu.unc.lib.dl.cdr.services.processing.ServicesConductor"
+	<bean id="enhancementConductor" class="edu.unc.lib.dl.cdr.services.processing.EnhancementConductor"
 		init-method="init" destroy-method="destroy">
 		<property name="services" ref="servicesList"/>
 		<property name="maxThreads" value="${conductor.services.maxThreads}"/>
@@ -190,13 +190,13 @@
 	
 	<util:list id="messageConductorList" list-class="java.util.ArrayList" 
 		value-type="edu.unc.lib.dl.cdr.services.processing.MessageConductor">
-		<ref bean="servicesConductor"/>
+		<ref bean="enhancementConductor"/>
 		<ref bean="solrUpdateConductor"/>
 	</util:list>
 	
 	<bean id="servicesMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.ServicesQueueMessageFilter">
 		<property name="services" ref="servicesList"/>
-		<property name="servicesConductor" ref="servicesConductor"/>
+		<property name="enhancementConductor" ref="enhancementConductor"/>
 	</bean>
 	
 	<bean id="solrUpdateMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateMessageFilter">
@@ -227,7 +227,7 @@
 	</bean>
 		
 	<bean id="catchUpService" class="edu.unc.lib.dl.cdr.services.processing.CatchUpService">
-		<property name="servicesConductor" ref="servicesConductor"/>
+		<property name="enhancementConductor" ref="enhancementConductor"/>
 		<property name="messageDirector" ref="messageDirector"/>
 		<property name="services">
 			<list>
@@ -374,7 +374,7 @@
 			<map>
 				<entry key="cdr-services:name=messageJMXService" value-ref="messageJMXService" />
 				<entry key="cdr-services:name=solrJMXService" value-ref="solrJMXService" />
-				<entry key="cdr-services:name=servicesConductor" value-ref="servicesConductor" />
+				<entry key="cdr-services:name=enhancementConductor" value-ref="enhancementConductor" />
 				<entry key="cdr-services:name=solrUpdateConductor" value-ref="solrUpdateConductor" />
 				<entry key="cdr-services:name=fedoraDataService" value-ref="fedoraDataService" />
 				<entry key="cdr-services:name=catchUpService" value-ref="catchUpService" />

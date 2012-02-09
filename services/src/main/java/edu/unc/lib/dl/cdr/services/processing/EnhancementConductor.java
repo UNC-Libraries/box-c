@@ -43,8 +43,8 @@ import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
  *
  * @author Gregory Jansen, Ben Pennell
  */
-public class ServicesConductor implements MessageConductor, ServiceConductor {
-	private static final Logger LOG = LoggerFactory.getLogger(ServicesConductor.class);
+public class EnhancementConductor implements MessageConductor, ServiceConductor {
+	private static final Logger LOG = LoggerFactory.getLogger(EnhancementConductor.class);
 
 	public static final String identifier = "SERVICES";
 
@@ -76,7 +76,7 @@ public class ServicesConductor implements MessageConductor, ServiceConductor {
 	private long unexpectedExceptionDelay = 0;
 	private long beforeExecuteDelay = 0;
 
-	public ServicesConductor() {
+	public EnhancementConductor() {
 		LOG.debug("Starting up Services Conductor");
 		pidQueue = new LinkedBlockingQueue<PIDMessage>();
 		// Initialize as synchronized collections for thread safety
