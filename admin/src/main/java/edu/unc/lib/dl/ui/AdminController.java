@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package edu.unc.lib.dl.ui;
 
@@ -49,42 +49,50 @@ public class AdminController extends MultiActionController {
 	private UserGroupDAO userGroupRequest;
 
 	private UiWebService uiWebService;
-	
+
 
 	public void setUiWebService(UiWebService uiWebService) {
 		this.uiWebService = uiWebService;
 	}
 
 	private boolean checkForCancel(HttpServletRequest request) {
-		
+
 		String temp = request.getParameter("_cancel");
 
 		if("Cancel".equals(temp)){
 			return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	@RequestMapping("/admin/")
 	public ModelAndView login(HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 
 
-		
+
 		Map myModel = new HashMap();
 		myModel.put("entries", "");
 
 		return new ModelAndView("admin", "model", myModel);
 	}
 
+	@RequestMapping("/admin/status")
+	public ModelAndView status(HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		Map myModel = new HashMap();
+		//myModel.put(", "");
+		return new ModelAndView("status", "model", myModel);
+	}
+
 	@RequestMapping("/admin/createuser")
 	public ModelAndView createUser(HttpServletRequest request,
 			HttpServletResponse response, UserGroupDAO userGroupRequest)
 			throws Exception {
-		
+
 		if(checkForCancel(request)) return login(request, response);
-		
+
 		return createUserInternal(request, response, userGroupRequest);
 	}
 
@@ -114,10 +122,10 @@ public class AdminController extends MultiActionController {
 	public ModelAndView createGroup(HttpServletRequest request,
 			HttpServletResponse response, UserGroupDAO userGroupRequest)
 			throws Exception {
-		
-		
+
+
 		if(checkForCancel(request)) return login(request, response);
-		
+
 		return createGroupInternal(request, response, userGroupRequest);
 	}
 
@@ -126,9 +134,9 @@ public class AdminController extends MultiActionController {
 
 		if (notNull(userGroupRequest.getGroupName())) {
 			userGroupRequest.setType(Constants.CREATE_GROUP);
-			
+
 			userGroupRequest.setAdminName(request.getRemoteUser());
-					
+
 			UserGroupDAO userGroupResponse = uiWebService
 					.userGroupOperation(userGroupRequest);
 
@@ -152,9 +160,9 @@ public class AdminController extends MultiActionController {
 		throws Exception {
 
 
-		
+
 		if(checkForCancel(request)) return login(request, response);
-		
+
 		return deleteUserInternal(request, response, userGroupRequest);
 	}
 
@@ -195,9 +203,9 @@ public class AdminController extends MultiActionController {
 			throws Exception {
 
 
-		
+
 		if(checkForCancel(request)) return login(request, response);
-		
+
 		return deleteGroupInternal(request, response, userGroupRequest);
 	}
 

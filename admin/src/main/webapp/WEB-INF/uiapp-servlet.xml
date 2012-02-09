@@ -106,6 +106,7 @@
 				<prop key="/admin/addusertogroup0">addUserToGroupController</prop>
 				<prop key="/admin/removeuserfromgroup0">removeUserFromGroupController</prop>
 				<prop key="/admin/">adminController</prop>
+				<prop key="/admin/status">adminController</prop>
 				<prop key="/admin/reindexsearch">reindexSearchController</prop>
 				<prop key="/*">passThroughController</prop>
 			</props>
