@@ -239,7 +239,6 @@
 				<xsl:apply-templates select="p:description/@ID|description/@ID"/>
 				<xsl:apply-templates select="p:description|description"/>
 			</xsl:if>
-		</div>
 	</xsl:template>
 
 	<xsl:template match="p:requirement|requirement"> Requirement <xsl:number
