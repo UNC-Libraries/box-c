@@ -18,10 +18,8 @@ package edu.unc.lib.dl.cdr.services.model;
 import java.util.List;
 
 import org.jdom.Document;
-import org.jdom.Element;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
-import edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;

@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.util.URIUtil;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -42,7 +41,6 @@ import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -215,7 +213,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 			if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.MD_TECHNICAL.getName()) == null) {
 				LOG.debug("Adding FITS output to MD_TECHNICAL");				
 				String message = "Adding technical metadata derived by FITS";
-				String newDSID = service.getManagementClient().addManagedDatastream(pid.getPID(),
+				service.getManagementClient().addManagedDatastream(pid.getPID(),
 						ContentModelHelper.Datastream.MD_TECHNICAL.getName(), false, message, new ArrayList<String>(),
 						"PREMIS Technical Metadata", false, "text/xml", premisTechURL);
 			} else {

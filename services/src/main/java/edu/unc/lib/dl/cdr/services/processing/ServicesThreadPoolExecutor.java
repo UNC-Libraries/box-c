@@ -61,6 +61,7 @@ public class ServicesThreadPoolExecutor<T extends Runnable> extends ThreadPoolEx
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void beforeExecute(Thread t, Runnable r) {
 		super.beforeExecute(t, r);
@@ -121,6 +122,7 @@ public class ServicesThreadPoolExecutor<T extends Runnable> extends ThreadPoolEx
 	 * Gets the set of runnables that are active or pending. No synchronization.
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public List<T> getAllRunningAndQueued() {
 		List<T> all = new ArrayList<T>();
 		// adding queue first to ensure coverage without synchronizing
@@ -135,6 +137,7 @@ public class ServicesThreadPoolExecutor<T extends Runnable> extends ThreadPoolEx
 	 * Gets the set of runnables that are active or pending. No synchronization.
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public List<T> getQueued() {
 		List<T> all = new ArrayList<T>();
 		// adding queue first to ensure coverage without synchronizing

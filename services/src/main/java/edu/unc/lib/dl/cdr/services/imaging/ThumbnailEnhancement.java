@@ -149,8 +149,8 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 		String resultURI = service.makeIrodsURIFromPath(resultPath);
 		if (!exists) {
 			String message = "adding thumbnail";
-			String newDSID = service.getManagementClient().addManagedDatastream(pid.getPID(), dsname, false, message,
-					Collections.EMPTY_LIST, "Thumbnail Image", false, "image/png", resultURI);
+			service.getManagementClient().addManagedDatastream(pid.getPID(), dsname, false, message,
+					Collections.<String>emptyList(), "Thumbnail Image", false, "image/png", resultURI);
 		} else {
 			String message = "updating thumbnail";
 			service.getManagementClient().modifyDatastreamByReference(pid.getPID(), dsname, false, message,

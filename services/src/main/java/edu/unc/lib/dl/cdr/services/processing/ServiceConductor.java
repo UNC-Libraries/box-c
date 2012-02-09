@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-import java.util.Map;
-
 /**
  * @author Gregory Jansen
  *

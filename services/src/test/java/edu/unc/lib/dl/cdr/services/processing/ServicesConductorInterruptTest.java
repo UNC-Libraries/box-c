@@ -41,6 +41,7 @@ public class ServicesConductorInterruptTest extends Assert {
 	protected static final Logger LOG = LoggerFactory.getLogger(ServicesConductorInterruptTest.class);
 	
 	protected ServicesConductor servicesConductor;
+	@SuppressWarnings("rawtypes")
 	protected ServicesThreadPoolExecutor executor;
 	protected List<ObjectEnhancementService> delayServices;
 	

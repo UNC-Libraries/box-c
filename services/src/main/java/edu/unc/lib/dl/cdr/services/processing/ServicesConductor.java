@@ -303,7 +303,7 @@ public class ServicesConductor implements MessageConductor, ServiceConductor {
 		return maxThreads;
 	}
 
-	public ServicesThreadPoolExecutor getExecutor(){
+	public ServicesThreadPoolExecutor<PerformServicesRunnable> getExecutor(){
 		return this.executor;
 	}
 

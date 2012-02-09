@@ -45,6 +45,7 @@ public class ServicesConductorTest extends Assert {
 	
 	protected ServicesConductor servicesConductor;
 	protected MessageDirector messageDirector;
+	@SuppressWarnings("rawtypes")
 	protected ServicesThreadPoolExecutor executor;
 	protected List<ObjectEnhancementService> servicesList = null;
 	protected List<ObjectEnhancementService> delayServices;

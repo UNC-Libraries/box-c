@@ -17,10 +17,7 @@ package edu.unc.lib.dl.cdr.services;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.List;
 
-import org.jdom.Document;
-import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -29,14 +26,11 @@ import org.springframework.context.ApplicationContextAware;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
-import edu.unc.lib.dl.cdr.services.processing.ServicesConductor;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public abstract class AbstractFedoraEnhancementService implements ObjectEnhancementService, ApplicationContextAware {
-	@SuppressWarnings("unused")
 	protected static final Logger LOG = LoggerFactory.getLogger(AbstractFedoraEnhancementService.class);
 
 	protected TripleStoreQueryService tripleStoreQueryService = null;
