@@ -47,7 +47,7 @@ public class IngestProperties {
 	/**
 	 * Not yet recorded
 	 */
-	private int managedBytes = -1;
+	private long managedBytes = -1;
 	private Map<PID, ContainerPlacement> containerPlacements = null;
 
 	public IngestProperties(File baseDir) throws Exception {
@@ -78,14 +78,16 @@ public class IngestProperties {
 		String bytes = props.getProperty("managedBytes");
 		if(bytes != null) {
 			try {
-				this.managedBytes = Integer.parseInt(bytes);
+				this.managedBytes = Long.parseLong(bytes);
 			} catch(NumberFormatException e) {}
 		}
 		String subTime = props.getProperty("submissionTime");
 		if(subTime != null) {
 			try {
-				this.submissionTime = Integer.parseInt(subTime);
-			} catch(NumberFormatException e) {}
+				this.submissionTime = Long.parseLong(subTime);
+			} catch(NumberFormatException e) {
+				throw new Error("Unexpected submissionTime exception", e);
+			}
 		}
 		this.originalDepositId = props.getProperty("originalDepositId");
 		this.containerPlacements = new HashMap<PID, ContainerPlacement>();
@@ -193,7 +195,7 @@ public class IngestProperties {
 		this.containerPlacements = placements;
 	}
 
-	public int getManagedBytes() {
+	public long getManagedBytes() {
 		return managedBytes;
 	}
 

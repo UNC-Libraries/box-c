@@ -155,21 +155,23 @@ public class AIPImpl implements ArchivalInformationPackage {
 	public void prepareIngest(String message, String submitter) throws IngestException {
 		// write ingest properties
 		try {
-			long managedBytes = 0;
+			// long managedBytes = 0;
 			File premisDir = new File(this.prepDir, "premisEvents");
 			premisDir.mkdir();
 			for (PID pid : this.getPIDs()) {
 				Document doc = this.getFOXMLDocument(pid);
 				serializeLoggerEvents(doc, pid, premisDir);
-				// TODO countManagedBytes()  how to efficiently calculate?
+				// TODO countManagedBytes() how to efficiently calculate?
 				this.saveFOXMLDocument(pid, doc);
 			}
 			IngestProperties props = new IngestProperties(this.prepDir);
-			List<String> recipients = new ArrayList<String>();
-			for (URI r : this.emailRecipients) {
-				recipients.add(r.toString());
+			if (this.emailRecipients != null) {
+				List<String> recipients = new ArrayList<String>();
+				for (URI r : this.emailRecipients) {
+					recipients.add(r.toString());
+				}
+				props.setEmailRecipients(recipients.toArray(new String[1]));
 			}
-			props.setEmailRecipients(recipients.toArray(new String[1]));
 			props.setContainerPlacements(topPID2Placement);
 			props.setMessage(message);
 			// props.setManagedBytes(managedBytes);

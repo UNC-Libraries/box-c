@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -813,6 +814,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 			// run routine AIP processing steps
 			aip = this.getAipIngestPipeline().processAIP(aip);
+
+			aip.setEmailRecipients(null); // no emails for blocking ingests
 
 			// persist the AIP to disk
 			String submitter = null;
