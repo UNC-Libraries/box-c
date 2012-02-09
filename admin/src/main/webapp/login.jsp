@@ -67,10 +67,10 @@ while (keys.hasMoreElements())
 }
 */
 
-	org.springframework.security.ui.savedrequest.SavedRequest savedRequest =  (org.springframework.security.ui.savedrequest.SavedRequest) session.getValue("SPRING_SECURITY_SAVED_REQUEST_KEY");
+    org.springframework.security.web.savedrequest.SavedRequest savedRequest =  (org.springframework.security.web.savedrequest.SavedRequest) session.getAttribute("SPRING_SECURITY_SAVED_REQUEST_KEY");
 
 	if(savedRequest != null) {
-		String requestedUrl = savedRequest.getRequestUrl();
+		String requestedUrl = savedRequest.getRedirectUrl();
 
 		if(requestedUrl != null) {
 			session.setAttribute("requestedUrl", requestedUrl);
