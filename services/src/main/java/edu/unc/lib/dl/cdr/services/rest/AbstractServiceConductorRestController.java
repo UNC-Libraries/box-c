@@ -46,7 +46,7 @@ public class AbstractServiceConductorRestController implements ServletContextAwa
 		result.put("active", !c.isPaused());
 		result.put("idle", c.isIdle());
 		result.put("id", c.getIdentifier());
-		result.put("active threads", c.getActiveThreadCount());
+		result.put("activeJobs", c.getActiveThreadCount());
 	}
 
 	@Override

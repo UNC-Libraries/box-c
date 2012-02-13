@@ -51,11 +51,13 @@ public class OperationsMessageSender {
 	private JmsTemplate jmsTemplate = null;
 
 	public void sendAddOperation(String userid, Collection<PID> destinations, Collection<PID> added,
-			Collection<PID> reordered) {
+			Collection<PID> reordered, String depositId) {
 		Document msg = new Document();
 		Element contentEl = createAtomEntry(msg, userid, destinations.iterator().next(), "add");
 		Element add = new Element("add", CDR_MESSAGE_NS);
 		contentEl.addContent(add);
+
+		add.addContent(new Element("depositId", CDR_MESSAGE_NS).setText(depositId));
 
 		for (PID destination : destinations) {
 			add.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));

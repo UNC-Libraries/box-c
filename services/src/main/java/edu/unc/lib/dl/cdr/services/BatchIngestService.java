@@ -154,6 +154,10 @@ public class BatchIngestService implements ServiceConductor {
 		return this.batchIngestQueue.getFailedDirectories().length;
 	}
 
+	public int getFinishedJobCount() {
+		return this.batchIngestQueue.getFinishedDirectories().length;
+	}
+
 	protected void initializeExecutor() {
 		LOG.debug("Initializing batch ingest thread pool executor with " + this.maxThreads + " threads.");
 		this.executor = new ServicesThreadPoolExecutor<BatchIngestTask>(this.maxThreads, "BatchIngest");

@@ -58,7 +58,7 @@ public class ContentModelHelper {
 				"permitDerivativesRead"), permitDerivativesUpdate("permitDerivativesUpdate"), permitDerivativesDelete(
 				"permitDerivativesDelete"), inheritPermissions("inheritPermissions"), hasSourceMimeType("hasSourceMimeType"),
 				hasSourceFileSize("hasSourceFileSize"), hasSurrogate("hasSurrogate"), thumb("thumb"), derivedJP2("derivedJP2"),
-				techData("techData");
+				techData("techData"), originalDeposit("originalDeposit");
 		private URI uri;
 
 		CDRProperty(String suffix) {

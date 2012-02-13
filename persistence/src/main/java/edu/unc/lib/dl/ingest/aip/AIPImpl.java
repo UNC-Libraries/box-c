@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -69,6 +70,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 	 *           directory containing FOXML files and the data directory
 	 */
 	public AIPImpl(File prepDir) {
+		depositID = new PID(String.format("uuid:%1$s", UUID.randomUUID()));
 		this.prepDir = prepDir;
 	}
 
@@ -76,6 +78,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 	 * Makes an AIP with a empty prep dir
 	 */
 	public AIPImpl() {
+		depositID = new PID(String.format("uuid:%1$s", UUID.randomUUID()));
 		try {
 			this.prepDir = FileUtils.createTempDirectory("ingest-prep");
 		} catch (IOException e) {
@@ -165,6 +168,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 				this.saveFOXMLDocument(pid, doc);
 			}
 			IngestProperties props = new IngestProperties(this.prepDir);
+			props.setOriginalDepositId(this.depositID.getPid());
 			if (this.emailRecipients != null) {
 				List<String> recipients = new ArrayList<String>();
 				for (URI r : this.emailRecipients) {
