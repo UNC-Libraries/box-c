@@ -1,5 +1,7 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,7 +13,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 
+import org.jdom.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +40,13 @@ import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor.PerformServic
 @Controller
 @RequestMapping(value={"/enhancement*", "/enhancement"})
 public class EnhancementConductorRestController extends AbstractServiceConductorRestController {
+	private static final Logger LOG = LoggerFactory.getLogger(EnhancementConductorRestController.class);
 	private final String BASE_PATH = "/rest/enhancement/";
+	private final String QUEUED_PATH = "queued";
+	private final String BLOCKED_PATH = "blocked";
+	private final String ACTIVE_PATH = "active";
+	private final String FAILED_PATH = "failed";
+	
 	private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.SSS");
 	
 	@Resource
@@ -48,19 +60,20 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		result.put("queuedJobs", this.enhancementConductor.getPidQueue().size());
 		result.put("blockedJobs", this.enhancementConductor.getCollisionList().size());
 		result.put("failedJobs", this.enhancementConductor.getFailedPids().size());
+		result.put("actievJobs", this.enhancementConductor.getExecutor().getRunningNow().size());
 		
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
 		
-		uris.put("queuedJobs", contextUrl + BASE_PATH + "queued");
-		uris.put("blockedJobs", contextUrl + BASE_PATH + "blocked");
-		uris.put("activeJobs", contextUrl + BASE_PATH + "active");
-		uris.put("failedJobs", contextUrl + BASE_PATH + "failed");
+		uris.put("queuedJobs", contextUrl + BASE_PATH + QUEUED_PATH);
+		uris.put("blockedJobs", contextUrl + BASE_PATH + BLOCKED_PATH);
+		uris.put("activeJobs", contextUrl + BASE_PATH + ACTIVE_PATH);
+		uris.put("failedJobs", contextUrl + BASE_PATH + FAILED_PATH);
 		
 		return result;
 	}
 	
-	@RequestMapping(value = "queued", method = RequestMethod.GET)
+	@RequestMapping(value = QUEUED_PATH, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getQueuedInfo( 
 			@RequestParam(value = "begin", required = false) Integer begin,
 			@RequestParam(value = "end", required = false) Integer end) {
@@ -69,22 +82,22 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		//Duplicate pid queue so that we can iterate over it.
 		List<PIDMessage> queued = new ArrayList<PIDMessage>(this.enhancementConductor.getPidQueue());
-		addPIDMessageListInfo(result, queued, begin, end);
+		addPIDMessageListInfo(result, queued, begin, end, QUEUED_PATH);
 		
 		return result;
 	}
 	
-	@RequestMapping(value = "blocked", method = RequestMethod.GET)
+	@RequestMapping(value = BLOCKED_PATH, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getBlockedInfo( 
 			@RequestParam(value = "begin", required = false) Integer begin,
 			@RequestParam(value = "end", required = false) Integer end) {
 		
 		Map<String, Object> result = new HashMap<String, Object>();
-		addPIDMessageListInfo(result, this.enhancementConductor.getCollisionList(), begin, end);
+		addPIDMessageListInfo(result, this.enhancementConductor.getCollisionList(), begin, end, BLOCKED_PATH);
 		return result;
 	}
 	
-	@RequestMapping(value = "active", method = RequestMethod.GET)
+	@RequestMapping(value = ACTIVE_PATH, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getActiveInfo( 
 			@RequestParam(value = "begin", required = false) Integer begin,
 			@RequestParam(value = "end", required = false) Integer end) {
@@ -95,11 +108,11 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			messages.add(task.getPidMessage());
 		}
 		Map<String, Object> result = new HashMap<String, Object>();
-		addPIDMessageListInfo(result, messages, begin, end);
+		addPIDMessageListInfo(result, messages, begin, end, ACTIVE_PATH);
 		return result;
 	}
 	
-	private void addPIDMessageListInfo(Map<String, Object> result, List<PIDMessage> messages, Integer begin, Integer end){
+	private void addPIDMessageListInfo(Map<String, Object> result, List<PIDMessage> messages, Integer begin, Integer end, String queuePath){
 		result.put("count", messages.size());
 		
 		if(begin == null) {
@@ -118,7 +131,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		result.put("jobs", jobs);
 		for (PIDMessage message: messages){
 			if (message != null){
-				Map<String, Object> job = getJobBriefInfo(message);
+				Map<String, Object> job = getJobBriefInfo(message, queuePath);
 				jobs.add(job);
 			}
 		}
@@ -129,7 +142,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	 * Failed list does not retain order, so paging is not possible.
 	 * @return
 	 */
-	@RequestMapping(value = "failed", method = RequestMethod.GET)
+	@RequestMapping(value = FAILED_PATH, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getFailedInfo() {
 		
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -159,17 +172,25 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	 * @param id
 	 * @return
 	 */
-	@RequestMapping(value = { "queued/job/{id}" }, method = RequestMethod.GET)
+	@RequestMapping(value = { QUEUED_PATH + "/job/{id}" }, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getQueuedJobInfo(@PathVariable("id") String id){
-		return lookupJobInfo(id, new ArrayList<PIDMessage>(this.enhancementConductor.getPidQueue()));
+		return getJobFullInfo(lookupJobInfo(id, new ArrayList<PIDMessage>(this.enhancementConductor.getPidQueue())), QUEUED_PATH);
 	}
 	
-	@RequestMapping(value = { "blocked/job/{id}" }, method = RequestMethod.GET)
+	@RequestMapping(value = { BLOCKED_PATH + "/job/{id}" }, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getBlockedJobInfo(@PathVariable("id") String id){
-		return lookupJobInfo(id, this.enhancementConductor.getCollisionList());
+		return getJobFullInfo(lookupJobInfo(id, this.enhancementConductor.getCollisionList()), BLOCKED_PATH);
 	}
 	
-	
+	@RequestMapping(value = { ACTIVE_PATH + "/job/{id}" }, method = RequestMethod.GET)
+	public @ResponseBody Map<String, ? extends Object> getActiveJobInfo(@PathVariable("id") String id){
+		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
+		List<PIDMessage> messages = new ArrayList<PIDMessage>();
+		for (PerformServicesRunnable task: currentlyRunning){
+			messages.add(task.getPidMessage());
+		}
+		return getJobFullInfo(lookupJobInfo(id, messages), ACTIVE_PATH);
+	}
 	
 	/**
 	 * Finds a PIDMessage in the provided list which matches the given message id.
@@ -177,12 +198,10 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	 * @param messages
 	 * @return
 	 */
-	private Map<String, ? extends Object> lookupJobInfo(String id, List<PIDMessage> messages){
-		long messageHash = Long.parseLong(id);
-		
+	private PIDMessage lookupJobInfo(String id, List<PIDMessage> messages){
 		for (PIDMessage message: messages){
-			if (message.getMessageID() == messageHash){
-				return getJobFullInfo(message);
+			if (message.getMessageID().equals(id)){
+				return message;
 			}
 		}
 		return null;
@@ -192,7 +211,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	 * Transforms a PIDMessage object into a map of properties for reporting purposes.
 	 * @return
 	 */
-	private Map<String, Object> getJobBriefInfo(PIDMessage message){
+	private Map<String, Object> getJobBriefInfo(PIDMessage message, String queuePath){
 		Map<String, Object> job = new HashMap<String, Object>();
 		
 		job.put("id", message.getMessageID());
@@ -214,7 +233,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		Map<String, Object> uris = new HashMap<String, Object>();
 		job.put("uris", uris);
-		uris.put("jobInfo", contextUrl + BASE_PATH + "queued/job/" + message.getMessageID());
+		uris.put("jobInfo", contextUrl + BASE_PATH + queuePath + "/job/" + message.getMessageID());
 
 		return job;
 	}
@@ -223,7 +242,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	 * Transforms a PIDMessage object into a map of properties for reporting purposes.
 	 * @return
 	 */
-	private Map<String, Object> getJobFullInfo(PIDMessage message){
+	private Map<String, Object> getJobFullInfo(PIDMessage message, String queuedPath){
 		Map<String, Object> job = new HashMap<String, Object>();
 		
 		job.put("id", message.getMessageID());
@@ -253,8 +272,53 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			}
 			job.put("filteredServices", filteredServices);
 		}
+		
+		if (message.getMessage() != null){
+			Map<String, Object> uris = new HashMap<String, Object>();
+			job.put("uris", uris);
+			uris.put("xml", contextUrl + BASE_PATH + queuedPath + "/job/" + message.getMessageID() + "/xml");
+		}
 
 		return job;
+	}
+	
+	@RequestMapping(value = { QUEUED_PATH + "/job/{id}/xml" }, method = RequestMethod.GET)
+	public void getQueuedJobXML(HttpServletResponse response, @PathVariable("id") String id) throws IOException{
+		response.setContentType("application/xml");
+		PrintWriter pr = response.getWriter();
+		pr.write(getJobXML(id, new ArrayList<PIDMessage>(this.enhancementConductor.getPidQueue())));
+	}
+	
+	@RequestMapping(value = { BLOCKED_PATH + "/job/{id}/xml" }, method = RequestMethod.GET)
+	public void getBlockedJobXML(HttpServletResponse response, @PathVariable("id") String id) throws IOException{
+		response.setContentType("application/xml");
+		PrintWriter pr = response.getWriter();
+		pr.write(getJobXML(id, new ArrayList<PIDMessage>(this.enhancementConductor.getCollisionList())));
+	}
+	
+	@RequestMapping(value = { ACTIVE_PATH + "/job/{id}/xml" }, method = RequestMethod.GET)
+	public void getActiveJobXML(HttpServletResponse response, @PathVariable("id") String id) throws IOException{
+		response.setContentType("application/xml");
+		PrintWriter pr = response.getWriter();
+		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
+		List<PIDMessage> messages = new ArrayList<PIDMessage>();
+		for (PerformServicesRunnable task: currentlyRunning){
+			messages.add(task.getPidMessage());
+		}
+		pr.write(getJobXML(id, messages));
+	}
+	
+	private String getJobXML(String id, List<PIDMessage> messages){
+		PIDMessage message = lookupJobInfo(id, messages);
+		if (message != null && message.getMessage() != null){
+			XMLOutputter outputter = new XMLOutputter();
+			try {
+				return outputter.outputString(message.getMessage());
+			} catch (Exception e) {
+				LOG.error("Error while generating xml output for " + id, e);
+			}
+		}
+		return null;
 	}
 	
 	private void addJobPropertyIfNotEmpty(String propertyName, Object propertyValue, Map<String, Object> job){

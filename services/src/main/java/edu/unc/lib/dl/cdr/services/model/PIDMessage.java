@@ -31,8 +31,8 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  *
  */
 public class PIDMessage {
-	private Document message;
-	private long messageID;
+	private Document message = null;
+	private String messageID = null;
 	private PID pid;
 	private PID depositID;
 	private String namespace = null;
@@ -52,6 +52,7 @@ public class PIDMessage {
 		this.pid = new PID(JMSMessageUtil.getPid(message));
 		this.namespace = namespace;
 		this.message = message;
+		extractMessageID();
 	}
 	
 	public PIDMessage(String pid, String namespace, String action){
@@ -92,12 +93,22 @@ public class PIDMessage {
 		return pid.getPid();
 	}
 	
-	public long getMessageID() {
+	public String getMessageID() {
 		return messageID;
 	}
 
-	public void setMessageID(long messageID) {
+	public void setMessageID(String messageID) {
 		this.messageID = messageID;
+	}
+	
+	public void extractMessageID() {
+		if (message != null){
+			try {
+				messageID = message.getRootElement().getChildTextTrim("id", JDOMNamespaceUtil.ATOM_NS);
+			} catch (NullPointerException e){
+				//Message was not set, therefore value is null 
+			}
+		}
 	}
 
 	public PID getDepositID() {
@@ -107,7 +118,7 @@ public class PIDMessage {
 	public void setDepositID(PID depositID) {
 		this.depositID = depositID;
 	}
-
+	
 	public String getTimestamp() {
 		if (timestamp == null){
 			try {

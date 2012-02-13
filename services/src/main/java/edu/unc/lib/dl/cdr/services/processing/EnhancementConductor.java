@@ -127,8 +127,10 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 					LOG.debug("Ignoring message for pid " + pidMsg.getPIDString());
 					return;
 				}
-				synchronized(idSequence){
-					pidMsg.setMessageID(idSequence.incrementAndGet());
+				if (pidMsg.getMessageID() == null){
+					synchronized(idSequence){
+						pidMsg.setMessageID("enhancement:" + idSequence.incrementAndGet());
+					}
 				}
 				boolean success = pidQueue.offer(pidMsg);
 				if (!success){
