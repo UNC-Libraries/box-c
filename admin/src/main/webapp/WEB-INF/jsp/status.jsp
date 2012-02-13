@@ -20,6 +20,22 @@
 <%@ include file="include.jsp"%>
 <%@ include file="../../html/head.html"%>
 <link rel="stylesheet" href="../../css/jquery/ui/jquery-ui.css" type="text/css" media="all" />
+<style>
+<!--
+tr.finished > td {
+  background-color: Beige;
+  background-image: none;
+}
+tr.active > td {
+  background-color: Lavender;
+  background-image: none;
+}
+tr.failed > td {
+  background-color: LavenderBlush;
+  background-image: none;
+}
+-->
+</style>
 <script type="text/javascript" src="../../js/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../../js/jquery/ui/jquery-ui.min.js"></script>
 <script type="text/javascript">
@@ -58,12 +74,11 @@ $(document).ready(function(){
         	
         }
     );
-    reloadIngestDetails();
-    refreshJobType("finished");
-    refresh();
+    refresh(new Array("status","active"), 5);
+    refresh(new Array("failed","queued","finished"), 30);
     return false;
 });
-function reloadIngestDetails() {
+function reloadIngestStatus() {
   // load service status
   $.getJSON(
   	restUrl+"ingest",
@@ -81,12 +96,24 @@ function reloadIngestDetails() {
   );
 }
 
-function refresh() {
-	reloadIngestDetails();
-	refreshJobType("failed");
-	refreshJobType("active");
-	refreshJobType("queued");
-	autorefresh=setTimeout("refresh()",1000*30);
+function refresh(types, seconds) {
+	var ts = " new Array(";
+	var first = true;
+	for(type in types) {
+		if("status"==types[type]) {
+			reloadIngestStatus();
+		} else {
+			refreshJobType(types[type]);
+		}
+		if(first) {
+			first = false;
+		} else {
+			ts += ",";
+		}
+		ts += " '"+types[type]+"'";
+	}
+	ts += ") ";
+	autorefresh=setTimeout("refresh("+ts+", "+seconds+");",1000*seconds);
 }
 
 function refreshJobType(type) {
@@ -114,7 +141,7 @@ function initChildRows(type) {
 
 function writeJob(d, type) {
 	var out = "<tr class='parent "+type+"' id='a"+d.id+"'>";
-	out = out + "<td>"+type+"</td><td>"+d.submitter+"</td><td>"+dateFormat(d.submissionTime)+"</td><td>"+"10/30"+"</td><td>"+d.containerPlacements[0].submittedLabel+"</td><td>"+d.message+"</td>";
+	out = out + "<td>"+type+"</td><td>"+d.submitter+"</td><td>"+dateFormat(d.submissionTime)+"</td><td>"+d.worked+"/"+d.size+"</td><td>"+d.containerPlacements[0].submittedLabel+"</td><td>"+d.message+"</td>";
 	out = out + "</tr>" 
 	out = out + "<tr class='child "+type+"' id='child-a"+d.id+"' style='display: none'><td colspan='6'>";
 	out = out + "Job details";

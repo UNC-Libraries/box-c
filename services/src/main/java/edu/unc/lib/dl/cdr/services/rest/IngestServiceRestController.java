@@ -18,6 +18,7 @@ package edu.unc.lib.dl.cdr.services.rest;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -181,6 +182,18 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 				job.put("submissionTime", props.getSubmissionTime() > 0 ? props.getSubmissionTime() : null);
 				job.put("depositPID", props.getOriginalDepositId());
 				job.put("message", props.getMessage());
+				int c = f.list(new FilenameFilter() {
+					@Override
+					public boolean accept(File arg0, String arg1) {
+						return arg1.endsWith(".foxml");
+					}
+				}).length;
+				job.put("size", c);
+				job.put("worked", c);
+				long mod = new File(f, "ingested.log").lastModified();
+				job.put("startTime",  mod);
+				job.put("finishedTime", null);
+				job.put("running", false);
 				job.put("containerPlacements", getContainerList(props));
 			} catch (Exception e1) {
 				LOG.error("Unexpected error building ingest properties", e1);
@@ -188,7 +201,9 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 			}
 			String error = null;
 			try {
-				BufferedReader reader = new BufferedReader(new FileReader(new File(f, BatchIngestTask.FAIL_LOG)));
+				File faillog = new File(f, BatchIngestTask.FAIL_LOG);
+				job.put("failedTime", faillog.lastModified());
+				BufferedReader reader = new BufferedReader(new FileReader(faillog));
 				String line = null;
 				StringBuilder stringBuilder = new StringBuilder();
 				String ls = System.getProperty("line.separator");
@@ -236,6 +251,18 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 				job.put("finishedTime", props.getFinishedTime() > 0 ? props.getFinishedTime() : null);
 				job.put("depositId", props.getOriginalDepositId());
 				job.put("message", props.getMessage());
+				int c = f.list(new FilenameFilter() {
+					@Override
+					public boolean accept(File arg0, String arg1) {
+						return arg1.endsWith(".foxml");
+					}
+				}).length;
+				job.put("size", c);
+				job.put("worked", c);
+				long mod = new File(f, "ingested.log").lastModified();
+				job.put("startTime",  mod);
+				job.put("finishedTime", props.getFinishedTime());
+				job.put("running", false);
 				job.put("containerPlacements", getContainerList(props));
 			} catch (Exception e1) {
 				LOG.error("Unexpected error building ingest properties", e1);
