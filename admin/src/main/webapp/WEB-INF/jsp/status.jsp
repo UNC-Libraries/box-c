@@ -20,6 +20,18 @@
 <%@ include file="include.jsp"%>
 <%@ include file="../../html/head.html"%>
 <link rel="stylesheet" href="../../css/jquery/ui/jquery-ui.css" type="text/css" media="all" />
+<style>
+<!--
+h3.queued { 
+}
+h3.active {
+}
+h3.finished {
+}
+h3.failed {
+}
+-->
+</style>
 <script type="text/javascript" src="../../js/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../../js/jquery/ui/jquery-ui.min.js"></script>
 <script type="text/javascript">
@@ -46,7 +58,6 @@ $(function() {
   	}
   	return true;
   });
-	$( "#accordion" ).accordion();
 });
 $(document).ready(function(){
     $.getJSON(
@@ -76,10 +87,56 @@ function reloadIngestDetails() {
   		$("#ingestFailedJobs").html(""+json.failedJobs);
     }
   );
-  // load active jobs
-  // load queued jobs
-  // load failed jobs
-  // load finished jobs
+  refreshJobType("finished");
+  refreshJobType("failed");
+  refreshJobType("active");
+  refreshJobType("queued");
+}
+
+function refreshJobType(type) {
+	$.getJSON(
+	 	restUrl+"ingest/"+type,
+	  {},
+	  function(json) {
+		  $("#jobs").children("tr."+type).remove();
+	  	for(job in json.jobs) {
+				$("#jobs").prepend(writeJob(json.jobs[job], type));
+		 	}
+		 	initChildRows(type);
+		}
+	);
+}
+
+function initChildRows(type) {
+	$('tr.parent.'+type)
+	  .css("cursor","pointer")
+	  .attr("title","Click to expand/collapse")
+	  .click(function(){
+		  $('#child-'+this.id).toggle();
+	});
+}
+
+function writeJob(d, type) {
+	var out = "<tr class='parent "+type+"' id='a"+d.id+"'>";
+	out = out + "<td>"+type+"</td><td>"+d.submitter+"</td><td>"+dateFormat(d.submissionTime)+"</td><td>"+"10/30"+"</td><td>"+d.containerPlacements[0].submittedLabel+"</td><td>"+d.message+"</td>";
+	out = out + "</tr>" 
+	out = out + "<tr class='child "+type+"' id='child-a"+d.id+"' style='display: none'><td colspan='6'>";
+	out = out + "Job details";
+	out = out + "</td></tr>";
+	return out;
+}
+
+function dateFormat(timestamp) {
+	var date = new Date(timestamp);
+	// hours part from the timestamp
+	//var hours = date.getHours();
+	// minutes part from the timestamp
+	//var minutes = date.getMinutes();
+	// seconds part from the timestamp
+	//var seconds = date.getSeconds();
+	// will display time in 10:30:23 format
+	//var formattedTime = hours + ':' + minutes + ':' + seconds;
+	return date.toUTCString();
 }
 
 //-->
@@ -104,23 +161,11 @@ function reloadIngestDetails() {
 						Queued: <span id="ingestQueuedJobs"></span> - Active: <span id="ingestActiveJobs"></span> - Finished: <span id="ingestFinishedJobs"></span>
 						- Failed: <span id="ingestFailedJobs"></span>
 						</p>
-					<div id="accordion">
-						<h3><a href="#">Finished Job 1</a></h3>
-    				<div>
-						</div>
-						<h3><a href="#">Active Job 1</a></h3>
-    				<div>
-						</div>
-						<h3><a href="#">Queued Job 1</a></h3>
-    				<div>
-					  <p>
-						Job details
-						</p>
-						</div>
-						<h3><a href="#">Failed Job 1</a></h3>
-    				<div>
-						</div>
-					</div>
+					<table>
+					  <thead><tr><th>status</th><th>submitter</th><th>submit time</th><th>ingested</th><th>name</th><th>message</th></tr></thead>
+					  <tbody id="jobs">
+					  </tbody>
+					</table>
 					</div>
 					<div id="servicetabs-2">
 						<p>Indexing</p>
