@@ -20,18 +20,6 @@
 <%@ include file="include.jsp"%>
 <%@ include file="../../html/head.html"%>
 <link rel="stylesheet" href="../../css/jquery/ui/jquery-ui.css" type="text/css" media="all" />
-<style>
-<!--
-h3.queued { 
-}
-h3.active {
-}
-h3.finished {
-}
-h3.failed {
-}
--->
-</style>
 <script type="text/javascript" src="../../js/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../../js/jquery/ui/jquery-ui.min.js"></script>
 <script type="text/javascript">
@@ -41,6 +29,7 @@ $.ajaxSetup ({
 	});   
 var ajax_load = "<img src='../../images/load.gif' alt='loading...' />";
 var restUrl = "/services/rest/";
+var autorefresh = null;
 $(function() {
 	$( "#servicetabs" ).tabs();
   $('#servicetabs').bind('tabsselect', function(event, ui) {
@@ -70,6 +59,8 @@ $(document).ready(function(){
         }
     );
     reloadIngestDetails();
+    refreshJobType("finished");
+    refresh();
     return false;
 });
 function reloadIngestDetails() {
@@ -85,12 +76,17 @@ function reloadIngestDetails() {
   		$("#ingestActiveJobs").html(""+json.activeJobs);
   		$("#ingestFinishedJobs").html(""+json.finishedJobs);
   		$("#ingestFailedJobs").html(""+json.failedJobs);
+  		$("#ingestRefreshed").html(""+dateFormat(new Date()));
     }
   );
-  refreshJobType("finished");
-  refreshJobType("failed");
-  refreshJobType("active");
-  refreshJobType("queued");
+}
+
+function refresh() {
+	reloadIngestDetails();
+	refreshJobType("failed");
+	refreshJobType("active");
+	refreshJobType("queued");
+	autorefresh=setTimeout("refresh()",1000*30);
 }
 
 function refreshJobType(type) {
@@ -100,7 +96,7 @@ function refreshJobType(type) {
 	  function(json) {
 		  $("#jobs").children("tr."+type).remove();
 	  	for(job in json.jobs) {
-				$("#jobs").prepend(writeJob(json.jobs[job], type));
+				$("#jobs").children("tr#"+type+"-end").before(writeJob(json.jobs[job], type));
 		 	}
 		 	initChildRows(type);
 		}
@@ -157,13 +153,17 @@ function dateFormat(timestamp) {
 					</ul>
 					<div id="servicetabs-1">
 						<p>
-						Active: <span id="ingestActive"></span> -	Idle: <span id="ingestIdle"></span><br />
+						Active: <span id="ingestActive"></span> -	Idle: <span id="ingestIdle"></span> - Refreshed: <span id="ingestRefreshed"></span><br />
 						Queued: <span id="ingestQueuedJobs"></span> - Active: <span id="ingestActiveJobs"></span> - Finished: <span id="ingestFinishedJobs"></span>
 						- Failed: <span id="ingestFailedJobs"></span>
 						</p>
 					<table>
 					  <thead><tr><th>status</th><th>submitter</th><th>submit time</th><th>ingested</th><th>name</th><th>message</th></tr></thead>
 					  <tbody id="jobs">
+					    <tr id="queued-end" style="display:none"><td></td></tr>
+					    <tr id="active-end" style="display:none"><td></td></tr>
+					    <tr id="failed-end" style="display:none"><td></td></tr>
+					    <tr id="finished-end" style="display:none"><td></td></tr>
 					  </tbody>
 					</table>
 					</div>
