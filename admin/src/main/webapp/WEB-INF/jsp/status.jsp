@@ -29,6 +29,7 @@ $.ajaxSetup ({
 	});   
 var ajax_load = "<img src='../../images/load.gif' alt='loading...' />";
 var restUrl = "/services/rest/";
+var autorefresh = null;
 $(function() {
 	$( "#servicetabs" ).tabs();
   $('#servicetabs').bind('tabsselect', function(event, ui) {
@@ -46,7 +47,6 @@ $(function() {
   	}
   	return true;
   });
-	$( "#accordion" ).accordion();
 });
 $(document).ready(function(){
     $.getJSON(
@@ -59,6 +59,8 @@ $(document).ready(function(){
         }
     );
     reloadIngestDetails();
+    refreshJobType("finished");
+    refresh();
     return false;
 });
 function reloadIngestDetails() {
@@ -74,12 +76,63 @@ function reloadIngestDetails() {
   		$("#ingestActiveJobs").html(""+json.activeJobs);
   		$("#ingestFinishedJobs").html(""+json.finishedJobs);
   		$("#ingestFailedJobs").html(""+json.failedJobs);
+  		$("#ingestRefreshed").html(""+dateFormat(new Date()));
     }
   );
-  // load active jobs
-  // load queued jobs
-  // load failed jobs
-  // load finished jobs
+}
+
+function refresh() {
+	reloadIngestDetails();
+	refreshJobType("failed");
+	refreshJobType("active");
+	refreshJobType("queued");
+	autorefresh=setTimeout("refresh()",1000*30);
+}
+
+function refreshJobType(type) {
+	$.getJSON(
+	 	restUrl+"ingest/"+type,
+	  {},
+	  function(json) {
+		  $("#jobs").children("tr."+type).remove();
+	  	for(job in json.jobs) {
+				$("#jobs").children("tr#"+type+"-end").before(writeJob(json.jobs[job], type));
+		 	}
+		 	initChildRows(type);
+		}
+	);
+}
+
+function initChildRows(type) {
+	$('tr.parent.'+type)
+	  .css("cursor","pointer")
+	  .attr("title","Click to expand/collapse")
+	  .click(function(){
+		  $('#child-'+this.id).toggle();
+	});
+}
+
+function writeJob(d, type) {
+	var out = "<tr class='parent "+type+"' id='a"+d.id+"'>";
+	out = out + "<td>"+type+"</td><td>"+d.submitter+"</td><td>"+dateFormat(d.submissionTime)+"</td><td>"+"10/30"+"</td><td>"+d.containerPlacements[0].submittedLabel+"</td><td>"+d.message+"</td>";
+	out = out + "</tr>" 
+	out = out + "<tr class='child "+type+"' id='child-a"+d.id+"' style='display: none'><td colspan='6'>";
+	out = out + "Job details";
+	out = out + "</td></tr>";
+	return out;
+}
+
+function dateFormat(timestamp) {
+	var date = new Date(timestamp);
+	// hours part from the timestamp
+	//var hours = date.getHours();
+	// minutes part from the timestamp
+	//var minutes = date.getMinutes();
+	// seconds part from the timestamp
+	//var seconds = date.getSeconds();
+	// will display time in 10:30:23 format
+	//var formattedTime = hours + ':' + minutes + ':' + seconds;
+	return date.toUTCString();
 }
 
 //-->
@@ -100,27 +153,19 @@ function reloadIngestDetails() {
 					</ul>
 					<div id="servicetabs-1">
 						<p>
-						Active: <span id="ingestActive"></span> -	Idle: <span id="ingestIdle"></span><br />
+						Active: <span id="ingestActive"></span> -	Idle: <span id="ingestIdle"></span> - Refreshed: <span id="ingestRefreshed"></span><br />
 						Queued: <span id="ingestQueuedJobs"></span> - Active: <span id="ingestActiveJobs"></span> - Finished: <span id="ingestFinishedJobs"></span>
 						- Failed: <span id="ingestFailedJobs"></span>
 						</p>
-					<div id="accordion">
-						<h3><a href="#">Finished Job 1</a></h3>
-    				<div>
-						</div>
-						<h3><a href="#">Active Job 1</a></h3>
-    				<div>
-						</div>
-						<h3><a href="#">Queued Job 1</a></h3>
-    				<div>
-					  <p>
-						Job details
-						</p>
-						</div>
-						<h3><a href="#">Failed Job 1</a></h3>
-    				<div>
-						</div>
-					</div>
+					<table>
+					  <thead><tr><th>status</th><th>submitter</th><th>submit time</th><th>ingested</th><th>name</th><th>message</th></tr></thead>
+					  <tbody id="jobs">
+					    <tr id="queued-end" style="display:none"><td></td></tr>
+					    <tr id="active-end" style="display:none"><td></td></tr>
+					    <tr id="failed-end" style="display:none"><td></td></tr>
+					    <tr id="finished-end" style="display:none"><td></td></tr>
+					  </tbody>
+					</table>
 					</div>
 					<div id="servicetabs-2">
 						<p>Indexing</p>
