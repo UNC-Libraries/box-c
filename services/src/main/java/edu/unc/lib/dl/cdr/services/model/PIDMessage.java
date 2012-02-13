@@ -32,7 +32,9 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  */
 public class PIDMessage {
 	private Document message;
+	private long messageID;
 	private PID pid;
+	private PID depositID;
 	private String namespace = null;
 	private String action = null;
 	private String datastream = null;
@@ -90,6 +92,22 @@ public class PIDMessage {
 		return pid.getPid();
 	}
 	
+	public long getMessageID() {
+		return messageID;
+	}
+
+	public void setMessageID(long messageID) {
+		this.messageID = messageID;
+	}
+
+	public PID getDepositID() {
+		return depositID;
+	}
+
+	public void setDepositID(PID depositID) {
+		this.depositID = depositID;
+	}
+
 	public String getTimestamp() {
 		if (timestamp == null){
 			try {

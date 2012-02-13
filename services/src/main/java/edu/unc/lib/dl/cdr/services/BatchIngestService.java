@@ -155,8 +155,8 @@ public class BatchIngestService implements ServiceConductor {
 	}
 
 	protected void initializeExecutor() {
-		LOG.debug("Initializing services thread pool executor with " + this.maxThreads + " threads.");
-		this.executor = new ServicesThreadPoolExecutor<BatchIngestTask>(this.maxThreads, "SolrUpdates");
+		LOG.debug("Initializing batch ingest thread pool executor with " + this.maxThreads + " threads.");
+		this.executor = new ServicesThreadPoolExecutor<BatchIngestTask>(this.maxThreads, "BatchIngest");
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
 		(this.executor).setBeforeExecuteDelay(beforeExecuteDelay);
 	}

@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.jdom.Element;
 import org.slf4j.Logger;
@@ -46,7 +47,8 @@ import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 public class EnhancementConductor implements MessageConductor, ServiceConductor {
 	private static final Logger LOG = LoggerFactory.getLogger(EnhancementConductor.class);
 
-	public static final String identifier = "SERVICES";
+	public static final String identifier = "ENHANCEMENT";
+	private AtomicLong idSequence;
 
 	/**
 	 * The object enhancement services, in priority order.
@@ -82,6 +84,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		// Initialize as synchronized collections for thread safety
 		collisionList = Collections.synchronizedList(new ArrayList<PIDMessage>());
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
+		idSequence = new AtomicLong(0);
 	}
 
 	public String getIdentifier(){
@@ -123,6 +126,9 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 				if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated()) {
 					LOG.debug("Ignoring message for pid " + pidMsg.getPIDString());
 					return;
+				}
+				synchronized(idSequence){
+					pidMsg.setMessageID(idSequence.incrementAndGet());
 				}
 				boolean success = pidQueue.offer(pidMsg);
 				if (!success){
@@ -257,7 +263,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	 * Kick starts a thread for processing messages if needed
 	 */
 	protected void startProcessing() {
-		executor.submit(new PerformServicesRunnable());
+		executor.execute(new PerformServicesRunnable());
 	}
 
 	@Override
@@ -398,15 +404,21 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	 */
 	public class PerformServicesRunnable implements Runnable {
 
+		private PIDMessage pidMessage = null;
+		
 		public PerformServicesRunnable() {
 			LOG.debug("Instantiating a new PerformServicesRunnable");
 		}
 
-		private void retryException(PIDMessage pidMessage, ObjectEnhancementService s, String message, Exception e, long retryDelay){
+		public PIDMessage getPidMessage() {
+			return pidMessage;
+		}
+
+		private void retryException(ObjectEnhancementService s, String message, Exception e, long retryDelay){
 			LOG.warn(message + s.getClass().getName() + " for " + pidMessage.getPIDString() + ".  Retrying after a delay.", e);
 			try {
 				Thread.sleep(retryDelay);
-				this.applyService(pidMessage, s);
+				this.applyService(s);
 				LOG.info("Second attempt to run " + s.getClass().getName() + " for " + pidMessage.getPIDString()
 						+ " was successful.");
 			} catch (InterruptedException e2) {
@@ -480,7 +492,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 			return null;
 		}
 
-		public void applyService(PIDMessage pidMessage, ObjectEnhancementService s) throws EnhancementException {
+		public void applyService(ObjectEnhancementService s) throws EnhancementException {
 			// Check if there were any failed services for this pid. If there were, check if the current service
 			// was one of them.
 
@@ -532,7 +544,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		public void run() {
 			LOG.debug("Starting new run of ServiceConductor thread " + this);
 			//Get the next message, waiting as long as necessary for one to be free
-			PIDMessage pidMessage = getNextMessage();
+			pidMessage = getNextMessage();
 
 			if (LOG.isDebugEnabled())
 				LOG.debug("Received pid " + pidMessage.getPIDString() + ": " + pidMessage.getFilteredServices());
@@ -551,11 +563,11 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 								return;
 							}
 							//Apply the service
-							this.applyService(pidMessage, s);
+							this.applyService(s);
 						} catch (EnhancementException e){
 							switch (e.getSeverity()) {
 								case RECOVERABLE:
-									retryException(pidMessage, s, "A recoverable enhancement exception occurred while attempting to apply service "
+									retryException(s, "A recoverable enhancement exception occurred while attempting to apply service "
 											+ s.getClass().getName(), e, recoverableDelay);
 									break;
 								case UNRECOVERABLE:
@@ -576,7 +588,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 									break;
 							}
 						} catch (RuntimeException e) {
-							retryException(pidMessage, s, "A runtime error occurred while attempting to apply service",
+							retryException(s, "A runtime error occurred while attempting to apply service",
 									e, unexpectedExceptionDelay);
 						} catch (Exception e) {
 							LOG.error("An unexpected exception occurred while attempting to apply service " + s.getClass().getName(), e);

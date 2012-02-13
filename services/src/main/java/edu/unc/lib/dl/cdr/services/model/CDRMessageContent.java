@@ -28,6 +28,7 @@ public class CDRMessageContent {
 	private List<String> reordered;
 	private String parent;
 	private List<String> oldParents;
+	//Additional mode information for affecting the default behavior of the given action
 	private String mode;
 	private String operation;
 	
@@ -95,6 +96,10 @@ public class CDRMessageContent {
 		this.oldParents = oldParents;
 	}
 
+	/**
+	 * Additional mode information for affecting the default behavior of the given action 
+	 * @return
+	 */
 	public String getMode() {
 		return mode;
 	}
