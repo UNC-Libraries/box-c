@@ -123,7 +123,7 @@ function refreshJobType(type) {
 	  function(json) {
 		  $("#jobs").children("tr."+type).remove();
 	  	for(job in json.jobs) {
-				$("#jobs").children("tr#"+type+"-end").before(writeJob(json.jobs[job], type));
+				$("#jobs").children("tr#"+type+"-end").after(writeJob(json.jobs[job], type));
 		 	}
 		 	initChildRows(type);
 		}
@@ -145,6 +145,9 @@ function writeJob(d, type) {
 	out = out + "</tr>" 
 	out = out + "<tr class='child "+type+"' id='child-a"+d.id+"' style='display: none'><td colspan='6'>";
 	out = out + "Job details";
+	if(d.error != null) {
+		out += "<h3>Error Log</h3><p>"+d.error+"</p>";
+	}
 	out = out + "</td></tr>";
 	return out;
 }
@@ -179,13 +182,20 @@ function dateFormat(timestamp) {
 						<li><a href="#servicetabs-3">Enhancement</a></li>
 					</ul>
 					<div id="servicetabs-1">
-						<p>
-						Active: <span id="ingestActive"></span> -	Idle: <span id="ingestIdle"></span> - Refreshed: <span id="ingestRefreshed"></span><br />
-						Queued: <span id="ingestQueuedJobs"></span> - Active: <span id="ingestActiveJobs"></span> - Finished: <span id="ingestFinishedJobs"></span>
-						- Failed: <span id="ingestFailedJobs"></span>
+						<table>
+						  <tr><th>Active</th><th>Idle</th><th>Queued</th><th>Active</th><th>Failed</th><th>Finished<sup>*</sup></th><th>Refreshed</th></tr>
+						  <tr>
+						    <td><span id="ingestActive"></span></td>
+						    <td><span id="ingestIdle"></span></td>
+						    <td><span id="ingestQueuedJobs"></span></td>
+						    <td><span id="ingestActiveJobs"></span></td>
+						    <td><span id="ingestFailedJobs"></span></td>
+						    <td><span id="ingestFinishedJobs"></span></td>
+						    <td><span id="ingestRefreshed"></span></td>
+						  </tr>
 						</p>
 					<table>
-					  <thead><tr><th>status</th><th>submitter</th><th>submit time</th><th>ingested</th><th>name</th><th>message</th></tr></thead>
+					  <thead><tr><th>status</th><th>submitter</th><th>submit time</th><th>ingested</th><th>first object</th><th>message</th></tr></thead>
 					  <tbody id="jobs">
 					    <tr id="queued-end" style="display:none"><td></td></tr>
 					    <tr id="active-end" style="display:none"><td></td></tr>
@@ -193,6 +203,7 @@ function dateFormat(timestamp) {
 					    <tr id="finished-end" style="display:none"><td></td></tr>
 					  </tbody>
 					</table>
+					* Finished ingest jobs are removed after two days.
 					</div>
 					<div id="servicetabs-2">
 						<p>Indexing</p>
