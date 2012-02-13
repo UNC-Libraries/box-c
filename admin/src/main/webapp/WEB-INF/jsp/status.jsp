@@ -19,42 +19,114 @@
 	pageEncoding="UTF-8"%>
 <%@ include file="include.jsp"%>
 <%@ include file="../../html/head.html"%>
-<title><fmt:message key="admin.status.heading" /></title>
-<%@ include file="../../html/admincontents.html"%>
+<link rel="stylesheet" href="../../css/jquery/ui/jquery-ui.css" type="text/css" media="all" />
 <script type="text/javascript" src="../../js/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../js/jquery/ui/jquery-ui.min.js"></script>
 <script type="text/javascript">
 <!--
 $.ajaxSetup ({  
 	  cache: false  
 	});   
 var ajax_load = "<img src='../../images/load.gif' alt='loading...' />";
-var jsonUrl = "/services/rest/info";
-$(document).ready(function(){  
-    // var q = $("#q").val();
-    $("#result").html(ajax_load);
+var restUrl = "/services/rest/";
+$(function() {
+	$( "#servicetabs" ).tabs();
+  $('#servicetabs').bind('tabsselect', function(event, ui) {
+   	//alert("Hello tabselect "+ui.index);
+   	switch(ui.index) {
+   		case 0:
+   			reloadIngestDetails();
+   			break;
+   		case 1:
+   			//loadIndexingDetails();
+   			break;
+  		case 2:
+   			//loadEnhancementDetails();
+  			break;
+  	}
+  	return true;
+  });
+	$( "#accordion" ).accordion();
+});
+$(document).ready(function(){
     $.getJSON(
-        jsonUrl,
+    		restUrl+"info",
         {},
         function(json) {
         	var serviceInfo = "<p>CDR Services Build: "+json.serviceInfo.groupId+":"+json.serviceInfo.artifactId+":"+json.serviceInfo.version+"</p>";
         	$("#serviceInfo").html(serviceInfo)
-          var serviceTabs = "<p><ul><li><a href=\"" + json.serviceInfo.uris.ingestServiceUri + "\">Ingest</a></li></ul></p>";
-          $("#tabs").html(serviceTabs);
+        	
         }
     );
+    reloadIngestDetails();
     return false;
-}); 
+});
+function reloadIngestDetails() {
+  // load service status
+  $.getJSON(
+  	restUrl+"ingest",
+    {},
+    function(json) {
+    	// idle active failedJobs activeJobs queuedJobs
+  		$("#ingestActive").html(""+json.active);
+  		$("#ingestIdle").html(""+json.idle);
+  		$("#ingestQueuedJobs").html(""+json.queuedJobs);
+  		$("#ingestActiveJobs").html(""+json.activeJobs);
+  		$("#ingestFinishedJobs").html(""+json.finishedJobs);
+  		$("#ingestFailedJobs").html(""+json.failedJobs);
+    }
+  );
+  // load active jobs
+  // load queued jobs
+  // load failed jobs
+  // load finished jobs
+}
+
 //-->
 </script>
-      <div id="content">            
+<title><fmt:message key="admin.status.heading" /></title>
+<%@ include file="../../html/admincontents.html"%>
+      <div id="content">
         <p class="breadcrumbs"><a href="<c:url value='/index.jsp'/>">Home</a> > Status Monitors    
         </p>
         <h2 class="fontface">Status Monitors</h2>
         
         <div id="serviceInfo"></div>
-        <ul id="tabs">
-          <li id="ingestService">Ingest</li>
-          <li id="indexingService">Indexing</li>
-          <li id="enhancementService">Enhancement</li>
-        </ul>
+        <div id="servicetabs">
+					<ul style="height: 37px">
+						<li><a href="#servicetabs-1">Ingest</a></li>
+						<li><a href="#servicetabs-2">Indexing</a></li>
+						<li><a href="#servicetabs-3">Enhancement</a></li>
+					</ul>
+					<div id="servicetabs-1">
+						<p>
+						Active: <span id="ingestActive"></span> -	Idle: <span id="ingestIdle"></span><br />
+						Queued: <span id="ingestQueuedJobs"></span> - Active: <span id="ingestActiveJobs"></span> - Finished: <span id="ingestFinishedJobs"></span>
+						- Failed: <span id="ingestFailedJobs"></span>
+						</p>
+					<div id="accordion">
+						<h3><a href="#">Finished Job 1</a></h3>
+    				<div>
+						</div>
+						<h3><a href="#">Active Job 1</a></h3>
+    				<div>
+						</div>
+						<h3><a href="#">Queued Job 1</a></h3>
+    				<div>
+					  <p>
+						Job details
+						</p>
+						</div>
+						<h3><a href="#">Failed Job 1</a></h3>
+    				<div>
+						</div>
+					</div>
+					</div>
+					<div id="servicetabs-2">
+						<p>Indexing</p>
+					</div>
+					<div id="servicetabs-3">
+					  <p>Enhancement</p>
+					</div>
+        </div>
 <%@ include file="../../html/footer.html"%>

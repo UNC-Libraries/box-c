@@ -397,7 +397,7 @@ public class BatchIngestTask implements Runnable {
 			this.lastIngestFilename = foxmlFiles[next].getName();
 			this.lastIngestPID = pid;
 			logIngestAttempt(pid, this.lastIngestFilename);
-			this.getManagementClient().ingest(doc, Format.FOXML_1_1, ingestProperties.getMessage());
+			this.getManagementClient().ingest(doc, Format.FOXML_1_1, ingestProperties.getOriginalDepositId());
 			this.state = STATE.INGEST_VERIFY_CHECKSUMS;
 		} catch (FedoraTimeoutException e) { // on timeout poll for the ingested object
 			log.info("Fedora Timeout Exception: " + e.getLocalizedMessage());
@@ -530,9 +530,10 @@ public class BatchIngestTask implements Runnable {
 						sendIngestMessages();
 						break;
 					case CLEANUP:
+						this.finishedTime = System.currentTimeMillis();
+						this.ingestProperties.setFinishedTime(this.finishedTime);
 						deleteDataFiles();
 						handleFinishedDir();
-						this.finishedTime = System.currentTimeMillis();
 						this.state = STATE.FINISHED;
 						break;
 				}
@@ -645,7 +646,7 @@ public class BatchIngestTask implements Runnable {
 			Collections.addAll(containerSet, this.containers);
 			if (this.sendJmsMessages) {
 				this.getOperationsMessageSender().sendAddOperation(ingestProperties.getSubmitter(), containerSet,
-						ingestProperties.getContainerPlacements().keySet(), reordered);
+						ingestProperties.getContainerPlacements().keySet(), reordered, ingestProperties.getOriginalDepositId());
 			}
 		}
 		// send successful ingest email

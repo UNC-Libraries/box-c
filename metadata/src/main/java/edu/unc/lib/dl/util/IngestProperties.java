@@ -49,6 +49,7 @@ public class IngestProperties {
 	 */
 	private long managedBytes = -1;
 	private Map<PID, ContainerPlacement> containerPlacements = null;
+	private long finishedTime;
 
 	public IngestProperties(File baseDir) throws Exception {
 		this.propFile = new File(baseDir, PROPERTIES_FILE);
@@ -87,6 +88,14 @@ public class IngestProperties {
 				this.submissionTime = Long.parseLong(subTime);
 			} catch(NumberFormatException e) {
 				throw new Error("Unexpected submissionTime exception", e);
+			}
+		}
+		String finTime = props.getProperty("finishedTime");
+		if(finTime != null) {
+			try {
+				this.finishedTime = Long.parseLong(finTime);
+			} catch(NumberFormatException e) {
+				throw new Error("Unexpected finishedTime exception", e);
 			}
 		}
 		this.originalDepositId = props.getProperty("originalDepositId");
@@ -137,6 +146,9 @@ public class IngestProperties {
 		}
 		if(this.submissionTime != -1) {
 			props.put("submissionTime", String.valueOf(this.submissionTime));
+		}
+		if(this.finishedTime != -1) {
+			props.put("finishedTime", String.valueOf(this.finishedTime));
 		}
 		if (this.containerPlacements != null && this.containerPlacements.size() > 0) {
 			int count = 0;
@@ -217,5 +229,16 @@ public class IngestProperties {
 
 	public void setSubmissionTime(long submissionTime) {
 		this.submissionTime = submissionTime;
+	}
+
+	/**
+	 * @param finishedTime
+	 */
+	public void setFinishedTime(long finishedTime) {
+		this.finishedTime = finishedTime;
+	}
+
+	public long getFinishedTime() {
+		return finishedTime;
 	}
 }

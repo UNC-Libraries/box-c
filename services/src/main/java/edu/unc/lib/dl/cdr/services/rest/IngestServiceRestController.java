@@ -60,6 +60,7 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 		addServiceConductorInfo(result, this.batchIngestService);
 		result.put("queuedJobs", this.batchIngestService.getQueuedJobCount());
 		result.put("failedJobs", this.batchIngestService.getFailedJobCount());
+		result.put("finishedJobs", this.batchIngestService.getFinishedJobCount());
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
 		uris.put("queuedJobs", contextUrl + "/rest/ingest/queued");
@@ -120,12 +121,12 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 			job.put("id", b.getBaseDir().getName());
 			job.put("submitter", b.getIngestProperties().getSubmitter());
 			job.put("submissionTime", b.getIngestProperties().getSubmissionTime() > 0 ? b.getIngestProperties().getSubmissionTime() : null);
-			job.put("depositId", b.getIngestProperties().getOriginalDepositId());
+			job.put("depositPID", b.getIngestProperties().getOriginalDepositId());
 			job.put("message", b.getIngestProperties().getMessage());
 			job.put("size", b.getFoxmlFiles().length);
 			job.put("worked", b.getIngestedCount());
-			job.put("started", b.getStartTime() > 0 ? b.getStartTime() : null);
-			job.put("finished", b.getFinishedTime() > 0 ? b.getFinishedTime() : null);
+			job.put("startTime", b.getStartTime() > 0 ? b.getStartTime() : null);
+			job.put("finishedTime", b.getFinishedTime() > 0 ? b.getFinishedTime() : null);
 			job.put("running", b.isRunning());
 			job.put("containerPlacements", getContainerList(b.getIngestProperties()));
 		} catch (Exception e) {
@@ -178,7 +179,7 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 				props = new IngestProperties(f);
 				job.put("submitter", props.getSubmitter());
 				job.put("submissionTime", props.getSubmissionTime() > 0 ? props.getSubmissionTime() : null);
-				job.put("depositId", props.getOriginalDepositId());
+				job.put("depositPID", props.getOriginalDepositId());
 				job.put("message", props.getMessage());
 				job.put("containerPlacements", getContainerList(props));
 			} catch (Exception e1) {
@@ -232,6 +233,7 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 				props = new IngestProperties(f);
 				job.put("submitter", props.getSubmitter());
 				job.put("submissionTime", props.getSubmissionTime() > 0 ? props.getSubmissionTime() : null);
+				job.put("finishedTime", props.getFinishedTime() > 0 ? props.getFinishedTime() : null);
 				job.put("depositId", props.getOriginalDepositId());
 				job.put("message", props.getMessage());
 				job.put("containerPlacements", getContainerList(props));
