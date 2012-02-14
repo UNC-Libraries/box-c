@@ -34,6 +34,9 @@ tr.failed > td {
   background-color: LavenderBlush;
   background-image: none;
 }
+tr.narrow > th {
+  min-width: 0px;
+}
 -->
 </style>
 <script type="text/javascript" src="../../js/jquery/jquery.min.js"></script>
@@ -91,7 +94,7 @@ function reloadIngestStatus() {
   		$("#ingestActiveJobs").html(""+json.activeJobs);
   		$("#ingestFinishedJobs").html(""+json.finishedJobs);
   		$("#ingestFailedJobs").html(""+json.failedJobs);
-  		$("#ingestRefreshed").html(""+dateFormat(new Date()));
+  		$("#ingestRefreshed").html(new Date().toTimeString());
     }
   );
 }
@@ -144,10 +147,8 @@ function writeJob(d, type) {
 	out = out + "<td>"+type+"</td><td>"+d.submitter+"</td><td>"+dateFormat(d.submissionTime)+"</td><td>"+d.worked+"/"+d.size+"</td><td>"+d.containerPlacements[0].submittedLabel+"</td><td>"+d.message+"</td>";
 	out = out + "</tr>" 
 	out = out + "<tr class='child "+type+"' id='child-a"+d.id+"' style='display: none'><td colspan='6'>";
-	out = out + "Job details";
-	if(d.error != null) {
-		out += "<h3>Error Log</h3><p>"+d.error+"</p>";
-	}
+	if(d.failedTime != null) out += "<p>Time of Failure: "+dateFormat(new Date(d.failedTime))+"</p>";
+	if(d.error != null) out += "<h3>Error Log</h3><p>"+d.error+"</p>";
 	out = out + "</td></tr>";
 	return out;
 }
@@ -155,14 +156,28 @@ function writeJob(d, type) {
 function dateFormat(timestamp) {
 	var date = new Date(timestamp);
 	// hours part from the timestamp
-	//var hours = date.getHours();
+	var hours = date.getHours();
+	var ampm = "AM";
+	if(hours >= 12) {
+		ampm = "PM";
+	}
+	if(hours > 12) {
+		hours = hours -12;
+	}
+	if(hours == 0) {
+		hours = 12;
+	}
 	// minutes part from the timestamp
-	//var minutes = date.getMinutes();
+	var minutes = date.getMinutes();
+	if(minutes < 10) {
+		minutes = "0"+minutes;
+	}
 	// seconds part from the timestamp
 	//var seconds = date.getSeconds();
 	// will display time in 10:30:23 format
-	//var formattedTime = hours + ':' + minutes + ':' + seconds;
-	return date.toUTCString();
+	var formattedTime = (date.getMonth()+1)+"/"+date.getDate()+" "+hours+':'+minutes+' '+ampm;
+	//return date.toUTCString();
+	return formattedTime;
 }
 
 //-->
@@ -183,7 +198,7 @@ function dateFormat(timestamp) {
 					</ul>
 					<div id="servicetabs-1">
 						<table>
-						  <tr><th>Active</th><th>Idle</th><th>Queued</th><th>Active</th><th>Failed</th><th>Finished<sup>*</sup></th><th>Refreshed</th></tr>
+						  <tr class="narrow"><th>Active</th><th>Idle</th><th>Queued</th><th>Active</th><th>Failed</th><th>Finished<sup>*</sup></th><th>Refreshed</th></tr>
 						  <tr>
 						    <td><span id="ingestActive"></span></td>
 						    <td><span id="ingestIdle"></span></td>
@@ -193,17 +208,18 @@ function dateFormat(timestamp) {
 						    <td><span id="ingestFinishedJobs"></span></td>
 						    <td><span id="ingestRefreshed"></span></td>
 						  </tr>
-						</p>
-					<table>
-					  <thead><tr><th>status</th><th>submitter</th><th>submit time</th><th>ingested</th><th>first object</th><th>message</th></tr></thead>
-					  <tbody id="jobs">
-					    <tr id="queued-end" style="display:none"><td></td></tr>
-					    <tr id="active-end" style="display:none"><td></td></tr>
-					    <tr id="failed-end" style="display:none"><td></td></tr>
-					    <tr id="finished-end" style="display:none"><td></td></tr>
-					  </tbody>
-					</table>
-					* Finished ingest jobs are removed after two days.
+						</table>
+					  <p>Batch Ingest Jobs by Status</p>
+					  <table>
+					    <thead><tr class="narrow"><th>status</th><th>submitter</th><th>submit time &uarr;</th><th>ingested</th><th>first object</th><th>message</th></tr></thead>
+					    <tbody id="jobs">
+					      <tr id="queued-end" style="display:none"><td></td></tr>
+					      <tr id="active-end" style="display:none"><td></td></tr>
+					      <tr id="failed-end" style="display:none"><td></td></tr>
+					      <tr id="finished-end" style="display:none"><td></td></tr>
+					    </tbody>
+					  </table>
+					  <p>* Finished ingest jobs are removed after two days.</p>
 					</div>
 					<div id="servicetabs-2">
 						<p>Indexing</p>

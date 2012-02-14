@@ -532,6 +532,7 @@ public class BatchIngestTask implements Runnable {
 					case CLEANUP:
 						this.finishedTime = System.currentTimeMillis();
 						this.ingestProperties.setFinishedTime(this.finishedTime);
+						this.ingestProperties.save();
 						deleteDataFiles();
 						handleFinishedDir();
 						this.state = STATE.FINISHED;
