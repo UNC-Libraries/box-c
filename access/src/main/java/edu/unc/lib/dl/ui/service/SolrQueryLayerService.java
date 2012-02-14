@@ -129,11 +129,13 @@ public class SolrQueryLayerService extends SolrSearchService {
 		
 		SearchResultResponse resultResponse = getSearchResults(searchRequest);
 		
+		//If this facet list contains parent collections, then get further metadata about them
 		if (searchState.getFacetsToRetrieve() == null || searchState.getFacetsToRetrieve().contains(SearchFieldKeys.PARENT_COLLECTION)){
 			FacetFieldObject parentCollectionFacet = resultResponse.getFacetFields().get(SearchFieldKeys.PARENT_COLLECTION);
 			List<BriefObjectMetadataBean> parentCollectionValues = getParentCollectionValues(resultResponse.getFacetFields().get(SearchFieldKeys.PARENT_COLLECTION), accessGroups);
 			int i;
-			if (parentCollectionFacet != null){
+			//If the parent collection facet yielded further metadata, then edit the original facet value to contain the additional metadata
+			if (parentCollectionFacet != null && parentCollectionValues != null){
 				for (GenericFacet pidFacet: parentCollectionFacet.getValues()){
 					String pid = pidFacet.getSearchValue();
 					for (i = 0; i < parentCollectionValues.size() && !pid.equals(parentCollectionValues.get(i).getId()); i++);
@@ -155,6 +157,12 @@ public class SolrQueryLayerService extends SolrSearchService {
 		return resultResponse;
 	}
 	
+	/**
+	 * Retrieves metadata fields for the parent collection pids contained by the supplied facet object.
+	 * @param parentCollectionFacet Facet object containing parent collection ids to lookup
+	 * @param accessGroups
+	 * @return
+	 */
 	public List<BriefObjectMetadataBean> getParentCollectionValues(FacetFieldObject parentCollectionFacet, AccessGroupSet accessGroups){
 		if (parentCollectionFacet == null || parentCollectionFacet.getValues() == null 
 				|| parentCollectionFacet.getValues().size() == 0){
