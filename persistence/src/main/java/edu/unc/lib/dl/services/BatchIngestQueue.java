@@ -49,12 +49,10 @@ public class BatchIngestQueue {
 		this.queuedDirectory = new File(this.serviceDirectory, QUEUED_SUBDIR);
 		this.failedDirectory = new File(this.serviceDirectory, FAILED_SUBDIR);
 		this.finishedDirectory = new File(this.serviceDirectory, FINISHED_SUBDIR);
-		if (!this.serviceDirectory.exists()) {
-			this.serviceDirectory.mkdir();
-			this.failedDirectory.mkdir();
-			this.finishedDirectory.mkdir();
-			this.queuedDirectory.mkdir();
-		}
+		if(!this.serviceDirectory.exists()) this.serviceDirectory.mkdir();
+		if(!this.failedDirectory.exists()) this.failedDirectory.mkdir();
+		if(!this.finishedDirectory.exists()) this.finishedDirectory.mkdir();
+		if(!this.queuedDirectory.exists()) this.queuedDirectory.mkdir();
 	}
 
 	public String getServiceDirectoryPath() {
