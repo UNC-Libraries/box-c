@@ -227,8 +227,8 @@ function dateFormat(timestamp) {
 					    <tbody id="jobs">
 					      <tr id="queued-end" style="display:none"><td></td></tr>
 					      <tr id="active-end" style="display:none"><td></td></tr>
-					      <tr id="failed-end" style="display:none"><td></td></tr>
 					      <tr id="finished-end" style="display:none"><td></td></tr>
+					      <tr id="failed-end" style="display:none"><td></td></tr>
 					    </tbody>
 					  </table>
 					  <p>* Finished ingest jobs are removed after two days.</p>

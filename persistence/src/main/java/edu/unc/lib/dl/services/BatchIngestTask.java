@@ -109,7 +109,7 @@ public class BatchIngestTask implements Runnable {
 	/**
 	 * This code indicates a container update in the ingest log.
 	 */
-	private static final String CONTAINER_UPDATED_CODE = "CONTAINER UPDATED";
+	public static final String CONTAINER_UPDATED_CODE = "CONTAINER UPDATED";
 
 	/**
 	 * Base directory of this ingest batch
@@ -437,6 +437,7 @@ public class BatchIngestTask implements Runnable {
 
 			this.eventLogger = new PremisEventLogger(AgentFactory.getRepositorySoftwareAgentStub());
 
+			this.state = STATE.CHECK;
 			if (ingestLog.exists()) { // this is a resume, find next foxml
 				BufferedReader r = new BufferedReader(new FileReader(ingestLog));
 				String lastLine = null;
@@ -457,8 +458,6 @@ public class BatchIngestTask implements Runnable {
 						log.info("Resuming ingest from " + this.lastIngestFilename + " in " + this.getBaseDir().getName());
 					}
 				}
-			} else {
-				this.state = STATE.CHECK;
 			}
 			this.ingestLogWriter = new BufferedWriter(new FileWriter(ingestLog, true));
 		} catch (Exception e) {
@@ -500,7 +499,7 @@ public class BatchIngestTask implements Runnable {
 	public void run() {
 		startTime = System.currentTimeMillis();
 		while (this.state != STATE.FINISHED) {
-			log.debug("Batch ingest: state=" + this.state + ", dir=" + this.getBaseDir());
+			log.debug("Batch ingest: state=" + this.state.name() + ", dir=" + this.getBaseDir().getName());
 			if (Thread.interrupted()) {
 				log.debug("halting ingest task due to interrupt, in run method");
 				this.halting = true;

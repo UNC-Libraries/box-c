@@ -189,7 +189,23 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 					}
 				}).length;
 				job.put("size", c);
-				job.put("worked", c);
+				BufferedReader r = new BufferedReader(new FileReader(new File(f, BatchIngestTask.INGEST_LOG)));
+				String lastLine = null;
+				int countLines = 0;
+				for (String line = r.readLine(); line != null; line = r.readLine()) {
+					lastLine = line;
+					countLines++;
+				}
+				String[] lastarray = lastLine.split("\\t");
+				if(BatchIngestTask.CONTAINER_UPDATED_CODE.equals(lastarray[1])) {
+					job.put("worked", c);
+				} else {
+					if(lastarray.length > 2) {
+						job.put("worked", countLines);
+					} else {
+						job.put("worked", countLines-1);
+					}
+				}
 				long mod = new File(f, "ingested.log").lastModified();
 				job.put("startTime",  mod);
 				job.put("finishedTime", null);
