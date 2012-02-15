@@ -16,20 +16,10 @@
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.swordapp.server.AuthCredentials;
-import org.swordapp.server.SwordAuthException;
-import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.AccessControlUtils;
@@ -59,12 +49,11 @@ public abstract class AbstractFedoraManager {
 	}
 
 	protected String readFileAsString(String filePath) throws java.io.IOException {
+		LOG.debug("Loading path file " + filePath);
 		StringBuffer fileData = new StringBuffer(1000);
 		java.io.InputStream inStream = this.getClass().getResourceAsStream(filePath);
 		java.io.InputStreamReader inStreamReader = new InputStreamReader(inStream);
 		BufferedReader reader = new BufferedReader(inStreamReader);
-		// BufferedReader reader = new BufferedReader(new
-		// InputStreamReader(this.getClass().getResourceAsStream(filePath)));
 		char[] buf = new char[1024];
 		int numRead = 0;
 		while ((numRead = reader.read(buf)) != -1) {
@@ -74,34 +63,6 @@ public abstract class AbstractFedoraManager {
 		}
 		reader.close();
 		return fileData.toString();
-	}
-
-	public void authenticate(AuthCredentials auth) throws SwordAuthException, SwordServerException {
-		HttpClient client = new HttpClient();
-		UsernamePasswordCredentials cred = new UsernamePasswordCredentials(
-				auth.getUsername(), auth.getPassword());
-		client.getState().setCredentials(new AuthScope(null, 443), cred);
-		client.getState().setCredentials(new AuthScope(null, 80), cred);
-
-		GetMethod method = new GetMethod(accessClient.getFedoraContextUrl());
-		
-		try {
-			method.setDoAuthentication(true);
-			client.executeMethod(method);
-			if (method.getStatusCode() == HttpStatus.SC_OK) {
-				return;
-			} else if (method.getStatusCode() == HttpStatus.SC_UNAUTHORIZED){
-				throw new SwordAuthException(true);
-			} else {
-				throw new SwordServerException("Server responded with status " + method.getStatusCode());
-			}
-		} catch (HttpException e){
-			throw new SwordServerException(e);
-		} catch (IOException e) {
-			throw new SwordServerException(e);
-		} finally {
-			method.releaseConnection();
-		}
 	}
 
 	public AccessClient getAccessClient() {

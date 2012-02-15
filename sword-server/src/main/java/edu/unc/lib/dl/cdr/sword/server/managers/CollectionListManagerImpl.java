@@ -21,14 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.abdera.Abdera;
-import org.apache.abdera.factory.Factory;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.CollectionListManager;
 import org.swordapp.server.SwordAuthException;
-import org.swordapp.server.SwordCollection;
 import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
@@ -50,9 +48,6 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 	@Override
 	public Feed listCollectionContents(IRI collectionIRI, AuthCredentials auth, SwordConfiguration config)
 			throws SwordServerException, SwordAuthException, SwordError {
-		
-		//Check the provided user/pass
-		//this.authenticate(auth);
 		
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
 		

@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.swordapp.server.MediaResourceAPI;
@@ -52,6 +51,7 @@ public class MediaResourceServlet extends BaseSwordServlet {
 	 */
 	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
 	public void doRetrieveContent(HttpServletRequest req, HttpServletResponse resp){
+		LOG.debug("Called retrieve content");
 		resp.setStatus(HttpStatus.NOT_IMPLEMENTED.value());
 	}
 	
