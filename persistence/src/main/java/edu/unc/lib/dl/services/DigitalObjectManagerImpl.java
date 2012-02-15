@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -144,6 +145,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			String submitter = null;
 			if(PersonAgent.class.isInstance(user)) {
 				submitter = ((PersonAgent)user).getOnyen();
+				try {
+					URI email = new URI(submitter+"@email.unc.edu");
+					aip.setEmailRecipients(Collections.singletonList(email));
+				} catch (URISyntaxException e) {
+					log.error("Invalid onyen, cannot create email URI", e);
+				}
 			} else {
 				submitter = user.getName();
 			}

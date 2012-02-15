@@ -96,6 +96,8 @@ public class BatchIngestTask implements Runnable {
 
 	private STATE state = STATE.INIT;
 
+	private BatchIngestQueue batchIngestQueue = null;
+
 	/**
 	 * Marks this tasks as halting. (Another task may resume ingest later.)
 	 */
@@ -277,11 +279,16 @@ public class BatchIngestTask implements Runnable {
 				}
 			}
 		}
+		this.ingestProperties.setStartTime(this.startTime);
+		this.ingestProperties.save();
 		// move batch to failed dir
 		try {
-			File failedFolder = new File(this.baseDir.getParentFile().getParentFile(), BatchIngestQueue.FAILED_SUBDIR);
-			File dest = new File(failedFolder, this.baseDir.getName());
-			FileUtils.renameOrMoveTo(this.baseDir, dest);
+			if (this.getBatchIngestQueue() != null) {
+				File dest = new File(this.getBatchIngestQueue().getFailedDirectory(), this.baseDir.getName());
+				FileUtils.renameOrMoveTo(this.baseDir, dest);
+			} else {
+				FileUtils.deleteDir(this.baseDir);
+			}
 		} catch (IOException ioe) {
 			throw new Error("Unexpected IO error on moving completed ingest batch.", ioe);
 		}
@@ -349,7 +356,7 @@ public class BatchIngestTask implements Runnable {
 		Document doc = getFOXMLDocument(foxmlFiles[next]);
 		PID pid = new PID(FOXMLJDOMUtil.getPID(doc));
 
-		log.debug("next ingest is:\t"+foxmlFiles[next].getName()+"\t"+pid.getPid());
+		log.debug("next ingest is:\t" + foxmlFiles[next].getName() + "\t" + pid.getPid());
 
 		// handle file locations (upload/rewrite/pass-through)
 		for (Element cLocation : FOXMLJDOMUtil.getFileLocators(doc)) {
@@ -360,7 +367,7 @@ public class BatchIngestTask implements Runnable {
 				if (uri.getScheme() == null || uri.getScheme().contains("file")) {
 					try {
 						File file = FileUtils.getFileForUrl(ref, dataDir);
-						log.debug("uploading "+file.getPath());
+						log.debug("uploading " + file.getPath());
 						newref = this.getManagementClient().upload(file);
 						cLocation.setAttribute("REF", newref);
 					} catch (IOException e) {
@@ -372,7 +379,7 @@ public class BatchIngestTask implements Runnable {
 						Document premis = new SAXBuilder().build(file);
 						this.eventLogger.logEvent(PremisEventLogger.Type.INGESTION, "ingested as PID:" + pid.getPid(), pid);
 						this.eventLogger.appendLogEvents(pid, premis.getRootElement());
-						log.debug("uploading "+file.getPath());
+						log.debug("uploading " + file.getPath());
 						newref = this.getManagementClient().upload(premis);
 						cLocation.setAttribute("REF", newref);
 					} catch (Exception e) {
@@ -531,6 +538,7 @@ public class BatchIngestTask implements Runnable {
 					case CLEANUP:
 						this.finishedTime = System.currentTimeMillis();
 						this.ingestProperties.setFinishedTime(this.finishedTime);
+						this.ingestProperties.setStartTime(this.startTime);
 						this.ingestProperties.save();
 						deleteDataFiles();
 						handleFinishedDir();
@@ -543,7 +551,7 @@ public class BatchIngestTask implements Runnable {
 				if (this.sendEmailMessages && this.mailNotifier != null && ingestProperties.getEmailRecipients() != null)
 					this.mailNotifier.sendIngestFailureNotice(e, ingestProperties);
 				return;
-			} catch(RuntimeException e) {
+			} catch (RuntimeException e) {
 				log.error("Unexpected runtime exception", e);
 				return;
 			}
@@ -560,8 +568,7 @@ public class BatchIngestTask implements Runnable {
 			if (submitter == null) {
 				throw fail("Cannot look up submitter");
 			} else {
-				log.warn("Ingest submitter is a software agent: " + submitter.getName() + " (" + submitter.getPID()
-						+ ")");
+				log.warn("Ingest submitter is a software agent: " + submitter.getName() + " (" + submitter.getPID() + ")");
 			}
 		}
 		this.eventLogger = new PremisEventLogger(submitter);
@@ -591,10 +598,8 @@ public class BatchIngestTask implements Runnable {
 	 */
 	private void handleFinishedDir() {
 		try {
-			if (this.saveFinishedBatches) {
-				File finishedFolder = new File(this.baseDir.getParentFile().getParentFile(),
-						BatchIngestQueue.FINISHED_SUBDIR);
-				File dest = new File(finishedFolder, this.baseDir.getName());
+			if (this.saveFinishedBatches && this.getBatchIngestQueue() != null) {
+				File dest = new File(this.getBatchIngestQueue().getFinishedDirectory(), this.baseDir.getName());
 				FileUtils.renameOrMoveTo(this.baseDir, dest);
 			} else {
 				FileUtils.deleteDir(baseDir);
@@ -646,7 +651,8 @@ public class BatchIngestTask implements Runnable {
 			Collections.addAll(containerSet, this.containers);
 			if (this.sendJmsMessages) {
 				this.getOperationsMessageSender().sendAddOperation(ingestProperties.getSubmitter(), containerSet,
-						ingestProperties.getContainerPlacements().keySet(), reordered, ingestProperties.getOriginalDepositId());
+						ingestProperties.getContainerPlacements().keySet(), reordered,
+						ingestProperties.getOriginalDepositId());
 			}
 		}
 		// send successful ingest email
@@ -797,10 +803,10 @@ public class BatchIngestTask implements Runnable {
 			if (!this.managementClient.pollForObject(this.lastIngestPID, ingestPollingDelaySeconds,
 					ingestPollingTimeoutSeconds)) {
 				// TODO re-attempt last ingest before failing?
-				throw fail("The last ingest before resuming was not completed within timeout of "+ingestPollingTimeoutSeconds+" - " + this.lastIngestPID + " in "
-						+ this.lastIngestFilename);
+				throw fail("The last ingest before resuming was not completed within timeout of "
+						+ ingestPollingTimeoutSeconds + " - " + this.lastIngestPID + " in " + this.lastIngestFilename);
 			} else {
-				log.debug("succeeded in finding last ingested fedora object:"+ this.lastIngestPID.getPid());
+				log.debug("succeeded in finding last ingested fedora object:" + this.lastIngestPID.getPid());
 				this.state = STATE.INGEST_VERIFY_CHECKSUMS;
 			}
 		} catch (InterruptedException e) {
@@ -894,9 +900,9 @@ public class BatchIngestTask implements Runnable {
 
 	public int getIngestedCount() {
 		int result = 0;
-		if(this.foxmlFiles != null && this.lastIngestFilename != null) {
-			for(int i = 0; i < foxmlFiles.length; i++) {
-				if(this.lastIngestFilename.equals(foxmlFiles[i].getName())) {
+		if (this.foxmlFiles != null && this.lastIngestFilename != null) {
+			for (int i = 0; i < foxmlFiles.length; i++) {
+				if (this.lastIngestFilename.equals(foxmlFiles[i].getName())) {
 					result = i;
 				}
 			}
@@ -906,7 +912,7 @@ public class BatchIngestTask implements Runnable {
 
 	public boolean isRunning() {
 		boolean result = false;
-		if(this.startTime > 0 && this.finishedTime < 0) {
+		if (this.startTime > 0 && this.finishedTime < 0) {
 			result = true;
 		}
 		return result;
@@ -917,6 +923,14 @@ public class BatchIngestTask implements Runnable {
 	 */
 	public long getFinishedTime() {
 		return this.finishedTime;
+	}
+
+	public BatchIngestQueue getBatchIngestQueue() {
+		return batchIngestQueue;
+	}
+
+	public void setBatchIngestQueue(BatchIngestQueue batchIngestQueue) {
+		this.batchIngestQueue = batchIngestQueue;
 	}
 
 }
