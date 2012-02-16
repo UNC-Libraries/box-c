@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MetsSubmitByPidDAO {
 	private String pid;
 	private String message;
+	private String ingestMessage;
 	private String ownerPid;
 	private String filePath;
 	private List breadcrumbs = new ArrayList();
@@ -42,7 +43,7 @@ public class MetsSubmitByPidDAO {
 	private boolean submissionCheck = false;
 	private String virusDate;
 	private String checksumDate;
-	
+
 	public void setFile(MultipartFile file) {
 		this.file = file;
 	}
@@ -86,7 +87,7 @@ public class MetsSubmitByPidDAO {
 	public void setSubmissionCheck(boolean submissionCheck) {
 		this.submissionCheck = submissionCheck;
 	}
-	
+
 	public String getVirusDate() {
 		return virusDate;
 	}
@@ -108,7 +109,7 @@ public class MetsSubmitByPidDAO {
 	public void setPid(String pid) {
 		this.pid = pid;
 	}
-	
+
 	public String getMessage() {
 		return message;
 	}
@@ -150,5 +151,13 @@ public class MetsSubmitByPidDAO {
 	}
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;
+	}
+
+	public String getIngestMessage() {
+		return ingestMessage;
+	}
+
+	public void setIngestMessage(String ingestMessage) {
+		this.ingestMessage = ingestMessage;
 	}
 }

@@ -83,7 +83,11 @@ public class SubmitServiceImpl implements SubmitService {
  			METSPackageSIP sip = new METSPackageSIP(containerPID,	file, agent, zipFlag);
  			PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
  			setPremisVirusEvent(eventLogger, request.getVirusDate(), request.getVirusSoftware(), request.getOwnerPid());
- 			digitalObjectManager.addToIngestQueue(sip, agent, "Added through UI");
+ 			String note = "Added through UI";
+ 			if(request.getMessage() != null) {
+ 				note = request.getMessage();
+ 			}
+ 			digitalObjectManager.addToIngestQueue(sip, agent, note);
  		} catch (IOException e) {
  			logger.error("unexpected io error", e);
  			error = "There was an unexpected error processing your ingest:\n <br />"+e.getLocalizedMessage();

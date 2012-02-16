@@ -189,10 +189,24 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 					}
 				}).length;
 				job.put("size", c);
-				job.put("worked", c);
-				long mod = new File(f, "ingested.log").lastModified();
-				job.put("startTime",  mod);
-				job.put("finishedTime", null);
+				BufferedReader r = new BufferedReader(new FileReader(new File(f, BatchIngestTask.INGEST_LOG)));
+				String lastLine = null;
+				int countLines = 0;
+				for (String line = r.readLine(); line != null; line = r.readLine()) {
+					lastLine = line;
+					countLines++;
+				}
+				String[] lastarray = lastLine.split("\\t");
+				if(BatchIngestTask.CONTAINER_UPDATED_CODE.equals(lastarray[1])) {
+					job.put("worked", c);
+				} else {
+					if(lastarray.length > 2) {
+						job.put("worked", countLines);
+					} else {
+						job.put("worked", countLines-1);
+					}
+				}
+				job.put("startTime",  props.getStartTime());
 				job.put("running", false);
 				job.put("containerPlacements", getContainerList(props));
 			} catch (Exception e1) {
@@ -248,6 +262,7 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 				props = new IngestProperties(f);
 				job.put("submitter", props.getSubmitter());
 				job.put("submissionTime", props.getSubmissionTime() > 0 ? props.getSubmissionTime() : null);
+				job.put("startTime", props.getStartTime() > 0 ? props.getStartTime() : null);
 				job.put("finishedTime", props.getFinishedTime() > 0 ? props.getFinishedTime() : null);
 				job.put("depositId", props.getOriginalDepositId());
 				job.put("message", props.getMessage());
@@ -259,9 +274,6 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 				}).length;
 				job.put("size", c);
 				job.put("worked", c);
-				long mod = new File(f, "ingested.log").lastModified();
-				job.put("startTime",  mod);
-				job.put("finishedTime", props.getFinishedTime());
 				job.put("running", false);
 				job.put("containerPlacements", getContainerList(props));
 			} catch (Exception e1) {

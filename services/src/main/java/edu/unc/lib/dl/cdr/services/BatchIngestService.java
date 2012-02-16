@@ -94,6 +94,7 @@ public class BatchIngestService implements ServiceConductor {
 				BatchIngestTask newtask = this.batchIngestTaskFactory.createTask();
 				newtask.setBaseDir(dir);
 				newtask.init();
+				newtask.setBatchIngestQueue(getBatchIngestQueue());
 				this.executor.execute(newtask);
 			}
 		}

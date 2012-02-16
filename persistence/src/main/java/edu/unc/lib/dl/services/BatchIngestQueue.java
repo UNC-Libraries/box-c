@@ -182,4 +182,20 @@ public class BatchIngestQueue {
 		return batchDirs;
 	}
 
+	public File getServiceDirectory() {
+		return serviceDirectory;
+	}
+
+	public File getQueuedDirectory() {
+		return queuedDirectory;
+	}
+
+	public File getFailedDirectory() {
+		return failedDirectory;
+	}
+
+	public File getFinishedDirectory() {
+		return finishedDirectory;
+	}
+
 }
