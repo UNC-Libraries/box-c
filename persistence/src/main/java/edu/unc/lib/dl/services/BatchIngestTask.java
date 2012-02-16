@@ -613,11 +613,11 @@ public class BatchIngestTask implements Runnable {
 	 *
 	 */
 	private void deleteDataFiles() {
-		if (this.dataDir != null) {
+		if (this.dataDir != null && this.dataDir.exists()) {
 			log.debug("Deleting batch ingest data files: " + this.dataDir.getAbsolutePath());
 			FileUtils.deleteDir(this.dataDir);
 		}
-		if (this.premisDir != null) {
+		if (this.premisDir != null && this.premisDir.exists()) {
 			log.debug("Deleting batch ingest premis events files: " + this.premisDir.getAbsolutePath());
 			FileUtils.deleteDir(this.premisDir);
 		}
