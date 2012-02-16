@@ -68,10 +68,18 @@ public class MetsSubmitByPidController extends CommonAdminObjectNavigationContro
 		MultipartFile file = dao.getFile();
 
 		MetsSubmitIngestObject ingest = new MetsSubmitIngestObject();
+		String ingestMessage = null;
+		if(dao.getIngestMessage() != null && dao.getIngestMessage().trim().length() > 0) {
+			ingestMessage = dao.getIngestMessage().trim();
+		}
 
 		if ((file != null) && (file.getSize() > 0)) {
 
 			String fileName = file.getOriginalFilename();
+			if(ingestMessage == null) {
+				ingestMessage = fileName;
+			}
+
 			String extension;
 
 			if (fileName.endsWith(".zip"))
@@ -109,7 +117,8 @@ public class MetsSubmitByPidController extends CommonAdminObjectNavigationContro
 						folderManager.createPath(pidPath, ownerAgent, mediator);
 
 					} catch (Exception e) {
-						e.printStackTrace();
+						dao.setMessage(e.getLocalizedMessage());
+						noErrors = false;
 					}
 				}
 
@@ -135,6 +144,7 @@ public class MetsSubmitByPidController extends CommonAdminObjectNavigationContro
 			ingest.setVirusCheck(dao.isVirusCheck());
 			ingest.setVirusSoftware(dao.getVirusSoftware());
 			ingest.setVirusDate(dao.getVirusDate());
+			ingest.setMessage(ingestMessage);
 
 			MetsSubmitIngestObject wsResponse = new MetsSubmitIngestObject();
 

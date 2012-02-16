@@ -55,12 +55,38 @@
 <b><fmt:message key="metsubmitbypid.instructions" /></b>
 <br>
 <form:form method="POST" commandName="metsSubmitByPidDAO" 	enctype="multipart/form-data">
-	<em><c:out value="${metsSubmitByPidDAO.message}" /></em>
-<br>
-	<table width="40%" bgcolor="f8f8ff" border="0" cellspacing="0"
+  <p>
+	  <em><c:out value="${metsSubmitByPidDAO.message}" /></em>
+  </p>
+
+<div style="float: right">
+	<table bgcolor="f8f8ff" border="0" cellspacing="0"
 		cellpadding="5">
 		<tbody>
-<br>
+		<tr><td colspan="3"><h1>2</h1></td></tr>
+		<tr><td align="left"><fmt:message key="submit.ingest.path" /></td>
+		<td>
+<c:forEach items="${metsSubmitByPidDAO.breadcrumbs}" var="breadcrumb"> <c:out value="/" /> <c:out value="${breadcrumb.label}" escapeXml="false" /></c:forEach> /</td>
+		</tr>
+		<tr>
+			<td align="left"><fmt:message key="submit.filepath.additional" /></td>
+			<td align="left"><input id="filePath" type="text"
+				name="filePath" value="${metsSubmitByPidDAO.filePath}" size="60" /><br />
+				<fmt:message key="metsubmitbypid.addFilePath" /></td>
+			<td><spring:bind path="metsSubmitByPidDAO.filePath">
+				<FONT color="red"><B><c:out
+					value="${status.errorMessage}" /></B></FONT>
+			</spring:bind></td>
+		</tr>
+		<tr>
+			<td align="left"><fmt:message key="submit.ingestMessage" /></td>
+			<td align="left"><input type="text" name="ingestMessage"
+				value="${metsSubmitByPidDAO.ingestMessage}" size="60" /></td>
+			<td><spring:bind path="metsSubmitByPidDAO.ingestMessage">
+				<FONT color="red"><B><c:out
+					value="${status.errorMessage}" /></B></FONT>
+			</spring:bind></td>
+		</tr>
 		<tr>
 			<td align="left"><fmt:message key="submit.owner.name" /></td>
 			<td align="left"><form:select path="ownerPid">
@@ -132,40 +158,20 @@
 					value="${status.errorMessage}" /></B></FONT>
 			</spring:bind></td>
 		</tr>
-		<tr><td align="left"><fmt:message key="submit.ingest.path" /></td>
-		<td>
-<c:forEach items="${metsSubmitByPidDAO.breadcrumbs}" var="breadcrumb">
-	<c:out value=" > " />
-	<c:out value="${breadcrumb.label}" escapeXml="false" />
-</c:forEach></td>
-		</tr>
-		<tr>
-			<td align="left"><fmt:message key="submit.filepath.additional" /></td>
-			<td align="left"><input id="filePath" type="text"
-				name="filePath" value="${metsSubmitByPidDAO.filePath}" size="60"></td>
-			<td><spring:bind path="metsSubmitByPidDAO.filePath">
-				<FONT color="red"><B><c:out
-					value="${status.errorMessage}" /></B></FONT>
-			</spring:bind></td>
-		</tr>
 		</tbody>
 	</table>
 	<center><input type="submit" alignment="center" value="<fmt:message key="submit.submit"/>"/></center>
 	</form:form>
-	<br><br>
-<table>
-<tbody>
-</tbody>
+	<center><form method="LINK" action="<c:url value='/ir/admin/'/>"><input type="submit" value='<fmt:message key="um.return.to.admin.page"/>'></form></center>
+</div>
+<div>
+<h1>1</h1>
 <c:if test="${not empty metsSubmitByPidDAO.paths}">
 			<c:forEach items="${metsSubmitByPidDAO.paths}" var="entry">
-				<tr><td align="left"><a href="<c:out value="${entry.path}" />"><c:out value="${entry.label}" escapeXml="false" /></a></td>
-				</tr>
-				
-			</c:forEach>			
+				<a href="<c:out value="${entry.path}" />"><c:out value="${entry.label}" escapeXml="false" /></a><br />
+			</c:forEach>
 </c:if>
-</table>
-
-<form method="LINK" action="<c:url value='/ir/admin/'/>"><input type="submit" value='<fmt:message key="um.return.to.admin.page"/>'></form>
+</div>
 </div>
 </body>
 </html>

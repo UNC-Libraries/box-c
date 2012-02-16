@@ -223,7 +223,7 @@ function dateFormat(timestamp) {
 						</table>
 					  <p>Batch Ingest Jobs by Status</p>
 					  <table>
-					    <thead><tr class="narrow"><th>status</th><th>submitter</th><th>submit time &uarr;</th><th>ingested</th><th>first object</th><th>message</th></tr></thead>
+					    <thead><tr class="narrow"><th>status</th><th>submitter</th><th>submit time &uarr;</th><th>ingested</th><th>first object</th><th>tracking note</th></tr></thead>
 					    <tbody id="jobs">
 					      <tr id="queued-end" style="display:none"><td></td></tr>
 					      <tr id="active-end" style="display:none"><td></td></tr>
