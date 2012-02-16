@@ -49,10 +49,14 @@ public class BatchIngestQueue {
 		this.queuedDirectory = new File(this.serviceDirectory, QUEUED_SUBDIR);
 		this.failedDirectory = new File(this.serviceDirectory, FAILED_SUBDIR);
 		this.finishedDirectory = new File(this.serviceDirectory, FINISHED_SUBDIR);
-		if(!this.serviceDirectory.exists()) this.serviceDirectory.mkdir();
-		if(!this.failedDirectory.exists()) this.failedDirectory.mkdir();
-		if(!this.finishedDirectory.exists()) this.finishedDirectory.mkdir();
-		if(!this.queuedDirectory.exists()) this.queuedDirectory.mkdir();
+		if (!this.serviceDirectory.exists())
+			this.serviceDirectory.mkdir();
+		if (!this.failedDirectory.exists())
+			this.failedDirectory.mkdir();
+		if (!this.finishedDirectory.exists())
+			this.finishedDirectory.mkdir();
+		if (!this.queuedDirectory.exists())
+			this.queuedDirectory.mkdir();
 	}
 
 	public String getServiceDirectoryPath() {
@@ -73,7 +77,7 @@ public class BatchIngestQueue {
 		}
 		File result = new File(this.queuedDirectory, System.currentTimeMillis() + "-" + props.getSubmitter());
 		if (result.exists()) {
-			LOG.error("queued directory name conflict: "+result.toString());
+			LOG.error("queued directory name conflict: " + result.toString());
 			return false;
 		}
 		try {
@@ -94,14 +98,19 @@ public class BatchIngestQueue {
 				return arg0.isDirectory();
 			}
 		});
-		Arrays.sort(batchDirs, new Comparator<File>() {
-			@Override
-			public int compare(File o1, File o2) {
-				if(o1 == null || o2 == null) return 0;
-				return (int)(o1.lastModified() - o2.lastModified());
-			}
-		});
-		return batchDirs;
+		if (batchDirs != null) {
+			Arrays.sort(batchDirs, new Comparator<File>() {
+				@Override
+				public int compare(File o1, File o2) {
+					if (o1 == null || o2 == null)
+						return 0;
+					return (int) (o1.lastModified() - o2.lastModified());
+				}
+			});
+			return batchDirs;
+		} else {
+			return new File[] {};
+		}
 	}
 
 	/**
@@ -111,14 +120,14 @@ public class BatchIngestQueue {
 		File[] batchDirs = this.queuedDirectory.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File arg0) {
-				if(arg0.isDirectory()) {
+				if (arg0.isDirectory()) {
 					String[] readyFiles = arg0.list(new FilenameFilter() {
 						@Override
 						public boolean accept(File dir, String name) {
 							return (READY_FILE.equals(name));
 						}
 					});
-					if(readyFiles.length > 0) {
+					if (readyFiles.length > 0) {
 						return true;
 					}
 				}
@@ -128,8 +137,9 @@ public class BatchIngestQueue {
 		Arrays.sort(batchDirs, new Comparator<File>() {
 			@Override
 			public int compare(File o1, File o2) {
-				if(o1 == null || o2 == null) return 0;
-				return (int)(o1.lastModified() - o2.lastModified());
+				if (o1 == null || o2 == null)
+					return 0;
+				return (int) (o1.lastModified() - o2.lastModified());
 			}
 		});
 		return batchDirs;
@@ -175,8 +185,9 @@ public class BatchIngestQueue {
 		Arrays.sort(batchDirs, new Comparator<File>() {
 			@Override
 			public int compare(File o1, File o2) {
-				if(o1 == null || o2 == null) return 0;
-				return (int)(o1.lastModified() - o2.lastModified());
+				if (o1 == null || o2 == null)
+					return 0;
+				return (int) (o1.lastModified() - o2.lastModified());
 			}
 		});
 		return batchDirs;

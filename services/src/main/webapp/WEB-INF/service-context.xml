@@ -378,6 +378,7 @@
 				<entry key="cdr-services:name=solrUpdateConductor" value-ref="solrUpdateConductor" />
 				<entry key="cdr-services:name=fedoraDataService" value-ref="fedoraDataService" />
 				<entry key="cdr-services:name=catchUpService" value-ref="catchUpService" />
+				<entry key="cdr-services:name=batchIngestService" value-ref="batchIngestService" />
 				<entry key="cdr-services:name=technicalMetadataEnhancementService" value-ref="technicalMetadataEnhancementService" />
 				<entry key="cdr-services:name=thumbnailEnhancementService" value-ref="thumbnailEnhancementService" />
 				<entry key="cdr-services:name=solrUpdateEnhancementService" value-ref="solrUpdateEnhancementService" />
