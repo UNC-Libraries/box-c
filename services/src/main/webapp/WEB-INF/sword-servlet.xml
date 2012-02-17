@@ -232,7 +232,8 @@
 		init-method="init">
 		<property name="acceptedPackaging">
 			<list>
-				<value>#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP.uri}</value>
+				<value>#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_1.uri}</value>
+				<value>#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_2.uri}</value>
 				<value>#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR.uri}</value>
 			</list>
 		</property>

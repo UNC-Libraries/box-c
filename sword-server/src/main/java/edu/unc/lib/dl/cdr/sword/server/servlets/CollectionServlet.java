@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.cdr.sword.server.servlets;
 
 import java.io.IOException;
+import java.util.Enumeration;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -49,17 +50,29 @@ public class CollectionServlet extends BaseSwordServlet {
 		// load the API
 		this.api = new CollectionAPI(this.collectionListManager, this.collectionDepositManager, this.config);
 	}
-	
-	@RequestMapping(value = {"", "/", "/{pid}", "/{pid}/*"}, method = RequestMethod.GET)
+
+	@RequestMapping(value = { "", "/", "/{pid}", "/{pid}/*" }, method = RequestMethod.GET)
 	protected void collectionList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		LOG.debug("GET request for collection content list");
 		this.api.get(req, resp);
 	}
-	
-	@RequestMapping(value = {"", "/", "/{pid}"}, method = RequestMethod.POST)
+
+	@RequestMapping(value = { "", "/", "/{pid}" }, method = RequestMethod.POST)
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		LOG.debug("POST request to submit to collection: " + req.getQueryString());
 		LOG.debug("Packaging: " + req.getHeader("Packaging"));
+		if (LOG.isDebugEnabled()) {
+			String headers = null;
+			Enumeration<String> e = req.getHeaderNames();
+			LOG.debug("Collection submission headers:");
+			while (e.hasMoreElements()) {
+				headers = e.nextElement();
+				if (headers != null) {
+					LOG.debug("  " + headers + ":" + req.getHeader(headers));
+				}
+			}
+		}
+		
 		this.api.post(req, resp);
 	}
 

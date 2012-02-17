@@ -91,7 +91,8 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			throw new SwordAuthException("Insufficient privileges to deposit to container " + containerPID.getPid());
 		}
 
-		if (PackagingType.METS_CDR.equals(deposit.getPackaging()) || PackagingType.METS_DSPACE_SIP.equals(deposit.getPackaging())){
+		if (PackagingType.METS_CDR.equals(deposit.getPackaging()) || PackagingType.METS_DSPACE_SIP_2.equals(deposit.getPackaging())
+				|| PackagingType.METS_DSPACE_SIP_1.equals(deposit.getPackaging())){
 			try {
 				return doMETSDeposit(containerPID, deposit, auth, configImpl, agent);
 			} catch (Exception e) {
