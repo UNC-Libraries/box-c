@@ -55,7 +55,7 @@ $(function() {
    	//alert("Hello tabselect "+ui.index);
    	switch(ui.index) {
    		case 0:
-   			reloadIngestDetails();
+   			//reloadIngestDetails();
    			break;
    		case 1:
    			//loadIndexingDetails();
