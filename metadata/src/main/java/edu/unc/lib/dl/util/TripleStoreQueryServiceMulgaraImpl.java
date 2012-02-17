@@ -90,25 +90,6 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		this.httpClient = new HttpClient(this.multiThreadedHttpConnectionManager);
 		this.mapper = new ObjectMapper();
 		this.collections = null;
-		// copies the classpath resources to the temp folder for access by the
-		// itql client.
-		// yeah, it's a hack, but better than relying on files placed in
-		// specific locations
-		// on the mulgara server.
-		/*
-		 * try { this.tempKruleOwl = File.createTempFile("krule-", ".owl"); this.tempKruleRdf =
-		 * File.createTempFile("krule-", ".rdf"); // dump rules files into temporary space for ITQL loading
-		 * BufferedInputStream isOwl = new BufferedInputStream(this.getClass().getClassLoader().getResourceAsStream (
-		 * TripleStoreQueryServiceMulgaraImpl.kruleOwlPath)); BufferedOutputStream osOwl = new BufferedOutputStream(new
-		 * FileOutputStream(this.tempKruleOwl)); byte[] buf = new byte[1024]; int len; while ((len = isOwl.read(buf)) > 0)
-		 * { osOwl.write(buf, 0, len); } isOwl.close(); osOwl.close();
-		 *
-		 * BufferedInputStream isRdf = new BufferedInputStream(this.getClass().getClassLoader ().getResourceAsStream(
-		 * TripleStoreQueryServiceMulgaraImpl.kruleRdfPath)); BufferedOutputStream osRdf = new BufferedOutputStream(new
-		 * FileOutputStream(this.tempKruleRdf)); while ((len = isRdf.read(buf)) > 0) { osRdf.write(buf, 0, len); }
-		 * isRdf.close(); osRdf.close(); } catch (IOException e) { throw new Error("There was a problem initializing the
-		 * Triple Store Service", e); }
-		 */
 	}
 
 	public void destroy() {
@@ -210,30 +191,6 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		}
 		return result;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see edu.unc.lib.dl.services.TripleStoreService#fetchByGUID(java.lang.String)
-	 */
-	// public PID fetchByUID(String guid) {
-	// PID result = null;
-	// String query =
-	// String.format("select $pid from <%1$s> where $pid <%2$s> '%3$s';", this
-	// .getResourceIndexModelUri(), ContentModelHelper.CDRProperty.uid.getURI(),
-	// guid);
-	// List<PID> response = this.lookupDigitalObjects(query.toString());
-	// if (!response.isEmpty()) {
-	// if (response.size() > 1) {
-	// throw new IllegalRepositoryStateException(
-	// "The repository is in an illegal state, multiple objects share the same guid.",
-	// response);
-	// } else {
-	// result = response.get(0);
-	// }
-	// }
-	// return result;
-	// }
 
 	private PID fetchCollectionsObject(){
 		return fetchCollectionsObject(false);
@@ -492,44 +449,33 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 	 *
 	 * @see edu.unc.lib.dl.services.TripleStoreService#lookupRepositoryPath(edu.unc .lib.dl.services.PID)
 	 */
+	@Override
 	public String lookupRepositoryPath(PID key) {
-		// TODO needs many CDRs one Fedora fix
-		// construct path from contains relationships
 		String result = null;
-		StringBuffer query = new StringBuffer();
-		query.append("select $p <%2$s> $c from <%1$s>").append(" where walk( $p <%2$s> <%3$s> and $p <%2$s> $c);");
-		String q = String.format(query.toString(), this.getResourceIndexModelUri(),
-				ContentModelHelper.Relationship.contains.getURI(), key.getURI());
-
-		List<List<String>> response = this.lookupStrings(q);
-		if (!response.isEmpty()) {
-			// build a map of key:parent to val:child
-			Map<String, String> parent2child = new HashMap<String, String>();
-			for (List<String> solution : response) {
-				parent2child.put(solution.get(0), solution.get(2));
-			}
-
-			// now get all the child slugs
-			StringBuffer squery = new StringBuffer();
-			squery.append("select $c $child from <%1$s>").append(" where walk( $p <%2$s> <%3$s> and $p <%2$s> $c)")
-					.append(" and $c <%4$s> $child;");
-			String sq = String.format(squery.toString(), this.getResourceIndexModelUri(),
-					ContentModelHelper.Relationship.contains.getURI(), key.getURI(),
-					ContentModelHelper.CDRProperty.slug.getURI());
-			List<List<String>> sresponse = this.lookupStrings(sq);
-
-			// build a map of key:parent to val:child
+		//Walk the hierarchy and gather the slugs for each child as we go.
+		StringBuffer squery = new StringBuffer();
+		squery.append("select $p $c $slug from <%1$s>").append(" where walk( $p <%2$s> <%3$s> and $p <%2$s> $c)")
+				.append(" and $c <%4$s> $slug;");
+		String sq = String.format(squery.toString(), this.getResourceIndexModelUri(),
+				ContentModelHelper.Relationship.contains.getURI(), key.getURI(),
+				ContentModelHelper.CDRProperty.slug.getURI());
+		List<List<String>> sresponse = this.lookupStrings(sq);
+		
+		if (!sresponse.isEmpty()) {
 			Map<String, String> child2slug = new HashMap<String, String>();
+			Map<String, String> parent2child = new HashMap<String, String>();
 			for (List<String> solution : sresponse) {
-				child2slug.put(solution.get(0), solution.get(1));
+				parent2child.put(solution.get(0), solution.get(1));
+				child2slug.put(solution.get(1), solution.get(2));
+			}
+			
+			StringBuffer sb = new StringBuffer();
+			for (String step = ContentModelHelper.Administrative_PID.REPOSITORY.getPID().getURI(); 
+					parent2child.containsKey(step); step = parent2child.get(step)) {
+				String stepChild = parent2child.get(step);
+				sb.append("/").append(child2slug.get(stepChild));
 			}
 
-			// follow REPOSITORY through all children, building path
-			StringBuffer sb = new StringBuffer();
-			for (String step = "info:fedora/admin:REPOSITORY"; parent2child.containsKey(step); step = parent2child
-					.get(step)) {
-				sb.append("/").append(child2slug.get(parent2child.get(step)));
-			}
 			result = sb.toString();
 		} else {
 			return "/";
@@ -539,63 +485,53 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	// USEFUL PUBLIC METHODS BELOW
 
+	/**
+	 * Generates a list containing PathInfo objects for each hierarchical step in the path leading up to 
+	 * and including PID key. If the object is an orphan, then an empty list is returned
+	 */
+	@Override
 	public List<PathInfo> lookupRepositoryPathInfo(PID key) {
-
-		// TODO needs many CDRs one Fedora fix
 		List<PathInfo> result = new ArrayList<PathInfo>();
 
-		// add the REPOSITORY object path info
-		PathInfo rootInfo = new PathInfo();
-		rootInfo.setLabel("Repository Home");
-		rootInfo.setPath("/");
-		rootInfo.setSlug("REPOSITORY");
-		rootInfo.setPid(ContentModelHelper.Administrative_PID.REPOSITORY.getPID());
-		result.add(rootInfo);
+		// now get all the child slugs
+		StringBuffer squery = new StringBuffer();
+		squery.append("select $p $pid $slug $label from <%1$s>")
+				.append(" where walk( $p <%2$s> <%3$s> and $p <%2$s> $pid)").append(" and $pid <%4$s> $slug")
+				.append(" and $pid <%5$s> $label;");
+		String sq = String.format(squery.toString(), this.getResourceIndexModelUri(),
+				ContentModelHelper.Relationship.contains, key.getURI(), ContentModelHelper.CDRProperty.slug,
+				ContentModelHelper.FedoraProperty.label);
+		List<List<String>> sresponse = this.lookupStrings(sq);
 
-		// construct path from contains relationships
-		StringBuffer query = new StringBuffer();
-		query.append("select $p <%2$s> $c from <%1$s>").append(" where walk( $p <%2$s> <%3$s> and $p <%2$s> $c);");
-		String q = String.format(query.toString(), this.getResourceIndexModelUri(),
-				ContentModelHelper.Relationship.contains.getURI(), key.getURI());
-
-		List<List<String>> response = this.lookupStrings(q);
-		if (!response.isEmpty()) {
-			// build a map of key:parent to val:child
-			Map<String, String> parent2child = new HashMap<String, String>();
-			for (List<String> solution : response) {
-				parent2child.put(solution.get(0), solution.get(2));
-			}
-
-			// now get all the child slugs
-			StringBuffer squery = new StringBuffer();
-			squery.append("select $pid $slug $label from <%1$s>")
-					.append(" where walk( $p <%2$s> <%3$s> and $p <%2$s> $pid)").append(" and $pid <%4$s> $slug")
-					.append(" and $pid <%5$s> $label;");
-			String sq = String.format(squery.toString(), this.getResourceIndexModelUri(),
-					ContentModelHelper.Relationship.contains, key.getURI(), ContentModelHelper.CDRProperty.slug,
-					ContentModelHelper.FedoraProperty.label);
-			List<List<String>> sresponse = this.lookupStrings(sq);
-
-			// build a map of key:parent to val:child
-			Map<String, String> child2slug = new HashMap<String, String>();
-			Map<String, String> child2label = new HashMap<String, String>();
-			for (List<String> solution : sresponse) {
-				child2slug.put(solution.get(0), solution.get(1));
-				child2label.put(solution.get(0), solution.get(2));
-			}
-
-			// follow REPOSITORY through all children, building path
+		if (!sresponse.isEmpty()) {
+			// add the REPOSITORY object path info
+			PathInfo rootInfo = new PathInfo();
+			rootInfo.setLabel("Repository Home");
+			rootInfo.setPath("/");
+			rootInfo.setSlug("REPOSITORY");
+			rootInfo.setPid(ContentModelHelper.Administrative_PID.REPOSITORY.getPID());
+			result.add(rootInfo);
+			
+			Map<String, PathInfo> parent2child = new HashMap<String, PathInfo>();
+			
 			StringBuffer sb = new StringBuffer();
-			for (String step = "info:fedora/admin:REPOSITORY"; parent2child.containsKey(step); step = parent2child
-					.get(step)) {
+			//Build the PathInfo objects representing each tuple then store them as the child of their parent.
+			for (List<String> solution : sresponse) {
 				PathInfo info = new PathInfo();
-				info.setLabel(child2label.get(parent2child.get(step)));
-				info.setPid(new PID(parent2child.get(step)));
-				String slug = child2slug.get(parent2child.get(step));
-				info.setSlug(slug);
-				sb.append("/").append(slug);
+				info.setPid(new PID(solution.get(1)));
+				info.setSlug(solution.get(2));
+				info.setLabel(solution.get(3));
+				sb.append("/").append(info.getSlug());
 				info.setPath(sb.toString());
-				result.add(info);
+				
+				parent2child.put(solution.get(0), info);
+			}
+			
+			//Now add the steps into the file result list in the correct walk order.
+			for (String step = ContentModelHelper.Administrative_PID.REPOSITORY.getPID().getURI(); 
+					parent2child.containsKey(step); step = parent2child.get(step).getPid().getURI()) {
+				PathInfo stepChild = parent2child.get(step);
+				result.add(stepChild);
 			}
 		}
 		return result;
@@ -1137,9 +1073,6 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		// TODO needs many CDRs one Fedora fix
 		List<PID> result = new ArrayList<PID>();
 
-		// add the REPOSITORY PID
-		//result.add(ContentModelHelper.Administrative_PID.REPOSITORY.getPID());
-
 		// construct path from contains relationships
 		StringBuffer query = new StringBuffer();
 		query.append("select $p <%2$s> $c from <%1$s>").append(" where walk( $p <%2$s> <%3$s> and $p <%2$s> $c);");
@@ -1154,8 +1087,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 				parent2child.put(solution.get(0), solution.get(2));
 			}
 
-			// follow REPOSITORY through all children, building path
-			StringBuffer sb = new StringBuffer();
+			// follow REPOSITORY through all children, building path in order
 			for (String step = ContentModelHelper.Administrative_PID.REPOSITORY.getPID().getURI(); parent2child.containsKey(step); step = parent2child
 					.get(step)) {
 				result.add(new PID(step));

@@ -187,22 +187,26 @@ public interface TripleStoreQueryService {
 	public abstract List<URI> lookupContentModels(PID key);
 
 	/**
-	 * Retrieves the path of the Item within the repository.
-	 *
+	 * Retrieves the path of the Item within the repository, from the first step above the repository root through the
+	 * Item itself.
+	 * 
 	 * @param key
 	 *           the object ID to lookup
-	 * @return the repository path string
+	 * @return the repository path string, starting from the first object after the REPOSITORY object. Returns "/" if
+	 *         the object is an orphan.  Path is formatted as a file path, concatenated with /'s.
 	 */
 	public abstract String lookupRepositoryPath(PID key);
 
 	/**
-	 * Gathers information about each step in the repository container structure.
-	 *
-	 * @param pid
+	 * Generates a list containing PathInfo objects for each hierarchical step in the path beginning with the repository
+	 * root leading up to and including PID pid.
+	 * 
+	 * @param key
 	 *           the pid for the object of interest
-	 * @return an ordered list of PathInfo objects starting from the REPOSITORY object.
+	 * @return an ordered list of PathInfo objects starting from the REPOSITORY object or an empty list if the object is
+	 *         an orphan.
 	 */
-	public abstract List<PathInfo> lookupRepositoryPathInfo(PID pid);
+	public abstract List<PathInfo> lookupRepositoryPathInfo(PID key);
 
 	/**
 	 * Gathers PID of each step in the repository container structure.
@@ -348,7 +352,9 @@ public interface TripleStoreQueryService {
 	 *           the results format, defaults to "json" on null
 	 * @return an Object representation of the JSON results
 	 */
+	@SuppressWarnings("rawtypes")
 	public Map sendSPARQL(String query);
 
+	@SuppressWarnings("rawtypes")
 	public Map sendSPARQL(String query, String format);
 }
