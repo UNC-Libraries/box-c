@@ -188,11 +188,14 @@ public class BriefObjectMetadataBean {
 		this.title = title;
 	}
 	
-	public String getAbstract() {
+	public String getAbstractText() {
 		return abstractText;
 	}
 	@Field
 	public void setAbstract(String abstractText) {
+		this.abstractText = abstractText;
+	}
+	public void setAbstractText(String abstractText) {
 		this.abstractText = abstractText;
 	}
 	

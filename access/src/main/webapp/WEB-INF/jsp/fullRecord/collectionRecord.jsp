@@ -62,9 +62,9 @@
 					</c:forEach>
 				</p>
 			</c:if>
-			<c:if test="${briefObject['abstract'] != null}">
+			<c:if test="${briefObject['abstractText'] != null}">
 					<p class="clear">
-						<c:out value="${briefObject['abstract']}" />
+						<c:out value="${briefObject['abstractText']}" />
 					</p>
 			</c:if>
 			<form id="collectionsearch" class="clear_on_submit_without_focus" action="basicSearch" method="get">

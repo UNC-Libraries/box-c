@@ -71,6 +71,6 @@
 			</p>
 		</c:if>
 		<p>${searchSettings.searchFieldLabels[searchFieldKeys.DATE_UPDATED]}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}"/></p>
-		<p><c:out value="${metadata['abstract']}"/></p>
+		<p><c:out value="${metadata['abstractText']}"/></p>
 	</div>
 </div>

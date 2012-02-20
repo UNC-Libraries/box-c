@@ -72,14 +72,15 @@
 			</c:if>
 			<p>${searchSettings.searchFieldLabels[searchFieldKeys.DATE_UPDATED]}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}"/></p>
 			
-			<c:set var="truncatedAbstract" value="${cdr:truncateText(metadata['abstract'], 250)}"/>
-			
-			<p>
-				<c:out value="${truncatedAbstract}" />
-				<c:if test="${fn:length(metadata['abstract']) > 250}">
-					(<a href="<c:out value='${fullRecordUrl}' />">more</a>)
-				</c:if>
-			</p>
+			<c:if test="${not empty metadata['abstractText']}">
+				<c:set var="truncatedAbstract" value="${cdr:truncateText(metadata.abstractText, 250)}"/>
+				<p>
+					<c:out value="${truncatedAbstract}" />
+					<c:if test="${fn:length(metadata.abstractText) > 250}">
+						(<a href="<c:out value='${fullRecordUrl}' />">more</a>)
+					</c:if>
+				</p>
+			</c:if>
 		</div>
 		<div class="containerinfo">
 			<c:url var="browseUrl" scope="page" value='browse?${searchStateUrl}'>

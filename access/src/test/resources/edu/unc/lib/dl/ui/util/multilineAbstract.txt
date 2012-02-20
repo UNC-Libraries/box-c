@@ -1,0 +1,31 @@
+Abstract
+
+
+
+Background
+
+Efficacious strategies for the primary prevention of coronary heart disease (CHD) are underused, and, when used, have low adherence. Existing efforts to improve use and adherence to these efficacious strategies have been so intensive that they are impractical for clinical practice.
+
+
+
+Methods
+
+We conducted a randomized trial of a CHD prevention intervention (including a computerized decision aid and automated tailored adherence messages) at one university general internal medicine practice. After obtaining informed consent and collecting baseline data, we randomized patients (men and women age 40-79 with no prior history of cardiovascular disease) to either the intervention or usual care. We then saw them for two additional study visits over 3 months. For intervention participants, we administered the decision aid at the primary study visit (1 week after baseline visit) and then mailed 3 tailored adherence reminders at 2, 4, and 6 weeks. We assessed our outcomes (including the predicted likelihood of angina, myocardial infarction, and CHD death over 10 years (CHD risk) and self-reported adherence) between groups at 3 month follow-up. Data collection occurred from June 2007 through December 2009. All study procedures were IRB approved.
+
+
+
+Results
+
+We randomized 160 eligible patients (81 intervention; 79 control) and followed 96% to study conclusion. Mean predicted CHD risk at baseline was 11.3%. The intervention increased self-reported adherence to chosen risk reducing strategies by 25 percentage points (95% CI 8% to 42%), with the biggest effect for aspirin. It also changed predicted CHD risk by -1.1% (95% CI -0.16% to -2%), with a larger effect in a pre-specified subgroup of high risk patients.
+
+
+
+Conclusion
+
+A computerized intervention that involves patients in CHD decision making and supports adherence to effective prevention strategies can improve adherence and reduce predicted CHD risk.
+
+
+
+Clinical trials registration number
+
+ClinicalTrials.gov: NCT00494052

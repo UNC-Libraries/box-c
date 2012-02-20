@@ -15,7 +15,8 @@
  */
 package edu.unc.lib.dl.ui.util;
 
-import java.text.BreakIterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * String manipulation utility methods related to Solr data.
@@ -70,12 +71,14 @@ public class StringFormatUtil {
 	
 	
 	public static String truncateText(String text, int length){
+		if (length < 0)
+			throw new IndexOutOfBoundsException();
+		
 		if (text == null || text.length() <= length){
 			return text;
 		}
-		BreakIterator bi = BreakIterator.getWordInstance();
-		bi.setText(text);
-		int first_after = bi.following(length);
-		return text.substring(0, first_after) + "...";
+		Matcher m = Pattern.compile("(.|\n){0," + length + "}\\b").matcher(text);
+		m.find();
+		return m.group(0);
 	}
 }
