@@ -514,23 +514,23 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 			
 			Map<String, PathInfo> parent2child = new HashMap<String, PathInfo>();
 			
-			StringBuffer sb = new StringBuffer();
+			
 			//Build the PathInfo objects representing each tuple then store them as the child of their parent.
 			for (List<String> solution : sresponse) {
 				PathInfo info = new PathInfo();
 				info.setPid(new PID(solution.get(1)));
 				info.setSlug(solution.get(2));
 				info.setLabel(solution.get(3));
-				sb.append("/").append(info.getSlug());
-				info.setPath(sb.toString());
-				
 				parent2child.put(solution.get(0), info);
 			}
 			
+			StringBuffer sb = new StringBuffer();
 			//Now add the steps into the file result list in the correct walk order.
 			for (String step = ContentModelHelper.Administrative_PID.REPOSITORY.getPID().getURI(); 
 					parent2child.containsKey(step); step = parent2child.get(step).getPid().getURI()) {
 				PathInfo stepChild = parent2child.get(step);
+				sb.append("/").append(stepChild.getSlug());
+				stepChild.setPath(sb.toString());
 				result.add(stepChild);
 			}
 		}
