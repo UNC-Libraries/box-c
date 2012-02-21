@@ -38,6 +38,7 @@ import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
+import edu.unc.lib.dl.message.ActionMessage;
 
 /**
  * Central service conductor class which stores and processes a queue of messages indicating updates to Fedora objects.
@@ -120,7 +121,8 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	 * @param msg
 	 */
 	@Override
-	public void add(PIDMessage pidMsg) {
+	public void add(ActionMessage msg) {
+		PIDMessage pidMsg = (PIDMessage)msg;
 		synchronized (pidQueue) {
 			synchronized (executor) {
 				if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated()) {

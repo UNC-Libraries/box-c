@@ -41,11 +41,11 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 
 	@Override
 	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(pid.getAction())){
+		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(pid.getQualifiedAction())){
 			return true;
 		}
 			
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(pid.getAction()) && 
+		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(pid.getQualifiedAction()) && 
 				this.getClass().getName().equals(pid.getServiceName())){
 			return true;
 		}

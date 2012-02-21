@@ -63,7 +63,7 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 
 	@Override
 	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(pid.getAction()))
+		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(pid.getQualifiedAction()))
 			return this.getClass().getName().equals(pid.getServiceName());
 		//Returns true if at least one other service passed prefilter
 		//It is okay for ingest messages to pass here since if they are still orphaned they are not indexed.

@@ -38,7 +38,7 @@ public class SolrUpdateMessageFilter implements MessageFilter {
 		if (msg.getNamespace() != null && msg.getNamespace().equals(SolrUpdateAction.namespace)){
 			return true;
 		}
-		String action = msg.getAction();
+		String action = msg.getQualifiedAction();
 		if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)
 				|| JMSMessageUtil.CDRActions.REORDER.equals(action) || JMSMessageUtil.CDRActions.REINDEX.equals(action)
 				|| JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)) {

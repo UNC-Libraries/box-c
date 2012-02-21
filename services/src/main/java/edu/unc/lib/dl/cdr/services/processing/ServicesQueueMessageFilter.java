@@ -68,7 +68,7 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 		
 		Set<String> failedServices = enhancementConductor.getFailedPids().get(message.getPIDString());
 		
-		boolean applyServiceStack = JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getAction());
+		boolean applyServiceStack = JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getQualifiedAction());
 		boolean serviceReached = !applyServiceStack || message.getServiceName() == null;
 		
 		for (ObjectEnhancementService s : services) {

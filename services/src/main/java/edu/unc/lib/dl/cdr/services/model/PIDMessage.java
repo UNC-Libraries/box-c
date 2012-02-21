@@ -22,6 +22,7 @@ import org.jdom.Document;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.message.ActionMessage;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -30,13 +31,14 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author bbpennel
  *
  */
-public class PIDMessage {
+public class PIDMessage implements ActionMessage {
 	private Document message = null;
 	private String messageID = null;
 	private PID pid;
 	private PID depositID;
 	private String namespace = null;
 	private String action = null;
+	private String qualifiedAction = null;
 	private String datastream = null;
 	private String relation = null;
 	private CDRMessageContent cdrMessageContent = null;
@@ -53,6 +55,7 @@ public class PIDMessage {
 		this.namespace = namespace;
 		this.message = message;
 		extractMessageID();
+		setAction(JMSMessageUtil.getAction(message));
 	}
 	
 	public PIDMessage(String pid, String namespace, String action){
@@ -132,25 +135,37 @@ public class PIDMessage {
 		return timestamp;
 	}
 	
-	public void setAction(String action){
+	private void setQualifiedAction(){
 		if (action != null && action.length() > 0 && this.namespace != null){
-			this.action = this.namespace + "/" + action;
+			this.qualifiedAction = this.namespace + "/" + action;
 		} else {
-			this.action = action;
+			this.qualifiedAction = action;
 		}
 	}
 	
+	@Override
+	public String getQualifiedAction() {
+		return this.qualifiedAction;
+	}
+	
+	public void setAction(String action){
+		this.action = action;
+		setQualifiedAction();
+	}
+	
+	@Override
 	public String getAction() {
-		if (action == null){
-			try {
-				setAction(JMSMessageUtil.getAction(message));
-			} catch (NullPointerException e){
-				//Message was not set, therefore value is null 
-			}
-			if (action == null)
-				action = "";
-		}
 		return action;
+	}
+	
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+		setQualifiedAction();
+	}
+	
+	@Override
+	public String getNamespace() {
+		return namespace;
 	}
 
 	public String getDatastream() {
@@ -224,16 +239,12 @@ public class PIDMessage {
 		return cdrMessageContent;
 	}
 
-	public String getNamespace() {
-		return namespace;
-	}
-
-	public void setNamespace(String namespace) {
-		this.namespace = namespace;
-	}
-
 	public String toString(){
 		return pid.getPid();
 	}
-	
+
+	@Override
+	public String getTargetID() {
+		return this.pid.getPid();
+	}
 }

@@ -13,41 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package edu.unc.lib.dl.message;
 
-package edu.unc.lib.dl.cdr.services.processing;
-
-import edu.unc.lib.dl.message.ActionMessage;
-
-public interface MessageConductor {
-	void add(ActionMessage message);
-
+public interface ActionMessage {
 	/**
-	 * Get the number of messages queued for processing
+	 * Returns the identifier for this message
 	 * @return
 	 */
-	int getQueueSize();
-
+	public String getMessageID();
+	
 	/**
-	 * Returns the identifier string for this conductor
+	 * Returns the target of this message.
 	 * @return
 	 */
-	public String getIdentifier();
-
+	public String getTargetID();
+	
 	/**
-	 * Clear the queue(s).  confirm parameter must be "yes" for the operation to occur
-	 */
-	void clearQueue();
-
-	/**
-	 * Clears message processing state objects.
-	 */
-	void clearState();
-
-	String queuesToString();
-
-	/**
-	 * Indicates if the conductor is ready to receive new messages.
+	 * Returns the unqualified action to be performed on the target
 	 * @return
 	 */
-	public boolean isReady();
+	public String getAction();
+	
+	/**
+	 * Returns the namespace of the action to be performed on the target
+	 * @return
+	 */
+	public String getNamespace();
+	
+	/**
+	 * Returns the action name qualified by its namespace
+	 * @return
+	 */
+	public String getQualifiedAction();
+
+	/**
+	 * Returns the time at which this message was created.
+	 * @return
+	 */
+	public long getTimeCreated();
 }

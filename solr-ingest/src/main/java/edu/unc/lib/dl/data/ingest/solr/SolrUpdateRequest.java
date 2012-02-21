@@ -15,14 +15,18 @@
  */
 package edu.unc.lib.dl.data.ingest.solr;
 
+import edu.unc.lib.dl.message.ActionMessage;
+
 /**
  * Represents a request to update an object identified by pid.
  * @author bbpennel
  */
-public class SolrUpdateRequest {
+public class SolrUpdateRequest implements ActionMessage {
+	protected String messageID;
 	protected String pid;
 	protected SolrUpdateAction action; 
 	protected SolrUpdateRequest linkedRequest;
+	protected long timeCreated = System.currentTimeMillis();
 	
 	public SolrUpdateRequest(){
 		pid = null;
@@ -51,12 +55,12 @@ public class SolrUpdateRequest {
 			pid = pid.substring(pid.indexOf("/") + 1);
 		this.pid = pid;
 	}
-
-	public SolrUpdateAction getAction() {
+	
+	public SolrUpdateAction getUpdateAction() {
 		return action;
 	}
 
-	public void setAction(SolrUpdateAction action) {
+	public void setUpdateAction(SolrUpdateAction action) {
 		this.action = action;
 	}
 	
@@ -84,5 +88,36 @@ public class SolrUpdateRequest {
 		if (linkedRequest != null){
 			linkedRequest.linkedRequestCompleted(this);
 		}
+	}
+
+	@Override
+	public String getMessageID() {
+		return messageID;
+	}
+
+	@Override
+	public String getTargetID() {
+		return pid;
+	}
+
+	@Override
+	public String getAction() {
+		return this.action.getName();
+	}
+
+	@Override
+	public String getNamespace() {
+		return SolrUpdateAction.namespace;
+	}
+
+	@Override
+	public String getQualifiedAction() {
+		return this.action.getURI().toString();
+	}
+
+	@Override
+	public long getTimeCreated() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

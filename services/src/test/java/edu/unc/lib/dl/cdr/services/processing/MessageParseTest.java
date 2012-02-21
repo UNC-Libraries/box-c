@@ -54,7 +54,7 @@ public class MessageParseTest extends Assert {
 			Document doc = readFileAsString("cdrAddMessage.xml");
 			PIDMessage message = new PIDMessage(doc, JMSMessageUtil.cdrMessageNamespace);
 			assertTrue(message.getPIDString().equals("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744"));
-			assertTrue(JMSMessageUtil.CDRActions.ADD.equals(message.getAction()));
+			assertTrue(JMSMessageUtil.CDRActions.ADD.equals(message.getQualifiedAction()));
 			assertTrue("2011-04-28T18:55:32.220Z".equals(message.getTimestamp()));
 			assertTrue("".equals(message.getDatastream()));
 			assertTrue("".equals(message.getRelation()));
@@ -82,7 +82,7 @@ public class MessageParseTest extends Assert {
 		try {
 			Document doc = readFileAsString("cdrMoveMessage.xml");
 			PIDMessage message = new PIDMessage(doc, JMSMessageUtil.cdrMessageNamespace);
-			assertTrue(JMSMessageUtil.CDRActions.MOVE.equals(message.getAction()));
+			assertTrue(JMSMessageUtil.CDRActions.MOVE.equals(message.getQualifiedAction()));
 			message.generateCDRMessageContent();
 			assertTrue(message.getCDRMessageContent().getParent().equals("uuid:a7ac047d-7991-462c-a024-897c36280b83"));
 			assertTrue(message.getCDRMessageContent().getOldParents().size() == 2);

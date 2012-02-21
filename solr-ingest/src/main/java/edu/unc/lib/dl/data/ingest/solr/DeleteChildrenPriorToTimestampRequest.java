@@ -18,25 +18,25 @@ package edu.unc.lib.dl.data.ingest.solr;
 import java.util.Date;
 
 public class DeleteChildrenPriorToTimestampRequest extends CountDownUpdateRequest {
-	protected Date timestamp;
+	protected Date timestampDate;
 
 	public DeleteChildrenPriorToTimestampRequest(String pid, SolrUpdateAction action, long timestamp) {
 		super(pid, action);
-		this.timestamp = new Date(timestamp);
+		this.timestampDate = new Date(timestamp);
 	}
 
 	public DeleteChildrenPriorToTimestampRequest(String pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest, long timestamp) {
 		super(pid, action, linkedRequest);
-		this.timestamp = new Date(timestamp);
+		this.timestampDate = new Date(timestamp);
 	}
 
 	public String getTimestampString() {
-		return org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(timestamp);
+		return org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(timestampDate);
 	}
 
 	@Override
 	public String toString() {
-		return "DeleteChildrenPriorToTimestampRequest [timestamp=" + timestamp + ", blockCount=" + blockCount + ", pid="
+		return "DeleteChildrenPriorToTimestampRequest [timestampDate=" + timestampDate + ", blockCount=" + blockCount + ", pid="
 				+ pid + ", action=" + action + ", linkedRequest=" + linkedRequest + "]";
 	}
 	

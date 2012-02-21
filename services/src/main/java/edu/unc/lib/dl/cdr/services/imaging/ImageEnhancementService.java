@@ -89,7 +89,7 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 	
 	@Override
 	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
-		String action = pid.getAction();
+		String action = pid.getQualifiedAction();
 		
 		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(action))
 			return true;

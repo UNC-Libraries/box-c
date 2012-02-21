@@ -475,7 +475,7 @@ public class SolrUpdateRunnable implements Runnable {
 	private boolean performAction(SolrUpdateRequest updateRequest){
 		boolean forceCommit = false;
 		try {
-			switch (updateRequest.getAction()) {
+			switch (updateRequest.getUpdateAction()) {
 				case DELETE:
 					// Add a delete request to the update document
 					solrUpdateService.getUpdateDocTransformer().deleteDocument(updateRequest.getPid());
