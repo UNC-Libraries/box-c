@@ -74,8 +74,9 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		Agent adminGroup = AgentManager.getAdministrativeGroupAgentStub();
 		PremisEventLogger logger = new PremisEventLogger(adminGroup);
 		METSPackageSIP sip = null;
+		boolean isZip = testFilePath.endsWith(".zip") || testFilePath.endsWith(".ZIP");
 		try {
-			sip = new METSPackageSIP(containerPID, testFile, adminGroup, true);
+			sip = new METSPackageSIP(containerPID, testFile, adminGroup, isZip);
 		} catch (IOException e) {
 			LOG.debug("STACK TRACE: ", e);
 			fail("EXPECTED: " + testMsg + "\nTHROWN: " + e.getMessage());
@@ -217,6 +218,22 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		if (e != null && e instanceof InvalidMETSException) {
 			// expected exception, yay!
 		} else {
+			fail("did not get the expected InvalidMETSException");
+		}
+	}
+	
+	@Test
+	public void testInvalidAgainstSimpleProfileMissingFLocat() {
+		Exception e = null;
+		try {
+			exceptionTest("src/test/resources/missing-flocat-test.xml", "METS does not match simple profile.");
+		} catch (IngestException ex) {
+			e = ex;
+		}
+		if (e != null && e instanceof InvalidMETSException) {
+			// expected exception, yay!
+		} else {
+			LOG.debug("Unexpected", e);
 			fail("did not get the expected InvalidMETSException");
 		}
 	}

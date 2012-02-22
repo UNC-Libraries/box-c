@@ -255,7 +255,7 @@
 				<executions>
 					<execution>
 						<id>check-headers</id>
-						<phase>verify</phase>
+						<phase>none</phase>
 						<goals>
 							<goal>check</goal>
 						</goals>
