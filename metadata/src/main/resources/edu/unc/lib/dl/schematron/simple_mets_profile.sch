@@ -75,6 +75,7 @@
             <sch:assert test="string-length(@MIMETYPE) &gt; 2">MIMETYPE attribute cannot be empty.</sch:assert>
             <sch:assert test="not(@CHECKSUMTYPE) or @CHECKSUMTYPE = 'MD5'">If a file element has a CHECKSUMTYPE, it must be MD5.</sch:assert>
             <sch:assert test="not(@CHECKSUMTYPE) or @CHECKSUM">If a file element has a CHECKSUMTYPE, it must also have a CHECKSUM.</sch:assert>
+            <sch:assert test="count(m:FLocat) = 1">A file element must have one and only one FLocat element, see file ID '<sch:value-of select="@ID"/>'.</sch:assert>
         </sch:rule>
         <sch:rule context="m:FLocat">
             <sch:assert test="@LOCTYPE = 'URL' or @LOCTYPE = 'OTHER'">File locations MUST be specified as a URL.</sch:assert>

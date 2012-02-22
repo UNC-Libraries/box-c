@@ -117,7 +117,7 @@ public class MetsSubmitByPidController extends CommonAdminObjectNavigationContro
 						folderManager.createPath(pidPath, ownerAgent, mediator);
 
 					} catch (Exception e) {
-						dao.setMessage(e.getLocalizedMessage());
+						dao.setMessage(e.getLocalizedMessage().replace("\n", "<br />\n"));
 						noErrors = false;
 					}
 				}
@@ -164,7 +164,7 @@ public class MetsSubmitByPidController extends CommonAdminObjectNavigationContro
 					dao.setMessage(requestContext.getMessage("submit.ingest.progress"));
 				} else {
 					dao.setMessage(wsResponse
-							.getMessage());
+							.getMessage().replace("\n", "<br />\n"));
 
 					logger.debug("METS submit failure");
 				}
