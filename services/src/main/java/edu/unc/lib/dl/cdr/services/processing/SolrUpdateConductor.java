@@ -30,8 +30,6 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.message.ActionMessage;
 
 public class SolrUpdateConductor extends SolrUpdateService implements MessageConductor, ServiceConductor {
-	public static final String identifier = "SOLR_UPDATE";
-
 	private long beforeExecuteDelay = 50;
 
 	@SuppressWarnings("unchecked")
@@ -46,6 +44,7 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	@Override
 	public void add(ActionMessage message) {
 		PIDMessage pidMessage = (PIDMessage)message;
+		
 		String namespace = message.getNamespace();
 		String action = message.getQualifiedAction();
 		if (namespace != null && action != null){

@@ -17,7 +17,6 @@ package edu.unc.lib.dl.cdr.services.rest;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,6 +45,7 @@ import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor;
 import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor.PerformServicesRunnable;
+import edu.unc.lib.dl.message.ActionMessage;
 
 /**
  * 
@@ -62,8 +62,6 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	public static final String ACTIVE_PATH = "active";
 	public static final String FAILED_PATH = "failed";
 	
-	private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.SSS");
-	
 	@Resource
 	private EnhancementConductor enhancementConductor;
 	
@@ -75,7 +73,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		result.put("queuedJobs", this.enhancementConductor.getPidQueue().size());
 		result.put("blockedJobs", this.enhancementConductor.getCollisionList().size());
 		result.put("failedJobs", this.enhancementConductor.getFailedPids().size());
-		result.put("actievJobs", this.enhancementConductor.getExecutor().getRunningNow().size());
+		result.put("activeJobs", this.enhancementConductor.getExecutor().getRunningNow().size());
 		
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
@@ -96,8 +94,8 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		//Duplicate pid queue so that we can iterate over it.
-		List<PIDMessage> queued = new ArrayList<PIDMessage>(this.enhancementConductor.getPidQueue());
-		addPIDMessageListInfo(result, queued, begin, end, QUEUED_PATH);
+		List<ActionMessage> queued = new ArrayList<ActionMessage>(this.enhancementConductor.getPidQueue());
+		addMessageListInfo(result, queued, begin, end, QUEUED_PATH);
 		
 		return result;
 	}
@@ -108,7 +106,8 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			@RequestParam(value = "end", required = false) Integer end) {
 		
 		Map<String, Object> result = new HashMap<String, Object>();
-		addPIDMessageListInfo(result, this.enhancementConductor.getCollisionList(), begin, end, BLOCKED_PATH);
+		List<ActionMessage> messageList = new ArrayList<ActionMessage>(this.enhancementConductor.getCollisionList());
+		addMessageListInfo(result, messageList, begin, end, BLOCKED_PATH);
 		return result;
 	}
 	
@@ -118,38 +117,13 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			@RequestParam(value = "end", required = false) Integer end) {
 		
 		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
-		List<PIDMessage> messages = new ArrayList<PIDMessage>();
+		List<ActionMessage> messages = new ArrayList<ActionMessage>();
 		for (PerformServicesRunnable task: currentlyRunning){
 			messages.add(task.getPidMessage());
 		}
 		Map<String, Object> result = new HashMap<String, Object>();
-		addPIDMessageListInfo(result, messages, begin, end, ACTIVE_PATH);
+		addMessageListInfo(result, messages, begin, end, ACTIVE_PATH);
 		return result;
-	}
-	
-	private void addPIDMessageListInfo(Map<String, Object> result, List<PIDMessage> messages, Integer begin, Integer end, String queuePath){
-		result.put("count", messages.size());
-		
-		if(begin == null) {
-			begin = 0;
-		}
-		if(end == null) {
-			end = messages.size();
-		}
-		result.put("begin", begin);
-		result.put("end", end);
-		if (begin != null && end != null) {
-			messages = messages.subList(begin, end);
-		}
-		
-		List<Map<String, Object>> jobs = new ArrayList<Map<String, Object>>();
-		result.put("jobs", jobs);
-		for (PIDMessage message: messages){
-			if (message != null){
-				Map<String, Object> job = getJobBriefInfo(message, queuePath);
-				jobs.add(job);
-			}
-		}
 	}
 	
 	/**
@@ -189,18 +163,18 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	 */
 	@RequestMapping(value = { QUEUED_PATH + "/job/{id}" }, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getQueuedJobInfo(@PathVariable("id") String id){
-		return getJobFullInfo(lookupJobInfo(id, new ArrayList<PIDMessage>(this.enhancementConductor.getPidQueue())), QUEUED_PATH);
+		return getJobFullInfo(lookupJobInfo(id, new ArrayList<ActionMessage>(this.enhancementConductor.getPidQueue())), QUEUED_PATH);
 	}
 	
 	@RequestMapping(value = { BLOCKED_PATH + "/job/{id}" }, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getBlockedJobInfo(@PathVariable("id") String id){
-		return getJobFullInfo(lookupJobInfo(id, this.enhancementConductor.getCollisionList()), BLOCKED_PATH);
+		return getJobFullInfo(lookupJobInfo(id, new ArrayList<ActionMessage>(this.enhancementConductor.getCollisionList())), BLOCKED_PATH);
 	}
 	
 	@RequestMapping(value = { ACTIVE_PATH + "/job/{id}" }, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getActiveJobInfo(@PathVariable("id") String id){
 		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
-		List<PIDMessage> messages = new ArrayList<PIDMessage>();
+		List<ActionMessage> messages = new ArrayList<ActionMessage>();
 		for (PerformServicesRunnable task: currentlyRunning){
 			messages.add(task.getPidMessage());
 		}
@@ -208,25 +182,14 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	}
 	
 	/**
-	 * Finds a PIDMessage in the provided list which matches the given message id.
-	 * @param id
-	 * @param messages
-	 * @return
-	 */
-	private PIDMessage lookupJobInfo(String id, List<PIDMessage> messages){
-		for (PIDMessage message: messages){
-			if (message.getMessageID().equals(id)){
-				return message;
-			}
-		}
-		return null;
-	}
-	
-	/**
 	 * Transforms a PIDMessage object into a map of properties for reporting purposes.
 	 * @return
 	 */
-	private Map<String, Object> getJobBriefInfo(PIDMessage message, String queuePath){
+	@Override
+	protected Map<String,Object> getJobBriefInfo(ActionMessage actionMessage, String queuePath){
+		if (actionMessage == null)
+			return null;
+		PIDMessage message = (PIDMessage)actionMessage;
 		Map<String, Object> job = new HashMap<String, Object>();
 		
 		job.put("id", message.getMessageID());
@@ -235,6 +198,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		addJobPropertyIfNotEmpty("dataStream", message.getDatastream(), job);
 		addJobPropertyIfNotEmpty("relation", message.getRelation(), job);
 		addJobPropertyIfNotEmpty("action", message.getQualifiedAction(), job);
+		addJobPropertyIfNotEmpty("serviceName", message.getServiceName(), job);
 
 		CDRMessageContent cdrMessage = message.getCDRMessageContent(); 
 		if (cdrMessage != null){
@@ -244,7 +208,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		addJobPropertyIfNotEmpty("generatedTimestamp", message.getTimestamp(), job);
 		Date timeCreated = new Date(message.getTimeCreated());
-		job.put("queuedTimestamp", format.format(timeCreated));
+		job.put("queuedTimestamp", formatISO8601.format(timeCreated));
 		
 		Map<String, Object> uris = new HashMap<String, Object>();
 		job.put("uris", uris);
@@ -257,7 +221,10 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	 * Transforms a PIDMessage object into a map of properties for reporting purposes.
 	 * @return
 	 */
-	private Map<String, Object> getJobFullInfo(PIDMessage message, String queuedPath){
+	private Map<String, Object> getJobFullInfo(ActionMessage actionMessage, String queuedPath){
+		if (actionMessage == null)
+			return null;
+		PIDMessage message = (PIDMessage)actionMessage;
 		Map<String, Object> job = new HashMap<String, Object>();
 		
 		job.put("id", message.getMessageID());
@@ -266,6 +233,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		addJobPropertyIfNotEmpty("dataStream", message.getDatastream(), job);
 		addJobPropertyIfNotEmpty("relation", message.getRelation(), job);
 		addJobPropertyIfNotEmpty("action", message.getQualifiedAction(), job);
+		addJobPropertyIfNotEmpty("serviceName", message.getServiceName(), job);
 
 		CDRMessageContent cdrMessage = message.getCDRMessageContent(); 
 		if (cdrMessage != null){
@@ -278,7 +246,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		addJobPropertyIfNotEmpty("generatedTimestamp", message.getTimestamp(), job);
 		Date timeCreated = new Date(message.getTimeCreated());
-		job.put("queuedTimestamp", format.format(timeCreated));
+		job.put("queuedTimestamp", formatISO8601.format(timeCreated));
 		
 		if (message.getFilteredServices() != null){
 			List<String> filteredServices = new ArrayList<String>();
@@ -288,12 +256,13 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			job.put("filteredServices", filteredServices);
 		}
 		
+		Map<String, Object> uris = new HashMap<String, Object>();
+		job.put("uris", uris);
 		if (message.getMessage() != null){
-			Map<String, Object> uris = new HashMap<String, Object>();
-			job.put("uris", uris);
 			uris.put("xml", contextUrl + BASE_PATH + queuedPath + "/job/" + message.getMessageID() + "/xml");
 		}
-
+		uris.put("targetInfo", contextUrl + ItemInfoRestController.BASE_PATH + message.getTargetID());
+		
 		return job;
 	}
 	
@@ -301,14 +270,14 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	public void getQueuedJobXML(HttpServletResponse response, @PathVariable("id") String id) throws IOException{
 		response.setContentType("application/xml");
 		PrintWriter pr = response.getWriter();
-		pr.write(getJobXML(id, new ArrayList<PIDMessage>(this.enhancementConductor.getPidQueue())));
+		pr.write(getJobXML(id, new ArrayList<ActionMessage>(this.enhancementConductor.getPidQueue())));
 	}
 	
 	@RequestMapping(value = { BLOCKED_PATH + "/job/{id}/xml" }, method = RequestMethod.GET)
 	public void getBlockedJobXML(HttpServletResponse response, @PathVariable("id") String id) throws IOException{
 		response.setContentType("application/xml");
 		PrintWriter pr = response.getWriter();
-		pr.write(getJobXML(id, new ArrayList<PIDMessage>(this.enhancementConductor.getCollisionList())));
+		pr.write(getJobXML(id, new ArrayList<ActionMessage>(this.enhancementConductor.getCollisionList())));
 	}
 	
 	@RequestMapping(value = { ACTIVE_PATH + "/job/{id}/xml" }, method = RequestMethod.GET)
@@ -316,15 +285,15 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		response.setContentType("application/xml");
 		PrintWriter pr = response.getWriter();
 		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
-		List<PIDMessage> messages = new ArrayList<PIDMessage>();
+		List<ActionMessage> messages = new ArrayList<ActionMessage>();
 		for (PerformServicesRunnable task: currentlyRunning){
 			messages.add(task.getPidMessage());
 		}
 		pr.write(getJobXML(id, messages));
 	}
 	
-	private String getJobXML(String id, List<PIDMessage> messages){
-		PIDMessage message = lookupJobInfo(id, messages);
+	private String getJobXML(String id, List<ActionMessage> messages){
+		PIDMessage message = (PIDMessage)lookupJobInfo(id, messages);
 		if (message != null && message.getMessage() != null){
 			XMLOutputter outputter = new XMLOutputter();
 			try {

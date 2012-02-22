@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.search.solr.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -300,6 +301,39 @@ public class SolrSearchService {
 		if (rootNode == null)
 			return null;
 		return rootNode.getAncestorPath();
+	}
+	
+	public Date getTimestamp(String pid, AccessGroupSet accessGroups){
+		QueryResponse queryResponse = null;
+		SolrQuery solrQuery = new SolrQuery();
+		StringBuilder query = new StringBuilder();
+		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':').append(solrSettings.sanitize(pid));
+		try {
+			//Add access restrictions to query
+			addAccessRestrictions(query, accessGroups, SearchFieldKeys.RECORD_ACCESS);
+		} catch (AccessRestrictionException e){
+			//If the user doesn't have any access groups, they don't have access to anything, return null.
+			LOG.error("Error while attempting to add access restrictions to object " + pid, e);
+			return null;
+		}
+		
+		solrQuery.addField(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP));
+
+
+		solrQuery.setQuery(query.toString());
+		solrQuery.setRows(1);
+
+		LOG.debug("query: " + solrQuery.toString());
+		try {
+			queryResponse = server.query(solrQuery);
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+			return null;
+		}
+		
+		if (queryResponse.getResults().getNumFound() == 0)
+			return null;
+		return (Date)queryResponse.getResults().get(0).getFieldValue("timestamp");
 	}
 	
 	/**

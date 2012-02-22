@@ -56,6 +56,8 @@ public class SolrUpdateRunnable implements Runnable {
 	private static XPath relsExtXpath;
 	private static XPath containerXpath;
 	private static XPath containsXpath;
+	
+	private SolrUpdateRequest updateRequest = null;
 
 	public SolrUpdateRunnable() {
 		LOG.debug("Creating a new SolrIngestThread " + this);
@@ -76,6 +78,14 @@ public class SolrUpdateRunnable implements Runnable {
 		}
 	}
 	
+	public SolrUpdateRequest getUpdateRequest() {
+		return updateRequest;
+	}
+
+	public void setUpdateRequest(SolrUpdateRequest updateRequest) {
+		this.updateRequest = updateRequest;
+	}
+
 	public static SolrUpdateService getSolrUpdateService() {
 		return solrUpdateService;
 	}
@@ -515,7 +525,6 @@ public class SolrUpdateRunnable implements Runnable {
 	@Override
 	public void run() {
 		try {
-			SolrUpdateRequest updateRequest = null;
 			String pid = null;
 			boolean forceCommit = false;
 			// Get the next pid and lock it

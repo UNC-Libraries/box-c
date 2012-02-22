@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,8 @@ import edu.unc.lib.dl.security.access.AccessGroupSet;
  */
 public class SolrUpdateService {
 	protected static final Logger LOG = LoggerFactory.getLogger(SolrUpdateService.class);
+	public static final String identifier = "SOLR_UPDATE";
+	
 	protected FedoraDataService fedoraDataService;
 	protected UpdateDocTransformer updateDocTransformer;
 	protected SolrDataAccessLayer solrDataAccessLayer;
@@ -62,11 +65,15 @@ public class SolrUpdateService {
 	protected long recoverableDelay = 0;
 	protected boolean autoCommit = true;
 	
+
+	protected AtomicLong idSequence;
+	
 	public SolrUpdateService() {
 		pidQueue = new LinkedBlockingQueue<SolrUpdateRequest>();
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
 		collisionList = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		updateDocTransformer = new UpdateDocTransformer();
+		idSequence = new AtomicLong(0);
 	}
 
 	public void init() {
@@ -112,12 +119,18 @@ public class SolrUpdateService {
 	}
 
 	public void offer(SolrUpdateRequest ingestRequest) {
+		if (ingestRequest.getMessageID() == null){
+			synchronized(idSequence){
+				ingestRequest.setMessageID(identifier + ":" + idSequence.incrementAndGet());
+			}
+		}
+		
 		synchronized (pidQueue) {
 			if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated())
 				return;
 			LOG.info("Queueing: " + ingestRequest.getPid());
 			pidQueue.offer(ingestRequest);
-			executor.submit(new SolrUpdateRunnable());
+			executor.execute(new SolrUpdateRunnable());
 		}
 	}
 
@@ -126,9 +139,11 @@ public class SolrUpdateService {
 			if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated())
 				return;
 			for (String pid : pids) {
-				pidQueue.offer(new SolrUpdateRequest(pid, SolrUpdateAction.ADD));
+				synchronized(idSequence){
+					pidQueue.offer(new SolrUpdateRequest(pid, SolrUpdateAction.ADD, identifier + ":" + idSequence.incrementAndGet()));
+				}
 			}
-			executor.submit(new SolrUpdateRunnable());
+			executor.execute(new SolrUpdateRunnable());
 		}
 	}
 

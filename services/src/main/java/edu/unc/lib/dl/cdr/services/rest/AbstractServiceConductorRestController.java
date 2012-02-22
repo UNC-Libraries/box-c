@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -22,7 +25,9 @@ import javax.servlet.ServletContext;
 
 import org.springframework.web.context.ServletContextAware;
 
+import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.processing.ServiceConductor;
+import edu.unc.lib.dl.message.ActionMessage;
 
 /**
  * @author Gregory Jansen
@@ -31,6 +36,7 @@ import edu.unc.lib.dl.cdr.services.processing.ServiceConductor;
 public class AbstractServiceConductorRestController implements ServletContextAware {
 
 	protected ServletContext servletContext = null;
+	protected SimpleDateFormat formatISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.SSS'Z'");
 
 	@Resource(name = "contextUrl")
 	protected String contextUrl = null;
@@ -47,6 +53,50 @@ public class AbstractServiceConductorRestController implements ServletContextAwa
 		result.put("idle", c.isIdle());
 		result.put("id", c.getIdentifier());
 		result.put("activeJobs", c.getActiveThreadCount());
+	}
+	
+	protected void addMessageListInfo(Map<String, Object> result, List<ActionMessage> messages, Integer begin, Integer end, String queuePath){
+		result.put("count", messages.size());
+		
+		if(begin == null) {
+			begin = 0;
+		}
+		if(end == null) {
+			end = messages.size();
+		}
+		result.put("begin", begin);
+		result.put("end", end);
+		if (begin != null && end != null) {
+			messages = messages.subList(begin, end);
+		}
+		
+		List<Map<String, Object>> jobs = new ArrayList<Map<String, Object>>();
+		result.put("jobs", jobs);
+		for (ActionMessage message: messages){
+			if (message != null){
+				Map<String, Object> job = getJobBriefInfo(message, queuePath);
+				jobs.add(job);
+			}
+		}
+	}
+	
+	protected Map<String,Object> getJobBriefInfo(ActionMessage message, String queuePath){
+		return null;
+	}
+	
+	/**
+	 * Finds an ActionMessage in the provided list which matches the given message id.
+	 * @param id
+	 * @param messages
+	 * @return
+	 */
+	protected ActionMessage lookupJobInfo(String id, List<ActionMessage> messages){
+		for (ActionMessage message: messages){
+			if (message.getMessageID().equals(id)){
+				return message;
+			}
+		}
+		return null;
 	}
 
 	@Override

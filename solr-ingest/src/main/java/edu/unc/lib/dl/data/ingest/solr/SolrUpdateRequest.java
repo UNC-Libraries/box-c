@@ -38,6 +38,14 @@ public class SolrUpdateRequest implements ActionMessage {
 		this.setPid(pid);
 		this.action = action;
 		linkedRequest = null;
+		this.messageID = null;
+	}
+	
+	public SolrUpdateRequest(String pid, SolrUpdateAction action, String messageID){
+		this.setPid(pid);
+		this.action = action;
+		linkedRequest = null;
+		this.messageID = messageID;
 	}
 	
 	public SolrUpdateRequest(String pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest){
@@ -88,6 +96,10 @@ public class SolrUpdateRequest implements ActionMessage {
 		if (linkedRequest != null){
 			linkedRequest.linkedRequestCompleted(this);
 		}
+	}
+
+	public void setMessageID(String messageID) {
+		this.messageID = messageID;
 	}
 
 	@Override
