@@ -188,6 +188,11 @@ public class SolrQueryLayerService extends SolrSearchService {
 		}
 		query.append(')');
 		
+		//If no pids were added to the query, then there's nothing to look up
+		if (first){
+			return null;
+		}
+		
 		try {
 			//Add access restrictions to query
 			addAccessRestrictions(query, accessGroups, SearchFieldKeys.RECORD_ACCESS);
