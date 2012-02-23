@@ -119,7 +119,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
 		List<ActionMessage> messages = new ArrayList<ActionMessage>();
 		for (PerformServicesRunnable task: currentlyRunning){
-			messages.add(task.getPidMessage());
+			messages.add(task.getMessage());
 		}
 		Map<String, Object> result = new HashMap<String, Object>();
 		addMessageListInfo(result, messages, begin, end, ACTIVE_PATH);
@@ -176,7 +176,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
 		List<ActionMessage> messages = new ArrayList<ActionMessage>();
 		for (PerformServicesRunnable task: currentlyRunning){
-			messages.add(task.getPidMessage());
+			messages.add(task.getMessage());
 		}
 		return getJobFullInfo(lookupJobInfo(id, messages), ACTIVE_PATH);
 	}
@@ -193,7 +193,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		Map<String, Object> job = new HashMap<String, Object>();
 		
 		job.put("id", message.getMessageID());
-		job.put("targetPID", message.getPIDString());
+		job.put("targetPID", message.getTargetID());
 		addJobPropertyIfNotEmpty("depositID", message.getDepositID(), job);
 		addJobPropertyIfNotEmpty("dataStream", message.getDatastream(), job);
 		addJobPropertyIfNotEmpty("relation", message.getRelation(), job);
@@ -228,7 +228,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		Map<String, Object> job = new HashMap<String, Object>();
 		
 		job.put("id", message.getMessageID());
-		job.put("targetPID", message.getPIDString());
+		job.put("targetPID", message.getTargetID());
 		addJobPropertyIfNotEmpty("depositID", message.getDepositID(), job);
 		addJobPropertyIfNotEmpty("dataStream", message.getDatastream(), job);
 		addJobPropertyIfNotEmpty("relation", message.getRelation(), job);
@@ -287,7 +287,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
 		List<ActionMessage> messages = new ArrayList<ActionMessage>();
 		for (PerformServicesRunnable task: currentlyRunning){
-			messages.add(task.getPidMessage());
+			messages.add(task.getMessage());
 		}
 		pr.write(getJobXML(id, messages));
 	}

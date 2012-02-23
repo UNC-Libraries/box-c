@@ -16,23 +16,23 @@
 package edu.unc.lib.dl.cdr.services;
 
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 
 /**
  * @author Gregory Jansen
  *
  */
 public abstract class Enhancement<Element> {
-    protected PIDMessage pid = null;
+    protected EnhancementMessage pid = null;
 
     /**
      * @param pid
      */
-    public Enhancement(PIDMessage pid) {
+    public Enhancement(EnhancementMessage pid) {
 	this.pid = pid;
     }
 
-    public PIDMessage getPid() {
+    public EnhancementMessage getPid() {
         return pid;
     }
     

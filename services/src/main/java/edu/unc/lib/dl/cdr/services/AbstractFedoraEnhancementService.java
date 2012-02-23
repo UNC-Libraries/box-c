@@ -24,6 +24,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
@@ -40,13 +41,14 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 	private ApplicationContext applicationContext;
 
 	@Override
-	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(pid.getQualifiedAction())){
+	public boolean prefilterMessage(EnhancementMessage eMessage) throws EnhancementException {
+		PIDMessage message = (PIDMessage)eMessage;
+		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getQualifiedAction())){
 			return true;
 		}
 			
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(pid.getQualifiedAction()) && 
-				this.getClass().getName().equals(pid.getServiceName())){
+		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(message.getQualifiedAction()) && 
+				this.getClass().getName().equals(message.getServiceName())){
 			return true;
 		}
 		return false;

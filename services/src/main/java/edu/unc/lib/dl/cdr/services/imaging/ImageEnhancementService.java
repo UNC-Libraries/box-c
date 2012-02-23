@@ -17,6 +17,7 @@ package edu.unc.lib.dl.cdr.services.imaging;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
@@ -83,18 +85,19 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 	}
 
 	@Override
-	public Enhancement<Element> getEnhancement(PIDMessage pid) {
-		return new ImageEnhancement(this, pid);
+	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
+		return new ImageEnhancement(this, message);
 	}
 	
 	@Override
-	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
-		String action = pid.getQualifiedAction();
+	public boolean prefilterMessage(EnhancementMessage eMessage) throws EnhancementException {
+		PIDMessage message = (PIDMessage)eMessage;
+		String action = message.getQualifiedAction();
 		
 		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(action))
 			return true;
 		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(action))
-			return this.getClass().getName().equals(pid.getServiceName());
+			return this.getClass().getName().equals(message.getServiceName());
 		
 		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
 			return true;
@@ -102,7 +105,7 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 		if (!(JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action) 
 				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)))
 			return false;
-		String datastream = pid.getDatastream();
+		String datastream = message.getDatastream();
 		
 		return ContentModelHelper.Datastream.DATA_FILE.equals(datastream);
 	}
@@ -114,14 +117,14 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 	 */
 	@SuppressWarnings({ "unchecked"})
 	@Override
-	public boolean isApplicable(PIDMessage pid) throws EnhancementException {
-		LOG.debug("isApplicable called with " + pid);
+	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
+		LOG.debug("isApplicable called with " + message.getTargetID());
 
 		String query = null;
 		try {
 			// replace model URI and PID tokens
 			query = this.readFileAsString("image-applicable.sparql");
-			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid.getPID()
+			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), message.getPid()
 					.getURI(), "http://cdr.unc.edu/definitions/1.0/base-model.xml#derivedJP2");
 		} catch (IOException e) {
 			throw new EnhancementException(e);
@@ -145,5 +148,4 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 		// TODO Auto-generated method stub
 		return false;
 	}
-
 }

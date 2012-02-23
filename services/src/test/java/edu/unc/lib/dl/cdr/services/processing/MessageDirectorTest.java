@@ -26,6 +26,7 @@ import org.mockito.ArgumentMatcher;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
@@ -84,7 +85,7 @@ public class MessageDirectorTest extends Assert {
 		}
 		
       public boolean matches(Object pid) {
-      	return ((PIDMessage) pid).getPIDString().startsWith(this.pid);
+      	return ((EnhancementMessage) pid).getTargetID().startsWith(this.pid);
       }
    }
 	

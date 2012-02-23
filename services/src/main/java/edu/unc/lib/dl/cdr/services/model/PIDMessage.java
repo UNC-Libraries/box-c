@@ -15,14 +15,10 @@
  */
 package edu.unc.lib.dl.cdr.services.model;
 
-import java.util.List;
-
 import org.jdom.Document;
 
-import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.message.ActionMessage;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -31,21 +27,12 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author bbpennel
  *
  */
-public class PIDMessage implements ActionMessage {
+public class PIDMessage extends EnhancementMessage {
 	private Document message = null;
-	private String messageID = null;
-	private PID pid;
-	private PID depositID;
-	private String namespace = null;
-	private String action = null;
-	private String qualifiedAction = null;
 	private String datastream = null;
 	private String relation = null;
 	private CDRMessageContent cdrMessageContent = null;
-	private String serviceName = null;
 	private String timestamp = null;
-	private long timeCreated = System.currentTimeMillis();
-	private List<ObjectEnhancementService> filteredServices = null;
 	
 	public PIDMessage(){
 	}
@@ -88,22 +75,6 @@ public class PIDMessage implements ActionMessage {
 		return message;
 	}
 	
-	public PID getPID(){
-		return pid;
-	}
-	
-	public String getPIDString(){
-		return pid.getPid();
-	}
-	
-	public String getMessageID() {
-		return messageID;
-	}
-
-	public void setMessageID(String messageID) {
-		this.messageID = messageID;
-	}
-	
 	public void extractMessageID() {
 		if (message != null){
 			try {
@@ -112,14 +83,6 @@ public class PIDMessage implements ActionMessage {
 				//Message was not set, therefore value is null 
 			}
 		}
-	}
-
-	public PID getDepositID() {
-		return depositID;
-	}
-
-	public void setDepositID(PID depositID) {
-		this.depositID = depositID;
 	}
 	
 	public String getTimestamp() {
@@ -133,39 +96,6 @@ public class PIDMessage implements ActionMessage {
 				timestamp = "";
 		}
 		return timestamp;
-	}
-	
-	private void setQualifiedAction(){
-		if (action != null && action.length() > 0 && this.namespace != null){
-			this.qualifiedAction = this.namespace + "/" + action;
-		} else {
-			this.qualifiedAction = action;
-		}
-	}
-	
-	@Override
-	public String getQualifiedAction() {
-		return this.qualifiedAction;
-	}
-	
-	public void setAction(String action){
-		this.action = action;
-		setQualifiedAction();
-	}
-	
-	@Override
-	public String getAction() {
-		return action;
-	}
-	
-	public void setNamespace(String namespace) {
-		this.namespace = namespace;
-		setQualifiedAction();
-	}
-	
-	@Override
-	public String getNamespace() {
-		return namespace;
 	}
 
 	public String getDatastream() {
@@ -197,39 +127,6 @@ public class PIDMessage implements ActionMessage {
 		}
     	return relation;
 	}
-	
-	public void setServiceName(String serviceName) {
-		this.serviceName = serviceName;
-	}
-
-	public String getServiceName() {
-		return serviceName;
-	}
-
-	public long getTimeCreated() {
-		return timeCreated;
-	}
-
-	public void setTimeCreated(long timeCreated) {
-		this.timeCreated = timeCreated;
-	}
-
-	public List<ObjectEnhancementService> getFilteredServices() {
-		return filteredServices;
-	}
-	
-	public boolean filteredServicesContains(Class<?> serviceClass){
-		for (ObjectEnhancementService service: this.filteredServices){
-			if (serviceClass.equals(service.getClass())){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void setFilteredServices(List<ObjectEnhancementService> filteredServices) {
-		this.filteredServices = filteredServices;
-	}
 
 	public void generateCDRMessageContent(){
 		cdrMessageContent = new CDRMessageContent(message);
@@ -241,10 +138,5 @@ public class PIDMessage implements ActionMessage {
 
 	public String toString(){
 		return pid.getPid();
-	}
-
-	@Override
-	public String getTargetID() {
-		return this.pid.getPid();
 	}
 }

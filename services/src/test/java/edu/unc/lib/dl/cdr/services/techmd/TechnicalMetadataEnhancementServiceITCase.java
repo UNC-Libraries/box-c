@@ -157,7 +157,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 			LOG.debug("found candidate: " + p);
 		}
 		assertTrue("The query for candidate objects must return at least 1 result", results.size() > 0);
-		assertTrue("The candidates must include our test object: " + pid1.getPIDString(), results.contains(pid1.getPID()));
+		assertTrue("The candidates must include our test object: " + pid1.getTargetID(), results.contains(pid1.getPid()));
 	}
 
 	@Test
@@ -215,17 +215,17 @@ public class TechnicalMetadataEnhancementServiceITCase {
 		assertTrue("The test pid should be applicable before the service runs: " + pid1, this
 				.getTechnicalMetadataEnhancementService().isApplicable(pid1));
 
-		String originalVID = this.getManagementClient().getDatastream(pid1.getPID(), "DATA_FILE").getVersionID();
+		String originalVID = this.getManagementClient().getDatastream(pid1.getPid(), "DATA_FILE").getVersionID();
 		Enhancement<Element> en = this.getTechnicalMetadataEnhancementService().getEnhancement(pid1);
 		en.call();
 
-		Datastream thb = this.getManagementClient().getDatastream(pid1.getPID(), "MD_TECHNICAL");
+		Datastream thb = this.getManagementClient().getDatastream(pid1.getPid(), "MD_TECHNICAL");
 		assertNotNull("technical metadata stream must not be null", thb);
 
-		String currentVID = this.getManagementClient().getDatastream(pid1.getPID(), "DATA_FILE").getVersionID();
+		String currentVID = this.getManagementClient().getDatastream(pid1.getPid(), "DATA_FILE").getVersionID();
 		assertTrue("The data stream version ID must not change", originalVID.equals(currentVID));
 
-		Document foxml = this.getManagementClient().export(Context.PUBLIC, Format.FOXML_1_1, pid1.getPIDString());
+		Document foxml = this.getManagementClient().export(Context.PUBLIC, Format.FOXML_1_1, pid1.getTargetID());
 		String foxstr = new XMLOutputter().outputString(foxml);
 		LOG.debug("FOXML AFTER TECHMD:\n" + foxstr);
 
@@ -233,12 +233,12 @@ public class TechnicalMetadataEnhancementServiceITCase {
 		assertFalse("A pid should no longer be applicable after the service runs: " + pid1, stillApplicable);
 
 		List<PID> candidates = this.getTechnicalMetadataEnhancementService().findCandidateObjects(50);
-		assertFalse("Test pid should no longer be a candidate", candidates.contains(pid1.getPID()));
+		assertFalse("Test pid should no longer be a candidate", candidates.contains(pid1.getPid()));
 
 		// now update source
 		File dataFile = new File("src/test/resources", "sample.pdf");
 		String uploadURI = this.getManagementClient().upload(dataFile);
-		this.getManagementClient().modifyDatastreamByReference(pid1.getPID(), "DATA_FILE", false, "Thumbnail Test",
+		this.getManagementClient().modifyDatastreamByReference(pid1.getPid(), "DATA_FILE", false, "Thumbnail Test",
 				Collections.<String>emptyList(), "sample.pdf", "application/pdf", null, ChecksumType.DEFAULT, uploadURI);
 		assertTrue("The test pid should be applicable again after source DS is updated: " + pid1, this
 				.getTechnicalMetadataEnhancementService().isApplicable(pid1));
@@ -253,11 +253,11 @@ public class TechnicalMetadataEnhancementServiceITCase {
 		PIDMessage pidConflict = ingestSample("techmd-test-single-conflict.xml", "fits_conflict.ppt", "application/octet-stream");
 		Enhancement<Element> en = this.getTechnicalMetadataEnhancementService().getEnhancement(pidConflict);
 		en.call();
-		Datastream thb = this.getManagementClient().getDatastream(pidConflict.getPID(), "MD_TECHNICAL");
-		Document foxml = this.getManagementClient().getObjectXML(pidConflict.getPID());
+		Datastream thb = this.getManagementClient().getDatastream(pidConflict.getPid(), "MD_TECHNICAL");
+		Document foxml = this.getManagementClient().getObjectXML(pidConflict.getPid());
 		new XMLOutputter().output(foxml, System.err);
 		assertNotNull("technical metadata stream must not be null", thb);
-		List<String> mimes = this.getTripleStoreQueryService().fetchAllTriples(pidConflict.getPID()).get("http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSourceMimeType");
+		List<String> mimes = this.getTripleStoreQueryService().fetchAllTriples(pidConflict.getPid()).get("http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSourceMimeType");
 		assertTrue("data stream mimetype must match powerpoint, but got: "+mimes.get(0), mimes.size() == 1 && mimes.get(0).contains("powerpoint"));
 	}
 
@@ -272,15 +272,15 @@ public class TechnicalMetadataEnhancementServiceITCase {
 		PIDMessage pidConflict = ingestSample("techmd-test-single-conflict.xml", "20110603testcase.zip", "application/octet-stream");
 		List<String> alts = new ArrayList<String>();
 		alts.add("irods://cdr-vault.libint.unc.edu:3333/cdrZone/home/eomeara/staging/Tucasi_live/originals/TUCASI/Vocabulary%20Development%20Week%202/Vocabulary%20Development%20Week%202%20(default).zip");
-		this.getManagementClient().modifyDatastreamByReference(pidConflict.getPID(), "DATA_FILE", false, "test", alts, null, null, null, null, null);
+		this.getManagementClient().modifyDatastreamByReference(pidConflict.getPid(), "DATA_FILE", false, "test", alts, null, null, null, null, null);
 		Enhancement<Element> en = this.getTechnicalMetadataEnhancementService().getEnhancement(pidConflict);
 		en.call();
-		Datastream thb = this.getManagementClient().getDatastream(pidConflict.getPID(), "MD_TECHNICAL");
-		Document foxml = this.getManagementClient().getObjectXML(pidConflict.getPID());
+		Datastream thb = this.getManagementClient().getDatastream(pidConflict.getPid(), "MD_TECHNICAL");
+		Document foxml = this.getManagementClient().getObjectXML(pidConflict.getPid());
 		LOG.debug("HEREHERE");
 		new XMLOutputter().output(foxml, System.err);
 		assertNotNull("technical metadata stream must not be null", thb);
-		List<String> mimes = this.getTripleStoreQueryService().fetchAllTriples(pidConflict.getPID()).get("http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSourceMimeType");
+		List<String> mimes = this.getTripleStoreQueryService().fetchAllTriples(pidConflict.getPid()).get("http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSourceMimeType");
 		assertTrue("data stream mimetype must match powerpoint, but got: "+mimes.get(0), mimes.size() == 1 && mimes.get(0).contains("zip"));
 	}
 
@@ -294,14 +294,14 @@ public class TechnicalMetadataEnhancementServiceITCase {
 		// update source data stream
 		File dataFile = new File("src/test/resources", "sample_fits_no_id_status.png");
 		String uploadURI = this.getManagementClient().upload(dataFile);
-		this.getManagementClient().modifyDatastreamByReference(pidConflict.getPID(), "DATA_FILE", false, "Techmd Test",
+		this.getManagementClient().modifyDatastreamByReference(pidConflict.getPid(), "DATA_FILE", false, "Techmd Test",
 				Collections.<String>emptyList(), "sample_fits_no_id_status.png", "application/octet-stream", null, ChecksumType.DEFAULT, uploadURI);
 		Enhancement<Element> en = this.getTechnicalMetadataEnhancementService().getEnhancement(pidConflict);
 		en.call();
 
-		Datastream thb = this.getManagementClient().getDatastream(pidConflict.getPID(), "MD_TECHNICAL");
+		Datastream thb = this.getManagementClient().getDatastream(pidConflict.getPid(), "MD_TECHNICAL");
 		assertNotNull("technical metadata stream must not be null", thb);
-		List<String> mimes = this.getTripleStoreQueryService().fetchAllTriples(pidConflict.getPID()).get("http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSourceMimeType");
+		List<String> mimes = this.getTripleStoreQueryService().fetchAllTriples(pidConflict.getPid()).get("http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSourceMimeType");
 		assertTrue("data stream mimetype must match image/png, but is "+mimes.get(0), mimes.size() == 1 && "image/png".equals(mimes.get(0)));
 	}
 
@@ -313,10 +313,10 @@ public class TechnicalMetadataEnhancementServiceITCase {
 		Enhancement<Element> en = this.getTechnicalMetadataEnhancementService().getEnhancement(pidErr);
 		en.call();
 
-		Datastream thb = this.getManagementClient().getDatastream(pidErr.getPID(), "MD_TECHNICAL");
+		Datastream thb = this.getManagementClient().getDatastream(pidErr.getPid(), "MD_TECHNICAL");
 		assertNotNull("technical metadata stream must not be null", thb);
 
-		Document foxml = this.getManagementClient().export(Context.PUBLIC, Format.FOXML_1_1, pidErr.getPIDString());
+		Document foxml = this.getManagementClient().export(Context.PUBLIC, Format.FOXML_1_1, pidErr.getTargetID());
 		String foxstr = new XMLOutputter().outputString(foxml);
 		LOG.debug("FOXML AFTER TECHMD:\n" + foxstr);
 
@@ -324,7 +324,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 		assertFalse("A pid should no longer be applicable after the service runs: " + pidErr, stillApplicable);
 
 		List<PID> candidates = this.getTechnicalMetadataEnhancementService().findCandidateObjects(50);
-		assertFalse("Test pid should no longer be a candidate", candidates.contains(pidErr.getPID()));
+		assertFalse("Test pid should no longer be a candidate", candidates.contains(pidErr.getPid()));
 	}
 
 	public TripleStoreQueryService getTripleStoreQueryService() {

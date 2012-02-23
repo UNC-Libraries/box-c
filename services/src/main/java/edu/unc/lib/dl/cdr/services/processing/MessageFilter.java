@@ -16,7 +16,7 @@
 
 package edu.unc.lib.dl.cdr.services.processing;
 
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.message.ActionMessage;
 
 /**
  * Message filter interface for determining which conductor a message should filter into.
@@ -25,7 +25,7 @@ import edu.unc.lib.dl.cdr.services.model.PIDMessage;
  * 
  */
 public interface MessageFilter {
-	public boolean filter(PIDMessage msg);
+	public boolean filter(ActionMessage msg);
 	
 	public String getConductor();
 }
