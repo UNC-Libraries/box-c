@@ -48,7 +48,7 @@
 
 	<bean id="swordPath" class="java.lang.String">
 		<constructor-arg
-			value="${repository.protocol}://${repository.host}${repository.port}/${sword.context}" />
+			value="${repository.protocol}://${repository.host}${repository.port}/${services.context}/${sword.context}" />
 	</bean>
 
 	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
