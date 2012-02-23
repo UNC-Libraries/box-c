@@ -329,7 +329,8 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 			xmlstr = xml.toString();
 			errstr = err.toString();
 			if (errstr.length() > 0) {
-				LOG.warn("FITS is warning for path: " + dsIrodsPath + "\n" + errstr);
+				LOG.warn("FITS is warning for path: " + dsIrodsPath);
+				LOG.info(errstr);
 			}
 			result = new SAXBuilder().build(new StringReader(xmlstr));
 			return result;

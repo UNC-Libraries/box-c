@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -73,7 +74,13 @@ public class CollectionServlet extends BaseSwordServlet {
 			}
 		}
 		
-		this.api.post(req, resp);
+		try {
+			this.api.post(req, resp);
+		} catch (Exception e) {
+			LOG.error("An unhandled exception occurred while attempting to ingest to " + req.getQueryString(), e);
+			resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			resp.getWriter().write("An unexpected exception occurred while attempting to process your submission.");
+		}
 	}
 
 	public CollectionListManager getCollectionListManager() {

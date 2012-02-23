@@ -33,6 +33,8 @@ import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.services.IngestResult;
@@ -95,6 +97,12 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 				|| PackagingType.METS_DSPACE_SIP_1.equals(deposit.getPackaging())){
 			try {
 				return doMETSDeposit(containerPID, deposit, auth, configImpl, agent);
+			} catch (FilesDoNotMatchManifestException e){
+				LOG.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest of package type " + deposit.getPackaging(), e);
+				throw new SwordError("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.", e);
+			} catch (IngestException e){
+				LOG.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.", e);
+				throw new SwordError("An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type " + deposit.getPackaging(), e);
 			} catch (Exception e) {
 				throw new SwordServerException(e);
 			}
