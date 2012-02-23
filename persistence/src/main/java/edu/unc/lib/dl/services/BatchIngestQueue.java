@@ -30,7 +30,7 @@ import edu.unc.lib.dl.util.IngestProperties;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public class BatchIngestQueue {
 	private static final Log LOG = LogFactory.getLog(BatchIngestQueue.class);
@@ -48,7 +48,8 @@ public class BatchIngestQueue {
 		this.serviceDirectory = new File(serviceDirectoryPath);
 		this.queuedDirectory = new File(this.serviceDirectory, QUEUED_SUBDIR);
 		this.failedDirectory = new File(this.serviceDirectory, FAILED_SUBDIR);
-		this.finishedDirectory = new File(this.serviceDirectory, FINISHED_SUBDIR);
+		this.finishedDirectory = new File(this.serviceDirectory,
+				FINISHED_SUBDIR);
 		if (!this.serviceDirectory.exists())
 			this.serviceDirectory.mkdir();
 		if (!this.failedDirectory.exists())
@@ -75,7 +76,8 @@ public class BatchIngestQueue {
 			LOG.error(e);
 			return false;
 		}
-		File result = new File(this.queuedDirectory, System.currentTimeMillis() + "-" + props.getSubmitter());
+		File result = new File(this.queuedDirectory, System.currentTimeMillis()
+				+ "-" + props.getSubmitter());
 		if (result.exists()) {
 			LOG.error("queued directory name conflict: " + result.toString());
 			return false;
@@ -134,15 +136,19 @@ public class BatchIngestQueue {
 				return false;
 			}
 		});
-		Arrays.sort(batchDirs, new Comparator<File>() {
-			@Override
-			public int compare(File o1, File o2) {
-				if (o1 == null || o2 == null)
-					return 0;
-				return (int) (o1.lastModified() - o2.lastModified());
-			}
-		});
-		return batchDirs;
+		if (batchDirs != null) {
+			Arrays.sort(batchDirs, new Comparator<File>() {
+				@Override
+				public int compare(File o1, File o2) {
+					if (o1 == null || o2 == null)
+						return 0;
+					return (int) (o1.lastModified() - o2.lastModified());
+				}
+			});
+			return batchDirs;
+		} else {
+			return new File[] {};
+		}
 	}
 
 	/**
@@ -182,14 +188,18 @@ public class BatchIngestQueue {
 				return arg0.isDirectory();
 			}
 		});
-		Arrays.sort(batchDirs, new Comparator<File>() {
-			@Override
-			public int compare(File o1, File o2) {
-				if (o1 == null || o2 == null)
-					return 0;
-				return (int) (o1.lastModified() - o2.lastModified());
-			}
-		});
+		if (batchDirs != null) {
+			Arrays.sort(batchDirs, new Comparator<File>() {
+				@Override
+				public int compare(File o1, File o2) {
+					if (o1 == null || o2 == null)
+						return 0;
+					return (int) (o1.lastModified() - o2.lastModified());
+				}
+			});
+		} else {
+			return new File[] {};
+		}
 		return batchDirs;
 	}
 
