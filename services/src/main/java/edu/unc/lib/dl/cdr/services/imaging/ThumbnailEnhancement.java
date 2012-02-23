@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -55,7 +56,7 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
-		LOG.debug("Called thumbnail enhancement service for " + pid.getPID());
+		LOG.debug("Called thumbnail enhancement service for " + pid.getPid());
 		
 		String surrogateDsUri = null;
 		String surrogateDsId = null;
@@ -67,22 +68,22 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 
 		try {
 		// enqueues objects that use this one as a surrogate.
-			List<PID> usesMeForSurrogate = this.service.getTripleStoreQueryService().fetchPIDsSurrogateFor(pid.getPID());
+			List<PID> usesMeForSurrogate = this.service.getTripleStoreQueryService().fetchPIDsSurrogateFor(pid.getPid());
 			for(PID usesMe: usesMeForSurrogate) {
 				this.service.getMessageDirector().direct(new PIDMessage(usesMe, JMSMessageUtil.servicesMessageNamespace, 
 						JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), ThumbnailEnhancementService.class.getName()));
 			}
 
 			// get sourceData data stream IDs
-			List<String> surrogateDSIDs = this.service.getTripleStoreQueryService().getSurrogateData(pid.getPID());
+			List<String> surrogateDSIDs = this.service.getTripleStoreQueryService().getSurrogateData(pid.getPid());
 			if(surrogateDSIDs == null || surrogateDSIDs.size() < 1) {
-				throw new EnhancementException(pid.getPID(), "Cannot find a suitable DSID for making a thumbnail.");
+				throw new EnhancementException(pid.getPid(), "Cannot find a suitable DSID for making a thumbnail.");
 			}
 			surrogateDsUri = surrogateDSIDs.get(0);
 			surrogateDsId = surrogateDsUri.substring(surrogateDsUri.lastIndexOf("/") + 1);
 			surrogatePid = new PID(surrogateDsUri.substring(0,surrogateDsUri.lastIndexOf("/")));
 
-			Document foxml = service.getManagementClient().getObjectXML(pid.getPID());
+			Document foxml = service.getManagementClient().getObjectXML(pid.getPid());
 
 			Document surrogateFoxml = service.getManagementClient().getObjectXML(surrogatePid);
 
@@ -111,7 +112,7 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 					dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
 					LOG.debug("Making 2 Thumbnails..");
 
-					Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid.getPID());
+					Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid.getPid());
 					List<String> thumbRels = rels.get(ContentModelHelper.CDRProperty.thumb.toString());
 					{
 						String dsname = ContentModelHelper.Datastream.THUMB_SMALL.getName();
@@ -133,10 +134,10 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 		} catch (NotFoundException e) {
 			throw new EnhancementException(e, Severity.UNRECOVERABLE);
 		} catch (FedoraException e) {
-			throw new EnhancementException("Thumbnail Enhancement failed to process, pid: " + pid.getPIDString() 
+			throw new EnhancementException("Thumbnail Enhancement failed to process, pid: " + pid.getTargetID() 
 					+ " surrogateDS: "+surrogateDsId, e, Severity.RECOVERABLE);
 		} catch (Exception e) {
-			throw new EnhancementException("Thumbnail Enhancement failed to process, pid "+pid.getPIDString()
+			throw new EnhancementException("Thumbnail Enhancement failed to process, pid "+pid.getTargetID()
 					+ " surrogateDS: "+surrogateDsId, e, Severity.UNRECOVERABLE);
 		}
 
@@ -149,16 +150,16 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 		String resultURI = service.makeIrodsURIFromPath(resultPath);
 		if (!exists) {
 			String message = "adding thumbnail";
-			service.getManagementClient().addManagedDatastream(pid.getPID(), dsname, false, message,
+			service.getManagementClient().addManagedDatastream(pid.getPid(), dsname, false, message,
 					Collections.<String>emptyList(), "Thumbnail Image", false, "image/png", resultURI);
 		} else {
 			String message = "updating thumbnail";
-			service.getManagementClient().modifyDatastreamByReference(pid.getPID(), dsname, false, message,
+			service.getManagementClient().modifyDatastreamByReference(pid.getPid(), dsname, false, message,
 					new ArrayList<String>(), "Thumbnail Image", "image/png", null, null, resultURI);
 		}
-		PID newDSPID = new PID(pid.getPID().getPid() + "/" + dsname);
+		PID newDSPID = new PID(pid.getTargetID() + "/" + dsname);
 		if (thumbRels == null || !thumbRels.contains(newDSPID.getURI())) {
-			service.getManagementClient().addObjectRelationship(pid.getPID(),
+			service.getManagementClient().addObjectRelationship(pid.getPid(),
 					ContentModelHelper.CDRProperty.thumb.toString(), newDSPID);
 		}
 		service.deleteIRODSFile(resultPath);
@@ -183,7 +184,7 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 		}
 	}
 
-	public ThumbnailEnhancement(ThumbnailEnhancementService service, PIDMessage pid) {
+	public ThumbnailEnhancement(ThumbnailEnhancementService service, EnhancementMessage pid) {
 		super(pid);
 		this.service = service;
 	}

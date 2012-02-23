@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.fedora.PID;
@@ -95,17 +97,17 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 	}
 
 	@Override
-	public Enhancement<Element> getEnhancement(PIDMessage pid) {
+	public Enhancement<Element> getEnhancement(EnhancementMessage pid) {
 		return null;
 	}
 	
 	@Override
-	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
+	public boolean prefilterMessage(EnhancementMessage pid) throws EnhancementException {
 		return false;
 	}
 
 	@Override
-	public boolean isApplicable(PIDMessage pid) {
+	public boolean isApplicable(EnhancementMessage pid) {
 		return true;
 	}
 
@@ -121,5 +123,4 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 	public void setWindowSizeHours(Integer windowSizeHours) {
 		this.windowSizeHours = windowSizeHours;
 	}
-
 }

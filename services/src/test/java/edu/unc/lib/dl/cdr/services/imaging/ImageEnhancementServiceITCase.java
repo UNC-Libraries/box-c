@@ -156,11 +156,11 @@ public class ImageEnhancementServiceITCase {
 		for (PID p : results) {
 			LOG.debug("found candidate: " + p);
 		}
-		assertTrue("TIFF must be a candidate", results.contains(pidTIFF.getPID()));
-		assertFalse("CollYes must not be a candidate", results.contains(pidCollYes.getPID()));
-		assertFalse("CollNo must not be a candidate", results.contains(pidCollNo.getPID()));
-		assertFalse("DOC must not be a candidate", results.contains(pidDOC.getPID()));
-		assertFalse("PDF must not be a candidate", results.contains(pidPDF.getPID()));
+		assertTrue("TIFF must be a candidate", results.contains(pidTIFF.getPid()));
+		assertFalse("CollYes must not be a candidate", results.contains(pidCollYes.getPid()));
+		assertFalse("CollNo must not be a candidate", results.contains(pidCollNo.getPid()));
+		assertFalse("DOC must not be a candidate", results.contains(pidDOC.getPid()));
+		assertFalse("PDF must not be a candidate", results.contains(pidPDF.getPid()));
 	}
 
 	@Test
@@ -192,7 +192,7 @@ public class ImageEnhancementServiceITCase {
 		Enhancement<Element> en = this.getImageEnhancementService().getEnhancement(pidTIFF);
 		try {
 			en.call();
-			Datastream thb = this.getManagementClient().getDatastream(pidTIFF.getPID(), ContentModelHelper.Datastream.IMAGE_JP2000.getName());
+			Datastream thb = this.getManagementClient().getDatastream(pidTIFF.getPid(), ContentModelHelper.Datastream.IMAGE_JP2000.getName());
 			assertNotNull(ContentModelHelper.Datastream.IMAGE_JP2000.getName()+" datastream must not be null", thb);
 		} catch (Exception e) {
 			throw new Error(e);
@@ -200,19 +200,19 @@ public class ImageEnhancementServiceITCase {
 		assertFalse("The PID " + pidTIFF + " must not be applicable after service has run.", this
 				.getImageEnhancementService().isApplicable(pidTIFF));
 		assertFalse("The PID " + pidTIFF + " must not be a candidate after service has run.", this
-				.getImageEnhancementService().findCandidateObjects(50).contains(pidTIFF.getPID()));
+				.getImageEnhancementService().findCandidateObjects(50).contains(pidTIFF.getPid()));
 
 		// now update source
 		File dataFile = new File("src/test/resources", "sample.tiff");
 		String uploadURI = this.getManagementClient().upload(dataFile);
-		this.getManagementClient().modifyDatastreamByReference(pidTIFF.getPID(), "DATA_FILE", false, "Thumbnail Test",
+		this.getManagementClient().modifyDatastreamByReference(pidTIFF.getPid(), "DATA_FILE", false, "Thumbnail Test",
 				Collections.<String>emptyList(), "sample.pdf", "image/tiff", null, ChecksumType.DEFAULT, uploadURI);
 		assertTrue("The test pid should be applicable again after source DS is updated: " + pidTIFF, this
 				.getImageEnhancementService().isApplicable(pidTIFF));
 
 		LOG.debug("Adding JP2 relationship again for kicks");
-		PID newDSPID = new PID(pidTIFF.getPID().getPid()+"/"+ ContentModelHelper.Datastream.IMAGE_JP2000.getName());
-		this.getManagementClient().addObjectRelationship(pidTIFF.getPID(),
+		PID newDSPID = new PID(pidTIFF.getPid().getPid()+"/"+ ContentModelHelper.Datastream.IMAGE_JP2000.getName());
+		this.getManagementClient().addObjectRelationship(pidTIFF.getPid(),
 				"http://cdr.unc.edu/definitions/1.0/base-model.xml#derivedJP2", newDSPID);
 	}
 

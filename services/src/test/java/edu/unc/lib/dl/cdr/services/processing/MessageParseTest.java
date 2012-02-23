@@ -53,7 +53,7 @@ public class MessageParseTest extends Assert {
 		try {
 			Document doc = readFileAsString("cdrAddMessage.xml");
 			PIDMessage message = new PIDMessage(doc, JMSMessageUtil.cdrMessageNamespace);
-			assertTrue(message.getPIDString().equals("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744"));
+			assertTrue(message.getTargetID().equals("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744"));
 			assertTrue(JMSMessageUtil.CDRActions.ADD.equals(message.getQualifiedAction()));
 			assertTrue("2011-04-28T18:55:32.220Z".equals(message.getTimestamp()));
 			assertTrue("".equals(message.getDatastream()));

@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
@@ -62,10 +63,10 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	private int maxThreads = 5;
 
 	// Queue of pids with their invoking messages
-	private BlockingQueue<PIDMessage> pidQueue = null;
+	private BlockingQueue<EnhancementMessage> pidQueue = null;
 	// List of pids which applied to locked pids when they were first called,
 	// preserved in order
-	private List<PIDMessage> collisionList = null;
+	private List<EnhancementMessage> collisionList = null;
 	// Set of locked pids, used to prevent items from being processed multiple
 	// times at once
 	private Set<String> lockedPids = null;
@@ -81,9 +82,9 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 
 	public EnhancementConductor() {
 		LOG.debug("Starting up Services Conductor");
-		pidQueue = new LinkedBlockingQueue<PIDMessage>();
+		pidQueue = new LinkedBlockingQueue<EnhancementMessage>();
 		// Initialize as synchronized collections for thread safety
-		collisionList = Collections.synchronizedList(new ArrayList<PIDMessage>());
+		collisionList = Collections.synchronizedList(new ArrayList<EnhancementMessage>());
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
 		idSequence = new AtomicLong(0);
 	}
@@ -121,22 +122,22 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	 * @param msg
 	 */
 	@Override
-	public void add(ActionMessage msg) {
-		PIDMessage pidMsg = (PIDMessage)msg;
+	public void add(ActionMessage aMessage) {
+		EnhancementMessage message = (EnhancementMessage)aMessage;
 		synchronized (pidQueue) {
 			synchronized (executor) {
 				if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated()) {
-					LOG.debug("Ignoring message for pid " + pidMsg.getPIDString());
+					LOG.debug("Ignoring message for pid " + message.getTargetID());
 					return;
 				}
-				if (pidMsg.getMessageID() == null){
+				if (message.getMessageID() == null){
 					synchronized(idSequence){
-						pidMsg.setMessageID(identifier + ":" + idSequence.incrementAndGet());
+						message.setMessageID(identifier + ":" + idSequence.incrementAndGet());
 					}
 				}
-				boolean success = pidQueue.offer(pidMsg);
+				boolean success = pidQueue.offer(message);
 				if (!success){
-					LOG.error("Failure to queue pid " + pidMsg.getPIDString());
+					LOG.error("Failure to queue pid " + message.getTargetID());
 				}
 				startProcessing();
 			}
@@ -361,11 +362,11 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		this.services = services;
 	}
 
-	public BlockingQueue<PIDMessage> getPidQueue() {
+	public BlockingQueue<EnhancementMessage> getPidQueue() {
 		return pidQueue;
 	}
 
-	public void setPidQueue(BlockingQueue<PIDMessage> pidQueue) {
+	public void setPidQueue(BlockingQueue<EnhancementMessage> pidQueue) {
 		this.pidQueue = pidQueue;
 	}
 
@@ -377,11 +378,11 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		this.lockedPids = lockedPids;
 	}
 
-	public List<PIDMessage> getCollisionList() {
+	public List<EnhancementMessage> getCollisionList() {
 		return collisionList;
 	}
 
-	public void setCollisionList(List<PIDMessage> collisionList) {
+	public void setCollisionList(List<EnhancementMessage> collisionList) {
 		this.collisionList = collisionList;
 	}
 
@@ -408,31 +409,31 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	 */
 	public class PerformServicesRunnable implements Runnable {
 
-		private PIDMessage pidMessage = null;
+		private EnhancementMessage message = null;
 		
 		public PerformServicesRunnable() {
 			LOG.debug("Instantiating a new PerformServicesRunnable");
 		}
 
-		public PIDMessage getPidMessage() {
-			return pidMessage;
+		public EnhancementMessage getMessage() {
+			return message;
 		}
 
-		private void retryException(ObjectEnhancementService s, String message, Exception e, long retryDelay){
-			LOG.warn(message + s.getClass().getName() + " for " + pidMessage.getPIDString() + ".  Retrying after a delay.", e);
+		private void retryException(ObjectEnhancementService s, String messagePrefix, Exception e, long retryDelay){
+			LOG.warn(messagePrefix + s.getClass().getName() + " for " + message.getTargetID() + ".  Retrying after a delay.", e);
 			try {
 				Thread.sleep(retryDelay);
 				this.applyService(s);
-				LOG.info("Second attempt to run " + s.getClass().getName() + " for " + pidMessage.getPIDString()
+				LOG.info("Second attempt to run " + s.getClass().getName() + " for " + message.getTargetID()
 						+ " was successful.");
 			} catch (InterruptedException e2) {
-				LOG.warn("Retry attempt for " + s.getClass().getName() + " for " + pidMessage.getPIDString()
+				LOG.warn("Retry attempt for " + s.getClass().getName() + " for " + message.getTargetID()
 						+ " was interrupted.");
 				Thread.currentThread().interrupt();
 			} catch (Exception e2) {
-				LOG.error("Second attempt to run " + s.getClass().getName() + " for " + pidMessage.getPIDString()
+				LOG.error("Second attempt to run " + s.getClass().getName() + " for " + message.getTargetID()
 						+ " failed.");
-				failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
+				failedPids.add(message.getTargetID(), s.getClass().getName());
 			}
 		}
 
@@ -445,8 +446,8 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		 *
 		 * @return the next available message which is not locked, or null if none if available.
 		 */
-		private PIDMessage getNextMessage() {
-			PIDMessage pid = null;
+		private EnhancementMessage getNextMessage() {
+			EnhancementMessage pid = null;
 
 			do {
 				synchronized (collisionList) {
@@ -454,12 +455,12 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 						// First read from the collision list in case there are items
 						// that were blocked which need to be read
 						if (!collisionList.isEmpty()) {
-							Iterator<PIDMessage> collisionIt = collisionList.iterator();
+							Iterator<EnhancementMessage> collisionIt = collisionList.iterator();
 							while (collisionIt.hasNext()) {
 								pid = collisionIt.next();
 								synchronized (lockedPids) {
-									if (!lockedPids.contains(pid.getPIDString())) {
-										lockedPids.add(pid.getPIDString());
+									if (!lockedPids.contains(pid.getTargetID())) {
+										lockedPids.add(pid.getTargetID());
 										collisionIt.remove();
 										return pid;
 									}
@@ -474,10 +475,10 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 
 							if (pid != null){
 								synchronized (lockedPids) {
-									if (lockedPids.contains(pid.getPIDString())) {
+									if (lockedPids.contains(pid.getTargetID())) {
 										collisionList.add(pid);
 									} else {
-										lockedPids.add(pid.getPIDString());
+										lockedPids.add(pid.getTargetID());
 										return pid;
 									}
 								}
@@ -501,31 +502,31 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 			// was one of them.
 
 			if (LOG.isDebugEnabled())
-				LOG.debug("Applying service " + s.getClass().getCanonicalName() + " to " + pidMessage.getPIDString());
+				LOG.debug("Applying service " + s.getClass().getCanonicalName() + " to " + message.getTargetID());
 
 			Set<String> failedServices = null;
 			synchronized(failedPids){
-				failedServices = failedPids.get(pidMessage.getPIDString());
+				failedServices = failedPids.get(message.getTargetID());
 				//Determine if the service should not be run
 				if (!(s.isActive() &&
-						((pidMessage.getServiceName() != null && pidMessage.getServiceName().equals(s.getClass().getName()))
-							|| s.isApplicable(pidMessage))
+						((message.getServiceName() != null && message.getServiceName().equals(s.getClass().getName()))
+							|| s.isApplicable(message))
 						&& (failedServices == null || !failedServices.contains(s.getClass().getName())))){
 					if (LOG.isDebugEnabled())
-						LOG.debug("Enhancement not run: " + s.getClass().getCanonicalName() + " on " + pidMessage.getPIDString());
+						LOG.debug("Enhancement not run: " + s.getClass().getCanonicalName() + " on " + message.getTargetID());
 					return;
 				}
 			}
 
 			//Generate the enhancement
-			LOG.info("Adding enhancement task: " + s.getClass().getCanonicalName() + " on " + pidMessage.getPIDString());
-			Enhancement<Element> task = s.getEnhancement(pidMessage);
+			LOG.info("Adding enhancement task: " + s.getClass().getCanonicalName() + " on " + message.getTargetID());
+			Enhancement<Element> task = s.getEnhancement(message);
 
 			//Pause before applying the service if the executor is paused.
 			pauseWait();
 			//If the thread was interrupted, we're done
 			if (Thread.currentThread().isInterrupted()){
-				LOG.warn("Services thread " + Thread.currentThread().getId() + " for " + pidMessage.getPIDString()
+				LOG.warn("Services thread " + Thread.currentThread().getId() + " for " + message.getTargetID()
 						+ " interrupted before calling enhancement");
 				return;
 			}
@@ -548,19 +549,19 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		public void run() {
 			LOG.debug("Starting new run of ServiceConductor thread " + this);
 			//Get the next message, waiting as long as necessary for one to be free
-			pidMessage = getNextMessage();
+			message = getNextMessage();
 
 			if (LOG.isDebugEnabled())
-				LOG.debug("Received pid " + pidMessage.getPIDString() + ": " + pidMessage.getFilteredServices());
+				LOG.debug("Received pid " + message.getTargetID() + ": " + message.getFilteredServices());
 
-			if (pidMessage != null && pidMessage.getFilteredServices() != null) {
+			if (message != null && message.getFilteredServices() != null) {
 				try {
 					//Quit before doing work if thread was interrupted
 					if (Thread.currentThread().isInterrupted()){
 						LOG.debug("Thread was interrupted");
 						return;
 					}
-					for (ObjectEnhancementService s : pidMessage.getFilteredServices()) {
+					for (ObjectEnhancementService s : message.getFilteredServices()) {
 						try {
 							if (Thread.currentThread().isInterrupted()){
 								LOG.debug("Thread was interrupted");
@@ -576,19 +577,19 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 									break;
 								case UNRECOVERABLE:
 									LOG.error("An unrecoverable exception occurred while attempting to apply service "
-											+ s.getClass().getName() + " for " + pidMessage.getPIDString() + ".  Adding to failure list.", e);
-									failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
+											+ s.getClass().getName() + " for " + message.getTargetID() + ".  Adding to failure list.", e);
+									failedPids.add(message.getTargetID(), s.getClass().getName());
 									break;
 								case FATAL:
 									pause();
 									LOG.error("A fatal exception occurred while attempting to apply service "
-											+ s.getClass().getName() + " for " + pidMessage.getPIDString() +", halting all future services.", e);
-									failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
+											+ s.getClass().getName() + " for " + message.getTargetID() +", halting all future services.", e);
+									failedPids.add(message.getTargetID(), s.getClass().getName());
 									return;
 								default:
 									LOG.error("An exception occurred while attempting to apply service "
-											+ s.getClass().getName() + " for " + pidMessage.getPIDString(), e);
-									failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
+											+ s.getClass().getName() + " for " + message.getTargetID(), e);
+									failedPids.add(message.getTargetID(), s.getClass().getName());
 									break;
 							}
 						} catch (RuntimeException e) {
@@ -596,11 +597,11 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 									e, unexpectedExceptionDelay);
 						} catch (Exception e) {
 							LOG.error("An unexpected exception occurred while attempting to apply service " + s.getClass().getName(), e);
-							failedPids.add(pidMessage.getPIDString(), s.getClass().getName());
+							failedPids.add(message.getTargetID(), s.getClass().getName());
 						}
 					}
 				} finally {
-					lockedPids.remove(pidMessage.getPIDString());
+					lockedPids.remove(message.getTargetID());
 				}
 			}
 		}

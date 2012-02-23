@@ -51,7 +51,7 @@
 
 	<bean id="contextUrl" class="java.lang.String">
 		<constructor-arg
-			value="${repository.protocol}://${repository.host}${repository.port}/${sword.context}" />
+			value="${repository.protocol}://${repository.host}${repository.port}/${services.context}" />
 	</bean>
 
 	<context:component-scan base-package="edu.unc.lib.dl.cdr.services.rest" />

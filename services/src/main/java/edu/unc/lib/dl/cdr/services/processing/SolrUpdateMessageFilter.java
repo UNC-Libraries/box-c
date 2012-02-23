@@ -19,6 +19,7 @@ package edu.unc.lib.dl.cdr.services.processing;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
+import edu.unc.lib.dl.message.ActionMessage;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 public class SolrUpdateMessageFilter implements MessageFilter {
@@ -31,7 +32,8 @@ public class SolrUpdateMessageFilter implements MessageFilter {
 		return SolrUpdateConductor.identifier;
 	}
 	
-	public boolean filter(PIDMessage msg) {
+	@Override
+	public boolean filter(ActionMessage msg) {
 		if (msg == null)
 			return false;
 			
@@ -44,7 +46,9 @@ public class SolrUpdateMessageFilter implements MessageFilter {
 				|| JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)) {
 			return true;
 		}
-		String datastream = msg.getDatastream();
+		if (!msg.getClass().equals(PIDMessage.class))
+			return false;
+		String datastream = ((PIDMessage)msg).getDatastream();
 		return ContentModelHelper.Datastream.MD_DESCRIPTIVE.equals(datastream)
 				&& (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
 				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action)

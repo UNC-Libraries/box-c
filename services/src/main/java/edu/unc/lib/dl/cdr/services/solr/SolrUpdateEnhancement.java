@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 
@@ -36,16 +37,16 @@ public class SolrUpdateEnhancement extends Enhancement<Element> {
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
-		LOG.debug("Called Solr update service for " + pid.getPID());
+		LOG.debug("Called Solr update service for " + pid.getTargetID());
 		
 		//Perform a single item update
-		service.getMessageDirector().direct(new PIDMessage(pid.getPIDString(), 
+		service.getMessageDirector().direct(new PIDMessage(pid.getTargetID(), 
 				SolrUpdateAction.namespace, SolrUpdateAction.ADD.getName()));
 		
 		return result;
 	}
 
-	public SolrUpdateEnhancement(SolrUpdateEnhancementService service, PIDMessage pid) {
+	public SolrUpdateEnhancement(SolrUpdateEnhancementService service, EnhancementMessage pid) {
 		super(pid);
 		this.service = service;
 	}

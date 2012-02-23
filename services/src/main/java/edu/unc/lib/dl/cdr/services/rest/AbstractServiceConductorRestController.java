@@ -25,7 +25,6 @@ import javax.servlet.ServletContext;
 
 import org.springframework.web.context.ServletContextAware;
 
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.processing.ServiceConductor;
 import edu.unc.lib.dl.message.ActionMessage;
 

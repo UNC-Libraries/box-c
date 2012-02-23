@@ -178,15 +178,15 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		// Add in matching active messages
 		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
 		for (PerformServicesRunnable runningTask : currentlyRunning) {
-			if (runningTask.getPidMessage() != null && runningTask.getPidMessage().getPIDString().equals(id)) {
+			if (runningTask.getMessage() != null && runningTask.getMessage().getTargetID().equals(id)) {
 				task = new HashMap<String, Object>();
 				task.put("jobInfo", contextUrl + EnhancementConductorRestController.BASE_PATH
 						+ EnhancementConductorRestController.ACTIVE_PATH + "/job/"
-						+ runningTask.getPidMessage().getMessageID());
-				task.put("action", runningTask.getPidMessage().getQualifiedAction());
+						+ runningTask.getMessage().getMessageID());
+				task.put("action", runningTask.getMessage().getQualifiedAction());
 				pendingTasks.add(task);
 				// Store the matching active messages for later
-				matchingMessages.add(runningTask.getPidMessage());
+				matchingMessages.add(runningTask.getMessage());
 			}
 		}
 		
