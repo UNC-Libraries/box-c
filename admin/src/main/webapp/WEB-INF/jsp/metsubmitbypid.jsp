@@ -56,7 +56,7 @@
 <br>
 <form:form method="POST" commandName="metsSubmitByPidDAO" 	enctype="multipart/form-data">
   <p>
-	  <em><c:out value="${metsSubmitByPidDAO.message}" /></em>
+	  <em><c:out escapeXml="false" value="${metsSubmitByPidDAO.message}" /></em>
   </p>
 
 <div style="float: right">

@@ -86,8 +86,9 @@ public class METSPackageFileValidator {
 		// find missing or corrupt files listed in manifest
 		try {
 			for(Element fileEl : (List<Element>)allFilesXpath.selectNodes(mets)) {
-				String href = fileEl.getChild("FLocat", JDOMNamespaceUtil.METS_NS).getAttributeValue("href", JDOMNamespaceUtil.XLINK_NS);
+				String href = null;
 				try {
+					href = fileEl.getChild("FLocat", JDOMNamespaceUtil.METS_NS).getAttributeValue("href", JDOMNamespaceUtil.XLINK_NS);
 					URI uri = new URI(href);
 					if (uri.getScheme() != null && !uri.getScheme().contains("file")) {
 						continue;
@@ -96,6 +97,9 @@ public class METSPackageFileValidator {
 					errors.append("Cannot parse file location: " + e.getLocalizedMessage() + " (" + href + ")");
 					missingFiles.add(href);
 					continue;
+				} catch (NullPointerException e) {
+					errors.append("A file location is missing for file ID: " + fileEl.getAttributeValue("ID"));
+					continue;					
 				}
 
 				fileCount++;
