@@ -43,12 +43,14 @@ import edu.unc.lib.dl.util.IngestProperties;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 @Controller
-@RequestMapping(value={"/ingest*", "/ingest"})
-public class IngestServiceRestController extends AbstractServiceConductorRestController {
-	private static final Logger LOG = LoggerFactory.getLogger(IngestServiceRestController.class);
+@RequestMapping(value = { "/ingest*", "/ingest" })
+public class IngestServiceRestController extends
+		AbstractServiceConductorRestController {
+	private static final Logger LOG = LoggerFactory
+			.getLogger(IngestServiceRestController.class);
 
 	@Resource
 	protected BatchIngestService batchIngestService = null;
@@ -61,7 +63,8 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 		addServiceConductorInfo(result, this.batchIngestService);
 		result.put("queuedJobs", this.batchIngestService.getQueuedJobCount());
 		result.put("failedJobs", this.batchIngestService.getFailedJobCount());
-		result.put("finishedJobs", this.batchIngestService.getFinishedJobCount());
+		result.put("finishedJobs",
+				this.batchIngestService.getFinishedJobCount());
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
 		uris.put("queuedJobs", contextUrl + "/rest/ingest/queued");
@@ -73,7 +76,8 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 
 	@RequestMapping(value = { "queued" }, method = RequestMethod.GET)
 	public @ResponseBody
-	Map<String, ? extends Object> getIngestQueued(@RequestParam(value = "begin", required = false) Integer begin,
+	Map<String, ? extends Object> getIngestQueued(
+			@RequestParam(value = "begin", required = false) Integer begin,
 			@RequestParam(value = "end", required = false) Integer end) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		LOG.debug("getIngestQueued()");
@@ -81,10 +85,10 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 		result.put("jobs", jobs);
 		List<BatchIngestTask> queued = this.batchIngestService.getQueuedJobs();
 		result.put("count", queued.size());
-		if(begin == null) {
+		if (begin == null) {
 			begin = 0;
 		}
-		if(end == null) {
+		if (end == null) {
 			end = queued.size();
 		}
 		result.put("begin", begin);
@@ -117,19 +121,25 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 		return result;
 	}
 
-	private void addBatchIngestTaskInfo(Map<String, Object> job, BatchIngestTask b) {
+	private void addBatchIngestTaskInfo(Map<String, Object> job,
+			BatchIngestTask b) {
 		try {
 			job.put("id", b.getBaseDir().getName());
 			job.put("submitter", b.getIngestProperties().getSubmitter());
-			job.put("submissionTime", b.getIngestProperties().getSubmissionTime() > 0 ? b.getIngestProperties().getSubmissionTime() : null);
-			job.put("depositPID", b.getIngestProperties().getOriginalDepositId());
+			job.put("submissionTime", b.getIngestProperties()
+					.getSubmissionTime() > 0 ? b.getIngestProperties()
+					.getSubmissionTime() : null);
+			job.put("depositPID", b.getIngestProperties()
+					.getOriginalDepositId());
 			job.put("message", b.getIngestProperties().getMessage());
 			job.put("size", b.getFoxmlFiles().length);
 			job.put("worked", b.getIngestedCount());
 			job.put("startTime", b.getStartTime() > 0 ? b.getStartTime() : null);
-			job.put("finishedTime", b.getFinishedTime() > 0 ? b.getFinishedTime() : null);
+			job.put("finishedTime",
+					b.getFinishedTime() > 0 ? b.getFinishedTime() : null);
 			job.put("running", b.isRunning());
-			job.put("containerPlacements", getContainerList(b.getIngestProperties()));
+			job.put("containerPlacements",
+					getContainerList(b.getIngestProperties()));
 		} catch (Exception e) {
 			job.put("error", e.getMessage());
 		}
@@ -141,7 +151,8 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 	 */
 	private Object getContainerList(IngestProperties ingestProperties) {
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
-		for(ContainerPlacement p : ingestProperties.getContainerPlacements().values()) {
+		for (ContainerPlacement p : ingestProperties.getContainerPlacements()
+				.values()) {
 			Map<String, Object> place = new HashMap<String, Object>();
 			place.put("submittedLabel", p.label);
 			place.put("containerPID", p.parentPID.getPid());
@@ -155,18 +166,20 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 
 	@RequestMapping(value = { "failed" }, method = RequestMethod.GET)
 	public @ResponseBody
-	Map<String, ? extends Object> getIngestFailed(@RequestParam(value = "begin", required = false) Integer begin,
+	Map<String, ? extends Object> getIngestFailed(
+			@RequestParam(value = "begin", required = false) Integer begin,
 			@RequestParam(value = "end", required = false) Integer end) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		LOG.debug("getIngestFailed()");
 		List<Map<String, Object>> jobs = new ArrayList<Map<String, Object>>();
 		result.put("jobs", jobs);
-		File[] failedDirs = this.batchIngestService.getBatchIngestQueue().getFailedDirectories();
+		File[] failedDirs = this.batchIngestService.getBatchIngestQueue()
+				.getFailedDirectories();
 		result.put("count", failedDirs.length);
-		if(begin == null) {
+		if (begin == null) {
 			begin = 0;
 		}
-		if(end == null) {
+		if (end == null) {
 			end = failedDirs.length;
 		}
 		result.put("begin", begin);
@@ -179,45 +192,55 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 			try {
 				props = new IngestProperties(f);
 				job.put("submitter", props.getSubmitter());
-				job.put("submissionTime", props.getSubmissionTime() > 0 ? props.getSubmissionTime() : null);
+				job.put("submissionTime",
+						props.getSubmissionTime() > 0 ? props
+								.getSubmissionTime() : null);
 				job.put("depositPID", props.getOriginalDepositId());
 				job.put("message", props.getMessage());
-				int c = f.list(new FilenameFilter() {
-					@Override
-					public boolean accept(File arg0, String arg1) {
-						return arg1.endsWith(".foxml");
-					}
-				}).length;
-				job.put("size", c);
-				BufferedReader r = new BufferedReader(new FileReader(new File(f, BatchIngestTask.INGEST_LOG)));
+				int c = 0;
+				try {
+					c = f.list(new FilenameFilter() {
+						@Override
+						public boolean accept(File arg0, String arg1) {
+							return arg1.endsWith(".foxml");
+						}
+					}).length;
+					job.put("size", c);
+				} catch (NullPointerException ignored) {
+				}
+				BufferedReader r = new BufferedReader(new FileReader(new File(
+						f, BatchIngestTask.INGEST_LOG)));
 				String lastLine = null;
 				int countLines = 0;
-				for (String line = r.readLine(); line != null; line = r.readLine()) {
+				for (String line = r.readLine(); line != null; line = r
+						.readLine()) {
 					lastLine = line;
 					countLines++;
 				}
 				String[] lastarray = lastLine.split("\\t");
-				if(BatchIngestTask.CONTAINER_UPDATED_CODE.equals(lastarray[1])) {
+				if (BatchIngestTask.CONTAINER_UPDATED_CODE.equals(lastarray[1])) {
 					job.put("worked", c);
 				} else {
-					if(lastarray.length > 2) {
+					if (lastarray.length > 2) {
 						job.put("worked", countLines);
 					} else {
-						job.put("worked", countLines-1);
+						job.put("worked", countLines - 1);
 					}
 				}
-				job.put("startTime",  props.getStartTime());
+				job.put("startTime", props.getStartTime());
 				job.put("running", false);
 				job.put("containerPlacements", getContainerList(props));
 			} catch (Exception e1) {
 				LOG.error("Unexpected error building ingest properties", e1);
-				throw new Error("Unexpected error building ingest properties",e1);
+				throw new Error("Unexpected error building ingest properties",
+						e1);
 			}
 			String error = null;
 			try {
 				File faillog = new File(f, BatchIngestTask.FAIL_LOG);
 				job.put("failedTime", faillog.lastModified());
-				BufferedReader reader = new BufferedReader(new FileReader(faillog));
+				BufferedReader reader = new BufferedReader(new FileReader(
+						faillog));
 				String line = null;
 				StringBuilder stringBuilder = new StringBuilder();
 				String ls = System.getProperty("line.separator");
@@ -237,18 +260,20 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 
 	@RequestMapping(value = { "finished" }, method = RequestMethod.GET)
 	public @ResponseBody
-	Map<String, ? extends Object> getIngestFinished(@RequestParam(value = "begin", required = false) Integer begin,
+	Map<String, ? extends Object> getIngestFinished(
+			@RequestParam(value = "begin", required = false) Integer begin,
 			@RequestParam(value = "end", required = false) Integer end) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		LOG.debug("getIngestFinished()");
 		List<Map<String, Object>> jobs = new ArrayList<Map<String, Object>>();
 		result.put("jobs", jobs);
-		File[] finishedDirs = this.batchIngestService.getBatchIngestQueue().getFinishedDirectories();
+		File[] finishedDirs = this.batchIngestService.getBatchIngestQueue()
+				.getFinishedDirectories();
 		result.put("count", finishedDirs.length);
-		if(begin == null) {
+		if (begin == null) {
 			begin = 0;
 		}
-		if(end == null) {
+		if (end == null) {
 			end = finishedDirs.length;
 		}
 		result.put("begin", begin);
@@ -261,24 +286,33 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 			try {
 				props = new IngestProperties(f);
 				job.put("submitter", props.getSubmitter());
-				job.put("submissionTime", props.getSubmissionTime() > 0 ? props.getSubmissionTime() : null);
-				job.put("startTime", props.getStartTime() > 0 ? props.getStartTime() : null);
-				job.put("finishedTime", props.getFinishedTime() > 0 ? props.getFinishedTime() : null);
+				job.put("submissionTime",
+						props.getSubmissionTime() > 0 ? props
+								.getSubmissionTime() : null);
+				job.put("startTime",
+						props.getStartTime() > 0 ? props.getStartTime() : null);
+				job.put("finishedTime",
+						props.getFinishedTime() > 0 ? props.getFinishedTime()
+								: null);
 				job.put("depositId", props.getOriginalDepositId());
 				job.put("message", props.getMessage());
-				int c = f.list(new FilenameFilter() {
-					@Override
-					public boolean accept(File arg0, String arg1) {
-						return arg1.endsWith(".foxml");
-					}
-				}).length;
-				job.put("size", c);
-				job.put("worked", c);
+				try {
+					int c = f.list(new FilenameFilter() {
+						@Override
+						public boolean accept(File arg0, String arg1) {
+							return arg1.endsWith(".foxml");
+						}
+					}).length;
+					job.put("size", c);
+					job.put("worked", c);
+				} catch (NullPointerException ignored) {
+				}
 				job.put("running", false);
 				job.put("containerPlacements", getContainerList(props));
 			} catch (Exception e1) {
 				LOG.error("Unexpected error building ingest properties", e1);
-				throw new Error("Unexpected error building ingest properties",e1);
+				throw new Error("Unexpected error building ingest properties",
+						e1);
 			}
 			jobs.add(job);
 		}
