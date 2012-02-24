@@ -218,12 +218,16 @@
 	
 	<bean id="cdrServicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
 		<property name="messageDirector" ref="messageDirector"/>
-		<property name="messageNamespace" value="#{jmsMessageUtil.cdrMessageNamespace}"/>
+		<property name="messageClass">
+			<value type="java.lang.Class">edu.unc.lib.dl.cdr.services.model.CDREventMessage</value>
+		</property>
 	</bean>
 	
 	<bean id="servicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
 		<property name="messageDirector" ref="messageDirector"/>
-		<property name="messageNamespace" value="#{jmsMessageUtil.fedoraMessageNamespace}"/>
+		<property name="messageClass">
+			<value type="java.lang.Class">edu.unc.lib.dl.cdr.services.model.FedoraEventMessage</value>
+		</property>
 	</bean>
 		
 	<bean id="catchUpService" class="edu.unc.lib.dl.cdr.services.processing.CatchUpService">
@@ -423,6 +427,7 @@
 	<bean id="solrSearchService" class="edu.unc.lib.dl.search.solr.service.SolrSearchService"
 		init-method="initializeSolrServer">
 		<property name="solrSettings" ref="solrSettings"/>
+		<property name="searchSettings" ref="searchSettings" />
 	</bean>
 	<bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
 		<property name="searchSettings" ref="searchSettings" />

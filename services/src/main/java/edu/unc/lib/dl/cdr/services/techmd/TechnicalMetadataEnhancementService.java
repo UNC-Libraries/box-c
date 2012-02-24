@@ -28,7 +28,7 @@ import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -102,8 +102,7 @@ public class TechnicalMetadataEnhancementService extends AbstractIrodsObjectEnha
 	}
 	
 	@Override
-	public boolean prefilterMessage(EnhancementMessage eMessage) throws EnhancementException {
-		PIDMessage message = (PIDMessage)eMessage;
+	public boolean prefilterMessage(EnhancementMessage message) throws EnhancementException {
 		String action = message.getQualifiedAction();
 		
 		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(action))
@@ -111,13 +110,17 @@ public class TechnicalMetadataEnhancementService extends AbstractIrodsObjectEnha
 		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(action))
 			return this.getClass().getName().equals(message.getServiceName());
 		
+		// If its not a Fedora message at this point, then its not going to match anything else
+		if (!(message instanceof FedoraEventMessage))
+			return false;
+		
 		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
 			return true;
 		
 		if (!(JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action) 
 				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)))
 			return false;
-		String datastream = message.getDatastream();
+		String datastream = ((FedoraEventMessage)message).getDatastream();
 		
 		return ContentModelHelper.Datastream.DATA_FILE.equals(datastream);
 	}

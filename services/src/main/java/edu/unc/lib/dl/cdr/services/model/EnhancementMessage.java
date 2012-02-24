@@ -16,13 +16,16 @@
 package edu.unc.lib.dl.cdr.services.model;
 
 import java.util.List;
-
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.message.ActionMessage;
 
+/**
+ * Message object which stores attributes needed for the application of enhancements.
+ * @author bbpennel
+ *
+ */
 public class EnhancementMessage implements ActionMessage {
-
 	protected String messageID = null;
 	protected PID pid;
 	protected PID depositID;
@@ -33,7 +36,31 @@ public class EnhancementMessage implements ActionMessage {
 	protected long timeCreated = System.currentTimeMillis();
 	protected List<ObjectEnhancementService> filteredServices = null;
 	
-	private void setQualifiedAction(){
+	protected EnhancementMessage(){
+	}
+	
+	public EnhancementMessage(String pid, String namespace, String action){
+		this(pid, namespace, action, null);
+	}
+	
+	public EnhancementMessage(PID pid, String namespace, String action){
+		this(pid, namespace, action, null);
+	}
+	
+	public EnhancementMessage(String pid, String namespace, String action, String service){
+		this(new PID(pid), namespace, action, service);
+	}
+	
+	public EnhancementMessage(PID pid, String namespace, String action, String service){
+		if (pid == null || action == null)
+			throw new IllegalArgumentException("Both a target pid and an action are required.");
+		this.pid = pid;
+		this.namespace = namespace;
+		setAction(action);
+		this.serviceName = service;
+	}
+	
+	protected void setQualifiedAction(){
 		if (action != null && action.length() > 0 && this.namespace != null){
 			this.qualifiedAction = this.namespace + "/" + action;
 		} else {

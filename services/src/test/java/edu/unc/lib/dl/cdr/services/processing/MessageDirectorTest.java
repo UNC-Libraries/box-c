@@ -28,10 +28,11 @@ import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
+import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
+import edu.unc.lib.dl.message.ActionMessage;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -77,7 +78,7 @@ public class MessageDirectorTest extends Assert {
 		messageDirector.setConductorsList(conductors);
 	}
 	
-	class IsMatchingPID extends ArgumentMatcher<PIDMessage> {
+	class IsMatchingPID extends ArgumentMatcher<EnhancementMessage> {
 		private String pid;
 		
 		public IsMatchingPID(String pid){
@@ -91,37 +92,37 @@ public class MessageDirectorTest extends Assert {
 	
 	@Test
 	public void noServiceMessage(){
-		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), "");
 		messageDirector.direct(message);
 		
-		verify(solrConductor, never()).add(any(PIDMessage.class));
-		verify(enhancementConductor, never()).add(any(PIDMessage.class));
+		verify(solrConductor, never()).add(any(EnhancementMessage.class));
+		verify(enhancementConductor, never()).add(any(EnhancementMessage.class));
 	}
 	
 	@Test
 	public void techmdServiceMessage(){
-		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), TechnicalMetadataEnhancementService.class.getName());
 		messageDirector.direct(message);
 		
-		verify(solrConductor, never()).add(any(PIDMessage.class));
-		verify(enhancementConductor).add(any(PIDMessage.class));
+		verify(solrConductor, never()).add(any(EnhancementMessage.class));
+		verify(enhancementConductor).add(any(EnhancementMessage.class));
 	}
 	
 	@Test
 	public void solrAddMessage(){
-		PIDMessage message = new PIDMessage("cdr:test", SolrUpdateAction.namespace, SolrUpdateAction.ADD.getName());
+		ActionMessage message = new SolrUpdateRequest("cdr:test", SolrUpdateAction.ADD);
 		messageDirector.direct(message);
-		verify(solrConductor).add(any(PIDMessage.class));
-		verify(enhancementConductor, never()).add(any(PIDMessage.class));
+		verify(solrConductor).add(any(ActionMessage.class));
+		verify(enhancementConductor, never()).add(any(ActionMessage.class));
 	}
 	
 	@Test
 	public void nullMessage(){
-		PIDMessage message = null;
+		EnhancementMessage message = null;
 		messageDirector.direct(message);
-		verify(solrConductor, never()).add(any(PIDMessage.class));
-		verify(enhancementConductor, never()).add(any(PIDMessage.class));
+		verify(solrConductor, never()).add(any(EnhancementMessage.class));
+		verify(enhancementConductor, never()).add(any(EnhancementMessage.class));
 	}
 }

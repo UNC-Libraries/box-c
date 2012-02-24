@@ -43,7 +43,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -106,7 +106,7 @@ public class ImageEnhancementServiceITCase {
 	public static void tearDownAfterClass() throws Exception {
 	}
 
-	private PIDMessage ingestSample(String filename, String dataFilename, String mimetype) throws Exception {
+	private EnhancementMessage ingestSample(String filename, String dataFilename, String mimetype) throws Exception {
 		File file = new File("src/test/resources", filename);
 		Document doc = new SAXBuilder().build(new FileReader(file));
 		PID pid = this.getManagementClient().ingest(doc, Format.FOXML_1_1, "ingesting test object");
@@ -121,7 +121,7 @@ public class ImageEnhancementServiceITCase {
 			this.getManagementClient().addLiteralStatement(pid,
 					ContentModelHelper.CDRProperty.hasSourceMimeType.getURI().toString(), mimetype, null);
 		}
-		PIDMessage result = new PIDMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage result = new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		samples.add(pid);
 		return result;
@@ -145,12 +145,12 @@ public class ImageEnhancementServiceITCase {
 
 	@Test
 	public void testFindCandidateObjects() throws Exception {
-		PIDMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
-		//PIDMessage pidPDF2 = ingestSample("thumbnail-PDF2.xml", "sample.pdf", "application/pdf");
-		PIDMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
-		PIDMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
-		PIDMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", "sample.tiff", "image/tiff");
-		PIDMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
+		EnhancementMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
+		//EnhancementMessage pidPDF2 = ingestSample("thumbnail-PDF2.xml", "sample.pdf", "application/pdf");
+		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
+		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
 
 		List<PID> results = this.getImageEnhancementService().findCandidateObjects(50);
 		for (PID p : results) {
@@ -165,11 +165,11 @@ public class ImageEnhancementServiceITCase {
 
 	@Test
 	public void testIsApplicable() throws Exception {
-		PIDMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
-		PIDMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
-		PIDMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
-		PIDMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", "sample.tiff", "image/tiff");
-		PIDMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
+		EnhancementMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
+		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
+		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
 		// return false for a PID w/o sourcedata
 		// return true for a PID w/o techData
 		// return true for a PID w/techData older than sourceData
@@ -188,7 +188,7 @@ public class ImageEnhancementServiceITCase {
 
 	@Test
 	public void testExtractionWorksAndNoLongerApplicable() throws EnhancementException, Exception {
-		PIDMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
 		Enhancement<Element> en = this.getImageEnhancementService().getEnhancement(pidTIFF);
 		try {
 			en.call();

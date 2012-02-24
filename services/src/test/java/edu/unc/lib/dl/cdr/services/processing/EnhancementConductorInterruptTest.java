@@ -33,7 +33,6 @@ import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -96,7 +95,7 @@ public class EnhancementConductorInterruptTest extends Assert {
 		int numberTestMessages = 10;
 		//queue items while paused, make sure they aren't moving
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
+			EnhancementMessage message = new EnhancementMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 			message.setFilteredServices(delayServices);
 			enhancementConductor.add(message);

@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.message.ActionMessage;
 
@@ -58,9 +57,9 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 	
 	@Override
 	public boolean filter(ActionMessage aMessage) {
-		EnhancementMessage message = (EnhancementMessage)aMessage;
-		if (message == null)
+		if (aMessage == null || !(aMessage instanceof EnhancementMessage))
 			return false;
+		EnhancementMessage message = (EnhancementMessage)aMessage;
 		String pid = message.getTargetID();
 		if (pid == null)
 			return false;

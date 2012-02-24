@@ -37,7 +37,6 @@ import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.message.ActionMessage;
 
@@ -257,7 +256,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	public void reprocessFailedPids() {
 		synchronized (failedPids) {
 			for (String pid : failedPids.keySet()) {
-				this.add(new PIDMessage(pid, JMSMessageUtil.servicesMessageNamespace,
+				this.add(new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace,
 						JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName()));
 			}
 			failedPids.clear();

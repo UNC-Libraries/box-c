@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.CDREventMessage;
+import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
@@ -43,45 +44,43 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 
 	@Override
 	public void add(ActionMessage message) {
-		PIDMessage pidMessage = (PIDMessage)message;
-		
-		String namespace = message.getNamespace();
+		if (message instanceof SolrUpdateRequest){
+			this.offer((SolrUpdateRequest)message);
+			return;
+		}
 		String action = message.getQualifiedAction();
-		if (namespace != null && action != null){
-			if (namespace.equals(SolrUpdateAction.namespace)){
-				SolrUpdateAction actionEnum = SolrUpdateAction.getAction(action);
-				if (actionEnum != null){
-					this.offer(message.getTargetID(), actionEnum);
+		if (action == null)
+			return;
+		
+		if (message instanceof FedoraEventMessage){
+			if (JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)){
+				this.offer(message.getTargetID(), SolrUpdateAction.DELETE_SOLR_TREE);
+			}
+		} else if (message instanceof CDREventMessage){
+			CDREventMessage cdrMessage = (CDREventMessage)message;
+			if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)
+					|| JMSMessageUtil.CDRActions.REORDER.equals(action)){
+				if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)){
+					//Move and add are both recursive adds of all subjects, plus a nonrecursive update for reordered children.
+					for (String pidString: cdrMessage.getSubjects()){
+						this.offer(new SolrUpdateRequest(pidString, SolrUpdateAction.RECURSIVE_ADD));
+					}
 				}
-			} else {
-				if (JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)){
-					this.offer(message.getTargetID(), SolrUpdateAction.DELETE_SOLR_TREE);
-				} else if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)
-						|| JMSMessageUtil.CDRActions.REORDER.equals(action)){
-					pidMessage.generateCDRMessageContent();
-					if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)){
-						//Move and add are both recursive adds of all subjects, plus a nonrecursive update for reordered children.
-						for (String pidString: pidMessage.getCDRMessageContent().getSubjects()){
-							this.offer(new SolrUpdateRequest(pidString, SolrUpdateAction.RECURSIVE_ADD));
-						}
-					}
-					// Reorder is a non-recursive add.
-					for (String pidString: pidMessage.getCDRMessageContent().getReordered()){
-						this.offer(new SolrUpdateRequest(pidString, SolrUpdateAction.ADD));
-					}
-				} else if (JMSMessageUtil.CDRActions.REINDEX.equals(action)){
-					//Determine which kind of reindex to perform based on the mode
-					pidMessage.generateCDRMessageContent();
-					if (pidMessage.getCDRMessageContent().getMode().equals("inplace")){
-						this.offer(new SolrUpdateRequest(pidMessage.getCDRMessageContent().getParent(), SolrUpdateAction.RECURSIVE_REINDEX));
-					} else {
-						this.offer(new SolrUpdateRequest(pidMessage.getCDRMessageContent().getParent(), SolrUpdateAction.CLEAN_REINDEX));
-					}
+				// Reorder is a non-recursive add.
+				for (String pidString: cdrMessage.getReordered()){
+					this.offer(new SolrUpdateRequest(pidString, SolrUpdateAction.ADD));
+				}
+			} else if (JMSMessageUtil.CDRActions.REINDEX.equals(action)){
+				//Determine which kind of reindex to perform based on the mode
+				if (cdrMessage.getMode().equals("inplace")){
+					this.offer(new SolrUpdateRequest(cdrMessage.getParent(), SolrUpdateAction.RECURSIVE_REINDEX));
 				} else {
-					//For all other message types, do a single record update
-					this.offer(message.getTargetID());
+					this.offer(new SolrUpdateRequest(cdrMessage.getParent(), SolrUpdateAction.CLEAN_REINDEX));
 				}
 			}
+		} else {
+			//For all other message types, do a single record update
+			this.offer(message.getTargetID());
 		}
 	}
 

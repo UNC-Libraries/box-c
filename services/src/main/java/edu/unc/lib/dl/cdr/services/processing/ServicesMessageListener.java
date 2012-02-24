@@ -15,7 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-import javax.jms.JMSException;
+import java.lang.reflect.Constructor;
+
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
@@ -23,16 +24,18 @@ import javax.jms.TextMessage;
 import org.jdom.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.fedora.ClientUtils;
+import edu.unc.lib.dl.message.ActionMessage;
 
 public class ServicesMessageListener implements MessageListener {
 	private static final Logger LOG = LoggerFactory.getLogger(ServicesMessageListener.class);
 	
 	private MessageDirector messageDirector = null;
 	
-	private String messageNamespace = null;
+	private Class<?> messageClass = null;
+	private Constructor<?> messageConstructor = null;
+	
 	
 	public ServicesMessageListener(){
 		
@@ -46,10 +49,8 @@ public class ServicesMessageListener implements MessageListener {
 				String msgText = ((TextMessage) message).getText();
 				LOG.debug(msgText);
 				Document msgXML = ClientUtils.parseXML(msgText.getBytes());
-				messageDirector.direct(msgXML, messageNamespace);
-			} catch (JMSException e) {
-				LOG.error("onMessage failed", e);
-			} catch (SAXException e) {
+				messageDirector.direct((ActionMessage)messageConstructor.newInstance(msgXML));
+			} catch (Exception e) {
 				LOG.error("onMessage failed", e);
 			}
 		} else {
@@ -65,12 +66,9 @@ public class ServicesMessageListener implements MessageListener {
 	public void setMessageDirector(MessageDirector messageDirector) {
 		this.messageDirector = messageDirector;
 	}
-
-	public String getMessageNamespace() {
-		return messageNamespace;
-	}
-
-	public void setMessageNamespace(String messageNamespace) {
-		this.messageNamespace = messageNamespace;
+	
+	public void setMessageClass(Class<?> messageClass) throws SecurityException, NoSuchMethodException{
+		this.messageClass = messageClass;
+		this.messageConstructor = this.messageClass.getConstructor(Document.class);
 	}
 }

@@ -32,8 +32,9 @@ import org.junit.Test;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
@@ -67,7 +68,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 	
 	@Test
 	public void serviceMessage(){
-		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), "");
 		assertFalse(servicesMessageFilter.filter(message));
 		message.setServiceName(TechnicalMetadataEnhancementService.class.getName());
@@ -79,7 +80,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		message.setServiceName("");
 		assertFalse(servicesMessageFilter.filter(message));
 		//Full stack run
-		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		assertTrue(servicesMessageFilter.filter(message));
 	}
@@ -89,12 +90,12 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		assertFalse(servicesMessageFilter.filter(null));
 		String pid = null;
 		try {
-			servicesMessageFilter.filter(new PIDMessage(pid, null, null));
+			servicesMessageFilter.filter(new EnhancementMessage(pid, null, null));
 			assertTrue(false);
 		} catch (IllegalArgumentException e){
 			assertTrue(true);
 		}
-		PIDMessage emptyMessage = new PIDMessage("", "", "");
+		EnhancementMessage emptyMessage = new EnhancementMessage("", "", "");
 		assertFalse(servicesMessageFilter.filter(emptyMessage));
 	}
 	
@@ -103,7 +104,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		
 		//Ingest object message, should partially pass, not pass solr
 		Document doc = readFileAsString("ingestMessage.xml");
-		PIDMessage message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		EnhancementMessage message = new FedoraEventMessage(doc);
 		assertTrue(servicesMessageFilter.filter(message));
 		assertTrue(message.getFilteredServices().size() > 0);
 		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
@@ -120,7 +121,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 	public void fedoraDatastreamMessages() throws Exception {
 		//Change md descript datastream, should not pass filters
 		Document doc = readFileAsString("modifyDSMDDescriptive.xml");
-		PIDMessage message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		EnhancementMessage message = new FedoraEventMessage(doc);
 		assertFalse(servicesMessageFilter.filter(message));
 		assertNull(message.getFilteredServices());
 		
@@ -132,7 +133,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		
 		//Change data file, should pass
 		doc = readFileAsString("modifyDSDataFile.xml");
-		message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		message = new FedoraEventMessage(doc);
 		assertTrue(servicesMessageFilter.filter(message));
 		assertTrue(message.getFilteredServices().size() > 0);
 		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
@@ -155,7 +156,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 	public void fedoraRelationMessages() throws Exception {
 		//Add relation tests
 		Document doc = readFileAsString("addRelSourceData.xml");
-		PIDMessage message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		FedoraEventMessage message = new FedoraEventMessage(doc);
 		assertTrue(servicesMessageFilter.filter(message));
 		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
 		assertFalse(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
@@ -169,7 +170,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		assertFalse(message.filteredServicesContains(ImageEnhancementService.class));
 		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
 		
-		message.setRelation(ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString());
+		message.setRelationPredicate(ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString());
 		message.setAction(JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.getName());
 		assertTrue(servicesMessageFilter.filter(message));
 		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
@@ -184,14 +185,14 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		assertFalse(message.filteredServicesContains(ImageEnhancementService.class));
 		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
 		
-		message.setRelation(ContentModelHelper.CDRProperty.techData.getURI().toString());
+		message.setRelationPredicate(ContentModelHelper.CDRProperty.techData.getURI().toString());
 		message.setAction(JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.getName());
 		assertFalse(servicesMessageFilter.filter(message));
 		
 		message.setAction(JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP.getName());
 		assertFalse(servicesMessageFilter.filter(message));
 		
-		message.setRelation(ContentModelHelper.CDRProperty.thumb.getURI().toString());
+		message.setRelationPredicate(ContentModelHelper.CDRProperty.thumb.getURI().toString());
 		message.setAction(JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.getName());
 		assertFalse(servicesMessageFilter.filter(message));
 		
@@ -212,7 +213,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		servicesMessageFilter.setenhancementConductor(enhancementConductor);
 		
 		//Full stack run with the first service failing but no starting service
-		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		
 		assertTrue(servicesMessageFilter.filter(message));
@@ -221,19 +222,19 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
 		
 		//Invalid starting service
-		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), "");
 		assertFalse(servicesMessageFilter.filter(message));
 		assertNull(message.getFilteredServices());
 		
 		//Fail on the starting point
-		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), TechnicalMetadataEnhancementService.class.getName());
 		assertFalse(servicesMessageFilter.filter(message));
 		assertNull(message.getFilteredServices());
 		
 		//Fail before the starting point
-		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), ThumbnailEnhancementService.class.getName());
 		assertTrue(servicesMessageFilter.filter(message));
 		assertFalse(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
@@ -241,7 +242,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
 		
 		//Fail after the starting point
-		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), TechnicalMetadataEnhancementService.class.getName());
 		failedServices.clear();
 		failedServices.add(ThumbnailEnhancementService.class.getName());
@@ -267,21 +268,21 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		servicesMessageFilter.setenhancementConductor(enhancementConductor);
 		
 		//fail techmd call
-		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), TechnicalMetadataEnhancementService.class.getName());
 		
 		assertFalse(servicesMessageFilter.filter(message));
 		assertNull(message.getFilteredServices());
 		
 		//fail full stack
-		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		
 		assertFalse(servicesMessageFilter.filter(message));
 		assertNull(message.getFilteredServices());
 		
 		//fail full stack, without solr being present in fail list.
-		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		
 		failedServices.clear();
@@ -297,7 +298,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		failedServices.add(ThumbnailEnhancementService.class.getName());
 		failedServices.add(ImageEnhancementService.class.getName());
 		
-		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), TechnicalMetadataEnhancementService.class.getName());
 		
 		assertTrue(servicesMessageFilter.filter(message));
@@ -306,7 +307,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		assertFalse(message.filteredServicesContains(SolrUpdateEnhancementService.class));
 		
 		//pass only techmd and solr from full stack
-		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		assertTrue(servicesMessageFilter.filter(message));
 		assertTrue(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
