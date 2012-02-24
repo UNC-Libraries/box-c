@@ -20,9 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom.Document;
-
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.message.ActionMessage;
 
 public class MessageDirector {
 	private Map<String,MessageConductor> conductors = null;
@@ -36,17 +34,12 @@ public class MessageDirector {
 	 * it passes the associated prefilter.
 	 * @param message
 	 */
-	public void direct(PIDMessage pidMessage){
+	public void direct(ActionMessage message){
 		for (MessageFilter filter: filters){
-			if (filter.filter(pidMessage)){
-				conductors.get(filter.getConductor()).add(pidMessage);
+			if (filter.filter(message)){
+				conductors.get(filter.getConductor()).add(message);
 			}
 		}
-	}
-	
-	public void direct(Document message, String namespace){
-		PIDMessage pidMessage = new PIDMessage(message, namespace);
-		direct(pidMessage);
 	}
 	
 	public Map<String, MessageConductor> getConductors() {

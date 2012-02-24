@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.CDREventMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
@@ -52,22 +52,18 @@ public class MessageParseTest extends Assert {
 
 		try {
 			Document doc = readFileAsString("cdrAddMessage.xml");
-			PIDMessage message = new PIDMessage(doc, JMSMessageUtil.cdrMessageNamespace);
+			CDREventMessage message = new CDREventMessage(doc);
 			assertTrue(message.getTargetID().equals("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744"));
 			assertTrue(JMSMessageUtil.CDRActions.ADD.equals(message.getQualifiedAction()));
-			assertTrue("2011-04-28T18:55:32.220Z".equals(message.getTimestamp()));
-			assertTrue("".equals(message.getDatastream()));
-			assertTrue("".equals(message.getRelation()));
+			assertTrue("2011-04-28T18:55:32.220Z".equals(message.getEventTimestamp()));
 			assertNull(message.getServiceName());
-			assertNull(message.getCDRMessageContent());
 			
-			message.generateCDRMessageContent();
-			assertTrue(message.getCDRMessageContent().getParent().equals("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744"));
-			assertTrue(message.getCDRMessageContent().getSubjects().size() == 3);
-			assertNull(message.getCDRMessageContent().getOldParents());
-			assertTrue(JMSMessageUtil.CDRActions.ADD.getName().equals(message.getCDRMessageContent().getOperation()));
-			assertTrue(message.getCDRMessageContent().getReordered().size() == 0);
-			assertNull(message.getCDRMessageContent().getMode());
+			assertTrue(message.getParent().equals("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744"));
+			assertTrue(message.getSubjects().size() == 3);
+			assertNull(message.getOldParents());
+			assertTrue(JMSMessageUtil.CDRActions.ADD.getName().equals(message.getOperation()));
+			assertTrue(message.getReordered().size() == 0);
+			assertNull(message.getMode());
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -81,13 +77,12 @@ public class MessageParseTest extends Assert {
 
 		try {
 			Document doc = readFileAsString("cdrMoveMessage.xml");
-			PIDMessage message = new PIDMessage(doc, JMSMessageUtil.cdrMessageNamespace);
+			CDREventMessage message = new CDREventMessage(doc);
 			assertTrue(JMSMessageUtil.CDRActions.MOVE.equals(message.getQualifiedAction()));
-			message.generateCDRMessageContent();
-			assertTrue(message.getCDRMessageContent().getParent().equals("uuid:a7ac047d-7991-462c-a024-897c36280b83"));
-			assertTrue(message.getCDRMessageContent().getOldParents().size() == 2);
-			assertTrue(message.getCDRMessageContent().getSubjects().size() == 2);
-			assertTrue(message.getCDRMessageContent().getReordered().size() == 1);
+			assertTrue(message.getParent().equals("uuid:a7ac047d-7991-462c-a024-897c36280b83"));
+			assertTrue(message.getOldParents().size() == 2);
+			assertTrue(message.getSubjects().size() == 2);
+			assertTrue(message.getReordered().size() == 1);
 			LOG.debug("");
 
 		} catch (Exception e) {

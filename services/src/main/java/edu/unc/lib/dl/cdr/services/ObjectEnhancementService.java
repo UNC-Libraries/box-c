@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.services;
 
-import java.util.Date;
 import java.util.List;
 
 import org.jdom.Element;

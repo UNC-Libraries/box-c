@@ -48,7 +48,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.util.UriUtils;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -111,7 +111,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 	public static void tearDownAfterClass() throws Exception {
 	}
 
-	private PIDMessage ingestSample(String filename, String dataFilename, String mimetype) throws Exception {
+	private EnhancementMessage ingestSample(String filename, String dataFilename, String mimetype) throws Exception {
 		String altIDPrefixSample = "irods://mtuomala@cdr-vault.libint.unc.edu:3333/cdrZone/home/mtuomala/staging/history/histdeptdigitalphotos/End%20of%20Year%20%20Party%202007/Originals/spacetest%20";
 		File file = new File("src/test/resources", filename);
 		Document doc = new SAXBuilder().build(new FileReader(file));
@@ -127,7 +127,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 			this.getManagementClient().addObjectRelationship(pid,
 					ContentModelHelper.CDRProperty.sourceData.getURI().toString(), dataFilePID);
 		}
-		PIDMessage result = new PIDMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage result = new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		samples.add(pid);
 		return result;
@@ -151,7 +151,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 
 	@Test
 	public void testFindCandidateObjects() throws Exception {
-		PIDMessage pid1 = ingestSample("techmd-test-single.xml", "sample.pdf", "application/pdf");
+		EnhancementMessage pid1 = ingestSample("techmd-test-single.xml", "sample.pdf", "application/pdf");
 		List<PID> results = this.getTechnicalMetadataEnhancementService().findCandidateObjects(50);
 		for (PID p : results) {
 			LOG.debug("found candidate: " + p);
@@ -162,7 +162,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 
 	@Test
 	public void testIsApplicable() throws Exception {
-		PIDMessage pid1 = ingestSample("techmd-test-single.xml", "sample.pdf", "application/pdf");
+		EnhancementMessage pid1 = ingestSample("techmd-test-single.xml", "sample.pdf", "application/pdf");
 		TechnicalMetadataEnhancementService s = this.getTechnicalMetadataEnhancementService();
 		// return false for a PID w/o sourcedata
 		// return true for a PID w/o techData
@@ -173,7 +173,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 
 	// @Test
 	public void testJMSTriggeringServices() throws Exception {
-		PIDMessage pid1 = ingestSample("techmd-test-single.xml", "sample.pdf", "application/pdf");
+		EnhancementMessage pid1 = ingestSample("techmd-test-single.xml", "sample.pdf", "application/pdf");
 		// load bean context w/JMS attached to running fedora
 		// ingest a file with generic mime type
 		try {
@@ -210,7 +210,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 
 	@Test
 	public void testExtractionTask() throws Exception {
-		PIDMessage pid1 = ingestSample("techmd-test-single.xml", "sample.pdf", "application/pdf");
+		EnhancementMessage pid1 = ingestSample("techmd-test-single.xml", "sample.pdf", "application/pdf");
 
 		assertTrue("The test pid should be applicable before the service runs: " + pid1, this
 				.getTechnicalMetadataEnhancementService().isApplicable(pid1));
@@ -250,7 +250,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 	 */
 	@Test
 	public void testExtractionTaskWithIdentificationConflict() throws Exception {
-		PIDMessage pidConflict = ingestSample("techmd-test-single-conflict.xml", "fits_conflict.ppt", "application/octet-stream");
+		EnhancementMessage pidConflict = ingestSample("techmd-test-single-conflict.xml", "fits_conflict.ppt", "application/octet-stream");
 		Enhancement<Element> en = this.getTechnicalMetadataEnhancementService().getEnhancement(pidConflict);
 		en.call();
 		Datastream thb = this.getManagementClient().getDatastream(pidConflict.getPid(), "MD_TECHNICAL");
@@ -269,7 +269,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 	 */
 	@Test
 	public void testCase20110603() throws Exception {
-		PIDMessage pidConflict = ingestSample("techmd-test-single-conflict.xml", "20110603testcase.zip", "application/octet-stream");
+		EnhancementMessage pidConflict = ingestSample("techmd-test-single-conflict.xml", "20110603testcase.zip", "application/octet-stream");
 		List<String> alts = new ArrayList<String>();
 		alts.add("irods://cdr-vault.libint.unc.edu:3333/cdrZone/home/eomeara/staging/Tucasi_live/originals/TUCASI/Vocabulary%20Development%20Week%202/Vocabulary%20Development%20Week%202%20(default).zip");
 		this.getManagementClient().modifyDatastreamByReference(pidConflict.getPid(), "DATA_FILE", false, "test", alts, null, null, null, null, null);
@@ -290,7 +290,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 	 */
 	@Test
 	public void testExtractionTaskWithIdentificationWithoutStatus() throws Exception {
-		PIDMessage pidConflict = ingestSample("techmd-test-single-conflict.xml", "fits_conflict.ppt", "application/octet-stream");
+		EnhancementMessage pidConflict = ingestSample("techmd-test-single-conflict.xml", "fits_conflict.ppt", "application/octet-stream");
 		// update source data stream
 		File dataFile = new File("src/test/resources", "sample_fits_no_id_status.png");
 		String uploadURI = this.getManagementClient().upload(dataFile);
@@ -307,7 +307,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 
 	@Test
 	public void testExtractionTaskWithErrorMessage() throws Exception {
-		PIDMessage pidErr = ingestSample("techmd-test-single-error.xml", "sample_fits_error.pdf", "application/pdf");
+		EnhancementMessage pidErr = ingestSample("techmd-test-single-error.xml", "sample_fits_error.pdf", "application/pdf");
 		assertTrue("The test pid should be applicable before the service runs: " + pidErr, this
 				.getTechnicalMetadataEnhancementService().isApplicable(pidErr));
 		Enhancement<Element> en = this.getTechnicalMetadataEnhancementService().getEnhancement(pidErr);

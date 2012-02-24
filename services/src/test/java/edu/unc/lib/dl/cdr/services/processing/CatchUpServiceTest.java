@@ -37,7 +37,6 @@ import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -172,7 +171,7 @@ public class CatchUpServiceTest extends Assert {
 		catchup.setPageSize(50);
 
 		catchup.activate();
-		verify(messageDirector, times(catchup.getPageSize())).direct(any(PIDMessage.class));
+		verify(messageDirector, times(catchup.getPageSize())).direct(any(EnhancementMessage.class));
 		verify(techmd, times(2)).findCandidateObjects(anyInt());
 		verify(image, times(2)).findCandidateObjects(anyInt());
 		assertTrue(catchup.isActive());
@@ -199,7 +198,7 @@ public class CatchUpServiceTest extends Assert {
 		catchup.setPageSize(50);
 
 		catchup.activate("2011-04-04T05:05:05.555Z");
-		verify(messageDirector, times(catchup.getPageSize())).direct(any(PIDMessage.class));
+		verify(messageDirector, times(catchup.getPageSize())).direct(any(EnhancementMessage.class));
 		verify(techmd, times(2)).findStaleCandidateObjects(anyInt(), anyString());
 		verify(image, times(2)).findStaleCandidateObjects(anyInt(), anyString());
 		assertTrue(catchup.isActive());
@@ -227,7 +226,7 @@ public class CatchUpServiceTest extends Assert {
 		while (catchup.isActive());
 		
 		assertFalse(catchup.isActive());
-		verify(messageDirector, atLeast(catchup.getPageSize())).direct(any(PIDMessage.class));
+		verify(messageDirector, atLeast(catchup.getPageSize())).direct(any(EnhancementMessage.class));
 		verify(techmd, atLeastOnce()).findCandidateObjects(anyInt());
 		verify(image, atLeastOnce()).findCandidateObjects(anyInt());
 	}

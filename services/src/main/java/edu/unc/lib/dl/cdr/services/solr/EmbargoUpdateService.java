@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -30,8 +29,8 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
+import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -53,8 +52,7 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 		List<PID> candidates = this.findCandidateObjects(-1);
 		if (candidates != null){
 			for (PID candidate: candidates){
-				getMessageDirector().direct(new PIDMessage(candidate.getPid(), 
-						SolrUpdateAction.namespace, SolrUpdateAction.RECURSIVE_ADD.getName()));
+				getMessageDirector().direct(new SolrUpdateRequest(candidate.getPid(), SolrUpdateAction.RECURSIVE_ADD));
 			}
 		}	
 	}

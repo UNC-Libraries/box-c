@@ -189,6 +189,9 @@ public class SolrUpdateRunnable implements Runnable {
 				searchState.setFacets(facets);
 			}
 			
+			//Get as many results as possible
+			searchState.setRowsPerPage(Integer.MAX_VALUE);
+			
 			//Override default resource types to include folder as well.
 			searchState.setResourceTypes(solrUpdateService.getSearchSettings().getResourceTypes());
 			
@@ -291,9 +294,9 @@ public class SolrUpdateRunnable implements Runnable {
 					List<Attribute> containsList = (List<Attribute>) containsXpath.selectNodes(relsExt);
 
 					// Generate cleanup request before offering children to be
-					// processed
+					// processed.  Set start time to minus one so that the search is less than (instead of <=)
 					CountDownUpdateRequest cleanupRequest = new DeleteChildrenPriorToTimestampRequest(
-							updateRequest.getPid(), SolrUpdateAction.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP, startTime);
+							updateRequest.getPid(), SolrUpdateAction.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP, startTime-1);
 					
 					CountDownUpdateRequest commitRequest = new CountDownUpdateRequest(updateRequest.getPid(), SolrUpdateAction.COMMIT, cleanupRequest);
 					
@@ -540,14 +543,17 @@ public class SolrUpdateRunnable implements Runnable {
 					pid = updateRequest.getPid();
 					forceCommit = performAction(updateRequest);
 				} finally {
+					//If needed, perform commit before completing this request
+					commitSolrChanges(forceCommit);
 					// Finish request and unlock the pid
 					updateRequest.requestCompleted();
 					solrUpdateService.getLockedPids().remove(pid);
 					LOG.debug("Processed pid " + pid);
 				}
+			} else {
+				//Commit changes to solr if they are ready to go
+				commitSolrChanges(forceCommit);
 			}
-			//Commit changes to solr if they are ready to go
-			commitSolrChanges(forceCommit);
 		} catch (Exception e) {
 			// Encountered an exception
 			LOG.error("Encountered an exception while ingesting to Solr.  Finished SolrIngestThread", e);

@@ -208,31 +208,35 @@ public class JMSMessageUtil {
 	 * @return
 	 */
 	public static String getDatastream(Document message){
-		if (message == null)
-			return null;
-	 	@SuppressWarnings("unchecked")
-		List<Element> categories = message.getRootElement().getChildren("category", JDOMNamespaceUtil.ATOM_NS);
-	 	for (Element category: categories){
-	 		String scheme = category.getAttributeValue("scheme");
-	 		if ("fedora-types:dsID".equals(scheme)){
-	 			return category.getAttributeValue("term");
-	 		}
-	 	}
-	 	return null;
+	 	return getCategoryByScheme(message, "fedora-types:dsID");
 	 }
 
 	/**
+	 * Retrieves the relationship of triple change messages
 	 * @param message
 	 * @return
 	 */
 	public static String getPredicate(Document message) {
+		return getCategoryByScheme(message, "fedora-types:relationship");
+	}
+	
+	/**
+	 * Retrieves the object component of triples in relationship change messages.
+	 * @param message
+	 * @return
+	 */
+	public static String getObject(Document message){
+		return getCategoryByScheme(message, "fedora-types:object");
+	}
+	
+	public static String getCategoryByScheme(Document message, String scheme){
 		if (message == null)
 			return null;
 	 	@SuppressWarnings("unchecked")
 		List<Element> categories = message.getRootElement().getChildren("category", JDOMNamespaceUtil.ATOM_NS);
 	 	for (Element category: categories){
-	 		String scheme = category.getAttributeValue("scheme");
-	 		if ("fedora-types:relationship".equals(scheme)){
+	 		String schemeValue = category.getAttributeValue("scheme");
+	 		if (schemeValue.equals(scheme)){
 	 			return category.getAttributeValue("term");
 	 		}
 	 	}
