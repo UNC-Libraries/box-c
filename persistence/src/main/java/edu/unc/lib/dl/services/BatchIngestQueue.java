@@ -129,7 +129,7 @@ public class BatchIngestQueue {
 							return (READY_FILE.equals(name));
 						}
 					});
-					if (readyFiles.length > 0) {
+					if (readyFiles != null && readyFiles.length > 0) {
 						return true;
 					}
 				}
