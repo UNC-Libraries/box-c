@@ -26,8 +26,9 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
+import edu.unc.lib.dl.message.ActionMessage;
 
 /**
  * Determines which services in the Services stack apply to the current message.  If none do, then return false.
@@ -55,10 +56,11 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 	}
 	
 	@Override
-	public boolean filter(PIDMessage message) {
-		if (message == null)
+	public boolean filter(ActionMessage aMessage) {
+		if (aMessage == null || !(aMessage instanceof EnhancementMessage))
 			return false;
-		String pid = message.getPIDString();
+		EnhancementMessage message = (EnhancementMessage)aMessage;
+		String pid = message.getTargetID();
 		if (pid == null)
 			return false;
 		
@@ -66,7 +68,7 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 		List<ObjectEnhancementService> messageServices = new ArrayList<ObjectEnhancementService>(services.size());
 		message.setFilteredServices(messageServices);
 		
-		Set<String> failedServices = enhancementConductor.getFailedPids().get(message.getPIDString());
+		Set<String> failedServices = enhancementConductor.getFailedPids().get(message.getTargetID());
 		
 		boolean applyServiceStack = JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getQualifiedAction());
 		boolean serviceReached = !applyServiceStack || message.getServiceName() == null;
@@ -104,7 +106,7 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 		
 		if (LOG.isDebugEnabled()){
 			StringBuilder sb = new StringBuilder();
-			sb.append("Service filter for ").append(message.getPIDString()).append(":");
+			sb.append("Service filter for ").append(message.getTargetID()).append(":");
 			for (ObjectEnhancementService s: messageServices){
 				sb.append(s.getClass().getSimpleName());
 			}

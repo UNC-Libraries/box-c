@@ -43,7 +43,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -106,7 +106,7 @@ public class ImageEnhancementServiceITCase {
 	public static void tearDownAfterClass() throws Exception {
 	}
 
-	private PIDMessage ingestSample(String filename, String dataFilename, String mimetype) throws Exception {
+	private EnhancementMessage ingestSample(String filename, String dataFilename, String mimetype) throws Exception {
 		File file = new File("src/test/resources", filename);
 		Document doc = new SAXBuilder().build(new FileReader(file));
 		PID pid = this.getManagementClient().ingest(doc, Format.FOXML_1_1, "ingesting test object");
@@ -121,7 +121,7 @@ public class ImageEnhancementServiceITCase {
 			this.getManagementClient().addLiteralStatement(pid,
 					ContentModelHelper.CDRProperty.hasSourceMimeType.getURI().toString(), mimetype, null);
 		}
-		PIDMessage result = new PIDMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage result = new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		samples.add(pid);
 		return result;
@@ -145,31 +145,31 @@ public class ImageEnhancementServiceITCase {
 
 	@Test
 	public void testFindCandidateObjects() throws Exception {
-		PIDMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
-		//PIDMessage pidPDF2 = ingestSample("thumbnail-PDF2.xml", "sample.pdf", "application/pdf");
-		PIDMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
-		PIDMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
-		PIDMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", "sample.tiff", "image/tiff");
-		PIDMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
+		EnhancementMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
+		//EnhancementMessage pidPDF2 = ingestSample("thumbnail-PDF2.xml", "sample.pdf", "application/pdf");
+		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
+		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
 
 		List<PID> results = this.getImageEnhancementService().findCandidateObjects(50);
 		for (PID p : results) {
 			LOG.debug("found candidate: " + p);
 		}
-		assertTrue("TIFF must be a candidate", results.contains(pidTIFF.getPID()));
-		assertFalse("CollYes must not be a candidate", results.contains(pidCollYes.getPID()));
-		assertFalse("CollNo must not be a candidate", results.contains(pidCollNo.getPID()));
-		assertFalse("DOC must not be a candidate", results.contains(pidDOC.getPID()));
-		assertFalse("PDF must not be a candidate", results.contains(pidPDF.getPID()));
+		assertTrue("TIFF must be a candidate", results.contains(pidTIFF.getPid()));
+		assertFalse("CollYes must not be a candidate", results.contains(pidCollYes.getPid()));
+		assertFalse("CollNo must not be a candidate", results.contains(pidCollNo.getPid()));
+		assertFalse("DOC must not be a candidate", results.contains(pidDOC.getPid()));
+		assertFalse("PDF must not be a candidate", results.contains(pidPDF.getPid()));
 	}
 
 	@Test
 	public void testIsApplicable() throws Exception {
-		PIDMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
-		PIDMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
-		PIDMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
-		PIDMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", "sample.tiff", "image/tiff");
-		PIDMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
+		EnhancementMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
+		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
+		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
 		// return false for a PID w/o sourcedata
 		// return true for a PID w/o techData
 		// return true for a PID w/techData older than sourceData
@@ -188,11 +188,11 @@ public class ImageEnhancementServiceITCase {
 
 	@Test
 	public void testExtractionWorksAndNoLongerApplicable() throws EnhancementException, Exception {
-		PIDMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
 		Enhancement<Element> en = this.getImageEnhancementService().getEnhancement(pidTIFF);
 		try {
 			en.call();
-			Datastream thb = this.getManagementClient().getDatastream(pidTIFF.getPID(), ContentModelHelper.Datastream.IMAGE_JP2000.getName());
+			Datastream thb = this.getManagementClient().getDatastream(pidTIFF.getPid(), ContentModelHelper.Datastream.IMAGE_JP2000.getName());
 			assertNotNull(ContentModelHelper.Datastream.IMAGE_JP2000.getName()+" datastream must not be null", thb);
 		} catch (Exception e) {
 			throw new Error(e);
@@ -200,19 +200,19 @@ public class ImageEnhancementServiceITCase {
 		assertFalse("The PID " + pidTIFF + " must not be applicable after service has run.", this
 				.getImageEnhancementService().isApplicable(pidTIFF));
 		assertFalse("The PID " + pidTIFF + " must not be a candidate after service has run.", this
-				.getImageEnhancementService().findCandidateObjects(50).contains(pidTIFF.getPID()));
+				.getImageEnhancementService().findCandidateObjects(50).contains(pidTIFF.getPid()));
 
 		// now update source
 		File dataFile = new File("src/test/resources", "sample.tiff");
 		String uploadURI = this.getManagementClient().upload(dataFile);
-		this.getManagementClient().modifyDatastreamByReference(pidTIFF.getPID(), "DATA_FILE", false, "Thumbnail Test",
+		this.getManagementClient().modifyDatastreamByReference(pidTIFF.getPid(), "DATA_FILE", false, "Thumbnail Test",
 				Collections.<String>emptyList(), "sample.pdf", "image/tiff", null, ChecksumType.DEFAULT, uploadURI);
 		assertTrue("The test pid should be applicable again after source DS is updated: " + pidTIFF, this
 				.getImageEnhancementService().isApplicable(pidTIFF));
 
 		LOG.debug("Adding JP2 relationship again for kicks");
-		PID newDSPID = new PID(pidTIFF.getPID().getPid()+"/"+ ContentModelHelper.Datastream.IMAGE_JP2000.getName());
-		this.getManagementClient().addObjectRelationship(pidTIFF.getPID(),
+		PID newDSPID = new PID(pidTIFF.getPid().getPid()+"/"+ ContentModelHelper.Datastream.IMAGE_JP2000.getName());
+		this.getManagementClient().addObjectRelationship(pidTIFF.getPid(),
 				"http://cdr.unc.edu/definitions/1.0/base-model.xml#derivedJP2", newDSPID);
 	}
 

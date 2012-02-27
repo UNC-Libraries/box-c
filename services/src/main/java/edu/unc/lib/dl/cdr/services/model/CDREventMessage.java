@@ -21,9 +21,14 @@ import java.util.List;
 import org.jdom.Document;
 import org.jdom.Element;
 
+import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
-public class CDRMessageContent {
+/**
+ * Stores the data extracted from CDR specific JMS events
+ * @author bbpennel
+ */
+public class CDREventMessage extends AbstractXMLEventMessage {
 	private List<String> subjects;
 	private List<String> reordered;
 	private String parent;
@@ -32,8 +37,12 @@ public class CDRMessageContent {
 	private String mode;
 	private String operation;
 	
-	public CDRMessageContent(Document message){
-		Element content = message.getRootElement().getChild("content", JDOMNamespaceUtil.ATOM_NS);
+	public CDREventMessage(Document messageBody) {
+		super(messageBody);
+		
+		this.setNamespace(JMSMessageUtil.cdrMessageNamespace);
+		
+		Element content = messageBody.getRootElement().getChild("content", JDOMNamespaceUtil.ATOM_NS);
 		if (content == null || content.getChildren().size() == 0)
 			return;
 		Element contentBody = (Element)content.getChildren().get(0);
@@ -96,10 +105,6 @@ public class CDRMessageContent {
 		this.oldParents = oldParents;
 	}
 
-	/**
-	 * Additional mode information for affecting the default behavior of the given action 
-	 * @return
-	 */
 	public String getMode() {
 		return mode;
 	}

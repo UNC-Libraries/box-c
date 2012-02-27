@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor;
 import edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor;
 import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor.PerformServicesRunnable;
@@ -178,15 +178,15 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		// Add in matching active messages
 		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
 		for (PerformServicesRunnable runningTask : currentlyRunning) {
-			if (runningTask.getPidMessage() != null && runningTask.getPidMessage().getPIDString().equals(id)) {
+			if (runningTask.getMessage() != null && runningTask.getMessage().getTargetID().equals(id)) {
 				task = new HashMap<String, Object>();
 				task.put("jobInfo", contextUrl + EnhancementConductorRestController.BASE_PATH
 						+ EnhancementConductorRestController.ACTIVE_PATH + "/job/"
-						+ runningTask.getPidMessage().getMessageID());
-				task.put("action", runningTask.getPidMessage().getQualifiedAction());
+						+ runningTask.getMessage().getMessageID());
+				task.put("action", runningTask.getMessage().getQualifiedAction());
 				pendingTasks.add(task);
 				// Store the matching active messages for later
-				matchingMessages.add(runningTask.getPidMessage());
+				matchingMessages.add(runningTask.getMessage());
 			}
 		}
 		
@@ -205,7 +205,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		//Build a set of all the services that have failed for this item
 		Set<String> queuedServices = new HashSet<String>();
 		for (ActionMessage message : matchingMessages) {
-			PIDMessage pidMessage = (PIDMessage)message;
+			EnhancementMessage pidMessage = (EnhancementMessage)message;
 			for (ObjectEnhancementService service : pidMessage.getFilteredServices()) {
 				queuedServices.add(service.getClass().getName());
 			}
@@ -220,7 +220,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		}
 		
 		List<String> applicableServices = new ArrayList<String>();
-		PIDMessage dummyMessage = new PIDMessage(id, null, null);
+		EnhancementMessage dummyMessage = new EnhancementMessage(id, null, null);
 		for (ObjectEnhancementService service: enhancementConductor.getServices()){
 			try {
 				if (service.isApplicable(dummyMessage)){

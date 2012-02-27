@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -57,29 +57,28 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	}
 
 	@Override
-	public Enhancement<Element> getEnhancement(PIDMessage pid) {
-		return new SolrUpdateEnhancement(this, pid);
+	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
+		return new SolrUpdateEnhancement(this, message.getPid());
 	}
 
 	@Override
-	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(pid.getQualifiedAction()))
-			return this.getClass().getName().equals(pid.getServiceName());
+	public boolean prefilterMessage(EnhancementMessage message) throws EnhancementException {
+		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(message.getQualifiedAction()))
+			return this.getClass().getName().equals(message.getServiceName());
 		//Returns true if at least one other service passed prefilter
 		//It is okay for ingest messages to pass here since if they are still orphaned they are not indexed.
-		return pid.getFilteredServices() != null && pid.getFilteredServices().size() > 0;
+		return message.getFilteredServices() != null && message.getFilteredServices().size() > 0;
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-
-	public boolean isApplicable(PIDMessage pid) throws EnhancementException {
+	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
 		// Get lastModified from Fedora
-		LOG.debug("isApplicable called with " + pid);
+		LOG.debug("isApplicable called with " + message);
 		
 		// Get dateUpdated from Solr
 		try {
-			Date solrDateModified = (Date) this.solrDataAccessLayer.getField(pid.getPIDString(),
+			Date solrDateModified = (Date) this.solrDataAccessLayer.getField(message.getTargetID(),
 					"dateUpdated");
 			if (solrDateModified == null) {
 				LOG.debug("isApplicable due to solrDateModified being null");
@@ -93,7 +92,7 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 				try {
 					// replace model URI and PID tokens
 					query = super.readFileAsString("solr-update-applicable.sparql");
-					query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid.getPID()
+					query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), message.getPid()
 							.getURI());
 
 					List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results"))

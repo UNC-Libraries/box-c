@@ -28,7 +28,9 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.AbstractXMLEventMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -91,37 +93,41 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 	}
 
 	@Override
-	public Enhancement<Element> getEnhancement(PIDMessage pid) {
-		return new ThumbnailEnhancement(this, pid);
+	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
+		return new ThumbnailEnhancement(this, message.getPid());
 	}
 
 	@Override
-	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
-		String action = pid.getQualifiedAction();
-		
+	public boolean prefilterMessage(EnhancementMessage message) throws EnhancementException {
+		String action = message.getQualifiedAction();
+
 		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(action))
 			return true;
 		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(action))
-			return this.getClass().getName().equals(pid.getServiceName());
+			return this.getClass().getName().equals(message.getServiceName());
+
+		// If its not a Fedora message at this point, then its not going to match anything else
+		if (!(message instanceof FedoraEventMessage))
+			return false;
 
 		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
 			return true;
 
-		if (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action) 
+		if (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
 				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)
-				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action)){
-			String datastream = pid.getDatastream();
+				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action)) {
+			String datastream = ((FedoraEventMessage) message).getDatastream();
 			return ContentModelHelper.Datastream.DATA_FILE.equals(datastream);
 		}
-		
-		if (!(JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.equals(action) 
-				|| JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP.equals(action))){
+
+		if (!(JMSMessageUtil.FedoraActions.ADD_RELATIONSHIP.equals(action) || JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP
+				.equals(action))) {
 			return false;
 		}
 
-		String relationship = pid.getRelation();
-		return ContentModelHelper.CDRProperty.sourceData.equals(relationship) 
-			|| ContentModelHelper.CDRProperty.hasSurrogate.equals(relationship);
+		String relationship = ((FedoraEventMessage) message).getRelationPredicate();
+		return ContentModelHelper.CDRProperty.sourceData.equals(relationship)
+				|| ContentModelHelper.CDRProperty.hasSurrogate.equals(relationship);
 	}
 
 	/*
@@ -131,36 +137,38 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 	 */
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	public boolean isApplicable(PIDMessage pid) throws EnhancementException {
-		LOG.debug("isApplicable called with " + pid);
-		if (pid.getMessage() != null) {
-			LOG.debug("isApplicable called with message:\n " + new XMLOutputter().outputString(pid.getMessage()));
+	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
+		LOG.debug("isApplicable called with " + message);
+		if (LOG.isDebugEnabled() && message instanceof AbstractXMLEventMessage
+				&& ((AbstractXMLEventMessage) message).getMessageBody() != null) {
+			LOG.debug("isApplicable called with message:\n "
+					+ new XMLOutputter().outputString(((AbstractXMLEventMessage) message).getMessageBody()));
 		}
-		
-		boolean needsThumb = false;
-		boolean isThumbForOthers = false;
+
 		String query = null;
 		try {
 			// replace model URI and PID tokens
 			query = this.readFileAsString("thumbnail-applicable.sparql");
-			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid.getPID()
+			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), message.getPid()
 					.getURI(), "http://cdr.unc.edu/definitions/1.0/base-model.xml#thumb");
 			Map<String, Object> result = this.getTripleStoreQueryService().sendSPARQL(query);
 			LOG.debug("checking if Applicable");
 			if (Boolean.TRUE.equals(result.get("boolean"))) {
-				needsThumb = true;
+				// Needs thumb for itself
+				return true;
 			}
 		} catch (IOException e) {
-			LOG.error("isApplicable failed for ThumbnailEnhancementService " + pid.getPIDString(), e);
+			LOG.error("isApplicable failed for ThumbnailEnhancementService " + message.getTargetID(), e);
 			throw new EnhancementException(e);
 		}
 
 		// replace model URI and PID tokens
-		List<PID> haveThisSurrogate = this.getTripleStoreQueryService().fetchPIDsSurrogateFor(pid.getPID());
-		if (haveThisSurrogate.size() > 0)
-			isThumbForOthers = true;
-
-		return needsThumb || isThumbForOthers;
+		List<PID> haveThisSurrogate = this.getTripleStoreQueryService().fetchPIDsSurrogateFor(message.getPid());
+		if (haveThisSurrogate.size() > 0) {
+			// Needs thumb as the surrogate for another object
+			return true;
+		}
+		return false;
 	}
 
 	/*

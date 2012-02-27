@@ -20,7 +20,7 @@ import java.util.List;
 import org.jdom.Element;
 
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -45,7 +45,7 @@ public interface ObjectEnhancementService {
 	 * @param pid
 	 * @return an EnhancementTask
 	 */
-	public Enhancement<Element> getEnhancement(PIDMessage pid) throws EnhancementException;
+	public Enhancement<Element> getEnhancement(EnhancementMessage pid) throws EnhancementException;
 
 	/**
 	 * Does this service apply to this object?
@@ -53,7 +53,7 @@ public interface ObjectEnhancementService {
 	 * @param pid
 	 * @return true if the service is applicable
 	 */
-	public boolean isApplicable(PIDMessage pid) throws EnhancementException;
+	public boolean isApplicable(EnhancementMessage pid) throws EnhancementException;
 	
 	/**
 	 * Does this message apply to this service?
@@ -61,7 +61,7 @@ public interface ObjectEnhancementService {
 	 * @return
 	 * @throws EnhancementException
 	 */
-	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException;
+	public boolean prefilterMessage(EnhancementMessage pid) throws EnhancementException;
 
 	/**
 	 * Checks to see if the enhancement should be re-applied. Generally a comparison of timestamps or software agent
@@ -71,7 +71,7 @@ public interface ObjectEnhancementService {
 	 * @return true if the object is stale w/respect to this enhancement
 	 */
 	public boolean isStale(PID pid) throws EnhancementException;
-
+	
 	/**
 	 * @return true if this service is currently active
 	 */

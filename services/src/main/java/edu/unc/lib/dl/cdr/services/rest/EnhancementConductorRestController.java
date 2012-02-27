@@ -40,9 +40,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
-import edu.unc.lib.dl.cdr.services.model.CDRMessageContent;
+import edu.unc.lib.dl.cdr.services.model.AbstractXMLEventMessage;
+import edu.unc.lib.dl.cdr.services.model.CDREventMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor;
 import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor.PerformServicesRunnable;
 import edu.unc.lib.dl.message.ActionMessage;
@@ -119,7 +121,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
 		List<ActionMessage> messages = new ArrayList<ActionMessage>();
 		for (PerformServicesRunnable task: currentlyRunning){
-			messages.add(task.getPidMessage());
+			messages.add(task.getMessage());
 		}
 		Map<String, Object> result = new HashMap<String, Object>();
 		addMessageListInfo(result, messages, begin, end, ACTIVE_PATH);
@@ -176,7 +178,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
 		List<ActionMessage> messages = new ArrayList<ActionMessage>();
 		for (PerformServicesRunnable task: currentlyRunning){
-			messages.add(task.getPidMessage());
+			messages.add(task.getMessage());
 		}
 		return getJobFullInfo(lookupJobInfo(id, messages), ACTIVE_PATH);
 	}
@@ -189,24 +191,26 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	protected Map<String,Object> getJobBriefInfo(ActionMessage actionMessage, String queuePath){
 		if (actionMessage == null)
 			return null;
-		PIDMessage message = (PIDMessage)actionMessage;
+		EnhancementMessage message = (EnhancementMessage)actionMessage;
 		Map<String, Object> job = new HashMap<String, Object>();
 		
 		job.put("id", message.getMessageID());
-		job.put("targetPID", message.getPIDString());
+		job.put("targetPID", message.getTargetID());
 		addJobPropertyIfNotEmpty("depositID", message.getDepositID(), job);
-		addJobPropertyIfNotEmpty("dataStream", message.getDatastream(), job);
-		addJobPropertyIfNotEmpty("relation", message.getRelation(), job);
 		addJobPropertyIfNotEmpty("action", message.getQualifiedAction(), job);
 		addJobPropertyIfNotEmpty("serviceName", message.getServiceName(), job);
 
-		CDRMessageContent cdrMessage = message.getCDRMessageContent(); 
-		if (cdrMessage != null){
+		if (message instanceof FedoraEventMessage){
+			FedoraEventMessage fMessage = (FedoraEventMessage)message;
+			addJobPropertyIfNotEmpty("dataStream", fMessage.getDatastream(), job);
+			addJobPropertyIfNotEmpty("relation", fMessage.getRelationPredicate(), job);
+			addJobPropertyIfNotEmpty("generatedTimestamp", fMessage.getEventTimestamp(), job);
+		} else if (message instanceof CDREventMessage){
+			CDREventMessage cdrMessage = (CDREventMessage)message;
 			addJobPropertyIfNotEmpty("mode", cdrMessage.getMode(), job);
 			addJobPropertyIfNotEmpty("targetParent", cdrMessage.getParent(), job);
 		}
 		
-		addJobPropertyIfNotEmpty("generatedTimestamp", message.getTimestamp(), job);
 		Date timeCreated = new Date(message.getTimeCreated());
 		job.put("queuedTimestamp", formatISO8601.format(timeCreated));
 		
@@ -224,27 +228,30 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	private Map<String, Object> getJobFullInfo(ActionMessage actionMessage, String queuedPath){
 		if (actionMessage == null)
 			return null;
-		PIDMessage message = (PIDMessage)actionMessage;
+		EnhancementMessage message = (EnhancementMessage)actionMessage;
 		Map<String, Object> job = new HashMap<String, Object>();
 		
 		job.put("id", message.getMessageID());
-		job.put("targetPID", message.getPIDString());
+		job.put("targetPID", message.getTargetID());
 		addJobPropertyIfNotEmpty("depositID", message.getDepositID(), job);
-		addJobPropertyIfNotEmpty("dataStream", message.getDatastream(), job);
-		addJobPropertyIfNotEmpty("relation", message.getRelation(), job);
 		addJobPropertyIfNotEmpty("action", message.getQualifiedAction(), job);
 		addJobPropertyIfNotEmpty("serviceName", message.getServiceName(), job);
 
-		CDRMessageContent cdrMessage = message.getCDRMessageContent(); 
-		if (cdrMessage != null){
+		if (message instanceof FedoraEventMessage){
+			FedoraEventMessage fMessage = (FedoraEventMessage)message;
+			addJobPropertyIfNotEmpty("dataStream", fMessage.getDatastream(), job);
+			addJobPropertyIfNotEmpty("relationPredicate", fMessage.getRelationPredicate(), job);
+			addJobPropertyIfNotEmpty("relationObject", fMessage.getRelationObject(), job);
+			addJobPropertyIfNotEmpty("generatedTimestamp", fMessage.getEventTimestamp(), job);
+		} else if (message instanceof CDREventMessage){
+			CDREventMessage cdrMessage = (CDREventMessage)message;
 			addJobPropertyIfNotEmpty("mode", cdrMessage.getMode(), job);
 			addJobPropertyIfNotEmpty("targetParent", cdrMessage.getParent(), job);
 			addJobPropertyIfNotEmpty("oldParents", cdrMessage.getOldParents(), job);
 			addJobPropertyIfNotEmpty("reordered", cdrMessage.getReordered(), job);
 			addJobPropertyIfNotEmpty("subjects", cdrMessage.getSubjects(), job);
+			addJobPropertyIfNotEmpty("generatedTimestamp", cdrMessage.getEventTimestamp(), job);
 		}
-		
-		addJobPropertyIfNotEmpty("generatedTimestamp", message.getTimestamp(), job);
 		Date timeCreated = new Date(message.getTimeCreated());
 		job.put("queuedTimestamp", formatISO8601.format(timeCreated));
 		
@@ -258,7 +265,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		Map<String, Object> uris = new HashMap<String, Object>();
 		job.put("uris", uris);
-		if (message.getMessage() != null){
+		if (message instanceof AbstractXMLEventMessage && ((AbstractXMLEventMessage)message).getMessageBody() != null){
 			uris.put("xml", contextUrl + BASE_PATH + queuedPath + "/job/" + message.getMessageID() + "/xml");
 		}
 		uris.put("targetInfo", contextUrl + ItemInfoRestController.BASE_PATH + message.getTargetID());
@@ -287,17 +294,20 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
 		List<ActionMessage> messages = new ArrayList<ActionMessage>();
 		for (PerformServicesRunnable task: currentlyRunning){
-			messages.add(task.getPidMessage());
+			messages.add(task.getMessage());
 		}
 		pr.write(getJobXML(id, messages));
 	}
 	
 	private String getJobXML(String id, List<ActionMessage> messages){
-		PIDMessage message = (PIDMessage)lookupJobInfo(id, messages);
-		if (message != null && message.getMessage() != null){
+		ActionMessage aMessage = lookupJobInfo(id, messages);
+		if (!(aMessage instanceof AbstractXMLEventMessage))
+			return null;
+		AbstractXMLEventMessage message = (AbstractXMLEventMessage)lookupJobInfo(id, messages);
+		if (message != null && message.getMessageBody() != null){
 			XMLOutputter outputter = new XMLOutputter();
 			try {
-				return outputter.outputString(message.getMessage());
+				return outputter.outputString(message.getMessageBody());
 			} catch (Exception e) {
 				LOG.error("Error while generating xml output for " + id, e);
 			}

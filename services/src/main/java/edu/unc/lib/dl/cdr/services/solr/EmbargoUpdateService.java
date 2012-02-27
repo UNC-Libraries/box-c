@@ -28,8 +28,9 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
+import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -51,8 +52,7 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 		List<PID> candidates = this.findCandidateObjects(-1);
 		if (candidates != null){
 			for (PID candidate: candidates){
-				getMessageDirector().direct(new PIDMessage(candidate.getPid(), 
-						SolrUpdateAction.namespace, SolrUpdateAction.RECURSIVE_ADD.getName()));
+				getMessageDirector().direct(new SolrUpdateRequest(candidate.getPid(), SolrUpdateAction.RECURSIVE_ADD));
 			}
 		}	
 	}
@@ -95,17 +95,17 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 	}
 
 	@Override
-	public Enhancement<Element> getEnhancement(PIDMessage pid) {
+	public Enhancement<Element> getEnhancement(EnhancementMessage pid) {
 		return null;
 	}
 	
 	@Override
-	public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
+	public boolean prefilterMessage(EnhancementMessage pid) throws EnhancementException {
 		return false;
 	}
 
 	@Override
-	public boolean isApplicable(PIDMessage pid) {
+	public boolean isApplicable(EnhancementMessage pid) {
 		return true;
 	}
 
@@ -121,5 +121,4 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 	public void setWindowSizeHours(Integer windowSizeHours) {
 		this.windowSizeHours = windowSizeHours;
 	}
-
 }

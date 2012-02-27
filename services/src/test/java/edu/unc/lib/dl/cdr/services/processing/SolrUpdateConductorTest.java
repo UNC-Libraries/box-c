@@ -32,7 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.data.ingest.solr.CountDownUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.DeleteChildrenPriorToTimestampRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrDataAccessLayer;
@@ -108,8 +107,7 @@ public class SolrUpdateConductorTest extends Assert {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		//Add messages and check that they all ran
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:" + i, SolrUpdateAction.namespace, 
-					SolrUpdateAction.ADD.getName());
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
 			messageDirector.direct(message);
 		}
 		while (!solrUpdateConductor.isEmpty());
@@ -129,8 +127,7 @@ public class SolrUpdateConductorTest extends Assert {
 		
 		//Check that collision list gets populated
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:" + i, SolrUpdateAction.namespace, 
-					SolrUpdateAction.ADD.getName());
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
 			for (int j=0; j<numberTestMessages; j++){
 				messageDirector.direct(message);
 				assertTrue(solrUpdateConductor.getLockedPids().size() <= i + 1
@@ -166,8 +163,7 @@ public class SolrUpdateConductorTest extends Assert {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:" + i, SolrUpdateAction.namespace, 
-					SolrUpdateAction.ADD.getName());
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
 			messageDirector.direct(message);
 		}
 		solrUpdateConductor.resume();
@@ -236,8 +232,7 @@ public class SolrUpdateConductorTest extends Assert {
 		//Test that nothing processes while paused
 		solrUpdateConductor.pause();
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:" + i, SolrUpdateAction.namespace, 
-					SolrUpdateAction.ADD.getName());
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
 			messageDirector.direct(message);
 		}
 		assertEquals(solrUpdateConductor.getQueueSize(), numberTestMessages);
@@ -259,8 +254,7 @@ public class SolrUpdateConductorTest extends Assert {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:" + i, SolrUpdateAction.namespace, 
-					SolrUpdateAction.ADD.getName());
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
 			messageDirector.direct(message);
 		}
 		
@@ -292,8 +286,7 @@ public class SolrUpdateConductorTest extends Assert {
 		
 		//Add messages and check that they all ran
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:" + i, SolrUpdateAction.namespace, 
-					SolrUpdateAction.ADD.getName());
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
 			messageDirector.direct(message);
 		}
 

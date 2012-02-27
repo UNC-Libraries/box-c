@@ -30,7 +30,8 @@ import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancement;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancement;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
@@ -61,20 +62,20 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		when(thumb.isActive()).thenReturn(true);
 		when(image.isActive()).thenReturn(true);
 		
-		when(techmd.prefilterMessage(any(PIDMessage.class))).thenReturn(true);
-		when(thumb.prefilterMessage(any(PIDMessage.class))).thenReturn(true);
-		when(image.prefilterMessage(any(PIDMessage.class))).thenReturn(true);
+		when(techmd.prefilterMessage(any(EnhancementMessage.class))).thenReturn(true);
+		when(thumb.prefilterMessage(any(EnhancementMessage.class))).thenReturn(true);
+		when(image.prefilterMessage(any(EnhancementMessage.class))).thenReturn(true);
 		
-		when(techmd.isApplicable(any(PIDMessage.class))).thenReturn(true);
-		when(thumb.isApplicable(any(PIDMessage.class))).thenReturn(true);
-		when(image.isApplicable(any(PIDMessage.class))).thenReturn(true);
+		when(techmd.isApplicable(any(EnhancementMessage.class))).thenReturn(true);
+		when(thumb.isApplicable(any(EnhancementMessage.class))).thenReturn(true);
+		when(image.isApplicable(any(EnhancementMessage.class))).thenReturn(true);
 		
 		techmdEnhancement = mock(TechnicalMetadataEnhancement.class);
 		thumbEnhancement = mock(ThumbnailEnhancement.class);
 		imageEnhancement = mock(ImageEnhancement.class);
-		when(techmd.getEnhancement(any(PIDMessage.class))).thenReturn(techmdEnhancement);
-		when(thumb.getEnhancement(any(PIDMessage.class))).thenReturn(thumbEnhancement);
-		when(image.getEnhancement(any(PIDMessage.class))).thenReturn(imageEnhancement);
+		when(techmd.getEnhancement(any(EnhancementMessage.class))).thenReturn(techmdEnhancement);
+		when(thumb.getEnhancement(any(EnhancementMessage.class))).thenReturn(thumbEnhancement);
+		when(image.getEnhancement(any(EnhancementMessage.class))).thenReturn(imageEnhancement);
 		
 		services = new ArrayList<ObjectEnhancementService>();
 		services.add(techmd);
@@ -101,8 +102,7 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		doThrow(exception).when(imageEnhancement).call();
 		
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:"+i, JMSMessageUtil.fedoraMessageNamespace, 
-					JMSMessageUtil.FedoraActions.INGEST.getName());
+			EnhancementMessage message = new FedoraEventMessage("uuid:"+i, JMSMessageUtil.FedoraActions.INGEST.getName());
 			message.setFilteredServices(services);
 			enhancementConductor.add(message);
 		}
@@ -136,15 +136,13 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		doThrow(exception).when(imageEnhancement).call();
 		
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:"+i, JMSMessageUtil.fedoraMessageNamespace, 
-					JMSMessageUtil.FedoraActions.INGEST.getName());
+			EnhancementMessage message = new FedoraEventMessage("uuid:"+i, JMSMessageUtil.FedoraActions.INGEST.getName());
 			message.setFilteredServices(unexceptionalServices);
 			enhancementConductor.add(message);
 		}
 		
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:"+(i+numberTestMessages), JMSMessageUtil.fedoraMessageNamespace, 
-					JMSMessageUtil.FedoraActions.INGEST.getName());
+			EnhancementMessage message = new FedoraEventMessage("uuid:"+(i+numberTestMessages), JMSMessageUtil.FedoraActions.INGEST.getName());
 			message.setFilteredServices(services);
 			enhancementConductor.add(message);
 		}
@@ -184,15 +182,13 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		doThrow(exception).when(imageEnhancement).call();
 		
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:"+i, JMSMessageUtil.fedoraMessageNamespace, 
-					JMSMessageUtil.FedoraActions.INGEST.getName());
+			EnhancementMessage message = new FedoraEventMessage("uuid:"+i, JMSMessageUtil.FedoraActions.INGEST.getName());
 			message.setFilteredServices(unexceptionalServices);
 			enhancementConductor.add(message);
 		}
 		
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:"+(i+numberTestMessages), JMSMessageUtil.fedoraMessageNamespace, 
-					JMSMessageUtil.FedoraActions.INGEST.getName());
+			EnhancementMessage message = new FedoraEventMessage("uuid:"+(i+numberTestMessages), JMSMessageUtil.FedoraActions.INGEST.getName());
 			message.setFilteredServices(services);
 			enhancementConductor.add(message);
 		}
@@ -219,8 +215,7 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		doThrow(exception).when(imageEnhancement).call();
 		
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:"+i, JMSMessageUtil.fedoraMessageNamespace, 
-					JMSMessageUtil.FedoraActions.INGEST.getName());
+			EnhancementMessage message = new FedoraEventMessage("uuid:"+i, JMSMessageUtil.FedoraActions.INGEST.getName());
 			message.setFilteredServices(services);
 			enhancementConductor.add(message);
 		}

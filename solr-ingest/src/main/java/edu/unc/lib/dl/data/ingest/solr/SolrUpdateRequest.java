@@ -28,20 +28,19 @@ public class SolrUpdateRequest implements ActionMessage {
 	protected SolrUpdateRequest linkedRequest;
 	protected long timeCreated = System.currentTimeMillis();
 	
-	public SolrUpdateRequest(){
+	protected SolrUpdateRequest(){
 		pid = null;
 		action = null;
 		linkedRequest = null;
 	}
 	
 	public SolrUpdateRequest(String pid, SolrUpdateAction action){
-		this.setPid(pid);
-		this.action = action;
-		linkedRequest = null;
-		this.messageID = null;
+		this(pid, action, (String)null);
 	}
 	
 	public SolrUpdateRequest(String pid, SolrUpdateAction action, String messageID){
+		if (pid == null || action == null)
+			throw new IllegalArgumentException("Both a target pid and an action are required.");
 		this.setPid(pid);
 		this.action = action;
 		linkedRequest = null;
@@ -49,6 +48,8 @@ public class SolrUpdateRequest implements ActionMessage {
 	}
 	
 	public SolrUpdateRequest(String pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest){
+		if (pid == null || action == null)
+			throw new IllegalArgumentException("Both a target pid and an action are required.");
 		this.setPid(pid);
 		this.action = action;
 		this.setLinkedRequest(linkedRequest);
@@ -59,6 +60,10 @@ public class SolrUpdateRequest implements ActionMessage {
 	}
 
 	public void setPid(String pid) {
+		if (pid == null){
+			this.pid = null;
+			return;
+		}
 		if (pid.indexOf("info:fedora/") == 0)
 			pid = pid.substring(pid.indexOf("/") + 1);
 		this.pid = pid;
@@ -129,7 +134,6 @@ public class SolrUpdateRequest implements ActionMessage {
 
 	@Override
 	public long getTimeCreated() {
-		// TODO Auto-generated method stub
-		return 0;
+		return timeCreated;
 	}
 }

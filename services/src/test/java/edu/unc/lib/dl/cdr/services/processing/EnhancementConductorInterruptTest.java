@@ -31,8 +31,8 @@ import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -95,7 +95,7 @@ public class EnhancementConductorInterruptTest extends Assert {
 		int numberTestMessages = 10;
 		//queue items while paused, make sure they aren't moving
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
+			EnhancementMessage message = new EnhancementMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 			message.setFilteredServices(delayServices);
 			enhancementConductor.add(message);
@@ -146,20 +146,20 @@ public class EnhancementConductorInterruptTest extends Assert {
 		}
 
 		@Override
-		public Enhancement<Element> getEnhancement(PIDMessage pid) throws EnhancementException {
-			return new DelayEnhancement(this, pid);
+		public Enhancement<Element> getEnhancement(EnhancementMessage pid) throws EnhancementException {
+			return new DelayEnhancement(this, pid.getPid());
 		}
 
 		@Override
-		public boolean isApplicable(PIDMessage pid) throws EnhancementException {
+		public boolean isApplicable(EnhancementMessage pid) throws EnhancementException {
 			incompleteServices.incrementAndGet();
 			betweenApplicableAndEnhancement.incrementAndGet();
-			LOG.debug("Completed isApplicable for " + pid.getPIDString());	
+			LOG.debug("Completed isApplicable for " + pid.getTargetID());	
 			return true;
 		}
 
 		@Override
-		public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
+		public boolean prefilterMessage(EnhancementMessage pid) throws EnhancementException {
 			return true;
 		}
 
@@ -167,17 +167,16 @@ public class EnhancementConductorInterruptTest extends Assert {
 		public boolean isStale(PID pid) throws EnhancementException {
 			return false;
 		}
-		
 	}
 	
 	public class DelayEnhancement extends Enhancement<Element> {
-		public DelayEnhancement(ObjectEnhancementService service, PIDMessage pid) {
+		public DelayEnhancement(ObjectEnhancementService service, PID pid) {
 			super(pid);
 		}
 		
 		@Override
 		public Element call() throws EnhancementException {
-			LOG.debug("Call invoked for " + this.pid.getPIDString());
+			LOG.debug("Call invoked for " + this.pid.getPid());
 			betweenApplicableAndEnhancement.decrementAndGet();
 			inService.incrementAndGet();
 			while (flag.get()){

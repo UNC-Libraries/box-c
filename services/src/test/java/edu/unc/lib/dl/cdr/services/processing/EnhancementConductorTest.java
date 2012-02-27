@@ -33,8 +33,8 @@ import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
@@ -127,10 +127,10 @@ public class EnhancementConductorTest extends Assert {
 
 		//Add messages and check that they all ran
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
+			EnhancementMessage message = new EnhancementMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 			messageDirector.direct(message);
-			message = new PIDMessage("uuid:" + i + "d", JMSMessageUtil.servicesMessageNamespace, 
+			message = new EnhancementMessage("uuid:" + i + "d", JMSMessageUtil.servicesMessageNamespace, 
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), DelayService.class.getName());
 			messageDirector.direct(message);
 		}
@@ -153,7 +153,7 @@ public class EnhancementConductorTest extends Assert {
 		
 		//Add messages which contain a lot of duplicates
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
+			EnhancementMessage message = new EnhancementMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 			for (int j=0; j<numberTestMessages; j++){
 				messageDirector.direct(message);
@@ -188,7 +188,7 @@ public class EnhancementConductorTest extends Assert {
 		
 		//Add messages then clear the conductors state
 		for (int i=0; i<numberTestMessages; i++){
-			PIDMessage message = new PIDMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
+			EnhancementMessage message = new EnhancementMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 			messageDirector.direct(message);
 		}
@@ -211,7 +211,7 @@ public class EnhancementConductorTest extends Assert {
 		
 		//Try to direct a pid with conductor shutdown
 		servicesCompleted.set(0);
-		PIDMessage message = new PIDMessage("uuid:fail", JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage message = new EnhancementMessage("uuid:fail", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		messageDirector.direct(message);
 		
@@ -269,20 +269,20 @@ public class DelayService extends AbstractFedoraEnhancementService {
 		}
 
 		@Override
-		public Enhancement<Element> getEnhancement(PIDMessage pid) throws EnhancementException {
-			return new DelayEnhancement(this, pid);
+		public Enhancement<Element> getEnhancement(EnhancementMessage pid) throws EnhancementException {
+			return new DelayEnhancement(this, pid.getPid());
 		}
 
 		@Override
-		public boolean isApplicable(PIDMessage pid) throws EnhancementException {
+		public boolean isApplicable(EnhancementMessage pid) throws EnhancementException {
 			incompleteServices.incrementAndGet();
 			betweenApplicableAndEnhancement.incrementAndGet();
-			LOG.debug("Completed isApplicable for " + pid.getPIDString());	
+			LOG.debug("Completed isApplicable for " + pid.getTargetID());	
 			return true;
 		}
 
 		@Override
-		public boolean prefilterMessage(PIDMessage pid) throws EnhancementException {
+		public boolean prefilterMessage(EnhancementMessage pid) throws EnhancementException {
 			return true;
 		}
 
@@ -294,13 +294,13 @@ public class DelayService extends AbstractFedoraEnhancementService {
 	}
 	
 	public class DelayEnhancement extends Enhancement<Element> {
-		public DelayEnhancement(ObjectEnhancementService service, PIDMessage pid) {
+		public DelayEnhancement(ObjectEnhancementService service, PID pid) {
 			super(pid);
 		}
 		
 		@Override
 		public Element call() throws EnhancementException {
-			LOG.debug("Call invoked for " + this.pid.getPIDString());
+			LOG.debug("Call invoked for " + this.pid.getPid());
 			betweenApplicableAndEnhancement.decrementAndGet();
 			//inService.incrementAndGet();
 			while (flag.get()){

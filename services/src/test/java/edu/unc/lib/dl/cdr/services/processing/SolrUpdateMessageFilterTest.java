@@ -27,10 +27,12 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
+import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context-unit.xml" })
@@ -44,38 +46,38 @@ public class SolrUpdateMessageFilterTest extends Assert {
 		assertFalse(solrUpdateMessageFilter.filter(null));
 		String pid = null;
 		try {
-			solrUpdateMessageFilter.filter(new PIDMessage(pid, null, null));
+			solrUpdateMessageFilter.filter(new SolrUpdateRequest(pid, null));
 			assertTrue(false);
 		} catch (IllegalArgumentException e){
 			assertTrue(true);
 		}
-		PIDMessage emptyMessage = new PIDMessage("", "", "");
+		EnhancementMessage emptyMessage = new EnhancementMessage("", "", "");
 		assertFalse(solrUpdateMessageFilter.filter(emptyMessage));
 	}
 	
 	@Test
 	public void solrMessages() throws Exception{
 		//All should pass
-		PIDMessage message = new PIDMessage("cdr:test", SolrUpdateAction.namespace, SolrUpdateAction.ADD.getName());
+		SolrUpdateRequest message = new SolrUpdateRequest("cdr:test", SolrUpdateAction.ADD);
 		assertTrue(solrUpdateMessageFilter.filter(message));
 		
-		message.setAction(SolrUpdateAction.DELETE_SOLR_TREE.getName());
+		message.setUpdateAction(SolrUpdateAction.DELETE_SOLR_TREE);
 		assertTrue(solrUpdateMessageFilter.filter(message));
 		
-		message.setAction(SolrUpdateAction.CLEAN_REINDEX.getName());
+		message.setUpdateAction(SolrUpdateAction.CLEAN_REINDEX);
 		assertTrue(solrUpdateMessageFilter.filter(message));
 		
-		message.setAction(SolrUpdateAction.RECURSIVE_REINDEX.getName());
+		message.setUpdateAction(SolrUpdateAction.RECURSIVE_REINDEX);
 		assertTrue(solrUpdateMessageFilter.filter(message));
 		
-		message.setAction(SolrUpdateAction.RECURSIVE_ADD.getName());
+		message.setUpdateAction(SolrUpdateAction.RECURSIVE_ADD);
 		assertTrue(solrUpdateMessageFilter.filter(message));
 	}
 	
 	@Test
 	public void fedoraMessages() throws Exception{
 		Document doc = readFileAsString("ingestMessage.xml");
-		PIDMessage message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		FedoraEventMessage message = new FedoraEventMessage(doc);
 		assertFalse(solrUpdateMessageFilter.filter(message));
 		
 		//Purge object passes
@@ -83,7 +85,7 @@ public class SolrUpdateMessageFilterTest extends Assert {
 		assertTrue(solrUpdateMessageFilter.filter(message));
 		
 		doc = readFileAsString("modifyDSDataFile.xml");
-		message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		message = new FedoraEventMessage(doc);
 		assertFalse(solrUpdateMessageFilter.filter(message));
 		
 		message.setAction(JMSMessageUtil.FedoraActions.PURGE_DATASTREAM.getName());
@@ -94,7 +96,7 @@ public class SolrUpdateMessageFilterTest extends Assert {
 		
 		//md descriptive, passes some of the time
 		doc = readFileAsString("modifyDSMDDescriptive.xml");
-		message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		message = new FedoraEventMessage(doc);
 		assertTrue(solrUpdateMessageFilter.filter(message));
 		
 		message.setAction(JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.getName());
@@ -108,7 +110,7 @@ public class SolrUpdateMessageFilterTest extends Assert {
 		
 		//Relationships
 		doc = readFileAsString("addRelSourceData.xml");
-		message = new PIDMessage(doc, JMSMessageUtil.fedoraMessageNamespace);
+		message = new FedoraEventMessage(doc);
 		assertFalse(solrUpdateMessageFilter.filter(message));
 		
 		message.setAction(JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP.getName());
@@ -117,7 +119,7 @@ public class SolrUpdateMessageFilterTest extends Assert {
 	
 	@Test
 	public void servicesMessages() throws Exception{
-		PIDMessage message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), "");
 		assertFalse(solrUpdateMessageFilter.filter(message));
 		message.setServiceName(TechnicalMetadataEnhancementService.class.getName());
@@ -129,10 +131,10 @@ public class SolrUpdateMessageFilterTest extends Assert {
 		message.setServiceName("");
 		assertFalse(solrUpdateMessageFilter.filter(message));
 		//Full stack run
-		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		assertFalse(solrUpdateMessageFilter.filter(message));
-		message = new PIDMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), "");
 		assertFalse(solrUpdateMessageFilter.filter(message));
 		

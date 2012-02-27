@@ -42,7 +42,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -103,7 +103,7 @@ public class ThumbnailEnhancementServiceITCase {
 	public static void tearDownAfterClass() throws Exception {
 	}
 
-	private PIDMessage ingestSample(String filename, String dataFilename, String mimetype) throws Exception {
+	private EnhancementMessage ingestSample(String filename, String dataFilename, String mimetype) throws Exception {
 		File file = new File("src/test/resources", filename);
 		Document doc = new SAXBuilder().build(new FileReader(file));
 		PID pid = this.getManagementClient().ingest(doc, Format.FOXML_1_1, "ingesting test object");
@@ -118,7 +118,7 @@ public class ThumbnailEnhancementServiceITCase {
 			this.getManagementClient().addLiteralStatement(pid,
 					ContentModelHelper.CDRProperty.hasSourceMimeType.getURI().toString(), mimetype, null);
 		}
-		PIDMessage result = new PIDMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage result = new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		samples.add(pid);
 		return result;
@@ -142,39 +142,39 @@ public class ThumbnailEnhancementServiceITCase {
 
 	@Test
 	public void testFindCandidateObjects() throws Exception {
-		PIDMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
-		//PIDMessage pidPDF2 = ingestSample("thumbnail-PDF2.xml", "sample.pdf", "application/pdf");
-		PIDMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
-		PIDMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
-		PIDMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
+		EnhancementMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
+		//EnhancementMessage pidPDF2 = ingestSample("thumbnail-PDF2.xml", "sample.pdf", "application/pdf");
+		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
+		EnhancementMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
 
 		// FIXME setup collection with surrogate
-		PIDMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", null, null);
-		this.managementClient.addObjectRelationship(pidCollYes.getPID(), ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString(), pidTIFF.getPID());
+		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", null, null);
+		this.managementClient.addObjectRelationship(pidCollYes.getPid(), ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString(), pidTIFF.getPid());
 
 		List<PID> results = this.getThumbnailEnhancementService().findCandidateObjects(50);
 		for (PID p : results) {
 			LOG.debug("found candidate: " + p);
 		}
-		assertTrue("TIFF must be a candidate", results.contains(pidTIFF.getPID()));
-		assertTrue("CollYes must be a candidate", results.contains(pidCollYes.getPID()));
-		assertFalse("CollNo must not be a candidate", results.contains(pidCollNo.getPID()));
-		assertFalse("DOC must not be a candidate", results.contains(pidDOC.getPID()));
-		assertFalse("PDF must not be a candidate", results.contains(pidPDF.getPID()));
+		assertTrue("TIFF must be a candidate", results.contains(pidTIFF.getPid()));
+		assertTrue("CollYes must be a candidate", results.contains(pidCollYes.getPid()));
+		assertFalse("CollNo must not be a candidate", results.contains(pidCollNo.getPid()));
+		assertFalse("DOC must not be a candidate", results.contains(pidDOC.getPid()));
+		assertFalse("PDF must not be a candidate", results.contains(pidPDF.getPid()));
 	}
 
 	@Test
 	public void testIsApplicable() throws Exception {
-		PIDMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
-		//PIDMessage pidPDF2 = ingestSample("thumbnail-PDF2.xml", "sample.pdf", "application/pdf");
-		PIDMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
-		PIDMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
+		EnhancementMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
+		//EnhancementMessage pidPDF2 = ingestSample("thumbnail-PDF2.xml", "sample.pdf", "application/pdf");
+		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
 
 		// setup collection with surrogate
-		PIDMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", null, null);
-		this.managementClient.addObjectRelationship(pidCollYes.getPID(), ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString(), pidTIFF.getPID());
+		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", null, null);
+		this.managementClient.addObjectRelationship(pidCollYes.getPid(), ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString(), pidTIFF.getPid());
 
-		PIDMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
+		EnhancementMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
 		// return false for a PID w/o sourcedata
 		// return true for a PID w/o techData
 		// return true for a PID w/techData older than sourceData
@@ -193,11 +193,11 @@ public class ThumbnailEnhancementServiceITCase {
 
 	@Test
 	public void testExtractionWorksAndNoLongerApplicable() throws Exception {
-		PIDMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
+		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
 		Enhancement<Element> en = this.getThumbnailEnhancementService().getEnhancement(pidTIFF);
 		try {
 			en.call();
-			Datastream thb = this.getManagementClient().getDatastream(pidTIFF.getPID(), "THUMB_LARGE");
+			Datastream thb = this.getManagementClient().getDatastream(pidTIFF.getPid(), "THUMB_LARGE");
 			assertNotNull("Thumbnail datastream must not be null", thb);
 		} catch (Exception e) {
 			throw new Error(e);
@@ -205,16 +205,16 @@ public class ThumbnailEnhancementServiceITCase {
 		assertFalse("The PID " + pidTIFF + " must not be applicable after service has run.", this
 				.getThumbnailEnhancementService().isApplicable(pidTIFF));
 		assertFalse("The PID " + pidTIFF + " must not be a candidate after service has run.", this
-				.getThumbnailEnhancementService().findCandidateObjects(50).contains(pidTIFF.getPID()));
+				.getThumbnailEnhancementService().findCandidateObjects(50).contains(pidTIFF.getPid()));
 
 	}
 
 	@Test
 	public void testExtractionWorksAndNoLongerApplicableCollection() throws Exception {
 		// ingest collection and tiff surrogate
-		PIDMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", null, null);
-		PIDMessage pidTiff = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
-		this.managementClient.addObjectRelationship(pidCollYes.getPID(), ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString(), pidTiff.getPID());
+		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", null, null);
+		EnhancementMessage pidTiff = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
+		this.managementClient.addObjectRelationship(pidCollYes.getPid(), ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString(), pidTiff.getPid());
 
 
 		Enhancement<Element> en = this.getThumbnailEnhancementService().getEnhancement(pidCollYes);
@@ -226,9 +226,9 @@ public class ThumbnailEnhancementServiceITCase {
 		assertFalse("The PID " + pidCollYes + " must not be applicable after service has run.", this
 				.getThumbnailEnhancementService().isApplicable(pidCollYes));
 		assertFalse("The PID " + pidCollYes + " must not be a candidate after service has run.", this
-				.getThumbnailEnhancementService().findCandidateObjects(50).contains(pidCollYes.getPID()));
+				.getThumbnailEnhancementService().findCandidateObjects(50).contains(pidCollYes.getPid()));
 
-		Datastream ds = this.managementClient.getDatastream(pidCollYes.getPID(), ContentModelHelper.Datastream.THUMB_SMALL.getName());
+		Datastream ds = this.managementClient.getDatastream(pidCollYes.getPid(), ContentModelHelper.Datastream.THUMB_SMALL.getName());
 		assertNotNull("There must be a small thumbnail on collection after service is run..", ds);
 	}
 

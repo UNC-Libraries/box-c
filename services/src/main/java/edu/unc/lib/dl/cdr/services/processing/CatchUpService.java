@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -160,13 +160,13 @@ public class CatchUpService {
 						candidatesFound = true;
 						for (PID candidate : candidates) {
 							if (priorToDate == null){
-								PIDMessage pidMessage = new PIDMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
+								EnhancementMessage message = new EnhancementMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
 										JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), s.getClass().getName());
-								messageDirector.direct(pidMessage);
+								messageDirector.direct(message);
 							} else {
-								PIDMessage pidMessage = new PIDMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
+								EnhancementMessage message = new EnhancementMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
 										JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), s.getClass().getName());
-								messageDirector.direct(pidMessage);
+								messageDirector.direct(message);
 							}
 							this.itemsProcessed++;
 							this.itemsProcessedThisSession++;

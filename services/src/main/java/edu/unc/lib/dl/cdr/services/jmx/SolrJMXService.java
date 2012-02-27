@@ -18,9 +18,9 @@ package edu.unc.lib.dl.cdr.services.jmx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.cdr.services.model.PIDMessage;
 import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
+import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 
 /**
@@ -40,23 +40,23 @@ public class SolrJMXService {
 	
 	public void update(String pid){
 		if (!active) return;
-		messageDirector.direct(new PIDMessage(pid, SolrUpdateAction.namespace, SolrUpdateAction.ADD.getName()));
+		messageDirector.direct(new SolrUpdateRequest(pid, SolrUpdateAction.ADD));
 	}
 	
 	public void reindex(String pid, boolean inplace){
 		if (!active) return;
 		LOG.info("Issuing request to recursively reindex " + pid + ", to be performed inplace:" + inplace + ".");
 		if (inplace){
-			messageDirector.direct(new PIDMessage(pid, SolrUpdateAction.namespace, SolrUpdateAction.RECURSIVE_REINDEX.getName()));
+			messageDirector.direct(new SolrUpdateRequest(pid, SolrUpdateAction.RECURSIVE_REINDEX));
 		} else {
-			messageDirector.direct(new PIDMessage(pid, SolrUpdateAction.namespace, SolrUpdateAction.CLEAN_REINDEX.getName()));
+			messageDirector.direct(new SolrUpdateRequest(pid, SolrUpdateAction.CLEAN_REINDEX));
 		}
 	}
 	
 	public void clearIndex(String confirmation){
 		if (!active || !confirmation.equalsIgnoreCase("yes")) return;
 		LOG.info("Issuing request to delete all Solr index contents.");
-		messageDirector.direct(new PIDMessage("", SolrUpdateAction.namespace, SolrUpdateAction.CLEAR_INDEX.getName()));
+		messageDirector.direct(new SolrUpdateRequest("", SolrUpdateAction.CLEAR_INDEX));
 	}
 
 	public boolean isActive() {
