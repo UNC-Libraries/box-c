@@ -85,7 +85,7 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 
 	@Override
 	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
-		return new ImageEnhancement(this, message);
+		return new ImageEnhancement(this, message.getPid());
 	}
 	
 	@Override

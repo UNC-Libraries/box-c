@@ -40,7 +40,6 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
-import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -78,11 +77,11 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 		}
 
 		// get sourceData data stream IDs
-		List<String> srcDSURIs = this.service.getTripleStoreQueryService().getSourceData(pid.getPid());
+		List<String> srcDSURIs = this.service.getTripleStoreQueryService().getSourceData(pid);
 
 		Map<String, Document> ds2FitsDoc = new HashMap<String, Document>();
 		try {
-			Document foxml = service.getManagementClient().getObjectXML(pid.getPid());
+			Document foxml = service.getManagementClient().getObjectXML(pid);
 
 			for (String srcURI : srcDSURIs) { // for each source datastream
 				LOG.debug("source data URI: " + srcURI);
@@ -93,7 +92,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 				String dsLocation = null;
 				String dsIrodsPath = null;
 				String dsAltIds = null;
-				Datastream ds = service.getManagementClient().getDatastream(pid.getPid(), dsid, "");
+				Datastream ds = service.getManagementClient().getDatastream(pid, dsid, "");
 				String vid = ds.getVersionID();
 				Element dsEl = FOXMLJDOMUtil.getDatastream(foxml, dsid);
 				for (Object o : dsEl.getChildren("datastreamVersion", JDOMNamespaceUtil.FOXML_NS)) {
@@ -159,23 +158,23 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 					format = trustedIdentity.getAttributeValue("format");
 				} else {
 					format = "Unknown";
-					LOG.warn("FITS unable to conclusively identify file: " + pid.getPid() + "/" + dsid);
+					LOG.warn("FITS unable to conclusively identify file: " + pid + "/" + dsid);
 					LOG.info(new XMLOutputter().outputString(fits));
 				}
 
 				if ("DATA_FILE".equals(dsid)) {
 					if (fitsMimetype != null) {
-						setExclusiveTripleValue(pid.getPid(), ContentModelHelper.CDRProperty.hasSourceMimeType.toString(),
+						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.toString(),
 								fitsMimetype, null);
 					} else { // application/octet-stream
-						setExclusiveTripleValue(pid.getPid(),
+						setExclusiveTripleValue(pid,
 								ContentModelHelper.CDRProperty.hasSourceMimeType.toString(),
 								"application/octet-stream", null);
 					}
 					
 					try {
 						Long.parseLong(size);
-						setExclusiveTripleValue(pid.getPid(),
+						setExclusiveTripleValue(pid,
 								ContentModelHelper.CDRProperty.hasSourceFileSize.toString(), size,
 								"http://www.w3.org/2001/XMLSchema#long");
 					} catch (NumberFormatException e) {
@@ -213,24 +212,24 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 			if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.MD_TECHNICAL.getName()) == null) {
 				LOG.debug("Adding FITS output to MD_TECHNICAL");				
 				String message = "Adding technical metadata derived by FITS";
-				service.getManagementClient().addManagedDatastream(pid.getPid(),
+				service.getManagementClient().addManagedDatastream(pid,
 						ContentModelHelper.Datastream.MD_TECHNICAL.getName(), false, message, new ArrayList<String>(),
 						"PREMIS Technical Metadata", false, "text/xml", premisTechURL);
 			} else {
 				LOG.debug("Replacing MD_TECHNICAL with new FITS output");
 				String message = "Replacing technical metadata derived by FITS";
-				service.getManagementClient().modifyDatastreamByReference(pid.getPid(),
+				service.getManagementClient().modifyDatastreamByReference(pid,
 						ContentModelHelper.Datastream.MD_TECHNICAL.getName(), false, message, new ArrayList<String>(),
 						"PREMIS Technical Metadata", "text/xml", null, null, premisTechURL);
 			}
 
 			LOG.debug("Adding techData relationship");
-			PID newDSPID = new PID(pid.getPid().getPid() + "/" + ContentModelHelper.Datastream.MD_TECHNICAL.getName());
-			Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid.getPid());
+			PID newDSPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.MD_TECHNICAL.getName());
+			Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid);
 
 			List<String> techrel = rels.get(ContentModelHelper.CDRProperty.techData.toString());
 			if (techrel == null || !techrel.contains(newDSPID.getURI())) {
-				service.getManagementClient().addObjectRelationship(pid.getPid(),
+				service.getManagementClient().addObjectRelationship(pid,
 						ContentModelHelper.CDRProperty.techData.toString(), newDSPID);
 			}
 
@@ -346,7 +345,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 	}
 
 	public TechnicalMetadataEnhancement(TechnicalMetadataEnhancementService technicalMetadataEnhancementService,
-			EnhancementMessage pid) {
+			PID pid) {
 		super(pid);
 		this.service = technicalMetadataEnhancementService;
 	}

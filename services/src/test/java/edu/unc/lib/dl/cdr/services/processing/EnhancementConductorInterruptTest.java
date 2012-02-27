@@ -147,7 +147,7 @@ public class EnhancementConductorInterruptTest extends Assert {
 
 		@Override
 		public Enhancement<Element> getEnhancement(EnhancementMessage pid) throws EnhancementException {
-			return new DelayEnhancement(this, pid);
+			return new DelayEnhancement(this, pid.getPid());
 		}
 
 		@Override
@@ -170,13 +170,13 @@ public class EnhancementConductorInterruptTest extends Assert {
 	}
 	
 	public class DelayEnhancement extends Enhancement<Element> {
-		public DelayEnhancement(ObjectEnhancementService service, EnhancementMessage pid) {
+		public DelayEnhancement(ObjectEnhancementService service, PID pid) {
 			super(pid);
 		}
 		
 		@Override
 		public Element call() throws EnhancementException {
-			LOG.debug("Call invoked for " + this.pid.getTargetID());
+			LOG.debug("Call invoked for " + this.pid.getPid());
 			betweenApplicableAndEnhancement.decrementAndGet();
 			inService.incrementAndGet();
 			while (flag.get()){
