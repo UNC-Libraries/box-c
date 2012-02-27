@@ -94,7 +94,7 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 
 	@Override
 	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
-		return new ThumbnailEnhancement(this, message);
+		return new ThumbnailEnhancement(this, message.getPid());
 	}
 
 	@Override
@@ -139,13 +139,12 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 	@Override
 	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
 		LOG.debug("isApplicable called with " + message);
-		if (LOG.isDebugEnabled() && ((AbstractXMLEventMessage) message).getMessageBody() != null) {
+		if (LOG.isDebugEnabled() && message instanceof AbstractXMLEventMessage
+				&& ((AbstractXMLEventMessage) message).getMessageBody() != null) {
 			LOG.debug("isApplicable called with message:\n "
 					+ new XMLOutputter().outputString(((AbstractXMLEventMessage) message).getMessageBody()));
 		}
 
-		boolean needsThumb = false;
-		boolean isThumbForOthers = false;
 		String query = null;
 		try {
 			// replace model URI and PID tokens
@@ -155,7 +154,8 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 			Map<String, Object> result = this.getTripleStoreQueryService().sendSPARQL(query);
 			LOG.debug("checking if Applicable");
 			if (Boolean.TRUE.equals(result.get("boolean"))) {
-				needsThumb = true;
+				// Needs thumb for itself
+				return true;
 			}
 		} catch (IOException e) {
 			LOG.error("isApplicable failed for ThumbnailEnhancementService " + message.getTargetID(), e);
@@ -164,10 +164,11 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 
 		// replace model URI and PID tokens
 		List<PID> haveThisSurrogate = this.getTripleStoreQueryService().fetchPIDsSurrogateFor(message.getPid());
-		if (haveThisSurrogate.size() > 0)
-			isThumbForOthers = true;
-
-		return needsThumb || isThumbForOthers;
+		if (haveThisSurrogate.size() > 0) {
+			// Needs thumb as the surrogate for another object
+			return true;
+		}
+		return false;
 	}
 
 	/*

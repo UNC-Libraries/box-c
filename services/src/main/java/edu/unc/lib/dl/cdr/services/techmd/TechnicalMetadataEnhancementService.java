@@ -98,7 +98,7 @@ public class TechnicalMetadataEnhancementService extends AbstractIrodsObjectEnha
 	 */
 	@Override
 	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
-		return new TechnicalMetadataEnhancement(this, message);
+		return new TechnicalMetadataEnhancement(this, message.getPid());
 	}
 	
 	@Override

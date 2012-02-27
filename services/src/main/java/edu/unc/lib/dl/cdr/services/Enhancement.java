@@ -16,27 +16,27 @@
 package edu.unc.lib.dl.cdr.services;
 
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.fedora.PID;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public abstract class Enhancement<Element> {
-    protected EnhancementMessage pid = null;
+	protected PID pid = null;
 
-    /**
-     * @param pid
-     */
-    public Enhancement(EnhancementMessage pid) {
-	this.pid = pid;
-    }
+	/**
+	 * @param pid
+	 */
+	public Enhancement(PID pid) {
+		this.pid = pid;
+	}
 
-    public EnhancementMessage getPid() {
-        return pid;
-    }
-    
-    public Element call() throws EnhancementException {
-   	 return null;
-    }
+	public PID getPid() {
+		return pid;
+	}
+
+	public Element call() throws EnhancementException {
+		return null;
+	}
 }

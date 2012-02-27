@@ -58,7 +58,7 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 
 	@Override
 	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
-		return new SolrUpdateEnhancement(this, message);
+		return new SolrUpdateEnhancement(this, message.getPid());
 	}
 
 	@Override
