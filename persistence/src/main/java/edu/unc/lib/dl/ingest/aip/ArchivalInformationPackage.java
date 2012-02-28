@@ -66,6 +66,13 @@ public interface ArchivalInformationPackage {
 	 */
 	public void setContainerPlacement(PID parentPID, PID topPID, Integer designatedOrder, Integer sipOrder, String label);
 
+	/**
+	 * Gets the ContainerPlacement object for the specified pid, representing its ordered placement within its parent
+	 * container.
+	 * 
+	 * @param pid
+	 * @return
+	 */
 	public ContainerPlacement getContainerPlacement(PID pid);
 
 	/**
@@ -77,12 +84,14 @@ public interface ArchivalInformationPackage {
 
 	/**
 	 * Gets the ID of the deposit.
+	 * 
 	 * @return
 	 */
 	public PID getDepositID();
 
 	/**
 	 * Sets the ID of the deposit.
+	 * 
 	 * @param pid
 	 */
 	public void setDepositID(PID pid);

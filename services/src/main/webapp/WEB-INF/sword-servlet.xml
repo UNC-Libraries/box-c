@@ -77,6 +77,7 @@
 					<property name="schematronValidator" ref="schematronValidator" />
 				</bean>
 				<bean class="edu.unc.lib.dl.ingest.aip.DublinCoreCrosswalkFilter" />
+				<bean class="edu.unc.lib.dl.ingest.aip.BiomedCentralAIPFilter"/>
 			</list>
 		</property>
 	</bean>

@@ -49,16 +49,17 @@ public class ContentModelHelper {
 	 *
 	 */
 	public static enum CDRProperty {
-		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), sourceData("sourceData"), indexText("indexText"), onyen(
-				"onyen"), slug("slug"), sortOrder("sortOrder"), permitMetadataCreate("permitMetadataCreate"), permitMetadataRead(
-				"permitMetadataRead"), permitMetadataUpdate("permitMetadataUpdate"), permitMetadataDelete(
-				"permitMetadataDelete"), permitOriginalsCreate("permitOriginalsCreate"), permitOriginalsRead(
-				"permitOriginalsRead"), permitOriginalsUpdate("permitOriginalsUpdate"), permitOriginalsDelete(
-				"permitOriginalsDelete"), permitDerivativesCreate("permitDerivativesCreate"), permitDerivativesRead(
-				"permitDerivativesRead"), permitDerivativesUpdate("permitDerivativesUpdate"), permitDerivativesDelete(
-				"permitDerivativesDelete"), inheritPermissions("inheritPermissions"), hasSourceMimeType("hasSourceMimeType"),
-				hasSourceFileSize("hasSourceFileSize"), hasSurrogate("hasSurrogate"), thumb("thumb"), derivedJP2("derivedJP2"),
-				techData("techData"), originalDeposit("originalDeposit");
+		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), defaultWebObject("defaultWebObject"), sourceData(
+				"sourceData"), indexText("indexText"), onyen("onyen"), slug("slug"), sortOrder("sortOrder"), permitMetadataCreate(
+				"permitMetadataCreate"), permitMetadataRead("permitMetadataRead"), permitMetadataUpdate(
+				"permitMetadataUpdate"), permitMetadataDelete("permitMetadataDelete"), permitOriginalsCreate(
+				"permitOriginalsCreate"), permitOriginalsRead("permitOriginalsRead"), permitOriginalsUpdate(
+				"permitOriginalsUpdate"), permitOriginalsDelete("permitOriginalsDelete"), permitDerivativesCreate(
+				"permitDerivativesCreate"), permitDerivativesRead("permitDerivativesRead"), permitDerivativesUpdate(
+				"permitDerivativesUpdate"), permitDerivativesDelete("permitDerivativesDelete"), inheritPermissions(
+				"inheritPermissions"), hasSourceMimeType("hasSourceMimeType"), hasSourceFileSize("hasSourceFileSize"), hasSurrogate(
+				"hasSurrogate"), thumb("thumb"), derivedJP2("derivedJP2"), techData("techData"), originalDeposit(
+				"originalDeposit");
 		private URI uri;
 
 		CDRProperty(String suffix) {
@@ -184,7 +185,7 @@ public class ContentModelHelper {
 	public static enum Model {
 		COLLECTION("Collection"), CONTAINER("Container"), GROUPAGENT("GroupAgent"), PERSONAGENT("PersonAgent"), SIMPLE(
 				"Simple"), SOFTWAREAGENT("SoftwareAgent"), PRESERVEDOBJECT("PreservedObject"), JP2DERIVEDIMAGE(
-				"JP2DerivedImage");
+				"JP2DerivedImage"), AGGREGATE_WORK("AggregateWork");
 
 		private URI uri;
 		private PID pid;
@@ -210,6 +211,10 @@ public class ContentModelHelper {
 
 		public boolean equals(String value){
 			return this.uri.toString().equals(value);
+		}
+		
+		public boolean equals(URI value){
+			return this.uri.equals(value);
 		}
 
 		public boolean equalsPID(String value){
