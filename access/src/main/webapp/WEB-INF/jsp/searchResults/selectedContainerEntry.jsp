@@ -43,7 +43,8 @@
 						</div>
 					</c:when>
 					<c:otherwise>
-						<div class="smallthumb_container empty">
+						<div class="smallthumb_container">
+							<img class="smallthumb" src="/static/images/collections/${metadata.idWithoutPrefix}.jpg"/>
 						</div>
 					</c:otherwise>
 				</c:choose>
