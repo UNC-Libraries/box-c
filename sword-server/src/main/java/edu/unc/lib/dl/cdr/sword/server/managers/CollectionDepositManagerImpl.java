@@ -65,7 +65,10 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		} else {
 			agentName = auth.getUsername();
 		};
-		Agent agent = agentFactory.findPersonByOnyen(agentName, true);
+		Agent agent = agentFactory.findPersonByOnyen(agentName, false);
+		if (agent == null){
+			throw new SwordAuthException("Unable to find a user matching the provided credentials, " + agentName);
+		}
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
 
 		String pidString = null;
