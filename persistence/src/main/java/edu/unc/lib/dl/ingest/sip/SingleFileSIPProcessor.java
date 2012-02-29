@@ -108,10 +108,10 @@ public class SingleFileSIPProcessor implements SIPProcessor {
 			} catch (IOException e) {
 				throw new IngestException("Checksum processor failed to find data file.");
 			}
-			locator = FOXMLJDOMUtil.makeLocatorDatastream("DATA_FILE", "M", relocatedData.toURI().toString(), sip.getMimeType(), "URL",
+			locator = FOXMLJDOMUtil.makeLocatorDatastream("DATA_FILE", "M", relocatedData.getName(), sip.getMimeType(), "URL",
 					sip.getFileLabel(), true, sip.getMd5checksum());
 		} else {
-			locator = FOXMLJDOMUtil.makeLocatorDatastream("DATA_FILE", "M", relocatedData.toURI().toString(), sip.getMimeType(), "URL",
+			locator = FOXMLJDOMUtil.makeLocatorDatastream("DATA_FILE", "M", relocatedData.getName(), sip.getMimeType(), "URL",
 					sip.getFileLabel(), true, null);
 		}
 

@@ -19,7 +19,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -54,11 +53,11 @@ import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.ManagementClient;
-import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
 import edu.unc.lib.dl.fedora.ManagementClient.ControlGroup;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.util.ContainerContentsHelper;
@@ -372,6 +371,8 @@ public class BatchIngestTask implements Runnable {
 						cLocation.setAttribute("REF", newref);
 					} catch (IOException e) {
 						throw fail("Data file missing: " + ref, e);
+					} catch (ServiceException e) {
+						throw fail("Problem uploading file: " + ref, e);
 					}
 				} else if (uri.getScheme().contains("premisEvents")) {
 					try {
