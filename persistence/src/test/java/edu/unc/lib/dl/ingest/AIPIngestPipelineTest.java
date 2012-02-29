@@ -50,12 +50,14 @@ import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
 import edu.unc.lib.dl.ingest.sip.SingleFolderSIP;
 import edu.unc.lib.dl.ingest.sip.SingleFolderSIPProcessor;
 import edu.unc.lib.dl.services.AgentManager;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -112,6 +114,7 @@ public class AIPIngestPipelineTest {
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/simple.zip"));
 		Agent user = new PersonAgent(new PID("cdr-test:142"), "Testy Testerson", "test");
+		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/test/container/path";
@@ -132,7 +135,7 @@ public class AIPIngestPipelineTest {
 		when(this.tripleStoreQueryService.verify(eq(containerPID))).thenReturn(containerPID);
 
 		try {
-			aip = this.getMetsPackageSIPProcessor().createAIP(sip);
+			aip = this.getMetsPackageSIPProcessor().createAIP(sip, record);
 		} catch (IngestException e) {
 			throw new Error(e);
 		}
@@ -142,7 +145,7 @@ public class AIPIngestPipelineTest {
 
 		try {
 			aip = this.getAipIngestPipeline().processAIP(aip);
-			aip.prepareIngest("this is a test", "testuser");
+			aip.prepareIngest();
 		} catch (IngestException e) {
 			log.error("ingest exception during test", e);
 			fail("get exception processing AIP" + e.getMessage());
@@ -168,6 +171,7 @@ public class AIPIngestPipelineTest {
 		// testing for failed conversion of SIP w/simple content model
 		File testFile = tempCopy(new File(testfile));
 		Agent user = new PersonAgent(new PID("cdr-test:142"), "Testy Testerson", "test");
+		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/test/container/path";
@@ -188,12 +192,12 @@ public class AIPIngestPipelineTest {
 
 		try {
 			log.debug("about to create AIP");
-			aip = this.getMetsPackageSIPProcessor().createAIP(sip);
+			aip = this.getMetsPackageSIPProcessor().createAIP(sip, record);
 			assertNotNull("The result ingest context is null.", aip);
 			int count = aip.getPIDs().size();
 			assertTrue("There should be 13 PIDs in the resulting AIP, found " + count, count == 13);
 			aip = this.getAipIngestPipeline().processAIP(aip);
-			aip.prepareIngest("this is a test", "testuser");
+			aip.prepareIngest();
 			fail("Failed to throw an IngestException for the extrafiles.zip");
 		} catch (IngestException e) { // expected test path
 			// exercise the email code (via a mock in this spring config)
@@ -206,6 +210,7 @@ public class AIPIngestPipelineTest {
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/METS.xml"));
 		Agent user = AgentManager.getAdministrativeGroupAgentStub();
+		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/collections";
@@ -225,7 +230,7 @@ public class AIPIngestPipelineTest {
 		when(this.tripleStoreQueryService.fetchByRepositoryPath(eq(containerPath))).thenReturn(containerPID);
 
 		try {
-			aip = this.getMetsPackageSIPProcessor().createAIP(sip);
+			aip = this.getMetsPackageSIPProcessor().createAIP(sip, record);
 		} catch (IngestException e) {
 			throw new Error(e);
 		}
@@ -235,7 +240,7 @@ public class AIPIngestPipelineTest {
 
 		try {
 			aip = this.getAipIngestPipeline().processAIP(aip);
-			aip.prepareIngest("this is a test", "testuser");
+			aip.prepareIngest();
 		} catch (IngestException e) {
 			log.error("ingest exception during test", e);
 			Element error = e.getErrorXML();
@@ -258,6 +263,7 @@ public class AIPIngestPipelineTest {
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/coll_mods.xml"));
 		Agent user = new PersonAgent(new PID("cdr-test:142"), "Testy Testerson", "test");
+		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
 		SingleFolderSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/test/container/path";
@@ -277,7 +283,7 @@ public class AIPIngestPipelineTest {
 		when(this.tripleStoreQueryService.verify(eq(containerPID))).thenReturn(containerPID);
 
 		try {
-			aip = this.getSingleFolderSIPProcessor().createAIP(sip);
+			aip = this.getSingleFolderSIPProcessor().createAIP(sip, record);
 		} catch (IngestException e) {
 			throw new Error(e);
 		}
@@ -287,7 +293,7 @@ public class AIPIngestPipelineTest {
 
 		try {
 			aip = this.getAipIngestPipeline().processAIP(aip);
-			aip.prepareIngest("this is a test", "testuser");
+			aip.prepareIngest();
 		} catch (IngestException e) {
 			log.error("ingest exception during test", e);
 			fail("get exception processing AIP" + e.getMessage());

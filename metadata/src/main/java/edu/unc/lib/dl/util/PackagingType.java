@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.util;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 public enum PackagingType {
 	METS_CDR("http://cdr.unc.edu/METS/profiles/Simple"),
 	METS_DSPACE_SIP_2("http://purl.org/net/sword/terms/METSDSpaceSIP"),
@@ -29,6 +32,14 @@ public enum PackagingType {
 	
 	public String getUri(){
 		return this.uri;
+	}
+	
+	public URI toURI() {
+		try {
+			return new URI(this.uri);
+		} catch (URISyntaxException e) {
+			throw new Error("Unexpected", e);
+		}
 	}
 	
 	public boolean equals(String value){

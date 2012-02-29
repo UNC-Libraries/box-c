@@ -49,17 +49,18 @@ public class ContentModelHelper {
 	 *
 	 */
 	public static enum CDRProperty {
-		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), defaultWebObject("defaultWebObject"), sourceData(
-				"sourceData"), indexText("indexText"), onyen("onyen"), slug("slug"), sortOrder("sortOrder"), permitMetadataCreate(
-				"permitMetadataCreate"), permitMetadataRead("permitMetadataRead"), permitMetadataUpdate(
-				"permitMetadataUpdate"), permitMetadataDelete("permitMetadataDelete"), permitOriginalsCreate(
-				"permitOriginalsCreate"), permitOriginalsRead("permitOriginalsRead"), permitOriginalsUpdate(
-				"permitOriginalsUpdate"), permitOriginalsDelete("permitOriginalsDelete"), permitDerivativesCreate(
-				"permitDerivativesCreate"), permitDerivativesRead("permitDerivativesRead"), permitDerivativesUpdate(
-				"permitDerivativesUpdate"), permitDerivativesDelete("permitDerivativesDelete"), inheritPermissions(
-				"inheritPermissions"), hasSourceMimeType("hasSourceMimeType"), hasSourceFileSize("hasSourceFileSize"), hasSurrogate(
-				"hasSurrogate"), thumb("thumb"), derivedJP2("derivedJP2"), techData("techData"), originalDeposit(
-				"originalDeposit");
+		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), defaultWebObject("defaultWebObject"), sourceData("sourceData"), indexText("indexText"), onyen(
+				"onyen"), slug("slug"), sortOrder("sortOrder"), permitMetadataCreate("permitMetadataCreate"), permitMetadataRead(
+				"permitMetadataRead"), permitMetadataUpdate("permitMetadataUpdate"), permitMetadataDelete(
+				"permitMetadataDelete"), permitOriginalsCreate("permitOriginalsCreate"), permitOriginalsRead(
+				"permitOriginalsRead"), permitOriginalsUpdate("permitOriginalsUpdate"), permitOriginalsDelete(
+				"permitOriginalsDelete"), permitDerivativesCreate("permitDerivativesCreate"), permitDerivativesRead(
+				"permitDerivativesRead"), permitDerivativesUpdate("permitDerivativesUpdate"), permitDerivativesDelete(
+				"permitDerivativesDelete"), inheritPermissions("inheritPermissions"), hasSourceMimeType("hasSourceMimeType"),
+				hasSourceFileSize("hasSourceFileSize"), hasSurrogate("hasSurrogate"), thumb("thumb"), derivedJP2("derivedJP2"),
+				techData("techData"), 
+				depositedOnBehalfOf("depositedOnBehalfOf"), depositMethod("depositMethod"),
+				depositPackageType("depositPackageType"), depositPackageSubType("depositPackageSubType");
 		private URI uri;
 
 		CDRProperty(String suffix) {
@@ -235,7 +236,7 @@ public class ContentModelHelper {
 	 */
 	public static enum Relationship {
 		contains(JDOMNamespaceUtil.CDR_NS, "contains"), member(JDOMNamespaceUtil.CDR_NS, "member"), owner(
-				JDOMNamespaceUtil.CDR_NS, "owner");
+				JDOMNamespaceUtil.CDR_NS, "owner"), originalDeposit(JDOMNamespaceUtil.CDR_NS, "originalDeposit"), depositedBy(JDOMNamespaceUtil.CDR_NS, "depositedBy");
 		private URI uri;
 
 		Relationship(Namespace ns, String suffix) {

@@ -16,17 +16,14 @@
 package edu.unc.lib.dl.services;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.List;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.PersonAgent;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
-import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 public interface DigitalObjectManager {
@@ -50,7 +47,7 @@ public interface DigitalObjectManager {
 	 *           a log message for this ingest action
 	 * @return a log of ingest events
 	 */
-	public abstract IngestResult addToIngestQueue(SubmissionInformationPackage sip, Agent user, String message) throws IngestException;
+	public abstract IngestResult addToIngestQueue(SubmissionInformationPackage sip, DepositRecord record) throws IngestException;
 
 	/**
 	 * Adds a relationship between two repository objects.
@@ -169,7 +166,7 @@ public interface DigitalObjectManager {
 	 *           the ingest message
 	 * @return the PID of the object added
 	 */
-	public abstract PID addWhileBlocking(SubmissionInformationPackage sip, Agent user, String message)
+	public abstract IngestResult addWhileBlocking(SubmissionInformationPackage sip, DepositRecord record)
 			throws IngestException;
 
 }

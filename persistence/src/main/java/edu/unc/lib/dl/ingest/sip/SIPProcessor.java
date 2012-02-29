@@ -17,9 +17,9 @@ package edu.unc.lib.dl.ingest.sip;
 
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
-import edu.unc.lib.dl.util.PremisEventLogger;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 
 public interface SIPProcessor {
-	public ArchivalInformationPackage createAIP(SubmissionInformationPackage sip)
+	public ArchivalInformationPackage createAIP(SubmissionInformationPackage sip, DepositRecord record)
 			throws IngestException;
 }

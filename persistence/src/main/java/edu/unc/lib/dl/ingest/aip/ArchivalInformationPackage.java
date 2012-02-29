@@ -80,20 +80,8 @@ public interface ArchivalInformationPackage {
 	 * @param submitter
 	 * @throws IngestException
 	 */
-	void prepareIngest(String message, String submitter) throws IngestException;
+	void prepareIngest() throws IngestException;
 
-	/**
-	 * Gets the ID of the deposit.
-	 * 
-	 * @return
-	 */
-	public PID getDepositID();
-
-	/**
-	 * Sets the ID of the deposit.
-	 * 
-	 * @param pid
-	 */
-	public void setDepositID(PID pid);
+	public DepositRecord getDepositRecord();
 
 }

@@ -33,6 +33,7 @@ import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.AIPException;
 import edu.unc.lib.dl.ingest.aip.AIPImpl;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.aip.RDFAwareAIPImpl;
 import edu.unc.lib.dl.pidgen.PIDGenerator;
 import edu.unc.lib.dl.services.AgentManager;
@@ -75,7 +76,7 @@ public class AgentSIPProcessor implements SIPProcessor {
 	}
 
 	@Override
-	public ArchivalInformationPackage createAIP(SubmissionInformationPackage in)
+	public ArchivalInformationPackage createAIP(SubmissionInformationPackage in, DepositRecord record)
 			throws IngestException {
 		log.debug("starting AgentSIPProcessor");
 		AgentSIP sip = (AgentSIP) in;
@@ -83,9 +84,9 @@ public class AgentSIPProcessor implements SIPProcessor {
 		// GET PIDS
 		Iterator<PID> newpids = this.getPidGenerator().getNextPIDs(sip.getAgents().size()).iterator();
 		HashMap<PID, Agent> pid2agent = new HashMap<PID, Agent>();
-
+		
 		// MAKE AND SAVE FOXML DOCS, set all as top pids
-		AIPImpl aip = new AIPImpl();
+		AIPImpl aip = new AIPImpl(record);
 		for (Agent p : sip.getAgents()) {
 			PID pid = newpids.next();
 			if (p.getPID() != null) {

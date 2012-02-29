@@ -531,7 +531,6 @@
 			<list>
 				<bean class="edu.unc.lib.dl.ingest.aip.LogIdentifierAssignmentFilter" />
 				<bean class="edu.unc.lib.dl.ingest.aip.CheckAIPRequirementsFilter" />
-				<bean class="edu.unc.lib.dl.ingest.aip.SetOriginalDepositIDFilter"/>
 				<bean class="edu.unc.lib.dl.ingest.aip.CheckContainerFilter">
 					<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 				</bean>
@@ -543,6 +542,7 @@
 				</bean>
 				<bean class="edu.unc.lib.dl.ingest.aip.DublinCoreCrosswalkFilter" />
 				<!-- <bean class="edu.unc.lib.dl.ingest.aip.SerializeEventLogsFilter"/> -->
+				<bean class="edu.unc.lib.dl.ingest.aip.SetOriginalDepositRecordFilter"/>
 			</list>
 		</property>
 	</bean>

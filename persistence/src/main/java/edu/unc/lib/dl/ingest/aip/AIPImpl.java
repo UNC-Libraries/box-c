@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +33,8 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
+import edu.unc.lib.dl.agents.Agent;
+import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.services.AgentManager;
@@ -61,7 +62,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 	private final Map<PID, ContainerPlacement> topPID2Placement = new HashMap<PID, ContainerPlacement>();
 	private boolean sendEmail = false;
 	private List<URI> emailRecipients = new ArrayList<URI>();
-	private PID depositID = null;
+	private DepositRecord depositRecord = null;
 
 	/**
 	 * Makes an AIP with a pre-populated prep dir.
@@ -69,16 +70,16 @@ public class AIPImpl implements ArchivalInformationPackage {
 	 * @param prepDir
 	 *           directory containing FOXML files and the data directory
 	 */
-	public AIPImpl(File prepDir) {
-		depositID = new PID(String.format("uuid:%1$s", UUID.randomUUID()));
+	public AIPImpl(File prepDir, DepositRecord depositRecord) {
+		this.depositRecord = depositRecord;
 		this.prepDir = prepDir;
 	}
 
 	/**
 	 * Makes an AIP with a empty prep dir
 	 */
-	public AIPImpl() {
-		depositID = new PID(String.format("uuid:%1$s", UUID.randomUUID()));
+	public AIPImpl(DepositRecord depositRecord) {
+		this.depositRecord = depositRecord;
 		try {
 			this.prepDir = FileUtils.createTempDirectory("ingest-prep");
 		} catch (IOException e) {
@@ -155,10 +156,9 @@ public class AIPImpl implements ArchivalInformationPackage {
 	}
 
 	@Override
-	public void prepareIngest(String message, String submitter) throws IngestException {
-		// write ingest properties
+	public void prepareIngest() throws IngestException {
 		try {
-			// long managedBytes = 0;
+			// write out PREMIS events
 			File premisDir = new File(this.prepDir, "premisEvents");
 			premisDir.mkdir();
 			for (PID pid : this.getPIDs()) {
@@ -167,8 +167,9 @@ public class AIPImpl implements ArchivalInformationPackage {
 				// TODO countManagedBytes() how to efficiently calculate?
 				this.saveFOXMLDocument(pid, doc);
 			}
+			// write ingest properties
 			IngestProperties props = new IngestProperties(this.prepDir);
-			props.setOriginalDepositId(this.depositID.getPid());
+			props.setOriginalDepositId(this.depositRecord.getPid().getPid());
 			if (this.emailRecipients != null) {
 				List<String> recipients = new ArrayList<String>();
 				for (URI r : this.emailRecipients) {
@@ -177,8 +178,15 @@ public class AIPImpl implements ArchivalInformationPackage {
 				props.setEmailRecipients(recipients.toArray(new String[1]));
 			}
 			props.setContainerPlacements(topPID2Placement);
-			props.setMessage(message);
+			props.setMessage(this.depositRecord.getMessage());
 			// props.setManagedBytes(managedBytes);
+			String submitter = null;
+			Agent user = depositRecord.getDepositedBy();
+			if(PersonAgent.class.isInstance(user)) {
+				submitter = ((PersonAgent)user).getOnyen();
+			} else {
+				submitter = user.getName();
+			}
 			props.setSubmitter(submitter);
 			props.setSubmissionTime(System.currentTimeMillis());
 			props.save();
@@ -345,12 +353,8 @@ public class AIPImpl implements ArchivalInformationPackage {
 	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getDepositID()
 	 */
 	@Override
-	public PID getDepositID() {
-		return this.depositID;
-	}
-
-	public void setDepositID(PID depositID) {
-		this.depositID = depositID;
+	public DepositRecord getDepositRecord() {
+		return this.depositRecord;
 	}
 
 }
