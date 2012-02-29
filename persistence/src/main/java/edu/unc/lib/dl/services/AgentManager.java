@@ -66,7 +66,7 @@ public class AgentManager extends AgentFactory {
 		addlist.add(group);
 		sip.setAgents(addlist);
 
-		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord(user, AgentFactory.getAdministrativeGroupAgentStub(), DepositMethod.Unspecified);
 		IngestResult resp = this.getDigitalObjectManager().addWhileBlocking(sip, record);		
 		log.debug("response is:" + resp);
 		log.debug("response size:" + resp.derivedPIDs.size());
@@ -125,7 +125,7 @@ public class AgentManager extends AgentFactory {
 		addlist.add(person);
 		sip.setAgents(addlist);
 
-		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord(user, AgentFactory.getAdministrativeGroupAgentStub(), DepositMethod.Unspecified);
 		IngestResult resp = this.getDigitalObjectManager().addWhileBlocking(sip, record);
 		log.debug("response is:" + resp);
 		return this.getPersonAgents(Collections.singletonList(resp.derivedPIDs.iterator().next()), false)
@@ -159,7 +159,7 @@ public class AgentManager extends AgentFactory {
 		addlist.add(software);
 		sip.setAgents(addlist);
 
-		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord(user, AgentFactory.getAdministrativeGroupAgentStub(), DepositMethod.Unspecified);
 		IngestResult resp = this.getDigitalObjectManager().addWhileBlocking(sip, record);
 		log.debug("response is:" + resp);
 		return this.getSoftwareAgents(Collections.singletonList(resp.derivedPIDs.iterator().next())).get(0);

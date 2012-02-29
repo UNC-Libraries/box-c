@@ -145,12 +145,12 @@ public class BatchIngestServiceTest {
 			reset(this.managementClient);
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
 			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
-			DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+			DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 			PID container = new PID("test:container");
-			METSPackageSIP sip1 = new METSPackageSIP(container, test, user, true);
+			METSPackageSIP sip1 = new METSPackageSIP(container, test, true);
 
 			test = tempCopy(new File("src/test/resources/simple.zip"));
-			METSPackageSIP sip2 = new METSPackageSIP(container, test, user, true);
+			METSPackageSIP sip2 = new METSPackageSIP(container, test, true);
 
 			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
 			List<String> personrow = new ArrayList<String>();
@@ -204,9 +204,9 @@ public class BatchIngestServiceTest {
 			reset(this.mailSender);
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
 			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
-			DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+			DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 			PID container = new PID("test:container");
-			METSPackageSIP sip = new METSPackageSIP(container, test, user, true);
+			METSPackageSIP sip = new METSPackageSIP(container, test, true);
 
 			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
 			List<String> personrow = new ArrayList<String>();
@@ -261,9 +261,9 @@ public class BatchIngestServiceTest {
 			});
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
 			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
-			DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+			DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 			PID container = new PID("test:container");
-			METSPackageSIP sip = new METSPackageSIP(container, test, user, true);
+			METSPackageSIP sip = new METSPackageSIP(container, test, true);
 
 			// define the fedora ingest behavior:
 			when(this.managementClient.ingest(any(Document.class), any(Format.class), any(String.class)))
