@@ -28,9 +28,11 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
+import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
  * Service which determines when to update individual items in Solr.
@@ -124,5 +126,20 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	@Override
 	public boolean isActive() {
 		return active;
+	}
+
+	@Override
+	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
+		EnhancementApplication lastApplied = null;
+		try {
+			Date timestamp = (Date)this.solrDataAccessLayer.getField(pid.getPid(), solrDataAccessLayer.getSolrSettings().getFieldName(SearchFieldKeys.TIMESTAMP));
+			lastApplied = new EnhancementApplication();
+			lastApplied.setLastApplied(timestamp);
+			lastApplied.setPid(pid);
+			lastApplied.setEnhancementClass(this.getClass());
+		} catch (SolrServerException e) {
+			throw new EnhancementException(e);
+		}
+		return lastApplied;
 	}
 }

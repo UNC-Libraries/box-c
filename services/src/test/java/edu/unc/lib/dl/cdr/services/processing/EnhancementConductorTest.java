@@ -33,6 +33,7 @@ import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
+import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
@@ -289,6 +290,12 @@ public class DelayService extends AbstractFedoraEnhancementService {
 		@Override
 		public boolean isStale(PID pid) throws EnhancementException {
 			return false;
+		}
+
+		@Override
+		public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
+			// TODO Auto-generated method stub
+			return null;
 		}
 		
 	}

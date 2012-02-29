@@ -20,6 +20,7 @@ import java.util.List;
 import org.jdom.Element;
 
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -71,6 +72,14 @@ public interface ObjectEnhancementService {
 	 * @return true if the object is stale w/respect to this enhancement
 	 */
 	public boolean isStale(PID pid) throws EnhancementException;
+	
+	/**
+	 * Determines the last date on which this service was applied to the object represented by pid.
+	 * @param pid
+	 * @return the most recent date this service was applied to object pid, or null if it has never been applied.
+	 * @throws EnhancementException
+	 */
+	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException;
 	
 	/**
 	 * @return true if this service is currently active

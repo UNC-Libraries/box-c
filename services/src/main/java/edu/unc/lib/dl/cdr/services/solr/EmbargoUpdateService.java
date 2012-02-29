@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
@@ -120,5 +121,10 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 
 	public void setWindowSizeHours(Integer windowSizeHours) {
 		this.windowSizeHours = windowSizeHours;
+	}
+
+	@Override
+	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
+		return null;
 	}
 }
