@@ -31,6 +31,7 @@ import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.PreIngestEventLogger;
 import edu.unc.lib.dl.ingest.sip.SingleFileSIP;
@@ -41,6 +42,7 @@ import edu.unc.lib.dl.schema.MetsSubmitIngestObject;
 import edu.unc.lib.dl.service.SubmitService;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.Constants;
+import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
@@ -87,7 +89,9 @@ public class SubmitServiceImpl implements SubmitService {
  			if(request.getMessage() != null) {
  				note = request.getMessage();
  			}
- 			digitalObjectManager.addToIngestQueue(sip, agent, note);
+ 			DepositRecord record = new DepositRecord(agent, DepositMethod.WebForm);
+ 			record.setMessage(note);
+ 			digitalObjectManager.addToIngestQueue(sip, record);
  		} catch (IOException e) {
  			logger.error("unexpected io error", e);
  			error = "There was an unexpected error processing your ingest:\n <br />"+e.getLocalizedMessage();
@@ -148,7 +152,9 @@ public class SubmitServiceImpl implements SubmitService {
  			sip.setMimeType(mediatedSubmitIngestObject.getMimetype());
  			sip.setModsXML(modsFile);
  			sip.setOwner(owner);
- 			digitalObjectManager.addToIngestQueue(sip, agent, "Added through UI");
+ 			DepositRecord record = new DepositRecord(agent, DepositMethod.WebForm);
+ 			record.setMessage("Added through UI");
+ 			digitalObjectManager.addToIngestQueue(sip, record);
  		} catch (IngestException e) {
  			error = e.getLocalizedMessage();
  		} catch (Exception e) {
@@ -234,7 +240,9 @@ public class SubmitServiceImpl implements SubmitService {
 			sip.setOwner(owner);
 			sip.setCollection(true);
 
-			digitalObjectManager.addWhileBlocking(sip, agent, "Added through UI");
+ 			DepositRecord record = new DepositRecord(agent, DepositMethod.WebForm);
+ 			record.setMessage("Added through UI");
+			digitalObjectManager.addWhileBlocking(sip, record);
 
 			request.setMessage(Constants.SUCCESS);
 

@@ -220,10 +220,10 @@ public class AgentFactory {
 		for (PID pid : pids) {
 			if (first) {
 				first = false;
-				q.append(" $pid <mulgara:is> <info:fedora/").append(pid.getPid()).append(">");
+				q.append(" $pid <mulgara:is> <").append(pid.getURI()).append(">");
 			} else {
 				q.append(" or");
-				q.append(" $pid <mulgara:is> <info:fedora/").append(pid.getPid()).append(">");
+				q.append(" $pid <mulgara:is> <").append(pid.getURI()).append(">");
 			}
 		}
 		if (pids.size() > 1) {

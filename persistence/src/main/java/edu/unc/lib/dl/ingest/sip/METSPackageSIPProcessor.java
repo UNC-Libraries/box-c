@@ -58,10 +58,10 @@ import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.AIPException;
 import edu.unc.lib.dl.ingest.aip.AIPImpl;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.aip.RDFAwareAIPImpl;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.JDOMXPathUtil;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
 import edu.unc.lib.dl.util.PathUtil;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
@@ -124,7 +124,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 	}
 
 	@Override
-	public ArchivalInformationPackage createAIP(SubmissionInformationPackage sip)
+	public ArchivalInformationPackage createAIP(SubmissionInformationPackage sip, DepositRecord record)
 			throws IngestException {
 		METSPackageSIP metsPack = (METSPackageSIP) sip;
 
@@ -158,7 +158,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 
 		// CONVERT METS DOCUMENT INTO AN AIP
 		ArchivalInformationPackage aip = transformMETS(metsPack, mets,
-				metsPack.isAllowIndexing());
+				metsPack.isAllowIndexing(), record);
 
 		// increment any duplicate slugs
 		RDFAwareAIPImpl rdfaip = null;
@@ -201,10 +201,8 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		// extract the METS OBJID, use for depositID if in uuid namespace
 		String objid = mets.getRootElement().getAttributeValue("OBJID");
 		if (objid != null && objid.startsWith("uuid:")) {
-			aip.setDepositID(new PID(objid));
-		} else { // no uuid for deposit, assign one
-			aip.setDepositID(this.getPidGenerator().getNextPID());
-		}
+			aip.getDepositRecord().setPid(new PID(objid));
+		} // else a deposit PID is already generated.. 
 
 		// move over pre-ingest events
 		if (metsPack.getPreIngestEventLogger().hasEvents()) {
@@ -245,9 +243,11 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 	}
 
 	private AIPImpl transformMETS(METSPackageSIP metsPack, Document mets,
-			boolean allowIndexing) throws IngestException {
+			boolean allowIndexing, DepositRecord record) throws IngestException {
 
-		AIPImpl aip = new AIPImpl(metsPack.getBatchPrepDir());
+		AIPImpl aip = new AIPImpl(metsPack.getBatchPrepDir(), record);
+		
+		// TODO Ben, this is where you might set the packaging type and subtype on the record object.
 
 		// count the object divs in METS
 		int num = 0;

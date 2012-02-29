@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.ingest.sip;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,9 +35,11 @@ import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.AIPException;
 import edu.unc.lib.dl.ingest.aip.AIPImpl;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.aip.RDFAwareAIPImpl;
 import edu.unc.lib.dl.util.Checksum;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
 import edu.unc.lib.dl.util.PathUtil;
 import edu.unc.lib.dl.util.PremisEventLogger;
@@ -51,12 +54,9 @@ public class SingleFileSIPProcessor implements SIPProcessor {
 	private TripleStoreQueryService tripleStoreQueryService = null;
 
 	@Override
-	public ArchivalInformationPackage createAIP(SubmissionInformationPackage in)
+	public ArchivalInformationPackage createAIP(SubmissionInformationPackage in, DepositRecord record)
 			throws IngestException {
 		SingleFileSIP sip = (SingleFileSIP) in;
-		AIPImpl aip = new AIPImpl(sip.getData());
-		sip.setDiscardFilesOnDestroy(false);
-
 		// CHECK FOR MISSING OR TRUNCATED SIP DATA
 		if (sip.getContainerPID() == null) {
 			throw new IngestException("Please specify a container path");
@@ -67,6 +67,24 @@ public class SingleFileSIPProcessor implements SIPProcessor {
 		} else if (sip.getModsXML() == null || !sip.getModsXML().exists() || sip.getModsXML().length() == 0) {
 			throw new IngestException("MODS metadata file not found");
 		}
+		
+		File batchPrepDir = null;
+		try {
+			batchPrepDir = FileUtils.createTempDirectory("ingest-prep");
+		} catch(IOException e) {
+			throw new IngestException("Unexpected UI error", e);
+		}
+		File sipDataSubDir = new File(batchPrepDir, "data");
+		sipDataSubDir.mkdir();
+		
+		File relocatedData = new File(sipDataSubDir, sip.getData().getName());
+		try {
+			FileUtils.renameOrMoveTo(sip.getData(), relocatedData);
+		} catch (IOException e1) {
+			throw new IngestException("Unexpected IO exception", e1);
+		}
+		AIPImpl aip = new AIPImpl(batchPrepDir, record);
+		sip.setDiscardFilesOnDestroy(false);
 
 		PID pid = this.getPidGenerator().getNextPID();
 
@@ -79,7 +97,7 @@ public class SingleFileSIPProcessor implements SIPProcessor {
 		if (sip.getMd5checksum() != null && sip.getMd5checksum().trim().length() > 0) {
 			Checksum checker = new Checksum();
 			try {
-				String sum = checker.getChecksum(sip.getData());
+				String sum = checker.getChecksum(relocatedData);
 				if (!sum.equals(sip.getMd5checksum().toLowerCase())) {
 					String msg = "Checksum failed for data file (SIP specified '" + sip.getMd5checksum()
 							+ "', but ingest got '" + sum + "'.)";
@@ -90,10 +108,10 @@ public class SingleFileSIPProcessor implements SIPProcessor {
 			} catch (IOException e) {
 				throw new IngestException("Checksum processor failed to find data file.");
 			}
-			locator = FOXMLJDOMUtil.makeLocatorDatastream("DATA_FILE", "M", "file:///stub", sip.getMimeType(), "URL",
+			locator = FOXMLJDOMUtil.makeLocatorDatastream("DATA_FILE", "M", relocatedData.toURI().toString(), sip.getMimeType(), "URL",
 					sip.getFileLabel(), true, sip.getMd5checksum());
 		} else {
-			locator = FOXMLJDOMUtil.makeLocatorDatastream("DATA_FILE", "M", "file:///stub", sip.getMimeType(), "URL",
+			locator = FOXMLJDOMUtil.makeLocatorDatastream("DATA_FILE", "M", relocatedData.toURI().toString(), sip.getMimeType(), "URL",
 					sip.getFileLabel(), true, null);
 		}
 
