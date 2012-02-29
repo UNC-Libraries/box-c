@@ -36,6 +36,7 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 	private String mimeType = null;
 	private File modsXML = null;
 	private Agent owner = null;
+	private Agent depositor = null;
 	private boolean discardFilesOnDestroy = true;
 
 	public boolean isDiscardFilesOnDestroy() {
@@ -166,5 +167,10 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 	 */
 	public void setOwner(Agent owner) {
 		this.owner = owner;
+	}
+
+	@Override
+	public Agent getDepositor() {
+		return depositor;
 	}
 }

@@ -123,6 +123,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public ArchivalInformationPackage createAIP(SubmissionInformationPackage sip, DepositRecord record)
 			throws IngestException {
@@ -413,10 +414,10 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 				return false;
 			}
 		};
+		@SuppressWarnings("rawtypes")
 		Iterator desc = svrl.getDescendants(failedAsserts);
 		if (desc.hasNext()) {
 			StringBuilder msg = new StringBuilder();
-			XMLOutputter out = new XMLOutputter();
 			msg.append("Validation of METS failed against submission profile: "
 					+ profileUrl);
 			while (desc.hasNext()) {
