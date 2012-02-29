@@ -21,6 +21,7 @@ import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 public class PackagedAIPSIP implements SubmissionInformationPackage {
 	private ArchivalInformationPackage aip = null;
 	private Agent owner = null;
+	private Agent depositor = null;
 
 	PackagedAIPSIP(Agent owner, ArchivalInformationPackage aip) {
 		this.owner = owner;
@@ -33,6 +34,14 @@ public class PackagedAIPSIP implements SubmissionInformationPackage {
 
 	public Agent getOwner() {
 		return this.owner;
+	}
+
+	public Agent getDepositor() {
+		return depositor;
+	}
+
+	public void setDepositor(Agent depositor) {
+		this.depositor = depositor;
 	}
 
 }

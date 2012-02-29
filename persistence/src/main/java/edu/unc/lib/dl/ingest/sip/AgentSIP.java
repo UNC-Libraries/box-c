@@ -31,4 +31,13 @@ public class AgentSIP implements SubmissionInformationPackage {
 		this.agents = agents;
 	}
 
+	@Override
+	public Agent getOwner() {
+		return null;
+	}
+
+	@Override
+	public Agent getDepositor() {
+		return null;
+	}
 }

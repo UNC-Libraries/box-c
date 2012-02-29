@@ -59,16 +59,20 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		if (collectionURI == null)
 			throw new SwordServerException("No collection URI was provided");
 
-		String agentName = null;
-		if (auth.getOnBehalfOf() != null){
-			agentName = auth.getOnBehalfOf();
-		} else {
-			agentName = auth.getUsername();
-		};
-		Agent agent = agentFactory.findPersonByOnyen(agentName, false);
-		if (agent == null){
-			throw new SwordAuthException("Unable to find a user matching the provided credentials, " + agentName);
+		Agent depositor = agentFactory.findPersonByOnyen(auth.getUsername(), false);
+		if (depositor == null){
+			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, " + auth.getUsername());
 		}
+		Agent owner = null;
+		if (auth.getOnBehalfOf() != null){
+			owner = agentFactory.findPersonByOnyen(auth.getOnBehalfOf(), false);
+			if (owner == null){
+				throw new SwordAuthException("Unable to find a user matching OnBehalfOf, " + auth.getOnBehalfOf());
+			}
+		} else {
+			owner = depositor;
+		}
+		
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
 
 		String pidString = null;
@@ -99,7 +103,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		if (PackagingType.METS_CDR.equals(deposit.getPackaging()) || PackagingType.METS_DSPACE_SIP_2.equals(deposit.getPackaging())
 				|| PackagingType.METS_DSPACE_SIP_1.equals(deposit.getPackaging())){
 			try {
-				return doMETSDeposit(containerPID, deposit, auth, configImpl, agent);
+				return doMETSDeposit(containerPID, deposit, auth, configImpl, depositor, owner);
 			} catch (FilesDoNotMatchManifestException e){
 				LOG.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest of package type " + deposit.getPackaging(), e);
 				throw new SwordError("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.", e);
@@ -114,7 +118,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	}
 
 	private DepositReceipt doMETSDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
-			SwordConfigurationImpl config, Agent agent) throws Exception {
+			SwordConfigurationImpl config, Agent depositor, Agent owner) throws Exception {
 
 		LOG.debug("Preparing to perform a CDR METS deposit to " + containerPID.getPid());
 
@@ -125,10 +129,10 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			LOG.debug("Working with temporary file: " + deposit.getFile().getAbsolutePath());
 		}
 		
-		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), agent, isZip);
+		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), depositor, owner, isZip);
 		// PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
 
-		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, agent, "Added through SWORD");
+		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, owner, "Added through SWORD");
 
 		DepositReceipt receipt = new DepositReceipt();
 		receipt.setOriginalDeposit("", deposit.getMimeType());

@@ -61,7 +61,6 @@ import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.ingest.aip.RDFAwareAIPImpl;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.JDOMXPathUtil;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
 import edu.unc.lib.dl.util.PathUtil;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
@@ -123,6 +122,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public ArchivalInformationPackage createAIP(SubmissionInformationPackage sip)
 			throws IngestException {
@@ -413,10 +413,10 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 				return false;
 			}
 		};
+		@SuppressWarnings("rawtypes")
 		Iterator desc = svrl.getDescendants(failedAsserts);
 		if (desc.hasNext()) {
 			StringBuilder msg = new StringBuilder();
-			XMLOutputter out = new XMLOutputter();
 			msg.append("Validation of METS failed against submission profile: "
 					+ profileUrl);
 			while (desc.hasNext()) {
