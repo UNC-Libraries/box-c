@@ -217,15 +217,19 @@ public class IngestServiceRestController extends
 					lastLine = line;
 					countLines++;
 				}
-				String[] lastarray = lastLine.split("\\t");
-				if (BatchIngestTask.CONTAINER_UPDATED_CODE.equals(lastarray[1])) {
-					job.put("worked", c);
-				} else {
-					if (lastarray.length > 2) {
-						job.put("worked", countLines);
+				if(lastLine != null) {
+					String[] lastarray = lastLine.split("\\t");
+					if (BatchIngestTask.CONTAINER_UPDATED_CODE.equals(lastarray[1])) {
+						job.put("worked", c);
 					} else {
-						job.put("worked", countLines - 1);
+						if (lastarray.length > 2) {
+							job.put("worked", countLines);
+						} else {
+							job.put("worked", countLines - 1);
+						}
 					}
+				} else {
+					job.put("worked", countLines);
 				}
 				job.put("startTime", props.getStartTime());
 				job.put("running", false);

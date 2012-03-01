@@ -85,7 +85,7 @@ public class SetOriginalDepositRecordFilter implements AIPIngestFilter {
 		// add manifest data stream
 		if (dr.getManifest() != null) {
 			Element locator = FOXMLJDOMUtil.makeLocatorDatastream(
-					"DATA_MANIFEST", "M", dr.getManifest().toURI().toString(),
+					"DATA_MANIFEST", "M", dr.getManifest().getName(),
 					"text/xml", "URL", "Deposit Manifest", false, null);
 			foxml.getRootElement().addContent(locator);
 		}
