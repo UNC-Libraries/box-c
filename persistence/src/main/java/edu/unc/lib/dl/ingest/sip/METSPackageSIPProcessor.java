@@ -63,6 +63,7 @@ import edu.unc.lib.dl.ingest.aip.RDFAwareAIPImpl;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
+import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PathUtil;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -142,12 +143,23 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		} catch (JDOMException e) {
 			throw new IngestException("Cannot read parse METS file", e);
 		}
-
+		
 		// VALIDATE METS AGAINST A PROFILE
 		String profile = validateProfile(mets);
 
 		// VALIDATE PACKAGED FILES AGAINST METS MANIFEST
 		this.getMetsPackageFileValidator().validateFiles(mets, metsPack);
+		
+		record.setManifest(metsPack.getMetsFile());
+		if(record.getPackagingType() == null) {
+			PackagingType recognizedType = null;
+			for(PackagingType t : PackagingType.values()) {
+				if(t.equals(profile)) {
+					record.setPackagingType(t);
+					break;
+				}
+			}
+		}
 
 		// TODO: replace named repository with an agent object representing
 		// ingest

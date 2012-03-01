@@ -28,6 +28,8 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.unc.lib.dl.cdr.services.processing.ServiceConductor;
 import edu.unc.lib.dl.cdr.services.processing.ServicesThreadPoolExecutor;
+import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.services.BatchFailedException;
 import edu.unc.lib.dl.services.BatchIngestQueue;
 import edu.unc.lib.dl.services.BatchIngestTask;
 import edu.unc.lib.dl.services.BatchIngestTaskFactory;
@@ -93,7 +95,12 @@ public class BatchIngestService implements ServiceConductor {
 				LOG.debug("Adding new batch ingest task to the queue: "+dir.getAbsolutePath());
 				BatchIngestTask newtask = this.batchIngestTaskFactory.createTask();
 				newtask.setBaseDir(dir);
-				newtask.init();
+				try {
+					newtask.init();
+				} catch(BatchFailedException e) {
+					LOG.error("Batch ingest task failed to initialize", e);
+					break;
+				}
 				newtask.setBatchIngestQueue(getBatchIngestQueue());
 				this.executor.execute(newtask);
 			}
