@@ -189,7 +189,7 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 		String query = null;
 		try {
 			// replace model URI and PID tokens
-			query = this.readFileAsString("thumb-last-applied.sparql");
+			query = this.readFileAsString("thumbnail-last-applied.sparql");
 			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid
 					.getURI());
 		} catch (IOException e) {
