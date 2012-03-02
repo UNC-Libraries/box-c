@@ -134,6 +134,7 @@
             <xsl:when test="@TYPE='Reference'">Reference</xsl:when>
             <xsl:when test="@TYPE='Bag'">Bag</xsl:when>
             <xsl:when test="@TYPE='SWORD Object'">Aggregate</xsl:when>
+            <xsl:when test="@TYPE='Aggregate Work'">Aggregate</xsl:when>
             <xsl:otherwise>
                 <xsl:message terminate="yes">Unrecognized METS div TYPE (<xsl:value-of
                         select="@TYPE"/>)</xsl:message>
