@@ -108,6 +108,8 @@
 				<prop key="/admin/">adminController</prop>
 				<prop key="/admin/status">adminController</prop>
 				<prop key="/admin/reindexsearch">reindexSearchController</prop>
+				<prop key="/services/rest/*">ajaxProxyController</prop>
+				<prop key="/services/rest/**/*">ajaxProxyController</prop>
 				<prop key="/*">passThroughController</prop>
 			</props>
 		</property>
@@ -232,6 +234,10 @@
 
 	<bean id="adminController" class="edu.unc.lib.dl.ui.AdminController">
 		<property name="uiWebService" ref="uiWebService"/>
+	</bean>
+	
+	<bean id="ajaxProxyController" class="edu.unc.lib.dl.ui.AjaxProxyController">
+		<property name="servicesUrl" value="https://${repository.host}${repository.port}/${services.context}/rest"/>
 	</bean>
 
 	<bean id="passThroughController" class="edu.unc.lib.dl.ui.PassThroughController"> </bean>
