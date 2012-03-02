@@ -107,13 +107,13 @@
             <sch:assert test="@LABEL or @DMDID">Disk divs MUST have a label or DMDID pointing to MODS with a title.</sch:assert>
             <sch:assert test="count($allFiles[@USE = 'DiskImage']) = 1 or count($allFiles) = 0 ">Disk divs MAY ONLY reference a single file with the USE of DiskImage.</sch:assert>
         </sch:rule>
-        <sch:rule context="m:div[ @TYPE = 'Folder' or @TYPE = 'AlphabetizedFolder' or (not(@TYPE) and (count(m:div) &gt; 0 or count(m:fptr) = 0)) ]">
+        <sch:rule context="m:div[ @TYPE = 'Folder' or @TYPE = 'Aggregate Work' or (not(@TYPE) and (count(m:div) &gt; 0 or count(m:fptr) = 0)) ]">
             <sch:let name="fileMatches" value="key('fileid',m:fptr/@FILEID)"/>
             <sch:let name="fileGrpMatch" value="key('filegrpid',m:fptr/@FILEID)/m:file"/>
             <sch:let name="nestedFileGrpMatch" value="key('nestedfilegrpid',m:fptr/@FILEID)/m:file"/>
             <sch:let name="allFiles" value="insert-before($fileMatches, 0, insert-before($fileGrpMatch, 0, $nestedFileGrpMatch))"/>      
-            <sch:assert test="@LABEL or @DMDID">Folders and AlphabetizedFolders MUST have a label or DMDID pointing to MODS with a title.</sch:assert>
-            <sch:assert test="count($allFiles) = 0 ">Folders MUST NOT reference a file.</sch:assert>
+            <sch:assert test="@LABEL or @DMDID">Folders and Aggregate Works MUST have a label or DMDID pointing to MODS with a title.</sch:assert>
+            <sch:assert test="count($allFiles) = 0 ">Folders and Aggregate Works MUST NOT reference a file.</sch:assert>
         </sch:rule>
         <sch:rule context="m:div[ @TYPE = 'Collection']">
             <sch:let name="fileMatches" value="key('fileid',m:fptr/@FILEID)"/>
@@ -137,7 +137,7 @@
             <sch:assert test="/m:mets/m:structLink/m:smLink[@xlink:from = concat('#',$ident)]">Reference divs MUST be identified in a smLink xlink:from attribute.</sch:assert>          
         </sch:rule>
         <sch:rule context="m:div">
-            <sch:assert test="not(@TYPE) or contains('Bag,Collection,Disk,Folder,AlphabetizedFolder,File,Reference', @TYPE)">The specified TYPE (<sch:value-of select="@TYPE"/>) MUST be one of Disk, Folder, AlphabetizedFolder, File or Reference.</sch:assert>
+            <sch:assert test="not(@TYPE) or contains('Bag,Collection,Disk,Folder,Aggregate Work,File,Reference', @TYPE)">The specified TYPE (<sch:value-of select="@TYPE"/>) MUST be one of Disk, Folder, Aggregate Work, File or Reference.</sch:assert>
         </sch:rule>
         <sch:rule context="m:div[ not(@TYPE) and (count(m:fptr) &gt; 0 and count(m:div) &gt; 0) ]">
             <sch:assert test="false">A div without a TYPE cannot contain both other divs and fptrs.</sch:assert>
