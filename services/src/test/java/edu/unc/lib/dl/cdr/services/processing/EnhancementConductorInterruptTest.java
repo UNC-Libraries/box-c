@@ -31,6 +31,7 @@ import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
@@ -166,6 +167,12 @@ public class EnhancementConductorInterruptTest extends Assert {
 		@Override
 		public boolean isStale(PID pid) throws EnhancementException {
 			return false;
+		}
+
+		@Override
+		public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
+			// TODO Auto-generated method stub
+			return null;
 		}
 	}
 	

@@ -1,0 +1,10 @@
+PREFIX fedora-view: <info:fedora/fedora-system:def/view#>  
+PREFIX cdr-base: <http://cdr.unc.edu/definitions/1.0/base-model.xml#> 
+SELECT ?lastModified
+FROM <%1$s>
+WHERE 
+{
+	?pid cdr-base:thumb ?techDS . 
+    ?techDS fedora-view:lastModifiedDate ?lastModified .  
+    FILTER (?pid = <%2$s>)
+}

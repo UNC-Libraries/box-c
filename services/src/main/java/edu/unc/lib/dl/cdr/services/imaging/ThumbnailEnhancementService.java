@@ -29,6 +29,7 @@ import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.AbstractXMLEventMessage;
+import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
@@ -180,5 +181,32 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 	public boolean isStale(PID pid) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
+		String query = null;
+		try {
+			// replace model URI and PID tokens
+			query = this.readFileAsString("thumbnail-last-applied.sparql");
+			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid
+					.getURI());
+		} catch (IOException e) {
+			throw new EnhancementException(e);
+		}
+		@SuppressWarnings("unchecked")
+		List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results"))
+				.get("bindings");
+		if (bindings.size() == 0)
+			return null;
+		
+		EnhancementApplication lastApplied = new EnhancementApplication();
+		String lastModified = (String) ((Map) bindings.get(0).get("lastModified")).get("value");
+		lastApplied.setLastAppliedFromISO8601(lastModified);
+		lastApplied.setPid(pid);
+		lastApplied.setEnhancementClass(this.getClass());
+		
+		return lastApplied;
 	}
 }

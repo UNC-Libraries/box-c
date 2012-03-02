@@ -15,7 +15,7 @@ sub needsReplicaCheck($$);
 sub extractResources(@);
 
 # 600000; # 10 minutes for testing 
-my $sixMonthsInSeconds =  15778463; # six months in seconds
+my $sixMonthsInSeconds = 15778463; # six months in seconds
 
 my $goodoutputfile = "good_replication.log";
 my $badoutputfile = "bad_replication.log";
@@ -31,7 +31,7 @@ if ($#ARGV <= 0) {
 for my $i (1 .. $#ARGV) {
 	push(@requiredResources, $ARGV[$i]); 
 
-	print "$ARGV[$i]\n";
+	# print "$ARGV[$i]\n";
 }
 
 
@@ -53,6 +53,9 @@ open BADFILE, ">>", $badoutputfile or die $!;
 
 my $currentTime = time();
 my $sixMonthsAgo = $currentTime - $sixMonthsInSeconds;
+
+print GOODFILE "$currentTime\n";
+print BADFILE "$currentTime\n";
 
 # For each directory and file
 for my $i (0 .. $#var) {
@@ -93,13 +96,13 @@ for my $i (0 .. $#var) {
 				if(! exists $fileResources{$requiredResources[$i]}) 
 				{
 					$missingResource = 1;
-					print BADFILE "$currentdirectory/$filename is has not been replicated to $requiredResources[$i]\n";
+					print BADFILE "$currentdirectory/$filename has not been replicated to $requiredResources[$i]\n";
 				}
 			}
 
 			if(!$missingResource) 
 			{
-		        	print GOODFILE @lsListing;
+		        	print GOODFILE "$currentdirectory/$filename\n";
 	
 		  		my $updateAVU = `imeta add -d $currentdirectory/$filename cdrReplica $currentTime`;
 			}
@@ -114,12 +117,12 @@ for my $i (0 .. $#var) {
 
 sub extractResources(@) 
 {
-	my @lsListing = shift;
+	my (@lsListing) = @_;
 
 	my %fileResources = ();
 
-	for my $i (0 .. $#lsListing) {	
-		my @array = split(/\s+/,$lsListing[$i]);
+        foreach (@lsListing) { 	
+		my @array = split(/\s+/,$_);
 
 		# print "$array[0] v $array[1] v $array[2] v $array[3]\n";
 

@@ -14,7 +14,7 @@ sub trim($);
 sub needsChecksum($$);
 
 # 600000; # 10 minutes for testing 
-my $sixMonthsInSeconds =  15778463; # six months in seconds
+my $sixMonthsInSeconds = 15778463; # six months in seconds
 
 my $goodoutputfile = "good_checksums.log";
 my $badoutputfile = "bad_checksums.log";
@@ -44,6 +44,9 @@ open BADFILE, ">>", $badoutputfile or die $!;
 
 my $currentTime = time();
 my $sixMonthsAgo = $currentTime - $sixMonthsInSeconds;
+
+print GOODFILE "$currentTime\n";
+print BADFILE "$currentTime\n";
 
 # For each directory and file
 for my $i (0 .. $#var) {
