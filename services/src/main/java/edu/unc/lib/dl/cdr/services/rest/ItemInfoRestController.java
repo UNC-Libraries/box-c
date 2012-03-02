@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,8 +26,13 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections.ListUtils;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -37,6 +43,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor;
 import edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor;
@@ -73,7 +80,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		return result;
 	}
 	
-	@RequestMapping(value = "{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public @ResponseBody
 	Map<String, ? extends Object> getItemInfo(@PathVariable("id") String id) {
 		PID pid = new PID(id);
@@ -108,12 +115,15 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
 		
-		uris.put("serviceStatus", contextUrl + BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/enhancement");
-		uris.put("serviceStatus", contextUrl + BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/indexing");
+		uris.put("enhancement", contextUrl + BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/enhancement");
+		uris.put("indexing", contextUrl + BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/indexing");
+		uris.put("foxml", contextUrl + BASE_PATH + id + "/foxml");
+		uris.put("objectViewXML", contextUrl + BASE_PATH + id + "/objectViewXML");
+		uris.put("solrRecord", contextUrl + BASE_PATH + id + "/solrRecord");
 		// Determine if this item is a container, add link to its children
 		for (URI contentModel: contentModels){
 			if (ContentModelHelper.Model.CONTAINER.getURI().equals(contentModel)){
-				uris.put("serviceStatus", contextUrl + BASE_PATH + id + "/children");
+				uris.put("children", contextUrl + BASE_PATH + id + "/children");
 				break;
 			}
 		}
@@ -139,6 +149,43 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		return result;
 	}
 	
+	@RequestMapping(value = "{id}/foxml", method = RequestMethod.GET)
+	public void getItemFOXML(HttpServletResponse response, @PathVariable("id") String id) throws Exception {
+		response.setContentType("application/xml");
+		PrintWriter pr = response.getWriter();
+		XMLOutputter xmlOutputter = new XMLOutputter();
+		xmlOutputter.output(solrUpdateConductor.getFedoraDataService().getFoxmlViewXML(id), pr);
+	}
+	
+	@RequestMapping(value = "{id}/objectViewXML", method = RequestMethod.GET)
+	public void getItemObjectViewXML(HttpServletResponse response, @PathVariable("id") String id) throws Exception {
+		response.setContentType("application/xml");
+		PrintWriter pr = response.getWriter();
+		XMLOutputter xmlOutputter = new XMLOutputter();
+		xmlOutputter.output(solrUpdateConductor.getFedoraDataService().getObjectViewXML(id), pr);
+	}
+	
+	@RequestMapping(value = "{id}/solrRecord", method = RequestMethod.GET)
+	public void getItemSolrRecord(HttpServletResponse response, @PathVariable("id") String id){
+		response.setContentType("application/xml");
+		GetMethod method = new GetMethod(solrUpdateConductor.getSolrPath() + "/select");
+		method.setQueryString(new NameValuePair[] {
+				new NameValuePair("q", "id:" + solrUpdateConductor.getSolrSearchService().getSolrSettings().sanitize(id)),
+				new NameValuePair("omitHeader", "true") });
+		HttpClient httpClient = new HttpClient();
+		
+		try {
+			httpClient.executeMethod(method);
+			int b;
+			while ((b = method.getResponseBodyAsStream().read()) != -1) {
+				response.getOutputStream().write(b);
+			}
+			response.getOutputStream().flush();
+		} catch (Exception e){
+			LOG.error("Failed to get solr record for " + id, e);
+		}
+	}
+	
 	@RequestMapping(value = "{id}/" + SERVICE_STATUS_PATH, method = RequestMethod.GET)
 	public @ResponseBody
 	Map<String, ? extends Object> getItemStatus(@PathVariable("id") String id) {
@@ -147,19 +194,19 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
 		
-		uris.put("serviceStatus", contextUrl + BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/enhancement");
-		uris.put("serviceStatus", contextUrl + BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/indexing");
+		uris.put("enhancement", contextUrl + BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/enhancement");
+		uris.put("indexing", contextUrl + BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/indexing");
 		
 		return result;
 	}
 	
-	@RequestMapping(value = "/item/{id}/" + SERVICE_STATUS_PATH + "/enhancement", method = RequestMethod.GET)
+	@RequestMapping(value = "{id}/" + SERVICE_STATUS_PATH + "/enhancement", method = RequestMethod.GET)
 	public @ResponseBody
 	Map<String, ? extends Object> getItemEnhancementStatus(@PathVariable("id") String id) {
 		return getEnhancementProperties(id);
 	}
 	
-	@RequestMapping(value = "/item/{id}/serviceStatus/indexing", method = RequestMethod.GET)
+	@RequestMapping(value = "{id}/serviceStatus/indexing", method = RequestMethod.GET)
 	public @ResponseBody
 	Map<String, ? extends Object> getItemIndexingStatus(@PathVariable("id") String id) {
 		return getIndexingProperties(id);
@@ -167,6 +214,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 	
 	private Map<String, Object> getEnhancementProperties(String id){
 		Map<String, Object> result = new HashMap<String, Object>();
+		PID pid = new PID(id);
 		
 		List<Object> pendingTasks = new ArrayList<Object>();
 		result.put("enhancementTasks", pendingTasks);
@@ -220,7 +268,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		}
 		
 		List<String> applicableServices = new ArrayList<String>();
-		EnhancementMessage dummyMessage = new EnhancementMessage(id, null, null);
+		EnhancementMessage dummyMessage = new EnhancementMessage(id, "", "");
 		for (ObjectEnhancementService service: enhancementConductor.getServices()){
 			try {
 				if (service.isApplicable(dummyMessage)){
@@ -231,6 +279,20 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 			}
 		}
 		result.put("applicableServices", applicableServices);
+		
+		Map<String,String> appliedServices = new HashMap<String,String>();
+		//Determine what services have been applied.
+		for (ObjectEnhancementService service: enhancementConductor.getServices()){
+			try {
+				EnhancementApplication lastApplied = service.getLastApplied(pid);
+				if (lastApplied != null){
+					appliedServices.put(service.getClass().getName(), formatISO8601.format(lastApplied.getLastApplied()));
+				}
+			} catch (EnhancementException e) {
+				LOG.error("Failed to getLastApplied for " + pid.getPid(), e);
+			}
+		}
+		result.put("appliedServices", appliedServices);
 		
 		return result;
 	}
@@ -267,6 +329,10 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		addMessageList(id, enhancementList, contextUrl + SolrUpdateConductorRestController.BASE_PATH
 				+ SolrUpdateConductorRestController.QUEUED_PATH, null, pendingTasks);
 
+		Map<String, Object> uris = new HashMap<String, Object>();
+		result.put("uris", uris);
+		
+		// Add the last time the item was indexed
 		AccessGroupSet accessGroups = new AccessGroupSet();
 		accessGroups.add(AccessGroupConstants.ADMIN_GROUP);
 		Date lastIndexed = solrUpdateConductor.getSolrSearchService().getTimestamp(id, accessGroups);
@@ -276,8 +342,8 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		} else {
 			result.put("indexed", true);
 			result.put("lastIndexed", formatISO8601.format(lastIndexed));
+			uris.put("solrRecord", contextUrl + BASE_PATH + id + "/solrRecord");
 		}
-		
 		
 		return result;
 	}
