@@ -47,7 +47,7 @@ $.ajaxSetup ({
 	  cache: false  
 	});   
 var ajax_load = "<img src='../../images/load.gif' alt='loading...' />";
-var restUrl = "/services/rest/";
+var restUrl = "/cdradmin/ir/services/rest/";
 var autorefresh = null;
 $(function() {
 	$( "#servicetabs" ).tabs();
