@@ -1,3 +1,18 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.dl.ui;
 
 import java.io.IOException;
@@ -22,14 +37,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 /**
  * @author Pedro Assuncao (assuncas@gmail.com)
  * @May 26, 2009
- *
+ * 
  */
 @Controller
 public class AjaxProxyController {
 	private static final Log log = LogFactory.getLog(AjaxProxyController.class);
 	String servicesUrl = null;
 
-    public String getServicesUrl() {
+	public String getServicesUrl() {
 		return servicesUrl;
 	}
 
@@ -38,75 +53,72 @@ public class AjaxProxyController {
 	}
 
 	@SuppressWarnings("unchecked")
-    @RequestMapping(value = {"/services/rest", "/services/rest/*", "/services/rest/**/*"})
-    public final void proxyAjaxCall(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+	@RequestMapping(value = { "/services/rest", "/services/rest/*", "/services/rest/**/*" })
+	public final void proxyAjaxCall(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String url = request.getRequestURI().replaceFirst(".*/services/rest", this.servicesUrl);
-		if(request.getQueryString() != null) url = url + request.getQueryString();
-		
-		//log.warn("proxy is using url: "+url);
+		if (request.getQueryString() != null)
+			url = url + "?" + request.getQueryString();
 
-        OutputStreamWriter writer =
-                new OutputStreamWriter(response.getOutputStream());
-        HttpClient client = new HttpClient();
-        try {
+		// log.warn("proxy is using url: "+url);
 
-            HttpMethod method = null;
+		OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream());
+		HttpClient client = new HttpClient();
+		try {
 
-            // Split this according to the type of request
-            if (request.getMethod().equals("GET")) {
+			HttpMethod method = null;
 
-                method = new GetMethod(url);
+			// Split this according to the type of request
+			if (request.getMethod().equals("GET")) {
 
-            } else if (request.getMethod().equals("POST")) {
+				method = new GetMethod(url);
 
-                method = new PostMethod(url);
+			} else if (request.getMethod().equals("POST")) {
 
-                // Set any eventual parameters that came with our original
-                // request (POST params, for instance)
-                Enumeration<String> paramNames = request.getParameterNames();
-                while (paramNames.hasMoreElements()) {
+				method = new PostMethod(url);
 
-                    String paramName = paramNames.nextElement();
-                    ((PostMethod) method).setParameter(paramName, request
-                            .getParameter(paramName));
-                }
+				// Set any eventual parameters that came with our original
+				// request (POST params, for instance)
+				Enumeration<String> paramNames = request.getParameterNames();
+				while (paramNames.hasMoreElements()) {
 
-            } else {
+					String paramName = paramNames.nextElement();
+					((PostMethod) method).setParameter(paramName, request.getParameter(paramName));
+				}
 
-                throw new NotImplementedException(
-                        "This proxy only supports GET and POST methods.");
-            }
+			} else {
 
-            // Execute the method
-            client.executeMethod(method);
+				throw new NotImplementedException("This proxy only supports GET and POST methods.");
+			}
 
-            // Set the content type, as it comes from the server
-            Header[] headers = method.getResponseHeaders();
-            for (Header header : headers) {
+			// Execute the method
+			client.executeMethod(method);
 
-                if ("Content-Type".equalsIgnoreCase(header.getName())) {
+			// Set the content type, as it comes from the server
+			Header[] headers = method.getResponseHeaders();
+			for (Header header : headers) {
 
-                    response.setContentType(header.getValue());
-                }
-            }
+				if ("Content-Type".equalsIgnoreCase(header.getName())) {
 
-            // Write the body, flush and close
-            writer.write(method.getResponseBodyAsString());
-            writer.flush();
-            writer.close();
+					response.setContentType(header.getValue());
+				}
+			}
 
-        } catch (HttpException e) {
+			// Write the body, flush and close
+			writer.write(method.getResponseBodyAsString());
+			writer.flush();
+			writer.close();
 
-            //log.error("Oops, something went wrong in the HTTP proxy", null, e);
-            writer.write(e.toString());
-            throw e;
+		} catch (HttpException e) {
 
-        } catch (IOException e) {
+			// log.error("Oops, something went wrong in the HTTP proxy", null, e);
+			writer.write(e.toString());
+			throw e;
 
-            e.printStackTrace();
-            writer.write(e.toString());
-            throw e;
-        }
-    }
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			writer.write(e.toString());
+			throw e;
+		}
+	}
 }
