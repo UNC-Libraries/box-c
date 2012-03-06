@@ -78,7 +78,8 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 				"path_algorithm"), BACKSLASH_IS_ESCAPE("backslash_is_escape"), CONNECTION_POOL("connectionPool"), PATH_REGISTRY(
 				"path_registry"), IRODS_HOST("irods_host"), IRODS_PORT("irods_port"), IRODS_USERNAME("irods_username"), IRODS_PASSWORD(
 				"irods_password"), IRODS_HOME_DIRECTORY("irods_homeDirectory"), IRODS_ZONE("irods_zone"), IRODS_DEFAULT_RESOURCE(
-				"irods_defaultStorageResource"), IRODS_READ_BUFFER_SIZE("irods_readBufferSize"), STAGING_LOCATIONS("stagingLocations");
+				"irods_defaultStorageResource"), IRODS_READ_BUFFER_SIZE("irods_readBufferSize"), STAGING_LOCATIONS("stagingLocations"),
+				IRODS_SOCKET_TIMEOUT("irods_socketTimeout");
 
 		private final String name;
 
@@ -125,8 +126,19 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 				throw new ModuleInitializationException("Parameter, \"" + Parameter.IRODS_READ_BUFFER_SIZE
 						+ "\" must be greater than 0", getRole());
 			}
+			String irodsSocketTimeout = getModuleParameter(Parameter.IRODS_SOCKET_TIMEOUT, false);
 		} catch (NumberFormatException e) {
-			throw new ModuleInitializationException(e.getMessage(), getRole());
+			throw new ModuleInitializationException("Cannot parse irods read buffer size "+ e.getMessage(), getRole());
+		}
+		int irodsSocketTimeout;
+		try {
+			irodsSocketTimeout = Integer.parseInt(getModuleParameter(Parameter.IRODS_SOCKET_TIMEOUT, false));
+			if (irodsSocketTimeout < 0) {
+				throw new ModuleInitializationException("Parameter, \"" + Parameter.IRODS_SOCKET_TIMEOUT
+						+ "\" cannot be negative", getRole());
+			}
+		} catch (NumberFormatException e) {
+			throw new ModuleInitializationException("Cannot configure irods socket timeout "+ e.getMessage(), getRole());
 		}
 		LOG.debug("irodsHost=" + irodsHost);
 		LOG.debug("irodsPort=" + irodsPort);
@@ -164,8 +176,8 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 			irodsFileSystem = IRODSFileSystem.instance();
 			JargonProperties origProps = irodsFileSystem.getIrodsSession().getJargonProperties();
 			SettableJargonProperties overrideJargonProperties = new SettableJargonProperties(origProps);
-			overrideJargonProperties.setIrodsSocketTimeout(300);
-			overrideJargonProperties.setIrodsParallelSocketTimeout(300);
+			overrideJargonProperties.setIrodsSocketTimeout(irodsSocketTimeout); // was 300
+			overrideJargonProperties.setIrodsParallelSocketTimeout(irodsSocketTimeout); // was 300
 			irodsFileSystem.getIrodsSession().setJargonProperties(overrideJargonProperties);
 		} catch (JargonException e) {
 			throw new ModuleInitializationException("Could not create IRODSFileSystem: " + e.getLocalizedMessage(),
