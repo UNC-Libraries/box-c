@@ -133,6 +133,38 @@ public class JRDFGraphUtil {
 		return result;
 	}
 
+	public static PID getPIDRelationshipSubject(Graph graph, URI predicate, String objectString) {
+		PID result = null;
+		ClosableIterator<Triple> tripleIter = null;
+		try {
+			Literal objectLiteral = graph.getElementFactory().createLiteral(objectString);
+			URIReference pred = graph.getElementFactory().createResource(predicate);
+			Triple findTop = graph.getTripleFactory().createTriple(ANY_SUBJECT_NODE, pred, objectLiteral);
+			tripleIter = graph.find(findTop);
+			if (tripleIter.hasNext()) {
+				Triple t = tripleIter.next();
+				if (t.getSubject() instanceof URIReference) {
+					URIReference n = (URIReference) t.getSubject();
+					String res = n.getURI().toString();
+					result = new PID(res.substring(res.indexOf("/") + 1));
+				}
+			}
+		} catch (GraphException e) {
+			log.error("programmer error: ", e);
+			throw new Error(e);
+		} catch (TripleFactoryException e) {
+			log.error("programmer error: ", e);
+			throw new Error(e);
+		} catch (GraphElementFactoryException e) {
+			log.error("programmer error: ", e);
+			throw new Error(e);
+		} finally {
+			if (tripleIter != null)
+				tripleIter.close();
+		}
+		return result;
+	}
+	
 	public static PID getPIDRelationshipSubject(Graph graph, URI predicate, PID objectPID) {
 		PID result = null;
 		ClosableIterator<Triple> tripleIter = null;
@@ -263,6 +295,15 @@ public class JRDFGraphUtil {
 		}
 	}
 
+	public static void addFedoraProperty(Graph graph, PID subject, ContentModelHelper.FedoraProperty property, String literal) {
+		try {
+			addTriple(graph, new URI("info:fedora/" + subject.getPid()), property.getURI(), literal);
+		} catch (URISyntaxException e) {
+			log.error("Unexpected exception", e);
+			throw new Error("programmer error: ", e);
+		}
+	}
+	
 	public static void addFedoraProperty(Graph graph, PID subject, ContentModelHelper.FedoraProperty property, URI object) {
 		try {
 			addTriple(graph, new URI("info:fedora/" + subject.getPid()), property.getURI(), object);
