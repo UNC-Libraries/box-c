@@ -18,10 +18,10 @@ package edu.unc.lib.dl.xml;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -66,7 +66,7 @@ public class FOXMLJDOMUtil {
 	private static final String getAllDatastreamsXpath = "/f:digitalObject/f:datastream";
 	private static final String getDatastreamXpath = "/f:digitalObject/f:datastream[@ID='%DSID%']";
 	private static final String labelXpath = "/f:digitalObject/f:objectProperties/f:property[@NAME='info:fedora/fedora-system:def/model#label']/@VALUE";
-	private static final Log log = LogFactory.getLog(FOXMLJDOMUtil.class);
+	private static Logger log = Logger.getLogger(FOXMLJDOMUtil.class);
 
 	private static final String pidXpath = "/f:digitalObject/@PID";
 
@@ -318,9 +318,16 @@ public class FOXMLJDOMUtil {
 			props = new Element("objectProperties", JDOMNamespaceUtil.FOXML_NS);
 			doc.getRootElement().addContent(1, props);
 		} else {
-			for (Element el : extracted(props.getChildren())) {
-				if (prop.toString().equals(el.getAttribute("NAME"))) {
-					props.removeContent(el);
+			log.debug("Properties were found, checking for cleanup");
+			System.out.println("Properties were found, checking for cleanup");
+			@SuppressWarnings("unchecked")
+			Iterator<Element> childIt = props.getChildren().iterator();
+			while (childIt.hasNext()){
+				Element el = childIt.next();
+				if (prop.toString().equals(el.getAttributeValue("NAME"))){
+					log.debug("FOUND property, delete it: " + el.getAttributeValue("NAME"));
+					System.out.println("FOUND property, delete it: " + el.getAttributeValue("NAME"));
+					childIt.remove();
 				}
 			}
 		}
