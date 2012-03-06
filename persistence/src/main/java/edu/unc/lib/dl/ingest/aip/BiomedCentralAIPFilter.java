@@ -1,17 +1,25 @@
 package edu.unc.lib.dl.ingest.aip;
 
+import java.io.File;
 import java.net.URI;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.jdom.Attribute;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
+import org.jdom.xpath.XPath;
 import org.jrdf.graph.Graph;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
 
 public class BiomedCentralAIPFilter implements AIPIngestFilter {
 	private static Logger LOG = Logger.getLogger(BiomedCentralAIPFilter.class);
@@ -21,12 +29,25 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 	
 	private Agent biomedAgent;
 	
+	private XPath foxmlArticleXMLXPath;
+	private XPath supplementXPath;
+	private XPath supplementFileNameXPath;
+	private XPath supplementTitle;
+	
 	public BiomedCentralAIPFilter(){
 	}
 	
 	public void init(){
 		biomedAgent = agentFactory.findPersonByOnyen(BIOMED_ONYEN, false);
 		LOG.debug("Initializing BiomedCentralAIPFilter, retrieved biomed agent " + biomedAgent.getPID().getPid());
+		try {
+			foxmlArticleXMLXPath = XPath.newInstance("//f:datastream[@ID='DATA_FILE']/f:datastreamVersion[1]/f:contentLocation/@REF");
+			supplementXPath = XPath.newInstance("//suppl");
+			supplementFileNameXPath = XPath.newInstance("file/@name");
+			supplementTitle = XPath.newInstance("text/p");
+		} catch (JDOMException e) {
+			LOG.error("Error initializing", e);
+		}
 	}
 	
 	
@@ -87,7 +108,11 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 					// suppress the XML main file by turning off indexing
 					JRDFGraphUtil.removeAllRelatedByPredicate(g, pid, ContentModelHelper.CDRProperty.allowIndexing.getURI());
 					JRDFGraphUtil.addCDRProperty(g, pid, ContentModelHelper.CDRProperty.allowIndexing, "no");
-					//rdfaip.getFOXMLDocument(pid)
+					try {
+						processArticleXML(rdfaip, pid);
+					} catch (Exception e){
+						throw new AIPException("Unable to process article XML from " + slug, e);
+					}
 				} else if (slug.matches("^[0-9\\-]+\\.\\w+$")){
 					LOG.debug("Found primary Biomed XML document " + slug);
 					// If this is a main object, then designate it as a default web object for its parent container
@@ -100,6 +125,29 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 				// Ignore supplemental files, which end in -S<#>
 			}
 			
+		}
+	}
+	
+	private void processArticleXML(RDFAwareAIPImpl aip, PID pid) throws Exception{
+		Graph g = aip.getGraph();
+		
+		Document foxml = aip.getFOXMLDocument(pid);
+		String foxmlPath = ((Attribute)this.foxmlArticleXMLXPath.selectSingleNode(foxml)).getValue();
+		File articleXMLFile = aip.getFileForUrl(foxmlPath);
+		SAXBuilder sb = new SAXBuilder();
+		
+		Document articleDocument = sb.build(articleXMLFile);
+		@SuppressWarnings("unchecked")
+		List<Element> supplements = this.supplementXPath.selectNodes(articleDocument);
+		if (supplements != null){
+			for (Element supplement: supplements){
+				String supplementFileName = ((Attribute)this.supplementFileNameXPath.selectSingleNode(supplement)).getValue();
+				PID supplementPID = JRDFGraphUtil.getPIDRelationshipSubject(g, ContentModelHelper.CDRProperty.slug.getURI(), supplementFileName);
+				String supplementTitle = ((Element)this.supplementTitle.selectSingleNode(supplement)).getValue().trim();
+				Document supplementFOXML = aip.getFOXMLDocument(supplementPID);
+				FOXMLJDOMUtil.setProperty(supplementFOXML, ObjectProperty.label, supplementTitle);
+				aip.saveFOXMLDocument(supplementPID, supplementFOXML);
+			}
 		}
 	}
 
