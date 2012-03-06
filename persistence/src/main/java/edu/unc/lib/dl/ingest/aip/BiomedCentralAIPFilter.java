@@ -18,6 +18,7 @@ import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
+import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
 
@@ -59,6 +60,11 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 					+ biomedAgent.getPID().getPid());
 			return aip;
 		}
+		if (!(PackagingType.METS_DSPACE_SIP_2.equals(aip.getDepositRecord().getPackagingType()) 
+				|| PackagingType.METS_DSPACE_SIP_1.equals(aip.getDepositRecord().getPackagingType()))){
+			LOG.debug("Packaging type " + aip.getDepositRecord().getPackagingType() + " was not applicable for filter");
+			return aip;
+		}
 		
 		RDFAwareAIPImpl rdfaip = null;
 		if (aip instanceof RDFAwareAIPImpl) {
@@ -68,6 +74,10 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 		}
 		
 		Graph g = rdfaip.getGraph();
+		
+		if (rdfaip.getTopPIDs() == null){
+			throw new AIPException("The AIP contained no top level pids.");
+		}
 		
 		// If the top level pids aren't aggregate works, then don't apply filter.
 		for (PID pid: rdfaip.getTopPIDs()){
