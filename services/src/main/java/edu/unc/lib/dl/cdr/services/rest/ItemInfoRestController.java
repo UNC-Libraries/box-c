@@ -76,7 +76,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 	public @ResponseBody
 	Map<String, ? extends Object> getItemRoot(@PathVariable("id") String id) {
 		Map<String, Object> result = new HashMap<String, Object>();
-		result.put("hint", "correct path is " + contextUrl + BASE_PATH + "<pid>");
+		result.put("hint", "correct path is " + BASE_PATH + "<pid>");
 		return result;
 	}
 	
@@ -115,15 +115,15 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
 		
-		uris.put("enhancement", contextUrl + BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/enhancement");
-		uris.put("indexing", contextUrl + BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/indexing");
-		uris.put("foxml", contextUrl + BASE_PATH + id + "/foxml");
-		uris.put("objectViewXML", contextUrl + BASE_PATH + id + "/objectViewXML");
-		uris.put("solrRecord", contextUrl + BASE_PATH + id + "/solrRecord");
+		uris.put("enhancement", BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/enhancement");
+		uris.put("indexing", BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/indexing");
+		uris.put("foxml", BASE_PATH + id + "/foxml");
+		uris.put("objectViewXML", BASE_PATH + id + "/objectViewXML");
+		uris.put("solrRecord", BASE_PATH + id + "/solrRecord");
 		// Determine if this item is a container, add link to its children
 		for (URI contentModel: contentModels){
 			if (ContentModelHelper.Model.CONTAINER.getURI().equals(contentModel)){
-				uris.put("children", contextUrl + BASE_PATH + id + "/children");
+				uris.put("children", BASE_PATH + id + "/children");
 				break;
 			}
 		}
@@ -194,8 +194,8 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
 		
-		uris.put("enhancement", contextUrl + BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/enhancement");
-		uris.put("indexing", contextUrl + BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/indexing");
+		uris.put("enhancement", BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/enhancement");
+		uris.put("indexing", BASE_PATH + id + "/" + SERVICE_STATUS_PATH + "/indexing");
 		
 		return result;
 	}
@@ -228,7 +228,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		for (PerformServicesRunnable runningTask : currentlyRunning) {
 			if (runningTask.getMessage() != null && runningTask.getMessage().getTargetID().equals(id)) {
 				task = new HashMap<String, Object>();
-				task.put("jobInfo", contextUrl + EnhancementConductorRestController.BASE_PATH
+				task.put("jobInfo", EnhancementConductorRestController.BASE_PATH
 						+ EnhancementConductorRestController.ACTIVE_PATH + "/job/"
 						+ runningTask.getMessage().getMessageID());
 				task.put("action", runningTask.getMessage().getQualifiedAction());
@@ -242,12 +242,12 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		
 		//Add matching blocked messages
 		enhancementList = new ArrayList<ActionMessage>(enhancementConductor.getCollisionList());
-		addMessageList(id, enhancementList, contextUrl + EnhancementConductorRestController.BASE_PATH
+		addMessageList(id, enhancementList, EnhancementConductorRestController.BASE_PATH
 				+ EnhancementConductorRestController.BLOCKED_PATH, matchingMessages, pendingTasks);
 		
 		//Add matching queued messages;
 		enhancementList = new ArrayList<ActionMessage>(enhancementConductor.getPidQueue());
-		addMessageList(id, enhancementList, contextUrl + EnhancementConductorRestController.BASE_PATH
+		addMessageList(id, enhancementList, EnhancementConductorRestController.BASE_PATH
 				+ EnhancementConductorRestController.QUEUED_PATH, matchingMessages, pendingTasks);
 		
 		//Build a set of all the services that have failed for this item
@@ -312,7 +312,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		for (SolrUpdateRunnable runningTask : currentlyRunning) {
 			if (runningTask.getUpdateRequest() != null && runningTask.getUpdateRequest().getTargetID().equals(id)) {
 				task = new HashMap<String, Object>();
-				task.put("jobInfo", contextUrl + SolrUpdateConductorRestController.BASE_PATH
+				task.put("jobInfo", SolrUpdateConductorRestController.BASE_PATH
 						+ SolrUpdateConductorRestController.ACTIVE_PATH + "/job/"
 						+ runningTask.getUpdateRequest().getMessageID());
 				task.put("action", runningTask.getUpdateRequest().getQualifiedAction());
@@ -322,11 +322,11 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		
 		// Get solr messages
 		enhancementList = new ArrayList<ActionMessage>(solrUpdateConductor.getCollisionList());
-		addMessageList(id, enhancementList, contextUrl + SolrUpdateConductorRestController.BASE_PATH
+		addMessageList(id, enhancementList, SolrUpdateConductorRestController.BASE_PATH
 				+ SolrUpdateConductorRestController.BLOCKED_PATH, null, pendingTasks);
 		
 		enhancementList = new ArrayList<ActionMessage>(solrUpdateConductor.getPidQueue());
-		addMessageList(id, enhancementList, contextUrl + SolrUpdateConductorRestController.BASE_PATH
+		addMessageList(id, enhancementList, SolrUpdateConductorRestController.BASE_PATH
 				+ SolrUpdateConductorRestController.QUEUED_PATH, null, pendingTasks);
 
 		Map<String, Object> uris = new HashMap<String, Object>();
@@ -342,7 +342,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		} else {
 			result.put("indexed", true);
 			result.put("lastIndexed", formatISO8601.format(lastIndexed));
-			uris.put("solrRecord", contextUrl + BASE_PATH + id + "/solrRecord");
+			uris.put("solrRecord", BASE_PATH + id + "/solrRecord");
 		}
 		
 		return result;

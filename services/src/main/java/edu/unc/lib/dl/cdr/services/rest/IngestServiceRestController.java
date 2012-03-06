@@ -67,10 +67,10 @@ public class IngestServiceRestController extends
 				this.batchIngestService.getFinishedJobCount());
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
-		uris.put("queuedJobs", contextUrl + "/rest/ingest/queued");
-		uris.put("activeJobs", contextUrl + "/rest/ingest/active");
-		uris.put("finishedJobs", contextUrl + "/rest/ingest/finished");
-		uris.put("failedJobs", contextUrl + "/rest/ingest/failed");
+		uris.put("queuedJobs", "/rest/ingest/queued");
+		uris.put("activeJobs", "/rest/ingest/active");
+		uris.put("finishedJobs", "/rest/ingest/finished");
+		uris.put("failedJobs", "/rest/ingest/failed");
 		return result;
 	}
 

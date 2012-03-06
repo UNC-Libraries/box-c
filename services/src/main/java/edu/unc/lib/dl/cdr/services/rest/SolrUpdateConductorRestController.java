@@ -59,9 +59,9 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
 		
-		uris.put("queuedJobs", contextUrl + BASE_PATH + QUEUED_PATH);
-		uris.put("blockedJobs", contextUrl + BASE_PATH + BLOCKED_PATH);
-		uris.put("activeJobs", contextUrl + BASE_PATH + ACTIVE_PATH);
+		uris.put("queuedJobs", BASE_PATH + QUEUED_PATH);
+		uris.put("blockedJobs", BASE_PATH + BLOCKED_PATH);
+		uris.put("activeJobs", BASE_PATH + ACTIVE_PATH);
 		
 		return result;
 	}
@@ -147,7 +147,7 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 		
 		Map<String, Object> uris = new HashMap<String, Object>();
 		job.put("uris", uris);
-		uris.put("jobInfo", contextUrl + BASE_PATH + queuePath + "/job/" + message.getMessageID());
+		uris.put("jobInfo", BASE_PATH + queuePath + "/job/" + message.getMessageID());
 
 		return job;
 	}
@@ -167,11 +167,11 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 		Map<String, Object> uris = new HashMap<String, Object>();
 		if (message.getLinkedRequest() != null){
 			job.put("linkedID", message.getLinkedRequest().getMessageID());
-			uris.put("linkedJob", contextUrl + BASE_PATH + queuePath + "/job/" + message.getMessageID());
+			uris.put("linkedJob", BASE_PATH + queuePath + "/job/" + message.getMessageID());
 		} else {
 			job.put("linkedID", null);
 		}
-		uris.put("targetInfo", contextUrl + ItemInfoRestController.BASE_PATH + message.getTargetID());
+		uris.put("targetInfo", ItemInfoRestController.BASE_PATH + message.getTargetID());
 		job.put("uris", uris);
 
 		return job;

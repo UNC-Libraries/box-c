@@ -75,9 +75,9 @@ public class InfoRestController implements ServletContextAware {
 		Map<String, Object> uris = new HashMap<String, Object>();
 		data.put("uris", uris);
 		uris.put("swordServiceUri", contextUrl+"/sword");
-		uris.put("ingestServiceUri", contextUrl+"/rest/ingest");
-		uris.put("enhancementServiceUri", contextUrl+"/rest/enhancement");
-		uris.put("solrIndexServiceUri", contextUrl+"/rest/indexing");
+		uris.put("ingestServiceUri", "/rest/ingest");
+		uris.put("enhancementServiceUri", "/rest/enhancement");
+		uris.put("solrIndexServiceUri", "/rest/indexing");
 		// { buildDate:"2011-10-26 11:50:56 UTC-0400",
 		// currentUserUri:"https://example.org/path/to/user",
 		// tasksUri:"https://example.org/path/to/tasks",
