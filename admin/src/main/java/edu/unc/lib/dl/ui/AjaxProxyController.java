@@ -59,34 +59,24 @@ public class AjaxProxyController {
 		if (request.getQueryString() != null)
 			url = url + "?" + request.getQueryString();
 
-		// log.warn("proxy is using url: "+url);
-
 		OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream());
 		HttpClient client = new HttpClient();
 		try {
-
 			HttpMethod method = null;
 
 			// Split this according to the type of request
 			if (request.getMethod().equals("GET")) {
-
 				method = new GetMethod(url);
-
 			} else if (request.getMethod().equals("POST")) {
-
 				method = new PostMethod(url);
-
 				// Set any eventual parameters that came with our original
 				// request (POST params, for instance)
 				Enumeration<String> paramNames = request.getParameterNames();
 				while (paramNames.hasMoreElements()) {
-
 					String paramName = paramNames.nextElement();
 					((PostMethod) method).setParameter(paramName, request.getParameter(paramName));
 				}
-
 			} else {
-
 				throw new NotImplementedException("This proxy only supports GET and POST methods.");
 			}
 
@@ -96,26 +86,19 @@ public class AjaxProxyController {
 			// Set the content type, as it comes from the server
 			Header[] headers = method.getResponseHeaders();
 			for (Header header : headers) {
-
 				if ("Content-Type".equalsIgnoreCase(header.getName())) {
-
 					response.setContentType(header.getValue());
 				}
 			}
-
-			// Write the body, flush and close
-			writer.write(method.getResponseBodyAsString());
-			writer.flush();
-			writer.close();
-
+			int b;
+			while ((b = method.getResponseBodyAsStream().read()) != -1) {
+				response.getOutputStream().write(b);
+			}
+			response.getOutputStream().flush();
 		} catch (HttpException e) {
-
-			// log.error("Oops, something went wrong in the HTTP proxy", null, e);
 			writer.write(e.toString());
 			throw e;
-
 		} catch (IOException e) {
-
 			e.printStackTrace();
 			writer.write(e.toString());
 			throw e;
