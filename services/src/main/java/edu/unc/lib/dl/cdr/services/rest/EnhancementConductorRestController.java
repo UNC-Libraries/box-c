@@ -80,10 +80,10 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
 		
-		uris.put("queuedJobs", contextUrl + BASE_PATH + QUEUED_PATH);
-		uris.put("blockedJobs", contextUrl + BASE_PATH + BLOCKED_PATH);
-		uris.put("activeJobs", contextUrl + BASE_PATH + ACTIVE_PATH);
-		uris.put("failedJobs", contextUrl + BASE_PATH + FAILED_PATH);
+		uris.put("queuedJobs", BASE_PATH + QUEUED_PATH);
+		uris.put("blockedJobs", BASE_PATH + BLOCKED_PATH);
+		uris.put("activeJobs", BASE_PATH + ACTIVE_PATH);
+		uris.put("failedJobs", BASE_PATH + FAILED_PATH);
 		
 		return result;
 	}
@@ -216,7 +216,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		Map<String, Object> uris = new HashMap<String, Object>();
 		job.put("uris", uris);
-		uris.put("jobInfo", contextUrl + BASE_PATH + queuePath + "/job/" + message.getMessageID());
+		uris.put("jobInfo", BASE_PATH + queuePath + "/job/" + message.getMessageID());
 
 		return job;
 	}
@@ -266,9 +266,9 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		Map<String, Object> uris = new HashMap<String, Object>();
 		job.put("uris", uris);
 		if (message instanceof AbstractXMLEventMessage && ((AbstractXMLEventMessage)message).getMessageBody() != null){
-			uris.put("xml", contextUrl + BASE_PATH + queuedPath + "/job/" + message.getMessageID() + "/xml");
+			uris.put("xml", BASE_PATH + queuedPath + "/job/" + message.getMessageID() + "/xml");
 		}
-		uris.put("targetInfo", contextUrl + ItemInfoRestController.BASE_PATH + message.getTargetID());
+		uris.put("targetInfo", ItemInfoRestController.BASE_PATH + message.getTargetID());
 		
 		return job;
 	}
