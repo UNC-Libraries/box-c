@@ -58,9 +58,11 @@ import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.services.DigitalObjectManagerImpl;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
@@ -143,11 +145,12 @@ public class BatchIngestServiceTest {
 			reset(this.managementClient);
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
 			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
+			DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 			PID container = new PID("test:container");
-			METSPackageSIP sip1 = new METSPackageSIP(container, test, user, true);
+			METSPackageSIP sip1 = new METSPackageSIP(container, test, true);
 
 			test = tempCopy(new File("src/test/resources/simple.zip"));
-			METSPackageSIP sip2 = new METSPackageSIP(container, test, user, true);
+			METSPackageSIP sip2 = new METSPackageSIP(container, test, true);
 
 			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
 			List<String> personrow = new ArrayList<String>();
@@ -169,7 +172,7 @@ public class BatchIngestServiceTest {
 			when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
 
 			this.batchIngestService.pause();
-			digitalObjectManagerImpl.addToIngestQueue(sip1, user, "testAdd1 for a good METS SIP");
+			digitalObjectManagerImpl.addToIngestQueue(sip1, record);
 			Thread.sleep(5*1000);
 			verify(this.managementClient, never()).ingest(any(Document.class), any(Format.class), any(String.class));
 
@@ -179,7 +182,7 @@ public class BatchIngestServiceTest {
 			} while(this.batchIngestService.executor.getAllRunningAndQueued().size() > 0);
 			verify(this.managementClient, times(14)).ingest(any(Document.class), any(Format.class), any(String.class));
 
-			digitalObjectManagerImpl.addToIngestQueue(sip2, user, "testAdd2 for a good METS SIP");
+			digitalObjectManagerImpl.addToIngestQueue(sip2, record);
 			do {
 				Thread.sleep(5*1000);
 			} while(this.batchIngestService.executor.getAllRunningAndQueued().size() > 0);
@@ -201,8 +204,9 @@ public class BatchIngestServiceTest {
 			reset(this.mailSender);
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
 			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
+			DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 			PID container = new PID("test:container");
-			METSPackageSIP sip = new METSPackageSIP(container, test, user, true);
+			METSPackageSIP sip = new METSPackageSIP(container, test, true);
 
 			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
 			List<String> personrow = new ArrayList<String>();
@@ -223,7 +227,7 @@ public class BatchIngestServiceTest {
 			ans.add(ContentModelHelper.Model.CONTAINER.getURI());
 			when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
 
-			digitalObjectManagerImpl.addToIngestQueue(sip, user, "testAdd for a good METS SIP");
+			digitalObjectManagerImpl.addToIngestQueue(sip, record);
 
 			do {
 				Thread.sleep(5*1000);
@@ -257,8 +261,9 @@ public class BatchIngestServiceTest {
 			});
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
 			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
+			DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 			PID container = new PID("test:container");
-			METSPackageSIP sip = new METSPackageSIP(container, test, user, true);
+			METSPackageSIP sip = new METSPackageSIP(container, test, true);
 
 			// define the fedora ingest behavior:
 			when(this.managementClient.ingest(any(Document.class), any(Format.class), any(String.class)))
@@ -284,7 +289,7 @@ public class BatchIngestServiceTest {
 			ans.add(ContentModelHelper.Model.CONTAINER.getURI());
 			when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
 
-			digitalObjectManagerImpl.addToIngestQueue(sip, user, "testAdd for a good METS SIP");
+			digitalObjectManagerImpl.addToIngestQueue(sip, record);
 
 			do {
 				Thread.sleep(5*1000);

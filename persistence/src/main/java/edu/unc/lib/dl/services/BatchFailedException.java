@@ -19,7 +19,7 @@ package edu.unc.lib.dl.services;
  * @author Gregory Jansen
  *
  */
-public class BatchFailedException extends RuntimeException {
+public class BatchFailedException extends Throwable {
 
 	/**
 	 * @param string

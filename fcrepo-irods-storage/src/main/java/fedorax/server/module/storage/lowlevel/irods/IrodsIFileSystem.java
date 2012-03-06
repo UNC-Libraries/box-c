@@ -316,7 +316,7 @@ public class IrodsIFileSystem {
 			}
 
 			rollbackLog.append("iRODS FILE REPAIR NEEDED FOR A FAILED REWRITE\n");
-			temp.createNewFile();
+			//temp.createNewFile();
 			IRODSFileOutputStream out = irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFileOutputStream(temp);
 			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(out, irodsBufferSize);
 			CopyResult copyResult = stream2streamCopy(content, bufferedOutputStream);
@@ -376,7 +376,7 @@ public class IrodsIFileSystem {
 				parentFile.mkdirs();
 			}
 			IRODSFile irodsFile = irodsFileSystem.getIRODSFileFactory(account).instanceIRODSFile(file.getPath());
-			irodsFile.createNewFile();
+			//irodsFile.createNewFile();
 			IRODSFileOutputStream irodsFileOutputStream = irodsFileSystem.getIRODSFileFactory(account)
 					.instanceIRODSFileOutputStream(irodsFile);
 			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(irodsFileOutputStream, irodsBufferSize);
@@ -403,7 +403,8 @@ public class IrodsIFileSystem {
 			if (irodsFileSystem != null) {
 				try {
 					irodsFileSystem.close();
-				} catch (JargonException ignored) {
+				} catch (JargonException e) {
+					LOG.error("There was an error closing the irods filesystem within LLS", e);
 				}
 			}
 		}

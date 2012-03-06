@@ -58,11 +58,12 @@ import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.AIPException;
 import edu.unc.lib.dl.ingest.aip.AIPImpl;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.aip.RDFAwareAIPImpl;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.JDOMXPathUtil;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
+import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PathUtil;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -123,8 +124,9 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public ArchivalInformationPackage createAIP(SubmissionInformationPackage sip)
+	public ArchivalInformationPackage createAIP(SubmissionInformationPackage sip, DepositRecord record)
 			throws IngestException {
 		METSPackageSIP metsPack = (METSPackageSIP) sip;
 
@@ -141,12 +143,23 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		} catch (JDOMException e) {
 			throw new IngestException("Cannot read parse METS file", e);
 		}
-
+		
 		// VALIDATE METS AGAINST A PROFILE
 		String profile = validateProfile(mets);
 
 		// VALIDATE PACKAGED FILES AGAINST METS MANIFEST
 		this.getMetsPackageFileValidator().validateFiles(mets, metsPack);
+		
+		record.setManifest(metsPack.getMetsFile());
+		if(record.getPackagingType() == null) {
+			PackagingType recognizedType = null;
+			for(PackagingType t : PackagingType.values()) {
+				if(t.equals(profile)) {
+					record.setPackagingType(t);
+					break;
+				}
+			}
+		}
 
 		// TODO: replace named repository with an agent object representing
 		// ingest
@@ -158,7 +171,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 
 		// CONVERT METS DOCUMENT INTO AN AIP
 		ArchivalInformationPackage aip = transformMETS(metsPack, mets,
-				metsPack.isAllowIndexing());
+				metsPack.isAllowIndexing(), record);
 
 		// increment any duplicate slugs
 		RDFAwareAIPImpl rdfaip = null;
@@ -201,10 +214,8 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		// extract the METS OBJID, use for depositID if in uuid namespace
 		String objid = mets.getRootElement().getAttributeValue("OBJID");
 		if (objid != null && objid.startsWith("uuid:")) {
-			aip.setDepositID(new PID(objid));
-		} else { // no uuid for deposit, assign one
-			aip.setDepositID(this.getPidGenerator().getNextPID());
-		}
+			aip.getDepositRecord().setPid(new PID(objid));
+		} // else a deposit PID is already generated.. 
 
 		// move over pre-ingest events
 		if (metsPack.getPreIngestEventLogger().hasEvents()) {
@@ -245,9 +256,11 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 	}
 
 	private AIPImpl transformMETS(METSPackageSIP metsPack, Document mets,
-			boolean allowIndexing) throws IngestException {
+			boolean allowIndexing, DepositRecord record) throws IngestException {
 
-		AIPImpl aip = new AIPImpl(metsPack.getBatchPrepDir());
+		AIPImpl aip = new AIPImpl(metsPack.getBatchPrepDir(), record);
+		
+		// TODO Ben, this is where you might set the packaging type and subtype on the record object.
 
 		// count the object divs in METS
 		int num = 0;
@@ -290,12 +303,8 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		}
 		t.setParameter("allowAnyIndexing", allowIndexingParam);
 
-		if (metsPack.getOwner() != null && metsPack.getOwner().getPID() != null) {
-			t.setParameter("ownerURI", metsPack.getOwner().getPID().getURI());
-		} else {
-			throw new IngestException("Error setting the owner of the SIP.");
-		}
-
+		t.setParameter("ownerURI", record.getOwner().getPID().getURI());
+		
 		File tempFOXDir = aip.getTempFOXDir();
 
 		t.setParameter("output.directory", tempFOXDir.getPath());
@@ -413,10 +422,10 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 				return false;
 			}
 		};
+		@SuppressWarnings("rawtypes")
 		Iterator desc = svrl.getDescendants(failedAsserts);
 		if (desc.hasNext()) {
 			StringBuilder msg = new StringBuilder();
-			XMLOutputter out = new XMLOutputter();
 			msg.append("Validation of METS failed against submission profile: "
 					+ profileUrl);
 			while (desc.hasNext()) {

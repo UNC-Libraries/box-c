@@ -284,10 +284,10 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 	 * @see edu.unc.lib.dl.ingest.ReportingIngestBundle#prepareIngest()
 	 */
 	@Override
-	public void prepareIngest(String message, String submitter) throws IngestException {
+	public void prepareIngest() throws IngestException {
 		log.debug("RDFIngestContext preparing for ingest");
 		commitGraphChanges();
-		this.baseAIP.prepareIngest(message, submitter);
+		this.baseAIP.prepareIngest();
 	}
 
 	public void printGraph() {
@@ -511,15 +511,7 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getDepositID()
 	 */
 	@Override
-	public PID getDepositID() {
-		return this.baseAIP.getDepositID();
-	}
-
-	/* (non-Javadoc)
-	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#setDepositID(edu.unc.lib.dl.fedora.PID)
-	 */
-	@Override
-	public void setDepositID(PID pid) {
-		this.baseAIP.setDepositID(pid);
+	public DepositRecord getDepositRecord() {
+		return this.baseAIP.getDepositRecord();
 	}
 }

@@ -66,7 +66,6 @@
 			<list>
 				<bean class="edu.unc.lib.dl.ingest.aip.LogIdentifierAssignmentFilter" />
 				<bean class="edu.unc.lib.dl.ingest.aip.CheckAIPRequirementsFilter" />
-				<bean class="edu.unc.lib.dl.ingest.aip.SetOriginalDepositIDFilter"/>
 				<bean class="edu.unc.lib.dl.ingest.aip.CheckContainerFilter">
 					<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 				</bean>
@@ -76,7 +75,11 @@
 				<bean class="edu.unc.lib.dl.ingest.aip.MODSValidationFilter">
 					<property name="schematronValidator" ref="schematronValidator" />
 				</bean>
+				<bean class="edu.unc.lib.dl.ingest.aip.BiomedCentralAIPFilter" init-method="init">
+					<property name="agentFactory" ref="agentFactory"/>
+				</bean>
 				<bean class="edu.unc.lib.dl.ingest.aip.DublinCoreCrosswalkFilter" />
+				<bean class="edu.unc.lib.dl.ingest.aip.SetOriginalDepositRecordFilter"/>
 			</list>
 		</property>
 	</bean>

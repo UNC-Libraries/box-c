@@ -55,6 +55,7 @@ import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.sip.SIPProcessor;
 import edu.unc.lib.dl.ingest.sip.SIPProcessorFactory;
 import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
@@ -62,7 +63,6 @@ import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.Checksum;
 import edu.unc.lib.dl.util.ContainerContentsHelper;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
@@ -118,25 +118,20 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	public DigitalObjectManagerImpl() {
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see edu.unc.lib.dl.services.DigitalObjectManager#add(java.lang.String, java.io.File, edu.unc.lib.dl.agents.Agent,
-	 * edu.unc.lib.dl.agents.PersonAgent, java.lang.String)
-	 */
-	public IngestResult addToIngestQueue(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
+	public IngestResult addToIngestQueue(SubmissionInformationPackage sip, DepositRecord record) throws IngestException {
 		IngestResult result = new IngestResult();
 		ArchivalInformationPackage aip = null;
 		try {
 			availableCheck();
-			if (user == null) {
+			if (record.getDepositedBy() == null) {
 				throw new IngestException("A user must be supplied for every ingest");
 			}
+			Agent user = record.getDepositedBy();
 			// lookup the processor for this SIP
 			SIPProcessor processor = this.getSipProcessorFactory().getSIPProcessor(sip);
 
 			// process the SIP into a standard AIP
-			aip = processor.createAIP(sip);
+			aip = processor.createAIP(sip, record);
 
 			// run routine AIP processing steps
 			aip = this.getAipIngestPipeline().processAIP(aip);
@@ -154,12 +149,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			} else {
 				submitter = user.getName();
 			}
-			aip.prepareIngest(message, submitter);
+			aip.prepareIngest();
 
 			// move the AIP into the ingest queue.
 			this.getBatchIngestQueue().add(aip.getTempFOXDir());
 
-			result.originalDepositID = aip.getDepositID();
+			result.originalDepositID = aip.getDepositRecord().getPid();
 			result.derivedPIDs = aip.getTopPIDs();
 			return result;
 		} catch (IngestException e) {
@@ -795,50 +790,40 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		this.operationsMessageSender = operationsMessageSender;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * edu.unc.lib.dl.services.DigitalObjectManager#addSingleObject(edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage
-	 * , edu.unc.lib.dl.agents.Agent, java.lang.String)
-	 */
 	@Override
-	public PID addWhileBlocking(SubmissionInformationPackage sip, Agent user, String message) throws IngestException {
-		// TODO check for proper SIP type
+	public IngestResult addWhileBlocking(SubmissionInformationPackage sip, DepositRecord record) throws IngestException {
 		boolean reject = true;
 		// normal SIP processing
 		ArchivalInformationPackage aip = null;
 		try {
 			availableCheck();
-			if (user == null) {
+			if (record.getDepositedBy() == null) {
 				throw new IngestException("A user must be supplied for every ingest");
 			}
+			Agent user = record.getDepositedBy();
 			// lookup the processor for this SIP
 			SIPProcessor processor = this.getSipProcessorFactory().getSIPProcessor(sip);
 
 			// process the SIP into a standard AIP
-			aip = processor.createAIP(sip);
-
+			aip = processor.createAIP(sip, record);
+			
 			// run routine AIP processing steps
 			aip = this.getAipIngestPipeline().processAIP(aip);
 
 			aip.setEmailRecipients(null); // no emails for blocking ingests
 
 			// persist the AIP to disk
-			String submitter = null;
-			if(PersonAgent.class.isInstance(user)) {
-				submitter = ((PersonAgent)user).getOnyen();
-			} else {
-				submitter = user.getName();
-			}
-			aip.prepareIngest(message, submitter);
+			aip.prepareIngest();
 
 			// move the AIP into the ingest queue.
 			// run ingest task immediately and wait for it.
 			this.ingestBatchNow(aip.getTempFOXDir());
 
 			// return the newly minted pid
-			return aip.getPIDs().iterator().next();
+			IngestResult result = new IngestResult();
+			result.derivedPIDs = aip.getTopPIDs();
+			result.originalDepositID = aip.getDepositRecord().getPid();
+			return result;
 		} catch (IngestException e) {
 			// exception on AIP preparation, no transaction started
 			log.info("User level exception on ingest, prior to Fedora transaction", e);
@@ -857,7 +842,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		log.info("Ingesting batch now, in parallel with queue: " + prepDir.getAbsolutePath());
 		BatchIngestTask task = this.batchIngestTaskFactory.createTask();
 		task.setBaseDir(prepDir);
-		task.init();
+		try {
+			task.init();
+		} catch(BatchFailedException e) {
+			throw new IngestException("Batch ingest task failed", e);
+		}
 		task.run();
 		task = null;
 	}

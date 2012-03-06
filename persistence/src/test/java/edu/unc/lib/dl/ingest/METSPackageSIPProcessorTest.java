@@ -38,6 +38,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.aip.MODSValidationFilter;
 import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
 import edu.unc.lib.dl.ingest.sip.InvalidMETSException;
@@ -45,6 +46,7 @@ import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.services.AgentManager;
+import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -72,16 +74,17 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 	private void exceptionTest(String testFilePath, String testMsg) throws IngestException {
 		File testFile = tempCopy(new File(testFilePath));
 		Agent adminGroup = AgentManager.getAdministrativeGroupAgentStub();
+		DepositRecord record = new DepositRecord(adminGroup, adminGroup, DepositMethod.Unspecified);
 		PremisEventLogger logger = new PremisEventLogger(adminGroup);
 		METSPackageSIP sip = null;
 		boolean isZip = testFilePath.endsWith(".zip") || testFilePath.endsWith(".ZIP");
 		try {
-			sip = new METSPackageSIP(containerPID, testFile, adminGroup, isZip);
+			sip = new METSPackageSIP(containerPID, testFile, isZip);
 		} catch (IOException e) {
 			LOG.debug("STACK TRACE: ", e);
 			fail("EXPECTED: " + testMsg + "\nTHROWN: " + e.getMessage());
 		}
-		ArchivalInformationPackage aip = this.getMetsPackageSIPProcessor().createAIP(sip);
+		ArchivalInformationPackage aip = this.getMetsPackageSIPProcessor().createAIP(sip, record);
 	}
 
 	public METSPackageSIPProcessor getMetsPackageSIPProcessor() {
@@ -138,16 +141,17 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		// testing for successful conversion of Large SIP, 2014 objects
 		File testFile = tempCopy(new File("src/test/resources/METS.xml"));
 		Agent user = AgentManager.getAdministrativeGroupAgentStub();
+		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		try {
-			sip = new METSPackageSIP(containerPID, testFile, user, false);
+			sip = new METSPackageSIP(containerPID, testFile, false);
 			sip.setDiscardDataFilesOnDestroy(false);
 		} catch (IOException e) {
 			throw new Error(e);
 		}
 		try {
-			aip = this.getMetsPackageSIPProcessor().createAIP(sip);
+			aip = this.getMetsPackageSIPProcessor().createAIP(sip, record);
 		} catch (IngestException e) {
 			throw new Error(e);
 		}
@@ -186,10 +190,11 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/simple.zip"));
 		Agent user = AgentManager.getAdministrativeGroupAgentStub();
+		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		try {
-			sip = new METSPackageSIP(containerPID, testFile, user, true);
+			sip = new METSPackageSIP(containerPID, testFile, true);
 			sip.setDiscardDataFilesOnDestroy(false);
 			sip.getPreIngestEventLogger().addMD5ChecksumCalculation(new Date(System.currentTimeMillis()), "ClamAV v2.1",
 					"Jane Smith");
@@ -198,7 +203,7 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 			throw new Error(e);
 		}
 		try {
-			aip = this.getMetsPackageSIPProcessor().createAIP(sip);
+			aip = this.getMetsPackageSIPProcessor().createAIP(sip, record);
 		} catch (IngestException e) {
 			throw new Error(e);
 		}
@@ -275,10 +280,11 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/dspaceMets.zip"));
 		Agent user = AgentManager.getAdministrativeGroupAgentStub();
+		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		try {
-			sip = new METSPackageSIP(containerPID, testFile, user, true);
+			sip = new METSPackageSIP(containerPID, testFile, true);
 			sip.setDiscardDataFilesOnDestroy(false);
 			sip.getPreIngestEventLogger().addMD5ChecksumCalculation(new Date(System.currentTimeMillis()), "ClamAV v2.1",
 					"Jane Smith");
@@ -291,7 +297,7 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 			while (iterator.hasNext()){
 				LOG.info("Schema " + iterator.next());
 			}
-			aip = this.getMetsPackageSIPProcessor().createAIP(sip);
+			aip = this.getMetsPackageSIPProcessor().createAIP(sip, record);
 			
 			MODSValidationFilter modsFilter = new MODSValidationFilter();
 			modsFilter.setSchematronValidator(schematronValidator);

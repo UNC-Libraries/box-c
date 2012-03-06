@@ -33,7 +33,6 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 	public static final String metsLocation = "METS.xml";
 	public static final String metsLocation2 = "mets.xml";
 	private boolean discardDataFilesOnDestroy = true;
-	private Agent owner = null;
 	private File metsFile = null;
 	private File batchPrepDir = null;
 	private File sipDataSubDir = null;
@@ -52,8 +51,8 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 	public PreIngestEventLogger getPreIngestEventLogger() {
 		return this.preIngestEvents;
 	}
-
-	public METSPackageSIP(PID containerPID, File sip, Agent owner, boolean isZIP) throws IOException {
+	
+	public METSPackageSIP(PID containerPID, File sip, boolean isZIP) throws IOException {
 		this.batchPrepDir = FileUtils.createTempDirectory("ingest-prep");
 		this.sipDataSubDir = new File(this.batchPrepDir, "data");
 		this.sipDataSubDir.mkdir();
@@ -73,7 +72,6 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 			throw new IOException("METS file " + metsFile.getPath() + " not found.");
 		}
 		this.containerPID = containerPID;
-		this.owner = owner;
 	}
 
 	public File getMetsFile() {
@@ -105,10 +103,6 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 
 	public PID getContainerPID() {
 		return containerPID;
-	}
-
-	public Agent getOwner() {
-		return owner;
 	}
 
 	public File getFileForLocator(String url) throws IOException {

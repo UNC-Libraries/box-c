@@ -49,7 +49,7 @@ public class ContentModelHelper {
 	 *
 	 */
 	public static enum CDRProperty {
-		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), sourceData("sourceData"), indexText("indexText"), onyen(
+		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), defaultWebObject("defaultWebObject"), sourceData("sourceData"), indexText("indexText"), onyen(
 				"onyen"), slug("slug"), sortOrder("sortOrder"), permitMetadataCreate("permitMetadataCreate"), permitMetadataRead(
 				"permitMetadataRead"), permitMetadataUpdate("permitMetadataUpdate"), permitMetadataDelete(
 				"permitMetadataDelete"), permitOriginalsCreate("permitOriginalsCreate"), permitOriginalsRead(
@@ -58,7 +58,9 @@ public class ContentModelHelper {
 				"permitDerivativesRead"), permitDerivativesUpdate("permitDerivativesUpdate"), permitDerivativesDelete(
 				"permitDerivativesDelete"), inheritPermissions("inheritPermissions"), hasSourceMimeType("hasSourceMimeType"),
 				hasSourceFileSize("hasSourceFileSize"), hasSurrogate("hasSurrogate"), thumb("thumb"), derivedJP2("derivedJP2"),
-				techData("techData"), originalDeposit("originalDeposit");
+				techData("techData"), 
+				depositedOnBehalfOf("depositedOnBehalfOf"), depositMethod("depositMethod"),
+				depositPackageType("depositPackageType"), depositPackageSubType("depositPackageSubType");
 		private URI uri;
 
 		CDRProperty(String suffix) {
@@ -184,7 +186,7 @@ public class ContentModelHelper {
 	public static enum Model {
 		COLLECTION("Collection"), CONTAINER("Container"), GROUPAGENT("GroupAgent"), PERSONAGENT("PersonAgent"), SIMPLE(
 				"Simple"), SOFTWAREAGENT("SoftwareAgent"), PRESERVEDOBJECT("PreservedObject"), JP2DERIVEDIMAGE(
-				"JP2DerivedImage");
+				"JP2DerivedImage"), AGGREGATE_WORK("AggregateWork");
 
 		private URI uri;
 		private PID pid;
@@ -211,6 +213,10 @@ public class ContentModelHelper {
 		public boolean equals(String value){
 			return this.uri.toString().equals(value);
 		}
+		
+		public boolean equals(URI value){
+			return this.uri.equals(value);
+		}
 
 		public boolean equalsPID(String value){
 			return this.pid.getPid().equals(value);
@@ -230,7 +236,7 @@ public class ContentModelHelper {
 	 */
 	public static enum Relationship {
 		contains(JDOMNamespaceUtil.CDR_NS, "contains"), member(JDOMNamespaceUtil.CDR_NS, "member"), owner(
-				JDOMNamespaceUtil.CDR_NS, "owner");
+				JDOMNamespaceUtil.CDR_NS, "owner"), originalDeposit(JDOMNamespaceUtil.CDR_NS, "originalDeposit"), depositedBy(JDOMNamespaceUtil.CDR_NS, "depositedBy");
 		private URI uri;
 
 		Relationship(Namespace ns, String suffix) {

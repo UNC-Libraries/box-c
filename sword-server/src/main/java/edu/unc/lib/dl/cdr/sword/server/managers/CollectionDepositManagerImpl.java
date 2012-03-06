@@ -34,10 +34,12 @@ import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.services.IngestResult;
+import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.PackagingType;
 
 /**
@@ -59,16 +61,20 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		if (collectionURI == null)
 			throw new SwordServerException("No collection URI was provided");
 
-		String agentName = null;
-		if (auth.getOnBehalfOf() != null){
-			agentName = auth.getOnBehalfOf();
-		} else {
-			agentName = auth.getUsername();
-		};
-		Agent agent = agentFactory.findPersonByOnyen(agentName, false);
-		if (agent == null){
-			throw new SwordAuthException("Unable to find a user matching the provided credentials, " + agentName);
+		Agent depositor = agentFactory.findPersonByOnyen(auth.getUsername(), false);
+		if (depositor == null){
+			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, " + auth.getUsername());
 		}
+		Agent owner = null;
+		if (auth.getOnBehalfOf() != null){
+			owner = agentFactory.findPersonByOnyen(auth.getOnBehalfOf(), false);
+			if (owner == null){
+				throw new SwordAuthException("Unable to find a user matching OnBehalfOf, " + auth.getOnBehalfOf());
+			}
+		} else {
+			owner = depositor;
+		}
+		
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
 
 		String pidString = null;
@@ -95,11 +101,18 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		if (!accessControlUtils.hasAccess(containerPID, groupList, "http://cdr.unc.edu/definitions/roles#curator")){
 			throw new SwordAuthException("Insufficient privileges to deposit to container " + containerPID.getPid());
 		}
+		
+		PackagingType recognizedType = null;
+		for(PackagingType t : PackagingType.values()) {
+			if(t.equals(deposit.getPackaging())) {
+				recognizedType = t;
+				break;
+			}
+		}
 
-		if (PackagingType.METS_CDR.equals(deposit.getPackaging()) || PackagingType.METS_DSPACE_SIP_2.equals(deposit.getPackaging())
-				|| PackagingType.METS_DSPACE_SIP_1.equals(deposit.getPackaging())){
+		if (recognizedType != null){
 			try {
-				return doMETSDeposit(containerPID, deposit, auth, configImpl, agent);
+				return doMETSDeposit(containerPID, deposit, auth, configImpl, depositor, recognizedType, owner);
 			} catch (FilesDoNotMatchManifestException e){
 				LOG.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest of package type " + deposit.getPackaging(), e);
 				throw new SwordError("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.", e);
@@ -114,7 +127,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	}
 
 	private DepositReceipt doMETSDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
-			SwordConfigurationImpl config, Agent agent) throws Exception {
+			SwordConfigurationImpl config, Agent agent, PackagingType type, Agent owner) throws Exception {
 
 		LOG.debug("Preparing to perform a CDR METS deposit to " + containerPID.getPid());
 
@@ -125,10 +138,13 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			LOG.debug("Working with temporary file: " + deposit.getFile().getAbsolutePath());
 		}
 		
-		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), agent, isZip);
+		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), isZip);
 		// PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
-
-		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, agent, "Added through SWORD");
+		
+		DepositRecord record = new DepositRecord(agent, owner, DepositMethod.SWORD13);
+		record.setMessage("Added through SWORD");
+		record.setPackagingType(type);
+		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
 
 		DepositReceipt receipt = new DepositReceipt();
 		receipt.setOriginalDeposit("", deposit.getMimeType());

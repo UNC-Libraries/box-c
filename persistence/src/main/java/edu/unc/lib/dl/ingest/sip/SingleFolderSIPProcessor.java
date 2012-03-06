@@ -32,6 +32,7 @@ import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.AIPException;
 import edu.unc.lib.dl.ingest.aip.AIPImpl;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.aip.RDFAwareAIPImpl;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
@@ -46,10 +47,10 @@ public class SingleFolderSIPProcessor implements SIPProcessor {
 	private edu.unc.lib.dl.pidgen.PIDGenerator pidGenerator = null;
 
 	@Override
-	public ArchivalInformationPackage createAIP(SubmissionInformationPackage in)
+	public ArchivalInformationPackage createAIP(SubmissionInformationPackage in, DepositRecord record)
 			throws IngestException {
 		SingleFolderSIP sip = (SingleFolderSIP) in;
-		AIPImpl aip = new AIPImpl();
+		AIPImpl aip = new AIPImpl(record);
 
 		// Note: container must exist.
 		PID pid = this.getPidGenerator().getNextPID();
@@ -125,7 +126,7 @@ public class SingleFolderSIPProcessor implements SIPProcessor {
 		}
 
 		// set owner
-		JRDFGraphUtil.addFedoraPIDRelationship(rdfaip.getGraph(), pid, ContentModelHelper.Relationship.owner, sip
+		JRDFGraphUtil.addFedoraPIDRelationship(rdfaip.getGraph(), pid, ContentModelHelper.Relationship.owner, record
 				.getOwner().getPID());
 		// set content model
 		JRDFGraphUtil.addFedoraProperty(rdfaip.getGraph(), pid, ContentModelHelper.FedoraProperty.hasModel,
@@ -155,7 +156,7 @@ public class SingleFolderSIPProcessor implements SIPProcessor {
 			String output = out.outputString(rdfaip.getFOXMLDocument(pid));
 			log.info("HEREFOXML:\n" + output);
 		}
-
+		
 		return rdfaip;
 	}
 

@@ -15,24 +15,17 @@
  */
 package edu.unc.lib.dl.ingest.sip;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 
 public class PackagedAIPSIP implements SubmissionInformationPackage {
 	private ArchivalInformationPackage aip = null;
-	private Agent owner = null;
 
-	PackagedAIPSIP(Agent owner, ArchivalInformationPackage aip) {
-		this.owner = owner;
+	PackagedAIPSIP(ArchivalInformationPackage aip) {
 		this.aip = aip;
 	}
 
 	public ArchivalInformationPackage getAip() {
 		return aip;
-	}
-
-	public Agent getOwner() {
-		return this.owner;
 	}
 
 }

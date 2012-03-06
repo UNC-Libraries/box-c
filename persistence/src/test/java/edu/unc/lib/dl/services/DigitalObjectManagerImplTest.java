@@ -66,9 +66,11 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.SingleFolderSIP;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -439,8 +441,9 @@ public class DigitalObjectManagerImplTest {
 	public void testAdd() throws Exception {
 		File test = tempCopy(new File("src/test/resources/simple.zip"));
 		Agent user = AgentManager.getAdministrativeGroupAgentStub();
+		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		PID container = new PID("test:container");
-		METSPackageSIP sip = new METSPackageSIP(container, test, user, true);
+		METSPackageSIP sip = new METSPackageSIP(container, test, true);
 
 		when(this.tripleStoreQueryService.lookupRepositoryPath(eq(container))).thenReturn("/test/container/path");
 		when(this.tripleStoreQueryService.fetchByRepositoryPath(eq("/test/container/path"))).thenReturn(container);
@@ -448,7 +451,7 @@ public class DigitalObjectManagerImplTest {
 		ArrayList<URI> ans = new ArrayList<URI>();
 		ans.add(ContentModelHelper.Model.CONTAINER.getURI());
 		when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
-		this.getDigitalObjectManagerImpl().addToIngestQueue(sip, user, "testAdd for a good METS SIP");
+		this.getDigitalObjectManagerImpl().addToIngestQueue(sip, record);
 		// verify batch ingest called
 		verify(this.batchIngestQueue, times(1)).add(any(File.class));
 	}
@@ -461,10 +464,10 @@ public class DigitalObjectManagerImplTest {
 		try {
 			reset(this.managementClient);
 			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
+			DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 			PID container = new PID("test:container");
 			SingleFolderSIP sip = new SingleFolderSIP();
 			sip.setContainerPID(container);
-			sip.setOwner(user);
 			sip.setSlug("testslug");
 
 			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
@@ -486,10 +489,10 @@ public class DigitalObjectManagerImplTest {
 			ans.add(ContentModelHelper.Model.CONTAINER.getURI());
 			when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
 
-			digitalObjectManagerImpl.addWhileBlocking(sip, user, "testing add single object (now)");
+			digitalObjectManagerImpl.addWhileBlocking(sip, record);
 
 			// verify batch ingest called
-			verify(this.managementClient, times(1)).ingest(any(Document.class), any(Format.class), any(String.class));
+			verify(this.managementClient, times(2)).ingest(any(Document.class), any(Format.class), any(String.class));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Error(e);

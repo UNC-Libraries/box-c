@@ -15,5 +15,6 @@
  */
 package edu.unc.lib.dl.ingest.sip;
 
+
 public interface SubmissionInformationPackage {
 }
