@@ -44,7 +44,8 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  */
 public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementService {
 	private static final Logger LOG = LoggerFactory.getLogger(ThumbnailEnhancementService.class);
-
+	public static final String enhancementName = "Thumbnail Generation";
+	
 	@Override
 	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
 		return this.findCandidateObjects(maxResults, priorToDate);
@@ -208,5 +209,10 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 		lastApplied.setEnhancementClass(this.getClass());
 		
 		return lastApplied;
+	}
+	
+	@Override
+	public String getName() {
+		return enhancementName;
 	}
 }

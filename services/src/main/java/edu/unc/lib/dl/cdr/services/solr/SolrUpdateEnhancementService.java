@@ -41,6 +41,7 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
  */
 public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementService {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateEnhancementService.class);
+	public static final String enhancementName = "Solr Update";
 
 	@Override
 	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) {
@@ -141,5 +142,10 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 			throw new EnhancementException(e);
 		}
 		return lastApplied;
+	}
+	
+	@Override
+	public String getName() {
+		return enhancementName;
 	}
 }

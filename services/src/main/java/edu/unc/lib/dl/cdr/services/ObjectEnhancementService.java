@@ -85,4 +85,10 @@ public interface ObjectEnhancementService {
 	 * @return true if this service is currently active
 	 */
 	public boolean isActive() throws EnhancementException;
+	
+	/**
+	 * Returns the name of this service
+	 * @return
+	 */
+	public String getName();
 }

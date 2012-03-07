@@ -42,6 +42,7 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 	private static final Logger LOG = LoggerFactory.getLogger(EmbargoUpdateService.class);
+	public static final String enhancementName = "Embargo Update";
 	
 	private Integer windowSizeHours;
 	
@@ -126,5 +127,10 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 	@Override
 	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
 		return null;
+	}
+	
+	@Override
+	public String getName() {
+		return enhancementName;
 	}
 }
