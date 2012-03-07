@@ -174,6 +174,12 @@ public class EnhancementConductorInterruptTest extends Assert {
 			// TODO Auto-generated method stub
 			return null;
 		}
+
+		@Override
+		public String getName() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}
 	
 	public class DelayEnhancement extends Enhancement<Element> {

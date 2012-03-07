@@ -297,6 +297,12 @@ public class DelayService extends AbstractFedoraEnhancementService {
 			// TODO Auto-generated method stub
 			return null;
 		}
+
+		@Override
+		public String getName() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 		
 	}
 	

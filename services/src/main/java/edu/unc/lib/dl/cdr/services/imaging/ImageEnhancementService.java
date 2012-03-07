@@ -41,6 +41,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  */
 public class ImageEnhancementService extends AbstractIrodsObjectEnhancementService {
 	private static final Logger LOG = LoggerFactory.getLogger(ImageEnhancementService.class);
+	public static final String enhancementName = "Image Derivative Generation";
 
 	@Override
 	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
@@ -177,5 +178,10 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 		lastApplied.setEnhancementClass(this.getClass());
 		
 		return lastApplied;
+	}
+
+	@Override
+	public String getName() {
+		return enhancementName;
 	}
 }

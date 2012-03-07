@@ -43,8 +43,8 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  * 
  */
 public class TechnicalMetadataEnhancementService extends AbstractIrodsObjectEnhancementService {
-
 	private static final Logger LOG = LoggerFactory.getLogger(TechnicalMetadataEnhancementService.class);
+	public static final String enhancementName = "Technical Metadata Extraction";
 
 	@Override
 	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
@@ -194,4 +194,8 @@ public class TechnicalMetadataEnhancementService extends AbstractIrodsObjectEnha
 		return lastApplied;
 	}
 
+	@Override
+	public String getName() {
+		return enhancementName;
+	}
 }
