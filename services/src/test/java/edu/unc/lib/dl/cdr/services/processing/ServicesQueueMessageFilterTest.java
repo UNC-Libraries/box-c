@@ -202,11 +202,11 @@ public class ServicesQueueMessageFilterTest extends Assert {
 	
 	@Test
 	public void applyStackStartingServicesFailures(){
-		Set<String> failedServices = new HashSet<String>();
-		failedServices.add(TechnicalMetadataEnhancementService.class.getName());
+		Set<Class<?>> failedServices = new HashSet<Class<?>>();
+		failedServices.add(TechnicalMetadataEnhancementService.class);
 		
 		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
-		when(failedPids.get(anyString())).thenReturn(failedServices);
+		when(failedPids.getFailedServices(anyString())).thenReturn(failedServices);
 		
 		EnhancementConductor enhancementConductor = mock(EnhancementConductor.class);
 		when(enhancementConductor.getFailedPids()).thenReturn(failedPids);
@@ -245,7 +245,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), TechnicalMetadataEnhancementService.class.getName());
 		failedServices.clear();
-		failedServices.add(ThumbnailEnhancementService.class.getName());
+		failedServices.add(ThumbnailEnhancementService.class);
 		assertTrue(servicesMessageFilter.filter(message));
 		assertTrue(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
 		assertFalse(message.filteredServicesContains(ThumbnailEnhancementService.class));
@@ -254,14 +254,14 @@ public class ServicesQueueMessageFilterTest extends Assert {
 	
 	@Test
 	public void applyServicesFailure(){
-		Set<String> failedServices = new HashSet<String>();
-		failedServices.add(TechnicalMetadataEnhancementService.class.getName());
-		failedServices.add(ThumbnailEnhancementService.class.getName());
-		failedServices.add(ImageEnhancementService.class.getName());
-		failedServices.add(SolrUpdateEnhancementService.class.getName());
+		Set<Class<?>> failedServices = new HashSet<Class<?>>();
+		failedServices.add(TechnicalMetadataEnhancementService.class);
+		failedServices.add(ThumbnailEnhancementService.class);
+		failedServices.add(ImageEnhancementService.class);
+		failedServices.add(SolrUpdateEnhancementService.class);
 		
 		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
-		when(failedPids.get(anyString())).thenReturn(failedServices);
+		when(failedPids.getFailedServices(anyString())).thenReturn(failedServices);
 		
 		EnhancementConductor enhancementConductor = mock(EnhancementConductor.class);
 		when(enhancementConductor.getFailedPids()).thenReturn(failedPids);
@@ -286,17 +286,17 @@ public class ServicesQueueMessageFilterTest extends Assert {
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		
 		failedServices.clear();
-		failedServices.add(TechnicalMetadataEnhancementService.class.getName());
-		failedServices.add(ThumbnailEnhancementService.class.getName());
-		failedServices.add(ImageEnhancementService.class.getName());
+		failedServices.add(TechnicalMetadataEnhancementService.class);
+		failedServices.add(ThumbnailEnhancementService.class);
+		failedServices.add(ImageEnhancementService.class);
 		
 		assertFalse(servicesMessageFilter.filter(message));
 		assertNull(message.getFilteredServices());
 		
 		//pass techmd call
 		failedServices.clear();
-		failedServices.add(ThumbnailEnhancementService.class.getName());
-		failedServices.add(ImageEnhancementService.class.getName());
+		failedServices.add(ThumbnailEnhancementService.class);
+		failedServices.add(ImageEnhancementService.class);
 		
 		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), TechnicalMetadataEnhancementService.class.getName());

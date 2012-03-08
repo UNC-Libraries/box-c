@@ -43,6 +43,7 @@ import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.AbstractXMLEventMessage;
 import edu.unc.lib.dl.cdr.services.model.CDREventMessage;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.cdr.services.model.FailedEnhancementObject;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor;
@@ -142,19 +143,38 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		result.put("jobs", jobs);
 		
 		FailedObjectHashMap failedList = this.enhancementConductor.getFailedPids();
-		Iterator<Entry<String,Set<String>>> iterator = failedList.entrySet().iterator();
-		
 		result.put("count", failedList.size());
 		
+		Iterator<Entry<String,FailedEnhancementObject>> iterator = failedList.entrySet().iterator();
 		while (iterator.hasNext()){
-			Entry<String,Set<String>> entry = iterator.next();
-			Map<String, Object> job = new HashMap<String,Object>();
-			job.put("id", entry.getKey());
-			job.put("services", entry.getValue());
-			jobs.add(job);
+			Entry<String,FailedEnhancementObject> entry = iterator.next();
+			Map<String, Object> failedEntry = new HashMap<String, Object>();
+			failedEntry.put("id", entry.getKey());
+			List<String> failedServices = new ArrayList<String>();
+			failedEntry.put("failedServices", failedServices);
+			for (Class<?> failedService: entry.getValue().getFailedServices()){
+				failedServices.add(failedService.getName());
+			}
+			failedEntry.put("timestamp", entry.getValue().getTimestamp());
+			if (entry.getValue().getMessages() != null){
+				Map<String, Object> uris = new HashMap<String, Object>();
+				failedEntry.put("uris", uris);
+				for (ActionMessage message: entry.getValue().getMessages()){
+					uris.put("message_" + message.getMessageID(), BASE_PATH + FAILED_PATH + "/job/" + message.getMessageID());
+				}
+			}
+			jobs.add(failedEntry);
 		}
 		
 		return result;
+	}
+	
+	@RequestMapping(value = { FAILED_PATH + "/job/{id}" }, method = RequestMethod.GET)
+	public @ResponseBody Map<String, ? extends Object> getFailedMessageInfo(@PathVariable("id") String id){
+		if (id == null || id.length() == 0)
+			return null;
+		ActionMessage message = this.enhancementConductor.getFailedPids().getMessageByMessageID(id);
+		return getJobFullInfo(message, FAILED_PATH);
 	}
 	
 	/**
@@ -213,6 +233,14 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		Date timeCreated = new Date(message.getTimeCreated());
 		job.put("queuedTimestamp", formatISO8601.format(timeCreated));
+		
+		if (message.getFilteredServices() != null){
+			List<String> filteredServices = new ArrayList<String>();
+			for (ObjectEnhancementService service: message.getFilteredServices()){
+				filteredServices.add(service.getName());
+			}
+			job.put("filteredServices", filteredServices);
+		}
 		
 		Map<String, Object> uris = new HashMap<String, Object>();
 		job.put("uris", uris);

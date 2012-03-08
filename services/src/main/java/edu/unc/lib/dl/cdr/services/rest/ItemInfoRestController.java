@@ -260,7 +260,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		}
 		result.put("queuedEnhancements", queuedServices);
 		
-		Set<String> failed = enhancementConductor.getFailedPids().get(id);
+		Set<Class<?>> failed = enhancementConductor.getFailedPids().getFailedServices(id);
 		if (failed == null){
 			result.put("failedEnhancements", ListUtils.EMPTY_LIST);
 		} else {

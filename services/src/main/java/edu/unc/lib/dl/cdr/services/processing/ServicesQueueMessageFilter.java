@@ -68,7 +68,7 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 		List<ObjectEnhancementService> messageServices = new ArrayList<ObjectEnhancementService>(services.size());
 		message.setFilteredServices(messageServices);
 		
-		Set<String> failedServices = enhancementConductor.getFailedPids().get(message.getTargetID());
+		Set<Class<?>> failedServices = enhancementConductor.getFailedPids().getFailedServices(message.getTargetID());
 		
 		boolean applyServiceStack = JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getQualifiedAction());
 		boolean serviceReached = !applyServiceStack || message.getServiceName() == null;
@@ -84,7 +84,7 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 				 
 				if (serviceReached){
 					//add services to the message's service list which have not failed previously and pass the prefilter method.
-					if (!(failedServices != null && failedServices.contains(s.getClass().getName()))
+					if (!(failedServices != null && failedServices.contains(s.getClass()))
 							&& s.prefilterMessage(message)){
 						messageServices.add(s);
 					} else {
