@@ -15,10 +15,14 @@
  */
 package edu.unc.lib.dl.cdr.services.model;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.message.ActionMessage;
 
 /**
  * Stores a concurrent map containing a set of pids and the set of services that failed for the
@@ -26,9 +30,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author bbpennel
  *
  */
-public class FailedObjectHashMap extends ConcurrentHashMap<String,Set<String>> {
+public class FailedObjectHashMap extends ConcurrentHashMap<String,FailedEnhancementObject> {
 	private static final long serialVersionUID = 1L;
-
+	private static final Logger LOG = LoggerFactory.getLogger(FailedObjectHashMap.class);
 	
 	/**
 	 * Method takes the output of failedObjectHashMap.toString() and repopulates 
@@ -45,15 +49,22 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String,Set<String>> {
 		} else {
 			entries = dump.split("]");
 		}
+		FailedEnhancementObject failedObject = null;
+		
 		for (String entry: entries){
 			String[] components = entry.split(": ");
 			String servicesString = components[1].trim();
 			servicesString = servicesString.substring(1, servicesString.length() - offset);
 			String[] services = servicesString.split(", ");
-			Set<String> failedServices = Collections.synchronizedSet(new HashSet<String>());
-			this.put(components[0].trim(), failedServices);
+			failedObject = new FailedEnhancementObject(new PID(components[0].trim()));
+			
+			this.put(components[0].trim(), failedObject);
 			for (String service: services){
-				failedServices.add(service);
+				try {
+					failedObject.addFailedService(Class.forName(service));
+				} catch (ClassNotFoundException e) {
+					LOG.warn("Unable to find class " + service + " while repopulating failed object map.");
+				}
 			}
 		}
 	}
@@ -63,22 +74,43 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String,Set<String>> {
 	 * @param pid
 	 * @param serviceName
 	 */
-	public synchronized void add(String pid, String serviceName){
-		Set<String> failedServices = this.get(pid);
-		if (failedServices == null){
-			failedServices = Collections.synchronizedSet(new HashSet<String>());
-			this.put(pid, failedServices);
+	public synchronized void add(PID pid, Class<?> service, ActionMessage message){
+		FailedEnhancementObject failedObject = this.get(pid.getPid());
+		if (failedObject == null){
+			failedObject = new FailedEnhancementObject(pid, service, message);
+			this.put(pid.getPid(), failedObject);
+		} else {
+			failedObject.addFailedService(service);
+			failedObject.addMessage(message);
 		}
-		failedServices.add(serviceName);
+	}
+	
+	public Set<Class<?>> getFailedServices(String pid){
+		FailedEnhancementObject failedObject = get(pid);
+		if (failedObject == null)
+			return null;
+		return failedObject.getFailedServices();
+	}
+	
+	public ActionMessage getMessageByMessageID(String messageID){
+		for (FailedEnhancementObject failedObject: this.values()){
+			if (failedObject.getMessages() != null){
+				for (ActionMessage message: failedObject.getMessages()){
+					if (message.getMessageID().equals(messageID))
+						return message;
+				}
+			}
+		}
+		return null;
 	}
 	
 	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		
-		for (Entry<String,Set<String>> entry: this.entrySet()){
+		for (Entry<String,FailedEnhancementObject> entry: this.entrySet()){
 			sb.append(entry.getKey()).append(": ");
-			sb.append(entry.getValue()).append('\n');
+			sb.append(entry.getValue().getFailedServices()).append('\n');
 		}
 		
 		return sb.toString();

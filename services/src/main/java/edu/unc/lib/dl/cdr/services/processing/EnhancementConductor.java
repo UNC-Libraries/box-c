@@ -432,7 +432,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 			} catch (Exception e2) {
 				LOG.error("Second attempt to run " + s.getClass().getName() + " for " + message.getTargetID()
 						+ " failed.");
-				failedPids.add(message.getTargetID(), s.getClass().getName());
+				failedPids.add(message.getPid(), s.getClass(), message);
 			}
 		}
 
@@ -503,14 +503,14 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 			if (LOG.isDebugEnabled())
 				LOG.debug("Applying service " + s.getClass().getCanonicalName() + " to " + message.getTargetID());
 
-			Set<String> failedServices = null;
+			Set<Class<?>> failedServices = null;
 			synchronized(failedPids){
-				failedServices = failedPids.get(message.getTargetID());
+				failedServices = failedPids.getFailedServices(message.getTargetID());
 				//Determine if the service should not be run
 				if (!(s.isActive() &&
 						((message.getServiceName() != null && message.getServiceName().equals(s.getClass().getName()))
 							|| s.isApplicable(message))
-						&& (failedServices == null || !failedServices.contains(s.getClass().getName())))){
+						&& (failedServices == null || !failedServices.contains(s.getClass())))){
 					if (LOG.isDebugEnabled())
 						LOG.debug("Enhancement not run: " + s.getClass().getCanonicalName() + " on " + message.getTargetID());
 					return;
@@ -577,18 +577,18 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 								case UNRECOVERABLE:
 									LOG.error("An unrecoverable exception occurred while attempting to apply service "
 											+ s.getClass().getName() + " for " + message.getTargetID() + ".  Adding to failure list.", e);
-									failedPids.add(message.getTargetID(), s.getClass().getName());
+									failedPids.add(message.getPid(), s.getClass(), message);
 									break;
 								case FATAL:
 									pause();
 									LOG.error("A fatal exception occurred while attempting to apply service "
 											+ s.getClass().getName() + " for " + message.getTargetID() +", halting all future services.", e);
-									failedPids.add(message.getTargetID(), s.getClass().getName());
+									failedPids.add(message.getPid(), s.getClass(), message);
 									return;
 								default:
 									LOG.error("An exception occurred while attempting to apply service "
 											+ s.getClass().getName() + " for " + message.getTargetID(), e);
-									failedPids.add(message.getTargetID(), s.getClass().getName());
+									failedPids.add(message.getPid(), s.getClass(), message);
 									break;
 							}
 						} catch (RuntimeException e) {
@@ -596,7 +596,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 									e, unexpectedExceptionDelay);
 						} catch (Exception e) {
 							LOG.error("An unexpected exception occurred while attempting to apply service " + s.getClass().getName(), e);
-							failedPids.add(message.getTargetID(), s.getClass().getName());
+							failedPids.add(message.getPid(), s.getClass(), message);
 						}
 					}
 				} finally {
