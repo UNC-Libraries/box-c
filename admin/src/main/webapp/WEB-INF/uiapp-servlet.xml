@@ -40,7 +40,10 @@
 		</property>
 		<property name="ignoreResourceNotFound" value="false"/>
 	</bean>
-	
+
+	<bean id="controlledPathsFile" class="java.lang.String">
+		<constructor-arg value="${controlled.paths.file}"/>
+	</bean>
 
 	<bean id="multipartResolver"
 		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
