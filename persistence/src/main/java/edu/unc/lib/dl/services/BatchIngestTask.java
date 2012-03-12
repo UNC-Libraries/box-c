@@ -267,6 +267,14 @@ public class BatchIngestTask implements Runnable {
 			if (e != null) {
 				e.printStackTrace(w);
 			}
+			// send failure email
+			if (this.sendEmailMessages && this.mailNotifier != null) {
+				this.mailNotifier.sendIngestFailureNotice(e, ingestProperties);
+				w.println("\nEMAIL NOTICE SENT TO ADMINS AND THESE OTHERS:");
+				for(String addy : this.ingestProperties.getEmailRecipients()) {
+					w.println(addy);
+				}
+			}
 		} catch (IOException e1) {
 			throw new Error("Unexpected error", e1);
 		} finally {
@@ -552,9 +560,6 @@ public class BatchIngestTask implements Runnable {
 				}
 			} catch (BatchFailedException e) {
 				log.error("Batch Ingest Task failed: " + e.getLocalizedMessage(), e);
-				// send failure email
-				if (this.sendEmailMessages && this.mailNotifier != null && ingestProperties.getEmailRecipients() != null)
-					this.mailNotifier.sendIngestFailureNotice(e, ingestProperties);
 				return;
 			}
 		}

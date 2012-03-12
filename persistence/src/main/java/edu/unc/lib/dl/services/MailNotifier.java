@@ -175,7 +175,7 @@ public class MailNotifier {
 			}
 			message.setSubject("CDR ingest complete");
 
-			message.setFrom("cdr@unc.edu");
+			message.setFrom(this.getRepositoryFromAddress());
 			message.setText(text, html);
 
 			// attach Events XML
@@ -287,13 +287,10 @@ public class MailNotifier {
 				for(String r : props.getEmailRecipients()) {
 					message.addTo(r);
 				}
-				message.setSubject("CDR ingest failed");
-			} else {
-				message.addTo("cdr@unc.edu", "CDR Administrator");
-				message.setSubject("CDR non-user initiated ingest failed");
 			}
-
-			message.setFrom("cdr@unc.edu");
+			message.addTo(this.getAdministratorAddress(), "CDR Administrator");
+			message.setSubject("CDR ingest failed");
+			message.setFrom(this.getRepositoryFromAddress());
 			message.setText(text, html);
 
 			// attach Events XML
@@ -363,7 +360,7 @@ public class MailNotifier {
 	 */
 	public void sendAdministratorMessage(String subject, String text) {
 		SimpleMailMessage message = new SimpleMailMessage();
-		message.setFrom(this.repositoryFromAddress);
+		message.setFrom(this.getRepositoryFromAddress());
 		message.setTo(this.administratorAddress);
 		message.setSubject("[" + this.irBaseUrl + "]" + subject);
 		message.setText(text);
