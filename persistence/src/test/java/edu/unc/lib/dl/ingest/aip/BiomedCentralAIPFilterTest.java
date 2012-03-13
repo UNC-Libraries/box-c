@@ -235,6 +235,51 @@ public class BiomedCentralAIPFilterTest extends Assert {
 		assertTrue("no".equals(allowIndexing));
 	}
 	
+	@Test
+	public void tooLongTitleTest() throws Exception{
+		AgentFactory agentFactory = mock(AgentFactory.class);
+		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(biomedAgent);
+		BiomedCentralAIPFilter filter = new BiomedCentralAIPFilter();
+		filter.setAgentFactory(agentFactory);
+		filter.init();
+		
+		File ingestPackage = new File("src/test/resources/biomedTooLongSupplTitle.zip");
+		PID containerPID = new PID("uuid:container");
+		METSPackageSIP sip = new METSPackageSIP(containerPID, ingestPackage, true);
+		
+		DepositRecord record = new DepositRecord(biomedAgent, biomedAgent, DepositMethod.SWORD13);
+		record.setPackagingType(PackagingType.METS_DSPACE_SIP_2);
+		
+		RDFAwareAIPImpl aip = (RDFAwareAIPImpl)metsPackageSIPProcessor.createAIP(sip, record);
+		
+		filter.doFilter(aip);
+		
+		Graph graph = aip.getGraph();
+		
+		PID articlePID = JRDFGraphUtil.getPIDRelationshipSubject(graph, ContentModelHelper.CDRProperty.slug.getURI(), "1745-6150-6-63.pdf");
+		PID aggregatePID = JRDFGraphUtil.getPIDRelationshipSubject(graph, ContentModelHelper.Relationship.contains.getURI(), articlePID);
+		PID xmlPID = JRDFGraphUtil.getPIDRelationshipSubject(graph, ContentModelHelper.CDRProperty.slug.getURI(), "1745-6150-6-63.xml");
+		PID s1PID = JRDFGraphUtil.getPIDRelationshipSubject(graph, ContentModelHelper.CDRProperty.slug.getURI(), "1745-6150-6-63-S1.XLSX");
+		PID s2PID = JRDFGraphUtil.getPIDRelationshipSubject(graph, ContentModelHelper.CDRProperty.slug.getURI(), "1745-6150-6-63-S2.ZIP");
+		assertNotNull(articlePID);
+		assertNotNull(aggregatePID);
+		assertNotNull(xmlPID);
+		assertNotNull(s1PID);
+		assertNotNull(s2PID);
+		
+		String defaultWebPID = JRDFGraphUtil.getRelationshipObjectURIs(graph, aggregatePID, ContentModelHelper.CDRProperty.defaultWebObject.getURI()).get(0).toString();
+		assertTrue(defaultWebPID.equals(articlePID.getURI()));
+		
+		String supplementTitle = FOXMLJDOMUtil.getLabel(aip.getFOXMLDocument(s1PID));
+		//This one is cut off
+		assertTrue("Spreadsheet with gene locus tags for all purine biosynthesizing genes identified".equals(supplementTitle));
+		supplementTitle = FOXMLJDOMUtil.getLabel(aip.getFOXMLDocument(s2PID));
+		assertTrue("Zip file containing additional phylogenetic trees. A set of phylogenetic trees generated as described in the Methods section. Locus tags were used for archaeal proteins, while species names were used for non-archaeal proteins used for comparisons.".equals(supplementTitle));
+		
+		String allowIndexing = JRDFGraphUtil.getRelatedLiteralObject(graph, xmlPID, ContentModelHelper.CDRProperty.allowIndexing.getURI());
+		assertTrue("no".equals(allowIndexing));
+	}
+	
 	private void logXML(Document xml){
 		XMLOutputter outputter = new XMLOutputter();
 		LOG.debug(outputter.outputString(xml));
