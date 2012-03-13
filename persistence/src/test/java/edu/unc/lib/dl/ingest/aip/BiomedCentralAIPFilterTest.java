@@ -6,6 +6,9 @@ import java.io.File;
 
 import javax.annotation.Resource;
 
+import org.apache.log4j.Logger;
+import org.jdom.Document;
+import org.jdom.output.XMLOutputter;
 import org.jrdf.graph.Graph;
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,6 +21,7 @@ import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
+import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
@@ -27,10 +31,13 @@ import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class BiomedCentralAIPFilterTest extends Assert {
+	private static Logger LOG = Logger.getLogger(BiomedCentralAIPFilterTest.class);
 	
 	@Resource
 	private METSPackageSIPProcessor metsPackageSIPProcessor = null;
 	private PersonAgent biomedAgent;
+	@Resource
+	private SchematronValidator schematronValidator;
 	
 	public BiomedCentralAIPFilterTest(){
 		biomedAgent = new PersonAgent(new PID("uuid:biomed"), "Biomed Central", "biomedcentral");
@@ -84,6 +91,17 @@ public class BiomedCentralAIPFilterTest extends Assert {
 		assertTrue("no".equals(allowIndexing));
 		
 		assertTrue(aip.getDepositRecord().getPackagingSubType().equals("BiomedCentral"));
+		
+		//Make sure it passes dc filter
+		DublinCoreCrosswalkFilter dcFilter = new DublinCoreCrosswalkFilter();
+		dcFilter.doFilter(aip);
+		
+		//Make sure if passes mods test
+		MODSValidationFilter modsFilter = new MODSValidationFilter();
+		modsFilter.setSchematronValidator(schematronValidator);
+		modsFilter.doFilter(aip);
+		
+		logXML(aip.getFOXMLDocument(aggregatePID));
 	}
 	
 	@Test
@@ -216,6 +234,11 @@ public class BiomedCentralAIPFilterTest extends Assert {
 		String allowIndexing = JRDFGraphUtil.getRelatedLiteralObject(graph, xmlPID, ContentModelHelper.CDRProperty.allowIndexing.getURI());
 		assertTrue("no".equals(allowIndexing));
 	}
+	
+	private void logXML(Document xml){
+		XMLOutputter outputter = new XMLOutputter();
+		LOG.debug(outputter.outputString(xml));
+	}
 
 	public METSPackageSIPProcessor getMetsPackageSIPProcessor() {
 		return metsPackageSIPProcessor;
@@ -223,5 +246,13 @@ public class BiomedCentralAIPFilterTest extends Assert {
 
 	public void setMetsPackageSIPProcessor(METSPackageSIPProcessor metsPackageSIPProcessor) {
 		this.metsPackageSIPProcessor = metsPackageSIPProcessor;
+	}
+
+	public SchematronValidator getSchematronValidator() {
+		return schematronValidator;
+	}
+
+	public void setSchematronValidator(SchematronValidator schematronValidator) {
+		this.schematronValidator = schematronValidator;
 	}
 }
