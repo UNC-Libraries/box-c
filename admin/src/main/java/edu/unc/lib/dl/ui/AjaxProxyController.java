@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.Enumeration;
 
@@ -61,9 +62,9 @@ public class AjaxProxyController {
 
 		OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream());
 		HttpClient client = new HttpClient();
+		HttpMethod method = null;
+		InputStream responseStream = null;
 		try {
-			HttpMethod method = null;
-
 			// Split this according to the type of request
 			if (request.getMethod().equals("GET")) {
 				method = new GetMethod(url);
@@ -90,8 +91,9 @@ public class AjaxProxyController {
 					response.setContentType(header.getValue());
 				}
 			}
+			responseStream = method.getResponseBodyAsStream();
 			int b;
-			while ((b = method.getResponseBodyAsStream().read()) != -1) {
+			while ((b = responseStream.read()) != -1) {
 				response.getOutputStream().write(b);
 			}
 			response.getOutputStream().flush();
@@ -102,6 +104,11 @@ public class AjaxProxyController {
 			e.printStackTrace();
 			writer.write(e.toString());
 			throw e;
+		} finally {
+			if (method != null)
+				method.releaseConnection();
+			if (responseStream != null)
+				responseStream.close();
 		}
 	}
 }
