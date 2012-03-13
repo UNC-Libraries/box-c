@@ -318,15 +318,11 @@ public class FOXMLJDOMUtil {
 			props = new Element("objectProperties", JDOMNamespaceUtil.FOXML_NS);
 			doc.getRootElement().addContent(1, props);
 		} else {
-			log.debug("Properties were found, checking for cleanup");
-			System.out.println("Properties were found, checking for cleanup");
 			@SuppressWarnings("unchecked")
 			Iterator<Element> childIt = props.getChildren().iterator();
 			while (childIt.hasNext()){
 				Element el = childIt.next();
 				if (prop.toString().equals(el.getAttributeValue("NAME"))){
-					log.debug("FOUND property, delete it: " + el.getAttributeValue("NAME"));
-					System.out.println("FOUND property, delete it: " + el.getAttributeValue("NAME"));
 					childIt.remove();
 				}
 			}

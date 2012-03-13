@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.jdom.output.XMLOutputter;
@@ -172,17 +175,29 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		method.setQueryString(new NameValuePair[] {
 				new NameValuePair("q", "id:" + solrUpdateConductor.getSolrSearchService().getSolrSettings().sanitize(id)),
 				new NameValuePair("omitHeader", "true") });
+		
 		HttpClient httpClient = new HttpClient();
+		InputStream responseStream = null;
 		
 		try {
 			httpClient.executeMethod(method);
+			responseStream = method.getResponseBodyAsStream();
 			int b;
-			while ((b = method.getResponseBodyAsStream().read()) != -1) {
+			while ((b = responseStream.read()) != -1) {
 				response.getOutputStream().write(b);
 			}
 			response.getOutputStream().flush();
 		} catch (Exception e){
 			LOG.error("Failed to get solr record for " + id, e);
+		} finally {
+			if (method != null)
+				method.releaseConnection();
+			try {
+				if (responseStream != null)
+					responseStream.close();
+			} catch (IOException e){
+				LOG.error("Failed to close response stream while getitng solr record for " + id, e);
+			}
 		}
 	}
 	

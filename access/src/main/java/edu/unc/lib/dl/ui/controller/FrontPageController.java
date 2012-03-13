@@ -47,7 +47,9 @@ public class FrontPageController extends AbstractSolrSearchController {
 		//Retrieve the list of newly added items
 		AccessGroupSet accessGroups = getUserAccessGroups(request);
 		SearchResultResponse resultResponse = queryLayer.getNewlyAdded(accessGroups);
-		model.addAttribute("newlyAddedList", resultResponse.getResultList());
+		if (resultResponse != null){
+			model.addAttribute("newlyAddedList", resultResponse.getResultList());
+		}
 		
 		//Retrieve news list
 		try {

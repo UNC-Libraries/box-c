@@ -75,6 +75,8 @@ public class DjatokaContentService {
 			}
 		} catch (Exception e){
 			LOG.error("Problem retrieving metadata for " + path, e);
+		} finally {
+			method.releaseConnection();
 		}
 	}
 	
