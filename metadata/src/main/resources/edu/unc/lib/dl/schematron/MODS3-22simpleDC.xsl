@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:mods="http://www.loc.gov/mods/v3" exclude-result-prefixes="mods"
 	xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -37,7 +37,7 @@ Version 1.0	2007-05-04 Tracy Meehleib <tmee@loc.gov>
 
 -->
 
-	<xsl:output method="xml" indent="yes"/>
+	<xsl:output method="xml" indent="yes" encoding="UTF-8"/>
 	
 	<xsl:template match="/">
 		<xsl:choose>
@@ -297,7 +297,7 @@ Version 1.0	2007-05-04 Tracy Meehleib <tmee@loc.gov>
 		<xsl:choose>
 			<xsl:when test="contains ('isbn issn uri doi lccn uri', $type)">
 				<dc:identifier>
-					<xsl:value-of select="$type"/>: <xsl:value-of select="."/>
+					<xsl:value-of select="$type"/>: <xsl:value-of select="."/>
 				</dc:identifier>
 			</xsl:when>
 			<xsl:otherwise>
