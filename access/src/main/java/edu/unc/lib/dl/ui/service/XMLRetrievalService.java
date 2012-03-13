@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.HttpClient;
@@ -27,6 +28,7 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.jdom.Document;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+
 
 public class XMLRetrievalService {
 	public static Document getXMLDocument(String url) throws HttpException, IOException, JDOMException  {
@@ -40,9 +42,19 @@ public class XMLRetrievalService {
 	    		new DefaultHttpMethodRetryHandler(3, false));
 		method.getParams().setParameter("http.useragent", "");
 		
-		client.executeMethod(method);
-
-		Document document = builder.build(method.getResponseBodyAsStream());
+		InputStream responseStream = null;
+		Document document = null;
+		
+		try {
+			client.executeMethod(method);
+			responseStream = method.getResponseBodyAsStream();
+			document = builder.build(responseStream);
+		} finally {
+			if (responseStream != null)
+				responseStream.close();
+			method.releaseConnection();
+		}
+		
 		return document;
 	}
 }

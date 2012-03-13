@@ -67,6 +67,8 @@ public class CDRTagLibUtil {
 			return post.getResponseBodyAsString();
 		} catch (Exception e) {
 			throw new ResourceNotFoundException("Failed to retrieve POST import request for " + url, e);
+		} finally {
+			post.releaseConnection();
 		}
 	}
 	

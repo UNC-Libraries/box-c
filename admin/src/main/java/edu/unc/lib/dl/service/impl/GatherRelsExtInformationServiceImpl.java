@@ -95,10 +95,11 @@ public class GatherRelsExtInformationServiceImpl implements
 	    // logger.debug("Query: " + uidQuery);
 	    httppost.addParameter("query", uidQuery.toString());
 	    String literalResponse = null;
+	    BufferedReader br = null;
 	    try {
 		client.executeMethod(httppost);
 		if (httppost.getStatusCode() == HttpStatus.SC_OK) {
-		    BufferedReader br = new BufferedReader(
+		    br = new BufferedReader(
 			    new InputStreamReader(httppost
 				    .getResponseBodyAsStream()));
 		    String readLine;
@@ -118,6 +119,8 @@ public class GatherRelsExtInformationServiceImpl implements
 			    + httppost.getStatusLine().toString());
 		}
 	    } finally {
+	   	 if (br != null)
+	   		 br.close();
 		httppost.releaseConnection();
 	    }
 	    logger.debug("Got response: " + literalResponse);
