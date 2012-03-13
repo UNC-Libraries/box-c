@@ -164,7 +164,7 @@
 
 		<!-- bibliographic citation element: dc.identifier.citation -->
 		<xsl:if test="./@epdcx:propertyURI='http://purl.org/eprint/terms/bibliographicCitation'">
-			<mods:relatedItem type="host">
+			<mods:relatedItem type="host" displayLabel="Citation">
 				<mods:part>
 					<mods:text><xsl:value-of select="epdcx:valueString" /></mods:text>
 				</mods:part>
