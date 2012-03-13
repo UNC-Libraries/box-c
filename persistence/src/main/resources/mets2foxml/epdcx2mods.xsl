@@ -81,7 +81,9 @@
 
 		<!-- language element: dc.language.iso -->
 		<xsl:if test="./@epdcx:propertyURI='http://purl.org/dc/elements/1.1/language' and ./@epdcx:vesURI='http://purl.org/dc/terms/RFC3066'">
-			<mods:language><xsl:value-of select="epdcx:valueString" /></mods:language>
+			<xsl:if test="epdcx:valueString/text() = 'en'">
+				<mods:language><mods:languageTerm type="code" authority="iso639-2b">eng</mods:languageTerm></mods:language>
+			</xsl:if>
 		</xsl:if>
 		
 		<!-- publisher element -->
@@ -135,7 +137,7 @@
 		<!-- copyright holder element: dc.rights.holder -->
 		<xsl:if test="./@epdcx:propertyURI='http://purl.org/eprint/terms/copyrightHolder'">
 			<mods:accessCondition>
-				<mods:rights.holder><xsl:value-of select="epdcx:valueString" /></mods:rights.holder>
+				<mods:rights.holder><mods:name><xsl:value-of select="epdcx:valueString" /></mods:name></mods:rights.holder>
 			</mods:accessCondition>
 		</xsl:if>
 		

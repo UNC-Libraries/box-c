@@ -614,6 +614,7 @@
 	<!-- Related items can contain any kind of item, so just reusing the other templates and nesting in an extra table-->
 	<xsl:template name="modsRelatedItems">
 		<xsl:for-each-group select="*[local-name() = 'relatedItem']" group-by="@displayLabel, .[not(@displayLabel)]/@type, local-name(.[not(@displayLabel) and not(@type)])[. != '']">
+			<tr>
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>
 			<th>
 				<xsl:choose>
@@ -691,6 +692,7 @@
 					<xsl:call-template name="modsParts"/>
 				</table>
 			</td>
+			</tr>
 		</xsl:for-each-group>
 	</xsl:template>
 	
