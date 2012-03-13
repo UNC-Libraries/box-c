@@ -464,7 +464,7 @@ public class ManagementClient extends WebServiceTemplate {
 		CommonsHttpMessageSender messageSender = new CommonsHttpMessageSender();
 		UsernamePasswordCredentials creds = new UsernamePasswordCredentials(this.getUsername(), this.getPassword());
 		messageSender.setCredentials(creds);
-		messageSender.setReadTimeout(30 * 1000);
+		messageSender.setReadTimeout(300 * 1000);
 		messageSender.afterPropertiesSet();
 		this.setMessageSender(messageSender);
 
