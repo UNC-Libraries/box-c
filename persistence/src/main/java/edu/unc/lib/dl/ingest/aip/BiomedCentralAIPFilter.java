@@ -125,7 +125,7 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 				if (slug == null) {
 					throw new AIPException(pid.getPid() + " missing slug.");
 				}
-				if (slug.matches("^[0-9\\-]+\\.[xX][mM][lL]$")){
+				if (slug.matches("^[0-9\\-X]+\\.[xX][mM][lL]$")){
 					LOG.debug("Found primary Biomed XML document " + slug);
 					// suppress the XML main file by turning off indexing
 					JRDFGraphUtil.removeAllRelatedByPredicate(g, pid, ContentModelHelper.CDRProperty.allowIndexing.getURI());
@@ -135,7 +135,7 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 					} catch (Exception e){
 						throw new AIPException("Unable to process article XML from " + slug, e);
 					}
-				} else if (slug.matches("^[0-9\\-]+\\.\\w+$")){
+				} else if (slug.matches("^[0-9\\-X]+\\.\\w+$")){
 					LOG.debug("Found primary Biomed XML document " + slug);
 					// If this is a main object, then designate it as a default web object for its parent container
 					try {
@@ -269,6 +269,14 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 				String supplementFileName = ((Attribute)this.supplementFileNameXPath.selectSingleNode(supplement)).getValue();
 				PID supplementPID = JRDFGraphUtil.getPIDRelationshipSubject(g, ContentModelHelper.CDRProperty.slug.getURI(), supplementFileName);
 				String supplementTitle = ((Element)this.supplementTitleXPath.selectSingleNode(supplement)).getValue().trim();
+				//If the title is too long for the label field, then limit to just the main title
+				if (supplementTitle.length() >= 250){
+					supplementTitle = ((Element)this.supplementTitleXPath.selectSingleNode(supplement)).getChildTextTrim("b");
+					//If still too long, then truncate.
+					if (supplementTitle.length() >= 250){
+						supplementTitle = supplementTitle.substring(0, 249);
+					}
+				}
 				Document supplementFOXML = aip.getFOXMLDocument(supplementPID);
 				FOXMLJDOMUtil.setProperty(supplementFOXML, ObjectProperty.label, supplementTitle);
 				aip.saveFOXMLDocument(supplementPID, supplementFOXML);
