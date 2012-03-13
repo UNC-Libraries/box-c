@@ -208,14 +208,23 @@ public class IngestServiceRestController extends
 					job.put("size", c);
 				} catch (NullPointerException ignored) {
 				}
-				BufferedReader r = new BufferedReader(new FileReader(new File(
-						f, BatchIngestTask.INGEST_LOG)));
+				BufferedReader r = null;
 				String lastLine = null;
 				int countLines = 0;
-				for (String line = r.readLine(); line != null; line = r
-						.readLine()) {
-					lastLine = line;
-					countLines++;
+				try {
+					r = new BufferedReader(new FileReader(new File(
+						f, BatchIngestTask.INGEST_LOG)));
+					for (String line = r.readLine(); line != null; line = r
+							.readLine()) {
+						lastLine = line;
+						countLines++;
+					}
+				} finally {
+					if(r != null) {
+						try {
+							r.close();
+						} catch(IOException ignored) {}
+					}
 				}
 				if(lastLine != null) {
 					String[] lastarray = lastLine.split("\\t");
@@ -240,22 +249,29 @@ public class IngestServiceRestController extends
 						e1);
 			}
 			String error = null;
+			File faillog = new File(f, BatchIngestTask.FAIL_LOG);
+			job.put("failedTime", faillog.lastModified());
+			String line = null;
+			StringBuilder stringBuilder = new StringBuilder();
+			String ls = System.getProperty("line.separator");
+			BufferedReader reader = null;
 			try {
-				File faillog = new File(f, BatchIngestTask.FAIL_LOG);
-				job.put("failedTime", faillog.lastModified());
-				BufferedReader reader = new BufferedReader(new FileReader(
+				reader = new BufferedReader(new FileReader(
 						faillog));
-				String line = null;
-				StringBuilder stringBuilder = new StringBuilder();
-				String ls = System.getProperty("line.separator");
 				while ((line = reader.readLine()) != null) {
 					stringBuilder.append(line);
 					stringBuilder.append(ls);
 				}
-				error = stringBuilder.toString();
 			} catch (IOException e) {
 				error = "Cannot read failure log: " + e.getMessage();
+			} finally {
+				if(reader != null) {
+					try {
+						reader.close();
+					} catch(IOException ignored) {}
+				}
 			}
+			error = stringBuilder.toString();
 			job.put("error", error);
 			jobs.add(job);
 		}

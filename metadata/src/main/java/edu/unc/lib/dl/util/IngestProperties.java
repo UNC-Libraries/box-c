@@ -70,7 +70,14 @@ public class IngestProperties {
 			log.debug("loading ingest properties from " + this.propFile.getAbsolutePath());
 		}
 		Properties props = new Properties();
-		props.load(new FileInputStream(propFile));
+		FileInputStream in = new FileInputStream(propFile); 
+		try {
+			props.load(in);
+		} finally {
+			try {
+				in.close();
+			} catch(IOException ignored) {}
+		}
 		this.submitter = props.getProperty("submitter");
 		String er = props.getProperty("email.recipients");
 		if (er != null) {
@@ -172,13 +179,19 @@ public class IngestProperties {
 				count++;
 			}
 		}
+		FileOutputStream f = null;
 		try {
-			FileOutputStream f = new FileOutputStream(this.propFile);
+			f = new FileOutputStream(this.propFile);
 			props.store(f, "This file provides properties to the batch ingest service.");
-			f.flush();
-			f.close();
 		} catch (IOException e) {
 			throw new Error("Unexpected", e);
+		} finally {
+			if(f != null) {
+				try {
+					f.flush();
+					f.close();					
+				} catch(IOException ignored) {}
+			}
 		}
 	}
 

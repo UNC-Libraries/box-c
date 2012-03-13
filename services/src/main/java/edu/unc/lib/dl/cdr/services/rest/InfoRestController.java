@@ -70,6 +70,12 @@ public class InfoRestController implements ServletContextAware {
 			data.put("artifactId", pomProperties.get("artifactId"));
 		} catch (IOException e) {
 			LOG.warn("REST service cannot load pom.properties", e);
+		} finally {
+			if(in != null) {
+				try {
+					in.close();
+				} catch(IOException ignored) {}
+			}
 		}
 		// add urls to serviceInfo
 		Map<String, Object> uris = new HashMap<String, Object>();

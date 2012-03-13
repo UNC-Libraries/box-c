@@ -944,4 +944,16 @@ public class BatchIngestTask implements Runnable {
 		this.batchIngestQueue = batchIngestQueue;
 	}
 
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		if(this.ingestLogWriter != null) {
+			try {
+				this.ingestLogWriter.close();
+			} catch(IOException ignored) {}
+		}
+	}
+
+	
+	
 }
