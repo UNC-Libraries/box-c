@@ -240,7 +240,7 @@
 	</bean>
 	
 	<bean id="ajaxProxyController" class="edu.unc.lib.dl.ui.AjaxProxyController">
-		<property name="servicesUrl" value="https://${repository.host}${repository.port}/${services.context}/rest"/>
+		<property name="servicesUrl" value="${admin.services.url}${services.context}/rest"/>
 	</bean>
 
 	<bean id="passThroughController" class="edu.unc.lib.dl.ui.PassThroughController"> </bean>
