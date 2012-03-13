@@ -19,6 +19,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -44,7 +47,6 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.WebServiceFaultException;
 import org.springframework.ws.client.WebServiceIOException;
-import org.springframework.ws.client.WebServiceTransportException;
 import org.springframework.ws.client.core.WebServiceMessageCallback;
 import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.soap.SoapMessage;
@@ -644,12 +646,33 @@ public class ManagementClient extends WebServiceTemplate {
 			post.setRequestEntity(new MultipartRequestEntity(parts, post.getParams()));
 			http.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
 			int status = http.executeMethod(post);
+			
+			InputStream in = post.getResponseBodyAsStream();
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			int b;
+			try {
+				while ((b = in.read()) != -1) {
+					pw.write(b);
+				}
+			} finally {
+				if(pw != null) {
+					pw.flush();
+					pw.close();
+				}
+				if(in != null) {
+					try {
+						in.close();
+					} catch(IOException ignored) {}
+				}
+			}
+			
 			if (status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED || status == HttpStatus.SC_ACCEPTED) {
-				result = post.getResponseBodyAsString().trim();
+				result = sw.toString().trim();
 				log.info("Upload complete, response=" + result);
 			} else {
 				log.warn("Upload failed, response=" + HttpStatus.getStatusText(status));
-				log.debug(post.getResponseBodyAsString());
+				log.debug(sw.toString().trim());
 			}
 		} catch (Exception ex) {
 			throw new ServiceException(ex);
@@ -669,6 +692,10 @@ public class ManagementClient extends WebServiceTemplate {
 			out.output(xml, baos);
 		} catch (IOException e) {
 			throw new ServiceException("Unexpected error writing to byte array output stream", e);
+		} finally {
+			try {
+				baos.close();
+			} catch(IOException ignored) {}
 		}
 
 		// construct a post request to Fedora upload service
@@ -681,24 +708,40 @@ public class ManagementClient extends WebServiceTemplate {
 			Part[] parts = { new FilePart("file", new ByteArrayPartSource("md_events.xml", baos.toByteArray())) };
 			post.setRequestEntity(new MultipartRequestEntity(parts, post.getParams()));
 			http.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
+			
 			int status = http.executeMethod(post);
+
+			InputStream in = post.getResponseBodyAsStream();
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			int b;
+			try {
+				while ((b = in.read()) != -1) {
+					pw.write(b);
+				}
+			} finally {
+				if(pw != null) {
+					pw.flush();
+					pw.close();
+				}
+				if(in != null) {
+					try {
+						in.close();
+					} catch(IOException ignored) {}
+				}
+			}
 			if (status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED || status == HttpStatus.SC_ACCEPTED) {
-				result = post.getResponseBodyAsString().trim();
+				result = sw.toString().trim();
 				log.debug("Upload complete, response=" + result);
 			} else {
 				log.warn("Upload failed, response=" + HttpStatus.getStatusText(status));
-				log.debug(post.getResponseBodyAsString());
+				log.debug(sw.toString().trim());
 			}
 		} catch (Exception ex) {
 			log.error("Upload failed due to error", ex);
 			throw new ServiceException(ex);
 		} finally {
 			post.releaseConnection();
-			try {
-				baos.close();
-			} catch (IOException e) {
-				throw new ServiceException("Unexpected error closing byte array output stream", e);
-			}
 		}
 		return result;
 	}
