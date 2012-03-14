@@ -186,7 +186,7 @@ public class ContentModelHelper {
 	public static enum Model {
 		COLLECTION("Collection"), CONTAINER("Container"), GROUPAGENT("GroupAgent"), PERSONAGENT("PersonAgent"), SIMPLE(
 				"Simple"), SOFTWAREAGENT("SoftwareAgent"), PRESERVEDOBJECT("PreservedObject"), JP2DERIVEDIMAGE(
-				"JP2DerivedImage"), AGGREGATE_WORK("AggregateWork");
+				"JP2DerivedImage"), AGGREGATE_WORK("AggregateWork"), DEPOSIT_RECORD("DepositRecord");
 
 		private URI uri;
 		private PID pid;

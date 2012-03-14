@@ -26,6 +26,8 @@ import org.jrdf.graph.Graph;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.Model;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
@@ -90,6 +92,7 @@ public class SetOriginalDepositRecordFilter implements AIPIngestFilter {
 			foxml.getRootElement().addContent(locator);
 		}
 		rdfaip.saveFOXMLDocument(dr.getPid(), foxml);
+		JRDFGraphUtil.addFedoraProperty(g, dr.getPid(), FedoraProperty.hasModel, Model.DEPOSIT_RECORD.getURI());
 		if (dr.getDepositedBy() != null) {
 			JRDFGraphUtil.addFedoraPIDRelationship(g, dr.getPid(),
 					Relationship.depositedBy, dr.getDepositedBy().getPID());
