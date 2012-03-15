@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.abdera.i18n.iri.IRI;
@@ -77,26 +76,10 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
 
-		String pidString = null;
-		String collectionPath = SwordConfigurationImpl.COLLECTION_PATH + "/";
-		int pidIndex = collectionURI.indexOf(collectionPath);
-		if (pidIndex > -1){
-			pidString = collectionURI.substring(pidIndex + collectionPath.length());
-		}
-
-		LOG.debug("Collection URI pid is " + pidString);
-
-		PID containerPID = null;
-		if (pidString.trim().length() == 0){
-			containerPID = collectionsPidObject;
-		} else {
-			containerPID = new PID(pidString);
-		}
+		PID containerPID = extractPID(collectionURI, SwordConfigurationImpl.COLLECTION_PATH + "/");
 		
 		//Get the users group
-		List<String> groupList = new ArrayList<String>();
-		groupList.add(configImpl.getDepositorNamespace() + auth.getUsername());
-		groupList.add("public");
+		List<String> groupList = this.getGroups(auth, configImpl);
 		
 		if (!accessControlUtils.hasAccess(containerPID, groupList, "http://cdr.unc.edu/definitions/roles#curator")){
 			throw new SwordAuthException("Insufficient privileges to deposit to container " + containerPID.getPid());
@@ -166,10 +149,11 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			receipt.addEditMediaIRI(new IRI(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + resultPID.getPid()));
 		}
 
-		IRI editIRI = new IRI(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + representativePID.getPid() + ".atom");
+		IRI editIRI = new IRI(config.getSwordPath() + SwordConfigurationImpl.EDIT_PATH + "/" + representativePID.getPid());
+		IRI swordEditIRI = new IRI(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + representativePID.getPid() + ".atom");
 
 		receipt.setEditIRI(editIRI);
-		receipt.setSwordEditIRI(editIRI);
+		receipt.setSwordEditIRI(swordEditIRI);
 
 		receipt.setSplashUri(config.getBasePath() + "record?id=" + representativePID.getPid());
 

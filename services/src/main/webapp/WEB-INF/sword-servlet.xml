@@ -242,6 +242,12 @@
 		</property>
 	</bean>
 	
+	<bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl"
+		init-method="init">
+		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+		<property name="agentFactory" ref="agentFactory"/>
+	</bean>
+	
 	<context:annotation-config />
 	
 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>

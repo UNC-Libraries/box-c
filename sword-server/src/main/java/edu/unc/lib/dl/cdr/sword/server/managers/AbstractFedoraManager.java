@@ -17,10 +17,14 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.swordapp.server.AuthCredentials;
 
+import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.AccessControlUtils;
 import edu.unc.lib.dl.fedora.PID;
@@ -63,6 +67,29 @@ public abstract class AbstractFedoraManager {
 		}
 		reader.close();
 		return fileData.toString();
+	}
+	
+	protected PID extractPID(String uri, String basePath){
+		String pidString = null;
+		int pidIndex = uri.indexOf(basePath);
+		if (pidIndex > -1){
+			pidString = uri.substring(pidIndex + basePath.length());
+		}
+
+		PID targetPID = null;
+		if (pidString.trim().length() == 0){
+			targetPID = collectionsPidObject;
+		} else {
+			targetPID = new PID(pidString);
+		}
+		return targetPID;
+	}
+	
+	protected List<String> getGroups(AuthCredentials auth, SwordConfigurationImpl config){
+		List<String> groupList = new ArrayList<String>();
+		groupList.add(config.getDepositorNamespace() + auth.getUsername());
+		groupList.add("public");
+		return groupList;
 	}
 
 	public AccessClient getAccessClient() {

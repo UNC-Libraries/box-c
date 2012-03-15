@@ -31,6 +31,7 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 	public static final String COLLECTION_PATH = "/collection";
 	public static final String SERVICE_DOCUMENT_PATH = "/serviceDocument";
 	public static final String MEDIA_RESOURCE_PATH = "/em";
+	public static final String EDIT_PATH = "/object";
 	
 	private String authType = null;
 	private int maxUploadSize = -1;
@@ -49,7 +50,6 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 	}
 
 	public void init() {
-		//this.authType = context.getInitParameter("authentication-method");
 		collectionsPidObject = tripleStoreQueryService.fetchByRepositoryPath("/Collections");
 	}
 
