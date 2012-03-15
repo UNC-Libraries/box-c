@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
@@ -39,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.AbstractXMLEventMessage;
 import edu.unc.lib.dl.cdr.services.model.CDREventMessage;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
@@ -67,6 +69,16 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	
 	@Resource
 	private EnhancementConductor enhancementConductor;
+	
+	private Map<String,String> serviceNameLookup;
+	
+	@PostConstruct
+	public void init(){
+		serviceNameLookup = new HashMap<String,String>();
+		for (ObjectEnhancementService service: enhancementConductor.getServices()){
+			serviceNameLookup.put(service.getClass().getName(), service.getName());
+		}
+	}
 	
 	@RequestMapping(value = { "", "/" }, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getInfo() {
@@ -153,7 +165,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			List<String> failedServices = new ArrayList<String>();
 			failedEntry.put("failedServices", failedServices);
 			for (String failedService: entry.getValue().getFailedServices()){
-				failedServices.add(failedService);
+				failedServices.add(this.serviceNameLookup.get(failedService));
 			}
 			failedEntry.put("timestamp", entry.getValue().getTimestamp());
 			if (entry.getValue().getMessages() != null){

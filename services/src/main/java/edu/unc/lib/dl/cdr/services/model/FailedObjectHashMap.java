@@ -24,6 +24,10 @@ import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -123,11 +127,13 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String, FailedEnhance
 		}
 
 		if (failedObject == null) {
-			log.debug("Adding message to new FailedEnhancementObject for " + pid.getPid() + " with failureLog " + (failureLogFile != null));
+			log.debug("Adding message to new FailedEnhancementObject for " + pid.getPid() + " with failureLog "
+					+ (failureLogFile != null));
 			failedObject = new FailedEnhancementObject(pid, service.getName(), message, failureLogFile);
 			this.put(pid.getPid(), failedObject);
 		} else {
-			log.debug("Adding message to existing FailedEnhancementObject for " + pid.getPid() + " with failureLog " + (failureLogFile != null));
+			log.debug("Adding message to existing FailedEnhancementObject for " + pid.getPid() + " with failureLog "
+					+ (failureLogFile != null));
 			failedObject.addFailedService(service.getName());
 			failedObject.addMessage(message, failureLogFile);
 		}
@@ -208,7 +214,8 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String, FailedEnhance
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public static FailedObjectHashMap loadFailedEnhancements(String filePath, String failureLogPath) throws IOException, ClassNotFoundException {
+	public static FailedObjectHashMap loadFailedEnhancements(String filePath, String failureLogPath) throws IOException,
+			ClassNotFoundException {
 		try {
 			FileInputStream fileInputStream = new FileInputStream(filePath);
 			ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
@@ -230,27 +237,37 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String, FailedEnhance
 		failedObjectMap.clear();
 		return failedObjectMap;
 	}
-	
+
+	public List<ActionMessage> getFailedMessages() {
+		List<ActionMessage> messages = new ArrayList<ActionMessage>();
+		for (FailedEnhancementObject failedObject : this.values()) {
+			if (failedObject.getMessages() != null) {
+				messages.addAll(failedObject.getMessages());
+			}
+		}
+		return messages;
+	}
+
 	/**
 	 * Clears the list and cleans out the trace file directory.
 	 */
 	@Override
-	public synchronized void clear(){
+	public synchronized void clear() {
 		super.clear();
-		if (this.failureLogPath != null){
-			//Clear out the trace files
+		if (this.failureLogPath != null) {
+			// Clear out the trace files
 			File logDirectory = new File(this.failureLogPath);
 			File[] traceFiles = logDirectory.listFiles();
-			if (traceFiles != null && traceFiles.length > 0){
-				for (File traceFile: traceFiles){
+			if (traceFiles != null && traceFiles.length > 0) {
+				for (File traceFile : traceFiles) {
 					traceFile.delete();
 				}
 			}
 		}
 	}
-	
+
 	@Override
-	public FailedEnhancementObject remove(Object key){
+	public FailedEnhancementObject remove(Object key) {
 		FailedEnhancementObject failedObject = super.remove(key);
 		failedObject.deleteFailureLogFiles();
 		return failedObject;
