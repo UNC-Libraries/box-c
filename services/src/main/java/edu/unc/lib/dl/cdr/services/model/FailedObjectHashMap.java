@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -102,6 +104,16 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String,FailedEnhancem
 			}
 		}
 		return null;
+	}
+	
+	public List<ActionMessage> getFailedMessages(){
+		List<ActionMessage> messages = new ArrayList<ActionMessage>();
+		for (FailedEnhancementObject failedObject: this.values()){
+			if (failedObject.getMessages() != null){
+				messages.addAll(failedObject.getMessages());
+			}
+		}
+		return messages;
 	}
 	
 	@Override

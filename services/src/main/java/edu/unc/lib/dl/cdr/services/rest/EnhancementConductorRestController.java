@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
@@ -67,6 +68,16 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	
 	@Resource
 	private EnhancementConductor enhancementConductor;
+	
+	private Map<Class<?>,String> serviceNameLookup;
+	
+	@PostConstruct
+	public void init(){
+		serviceNameLookup = new HashMap<Class<?>,String>();
+		for (ObjectEnhancementService service: enhancementConductor.getServices()){
+			serviceNameLookup.put(service.getClass(), service.getName());
+		}
+	}
 	
 	@RequestMapping(value = { "", "/" }, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getInfo() {
@@ -153,7 +164,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			List<String> failedServices = new ArrayList<String>();
 			failedEntry.put("failedServices", failedServices);
 			for (Class<?> failedService: entry.getValue().getFailedServices()){
-				failedServices.add(failedService.getName());
+				failedServices.add(this.serviceNameLookup.get(failedService));
 			}
 			failedEntry.put("timestamp", entry.getValue().getTimestamp());
 			if (entry.getValue().getMessages() != null){
