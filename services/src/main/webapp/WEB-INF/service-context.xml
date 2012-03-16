@@ -48,27 +48,6 @@
 		<property name="config" value="file:${activemq.home}/conf/activemq.xml" />
 		<property name="start" value="true" />
 	</bean>
-	
-	<bean class="org.springframework.web.context.support.ServletContextAttributeExporter">
-		<property name="attributes">
-			<map>
-				<!-- inject the following beans into the servlet
-					context so the servlets can access them. 
-				<entry key="imageAccessService">
-					<ref bean="imageAccessService"/>
-				</entry>-->
-				<entry key="accessClient">
-					<ref bean="accessClient"/>
-				</entry>
-				<entry key="managementClient">
-					<ref bean="managementClient"/>
-				</entry>
-				<entry key="irodsAccount">
-					<ref bean="irodsAccount"/>
-				</entry>
-			</map>
-		</property>
-	</bean>
 
 	<bean id="tripleStoreQueryService"
 		class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl" destroy-method="destroy">
