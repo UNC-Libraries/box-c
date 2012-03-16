@@ -63,9 +63,9 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Provides an adapter for querying and modifying the triple store.
- *
+ * 
  * @author count0
- *
+ * 
  */
 public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryService {
 	private static final Log log = LogFactory.getLog(TripleStoreQueryServiceMulgaraImpl.class);
@@ -100,7 +100,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.services.TripleStoreService#fetchAllContents(edu.unc.lib .dl.services.PID)
 	 */
 	public List<PID> fetchAllContents(PID key) {
@@ -112,7 +112,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.services.TripleStoreService#fetchAllContents(edu.unc.lib .dl.services.PID)
 	 */
 	public Map<String, PID> fetchChildSlugs(PID parent) {
@@ -130,7 +130,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.services.TripleStoreService#fetchByPredicateAndLiteral (java.lang.String, java.lang.String)
 	 */
 	public List<PID> fetchByPredicateAndLiteral(String predicateURI, String literal) {
@@ -141,7 +141,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.services.TripleStoreService#fetchByRepositoryPath(java .lang.String)
 	 */
 	public PID fetchByRepositoryPath(String path) {
@@ -192,20 +192,20 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		return result;
 	}
 
-	private PID fetchCollectionsObject(){
+	private PID fetchCollectionsObject() {
 		return fetchCollectionsObject(false);
 	}
-	
-	private PID fetchCollectionsObject(boolean refresh){
-		if (refresh || collections == null){
+
+	private PID fetchCollectionsObject(boolean refresh) {
+		if (refresh || collections == null) {
 			collections = this.fetchByRepositoryPath("/Collections");
 		}
 		return collections;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.services.TripleStoreService#fetchCollection(edu.unc.lib .dl.services.PID)
 	 */
 	public PID fetchCollection(PID key) {
@@ -231,7 +231,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 				this.getResourceIndexModelUri(), ContentModelHelper.Relationship.contains, child.getURI());
 		List<PID> result = this.lookupDigitalObjects(query);
 		if (result.size() > 1) {
-			throw new IllegalRepositoryStateException("An objects seems to be contained by more than one object: "+child);
+			throw new IllegalRepositoryStateException("An objects seems to be contained by more than one object: " + child);
 		} else if (result.size() == 0) {
 			return null; // only the REPOSITORY object.
 		} else {
@@ -299,7 +299,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/**
 	 * Fetches a list of PIDs that depend on this object or it's descendants.
-	 *
+	 * 
 	 * @param pid
 	 *           the PID of the object
 	 * @return a list of dependent object PIDs
@@ -377,7 +377,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.services.TripleStoreService#isContainer(edu.unc .lib.dl.services.PID)
 	 */
 	public boolean isContainer(PID key) {
@@ -399,7 +399,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.services.TripleStoreService#lookupContentModel(edu.unc .lib.dl.services.PID)
 	 */
 	public List<URI> lookupContentModels(PID key) {
@@ -422,7 +422,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/**
 	 * Lookup a list of digital object ids. The query must return pairs of $pid and $repositoryPath.
-	 *
+	 * 
 	 * @param query
 	 *           a query that returns resource values, one per row
 	 * @return a list of the URIs found
@@ -446,13 +446,13 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.services.TripleStoreService#lookupRepositoryPath(edu.unc .lib.dl.services.PID)
 	 */
 	@Override
 	public String lookupRepositoryPath(PID key) {
 		String result = null;
-		//Walk the hierarchy and gather the slugs for each child as we go.
+		// Walk the hierarchy and gather the slugs for each child as we go.
 		StringBuffer squery = new StringBuffer();
 		squery.append("select $p $c $slug from <%1$s>").append(" where walk( $p <%2$s> <%3$s> and $p <%2$s> $c)")
 				.append(" and $c <%4$s> $slug;");
@@ -460,7 +460,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 				ContentModelHelper.Relationship.contains.getURI(), key.getURI(),
 				ContentModelHelper.CDRProperty.slug.getURI());
 		List<List<String>> sresponse = this.lookupStrings(sq);
-		
+
 		if (!sresponse.isEmpty()) {
 			Map<String, String> child2slug = new HashMap<String, String>();
 			Map<String, String> parent2child = new HashMap<String, String>();
@@ -468,10 +468,10 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 				parent2child.put(solution.get(0), solution.get(1));
 				child2slug.put(solution.get(1), solution.get(2));
 			}
-			
+
 			StringBuffer sb = new StringBuffer();
-			for (String step = ContentModelHelper.Administrative_PID.REPOSITORY.getPID().getURI(); 
-					parent2child.containsKey(step); step = parent2child.get(step)) {
+			for (String step = ContentModelHelper.Administrative_PID.REPOSITORY.getPID().getURI(); parent2child
+					.containsKey(step); step = parent2child.get(step)) {
 				String stepChild = parent2child.get(step);
 				sb.append("/").append(child2slug.get(stepChild));
 			}
@@ -486,8 +486,8 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 	// USEFUL PUBLIC METHODS BELOW
 
 	/**
-	 * Generates a list containing PathInfo objects for each hierarchical step in the path leading up to 
-	 * and including PID key. If the object is an orphan, then an empty list is returned
+	 * Generates a list containing PathInfo objects for each hierarchical step in the path leading up to and including
+	 * PID key. If the object is an orphan, then an empty list is returned
 	 */
 	@Override
 	public List<PathInfo> lookupRepositoryPathInfo(PID key) {
@@ -511,11 +511,10 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 			rootInfo.setSlug("REPOSITORY");
 			rootInfo.setPid(ContentModelHelper.Administrative_PID.REPOSITORY.getPID());
 			result.add(rootInfo);
-			
+
 			Map<String, PathInfo> parent2child = new HashMap<String, PathInfo>();
-			
-			
-			//Build the PathInfo objects representing each tuple then store them as the child of their parent.
+
+			// Build the PathInfo objects representing each tuple then store them as the child of their parent.
 			for (List<String> solution : sresponse) {
 				PathInfo info = new PathInfo();
 				info.setPid(new PID(solution.get(1)));
@@ -523,11 +522,11 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 				info.setLabel(solution.get(3));
 				parent2child.put(solution.get(0), info);
 			}
-			
+
 			StringBuffer sb = new StringBuffer();
-			//Now add the steps into the file result list in the correct walk order.
-			for (String step = ContentModelHelper.Administrative_PID.REPOSITORY.getPID().getURI(); 
-					parent2child.containsKey(step); step = parent2child.get(step).getPid().getURI()) {
+			// Now add the steps into the file result list in the correct walk order.
+			for (String step = ContentModelHelper.Administrative_PID.REPOSITORY.getPID().getURI(); parent2child
+					.containsKey(step); step = parent2child.get(step).getPid().getURI()) {
 				PathInfo stepChild = parent2child.get(step);
 				sb.append("/").append(stepChild.getSlug());
 				stepChild.setPath(sb.toString());
@@ -602,12 +601,9 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 	private String sendTQL(String query) {
 		log.debug(query);
 		String result = null;
+		SOAPMessage reply = null;
 		SOAPConnection connection = null;
 		try {
-			// First create the connection
-			SOAPConnectionFactory soapConnFactory = SOAPConnectionFactory.newInstance();
-			connection = soapConnFactory.createConnection();
-			
 			// Next, create the actual message
 			MessageFactory messageFactory = MessageFactory.newInstance();
 			SOAPMessage message = messageFactory.createMessage();
@@ -622,7 +618,11 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 			CDATASection queryCDATA = message.getSOAPPart().createCDATASection(query);
 			queryStr.appendChild(queryCDATA);
 			message.saveChanges();
-			SOAPMessage reply = connection.call(message, this.getItqlEndpointURL());
+
+			// First create the connection
+			SOAPConnectionFactory soapConnFactory = SOAPConnectionFactory.newInstance();
+			connection = soapConnFactory.createConnection();
+			reply = connection.call(message, this.getItqlEndpointURL());
 
 			if (reply.getSOAPBody().hasFault()) {
 				reportSOAPFault(reply);
@@ -641,28 +641,31 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 				log.debug(result);
 			}
 		} catch (SOAPException e) {
+			log.error("Failed to prepare or send iTQL via SOAP", e);
 			throw new RuntimeException("Cannot query triple store at " + this.getItqlEndpointURL(), e);
 		} finally {
 			try {
 				connection.close();
 			} catch (SOAPException e) {
-				throw new RuntimeException("Failed to close SOAP connection for triple store at " + this.getItqlEndpointURL(), e);
+				log.error("Failed to close SOAP connection", e);
+				throw new RuntimeException("Failed to close SOAP connection for triple store at "
+						+ this.getItqlEndpointURL(), e);
 			}
 		}
 		return result;
 	}
 
 	@Override
-	public Map<?,?> sendSPARQL(String query) {
+	public Map<?, ?> sendSPARQL(String query) {
 		return sendSPARQL(query, "json");
 	}
 
 	@Override
-	public Map<?,?> sendSPARQL(String query, String format) {
+	public Map<?, ?> sendSPARQL(String query, String format) {
 		return sendSPARQL(query, format, 3);
 	}
-		
-	public Map<?,?> sendSPARQL(String query, String format, int retries) {
+
+	public Map<?, ?> sendSPARQL(String query, String format, int retries) {
 		PostMethod post = null;
 		try {
 			String postUrl = this.getSparqlEndpointURL();
@@ -672,7 +675,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 			post = new PostMethod(postUrl);
 			post.setRequestHeader("Content-Type", "application/sparql-query");
 			post.addParameter("query", query);
-			
+
 			int statusCode = httpClient.executeMethod(post);
 			if (statusCode != HttpStatus.SC_OK) {
 				throw new RuntimeException("SPARQL POST method failed: " + post.getStatusLine());
@@ -681,7 +684,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 				byte[] resultBytes = post.getResponseBody();
 				log.debug(new String(resultBytes, "utf-8"));
 				if ("json".equals(format)) {
-					return (Map<?,?>) mapper.readValue(new ByteArrayInputStream(resultBytes), Object.class);
+					return (Map<?, ?>) mapper.readValue(new ByteArrayInputStream(resultBytes), Object.class);
 				} else {
 					Map<String, String> resultMap = new HashMap<String, String>();
 					String resultString = new String(resultBytes, "utf-8");
@@ -771,7 +774,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.services.TripleStoreService#fetch(edu.unc.lib.dl.services .PID)
 	 */
 	public PID verify(PID key) {
@@ -804,11 +807,10 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		return false;
 	}
 
-	public boolean allowIndexing(PID pid){
-		String query = String.format("select ?pid from <%1$s> where {" +
-				"?pid <%2$s> 'yes' " +
-				"filter (?pid = <%3$s>) }",
-				this.getResourceIndexModelUri(), ContentModelHelper.CDRProperty.allowIndexing.getURI(), pid.getURI());
+	public boolean allowIndexing(PID pid) {
+		String query = String.format("select ?pid from <%1$s> where {" + "?pid <%2$s> 'yes' "
+				+ "filter (?pid = <%3$s>) }", this.getResourceIndexModelUri(),
+				ContentModelHelper.CDRProperty.allowIndexing.getURI(), pid.getURI());
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		List response = (List<Map>) ((Map) sendSPARQL(query).get("results")).get("bindings");
 
@@ -875,7 +877,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#lookupLabels(java.util.List)
 	 */
 	public String lookupLabel(PID pid) {
@@ -891,7 +893,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#lookupSlug(edu.unc.lib.dl .fedora.PID)
 	 */
 	public String lookupSlug(PID pid) {
@@ -906,11 +908,11 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 	}
 
 	@Override
-	public String lookupSourceMimeType(PID pid){
+	public String lookupSourceMimeType(PID pid) {
 		String result = null;
 		List<List<String>> res = this.queryResourceIndex(String.format(
-				"select $mimeType from <%1$s> where <%2$s> <%3$s> $mimeType;", this.getResourceIndexModelUri(), pid.getURI(),
-				ContentModelHelper.CDRProperty.hasSourceMimeType.getURI()));
+				"select $mimeType from <%1$s> where <%2$s> <%3$s> $mimeType;", this.getResourceIndexModelUri(),
+				pid.getURI(), ContentModelHelper.CDRProperty.hasSourceMimeType.getURI()));
 		if (!res.isEmpty() && !res.get(0).isEmpty()) {
 			result = res.get(0).get(0);
 		}
@@ -919,7 +921,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#fetchChildPathInfo(edu.unc .lib.dl.fedora.PID)
 	 */
 	@Override
@@ -952,7 +954,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#lookupPermissions (edu.unc.lib.dl.fedora.PID)
 	 */
 	@Override
@@ -1008,7 +1010,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#fetchAllTriples(PID pid) (edu.unc.lib.dl.fedora.PID)
 	 */
 	@Override
@@ -1036,7 +1038,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#lookupSinglePermission (edu.unc.lib.dl.fedora.PID, String)
 	 */
 	@Override
@@ -1088,8 +1090,8 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 			}
 
 			// follow REPOSITORY through all children, building path in order
-			for (String step = ContentModelHelper.Administrative_PID.REPOSITORY.getPID().getURI(); parent2child.containsKey(step); step = parent2child
-					.get(step)) {
+			for (String step = ContentModelHelper.Administrative_PID.REPOSITORY.getPID().getURI(); parent2child
+					.containsKey(step); step = parent2child.get(step)) {
 				result.add(new PID(step));
 			}
 		}
@@ -1106,7 +1108,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#getSourceData(edu.unc.lib.dl.fedora.PID)
 	 */
 	@Override
@@ -1124,17 +1126,15 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		}
 		return result;
 	}
-	
+
 	@Override
 	public boolean isOrphaned(PID key) {
 		PID collections = fetchCollectionsObject();
 		StringBuffer query = new StringBuffer();
-		query.append("select $p from <%1$s>")
-				.append(" where walk( $p <%2$s> <%3$s> and $p <%2$s> $c) ");
+		query.append("select $p from <%1$s>").append(" where walk( $p <%2$s> <%3$s> and $p <%2$s> $c) ");
 		query.append(" and <%4$s> <%2$s> $c;");
 		String q = String.format(query.toString(), this.getResourceIndexModelUri(),
-				ContentModelHelper.Relationship.contains.getURI(), key.getURI(),
-				collections.getURI());
+				ContentModelHelper.Relationship.contains.getURI(), key.getURI(), collections.getURI());
 
 		List<List<String>> response = this.lookupStrings(q);
 		return response.isEmpty() || response.get(0).isEmpty();
@@ -1142,9 +1142,9 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#fetchParentCollection(edu.unc.lib.dl.fedora.PID)
-	 *
+	 * 
 	 * select $p from <#ri> where walk( $p <http://cdr.unc.edu/definitions/1.0/base-model.xml#contains>
 	 * <info:fedora/uuid:4e349cbf-dda4-4d14-94eb-c2c27a59c06a> and $p
 	 * <http://cdr.unc.edu/definitions/1.0/base-model.xml#contains> $c) and $p <fedora-model:hasModel>
@@ -1168,42 +1168,45 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#getSurrogateData(edu.unc.lib.dl.fedora.PID)
 	 */
 	@Override
 	public List<String> getSurrogateData(PID pid) {
 		List<String> result = new ArrayList<String>();
-		String query = String.format("select $ds from <%1$s>"
-				+ " where $pid <%3$s> $ds"
-				+ " and ($pid <http://mulgara.org/mulgara#is> <%2$s> or <%2$s> <%4$s> $pid);", this.getResourceIndexModelUri(), pid.getURI(),
-				ContentModelHelper.CDRProperty.sourceData.getURI(), ContentModelHelper.CDRProperty.hasSurrogate.getURI());
+		String query = String.format("select $ds from <%1$s>" + " where $pid <%3$s> $ds"
+				+ " and ($pid <http://mulgara.org/mulgara#is> <%2$s> or <%2$s> <%4$s> $pid);",
+				this.getResourceIndexModelUri(), pid.getURI(), ContentModelHelper.CDRProperty.sourceData.getURI(),
+				ContentModelHelper.CDRProperty.hasSurrogate.getURI());
 		List<List<String>> response = this.lookupStrings(query);
 		if (!response.isEmpty()) {
 			for (List<String> entry : response) {
 				result.add(entry.get(0));
 			}
 		}
-		log.debug("found " + result.size() + " source/surrogate datastreams for "+pid.getPid());
+		log.debug("found " + result.size() + " source/surrogate datastreams for " + pid.getPid());
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#fetchPIDsSurrogateFor(edu.unc.lib.dl.fedora.PID)
 	 */
 	@Override
 	public List<PID> fetchPIDsSurrogateFor(PID pid) {
 		List<PID> result = new ArrayList<PID>();
 		String query = String.format("select $pid from <%1$s> where $pid <%3$s> <%2$s>;",
-				this.getResourceIndexModelUri(), pid.getURI(),
-				ContentModelHelper.CDRProperty.hasSurrogate.getURI());
+				this.getResourceIndexModelUri(), pid.getURI(), ContentModelHelper.CDRProperty.hasSurrogate.getURI());
 		List<List<String>> response = this.lookupStrings(query);
 		if (!response.isEmpty()) {
 			for (List<String> entry : response) {
 				result.add(new PID(entry.get(0)));
 			}
 		}
-		log.debug("found " + result.size() + " pid that have this one as a surrogate: "+pid.getPid());
+		log.debug("found " + result.size() + " pid that have this one as a surrogate: " + pid.getPid());
 		return result;
 	}
 }
