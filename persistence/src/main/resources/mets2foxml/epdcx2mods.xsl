@@ -17,8 +17,10 @@
 
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:mods="http://www.loc.gov/mods/v3" xmlns:epdcx="http://purl.org/eprint/epdcx/2006-11-16/"
+	xmlns:mods="http://www.loc.gov/mods/v3" xmlns:epdcx="http://purl.org/eprint/epdcx/2006-11-16/" 
+	xmlns:rights="http://www.cdlib.org/inside/diglib/copyrightMD" xmlns:xlink2="http://www.w3.org/1999/xlink"
 	version="2.0">
+	<xsl:import href="/xsl/languageMappings.xsl"/>
 	
 	<xsl:variable name="eprintGenre" select="document('/edu/unc/lib/dl/schematron/genres_eprints_swap.xml')/option-set"/>
 	<xsl:key name="eprintGenreLookup" match="option" use="valueURI"/>
@@ -71,7 +73,7 @@
 		<xsl:if test="./@epdcx:propertyURI='http://purl.org/dc/elements/1.1/identifier'">
 			<xsl:choose>
 				<xsl:when test="epdcx:valueString[@epdcx:sesURI='http://purl.org/dc/terms/URI']">
-					<mods:location><mods:uri><xsl:value-of select="epdcx:valueString" /></mods:uri></mods:location>
+					<mods:location><mods:url><xsl:value-of select="epdcx:valueString" /></mods:url></mods:location>
 				</xsl:when>
 				<xsl:otherwise>
 					<mods:identifier><xsl:value-of select="epdcx:valueString" /></mods:identifier>
@@ -81,16 +83,37 @@
 
 		<!-- language element: dc.language.iso -->
 		<xsl:if test="./@epdcx:propertyURI='http://purl.org/dc/elements/1.1/language' and ./@epdcx:vesURI='http://purl.org/dc/terms/RFC3066'">
-			<xsl:if test="epdcx:valueString/text() = 'en'">
-				<mods:language><mods:languageTerm type="code" authority="iso639-2b">eng</mods:languageTerm></mods:language>
-			</xsl:if>
+			<xsl:variable name="rfcCode" select="./epdcx:valueString/text()"/>
+			<xsl:variable name="languageCode">
+				<xsl:call-template name="RFC3066toISO639-2b">
+					<xsl:with-param name="langCode" select="$rfcCode"/>
+				</xsl:call-template>
+			</xsl:variable>
+			
+			<mods:language><mods:languageTerm type="code" authority="iso639-2b"><xsl:value-of select="$languageCode"/></mods:languageTerm></mods:language>
 		</xsl:if>
 		
-		<!-- publisher element -->
-		<xsl:if test="./@epdcx:propertyURI='http://purl.org/dc/elements/1.1/publisher'">
-			<mods:originInfo>
-				<mods:publisher><xsl:value-of select="epdcx:valueString" /></mods:publisher>
-			</mods:originInfo>
+		<!-- origin info element -->
+		<xsl:variable name="isPublisher" select="boolean(./@epdcx:propertyURI='http://purl.org/dc/elements/1.1/publisher')" />
+		<xsl:variable name="isDateIssued" select="boolean(./@epdcx:propertyURI='http://purl.org/dc/terms/available')" />
+		<xsl:if test="$isPublisher or $isDateIssued">
+			<xsl:choose>
+				<xsl:when test="$isPublisher">
+					<mods:originInfo>
+						<mods:publisher><xsl:value-of select="epdcx:valueString" /></mods:publisher>
+						<xsl:variable name="dateIssued" select="parent::*/epdcx:statement[@epdcx:propertyURI='http://purl.org/dc/terms/available']"/>
+						<xsl:if test="boolean($dateIssued)">
+							<mods:dateIssued><xsl:value-of select="$dateIssued/epdcx:valueString" /></mods:dateIssued>
+						</xsl:if>
+					</mods:originInfo>
+				</xsl:when>
+				<!-- Only show date issued this way if there is no publisher, so that the values are rolled up -->
+				<xsl:when test="$isDateIssued and not(boolean(parent::*/epdcx:statement[@epdcx:propertyURI='http://purl.org/dc/elements/1.1/publisher']))">
+					<mods:originInfo>
+						<mods:dateIssued><xsl:value-of select="epdcx:valueString" /></mods:dateIssued>
+					</mods:originInfo>
+				</xsl:when>
+			</xsl:choose>
 		</xsl:if>
 
 		<!-- item type element: dc.type -->
@@ -101,23 +124,15 @@
 					<xsl:with-param name="valueURI" select="$genreValueURI"/>
 				</xsl:apply-templates>
 			</xsl:variable>
-			<xsl:if test="not($eprintGenreName = '')">
-				<mods:typeOfResource><xsl:value-of select="$eprintGenreName"/></mods:typeOfResource>
-			</xsl:if>
 			<xsl:if test="./@epdcx:vesURI = 'http://purl.org/eprint/terms/Type'">
+				<mods:typeOfResource>text</mods:typeOfResource>
 				<mods:genre>
 					<xsl:attribute name="authorityURI">http://purl.org/eprint/type/</xsl:attribute>
 					<xsl:attribute name="valueURI"><xsl:value-of select="$genreValueURI"></xsl:value-of></xsl:attribute>
+					<xsl:attribute name="type">work type</xsl:attribute>
 					<xsl:value-of select="$eprintGenreName" />
 				</mods:genre>
 			</xsl:if>
-		</xsl:if>
-
-		<!-- date available element: dc.date.issued -->
-		<xsl:if test="./@epdcx:propertyURI='http://purl.org/dc/terms/available'">
-			<mods:originInfo>
-				<mods:dateIssued><xsl:value-of select="epdcx:valueString" /></mods:dateIssued>
-			</mods:originInfo>
 		</xsl:if>
 		
 		<!-- date element: dc.date -->
@@ -130,45 +145,45 @@
 		<!-- publication status element: dc.description.version -->
 		<xsl:if test="./@epdcx:propertyURI='http://purl.org/eprint/terms/status' and ./@epdcx:vesURI='http://purl.org/eprint/terms/Status'">
 			<xsl:if test="./@epdcx:valueURI='http://purl.org/eprint/status/PeerReviewed'">
-				<mods:note>Peer Reviewed</mods:note>
+				<mods:genre authority="local">Peer Reviewed</mods:genre>
 			</xsl:if>
 		</xsl:if>
 
 		<!-- copyright holder element: dc.rights.holder -->
 		<xsl:if test="./@epdcx:propertyURI='http://purl.org/eprint/terms/copyrightHolder'">
 			<mods:accessCondition>
-				<mods:rights.holder><mods:name><xsl:value-of select="epdcx:valueString" /></mods:name></mods:rights.holder>
+				<rights:copyright copyright.status="copyrighted" publication.status="published">
+					<rights:rights.holder><rights:name><xsl:value-of select="epdcx:valueString" /></rights:name></rights:rights.holder>
+				</rights:copyright>
 			</mods:accessCondition>
 		</xsl:if>
 		
 		<!-- license element -->
 		<xsl:if test="./@epdcx:propertyURI='http://purl.org/dc/terms/license'">
 			<mods:accessCondition type="use and reproduction">
-				<xsl:value-of select="epdcx:valueString" />
+				<xsl:attribute name="xlink2:href">
+					<xsl:value-of select="epdcx:valueString" />
+				</xsl:attribute>
 			</mods:accessCondition>
 		</xsl:if>
 		
 		<xsl:if test="./@epdcx:propertyURI='http://purl.org/dc/terms/accessRights/' and ./@epdcx:vesURI='http://purl.org/eprint/terms/AccessRights'">
 			<xsl:choose>
 				<xsl:when test="./@epdcx:valueURI='http://purl.org/eprint/accessRights/OpenAccess'">
-					<mods:accessCondition type="access">Open Access</mods:accessCondition>
+					<mods:accessCondition type="restriction on access">Open Access</mods:accessCondition>
 				</xsl:when>
 				<xsl:when test="./@epdcx:valueURI='http://purl.org/eprint/accessRights/RestrictedAccess'">
-					<mods:accessCondition type="access">Restricted Access</mods:accessCondition>
+					<mods:accessCondition type="restriction on access">Restricted Access</mods:accessCondition>
 				</xsl:when>
 				<xsl:when test="./@epdcx:valueURI='http://purl.org/eprint/accessRights/ClosedAccess'">
-					<mods:accessCondition type="access">Closed Access</mods:accessCondition>
+					<mods:accessCondition type="restriction on access">Closed Access</mods:accessCondition>
 				</xsl:when>
 			</xsl:choose>
 		</xsl:if>
 
 		<!-- bibliographic citation element: dc.identifier.citation -->
 		<xsl:if test="./@epdcx:propertyURI='http://purl.org/eprint/terms/bibliographicCitation'">
-			<mods:relatedItem type="host" displayLabel="Citation">
-				<mods:part>
-					<mods:text><xsl:value-of select="epdcx:valueString" /></mods:text>
-				</mods:part>
-			</mods:relatedItem>
+			<mods:note type="citation/reference"><xsl:value-of select="epdcx:valueString" /></mods:note>
 		</xsl:if>
 	</xsl:template>
 	
