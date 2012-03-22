@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cdr="http://cdr.lib.unc.edu/" xmlns:dcterms="http://purl.org/dc/terms/">
+	<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
+	<updated>2012-03-07T17:17:08Z</updated>
+	<summary type="text">Creating collection</summary>
+		
+	<cdr:datastream id="RELS-EXT">
+		<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+			<rdf:Description>
+				<allowIndexing xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">yes</allowIndexing>
+				<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:Collection"/>
+				<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:Container"/>
+				<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:PreservedObject"/>
+			</rdf:Description>
+		</rdf:RDF>
+	</cdr:datastream>
+
+	
+	<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+		<titleInfo>
+			<title>SOHP Test</title>
+		</titleInfo>
+		<name type="corporate">
+			<namePart>SHC</namePart>
+			<role>
+				<roleTerm type="text">creator</roleTerm>
+			</role>
+		</name>
+		<name type="personal">
+			<namePart>Some Names</namePart>
+			<role>
+				<roleTerm type="text">creator</roleTerm>
+			</role>
+		</name>
+		<originInfo>
+			<dateCreated keyDate="yes" encoding="iso8601">2003-01-01/2010-12-31</dateCreated>
+		</originInfo>
+		<language>
+			<languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+		</language>
+		<abstract>Some SOHP interviews and collected documentation</abstract>
+		<note type="short description">Interview files are both WAV and MP3. Documentation,
+			including signed agreements, are included in both MS Word and PDF
+			files.</note>
+		<subject>
+			<topic>Talkin&apos;</topic>
+			<topic>Livin&apos;</topic>
+		</subject>
+	</mods>
+	
+	<dcterms:abstract>The abstract</dcterms:abstract>
+	<dcterms:accessRights>Access Rights</dcterms:accessRights>
+	<dcterms:alternative>Alternative Title</dcterms:alternative>
+	<dcterms:available>Date Available</dcterms:available>
+	<dcterms:bibliographicCitation>Bibliographic Citation</dcterms:bibliographicCitation>
+	<dcterms:contributor>Contributor</dcterms:contributor>
+	<dcterms:description>Description</dcterms:description>
+	<dcterms:hasPart>Has Part</dcterms:hasPart>
+	<dcterms:hasVersion>Has Version</dcterms:hasVersion>
+	<dcterms:identifier>Identifier</dcterms:identifier>
+	<dcterms:isPartOf>Is Part Of</dcterms:isPartOf>
+	<dcterms:publisher>Publisher</dcterms:publisher>
+	<dcterms:references>References</dcterms:references>
+	<dcterms:rightsHolder>Rights Holder</dcterms:rightsHolder>
+	<dcterms:source>Source</dcterms:source>
+	<dcterms:title>Title</dcterms:title>
+	<dcterms:type>Type</dcterms:type>
+</entry>
