@@ -278,6 +278,14 @@ public interface TripleStoreQueryService {
 	 * @return a list of datastream URI strings
 	 */
 	public abstract List<String> getSourceData(PID pid);
+	
+	
+	/**
+	 * Lists all disseminators for the pid.
+	 * @param pid
+	 * @return a list of disseminator names for the object
+	 */
+	public abstract List<String> listDisseminators(PID pid);
 
 	/**
 	 * Gets datastreams that are cdr:sourceData for the object or its surrogate.

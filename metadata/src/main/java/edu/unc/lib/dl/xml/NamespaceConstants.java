@@ -81,12 +81,22 @@ public final class NamespaceConstants {
     /**
      * The Fedora content model URI.
      */
-    public static final String FEDORA__MODEL_URI = "info:fedora/fedora-system:def/model#";
+    public static final String FEDORA_MODEL_URI = "info:fedora/fedora-system:def/model#";
 
     /**
      * The Fedora content model namespace prefix.
      */
     public static final String FEDORA_MODEL_PREFIX = "fedModel";
+    
+    /**
+     * The Fedora content model URI.
+     */
+    public static final String FEDORA_VIEW_URI = "info:fedora/fedora-system:def/view#";
+
+    /**
+     * The Fedora content model namespace prefix.
+     */
+    public static final String FEDORA_VIEW_PREFIX = "fedView";
 
     /**
      * The URI for Fedora's FOXML namespace (note: no standard prefix).

@@ -26,7 +26,9 @@ import static edu.unc.lib.dl.xml.NamespaceConstants.DCTERMS_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.DC_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.DC_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.FEDORA_MODEL_PREFIX;
-import static edu.unc.lib.dl.xml.NamespaceConstants.FEDORA__MODEL_URI;
+import static edu.unc.lib.dl.xml.NamespaceConstants.FEDORA_MODEL_URI;
+import static edu.unc.lib.dl.xml.NamespaceConstants.FEDORA_VIEW_PREFIX;
+import static edu.unc.lib.dl.xml.NamespaceConstants.FEDORA_VIEW_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.FOXML_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.LOCAL_RELS_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.LOCAL_RELS_URI;
@@ -97,8 +99,13 @@ public class JDOMNamespaceUtil {
     /**
      * Fedora content model namespace with standard prefix.
      */
-    public static final Namespace FEDORA_MODEL_NS = Namespace.getNamespace(FEDORA_MODEL_PREFIX, FEDORA__MODEL_URI);
+    public static final Namespace FEDORA_MODEL_NS = Namespace.getNamespace(FEDORA_MODEL_PREFIX, FEDORA_MODEL_URI);
 
+    /**
+     * Fedora content view namespace with standard prefix.
+     */
+    public static final Namespace FEDORA_VIEW_NS = Namespace.getNamespace(FEDORA_VIEW_PREFIX, FEDORA_VIEW_URI);
+    
     /**
      * Fedora Object XML namespace (no prefix).
      */

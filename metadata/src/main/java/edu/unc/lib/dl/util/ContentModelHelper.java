@@ -150,7 +150,8 @@ public class ContentModelHelper {
 	 */
 	public static enum FedoraProperty {
 		Active(JDOMNamespaceUtil.FEDORA_MODEL_NS, "Active"), hasModel(JDOMNamespaceUtil.FEDORA_MODEL_NS, "hasModel"), label(
-				JDOMNamespaceUtil.FEDORA_MODEL_NS, "label"), state(JDOMNamespaceUtil.FEDORA_MODEL_NS, "state"), ;
+				JDOMNamespaceUtil.FEDORA_MODEL_NS, "label"), state(JDOMNamespaceUtil.FEDORA_MODEL_NS, "state"), 
+				disseminates(JDOMNamespaceUtil.FEDORA_VIEW_NS, "disseminates");
 		private URI uri;
 
 		FedoraProperty(Namespace ns, String suffix) {
@@ -262,16 +263,48 @@ public class ContentModelHelper {
 			return this.uri.toString();
 		}
 	}
+	
+	public static enum ControlGroup {
+		INTERNAL("X"), MANAGED("M"), EXTERNAL("E"), REDIRECTED("R");
+		
+		private String attributeValue;
+		
+		ControlGroup(String attributeValue){
+			this.setAttributeValue(attributeValue); 
+		}
+
+		public String getAttributeValue() {
+			return attributeValue;
+		}
+
+		public void setAttributeValue(String attributeValue) {
+			this.attributeValue = attributeValue;
+		}
+	}
 
 	public static enum Datastream {
-		RELS_EXT("RELS-EXT"), DATA_FILE("DATA_FILE"), MD_TECHNICAL("MD_TECHNICAL"), IMAGE_JP2000("IMAGE_JP2000"),
-		MD_DESCRIPTIVE("MD_DESCRIPTIVE"), DC("DC"), MD_EVENTS("MD_EVENTS"), THUMB_SMALL("THUMB_SMALL"), THUMB_LARGE("THUMB_LARGE"),
-		MD_CONTENTS("MD_CONTENTS"), AUDIT("AUDIT");
+		RELS_EXT("RELS-EXT", ControlGroup.INTERNAL, false, "Fedora Object-to-Object Relationship Metadata"), 
+		DATA_FILE("DATA_FILE", ControlGroup.MANAGED, true, null), 
+		MD_TECHNICAL("MD_TECHNICAL", ControlGroup.MANAGED, false, "PREMIS Technical Metadata"), 
+		IMAGE_JP2000("IMAGE_JP2000", ControlGroup.MANAGED, false, "Derived JP2000 image"),
+		MD_DESCRIPTIVE("MD_DESCRIPTIVE", ControlGroup.INTERNAL, true, "Descriptive Metadata"), 
+		DC("DC", ControlGroup.INTERNAL, false, "Internal XML Metadata"), 
+		MD_EVENTS("MD_EVENTS", ControlGroup.MANAGED, false, "PREMIS Events Metadata"), 
+		THUMB_SMALL("THUMB_SMALL", ControlGroup.MANAGED, false, "Thumbnail Image"), 
+		THUMB_LARGE("THUMB_LARGE", ControlGroup.MANAGED, false, "Thumbnail Image"),
+		MD_CONTENTS("MD_CONTENTS", ControlGroup.INTERNAL, false, "List of Contents"), 
+		AUDIT("AUDIT", ControlGroup.INTERNAL, false, "Audit Trail for this object");
 
 		private String name;
+		private ControlGroup controlGroup;
+		private boolean versionable;
+		private String label;
 
-		Datastream(String name){
+		Datastream(String name, ControlGroup controlGroup, boolean versionable, String label){
 			this.setName(name);
+			this.setControlGroup(controlGroup);
+			this.setVersionable(versionable);
+			this.setLabel(label);
 		}
 
 		public void setName(String name) {
@@ -280,6 +313,30 @@ public class ContentModelHelper {
 
 		public String getName() {
 			return name;
+		}
+
+		public ControlGroup getControlGroup() {
+			return controlGroup;
+		}
+
+		public void setControlGroup(ControlGroup controlGroup) {
+			this.controlGroup = controlGroup;
+		}
+
+		public boolean isVersionable() {
+			return versionable;
+		}
+
+		public void setVersionable(boolean versionable) {
+			this.versionable = versionable;
+		}
+
+		public String getLabel() {
+			return label;
+		}
+
+		public void setLabel(String label) {
+			this.label = label;
 		}
 
 		public boolean equals(String value){
