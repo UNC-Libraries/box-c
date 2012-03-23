@@ -732,6 +732,24 @@
 		</complexType>
 	</element>
 
+	<element name="FixityReplicationObject">
+		<complexType>
+			<sequence>
+				<element name="message" type="string" nillable="true"/>
+				<element name="adminOnyen" type="string" nillable="true"/>
+				<element name="goodReplicationFile" type="base64Binary" nillable="true"/>
+				<element name="goodReplicationFileName" type="string" nillable="true"/>
+				<element name="badReplicationFile" type="base64Binary" nillable="true"/>
+				<element name="badReplicationFileName" type="string" nillable="true"/>
+				<element name="goodFixityFile" type="base64Binary" nillable="true"/>
+				<element name="goodFixityFileName" type="string" nillable="true"/>
+				<element name="badFixityFile" type="base64Binary" nillable="true"/>
+				<element name="badFixityFileName" type="string" nillable="true"/>
+			</sequence>
+		</complexType>
+	</element>
+
+
 	<element name="DeletePathRequest">
 		<complexType>
 			<sequence>

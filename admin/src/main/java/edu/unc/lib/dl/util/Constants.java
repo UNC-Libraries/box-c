@@ -63,6 +63,7 @@ public class Constants {
 	public static final String CREATE_COLLECTION_OBJECT = "CreateCollectionObject";
 	public static final String MEDIATED_SUBMIT_INGEST_OBJECT = "MediatedSubmitIngestObject";
 	public static final String METS_SUBMIT_INGEST_OBJECT = "MetsSubmitIngestObject";
+	public static final String FIXITY_REPLICATION_OBJECT = "FixityReplicationObject";
 	public static final String UPDATE_INGEST_OBJECT = "UpdateIngestObject";
 	public static final String MD_DESCRIPTIVE = "MD_DESCRIPTIVE";
 	public static final String MD_CONTENTS = "MD_CONTENTS";

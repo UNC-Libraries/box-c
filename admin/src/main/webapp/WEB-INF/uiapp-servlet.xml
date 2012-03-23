@@ -96,6 +96,8 @@
 				<prop key="/submit/mediated/**/*">mediatedSubmitController</prop>
 				<prop key="/submit/metsubmitbypid">metsSubmitByPidController</prop>
 				<prop key="/submit/metsubmitbypid/**/*">metsSubmitByPidController</prop>
+				<prop key="/admin/fixityreplication">fixityReplicationController</prop>
+				<prop key="/admin/fixityreplication/**/*">fixityReplicationController</prop>
 				<prop key="/admin/deleteobject">deleteObjectController</prop>
 				<prop key="/admin/deleteobject/**/*">deleteObjectController</prop>
 				<prop key="/admin/moveobject">moveObjectController</prop>
@@ -165,6 +167,19 @@
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="baseUrl" value="${admin.base.path}"/>
 	</bean>
+
+	<bean id="fixityReplicationController" class="edu.unc.lib.dl.ui.FixityReplicationController">
+		<property name="commandClass" value="edu.unc.lib.dl.util.FixityReplicationDAO"/>
+		<property name="commandName" value="fixityReplicationDAO"/>
+		<property name="formView" value="fixityreplication"/>
+		<property name="successView" value="fixityreplication"/>
+		<property name="uiWebService" ref="uiWebService"/>
+		<property name="agentManager" ref="agentManager"/>
+		<property name="folderManager" ref="folderManager"/>
+		<property name="uiUtilityMethods" ref="uiUtilityMethods"/>
+		<property name="baseUrl" value="${admin.base.path}"/>		
+	</bean>
+
 
 	<bean id="metsSubmitByPidController" class="edu.unc.lib.dl.ui.MetsSubmitByPidController">
 		<property name="commandClass" value="edu.unc.lib.dl.util.MetsSubmitByPidDAO"/>
