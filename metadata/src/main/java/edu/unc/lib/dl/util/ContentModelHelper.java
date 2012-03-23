@@ -306,6 +306,16 @@ public class ContentModelHelper {
 			this.setVersionable(versionable);
 			this.setLabel(label);
 		}
+		
+		public static Datastream getDatastream(String name){
+			if (name == null)
+				return null;
+			for (Datastream datastream: values()){
+				if (datastream.equals(name))
+					return datastream;
+			}
+			return null;
+		}
 
 		public void setName(String name) {
 			this.name = name;

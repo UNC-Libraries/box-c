@@ -15,10 +15,12 @@
  */
 package edu.unc.lib.dl.fedora;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -31,9 +33,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.jdom.Document;
+import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
 import org.jdom.output.SAXOutputter;
+import org.jdom.output.XMLOutputter;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -113,6 +118,66 @@ public class ClientUtils {
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * Serializes a non-FOXML root XML element.  Does not attempt to attach local namespaces to sub-elements.
+	 * @param element 
+	 * @return
+	 */
+	public static byte[] serializeXML(Element element) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Writer pw;
+		try {
+			pw = new OutputStreamWriter(baos, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new ServiceException("UTF-8 character encoding support is required", e);
+		}
+		
+		Format format = Format.getPrettyFormat();
+		XMLOutputter outputter = new XMLOutputter(format);
+		
+		try {
+			outputter.output(element, pw);
+			pw.flush();
+			byte[] result = baos.toByteArray();
+			return result;
+		} catch (IOException e) {
+			log.error("Failed to serialize element", e);
+		} finally {
+			try {
+				pw.close();
+				baos.close();
+			} catch (IOException e) {
+				log.error("Could not close streams", e);
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Serializes a JDOM element to a UTF-8 encoded file.  Does not enforce locally declared namespaces. 
+	 * @param element a detached, standalone element
+	 * @return
+	 */
+	public static File writeXMLToTempFile(Element element) throws IOException {
+		Format format = Format.getPrettyFormat();
+		XMLOutputter outputter = new XMLOutputter(format);
+		BufferedWriter writer = null;
+		try {
+			File result = File.createTempFile("ClientUtils-", ".xml");
+			writer = new BufferedWriter(new FileWriter(result));
+			outputter.output(element, writer);
+			return result;
+		} finally {
+			if (writer != null){
+				try {
+					writer.close();
+				} catch (IOException e) {
+					log.error("Failed to close temp file", e);
+				}
+			}
+		}
 	}
 
 	/**

@@ -45,6 +45,7 @@ import org.joda.time.DateTime;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.ClientUtils;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
@@ -60,9 +61,12 @@ import edu.unc.lib.dl.ingest.sip.SIPProcessor;
 import edu.unc.lib.dl.ingest.sip.SIPProcessorFactory;
 import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
 import edu.unc.lib.dl.schematron.SchematronValidator;
+import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.Checksum;
 import edu.unc.lib.dl.util.ContainerContentsHelper;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
@@ -626,6 +630,40 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			log.error("Cannot log PREMIS events for " + pid.getPid(), e);
 		}
 		return result;
+	}
+	
+	public String addOrReplaceDatastream(PID pid, Datastream datastream, File content, String mimetype, Agent user, String message) throws UpdateException {
+		return addOrReplaceDatastream(pid, datastream, null, content, mimetype, user, message);
+	}
+	
+	public String addOrReplaceDatastream(PID pid, Datastream datastream, String label, File content, String mimetype, Agent user, String message) throws UpdateException {
+		String dsLabel = datastream.getLabel();
+		if (label != null)
+			dsLabel = label;
+		List<String> datastreamNames = tripleStoreQueryService.listDisseminators(pid);
+		try {
+			if (datastream.getControlGroup().equals(ContentModelHelper.ControlGroup.INTERNAL)){
+				//Handle inline datastreams
+				if (datastreamNames.contains(datastream)){
+					return this.managementClient.modifyDatastreamByValue(pid, datastream.getName(), false, message, new ArrayList<String>(),
+							datastream.getLabel(), mimetype, null, null, content);
+				} else {
+					return this.managementClient.addInlineXMLDatastream(pid, datastream.getName(), false, message, new ArrayList<String>(),
+							datastream.getLabel(), datastream.isVersionable(), content);
+				}
+			} else if (datastream.getControlGroup().equals(ContentModelHelper.ControlGroup.MANAGED)){
+				//Handle managed datastreams
+				String dsLocation = managementClient.upload(content);
+				if (datastreamNames.contains(datastream)){
+					return managementClient.modifyDatastreamByReference(pid, datastream.getName(), false, message, Collections.<String>emptyList(), dsLabel, mimetype, null, null, dsLocation);
+				} else {
+					return managementClient.addManagedDatastream(pid, datastream.getName(), false, message, Collections.<String>emptyList(), dsLabel, datastream.isVersionable(), mimetype, dsLocation);
+				}
+			}
+		} catch (FedoraException e) {
+			throw new UpdateException("Failed to modify datastream " + datastream.getName() + " for " + pid.getPid(), e);
+		}
+		return null;
 	}
 
 	/*

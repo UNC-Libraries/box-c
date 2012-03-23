@@ -24,7 +24,9 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
+import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 public interface DigitalObjectManager {
 
@@ -134,6 +136,22 @@ public interface DigitalObjectManager {
 	public abstract String updateDescription(PID pid, File newMODSFile, String checksum, Agent user, String message)
 			throws IngestException;
 
+	/**
+	 * Adds or replaces the contents of the specified datastream with the file content.
+	 * @param pid
+	 * @param datastream
+	 * @param content
+	 * @param mimetype
+	 * @param user
+	 * @param message
+	 * @throws UpdateException
+	 */
+	public abstract String addOrReplaceDatastream(PID pid, Datastream datastream, File content, String mimetype,
+			Agent user, String message) throws UpdateException;
+	
+	public abstract String addOrReplaceDatastream(PID pid, Datastream datastream, String label, File content,
+			String mimetype, Agent user, String message) throws UpdateException; 
+	
 	/**
 	 * Moves the specified objects from their current containers to another existing container. The destination path must
 	 * correspond to a object having the Container model. Note that the List may include PIDs from a variety of different

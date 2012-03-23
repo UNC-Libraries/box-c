@@ -23,5 +23,6 @@ public class AtomPubMetadataUIP extends MetadataUIP {
 		incomingData = (HashMap<String, ?>)AtomPubMetadataParserUtil.extractDatastreams(entry);
 		originalData = new HashMap<String,Element>();
 		modifiedData = new HashMap<String,Element>();
+		this.message = entry.getSummary();
 	}
 }

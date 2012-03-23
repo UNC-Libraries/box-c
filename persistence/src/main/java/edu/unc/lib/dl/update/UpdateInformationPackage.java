@@ -1,5 +1,6 @@
 package edu.unc.lib.dl.update;
 
+import java.io.File;
 import java.util.Map;
 
 import edu.unc.lib.dl.agents.PersonAgent;
@@ -18,5 +19,11 @@ public interface UpdateInformationPackage {
 	public Map<String,?> getOriginalData();
 	
 	public Map<String,?> getModifiedData();
+	
+	public Map<String,File> getModifiedFiles();
+	
+	public String getMessage();
+	
+	public String getMimetype(String key);
 	
 }

@@ -1,5 +1,6 @@
 package edu.unc.lib.dl.update;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,17 +12,20 @@ public class UIPImpl implements UpdateInformationPackage {
 	protected PID pid;
 	protected PersonAgent user;
 	protected UpdateOperation operation;
-	
-	protected HashMap<String,?> incomingData;
-	protected HashMap<String,?> originalData;
-	protected HashMap<String,?> modifiedData;
-	
-	public UIPImpl(PID pid, PersonAgent user, UpdateOperation operation){
+
+	protected HashMap<String, ?> incomingData;
+	protected HashMap<String, ?> originalData;
+	protected HashMap<String, ?> modifiedData;
+
+	protected String message;
+
+	public UIPImpl(PID pid, PersonAgent user, UpdateOperation operation) {
 		this.pid = pid;
 		this.user = user;
 		this.operation = operation;
+		message = null;
 	}
-	
+
 	@Override
 	public PID getPID() {
 		return pid;
@@ -52,6 +56,16 @@ public class UIPImpl implements UpdateInformationPackage {
 		return modifiedData;
 	}
 
+	@Override
+	public Map<String, File> getModifiedFiles() {
+		return null;
+	}
+	
+	@Override
+	public String getMimetype(String key) {
+		return null;
+	}
+
 	public void setIncomingData(HashMap<String, ?> incomingData) {
 		this.incomingData = incomingData;
 	}
@@ -62,5 +76,13 @@ public class UIPImpl implements UpdateInformationPackage {
 
 	public void setModifiedData(HashMap<String, ?> modifiedData) {
 		this.modifiedData = modifiedData;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
 	}
 }

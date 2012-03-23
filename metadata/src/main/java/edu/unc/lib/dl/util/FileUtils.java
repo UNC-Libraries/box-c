@@ -204,4 +204,19 @@ public class FileUtils {
 			log.warn("Unable to delete data at: " + dir.getPath());
 		}
 	}
+	
+	public static byte[] readFileToByteArray(File file) throws IOException {
+		byte[] buffer = new byte[(int) file.length()];
+		InputStream ios = null;
+		try {
+			ios = new FileInputStream(file);
+			if (ios.read(buffer) == -1) {
+				throw new IOException("EOF reached while trying to read the whole file");
+			}
+			return buffer;
+		} finally {
+			if (ios != null)
+				ios.close();
+		}
+	}
 }

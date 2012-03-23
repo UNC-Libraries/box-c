@@ -88,6 +88,8 @@ import edu.unc.lib.dl.fedora.types.PurgeRelationshipResponse;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionable;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionableResponse;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
+import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
@@ -224,23 +226,21 @@ public class ManagementClient extends WebServiceTemplate {
 	public String addInlineXMLDatastream(PID pid, String dsid, boolean force, String message, List<String> altids,
 			String label, boolean versionable, Document xml) throws FedoraException {
 		File file = ClientUtils.writeXMLToTempFile(xml);
-		// String checksum = null;
-		// try {
-		// checksum = new Checksum().getChecksum(file);
-		// } catch (IOException e) {
-		// throw new Error(e);
-		// }
+		return addInlineXMLDatastream(pid, dsid, force, message, altids, label, versionable, file);
+	}
+	
+	public String addInlineXMLDatastream(PID pid, String dsid, boolean force, String message, List<String> altids,
+			String label, boolean versionable, File contentFile) throws FedoraException {
 		String location = null;
-		location = this.upload(file);
-		file.delete();
+		location = this.upload(contentFile);
+		contentFile.delete();
 		AddDatastream req = new AddDatastream();
 		req.setPid(pid.getPid());
 		req.setDsID(dsid);
 		req.setLogMessage(message);
 		req.setDsState(State.ACTIVE.id);
-		req.setControlGroup("X");
+		req.setControlGroup(ContentModelHelper.ControlGroup.INTERNAL.getAttributeValue());
 		req.setDsLocation(location);
-		// req.setChecksum("none");
 		req.setChecksumType(ChecksumType.MD5.id);
 		ArrayOfString alts = new ArrayOfString();
 		alts.getItem().addAll(altids);
@@ -251,9 +251,6 @@ public class ManagementClient extends WebServiceTemplate {
 		req.setVersionable(versionable);
 		AddDatastreamResponse resp = (AddDatastreamResponse) this.callService(req, Action.addDatastream);
 		String id = resp.getDatastreamID();
-		// String timestamp = this.modifyInlineXMLDatastream(pid, dsid,
-		// force, message, altids, label,
-		// xml);
 		return id;
 	}
 
@@ -459,7 +456,18 @@ public class ManagementClient extends WebServiceTemplate {
 	}
 
 	// DEPENDENCY SETTERS AND GETTERS
-
+	public String modifyDatastreamByValue(PID pid, String dsid, boolean force, String message, List<String> altids,
+			String label, String mimetype, String checksum, ChecksumType checksumType, File contentFile) throws FedoraException {
+		byte[] contentBytes;
+		try {
+			contentBytes = FileUtils.readFileToByteArray(contentFile);
+			return modifyDatastreamByValue(pid, dsid, force, message, altids, label, mimetype, checksum, checksumType, contentBytes);
+		} catch (IOException e) {
+			log.error("Could not read the new content file", e);
+		}
+		return null;
+	}
+	
 	public String modifyDatastreamByValue(PID pid, String dsid, boolean force, String message, List<String> altids,
 			String label, String mimetype, String checksum, ChecksumType checksumType, byte[] content)
 			throws FedoraException {
