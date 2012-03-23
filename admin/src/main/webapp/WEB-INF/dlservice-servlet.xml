@@ -91,6 +91,12 @@
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 
+	<bean id="fixityReplicationService" class="edu.unc.lib.dl.service.impl.FixityReplicationServiceImpl">
+		<property name="agentManager" ref="agentManager" />
+		<property name="managementClient" ref="managementClient" />
+	</bean>
+
+
 	<bean id="updateService" class="edu.unc.lib.dl.service.impl.UpdateServiceImpl">
 		<property name="agentManager" ref="agentManager" />
 		<property name="digitalObjectManager" ref="digitalObjectManager" />
@@ -288,6 +294,10 @@
 
 	<bean id="metsSubmitEndpoint" class="edu.unc.lib.dl.ws.MetsSubmitEndpoint">
 		<property name="submitService" ref="submitService" />
+	</bean>
+
+	<bean id="fixityReplicationEndpoint" class="edu.unc.lib.dl.ws.FixityReplicationEndpoint">
+		<property name="fixityReplicationService" ref="fixityReplicationService" />
 	</bean>
 
 	<bean id="updateEndpoint" class="edu.unc.lib.dl.ws.UpdateEndpoint">

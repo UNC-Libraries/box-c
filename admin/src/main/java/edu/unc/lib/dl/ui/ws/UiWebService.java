@@ -56,6 +56,7 @@ import edu.unc.lib.dl.schema.ItemInfoResponse;
 import edu.unc.lib.dl.schema.ListDatastreamsResponse;
 import edu.unc.lib.dl.schema.MediatedSubmitIngestObject;
 import edu.unc.lib.dl.schema.MetsSubmitIngestObject;
+import edu.unc.lib.dl.schema.FixityReplicationObject;
 import edu.unc.lib.dl.schema.MoveObjectRequest;
 import edu.unc.lib.dl.schema.MoveObjectResponse;
 import edu.unc.lib.dl.schema.OverviewDataRequest;
@@ -519,6 +520,14 @@ public class UiWebService extends WebServiceGatewaySupport {
 		return response;
 	}
 
+	public FixityReplicationObject fixityReplication(FixityReplicationObject request) {
+
+		FixityReplicationObject response = (FixityReplicationObject) getWebServiceTemplate()
+				.marshalSendAndReceive(this.getDefaultUri(), request);
+
+		return response;
+	}
+	
 	public MoveObjectResponse moveObjects(MoveObjectRequest request) {
 
 		MoveObjectResponse response = (MoveObjectResponse) getWebServiceTemplate()
