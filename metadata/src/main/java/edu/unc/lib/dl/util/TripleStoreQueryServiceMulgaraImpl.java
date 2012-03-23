@@ -1209,6 +1209,21 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 	}
 	
 	@Override
+	public List<String> listDisseminators(PID pid){
+		List<String> result = new ArrayList<String>();
+		String query = String.format("select $ds from <%1$s>" + " where $pid <%3$s> $ds"
+				+ " and $pid <http://mulgara.org/mulgara#is> <%2$s>;", this.getResourceIndexModelUri(), pid.getURI(),
+				ContentModelHelper.FedoraProperty.disseminates.getURI());
+		List<List<String>> response = this.lookupStrings(query);
+		if (!response.isEmpty()) {
+			for (List<String> entry : response) {
+				result.add(entry.get(0));
+			}
+		}
+		return result;
+	}
+	
+	@Override
 	public boolean isOrphaned(PID key) {
 		PID collections = fetchCollectionsObject();
 		StringBuffer query = new StringBuffer();
