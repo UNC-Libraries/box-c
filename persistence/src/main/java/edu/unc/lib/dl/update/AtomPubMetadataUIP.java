@@ -18,7 +18,7 @@ import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
  */
 public class AtomPubMetadataUIP extends MetadataUIP {
 
-	public AtomPubMetadataUIP(PID pid, PersonAgent user, UpdateOperation operation, Entry entry) throws IOException, JDOMException{
+	public AtomPubMetadataUIP(PID pid, PersonAgent user, UpdateOperation operation, Entry entry) throws IOException, JDOMException, UIPException{
 		super(pid, user, operation);
 		incomingData = (HashMap<String, ?>)AtomPubMetadataParserUtil.extractDatastreams(entry);
 		originalData = new HashMap<String,Element>();

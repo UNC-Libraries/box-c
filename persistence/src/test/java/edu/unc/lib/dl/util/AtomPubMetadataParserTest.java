@@ -17,7 +17,7 @@ public class AtomPubMetadataParserTest extends Assert {
 
 	@Test
 	public void testDatastreamExtraction() throws Exception{
-		InputStream entryPart = new FileInputStream(new File("src/test/resources/metadataUpdateMultipleDS.xml"));
+		InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataUpdateMultipleDS.xml"));
 		Abdera abdera = new Abdera();
 		Parser parser = abdera.getParser();
 		Document<Entry> entryDoc = parser.parse(entryPart);

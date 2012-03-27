@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cdr="http://cdr.lib.unc.edu/" xmlns:dcterms="http://purl.org/dc/terms/">
+	<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
+	<updated>2012-03-07T17:17:08Z</updated>
+	<summary type="text">mods data</summary>
+		
+	<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+		<titleInfo>
+			<title>SOHP Test</title>
+		</titleInfo>
+		<name type="corporate">
+			<namePart>SHC</namePart>
+			<role>
+				<roleTerm type="text">creator</roleTerm>
+			</role>
+		</name>
+		<name type="personal">
+			<namePart>Some Names</namePart>
+			<role>
+				<roleTerm type="text">creator</roleTerm>
+			</role>
+		</name>
+		<originInfo>
+			<dateCreated keyDate="yes" encoding="iso8601">2003-01-01/2010-12-31</dateCreated>
+		</originInfo>
+		<language>
+			<languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+		</language>
+		<abstract>Some SOHP interviews and collected documentation</abstract>
+		<note type="short description">Interview files are both WAV and MP3. Documentation,
+			including signed agreements, are included in both MS Word and PDF
+			files.</note>
+		<subject>
+			<topic>Talkin&apos;</topic>
+			<topic>Livin&apos;</topic>
+		</subject>
+	</mods>
+</entry>
