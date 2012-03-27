@@ -59,6 +59,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 	Namespace ns = JDOMNamespaceUtil.FITS_NS;
 
 	private static final Logger LOG = LoggerFactory.getLogger(TechnicalMetadataEnhancement.class);
+	private static final int MAX_EXTENSION_LENGTH = 8;
 
 	private TechnicalMetadataEnhancementService service = null;
 
@@ -287,9 +288,15 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 			for (String altid : altIds.split(" ")) {
 				if (altid.length() > 0) {
 					URI alt = new URI(altid);
-					int ind = alt.getRawPath().lastIndexOf(".");
-					if (ind > 0 && alt.getRawPath().length() - 1 > ind) {
-						filename = alt.getRawPath().substring(ind + 1);
+					String rawPath = alt.getRawPath();
+					//Narrow file name down to after the last /
+					int lastSlash = rawPath.lastIndexOf("/");
+					if (lastSlash > 0)
+						rawPath = rawPath.substring(lastSlash + 1);
+					int ind = rawPath.lastIndexOf(".");
+					//Use text after last . as extension if its length is 0 > len >= MAX_EXTENSION_LENGTH
+					if (ind > 0 && rawPath.length() - 1 > ind && (rawPath.length() - ind <= MAX_EXTENSION_LENGTH)) {
+						filename = rawPath.substring(ind + 1);
 						filename = URIUtil.decode("linkedfile."+filename);
 						break;
 					}
