@@ -17,8 +17,11 @@ sub extractResources(@);
 # 600000; # 10 minutes for testing 
 my $sixMonthsInSeconds = 15778463; # six months in seconds
 
-my $goodoutputfile = "good_replication.log";
-my $badoutputfile = "bad_replication.log";
+my $currentTime = time();
+my $sixMonthsAgo = $currentTime - $sixMonthsInSeconds;
+
+my $goodoutputfile = "good_replication.log.$currentTime";
+my $badoutputfile = "bad_replication.log.$currentTime";
 
 my @requiredResources = ();
 
@@ -50,9 +53,6 @@ my $currentdirectory = "";
 
 open GOODFILE, ">>", $goodoutputfile or die $!;
 open BADFILE, ">>", $badoutputfile or die $!;
-
-my $currentTime = time();
-my $sixMonthsAgo = $currentTime - $sixMonthsInSeconds;
 
 print GOODFILE "$currentTime\n";
 print BADFILE "$currentTime\n";
@@ -102,7 +102,7 @@ for my $i (0 .. $#var) {
 
 			if(!$missingResource) 
 			{
-		        	print GOODFILE "$currentdirectory/$filename\n";
+		        	print GOODFILE "$currentdirectory/$filename @requiredResources\n";
 	
 		  		my $updateAVU = `imeta add -d $currentdirectory/$filename cdrReplica $currentTime`;
 			}

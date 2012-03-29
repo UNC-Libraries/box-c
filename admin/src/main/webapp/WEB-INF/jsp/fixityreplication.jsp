@@ -46,7 +46,7 @@
 	  <em><c:out escapeXml="false" value="${fixityReplicationDAO.message}" /></em>
   </p>
 
-<div style="float: right">
+<div style="float: left">
 	<table bgcolor="f8f8ff" border="0" cellspacing="0"
 		cellpadding="5">
 		<tbody>
