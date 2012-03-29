@@ -22,15 +22,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.FedoraUtil;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
@@ -45,7 +45,9 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 public class FedoraContentService {
 	private static final Logger LOG = LoggerFactory.getLogger(FedoraContentService.class);
 	private AccessClient accessClient = null;
+
 	private TripleStoreQueryService tripleStoreQueryService = null;
+	
 	@Autowired
 	private FedoraUtil fedoraUtil = null;
 
@@ -88,19 +90,18 @@ public class FedoraContentService {
 
 	public void streamData(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response,
 			String fileExtension, boolean asAttachment, int retryServerError) {
-		String dataUrl = fedoraUtil.getFedoraUrl();
+		String dataUrl = fedoraUtil.getFedoraUrl() + "/objects/" + simplepid + "/datastreams/" + datastream + "/content";
 
-		HttpClient client = new HttpClient();
-
-		UsernamePasswordCredentials cred = new UsernamePasswordCredentials(accessClient.getUsername(),
-				accessClient.getPassword());
-		client.getState().setCredentials(new AuthScope(null, 443), cred);
-		client.getState().setCredentials(new AuthScope(null, 80), cred);
-
-		GetMethod method = new GetMethod(dataUrl + "/objects/" + simplepid + "/datastreams/" + datastream + "/content");
+		HttpClient client = HttpClientUtil.getAuthenticatedClient(dataUrl, accessClient.getUsername(), accessClient.getPassword());
+		client.getParams().setAuthenticationPreemptive(true);
+		GetMethod method = new GetMethod(dataUrl);
 
 		try {
-			method.setDoAuthentication(true);
+			String groups = GroupsThreadStore.getGroups();
+			if (groups != null) {
+				method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups);
+			}
+			//method.setDoAuthentication(true);
 			client.executeMethod(method);
 			if (method.getStatusCode() == HttpStatus.SC_OK) {
 				if (response != null) {

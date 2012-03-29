@@ -25,7 +25,8 @@ import java.net.MalformedURLException;
  * Utitlity class for common <code>HttpClient</code> operations.
  */
 public class HttpClientUtil {
-
+	public static final String SHIBBOLETH_GROUPS_HEADER = "isMemberOf";
+	public static final String FORWARDED_GROUPS_HEADER = "forwardedGroups";
 
     /**
      * Gets a client that is configured to use HTTP Basic authentication.
