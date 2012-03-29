@@ -63,7 +63,7 @@ public class FixityReplicationDAO {
 	public MultipartFile getBadFixityFile() {
 		return badFixityFile;
 	}
-	public void setBadFixityFile(MultipartFile badFixityile) {
+	public void setBadFixityFile(MultipartFile badFixityFile) {
 		this.badFixityFile = badFixityFile;
 	}
 }

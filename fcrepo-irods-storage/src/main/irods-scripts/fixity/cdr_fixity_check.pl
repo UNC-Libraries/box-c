@@ -16,8 +16,11 @@ sub needsChecksum($$);
 # 600000; # 10 minutes for testing 
 my $sixMonthsInSeconds = 15778463; # six months in seconds
 
-my $goodoutputfile = "good_checksums.log";
-my $badoutputfile = "bad_checksums.log";
+my $currentTime = time();
+my $sixMonthsAgo = $currentTime - $sixMonthsInSeconds;
+
+my $goodoutputfile = "good_checksums.log.$currentTime";
+my $badoutputfile = "bad_checksums.log.$currentTime";
 
 if ($#ARGV != 0) {
 	print "usage: cdr_fixity_check /zoneName/home/fedora\n";
@@ -39,11 +42,6 @@ my $currentdirectory = "";
 
 open GOODFILE, ">>", $goodoutputfile or die $!;
 open BADFILE, ">>", $badoutputfile or die $!;
-
-# my ($sec,$min,$hour,etc...) = localtime(time);
-
-my $currentTime = time();
-my $sixMonthsAgo = $currentTime - $sixMonthsInSeconds;
 
 print GOODFILE "$currentTime\n";
 print BADFILE "$currentTime\n";

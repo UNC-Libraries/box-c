@@ -21,13 +21,11 @@ package edu.unc.lib.dl.service.impl;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.kahadb.util.ByteArrayInputStream;
 import org.jdom.Element;
-import org.joda.time.DateTime;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
@@ -39,7 +37,7 @@ import edu.unc.lib.dl.util.Constants;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 /**
- * @author steve
+ * 
  * 
  */
 public class FixityReplicationServiceImpl implements FixityReplicationService {
@@ -57,6 +55,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 	 * @see edu.unc.lib.dl.service.SubmitService#metsSubmit(edu.unc.lib.dl.schema .MediatedSubmitIngestObject)
 	 */
 	public FixityReplicationObject fixityReplication(FixityReplicationObject request) {
+
 		String error = null;
 
 		Agent agent = agentManager.findPersonByOnyen(request.getAdminOnyen(), true);
@@ -78,11 +77,8 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 		request.setGoodFixityFile(null);
 		request.setBadFixityFile(null);
 
-		if (error != null) {
-			request.setMessage(error);
-		} else {
-			request.setMessage(Constants.IN_PROGRESS_THREADED);
-		}
+		request.setMessage(Constants.IN_PROGRESS_THREADED);
+
 		return request;
 	}
 
@@ -91,11 +87,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 		try {
 
-			logger.debug("1...");
-
 			DataInputStream dis = new DataInputStream(new ByteArrayInputStream(logFile));
-
-			logger.debug("2...");
 
 			BufferedReader br = new BufferedReader(new InputStreamReader(dis));
 
@@ -118,14 +110,6 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 				}
 			}
 
-			logger.debug("4...");
-			String strLine;
-
-			logger.debug("5...");
-			while ((strLine = br.readLine()) != null) {
-				logger.debug("6...");
-				logger.debug(strLine);
-			}
 			dis.close();
 
 		} catch (Exception e) {
@@ -139,14 +123,43 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 	private String goodReplication(BufferedReader br, Agent agent) {
 		String error = null;
 
+		String strLine = null;
+
 		try {
 
-			String strLine;
+			String timestamp = br.readLine(); // first line is the timestamp
 
-			logger.debug("a...");
+			logger.debug("goodReplication");
 			while ((strLine = br.readLine()) != null) {
-				logger.debug("b...");
-				logger.debug(strLine);
+				logger.debug("in while, input: " + strLine);
+
+				strLine = strLine.trim();
+
+				// extract UUID
+				if (strLine.contains("uuid_")) {
+					int uuidIndex = strLine.indexOf("uuid_");
+					String uuid = strLine.substring(uuidIndex, strLine.indexOf(" ", uuidIndex));
+					if (uuid == null) {
+						logger.error("Could not process bad replication check entry: " + strLine);
+					} else {
+						logger.debug(uuid);
+
+						uuid = convertUUID(uuid);
+
+					   PID pid = new PID(uuid);
+
+						PremisEventLogger pelogger = new PremisEventLogger(agent);
+
+						logger.debug("timestamp: " + timestamp + " uuid: " + uuid + " strLine: " + strLine);
+
+						Element event = pelogger.logEvent(PremisEventLogger.Type.REPLICATION,
+						"Replication check succeeded at "
+						+ timestamp, pid);
+						pelogger.addDetailedOutcome(event, "success", " Message: " + strLine, null);
+
+						this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
+					}
+				}
 			}
 
 		} catch (Exception e) {
@@ -170,16 +183,19 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 			while ((strLine = br.readLine()) != null) {
 				logger.debug("in while, input: " + strLine);
 
-				// if line starts with "uuid_", process it
-
 				strLine = strLine.trim();
-				if (strLine.startsWith("uuid_")) {
 
-					// TODO: extract UUID for all cases
-					
-					
-					// extract UUID
-					String uuid = strLine.substring(strLine.indexOf("uuid_"), strLine.indexOf(" "));
+				// Examples
+				// ERROR: lsUtil: srcPath
+				// /cdrZone/home/fedora/admin_REPOSITORY_SOFTWARE+MD_EVENTS+MD_EVENTS./uuid_cb95ebe0-0860-4856-bbc4-1430d2004a6a+MD_EVENTS+MD_EVENTS.0
+				// does not exist or user lacks access permission
+				// /cdrZone/home/fedora/datastreams/2011/1021/16/11/uuid_13754cd5-649c-4fb9-8460-37dcd74d57e0+DATA_FILE+DATA_FILE.0
+				// has not been replicated to cdrResc2
+
+				// extract UUID
+				if (strLine.contains("uuid_")) {
+					int uuidIndex = strLine.indexOf("uuid_");
+					String uuid = strLine.substring(uuidIndex, strLine.indexOf(" ", uuidIndex));
 					if (uuid == null) {
 						logger.error("Could not process bad replication check entry: " + strLine);
 					} else {
@@ -189,13 +205,20 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 						PID pid = new PID(uuid);
 
-						PremisEventLogger logger = new PremisEventLogger(agent);
-						DateTime dateTime = new DateTime(timestamp);
+						PremisEventLogger pelogger = new PremisEventLogger(agent);
 
-						Element event = logger.logEvent(PremisEventLogger.Type.REPLICATION, "Replication check failed at "
+						Element event = pelogger.logEvent(PremisEventLogger.Type.REPLICATION, "Replication check failed at "
 								+ timestamp, pid);
-						logger.addDetailedOutcome(event, "failure", " Message: " + strLine, null);
-						this.managementClient.writePremisEventsToFedoraObject(logger, pid);
+						pelogger.addDetailedOutcome(event, "failure", " Message: " + strLine, null);
+
+						logger.debug("timestamp: " + timestamp + " pid: " + pid.getPid() + " strLine: " + strLine);
+
+						try {
+							this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
+							} catch (Exception e) {
+							logger.debug("Assuming this is from the object not existing: " + strLine + " | exception: "
+							+ e.getLocalizedMessage());
+						} 
 					}
 				}
 			}
@@ -205,7 +228,6 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 			error = e.getLocalizedMessage();
 		}
 
-		
 		return error;
 	}
 
@@ -228,7 +250,8 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 				if (strLine.startsWith("uuid_")) {
 
 					// extract UUID
-					String uuid = strLine.substring(strLine.indexOf("uuid_"), strLine.indexOf(" "));
+					int uuidIndex = strLine.indexOf("uuid_");
+					String uuid = strLine.substring(uuidIndex, strLine.indexOf(" ", uuidIndex));
 					if (uuid == null) {
 						logger.error("Could not process good fixity check entry: " + strLine);
 					} else {
@@ -238,13 +261,14 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 						PID pid = new PID(uuid);
 
-						PremisEventLogger logger = new PremisEventLogger(agent);
-						DateTime dateTime = new DateTime(timestamp);
+						PremisEventLogger pelogger = new PremisEventLogger(agent);
 
-						Element event = logger.logEvent(PremisEventLogger.Type.FIXITY_CHECK, "Fixity check succeeded at "
-								+ timestamp, pid);
-						logger.addDetailedOutcome(event, "success", " Message: " + strLine, null);
-						this.managementClient.writePremisEventsToFedoraObject(logger, pid);
+						logger.debug("timestamp: " + timestamp + " pid: " + pid.getPid() + " strLine: " + strLine);
+
+						Element event = pelogger.logEvent(PremisEventLogger.Type.FIXITY_CHECK, "Fixity check succeeded at "
+						+ timestamp, pid);
+						pelogger.addDetailedOutcome(event, "success", " Message: " + strLine, null);
+						this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
 					}
 				}
 			}
@@ -273,12 +297,13 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 				// if line starts with "ERROR:", process it
 
 				strLine = strLine.trim();
-				if (strLine.startsWith("ERROR:")) {
+				if (strLine.startsWith("ERROR: chksumUtil")) {
 					if (!strLine.endsWith("does not exist")) { // Object does not exist in iRODS; user will see this in bad
 																				// fixity log; we have no object to store this message on
 
 						// extract UUID
-						String uuid = strLine.substring(strLine.indexOf("uuid_"), strLine.indexOf(","));
+						int uuidIndex = strLine.indexOf("uuid_");
+						String uuid = strLine.substring(uuidIndex, strLine.indexOf(",", uuidIndex));
 						if (uuid == null) {
 							logger.error("Could not process bad fixity check entry: " + strLine);
 						} else {
@@ -288,13 +313,14 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 							PID pid = new PID(uuid);
 
-							PremisEventLogger logger = new PremisEventLogger(agent);
-							DateTime dateTime = new DateTime(timestamp);
+							PremisEventLogger pelogger = new PremisEventLogger(agent);
 
-							Element event = logger.logEvent(PremisEventLogger.Type.FIXITY_CHECK, "Fixity check failed at "
-									+ timestamp, pid);
-							logger.addDetailedOutcome(event, "failure", " Message: " + strLine, null);
-							this.managementClient.writePremisEventsToFedoraObject(logger, pid);
+							logger.debug("timestamp: " + timestamp + " pid: " + pid.getPid() + " strLine: " + strLine);
+
+							Element event = pelogger.logEvent(PremisEventLogger.Type.FIXITY_CHECK, "Fixity check failed at "
+							+ timestamp, pid);
+							pelogger.addDetailedOutcome(event, "failure", " Message: " + strLine, null);
+							this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
 						}
 					}
 				}
@@ -322,34 +348,6 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 		result = result.replace("_", ":");
 
 		return result;
-	}
-
-	private void setPremisVirusEvent(PremisEventLogger eventLogger, String date, String software, String person) {
-
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
-		if ((date != null) && (software != null) && (person != null)) {
-			// try {
-			// eventLogger.addVirusScan(sdf.parse(date), software, person);
-			// } catch (ParseException e) {
-			// logger.error("date parse exception", e);
-			// }
-		}
-
-	}
-
-	private void setPremisChecksumEvent(PremisEventLogger eventLogger, String date, String checksum, String person) {
-
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
-		if ((date != null) && (checksum != null) && (person != null)) {
-			// try {
-			// eventLogger.addMD5ChecksumCalculation(sdf.parse(date), checksum,
-			// person);
-			// } catch (ParseException e) {
-			// logger.error("date parse exception", e);
-			// }
-		}
 	}
 
 	public AgentFactory getAgentManager() {
