@@ -165,6 +165,16 @@ public class FedoraDataService {
 			boolean failOnException) throws FedoraException {
 		Collection<Future<Content>> futures = new ArrayList<Future<Content>>(callables.size());
 		
+		if(GroupsThreadStore.getGroups() != null) {
+			String groups = GroupsThreadStore.getGroups();
+			for(Callable<Content> c : callables) {
+				if(GroupForwardingCallable.class.isInstance(c)) {
+					GroupForwardingCallable rfc = (GroupForwardingCallable)c;
+					rfc.setGroups(groups);
+				}
+			}
+		}
+		
 		for (Callable<Content> callable: callables){
 			futures.add(executor.submit(callable));
 		}
@@ -230,12 +240,30 @@ public class FedoraDataService {
 	public void setThreadGroupPrefix(String threadGroupPrefix) {
 		this.threadGroupPrefix = threadGroupPrefix;
 	}
+	
+	private abstract class GroupForwardingCallable implements Callable<Content> {
+		String groups = null;
+
+		public void setGroups(String groups) {
+			this.groups = groups;
+		}
+		
+		protected void storeGroupsOnCurrentThread() {
+			LOG.debug("storing groups on thread for FedoraDataService.GroupForwardingCallable: "+groups);
+			GroupsThreadStore.storeGroups(groups);
+		}
+		
+		protected void clearGroupsOnCurrentThread() {
+			LOG.debug("clearing groups on thread for FedoraDataService.GroupForwardingCallable");
+			GroupsThreadStore.clearGroups();
+		}
+	}
 
 	/**
 	 * Retrieves FOXML and adds the results as a child of inputs.
 	 * 
 	 */
-	private class GetFoxml implements Callable<Content> {
+	private class GetFoxml extends GroupForwardingCallable {
 		private PID pid;
 
 		public GetFoxml(PID pid) {
@@ -245,8 +273,8 @@ public class FedoraDataService {
 		@Override
 		public Content call() {
 			try {
-
-				LOG.debug("Get FOXML for pid " + pid.getPid());
+				this.storeGroupsOnCurrentThread();
+				LOG.debug("HERE Get FOXML for pid " + pid.getPid());
 
 				// add foxml
 				Document foxml;
@@ -257,6 +285,8 @@ public class FedoraDataService {
 				throw new ServiceException("Failed to retrieve FOXML for " + pid.getPid() + " due to Fedora Exception", e);
 			} catch (Exception e) {
 				throw new ServiceException("Failed to retrieve FOXML for " + pid.getPid(), e);
+			} finally {
+				this.clearGroupsOnCurrentThread();
 			}
 		}
 	}
@@ -296,7 +326,7 @@ public class FedoraDataService {
 	 * Retrieves Mods datastream for pid and adds the results as a child of inputs.
 	 * 
 	 */
-	private class GetMods implements Callable<Content> {
+	private class GetMods extends GroupForwardingCallable {
 		private PID pid;
 
 		public GetMods(PID pid) {
@@ -307,12 +337,15 @@ public class FedoraDataService {
 		public Content call() {
 			// add MODS
 			try {
+				this.storeGroupsOnCurrentThread();
 				LOG.debug("Get mods for " + pid.getPid());
 				byte[] modsBytes = getAccessClient().getDatastreamDissemination(pid, "MD_DESCRIPTIVE", null).getStream();
 				Document mods = edu.unc.lib.dl.fedora.ClientUtils.parseXML(modsBytes);
 				return mods.getRootElement().detach();
 			} catch (Exception e) {
 				throw new ServiceException(e);
+			} finally {
+				this.clearGroupsOnCurrentThread();
 			}
 		}
 	}
@@ -369,7 +402,7 @@ public class FedoraDataService {
 	 * identified by pid and stores the results as a child of inputs named "order".
 	 * 
 	 */
-	private class GetOrderWithinParent implements Callable<Content> {
+	private class GetOrderWithinParent extends GroupForwardingCallable {
 		private PID pid;
 
 		public GetOrderWithinParent(PID pid) {
@@ -379,6 +412,7 @@ public class FedoraDataService {
 		@Override
 		public Content call() {
 			try {
+				this.storeGroupsOnCurrentThread();
 				LOG.debug("Get Order within Parent for " + pid.getPid());
 				PID container = tripleStoreQueryService.fetchContainer(pid);
 				byte[] structMapBytes = getAccessClient().getDatastreamDissemination(container, "MD_CONTENTS", null)
@@ -397,6 +431,8 @@ public class FedoraDataService {
 				return null;
 			} catch (Exception e) {
 				throw new ServiceException(e);
+			} finally {
+				this.clearGroupsOnCurrentThread();
 			}
 		}
 	}

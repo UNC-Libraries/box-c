@@ -142,7 +142,13 @@
 	<bean
 		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
 	<bean
-		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"></bean>
+		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+		<property name="interceptors">
+			<list>
+				<bean class="edu.unc.lib.dl.fedora.GroupsToThreadStoreInterceptor"/>
+			</list>
+		</property>
+	</bean>
 	<context:component-scan base-package="edu.unc.lib.dl.ui.controller" />
 
 	<!-- Map logical view names to physical views <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
@@ -163,6 +169,11 @@
 	</bean>
 
 	<bean class="edu.unc.lib.dl.ui.view.XSLViewResolver">
-		<property name="views" value="#{externalContentSettings.map('xslView')}" />
+		<!-- property name="views" value="#{externalContentSettings.map('xslView')}" /-->
+		<property name="views">
+			<map>
+				<entry key="external.xslView.fullRecord.url" value="${external.base.file.url}recordTransformations/fullRecord.xsl"/>
+			</map>
+		</property>
 	</bean>
 </beans>

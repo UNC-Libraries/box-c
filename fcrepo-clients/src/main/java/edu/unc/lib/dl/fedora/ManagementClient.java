@@ -116,23 +116,6 @@ public class ManagementClient extends WebServiceTemplate {
 		}
 	}
 
-	// private static class myCallback implements WebServiceMessageCallback {
-	// Object requestPayload = null;
-	// Marshaller marshaller = null;
-	// String uri = null;
-	//
-	// public void doWithMessage(WebServiceMessage message) throws IOException, TransformerException {
-	// ((SoapMessage) message).setSoapAction(uri);
-	// if (requestPayload != null) {
-	// if (marshaller == null) {
-	// throw new IllegalStateException(
-	// "No marshaller registered. Check configuration of WebServiceTemplate.");
-	// }
-	// MarshallingUtils.marshal(marshaller, requestPayload, message);
-	// }
-	// }
-	// }
-
 	public enum ChecksumType {
 		DEFAULT("DEFAULT"), DISABLED("DISABLED"), HAVAL("HAVAL"), MD5("MD5"), SHA_1("SHA-1"), SHA_256("SHA-256"), SHA_385(
 				"SHA-385"), SHA_512("SHA-512"), TIGER("TIGER"), WHIRLPOOL("WHIRLPOOL");
@@ -291,7 +274,7 @@ public class ManagementClient extends WebServiceTemplate {
 	 * modifications to the datastream replace the current datastream contents and no versioning history is preserved. To
 	 * put it another way: No new datastream versions will be made, but all the existing versions will be retained. All
 	 * changes to the datastream will be to the current version.
-	 *
+	 * 
 	 * @param pid
 	 *           The PID of the object.
 	 * @param dsid
@@ -366,7 +349,7 @@ public class ManagementClient extends WebServiceTemplate {
 		} catch (WebServiceIOException e) {
 			if (e.getMessage().contains("503")) {
 				throw new FedoraTimeoutException(e);
-			} else if(java.net.SocketTimeoutException.class.isInstance(e.getCause())) {
+			} else if (java.net.SocketTimeoutException.class.isInstance(e.getCause())) {
 				throw new FedoraTimeoutException(e);
 			} else {
 				throw new ServiceException(e);
@@ -646,7 +629,7 @@ public class ManagementClient extends WebServiceTemplate {
 			post.setRequestEntity(new MultipartRequestEntity(parts, post.getParams()));
 			http.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
 			int status = http.executeMethod(post);
-			
+
 			InputStream in = post.getResponseBodyAsStream();
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
@@ -656,17 +639,18 @@ public class ManagementClient extends WebServiceTemplate {
 					pw.write(b);
 				}
 			} finally {
-				if(pw != null) {
+				if (pw != null) {
 					pw.flush();
 					pw.close();
 				}
-				if(in != null) {
+				if (in != null) {
 					try {
 						in.close();
-					} catch(IOException ignored) {}
+					} catch (IOException ignored) {
+					}
 				}
 			}
-			
+
 			if (status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED || status == HttpStatus.SC_ACCEPTED) {
 				result = sw.toString().trim();
 				log.info("Upload complete, response=" + result);
@@ -695,7 +679,8 @@ public class ManagementClient extends WebServiceTemplate {
 		} finally {
 			try {
 				baos.close();
-			} catch(IOException ignored) {}
+			} catch (IOException ignored) {
+			}
 		}
 
 		// construct a post request to Fedora upload service
@@ -708,7 +693,7 @@ public class ManagementClient extends WebServiceTemplate {
 			Part[] parts = { new FilePart("file", new ByteArrayPartSource("md_events.xml", baos.toByteArray())) };
 			post.setRequestEntity(new MultipartRequestEntity(parts, post.getParams()));
 			http.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
-			
+
 			int status = http.executeMethod(post);
 
 			InputStream in = post.getResponseBodyAsStream();
@@ -720,14 +705,15 @@ public class ManagementClient extends WebServiceTemplate {
 					pw.write(b);
 				}
 			} finally {
-				if(pw != null) {
+				if (pw != null) {
 					pw.flush();
 					pw.close();
 				}
-				if(in != null) {
+				if (in != null) {
 					try {
 						in.close();
-					} catch(IOException ignored) {}
+					} catch (IOException ignored) {
+					}
 				}
 			}
 			if (status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED || status == HttpStatus.SC_ACCEPTED) {
@@ -772,7 +758,7 @@ public class ManagementClient extends WebServiceTemplate {
 	/**
 	 * Poll Fedora until the PID is found or timeout. This method will blocking until at most the specified timeout plus
 	 * the timeout of the underlying HTTP connection.
-	 *
+	 * 
 	 * @param pid
 	 *           the PID to look for
 	 * @param delay
@@ -784,7 +770,8 @@ public class ManagementClient extends WebServiceTemplate {
 	public boolean pollForObject(PID pid, int delay, int timeout) throws InterruptedException {
 		long startTime = System.currentTimeMillis();
 		while (System.currentTimeMillis() - startTime < timeout * 1000) {
-			if(Thread.interrupted()) throw new InterruptedException();
+			if (Thread.interrupted())
+				throw new InterruptedException();
 			try {
 				ObjectProfile doc = this.getAccessClient().getObjectProfile(pid, null);
 				if (doc != null)
@@ -796,7 +783,8 @@ public class ManagementClient extends WebServiceTemplate {
 				// fedora responded, but object not found
 				log.debug("got exception from fedora", e);
 			}
-			if(Thread.interrupted()) throw new InterruptedException();
+			if (Thread.interrupted())
+				throw new InterruptedException();
 			log.info(pid + " not found, waiting " + delay + " seconds..");
 			Thread.sleep(delay * 1000);
 		}

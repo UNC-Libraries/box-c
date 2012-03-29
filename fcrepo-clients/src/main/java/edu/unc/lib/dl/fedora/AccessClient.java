@@ -26,7 +26,6 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.WebServiceFaultException;
 import org.springframework.ws.client.WebServiceIOException;
-import org.springframework.ws.client.WebServiceTransportException;
 import org.springframework.ws.client.core.WebServiceMessageCallback;
 import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.soap.SoapMessage;
@@ -55,16 +54,16 @@ import edu.unc.lib.dl.fedora.types.ObjectProfile;
  * For Fedora 3.0 API documentation, please consult the <a
  * href="https://fedora-commons.org/confluence/display/FCR30/API-A">wiki</a>.
  * </p>
- *
+ * 
  * @author count0
- *
+ * 
  */
 public class AccessClient extends WebServiceTemplate {
 	/**
 	 * These are the actions support by the Fedora API-A service.
-	 *
+	 * 
 	 * @author count0
-	 *
+	 * 
 	 */
 	private enum Action {
 		describeRepository("describeRepository"), findObjects("findObjects"), getDatastreamDissemination(
@@ -91,7 +90,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Encapsulates all marshalled web service calls.
-	 *
+	 * 
 	 * @param request
 	 *           a marshalled request object
 	 * @param action
@@ -105,7 +104,7 @@ public class AccessClient extends WebServiceTemplate {
 		} catch (WebServiceIOException e) {
 			if (e.getMessage().contains("503")) {
 				throw new FedoraTimeoutException(e);
-			} else if(java.net.SocketTimeoutException.class.isInstance(e.getCause())) {
+			} else if (java.net.SocketTimeoutException.class.isInstance(e.getCause())) {
 				throw new FedoraTimeoutException(e);
 			} else {
 				throw new ServiceException(e);
@@ -155,21 +154,19 @@ public class AccessClient extends WebServiceTemplate {
 		return response.getDissemination();
 	}
 
-	public ObjectProfile getObjectProfile(PID pid, String timestamp) throws FedoraException,
-			ServiceException {
+	public ObjectProfile getObjectProfile(PID pid, String timestamp) throws FedoraException, ServiceException {
 		GetObjectProfile req = new GetObjectProfile();
 		req.setPid(pid.getPid());
 		if (timestamp != null) {
 			req.setAsOfDateTime(timestamp);
 		}
-		GetObjectProfileResponse response = (GetObjectProfileResponse) this.callService(req,
-				Action.getObjectProfile);
+		GetObjectProfileResponse response = (GetObjectProfileResponse) this.callService(req, Action.getObjectProfile);
 		return response.getObjectProfile();
 	}
 
 	/**
 	 * Get the Fedora base URL.
-	 *
+	 * 
 	 * @return Fedora base URL
 	 */
 	public String getFedoraContextUrl() {
@@ -178,7 +175,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Get the Fedora password.
-	 *
+	 * 
 	 * @return
 	 */
 	public String getPassword() {
@@ -187,7 +184,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Get the Fedora username
-	 *
+	 * 
 	 * @return
 	 */
 	public String getUsername() {
@@ -196,7 +193,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Initializes this client bean, calling the initializers of dependencies.
-	 *
+	 * 
 	 * @throws Exception
 	 *            when initialization fails
 	 */
@@ -224,7 +221,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Set the Fedora base URL.
-	 *
+	 * 
 	 * @param fedoraUrl
 	 */
 	public void setFedoraContextUrl(String fedoraContextUrl) {
@@ -233,7 +230,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Set the Fedora password.
-	 *
+	 * 
 	 * @param password
 	 */
 	public void setPassword(String password) {
@@ -242,7 +239,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Set the Fedora username
-	 *
+	 * 
 	 * @param username
 	 */
 	public void setUsername(String username) {

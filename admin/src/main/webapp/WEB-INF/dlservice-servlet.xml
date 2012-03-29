@@ -394,21 +394,19 @@
 		<property name="itqlEndpointURL"
 			value="http://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService" />
 		<property name="serverModelUri" value="rmi://${mulgara.host}/server1#" />
-		<property name="name" value="${fedora.admin.username}" />
-		<property name="pass" value="${fedora.admin.password}" />
 	</bean>
 	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
 		init-method="init">
 		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.admin.username}" />
-		<property name="password" value="${fedora.admin.password}" />
+		<property name="username" value="${fedora.appUser.username}" />
+		<property name="password" value="${fedora.appUser.password}" />
 		<property name="accessClient" ref="accessClient"/>
 	</bean>
 	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient"
 		init-method="init">
 		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.admin.username}" />
-		<property name="password" value="${fedora.admin.password}" />
+		<property name="username" value="${fedora.appUser.username}" />
+		<property name="password" value="${fedora.appUser.password}" />
 	</bean>
 
 	<!-- a pooling based JMS provider -->
