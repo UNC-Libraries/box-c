@@ -31,12 +31,14 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 		
 		uip = pipeline.processUIP(uip);
 		Map<String,File> modifiedFiles = uip.getModifiedFiles();
-		for (Entry<String,File> modifiedFile: modifiedFiles.entrySet()){
-			Datastream datastream = Datastream.getDatastream(modifiedFile.getKey());
-			if (datastream != null){
-				log.debug("Adding/replacing datastream " + datastream.getName() + " on " + uip.getPID().getPid());
-				digitalObjectManager.addOrReplaceDatastream(uip.getPID(), datastream, modifiedFile.getValue(),
-						uip.getMimetype(modifiedFile.getKey()), (Agent) uip.getUser(), uip.getMessage());
+		if (modifiedFiles != null){
+			for (Entry<String,File> modifiedFile: modifiedFiles.entrySet()){
+				Datastream datastream = Datastream.getDatastream(modifiedFile.getKey());
+				if (datastream != null && modifiedFile.getValue() != null){
+					log.debug("Adding/replacing datastream " + datastream.getName() + " on " + uip.getPID().getPid());
+					digitalObjectManager.addOrReplaceDatastream(uip.getPID(), datastream, modifiedFile.getValue(),
+							uip.getMimetype(modifiedFile.getKey()), (Agent) uip.getUser(), uip.getMessage());
+				}
 			}
 		}
 	}

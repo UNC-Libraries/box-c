@@ -18,11 +18,14 @@ import edu.unc.lib.dl.fedora.ClientUtils;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 
-public abstract class MetadataUIP extends FedoraObjectUIP {
+public class MetadataUIP extends FedoraObjectUIP {
 	private static Logger log = Logger.getLogger(MetadataUIP.class);
 
-	protected MetadataUIP(PID pid, PersonAgent user, UpdateOperation operation) {
+	public MetadataUIP(PID pid, PersonAgent user, UpdateOperation operation) {
 		super(pid, user, operation);
+		incomingData = new HashMap<String,Element>();
+		originalData = new HashMap<String,Element>();
+		modifiedData = new HashMap<String,Element>();
 	}
 
 	@SuppressWarnings("unchecked")
