@@ -156,5 +156,10 @@ public class EnhancementMessage implements ActionMessage {
 	public void setFilteredServices(List<ObjectEnhancementService> filteredServices) {
 		this.filteredServices = filteredServices;
 	}
+	
+	@Override
+	public String toString(){
+		return pid.getPid() + ":" + action;
+	}
 
 }
