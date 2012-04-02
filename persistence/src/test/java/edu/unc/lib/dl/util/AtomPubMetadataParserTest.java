@@ -45,4 +45,27 @@ public class AtomPubMetadataParserTest extends Assert {
 			outputter.output(element.getValue(), System.out);
 		}
 	}
+	
+	@Test
+	public void testDCOnlyExtraction() throws Exception{
+		InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataDC.xml"));
+		Abdera abdera = new Abdera();
+		Parser parser = abdera.getParser();
+		Document<Entry> entryDoc = parser.parse(entryPart);
+		Entry entry = entryDoc.getRoot();
+		Map<String,org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		
+		org.jdom.Element dcDS = datastreamMap.get(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM);
+		org.jdom.Element modsDS = datastreamMap.get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName());
+		org.jdom.Element relsExtDS = datastreamMap.get(ContentModelHelper.Datastream.RELS_EXT.getName());
+		//Atom DC should be set
+		assertNotNull(dcDS);
+		assertNull(relsExtDS);
+		//Results should contain MD_DESCRIPTIVE entry, but null content
+		assertTrue(datastreamMap.containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
+		assertNull(modsDS);
+		
+		//Make sure everything has been unwrapped
+		assertTrue(dcDS.getName().equals("dc"));
+	}
 }

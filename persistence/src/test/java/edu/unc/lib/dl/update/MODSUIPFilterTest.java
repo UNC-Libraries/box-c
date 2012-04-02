@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import org.apache.abdera.Abdera;
@@ -35,6 +36,17 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 public class MODSUIPFilterTest extends Assert {
 	@Resource
 	private SchematronValidator schematronValidator;
+	private MODSUIPFilter filter;
+	
+	public MODSUIPFilterTest(){
+		filter = new MODSUIPFilter();
+		
+	}
+	
+	@PostConstruct
+	public void init(){
+		filter.setSchematronValidator(schematronValidator);
+	}
 	
 	@Test
 	public void addMODSToObjectWithoutMODS() throws Exception {
@@ -57,10 +69,8 @@ public class MODSUIPFilterTest extends Assert {
 		assertFalse(uip.getModifiedData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
 		assertTrue(uip.getIncomingData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
 
-		MODSUIPFilter filter = new MODSUIPFilter();
-		filter.setSchematronValidator(schematronValidator);
 		filter.doFilter(uip);
-
+		
 		assertFalse(uip.getOriginalData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
 		assertTrue(uip.getModifiedData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
 		assertTrue(uip.getIncomingData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
@@ -100,8 +110,6 @@ public class MODSUIPFilterTest extends Assert {
 		int incomingChildrenCount = uip.getIncomingData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName())
 				.getChildren().size();
 
-		MODSUIPFilter filter = new MODSUIPFilter();
-		filter.setSchematronValidator(schematronValidator);
 		filter.doFilter(uip);
 		
 		assertEquals(originalChildrenCount,
@@ -133,8 +141,6 @@ public class MODSUIPFilterTest extends Assert {
 		assertFalse(uip.getModifiedData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
 		assertTrue(uip.getIncomingData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
 
-		MODSUIPFilter filter = new MODSUIPFilter();
-		filter.setSchematronValidator(schematronValidator);
 		filter.doFilter(uip);
 
 		assertFalse(uip.getOriginalData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
@@ -167,18 +173,14 @@ public class MODSUIPFilterTest extends Assert {
 		AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, user, UpdateOperation.REPLACE, entry);
 		uip.storeOriginalDatastreams(accessClient);
 
-		//Original data is not loaded for replace operations
-		assertFalse(uip.getOriginalData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
+		assertTrue(uip.getOriginalData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
 		assertFalse(uip.getModifiedData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
 		assertTrue(uip.getIncomingData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
 
 		int incomingChildrenCount = uip.getIncomingData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName())
 				.getChildren().size();
 
-		MODSUIPFilter filter = new MODSUIPFilter();
-		filter.setSchematronValidator(schematronValidator);
-		filter.doFilter(uip);
-		
+		filter.doFilter(uip);		
 		
 		for (Object elementObject: uip.getModifiedData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()).getChildren()){
 			Element element = (Element)elementObject;
@@ -211,8 +213,6 @@ public class MODSUIPFilterTest extends Assert {
 		MetadataUIP uip = new MetadataUIP(pid, user, UpdateOperation.ADD);
 		uip.getIncomingData().put(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), modsElement);
 		
-		MODSUIPFilter filter = new MODSUIPFilter();
-		filter.setSchematronValidator(schematronValidator);
 		try {
 			filter.doFilter(uip);
 			fail();
@@ -225,7 +225,6 @@ public class MODSUIPFilterTest extends Assert {
 	public void wrongUIPType() throws UIPException{
 		ContentUIP uip = mock(ContentUIP.class);
 		
-		MODSUIPFilter filter = new MODSUIPFilter();
 		filter.doFilter(uip);
 		
 		verify(uip, times(0)).getIncomingData();

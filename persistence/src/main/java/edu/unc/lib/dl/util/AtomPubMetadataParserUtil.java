@@ -54,14 +54,18 @@ public class AtomPubMetadataParserUtil {
 						}
 					}
 				} else if (modsQName.equals(element.getQName())){
-					//Create the default mods datastream
+					//Create the default mods datastream, taking precedence over the stub from DC terms
 					org.jdom.Element modsElement = abderaToJDOM(element);
 					datastreamMap.put(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), modsElement);
 				} else if (dcNamespace.equals(element.getQName().getNamespaceURI())){
 					//Populate dublin core properties from the default entry metadata
 					if (dcOutStream == null){
+						// Add in a stub for MD_DESCRIPTIVE if no MODS have been added yet.
+						if (!datastreamMap.containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName())){
+							datastreamMap.put(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), null);
+						}
 						dcOutStream = new ByteArrayOutputStream();
-						dcOutStream.write("<oai_dc:dc xmlns:oai_dc=\"http://www.openarchives.org/OAI/2.0/oai_dc/\">".getBytes("UTF-8"));
+						dcOutStream.write("<dcterms:dc xmlns:dcterms=\"http://purl.org/dc/terms/\">".getBytes("UTF-8"));
 					}
 					element.writeTo(dcOutStream);
 				}
@@ -69,7 +73,7 @@ public class AtomPubMetadataParserUtil {
 			
 			//Create the atom dublin core default datastream if it's populated
 			if (dcOutStream != null){
-				dcOutStream.write("</oai_dc:dc>".getBytes("UTF-8"));
+				dcOutStream.write("</dcterms:dc>".getBytes("UTF-8"));
 				SAXBuilder saxBuilder = new SAXBuilder();
 				ByteArrayInputStream inStream = new ByteArrayInputStream(dcOutStream.toByteArray());
 				org.jdom.Document jdomDocument = saxBuilder.build(inStream);

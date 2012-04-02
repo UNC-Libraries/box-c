@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cdr="http://cdr.lib.unc.edu/" xmlns:dcterms="http://purl.org/dc/terms/">
+	<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
+	<updated>2012-03-07T17:17:08Z</updated>
+	<summary type="text">DC metadata</summary>
+	
+	<dcterms:abstract>The abstract</dcterms:abstract>
+	<dcterms:accessRights>Access Rights</dcterms:accessRights>
+	<dcterms:alternative>Alternative Title</dcterms:alternative>
+	<dcterms:available>Date Available</dcterms:available>
+	<dcterms:bibliographicCitation>Bibliographic Citation</dcterms:bibliographicCitation>
+	<dcterms:contributor>Contributor</dcterms:contributor>
+	<dcterms:description>Description</dcterms:description>
+	<dcterms:hasPart>Has Part</dcterms:hasPart>
+	<dcterms:hasVersion>Has Version</dcterms:hasVersion>
+	<dcterms:identifier>Identifier</dcterms:identifier>
+	<dcterms:isPartOf>Is Part Of</dcterms:isPartOf>
+	<dcterms:publisher>Publisher</dcterms:publisher>
+	<dcterms:references>References</dcterms:references>
+	<dcterms:rightsHolder>Rights Holder</dcterms:rightsHolder>
+	<dcterms:source>Source</dcterms:source>
+	<dcterms:title>Title</dcterms:title>
+	<dcterms:type>Type</dcterms:type>
+</entry>

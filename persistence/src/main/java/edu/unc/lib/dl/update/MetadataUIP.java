@@ -53,8 +53,7 @@ public class MetadataUIP extends FedoraObjectUIP {
 	
 	@Override
 	public void storeOriginalDatastreams(AccessClient accessClient) throws UIPException {
-		//For efficiency, only pulling down the original if it is being modified, not replaced/deleted
-		if (!(this.operation.equals(UpdateOperation.ADD) || this.operation.equals(UpdateOperation.UPDATE))) 
+		if (incomingData == null)
 			return;
 		
 		for (String datastream: incomingData.keySet()){
