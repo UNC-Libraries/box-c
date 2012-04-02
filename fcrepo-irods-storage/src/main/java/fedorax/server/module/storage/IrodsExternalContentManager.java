@@ -134,7 +134,10 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 			m_http = new WebClient();
 			// m_http.USER_AGENT = m_userAgent;
 
-			String stagingLocations = getModuleParameter(Parameter.STAGING_LOCATIONS, false);
+			String stagingLocations = null;
+			try {
+				getModuleParameter(Parameter.STAGING_LOCATIONS, false);
+			} catch(ModuleInitializationException ignored) {}
 			if (stagingLocations != null && stagingLocations.length() > 5) {
 				LOG.info("Configuring staging locations: " + stagingLocations);
 				try {
