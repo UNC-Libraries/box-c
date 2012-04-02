@@ -206,6 +206,28 @@
 		</property>
 	</bean>
 	
+	<!-- Update processing -->
+	
+	<bean id="uipPipeline" class="edu.unc.lib.dl.update.UIPUpdatePipeline">
+		<property name="updateFilters">
+			<list>
+				<bean class="edu.unc.lib.dl.update.AtomDCToMODSFilter">
+					<property name="schematronValidator" ref="schematronValidator" />
+				</bean>
+				<bean class="edu.unc.lib.dl.update.MODSUIPFilter">
+					<property name="schematronValidator" ref="schematronValidator" />
+				</bean>
+				<bean class="edu.unc.lib.dl.update.RELSEXTUIPFilter"/>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="uipProcessor" class="edu.unc.lib.dl.update.FedoraObjectUIPProcessor">
+		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+		<property name="accessClient" ref="accessClient"/>
+		<property name="pipeline" ref="uipPipeline"/>
+	</bean>
+	
 	<!-- SWORD config -->
 
 	<bean id="config" class="edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl"
@@ -246,6 +268,7 @@
 		init-method="init">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="agentFactory" ref="agentFactory"/>
+		<property name="uipProcessor" ref="uipProcessor"/>
 	</bean>
 	
 	<context:annotation-config />

@@ -20,10 +20,15 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  */
 public class AtomPubMetadataUIP extends MetadataUIP {
 
-	public AtomPubMetadataUIP(PID pid, PersonAgent user, UpdateOperation operation, Entry entry) throws IOException,
-			JDOMException, UIPException {
+	public AtomPubMetadataUIP(PID pid, PersonAgent user, UpdateOperation operation, Entry entry) throws UIPException {
 		super(pid, user, operation);
-		incomingData = (HashMap<String, ?>) AtomPubMetadataParserUtil.extractDatastreams(entry);
+		try { 
+			incomingData = (HashMap<String, ?>) AtomPubMetadataParserUtil.extractDatastreams(entry);
+		} catch (IOException e) {
+			throw new UIPException("Unable to extract datastreams from submitted metadata for " + pid.getPid(), e);
+		} catch (JDOMException e) {
+			throw new UIPException("Unable to extract datastreams from submitted metadata for " + pid.getPid(), e);
+		}
 		// If there are DC fields in the root entry document but no MODS, then add a null MODS stub for future population
 		if (incomingData.containsKey(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM)
 				&& !incomingData.containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName())) {

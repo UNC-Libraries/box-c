@@ -3,6 +3,7 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.ContainerManager;
 import org.swordapp.server.Deposit;
@@ -14,29 +15,68 @@ import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
+import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.services.DigitalObjectManager;
+import edu.unc.lib.dl.update.AtomPubMetadataUIP;
+import edu.unc.lib.dl.update.UIPException;
+import edu.unc.lib.dl.update.UIPProcessor;
+import edu.unc.lib.dl.update.UpdateException;
+import edu.unc.lib.dl.update.UpdateOperation;
 
 public class ContainerManagerImpl extends AbstractFedoraManager implements ContainerManager {
 
+	private static Logger log = Logger.getLogger(ContainerManagerImpl.class);
+	
 	private DigitalObjectManager digitalObjectManager;
 	private AgentFactory agentFactory;
+	private UIPProcessor uipProcessor;
 
 	@Override
 	public DepositReceipt replaceMetadata(String editIRI, Deposit deposit, AuthCredentials auth,
 			SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
-		// TODO Auto-generated method stub
+		
+		PID targetPID = extractPID(editIRI, SwordConfigurationImpl.EDIT_PATH + "/");
+		
+		PersonAgent depositor = agentFactory.findPersonByOnyen(auth.getUsername(), false);
+		if (depositor == null){
+			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, " + auth.getUsername());
+		}
+		
+		SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
+		//Get the users group
+		List<String> groupList = this.getGroups(auth, configImpl);
+		
+		if (!accessControlUtils.hasAccess(targetPID, groupList, "http://cdr.unc.edu/definitions/roles#curator")){
+			throw new SwordAuthException("Insufficient privileges to update metadata for " + targetPID.getPid());
+		}
+		
+		AtomPubMetadataUIP uip;
+		try {
+			uip = new AtomPubMetadataUIP(targetPID, depositor, UpdateOperation.REPLACE, deposit.getSwordEntry().getEntry());
+		} catch (UIPException e) {
+			log.error("An exception occurred while attempting to create metadata UIP for " + targetPID.getPid(), e);
+			throw new SwordServerException("An exception occurred while attempting to create metadata UIP for " + targetPID.getPid(), e);
+		}
+		
+		try {
+			uipProcessor.process(uip);
+		} catch (UpdateException e) {
+			throw new SwordServerException("An exception occurred while attempting to update object " + targetPID.getPid(), e);
+		} catch (UIPException e) {
+			throw new SwordError("The provided UIP did not meet processing requirements for " + targetPID.getPid(), e);
+		}
+		
 		return null;
 	}
 
 	@Override
 	public DepositReceipt replaceMetadataAndMediaResource(String editIRI, Deposit deposit, AuthCredentials auth,
 			SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new SwordServerException("Method not yet supported");
 	}
 
 	@Override
@@ -121,5 +161,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		this.agentFactory = agentFactory;
 	}
 
-	
+	public void setUipProcessor(UIPProcessor uipProcessor) {
+		this.uipProcessor = uipProcessor;
+	}
 }

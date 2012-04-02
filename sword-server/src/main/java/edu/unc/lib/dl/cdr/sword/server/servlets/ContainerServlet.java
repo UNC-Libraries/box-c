@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -44,7 +43,11 @@ public class ContainerServlet extends BaseSwordServlet {
 	
 	@RequestMapping(value = { "/{pid}", "/{pid}/*" }, method = RequestMethod.PUT)
 	public void replaceMetadataOrMetadataAndContent(HttpServletRequest req, HttpServletResponse resp){
-		resp.setStatus(HttpStatus.NOT_IMPLEMENTED.value());
+		try {
+			this.api.put(req, resp);
+		} catch (Exception e) {
+			LOG.error("Failed to update container " + req.getQueryString(), e);
+		}
 	}
 
 	public void setContainerManager(ContainerManager containerManager) {
