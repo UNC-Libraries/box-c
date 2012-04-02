@@ -280,6 +280,7 @@
 		init-method="init">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="agentFactory" ref="agentFactory"/>
+		<property name="uipProcessor" ref="uipProcessor"/>
 	</bean>
 	
 	<context:annotation-config />
