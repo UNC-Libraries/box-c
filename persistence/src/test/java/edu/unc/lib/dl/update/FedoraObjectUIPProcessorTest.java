@@ -9,6 +9,7 @@ import org.junit.Test;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -63,5 +64,11 @@ public class FedoraObjectUIPProcessorTest extends Assert {
 		when(uip.getModifiedFiles()).thenReturn(null);
 		uipProcessor.process(uip);
 		verify(digitalObjectManager, times(2)).addOrReplaceDatastream(any(PID.class), any(Datastream.class), any(File.class), anyString(), any(Agent.class), anyString());
+	}
+	
+	@Test
+	public void blah(){
+		System.out.println(AccessControlRole.curator.getUri().toString());
+		
 	}
 }

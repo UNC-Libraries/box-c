@@ -32,6 +32,7 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
+import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -89,7 +90,7 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 		groupList.add("public");
 		
 		//Verify access control
-		if (!accessControlUtils.hasAccess(containerPID, groupList, "http://cdr.unc.edu/definitions/roles#metadataOnlyPatron")){
+		if (!accessControlUtils.hasAccess(containerPID, groupList, AccessControlRole.metadataOnlyPatron.getUri().toString())){
 			throw new SwordAuthException("Insufficient privileges to view the collection list for " + containerPID.getPid());
 		}
 		

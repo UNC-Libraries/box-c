@@ -15,6 +15,7 @@ import org.jdom.input.SAXBuilder;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.ClientUtils;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 
@@ -67,6 +68,8 @@ public class MetadataUIP extends FedoraObjectUIP {
 					Element rootElement = dsDocument.detachRootElement();
 					this.getOriginalData().put(datastream, rootElement);
 				}
+			} catch (NotFoundException e){
+				//Datastream wasn't found, therefore it doesn't exist and no original should be added
 			} catch (Exception e) {
 				throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
 						+ pid.getPid(), e);

@@ -19,7 +19,7 @@ import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 @Controller
 @RequestMapping(SwordConfigurationImpl.EDIT_PATH)
 public class ContainerServlet extends BaseSwordServlet {
-	private static Logger LOG = Logger.getLogger(ContainerServlet.class);
+	private static Logger log = Logger.getLogger(ContainerServlet.class);
 
 	@Resource
 	private ContainerManager containerManager;
@@ -37,7 +37,7 @@ public class ContainerServlet extends BaseSwordServlet {
 		try {
 			this.api.delete(req, resp);
 		} catch (Exception e) {
-			LOG.error("Failed to delete container " + req.getQueryString(), e);
+			log.error("Failed to delete container " + req.getQueryString(), e);
 		}
 	}
 	
@@ -46,7 +46,7 @@ public class ContainerServlet extends BaseSwordServlet {
 		try {
 			this.api.put(req, resp);
 		} catch (Exception e) {
-			LOG.error("Failed to update container " + req.getQueryString(), e);
+			log.error("Failed to update container " + req.getQueryString(), e);
 		}
 	}
 

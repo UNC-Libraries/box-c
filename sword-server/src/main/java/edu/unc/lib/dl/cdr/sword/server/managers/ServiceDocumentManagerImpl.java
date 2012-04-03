@@ -34,6 +34,7 @@ import org.swordapp.server.SwordServerException;
 import org.swordapp.server.SwordWorkspace;
 
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
+import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -77,7 +78,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 		groupList.add(configImpl.getDepositorNamespace() + auth.getUsername());
 		groupList.add("public");
 
-		if (!accessControlUtils.hasAccess(pid, groupList, "http://cdr.unc.edu/definitions/roles#metadataOnlyPatron")) {
+		if (!accessControlUtils.hasAccess(pid, groupList, AccessControlRole.metadataOnlyPatron.getUri().toString())) {
 			LOG.debug("Insufficient privileges to access the service document for " + pid.getPid());
 			throw new SwordAuthException("Insufficient privileges to access the service document for " + pid.getPid());
 		}
@@ -124,7 +125,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 			String slug = (String) ((Map<?, ?>) binding.get("slug")).get("value");
 
 			// Check that the user has curator access to this collection
-			if (accessControlUtils.hasAccess(containerPID, groupList, "http://cdr.unc.edu/definitions/roles#curator")) {
+			if (accessControlUtils.hasAccess(containerPID, groupList, AccessControlRole.curator.getUri().toString())) {
 				collection.setHref(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/"
 						+ containerPID.getPid());
 				collection.setTitle(slug);

@@ -641,22 +641,29 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		if (label != null)
 			dsLabel = label;
 		List<String> datastreamNames = tripleStoreQueryService.listDisseminators(pid);
+		log.debug("Current datastreams: " + datastreamNames);
+		String datastreamName = pid.getURI() + "/" + datastream.getName();
+		log.debug("Adding or replacing datastream: " + datastreamName);
 		try {
 			if (datastream.getControlGroup().equals(ContentModelHelper.ControlGroup.INTERNAL)){
 				//Handle inline datastreams
-				if (datastreamNames.contains(datastream)){
+				if (datastreamNames.contains(datastreamName)){
+					log.debug("Replacing preexisting internal datastream " + datastreamName);
 					return this.managementClient.modifyDatastreamByValue(pid, datastream.getName(), false, message, new ArrayList<String>(),
 							datastream.getLabel(), mimetype, null, null, content);
 				} else {
+					log.debug("Adding internal datastream " + datastreamName);
 					return this.managementClient.addInlineXMLDatastream(pid, datastream.getName(), false, message, new ArrayList<String>(),
 							datastream.getLabel(), datastream.isVersionable(), content);
 				}
 			} else if (datastream.getControlGroup().equals(ContentModelHelper.ControlGroup.MANAGED)){
 				//Handle managed datastreams
 				String dsLocation = managementClient.upload(content);
-				if (datastreamNames.contains(datastream)){
+				if (datastreamNames.contains(datastreamName)){
+					log.debug("Replacing preexisting managed datastream " + datastreamName);
 					return managementClient.modifyDatastreamByReference(pid, datastream.getName(), false, message, Collections.<String>emptyList(), dsLabel, mimetype, null, null, dsLocation);
 				} else {
+					log.debug("Adding managed datastream " + datastreamName);
 					return managementClient.addManagedDatastream(pid, datastream.getName(), false, message, Collections.<String>emptyList(), dsLabel, datastream.isVersionable(), mimetype, dsLocation);
 				}
 			}

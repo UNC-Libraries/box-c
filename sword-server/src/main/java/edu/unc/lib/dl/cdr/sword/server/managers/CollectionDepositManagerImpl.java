@@ -31,6 +31,7 @@ import org.swordapp.server.SwordServerException;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
+import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
@@ -81,7 +82,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		//Get the users group
 		List<String> groupList = this.getGroups(auth, configImpl);
 		
-		if (!accessControlUtils.hasAccess(containerPID, groupList, "http://cdr.unc.edu/definitions/roles#curator")){
+		if (!accessControlUtils.hasAccess(containerPID, groupList, AccessControlRole.curator.getUri().toString())){
 			throw new SwordAuthException("Insufficient privileges to deposit to container " + containerPID.getPid());
 		}
 		

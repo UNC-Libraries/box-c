@@ -3,6 +3,7 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.abdera.i18n.iri.IRI;
 import org.apache.log4j.Logger;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.ContainerManager;
@@ -17,6 +18,7 @@ import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
+import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
@@ -50,7 +52,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		//Get the users group
 		List<String> groupList = this.getGroups(auth, configImpl);
 		
-		if (!accessControlUtils.hasAccess(targetPID, groupList, "http://cdr.unc.edu/definitions/roles#curator")){
+		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.curator.getUri().toString())){
 			throw new SwordAuthException("Insufficient privileges to update metadata for " + targetPID.getPid());
 		}
 		
@@ -70,7 +72,11 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 			throw new SwordError("The provided UIP did not meet processing requirements for " + targetPID.getPid(), e);
 		}
 		
-		return null;
+		DepositReceipt receipt = new DepositReceipt();
+		receipt.setLocation(new IRI(editIRI));
+		receipt.setEmpty(true);
+		
+		return receipt;
 	}
 
 	@Override
@@ -119,7 +125,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		
 		List<String> groupList = this.getGroups(auth, configImpl);
 		
-		if (!accessControlUtils.hasAccess(targetPID, groupList, "http://cdr.unc.edu/definitions/roles#curator")){
+		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.admin.getUri().toString())){
 			throw new SwordAuthException("Insufficient privileges to delete object " + targetPID.getPid());
 		}
 		
