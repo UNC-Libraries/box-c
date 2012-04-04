@@ -60,8 +60,8 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		try {
 			uip = new AtomPubMetadataUIP(targetPID, depositor, UpdateOperation.REPLACE, deposit.getSwordEntry().getEntry());
 		} catch (UIPException e) {
-			log.error("An exception occurred while attempting to create metadata UIP for " + targetPID.getPid(), e);
-			throw new SwordServerException("An exception occurred while attempting to create metadata UIP for " + targetPID.getPid(), e);
+			log.warn("An exception occurred while attempting to create metadata UIP for " + targetPID.getPid(), e);
+			throw new SwordError("An exception occurred while attempting to create metadata UIP for " + editIRI + "\n" + e.getMessage());
 		}
 		
 		try {
@@ -69,7 +69,8 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		} catch (UpdateException e) {
 			throw new SwordServerException("An exception occurred while attempting to update object " + targetPID.getPid(), e);
 		} catch (UIPException e) {
-			throw new SwordError("The provided UIP did not meet processing requirements for " + targetPID.getPid(), e);
+			log.warn("Failed to process UIP for " + targetPID.getPid(), e);
+			throw new SwordError("A problem occurred while attempting to perform the requested update operation on " + editIRI + ".\n" + e.getMessage());
 		}
 		
 		DepositReceipt receipt = new DepositReceipt();

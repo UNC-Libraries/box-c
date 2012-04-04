@@ -106,10 +106,11 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 		}
 		try {
 			modsValidator.validate(new JDOMSource(mods));
-		} catch (Exception e) {
+		} catch (SAXException e) {
 			throw new UIPException("MODS failed to validate to schema", e);
+		} catch (Exception e) {
+			throw new RuntimeException("Unexpected exception while attempting to validate MODS", e);
 		}
-
 	}
 
 	public void setSchematronValidator(SchematronValidator schematronValidator) {
