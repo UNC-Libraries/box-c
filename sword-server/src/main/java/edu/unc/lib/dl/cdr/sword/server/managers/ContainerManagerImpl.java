@@ -37,10 +37,8 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 	private AgentFactory agentFactory;
 	private UIPProcessor uipProcessor;
 
-	@Override
-	public DepositReceipt replaceMetadata(String editIRI, Deposit deposit, AuthCredentials auth,
-			SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
-		
+	private DepositReceipt updateMetadata(String editIRI, Deposit deposit, AuthCredentials auth,
+			SwordConfiguration config, UpdateOperation operation) throws SwordError, SwordServerException, SwordAuthException {
 		PID targetPID = extractPID(editIRI, SwordConfigurationImpl.EDIT_PATH + "/");
 		
 		PersonAgent depositor = agentFactory.findPersonByOnyen(auth.getUsername(), false);
@@ -58,7 +56,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		
 		AtomPubMetadataUIP uip;
 		try {
-			uip = new AtomPubMetadataUIP(targetPID, depositor, UpdateOperation.REPLACE, deposit.getSwordEntry().getEntry());
+			uip = new AtomPubMetadataUIP(targetPID, depositor, operation, deposit.getSwordEntry().getEntry());
 		} catch (UIPException e) {
 			log.warn("An exception occurred while attempting to create metadata UIP for " + targetPID.getPid(), e);
 			throw new SwordError("An exception occurred while attempting to create metadata UIP for " + editIRI + "\n" + e.getMessage());
@@ -79,6 +77,12 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		
 		return receipt;
 	}
+	
+	@Override
+	public DepositReceipt replaceMetadata(String editIRI, Deposit deposit, AuthCredentials auth,
+			SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
+		return updateMetadata(editIRI, deposit, auth, config, UpdateOperation.REPLACE);
+	}
 
 	@Override
 	public DepositReceipt replaceMetadataAndMediaResource(String editIRI, Deposit deposit, AuthCredentials auth,
@@ -89,21 +93,19 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 	@Override
 	public DepositReceipt addMetadataAndResources(String editIRI, Deposit deposit, AuthCredentials auth,
 			SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new SwordServerException("Method not yet supported");
 	}
 
 	@Override
 	public DepositReceipt addMetadata(String editIRI, Deposit deposit, AuthCredentials auth, SwordConfiguration config)
 			throws SwordError, SwordServerException, SwordAuthException {
-		// TODO Auto-generated method stub
-		return null;
+		return updateMetadata(editIRI, deposit, auth, config, UpdateOperation.ADD);
 	}
 
 	@Override
 	public DepositReceipt addResources(String editIRI, Deposit deposit, AuthCredentials auth, SwordConfiguration config)
 			throws SwordError, SwordServerException, SwordAuthException {
-		// TODO Auto-generated method stub
+		// This happens in the MediaResourceManager.  This method isn't referenced
 		return null;
 	}
 

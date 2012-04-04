@@ -49,6 +49,15 @@ public class ContainerServlet extends BaseSwordServlet {
 			log.error("Failed to update container " + req.getQueryString(), e);
 		}
 	}
+	
+	@RequestMapping(value = {"/{pid}", "/{pid}/*" }, method = RequestMethod.POST)
+	public void addMetadataOrMetadataAndContent(HttpServletRequest req, HttpServletResponse resp){
+		try {
+			this.api.post(req, resp);
+		} catch (Exception e) {
+			log.error("Failed to update container " + req.getQueryString(), e);
+		}
+	}
 
 	public void setContainerManager(ContainerManager containerManager) {
 		this.containerManager = containerManager;

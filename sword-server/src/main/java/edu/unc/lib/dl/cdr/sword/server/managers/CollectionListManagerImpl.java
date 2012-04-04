@@ -120,8 +120,8 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 			
 			if (accessControlUtils.hasAccess(childPID, groupList, "http://cdr.unc.edu/definitions/roles#metadataOnlyPatron")){
 				Entry entry = feed.addEntry();
-				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.MEDIA_RESOURCE_PATH + "/" + childPID.getPid() + ".atom", "edit");
-				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.MEDIA_RESOURCE_PATH + "/" + childPID.getPid(), "edit-media");
+				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + childPID.getPid() + ".atom", "edit");
+				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + childPID.getPid(), "edit-media");
 				entry.setId(childPID.getURI());
 				entry.setTitle(slug);
 

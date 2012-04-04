@@ -31,7 +31,7 @@ import org.swordapp.server.MediaResourceManager;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 
 @Controller
-@RequestMapping(SwordConfigurationImpl.MEDIA_RESOURCE_PATH)
+@RequestMapping(SwordConfigurationImpl.EDIT_MEDIA_PATH)
 public class MediaResourceServlet extends BaseSwordServlet {
 	private static Logger LOG = Logger.getLogger(MediaResourceServlet.class);
 	
