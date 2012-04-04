@@ -46,6 +46,8 @@ import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.EvaluationResult;
 
+import edu.unc.lib.dl.util.ContentModelHelper;
+
 @SuppressWarnings("rawtypes")
 public class AccessControlUtils {
 
@@ -75,10 +77,6 @@ public class AccessControlUtils {
 	private long cacheResetTime;
 	private PID collectionsPid;
 
-	private Properties accessControlProperties = null;
-
-	private HashMap<String, List<String>> rolePermissions = null;
-
 	private static final Log LOG = LogFactory.getLog(AccessControlUtils.class);
 
 	private edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService = null;
@@ -104,7 +102,7 @@ public class AccessControlUtils {
 	}
 
 	public void setAccessControlProperties(Properties accessControlProperties) {
-		this.accessControlProperties = accessControlProperties;
+		//this.accessControlProperties = accessControlProperties;
 	}
 
 	public void startCacheCleanupThreadForFedoraBasedAccessControl() {
@@ -134,10 +132,6 @@ public class AccessControlUtils {
 		}
 
 		collectionsPid = tripleStoreQueryService.fetchByRepositoryPath("/Collections");
-
-		if (collectionsPid != null) {
-			cachePermissionsForRoles();
-		}
 
 		initComplete = true;
 
@@ -179,8 +173,6 @@ public class AccessControlUtils {
 
 		Map<String, List<String>> map = new HashMap<String, List<String>>();
 
-		Set<String> roles = rolePermissions.keySet();
-
 		Map<String, Set<String>> permissionGroupSets = new HashMap<String, Set<String>>();
 
 		// need to pick out roles, noinherit, embargoes
@@ -198,15 +190,13 @@ public class AccessControlUtils {
 			String key = iterator.next();
 
 			LOG.debug("getAccessControlFromRelsExt Key: " + key);
+			
+			if (AccessControlRole.roleExists(key)) { // found a role
 
-			if (roles.contains(key)) { // found a role
-
-				List<String> groups = relsext.get(key); // get groups for the
-				// role
-				List<String> permissions = rolePermissions.get(key); // get
-				// permissions
-				// for a
-				// role
+				// get object specific groups for the role
+				List<String> groups = relsext.get(key);
+				// get general permissions for the role
+				List<String> permissions = AccessControlRole.getRolePermissions(key);
 
 				for (String permission : permissions) {
 
@@ -230,9 +220,9 @@ public class AccessControlUtils {
 
 					permissionGroupSets.put(permission, temp);
 				}
-			} else if ("http://cdr.unc.edu/definitions/acl#inheritPermissions".equals(key)) {
+			} else if (ContentModelHelper.CDRProperty.inheritPermissions.getURI().toString().equals(key)) {
 				map.put(key, relsext.get(key));
-			} else if ("http://cdr.unc.edu/definitions/acl#embargo".equals(key)) {
+			} else if (ContentModelHelper.CDRProperty.embargo.getURI().toString().equals(key)) {
 				map.put(key, relsext.get(key));
 			}
 		}
@@ -278,53 +268,6 @@ public class AccessControlUtils {
 		LOG.debug("getAccessControlFromRelsExt exit");
 
 		return map;
-	}
-
-	private void cachePermissionsForRoles() {
-
-		LOG.debug("cachePermissionsForRoles entry");
-
-		if (rolePermissions == null) {
-			rolePermissions = new HashMap<String, List<String>>(16);
-
-			Enumeration<Object> keys = accessControlProperties.keys();
-
-			if (!keys.hasMoreElements()) {
-				LOG.error("cachePermissionsForRoles: No permissions found for roles; cannot determine access control settings.");
-			}
-
-			// Extract roles and their permissions
-			while (keys.hasMoreElements()) {
-				String role = (String) keys.nextElement();
-
-				String tempPermissions = accessControlProperties.getProperty(role);
-				if ((tempPermissions == null) || (tempPermissions.equals(""))) {
-					LOG.error("cachePermissionsForRoles: No permissions found for role: " + role);
-				} else {
-					String[] temp = tempPermissions.split(" ");
-					if ((temp == null) || (temp.length < 1)) {
-						LOG.error("cachePermissionsForRoles: No permissions found for role: " + role);
-					} else {
-						List<String> tempList = (this.isOnlyCacheReadPermissions() ? new ArrayList<String>(1) : new ArrayList<String>(12));
-
-						for (String permission : temp) {
-							// Are we only interested in read permissions?
-							if (this.isOnlyCacheReadPermissions()) {
-								if ((permission != null) && (permission.endsWith("Read"))) {
-									tempList.add(permission);
-								}
-							} else // Add all permissions
-							{
-								tempList.add(permission);
-							}
-						}
-						rolePermissions.put(role, tempList);
-					}
-				}
-			}
-		}
-
-		LOG.debug("cachePermissionsForRoles exit");
 	}
 
 	/*
@@ -506,7 +449,7 @@ public class AccessControlUtils {
 	 * @return
 	 */
 	public boolean hasAccess(PID inputPid, Collection<String> inputGroups, String role){
-		List<String> permissionTypes = rolePermissions.get(role);
+		List<String> permissionTypes = AccessControlRole.getRolePermissions(role);
 		if (LOG.isDebugEnabled()){
 			LOG.debug("hasAccess called for pid " + inputPid.getPid() + " groups " + inputGroups + 
 					" role " + role + " permissions " + permissionTypes);

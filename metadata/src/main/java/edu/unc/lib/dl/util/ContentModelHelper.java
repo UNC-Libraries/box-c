@@ -49,23 +49,37 @@ public class ContentModelHelper {
 	 *
 	 */
 	public static enum CDRProperty {
-		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), defaultWebObject("defaultWebObject"), sourceData("sourceData"), indexText("indexText"), onyen(
-				"onyen"), slug("slug"), sortOrder("sortOrder"), permitMetadataCreate("permitMetadataCreate"), permitMetadataRead(
-				"permitMetadataRead"), permitMetadataUpdate("permitMetadataUpdate"), permitMetadataDelete(
-				"permitMetadataDelete"), permitOriginalsCreate("permitOriginalsCreate"), permitOriginalsRead(
-				"permitOriginalsRead"), permitOriginalsUpdate("permitOriginalsUpdate"), permitOriginalsDelete(
-				"permitOriginalsDelete"), permitDerivativesCreate("permitDerivativesCreate"), permitDerivativesRead(
-				"permitDerivativesRead"), permitDerivativesUpdate("permitDerivativesUpdate"), permitDerivativesDelete(
-				"permitDerivativesDelete"), inheritPermissions("inheritPermissions"), hasSourceMimeType("hasSourceMimeType"),
-				hasSourceFileSize("hasSourceFileSize"), hasSurrogate("hasSurrogate"), thumb("thumb"), derivedJP2("derivedJP2"),
-				techData("techData"), 
-				depositedOnBehalfOf("depositedOnBehalfOf"), depositMethod("depositMethod"),
-				depositPackageType("depositPackageType"), depositPackageSubType("depositPackageSubType");
+		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), defaultWebObject("defaultWebObject"), sourceData(
+				"sourceData"), indexText("indexText"), onyen("onyen"), slug("slug"), sortOrder("sortOrder"), hasSourceMimeType(
+				"hasSourceMimeType"), hasSourceFileSize("hasSourceFileSize"), hasSurrogate("hasSurrogate"), thumb("thumb"), derivedJP2(
+				"derivedJP2"), techData("techData"), depositedOnBehalfOf("depositedOnBehalfOf"), depositMethod(
+				"depositMethod"), depositPackageType("depositPackageType"), depositPackageSubType("depositPackageSubType"), permitMetadataCreate(
+				"permitMetadataCreate"), permitMetadataRead("permitMetadataRead"), permitMetadataUpdate(
+				"permitMetadataUpdate"), permitMetadataDelete("permitMetadataDelete"), permitOriginalsCreate(
+				"permitOriginalsCreate"), permitOriginalsRead("permitOriginalsRead"), permitOriginalsUpdate(
+				"permitOriginalsUpdate"), permitOriginalsDelete("permitOriginalsDelete"), permitDerivativesCreate(
+				"permitDerivativesCreate"), permitDerivativesRead("permitDerivativesRead"), permitDerivativesUpdate(
+				"permitDerivativesUpdate"), permitDerivativesDelete("permitDerivativesDelete"), inheritPermissions(
+				"inheritPermissions", "http://cdr.unc.edu/definitions/acl#"), embargo("embargo",
+				"http://cdr.unc.edu/definitions/acl#");
 		private URI uri;
+		private String predicate;
 
-		CDRProperty(String suffix) {
+		CDRProperty(String predicate) {
 			try {
-				this.uri = new URI(JDOMNamespaceUtil.CDR_NS.getURI() + suffix);
+				this.predicate = predicate;
+				this.uri = new URI(JDOMNamespaceUtil.CDR_NS.getURI() + predicate);
+			} catch (URISyntaxException e) {
+				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
+				x.initCause(e);
+				throw x;
+			}
+		}
+		
+		CDRProperty(String predicate, String namespace) {
+			try {
+				this.predicate = predicate;
+				this.uri = new URI(namespace + predicate);
 			} catch (URISyntaxException e) {
 				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
 				x.initCause(e);
@@ -75,6 +89,10 @@ public class ContentModelHelper {
 
 		public URI getURI() {
 			return this.uri;
+		}
+
+		public String getPredicate() {
+			return predicate;
 		}
 
 		public boolean equals(String value){

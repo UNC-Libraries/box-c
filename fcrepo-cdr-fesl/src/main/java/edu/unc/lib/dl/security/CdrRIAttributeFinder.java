@@ -18,7 +18,6 @@ package edu.unc.lib.dl.security;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import org.fcrepo.server.security.xacml.MelcoeXacmlException;
@@ -103,23 +102,9 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 			Map<String, String> options = AttributeFinderConfigUtil
 					.getOptionMap(this.getClass().getName());
 
-			String roleString = options.get("cdr.roles");
-			String rolePrefix = options.get("cdr.role.prefix");
 			String tripleStorePrefix = options.get("cdr.role.triplestore.prefix");
 
-			String[] roles = roleString.split(" ");
-
-			logger.debug("loadSettingsFromOptions: roleString: " + roleString);
-			logger.debug("loadSettingsFromOptions: rolePrefix: " + rolePrefix);
 			logger.debug("loadSettingsFromOptions: tripleStorePrefix: " + tripleStorePrefix);
-
-			// load roles from config
-			Properties accessControlProperties = new Properties();
-			for (String role : roles) {
-				logger.debug("loadSettingsFromOptions: role: " + role);
-				String permissionString = options.get(rolePrefix + role);
-				accessControlProperties.put(tripleStorePrefix + role, permissionString);
-			}
 
 			// load caching settings and tripleStore
 			String username = options.get("cdr.username");
@@ -131,14 +116,13 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 			int cacheResetTime = convertStringToIntOtherwiseReturnZero(options.get("cdr.cache.reset.time.hours"));
 
 			TripleStoreQueryServiceMulgaraImpl tripleStoreQueryService = new TripleStoreQueryServiceMulgaraImpl();
-			tripleStoreQueryService.setName(username); // fedoraAdmin
-			tripleStoreQueryService.setPass(password); // inst1repo
-			tripleStoreQueryService.setItqlEndpointURL(itqlEndpointURL); // "http://nagin:8080/webservices/services/ItqlBeanService"
-			tripleStoreQueryService.setServerModelUri(serverModelUri); // "rmi://nagin/server1#"
+			tripleStoreQueryService.setName(username);
+			tripleStoreQueryService.setPass(password);
+			tripleStoreQueryService.setItqlEndpointURL(itqlEndpointURL);
+			tripleStoreQueryService.setServerModelUri(serverModelUri);
 
 			// Load CDR configuration
 			accessControlUtils = new AccessControlUtils();
-			accessControlUtils.setAccessControlProperties(accessControlProperties);
 			accessControlUtils.setAttributeFactory(attributeFactory);
 			accessControlUtils.setOnlyCacheReadPermissions(false);
 			accessControlUtils.setTripleStoreQueryService(tripleStoreQueryService);

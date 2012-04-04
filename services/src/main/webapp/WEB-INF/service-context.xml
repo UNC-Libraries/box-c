@@ -82,15 +82,6 @@
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="cacheDepth" value="${access.cache.depth}"/>
 		<property name="cacheLimit" value="${access.cache.limit}"/>
-		<property name="accessControlProperties">
-			<props>
-				<prop key="http://cdr.unc.edu/definitions/roles#patron">permitMetadataRead permitOriginalsRead permitDerivativesRead</prop>
-				<prop key="http://cdr.unc.edu/definitions/roles#noOriginalsPatron">permitMetadataRead permitDerivativesRead</prop>
-				<prop key="http://cdr.unc.edu/definitions/roles#metadataOnlyPatron">permitMetadataRead</prop>
-				<prop key="http://cdr.unc.edu/definitions/roles#curator">permitMetadataCreate permitMetadataRead permitMetadataUpdate permitOriginalsCreate permitOriginalsRead permitOriginalsUpdate permitDerivativesCreate permitDerivativesRead permitDerivativesUpdate</prop>
-				<prop key="http://cdr.unc.edu/definitions/roles#admin">permitMetadataCreate permitMetadataRead permitMetadataUpdate permitMetadataDelete permitOriginalsCreate permitOriginalsRead permitOriginalsUpdate permitOriginalsDelete permitDerivativesCreate permitDerivativesRead permitDerivativesUpdate permitDerivativesDelete</prop>
-			</props>
-		</property>
 	</bean>
 
 	<bean id="irodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">

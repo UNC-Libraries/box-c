@@ -2,13 +2,14 @@ package edu.unc.lib.dl.fedora;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public enum AccessControlRole {
 	patron("patron", Arrays.asList(CDRProperty.permitOriginalsRead, CDRProperty.permitDerivativesRead, CDRProperty.permitMetadataRead)),
@@ -21,12 +22,11 @@ public enum AccessControlRole {
 			CDRProperty.permitOriginalsCreate, CDRProperty.permitDerivativesCreate, CDRProperty.permitMetadataCreate,
 			CDRProperty.permitOriginalsUpdate, CDRProperty.permitDerivativesUpdate, CDRProperty.permitMetadataUpdate,
 			CDRProperty.permitOriginalsDelete, CDRProperty.permitDerivativesDelete, CDRProperty.permitMetadataDelete));
-	
-	
+
 	private URI uri;
 	private String roleName;
 	private List<CDRProperty> permissions;
-	//private final static Map<String, List<CDRProperty>> permissionsMap = new HashMap<String, List<CDRProperty>>();
+	private static Map<String, List<String>> permissionsMap = null;
 	
 	AccessControlRole(String roleName, List<CDRProperty> permissions){
 		try {
@@ -50,5 +50,32 @@ public enum AccessControlRole {
 
 	public String getRoleName() {
 		return roleName;
+	}
+	
+	public static Map<String, List<String>> getPermissionsMap(){
+		if (permissionsMap == null){
+			//If this is the first time accessing permissions, populate the map
+			permissionsMap = new HashMap<String, List<String>>(values().length);
+			for (AccessControlRole role: values()){
+				List<CDRProperty> rolePermissions = role.getPermissions();
+				List<String> permissions = new ArrayList<String>(rolePermissions.size());
+				for (CDRProperty permission: rolePermissions){
+					permissions.add(permission.getPredicate());
+				}
+				permissionsMap.put(role.getUri().toString(), Collections.unmodifiableList(permissions));
+			}
+			// Make the map unmodifiable
+			permissionsMap = Collections.unmodifiableMap(permissionsMap);
+		}
+		return permissionsMap;
+	}
+	
+	public static List<String> getRolePermissions(String role){
+		Map<String, List<String>> permissionsMap = getPermissionsMap();
+		return permissionsMap.get(role);
+	}
+	
+	public static boolean roleExists(String role){
+		return getPermissionsMap().containsKey(role);
 	}
 }
