@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -32,6 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 
+import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.data.ingest.solr.CountDownUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.DeleteChildrenPriorToTimestampRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrDataAccessLayer;
@@ -101,6 +103,33 @@ public class SolrUpdateConductorTest extends Assert {
 		numberTestMessages = 10;
 	}
 	
+	@Test
+	public void modsModified() throws Exception {
+		Document doc = readFileAsDocument("modifyMODSMessage.xml");
+		FedoraEventMessage message = new FedoraEventMessage(doc);
+		
+		@SuppressWarnings("unchecked")
+		BlockingQueue<SolrUpdateRequest> pidQueue = mock(BlockingQueue.class);
+		solrUpdateConductor.setPidQueue(pidQueue);
+		
+		solrUpdateConductor.add(message);
+		
+		verify(pidQueue, times(1)).offer(any(SolrUpdateRequest.class));
+	}
+	
+	@Test
+	public void ingestMessage() throws Exception {
+		Document doc = readFileAsDocument("ingestMessage.xml");
+		FedoraEventMessage message = new FedoraEventMessage(doc);
+		
+		@SuppressWarnings("unchecked")
+		BlockingQueue<SolrUpdateRequest> pidQueue = mock(BlockingQueue.class);
+		solrUpdateConductor.setPidQueue(pidQueue);
+		
+		solrUpdateConductor.add(message);
+		
+		verify(pidQueue, times(1)).offer(any(SolrUpdateRequest.class));
+	}
 	
 	@Test
 	public void addRequests() throws Exception{
@@ -338,6 +367,10 @@ public class SolrUpdateConductorTest extends Assert {
 		}
 		reader.close();
 		return fileData.toString();
+	}
+	
+	private Document readFileAsDocument(String filePath) throws Exception {
+		return new SAXBuilder().build(new InputStreamReader(this.getClass().getResourceAsStream(filePath)));
 	}
 	
 	public class BlockingFedoraDataService extends FedoraDataService {

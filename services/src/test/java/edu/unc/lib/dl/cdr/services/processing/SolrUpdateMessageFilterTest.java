@@ -74,6 +74,15 @@ public class SolrUpdateMessageFilterTest extends Assert {
 		assertTrue(solrUpdateMessageFilter.filter(message));
 	}
 	
+	
+	@Test
+	public void modifyMODSMessage() throws Exception {
+		Document doc = readFileAsString("modifyMODSMessage.xml");
+		FedoraEventMessage message = new FedoraEventMessage(doc);
+		
+		assertTrue(solrUpdateMessageFilter.filter(message));
+	}
+	
 	@Test
 	public void fedoraMessages() throws Exception{
 		Document doc = readFileAsString("ingestMessage.xml");
