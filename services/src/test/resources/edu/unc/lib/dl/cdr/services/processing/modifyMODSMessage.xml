@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:fedora-types="http://www.fedora.info/definitions/1/0/types/">
+  <id>urn:uuid:4a3c86d1-4a24-46da-82de-0c098b4010cd</id>
+  <updated>2012-04-04T15:51:45.130Z</updated>
+  <author>
+    <name>fedoraAdmin</name>
+    <uri>http://cdr-alpha.lib.unc.edu:80/fedora</uri>
+  </author>
+  <title type="text">modifyDatastreamByValue</title>
+  <category term="uuid:c917da11-a6c4-458d-877b-8c35b7a67ee7" scheme="fedora-types:pid" label="xsd:string"></category>
+  <category term="MD_DESCRIPTIVE" scheme="fedora-types:dsID" label="xsd:string"></category>
+  <category term="" scheme="fedora-types:altIDs" label="fedora-types:ArrayOfString"></category>
+  <category term="Descriptive Metadata" scheme="fedora-types:dsLabel" label="xsd:string"></category>
+  <category term="" scheme="fedora-types:formatURI" label="xsd:string"></category>
+  <category term="[OMITTED]" scheme="fedora-types:dsContent" label="xsd:base64Binary"></category>
+  <category term="MD5" scheme="fedora-types:checksumType" label="xsd:string"></category>
+  <category term="null" scheme="fedora-types:checksum" label="xsd:string"></category>
+  <category term="mods data" scheme="fedora-types:logMessage" label="xsd:string"></category>
+  <summary type="text">uuid:c917da11-a6c4-458d-877b-8c35b7a67ee7</summary>
+  <content type="text">2012-04-04T15:51:45.125Z</content>
+  <category term="3.5" scheme="info:fedora/fedora-system:def/view#version"></category>
+  <category term="info:fedora/fedora-system:ATOM-APIM-1.0" scheme="http://www.fedora.info/definitions/1/0/types/formatURI"></category>
+</entry>
