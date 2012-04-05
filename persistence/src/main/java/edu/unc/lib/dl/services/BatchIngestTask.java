@@ -53,7 +53,6 @@ import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.ManagementClient;
-import edu.unc.lib.dl.fedora.ManagementClient.ControlGroup;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
@@ -63,6 +62,7 @@ import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.util.ContainerContentsHelper;
 import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.ControlGroup;
 import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.IngestProperties;
@@ -767,7 +767,7 @@ public class BatchIngestTask implements Runnable {
 		// build a map of checksums for the datastreams
 		Map<String, String> dsID2md5 = new HashMap<String, String>();
 		for (Element ds : FOXMLJDOMUtil.getAllDatastreams(xml)) {
-			if (ControlGroup.MANAGED.toString().equals(ds.getAttributeValue("CONTROL_GROUP"))) {
+			if (ControlGroup.MANAGED.getAttributeValue().equals(ds.getAttributeValue("CONTROL_GROUP"))) {
 				Element dsV = ds.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
 				Element contentDigest = dsV.getChild("contentDigest", JDOMNamespaceUtil.FOXML_NS);
 				if (contentDigest != null) { // we have a winner!

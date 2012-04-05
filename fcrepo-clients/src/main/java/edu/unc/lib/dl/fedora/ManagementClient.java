@@ -147,20 +147,6 @@ public class ManagementClient extends WebServiceTemplate {
 		}
 	}
 
-	public enum ControlGroup {
-		EXTERNALLY_REFERENCED("E"), INLINE_XML("X"), MANAGED("M"), REDIRECTED("R");
-		private final String id;
-
-		ControlGroup(String id) {
-			this.id = id;
-		}
-
-		@Override
-		public String toString() {
-			return this.id;
-		}
-	}
-
 	public enum Format {
 		ATOM_1_0("ATOM-1.0"), FOXML_1_0("FOXML-1.0"), FOXML_1_1("FOXML-1.1"), METS_FED_EXT_1_1("METSFedoraExt-1.1");
 		private final String id;
