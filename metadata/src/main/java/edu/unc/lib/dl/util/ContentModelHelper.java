@@ -168,8 +168,9 @@ public class ContentModelHelper {
 	 */
 	public static enum FedoraProperty {
 		Active(JDOMNamespaceUtil.FEDORA_MODEL_NS, "Active"), hasModel(JDOMNamespaceUtil.FEDORA_MODEL_NS, "hasModel"), label(
-				JDOMNamespaceUtil.FEDORA_MODEL_NS, "label"), state(JDOMNamespaceUtil.FEDORA_MODEL_NS, "state"), 
-				disseminates(JDOMNamespaceUtil.FEDORA_VIEW_NS, "disseminates");
+				JDOMNamespaceUtil.FEDORA_MODEL_NS, "label"), state(JDOMNamespaceUtil.FEDORA_MODEL_NS, "state"), disseminates(
+				JDOMNamespaceUtil.FEDORA_VIEW_NS, "disseminates"), mimeType(JDOMNamespaceUtil.FEDORA_VIEW_NS, "mimeType"), lastModifiedDate(
+				JDOMNamespaceUtil.FEDORA_VIEW_NS, "lastModifiedDate");
 		private URI uri;
 
 		FedoraProperty(Namespace ns, String suffix) {

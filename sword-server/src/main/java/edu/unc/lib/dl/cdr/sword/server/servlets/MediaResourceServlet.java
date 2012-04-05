@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.cdr.sword.server.servlets;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,19 +29,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.swordapp.server.MediaResourceAPI;
 import org.swordapp.server.MediaResourceManager;
 
+import edu.unc.lib.dl.cdr.sword.server.MediaResourceAPITidy;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 
 @Controller
 @RequestMapping(SwordConfigurationImpl.EDIT_MEDIA_PATH)
 public class MediaResourceServlet extends BaseSwordServlet {
-	private static Logger LOG = Logger.getLogger(MediaResourceServlet.class);
+	private static Logger log = Logger.getLogger(MediaResourceServlet.class);
 	
-	protected MediaResourceManager mrm;
+	@Resource
+	protected MediaResourceManager mediaResourceManager;
 	protected MediaResourceAPI api;
 	
 	@PostConstruct
 	public void init() throws ServletException {
-		
+		this.api = new MediaResourceAPITidy(mediaResourceManager, this.config);
 	}
 	
 	/**
@@ -49,10 +52,14 @@ public class MediaResourceServlet extends BaseSwordServlet {
 	 * @param resp
 	 * @param pid
 	 */
-	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
+	@RequestMapping(value = "/{pid}/{datastream}", method = RequestMethod.GET)
 	public void doRetrieveContent(HttpServletRequest req, HttpServletResponse resp){
-		LOG.debug("Called retrieve content");
-		resp.setStatus(HttpStatus.NOT_IMPLEMENTED.value());
+		log.debug("Called retrieve content");
+		try {
+			this.api.get(req, resp);
+		} catch (Exception e) {
+			log.error("Failed to retrieve content for " + req.getQueryString(), e);
+		}
 	}
 	
 	/**
@@ -87,5 +94,9 @@ public class MediaResourceServlet extends BaseSwordServlet {
 	@RequestMapping(value = "/{pid}", method = RequestMethod.DELETE)
 	public void doDeleteContent(HttpServletRequest req, HttpServletResponse resp){
 		resp.setStatus(HttpStatus.NOT_IMPLEMENTED.value());
+	}
+
+	public void setMediaResourceManager(MediaResourceManager mediaResourceManager) {
+		this.mediaResourceManager = mediaResourceManager;
 	}
 }

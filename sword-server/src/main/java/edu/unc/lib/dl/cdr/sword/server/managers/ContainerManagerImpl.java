@@ -15,7 +15,6 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.AccessControlRole;
@@ -34,7 +33,6 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 	private static Logger log = Logger.getLogger(ContainerManagerImpl.class);
 	
 	private DigitalObjectManager digitalObjectManager;
-	private AgentFactory agentFactory;
 	private UIPProcessor uipProcessor;
 
 	private DepositReceipt updateMetadata(String editIRI, Deposit deposit, AuthCredentials auth,
@@ -164,10 +162,6 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 	public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
 		this.digitalObjectManager = digitalObjectManager;
-	}
-
-	public void setAgentFactory(AgentFactory agentFactory) {
-		this.agentFactory = agentFactory;
 	}
 
 	public void setUipProcessor(UIPProcessor uipProcessor) {

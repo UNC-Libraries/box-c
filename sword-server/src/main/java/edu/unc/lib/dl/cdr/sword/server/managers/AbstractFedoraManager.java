@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.swordapp.server.AuthCredentials;
 
+import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.AccessControlUtils;
@@ -47,6 +48,8 @@ public abstract class AbstractFedoraManager {
 	@Autowired
 	protected AccessControlUtils accessControlUtils;
 	protected PID collectionsPidObject;
+	@Autowired
+	protected AgentFactory agentFactory;
 	
 	public void init(){
 		collectionsPidObject = this.tripleStoreQueryService.fetchByRepositoryPath("/Collections");
@@ -126,5 +129,9 @@ public abstract class AbstractFedoraManager {
 
 	public void setAccessControlUtils(AccessControlUtils accessControlUtils) {
 		this.accessControlUtils = accessControlUtils;
+	}
+
+	public void setAgentFactory(AgentFactory agentFactory) {
+		this.agentFactory = agentFactory;
 	}
 }

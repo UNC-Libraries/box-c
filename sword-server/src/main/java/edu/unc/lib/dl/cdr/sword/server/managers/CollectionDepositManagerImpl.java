@@ -29,7 +29,6 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.PID;
@@ -51,7 +50,6 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	private static Logger LOG = Logger.getLogger(CollectionDepositManagerImpl.class);
 
 	private DigitalObjectManager digitalObjectManager;
-	private AgentFactory agentFactory;
 
 	@Override
 	public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
@@ -170,13 +168,5 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 
 	public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
 		this.digitalObjectManager = digitalObjectManager;
-	}
-
-	public AgentFactory getAgentFactory() {
-		return agentFactory;
-	}
-
-	public void setAgentFactory(AgentFactory agentFactory) {
-		this.agentFactory = agentFactory;
 	}
 }

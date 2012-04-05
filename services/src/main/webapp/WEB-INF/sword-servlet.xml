@@ -271,6 +271,12 @@
 		<property name="uipProcessor" ref="uipProcessor"/>
 	</bean>
 	
+	<bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl"
+		init-method="init">
+		<property name="agentFactory" ref="agentFactory"/>
+		<property name="fedoraPath" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}"/>
+	</bean>
+	
 	<context:annotation-config />
 	
 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
