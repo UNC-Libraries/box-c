@@ -19,17 +19,16 @@
 package edu.unc.lib.dl.service.impl;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.InputStreamReader;
+import java.io.FileReader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.kahadb.util.ByteArrayInputStream;
 import org.jdom.Element;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.ManagementClient;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.FixityReplicationObject;
 import edu.unc.lib.dl.service.FixityReplicationService;
@@ -56,40 +55,27 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 	 */
 	public FixityReplicationObject fixityReplication(FixityReplicationObject request) {
 
-		String error = null;
-
-		Agent agent = agentManager.findPersonByOnyen(request.getAdminOnyen(), true);
-
-		error = processLogFile(LogType.GOOD_REPLICATION, request.getGoodReplicationFile(), agent);
-
-		if (error == null)
-			error = processLogFile(LogType.BAD_REPLICATION, request.getBadReplicationFile(), agent);
-
-		if (error == null)
-			error = processLogFile(LogType.GOOD_FIXITY, request.getGoodFixityFile(), agent);
-
-		if (error == null)
-			error = processLogFile(LogType.BAD_FIXITY, request.getBadFixityFile(), agent);
-
 		// Don't send files back down
 		request.setGoodReplicationFile(null);
 		request.setBadReplicationFile(null);
 		request.setGoodFixityFile(null);
 		request.setBadFixityFile(null);
 
+		// Create and start the thread
+		FixityReplicationThread thread = new FixityReplicationThread();
+		thread.setRequest(request);
+		thread.start();
+
 		request.setMessage(Constants.IN_PROGRESS_THREADED);
 
 		return request;
 	}
 
-	private String processLogFile(LogType id, byte[] logFile, Agent agent) {
+	private String processLogFile(LogType id, String logFile, Agent agent) {
 		String error = null;
 
 		try {
-
-			DataInputStream dis = new DataInputStream(new ByteArrayInputStream(logFile));
-
-			BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+			BufferedReader br = new BufferedReader(new FileReader(logFile));
 
 			switch (id) {
 				case GOOD_REPLICATION: {
@@ -110,10 +96,8 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 				}
 			}
 
-			dis.close();
-
 		} catch (Exception e) {
-			logger.error("Fixity/Replication unexpected exception", e);
+			logger.warn("Fixity/Replication unexpected exception", e);
 			error = e.getLocalizedMessage();
 		}
 
@@ -140,30 +124,34 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 					int uuidIndex = strLine.indexOf("uuid_");
 					String uuid = strLine.substring(uuidIndex, strLine.indexOf(" ", uuidIndex));
 					if (uuid == null) {
-						logger.error("Could not process bad replication check entry: " + strLine);
+						logger.warn("Could not process bad replication check entry: " + strLine);
 					} else {
 						logger.debug(uuid);
 
 						uuid = convertUUID(uuid);
 
-					   PID pid = new PID(uuid);
+						PID pid = new PID(uuid);
 
 						PremisEventLogger pelogger = new PremisEventLogger(agent);
 
 						logger.debug("timestamp: " + timestamp + " uuid: " + uuid + " strLine: " + strLine);
 
 						Element event = pelogger.logEvent(PremisEventLogger.Type.REPLICATION,
-						"Replication check succeeded at "
-						+ timestamp, pid);
-						pelogger.addDetailedOutcome(event, "success", " Message: " + strLine, null);
+								"Replication check succeeded on " + timestamp, pid);
+						pelogger.addDetailedOutcome(event, "success", "Message: " + strLine, null);
 
-						this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
+						try {
+							this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
+						} catch (NotFoundException e) {
+							logger.debug("Assuming this is from the object not existing: " + strLine + " | exception: "
+									+ e.getLocalizedMessage());
+						}
 					}
 				}
 			}
 
 		} catch (Exception e) {
-			logger.error("Fixity/Replication unexpected exception", e);
+			logger.warn("Fixity/Replication unexpected exception", e);
 			error = e.getLocalizedMessage();
 		}
 
@@ -197,7 +185,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 					int uuidIndex = strLine.indexOf("uuid_");
 					String uuid = strLine.substring(uuidIndex, strLine.indexOf(" ", uuidIndex));
 					if (uuid == null) {
-						logger.error("Could not process bad replication check entry: " + strLine);
+						logger.warn("Could not process bad replication check entry: " + strLine);
 					} else {
 						logger.debug(uuid);
 
@@ -207,24 +195,24 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 						PremisEventLogger pelogger = new PremisEventLogger(agent);
 
-						Element event = pelogger.logEvent(PremisEventLogger.Type.REPLICATION, "Replication check failed at "
+						Element event = pelogger.logEvent(PremisEventLogger.Type.REPLICATION, "Replication check failed on "
 								+ timestamp, pid);
-						pelogger.addDetailedOutcome(event, "failure", " Message: " + strLine, null);
+						pelogger.addDetailedOutcome(event, "failure", "Message: " + strLine, null);
 
 						logger.debug("timestamp: " + timestamp + " pid: " + pid.getPid() + " strLine: " + strLine);
 
 						try {
 							this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
-							} catch (Exception e) {
+						} catch (NotFoundException e) {
 							logger.debug("Assuming this is from the object not existing: " + strLine + " | exception: "
-							+ e.getLocalizedMessage());
-						} 
+									+ e.getLocalizedMessage());
+						}
 					}
 				}
 			}
 
 		} catch (Exception e) {
-			logger.error("Fixity/Replication unexpected exception", e);
+			logger.warn("Fixity/Replication unexpected exception", e);
 			error = e.getLocalizedMessage();
 		}
 
@@ -247,13 +235,13 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 				// if line starts with "uuid_", process it
 
 				strLine = strLine.trim();
-				if (strLine.startsWith("uuid_")) {
+				if (strLine.contains("uuid_")) {
 
 					// extract UUID
 					int uuidIndex = strLine.indexOf("uuid_");
 					String uuid = strLine.substring(uuidIndex, strLine.indexOf(" ", uuidIndex));
 					if (uuid == null) {
-						logger.error("Could not process good fixity check entry: " + strLine);
+						logger.warn("Could not process good fixity check entry: " + strLine);
 					} else {
 						logger.debug(uuid);
 
@@ -265,16 +253,22 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 						logger.debug("timestamp: " + timestamp + " pid: " + pid.getPid() + " strLine: " + strLine);
 
-						Element event = pelogger.logEvent(PremisEventLogger.Type.FIXITY_CHECK, "Fixity check succeeded at "
-						+ timestamp, pid);
-						pelogger.addDetailedOutcome(event, "success", " Message: " + strLine, null);
-						this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
+						Element event = pelogger.logEvent(PremisEventLogger.Type.FIXITY_CHECK, "Fixity check succeeded on "
+								+ timestamp, pid);
+						pelogger.addDetailedOutcome(event, "success", "Message: " + strLine, null);
+
+						try {
+							this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
+						} catch (NotFoundException e) {
+							logger.debug("Assuming this is from the object not existing: " + strLine + " | exception: "
+									+ e.getLocalizedMessage());
+						}
 					}
 				}
 			}
 
 		} catch (Exception e) {
-			logger.error("Fixity/Replication unexpected exception", e);
+			logger.warn("Fixity/Replication unexpected exception", e);
 			error = e.getLocalizedMessage();
 		}
 
@@ -296,38 +290,48 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 				// if line starts with "ERROR:", process it
 
+				// /cdrZone/home/fedora/uuid_20120323.txt failed a checksum on resource cdrResc
+				// ERROR: chksumDataObjUtil: rcDataObjChksum error for /cdrZone/home/fedora/uuid_20120323.txt status =
+				// -314000 USER_CHKSUM_MISMATCH
+				// ERROR: chksumUtil: chksum error for /cdrZone/home/fedora/uuid_20120323.txt, status = -314000 status =
+				// -314000 USER_CHKSUM_MISMATCH
+				// Total checksum performed = 1, Failed checksum = 1
+
 				strLine = strLine.trim();
-				if (strLine.startsWith("ERROR: chksumUtil")) {
-					if (!strLine.endsWith("does not exist")) { // Object does not exist in iRODS; user will see this in bad
-																				// fixity log; we have no object to store this message on
+				if (strLine.startsWith("/")) {
 
-						// extract UUID
-						int uuidIndex = strLine.indexOf("uuid_");
-						String uuid = strLine.substring(uuidIndex, strLine.indexOf(",", uuidIndex));
-						if (uuid == null) {
-							logger.error("Could not process bad fixity check entry: " + strLine);
-						} else {
-							logger.debug(uuid);
+					// extract UUID
+					int uuidIndex = strLine.indexOf("uuid_");
+					String uuid = strLine.substring(uuidIndex, strLine.indexOf(" ", uuidIndex));
+					if (uuid == null) {
+						logger.warn("Could not process bad fixity check entry: " + strLine);
+					} else {
+						logger.debug(uuid);
 
-							uuid = convertUUID(uuid);
+						uuid = convertUUID(uuid);
 
-							PID pid = new PID(uuid);
+						PID pid = new PID(uuid);
 
-							PremisEventLogger pelogger = new PremisEventLogger(agent);
+						PremisEventLogger pelogger = new PremisEventLogger(agent);
 
-							logger.debug("timestamp: " + timestamp + " pid: " + pid.getPid() + " strLine: " + strLine);
+						logger.debug("timestamp: " + timestamp + " pid: " + pid.getPid() + " strLine: " + strLine);
 
-							Element event = pelogger.logEvent(PremisEventLogger.Type.FIXITY_CHECK, "Fixity check failed at "
-							+ timestamp, pid);
-							pelogger.addDetailedOutcome(event, "failure", " Message: " + strLine, null);
+						Element event = pelogger.logEvent(PremisEventLogger.Type.FIXITY_CHECK, "Fixity check failed on "
+								+ timestamp, pid);
+						pelogger.addDetailedOutcome(event, "failure", "Message: " + strLine, null);
+
+						try {
 							this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
+						} catch (NotFoundException e) {
+							logger.debug("Assuming this is from the object not existing: " + strLine + " | exception: "
+									+ e.getLocalizedMessage());
 						}
 					}
 				}
 			}
 
 		} catch (Exception e) {
-			logger.error("Fixity/Replication unexpected exception", e);
+			logger.warn("Fixity/Replication unexpected exception", e);
 			error = e.getLocalizedMessage();
 		}
 
@@ -364,5 +368,27 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 	public void setManagementClient(ManagementClient managementClient) {
 		this.managementClient = managementClient;
+	}
+
+	class FixityReplicationThread extends Thread {
+		FixityReplicationObject request;
+
+		@Override
+		public void run() {
+
+			Agent agent = agentManager.findPersonByOnyen(request.getAdminOnyen(), true);
+
+			processLogFile(LogType.GOOD_REPLICATION, request.getGoodReplicationFileName(), agent);
+
+			processLogFile(LogType.BAD_REPLICATION, request.getBadReplicationFileName(), agent);
+
+			processLogFile(LogType.GOOD_FIXITY, request.getGoodFixityFileName(), agent);
+
+			processLogFile(LogType.BAD_FIXITY, request.getBadFixityFileName(), agent);
+		}
+
+		public void setRequest(FixityReplicationObject request) {
+			this.request = request;
+		}
 	}
 }

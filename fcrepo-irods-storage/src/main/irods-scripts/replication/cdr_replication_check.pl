@@ -14,7 +14,7 @@ sub trim($);
 sub needsReplicaCheck($$);
 sub extractResources(@);
 
-# 600000; # 10 minutes for testing 
+#my $sixMonthsInSeconds = 6; # for testing 
 my $sixMonthsInSeconds = 15778463; # six months in seconds
 
 my $currentTime = time();
@@ -54,8 +54,8 @@ my $currentdirectory = "";
 open GOODFILE, ">>", $goodoutputfile or die $!;
 open BADFILE, ">>", $badoutputfile or die $!;
 
-print GOODFILE "$currentTime\n";
-print BADFILE "$currentTime\n";
+print GOODFILE strftime("%Y-%m-%d", localtime), "\n";
+print BADFILE strftime("%Y-%m-%d", localtime), "\n";
 
 # For each directory and file
 for my $i (0 .. $#var) {
@@ -102,7 +102,7 @@ for my $i (0 .. $#var) {
 
 			if(!$missingResource) 
 			{
-		        	print GOODFILE "$currentdirectory/$filename @requiredResources\n";
+		        	print GOODFILE "$currentdirectory/$filename has been replicated to @requiredResources\n";
 	
 		  		my $updateAVU = `imeta add -d $currentdirectory/$filename cdrReplica $currentTime`;
 			}
@@ -111,7 +111,9 @@ for my $i (0 .. $#var) {
     }
     else {
       # directory comes in as 'directorypath:' so we need to remove the ':'
-      $currentdirectory = substr(trim($var[$i]), 0, -1);
+      if ((trim($var[$i]) =~ /:$/) && (trim($var[$i]) =~ /\//)) {
+              $currentdirectory = substr(trim($var[$i]), 0, -1);
+      } 
     }
 }
 
@@ -165,7 +167,7 @@ sub needsReplicaCheck($$)
 			}
 		} else {
 
-			print BADFILE "Problem: $currentdirectory\\$filename has cdrReplica of '@array[1]'";
+			print BADFILE "Problem: $currentdirectory/$filename has cdrReplica of '@array[1]'";
 			return 0; # something wrong with cdrReplica value; need to look into problem
 		}
 	} else {

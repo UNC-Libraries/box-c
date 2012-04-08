@@ -72,36 +72,31 @@ public class FixityReplicationController extends CommonAdminObjectNavigationCont
 
 			FixityReplicationObject frobject = new FixityReplicationObject();
 
-			/*
-			 * MetsSubmitIngestObject ingest = new MetsSubmitIngestObject(); String ingestMessage = null;
-			 * if(dao.getIngestMessage() != null && dao.getIngestMessage().trim().length() > 0) { ingestMessage =
-			 * dao.getIngestMessage().trim(); }
-			 */
 			if ((goodReplicationFile != null) && (goodReplicationFile.getSize() > 0)) {
 
 				frobject.setGoodReplicationFileName(writeFile(goodReplicationFile, ".log"));
-				frobject.setGoodReplicationFile(goodReplicationFile.getBytes());
+			//	frobject.setGoodReplicationFile(goodReplicationFile.getBytes());
 			} else {
 				logger.debug("good replication file is NULL");
 			}
 			if ((badReplicationFile != null) && (badReplicationFile.getSize() > 0)) {
 
 				frobject.setBadReplicationFileName(writeFile(badReplicationFile, ".log"));
-				frobject.setBadReplicationFile(badReplicationFile.getBytes());
+			//	frobject.setBadReplicationFile(badReplicationFile.getBytes());
 			} else {
 				logger.debug("bad replication file is NULL");
 			}
 			if ((goodFixityFile != null) && (goodFixityFile.getSize() > 0)) {
 
 				frobject.setGoodFixityFileName(writeFile(goodFixityFile, ".log"));
-				frobject.setGoodFixityFile(goodFixityFile.getBytes());
+			//	frobject.setGoodFixityFile(goodFixityFile.getBytes());
 			} else {
 				logger.debug("good fixity file is NULL");
 			}
 			if ((badFixityFile != null) && (badFixityFile.getSize() > 0)) {
 
 				frobject.setBadFixityFileName(writeFile(badFixityFile, ".log"));
-				frobject.setBadFixityFile(badFixityFile.getBytes());
+			//	frobject.setBadFixityFile(badFixityFile.getBytes());
 			} else {
 				logger.debug("bad fixity file is NULL");
 			}
