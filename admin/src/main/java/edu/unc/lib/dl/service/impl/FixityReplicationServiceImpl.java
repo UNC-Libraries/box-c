@@ -24,6 +24,7 @@ import java.io.FileReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdom.Element;
+import org.jdom.Namespace;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
@@ -35,6 +36,8 @@ import edu.unc.lib.dl.service.FixityReplicationService;
 import edu.unc.lib.dl.util.Constants;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+
 /**
  * 
  * 
@@ -43,6 +46,8 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 	protected final Log logger = LogFactory.getLog(getClass());
 	private AgentFactory agentManager;
 	private ManagementClient managementClient;
+	public static final Namespace NS = Namespace.getNamespace(JDOMNamespaceUtil.PREMIS_V2_NS.getURI());
+	public static final String PID_TYPE = "PID";
 
 	public enum LogType {
 		GOOD_REPLICATION, BAD_REPLICATION, GOOD_FIXITY, BAD_FIXITY
@@ -127,6 +132,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 						logger.warn("Could not process bad replication check entry: " + strLine);
 					} else {
 						logger.debug(uuid);
+						String fullUuid = uuid;
 
 						uuid = convertUUID(uuid);
 
@@ -138,6 +144,9 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 						Element event = pelogger.logEvent(PremisEventLogger.Type.REPLICATION,
 								"Replication check succeeded on " + timestamp, pid);
+
+						addLinkingObjectIdentifier(fullUuid, event);
+						
 						pelogger.addDetailedOutcome(event, "success", "Message: " + strLine, null);
 
 						try {
@@ -188,6 +197,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 						logger.warn("Could not process bad replication check entry: " + strLine);
 					} else {
 						logger.debug(uuid);
+						String fullUuid = uuid;
 
 						uuid = convertUUID(uuid);
 
@@ -197,6 +207,9 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 						Element event = pelogger.logEvent(PremisEventLogger.Type.REPLICATION, "Replication check failed on "
 								+ timestamp, pid);
+
+						addLinkingObjectIdentifier(fullUuid, event);
+						
 						pelogger.addDetailedOutcome(event, "failure", "Message: " + strLine, null);
 
 						logger.debug("timestamp: " + timestamp + " pid: " + pid.getPid() + " strLine: " + strLine);
@@ -244,6 +257,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 						logger.warn("Could not process good fixity check entry: " + strLine);
 					} else {
 						logger.debug(uuid);
+						String fullUuid = uuid;
 
 						uuid = convertUUID(uuid);
 
@@ -255,6 +269,9 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 						Element event = pelogger.logEvent(PremisEventLogger.Type.FIXITY_CHECK, "Fixity check succeeded on "
 								+ timestamp, pid);
+
+						addLinkingObjectIdentifier(fullUuid, event);
+						
 						pelogger.addDetailedOutcome(event, "success", "Message: " + strLine, null);
 
 						try {
@@ -307,6 +324,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 						logger.warn("Could not process bad fixity check entry: " + strLine);
 					} else {
 						logger.debug(uuid);
+						String fullUuid = uuid;
 
 						uuid = convertUUID(uuid);
 
@@ -318,6 +336,9 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 						Element event = pelogger.logEvent(PremisEventLogger.Type.FIXITY_CHECK, "Fixity check failed on "
 								+ timestamp, pid);
+
+						addLinkingObjectIdentifier(fullUuid, event);
+						
 						pelogger.addDetailedOutcome(event, "failure", "Message: " + strLine, null);
 
 						try {
@@ -336,6 +357,37 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 		}
 
 		return error;
+	}
+
+	private void addLinkingObjectIdentifier(String input, Element event) {
+		String pid = null;
+		String dataStream = null;
+
+		// /cdrZone/home/fedora/datastreams/2011/1021/16/11/uuid_13754cd5-649c-4fb9-8460-37dcd74d57e0+DATA_FILE+DATA_FILE.0 has not been replicated to cdrResc2
+
+		
+		logger.debug("addLinkingObjectIdentifier: "+input);
+		
+		if (input.contains("+")) {
+			pid = input.substring(0, input.indexOf("+"));
+			pid = pid.replace("_", ":");
+
+			int plusIndex = input.indexOf("+");
+			dataStream = input.substring(plusIndex+1, input.indexOf("+", plusIndex+1));
+
+			logger.debug("addLinkingObjectIdentifier: "+pid+"/"+dataStream);
+			
+//			if (dataStream.contains(".")) { // remove version information
+//				dataStream = dataStream.substring(0, dataStream.indexOf("."));
+//			}
+
+		} else
+			return; // no datastream to process
+
+		Element source = new Element("linkingObjectIdentifier", NS);
+		source.addContent(new Element("linkingObjectIdentifierType", NS).setText(PID_TYPE));
+		source.addContent(new Element("linkingObjectIdentifierValue", NS).setText(pid + "/" + dataStream));
+		event.addContent(source);
 	}
 
 	// convert iRODS filename UUID to CDR UUID
@@ -378,17 +430,29 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 			Agent agent = agentManager.findPersonByOnyen(request.getAdminOnyen(), true);
 
-			processLogFile(LogType.GOOD_REPLICATION, request.getGoodReplicationFileName(), agent);
+			if (notNull(request.getGoodReplicationFileName()))
+				processLogFile(LogType.GOOD_REPLICATION, request.getGoodReplicationFileName(), agent);
 
-			processLogFile(LogType.BAD_REPLICATION, request.getBadReplicationFileName(), agent);
+			if (notNull(request.getBadReplicationFileName()))
+				processLogFile(LogType.BAD_REPLICATION, request.getBadReplicationFileName(), agent);
 
-			processLogFile(LogType.GOOD_FIXITY, request.getGoodFixityFileName(), agent);
+			if (notNull(request.getGoodFixityFileName()))
+				processLogFile(LogType.GOOD_FIXITY, request.getGoodFixityFileName(), agent);
 
-			processLogFile(LogType.BAD_FIXITY, request.getBadFixityFileName(), agent);
+			if (notNull(request.getBadFixityFileName()))
+				processLogFile(LogType.BAD_FIXITY, request.getBadFixityFileName(), agent);
 		}
 
 		public void setRequest(FixityReplicationObject request) {
 			this.request = request;
+		}
+
+		private boolean notNull(String value) {
+			if ((value == null) || (value.equals(""))) {
+				return false;
+			}
+
+			return true;
 		}
 	}
 }

@@ -2,10 +2,11 @@
 
 # Script to run replication checks on objects stored in the CDR
 # 
-# To run, modify the irods .irodsEnv on a client iRODS (not alpha, 
+# To run, modify your .irodsEnv on a client iRODS (not alpha, 
 # dev, prod) to make the user fedora and connect to iRODS (iinit) and 
 # run the script.  It is set up to start in the passed in path and 
-# verify replicas on objects which haven't been checked in 6 months.
+# resources and verify replicas on objects which haven't been checked 
+# in 6 months.
 
 use strict;
 use POSIX; # needed for number processing
