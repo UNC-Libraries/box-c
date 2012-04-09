@@ -2,10 +2,10 @@
 
 # Script to run fixity checks on objects stored in the CDR
 # 
-# To run, modify the irods .irodsEnv to make the user fedora
+# To run, modify your .irodsEnv to make the user fedora
 # and connect to iRODS (iinit) and run the script.  It is set
-# up to start in the passed in path and verify checksums on objects
-# which haven't been checked in 6 months.
+# up to start in the passed in path and resources and verify 
+# checksums on objects which haven't been checked in 6 months.
 
 use strict;
 use POSIX; # needed for number processing
