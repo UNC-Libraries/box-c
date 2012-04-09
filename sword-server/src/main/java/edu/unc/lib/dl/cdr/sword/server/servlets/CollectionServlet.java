@@ -77,7 +77,7 @@ public class CollectionServlet extends BaseSwordServlet {
 		try {
 			this.api.post(req, resp);
 		} catch (Exception e) {
-			LOG.error("An unhandled exception occurred while attempting to ingest to " + req.getQueryString(), e);
+			LOG.error("An unhandled exception occurred while attempting to ingest to " + req.getRequestURI(), e);
 			resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			resp.getWriter().write("An unexpected exception occurred while attempting to process your submission.");
 		}

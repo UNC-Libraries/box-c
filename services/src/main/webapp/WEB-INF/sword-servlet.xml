@@ -177,6 +177,11 @@
 	<bean id="singleFolderSIPProcessor" class="edu.unc.lib.dl.ingest.sip.SingleFolderSIPProcessor">
 		<property name="pidGenerator" ref="pidGenerator" />
 	</bean>
+	
+	<bean id="atomPubEntrySIPProcessor" class="edu.unc.lib.dl.ingest.sip.AtomPubEntrySIPProcessor">
+		<property name="pidGenerator" ref="pidGenerator" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
 
 	<bean id="metsPackageSIPProcessor" class="edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor">
 		<property name="schematronValidator" ref="schematronValidator" />
@@ -202,6 +207,8 @@
 					value-ref="singleFileSIPProcessor" />
 				<entry key="edu.unc.lib.dl.ingest.sip.SingleFolderSIP"
 					value-ref="singleFolderSIPProcessor" />
+				<entry key="edu.unc.lib.dl.ingest.sip.AtomPubEntrySIP"
+					value-ref="atomPubEntrySIPProcessor" />
 			</map>
 		</property>
 	</bean>

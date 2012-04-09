@@ -1,9 +1,11 @@
 package edu.unc.lib.dl.update;
 
 import org.apache.log4j.Logger;
+import org.jdom.Attribute;
 import org.jdom.Element;
 
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class RELSEXTUIPFilter extends MetadataUIPFilter {
 	private static Logger log = Logger.getLogger(RELSEXTUIPFilter.class);
@@ -41,11 +43,19 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
 
 		if (newModified != null) {
 			// no validation yet
-			//validate(uip, newModified);
+			validate(metadataUIP, newModified);
 			metadataUIP.getModifiedData().put(datastreamName, newModified);
 		}
 		
 		return uip;
 	}
 
+	public void validate(MetadataUIP uip, Element relsEXT){
+		//Make sure Description has rdf:about set
+		Element descriptionElement = relsEXT.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+		if (descriptionElement.getAttribute("about", JDOMNamespaceUtil.RDF_NS) == null){
+			Attribute aboutAttribute = new Attribute("about", uip.getPID().getURI(), JDOMNamespaceUtil.RDF_NS);
+			descriptionElement.setAttribute(aboutAttribute);
+		}
+	}
 }

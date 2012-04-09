@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.log4j.Logger;
+import org.jdom.JDOMException;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.CollectionDepositManager;
 import org.swordapp.server.Deposit;
@@ -34,6 +35,7 @@ import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
+import edu.unc.lib.dl.ingest.sip.AtomPubEntrySIP;
 import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.services.DigitalObjectManager;
@@ -47,7 +49,7 @@ import edu.unc.lib.dl.util.PackagingType;
  *
  */
 public class CollectionDepositManagerImpl extends AbstractFedoraManager implements CollectionDepositManager {
-	private static Logger LOG = Logger.getLogger(CollectionDepositManagerImpl.class);
+	private static Logger log = Logger.getLogger(CollectionDepositManagerImpl.class);
 
 	private DigitalObjectManager digitalObjectManager;
 
@@ -55,7 +57,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
 			SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
 		
-		LOG.debug("Preparing to do collection deposit to " + collectionURI);
+		log.debug("Preparing to do collection deposit to " + collectionURI);
 		if (collectionURI == null)
 			throw new SwordServerException("No collection URI was provided");
 
@@ -84,21 +86,31 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			throw new SwordAuthException("Insufficient privileges to deposit to container " + containerPID.getPid());
 		}
 		
-		PackagingType recognizedType = null;
-		for(PackagingType t : PackagingType.values()) {
-			if(t.equals(deposit.getPackaging())) {
-				recognizedType = t;
-				break;
+		
+		if (deposit.getFile() == null){
+			if (deposit.getSwordEntry() != null) {
+				try {
+					log.debug("Performing metadata only deposit to " + containerPID.getPid());
+					return doMetadataOnlyDeposit(containerPID, deposit, auth, configImpl, depositor, owner);
+				} catch (JDOMException e){
+					log.warn("Failed to deposit", e);
+					throw new SwordError("A problem occurred while attempting to perform your deposit: " + e.getMessage());
+				} catch (Exception e) {
+					throw new SwordServerException("Unexpected exception while attempting to perform a metadata only deposit", e);
+				}
 			}
-		}
+		} else {
+			PackagingType recognizedType = null;
+			for(PackagingType t : PackagingType.values()) {
+				if(t.equals(deposit.getPackaging())) {
+					recognizedType = t;
+					break;
+				}
+			}
 
 		if (recognizedType != null){
 			try {
-<<<<<<< HEAD
 				return doMETSDeposit(containerPID, deposit, auth, configImpl, agent, recognizedType);
-=======
-				return doMETSDeposit(containerPID, deposit, auth, configImpl, depositor, owner);
->>>>>>> 61308f3... Methods for getting owner and depositor are part of SIP interface.
 			} catch (FilesDoNotMatchManifestException e){
 				LOG.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest of package type " + deposit.getPackaging(), e);
 				throw new SwordError("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.", e);
@@ -111,17 +123,35 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		}
 		return null;
 	}
+	
+	private DepositReceipt doMetadataOnlyDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
+			SwordConfigurationImpl config, Agent agent, Agent owner) throws Exception {
+		
+		log.debug("Preparing to perform an Atom Pub entry metadata only deposit to " + containerPID.getPid());
+		
+		if (deposit.getSwordEntry() == null || deposit.getSwordEntry().getEntry() == null)
+			throw new SwordError("No AtomPub entry was included in the submission");
+		
+		AtomPubEntrySIP sip = new AtomPubEntrySIP(containerPID, deposit.getSwordEntry().getEntry());
+		sip.setSuggestedSlug(deposit.getSlug());
+		
+		DepositRecord record = new DepositRecord(agent, owner, DepositMethod.SWORD13);
+		record.setMessage("Added through SWORD");
+		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
+		
+		return buildReceipt(ingestResult, config);
+	}
 
 	private DepositReceipt doMETSDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
 			SwordConfigurationImpl config, Agent agent, PackagingType type) throws Exception {
 
-		LOG.debug("Preparing to perform a CDR METS deposit to " + containerPID.getPid());
+		log.debug("Preparing to perform a CDR METS deposit to " + containerPID.getPid());
 
 		String name = deposit.getFilename();
 		boolean isZip = name.endsWith(".zip");
 
-		if (LOG.isDebugEnabled()){
-			LOG.debug("Working with temporary file: " + deposit.getFile().getAbsolutePath());
+		if (log.isDebugEnabled()){
+			log.debug("Working with temporary file: " + deposit.getFile().getAbsolutePath());
 		}
 		
 		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), depositor, owner, isZip);
@@ -132,11 +162,15 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		record.setPackagingType(type);
 		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
 
+		return buildReceipt(ingestResult, config);
+	}
+	
+	private DepositReceipt buildReceipt(IngestResult ingestResult, SwordConfigurationImpl config) throws SwordServerException{
 		DepositReceipt receipt = new DepositReceipt();
-		receipt.setOriginalDeposit("", deposit.getMimeType());
-
+		//receipt.setOriginalDeposit("", deposit.getMimeType());
+		
 		if (ingestResult == null || ingestResult.derivedPIDs == null || ingestResult.derivedPIDs.size() == 0){
-			throw new SwordServerException("Add batch request to " + containerPID.getPid() + " did not return any derived results.");
+			throw new SwordServerException("Add batch request " + ingestResult.originalDepositID.getPid() + " did not return any derived results.");
 		}
 
 		PID representativePID = null;
@@ -157,8 +191,8 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		receipt.setSplashUri(config.getBasePath() + "record?id=" + representativePID.getPid());
 
 		receipt.setTreatment("Added to CDR through SWORD");
-
-		LOG.info("Returning receipt " + receipt);
+		
+		log.info("Returning receipt " + receipt);
 		return receipt;
 	}
 
