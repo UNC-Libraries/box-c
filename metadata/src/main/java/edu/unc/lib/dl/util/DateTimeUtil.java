@@ -18,6 +18,10 @@
  */
 package edu.unc.lib.dl.util;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -66,5 +70,11 @@ public class DateTimeUtil {
 		}
 		result = isoDT.withZoneRetainFields(DateTimeZone.forID("Etc/UTC"));
 		return result;
+	}
+	
+	private final static SimpleDateFormat utcFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+	
+	public static Date parseUTCToDate(String utcDate) throws ParseException {
+		return utcFormatter.parse(utcDate);
 	}
 }

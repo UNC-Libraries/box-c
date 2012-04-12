@@ -170,7 +170,7 @@ public class ContentModelHelper {
 		Active(JDOMNamespaceUtil.FEDORA_MODEL_NS, "Active"), hasModel(JDOMNamespaceUtil.FEDORA_MODEL_NS, "hasModel"), label(
 				JDOMNamespaceUtil.FEDORA_MODEL_NS, "label"), state(JDOMNamespaceUtil.FEDORA_MODEL_NS, "state"), disseminates(
 				JDOMNamespaceUtil.FEDORA_VIEW_NS, "disseminates"), mimeType(JDOMNamespaceUtil.FEDORA_VIEW_NS, "mimeType"), lastModifiedDate(
-				JDOMNamespaceUtil.FEDORA_VIEW_NS, "lastModifiedDate");
+				JDOMNamespaceUtil.FEDORA_VIEW_NS, "lastModifiedDate"), createdDate(JDOMNamespaceUtil.FEDORA_MODEL_NS, "createdDate");
 		private URI uri;
 
 		FedoraProperty(Namespace ns, String suffix) {
@@ -312,7 +312,8 @@ public class ContentModelHelper {
 		THUMB_SMALL("THUMB_SMALL", ControlGroup.MANAGED, false, "Thumbnail Image"), 
 		THUMB_LARGE("THUMB_LARGE", ControlGroup.MANAGED, false, "Thumbnail Image"),
 		MD_CONTENTS("MD_CONTENTS", ControlGroup.INTERNAL, false, "List of Contents"), 
-		AUDIT("AUDIT", ControlGroup.INTERNAL, false, "Audit Trail for this object");
+		AUDIT("AUDIT", ControlGroup.INTERNAL, false, "Audit Trail for this object"),
+		DATA_MANIFEST("DATA_MANIFEST", ControlGroup.MANAGED, false, "Deposit Manifest");
 
 		private String name;
 		private ControlGroup controlGroup;

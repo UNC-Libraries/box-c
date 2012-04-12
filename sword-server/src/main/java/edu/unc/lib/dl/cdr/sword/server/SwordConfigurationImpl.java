@@ -32,6 +32,7 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 	public static final String SERVICE_DOCUMENT_PATH = "/serviceDocument";
 	public static final String EDIT_MEDIA_PATH = "/em";
 	public static final String EDIT_PATH = "/object";
+	public static final String STATE_PATH = "/state";
 	
 	private String authType = null;
 	private int maxUploadSize = -1;

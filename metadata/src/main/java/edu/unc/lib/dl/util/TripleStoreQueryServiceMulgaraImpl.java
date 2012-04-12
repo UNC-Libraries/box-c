@@ -138,6 +138,31 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 				this.getResourceIndexModelUri(), predicateURI, literal);
 		return this.lookupDigitalObjects(query);
 	}
+	
+	@Override
+	public List<String> fetchBySubjectAndPredicate(PID subject, String predicateURI){
+		String query = String.format(
+				"select $literal from <%1$s> where <%2$s> <%3$s> $literal;",
+				this.getResourceIndexModelUri(), subject.getURI(), predicateURI);
+		List<List<String>> res = this.lookupStrings(query);
+		if (res == null)
+			return null;
+		List<String> literals = new ArrayList<String>();
+		for (List<String> row: res){
+			if (row.size() > 0)
+				literals.add(row.get(0));
+		}
+		return literals;
+	}
+	
+	@Override
+	public String fetchFirstBySubjectAndPredicate(PID subject, String predicateURI) {
+		String query = String.format(
+				"select $literal from <%1$s> where <%2$s> <%3$s> $literal;",
+				this.getResourceIndexModelUri(), subject.getURI(), predicateURI);
+		
+		return this.lookupFirstString(query);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -317,6 +342,13 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 				ContentModelHelper.Relationship.contains.getURI());
 		result.addAll(this.lookupDigitalObjects(query2));
 		return result;
+	}
+	
+	@Override
+	public String fetchState(PID pid) {
+		String query = String.format("select $state from <%1$s> where <%2$s> <%3$s> $state;",
+				this.getResourceIndexModelUri(), pid.getURI(), ContentModelHelper.FedoraProperty.Active.toString());
+		return this.lookupFirstString(query);
 	}
 
 	public String getInferenceRulesModelUri() {
@@ -587,6 +619,24 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 			result.add(row);
 		}
 		return result;
+	}
+	
+	private String lookupFirstString(String query) {
+		String response = this.sendTQL(query);
+		for (Element solution : getQuerySolutions(response)) {
+			if (solution.getChildren().size() > 0){
+				Object o = solution.getChildren().get(0);
+				if (o instanceof Element) {
+					Element el = (Element) o;
+					String resourceAttribute = el.getAttributeValue("resource");
+					if (resourceAttribute == null) {
+						return el.getTextTrim();
+					}
+					return resourceAttribute;
+				}
+			}
+		}
+		return null;
 	}
 
 	public List<List<String>> queryResourceIndex(String query) {

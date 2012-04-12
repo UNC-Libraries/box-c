@@ -365,4 +365,10 @@ public interface TripleStoreQueryService {
 
 	@SuppressWarnings("rawtypes")
 	public Map sendSPARQL(String query, String format);
+
+	List<String> fetchBySubjectAndPredicate(PID subject, String predicateURI);
+
+	String fetchFirstBySubjectAndPredicate(PID subject, String predicateURI);
+
+	String fetchState(PID pid);
 }

@@ -257,7 +257,6 @@
 	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl"
 		init-method="init">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
-		<property name="agentFactory" ref="agentFactory"/>
 	</bean>
 	
 	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ServiceDocumentManagerImpl" 
@@ -274,14 +273,16 @@
 	<bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl"
 		init-method="init">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
-		<property name="agentFactory" ref="agentFactory"/>
 		<property name="uipProcessor" ref="uipProcessor"/>
 	</bean>
 	
 	<bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl"
 		init-method="init">
-		<property name="agentFactory" ref="agentFactory"/>
 		<property name="fedoraPath" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}"/>
+	</bean>
+	
+	<bean id="statementManager" class="edu.unc.lib.dl.cdr.sword.server.managers.StatementManagerImpl"
+		init-method="init">
 	</bean>
 	
 	<context:annotation-config />
