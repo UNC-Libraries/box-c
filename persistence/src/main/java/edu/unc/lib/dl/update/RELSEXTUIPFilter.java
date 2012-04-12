@@ -1,5 +1,7 @@
 package edu.unc.lib.dl.update;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Element;
@@ -49,11 +51,44 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
 		
 		return uip;
 	}
+	
+	protected Element performAdd(MetadataUIP uip, String datastreamName) throws UIPException {
+		Element incoming = uip.getIncomingData().get(datastreamName);
+		Element newModified = getNewModifiedElement(uip, datastreamName, incoming);
+		if (newModified == null)
+			return null;
+		
+		// If there is no rdf:Description tag in the incoming data, then there is nothing to add.
+		if (incoming.getChildren().size() == 0)
+			return newModified;
+		
+		Element incomingDescription = (Element)incoming.getChildren().get(0);
+		Element newDescription = null;
+		
+		// If the previous rels-ext didn't have a description, then use the new one
+		if (newModified.getChildren().size() == 0){
+			newModified.addContent((Element)incomingDescription.clone());
+			return newModified;
+		} else {
+			newDescription = (Element)newModified.getChildren().get(0);
+		}
+		
+		// Clone all the child elements of the incoming rdf:Description tag
+		@SuppressWarnings("unchecked")
+		List<Element> incomingElements = (List<Element>) incomingDescription.getChildren();
+		// Add all the incoming element children to the base modified object
+		for (Element incomingElement : incomingElements) {
+			newDescription.addContent((Element) incomingElement.clone());
+		}
+
+		return newModified;
+	}
 
 	public void validate(MetadataUIP uip, Element relsEXT){
-		//Make sure Description has rdf:about set
+		//Make sure Description has rdf:about set, and that is is the objects pid
 		Element descriptionElement = relsEXT.getChild("Description", JDOMNamespaceUtil.RDF_NS);
-		if (descriptionElement.getAttribute("about", JDOMNamespaceUtil.RDF_NS) == null){
+		if (descriptionElement.getAttribute("about", JDOMNamespaceUtil.RDF_NS) == null || 
+				(descriptionElement.getAttribute("about", JDOMNamespaceUtil.RDF_NS) != null && !uip.getPID().getURI().equals(descriptionElement.getAttributeValue("about", JDOMNamespaceUtil.RDF_NS)))){
 			Attribute aboutAttribute = new Attribute("about", uip.getPID().getURI(), JDOMNamespaceUtil.RDF_NS);
 			descriptionElement.setAttribute(aboutAttribute);
 		}
