@@ -133,6 +133,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			throw new SwordError("No AtomPub entry was included in the submission");
 		
 		AtomPubEntrySIP sip = new AtomPubEntrySIP(containerPID, deposit.getSwordEntry().getEntry());
+		sip.setInProgress(deposit.isInProgress());
 		sip.setSuggestedSlug(deposit.getSlug());
 		
 		DepositRecord record = new DepositRecord(agent, owner, DepositMethod.SWORD13);

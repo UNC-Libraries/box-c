@@ -274,6 +274,7 @@
 		init-method="init">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="uipProcessor" ref="uipProcessor"/>
+		<property name="managementClient" ref="managementClient"/>
 	</bean>
 	
 	<bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl"
