@@ -31,6 +31,7 @@ import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
+import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
 import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
@@ -52,6 +53,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	private static Logger log = Logger.getLogger(CollectionDepositManagerImpl.class);
 
 	private DigitalObjectManager digitalObjectManager;
+	private DepositReportingUtil depositReportingUtil;
 
 	@Override
 	public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
@@ -167,33 +169,12 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	}
 	
 	private DepositReceipt buildReceipt(IngestResult ingestResult, SwordConfigurationImpl config) throws SwordServerException{
-		DepositReceipt receipt = new DepositReceipt();
-		//receipt.setOriginalDeposit("", deposit.getMimeType());
-		
 		if (ingestResult == null || ingestResult.derivedPIDs == null || ingestResult.derivedPIDs.size() == 0){
 			throw new SwordServerException("Add batch request " + ingestResult.originalDepositID.getPid() + " did not return any derived results.");
 		}
-
-		PID representativePID = null;
-
-		for (PID resultPID: ingestResult.derivedPIDs){
-			if (representativePID == null){
-				representativePID = resultPID;
-			}
-			receipt.addEditMediaIRI(new IRI(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + resultPID.getPid()));
-		}
-
-		IRI editIRI = new IRI(config.getSwordPath() + SwordConfigurationImpl.EDIT_PATH + "/" + representativePID.getPid());
-		IRI swordEditIRI = new IRI(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + representativePID.getPid() + ".atom");
-
-		receipt.setEditIRI(editIRI);
-		receipt.setSwordEditIRI(swordEditIRI);
-
-		receipt.setSplashUri(config.getBasePath() + "record?id=" + representativePID.getPid());
-
-		receipt.setTreatment("Added to CDR through SWORD");
 		
-		log.info("Returning receipt " + receipt);
+		DepositReceipt receipt = depositReportingUtil.retrieveDepositReceipt(ingestResult, config);
+		
 		return receipt;
 	}
 
@@ -203,5 +184,9 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 
 	public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
 		this.digitalObjectManager = digitalObjectManager;
+	}
+
+	public void setDepositReportingUtil(DepositReportingUtil depositReportingUtil) {
+		this.depositReportingUtil = depositReportingUtil;
 	}
 }

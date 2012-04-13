@@ -1,9 +1,17 @@
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.abdera.Abdera;
 import org.apache.abdera.i18n.iri.IRI;
+import org.apache.abdera.model.Document;
+import org.apache.abdera.model.Element;
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
+import org.apache.abdera.parser.Parser;
 import org.apache.log4j.Logger;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.ContainerManager;
@@ -17,11 +25,14 @@ import org.swordapp.server.SwordServerException;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
+import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
+import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil.OriginalDepositPair;
 import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.update.AtomPubMetadataUIP;
@@ -38,6 +49,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 	private DigitalObjectManager digitalObjectManager;
 	private UIPProcessor uipProcessor;
 	private ManagementClient managementClient;
+	private DepositReportingUtil depositReportingUtil;
 
 	private DepositReceipt updateMetadata(String editIRI, Deposit deposit, AuthCredentials auth,
 			SwordConfiguration config, UpdateOperation operation) throws SwordError, SwordServerException,
@@ -169,7 +181,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 		List<String> groupList = this.getGroups(auth, configImpl);
 
-		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.curator.getUri().toString())) {
+		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.patron.getUri().toString())) {
 			throw new SwordAuthException("Insufficient privileges to update object headers " + targetPID.getPid());
 		}
 
@@ -190,13 +202,30 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 	}
 
 	/**
-	 * After-the-fact deposit receipt retrieval method
+	 * After-the-fact deposit receipt retrieval method.  From the EDIT-IRI
 	 */
 	@Override
-	public DepositReceipt getEntry(String editIRI, Map<String, String> accept, AuthCredentials auth,
-			SwordConfiguration config) throws SwordServerException, SwordError, SwordAuthException {
-		// TODO Auto-generated method stub
-		return null;
+	public DepositReceipt getEntry(String editIRIString, Map<String, String> accept, AuthCredentials auth,
+			SwordConfiguration configBase) throws SwordServerException, SwordError, SwordAuthException {
+		
+		PID targetPID = extractPID(editIRIString, SwordConfigurationImpl.EDIT_PATH + "/");
+		
+		SwordConfigurationImpl config = (SwordConfigurationImpl) configBase;
+		
+		Agent user = agentFactory.findPersonByOnyen(auth.getUsername(), false);
+		if (user == null) {
+			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, "
+					+ auth.getUsername());
+		}
+		
+		List<String> groupList = this.getGroups(auth, config);
+		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.patron.getUri().toString())) {
+			throw new SwordAuthException("Insufficient privileges to get deposit receipt " + targetPID.getPid());
+		}
+		
+		DepositReceipt receipt =  depositReportingUtil.retrieveDepositReceipt(targetPID, config);
+		
+		return receipt;
 	}
 	
 	private void setInProgress(PID targetPID, Deposit deposit, DepositReceipt receipt) throws SwordServerException {
@@ -223,5 +252,9 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 	public void setManagementClient(ManagementClient managementClient) {
 		this.managementClient = managementClient;
+	}
+
+	public void setDepositReportingUtil(DepositReportingUtil depositReportingUtil) {
+		this.depositReportingUtil = depositReportingUtil;
 	}
 }

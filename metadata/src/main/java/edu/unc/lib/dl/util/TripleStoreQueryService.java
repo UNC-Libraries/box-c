@@ -371,4 +371,6 @@ public interface TripleStoreQueryService {
 	String fetchFirstBySubjectAndPredicate(PID subject, String predicateURI);
 
 	String fetchState(PID pid);
+
+	Map<String, String> fetchDisseminatorMimetypes(PID pid);
 }

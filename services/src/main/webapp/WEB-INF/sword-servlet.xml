@@ -249,6 +249,11 @@
 		<property name="depositorNamespace" value="${sword.depositorNamespace}"/>
 	</bean>
 	
+	<bean id="depositReportingUtil" class="edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="accessClient" ref="accessClient"/>
+	</bean>
+	
 	<bean id="collectionListManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl"
 		init-method="init">
 		<property name="pageSize" value="50"/>
@@ -257,6 +262,7 @@
 	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl"
 		init-method="init">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+		<property name="depositReportingUtil" ref="depositReportingUtil"/>
 	</bean>
 	
 	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ServiceDocumentManagerImpl" 
@@ -275,6 +281,7 @@
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="uipProcessor" ref="uipProcessor"/>
 		<property name="managementClient" ref="managementClient"/>
+		<property name="depositReportingUtil" ref="depositReportingUtil"/>
 	</bean>
 	
 	<bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl"

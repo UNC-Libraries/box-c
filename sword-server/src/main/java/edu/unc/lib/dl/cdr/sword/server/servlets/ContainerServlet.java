@@ -58,6 +58,15 @@ public class ContainerServlet extends BaseSwordServlet {
 			log.error("Failed to update container " + req.getQueryString(), e);
 		}
 	}
+	
+	@RequestMapping(value = {"/{pid}", "/{pid}/*" }, method = RequestMethod.GET)
+	public void getDepositReceiptOrStatement(HttpServletRequest req, HttpServletResponse resp){
+		try {
+			this.api.get(req, resp);
+		} catch (Exception e) {
+			log.error("Failed to get deposit receipt for " + req.getQueryString(), e);
+		}
+	}
 
 	public void setContainerManager(ContainerManager containerManager) {
 		this.containerManager = containerManager;

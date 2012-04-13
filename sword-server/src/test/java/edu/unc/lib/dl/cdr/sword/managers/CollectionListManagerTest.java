@@ -36,7 +36,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 import static org.mockito.Mockito.*;
 
 public class CollectionListManagerTest extends Assert {
-	private static Logger LOG = Logger.getLogger(CollectionListManagerTest.class);
+	private static Logger log = Logger.getLogger(CollectionListManagerTest.class);
 	
 	private CollectionListManagerImpl manager;
 	private SwordConfigurationImpl config;
@@ -79,6 +79,7 @@ public class CollectionListManagerTest extends Assert {
 	
 	@Test
 	public void listCollectionsSecondPage() throws Exception {
+		log.debug("Second page test");
 		String pidString = "uuid:23425234532434";
 		String url = "https://localhost/services/collection/" + pidString + "/1";
 		IRI iri = new IRI(url);
