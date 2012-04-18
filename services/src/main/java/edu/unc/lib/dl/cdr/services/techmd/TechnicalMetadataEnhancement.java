@@ -116,10 +116,10 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 				try {
 					fits = runFITS(dsIrodsPath, dsAltIds);
 				} catch (JDOMException e){
-					LOG.warn("Failed to parse FITS response", e);
-					return null;
-				} catch (Exception e) {
+					//Rethrow JDOM exception as an unrecoverable enhancement exception
 					throw new EnhancementException(e, Severity.UNRECOVERABLE);
+				} catch (Exception e){
+					throw new RuntimeException(e);
 				}
 
 				// put the FITS document in DS map
@@ -341,7 +341,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 			result = new SAXBuilder().build(new StringReader(xmlstr));
 			return result;
 		} catch(JDOMException e) {
-			LOG.warn("Failed to parse FITS output: "+e.getMessage());
+			LOG.warn("Failed to parse FITS output for path: " + dsIrodsPath);
 			LOG.info("FITS returned: \n"+xmlstr+"\n\n"+errstr);
 			throw e;
 		} finally {
