@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.AbstractXMLEventMessage;
 import edu.unc.lib.dl.cdr.services.model.CDREventMessage;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
@@ -152,8 +151,8 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			failedEntry.put("id", entry.getKey());
 			List<String> failedServices = new ArrayList<String>();
 			failedEntry.put("failedServices", failedServices);
-			for (Class<?> failedService: entry.getValue().getFailedServices()){
-				failedServices.add(failedService.getName());
+			for (String failedService: entry.getValue().getFailedServices()){
+				failedServices.add(failedService);
 			}
 			failedEntry.put("timestamp", entry.getValue().getTimestamp());
 			if (entry.getValue().getMessages() != null){
@@ -236,8 +235,8 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		if (message.getFilteredServices() != null){
 			List<String> filteredServices = new ArrayList<String>();
-			for (ObjectEnhancementService service: message.getFilteredServices()){
-				filteredServices.add(service.getName());
+			for (String service: message.getFilteredServices()){
+				filteredServices.add(service);
 			}
 			job.put("filteredServices", filteredServices);
 		}
@@ -285,8 +284,8 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		if (message.getFilteredServices() != null){
 			List<String> filteredServices = new ArrayList<String>();
-			for (ObjectEnhancementService service: message.getFilteredServices()){
-				filteredServices.add(service.getClass().getName());
+			for (String service: message.getFilteredServices()){
+				filteredServices.add(service);
 			}
 			job.put("filteredServices", filteredServices);
 		}

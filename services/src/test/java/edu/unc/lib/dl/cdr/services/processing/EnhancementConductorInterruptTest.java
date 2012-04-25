@@ -45,6 +45,7 @@ public class EnhancementConductorInterruptTest extends Assert {
 	@SuppressWarnings("rawtypes")
 	protected ServicesThreadPoolExecutor executor;
 	protected List<ObjectEnhancementService> delayServices;
+	protected List<String> delayServiceNames;
 	
 	public static AtomicInteger inIsApplicable;
 	public static AtomicInteger incompleteServices;
@@ -64,8 +65,10 @@ public class EnhancementConductorInterruptTest extends Assert {
 	@Before
 	public void setUp() throws Exception {
 		delayServices = new ArrayList<ObjectEnhancementService>();
+		delayServiceNames = new ArrayList<String>();
 		DelayService delayService = new DelayService();
 		delayServices.add(delayService);
+		delayServiceNames.add(delayService.getClass().getName());
 		
 		enhancementConductor = new EnhancementConductor();
 		enhancementConductor.setRecoverableDelay(0);
@@ -98,7 +101,7 @@ public class EnhancementConductorInterruptTest extends Assert {
 		for (int i=0; i<numberTestMessages; i++){
 			EnhancementMessage message = new EnhancementMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
-			message.setFilteredServices(delayServices);
+			message.setFilteredServices(delayServiceNames);
 			enhancementConductor.add(message);
 		}
 		
@@ -131,7 +134,8 @@ public class EnhancementConductorInterruptTest extends Assert {
 	}
 	
 	public class DelayService extends AbstractFedoraEnhancementService {
-		
+		private static final long serialVersionUID = 1L;
+
 		public DelayService(){
 			this.active = true;
 		}

@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,20 +25,21 @@ import java.util.Set;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.message.ActionMessage;
 
-public class FailedEnhancementObject {
-	private Set<Class<?>> failedServices;
+public class FailedEnhancementObject implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private Set<String> failedServices;
 	private long timestamp = System.currentTimeMillis();
 	private PID pid;
 	private List<ActionMessage> messages;
 	
 	public FailedEnhancementObject(PID pid){
 		this.pid = pid;
-		failedServices = Collections.synchronizedSet(new HashSet<Class<?>>());
+		failedServices = Collections.synchronizedSet(new HashSet<String>());
 	}
 	
-	public FailedEnhancementObject(PID pid, Class<?> failedService, ActionMessage message){
+	public FailedEnhancementObject(PID pid, String failedService, ActionMessage message){
 		this.pid = pid;
-		failedServices = Collections.synchronizedSet(new HashSet<Class<?>>());
+		failedServices = Collections.synchronizedSet(new HashSet<String>());
 		addFailedService(failedService);
 		messages = new ArrayList<ActionMessage>();
 		addMessage(message);
@@ -54,11 +56,11 @@ public class FailedEnhancementObject {
 		messages.add(message);
 	}
 	
-	public void addFailedService(Class<?> serviceName){
+	public void addFailedService(String serviceName){
 		failedServices.add(serviceName);
 	}
 
-	public Set<Class<?>> getFailedServices() {
+	public Set<String> getFailedServices() {
 		return failedServices;
 	}
 

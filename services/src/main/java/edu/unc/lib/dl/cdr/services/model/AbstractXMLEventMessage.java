@@ -22,6 +22,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public abstract class AbstractXMLEventMessage extends EnhancementMessage {
+	private static final long serialVersionUID = 1L;
 	protected Document messageBody = null;
 	private String eventTimestamp = null;
 	

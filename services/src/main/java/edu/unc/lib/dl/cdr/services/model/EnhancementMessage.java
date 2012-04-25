@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.cdr.services.model;
 
 import java.util.List;
-import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.message.ActionMessage;
 
@@ -26,6 +25,8 @@ import edu.unc.lib.dl.message.ActionMessage;
  *
  */
 public class EnhancementMessage implements ActionMessage {
+	private static final long serialVersionUID = 1L;
+	
 	protected String messageID = null;
 	protected PID pid;
 	protected PID depositID;
@@ -34,7 +35,7 @@ public class EnhancementMessage implements ActionMessage {
 	protected String qualifiedAction = null;
 	protected String serviceName = null;
 	protected long timeCreated = System.currentTimeMillis();
-	protected List<ObjectEnhancementService> filteredServices = null;
+	protected List<String> filteredServices = null;
 	
 	protected EnhancementMessage(){
 	}
@@ -140,20 +141,15 @@ public class EnhancementMessage implements ActionMessage {
 		this.timeCreated = timeCreated;
 	}
 
-	public List<ObjectEnhancementService> getFilteredServices() {
+	public List<String> getFilteredServices() {
 		return filteredServices;
 	}
 	
 	public boolean filteredServicesContains(Class<?> serviceClass){
-		for (ObjectEnhancementService service: this.filteredServices){
-			if (serviceClass.equals(service.getClass())){
-				return true;
-			}
-		}
-		return false;
+		return this.filteredServices.contains(serviceClass.getName());
 	}
 
-	public void setFilteredServices(List<ObjectEnhancementService> filteredServices) {
+	public void setFilteredServices(List<String> filteredServices) {
 		this.filteredServices = filteredServices;
 	}
 	

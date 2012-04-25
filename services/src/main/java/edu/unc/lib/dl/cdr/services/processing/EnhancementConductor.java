@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,11 +44,11 @@ import edu.unc.lib.dl.message.ActionMessage;
 
 /**
  * Central service conductor class which stores and processes a queue of messages indicating updates to Fedora objects.
- *
+ * 
  * @author Gregory Jansen, Ben Pennell
  */
 public class EnhancementConductor implements MessageConductor, ServiceConductor {
-	private static final Logger LOG = LoggerFactory.getLogger(EnhancementConductor.class);
+	private static final Logger log = LoggerFactory.getLogger(EnhancementConductor.class);
 
 	public static final String identifier = "ENHANCEMENT";
 	private AtomicLong idSequence;
@@ -55,6 +57,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	 * The object enhancement services, in priority order.
 	 */
 	private List<ObjectEnhancementService> services = new ArrayList<ObjectEnhancementService>();
+	private Map<String, ObjectEnhancementService> servicesMap = new HashMap<String, ObjectEnhancementService>();
 
 	/**
 	 * Maximum numbers of threads in executor pool.
@@ -80,7 +83,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	private long beforeExecuteDelay = 0;
 
 	public EnhancementConductor() {
-		LOG.debug("Starting up Services Conductor");
+		log.debug("Starting up Services Conductor");
 		pidQueue = new LinkedBlockingQueue<EnhancementMessage>();
 		// Initialize as synchronized collections for thread safety
 		collisionList = Collections.synchronizedList(new ArrayList<EnhancementMessage>());
@@ -88,7 +91,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		idSequence = new AtomicLong(0);
 	}
 
-	public String getIdentifier(){
+	public String getIdentifier() {
 		return identifier;
 	}
 
@@ -100,7 +103,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		initializeExecutor();
 	}
 
-	private void initializeExecutor(){
+	private void initializeExecutor() {
 		this.executor = new ServicesThreadPoolExecutor<PerformServicesRunnable>(this.maxThreads, this.getIdentifier());
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
 		this.executor.setBeforeExecuteDelay(beforeExecuteDelay);
@@ -110,49 +113,54 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	 * Deconstructor method, stops the thread pool.
 	 */
 	public void destroy() {
+		try {
+			this.failedPids.serializeFailedEnhancements();
+		} catch (IOException e) {
+			log.error("Failed to serialize the failed enhancements list during shutdown", e);
+		}
 		this.executor.shutdownNow();
 	}
 
 	/**
 	 * Offers a pid and its message to the queue of messages to be processed. Will start up processing threads if none
 	 * are running or available.
-	 *
+	 * 
 	 * @param pid
 	 * @param msg
 	 */
 	@Override
 	public void add(ActionMessage aMessage) {
-		EnhancementMessage message = (EnhancementMessage)aMessage;
+		EnhancementMessage message = (EnhancementMessage) aMessage;
 		synchronized (pidQueue) {
 			synchronized (executor) {
 				if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated()) {
-					LOG.debug("Ignoring message for pid " + message.getTargetID());
+					log.debug("Ignoring message for pid " + message.getTargetID());
 					return;
 				}
-				if (message.getMessageID() == null){
-					synchronized(idSequence){
+				if (message.getMessageID() == null) {
+					synchronized (idSequence) {
 						message.setMessageID(identifier + ":" + idSequence.incrementAndGet());
 					}
 				}
 				boolean success = pidQueue.offer(message);
-				if (!success){
-					LOG.error("Failure to queue pid " + message.getTargetID());
+				if (!success) {
+					log.error("Failure to queue pid " + message.getTargetID());
 				}
 				startProcessing();
 			}
 		}
 	}
 
-	public int getMaxThreadPoolSize(){
+	public int getMaxThreadPoolSize() {
 		return this.executor.getMaximumPoolSize();
 	}
 
-	public void setMaxThreadPoolSize(int threadPoolSize){
+	public void setMaxThreadPoolSize(int threadPoolSize) {
 		this.executor.setCorePoolSize(threadPoolSize);
 		this.executor.setMaximumPoolSize(threadPoolSize);
 	}
 
-	public void resetMaxThreadPoolSize(){
+	public void resetMaxThreadPoolSize() {
 		this.executor.setCorePoolSize(this.maxThreads);
 		this.executor.setMaximumPoolSize(this.maxThreads);
 	}
@@ -163,12 +171,12 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	}
 
 	@Override
-	public void pause(){
+	public void pause() {
 		this.executor.pause();
 	}
 
 	@Override
-	public void resume(){
+	public void resume() {
 		this.executor.resume();
 	}
 
@@ -178,47 +186,47 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	}
 
 	@Override
-	public boolean isIdle(){
+	public boolean isIdle() {
 		return isPaused() || this.lockedPids.size() == 0;
 	}
 
 	@Override
-	public boolean isReady(){
+	public boolean isReady() {
 		return !this.executor.isShutdown() && !this.executor.isTerminated() && !this.executor.isTerminating();
 	}
 
-	public Map<String, Object> getInfo(){
+	public Map<String, Object> getInfo() {
 		// TODO put values in separate keys
 		Map<String, Object> result = new HashMap<String, Object>();
 		StringBuilder sb = new StringBuilder();
 		sb.append("Services Conductor Status:\n")
-			.append("Paused: " + isPaused() + "\n")
-			.append("PID Queue: " + this.pidQueue.size() + "\n")
-			.append("Collision List: " + this.collisionList.size() + "\n")
-			.append("Locked pids: " + this.lockedPids.size() + "\n")
-			.append("Failed pids: " + this.failedPids.size() + "\n")
-			.append("Executor: " + executor.getActiveCount() + " active workers, " + executor.getQueue().size() + " queued");
+				.append("Paused: " + isPaused() + "\n")
+				.append("PID Queue: " + this.pidQueue.size() + "\n")
+				.append("Collision List: " + this.collisionList.size() + "\n")
+				.append("Locked pids: " + this.lockedPids.size() + "\n")
+				.append("Failed pids: " + this.failedPids.size() + "\n")
+				.append(
+						"Executor: " + executor.getActiveCount() + " active workers, " + executor.getQueue().size()
+								+ " queued");
 		result.put("message", sb.toString());
 		return result;
 	}
 
 	@Override
-	public String queuesToString(){
+	public String queuesToString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Services Conductor Queues:\n")
-			.append("PID Queue: " + this.pidQueue + "\n")
-			.append("Collision List: " + this.collisionList + "\n")
-			.append("Locked pids: " + this.lockedPids + "\n")
-			.append("Failed pids: " + this.failedPids + "\n");
+		sb.append("Services Conductor Queues:\n").append("PID Queue: " + this.pidQueue + "\n")
+				.append("Collision List: " + this.collisionList + "\n").append("Locked pids: " + this.lockedPids + "\n")
+				.append("Failed pids: " + this.failedPids + "\n");
 		return sb.toString();
 	}
 
 	public void logStatus() {
-		LOG.info((String)getInfo().get("message"));
+		log.info((String) getInfo().get("message"));
 	}
 
 	public void logQueues() {
-		LOG.info(queuesToString());
+		log.info(queuesToString());
 	}
 
 	@Override
@@ -244,12 +252,11 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		this.lockedPids.remove(pid);
 	}
 
-
-	public synchronized void repopulateFailedPids(String dump){
+	public synchronized void repopulateFailedPids(String dump) {
 		this.failedPids.repopulate(dump);
 	}
 
-	public synchronized void removeFailedPid(String pid){
+	public synchronized void removeFailedPid(String pid) {
 		this.failedPids.remove(pid);
 	}
 
@@ -275,7 +282,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		this.executor.shutdown();
 		this.clearQueue();
 		this.lockedPids.clear();
-		LOG.warn("ServiceConductor is shutting down, no further objects will be received");
+		log.warn("ServiceConductor is shutting down, no further objects will be received");
 	}
 
 	@Override
@@ -283,21 +290,22 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		this.executor.shutdownNow();
 		this.clearQueue();
 		this.lockedPids.clear();
-		LOG.warn("ServiceConductor is shutting down, no further objects will be received");
+		log.warn("ServiceConductor is shutting down, no further objects will be received");
 	}
 
 	@Override
 	public synchronized void abort() {
 		this.lockedPids.clear();
-		//Perform hard shutdown and wait for it to finish
+		// Perform hard shutdown and wait for it to finish
 		List<Runnable> runnables = this.executor.shutdownNow();
-		while (this.executor.isTerminating() && !this.executor.isShutdown());
-		//restart and pause the executor
+		while (this.executor.isTerminating() && !this.executor.isShutdown())
+			;
+		// restart and pause the executor
 		initializeExecutor();
 		pause();
-		//Pass the old runnables on to the new executor.
-		if (runnables != null){
-			for (Runnable runnable: runnables){
+		// Pass the old runnables on to the new executor.
+		if (runnables != null) {
+			for (Runnable runnable : runnables) {
 				this.executor.submit(runnable);
 			}
 		}
@@ -313,7 +321,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		return maxThreads;
 	}
 
-	public ServicesThreadPoolExecutor<PerformServicesRunnable> getExecutor(){
+	public ServicesThreadPoolExecutor<PerformServicesRunnable> getExecutor() {
 		return this.executor;
 	}
 
@@ -353,12 +361,20 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		return services;
 	}
 
-	public void setServices(List<ObjectEnhancementService> services) {
+	public synchronized void setServices(List<ObjectEnhancementService> services) {
 		this.services = services;
+		this.servicesMap = new HashMap<String, ObjectEnhancementService>();
+		for (ObjectEnhancementService service : services) {
+			this.servicesMap.put(service.getClass().getName(), service);
+		}
 	}
 
 	public void setServices(ArrayList<ObjectEnhancementService> services) {
 		this.services = services;
+		this.servicesMap = new HashMap<String, ObjectEnhancementService>();
+		for (ObjectEnhancementService service : services) {
+			this.servicesMap.put(service.getClass().getName(), service);
+		}
 	}
 
 	public BlockingQueue<EnhancementMessage> getPidQueue() {
@@ -402,36 +418,36 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	 * Runnable class which performs the actual processing of messages from the queue. Messages are read if they do not
 	 * apply to a pid that is already being processed, and a list of services are tested against each message to
 	 * determine if they should be run.
-	 *
+	 * 
 	 * @author bbpennel
-	 *
+	 * 
 	 */
 	public class PerformServicesRunnable implements Runnable {
 
 		private EnhancementMessage message = null;
-		
+
 		public PerformServicesRunnable() {
-			LOG.debug("Instantiating a new PerformServicesRunnable");
+			log.debug("Instantiating a new PerformServicesRunnable");
 		}
 
 		public EnhancementMessage getMessage() {
 			return message;
 		}
 
-		private void retryException(ObjectEnhancementService s, String messagePrefix, Exception e, long retryDelay){
-			LOG.warn(messagePrefix + s.getClass().getName() + " for " + message.getTargetID() + ".  Retrying after a delay.", e);
+		private void retryException(ObjectEnhancementService s, String messagePrefix, Exception e, long retryDelay) {
+			log.warn(messagePrefix + s.getClass().getName() + " for " + message.getTargetID()
+					+ ".  Retrying after a delay.", e);
 			try {
 				Thread.sleep(retryDelay);
 				this.applyService(s);
-				LOG.info("Second attempt to run " + s.getClass().getName() + " for " + message.getTargetID()
+				log.info("Second attempt to run " + s.getClass().getName() + " for " + message.getTargetID()
 						+ " was successful.");
 			} catch (InterruptedException e2) {
-				LOG.warn("Retry attempt for " + s.getClass().getName() + " for " + message.getTargetID()
+				log.warn("Retry attempt for " + s.getClass().getName() + " for " + message.getTargetID()
 						+ " was interrupted.");
 				Thread.currentThread().interrupt();
 			} catch (Exception e2) {
-				LOG.error("Second attempt to run " + s.getClass().getName() + " for " + message.getTargetID()
-						+ " failed.");
+				log.error("Second attempt to run " + s.getClass().getName() + " for " + message.getTargetID() + " failed.");
 				failedPids.add(message.getPid(), s.getClass(), message);
 			}
 		}
@@ -442,7 +458,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		 * found or the list is empty. If there are any items in the collision list, they are treated as if they were at
 		 * the beginning of message queue, meaning that they are examined before polling of the queue begins in order to
 		 * retain operation order.
-		 *
+		 * 
 		 * @return the next available message which is not locked, or null if none if available.
 		 */
 		private EnhancementMessage getNextMessage() {
@@ -472,7 +488,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 							// the regular queue.
 							pid = pidQueue.poll();
 
-							if (pid != null){
+							if (pid != null) {
 								synchronized (lockedPids) {
 									if (lockedPids.contains(pid.getTargetID())) {
 										collisionList.add(pid);
@@ -488,7 +504,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 				try {
 					Thread.sleep(200L);
 				} catch (InterruptedException e) {
-					LOG.warn("Services runnable interrupted while waiting to get next message.");
+					log.warn("Services runnable interrupted while waiting to get next message.");
 					Thread.currentThread().interrupt();
 				}
 			} while (pid == null && !Thread.currentThread().isInterrupted()
@@ -500,45 +516,44 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 			// Check if there were any failed services for this pid. If there were, check if the current service
 			// was one of them.
 
-			if (LOG.isDebugEnabled())
-				LOG.debug("Applying service " + s.getClass().getCanonicalName() + " to " + message.getTargetID());
+			if (log.isDebugEnabled())
+				log.debug("Applying service " + s.getClass().getCanonicalName() + " to " + message.getTargetID());
 
-			Set<Class<?>> failedServices = null;
-			synchronized(failedPids){
+			Set<String> failedServices = null;
+			synchronized (failedPids) {
 				failedServices = failedPids.getFailedServices(message.getTargetID());
-				//Determine if the service should not be run
-				if (!(s.isActive() &&
-						((message.getServiceName() != null && message.getServiceName().equals(s.getClass().getName()))
-							|| s.isApplicable(message))
-						&& (failedServices == null || !failedServices.contains(s.getClass())))){
-					if (LOG.isDebugEnabled())
-						LOG.debug("Enhancement not run: " + s.getClass().getCanonicalName() + " on " + message.getTargetID());
+				// Determine if the service should not be run
+				if (!(s.isActive()
+						&& ((message.getServiceName() != null && message.getServiceName().equals(s.getClass().getName())) || s
+								.isApplicable(message)) && (failedServices == null || !failedServices.contains(s.getClass().getName())))) {
+					if (log.isDebugEnabled())
+						log.debug("Enhancement not run: " + s.getClass().getCanonicalName() + " on " + message.getTargetID());
 					return;
 				}
 			}
 
-			//Generate the enhancement
-			LOG.info("Adding enhancement task: " + s.getClass().getCanonicalName() + " on " + message.getTargetID());
+			// Generate the enhancement
+			log.info("Adding enhancement task: " + s.getClass().getCanonicalName() + " on " + message.getTargetID());
 			Enhancement<Element> task = s.getEnhancement(message);
 
-			//Pause before applying the service if the executor is paused.
+			// Pause before applying the service if the executor is paused.
 			pauseWait();
-			//If the thread was interrupted, we're done
-			if (Thread.currentThread().isInterrupted()){
-				LOG.warn("Services thread " + Thread.currentThread().getId() + " for " + message.getTargetID()
+			// If the thread was interrupted, we're done
+			if (Thread.currentThread().isInterrupted()) {
+				log.warn("Services thread " + Thread.currentThread().getId() + " for " + message.getTargetID()
 						+ " interrupted before calling enhancement");
 				return;
 			}
-			//Enhancement services need to be run serially per pid, so making a direct invocation of call
+			// Enhancement services need to be run serially per pid, so making a direct invocation of call
 			task.call();
 		}
 
-		private void pauseWait(){
-			while (executor.isPaused() && !Thread.currentThread().isInterrupted()){
+		private void pauseWait() {
+			while (executor.isPaused() && !Thread.currentThread().isInterrupted()) {
 				try {
 					Thread.sleep(1000L);
 				} catch (Exception e) {
-					LOG.debug("Services thread " + Thread.currentThread().getId() + " interrupted while paused");
+					log.debug("Services thread " + Thread.currentThread().getId() + " interrupted while paused");
 					Thread.currentThread().interrupt();
 				}
 			}
@@ -546,56 +561,66 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 
 		@Override
 		public void run() {
-			LOG.debug("Starting new run of ServiceConductor thread " + this);
-			//Get the next message, waiting as long as necessary for one to be free
+			log.debug("Starting new run of ServiceConductor thread " + this);
+			// Get the next message, waiting as long as necessary for one to be free
 			message = getNextMessage();
 
-			if (LOG.isDebugEnabled())
-				LOG.debug("Received pid " + message.getTargetID() + ": " + message.getFilteredServices());
+			if (log.isDebugEnabled())
+				log.debug("Received pid " + message.getTargetID() + ": " + message.getFilteredServices());
 
 			if (message != null && message.getFilteredServices() != null) {
 				try {
-					//Quit before doing work if thread was interrupted
-					if (Thread.currentThread().isInterrupted()){
-						LOG.debug("Thread was interrupted");
+					// Quit before doing work if thread was interrupted
+					if (Thread.currentThread().isInterrupted()) {
+						log.debug("Thread was interrupted");
 						return;
 					}
-					for (ObjectEnhancementService s : message.getFilteredServices()) {
+					for (String serviceClassName : message.getFilteredServices()) {
+						ObjectEnhancementService s = servicesMap.get(serviceClassName);
 						try {
-							if (Thread.currentThread().isInterrupted()){
-								LOG.debug("Thread was interrupted");
-								return;
+							if (s == null) {
+								log.error("Service " + serviceClassName
+										+ " is not included in the list of enabled services for this conductor, ignoring.");
+							} else {
+								if (Thread.currentThread().isInterrupted()) {
+									log.debug("Thread was interrupted");
+									return;
+								}
+								// Apply the service
+								this.applyService(s);
 							}
-							//Apply the service
-							this.applyService(s);
-						} catch (EnhancementException e){
+						} catch (EnhancementException e) {
 							switch (e.getSeverity()) {
 								case RECOVERABLE:
-									retryException(s, "A recoverable enhancement exception occurred while attempting to apply service "
-											+ s.getClass().getName(), e, recoverableDelay);
+									retryException(s,
+											"A recoverable enhancement exception occurred while attempting to apply service "
+													+ s.getClass().getName(), e, recoverableDelay);
 									break;
 								case UNRECOVERABLE:
-									LOG.error("An unrecoverable exception occurred while attempting to apply service "
-											+ s.getClass().getName() + " for " + message.getTargetID() + ".  Adding to failure list.", e);
+									log.error("An unrecoverable exception occurred while attempting to apply service "
+											+ s.getClass().getName() + " for " + message.getTargetID()
+											+ ".  Adding to failure list.", e);
 									failedPids.add(message.getPid(), s.getClass(), message);
 									break;
 								case FATAL:
 									pause();
-									LOG.error("A fatal exception occurred while attempting to apply service "
-											+ s.getClass().getName() + " for " + message.getTargetID() +", halting all future services.", e);
+									log.error("A fatal exception occurred while attempting to apply service "
+											+ s.getClass().getName() + " for " + message.getTargetID()
+											+ ", halting all future services.", e);
 									failedPids.add(message.getPid(), s.getClass(), message);
 									return;
 								default:
-									LOG.error("An exception occurred while attempting to apply service "
+									log.error("An exception occurred while attempting to apply service "
 											+ s.getClass().getName() + " for " + message.getTargetID(), e);
 									failedPids.add(message.getPid(), s.getClass(), message);
 									break;
 							}
 						} catch (RuntimeException e) {
-							retryException(s, "A runtime error occurred while attempting to apply service",
-									e, unexpectedExceptionDelay);
+							retryException(s, "A runtime error occurred while attempting to apply service", e,
+									unexpectedExceptionDelay);
 						} catch (Exception e) {
-							LOG.error("An unexpected exception occurred while attempting to apply service " + s.getClass().getName(), e);
+							log.error("An unexpected exception occurred while attempting to apply service "
+									+ s.getClass().getName(), e);
 							failedPids.add(message.getPid(), s.getClass(), message);
 						}
 					}
