@@ -143,6 +143,7 @@
 	
 	<bean id="servicesFailedPids" class="edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap" factory-method="loadFailedEnhancements">
 		<constructor-arg><value>${services.enhancements.failed.path}</value></constructor-arg>
+		<constructor-arg><value>${services.enhancements.failedTraces.path}</value></constructor-arg>
 	</bean>
 	
 	<bean id="enhancementConductor" class="edu.unc.lib.dl.cdr.services.processing.EnhancementConductor"

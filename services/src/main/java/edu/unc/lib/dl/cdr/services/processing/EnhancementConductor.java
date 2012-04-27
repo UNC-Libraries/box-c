@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +52,6 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	private static final Logger log = LoggerFactory.getLogger(EnhancementConductor.class);
 
 	public static final String identifier = "ENHANCEMENT";
-	private AtomicLong idSequence;
 
 	/**
 	 * The object enhancement services, in priority order.
@@ -88,7 +88,6 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		// Initialize as synchronized collections for thread safety
 		collisionList = Collections.synchronizedList(new ArrayList<EnhancementMessage>());
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
-		idSequence = new AtomicLong(0);
 	}
 
 	public String getIdentifier() {
@@ -138,9 +137,8 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 					return;
 				}
 				if (message.getMessageID() == null) {
-					synchronized (idSequence) {
-						message.setMessageID(identifier + ":" + idSequence.incrementAndGet());
-					}
+					UUID uuid = UUID.randomUUID();
+					message.setMessageID(identifier + ":" + uuid.toString());
 				}
 				boolean success = pidQueue.offer(message);
 				if (!success) {
@@ -448,7 +446,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 				Thread.currentThread().interrupt();
 			} catch (Exception e2) {
 				log.error("Second attempt to run " + s.getClass().getName() + " for " + message.getTargetID() + " failed.");
-				failedPids.add(message.getPid(), s.getClass(), message);
+				failedPids.add(message.getPid(), s.getClass(), message, e);
 			}
 		}
 
@@ -600,19 +598,19 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 									log.error("An unrecoverable exception occurred while attempting to apply service "
 											+ s.getClass().getName() + " for " + message.getTargetID()
 											+ ".  Adding to failure list.", e);
-									failedPids.add(message.getPid(), s.getClass(), message);
+									failedPids.add(message.getPid(), s.getClass(), message, e);
 									break;
 								case FATAL:
 									pause();
 									log.error("A fatal exception occurred while attempting to apply service "
 											+ s.getClass().getName() + " for " + message.getTargetID()
 											+ ", halting all future services.", e);
-									failedPids.add(message.getPid(), s.getClass(), message);
+									failedPids.add(message.getPid(), s.getClass(), message, e);
 									return;
 								default:
 									log.error("An exception occurred while attempting to apply service "
 											+ s.getClass().getName() + " for " + message.getTargetID(), e);
-									failedPids.add(message.getPid(), s.getClass(), message);
+									failedPids.add(message.getPid(), s.getClass(), message, e);
 									break;
 							}
 						} catch (RuntimeException e) {
@@ -621,7 +619,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 						} catch (Exception e) {
 							log.error("An unexpected exception occurred while attempting to apply service "
 									+ s.getClass().getName(), e);
-							failedPids.add(message.getPid(), s.getClass(), message);
+							failedPids.add(message.getPid(), s.getClass(), message, e);
 						}
 					}
 				} finally {

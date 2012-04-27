@@ -43,6 +43,7 @@ import edu.unc.lib.dl.cdr.services.model.AbstractXMLEventMessage;
 import edu.unc.lib.dl.cdr.services.model.CDREventMessage;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedEnhancementObject;
+import edu.unc.lib.dl.cdr.services.model.FailedEnhancementObject.MessageFailure;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor;
@@ -172,8 +173,17 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	public @ResponseBody Map<String, ? extends Object> getFailedMessageInfo(@PathVariable("id") String id){
 		if (id == null || id.length() == 0)
 			return null;
-		ActionMessage message = this.enhancementConductor.getFailedPids().getMessageByMessageID(id);
-		return getJobFullInfo(message, FAILED_PATH);
+		MessageFailure messageFailure;
+		try {
+			messageFailure = this.enhancementConductor.getFailedPids().getMessageFailure(id);
+			Map<String, Object> jobInfo = getJobFullInfo(messageFailure.getMessage(), FAILED_PATH);
+			jobInfo.put("stackTrace", messageFailure.getFailureLog());			
+			
+			return jobInfo;
+		} catch (IOException e) {
+			LOG.error("Failed to load stack trace file for " + id, e);
+			return null;
+		}
 	}
 	
 	/**

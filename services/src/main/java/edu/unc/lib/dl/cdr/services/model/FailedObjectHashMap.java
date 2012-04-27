@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.model;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -22,12 +23,14 @@ import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.cdr.services.model.FailedEnhancementObject.MessageFailure;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.message.ActionMessage;
 
@@ -41,13 +44,16 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String, FailedEnhance
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = LoggerFactory.getLogger(FailedObjectHashMap.class);
 	private String serializationPath;
+	private String failureLogPath;
 
 	public FailedObjectHashMap() {
-
+		this.serializationPath = null;
+		this.failureLogPath = null;
 	}
 
-	public FailedObjectHashMap(String serializationPath) {
+	public FailedObjectHashMap(String serializationPath, String failureLogPath) {
 		this.serializationPath = serializationPath;
+		this.failureLogPath = failureLogPath;
 	}
 
 	/**
@@ -88,15 +94,48 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String, FailedEnhance
 	 * @param pid
 	 * @param serviceName
 	 */
-	public synchronized void add(PID pid, Class<?> service, ActionMessage message) {
+	public synchronized boolean add(PID pid, Class<?> service, ActionMessage message, Throwable exception) {
 		FailedEnhancementObject failedObject = this.get(pid.getPid());
+
+		File failureLogFile = null;
+
+		if (exception != null && this.failureLogPath != null) {
+			// Write the exception out to the message file.
+			failureLogFile = new File(this.failureLogPath, message.getMessageID());
+			log.debug("Storing exception for " + pid.getPid() + " to " + failureLogFile.getAbsolutePath());
+			PrintWriter writer = null;
+			try {
+				writer = new PrintWriter(new FileOutputStream(failureLogFile));
+				if (exception != null)
+					exception.printStackTrace(writer);
+			} catch (IOException e) {
+				log.error("Failed to create failure log for " + pid.getPid() + " message " + message.getMessageID());
+				return false;
+			} finally {
+				if (writer != null) {
+					try {
+						writer.flush();
+						writer.close();
+					} catch (Exception ignored) {
+					}
+				}
+			}
+		}
+
 		if (failedObject == null) {
-			failedObject = new FailedEnhancementObject(pid, service.getName(), message);
+			log.debug("Adding message to new FailedEnhancementObject for " + pid.getPid() + " with failureLog " + (failureLogFile != null));
+			failedObject = new FailedEnhancementObject(pid, service.getName(), message, failureLogFile);
 			this.put(pid.getPid(), failedObject);
 		} else {
+			log.debug("Adding message to existing FailedEnhancementObject for " + pid.getPid() + " with failureLog " + (failureLogFile != null));
 			failedObject.addFailedService(service.getName());
-			failedObject.addMessage(message);
+			failedObject.addMessage(message, failureLogFile);
 		}
+		return true;
+	}
+
+	public synchronized void add(PID pid, Class<?> service, ActionMessage message) {
+		add(pid, service, message, null);
 	}
 
 	public Set<String> getFailedServices(String pid) {
@@ -106,12 +145,38 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String, FailedEnhance
 		return failedObject.getFailedServices();
 	}
 
-	public ActionMessage getMessageByMessageID(String messageID) {
+	/**
+	 * Retrieves the message failure information for the message matching the provided ID.
+	 * 
+	 * This includes the message itself and the log that resulted from its failure, if provided.
+	 * 
+	 * @param messageID
+	 * @return
+	 * @throws IOException
+	 */
+	public MessageFailure getMessageFailure(String messageID) throws IOException {
+		for (FailedEnhancementObject failedObject : this.values()) {
+			if (failedObject.getMessages() != null) {
+				MessageFailure messageFailure = failedObject.getMessageFailure(messageID);
+				if (messageFailure != null)
+					return messageFailure;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Retrieves the failed enhancement object containing a message matching the provided message id
+	 * 
+	 * @param messageID
+	 * @return
+	 */
+	public FailedEnhancementObject getFailureByMessageID(String messageID) {
 		for (FailedEnhancementObject failedObject : this.values()) {
 			if (failedObject.getMessages() != null) {
 				for (ActionMessage message : failedObject.getMessages()) {
 					if (message.getMessageID().equals(messageID))
-						return message;
+						return failedObject;
 				}
 			}
 		}
@@ -143,7 +208,7 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String, FailedEnhance
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public static FailedObjectHashMap loadFailedEnhancements(String filePath) throws IOException, ClassNotFoundException {
+	public static FailedObjectHashMap loadFailedEnhancements(String filePath, String failureLogPath) throws IOException, ClassNotFoundException {
 		try {
 			FileInputStream fileInputStream = new FileInputStream(filePath);
 			ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
@@ -157,9 +222,38 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String, FailedEnhance
 		} catch (InvalidClassException e) {
 			log.warn("Unable to reload failed enhancement instance from " + filePath
 					+ ", the serial version ID did not match.  Creating new map.", e);
+		} catch (Exception e) {
+			log.error("Unable to reload failed enhancement instance from " + filePath + ", creating new map.", e);
 		}
 
-		return new FailedObjectHashMap(filePath);
+		FailedObjectHashMap failedObjectMap = new FailedObjectHashMap(filePath, failureLogPath);
+		failedObjectMap.clear();
+		return failedObjectMap;
+	}
+	
+	/**
+	 * Clears the list and cleans out the trace file directory.
+	 */
+	@Override
+	public synchronized void clear(){
+		super.clear();
+		if (this.failureLogPath != null){
+			//Clear out the trace files
+			File logDirectory = new File(this.failureLogPath);
+			File[] traceFiles = logDirectory.listFiles();
+			if (traceFiles != null && traceFiles.length > 0){
+				for (File traceFile: traceFiles){
+					traceFile.delete();
+				}
+			}
+		}
+	}
+	
+	@Override
+	public FailedEnhancementObject remove(Object key){
+		FailedEnhancementObject failedObject = super.remove(key);
+		failedObject.deleteFailureLogFiles();
+		return failedObject;
 	}
 
 	public String getSerializationPath() {
