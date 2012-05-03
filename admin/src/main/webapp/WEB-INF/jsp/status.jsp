@@ -189,6 +189,7 @@ table.detailsView td {
 						<th>status</th>
 						<th>pid</th>
 						<th>service(s)</th>
+						<th></th>
 					</tr>
 				</thead>
 				<tbody id="enhancementJobs">

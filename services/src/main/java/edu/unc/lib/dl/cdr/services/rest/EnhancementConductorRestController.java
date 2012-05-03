@@ -171,8 +171,12 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			if (entry.getValue().getMessages() != null){
 				Map<String, Object> uris = new HashMap<String, Object>();
 				failedEntry.put("uris", uris);
+				uris.put("jobInfo", BASE_PATH + FAILED_PATH + "/job/");
+				
+				List<String> messageIDList = new ArrayList<String>();
+				failedEntry.put("messageIDs", messageIDList);
 				for (ActionMessage message: entry.getValue().getMessages()){
-					uris.put("message_" + message.getMessageID(), BASE_PATH + FAILED_PATH + "/job/" + message.getMessageID());
+					messageIDList.add(message.getMessageID());
 				}
 			}
 			jobs.add(failedEntry);
