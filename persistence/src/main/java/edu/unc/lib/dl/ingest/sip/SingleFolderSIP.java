@@ -24,8 +24,6 @@ public class SingleFolderSIP implements SubmissionInformationPackage {
 	private PID containerPID = null;
 	private final String label = null;
 	private File modsXML = null;
-	private Agent owner = null;
-	private Agent depositor = null;
 	private String slug = null;
 	private boolean allowIndexing = true;
 	private boolean isCollection = false;
@@ -50,10 +48,6 @@ public class SingleFolderSIP implements SubmissionInformationPackage {
 		return modsXML;
 	}
 
-	public Agent getOwner() {
-		return this.owner;
-	}
-
 	public String getSlug() {
 		return slug;
 	}
@@ -64,10 +58,6 @@ public class SingleFolderSIP implements SubmissionInformationPackage {
 
 	public void setModsXML(File modsXML) {
 		this.modsXML = modsXML;
-	}
-
-	public void setOwner(Agent owner) {
-		this.owner = owner;
 	}
 
 	public void setSlug(String slug) {
@@ -82,12 +72,4 @@ public class SingleFolderSIP implements SubmissionInformationPackage {
 		this.isCollection = isCollection;
 	}
 
-	public void setDepositor(Agent depositor){
-		this.depositor = depositor;
-	}
-	
-	@Override
-	public Agent getDepositor() {
-		return depositor;
-	}
 }

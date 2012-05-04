@@ -35,8 +35,6 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 	private String md5checksum = null;
 	private String mimeType = null;
 	private File modsXML = null;
-	private Agent owner = null;
-	private Agent depositor = null;
 	private boolean discardFilesOnDestroy = true;
 
 	public boolean isDiscardFilesOnDestroy() {
@@ -87,10 +85,6 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 
 	public File getModsXML() {
 		return modsXML;
-	}
-
-	public Agent getOwner() {
-		return this.owner;
 	}
 
 	public boolean isAllowIndexing() {
@@ -160,17 +154,4 @@ public class SingleFileSIP implements SubmissionInformationPackage {
 		this.modsXML = modsXML;
 	}
 
-	/**
-	 * Set the owner of the submitted objects.
-	 * 
-	 * @param owner
-	 */
-	public void setOwner(Agent owner) {
-		this.owner = owner;
-	}
-
-	@Override
-	public Agent getDepositor() {
-		return depositor;
-	}
 }

@@ -62,8 +62,6 @@ public class SingleFileSIPProcessor implements SIPProcessor {
 			throw new IngestException("Please specify a container path");
 		} else if (sip.getData() == null || !sip.getData().exists() || sip.getData().length() == 0) {
 			throw new IngestException("Data file not found");
-		} else if (sip.getOwner() == null) {
-			throw new IngestException("Please specify a the owner agent");
 		} else if (sip.getModsXML() == null || !sip.getModsXML().exists() || sip.getModsXML().length() == 0) {
 			throw new IngestException("MODS metadata file not found");
 		}
@@ -166,7 +164,7 @@ public class SingleFileSIPProcessor implements SIPProcessor {
 		}
 
 		// set owner
-		JRDFGraphUtil.addFedoraPIDRelationship(rdfaip.getGraph(), pid, ContentModelHelper.Relationship.owner, sip
+		JRDFGraphUtil.addFedoraPIDRelationship(rdfaip.getGraph(), pid, ContentModelHelper.Relationship.owner, record
 				.getOwner().getPID());
 
 		// set content model

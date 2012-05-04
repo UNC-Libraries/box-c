@@ -94,10 +94,9 @@ public class FolderManager {
 			} else {
 				containerPath = containerPath + "/" + slug;
 			}
-			sip.setOwner(owner);
 			sip.setSlug(slug);
 			sip.setAllowIndexing(true);
-			DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+			DepositRecord record = new DepositRecord(user, owner, DepositMethod.Unspecified);
 			record.setMessage("creating a new folder path");
 			IngestResult result = this.getDigitalObjectManager().addWhileBlocking(sip, record);
 			lastpid = result.derivedPIDs.iterator().next();

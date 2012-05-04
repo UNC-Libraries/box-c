@@ -1,17 +1,8 @@
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.abdera.Abdera;
 import org.apache.abdera.i18n.iri.IRI;
-import org.apache.abdera.model.Document;
-import org.apache.abdera.model.Element;
-import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.Feed;
-import org.apache.abdera.parser.Parser;
 import org.apache.log4j.Logger;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.ContainerManager;
@@ -26,13 +17,11 @@ import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
-import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil.OriginalDepositPair;
 import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.update.AtomPubMetadataUIP;

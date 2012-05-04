@@ -30,14 +30,4 @@ public class AgentSIP implements SubmissionInformationPackage {
 	public void setAgents(List<Agent> agents) {
 		this.agents = agents;
 	}
-
-	@Override
-	public Agent getOwner() {
-		return null;
-	}
-
-	@Override
-	public Agent getDepositor() {
-		return null;
-	}
 }

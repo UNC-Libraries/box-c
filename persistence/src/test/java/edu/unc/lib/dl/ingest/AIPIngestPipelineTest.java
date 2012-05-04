@@ -114,13 +114,13 @@ public class AIPIngestPipelineTest {
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/simple.zip"));
 		Agent user = new PersonAgent(new PID("cdr-test:142"), "Testy Testerson", "test");
-		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/test/container/path";
 		PID containerPID = new PID("test:1");
 		try {
-			sip = new METSPackageSIP(containerPID, testFile, user, true);
+			sip = new METSPackageSIP(containerPID, testFile, true);
 			sip.setDiscardDataFilesOnDestroy(false);
 		} catch (IOException e) {
 			throw new Error(e);
@@ -171,13 +171,13 @@ public class AIPIngestPipelineTest {
 		// testing for failed conversion of SIP w/simple content model
 		File testFile = tempCopy(new File(testfile));
 		Agent user = new PersonAgent(new PID("cdr-test:142"), "Testy Testerson", "test");
-		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/test/container/path";
 		PID containerPID = new PID("test:1");
 		try {
-			sip = new METSPackageSIP(containerPID, testFile, user, true);
+			sip = new METSPackageSIP(containerPID, testFile, true);
 			sip.setDiscardDataFilesOnDestroy(false);
 		} catch (IOException e) {
 			throw new Error(e);
@@ -210,13 +210,13 @@ public class AIPIngestPipelineTest {
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/METS.xml"));
 		Agent user = AgentManager.getAdministrativeGroupAgentStub();
-		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/collections";
 		PID containerPID = new PID("test:Foo");
 		try {
-			sip = new METSPackageSIP(containerPID, testFile, user, false);
+			sip = new METSPackageSIP(containerPID, testFile, false);
 			sip.setDiscardDataFilesOnDestroy(false);
 		} catch (IOException e) {
 			throw new Error(e);
@@ -263,7 +263,7 @@ public class AIPIngestPipelineTest {
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/coll_mods.xml"));
 		Agent user = new PersonAgent(new PID("cdr-test:142"), "Testy Testerson", "test");
-		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		SingleFolderSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/test/container/path";
@@ -272,7 +272,6 @@ public class AIPIngestPipelineTest {
 		sip.setContainerPID(containerPID);
 		sip.setSlug("etd");
 		sip.setModsXML(testFile);
-		sip.setOwner(user);
 
 		// SETUP MOCK TRIPLES!
 		ArrayList<URI> ans = new ArrayList<URI>();

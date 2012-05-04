@@ -28,11 +28,16 @@ public class DepositRecord {
 	private String packagingSubType = null;
 	private DepositMethod method = DepositMethod.Unspecified;
 	private Agent depositedBy = null;
+	private Agent owner = null;
+	public Agent getOwner() {
+		return owner;
+	}
 	private String onBehalfOf = null;
 	private String message = null;
-	public DepositRecord(Agent depositedBy, DepositMethod method) {
+	public DepositRecord(Agent depositedBy, Agent owner, DepositMethod method) {
 		this.depositedBy = depositedBy;
 		this.method = method;
+		this.owner = owner;
 	}
 	public String getMessage() {
 		return message;

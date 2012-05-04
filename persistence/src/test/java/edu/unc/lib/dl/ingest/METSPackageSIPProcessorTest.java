@@ -74,12 +74,12 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 	private void exceptionTest(String testFilePath, String testMsg) throws IngestException {
 		File testFile = tempCopy(new File(testFilePath));
 		Agent adminGroup = AgentManager.getAdministrativeGroupAgentStub();
-		DepositRecord record = new DepositRecord(adminGroup, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord(adminGroup, adminGroup, DepositMethod.Unspecified);
 		PremisEventLogger logger = new PremisEventLogger(adminGroup);
 		METSPackageSIP sip = null;
 		boolean isZip = testFilePath.endsWith(".zip") || testFilePath.endsWith(".ZIP");
 		try {
-			sip = new METSPackageSIP(containerPID, testFile, adminGroup, isZip);
+			sip = new METSPackageSIP(containerPID, testFile, isZip);
 		} catch (IOException e) {
 			LOG.debug("STACK TRACE: ", e);
 			fail("EXPECTED: " + testMsg + "\nTHROWN: " + e.getMessage());
@@ -141,11 +141,11 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		// testing for successful conversion of Large SIP, 2014 objects
 		File testFile = tempCopy(new File("src/test/resources/METS.xml"));
 		Agent user = AgentManager.getAdministrativeGroupAgentStub();
-		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		try {
-			sip = new METSPackageSIP(containerPID, testFile, user, false);
+			sip = new METSPackageSIP(containerPID, testFile, false);
 			sip.setDiscardDataFilesOnDestroy(false);
 		} catch (IOException e) {
 			throw new Error(e);
@@ -190,11 +190,11 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/simple.zip"));
 		Agent user = AgentManager.getAdministrativeGroupAgentStub();
-		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		try {
-			sip = new METSPackageSIP(containerPID, testFile, user, true);
+			sip = new METSPackageSIP(containerPID, testFile, true);
 			sip.setDiscardDataFilesOnDestroy(false);
 			sip.getPreIngestEventLogger().addMD5ChecksumCalculation(new Date(System.currentTimeMillis()), "ClamAV v2.1",
 					"Jane Smith");
@@ -280,11 +280,11 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/dspaceMets.zip"));
 		Agent user = AgentManager.getAdministrativeGroupAgentStub();
-		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		try {
-			sip = new METSPackageSIP(containerPID, testFile, user, true);
+			sip = new METSPackageSIP(containerPID, testFile, true);
 			sip.setDiscardDataFilesOnDestroy(false);
 			sip.getPreIngestEventLogger().addMD5ChecksumCalculation(new Date(System.currentTimeMillis()), "ClamAV v2.1",
 					"Jane Smith");

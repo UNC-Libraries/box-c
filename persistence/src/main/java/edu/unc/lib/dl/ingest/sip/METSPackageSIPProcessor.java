@@ -303,12 +303,8 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		}
 		t.setParameter("allowAnyIndexing", allowIndexingParam);
 
-		if (metsPack.getOwner() != null && metsPack.getOwner().getPID() != null) {
-			t.setParameter("ownerURI", metsPack.getOwner().getPID().getURI());
-		} else {
-			throw new IngestException("Error setting the owner of the SIP.");
-		}
-
+		t.setParameter("ownerURI", record.getOwner().getPID().getURI());
+		
 		File tempFOXDir = aip.getTempFOXDir();
 
 		t.setParameter("output.directory", tempFOXDir.getPath());

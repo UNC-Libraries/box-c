@@ -441,9 +441,9 @@ public class DigitalObjectManagerImplTest {
 	public void testAdd() throws Exception {
 		File test = tempCopy(new File("src/test/resources/simple.zip"));
 		Agent user = AgentManager.getAdministrativeGroupAgentStub();
-		DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		PID container = new PID("test:container");
-		METSPackageSIP sip = new METSPackageSIP(container, test, user, true);
+		METSPackageSIP sip = new METSPackageSIP(container, test, true);
 
 		when(this.tripleStoreQueryService.lookupRepositoryPath(eq(container))).thenReturn("/test/container/path");
 		when(this.tripleStoreQueryService.fetchByRepositoryPath(eq("/test/container/path"))).thenReturn(container);
@@ -464,11 +464,10 @@ public class DigitalObjectManagerImplTest {
 		try {
 			reset(this.managementClient);
 			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
-			DepositRecord record = new DepositRecord(user, DepositMethod.Unspecified);
+			DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 			PID container = new PID("test:container");
 			SingleFolderSIP sip = new SingleFolderSIP();
 			sip.setContainerPID(container);
-			sip.setOwner(user);
 			sip.setSlug("testslug");
 
 			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);

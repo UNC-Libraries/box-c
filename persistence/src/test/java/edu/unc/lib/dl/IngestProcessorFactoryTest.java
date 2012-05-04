@@ -49,7 +49,7 @@ public class IngestProcessorFactoryTest extends Assert {
 	public void testFindMETSPackageProcessor() {
 		try {
 			File test = File.createTempFile("test", ".txt");
-			METSPackageSIP foo = new METSPackageSIP(new PID("test:1"), test, null, false);
+			METSPackageSIP foo = new METSPackageSIP(new PID("test:1"), test, false);
 			this.getSipProcessorFactory().getSIPProcessor(foo);
 		} catch (IOException e) {
 			log.debug(e);

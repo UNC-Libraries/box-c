@@ -17,7 +17,6 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import java.util.List;
 
-import org.apache.abdera.i18n.iri.IRI;
 import org.apache.log4j.Logger;
 import org.jdom.JDOMException;
 import org.swordapp.server.AuthCredentials;
@@ -110,17 +109,18 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 				}
 			}
 
-		if (recognizedType != null){
-			try {
-				return doMETSDeposit(containerPID, deposit, auth, configImpl, agent, recognizedType);
-			} catch (FilesDoNotMatchManifestException e){
-				LOG.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest of package type " + deposit.getPackaging(), e);
-				throw new SwordError("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.", e);
-			} catch (IngestException e){
-				LOG.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.", e);
-				throw new SwordError("An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type " + deposit.getPackaging(), e);
-			} catch (Exception e) {
-				throw new SwordServerException(e);
+			if (recognizedType != null){
+				try {
+					return doMETSDeposit(containerPID, deposit, auth, configImpl, depositor, recognizedType, owner);
+				} catch (FilesDoNotMatchManifestException e){
+					log.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest of package type " + deposit.getPackaging(), e);
+					throw new SwordError("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.", e);
+				} catch (IngestException e){
+					log.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.", e);
+					throw new SwordError("An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type " + deposit.getPackaging(), e);
+				} catch (Exception e) {
+					throw new SwordServerException(e);
+				}
 			}
 		}
 		return null;
@@ -146,7 +146,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	}
 
 	private DepositReceipt doMETSDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
-			SwordConfigurationImpl config, Agent agent, PackagingType type) throws Exception {
+			SwordConfigurationImpl config, Agent agent, PackagingType type, Agent owner) throws Exception {
 
 		log.debug("Preparing to perform a CDR METS deposit to " + containerPID.getPid());
 
@@ -157,10 +157,10 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			log.debug("Working with temporary file: " + deposit.getFile().getAbsolutePath());
 		}
 		
-		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), depositor, owner, isZip);
+		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), isZip);
 		// PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
 		
-		DepositRecord record = new DepositRecord(agent, DepositMethod.SWORD13);
+		DepositRecord record = new DepositRecord(agent, owner, DepositMethod.SWORD13);
 		record.setMessage("Added through SWORD");
 		record.setPackagingType(type);
 		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
@@ -174,7 +174,6 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		}
 		
 		DepositReceipt receipt = depositReportingUtil.retrieveDepositReceipt(ingestResult, config);
-		
 		return receipt;
 	}
 

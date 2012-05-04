@@ -15,10 +15,6 @@
  */
 package edu.unc.lib.dl.ingest.sip;
 
-import edu.unc.lib.dl.agents.Agent;
 
 public interface SubmissionInformationPackage {
-	public Agent getOwner();
-	
-	public Agent getDepositor();
 }

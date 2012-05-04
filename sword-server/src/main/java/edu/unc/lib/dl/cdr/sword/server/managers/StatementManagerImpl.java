@@ -2,14 +2,12 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.swordapp.server.AuthCredentials;
-import org.swordapp.server.OriginalDeposit;
 import org.swordapp.server.ResourcePart;
 import org.swordapp.server.Statement;
 import org.swordapp.server.StatementManager;
@@ -25,7 +23,6 @@ import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DateTimeUtil;
-import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 public class StatementManagerImpl extends AbstractFedoraManager implements StatementManager {
 
