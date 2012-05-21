@@ -167,6 +167,9 @@ public class EnhancementConductorTest extends Assert {
 			;
 
 		assertEquals(enhancementConductor.getLockedPids().size(), enhancementConductor.getMaxThreads());
+		LOG.debug("Add collisions waiting");
+		LOG.debug("Queue" + enhancementConductor.getPidQueue());
+		LOG.debug("Collisions" + enhancementConductor.getCollisionList());
 		assertEquals(enhancementConductor.getCollisionList().size(), (enhancementConductor.getMaxThreads() - 1)
 				* (numberTestMessages - 1));
 		assertEquals(
