@@ -15,7 +15,9 @@
  */
 package edu.unc.lib.dl.message;
 
-public interface ActionMessage {
+import java.io.Serializable;
+
+public interface ActionMessage extends Serializable {
 	/**
 	 * Returns the identifier for this message
 	 * @return

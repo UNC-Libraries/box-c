@@ -84,13 +84,18 @@ public class UpdateDocTransformer {
 		Source transformSource = new StreamSource(res.getInputStream());
 		TransformerFactory factory = TransformerFactory.newInstance();
 		factory.setURIResolver(new URIResolver() {
-			public Source resolve(String href, String base) throws TransformerException {
+			public Source resolve(String href, String base)
+					throws TransformerException {
 				Source result = null;
-				result = new StreamSource(this.getClass().getResourceAsStream("/transform/"
-						+ href));
+				if (href.startsWith("/"))
+					result = new StreamSource(UpdateDocTransformer.class
+							.getResourceAsStream(href));
+				else
+					result = new StreamSource(UpdateDocTransformer.class
+							.getResourceAsStream("/transform/" + href));
 				return result;
 			}
-	    });
+		});
 		
 		Templates transformTemplate = factory.newTemplates(transformSource);
 		transformer = transformTemplate.newTransformer();

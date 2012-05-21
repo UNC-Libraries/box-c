@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.jdom.output.XMLOutputter;
@@ -269,13 +268,13 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		Set<String> queuedServices = new HashSet<String>();
 		for (ActionMessage message : matchingMessages) {
 			EnhancementMessage pidMessage = (EnhancementMessage)message;
-			for (ObjectEnhancementService service : pidMessage.getFilteredServices()) {
-				queuedServices.add(service.getClass().getName());
+			for (String service : pidMessage.getFilteredServices()) {
+				queuedServices.add(service);
 			}
 		}
 		result.put("queuedEnhancements", queuedServices);
 		
-		Set<Class<?>> failed = enhancementConductor.getFailedPids().getFailedServices(id);
+		Set<String> failed = enhancementConductor.getFailedPids().getFailedServices(id);
 		if (failed == null){
 			result.put("failedEnhancements", ListUtils.EMPTY_LIST);
 		} else {

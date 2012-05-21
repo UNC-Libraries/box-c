@@ -65,10 +65,10 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 			return false;
 		
 		//Iterate through the services stack
-		List<ObjectEnhancementService> messageServices = new ArrayList<ObjectEnhancementService>(services.size());
+		List<String> messageServices = new ArrayList<String>(services.size());
 		message.setFilteredServices(messageServices);
 		
-		Set<Class<?>> failedServices = enhancementConductor.getFailedPids().getFailedServices(message.getTargetID());
+		Set<String> failedServices = enhancementConductor.getFailedPids().getFailedServices(message.getTargetID());
 		
 		boolean applyServiceStack = JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getQualifiedAction());
 		boolean serviceReached = !applyServiceStack || message.getServiceName() == null;
@@ -84,9 +84,9 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 				 
 				if (serviceReached){
 					//add services to the message's service list which have not failed previously and pass the prefilter method.
-					if (!(failedServices != null && failedServices.contains(s.getClass()))
+					if (!(failedServices != null && failedServices.contains(s.getClass().getName()))
 							&& s.prefilterMessage(message)){
-						messageServices.add(s);
+						messageServices.add(s.getClass().getName());
 					} else {
 						//If the starting service doesn't pass, then skip the rest of the stack 
 						if (applyServiceStack && message.getServiceName() != null && messageServices.size() == 0){
@@ -107,8 +107,8 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 		if (LOG.isDebugEnabled()){
 			StringBuilder sb = new StringBuilder();
 			sb.append("Service filter for ").append(message.getTargetID()).append(":");
-			for (ObjectEnhancementService s: messageServices){
-				sb.append(s.getClass().getSimpleName());
+			for (String s: messageServices){
+				sb.append(s);
 			}
 			LOG.debug(sb.toString());
 		}

@@ -26,6 +26,7 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 public class FedoraEventMessage extends AbstractXMLEventMessage {
+	private static final long serialVersionUID = 1L;
 	private String datastream = null;
 	private String relationPredicate = null;
 	private String relationObject = null;

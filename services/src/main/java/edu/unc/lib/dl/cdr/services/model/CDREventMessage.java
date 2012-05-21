@@ -29,6 +29,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author bbpennel
  */
 public class CDREventMessage extends AbstractXMLEventMessage {
+	private static final long serialVersionUID = 1L;
 	private List<String> subjects;
 	private List<String> reordered;
 	private String parent;

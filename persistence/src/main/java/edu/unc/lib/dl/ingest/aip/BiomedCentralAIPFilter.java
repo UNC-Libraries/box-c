@@ -17,6 +17,8 @@ package edu.unc.lib.dl.ingest.aip;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +47,7 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 	private static Logger LOG = Logger.getLogger(BiomedCentralAIPFilter.class);
 	
 	private static final String BIOMED_ONYEN = "biomedcentral";
+	private final String UNC_AFFIL_ADDRESS = "University of North Carolina at Chapel Hill";
 	private AgentFactory agentFactory;
 	
 	private Agent biomedAgent;
@@ -222,70 +225,66 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 			}
 		}
 		
-		//Extract affiliations
-		elements = this.affiliationXPath.selectNodes(bibRoot);
-		Map<String,String> affiliationMap = new HashMap<String,String>();
-		if (elements != null){
-			for (Element element: elements){
-				String affiliation = element.getChildTextTrim("p");
-				int index = affiliation.indexOf(",");
-				if (index != -1){
-					affiliation = affiliation.substring(0,index);
-				}
-				affiliationMap.put(element.getAttributeValue("id"), affiliation);
-			}
-		}
-		
-		//Extract author names, then create name attributes with affiliations
-		elements = this.authorXPath.selectNodes(bibRoot);
-		if (elements != null){
-			for (Element element: elements){
-				String surname = element.getChildText("snm");
-				String givenName = element.getChildText("fnm");
-				String middle = element.getChildText("mi");
-				String affiliationID = element.getChild("insr").getAttributeValue("iid");
-				
-				Element nameElement = new Element("name", JDOMNamespaceUtil.MODS_V3_NS);
-				Element namePartElement = new Element("namePart", JDOMNamespaceUtil.MODS_V3_NS);
-				
-				StringBuilder nameBuilder = new StringBuilder();
-				if (surname != null){
-					nameBuilder.append(surname);
-					if (givenName != null || middle != null)
-						nameBuilder.append(", ");
-				}
-				if (givenName != null)
-					nameBuilder.append(givenName);
-				if (middle != null)
-					nameBuilder.append(' ').append(middle);
-				namePartElement.setText(nameBuilder.toString());
-				
-				nameElement.addContent(namePartElement);
-				
-				//Add in the affiliation if it is set.
-				String affiliation = affiliationMap.get(affiliationID);
-				if (affiliation != null){
-					Element affiliationElement = new Element("affiliation", JDOMNamespaceUtil.MODS_V3_NS);
-					affiliationElement.setText(affiliation);
-					nameElement.addContent(affiliationElement);
-				}
-				
-				modsContent.addContent(nameElement);
-			}
-		}
+		this.addAuthorsAndAffiliations(bibRoot, modsContent);
 		
 		// Add in the containing journal
 		String source = bibRoot.getChildText("source");
 		if (source != null){
-			Element hostElement = new Element("relatedItem", JDOMNamespaceUtil.MODS_V3_NS);
+			Element sourceElement = new Element("relatedItem", JDOMNamespaceUtil.MODS_V3_NS);
 			Element titleInfoElement = new Element("titleInfo", JDOMNamespaceUtil.MODS_V3_NS);
 			Element titleElement = new Element("title", JDOMNamespaceUtil.MODS_V3_NS);
-			hostElement.addContent(titleInfoElement);
+			sourceElement.addContent(titleInfoElement);
 			titleInfoElement.addContent(titleElement);
-			hostElement.setAttribute("type", "host");
-			hostElement.setAttribute("displayLabel", "Source");
+			sourceElement.setAttribute("type", "otherFormat");
+			sourceElement.setAttribute("displayLabel", "Source");
 			titleElement.setText(source);
-			modsContent.addContent(hostElement);
+			modsContent.addContent(sourceElement);
+			
+			//Extract the rest of the bibliographic fields
+			String issn = bibRoot.getChildText("issn");
+			if (issn != null){
+				Element element = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+				element.setText(issn);
+				element.setAttribute("type", "issn");
+				sourceElement.addContent(element);
+			}
+				
+			String pubdate = bibRoot.getChildText("pubdate");
+			if (pubdate != null){
+				Element element = new Element("originInfo", JDOMNamespaceUtil.MODS_V3_NS);
+				Element dateIssued = new Element("dateIssued", JDOMNamespaceUtil.MODS_V3_NS);
+				dateIssued.setText(pubdate);
+				element.setContent(dateIssued);
+				sourceElement.addContent(element);
+			}
+			
+			String volume = bibRoot.getChildText("volume");
+			String issue = bibRoot.getChildText("issue");
+			if (volume != null || issue != null){
+				Element element = new Element("part", JDOMNamespaceUtil.MODS_V3_NS);
+				addDetailElement("volume", volume, "vol.", element);
+				addDetailElement("issue", issue, "issue", element);
+				sourceElement.addContent(element);
+			}
+
+			String fpage = bibRoot.getChildText("fpage");
+			String lpage = bibRoot.getChildText("lpage");
+			if (fpage != null || lpage != null){
+				Element element = new Element("extent", JDOMNamespaceUtil.MODS_V3_NS);
+				element.setAttribute("unit", "page");
+				if (fpage != null){
+					Element pageElement = new Element("start", JDOMNamespaceUtil.MODS_V3_NS);
+					pageElement.setText(fpage);
+					element.addContent(pageElement);
+				}
+				if (lpage != null){
+					Element pageElement = new Element("end", JDOMNamespaceUtil.MODS_V3_NS);
+					pageElement.setText(lpage);
+					element.addContent(pageElement);
+				}
+				sourceElement.addContent(element);
+			}
+			
 		}
 		
 		//Set titles for supplements
@@ -311,6 +310,100 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 		modsContent.detach();
 		FOXMLJDOMUtil.setInlineXMLDatastreamContent(parentFOXML, ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), "Descriptive Metadata", modsContent, true);
 		aip.saveFOXMLDocument(parentPID, parentFOXML);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void addAuthorsAndAffiliations(Element bibRoot, Element modsContent) throws JDOMException{
+		//Extract affiliations
+		List<Element> elements = (List<Element>)this.affiliationXPath.selectNodes(bibRoot);
+		Map<String,List<String>> affiliationMap = new HashMap<String,List<String>>();
+		if (elements != null){
+			for (Element element: elements){
+				String affiliation = element.getChildTextTrim("p");
+				int index = affiliation.indexOf(UNC_AFFIL_ADDRESS);
+				if (index == -1){
+					//If not UNC affiliated, then use up to the first comma.
+					index = affiliation.indexOf(",");
+					if (index != -1){
+						affiliation = affiliation.substring(0,index);
+					}
+					affiliationMap.put(element.getAttributeValue("id"), Arrays.asList(affiliation));
+				} else {
+					//If it is a UNC affiliate, then break down all the address elements up to UNC
+					int commaIndex = affiliation.lastIndexOf(',', index);
+					if (commaIndex != -1){
+						affiliation = affiliation.substring(0, commaIndex);
+						String[] affiliationComponents = affiliation.split(",");
+						List<String> affiliationList = new ArrayList<String>();
+						for (String affiliationComponent: affiliationComponents){
+							affiliationList.add(affiliationComponent.trim());
+						}
+						affiliationMap.put(element.getAttributeValue("id"), affiliationList);
+					}
+				}
+			}
+		}
+		
+		//Extract author names, then create name attributes with affiliations
+		elements = this.authorXPath.selectNodes(bibRoot);
+		if (elements != null){
+			for (Element element: elements){
+				String surname = element.getChildText("snm");
+				String givenName = element.getChildText("fnm");
+				String middle = element.getChildText("mi");
+				String affiliationID = null;
+				List<?> affiliationRefList = element.getChildren("insr");
+				
+				Element nameElement = new Element("name", JDOMNamespaceUtil.MODS_V3_NS);
+				Element namePartElement = new Element("namePart", JDOMNamespaceUtil.MODS_V3_NS);
+				
+				StringBuilder nameBuilder = new StringBuilder();
+				if (surname != null){
+					nameBuilder.append(surname);
+					if (givenName != null || middle != null)
+						nameBuilder.append(", ");
+				}
+				if (givenName != null)
+					nameBuilder.append(givenName);
+				if (middle != null)
+					nameBuilder.append(' ').append(middle);
+				namePartElement.setText(nameBuilder.toString());
+				
+				nameElement.addContent(namePartElement);
+				
+				//Add in the list of affiliations for each affil reference
+				for (Object affiliationObject: affiliationRefList){
+					Element affiliationRef = (Element)affiliationObject;
+					affiliationID = affiliationRef.getAttributeValue("iid");
+					if (affiliationID != null){
+						List<String> affiliationList = affiliationMap.get(affiliationID);
+						if (affiliationList != null){
+							for (String affiliation: affiliationList){
+								Element affiliationElement = new Element("affiliation", JDOMNamespaceUtil.MODS_V3_NS);
+								affiliationElement.setText(affiliation);
+								nameElement.addContent(affiliationElement);
+							}
+						}
+					}
+				}
+				
+				modsContent.addContent(nameElement);
+			}
+		}
+	}
+	
+	private void addDetailElement(String type, String text, String caption, Element parentElement){
+		if (text == null)
+			return;
+		Element detailElement = new Element("detail", JDOMNamespaceUtil.MODS_V3_NS);
+		detailElement.setAttribute("type", type);
+		Element numberElement = new Element("number", JDOMNamespaceUtil.MODS_V3_NS);
+		numberElement.setText(text);
+		Element captionElement = new Element("caption", JDOMNamespaceUtil.MODS_V3_NS);
+		captionElement.setText(caption);
+		detailElement.addContent(numberElement);
+		detailElement.addContent(captionElement);
+		parentElement.addContent(detailElement);
 	}
 
 	public AgentFactory getAgentFactory() {

@@ -291,6 +291,7 @@
 	
 	<bean id="statementManager" class="edu.unc.lib.dl.cdr.sword.server.managers.StatementManagerImpl"
 		init-method="init">
+		<property name="depositReportingUtil" ref="depositReportingUtil"/>
 	</bean>
 	
 	<context:annotation-config />
