@@ -132,7 +132,9 @@
 		<ref bean="solrUpdateEnhancementService"/>
 	</util:list>
 	
-	<bean id="servicesFailedPids" class="edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap">
+	<bean id="servicesFailedPids" class="edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap" factory-method="loadFailedEnhancements">
+		<constructor-arg><value>${services.enhancements.failed.path}</value></constructor-arg>
+		<constructor-arg><value>${services.enhancements.failedTraces.path}</value></constructor-arg>
 	</bean>
 	
 	<bean id="enhancementConductor" class="edu.unc.lib.dl.cdr.services.processing.EnhancementConductor"
@@ -291,6 +293,11 @@
 		<property name="targetObject" ref="embargoUpdateService" />
 		<property name="targetMethod" value="updateEmbargoes" />
 	</bean>
+		
+	<bean id="backupFailedPidsJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="servicesFailedPids" />
+		<property name="targetMethod" value="serializeFailedEnhancements" />
+	</bean>
 	
 	<bean id="embargoCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="embargoJobDetail" />
@@ -307,6 +314,11 @@
 		<property name="cronExpression" value="${scheduled.catchUpDeactivate.cron}" />
 	</bean>
 	
+	<bean id="backupFailedPidsCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="backupFailedPidsJobDetail" />
+		<property name="cronExpression" value="${scheduled.backupFailedPids.cron}" />
+	</bean>
+	
 	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
@@ -314,6 +326,7 @@
 				<ref bean="acCacheResetCronTrigger" />
 				<ref bean="catchUpActivateCronTrigger" />
 				<ref bean="catchUpDeactivateCronTrigger" />
+				<ref bean="backupFailedPidsCronTrigger" />
 			</list>
 		</property>
 		<property name="autoStartup">

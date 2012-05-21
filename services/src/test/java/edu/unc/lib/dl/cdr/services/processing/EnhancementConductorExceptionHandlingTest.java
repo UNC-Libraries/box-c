@@ -49,6 +49,7 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 	private ImageEnhancement imageEnhancement;
 	private EnhancementConductor enhancementConductor;
 	private List<ObjectEnhancementService> services;
+	private List<String> serviceNames;
 	
 	int numberTestMessages;
 	
@@ -82,6 +83,11 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		services.add(thumb);
 		services.add(image);
 		
+		serviceNames = new ArrayList<String>();
+		serviceNames.add(techmd.getClass().getName());
+		serviceNames.add(thumb.getClass().getName());
+		serviceNames.add(image.getClass().getName());
+		
 		enhancementConductor = new EnhancementConductor();
 		enhancementConductor.setServices(services);
 		enhancementConductor.setRecoverableDelay(0);
@@ -103,7 +109,7 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		
 		for (int i=0; i<numberTestMessages; i++){
 			EnhancementMessage message = new FedoraEventMessage("uuid:"+i, JMSMessageUtil.FedoraActions.INGEST.getName());
-			message.setFilteredServices(services);
+			message.setFilteredServices(serviceNames);
 			enhancementConductor.add(message);
 		}
 		
@@ -129,8 +135,8 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		EnhancementException exception = mock(EnhancementException.class);
 		when(exception.getSeverity()).thenReturn(EnhancementException.Severity.FATAL);
 		
-		ArrayList<ObjectEnhancementService> unexceptionalServices = new ArrayList<ObjectEnhancementService>();
-		unexceptionalServices.add(thumb);
+		ArrayList<String> unexceptionalServices = new ArrayList<String>();
+		unexceptionalServices.add(thumb.getClass().getName());
 		
 		doThrow(exception).when(techmdEnhancement).call();
 		doThrow(exception).when(imageEnhancement).call();
@@ -143,7 +149,7 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		
 		for (int i=0; i<numberTestMessages; i++){
 			EnhancementMessage message = new FedoraEventMessage("uuid:"+(i+numberTestMessages), JMSMessageUtil.FedoraActions.INGEST.getName());
-			message.setFilteredServices(services);
+			message.setFilteredServices(serviceNames);
 			enhancementConductor.add(message);
 		}
 		
@@ -175,8 +181,8 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		EnhancementException exception = mock(EnhancementException.class);
 		when(exception.getSeverity()).thenReturn(EnhancementException.Severity.UNRECOVERABLE);
 		
-		ArrayList<ObjectEnhancementService> unexceptionalServices = new ArrayList<ObjectEnhancementService>();
-		unexceptionalServices.add(thumb);
+		ArrayList<String> unexceptionalServices = new ArrayList<String>();
+		unexceptionalServices.add(thumb.getClass().getName());
 		
 		doThrow(exception).when(techmdEnhancement).call();
 		doThrow(exception).when(imageEnhancement).call();
@@ -189,7 +195,7 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		
 		for (int i=0; i<numberTestMessages; i++){
 			EnhancementMessage message = new FedoraEventMessage("uuid:"+(i+numberTestMessages), JMSMessageUtil.FedoraActions.INGEST.getName());
-			message.setFilteredServices(services);
+			message.setFilteredServices(serviceNames);
 			enhancementConductor.add(message);
 		}
 		
@@ -216,7 +222,7 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		
 		for (int i=0; i<numberTestMessages; i++){
 			EnhancementMessage message = new FedoraEventMessage("uuid:"+i, JMSMessageUtil.FedoraActions.INGEST.getName());
-			message.setFilteredServices(services);
+			message.setFilteredServices(serviceNames);
 			enhancementConductor.add(message);
 		}
 		

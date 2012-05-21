@@ -41,9 +41,8 @@ import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
 public class EnhancementConductorTest extends Assert {
-
 	protected static final Logger LOG = LoggerFactory.getLogger(EnhancementConductorTest.class);
-	
+
 	protected EnhancementConductor enhancementConductor;
 	protected MessageDirector messageDirector;
 	@SuppressWarnings("rawtypes")
@@ -51,29 +50,29 @@ public class EnhancementConductorTest extends Assert {
 	protected List<ObjectEnhancementService> servicesList = null;
 	protected List<ObjectEnhancementService> delayServices;
 	protected ServicesQueueMessageFilter servicesMessageFilter;
-	
+
 	public static AtomicInteger inIsApplicable;
 	public static AtomicInteger incompleteServices;
 	public static AtomicInteger betweenApplicableAndEnhancement;
 	public static AtomicInteger servicesCompleted;
-	
+
 	protected int numberTestMessages;
-	
+
 	public AtomicBoolean flag;
 	public Object blockingObject;
-	
-	public EnhancementConductorTest(){
+
+	public EnhancementConductorTest() {
 		delayServices = new ArrayList<ObjectEnhancementService>();
 		DelayService delayService = new DelayService();
 		delayServices.add(delayService);
-		
+
 		servicesList = new ArrayList<ObjectEnhancementService>();
 		servicesList.add(new TechnicalMetadataEnhancementService());
 		servicesList.add(new ImageEnhancementService());
 		servicesList.add(new ThumbnailEnhancementService());
-		
+
 	}
-	
+
 	@Before
 	public void setUp() throws Exception {
 		enhancementConductor = new EnhancementConductor();
@@ -82,118 +81,125 @@ public class EnhancementConductorTest extends Assert {
 		enhancementConductor.setMaxThreads(3);
 		enhancementConductor.setFailedPids(new FailedObjectHashMap());
 		enhancementConductor.init();
-		
+
 		List<MessageConductor> conductors = new ArrayList<MessageConductor>(1);
 		conductors.add(enhancementConductor);
-		
+
 		messageDirector = new MessageDirector();
 		messageDirector.setConductorsList(conductors);
-		
+
 		servicesMessageFilter = new ServicesQueueMessageFilter();
 		servicesMessageFilter.setenhancementConductor(enhancementConductor);
 		List<MessageFilter> filters = new ArrayList<MessageFilter>();
 		filters.add(servicesMessageFilter);
 		messageDirector.setFilters(filters);
-		
+
 		this.executor = enhancementConductor.getExecutor();
 		inIsApplicable = new AtomicInteger(0);
 		incompleteServices = new AtomicInteger(0);
 		betweenApplicableAndEnhancement = new AtomicInteger(0);
 		servicesCompleted = new AtomicInteger(0);
 		numberTestMessages = 10;
-		
+
 		this.blockingObject = new Object();
 		this.flag = new AtomicBoolean(true);
 	}
-	
-	
-	//@Test
+
+	// @Test
 	public void stressQueueOperations() throws Exception {
-		while (this.executor.isShutdown() || this.executor.isTerminated() || this.executor.isTerminating());
-		
-		for (int i=0; i<500; i++){
+		while (this.executor.isShutdown() || this.executor.isTerminated() || this.executor.isTerminating())
+			;
+
+		for (int i = 0; i < 500; i++) {
 			addMessages();
-			while (!enhancementConductor.isEmpty());
+			while (!enhancementConductor.isEmpty())
+				;
 			setUp();
 		}
-		while (!enhancementConductor.isIdle());
+		while (!enhancementConductor.isIdle())
+			;
 	}
-	
+
 	@Test
-	public void addMessages() throws InterruptedException{
+	public void addMessages() throws InterruptedException {
 		enhancementConductor.setServices(delayServices);
 		servicesMessageFilter.setServices(delayServices);
-		
+
 		flag.set(false);
 
-		//Add messages and check that they all ran
-		for (int i=0; i<numberTestMessages; i++){
-			EnhancementMessage message = new EnhancementMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
+		// Add messages and check that they all ran
+		for (int i = 0; i < numberTestMessages; i++) {
+			EnhancementMessage message = new EnhancementMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace,
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 			messageDirector.direct(message);
-			message = new EnhancementMessage("uuid:" + i + "d", JMSMessageUtil.servicesMessageNamespace, 
+			message = new EnhancementMessage("uuid:" + i + "d", JMSMessageUtil.servicesMessageNamespace,
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), DelayService.class.getName());
 			messageDirector.direct(message);
 		}
-		
-		while (!enhancementConductor.isEmpty());
 
-		if (servicesCompleted.get() != numberTestMessages * 2){
-			LOG.warn("Number of services completed (" + servicesCompleted.get() + 
-					") does not match number of test messages (" + (numberTestMessages * 2) + ")");
+		while (!enhancementConductor.isEmpty())
+			;
+
+		if (servicesCompleted.get() != numberTestMessages * 2) {
+			LOG.warn("Number of services completed (" + servicesCompleted.get()
+					+ ") does not match number of test messages (" + (numberTestMessages * 2) + ")");
 		}
 		assertEquals(servicesCompleted.get(), numberTestMessages * 2);
 	}
-	
+
 	@Test
-	public void addCollisions(){
+	public void addCollisions() {
 		enhancementConductor.setServices(delayServices);
 		servicesMessageFilter.setServices(delayServices);
-		
+
 		numberTestMessages = 5;
-		
-		//Add messages which contain a lot of duplicates
-		for (int i=0; i<numberTestMessages; i++){
-			EnhancementMessage message = new EnhancementMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
+
+		// Add messages which contain a lot of duplicates
+		for (int i = 0; i < numberTestMessages; i++) {
+			EnhancementMessage message = new EnhancementMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace,
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
-			for (int j=0; j<numberTestMessages; j++){
+			for (int j = 0; j < numberTestMessages; j++) {
 				messageDirector.direct(message);
 			}
 		}
-		
-		while (enhancementConductor.getLockedPids().size() < enhancementConductor.getMaxThreads());
-		
+
+		while (enhancementConductor.getLockedPids().size() < enhancementConductor.getMaxThreads())
+			;
+
 		assertEquals(enhancementConductor.getLockedPids().size(), enhancementConductor.getMaxThreads());
-		assertEquals(enhancementConductor.getCollisionList().size(), 
-				(enhancementConductor.getMaxThreads() - 1) * (numberTestMessages - 1));
-		assertEquals(enhancementConductor.getPidQueue().size(), 
+		assertEquals(enhancementConductor.getCollisionList().size(), (enhancementConductor.getMaxThreads() - 1)
+				* (numberTestMessages - 1));
+		assertEquals(
+				enhancementConductor.getPidQueue().size(),
 				(numberTestMessages * numberTestMessages - (enhancementConductor.getMaxThreads() - 1) * numberTestMessages) - 1);
-		assertEquals(enhancementConductor.getQueueSize(), (numberTestMessages * numberTestMessages) - enhancementConductor.getMaxThreads());
-		
-		//Process the remaining items to make sure all messages get processed.
-		synchronized(blockingObject){
+		assertEquals(enhancementConductor.getQueueSize(), (numberTestMessages * numberTestMessages)
+				- enhancementConductor.getMaxThreads());
+
+		// Process the remaining items to make sure all messages get processed.
+		synchronized (blockingObject) {
 			flag.set(false);
 			blockingObject.notifyAll();
 		}
-		
-		while (!enhancementConductor.isEmpty());
+
+		while (!enhancementConductor.isEmpty())
+			;
 		assertEquals(servicesCompleted.get(), numberTestMessages * numberTestMessages);
 	}
-	
+
 	@Test
-	public void clearState(){
+	public void clearState() {
 		enhancementConductor.setServices(delayServices);
 		servicesMessageFilter.setServices(delayServices);
-		
+
 		enhancementConductor.pause();
-		
-		//Add messages then clear the conductors state
-		for (int i=0; i<numberTestMessages; i++){
-			EnhancementMessage message = new EnhancementMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace, 
+
+		// Add messages then clear the conductors state
+		for (int i = 0; i < numberTestMessages; i++) {
+			EnhancementMessage message = new EnhancementMessage("uuid:" + i, JMSMessageUtil.servicesMessageNamespace,
 					JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 			messageDirector.direct(message);
 		}
-		
+
 		enhancementConductor.clearState();
 		assertTrue(enhancementConductor.getPidQueue().size() == 0);
 		assertTrue(enhancementConductor.getCollisionList().size() == 0);
@@ -202,20 +208,18 @@ public class EnhancementConductorTest extends Assert {
 		assertTrue(executor.getQueue().size() == 0);
 		enhancementConductor.resume();
 	}
-	
-	
-	
-	//@Test
-	public void addToShutdownExecutor(){
+
+	// @Test
+	public void addToShutdownExecutor() {
 		enhancementConductor.shutdownNow();
 		assertFalse(enhancementConductor.isReady());
-		
-		//Try to direct a pid with conductor shutdown
+
+		// Try to direct a pid with conductor shutdown
 		servicesCompleted.set(0);
-		EnhancementMessage message = new EnhancementMessage("uuid:fail", JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage message = new EnhancementMessage("uuid:fail", JMSMessageUtil.servicesMessageNamespace,
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		messageDirector.direct(message);
-		
+
 		assertTrue(servicesCompleted.get() == 0);
 		assertTrue(enhancementConductor.getQueueSize() == 0);
 		assertTrue(enhancementConductor.getLockedPids().size() == 0);
@@ -253,12 +257,13 @@ public class EnhancementConductorTest extends Assert {
 		this.servicesList = servicesList;
 	}
 
-public class DelayService extends AbstractFedoraEnhancementService {
-		
-		public DelayService(){
+	public class DelayService extends AbstractFedoraEnhancementService {
+		private static final long serialVersionUID = 1L;
+
+		public DelayService() {
 			this.active = true;
 		}
-		
+
 		@Override
 		public List<PID> findCandidateObjects(int maxResults) throws EnhancementException {
 			return null;
@@ -278,7 +283,7 @@ public class DelayService extends AbstractFedoraEnhancementService {
 		public boolean isApplicable(EnhancementMessage pid) throws EnhancementException {
 			incompleteServices.incrementAndGet();
 			betweenApplicableAndEnhancement.incrementAndGet();
-			LOG.debug("Completed isApplicable for " + pid.getTargetID());	
+			LOG.debug("Completed isApplicable for " + pid.getTargetID());
 			return true;
 		}
 
@@ -303,24 +308,24 @@ public class DelayService extends AbstractFedoraEnhancementService {
 			// TODO Auto-generated method stub
 			return null;
 		}
-		
+
 	}
-	
+
 	public class DelayEnhancement extends Enhancement<Element> {
 		public DelayEnhancement(ObjectEnhancementService service, PID pid) {
 			super(pid);
 		}
-		
+
 		@Override
 		public Element call() throws EnhancementException {
 			LOG.debug("Call invoked for " + this.pid.getPid());
 			betweenApplicableAndEnhancement.decrementAndGet();
-			//inService.incrementAndGet();
-			while (flag.get()){
-				synchronized(blockingObject){
+			// inService.incrementAndGet();
+			while (flag.get()) {
+				synchronized (blockingObject) {
 					try {
 						blockingObject.wait();
-					} catch (InterruptedException e){
+					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
 						return null;
 					}
@@ -330,7 +335,7 @@ public class DelayService extends AbstractFedoraEnhancementService {
 			servicesCompleted.incrementAndGet();
 			return null;
 		}
-		
+
 	}
-	
+
 }

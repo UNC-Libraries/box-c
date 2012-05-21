@@ -13,7 +13,7 @@
 		xmlns:mods="http://www.loc.gov/mods/v3"
 		xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/">
 		
-	<xsl:import href="languageNames.xsl" />
+	<xsl:import href="/xsl/languageMappings.xsl"/>
 	<xsl:import href="cdr-functions.xsl" />
 	<xsl:output  method="xml" omit-xml-declaration="yes" indent="no"/>
 	
@@ -36,7 +36,7 @@
 		<field name="language">
 			<xsl:choose>
 				<xsl:when test="@authority = 'iso639-2b'">
-					<xsl:call-template name="getISO639-2Name">
+					<xsl:call-template name="ISO639-2btoName">
 						<xsl:with-param name="langCode" select="." />
 					</xsl:call-template>
 				</xsl:when>
@@ -232,7 +232,7 @@
 		
 		<xsl:if test="boolean(dc:language)">
 			<field name="language">
-				<xsl:call-template name="getISO639-2Name">
+				<xsl:call-template name="ISO639-2btoName">
 					<xsl:with-param name="langCode" select="dc:language[1]" />
 				</xsl:call-template>
 			</field>
