@@ -14,6 +14,7 @@ import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
+import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
@@ -34,6 +35,8 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class MODSUIPFilterTest extends Assert {
+	private static Logger log = Logger.getLogger(MODSUIPFilterTest.class);
+	
 	@Resource
 	private SchematronValidator schematronValidator;
 	private MODSUIPFilter filter;
@@ -217,7 +220,8 @@ public class MODSUIPFilterTest extends Assert {
 			filter.doFilter(uip);
 			fail();
 		} catch (UIPException expected){
-			assertEquals("MODS failed to validate to schema", expected.getMessage());
+			assertTrue(expected.getMessage().startsWith("MODS failed to validate to schema"));
+			log.debug("Validation Message: " + expected.getMessage());
 		}
 	}
 	
