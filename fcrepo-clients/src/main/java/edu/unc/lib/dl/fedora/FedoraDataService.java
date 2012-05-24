@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService.PathInfo;
 
 /**
@@ -155,6 +157,7 @@ public class FedoraDataService {
 		callables.add(new GetParentCollection(pid));
 		callables.add(new GetPermissions(pid));
 		callables.add(new GetOrderWithinParent(pid));
+		callables.add(new GetDefaultWebObject(pid));
 		
 		this.retrieveAsynchronousResults(inputs, callables, pid, failOnException);
 		
@@ -434,6 +437,37 @@ public class FedoraDataService {
 			} finally {
 				this.clearGroupsOnCurrentThread();
 			}
+		}
+	}
+	
+	private class GetDefaultWebObject extends GroupForwardingCallable {
+		private PID pid;
+
+		public GetDefaultWebObject(PID pid) {
+			this.pid = pid;
+		}
+
+		@Override
+		public Content call() {
+			try {
+				this.storeGroupsOnCurrentThread();
+				String webObject = tripleStoreQueryService.fetchFirstBySubjectAndPredicate(pid, ContentModelHelper.CDRProperty.defaultWebObject.toString());
+				if (webObject != null) {
+					Document foxml;
+					foxml = managementClient.getObjectXML(new PID(webObject));
+					if (foxml != null){
+						Element webObjectElement = new Element("defaultWebObject");
+						webObjectElement.setAttribute("id", webObject);
+						webObjectElement.addContent(foxml.getRootElement().detach());
+						return webObjectElement;
+					}
+				}
+			} catch (Exception e) {
+				throw new ServiceException(e);
+			} finally {
+				this.clearGroupsOnCurrentThread();
+			}
+			return null;
 		}
 	}
 }

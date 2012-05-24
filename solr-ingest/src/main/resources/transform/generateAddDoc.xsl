@@ -20,6 +20,7 @@
 	<xsl:variable name="collectionType">Collection</xsl:variable>
 	<xsl:variable name="folderType">Folder</xsl:variable>
 	<xsl:variable name="fileType">File</xsl:variable>
+	<xsl:variable name="aggregateType">Aggregate</xsl:variable>
 	
 	
 	<xsl:template match="mods:subject" mode="modsSubject">
@@ -292,6 +293,50 @@
 		<field name="fileAccess"><xsl:value-of select="text()"/></field>
 	</xsl:template>
 	
+	<xsl:template name="fileMetadata">
+		<xsl:param name="digitalObject"/>
+	
+		<xsl:variable name="mimeType">
+			<xsl:variable name="fitsMimeType" select="lower-case($digitalObject/foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/rdf:Description/ns5:hasSourceMimeType)"/>
+			<xsl:choose>
+				<xsl:when test="boolean($fitsMimeType)"><xsl:value-of select="$fitsMimeType"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="lower-case($digitalObject/foxml:datastream[@ID='DATA_FILE']/foxml:datastreamVersion[last()]/@MIMETYPE)"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		
+		<xsl:variable name="altIds" select="$digitalObject/foxml:datastream[@ID='DATA_FILE']/foxml:datastreamVersion[last()]/@ALT_IDS"/>
+		<xsl:variable name="fileName">
+			<xsl:if test="boolean($altIds)">
+				<xsl:value-of select="cdr-fn:substringAfterLast($altIds, '/')"/>
+			</xsl:if>
+		</xsl:variable>
+		<xsl:if test="boolean($fileName) and $fileName != ''">
+			<field name="keyword"><xsl:value-of select="$fileName"/></field>
+		</xsl:if>
+		
+		<!-- Get the best guess at the file extension -->
+		<xsl:variable name="fileExtension" select="cdr-fn:getFileExtension($mimeType, $fileName)"/>
+		
+		<!-- Generate the content type facet using file extension and mimetype -->
+		<xsl:variable name="contentGeneralType" select="cdr-fn:getContentType($mimeType, $fileExtension)" />
+		<field name="contentType">1,<xsl:value-of select="$contentGeneralType"/></field>
+		<field name="contentType">2,<xsl:value-of select="$fileExtension"/>,<xsl:value-of select="$fileExtension"/></field>
+		
+		<!-- Get the file size, first from the FITS generated relation, and then from the file itself if fits not present -->
+		<xsl:variable name="fitsFileSize" select="$digitalObject/foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/rdf:Description/ns5:hasSourceFileSize"/>
+		<xsl:choose>
+			<xsl:when test="boolean($fitsFileSize)">
+				<field name="filesize"><xsl:value-of select="$fitsFileSize"/></field>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:variable name="filesize" select="$digitalObject/foxml:datastream[@ID='DATA_FILE']/foxml:datastreamVersion[last()]/@SIZE"/>
+				<xsl:if test="$filesize != '-1'">
+					<field name="filesize"><xsl:value-of select="$digitalObject/foxml:datastream[@ID='DATA_FILE']/foxml:datastreamVersion[last()]/@SIZE"/></field>
+				</xsl:if>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	
 	<xsl:template match="/">
 		<add>
 			<doc>
@@ -300,6 +345,7 @@
 				<xsl:variable name="resourceType">
 					<xsl:choose>
 						<xsl:when test="boolean(/view-inputs/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/rdf:Description/ns6:hasModel[@rdf:resource = 'info:fedora/cdr-model:Collection']/@rdf:resource)"><xsl:value-of select="$collectionType"/></xsl:when>
+						<xsl:when test="boolean(/view-inputs/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/rdf:Description/ns6:hasModel[@rdf:resource = 'info:fedora/cdr-model:AggregateWork']/@rdf:resource)"><xsl:value-of select="$aggregateType"/></xsl:when>
 						<xsl:when test="boolean(/view-inputs/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/rdf:Description/ns6:hasModel[@rdf:resource = 'info:fedora/cdr-model:Container']/@rdf:resource)"><xsl:value-of select="$folderType"/></xsl:when>
 						<xsl:when test="boolean(/view-inputs/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/rdf:Description/ns6:hasModel[@rdf:resource = 'info:fedora/cdr-model:Simple']/@rdf:resource)"><xsl:value-of select="$fileType"/></xsl:when>
 					</xsl:choose>
@@ -309,7 +355,7 @@
 					<xsl:choose>
 						<xsl:when test="$resourceType = $collectionType">01</xsl:when>
 						<xsl:when test="$resourceType = $folderType">02</xsl:when>
-						<xsl:when test="$resourceType = $fileType">03</xsl:when>
+						<xsl:when test="$resourceType = $fileType or $resourceType = $aggregateType">03</xsl:when>
 					</xsl:choose>
 				</field>
 				
@@ -363,47 +409,19 @@
 				</xsl:choose>
 				
 				<!-- File specific metadata, including file name, size, content type -->
-				<xsl:if test="$resourceType = $fileType">
-					<xsl:variable name="mimeType">
-						<xsl:variable name="fitsMimeType" select="lower-case(/view-inputs/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/rdf:Description/ns5:hasSourceMimeType)"/>
-						<xsl:choose>
-							<xsl:when test="boolean($fitsMimeType)"><xsl:value-of select="$fitsMimeType"/></xsl:when>
-							<xsl:otherwise><xsl:value-of select="lower-case(/view-inputs/foxml:digitalObject/foxml:datastream[@ID='DATA_FILE']/foxml:datastreamVersion[last()]/@MIMETYPE)"/></xsl:otherwise>
-						</xsl:choose>
-					</xsl:variable>
-					
-					<xsl:variable name="altIds" select="/view-inputs/foxml:digitalObject/foxml:datastream[@ID='DATA_FILE']/foxml:datastreamVersion[last()]/@ALT_IDS"/>
-					<xsl:variable name="fileName">
-						<xsl:if test="boolean($altIds)">
-							<xsl:value-of select="cdr-fn:substringAfterLast($altIds, '/')"/>
-						</xsl:if>
-					</xsl:variable>
-					<xsl:if test="boolean($fileName) and $fileName != ''">
-						<field name="keyword"><xsl:value-of select="$fileName"/></field>
-					</xsl:if>
-					
-					<!-- Get the best guess at the file extension -->
-					<xsl:variable name="fileExtension" select="cdr-fn:getFileExtension($mimeType, $fileName)"/>
-					
-					<!-- Generate the content type facet using file extension and mimetype -->
-					<xsl:variable name="contentGeneralType" select="cdr-fn:getContentType($mimeType, $fileExtension)" />
-					<field name="contentType">1,<xsl:value-of select="$contentGeneralType"/></field>
-					<field name="contentType">2,<xsl:value-of select="$fileExtension"/>,<xsl:value-of select="$fileExtension"/></field>
-					
-					<!-- Get the file size, first from the FITS generated relation, and then from the file itself if fits not present -->
-					<xsl:variable name="fitsFileSize" select="/view-inputs/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/rdf:Description/ns5:hasSourceFileSize"/>
-					<xsl:choose>
-						<xsl:when test="boolean($fitsFileSize)">
-							<field name="filesize"><xsl:value-of select="$fitsFileSize"/></field>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:variable name="filesize" select="/view-inputs/foxml:digitalObject/foxml:datastream[@ID='DATA_FILE']/foxml:datastreamVersion[last()]/@SIZE"/>
-							<xsl:if test="$filesize != '-1'">
-								<field name="filesize"><xsl:value-of select="/view-inputs/foxml:digitalObject/foxml:datastream[@ID='DATA_FILE']/foxml:datastreamVersion[last()]/@SIZE"/></field>
-							</xsl:if>
-						</xsl:otherwise>
-					</xsl:choose>
-				</xsl:if>
+				<xsl:variable name="defaultWebObject" select="/view-inputs/defaultWebObject/foxml:digitalObject"/>
+				<xsl:choose>
+					<xsl:when test="boolean($defaultWebObject)">
+						<xsl:call-template name="fileMetadata">
+							<xsl:with-param name="digitalObject" select="$defaultWebObject"/>
+						</xsl:call-template>
+					</xsl:when>
+					<xsl:when test="$resourceType = $fileType">
+						<xsl:call-template name="fileMetadata">
+							<xsl:with-param name="digitalObject" select="/view-inputs/foxml:digitalObject"/>
+						</xsl:call-template>
+					</xsl:when>
+				</xsl:choose>
 				
 				<xsl:apply-templates select="/view-inputs/foxml:digitalObject/foxml:objectProperties/foxml:property[@NAME='info:fedora/fedora-system:def/view#lastModifiedDate']/@VALUE"/>
 				<xsl:apply-templates select="/view-inputs/foxml:digitalObject/foxml:objectProperties/foxml:property[@NAME='info:fedora/fedora-system:def/model#createdDate']/@VALUE"/>

@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.test;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.jdom.Document;
+import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,14 +42,15 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.data.ingest.solr.UpdateDocTransformer;
+import edu.unc.lib.dl.fedora.ClientUtils;
 import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/services-context.xml" })
+//@RunWith(SpringJUnit4ClassRunner.class)
+//@ContextConfiguration(locations = { "/services-context.xml" })
 public class SolrIngestByHand {
 
 	@Autowired
@@ -196,7 +203,7 @@ public class SolrIngestByHand {
 		solrIngestService.shutdown();
 	}
 	
-	@Test
+	//@Test
 	public void testFedoraDataService() {
 		Document doc;
 		try {
@@ -212,19 +219,30 @@ public class SolrIngestByHand {
 
 	}
 
-	//@Test
-	public void testTransform() {
-		Document doc;
+	@Test
+	public void testTransform() throws IOException {
+		InputStream inputStream = null;
 		try {
-			doc = fedoraDataService.getObjectViewXML("uuid:3144b9b4-47b9-47bb-9221-7b1916209673");
-			XMLOutputter out = new XMLOutputter();
-		   out.output(doc, System.out);
-		   
-		   updateDocTransformer.addDocument(doc);
+			inputStream = new FileInputStream(new File("src/test/resources/defaultWebObject.xml"));
+			Document result = null;
+			SAXBuilder builder = new SAXBuilder();
+			result = builder.build(inputStream);
 			
-			System.out.println(updateDocTransformer.toString());
+			XMLOutputter out = new XMLOutputter();
+		   out.output(result, System.out);
+		   
+		   UpdateDocTransformer transformer = new UpdateDocTransformer();
+		   transformer.init();
+		   transformer.setXslName("generateAddDoc.xsl");
+		   
+		   transformer.addDocument(result);
+			
+			System.out.println(transformer.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			if (inputStream != null)
+				inputStream.close();
 		}
 	}
 	
