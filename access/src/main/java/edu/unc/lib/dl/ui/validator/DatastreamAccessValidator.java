@@ -17,10 +17,9 @@ package edu.unc.lib.dl.ui.validator;
 
 import java.util.Collection;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import edu.unc.lib.dl.security.access.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.Datastream;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.ui.util.AccessControlSettings;
 
@@ -45,7 +44,7 @@ public class DatastreamAccessValidator {
 		filterDatastreams(metadata.getDatastream(), metadata.getSurrogateAccess(), metadata.getFileAccess(), userAccess);
 	}
 	
-	public static void filterDatastreams(Collection<String> datastreams, AccessGroupSet surrogateAccess, 
+	public static void filterDatastreams(Collection<Datastream> datastreams, AccessGroupSet surrogateAccess, 
 			AccessGroupSet fileAccess, AccessGroupSet userAccess){
 		
 		if (userAccess.contains(accessSettings.getAdminGroup()))
@@ -53,21 +52,21 @@ public class DatastreamAccessValidator {
 		
 		//Remove surrogate datastreams if no matching groups
 		if (!surrogateAccess.containsAny(userAccess)){
-			for (String accessDS: accessSettings.getSurrogateDatastreams()){
+			for (Datastream accessDS: accessSettings.getSurrogateDatastreams()){
 				datastreams.remove(accessDS);
 			}
 		}
 		
 		//Remove file datastreams if no matching groups
 		if (!fileAccess.containsAny(userAccess)){
-			for (String accessDS: accessSettings.getFileDatastreams()){
+			for (Datastream accessDS: accessSettings.getFileDatastreams()){
 				datastreams.remove(accessDS);
 			}
 		}
 		
 		//Remove admin datastreams if not an admin
 		if (!userAccess.contains(accessSettings.getAdminGroup())){
-			for (String accessDS: accessSettings.getAdminDatastreams()){
+			for (Datastream accessDS: accessSettings.getAdminDatastreams()){
 				datastreams.remove(accessDS);
 			}
 		}

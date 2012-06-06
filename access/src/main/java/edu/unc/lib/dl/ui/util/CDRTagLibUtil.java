@@ -27,6 +27,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 
 /**
@@ -35,8 +36,12 @@ import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
  *
  */
 public class CDRTagLibUtil {
-	public static String getDatastreamUrl(String pid, String datastream, FedoraUtil fedoraUtil){
-		return fedoraUtil.getDatastreamUrl(pid, datastream);
+	public static String getDatastreamUrl(Object object, String datastream, FedoraUtil fedoraUtil){
+		if (object instanceof String)
+			return fedoraUtil.getDatastreamUrl((String)object, datastream);
+		if (object instanceof BriefObjectMetadataBean)
+			return fedoraUtil.getDatastreamUrl((BriefObjectMetadataBean)object, datastream);
+		return null;
 	}
 	
 	public static void decrementLongMap(Map<String,Long> map, String key){
@@ -46,7 +51,6 @@ public class CDRTagLibUtil {
 	}
 	
 	public static String postImport(HttpServletRequest request, String url){
-		@SuppressWarnings("unchecked")
 		Map<String, String[]> parameters = request.getParameterMap();
 		HttpClientParams params = new HttpClientParams();
 		params.setContentCharset("UTF-8");

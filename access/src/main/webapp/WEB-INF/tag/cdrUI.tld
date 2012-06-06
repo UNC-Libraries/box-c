@@ -52,7 +52,7 @@
 		<name>getDatastreamUrl</name>
 		<function-class>edu.unc.lib.dl.ui.util.CDRTagLibUtil</function-class>
 		<function-signature>
-			java.lang.String getDatastreamUrl(java.lang.String, java.lang.String, edu.unc.lib.dl.ui.util.FedoraUtil)
+			java.lang.String getDatastreamUrl(java.lang.Object, java.lang.String, edu.unc.lib.dl.ui.util.FedoraUtil)
 		</function-signature>
 	</function>
 	<function>

@@ -31,7 +31,7 @@
 		<c:choose>
 			<c:when test="${cdr:contains(briefObject.datastream, 'THUMB_LARGE')}">
 				<div class="largethumb_container">
-					<img id="thumb_main" class="largethumb" src="${cdr:getDatastreamUrl(briefObject.id, 'THUMB_LARGE', fedoraUtil)}"/>
+					<img id="thumb_main" class="largethumb" src="${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}"/>
 				</div>
 			</c:when>
 			<c:otherwise>

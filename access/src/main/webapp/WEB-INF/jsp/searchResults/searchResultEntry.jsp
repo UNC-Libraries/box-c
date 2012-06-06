@@ -58,7 +58,7 @@
 				<c:when test="${cdr:contains(metadata.datastream, 'THUMB_SMALL')}">
 					<div class="smallthumb_container">
 						<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_${metadata.contentType.searchKey}" 
-								src="${cdr:getDatastreamUrl(metadata.id, 'THUMB_SMALL', fedoraUtil)}"/>
+								src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
 					</div>
 				</c:when>
 				<c:otherwise>
@@ -189,12 +189,12 @@
 					<c:choose>
 						<c:when test="${cdr:contains(metadata.datastream, 'DATA_FILE')}">
 							<div class="actionlink right download">
-								<a href="${cdr:getDatastreamUrl(metadata.id, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
+								<a href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
 							</div>
 						</c:when>
 						<c:when test="${cdr:contains(metadata.datastream, 'SURROGATE')}">
 							<div class="actionlink right download">
-								<a href="${cdr:getDatastreamUrl(metadata.id, 'SURROGATE', fedoraUtil)}">Preview</a>
+								<a href="${cdr:getDatastreamUrl(metadata, 'SURROGATE', fedoraUtil)}">Preview</a>
 							</div>
 						</c:when>
 						<c:otherwise>

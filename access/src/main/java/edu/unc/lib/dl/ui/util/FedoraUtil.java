@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.ui.util;
 
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.Datastream;
+
 public class FedoraUtil {
 	private String fedoraUrl;
 	
@@ -32,6 +35,33 @@ public class FedoraUtil {
 		//url.append(fedoraUrl).append("/objects/").append(pid).append("/datastreams/").append(datastream).append("/content");
 		//Temporarily using a proxy servlet while fedora access control isn't in place
 		url.append("content?id=").append(pid).append("&ds=").append(datastream);
+		return url.toString(); 
+	}
+	
+	public String getDatastreamUrl(BriefObjectMetadataBean metadata, String datastreamName){
+		// Prefer the matching datastream from this object over the same datastream with a different pid prefix
+		Datastream preferredDS = null;
+		Datastream incomingDS = new Datastream(datastreamName);
+		for (Datastream ds: metadata.getDatastream()){
+			if (ds.equals(incomingDS)) {
+				preferredDS = ds;
+				if ((incomingDS.getPid() == null && preferredDS.getPid() == null) || (incomingDS.getPid() != null && preferredDS.getPid() != null)){
+						break;
+				}
+			}
+		}
+		
+		if (preferredDS == null)
+			return "";
+		
+		StringBuilder url = new StringBuilder();
+		url.append("content?id=");
+		if (preferredDS.getPid() == null) {
+			url.append(metadata.getId());
+		} else {
+			url.append(preferredDS.getPid());
+		}
+		url.append("&ds=").append(preferredDS.getName());
 		return url.toString(); 
 	}
 

@@ -415,6 +415,10 @@
 						<xsl:call-template name="fileMetadata">
 							<xsl:with-param name="digitalObject" select="$defaultWebObject"/>
 						</xsl:call-template>
+						<xsl:variable name="defaultWebObjectPID" select="$defaultWebObject/@PID"/>
+						<xsl:for-each select="$defaultWebObject/foxml:datastream">
+							<field name="datastream"><xsl:value-of select="$defaultWebObjectPID"/>/<xsl:value-of select="./@ID"/></field>
+						</xsl:for-each>
 					</xsl:when>
 					<xsl:when test="$resourceType = $fileType">
 						<xsl:call-template name="fileMetadata">
@@ -423,9 +427,10 @@
 					</xsl:when>
 				</xsl:choose>
 				
+				<xsl:apply-templates select="/view-inputs/foxml:digitalObject/foxml:datastream/@ID" mode="datastreamField"/>
+				
 				<xsl:apply-templates select="/view-inputs/foxml:digitalObject/foxml:objectProperties/foxml:property[@NAME='info:fedora/fedora-system:def/view#lastModifiedDate']/@VALUE"/>
 				<xsl:apply-templates select="/view-inputs/foxml:digitalObject/foxml:objectProperties/foxml:property[@NAME='info:fedora/fedora-system:def/model#createdDate']/@VALUE"/>
-				<xsl:apply-templates select="/view-inputs/foxml:digitalObject/foxml:datastream/@ID" mode="datastreamField"/>
 				
 				<xsl:variable name="hasMods" select="boolean(/view-inputs/foxml:digitalObject/foxml:datastream[@ID='MD_DESCRIPTIVE']/foxml:datastreamVersion/foxml:xmlContent/mods:mods)"/>
 				<xsl:variable name="hasDC" select="boolean(/view-inputs/foxml:digitalObject/foxml:datastream[@ID='DC']/foxml:datastreamVersion/foxml:xmlContent/oai_dc:dc)"/>

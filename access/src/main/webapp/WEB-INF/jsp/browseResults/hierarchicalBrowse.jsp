@@ -267,7 +267,7 @@
 						<c:if test="${param.displaySecondaryActions}">
 							<p class="hier_secondary_actions">
 								<c:if test="${cdr:contains(containerNode.datastream, 'DATA_FILE')}">
-									<a href="${cdr:getDatastreamUrl(containerNode.id, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
+									<a href="${cdr:getDatastreamUrl(containerNode, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
 									(<c:out value="${containerNode.contentType.highestTierDisplayValue}"/> 
 									<c:if test="${not empty containerNode.filesize}">
 										&nbsp;<c:out value="${cdr:formatFilesize(containerNode.filesize, 1)}"/>

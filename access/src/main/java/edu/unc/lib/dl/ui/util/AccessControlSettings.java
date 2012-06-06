@@ -15,12 +15,15 @@
  */
 package edu.unc.lib.dl.ui.util;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.Datastream;
 import edu.unc.lib.dl.search.solr.util.AbstractSettings;
 import edu.unc.lib.dl.security.access.AccessType;
 
@@ -30,10 +33,10 @@ import edu.unc.lib.dl.security.access.AccessType;
  *
  */
 public class AccessControlSettings extends AbstractSettings {
-	private Set<String> adminDatastreams;
-	private Set<String> surrogateDatastreams;
-	private Set<String> fileDatastreams;
-	private Set<String> recordDatastreams;
+	private Set<Datastream> adminDatastreams;
+	private Set<Datastream> surrogateDatastreams;
+	private Set<Datastream> fileDatastreams;
+	private Set<Datastream> recordDatastreams;
 	private String adminGroup;
 	private String publicGroup;
 	
@@ -43,43 +46,59 @@ public class AccessControlSettings extends AbstractSettings {
 	
 	@Autowired(required = true)
 	public void setProperties(Properties properties){
-		this.adminDatastreams = this.getUnmodifiableSetFromProperty("access.datastream.admin", new HashSet<String>(), properties, ",");
-		this.surrogateDatastreams = this.getUnmodifiableSetFromProperty("access.datastream.surrogate", new HashSet<String>(), properties, ",");
-		this.fileDatastreams = this.getUnmodifiableSetFromProperty("access.datastream.file", new HashSet<String>(), properties, ",");
-		this.recordDatastreams = this.getUnmodifiableSetFromProperty("access.datastream.record", new HashSet<String>(), properties, ",");
+		this.adminDatastreams = this.getUnmodifiableDatastreamSetFromProperty("access.datastream.admin", new HashSet<Datastream>(), properties, ",");
+		this.surrogateDatastreams = this.getUnmodifiableDatastreamSetFromProperty("access.datastream.surrogate", new HashSet<Datastream>(), properties, ",");
+		this.fileDatastreams = this.getUnmodifiableDatastreamSetFromProperty("access.datastream.file", new HashSet<Datastream>(), properties, ",");
+		this.recordDatastreams = this.getUnmodifiableDatastreamSetFromProperty("access.datastream.record", new HashSet<Datastream>(), properties, ",");
 		this.setAdminGroup(properties.getProperty("access.group.admin", ""));
 		this.setPublicGroup(properties.getProperty("access.group.public", ""));
 	}
+	
+	protected Set<Datastream> getUnmodifiableDatastreamSetFromProperty(String propertyName, Set<Datastream> c, Properties properties, String delimiter){
+		populateDatastreamCollectionFromProperty(propertyName, c, properties, delimiter);
+		return Collections.unmodifiableSet(c);
+	}
+	
+	protected void populateDatastreamCollectionFromProperty(String propertyName, Collection<Datastream> c, 
+			Properties properties, String delimiter){
+		String value = properties.getProperty(propertyName, null);
+		if (value != null){
+			String searchable[] = value.split(delimiter);
+			for (String field: searchable){
+				c.add(new Datastream(field));
+			}
+		}
+	}
 
-	public Set<String> getAdminDatastreams() {
+	public Set<Datastream> getAdminDatastreams() {
 		return adminDatastreams;
 	}
 
-	public void setAdminDatastreams(Set<String> adminDatastreams) {
+	public void setAdminDatastreams(Set<Datastream> adminDatastreams) {
 		this.adminDatastreams = adminDatastreams;
 	}
 
-	public Set<String> getSurrogateDatastreams() {
+	public Set<Datastream> getSurrogateDatastreams() {
 		return surrogateDatastreams;
 	}
 
-	public void setSurrogateDatastreams(Set<String> surrogateDatastreams) {
+	public void setSurrogateDatastreams(Set<Datastream> surrogateDatastreams) {
 		this.surrogateDatastreams = surrogateDatastreams;
 	}
 
-	public Set<String> getFileDatastreams() {
+	public Set<Datastream> getFileDatastreams() {
 		return fileDatastreams;
 	}
 
-	public void setFileDatastreams(Set<String> fileDatastreams) {
+	public void setFileDatastreams(Set<Datastream> fileDatastreams) {
 		this.fileDatastreams = fileDatastreams;
 	}
 
-	public Set<String> getRecordDatastreams() {
+	public Set<Datastream> getRecordDatastreams() {
 		return recordDatastreams;
 	}
 
-	public void setRecordDatastreams(Set<String> recordDatastreams) {
+	public void setRecordDatastreams(Set<Datastream> recordDatastreams) {
 		this.recordDatastreams = recordDatastreams;
 	}
 
@@ -105,13 +124,14 @@ public class AccessControlSettings extends AbstractSettings {
 	 * @return
 	 */
 	public AccessType getAccessType(String datastream){
-		if (fileDatastreams.contains(datastream)){
+		Datastream ds = new Datastream(datastream);
+		if (fileDatastreams.contains(ds)){
 			return AccessType.FILE;
-		} else if (surrogateDatastreams.contains(datastream)){
+		} else if (surrogateDatastreams.contains(ds)){
 			return AccessType.SURROGATE;
-		} else if (adminDatastreams.contains(datastream)){
+		} else if (adminDatastreams.contains(ds)){
 			return AccessType.ADMIN;
-		} else if (recordDatastreams.contains(datastream)){
+		} else if (recordDatastreams.contains(ds)){
 			return AccessType.RECORD;
 		}
 		return AccessType.NONE;

@@ -32,7 +32,7 @@
 		<c:choose>
 			<c:when test="${cdr:contains(metadata.datastream, 'THUMB_SMALL')}">
 				<div class="smallthumb_container">
-					<img class="smallthumb" src="${cdr:getDatastreamUrl(metadata.id, 'THUMB_SMALL', fedoraUtil)}"/>
+					<img class="smallthumb" src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
 				</div>
 			</c:when>
 			<c:otherwise>
