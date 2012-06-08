@@ -4,10 +4,16 @@ import edu.unc.lib.dl.fedora.PID;
 import gov.loc.mods.mods.MODSFactory;
 import gov.loc.mods.mods.ModsDefinition;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.security.Principal;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.validation.Valid;
 
+import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,18 +40,33 @@ import crosswalk.OutputElement;
 @RequestMapping(value = { "/*", "/**" })
 @SessionAttributes("form")
 public class FormController {
+	
+	public FormController() {
+		LOG.debug("FormController created");
+	}
 
 	private static final Logger LOG = LoggerFactory.getLogger(FormController.class);
 	
 	@Autowired
-	private static PID defaultContainer = null;
+	private DepositHandler depositHandler;
+	
+	public DepositHandler getDepositHandler() {
+		return depositHandler;
+	}
 
-	public static PID getDefaultContainer() {
+	public void setDepositHandler(DepositHandler depositHandler) {
+		this.depositHandler = depositHandler;
+	}
+
+	@Autowired
+	private PID defaultContainer = null;
+
+	public PID getDefaultContainer() {
 		return defaultContainer;
 	}
 
-	public static void setDefaultContainer(PID defaultContainer) {
-		FormController.defaultContainer = defaultContainer;
+	public void setDefaultContainer(PID defaultContainer) {
+		this.defaultContainer = defaultContainer;
 	}
 
 	@Autowired
@@ -88,6 +109,24 @@ public class FormController {
 			errors.addError( new ObjectError("file", "You must select a file for upload."));
 			return "form";
 		}
+		String mods = makeMods(form);
+		LOG.debug(mods);
+		// perform a deposit with the default handler.
+		try {
+			this.getDepositHandler().deposit(form.getDepositContainerId(), mods, file.getInputStream());
+		} catch (IOException e) {
+			throw new Error("temporary file upload storage failed", e);
+		}
+		
+		// TODO email notices
+		
+		// clear session
+		sessionStatus.setComplete();
+		return "success";
+	}
+
+	private String makeMods(Form form) {
+		String result;
 		// run the mapping and get a MODS record. (report any errors)
 		ModsDefinition mods = MODSFactory.eINSTANCE.createModsDefinition();
 		for (FormElement fe : form.getElements()) {
@@ -99,14 +138,18 @@ public class FormController {
 			}
 		}
 		LOG.debug(mods.toString());
-		// TODO create a METS SIP
-		// TODO perform a sword submission.
-		
-		// TODO email notices
-		
-		// clear session
-		sessionStatus.setComplete();
-		return "success";
+		StringWriter sw = new StringWriter();
+		Map<Object, Object> options = new HashMap<Object, Object>();
+		options.put(XMLResource.OPTION_ENCODING, "utf-8");
+		options.put(XMLResource.OPTION_LINE_WIDTH, new Integer(80));
+		options.put(XMLResource.OPTION_ROOT_OBJECTS, Collections.singletonList(mods));
+		try {
+			((XMLResource) mods.eResource()).save(sw, options);
+		} catch (IOException e) {
+			sw.append("failed to serialize XML for model object");
+		}
+		result = sw.toString();
+		return result;
 	}
 
 }
