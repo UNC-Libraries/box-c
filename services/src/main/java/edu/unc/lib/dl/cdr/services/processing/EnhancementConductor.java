@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +28,6 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.jdom.Element;
 import org.slf4j.Logger;
@@ -520,10 +518,10 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 			Set<String> failedServices = null;
 			synchronized (failedPids) {
 				failedServices = failedPids.getFailedServices(message.getTargetID());
-				// Determine if the service should not be run
-				if (!(s.isActive()
-						&& ((message.getServiceName() != null && message.getServiceName().equals(s.getClass().getName())) || s
-								.isApplicable(message)) && (failedServices == null || !failedServices.contains(s.getClass().getName())))) {
+				// Determine if the service should not be run, depending on if the service is active, applicable and hasn't
+				// previously failed
+				if (!s.isActive() || !(s.getClass().getName().equals(message.getServiceName()) || s.isApplicable(message))
+						|| (failedServices != null && failedServices.contains(s.getClass().getName()))) {
 					if (log.isDebugEnabled())
 						log.debug("Enhancement not run: " + s.getClass().getCanonicalName() + " on " + message.getTargetID());
 					return;

@@ -53,13 +53,13 @@ public class CollectionServlet extends BaseSwordServlet {
 	}
 
 	@RequestMapping(value = { "", "/", "/{pid}", "/{pid}/*" }, method = RequestMethod.GET)
-	protected void collectionList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	public void collectionList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		LOG.debug("GET request for collection content list");
 		this.api.get(req, resp);
 	}
 
 	@RequestMapping(value = { "", "/", "/{pid}" }, method = RequestMethod.POST)
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		LOG.debug("POST request to submit to collection: " + req.getQueryString());
 		LOG.debug("Packaging: " + req.getHeader("Packaging"));
 		if (LOG.isDebugEnabled()) {

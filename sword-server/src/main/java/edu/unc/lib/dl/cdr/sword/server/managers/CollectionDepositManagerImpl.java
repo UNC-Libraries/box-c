@@ -44,9 +44,9 @@ import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.PackagingType;
 
 /**
- *
+ * 
  * @author bbpennel
- *
+ * 
  */
 public class CollectionDepositManagerImpl extends AbstractFedoraManager implements CollectionDepositManager {
 	private static Logger log = Logger.getLogger(CollectionDepositManagerImpl.class);
@@ -57,91 +57,112 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	@Override
 	public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
 			SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
-		
+
 		log.debug("Preparing to do collection deposit to " + collectionURI);
 		if (collectionURI == null)
 			throw new SwordServerException("No collection URI was provided");
 
 		Agent depositor = agentFactory.findPersonByOnyen(auth.getUsername(), false);
-		if (depositor == null){
-			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, " + auth.getUsername());
+		if (depositor == null) {
+			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, "
+					+ auth.getUsername());
 		}
 		Agent owner = null;
-		if (auth.getOnBehalfOf() != null){
+		if (auth.getOnBehalfOf() != null) {
 			owner = agentFactory.findPersonByOnyen(auth.getOnBehalfOf(), false);
-			if (owner == null){
+			if (owner == null) {
 				throw new SwordAuthException("Unable to find a user matching OnBehalfOf, " + auth.getOnBehalfOf());
 			}
 		} else {
 			owner = depositor;
 		}
-		
-		SwordConfigurationImpl configImpl = (SwordConfigurationImpl)config;
+
+		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 
 		PID containerPID = extractPID(collectionURI, SwordConfigurationImpl.COLLECTION_PATH + "/");
-		
-		//Get the users group
+
+		// Get the users group
 		List<String> groupList = this.getGroups(auth, configImpl);
-		
-		if (!accessControlUtils.hasAccess(containerPID, groupList, AccessControlRole.curator.getUri().toString())){
+
+		if (!accessControlUtils.hasAccess(containerPID, groupList, AccessControlRole.curator.getUri().toString())) {
 			throw new SwordAuthException("Insufficient privileges to deposit to container " + containerPID.getPid());
 		}
-		
-		
-		if (deposit.getFile() == null){
-			if (deposit.getSwordEntry() != null) {
+
+		if (deposit.getPackaging() == null || deposit.getPackaging().trim().length() == 0) {
+			// Ingest of non-packaged objects
+			if (deposit.getSwordEntry() == null) {
+				// Single file, no metadata ingest, which isn't supported at the moment
+				throw new SwordError("Could not ingest, no metadata was provided.");
+			} else {
 				try {
-					log.debug("Performing metadata only deposit to " + containerPID.getPid());
-					return doMetadataOnlyDeposit(containerPID, deposit, auth, configImpl, depositor, owner);
-				} catch (JDOMException e){
+					log.debug("Performing Atom Pub Entry deposit to " + containerPID.getPid());
+					return doAtomPubEntryDeposit(containerPID, deposit, auth, configImpl, depositor, owner);
+				} catch (JDOMException e) {
 					log.warn("Failed to deposit", e);
 					throw new SwordError("A problem occurred while attempting to perform your deposit: " + e.getMessage());
 				} catch (Exception e) {
-					throw new SwordServerException("Unexpected exception while attempting to perform a metadata only deposit", e);
+					throw new SwordServerException(
+							"Unexpected exception while attempting to perform an Atom Pub entry deposit", e);
 				}
 			}
-		} else {
-			PackagingType recognizedType = null;
-			for(PackagingType t : PackagingType.values()) {
-				if(t.equals(deposit.getPackaging())) {
-					recognizedType = t;
-					break;
+		} else { 
+			if (deposit.getFile() == null){
+				// Invalid to have a package but no file
+				throw new SwordError("Could not ingest, a package type was provided but no content.");
+			} else {
+				PackagingType recognizedType = null;
+				for (PackagingType t : PackagingType.values()) {
+					if (t.equals(deposit.getPackaging())) {
+						recognizedType = t;
+						break;
+					}
 				}
-			}
 
-			if (recognizedType != null){
-				try {
-					return doMETSDeposit(containerPID, deposit, auth, configImpl, depositor, recognizedType, owner);
-				} catch (FilesDoNotMatchManifestException e){
-					log.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest of package type " + deposit.getPackaging(), e);
-					throw new SwordError("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.", e);
-				} catch (IngestException e){
-					log.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.", e);
-					throw new SwordError("An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type " + deposit.getPackaging(), e);
-				} catch (Exception e) {
-					throw new SwordServerException(e);
-				}
+				if (recognizedType != null) {
+					try {
+						// METS subclasses are the only supported packaging types at the moment
+						return doMETSDeposit(containerPID, deposit, auth, configImpl, depositor, recognizedType, owner);
+					} catch (FilesDoNotMatchManifestException e) {
+						log.warn("Files in the package " + deposit.getFilename()
+								+ " did not match the provided METS manifest of package type " + deposit.getPackaging(), e);
+						throw new SwordError("Files in the package " + deposit.getFilename()
+								+ " did not match the provided METS manifest.", e);
+					} catch (IngestException e) {
+						log.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.",
+								e);
+						throw new SwordError("An exception occurred while attempting to ingest package " + deposit.getFilename()
+								+ " of type " + deposit.getPackaging(), e);
+					} catch (Exception e) {
+						throw new SwordServerException(e);
+					}
+				}				
 			}
 		}
 		return null;
 	}
-	
-	private DepositReceipt doMetadataOnlyDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
+
+	private DepositReceipt doAtomPubEntryDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
 			SwordConfigurationImpl config, Agent agent, Agent owner) throws Exception {
-		
+
 		log.debug("Preparing to perform an Atom Pub entry metadata only deposit to " + containerPID.getPid());
-		
+
 		if (deposit.getSwordEntry() == null || deposit.getSwordEntry().getEntry() == null)
 			throw new SwordError("No AtomPub entry was included in the submission");
-		
+
 		AtomPubEntrySIP sip = new AtomPubEntrySIP(containerPID, deposit.getSwordEntry().getEntry());
+		if (deposit.getFile() == null) {
+			sip = new AtomPubEntrySIP(containerPID, deposit.getSwordEntry().getEntry());
+		} else {
+			sip = new AtomPubEntrySIP(containerPID, deposit.getSwordEntry().getEntry(), deposit.getFile(),
+					deposit.getMimeType(), deposit.getFilename(), deposit.getMd5());
+		}
 		sip.setInProgress(deposit.isInProgress());
 		sip.setSuggestedSlug(deposit.getSlug());
-		
+
 		DepositRecord record = new DepositRecord(agent, owner, DepositMethod.SWORD13);
 		record.setMessage("Added through SWORD");
 		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
-		
+
 		return buildReceipt(ingestResult, config);
 	}
 
@@ -153,13 +174,13 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		String name = deposit.getFilename();
 		boolean isZip = name.endsWith(".zip");
 
-		if (log.isDebugEnabled()){
+		if (log.isDebugEnabled()) {
 			log.debug("Working with temporary file: " + deposit.getFile().getAbsolutePath());
 		}
-		
+
 		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), isZip);
 		// PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
-		
+
 		DepositRecord record = new DepositRecord(agent, owner, DepositMethod.SWORD13);
 		record.setMessage("Added through SWORD");
 		record.setPackagingType(type);
@@ -167,12 +188,14 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 
 		return buildReceipt(ingestResult, config);
 	}
-	
-	private DepositReceipt buildReceipt(IngestResult ingestResult, SwordConfigurationImpl config) throws SwordServerException{
-		if (ingestResult == null || ingestResult.derivedPIDs == null || ingestResult.derivedPIDs.size() == 0){
-			throw new SwordServerException("Add batch request " + ingestResult.originalDepositID.getPid() + " did not return any derived results.");
+
+	private DepositReceipt buildReceipt(IngestResult ingestResult, SwordConfigurationImpl config)
+			throws SwordServerException {
+		if (ingestResult == null || ingestResult.derivedPIDs == null || ingestResult.derivedPIDs.size() == 0) {
+			throw new SwordServerException("Add batch request " + ingestResult.originalDepositID.getPid()
+					+ " did not return any derived results.");
 		}
-		
+
 		DepositReceipt receipt = depositReportingUtil.retrieveDepositReceipt(ingestResult, config);
 		return receipt;
 	}

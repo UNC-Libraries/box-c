@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.jdom.Document;
+import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 import org.junit.Assert;
 import org.junit.Before;
@@ -212,13 +216,15 @@ public class SolrIngestByHand {
 
 	}
 
-	//@Test
+	@Test
 	public void testTransform() {
 		Document doc;
 		try {
-			doc = fedoraDataService.getObjectViewXML("uuid:3144b9b4-47b9-47bb-9221-7b1916209673");
-			XMLOutputter out = new XMLOutputter();
-		   out.output(doc, System.out);
+			doc = new SAXBuilder().build(new FileInputStream(new File("/Users/bbpennel/git/Carolina-Digital-Repository/solr-ingest/src/test/resources/objectView.xml")));
+			
+			//doc = fedoraDataService.getObjectViewXML("uuid:3144b9b4-47b9-47bb-9221-7b1916209673");
+			//XMLOutputter out = new XMLOutputter();
+		   //out.output(doc, System.out);
 		   
 		   updateDocTransformer.addDocument(doc);
 			

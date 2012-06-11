@@ -11,46 +11,18 @@ import org.jdom.JDOMException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 
-public class AtomPubEntrySIP implements SubmissionInformationPackage {
+public class AtomPubEntrySIP extends FileSIP {
+	private Map<String, Element> metadataStreams;
 
-	private PID containerPID;
-	private boolean inProgress = false;
-	private String suggestedSlug;
-	private Map<String,Element> metadataStreams;
-	private File contentFile;
-	private String contentMimetype;
-	private String filename;
-
-	public AtomPubEntrySIP(PID containerPID, Entry atomEntry) throws IOException, JDOMException{
-		if (atomEntry == null){
-			throw new IllegalArgumentException("A non-null atom entry must be provided.");
-		}
+	public AtomPubEntrySIP(PID containerPID, Entry atomEntry) throws IOException, JDOMException {
 		this.containerPID = containerPID;
-		metadataStreams = AtomPubMetadataParserUtil.extractDatastreams(atomEntry);
+		this.setMetadataStreams(atomEntry);
 	}
 
-	public PID getContainerPID() {
-		return containerPID;
-	}
-
-	public void setContainerPID(PID containerPID) {
-		this.containerPID = containerPID;
-	}
-
-	public boolean isInProgress() {
-		return inProgress;
-	}
-
-	public void setInProgress(boolean inProgress) {
-		this.inProgress = inProgress;
-	}
-
-	public String getSuggestedSlug() {
-		return suggestedSlug;
-	}
-
-	public void setSuggestedSlug(String suggestedSlug) {
-		this.suggestedSlug = suggestedSlug;
+	public AtomPubEntrySIP(PID containerPID, Entry atomEntry, File data, String mimeType, String fileLabel,
+			String md5checksum) throws IOException, JDOMException {
+		super(containerPID, data, mimeType, fileLabel, md5checksum);
+		setMetadataStreams(atomEntry);
 	}
 
 	public Map<String, Element> getMetadataStreams() {
@@ -61,27 +33,10 @@ public class AtomPubEntrySIP implements SubmissionInformationPackage {
 		this.metadataStreams = metadataStreams;
 	}
 
-	public File getContentFile() {
-		return contentFile;
-	}
-
-	public void setContentFile(File contentFile) {
-		this.contentFile = contentFile;
-	}
-
-	public String getContentMimetype() {
-		return contentMimetype;
-	}
-
-	public void setContentMimetype(String mimetype) {
-		this.contentMimetype = mimetype;
-	}
-
-	public String getFilename() {
-		return filename;
-	}
-
-	public void setFilename(String filename) {
-		this.filename = filename;
+	public void setMetadataStreams(Entry atomEntry) throws IOException, JDOMException {
+		if (atomEntry == null) {
+			throw new IllegalArgumentException("A non-null atom entry must be provided.");
+		}
+		metadataStreams = AtomPubMetadataParserUtil.extractDatastreams(atomEntry);
 	}
 }
