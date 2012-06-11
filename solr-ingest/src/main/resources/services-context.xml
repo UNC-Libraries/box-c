@@ -25,26 +25,18 @@
 
 	<!-- Fedora -->
 
-	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl">
-		<property name="itqlEndpointURL"
-			value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/webservices/services/ItqlBeanService" />
-		<property name="sparqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/sparql/"/>
-		<property name="serverModelUri" value="rmi://${mulgara.host}/server1#" />
+	<bean id="tripleStoreQueryService" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.dl.util.TripleStoreQueryService"/>
 	</bean>
-	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
-		init-method="init">
-		<property name="fedoraContextUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.admin.username}" />
-		<property name="password" value="${fedora.admin.password}" />
+
+	<bean id="managementClient" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg index="0" value="edu.unc.lib.dl.fedora.ManagementClient"/>
 	</bean>
-	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient"
-		init-method="init">
-		<property name="fedoraContextUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.admin.username}" />
-		<property name="password" value="${fedora.admin.password}" />
+
+	<bean id="accessClient" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.dl.fedora.AccessClient"/>
 	</bean>
+	
 	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService" init-method="init">
 		<property name="accessClient" ref="accessClient"/>
 		<property name="managementClient" ref="managementClient"/>

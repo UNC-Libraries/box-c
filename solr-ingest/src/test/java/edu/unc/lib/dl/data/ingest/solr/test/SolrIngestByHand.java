@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.test;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -223,19 +223,16 @@ public class SolrIngestByHand {
 	public void testTransform() throws IOException {
 		InputStream inputStream = null;
 		try {
-			inputStream = new FileInputStream(new File("src/test/resources/defaultWebObject.xml"));
-			Document result = null;
-			SAXBuilder builder = new SAXBuilder();
-			result = builder.build(inputStream);
+			Document doc = new SAXBuilder().build(new FileInputStream(new File("src/test/resources/defaultWebObject.xml")));
 			
 			XMLOutputter out = new XMLOutputter();
-		   out.output(result, System.out);
+		   out.output(doc, System.out);
 		   
 		   UpdateDocTransformer transformer = new UpdateDocTransformer();
 		   transformer.init();
 		   transformer.setXslName("generateAddDoc.xsl");
 		   
-		   transformer.addDocument(result);
+		   transformer.addDocument(doc);
 			
 			System.out.println(transformer.toString());
 		} catch (Exception e) {

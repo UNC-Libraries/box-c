@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view-inputs><foxml:digitalObject xmlns:foxml="info:fedora/fedora-system:def/foxml#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" VERSION="1.1" PID="uuid:6df9e939-3495-4884-b52d-286f3d16b4f7" xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+<foxml:objectProperties>
+<foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active" />
+<foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="SOHP Test" />
+<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE="" />
+<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2012-06-08T20:14:09.531Z" />
+<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2012-06-08T20:14:09.531Z" />
+</foxml:objectProperties>
+<foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="AUDIT.0" LABEL="Audit Trail for this object" CREATED="2012-06-08T20:14:09.531Z" MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+<foxml:xmlContent>
+<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+<audit:record ID="AUDREC1">
+<audit:process type="Fedora API-M" />
+<audit:action>ingest</audit:action>
+<audit:componentID />
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-06-08T20:14:09.531Z</audit:date>
+<audit:justification>uuid:39fb5d50-3e4b-4b83-bc81-041a36d50a28</audit:justification>
+</audit:record>
+</audit:auditTrail>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_DESCRIPTIVE" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+<foxml:datastreamVersion ID="MD_DESCRIPTIVE1.0" LABEL="Descriptive Metadata" CREATED="2012-06-08T20:14:09.549Z" MIMETYPE="text/xml" SIZE="972">
+<foxml:contentDigest TYPE="MD5" DIGEST="0337335cd5e787b71609cdaeeb2c59c7" />
+<foxml:xmlContent>
+<mods xmlns="http://www.loc.gov/mods/v3">
+		<titleInfo>
+			<title>SOHP Test</title>
+		</titleInfo>
+		<name type="corporate">
+			<namePart>SHC</namePart>
+			<role>
+				<roleTerm type="text">creator</roleTerm>
+			</role>
+		</name>
+		<name type="personal">
+			<namePart>Some Names</namePart>
+			<role>
+				<roleTerm type="text">creator</roleTerm>
+			</role>
+		</name>
+		<originInfo>
+			<dateCreated keyDate="yes" encoding="iso8601">2003-01-01/2010-12-31</dateCreated>
+		</originInfo>
+		<language>
+			<languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+		</language>
+		<abstract>Some SOHP interviews and collected documentation</abstract>
+		<note type="short description">Interview files are both WAV and MP3. Documentation,
+			including signed agreements, are included in both MS Word and PDF
+			files.</note>
+		<subject>
+			<topic>Talkin'</topic>
+			<topic>Livin'</topic>
+		</subject>
+	</mods>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DATA_FILE" STATE="A" CONTROL_GROUP="M" VERSIONABLE="true">
+<foxml:datastreamVersion ID="DATA_FILE.0" LABEL="&quot;unclogotan.png&quot;" CREATED="2012-06-08T20:14:09.550Z" MIMETYPE="image/png" SIZE="137246">
+<foxml:contentDigest TYPE="MD5" DIGEST="55f0a4d53ce22b0fd679f7ca8d646bf1" />
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:6df9e939-3495-4884-b52d-286f3d16b4f7+DATA_FILE+DATA_FILE.0" />
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="RELS-EXT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="RELS-EXT1.0" LABEL="Relationship Metadata" CREATED="2012-06-08T20:14:09.550Z" MIMETYPE="text/xml" SIZE="1099">
+<foxml:contentDigest TYPE="MD5" DIGEST="78b73dd8b7ba6ec258cda9d23fc04311" />
+<foxml:xmlContent>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns5="http://cdr.unc.edu/definitions/1.0/base-model.xml#" xmlns:ns6="info:fedora/fedora-system:def/model#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+                    <rdf:Description rdf:about="info:fedora/uuid:6df9e939-3495-4884-b52d-286f3d16b4f7">
+                        <ns5:originalDeposit rdf:resource="info:fedora/uuid:39fb5d50-3e4b-4b83-bc81-041a36d50a28" />
+                        <ns5:owner rdf:resource="info:fedora/uuid:7305e957-e0b6-41f3-a05d-0cd70978f99d" />
+                        <ns5:slug>SOHP_Test_5</ns5:slug>
+                        <ns6:hasModel rdf:resource="info:fedora/cdr-model:PreservedObject" />
+                        <ns6:hasModel rdf:resource="info:fedora/cdr-model:Simple" />
+                    </rdf:Description>
+                </rdf:RDF>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="DC1.0" LABEL="Internal XML Metadata" CREATED="2012-06-08T20:14:09.550Z" MIMETYPE="text/xml" SIZE="809">
+<foxml:contentDigest TYPE="MD5" DIGEST="1a1b3a642115c7bd584bcc1041efc003" />
+<foxml:xmlContent>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+  <dc:title>SOHP Test</dc:title>
+  <dc:creator>SHC</dc:creator>
+  <dc:creator>Some Names</dc:creator>
+  <dc:subject>Talkin'--Livin'</dc:subject>
+  <dc:description>Some SOHP interviews and collected documentation</dc:description>
+  <dc:description>Interview files are both WAV and MP3. Documentation,
+			including signed agreements, are included in both MS Word and PDF
+			files.</dc:description>
+  <dc:identifier>uuid:6df9e939-3495-4884-b52d-286f3d16b4f7</dc:identifier>
+  <dc:language>eng</dc:language>
+</oai_dc:dc>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_EVENTS" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_EVENTS.0" LABEL="PREMIS Events Metadata" CREATED="2012-06-08T20:14:09.550Z" MIMETYPE="text/xml" SIZE="4109">
+<foxml:contentDigest TYPE="MD5" DIGEST="929fe6cc9c7b5c080c3adc628828ead1" />
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:6df9e939-3495-4884-b52d-286f3d16b4f7+MD_EVENTS+MD_EVENTS.0" />
+</foxml:datastreamVersion>
+</foxml:datastream>
+</foxml:digitalObject><path><object label="Repository Home" pid="admin:REPOSITORY" slug="REPOSITORY" /><object label="Collections" pid="uuid:48c47dfc-88a6-4429-8d3b-1f6f0fa52f29" slug="Collections" /><object label="test collection" pid="uuid:c9aba0a2-12e9-4767-822e-b285a37b07d7" slug="test_collection" /><object label="SOHP Test" pid="uuid:6df9e939-3495-4884-b52d-286f3d16b4f7" slug="SOHP_Test_5" /></path><parentCollection>uuid:c9aba0a2-12e9-4767-822e-b285a37b07d7</parentCollection><permissions><rights><permitDerivativesCreate>unc:app:lib:cdr:depositor:cdradmin</permitDerivativesCreate><permitDerivativesCreate>unc:app:lib:cdr:depositor:biomedcentral</permitDerivativesCreate><permitMetadataUpdate>unc:app:lib:cdr:depositor:cdradmin</permitMetadataUpdate><permitMetadataUpdate>unc:app:lib:cdr:depositor:biomedcentral</permitMetadataUpdate><permitOriginalsRead>unc:app:lib:cdr:depositor:cdradmin</permitOriginalsRead><permitOriginalsRead>public</permitOriginalsRead><permitOriginalsRead>unc:app:lib:cdr:depositor:biomedcentral</permitOriginalsRead><permitDerivativesRead>unc:app:lib:cdr:depositor:cdradmin</permitDerivativesRead><permitDerivativesRead>public</permitDerivativesRead><permitDerivativesRead>unc:app:lib:cdr:depositor:biomedcentral</permitDerivativesRead><permitDerivativesUpdate>unc:app:lib:cdr:depositor:cdradmin</permitDerivativesUpdate><permitDerivativesUpdate>unc:app:lib:cdr:depositor:biomedcentral</permitDerivativesUpdate><permitOriginalsUpdate>unc:app:lib:cdr:depositor:cdradmin</permitOriginalsUpdate><permitOriginalsUpdate>unc:app:lib:cdr:depositor:biomedcentral</permitOriginalsUpdate><permitMetadataCreate>unc:app:lib:cdr:depositor:cdradmin</permitMetadataCreate><permitMetadataCreate>unc:app:lib:cdr:depositor:biomedcentral</permitMetadataCreate><permitOriginalsCreate>unc:app:lib:cdr:depositor:cdradmin</permitOriginalsCreate><permitOriginalsCreate>unc:app:lib:cdr:depositor:biomedcentral</permitOriginalsCreate><permitMetadataRead>unc:app:lib:cdr:depositor:cdradmin</permitMetadataRead><permitMetadataRead>public</permitMetadataRead><permitMetadataRead>unc:app:lib:cdr:depositor:biomedcentral</permitMetadataRead></rights></permissions></view-inputs>

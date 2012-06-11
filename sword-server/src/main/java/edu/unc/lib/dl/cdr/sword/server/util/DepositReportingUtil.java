@@ -19,6 +19,7 @@ import org.swordapp.server.OriginalDeposit;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.services.IngestResult;
@@ -220,17 +221,27 @@ public class DepositReportingUtil {
 		receipt.setStatementURI("application/atom+xml;type=feed", config.getSwordPath() + SwordConfigurationImpl.STATE_PATH + "/" + targetPID.getPid());
 		
 		try {
-			MIMETypedStream metadataStream = accessClient.getDatastreamDissemination(targetPID, ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), null);
+			MIMETypedStream metadataStream = null;
+			try {
+				metadataStream = accessClient.getDatastreamDissemination(targetPID, ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), null);
+			} catch (NotFoundException notFound) {
+				// There was no MODS, which is okay, look for DC next
+			}
+			
 			if (metadataStream == null){
 				//If there is a DC stream instead, then add all its children
-				metadataStream = accessClient.getDatastreamDissemination(targetPID, ContentModelHelper.Datastream.DC.getName(), null);
-				if (metadataStream != null) {
-					Abdera abdera = new Abdera();
-					Parser parser = abdera.getParser();
-					Document<Element> entryDoc = parser.parse(new ByteArrayInputStream(metadataStream.getStream()));
-					for (Element child: entryDoc.getRoot().getElements()){
-						receipt.addDublinCore(child.getQName().getLocalPart(), child.getText());
+				try {
+					metadataStream = accessClient.getDatastreamDissemination(targetPID, ContentModelHelper.Datastream.DC.getName(), null);
+					if (metadataStream != null) {
+						Abdera abdera = new Abdera();
+						Parser parser = abdera.getParser();
+						Document<Element> entryDoc = parser.parse(new ByteArrayInputStream(metadataStream.getStream()));
+						for (Element child: entryDoc.getRoot().getElements()){
+							receipt.addDublinCore(child.getQName().getLocalPart(), child.getText());
+						}
 					}
+				} catch (NotFoundException notFound) {
+					// No DC either, so no metadata
 				}
 			} else {
 				// Build MODS as an Abdera entry and add it to the receipt entry.

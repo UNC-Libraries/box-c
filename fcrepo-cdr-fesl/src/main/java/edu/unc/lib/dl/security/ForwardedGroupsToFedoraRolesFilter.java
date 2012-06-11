@@ -62,13 +62,13 @@ public class ForwardedGroupsToFedoraRolesFilter implements Filter {
 		LOG.debug(this.header + ": " + groups);
 		LOG.debug("remote user: " + req.getRemoteUser());
 		LOG.debug("uri: " + req.getRequestURI());
+		Set<String> forwardedRoles = new HashSet<String>();
 		if (groups != null) {
-			Set<String> forwardedRoles = new HashSet<String>();
 			for (String cdrRole : groups.split(this.separator)) {
 				forwardedRoles.add(cdrRole);
 			}
-			populateFedoraAttributes(forwardedRoles, req);
 		}
+		populateFedoraAttributes(forwardedRoles, req);
 		chain.doFilter(request, response);
 	}
 
@@ -106,6 +106,7 @@ public class ForwardedGroupsToFedoraRolesFilter implements Filter {
 			roles.clear();
 			roles.addAll(forwardedGroups);
 		}
+		roles.add("public");
 	}
 
 	@Override

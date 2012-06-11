@@ -1,9 +1,5 @@
 package edu.unc.lib.dl.ingest.sip;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.xml.transform.TransformerException;
@@ -21,24 +17,14 @@ import edu.unc.lib.dl.ingest.aip.AIPImpl;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.aip.RDFAwareAIPImpl;
-import edu.unc.lib.dl.pidgen.PIDGenerator;
 import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
-import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.FileUtils;
-import edu.unc.lib.dl.util.JRDFGraphUtil;
-import edu.unc.lib.dl.util.PathUtil;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.ModsXmlHelper;
-import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
 
-public class AtomPubEntrySIPProcessor implements SIPProcessor {
+public class AtomPubEntrySIPProcessor extends FileSIPProcessor {
 	private static final Log log = LogFactory.getLog(AtomPubEntrySIPProcessor.class);
-
-	private PIDGenerator pidGenerator;
-	private TripleStoreQueryService tripleStoreQueryService;
 
 	@Override
 	public ArchivalInformationPackage createAIP(SubmissionInformationPackage genericSIP, DepositRecord record)
@@ -53,17 +39,7 @@ public class AtomPubEntrySIPProcessor implements SIPProcessor {
 
 		PID pid = pidGenerator.getNextPID();
 
-		// Prepare the temporary ingest directory
-		File batchPrepDir = null;
-		try {
-			batchPrepDir = FileUtils.createTempDirectory("ingest-prep");
-		} catch (IOException e) {
-			throw new IngestException("Unexpected IO error", e);
-		}
-		File sipDataSubDir = new File(batchPrepDir, "data");
-		sipDataSubDir.mkdir();
-
-		AIPImpl aip = new AIPImpl(batchPrepDir, record);
+		AIPImpl aip = this.prepareIngestDirectory(sip, record);
 
 		// create FOXML stub document
 		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(pid.getPid());
@@ -122,31 +98,12 @@ public class AtomPubEntrySIPProcessor implements SIPProcessor {
 			}
 		}
 		if (label == null) {
-			if (sip.getFilename() == null) {
+			if (sip.getFileLabel() == null) {
 				label = pid.getPid();
 			} else {
-				label = sip.getFilename();
+				label = sip.getFileLabel();
 			}
 		}
-
-		// set the label
-		FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.label, label);
-
-		// Set object to be active or not depending on if it is in progress.
-		if (sip.isInProgress()) {
-			FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.state, "Inactive");
-		} else {
-			FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.state, "Active");
-		}
-
-		// Add the pid to the topPID set
-		Set<PID> topPIDs = new HashSet<PID>();
-		topPIDs.add(pid);
-		aip.setTopPIDs(topPIDs);
-		aip.setContainerPlacement(sip.getContainerPID(), pid, null, null, label);
-
-		// save FOXML to AIP
-		aip.saveFOXMLDocument(pid, foxml);
 
 		// MAKE RDF AWARE AIP
 		RDFAwareAIPImpl rdfaip = null;
@@ -155,46 +112,13 @@ public class AtomPubEntrySIPProcessor implements SIPProcessor {
 		} catch (AIPException e) {
 			throw new IngestException("Could not create RDF AIP for simplified RELS-EXT setup of agent", e);
 		}
-
-		// set owner
-		JRDFGraphUtil.addFedoraPIDRelationship(rdfaip.getGraph(), pid, ContentModelHelper.Relationship.owner, record
-				.getOwner().getPID());
-
-		// set content model
-		JRDFGraphUtil.addFedoraProperty(rdfaip.getGraph(), pid, ContentModelHelper.FedoraProperty.hasModel,
-				ContentModelHelper.Model.SIMPLE.getURI());
-
-		// set slug using either default or suggested slug, detecting sibling slug conflicts and incrementing
-		String slug = PathUtil.makeSlug(label);
-		if (sip.getSuggestedSlug() == null) {
-			slug = PathUtil.makeSlug(label);
-		} else {
-			slug = sip.getSuggestedSlug();
-		}
-		String containerPath = tripleStoreQueryService.lookupRepositoryPath(sip.getContainerPID());
-		while (tripleStoreQueryService.fetchByRepositoryPath(containerPath + "/" + slug) != null) {
-			slug = PathUtil.incrementSlug(slug);
-		}
-		JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.slug, slug);
+		
+		this.assignFileTriples(pid, sip, record, foxml, label, rdfaip);
+		
+		this.setDataFile(pid, sip, foxml, rdfaip);
 		
 		rdfaip.saveFOXMLDocument(pid, foxml);
 		
 		return rdfaip;
-	}
-
-	public PIDGenerator getPidGenerator() {
-		return pidGenerator;
-	}
-
-	public void setPidGenerator(PIDGenerator pidGenerator) {
-		this.pidGenerator = pidGenerator;
-	}
-
-	public TripleStoreQueryService getTripleStoreQueryService() {
-		return tripleStoreQueryService;
-	}
-
-	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
 }

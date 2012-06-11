@@ -164,4 +164,14 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 	public void setDepositorNamespace(String depositorNamespace) {
 		this.depositorNamespace = depositorNamespace;
 	}
+
+	@Override
+	public String getAlternateUrl() {
+		return null;
+	}
+
+	@Override
+	public String getAlternateUrlContentType() {
+		return null;
+	}
 }
