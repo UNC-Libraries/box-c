@@ -64,7 +64,7 @@ public class DepositReportingUtilTest extends Assert {
 		
 		Entry receiptEntry = receipt.getAbderaEntry();
 		
-		assertEquals("There must be one mods extension", 1, receiptEntry.getExtensions().size());
+		assertEquals("There must be two extension", 2, receiptEntry.getExtensions().size());
 		assertEquals("mods", receiptEntry.getExtensions().get(0).getQName().getLocalPart());
 		
 		List<Link> links = receiptEntry.getLinks(UriRegistry.REL_DERIVED_RESOURCE);
@@ -118,9 +118,13 @@ public class DepositReportingUtilTest extends Assert {
 		
 		Entry receiptEntry = receipt.getAbderaEntry();
 		
-		assertEquals("There must be 20 DC extensions", 20, receiptEntry.getExtensions().size());
+		assertEquals("There must be 20 DC extensions plus 1 for treatment", 21, receiptEntry.getExtensions().size());
+		int dcElementCount = 0;
 		for (Element extension: receiptEntry.getExtensions()){
-			assertEquals(UriRegistry.DC_NAMESPACE, extension.getQName().getNamespaceURI());
+			if (UriRegistry.DC_NAMESPACE.equals(extension.getQName().getNamespaceURI())){
+				dcElementCount++;
+			}
 		}
+		assertEquals(20, dcElementCount);
 	}
 }
