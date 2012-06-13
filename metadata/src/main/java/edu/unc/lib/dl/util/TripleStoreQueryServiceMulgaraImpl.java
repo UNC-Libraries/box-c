@@ -139,6 +139,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		return this.lookupDigitalObjects(query);
 	}
 	
+	public List<PID> fetchByPredicateAndLiteral(String predicateURI, PID pidLiteral) {
+		String query = String.format("select $pid from <%1$s> where $pid <%2$s> <%3$s>;",
+				this.getResourceIndexModelUri(), predicateURI, pidLiteral.getURI());
+		return this.lookupDigitalObjects(query);
+	}
+	
 	@Override
 	public List<String> fetchBySubjectAndPredicate(PID subject, String predicateURI){
 		String query = String.format(
