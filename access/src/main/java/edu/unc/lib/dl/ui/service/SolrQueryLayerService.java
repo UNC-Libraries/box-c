@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
@@ -105,7 +106,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		return getSearchResults(searchRequest);
 	}
-
+	
 	/**
 	 * Retrieves the facet list for the search defined by searchState. The facet results optionally can ignore
 	 * hierarchical cutoffs.
@@ -115,16 +116,13 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * @param applyCutoffs
 	 * @return
 	 */
-	public SearchResultResponse getFacetList(SearchState searchState, AccessGroupSet accessGroups,
+	public SearchResultResponse getFacetList(SearchState baseState, AccessGroupSet accessGroups,
 			List<String> facetsToRetrieve, boolean applyCutoffs) {
+		SearchState searchState = (SearchState)baseState.clone();
+		
 		SearchRequest searchRequest = new SearchRequest();
 		searchRequest.setAccessGroups(accessGroups);
 		searchRequest.setSearchState(searchState);
-
-		// Backup resource types
-		List<String> resourceTypes = searchState.getResourceTypes();
-		// Backup the rowsPerPage
-		Integer rowsPerPage = searchState.getRowsPerPage();
 
 		searchState.setRowsPerPage(0);
 		if (facetsToRetrieve != null)
@@ -158,11 +156,6 @@ public class SolrQueryLayerService extends SolrSearchService {
 				}
 			}
 		}
-
-		// Restore rows per page
-		searchState.setRowsPerPage(rowsPerPage);
-		// Restore resourceTypes
-		searchState.setResourceTypes(resourceTypes);
 
 		return resultResponse;
 	}
@@ -382,12 +375,11 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * @param accessGroups
 	 * @return
 	 */
-	public SearchResultResponse getFullRecordSupplementalData(HierarchicalFacet ancestorPath, AccessGroupSet accessGroups) {
+	public SearchResultResponse getFullRecordSupplementalData(HierarchicalFacet ancestorPath, AccessGroupSet accessGroups, List<String> facetsToRetrieve) {
 		SearchState searchState = SearchStateFactory.createSearchState();
 		searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, ancestorPath);
 		searchState.setRowsPerPage(0);
-		return getFacetList(searchState, accessGroups, new ArrayList<String>(searchSettings.collectionBrowseFacetNames),
-				false);
+		return getFacetList(searchState, accessGroups, facetsToRetrieve, false);
 	}
 
 	/**
@@ -490,7 +482,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Retrieves results for populating a hierarchical browse view. Supports all the regular navigation available to
-	 * searches. Results contain child counts for each item (all items returns are containers), and a map containing the
+	 * searches. Results contain child counts for each item (all items returned are containers), and a map containing the
 	 * number of nested subcontainers per container. Children counts are retrieved based on facet counts.
 	 * 
 	 * @param browseRequest
@@ -504,6 +496,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		HierarchicalBrowseResultResponse browseResults = new HierarchicalBrowseResultResponse();
 
 		SearchState hierarchyState = SearchStateFactory.createHierarchyListSearchState();
+		//hierarchyState.getResourceTypes().add(searchSettings.resourceTypeFile);
 		if (!noRootNode) {
 			hierarchyState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH,
 					browseRequest.getSearchState().getFacets().get(SearchFieldKeys.ANCESTOR_PATH));

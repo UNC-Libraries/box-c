@@ -74,6 +74,11 @@
 										src="/static/images/collections/${metadata.idWithoutPrefix}.jpg" style="height: 64px; width: 64px;"/>
 							</div>
 						</c:when>
+						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentType.searchKey}">
+							<div class="smallthumb_container">
+								<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
+							</div>
+						</c:when>
 						<c:otherwise>
 							<div class="smallthumb_container">
 								<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_default" 
@@ -122,7 +127,7 @@
 				<%-- Metadata body for items --%>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
 					<h2><a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
-						<c:if test="${metadata.resourceType == searchSettings.resourceTypeAggregate}">
+						<c:if test="${metadata.resourceType == searchSettings.resourceTypeAggregate && metadata.childCount > 1}">
 							<p class="searchitem_container_count">(${metadata.childCount} item<c:if test="${metadata.childCount != 1}">s</c:if>)</p>
 						</c:if>
 					</h2>

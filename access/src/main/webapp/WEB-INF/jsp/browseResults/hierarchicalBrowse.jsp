@@ -190,7 +190,7 @@
 								</c:set>
 							</c:if>
 							<c:if test="${!(pathTier.tier == baseTier && param.excludeParent) 
-											&& containerNode.resourceType != searchSettings.resourceTypeFile}">
+											&& (containerNode.resourceType != searchSettings.resourceTypeFile)}">
 								<c:set var="endContainerDivs" value="${endContainerDivs}</div>"/>
 							</c:if>
 							
@@ -237,8 +237,8 @@
 					<c:when test="${containerNode.resourceType == searchSettings.resourceTypeCollection}">
 						<img src="/static/images/hier_collection.png" alt="Collection" title="Collection" class="resource_type"/>
 					</c:when>
-					<c:when test="${containerNode.resourceType == searchSettings.resourceTypeFile}">
-						<img src="/static/images/hier_file.png" alt="Collection" title="Collection" class="resource_type"/>
+					<c:when test="${containerNode.resourceType == searchSettings.resourceTypeFile || containerNode.resourceType == searchSettings.resourceTypeAggregate}">
+						<img src="/static/images/hier_file.png" alt="File" title="File" class="resource_type"/>
 					</c:when>
 					<c:otherwise>
 						<img src="/static/images/hier_folder.png" alt="Folder" title="Folder" class="resource_type"/>
@@ -251,7 +251,7 @@
 					<c:when test="${firstEntryBrowseSelected}">
 						<a class="hier_entry_primary_action" title="Currently browsing ${containerNode.title}">${containerNode.title}</a>
 					</c:when>
-					<c:when test="${containerNode.resourceType == searchSettings.resourceTypeFile}">
+					<c:when test="${containerNode.resourceType == searchSettings.resourceTypeFile || containerNode.resourceType == searchSettings.resourceTypeAggregate}">
 						<c:url var="fullRecordUrl" value="record">
 							<c:param name="id" value="${containerNode.id}"/>
 						</c:url>

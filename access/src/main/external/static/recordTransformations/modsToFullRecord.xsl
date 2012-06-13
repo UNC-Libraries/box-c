@@ -286,7 +286,15 @@
 					</th><xsl:value-of select="$newline"/>
 					<td>
 						<xsl:for-each select="current-group()">
-							<xsl:value-of select="text()"/><br/><xsl:value-of select="$newline"/>
+							<xsl:choose>
+								<xsl:when test="boolean(text())">
+									<xsl:value-of select="text()"/><br/><xsl:value-of select="$newline"/>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of select="./@*[local-name() = 'href']"/><br/><xsl:value-of select="$newline"/>
+								</xsl:otherwise>
+							</xsl:choose>
+							
 						</xsl:for-each>
 					</td>
 				</tr>

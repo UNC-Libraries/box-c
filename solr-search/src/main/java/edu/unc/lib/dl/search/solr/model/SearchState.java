@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  * 
  * @author bbpennel
  */
-public class SearchState implements Serializable  {
+public class SearchState implements Serializable, Cloneable  {
 	private static final long serialVersionUID = 1L;
 	
 	private HashMap<String,String> searchFields;
@@ -315,5 +315,10 @@ public class SearchState implements Serializable  {
 	public boolean isPopulatedSearch(){
 		return this.getFacets().size() > 0 || this.getRangeFields().size() > 0 
 			|| this.getSearchFields().size() > 0 || this.getAccessTypeFilter() != null;
+	}
+
+	@Override
+	public Object clone() {
+		return new SearchState(this);
 	}
 }

@@ -24,6 +24,9 @@
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection || briefObject.resourceType == searchSettings.resourceTypeFolder}">
 		<c:import url="WEB-INF/jsp/fullRecord/collectionRecord.jsp" />
 	</c:when>
+	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeAggregate}">
+		<c:import url="WEB-INF/jsp/fullRecord/aggregateRecord.jsp" />
+	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile}">
 		<c:import url="WEB-INF/jsp/fullRecord/fileRecord.jsp" />
 	</c:when>

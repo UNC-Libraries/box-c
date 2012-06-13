@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -87,16 +88,28 @@ public class FullRecordController extends AbstractSolrSearchController {
 			throw new InvalidRecordRequestException();
 		}
 
+		
+		boolean retrieveFacets = briefObject.getResourceType().equals(searchSettings.resourceTypeCollection) || briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
 		boolean retrieveNeighbors = briefObject.getResourceType().equals(searchSettings.resourceTypeFile)
 				|| briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
 		boolean retrieveHierarchicalStructure = briefObject.getResourceType().equals(
 				searchSettings.resourceTypeCollection)
 				|| briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)
 				|| briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
+		boolean retrieveHierarchicalItems = briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
 
-		if (retrieveHierarchicalStructure) {
+		if (retrieveFacets) {
+			List<String> facetsToRetrieve = null;
+			if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)){
+				facetsToRetrieve = new ArrayList<String>(searchSettings.collectionBrowseFacetNames);
+			} else if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)){
+				facetsToRetrieve = new ArrayList<String>();
+				facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE);
+			}
+			
+			
 			SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
-					accessGroups);
+					accessGroups, facetsToRetrieve);
 
 			briefObject.setChildCount(resultResponse.getResultCount());
 			String collectionSearchStateUrl = searchSettings.searchStateParams.get("FACET_FIELDS") + "="
@@ -104,16 +117,41 @@ public class FullRecordController extends AbstractSolrSearchController {
 					+ briefObject.getPath().getSearchValue();
 			model.addAttribute("facetFields", resultResponse.getFacetFields());
 			model.addAttribute("collectionSearchStateUrl", collectionSearchStateUrl);
+		}
+		
+		if (retrieveHierarchicalStructure) {
+			LOG.debug("Retrieving hierarchical structure for " + briefObject.getResourceType() + " " + id);
 
 			// Retrieve hierarchical browse results
 			SearchState searchState = SearchStateFactory.createHierarchicalBrowseSearchState();
 			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, briefObject.getPath());
+			HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(searchState, 4, accessGroups);
+			
+			HierarchicalBrowseResultResponse hierarchicalResultResponse = null;
+
 			searchState.setRowsPerPage(0);
-
-			HierarchicalBrowseResultResponse hierarchicalResultResponse = queryLayer
-					.getHierarchicalBrowseResults(new HierarchicalBrowseRequest(searchState, 4, accessGroups));
-
+			hierarchicalResultResponse = queryLayer.getHierarchicalBrowseResults(browseRequest);
+			
+			if (LOG.isDebugEnabled() && hierarchicalResultResponse != null)
+				LOG.debug(id + " returned " + hierarchicalResultResponse.getResultCount() + " hierarchical results.");
+			
+			if (retrieveHierarchicalItems) {
+				hierarchicalResultResponse.setResultCount(hierarchicalResultResponse.getResultList().size());
+				
+				LOG.debug(id + " result contains " + hierarchicalResultResponse.getResultList().size() + " objects after adding root for items.");
+				
+				searchState.setRowsPerPage(100);
+				
+				SearchResultResponse itemResults = queryLayer.getHierarchicalBrowseItemResult(browseRequest);
+				hierarchicalResultResponse.populateItemResults(itemResults.getResultList());
+				
+				if (LOG.isDebugEnabled() && hierarchicalResultResponse != null)
+					LOG.debug(id + " returned " + itemResults.getResultCount() + " item results." + hierarchicalResultResponse.getResultCount());
+			}
+			
 			model.addAttribute("hierarchicalViewResults", hierarchicalResultResponse);
+			
+			
 		}
 		
 		if (retrieveNeighbors) {

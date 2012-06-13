@@ -1065,6 +1065,12 @@ ul.crumblist li a {
 	line-height: 17px;
 }
 
+#hierarchical_view_full_record.aggregate {
+	margin: -15px 20px 0px 40px;
+	width: 900px;
+	float: left;	
+}
+
 #facet_field_path_structure {
 	overflow: hidden;
 	background-color: #ededed;
