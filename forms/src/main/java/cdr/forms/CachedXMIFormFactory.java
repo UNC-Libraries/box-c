@@ -51,7 +51,7 @@ public class CachedXMIFormFactory extends AbstractFormFactory {
 
 	@Override
 	public Form getForm(String id) {
-		if (!cache.containsKey(id)) {
+		if (true || !cache.containsKey(id)) {
 			loadForm(id);
 		}
 		return cache.get(id);

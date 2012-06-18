@@ -1,26 +1,38 @@
 package cdr.forms;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.security.access.UserSecurityProfile;
+import gov.loc.mods.mods.DocumentRoot;
 import gov.loc.mods.mods.MODSFactory;
+import gov.loc.mods.mods.MODSPackage;
 import gov.loc.mods.mods.ModsDefinition;
+import gov.loc.mods.mods.util.MODSResourceFactoryImpl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.Principal;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +42,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+import org.w3._1999.xlink.XlinkPackage;
 
 import crosswalk.Form;
 import crosswalk.FormElement;
@@ -40,8 +54,13 @@ import crosswalk.OutputElement;
 @RequestMapping(value = { "/*", "/**" })
 @SessionAttributes("form")
 public class FormController {
+	ResourceSet rs = null;
 	
 	public FormController() {
+		rs = new ResourceSetImpl();
+		rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put("mods", new MODSResourceFactoryImpl());
+		rs.getPackageRegistry().put(MODSPackage.eNS_URI, MODSPackage.eINSTANCE);
+		rs.getPackageRegistry().put(XlinkPackage.eNS_URI, XlinkPackage.eINSTANCE);
 		LOG.debug("FormController created");
 	}
 
@@ -68,6 +87,17 @@ public class FormController {
 	public void setDefaultContainer(PID defaultContainer) {
 		this.defaultContainer = defaultContainer;
 	}
+	
+	@Autowired
+	public String administratorEmail = null;
+
+	public String getAdministratorEmail() {
+		return administratorEmail;
+	}
+
+	public void setAdministratorEmail(String administratorEmail) {
+		this.administratorEmail = administratorEmail;
+	}
 
 	@Autowired
 	AbstractFormFactory factory = null;
@@ -83,6 +113,9 @@ public class FormController {
 	@InitBinder
    protected void initBinder(WebDataBinder binder) {
        binder.setValidator(new FormValidator());
+       binder.registerCustomEditor(java.util.Date.class, new DateEditor(new SimpleDateFormat("yy-MM-dd")));
+       binder.setBindEmptyMultipartFiles(false);
+       binder.registerCustomEditor(java.lang.String.class, new StringTrimmerEditor(true));
    }
 	
 	@ModelAttribute("form")
@@ -91,15 +124,32 @@ public class FormController {
 	}
 
 	@RequestMapping(value = "/{formId}.form", method = RequestMethod.GET)
-	public String showForm(@PathVariable String formId, @ModelAttribute("form") Form form) {
+	public String showForm(@PathVariable String formId, @ModelAttribute("form") Form form, HttpSession session) throws PermissionDeniedException {
 		LOG.debug("in GET for form " + formId);
+		checkPermission(formId, form, session);
 		return "form";
+	}
+
+	private void checkPermission(String formId, Form form, HttpSession session) throws PermissionDeniedException {
+		// check permissions
+		UserSecurityProfile profile = (UserSecurityProfile)session.getAttribute("user");
+		LOG.debug("in permission check with profile: "+profile.getAccessGroups().toArray().toString());
+		if(profile == null || profile.getUserName() == null) {
+			if(!form.getAuthorizedGroups().contains("public")) {
+				throw new PermissionDeniedException("You must first log in to use this deposit form.", profile, form, formId);
+			}
+		} else {
+			if(!profile.getAccessGroups().containsAny(form.getAuthorizedGroups())) {
+				throw new PermissionDeniedException("Your login is not authorized to use this form. Send email to "+this.getAdministratorEmail()+" to request access.", profile, form, formId);
+			}
+		}
 	}
 
 	@RequestMapping(value = "/{formId}.form", method = RequestMethod.POST)
 	public String processForm(@PathVariable String formId, @Valid @ModelAttribute("form") Form form, BindingResult errors,
-			Principal user, @RequestParam("file") MultipartFile file, SessionStatus sessionStatus) {
+			Principal user, @RequestParam("file") MultipartFile file, SessionStatus sessionStatus, HttpSession session) throws PermissionDeniedException {
 		LOG.debug("in POST for form " + formId);
+		checkPermission(formId, form, session);
 		if (user != null) form.setCurrentUser(user.getName());
 		if (errors.hasErrors()) {
 			LOG.debug(errors.getErrorCount() + " errors");
@@ -109,8 +159,10 @@ public class FormController {
 			errors.addError( new ObjectError("file", "You must select a file for upload."));
 			return "form";
 		}
+		
 		String mods = makeMods(form);
 		LOG.debug(mods);
+		
 		// perform a deposit with the default handler.
 		try {
 			this.getDepositHandler().deposit(form.getDepositContainerId(), mods, file.getInputStream());
@@ -125,10 +177,21 @@ public class FormController {
 		return "success";
 	}
 
+	@ExceptionHandler(PermissionDeniedException.class)
+	public ModelAndView handleForbidden(PermissionDeniedException e) {
+		ModelAndView modelview = new ModelAndView("403");
+		modelview.addObject("user", e.getUserSecurityProfile());
+		modelview.addObject("formId", e.getFormId());
+		modelview.addObject("form", e.getForm());
+		modelview.addObject("message", e.getMessage());
+		return modelview;
+	}
+	
 	private String makeMods(Form form) {
-		String result;
 		// run the mapping and get a MODS record. (report any errors)
 		ModsDefinition mods = MODSFactory.eINSTANCE.createModsDefinition();
+		DocumentRoot root = MODSFactory.eINSTANCE.createDocumentRoot();
+		root.setMods(mods);
 		for (FormElement fe : form.getElements()) {
 			if(MetadataBlock.class.isInstance(fe)) {
 				MetadataBlock mb = (MetadataBlock)fe;
@@ -137,19 +200,29 @@ public class FormController {
 				}
 			}
 		}
-		LOG.debug(mods.toString());
+		File tmp;
+		try {
+			tmp = File.createTempFile("tmp", ".mods");
+		} catch (IOException e1) {
+			throw new Error(e1);
+		}
+		URI uri = URI.createURI(tmp.toURI().toString());
+		XMLResource res = (XMLResource) rs.createResource(uri);
+		res.getContents().add(root);
+		
 		StringWriter sw = new StringWriter();
 		Map<Object, Object> options = new HashMap<Object, Object>();
 		options.put(XMLResource.OPTION_ENCODING, "utf-8");
+
+		options.put(XMLResource.OPTION_DECLARE_XML, "");
 		options.put(XMLResource.OPTION_LINE_WIDTH, new Integer(80));
 		options.put(XMLResource.OPTION_ROOT_OBJECTS, Collections.singletonList(mods));
 		try {
-			((XMLResource) mods.eResource()).save(sw, options);
+			res.save(sw, options);
 		} catch (IOException e) {
-			sw.append("failed to serialize XML for model object");
+			throw new Error("failed to serialize XML for model object", e);
 		}
-		result = sw.toString();
-		return result;
+		return sw.toString();
 	}
 
 }

@@ -22,7 +22,16 @@
 		<servlet-name>forms</servlet-name>
 		<url-pattern>*.form</url-pattern>
 	</servlet-mapping>
-
+	
+	<filter>
+		<filter-name>UserSecurityProfileFilter</filter-name>
+		<filter-class>edu.unc.lib.dl.security.access.UserSecurityProfileFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>UserSecurityProfileFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>formapp</web-resource-name>

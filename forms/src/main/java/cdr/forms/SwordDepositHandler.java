@@ -52,7 +52,7 @@ public class SwordDepositHandler implements DepositHandler {
 		Entry entry = abdera.newEntry();
 		Parser parser = abdera.getParser();
 		Document<FOMExtensibleElement> doc = parser.parse(new ByteArrayInputStream(modsXml.getBytes()));
-		entry.addExtension(doc.getRoot());
+		entry.addExtension(doc.getRoot().getFirstChild());
 
 		// entry.writeTo(System.out);
 

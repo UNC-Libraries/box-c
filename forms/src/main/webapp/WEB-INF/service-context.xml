@@ -51,6 +51,10 @@
 	<bean id="defaultContainer" class="edu.unc.lib.dl.fedora.PID">
 		<constructor-arg value="${forms.default.container.pid}"/>
 	</bean>
+	
+	<bean id="administratorEmail" class="java.lang.String">
+		<constructor-arg value="${administrator.email}"/>
+	</bean>
 
 	<bean id="depositHandler" class="cdr.forms.SwordDepositHandler">
 		<property name="serviceUrl"

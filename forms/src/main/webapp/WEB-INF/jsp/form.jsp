@@ -7,6 +7,20 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="/static/css/reset.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/cdrui_styles.css" />
+
+<link type="text/css" href="/cdradmin/css/jquery/ui/jquery-ui.css" rel="stylesheet" />
+
+<script type="text/javascript" src="/cdradmin/js/jquery/jquery.min.js"></script> 
+<script type="text/javascript" src="/cdradmin/js/jquery/ui/jquery-ui.min.js"></script> 
+
+<script type="text/javascript">
+	$(document).ready( function() {
+		$(".datepicker").datepicker({dateFormat : 'yy-mm-dd', changeYear : true, changeMonth : true, yearRange : '-300:+02' }).val($.datepicker.formatDate('yy-mm-dd', new Date()));
+		// $(".datepicker").datepicker('option', 'constrainInput', true);
+		// $(".datepicker").datepicker('option', 'maxDate', '+0m +0w');
+	});
+</script>
+
 <!--[if IE 8]>
 	<link rel="stylesheet" type="text/css" href="/static/css/cdrui_styles_ie8.css" />
 <![endif]-->
@@ -36,7 +50,7 @@
 		<div id="content">
 			<div class="contentarea">
 <h2><c:out value="${form.title}"/></h2>
-<c:out value="${formId}"/>
+<p><c:out value="${form.description}"/></p>
 <form:form modelAttribute="form" enctype="multipart/form-data">
 	<c:forEach items="${form.elements}" varStatus="elementRow">
 		<spring:bind path="form.elements[${elementRow.index}]" ignoreNestedPath="true">
@@ -58,8 +72,14 @@
 					  <p>
 					<c:forEach items="${form.elements[elementRow.index].ports}" var="port" varStatus="portRow">
 						<spring:bind path="form.elements[${elementRow.index}].ports[${portRow.index}]" ignoreNestedPath="true">
-							<c:out value="${port.label}"/>
+							<div style="float: left; clear: both; width: 12em; height: 2em; text-align: right; vertical-align: baseline; margin-right: 1em;"><c:out value="${port.label}"/></div>
+							<% if(status.getValue() instanceof DateInputField) { %>
+							<form:input cssClass="datepicker" path="elements[${elementRow.index}].ports[${portRow.index}].enteredValue" title="${port.usage}" />
+							<% } else if(status.getValue() instanceof TextInputField) { %>
+							<form:input path="elements[${elementRow.index}].ports[${portRow.index}].enteredValue" title="${port.usage}" maxlength="${port.maxSize}" size="${port.preferredSize}" />
+							<% } else { %>
 							<form:input path="elements[${elementRow.index}].ports[${portRow.index}].enteredValue" title="${port.usage}" />
+							<% } %>
 							<c:if test="${port.required}"><span style="color:red">*</span></c:if>
 							<form:errors cssStyle="color:red;" path="elements[${elementRow.index}].ports[${portRow.index}].enteredValue" /><br />
 						</spring:bind>
