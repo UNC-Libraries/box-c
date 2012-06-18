@@ -30,6 +30,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,10 +163,10 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			Entry<String,FailedEnhancementObject> entry = iterator.next();
 			Map<String, Object> failedEntry = new HashMap<String, Object>();
 			failedEntry.put("id", entry.getKey());
-			List<String> failedServices = new ArrayList<String>();
+			Map<String,String> failedServices = new HashMap<String,String>();
 			failedEntry.put("failedServices", failedServices);
 			for (String failedService: entry.getValue().getFailedServices()){
-				failedServices.add(this.serviceNameLookup.get(failedService));
+				failedServices.put(failedService, this.serviceNameLookup.get(failedService));
 			}
 			failedEntry.put("timestamp", entry.getValue().getTimestamp());
 			if (entry.getValue().getMessages() != null){
@@ -229,6 +230,46 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	}
 	
 	/**
+	 * Seeks out the job info for the given message id in each of the enhancement lists.  If a messageType is provided, then it will start
+	 * seeking in the specified list and work its way down the stack if not found there.
+	 * @param id
+	 * @param messageType
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = {"job/{id}" }, method = RequestMethod.GET)
+	public @ResponseBody Map<String, ? extends Object> getJobInfo(@PathVariable("id") String id, @RequestParam("type") String messageType){
+		String[] typeStack = {"queued", "blocked", "active", "failed"};
+		
+		LOG.debug("Retrieving message for enhancement " + id + " starting with type " + messageType);
+		
+		boolean reachedMessageType = messageType == null;
+		
+		for (String type: typeStack) {
+			if (!reachedMessageType && type.equals(messageType))
+				reachedMessageType = true;
+			if (reachedMessageType) {
+				Map<String, ?> result = null;
+				if ("queued".equals(type)) {
+					result = getQueuedJobInfo(id);
+				} else if ("blocked".equals(type)) {
+					result = getBlockedJobInfo(id);
+				} else if ("active".equals(type)) {
+					result = getActiveJobInfo(id);
+				} else if ("failed".equals(type)) {
+					result = getFailedMessageInfo(id);
+				}
+				
+				if (result != null) {
+					((Map<String, Object>)result).put("type", type);
+					return result;
+				}
+			}
+		}
+		return null;
+	}
+	
+	/**
 	 * Transforms a PIDMessage object into a map of properties for reporting purposes.
 	 * @return
 	 */
@@ -260,9 +301,9 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		job.put("queuedTimestamp", formatISO8601.format(timeCreated));
 		
 		if (message.getFilteredServices() != null){
-			List<String> filteredServices = new ArrayList<String>();
-			for (String service: message.getFilteredServices()){
-				filteredServices.add(service);
+			Map<String,String> filteredServices = new HashMap<String,String>();
+			for (String filteredService: message.getFilteredServices()){
+				filteredServices.put(filteredService, this.serviceNameLookup.get(filteredService));
 			}
 			job.put("filteredServices", filteredServices);
 		}
@@ -309,9 +350,9 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		job.put("queuedTimestamp", formatISO8601.format(timeCreated));
 		
 		if (message.getFilteredServices() != null){
-			List<String> filteredServices = new ArrayList<String>();
-			for (String service: message.getFilteredServices()){
-				filteredServices.add(service);
+			Map<String,String> filteredServices = new HashMap<String,String>();
+			for (String filteredService: message.getFilteredServices()){
+				filteredServices.put(filteredService, this.serviceNameLookup.get(filteredService));
 			}
 			job.put("filteredServices", filteredServices);
 		}
@@ -358,7 +399,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			return null;
 		AbstractXMLEventMessage message = (AbstractXMLEventMessage)lookupJobInfo(id, messages);
 		if (message != null && message.getMessageBody() != null){
-			XMLOutputter outputter = new XMLOutputter();
+			XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
 			try {
 				return outputter.outputString(message.getMessageBody());
 			} catch (Exception e) {

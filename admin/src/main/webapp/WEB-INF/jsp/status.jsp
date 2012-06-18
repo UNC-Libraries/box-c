@@ -20,44 +20,11 @@
 <%@ include file="include.jsp"%>
 <%@ include file="../../html/head.html"%>
 <link rel="stylesheet" href="../../css/jquery/ui/jquery-ui.css" type="text/css" media="all" />
-<style>
-<!--
-tr.finished > td {
-  background-color: Beige;
-  background-image: none;
-}
-tr.active > td {
-  background-color: Lavender;
-  background-image: none;
-}
-tr.failed > td {
-  background-color: LavenderBlush;
-  background-image: none;
-}
-tr.narrow > th {
-  min-width: 0px;
-}
-
-table.statusList {
-	width: 60%;
-	float: left;
-}
-
-table.detailsView {
-	width: 38%;
-	float: right;
-}
-
-table.detailsView td {
-	background-image: none;
-	min-height: 200px;
-	display: block;
-}
--->
-</style>
+<link rel="stylesheet" type="text/css" href="../../css/statusMonitor.css"/>
 <script type="text/javascript" src="../../js/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../../js/jquery/ui/jquery-ui.min.js"></script>
 <script type="text/javascript" src="../../js/statusMonitor.js"></script>
+
 <title><fmt:message key="admin.status.heading" /></title>
 <%@ include file="../../html/admincontents.html"%>
 <div id="content">
@@ -183,39 +150,40 @@ table.detailsView td {
 				</tr>
 			</table>
 			<p>Enhancement Jobs by Status</p>
-			<table class="statusList">
-				<thead>
-					<tr class="narrow">
-						<th>status</th>
-						<th>pid</th>
-						<th>service(s)</th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody id="enhancementJobs">
-					<tr class="blocked-end" style="display: none">
-						<td></td>
-					</tr>
-					<tr class="queued-end" style="display: none">
-						<td></td>
-					</tr>
-					<tr class="failed-end" style="display: none">
-						<td></td>
-					</tr>
-				</tbody>
-			</table>
-			<table class="detailsView">
-				<thead>
-					<tr class="narrow">
-						<th>Details</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td id="enhancementDetails">Filler</td>
-					</tr>
-				</tbody>
-			</table>
+			<div id="enhancementData">
+				<div class="detailsContainer">
+					<div class="detailsColumn">
+						<div class="detailsView">
+							<h2>Details <a class="expandDetails">(expand)</a><img title="Refresh details" class="refreshDetailsButton" src="../../images/arrow_refresh.png"/></h2>
+							<div class="detailsContent">
+								<div id="enhancementDetails" class="jobDetails"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<table class="statusList">
+					<thead>
+						<tr class="narrow">
+							<th>status</th>
+							<th>pid</th>
+							<th>service(s)</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody id="enhancementJobs">
+						<tr class="blocked-end" style="display: none">
+							<td></td>
+						</tr>
+						<tr class="queued-end" style="display: none">
+							<td></td>
+						</tr>
+						<tr class="failed-end" style="display: none">
+							<td></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			
 			<div style="clear:both;"></div>
 		</div>
 	</div>
