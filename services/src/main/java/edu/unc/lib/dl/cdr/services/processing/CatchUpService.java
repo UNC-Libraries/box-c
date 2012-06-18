@@ -86,7 +86,9 @@ public class CatchUpService {
 		}
 		LOG.info("Activating CatchUp Service");
 		isActive = true;
-		return catchUp(priorToDate);
+		boolean result = catchUp(priorToDate);
+		isActive = false;
+		return result;
 	}
 	
 	/**
@@ -144,6 +146,7 @@ public class CatchUpService {
 	private boolean addBatch(String priorToDate) {
 		boolean candidatesFound = false;
 		for (ObjectEnhancementService s : services) {
+			String serviceName = s.getClass().getName();
 			try {
 				if (s.isActive()) {
 					int pageSize = this.pageSize + enhancementConductor.getFailedPids().size();
@@ -157,19 +160,21 @@ public class CatchUpService {
 					LOG.debug("Searched for " + pageSize + " candidates, found " + candidates.size() + " for "
 							+ s.getClass().getName());
 					if (candidates.size() > 0) {
-						candidatesFound = true;
 						for (PID candidate : candidates) {
-							if (priorToDate == null){
-								EnhancementMessage message = new EnhancementMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
-										JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), s.getClass().getName());
-								messageDirector.direct(message);
-							} else {
-								EnhancementMessage message = new EnhancementMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
-										JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), s.getClass().getName());
-								messageDirector.direct(message);
+							if (!enhancementConductor.getFailedPids().contains(candidate.getPid(), serviceName)){
+								candidatesFound = true;
+								if (priorToDate == null){
+									EnhancementMessage message = new EnhancementMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
+											JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), s.getClass().getName());
+									messageDirector.direct(message);
+								} else {
+									EnhancementMessage message = new EnhancementMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
+											JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), s.getClass().getName());
+									messageDirector.direct(message);
+								}
+								this.itemsProcessed++;
+								this.itemsProcessedThisSession++;
 							}
-							this.itemsProcessed++;
-							this.itemsProcessedThisSession++;
 						}
 					}
 				}

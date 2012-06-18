@@ -42,6 +42,8 @@
 			</li>
 			<li><a href="#servicetabs-3">Enhancement</a>
 			</li>
+			<li><a href="#servicetabs-4">Catchup</a>
+			</li>
 		</ul>
 		<div id="servicetabs-1">
 			<table>
@@ -185,6 +187,52 @@
 			</div>
 			
 			<div style="clear:both;"></div>
+		</div>
+		<div id="servicetabs-4">
+			<table>
+				<tr class="narrow">
+					<th>Enabled</th>
+					<th>Active</th>
+					<th>Items Processed</th>
+					<th>This Session</th>
+					<th>Services</th>
+					<th>Refreshed</th>
+				</tr>
+				<tr>
+					<td><span id="catchupEnabled"></span>
+					</td>
+					<td><span id="catchupActive"></span>
+					</td>
+					<td><span id="catchupItemsProcessed"></span>
+					</td>
+					<td><span id="catchupItemsProcessedThisSession"></span>
+					</td>
+					<td><span id="catchupServices"></span>
+					</td>
+					<td><span id="catchupRefreshed"></span>
+					</td>
+				</tr>
+			</table>
+			<p>Catchup candidates</p>
+			<table>
+				<thead>
+					<tr class="narrow">
+						<th>Service</th>
+						<th>pid</th>
+					</tr>
+				</thead>
+				<tbody id="catchupJobs">
+					<tr class="TechnicalMetadataEnhancementService-end" style="display: none">
+						<td></td>
+					</tr>
+					<tr class="ImageEnhancementService-end" style="display: none">
+						<td></td>
+					</tr>
+					<tr class="ThumbnailEnhancementService-end" style="display: none">
+						<td></td>
+					</tr>
+				</tbody>
+			</table>
 		</div>
 	</div>
 	<%@ include file="../../html/footer.html"%>

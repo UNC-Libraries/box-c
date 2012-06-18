@@ -312,6 +312,12 @@ public class EnhancementConductorTest extends Assert {
 			return null;
 		}
 
+		@Override
+		public int countCandidateObjects() throws EnhancementException {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
 	}
 
 	public class DelayEnhancement extends Enhancement<Element> {

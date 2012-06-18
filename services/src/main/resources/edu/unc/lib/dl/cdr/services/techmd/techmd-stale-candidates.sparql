@@ -13,4 +13,4 @@ WHERE
   }
 }
 ORDER BY ?techModified
-LIMIT %3$s
+%3$s

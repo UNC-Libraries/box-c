@@ -725,6 +725,9 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 			post = new PostMethod(postUrl);
 			post.setRequestHeader("Content-Type", "application/sparql-query");
 			post.addParameter("query", query);
+			
+			log.debug("SPARQL URL: " + postUrl);
+			log.debug("SPARQL Query: " + query);
 
 			int statusCode = httpClient.executeMethod(post);
 			if (statusCode != HttpStatus.SC_OK) {
@@ -733,7 +736,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 				log.debug("SPARQL POST method succeeded: " + post.getStatusLine());
 				byte[] resultBytes = post.getResponseBody();
 				log.debug(new String(resultBytes, "utf-8"));
-				if ("json".equals(format)) {
+				if (format != null && format.endsWith("json")) {
 					return (Map<?, ?>) mapper.readValue(new ByteArrayInputStream(resultBytes), Object.class);
 				} else {
 					Map<String, String> resultMap = new HashMap<String, String>();

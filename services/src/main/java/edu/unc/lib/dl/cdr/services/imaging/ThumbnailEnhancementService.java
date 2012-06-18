@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.cdr.services.imaging;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,52 +45,44 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 	private static final Logger LOG = LoggerFactory.getLogger(ThumbnailEnhancementService.class);
 	public static final String enhancementName = "Thumbnail Generation";
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
-		return this.findCandidateObjects(maxResults, priorToDate);
+		return (List<PID>)this.findCandidateObjects(maxResults, priorToDate, false);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#findCandidateObjects (int)
-	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<PID> findCandidateObjects(int maxResults) throws EnhancementException {
-		return this.findCandidateObjects(maxResults, null);
+		return (List<PID>)this.findCandidateObjects(maxResults, null, false);
+	}
+	
+	@Override
+	public int countCandidateObjects() throws EnhancementException {
+		return (Integer)this.findCandidateObjects(-1, null, true);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#findCandidateObjects (int)
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public List<PID> findCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
-		List<PID> result = new ArrayList<PID>();
+	public Object findCandidateObjects(int maxResults, String priorToDate, boolean countQuery) throws EnhancementException {
 		String query = null;
 		try {
+			String limitClause = "";
+			if (maxResults >= 0 && !countQuery) {
+				limitClause = "LIMIT " + maxResults; 
+			}
 			if (priorToDate == null) {
 				query = this.readFileAsString("thumbnail-candidates.sparql");
 				query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(),
-						ContentModelHelper.Datastream.THUMB_SMALL.getName(), maxResults);
+						ContentModelHelper.Datastream.THUMB_SMALL.getName(), limitClause);
 			} else {
 				query = this.readFileAsString("thumbnail-stale-candidates.sparql");
 				query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(),
-						ContentModelHelper.Datastream.THUMB_SMALL.getName(), priorToDate, maxResults);
+						ContentModelHelper.Datastream.THUMB_SMALL.getName(), priorToDate, limitClause);
 			}
 		} catch (IOException e) {
 			LOG.error("Failed to retrieve candidates for ThumbnailEnhancementService", e);
 			throw new EnhancementException(e);
 		}
-		List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results"))
-				.get("bindings");
-		for (Map binding : bindings) {
-			String pidURI = (String) ((Map) binding.get("pid")).get("value");
-			result.add(new PID(pidURI));
-		}
-		LOG.debug(result.toString());
-		return result;
+		return this.executeCandidateQuery(query, countQuery);
 	}
 
 	@Override

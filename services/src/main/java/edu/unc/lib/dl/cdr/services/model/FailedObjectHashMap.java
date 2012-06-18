@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.FailedEnhancementObject.MessageFailure;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.message.ActionMessage;
@@ -271,6 +272,20 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String, FailedEnhance
 		FailedEnhancementObject failedObject = super.remove(key);
 		failedObject.deleteFailureLogFiles();
 		return failedObject;
+	}
+	
+	public boolean contains(String pid, Class<ObjectEnhancementService> serviceClass) {
+		if (serviceClass == null)
+			return false;
+		return contains(pid, serviceClass.getClass().getName());
+	}
+	
+	public boolean contains(String pid, String serviceName) {
+		FailedEnhancementObject failed = this.get(pid);
+		if (failed == null)
+			return false;
+		
+		return failed.getFailedServices().contains(serviceName);
 	}
 
 	public String getSerializationPath() {

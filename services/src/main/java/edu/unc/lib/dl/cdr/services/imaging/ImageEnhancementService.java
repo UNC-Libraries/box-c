@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.cdr.services.imaging;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,90 +35,87 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
  * Enhancement service used for construction of jp2 derived images.
- *
+ * 
  * @author Gregory Jansen, bbpennel
  */
 public class ImageEnhancementService extends AbstractIrodsObjectEnhancementService {
 	private static final Logger LOG = LoggerFactory.getLogger(ImageEnhancementService.class);
 	public static final String enhancementName = "Image Derivative Generation";
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
-		return this.findCandidateObjects(maxResults, priorToDate);
+		return (List<PID>) this.findCandidateObjects(maxResults, priorToDate, false);
 	}
-	
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#findCandidateObjects (int)
-	 */
+
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<PID> findCandidateObjects(int maxResults) throws EnhancementException {
-		return this.findCandidateObjects(maxResults, null);
+		return (List<PID>) this.findCandidateObjects(maxResults, null, false);
 	}
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public List<PID> findCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
-		List<PID> result = new ArrayList<PID>();
+
+	@Override
+	public int countCandidateObjects() throws EnhancementException {
+		return (Integer) this.findCandidateObjects(-1, null, true);
+	}
+
+	public Object findCandidateObjects(int maxResults, String priorToDate, boolean countQuery)
+			throws EnhancementException {
 		String query = null;
 		try {
-			if (priorToDate == null){
+			String limitClause = "";
+			if (maxResults >= 0 && !countQuery) {
+				limitClause = "LIMIT " + maxResults;
+			}
+			if (priorToDate == null) {
 				query = this.readFileAsString("image-candidates.sparql");
-				query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(),
-						maxResults);
+				query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), limitClause);
 			} else {
 				query = this.readFileAsString("image-stale-candidates.sparql");
-				query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(),
-						priorToDate, maxResults);
+				query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), priorToDate,
+						limitClause);
 			}
 		} catch (IOException e) {
 			throw new EnhancementException(e);
 		}
-		List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results"))
-				.get("bindings");
-		for (Map binding : bindings) {
-			String pidURI = (String) ((Map) binding.get("pid")).get("value");
-			result.add(new PID(pidURI));
-		}
-		LOG.debug(result.toString());
-		return result;
+		return this.executeCandidateQuery(query, countQuery);
 	}
 
 	@Override
 	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
 		return new ImageEnhancement(this, message.getPid());
 	}
-	
+
 	@Override
 	public boolean prefilterMessage(EnhancementMessage message) throws EnhancementException {
 		String action = message.getQualifiedAction();
-		
+
 		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(action))
 			return true;
 		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(action))
 			return this.getClass().getName().equals(message.getServiceName());
-		
-		//If its not a Fedora message at this point, then its not going to match anything else
+
+		// If its not a Fedora message at this point, then its not going to match anything else
 		if (!(message instanceof FedoraEventMessage))
 			return false;
-		
+
 		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
 			return true;
-		
-		if (!(JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action) 
-				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)))
+
+		if (!(JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action) || JMSMessageUtil.FedoraActions.ADD_DATASTREAM
+				.equals(action)))
 			return false;
-		String datastream = ((FedoraEventMessage)message).getDatastream();
-		
+		String datastream = ((FedoraEventMessage) message).getDatastream();
+
 		return ContentModelHelper.Datastream.DATA_FILE.equals(datastream);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#isApplicable(edu. unc.lib.dl.fedora.PID)
 	 */
-	@SuppressWarnings({ "unchecked"})
+	@SuppressWarnings({ "unchecked" })
 	@Override
 	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
 		LOG.debug("isApplicable called with " + message.getTargetID());
@@ -144,7 +140,7 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#isStale(edu.unc.lib .dl.fedora.PID)
 	 */
 	@Override
@@ -160,8 +156,7 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 		try {
 			// replace model URI and PID tokens
 			query = this.readFileAsString("image-last-applied.sparql");
-			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid
-					.getURI());
+			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid.getURI());
 		} catch (IOException e) {
 			throw new EnhancementException(e);
 		}
@@ -170,13 +165,13 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 				.get("bindings");
 		if (bindings.size() == 0)
 			return null;
-		
+
 		EnhancementApplication lastApplied = new EnhancementApplication();
 		String lastModified = (String) ((Map) bindings.get(0).get("lastModified")).get("value");
 		lastApplied.setLastAppliedFromISO8601(lastModified);
 		lastApplied.setPid(pid);
 		lastApplied.setEnhancementClass(this.getClass());
-		
+
 		return lastApplied;
 	}
 

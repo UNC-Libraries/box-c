@@ -38,6 +38,23 @@ public interface ObjectEnhancementService {
 	 */
 	public List<PID> findCandidateObjects(int maxResults) throws EnhancementException;
 
+	/**
+	 * Returns the total number of objects that would be returned by findCandidateObjects.
+	 * 
+	 * @return
+	 * @throws EnhancementException
+	 */
+	public int countCandidateObjects() throws EnhancementException;
+
+	/**
+	 * Returns a list of candidate objects to which this service may apply to, including objects that it has applied to
+	 * in the past but which are now stale.
+	 * 
+	 * @param maxResults
+	 * @param priorToDate
+	 * @return
+	 * @throws EnhancementException
+	 */
 	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException;
 
 	/**
@@ -55,9 +72,10 @@ public interface ObjectEnhancementService {
 	 * @return true if the service is applicable
 	 */
 	public boolean isApplicable(EnhancementMessage pid) throws EnhancementException;
-	
+
 	/**
 	 * Does this message apply to this service?
+	 * 
 	 * @param pid
 	 * @return
 	 * @throws EnhancementException
@@ -72,22 +90,24 @@ public interface ObjectEnhancementService {
 	 * @return true if the object is stale w/respect to this enhancement
 	 */
 	public boolean isStale(PID pid) throws EnhancementException;
-	
+
 	/**
 	 * Determines the last date on which this service was applied to the object represented by pid.
+	 * 
 	 * @param pid
 	 * @return the most recent date this service was applied to object pid, or null if it has never been applied.
 	 * @throws EnhancementException
 	 */
 	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException;
-	
+
 	/**
 	 * @return true if this service is currently active
 	 */
 	public boolean isActive() throws EnhancementException;
-	
+
 	/**
 	 * Returns the name of this service
+	 * 
 	 * @return
 	 */
 	public String getName();

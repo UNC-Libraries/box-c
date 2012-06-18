@@ -24,4 +24,4 @@ WHERE
    FILTER ( regex( str(?srcMime), 'image/') && (!bound(?jp2DS) || !bound(?jp2Modified)) ) 
  }
 }
-LIMIT %2$s
+%2$s

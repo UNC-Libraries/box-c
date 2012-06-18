@@ -18,4 +18,4 @@ WHERE
  }
 }
 ORDER BY ?jp2Modified
-LIMIT %3$s
+%3$s

@@ -17,4 +17,4 @@ WHERE
     FILTER ( !bound(?techDS) || !bound(?techModified)) 
   }
 }
-LIMIT %2$s
+%2$s

@@ -21,6 +21,9 @@ $(function() {
 			case 2:
 				activateEnhancementStatus();
 				break;
+			case 3:
+				activateCatchupStatus();
+				break;
 		}
 		return true;
 	});
@@ -37,7 +40,6 @@ $(function() {
 	});
 	
 	$(".refreshDetailsButton").click(function(){
-		console.log("refresh button pressed for " + $(".refreshDetailsButton").data("messageID") + " " + $(".refreshDetailsButton").data("type"));
 		enhancementLoadDetails($(".refreshDetailsButton").data("messageID"), $(".refreshDetailsButton").data("type"));
 	});
 });
@@ -45,7 +47,6 @@ $(function() {
 function refresh(types, seconds, viewName, refreshFunction) {
 	if (activeView != viewName)
 		return;
-	console.log("refreshing " + viewName + ":" + types);
 	for(type in types) {
 		refreshFunction(viewName, types[type]);
 	}
@@ -54,7 +55,6 @@ function refresh(types, seconds, viewName, refreshFunction) {
 
 function activateIngestStatus(){
 	view = "ingest";
-	console.log("Activating ingest status");
 	activeView = view;
 	refresh(new Array("active"), 5, view, refreshJobType);
 	refresh(new Array("status"), 5, view, reloadIngestStatus);
@@ -63,7 +63,6 @@ function activateIngestStatus(){
 
 function activateEnhancementStatus(){
 	view = "enhancement";
-	console.log("Activating enhancement status");
 	activeView = view;
 	refresh(new Array("active"), 5, "enhancement", refreshJobType);
 	refresh(new Array("status"), 5, view, reloadEnhancementStatus);
@@ -71,9 +70,15 @@ function activateEnhancementStatus(){
 	refresh(new Array("failed"), 10, view, refreshFailedJobType);
 }
 
+function activateCatchupStatus(){
+	view = "catchup";
+	activeView = view;
+	refresh(new Array("status"), 60, view, reloadCatchupStatus);
+	refresh(new Array("TechnicalMetadataEnhancementService", "ImageEnhancementService", "ThumbnailEnhancementService"), 45, view, refreshCatchup);
+}
+
 function activateIndexingStatus(){
 	view = "indexing";
-	console.log("Activating indexing status");
 	activeView = view;
 	//refresh(new Array("active"), 5, "enhancement", refreshJobType);
 	refresh(new Array("status"), 5, view, reloadEnhancementStatus);
@@ -115,9 +120,31 @@ function reloadEnhancementStatus(viewName, type) {
 	);
 }
 
+function reloadCatchupStatus(viewName, type) {
+	// load service status
+	$.getJSON(
+		restUrl+"catchup",
+		{},
+		function(json) {
+			// idle active failedJobs activeJobs queuedJobs
+			$("#catchupActive").html(""+json.active);
+			$("#catchupEnabled").html(""+json.enabled);
+			$("#catchupItemsProcessed").html(""+json.itemsProcessed);
+			$("#catchupItemsProcessedThisSession").html(""+json.itemsProcessedThisSession);
+			var serviceOut = "<ul>";
+			for (unqualifiedName in json.services) {
+				var service = json.services[unqualifiedName];
+				serviceOut += "<li>" + service.serviceName + " (" + service.count + ")</li>"; 
+			}
+			serviceOut += "</ul>";
+			$("#catchupServices").html(serviceOut);
+			$("#catchupRefreshed").html(new Date().toTimeString());
+		}
+	);
+}
+
 function refreshJobType(viewName, type, subType) {
 	subType = subType || "";
-	console.log("Refresh job " + viewName + " " + type);
 	$.getJSON(
 	 	restUrl+viewName+"/"+type,
 		{},
@@ -149,7 +176,6 @@ function ingestInitDetails(type) {
 			} else {
 				selectedIDs.splice($.inArray(id, selectedIDs), 1);
 			}
-			console.log("Halt");
 	});
 }
 
@@ -231,6 +257,23 @@ function ingestWriteJob(d, type) {
 	if(d.error != null) out += "<h3>Error Log</h3><pre class='stacktrace'>"+d.error+"</pre>";
 	out = out + "</td></tr>";
 	return out;
+}
+
+function refreshCatchup(viewName, type) {
+	$.getJSON(
+	 	restUrl+viewName+"/candidates/"+type,
+		{},
+		function(json) {
+			$("#" + viewName + "Jobs").children("tr."+type).remove();
+			for(jobCount in json[type]) {
+				job = json[type][jobCount];
+				var out = "<tr class='parent "+type+"' id='a"+job.pid+"'>";
+				out += "<td>"+type+"</td><td>"+job.pid+"</td>";
+				out += "</tr>";
+				$("#" + viewName + "Jobs tr."+type+"-end").after(out);
+		 	}
+		}
+	);
 }
 
 function enhancementWriteJob(d, type) {
