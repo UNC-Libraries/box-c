@@ -298,9 +298,10 @@ function enhancementWriteJob(d, type) {
 }
 
 function enhancementFailedWriteJob(d, type) {
+	var out = "";
 	for (messageID in d.messageIDs){
-		var out = "<tr class='parent "+type+" detailsLink' id='a"+d.messageIDs[messageID]+"'>";
-		out = out + "<td>"+type+"</td><td>"+d.id+"</td><td>";
+		out += "<tr class='parent "+type+" detailsLink' id='a"+d.messageIDs[messageID]+"'>";
+		out += "<td>"+type+"</td><td>"+d.id+"</td><td>";
 		for (failedService in d.failedServices){
 			className = d.failedServices[failedService];
 			lastIndex = className.lastIndexOf(".");
