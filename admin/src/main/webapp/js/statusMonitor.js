@@ -121,11 +121,17 @@ function reloadEnhancementStatus(viewName, type) {
 }
 
 function reloadCatchupStatus(viewName, type) {
+	var loadIconRow = $("#catchupStatus .loadJobs");
+	if (loadIconRow.length > 0){
+		loadIconRow.show();
+	} else loadIconRow = null;
 	// load service status
 	$.getJSON(
 		restUrl+"catchup",
 		{},
 		function(json) {
+			if (loadIconRow != null)
+				loadIconRow.remove();
 			// idle active failedJobs activeJobs queuedJobs
 			$("#catchupActive").html(""+json.active);
 			$("#catchupEnabled").html(""+json.enabled);
@@ -260,10 +266,16 @@ function ingestWriteJob(d, type) {
 }
 
 function refreshCatchup(viewName, type) {
+	var loadIconRow = $("#catchupJobs .loadJobs");
+	if (loadIconRow.length > 0){
+		loadIconRow.show();
+	} else loadIconRow = null;
 	$.getJSON(
 	 	restUrl+viewName+"/candidates/"+type,
 		{},
 		function(json) {
+			if (loadIconRow != null)
+				loadIconRow.remove();
 			$("#" + viewName + "Jobs").children("tr."+type).remove();
 			for(jobCount in json[type]) {
 				job = json[type][jobCount];

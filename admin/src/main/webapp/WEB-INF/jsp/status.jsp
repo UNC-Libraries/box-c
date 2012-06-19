@@ -189,7 +189,7 @@
 			<div style="clear:both;"></div>
 		</div>
 		<div id="servicetabs-4">
-			<table>
+			<table id="catchupStatus">
 				<tr class="narrow">
 					<th>Enabled</th>
 					<th>Active</th>
@@ -197,6 +197,9 @@
 					<th>This Session</th>
 					<th>Services</th>
 					<th>Refreshed</th>
+				</tr>
+				<tr class="loadJobs" style="display: none">
+					<td colspan="6"><img src="../../images/load.gif"/></td>
 				</tr>
 				<tr>
 					<td><span id="catchupEnabled"></span>
@@ -222,6 +225,9 @@
 					</tr>
 				</thead>
 				<tbody id="catchupJobs">
+					<tr class="loadJobs" style="display: none">
+						<td colspan="2"><img src="../../images/load.gif"/></td>
+					</tr>
 					<tr class="TechnicalMetadataEnhancementService-end" style="display: none">
 						<td></td>
 					</tr>
