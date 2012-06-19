@@ -142,8 +142,6 @@ table.statusList td {
 
 .detailsLink {
 	cursor: pointer;
-	text-decoration: underline;
-	color: #284968;
 }
 
 .detailsLink:hover {

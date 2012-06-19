@@ -170,7 +170,6 @@ function refreshFailedJobType(viewName, type) {
 
 function ingestInitDetails(type) {
 	$('tr.parent.'+type)
-		.css("cursor","pointer")
 		.attr("title","Click to expand/collapse")
 		.click(function(){
 			var target = $('#child-'+this.id);
@@ -231,15 +230,15 @@ function enhancementLoadDetails(messageID, type) {
 }
 
 function enhancementInitDetails(type) {
-	$('tr.parent.' + type + ' span.detailsLink').attr("title","Click for message details")
+	$('tr.parent.' + type).attr("title","Click for message details")
 		.click(function(){
-			var messageID = this.id.substring(this.id.indexOf('_') + 1);
+			var messageID = this.id.substring(1);
 			enhancementLoadDetails(messageID, type);
 		});
 }
 
 function ingestWriteJob(d, type) {
-	var out = "<tr class='parent "+type+"' id='a"+d.id+"'>";
+	var out = "<tr class='parent "+type+" detailsLink' id='a"+d.id+"'>";
 	out = out + "<td>"+type+"</td><td>"+d.submitter+"</td><td>"+dateFormat(d.submissionTime)+"</td><td>"+d.worked+"/"+d.size+"</td><td>"+d.containerPlacements[0].submittedLabel+"</td><td>"+d.message+"</td>";
 	out = out + "</tr>";
 	out = out + "<tr class='child "+type+"' id='child-a"+d.id+"'";
@@ -289,33 +288,29 @@ function refreshCatchup(viewName, type) {
 }
 
 function enhancementWriteJob(d, type) {
-	var out = "<tr class='parent "+type+"' id='a"+d.id+"'>";
-	out = out + "<td>"+type+"</td><td>"+d.targetPID+"</td><td><ul>";
+	var out = "<tr class='parent "+type+" detailsLink' id='a"+d.id+"'>";
+	out += "<td>"+type+"</td><td>"+d.targetPID+"</td><td><ul>";
 	for (filteredService in d.filteredServices){
 		out += "<li>" + d.filteredServices[filteredService] + "</li>";
 	}
-	out = out + "</ul></td><td>";
-	out += "<span id=\"" + type + "_" + d.id + "\" class='" + type + "Message detailsLink'>Message</span><br/>";
-	out = out + "</td></tr>";
+	out += "</ul></td></tr>";
 	return out;
 }
 
 function enhancementFailedWriteJob(d, type) {
-	var out = "<tr class='parent "+type+"' id='a"+d.id+"'>";
-	out = out + "<td>"+type+"</td><td>"+d.id+"</td><td>";
-	for (failedService in d.failedServices){
-		className = d.failedServices[failedService];
-		lastIndex = className.lastIndexOf(".");
-		if (lastIndex != -1)
-			className = className.substring(lastIndex+1);
-		out += className + "<br/>";
-	}
-	out = out + "</td><td><ul>";
-	var messageCount = 0;
 	for (messageID in d.messageIDs){
-		out += "<li><span id=\"" + type + "_" + d.messageIDs[messageID] + "\" class='failedMessage detailsLink'>Message " + (++messageCount) + "</span></li>";
+		var out = "<tr class='parent "+type+" detailsLink' id='a"+d.messageIDs[messageID]+"'>";
+		out = out + "<td>"+type+"</td><td>"+d.id+"</td><td>";
+		for (failedService in d.failedServices){
+			className = d.failedServices[failedService];
+			lastIndex = className.lastIndexOf(".");
+			if (lastIndex != -1)
+				className = className.substring(lastIndex+1);
+			out += className + "<br/>";
+		}
+		out += "</td></tr>";
 	}
-	out = out + "</ul></td></tr>";
+	
 	return out;
 }
 
