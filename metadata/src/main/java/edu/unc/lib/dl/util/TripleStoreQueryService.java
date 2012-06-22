@@ -327,6 +327,8 @@ public interface TripleStoreQueryService {
 	 * @return
 	 */
 	public abstract String lookupLabel(PID pid);
+	
+	public abstract String lookupLabel(String pid);
 
 	/**
 	 * Looks up the slug for a given PID

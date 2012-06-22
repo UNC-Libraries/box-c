@@ -49,6 +49,8 @@ public class CatchUpServiceTest extends Assert {
 	EnhancementConductor enhancementConductor;
 	TechnicalMetadataEnhancementService techmd;
 	ImageEnhancementService image;
+	DelayService delay;
+	List<ObjectEnhancementService> services;
 
 	@SuppressWarnings("unchecked")
 	@Before
@@ -71,10 +73,14 @@ public class CatchUpServiceTest extends Assert {
 
 		techmd = mock(TechnicalMetadataEnhancementService.class);
 		image = mock(ImageEnhancementService.class);
+		delay = new DelayService();
+		
+		DelayEnhancement.init();
 
-		List<ObjectEnhancementService> services = new ArrayList<ObjectEnhancementService>();
+		services = new ArrayList<ObjectEnhancementService>();
 		services.add(techmd);
 		services.add(image);
+		
 
 		catchup.setMessageDirector(messageDirector);
 		catchup.setenhancementConductor(enhancementConductor);
@@ -85,19 +91,33 @@ public class CatchUpServiceTest extends Assert {
 
 	@Test
 	public void activation() {
+		//Add delay service
+		services.add(delay);
+		
 		catchup.setEnabled(false);
 		catchup.activate();
 		assertFalse(catchup.isEnabled());
 		assertFalse(catchup.isActive());
 
 		catchup.setEnabled(true);
-		catchup.activate();
+		Thread thread = new Thread(new CatchUpActivateRunnable());
+		thread.start();
+		
+		while (DelayEnhancement.inService.get() != 1);
+		
 		assertTrue(catchup.isEnabled());
 		assertTrue(catchup.isActive());
+		
+		synchronized(DelayEnhancement.blockingObject){
+			DelayEnhancement.flag.set(false);
+			DelayEnhancement.blockingObject.notifyAll();
+		}
 	}
 
 	@Test
 	public void activationInvalidDate() {
+		//Add delay service
+		services.add(delay);
 		String priorToDate = "invalid";
 		try {
 			catchup.activate(priorToDate);
@@ -140,14 +160,31 @@ public class CatchUpServiceTest extends Assert {
 	}
 
 	@Test
-	public void activationValidDate() {
-		String priorToDate = "2011-04-04T05:05:05.555Z";
-		catchup.activate(priorToDate);
+	public void activationValidDateWithMilli() {
+		activationValidDate("2011-04-04T05:05:05.555Z");
+	}
+	
+	@Test
+	public void activationValidDateWithoutMilli() {
+		activationValidDate("2011-04-04T05:05:05Z");
+	}
+	
+	
+	public void activationValidDate(String priorToDate) {
+		//Add delay service
+		services.add(delay);
+		Thread thread = new Thread(new CatchUpActivateRunnable(priorToDate));
+		thread.start();
+		
+		while (DelayEnhancement.inService.get() != 1);
+		
 		assertTrue(catchup.isActive());
-
-		priorToDate = "2011-04-04T05:05:05Z";
-		catchup.activate(priorToDate);
-		assertTrue(catchup.isActive());
+		assertTrue(catchup.isInCatchUp());
+		
+		synchronized(DelayEnhancement.blockingObject){
+			DelayEnhancement.flag.set(false);
+			DelayEnhancement.blockingObject.notifyAll();
+		}
 	}
 
 	@Test
@@ -174,7 +211,6 @@ public class CatchUpServiceTest extends Assert {
 		verify(messageDirector, times(catchup.getPageSize())).direct(any(EnhancementMessage.class));
 		verify(techmd, times(2)).findCandidateObjects(anyInt());
 		verify(image, times(2)).findCandidateObjects(anyInt());
-		assertTrue(catchup.isActive());
 	}
 
 	@Test
@@ -201,7 +237,6 @@ public class CatchUpServiceTest extends Assert {
 		verify(messageDirector, times(catchup.getPageSize())).direct(any(EnhancementMessage.class));
 		verify(techmd, times(2)).findStaleCandidateObjects(anyInt(), anyString());
 		verify(image, times(2)).findStaleCandidateObjects(anyInt(), anyString());
-		assertTrue(catchup.isActive());
 	}
 
 	@Test
@@ -280,5 +315,22 @@ public class CatchUpServiceTest extends Assert {
 			results.add(new PID("uuid:" + i));
 		}
 		return results;
+	}
+	
+	public class CatchUpActivateRunnable implements Runnable {
+		String priorToDate;
+		
+		public CatchUpActivateRunnable(){
+			priorToDate = null;
+		}
+		
+		public CatchUpActivateRunnable(String priorToDate){
+			this.priorToDate = priorToDate;
+		}
+		
+		@Override
+		public void run() {
+			catchup.activate(priorToDate);
+		}
 	}
 }

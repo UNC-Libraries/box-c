@@ -194,6 +194,8 @@ function enhancementLoadDetails(messageID, type) {
 		} else if (data.type == 'failed') {
 			var details = "<span>Status:</span>" + data.type + " (last refreshed " + new Date().toTimeString() + ")<br/>";
 			details += "<span>Message:</span>" + data.id + "<br/>";
+			if (data.targetLabel != null)
+				details += "<span>Label:</span>" + data.targetLabel + "<br/>";
 			details += "<span>Target:</span>" + data.targetPID + "<br/>"; 
 			details += "<span>Queued Timestamp:</span>" + dateFormat(data.queuedTimestamp, true) + "<br/>";
 			details += "<span>Action:</span><br/>" + data.action + "<br/>";
@@ -210,6 +212,8 @@ function enhancementLoadDetails(messageID, type) {
 		} else if (data.type == 'queued'){
 			var details = "<span>Status:</span>" + data.type + " (last refreshed " + new Date().toTimeString() + ")<br/>";
 			details += "<span>Message:</span>" + data.id + "<br/>";
+			if (data.targetLabel != null)
+				details += "<span>Label:</span>" + data.targetLabel + "<br/>";
 			details += "<span>Target:</span>" + data.targetPID + "<br/>";
 			details += "<span>Queued Timestamp:</span>" + dateFormat(data.queuedTimestamp, true) + "<br/>";
 			details += "<span>Action:</span>" + data.action + "<br/>";
@@ -279,7 +283,9 @@ function refreshCatchup(viewName, type) {
 			for(jobCount in json[type]) {
 				job = json[type][jobCount];
 				var out = "<tr class='parent "+type+"' id='a"+job.pid+"'>";
-				out += "<td>"+type+"</td><td>"+job.pid+"</td>";
+				out += "<td>"+type+"</td>";
+				out += "<td>"+job.label+"</td>";
+				out += "<td>"+job.pid+"</td>";
 				out += "</tr>";
 				$("#" + viewName + "Jobs tr."+type+"-end").after(out);
 		 	}
@@ -289,7 +295,14 @@ function refreshCatchup(viewName, type) {
 
 function enhancementWriteJob(d, type) {
 	var out = "<tr class='parent "+type+" detailsLink' id='a"+d.id+"'>";
-	out += "<td>"+type+"</td><td>"+d.targetPID+"</td><td><ul>";
+	out += "<td>"+type+"</td>";
+	
+	if (d.targetLabel != null)
+		out += "<td>"+d.targetLabel+"</td>";
+	else out += "<td>"+d.targetPID+"</td>";
+	
+	out += "<td><ul>";
+	
 	for (filteredService in d.filteredServices){
 		out += "<li>" + d.filteredServices[filteredService] + "</li>";
 	}
@@ -301,7 +314,13 @@ function enhancementFailedWriteJob(d, type) {
 	var out = "";
 	for (messageID in d.messageIDs){
 		out += "<tr class='parent "+type+" detailsLink' id='a"+d.messageIDs[messageID]+"'>";
-		out += "<td>"+type+"</td><td>"+d.id+"</td><td>";
+		out += "<td>"+type+"</td>";
+		if (d.targetLabel != null)
+			out += "<td>"+d.targetLabel+"</td>";
+		else out += "<td>"+d.targetPID+"</td>";
+		
+		out += "<td>";
+		
 		for (failedService in d.failedServices){
 			className = d.failedServices[failedService];
 			lastIndex = className.lastIndexOf(".");

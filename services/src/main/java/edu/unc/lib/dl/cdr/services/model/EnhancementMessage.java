@@ -29,6 +29,7 @@ public class EnhancementMessage implements ActionMessage {
 	
 	protected String messageID = null;
 	protected PID pid;
+	protected String targetLabel;
 	protected PID depositID;
 	protected String namespace = null;
 	protected String action = null;
@@ -124,6 +125,15 @@ public class EnhancementMessage implements ActionMessage {
 		return this.pid.getPid();
 	}
 	
+	@Override
+	public String getTargetLabel() {
+		return this.targetLabel;
+	}
+	
+	public void setTargetLabel(String targetLabel) {
+		this.targetLabel = targetLabel;
+	}
+	
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
@@ -157,5 +167,4 @@ public class EnhancementMessage implements ActionMessage {
 	public String toString(){
 		return pid.getPid() + ":" + action;
 	}
-
 }

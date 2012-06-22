@@ -928,6 +928,10 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 		return result;
 	}
 
+	public String lookupLabel(String pid) {
+		return lookupLabel(new PID(pid));
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

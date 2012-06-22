@@ -167,7 +167,7 @@
 					<thead>
 						<tr class="narrow">
 							<th>status</th>
-							<th>pid</th>
+							<th>label</th>
 							<th>service(s)</th>
 						</tr>
 					</thead>
@@ -220,12 +220,13 @@
 				<thead>
 					<tr class="narrow">
 						<th>Service</th>
+						<th>label</th>
 						<th>pid</th>
 					</tr>
 				</thead>
 				<tbody id="catchupJobs">
 					<tr class="loadJobs" style="display: none">
-						<td colspan="2"><img src="../../images/load.gif"/></td>
+						<td colspan="3"><img src="../../images/load.gif"/></td>
 					</tr>
 					<tr class="TechnicalMetadataEnhancementService-end" style="display: none">
 						<td></td>

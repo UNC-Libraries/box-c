@@ -158,25 +158,32 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		FailedObjectHashMap failedList = this.enhancementConductor.getFailedPids();
 		result.put("count", failedList.size());
 		
+		String label;
 		Iterator<Entry<String,FailedEnhancementObject>> iterator = failedList.entrySet().iterator();
 		while (iterator.hasNext()){
 			Entry<String,FailedEnhancementObject> entry = iterator.next();
 			Map<String, Object> failedEntry = new HashMap<String, Object>();
-			failedEntry.put("id", entry.getKey());
+			failedEntry.put("targetPID", entry.getKey());
 			Map<String,String> failedServices = new HashMap<String,String>();
 			failedEntry.put("failedServices", failedServices);
 			for (String failedService: entry.getValue().getFailedServices()){
 				failedServices.put(failedService, this.serviceNameLookup.get(failedService));
 			}
 			failedEntry.put("timestamp", entry.getValue().getTimestamp());
-			if (entry.getValue().getMessages() != null){
+			List<ActionMessage> messages = entry.getValue().getMessages();
+			if (messages != null && messages.size() > 0){
+				// Populate the label on all messages for this item
+				this.populateLabels(messages);
+				// Use the first message's label for the entry
+				failedEntry.put("targetLabel", messages.get(0).getTargetLabel());
+				
 				Map<String, Object> uris = new HashMap<String, Object>();
 				failedEntry.put("uris", uris);
 				uris.put("jobInfo", BASE_PATH + FAILED_PATH + "/job/");
 				
 				List<String> messageIDList = new ArrayList<String>();
 				failedEntry.put("messageIDs", messageIDList);
-				for (ActionMessage message: entry.getValue().getMessages()){
+				for (ActionMessage message: messages){
 					messageIDList.add(message.getMessageID());
 				}
 			}
@@ -282,6 +289,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		job.put("id", message.getMessageID());
 		job.put("targetPID", message.getTargetID());
+		job.put("targetLabel", message.getTargetLabel());
 		addJobPropertyIfNotEmpty("depositID", message.getDepositID(), job);
 		addJobPropertyIfNotEmpty("action", message.getQualifiedAction(), job);
 		addJobPropertyIfNotEmpty("serviceName", message.getServiceName(), job);
@@ -327,6 +335,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		job.put("id", message.getMessageID());
 		job.put("targetPID", message.getTargetID());
+		job.put("targetLabel", message.getTargetLabel());
 		addJobPropertyIfNotEmpty("depositID", message.getDepositID(), job);
 		addJobPropertyIfNotEmpty("action", message.getQualifiedAction(), job);
 		addJobPropertyIfNotEmpty("serviceName", message.getServiceName(), job);

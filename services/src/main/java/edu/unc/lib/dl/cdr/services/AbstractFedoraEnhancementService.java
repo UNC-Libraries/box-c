@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationContextAware;
 
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.cdr.services.model.LabeledPID;
 import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -106,7 +107,8 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 			List<PID> result = new ArrayList<PID>();
 			for (Map binding : bindings) {
 				String pidURI = (String) ((Map) binding.get("pid")).get("value");
-				result.add(new PID(pidURI));
+				String label = (String) ((Map) binding.get("label")).get("value");
+				result.add(new LabeledPID(pidURI, label));
 			}
 
 			return result;

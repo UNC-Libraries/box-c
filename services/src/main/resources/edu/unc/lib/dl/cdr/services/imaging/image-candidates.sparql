@@ -1,7 +1,7 @@
 PREFIX fedora-view: <info:fedora/fedora-system:def/view#> 
 PREFIX fedora-model: <info:fedora/fedora-system:def/model#> 
 PREFIX cdr-base: <http://cdr.unc.edu/definitions/1.0/base-model.xml#> 
-SELECT ?pid
+SELECT ?pid ?label
 FROM <%1$s>
 WHERE 
 { 
@@ -23,5 +23,6 @@ WHERE
      ?jp2DS fedora-view:lastModifiedDate ?jp2Modified . } 
    FILTER ( regex( str(?srcMime), 'image/') && (!bound(?jp2DS) || !bound(?jp2Modified)) ) 
  }
+ ?pid fedora-model:label ?label
 }
 %2$s

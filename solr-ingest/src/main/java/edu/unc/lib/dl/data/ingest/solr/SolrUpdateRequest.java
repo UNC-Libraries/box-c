@@ -22,8 +22,10 @@ import edu.unc.lib.dl.message.ActionMessage;
  * @author bbpennel
  */
 public class SolrUpdateRequest implements ActionMessage {
+	private static final long serialVersionUID = 1L;
 	protected String messageID;
 	protected String pid;
+	protected String targetLabel;
 	protected SolrUpdateAction action; 
 	protected SolrUpdateRequest linkedRequest;
 	protected long timeCreated = System.currentTimeMillis();
@@ -115,6 +117,16 @@ public class SolrUpdateRequest implements ActionMessage {
 	@Override
 	public String getTargetID() {
 		return pid;
+	}
+
+	@Override
+	public String getTargetLabel() {
+		return targetLabel;
+	}
+
+	@Override
+	public void setTargetLabel(String targetLabel) {
+		this.targetLabel = targetLabel;
 	}
 
 	@Override

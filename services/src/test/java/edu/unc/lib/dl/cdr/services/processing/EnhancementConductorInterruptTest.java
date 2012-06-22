@@ -47,16 +47,11 @@ public class EnhancementConductorInterruptTest extends Assert {
 	protected List<ObjectEnhancementService> delayServices;
 	protected List<String> delayServiceNames;
 	
-	public static AtomicInteger inIsApplicable;
-	public static AtomicInteger incompleteServices;
-	public static AtomicInteger betweenApplicableAndEnhancement;
-	public static AtomicInteger servicesCompleted;
-	public static AtomicInteger inService;
+	
 	
 	protected int numberTestMessages;
 	
-	public AtomicBoolean flag;
-	public Object blockingObject;
+	
 	
 	public EnhancementConductorInterruptTest(){
 		
@@ -79,15 +74,10 @@ public class EnhancementConductorInterruptTest extends Assert {
 		enhancementConductor.init();
 		
 		this.executor = enhancementConductor.getExecutor();
-		inIsApplicable = new AtomicInteger(0);
-		incompleteServices = new AtomicInteger(0);
-		betweenApplicableAndEnhancement = new AtomicInteger(0);
-		servicesCompleted = new AtomicInteger(0);
-		inService = new AtomicInteger(0);
+		
 		numberTestMessages = 10;
 		
-		this.blockingObject = new Object();
-		this.flag = new AtomicBoolean(true);
+		DelayEnhancement.init();
 	}
 	
 	@Test
@@ -105,12 +95,12 @@ public class EnhancementConductorInterruptTest extends Assert {
 			enhancementConductor.add(message);
 		}
 		
-		while (inService.get() != enhancementConductor.getMaxThreads());
+		while (DelayEnhancement.inService.get() != enhancementConductor.getMaxThreads());
 
 		assertTrue(enhancementConductor.getLockedPids().size() == enhancementConductor.getMaxThreads());
 		
 		//assertEquals(incompleteServices.get(), enhancementConductor.getMaxThreads());
-		assertEquals(incompleteServices.get(), numberTestMessages - enhancementConductor.getQueueSize());
+		assertEquals(DelayEnhancement.incompleteServices.get(), numberTestMessages - enhancementConductor.getQueueSize());
 		//Abort the currently active threads
 		enhancementConductor.abort();
 		
@@ -123,99 +113,13 @@ public class EnhancementConductorInterruptTest extends Assert {
 		assertTrue(enhancementConductor.getQueueSize() == numberTestMessages - enhancementConductor.getMaxThreads());
 		
 		//Process remaining message queue, then shut down conductor
-		synchronized(blockingObject){
-			flag.set(false);
-			blockingObject.notifyAll();
+		synchronized(DelayEnhancement.blockingObject){
+			DelayEnhancement.flag.set(false);
+			DelayEnhancement.blockingObject.notifyAll();
 		}
 		enhancementConductor.resume();
 		while (enhancementConductor.getLockedPids().size() > 0 || enhancementConductor.getQueueSize() > 0);
 		
 		//assertEquals(servicesCompleted.get(), numberTestMessages - enhancementConductor.getMaxThreads());
-	}
-	
-	public class DelayService extends AbstractFedoraEnhancementService {
-		private static final long serialVersionUID = 1L;
-
-		public DelayService(){
-			this.active = true;
-		}
-		
-		@Override
-		public List<PID> findCandidateObjects(int maxResults) throws EnhancementException {
-			return null;
-		}
-
-		@Override
-		public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
-			return null;
-		}
-
-		@Override
-		public Enhancement<Element> getEnhancement(EnhancementMessage pid) throws EnhancementException {
-			return new DelayEnhancement(this, pid.getPid());
-		}
-
-		@Override
-		public boolean isApplicable(EnhancementMessage pid) throws EnhancementException {
-			incompleteServices.incrementAndGet();
-			betweenApplicableAndEnhancement.incrementAndGet();
-			LOG.debug("Completed isApplicable for " + pid.getTargetID());	
-			return true;
-		}
-
-		@Override
-		public boolean prefilterMessage(EnhancementMessage pid) throws EnhancementException {
-			return true;
-		}
-
-		@Override
-		public boolean isStale(PID pid) throws EnhancementException {
-			return false;
-		}
-
-		@Override
-		public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public String getName() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public int countCandidateObjects() throws EnhancementException {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-	}
-	
-	public class DelayEnhancement extends Enhancement<Element> {
-		public DelayEnhancement(ObjectEnhancementService service, PID pid) {
-			super(pid);
-		}
-		
-		@Override
-		public Element call() throws EnhancementException {
-			LOG.debug("Call invoked for " + this.pid.getPid());
-			betweenApplicableAndEnhancement.decrementAndGet();
-			inService.incrementAndGet();
-			while (flag.get()){
-				synchronized(blockingObject){
-					try {
-						blockingObject.wait();
-					} catch (InterruptedException e){
-						Thread.currentThread().interrupt();
-						return null;
-					}
-				}
-			}
-			incompleteServices.decrementAndGet();
-			servicesCompleted.incrementAndGet();
-			return null;
-		}
-		
 	}
 }

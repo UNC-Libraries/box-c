@@ -27,15 +27,19 @@ import org.springframework.web.context.ServletContextAware;
 
 import edu.unc.lib.dl.cdr.services.processing.ServiceConductor;
 import edu.unc.lib.dl.message.ActionMessage;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
  * @author Gregory Jansen
- *
+ * @author bbpennel
  */
 public class AbstractServiceConductorRestController implements ServletContextAware {
 
 	protected ServletContext servletContext = null;
 	protected SimpleDateFormat formatISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.SSS'Z'");
+	
+	@Resource
+	protected TripleStoreQueryService tripleStoreQueryService;
 
 	@Resource(name = "contextUrl")
 	protected String contextUrl = null;
@@ -69,6 +73,8 @@ public class AbstractServiceConductorRestController implements ServletContextAwa
 			messages = messages.subList(begin, end);
 		}
 		
+		populateLabels(messages);
+		
 		List<Map<String, Object>> jobs = new ArrayList<Map<String, Object>>();
 		result.put("jobs", jobs);
 		for (ActionMessage message: messages){
@@ -76,6 +82,28 @@ public class AbstractServiceConductorRestController implements ServletContextAwa
 				Map<String, Object> job = getJobBriefInfo(message, queuePath);
 				jobs.add(job);
 			}
+		}
+	}
+	
+	/**
+	 * Retrieves labels for action messages and stores them to the message
+	 * @param messages
+	 */
+	protected void populateLabels(List<ActionMessage> messages) {
+		List<String> retrievalList = new ArrayList<String>();
+		List<ActionMessage> targetedMessages = new ArrayList<ActionMessage>();
+		
+		for (ActionMessage message: messages) {
+			if (message.getTargetLabel() == null) {
+				retrievalList.add(message.getTargetID());
+				targetedMessages.add(message);
+			}
+		}
+		
+		String label;
+		for (ActionMessage message: targetedMessages) {
+			label = tripleStoreQueryService.lookupLabel(message.getTargetID());
+			message.setTargetLabel(label);
 		}
 	}
 	
@@ -103,4 +131,7 @@ public class AbstractServiceConductorRestController implements ServletContextAwa
 		this.servletContext = servletContext;
 	}
 
+	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+		this.tripleStoreQueryService = tripleStoreQueryService;
+	}
 }
