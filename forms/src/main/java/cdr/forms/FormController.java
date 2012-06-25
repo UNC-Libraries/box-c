@@ -8,8 +8,14 @@ import gov.loc.mods.mods.MODSPackage;
 import gov.loc.mods.mods.ModsDefinition;
 import gov.loc.mods.mods.util.MODSResourceFactoryImpl;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
@@ -30,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,6 +52,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.w3._1999.xlink.XlinkPackage;
 
+import com.philvarner.clamavj.ClamScan;
+import com.philvarner.clamavj.ScanResult;
+
 import crosswalk.Form;
 import crosswalk.FormElement;
 import crosswalk.MetadataBlock;
@@ -56,6 +66,17 @@ import crosswalk.OutputElement;
 public class FormController {
 	ResourceSet rs = null;
 	
+	@Autowired
+	ClamScan clamScan = null;
+	
+	public ClamScan getClamScan() {
+		return clamScan;
+	}
+
+	public void setClamScan(ClamScan clamScan) {
+		this.clamScan = clamScan;
+	}
+
 	public FormController() {
 		rs = new ResourceSetImpl();
 		rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put("mods", new MODSResourceFactoryImpl());
@@ -114,7 +135,7 @@ public class FormController {
    protected void initBinder(WebDataBinder binder) {
        binder.setValidator(new FormValidator());
        binder.registerCustomEditor(java.util.Date.class, new DateEditor(new SimpleDateFormat("yy-MM-dd")));
-       binder.setBindEmptyMultipartFiles(false);
+       //binder.setBindEmptyMultipartFiles(false);
        binder.registerCustomEditor(java.lang.String.class, new StringTrimmerEditor(true));
    }
 	
@@ -147,7 +168,7 @@ public class FormController {
 
 	@RequestMapping(value = "/{formId}.form", method = RequestMethod.POST)
 	public String processForm(@PathVariable String formId, @Valid @ModelAttribute("form") Form form, BindingResult errors,
-			Principal user, @RequestParam("file") MultipartFile file, SessionStatus sessionStatus, HttpSession session) throws PermissionDeniedException {
+			Principal user, @RequestParam("file") MultipartFile mpfile, SessionStatus sessionStatus, HttpSession session) throws PermissionDeniedException {
 		LOG.debug("in POST for form " + formId);
 		checkPermission(formId, form, session);
 		if (user != null) form.setCurrentUser(user.getName());
@@ -155,26 +176,66 @@ public class FormController {
 			LOG.debug(errors.getErrorCount() + " errors");
 			return "form";
 		}
-		if(file.isEmpty()) {
-			errors.addError( new ObjectError("file", "You must select a file for upload."));
+		if(mpfile.isEmpty()) {
+			errors.addError( new FieldError("form", "file", "You must select a file for upload."));
 			return "form";
 		}
 		
 		String mods = makeMods(form);
 		LOG.debug(mods);
 		
-		// perform a deposit with the default handler.
-		try {
-			this.getDepositHandler().deposit(form.getDepositContainerId(), mods, file.getInputStream());
-		} catch (IOException e) {
-			throw new Error("temporary file upload storage failed", e);
+		File depositFile = handleUpload(mpfile);
+		
+		if(!virusScan(depositFile)) {
+			errors.addError( new FieldError("form", "file", "A virus was detected in your file. Please scan your computer for viruses or report this issue to technical support."));
+			return "form";
 		}
+		
+		// perform a deposit with the default handler.
+		this.getDepositHandler().deposit(form.getDepositContainerId(), mods, mpfile.getOriginalFilename(), depositFile);
+
 		
 		// TODO email notices
 		
 		// clear session
 		sessionStatus.setComplete();
+		// TODO delete files
+		depositFile.delete();
 		return "success";
+	}
+
+	private synchronized boolean virusScan(File depositFile) {
+		boolean passed = false;
+		try {
+			ScanResult result = this.getClamScan().scan(new FileInputStream(depositFile));
+			passed = ScanResult.Status.PASSED.equals(result.getStatus());
+		} catch (FileNotFoundException e) {
+			throw new Error(e);
+		}
+		return passed;
+	}
+
+	private File handleUpload(MultipartFile file) {
+		File result = null;
+		OutputStream out = null;
+		try {
+			result = File.createTempFile("form", ".data");
+			InputStream stream = file.getInputStream();
+			out = new BufferedOutputStream(new FileOutputStream(result));
+			for(int i = stream.read(); i > 0; i = stream.read()) {
+				out.write(i);
+			}
+			out.flush();
+		} catch(IOException e) {
+			throw new Error(e);
+		} finally {
+			if(out != null) {
+				try {
+					out.close();
+				} catch(IOException ignored) {}
+			}
+		}
+		return result;
 	}
 
 	@ExceptionHandler(PermissionDeniedException.class)

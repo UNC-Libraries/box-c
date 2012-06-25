@@ -1,9 +1,7 @@
 package cdr.forms;
 
-import java.io.InputStream;
+import java.io.File;
 
 public interface DepositHandler {
-
-	public abstract DepositResult deposit(String containerPid, String modsXml, InputStream depositData);
-
+	DepositResult deposit(String containerPid, String modsXml, String title, File depositData);
 }

@@ -64,7 +64,7 @@
 					<% } %>
 			<% } else if(MetadataBlock.class.isInstance(status.getValue())) { 
 					MetadataBlock mb = (MetadataBlock)status.getValue(); %>
-					<br/><h3><%= ((MetadataBlock)status.getValue()).getName() %></h3>
+					<br/><h3 style="clear: both;"><%= ((MetadataBlock)status.getValue()).getName() %></h3>
 					<% if(mb.getDescription() != null) { %>
 					<p><%= ((MetadataBlock)status.getValue()).getDescription() %></p>
 					<% } %>
@@ -91,7 +91,7 @@
 	</c:forEach>
 	<br/><h3>File for Deposit</h3>
 	<div style="margin: 0em 2em;">
-		<p><input name="file" type="file" /></p>
+		<p><input name="file" type="file" /><spring:hasBindErrors name="form"><span style="color:red"><%= errors.getFieldError("file").getDefaultMessage() %></span></spring:hasBindErrors></p>
 	</div>
 	<div style="text-align: center; margin: 2em;">
 		<input type="submit" value="submit deposit" />

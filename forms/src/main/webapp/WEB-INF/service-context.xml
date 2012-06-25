@@ -33,15 +33,12 @@
 		</property>
 		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
-
-	<bean id="irodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">
-		<constructor-arg value="${irods.host}" />
-		<constructor-arg value="${irods.port}" type="int" />
-		<constructor-arg value="${irods.services.username}" />
-		<constructor-arg value="${irods.services.password}" />
-		<constructor-arg value="/${irods.zone}/home/${irods.services.username}" />
-		<constructor-arg value="${irods.zone}" />
-		<constructor-arg value="${irods.default.resc}" />
+	
+	<!-- Note that ClamScan is not thread safe. -->
+	<bean id="clamScan" class="com.philvarner.clamavj.ClamScan">
+		<property name="host" value="${clamd.host}"/>
+		<property name="port" value="${clamd.port}"/>
+		<property name="timeout" value="${clamd.timeout}"/>
 	</bean>
 
 	<bean id="formFactory" class="cdr.forms.CachedXMIFormFactory">
@@ -59,12 +56,9 @@
 	<bean id="depositHandler" class="cdr.forms.SwordDepositHandler">
 		<property name="serviceUrl"
 			value="${admin.services.url}${services.context}/sword/" />
-		<property name="username" value="${sword.username}" />
-		<property name="password" value="${sword.password}" />
+		<property name="username" value="${forms.sword.username}" />
+		<property name="password" value="${forms.sword.password}" />
 	</bean>
-
-	<bean id="irodsFileSystem" class="org.irods.jargon.core.pub.IRODSFileSystem"
-		factory-method="instance" />
 
 	<!-- JMX -->
 
