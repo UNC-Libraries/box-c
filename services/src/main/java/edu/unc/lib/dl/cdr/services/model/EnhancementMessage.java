@@ -35,7 +35,9 @@ public class EnhancementMessage implements ActionMessage {
 	protected String action = null;
 	protected String qualifiedAction = null;
 	protected String serviceName = null;
+	protected String activeService = null;
 	protected long timeCreated = System.currentTimeMillis();
+	protected long timeFinished = -1;
 	protected List<String> filteredServices = null;
 	
 	protected EnhancementMessage(){
@@ -151,6 +153,14 @@ public class EnhancementMessage implements ActionMessage {
 		this.timeCreated = timeCreated;
 	}
 
+	public long getTimeFinished() {
+		return timeFinished;
+	}
+
+	public void setTimeFinished(long timeFinished) {
+		this.timeFinished = timeFinished;
+	}
+
 	public List<String> getFilteredServices() {
 		return filteredServices;
 	}
@@ -163,6 +173,14 @@ public class EnhancementMessage implements ActionMessage {
 		this.filteredServices = filteredServices;
 	}
 	
+	public String getActiveService() {
+		return activeService;
+	}
+
+	public void setActiveService(String activeService) {
+		this.activeService = activeService;
+	}
+
 	@Override
 	public String toString(){
 		return pid.getPid() + ":" + action;

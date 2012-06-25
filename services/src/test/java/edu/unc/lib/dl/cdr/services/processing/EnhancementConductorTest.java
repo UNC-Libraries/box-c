@@ -17,28 +17,20 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jdom.Element;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancementService;
-import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
-import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
-import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
-import edu.unc.lib.dl.fedora.PID;
 
 public class EnhancementConductorTest extends Assert {
 	protected static final Logger LOG = LoggerFactory.getLogger(EnhancementConductorTest.class);
@@ -51,15 +43,7 @@ public class EnhancementConductorTest extends Assert {
 	protected List<ObjectEnhancementService> delayServices;
 	protected ServicesQueueMessageFilter servicesMessageFilter;
 
-	public static AtomicInteger inIsApplicable;
-	public static AtomicInteger incompleteServices;
-	public static AtomicInteger betweenApplicableAndEnhancement;
-	public static AtomicInteger servicesCompleted;
-
 	protected int numberTestMessages;
-
-	public AtomicBoolean flag;
-	public Object blockingObject;
 
 	public EnhancementConductorTest() {
 		delayServices = new ArrayList<ObjectEnhancementService>();
@@ -95,14 +79,9 @@ public class EnhancementConductorTest extends Assert {
 		messageDirector.setFilters(filters);
 
 		this.executor = enhancementConductor.getExecutor();
-		inIsApplicable = new AtomicInteger(0);
-		incompleteServices = new AtomicInteger(0);
-		betweenApplicableAndEnhancement = new AtomicInteger(0);
-		servicesCompleted = new AtomicInteger(0);
+		DelayEnhancement.init();
+		
 		numberTestMessages = 10;
-
-		this.blockingObject = new Object();
-		this.flag = new AtomicBoolean(true);
 	}
 
 	// @Test
@@ -125,7 +104,7 @@ public class EnhancementConductorTest extends Assert {
 		enhancementConductor.setServices(delayServices);
 		servicesMessageFilter.setServices(delayServices);
 
-		flag.set(false);
+		DelayEnhancement.flag.set(false);
 
 		// Add messages and check that they all ran
 		for (int i = 0; i < numberTestMessages; i++) {
@@ -140,11 +119,11 @@ public class EnhancementConductorTest extends Assert {
 		while (!enhancementConductor.isEmpty())
 			;
 
-		if (servicesCompleted.get() != numberTestMessages * 2) {
-			LOG.warn("Number of services completed (" + servicesCompleted.get()
+		if (DelayEnhancement.servicesCompleted.get() != numberTestMessages * 2) {
+			LOG.warn("Number of services completed (" + DelayEnhancement.servicesCompleted.get()
 					+ ") does not match number of test messages (" + (numberTestMessages * 2) + ")");
 		}
-		assertEquals(servicesCompleted.get(), numberTestMessages * 2);
+		assertEquals(DelayEnhancement.servicesCompleted.get(), numberTestMessages * 2);
 	}
 
 	@Test
@@ -179,14 +158,14 @@ public class EnhancementConductorTest extends Assert {
 				- enhancementConductor.getMaxThreads());
 
 		// Process the remaining items to make sure all messages get processed.
-		synchronized (blockingObject) {
-			flag.set(false);
-			blockingObject.notifyAll();
+		synchronized (DelayEnhancement.blockingObject) {
+			DelayEnhancement.flag.set(false);
+			DelayEnhancement.blockingObject.notifyAll();
 		}
 
 		while (!enhancementConductor.isEmpty())
 			;
-		assertEquals(servicesCompleted.get(), numberTestMessages * numberTestMessages);
+		assertEquals(DelayEnhancement.servicesCompleted.get(), numberTestMessages * numberTestMessages);
 	}
 
 	@Test
@@ -218,16 +197,35 @@ public class EnhancementConductorTest extends Assert {
 		assertFalse(enhancementConductor.isReady());
 
 		// Try to direct a pid with conductor shutdown
-		servicesCompleted.set(0);
+		DelayEnhancement.servicesCompleted.set(0);
 		EnhancementMessage message = new EnhancementMessage("uuid:fail", JMSMessageUtil.servicesMessageNamespace,
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		messageDirector.direct(message);
 
-		assertTrue(servicesCompleted.get() == 0);
+		assertTrue(DelayEnhancement.servicesCompleted.get() == 0);
 		assertTrue(enhancementConductor.getQueueSize() == 0);
 		assertTrue(enhancementConductor.getLockedPids().size() == 0);
 	}
 
+	@Test
+	public void finishedWindowingTest() {
+		EnhancementConductor.LimitedWindowList<Integer> limited = new EnhancementConductor.LimitedWindowList<Integer>(10);
+		List<Integer> tooBigToFail = new ArrayList<Integer>();
+		
+		for (int i=0; i<12; i++) {
+			limited.add(i);
+			tooBigToFail.add(i);
+		}
+		assertEquals("[2, 3, 4, 5, 6, 7, 8, 9, 10, 11]", limited.toString());
+		
+		limited.clear();
+		assertEquals(0, limited.size());
+		
+		
+		limited.addAll(tooBigToFail);
+		assertEquals("[2, 3, 4, 5, 6, 7, 8, 9, 10, 11]", limited.toString());
+	}
+	
 	public EnhancementConductor getenhancementConductor() {
 		return enhancementConductor;
 	}
@@ -259,92 +257,4 @@ public class EnhancementConductorTest extends Assert {
 	public void setServicesList(List<ObjectEnhancementService> servicesList) {
 		this.servicesList = servicesList;
 	}
-
-	public class DelayService extends AbstractFedoraEnhancementService {
-		private static final long serialVersionUID = 1L;
-
-		public DelayService() {
-			this.active = true;
-		}
-
-		@Override
-		public List<PID> findCandidateObjects(int maxResults) throws EnhancementException {
-			return null;
-		}
-
-		@Override
-		public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
-			return null;
-		}
-
-		@Override
-		public Enhancement<Element> getEnhancement(EnhancementMessage pid) throws EnhancementException {
-			return new DelayEnhancement(this, pid.getPid());
-		}
-
-		@Override
-		public boolean isApplicable(EnhancementMessage pid) throws EnhancementException {
-			incompleteServices.incrementAndGet();
-			betweenApplicableAndEnhancement.incrementAndGet();
-			LOG.debug("Completed isApplicable for " + pid.getTargetID());
-			return true;
-		}
-
-		@Override
-		public boolean prefilterMessage(EnhancementMessage pid) throws EnhancementException {
-			return true;
-		}
-
-		@Override
-		public boolean isStale(PID pid) throws EnhancementException {
-			return false;
-		}
-
-		@Override
-		public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public String getName() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public int countCandidateObjects() throws EnhancementException {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-	}
-
-	public class DelayEnhancement extends Enhancement<Element> {
-		public DelayEnhancement(ObjectEnhancementService service, PID pid) {
-			super(pid);
-		}
-
-		@Override
-		public Element call() throws EnhancementException {
-			LOG.debug("Call invoked for " + this.pid.getPid());
-			betweenApplicableAndEnhancement.decrementAndGet();
-			// inService.incrementAndGet();
-			while (flag.get()) {
-				synchronized (blockingObject) {
-					try {
-						blockingObject.wait();
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-						return null;
-					}
-				}
-			}
-			incompleteServices.decrementAndGet();
-			servicesCompleted.incrementAndGet();
-			return null;
-		}
-
-	}
-
 }

@@ -172,10 +172,16 @@
 						</tr>
 					</thead>
 					<tbody id="enhancementJobs">
+						<tr class="active-end" style="display: none">
+							<td></td>
+						</tr>
 						<tr class="blocked-end" style="display: none">
 							<td></td>
 						</tr>
 						<tr class="queued-end" style="display: none">
+							<td></td>
+						</tr>
+						<tr class="finished-end" style="display: none">
 							<td></td>
 						</tr>
 						<tr class="failed-end" style="display: none">

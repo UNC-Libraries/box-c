@@ -31,9 +31,9 @@ body {
 }
 #pagewrapper {
     width: 99%;
-    margin: 3% auto;
+    margin: 1% auto;
     min-width: 750px;
-    max-width: 1600px;
+    /*max-width: 1600px;*/
     border: 1px solid #ccc;
     background-color: #fff;
 /* float: left; */

@@ -1,6 +1,7 @@
 table td li {
 	text-indent: -1em;
 	margin-left: 1em;
+	min-width: 160px;
 }
 
 .queued {
@@ -104,10 +105,14 @@ table.statusList td {
 	font-weight: bold;
 	padding-top: 6px;
 	line-height: 14px;
-	width: 80px;
+	min-width: 60px;
 	display: inline-block;
+	padding-right: 5px;
 }
 
+.jobDetails ul {
+	margin-left: 10px;
+}
 
 .expandedDetails table.statusList {
 	width: 240px;

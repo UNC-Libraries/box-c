@@ -66,7 +66,7 @@ function activateEnhancementStatus(){
 	activeView = view;
 	refresh(new Array("active"), 5, "enhancement", refreshJobType);
 	refresh(new Array("status"), 5, view, reloadEnhancementStatus);
-	refresh(new Array("blocked","queued"), 10, view, refreshJobType);
+	refresh(new Array("blocked", "queued", "finished"), 10, view, refreshJobType);
 	refresh(new Array("failed"), 10, view, refreshFailedJobType);
 }
 
@@ -191,32 +191,44 @@ function enhancementLoadDetails(messageID, type) {
 			$("#enhancementDetails").html("");
 			$(".refreshDetailsButton").data("messageID");
 			$(".refreshDetailsButton").data("type");
-		} else if (data.type == 'failed') {
-			var details = "<span>Status:</span>" + data.type + " (last refreshed " + new Date().toTimeString() + ")<br/>";
-			details += "<span>Message:</span>" + data.id + "<br/>";
-			if (data.targetLabel != null)
-				details += "<span>Label:</span>" + data.targetLabel + "<br/>";
-			details += "<span>Target:</span>" + data.targetPID + "<br/>"; 
-			details += "<span>Queued Timestamp:</span>" + dateFormat(data.queuedTimestamp, true) + "<br/>";
-			details += "<span>Action:</span><br/>" + data.action + "<br/>";
-			details += "<span>Failed service:</span><br/>" + data.serviceName + "<br/>";
-			if (data.stackTrace) {
-				details += "<span>Stack trace:</span><br/>";
-				details += "<pre>" + data.stackTrace + "</pre>";
-			}
-			$(".detailsContent").removeClass("active").removeClass("finished");
-			$(".detailsContent").addClass("failed");
-			$("#enhancementDetails").html(details);
-			$(".refreshDetailsButton").data("messageID", messageID);
-			$(".refreshDetailsButton").data("type", data.type);
-		} else if (data.type == 'queued'){
+		} else if (data.type == 'failed' || data.type == 'queued' || data.type == 'finished' || data.type == 'active' || data.type == 'blocked'){
 			var details = "<span>Status:</span>" + data.type + " (last refreshed " + new Date().toTimeString() + ")<br/>";
 			details += "<span>Message:</span>" + data.id + "<br/>";
 			if (data.targetLabel != null)
 				details += "<span>Label:</span>" + data.targetLabel + "<br/>";
 			details += "<span>Target:</span>" + data.targetPID + "<br/>";
-			details += "<span>Queued Timestamp:</span>" + dateFormat(data.queuedTimestamp, true) + "<br/>";
+			details += "<span>Queued:</span>" + dateFormat(data.queuedTimestamp, true) + "<br/>";
+			if ("finishedTimestamp" in data) {
+				details += "<span>Finished Timestamp:</span>" + dateFormat(data.finishedTimestamp, true) + "<br/>";
+			}
 			details += "<span>Action:</span>" + data.action + "<br/>";
+			if (data.serviceName != null) {
+				details += "<span>Specified service:</span>" + data.serviceName + "<br/>";
+			}
+			if ("activeService" in data && data.activeService != null) {
+				details += "<span>Active service:</span><br/>" + data.activeService + "<br/>";
+			}
+			
+			if (data.filteredServices != null && !jQuery.isEmptyObject(data.filteredServices)) {
+				details += "<span>Filtered service(s):</span><ul>";
+				for (serviceIndex in data.filteredServices) {
+					details += "<li>" + data.filteredServices[serviceIndex] + "</li>";
+				}
+				details += "</ul>";
+			}
+			
+			if (data.failedServices != null && !jQuery.isEmptyObject(data.failedServices)) {
+				details += "<span>Failed service(s):</span><ul>";
+				for (serviceIndex in data.failedServices) {
+					details += "<li>" + data.failedServices[serviceIndex] + "</li>";
+				}
+				details += "</ul>";
+			}
+			
+			if ("stackTrace" in data) {
+				details += "<span>Stack trace:</span><br/>";
+				details += "<pre>" + data.stackTrace + "</pre>";
+			}
 			if ("xml" in data.uris) {
 				$.get(servicesUrl + data.uris.xml, function(data){
 					var xmlstr = data.xml ? data.xml : (new XMLSerializer()).serializeToString(data);
@@ -225,7 +237,8 @@ function enhancementLoadDetails(messageID, type) {
 						.append(xmlElement);
 				});
 			}
-			$(".detailsContent").removeClass("active").removeClass("finished").removeClass("failed");
+			$(".detailsContent").removeClass("active").removeClass("finished").removeClass("failed").removeClass("blocked").removeClass("queued");
+			$(".detailsContent").addClass(data.type);
 			$("#enhancementDetails").html(details);
 			$(".refreshDetailsButton").data("messageID", messageID);
 			$(".refreshDetailsButton").data("type", data.type);
@@ -319,22 +332,22 @@ function enhancementFailedWriteJob(d, type) {
 			out += "<td>"+d.targetLabel+"</td>";
 		else out += "<td>"+d.targetPID+"</td>";
 		
-		out += "<td>";
+		out += "<td><ul>";
 		
 		for (failedService in d.failedServices){
 			className = d.failedServices[failedService];
 			lastIndex = className.lastIndexOf(".");
 			if (lastIndex != -1)
 				className = className.substring(lastIndex+1);
-			out += className + "<br/>";
+			out += "<li>" + className + "</li>";
 		}
-		out += "</td></tr>";
+		out += "</ul></td></tr>";
 	}
 	
 	return out;
 }
 
-function dateFormat(timestamp, showYear) {
+function dateFormat(timestamp, showYear, showSeconds) {
 	var date = new Date(timestamp);
 	// hours part from the timestamp
 	var hours = date.getHours();
@@ -354,12 +367,17 @@ function dateFormat(timestamp, showYear) {
 		minutes = "0"+minutes;
 	}
 	// seconds part from the timestamp
-	//var seconds = date.getSeconds();
+	
 	// will display time in 10:30:23 format
 	var formattedTime = (date.getMonth()+1)+"/"+date.getDate();
 	if (showYear == true)
 		formattedTime += "/"+date.getFullYear();
-	formattedTime += " "+hours+':'+minutes+' '+ampm;
+	formattedTime += " "+hours+':'+minutes;
+	if (showSeconds) {
+		var seconds = date.getSeconds();
+		formattedTime += ":" + seconds;
+	}
+	formattedTime += ' ' + ampm;
 	//return date.toUTCString();
 	return formattedTime;
 }

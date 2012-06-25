@@ -145,6 +145,8 @@
 		<property name="unexpectedExceptionDelay" value="${conductor.services.unexpectedExceptionDelay}"/>
 		<property name="beforeExecuteDelay" value="${conductor.services.beforeExecuteDelay}"/>
 		<property name="failedPids" ref="servicesFailedPids"/>
+		<property name="finishedMessageTimeout" value="${scheduled.cleanupFinishedEnhancements.windowMilli}"/>
+		<property name="maxFinishedMessages" value="${conductor.services.maxFinishedMessages}"/>
 	</bean>
 	
 	<bean id="solrUpdateConductor" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor"
@@ -293,6 +295,12 @@
 		<property name="targetObject" ref="embargoUpdateService" />
 		<property name="targetMethod" value="updateEmbargoes" />
 	</bean>
+	
+	<bean id="cleanupFinishedEnhancementsJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="enhancementConductor" />
+		<property name="targetMethod" value="cleanupFinishedMessages" />
+	</bean>
+	
 		
 	<bean id="backupFailedPidsJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
 		<property name="targetObject" ref="servicesFailedPids" />
@@ -319,6 +327,11 @@
 		<property name="cronExpression" value="${scheduled.backupFailedPids.cron}" />
 	</bean>
 	
+	<bean id="cleanupFinishedEnhancementsCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="cleanupFinishedEnhancementsJobDetail" />
+		<property name="cronExpression" value="${scheduled.cleanupFinishedEnhancements.cron}" />
+	</bean>
+	
 	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
@@ -327,6 +340,7 @@
 				<ref bean="catchUpActivateCronTrigger" />
 				<ref bean="catchUpDeactivateCronTrigger" />
 				<ref bean="backupFailedPidsCronTrigger" />
+				<ref bean="cleanupFinishedEnhancementsCronTrigger" />
 			</list>
 		</property>
 		<property name="autoStartup">
