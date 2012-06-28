@@ -18,15 +18,18 @@ package edu.unc.lib.dl.data.ingest.solr;
 import java.util.Date;
 
 public class DeleteChildrenPriorToTimestampRequest extends CountDownUpdateRequest {
+	private static final long serialVersionUID = 1L;
 	protected Date timestampDate;
 
-	public DeleteChildrenPriorToTimestampRequest(String pid, SolrUpdateAction action, long timestamp) {
-		super(pid, action);
+	public DeleteChildrenPriorToTimestampRequest(String pid, SolrUpdateAction action, String messageID,
+			UpdateNodeRequest parent, long timestamp) {
+		super(pid, action, messageID, parent);
 		this.timestampDate = new Date(timestamp);
 	}
 
-	public DeleteChildrenPriorToTimestampRequest(String pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest, long timestamp) {
-		super(pid, action, linkedRequest);
+	public DeleteChildrenPriorToTimestampRequest(String pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest,
+			String messageID, UpdateNodeRequest parent, long timestamp) {
+		super(pid, action, linkedRequest, messageID, parent);
 		this.timestampDate = new Date(timestamp);
 	}
 
@@ -36,8 +39,8 @@ public class DeleteChildrenPriorToTimestampRequest extends CountDownUpdateReques
 
 	@Override
 	public String toString() {
-		return "DeleteChildrenPriorToTimestampRequest [timestampDate=" + timestampDate + ", blockCount=" + blockCount + ", pid="
-				+ pid + ", action=" + action + ", linkedRequest=" + linkedRequest + "]";
+		return "DeleteChildrenPriorToTimestampRequest [timestampDate=" + timestampDate + ", blockCount=" + blockCount
+				+ ", pid=" + pid + ", action=" + action + ", linkedRequest=" + linkedRequest + "]";
 	}
-	
+
 }

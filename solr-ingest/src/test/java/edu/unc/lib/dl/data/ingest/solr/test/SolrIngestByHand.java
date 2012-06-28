@@ -65,26 +65,26 @@ public class SolrIngestByHand {
 	public void test() {
 		ExecutionTimer t = new ExecutionTimer();
 		t.start();
-		solrIngestService.offer(new SolrUpdateRequest("uuid:2cc0ad2f-ce71-4a79-ba19-7e254f56d635", SolrUpdateAction.ADD));
-		solrIngestService.offer(new SolrUpdateRequest("uuid:64826711-afe8-410a-ab4a-9e710e5e3b0b", SolrUpdateAction.ADD));
-		solrIngestService.offer(new SolrUpdateRequest("uuid:2cc0ad2f-ce71-4a79-ba19-7e254f56d635", SolrUpdateAction.ADD));
-		solrIngestService.offer(new SolrUpdateRequest("uuid:ff456a7c-3434-4cd1-956e-f419b0d78b2c", SolrUpdateAction.ADD));
+		solrIngestService.offer("uuid:2cc0ad2f-ce71-4a79-ba19-7e254f56d635", SolrUpdateAction.ADD);
+		solrIngestService.offer("uuid:64826711-afe8-410a-ab4a-9e710e5e3b0b", SolrUpdateAction.ADD);
+		solrIngestService.offer("uuid:2cc0ad2f-ce71-4a79-ba19-7e254f56d635", SolrUpdateAction.ADD);
+		solrIngestService.offer("uuid:ff456a7c-3434-4cd1-956e-f419b0d78b2c", SolrUpdateAction.ADD);
 
-		solrIngestService.offer(new SolrUpdateRequest("uuid:2cc0ad2f-ce71-4a79-ba19-7e254f56d635", SolrUpdateAction.ADD));
+		solrIngestService.offer("uuid:2cc0ad2f-ce71-4a79-ba19-7e254f56d635", SolrUpdateAction.ADD);
 		System.out.println("0:" + solrIngestService.statusString());
-		solrIngestService.offer(new SolrUpdateRequest("uuid:6b163ea0-b91e-4658-b1a9-fc62d36db778", SolrUpdateAction.ADD));
-		solrIngestService.offer(new SolrUpdateRequest("uuid:abe485b4-9411-4402-b0aa-f88bf5dd690b", SolrUpdateAction.ADD));
-		solrIngestService.offer(new SolrUpdateRequest("uuid:2cc0ad2f-ce71-4a79-ba19-7e254f56d635", SolrUpdateAction.ADD));
+		solrIngestService.offer("uuid:6b163ea0-b91e-4658-b1a9-fc62d36db778", SolrUpdateAction.ADD);
+		solrIngestService.offer("uuid:abe485b4-9411-4402-b0aa-f88bf5dd690b", SolrUpdateAction.ADD);
+		solrIngestService.offer("uuid:2cc0ad2f-ce71-4a79-ba19-7e254f56d635", SolrUpdateAction.ADD);
 		System.out.println("1:" + solrIngestService.statusString());
-		solrIngestService.offer(new SolrUpdateRequest("uuid:c5ace0aa-cb3e-4eb3-9be8-f5c30253c275", SolrUpdateAction.ADD));
-		solrIngestService.offer(new SolrUpdateRequest("uuid:94a5b617-b2bb-4fb1-a5ef-aeb70ecde0bc", SolrUpdateAction.ADD));
+		solrIngestService.offer("uuid:c5ace0aa-cb3e-4eb3-9be8-f5c30253c275", SolrUpdateAction.ADD);
+		solrIngestService.offer("uuid:94a5b617-b2bb-4fb1-a5ef-aeb70ecde0bc", SolrUpdateAction.ADD);
 		try {
 			System.out.println("Processing tests");
 			Thread.sleep(5000L); // one second
 		} catch (Exception e) {
 		}
 		System.out.println("2:" + solrIngestService.statusString());
-		solrIngestService.offer(new SolrUpdateRequest("uuid:353323d2-253c-48eb-94d0-bee7ab596ead", SolrUpdateAction.ADD));
+		solrIngestService.offer("uuid:353323d2-253c-48eb-94d0-bee7ab596ead", SolrUpdateAction.ADD);
 		System.out.println("3:" + solrIngestService.statusString());
 		do {
 			try {
@@ -102,7 +102,7 @@ public class SolrIngestByHand {
 	
 	//@Test
 	public void testAdd(){
-		solrIngestService.offer(new SolrUpdateRequest("uuid:48c47dfc-88a6-4429-8d3b-1f6f0fa52f29", SolrUpdateAction.ADD));
+		solrIngestService.offer("uuid:48c47dfc-88a6-4429-8d3b-1f6f0fa52f29", SolrUpdateAction.ADD);
 		do {
 			try {
 				System.out.println("Processing tests");
@@ -117,7 +117,7 @@ public class SolrIngestByHand {
 	public void testRecursiveAdd(){
 		//uuid:48c47dfc-88a6-4429-8d3b-1f6f0fa52f29
 		String pid = "uuid:aac4a586-8afa-4144-b39a-a2f19908065e";//"uuid:0a045247-996e-4bfc-a2db-11925e5bad58";
-		solrIngestService.offer(new SolrUpdateRequest(pid, SolrUpdateAction.RECURSIVE_ADD));
+		solrIngestService.offer(pid, SolrUpdateAction.RECURSIVE_ADD);
 		do {
 			try {
 				System.out.println("Processing tests");
@@ -155,7 +155,6 @@ public class SolrIngestByHand {
 			System.out.println("edt formatted: " + formatter.format(edtTime));
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			System.out.println(e);
 		}
 	}
@@ -164,7 +163,7 @@ public class SolrIngestByHand {
 	public void testRecursiveReindex(){
 		String pid = "uuid:96f9821e-e9ed-410c-ab88-2e293bd3d1b5";
 		//String pid = "uuid:353323d2-253c-48eb-94d0-bee7ab596ead";
-		solrIngestService.offer(new SolrUpdateRequest(pid, SolrUpdateAction.RECURSIVE_REINDEX));
+		solrIngestService.offer(pid, SolrUpdateAction.RECURSIVE_REINDEX);
 		try {
 			System.out.println("Processing tests");
 			Thread.sleep(25000L); // one second
@@ -184,7 +183,7 @@ public class SolrIngestByHand {
 	public void testCleanReindex(){
 		String pid = "uuid:96f9821e-e9ed-410c-ab88-2e293bd3d1b5";
 		//String pid = "uuid:353323d2-253c-48eb-94d0-bee7ab596ead";
-		solrIngestService.offer(new SolrUpdateRequest(pid, SolrUpdateAction.CLEAN_REINDEX));
+		solrIngestService.offer(pid, SolrUpdateAction.CLEAN_REINDEX);
 		try {
 			System.out.println("Processing tests");
 			Thread.sleep(25000L); // one second
@@ -210,7 +209,6 @@ public class SolrIngestByHand {
 			XMLOutputter out = new XMLOutputter();
 			out.output(doc, System.out);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

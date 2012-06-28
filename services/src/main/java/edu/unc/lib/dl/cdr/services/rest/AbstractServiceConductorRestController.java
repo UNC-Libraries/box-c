@@ -89,11 +89,12 @@ public class AbstractServiceConductorRestController implements ServletContextAwa
 	 * Retrieves labels for action messages and stores them to the message
 	 * @param messages
 	 */
-	protected void populateLabels(List<ActionMessage> messages) {
+	protected void populateLabels(List<?> messages) {
 		List<String> retrievalList = new ArrayList<String>();
 		List<ActionMessage> targetedMessages = new ArrayList<ActionMessage>();
 		
-		for (ActionMessage message: messages) {
+		for (Object messageObject: messages) {
+			ActionMessage message = (ActionMessage)messageObject;
 			if (message.getTargetLabel() == null) {
 				retrievalList.add(message.getTargetID());
 				targetedMessages.add(message);

@@ -16,7 +16,7 @@ $(function() {
 				activateIngestStatus();
 				break;
 			case 1:
-				//loadIndexingDetails();
+				activateIndexingStatus();
 				break;
 			case 2:
 				activateEnhancementStatus();
@@ -39,8 +39,12 @@ $(function() {
 		}
 	});
 	
-	$(".refreshDetailsButton").click(function(){
+	$("#enhancementData .refreshDetailsButton").click(function(){
 		enhancementLoadDetails($(".refreshDetailsButton").data("messageID"), $(".refreshDetailsButton").data("type"));
+	});
+	
+	$("#indexingData .refreshDetailsButton").click(function(){
+		indexingLoadDetails($(".refreshDetailsButton").data("messageID"), $(".refreshDetailsButton").data("type"));
 	});
 });
 
@@ -50,7 +54,7 @@ function refresh(types, seconds, viewName, refreshFunction) {
 	for(type in types) {
 		refreshFunction(viewName, types[type]);
 	}
-	autorefresh=setTimeout(function(){refresh(types, seconds, viewName, refreshFunction)},1000*seconds);
+	autorefresh=setTimeout(function(){refresh(types, seconds, viewName, refreshFunction);},1000*seconds);
 }
 
 function activateIngestStatus(){
@@ -81,8 +85,8 @@ function activateIndexingStatus(){
 	view = "indexing";
 	activeView = view;
 	//refresh(new Array("active"), 5, "enhancement", refreshJobType);
-	refresh(new Array("status"), 5, view, reloadEnhancementStatus);
-	//refresh(new Array("blocked","queued", "failed"), 10, view, refreshJobType);
+	refresh(new Array("status"), 5, view, reloadIndexingStatus);
+	refresh(new Array("jobs"), 5, view, refreshJobType);
 }
 
 function reloadIngestStatus(viewName, type) {
@@ -149,12 +153,29 @@ function reloadCatchupStatus(viewName, type) {
 	);
 }
 
-function refreshJobType(viewName, type, subType) {
-	subType = subType || "";
+function reloadIndexingStatus(viewName, type) {
+	$.getJSON(
+			restUrl+"indexing",
+			{},
+			function(json) {
+				// idle active failedJobs activeJobs queuedJobs
+				$("#indexingActive").html(""+json.active);
+				$("#indexingIdle").html(""+json.idle);
+				$("#indexingQueuedJobs").html(""+json.queuedJobs);
+				$("#indexingActiveJobs").html(""+json.activeJobs);
+				$("#indexingRefreshed").html(new Date().toTimeString());
+			}
+		);
+}
+
+function refreshJobType(viewName, type, params) {
 	$.getJSON(
 	 	restUrl+viewName+"/"+type,
 		{},
 		function(json) {
+			var subType = "";
+			if (params != null && params.subType != null)
+				subType = params.subType;
 			$("#" + viewName + "Jobs").children("tr."+type).remove();
 			for(job in json.jobs) {
 				$("#" + viewName + "Jobs tr."+type+"-end").after(window[viewName+subType+"WriteJob"](json.jobs[job], type));
@@ -165,7 +186,7 @@ function refreshJobType(viewName, type, subType) {
 }
 
 function refreshFailedJobType(viewName, type) {
-	refreshJobType(viewName, type, "Failed");
+	refreshJobType(viewName, type, {"subType": "Failed"});
 }
 
 function ingestInitDetails(type) {
@@ -187,10 +208,10 @@ function ingestInitDetails(type) {
 function enhancementLoadDetails(messageID, type) {
 	$.get(restUrl + "enhancement/job/" + messageID + "?type=" + type, function(data){
 		if (data == null || data.type == null) {
-			$(".detailsContent").removeClass("active").removeClass("finished").removeClass("failed");
+			$("#enhancementData .detailsContent").removeClass("active").removeClass("finished").removeClass("failed");
 			$("#enhancementDetails").html("");
-			$(".refreshDetailsButton").data("messageID");
-			$(".refreshDetailsButton").data("type");
+			$("enhancementData .refreshDetailsButton").data("messageID");
+			$("enhancementData .refreshDetailsButton").data("type");
 		} else if (data.type == 'failed' || data.type == 'queued' || data.type == 'finished' || data.type == 'active' || data.type == 'blocked'){
 			var details = "<span>Status:</span>" + data.type + " (last refreshed " + new Date().toTimeString() + ")<br/>";
 			details += "<span>Message:</span>" + data.id + "<br/>";
@@ -237,11 +258,11 @@ function enhancementLoadDetails(messageID, type) {
 						.append(xmlElement);
 				});
 			}
-			$(".detailsContent").removeClass("active").removeClass("finished").removeClass("failed").removeClass("blocked").removeClass("queued");
-			$(".detailsContent").addClass(data.type);
+			$("#enhancementData .detailsContent").removeClass("active").removeClass("finished").removeClass("failed").removeClass("blocked").removeClass("queued");
+			$("#enhancementData .detailsContent").addClass(data.type);
 			$("#enhancementDetails").html(details);
-			$(".refreshDetailsButton").data("messageID", messageID);
-			$(".refreshDetailsButton").data("type", data.type);
+			$("#enhancementData .refreshDetailsButton").data("messageID", messageID);
+			$("#enhancementData .refreshDetailsButton").data("type", data.type);
 		}
 	});
 }
@@ -304,6 +325,63 @@ function refreshCatchup(viewName, type) {
 		 	}
 		}
 	);
+}
+
+// Indexing
+function indexingLoadDetails(messageID, type) {
+	$.get(restUrl + view + "/jobs/job/" + messageID, function(data){
+		var details = "<span>Status:</span>" + data.status.toLowerCase() + " (last refreshed " + new Date().toTimeString() + ")<br/>";
+		details += "<span>Message:</span>" + data.id + "<br/>";
+		if (data.targetLabel != null)
+			details += "<span>Label:</span>" + data.targetLabel + "<br/>";
+		details += "<span>Target:</span>" + data.targetPID + "<br/>";
+		details += "<span>Queued:</span>" + dateFormat(data.queuedTimestamp, true) + "<br/>";
+		
+		if (data.parent != null && data.parent.label != "SOLR_UPDATE:ROOT"){
+			details += "<span>Parent Operation:</span>" + data.parent.label + "<br/>";
+		}
+		
+		if (data.childrenPending > 0) {
+			details += "<span>Progress:</span>" + data.childrenProcessed + "/" + data.childrenPending + "<br/>";
+			details += "<span>Sub-operations:</span><br/><ul>";
+			for (statusKey in data.childrenCounts) {
+				if (data.childrenCounts[statusKey] > 0 )
+				details += "<li>" + statusKey + ": " + data.childrenCounts[statusKey] + "</li>"; 
+			}
+			details += "</ul>";
+		}
+		
+		details += "<span>Action:</span>" + data.action.label + "<br/>";
+		
+		$("#indexingDetails").html(details);
+		
+		$("#indexingData .detailsContent").removeClass("active").removeClass("finished").removeClass("failed").removeClass("blocked").removeClass("queued").removeClass("inprogress");
+		$("#indexingData .detailsContent").addClass(data.status);
+		
+		$("#indexingData .refreshDetailsButton").data("messageID", data.id).data("type", type);
+	});
+}
+
+function indexingInitDetails(type) {
+	$('tr.parent.' + type).attr("title","Click for message details")
+		.click(function(){
+			var messageID = this.id.substring(1);
+			indexingLoadDetails(messageID, type);
+		});
+}
+
+function indexingWriteJob(job, type) {
+	var out = "<tr class='parent "+ type +" " + job.status + " detailsLink' id='a"+job.id+"'>";
+	out += "<td>"+job.status.toLowerCase()+"</td>";
+	if (job.targetLabel == null)
+		out += "<td>"+job.targetPID+"</td>";
+	else out += "<td>"+job.targetLabel+"</td>";
+	out += "<td>"+job.action.label+"</td>";
+	if (job.childrenPending > 0)
+		out += "<td>"+job.childrenProcessed + "/" + job.childrenPending+"</td>";
+	else out += "<td></td>";
+	out += "</tr>";
+	return out;
 }
 
 function enhancementWriteJob(d, type) {

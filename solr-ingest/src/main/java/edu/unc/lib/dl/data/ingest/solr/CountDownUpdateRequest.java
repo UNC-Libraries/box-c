@@ -18,16 +18,16 @@ package edu.unc.lib.dl.data.ingest.solr;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CountDownUpdateRequest extends SolrUpdateRequest {
-	
+	private static final long serialVersionUID = 1L;
 	AtomicInteger blockCount;
 	
-	public CountDownUpdateRequest(String pid, SolrUpdateAction action){
-		super(pid, action);
+	public CountDownUpdateRequest(String pid, SolrUpdateAction action, String messageID, UpdateNodeRequest parent){
+		super(pid, action, messageID, parent);
 		this.blockCount = new AtomicInteger(0);
 	}
 	
-	public CountDownUpdateRequest(String pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest){
-		super(pid, action, linkedRequest);
+	public CountDownUpdateRequest(String pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
+		super(pid, action, linkedRequest, messageID, parent);
 		this.blockCount = new AtomicInteger(0);
 	}
 	

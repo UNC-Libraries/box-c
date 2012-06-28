@@ -121,10 +121,39 @@
 					</td>
 					<td><span id="indexingActiveJobs"></span>
 					</td>
-					<td><span id="queueRefreshed"></span>
+					<td><span id="indexingRefreshed"></span>
 					</td>
 				</tr>
 			</table>
+			<p>Indexing Jobs</p>
+			<div id="indexingData">
+				<div class="detailsContainer">
+					<div class="detailsColumn">
+						<div class="detailsView">
+							<h2>Details <a class="expandDetails">(expand)</a><img title="Refresh details" class="refreshDetailsButton" src="../../images/arrow_refresh.png"/></h2>
+							<div class="detailsContent">
+								<div id="indexingDetails" class="jobDetails"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<table class="statusList">
+					<thead>
+						<tr class="narrow">
+							<th>status</th>
+							<th>label</th>
+							<th>action</th>
+							<th>progress</th>
+						</tr>
+					</thead>
+					<tbody id="indexingJobs">
+						<tr class="jobs-end" style="display: none">
+							<td></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div style="clear:both;"></div>
 		</div>
 		<div id="servicetabs-3">
 			<table>
