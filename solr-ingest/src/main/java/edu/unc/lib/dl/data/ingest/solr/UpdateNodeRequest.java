@@ -94,11 +94,15 @@ public class UpdateNodeRequest implements ActionMessage {
 		if (ProcessingStatus.FINISHED.equals(status))
 			return;
 		
-		if (children == null || childrenProcessed.get() == childrenPending.get()) {
-			status = ProcessingStatus.FINISHED;
+		if (ProcessingStatus.FAILED.equals(status)) {
 			timeFinished = System.currentTimeMillis();
 		} else {
-			status = ProcessingStatus.INPROGRESS;
+			if (children == null || childrenProcessed.get() == childrenPending.get()) {
+				status = ProcessingStatus.FINISHED;
+				timeFinished = System.currentTimeMillis();
+			} else {
+				status = ProcessingStatus.INPROGRESS;
+			}
 		}
 		parent.childCompleted();
 	}

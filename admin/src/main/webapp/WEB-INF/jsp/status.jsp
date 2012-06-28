@@ -110,6 +110,8 @@
 					<th>Idle</th>
 					<th>Queued</th>
 					<th>Active</th>
+					<th>Failed</th>
+					<th>Finished</th>
 					<th>Refreshed</th>
 				</tr>
 				<tr>
@@ -120,6 +122,10 @@
 					<td><span id="indexingQueuedJobs"></span>
 					</td>
 					<td><span id="indexingActiveJobs"></span>
+					</td>
+					<td><span id="indexingFailedJobs"></span>
+					</td>
+					<td><span id="indexingFinishedJobs"></span>
 					</td>
 					<td><span id="indexingRefreshed"></span>
 					</td>
@@ -163,6 +169,7 @@
 					<th>Queued</th>
 					<th>Active</th>
 					<th>Failed</th>
+					<th>Finished</th>
 					<th>Refreshed</th>
 				</tr>
 				<tr>
@@ -175,6 +182,8 @@
 					<td><span id="enhancementActiveJobs"></span>
 					</td>
 					<td><span id="enhancementFailedJobs"></span>
+					</td>
+					<td><span id="enhancementFinishedJobs"></span>
 					</td>
 					<td><span id="enhancementRefreshed"></span>
 					</td>

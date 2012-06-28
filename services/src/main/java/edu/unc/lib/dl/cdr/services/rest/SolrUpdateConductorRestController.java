@@ -51,6 +51,7 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 	public static final String QUEUED_PATH = "queued";
 	public static final String BLOCKED_PATH = "blocked";
 	public static final String ACTIVE_PATH = "active";
+	public static final String FAILED_PATH = "failed";
 	public static final String CHILDREN_JOBS_PATH = "jobs";
 	
 	@Resource
@@ -63,7 +64,9 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 		result.put("pendingJobs", this.solrUpdateConductor.getQueueSize());
 		result.put("queuedJobs", this.solrUpdateConductor.getPidQueue().size());
 		result.put("blockedJobs", this.solrUpdateConductor.getCollisionList().size());
-		result.put("activeJobs", this.solrUpdateConductor.getThreadPoolExecutor().getRunningNow().size());
+		result.put("failedJobs", this.solrUpdateConductor.getFailedMessages().size());
+		result.put("finishedJobs", this.solrUpdateConductor.getFinishedMessages().size());
+		result.put("activeJobs", this.solrUpdateConductor.getActiveMessages().size());
 		
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
@@ -71,6 +74,7 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 		uris.put("queuedJobs", BASE_PATH + QUEUED_PATH);
 		uris.put("blockedJobs", BASE_PATH + BLOCKED_PATH);
 		uris.put("activeJobs", BASE_PATH + ACTIVE_PATH);
+		uris.put("failedJobs", BASE_PATH + FAILED_PATH);
 		uris.put("childrenJobs", BASE_PATH + CHILDREN_JOBS_PATH);
 		
 		return result;
@@ -241,16 +245,24 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 	public @ResponseBody Map<String, ? extends Object> getActiveInfo( 
 			@RequestParam(value = "begin", required = false) Integer begin,
 			@RequestParam(value = "end", required = false) Integer end) {
-		
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		//Duplicate pid queue so that we can iterate over it.
-		List<ActionMessage> messageList = new ArrayList<ActionMessage>();
-		Set<SolrUpdateRunnable> currentlyRunning = this.solrUpdateConductor.getThreadPoolExecutor().getRunningNow();
-		for (SolrUpdateRunnable runningTask : currentlyRunning) {
-			messageList.add(runningTask.getUpdateRequest());
-		}
+		List<ActionMessage> messageList = new ArrayList<ActionMessage>(this.solrUpdateConductor.getActiveMessages());
 		addMessageListInfo(result, messageList, begin, end, ACTIVE_PATH);
+		
+		return result;
+	}
+	
+	@RequestMapping(value = FAILED_PATH, method = RequestMethod.GET)
+	public @ResponseBody Map<String, ? extends Object> getFailedInfo( 
+			@RequestParam(value = "begin", required = false) Integer begin,
+			@RequestParam(value = "end", required = false) Integer end) {
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		//Duplicate pid queue so that we can iterate over it.
+		List<ActionMessage> messageList = new ArrayList<ActionMessage>(this.solrUpdateConductor.getFailedMessages());
+		addMessageListInfo(result, messageList, begin, end, FAILED_PATH);
 		
 		return result;
 	}
@@ -262,12 +274,17 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 	
 	@RequestMapping(value = { BLOCKED_PATH + "/job/{id}" }, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getBlockedJobInfo(@PathVariable("id") String id){
-		return getJobFullInfo(lookupJobInfo(id, new ArrayList<ActionMessage>(this.solrUpdateConductor.getPidQueue())), BLOCKED_PATH);
+		return getJobFullInfo(lookupJobInfo(id, new ArrayList<ActionMessage>(this.solrUpdateConductor.getCollisionList())), BLOCKED_PATH);
 	}
 	
 	@RequestMapping(value = { ACTIVE_PATH + "/job/{id}" }, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getActiveJobInfo(@PathVariable("id") String id){
-		return getJobFullInfo(lookupJobInfo(id, new ArrayList<ActionMessage>(this.solrUpdateConductor.getPidQueue())), ACTIVE_PATH);
+		return getJobFullInfo(lookupJobInfo(id, new ArrayList<ActionMessage>(this.solrUpdateConductor.getActiveMessages())), ACTIVE_PATH);
+	}
+	
+	@RequestMapping(value = { FAILED_PATH + "/job/{id}" }, method = RequestMethod.GET)
+	public @ResponseBody Map<String, ? extends Object> getFailedJobInfo(@PathVariable("id") String id){
+		return getJobFullInfo(lookupJobInfo(id, new ArrayList<ActionMessage>(this.solrUpdateConductor.getFailedMessages())), FAILED_PATH);
 	}
 	
 	/**

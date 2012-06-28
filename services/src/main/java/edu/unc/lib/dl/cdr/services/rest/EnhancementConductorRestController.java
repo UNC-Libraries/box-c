@@ -87,7 +87,8 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		result.put("queuedJobs", this.enhancementConductor.getPidQueue().size());
 		result.put("blockedJobs", this.enhancementConductor.getCollisionList().size());
 		result.put("failedJobs", this.enhancementConductor.getFailedPids().size());
-		result.put("activeJobs", this.enhancementConductor.getExecutor().getRunningNow().size());
+		result.put("activeJobs", this.enhancementConductor.getActiveMessages().size());
+		result.put("finishedJobs", this.enhancementConductor.getFinishedMessages().size());
 		
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);

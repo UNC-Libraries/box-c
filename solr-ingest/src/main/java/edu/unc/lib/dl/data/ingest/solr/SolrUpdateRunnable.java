@@ -155,7 +155,7 @@ public class SolrUpdateRunnable implements Runnable {
 				}
 			}
 		} catch (Exception e) {
-			LOG.error("Error while performing a recursive add on " + updateRequest.getTargetID(), e);
+			throw new IndexingException("Error while performing a recursive add on " + updateRequest.getTargetID(), e);
 		}
 	}
 
@@ -171,8 +171,7 @@ public class SolrUpdateRunnable implements Runnable {
 	private void deleteChildrenPriorToTimestamp(SolrUpdateRequest updateRequest) throws Exception {
 		try {
 			if (!(updateRequest instanceof DeleteChildrenPriorToTimestampRequest)) {
-				LOG.error("Improper request issued to deleteChildrenPriorToTimestamp.  The request must be of type DeleteChildrenPriorToTimestampRequest");
-				return;
+				throw new IndexingException("Improper request issued to deleteChildrenPriorToTimestamp.  The request must be of type DeleteChildrenPriorToTimestampRequest");
 			}
 			DeleteChildrenPriorToTimestampRequest cleanupRequest = (DeleteChildrenPriorToTimestampRequest) updateRequest;
 
@@ -217,7 +216,7 @@ public class SolrUpdateRunnable implements Runnable {
 				solrUpdateService.offer(child.getId(), SolrUpdateAction.DELETE);
 			}
 		} catch (Exception e) {
-			LOG.error("Error encountered in deleteChildrenPriorToTimestampRequest for " + updateRequest.getTargetID(), e);
+			throw new IndexingException("Error encountered in deleteChildrenPriorToTimestampRequest for " + updateRequest.getTargetID(), e);
 		}
 	}
 
@@ -338,7 +337,7 @@ public class SolrUpdateRunnable implements Runnable {
 				}
 			}
 		} catch (Exception e) {
-			LOG.error("Error while performing a recursive add on " + updateRequest.getTargetID(), e);
+			throw new IndexingException("Error while performing a recursive add on " + updateRequest.getTargetID(), e);
 		}
 	}
 
@@ -367,7 +366,7 @@ public class SolrUpdateRunnable implements Runnable {
 					LOG.warn("Retry attempt to retrieve object view XML was interrupted", e);
 					Thread.currentThread().interrupt();
 				} catch (Exception e2) {
-					LOG.error("Failed to get ObjectViewXML for " + updateRequest.getTargetID() + " after two attempts.", e2);
+					throw new IndexingException("Failed to get ObjectViewXML for " + updateRequest.getTargetID() + " after two attempts.", e2);
 				}
 			}
 
@@ -495,8 +494,7 @@ public class SolrUpdateRunnable implements Runnable {
 					try {
 						solrUpdateService.getSolrDataAccessLayer().updateIndex(addDocString);
 					} catch (Exception e) {
-						LOG.error("Failed to ingest update document to Solr", e);
-						LOG.error(addDocString);
+						throw new IndexingException("Failed to ingest update document to Solr", e, addDocString);
 					}
 					t.end();
 					LOG.info("Uploaded document to Solr: " + t.duration());
@@ -545,6 +543,7 @@ public class SolrUpdateRunnable implements Runnable {
 					break;
 			}
 		} catch (Exception e) {
+			updateRequest.setStatus(ProcessingStatus.FAILED);
 			LOG.error("An error occurred while attempting perform action " + updateRequest.getAction() + " on object "
 					+ updateRequest.getTargetID(), e);
 		}
@@ -577,7 +576,11 @@ public class SolrUpdateRunnable implements Runnable {
 					updateRequest.requestCompleted();
 					solrUpdateService.getActiveMessages().remove(updateRequest);
 					solrUpdateService.getLockedPids().remove(pid);
-					solrUpdateService.getFinishedMessages().add(updateRequest);
+					if (ProcessingStatus.FAILED.equals(updateRequest.getStatus())) {
+						solrUpdateService.getFailedMessages().add(updateRequest);
+					} else {
+						solrUpdateService.getFinishedMessages().add(updateRequest);
+					}
 					LOG.debug("Processed pid " + pid);
 				}
 			} else {

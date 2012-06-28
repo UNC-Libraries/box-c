@@ -119,6 +119,7 @@ function reloadEnhancementStatus(viewName, type) {
 			$("#enhancementQueuedJobs").html(""+json.queuedJobs);
 			$("#enhancementActiveJobs").html(""+json.activeJobs);
 			$("#enhancementFailedJobs").html(""+json.failedJobs);
+			$("#enhancementFinishedJobs").html(""+json.finishedJobs);
 			$("#enhancementRefreshed").html(new Date().toTimeString());
 		}
 	);
@@ -163,6 +164,8 @@ function reloadIndexingStatus(viewName, type) {
 				$("#indexingIdle").html(""+json.idle);
 				$("#indexingQueuedJobs").html(""+json.queuedJobs);
 				$("#indexingActiveJobs").html(""+json.activeJobs);
+				$("#indexingFailedJobs").html(""+json.failedJobs);
+				$("#indexingFinishedJobs").html(""+json.finishedJobs);
 				$("#indexingRefreshed").html(new Date().toTimeString());
 			}
 		);

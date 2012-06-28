@@ -62,6 +62,7 @@ public class SolrUpdateService {
 	protected List<SolrUpdateRequest> collisionList = null;
 	protected List<SolrUpdateRequest> finishedMessages = null;
 	protected List<SolrUpdateRequest> activeMessages = null;
+	protected List<SolrUpdateRequest> failedMessages = null;
 	protected Set<String> lockedPids = null;
 	protected int maxThreads = 3;
 	protected long recoverableDelay = 0;
@@ -75,6 +76,7 @@ public class SolrUpdateService {
 		collisionList = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		finishedMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		activeMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
+		failedMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		updateDocTransformer = new UpdateDocTransformer();
 		root = new UpdateNodeRequest(identifier + ":ROOT", null);
 	}
@@ -248,6 +250,10 @@ public class SolrUpdateService {
 
 	public List<SolrUpdateRequest> getActiveMessages() {
 		return activeMessages;
+	}
+
+	public List<SolrUpdateRequest> getFailedMessages() {
+		return failedMessages;
 	}
 
 	public UpdateNodeRequest getRoot() {
