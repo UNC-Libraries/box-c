@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.unc.lib.cdr</groupId>
 	<artifactId>cdr</artifactId>
@@ -106,7 +105,8 @@
 		<module>solr-ingest</module>
 		<module>solr-search</module>
 		<module>sword-server</module>
-	</modules>
+    <module>forms</module>
+  </modules>
 
 	<reporting>
 		<plugins>
@@ -128,12 +128,12 @@
 			<properties>
 				<repositoryProtocol>https</repositoryProtocol>
 				<repositoryHost>localhost</repositoryHost>
-				<repositoryPort></repositoryPort>
-				<repositoryContext></repositoryContext>
+				<repositoryPort/>
+				<repositoryContext/>
 
 				<fedoraProtocol>https</fedoraProtocol>
 				<fedoraHost>localhost</fedoraHost>
-				<fedoraPort></fedoraPort>
+				<fedoraPort/>
 				<fedoraContext>fedora/</fedoraContext>
 				<fedoraAdminUsername>fedoraAdmin</fedoraAdminUsername>
 				<fedoraAdminPassword>fedoraPassword</fedoraAdminPassword>
@@ -141,11 +141,11 @@
 				<mulgaraProtocol>http</mulgaraProtocol>
 				<mulgaraHost>localhost</mulgaraHost>
 				<mulgaraPort>:8080</mulgaraPort>
-				<mulgaraContext></mulgaraContext>
+				<mulgaraContext/>
 
 				<solrProtocol>https</solrProtocol>
 				<solrHost>localhost</solrHost>
-				<solrPort></solrPort>
+				<solrPort/>
 				<solrContext>solr</solrContext>
 
 				<externalBaseUrl>http://localhost/static/</externalBaseUrl>
