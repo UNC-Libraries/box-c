@@ -238,6 +238,7 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 			while (iterator.hasNext()) {
 				SolrUpdateRequest message = iterator.next();
 				if (currentTime - message.getTimeFinished() >= finishedMessageTimeout) {
+					message.remove();
 					iterator.remove();
 				}
 			}

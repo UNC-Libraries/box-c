@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -39,7 +38,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor;
 import edu.unc.lib.dl.data.ingest.solr.ProcessingStatus;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnable;
 import edu.unc.lib.dl.data.ingest.solr.UpdateNodeRequest;
 import edu.unc.lib.dl.message.ActionMessage;
 
@@ -113,6 +111,12 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 			return null;
 		
 		Map<String, Object> result = new HashMap<String, Object>();
+		if (root != solrUpdateConductor.getRoot()) {
+			Map<String,Object> parentInfo = getJobBriefInfo(root, "");
+			this.getChildrenJobInfo(parentInfo, root);
+			result.put("parent", parentInfo);
+		}
+		
 		List<Object> jobs = new ArrayList<Object>();
 		result.put("jobs", jobs);
 		
@@ -197,20 +201,11 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 				break;
 			}
 		}
+		jobInfo.put("jobActive", active);
 		
-		if (active) {
-			jobInfo.put("jobActive", active);
-		}
 		
 		jobInfo.put("childrenPending", message.getChildrenPending());
 		jobInfo.put("childrenProcessed", message.getChildrenProcessed());
-		
-		if (message.getChildren() != null) {
-			jobInfo.put("immediateChildrenCount", message.getChildren().size());
-			
-			Map<ProcessingStatus, Integer> counts = message.countChildrenByStatus(1);
-			jobInfo.put("immediateChildrenCounts", counts);
-		}
 	}
 	
 	@RequestMapping(value = QUEUED_PATH, method = RequestMethod.GET)

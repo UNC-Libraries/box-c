@@ -49,6 +49,11 @@ tr.failed>td {
 	background-color: LavenderBlush;
 }
 
+tr.parentNode > td {
+	background-color: #CCCCCC;
+	padding-bottom: 10px;	
+}
+
 tr.narrow>th {
 	min-width: 0px;
 }
@@ -71,6 +76,20 @@ table.statusList {
 table.statusList td {
 	font-size: 80%;
 	padding: 6px 2px 6px 10px;
+}
+
+table.statusList td.drillDown {
+	font-size: 120%;
+	min-width: 15px;
+}
+
+.drillDown:hover {
+	text-decoration: underline;
+}
+
+.drillDown {
+	color: #284968;
+	cursor: pointer;
 }
 
 .detailsView {

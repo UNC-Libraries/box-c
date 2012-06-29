@@ -86,7 +86,7 @@ function activateIndexingStatus(){
 	activeView = view;
 	//refresh(new Array("active"), 5, "enhancement", refreshJobType);
 	refresh(new Array("status"), 5, view, reloadIndexingStatus);
-	refresh(new Array("jobs"), 5, view, refreshJobType);
+	refresh(new Array("jobs"), 5, view, refreshIndexingJobs);
 }
 
 function reloadIngestStatus(viewName, type) {
@@ -331,6 +331,32 @@ function refreshCatchup(viewName, type) {
 }
 
 // Indexing
+function refreshIndexingJobs(viewName, type, params) {
+	var scoping = $("#" + viewName + "Data").data("scope");
+	if (scoping != null && scoping != "")
+		scoping = "/" + scoping;
+	else scoping = "";
+	
+	$.getJSON(
+	 	restUrl+viewName+"/"+type + scoping,
+		{},
+		function(json) {
+			var subType = "";
+			if (params != null && params.subType != null)
+				subType = params.subType;
+			$("#" + viewName + "Jobs").children("tr.parent").remove();
+			if (json.parent != null)
+				$("#" + viewName + "Jobs tr.parent-end").after(window[viewName+subType+"WriteJob"](json.parent, "parentNode"));
+			
+			$("#" + viewName + "Jobs").children("tr."+type).remove();
+			for(job in json.jobs) {
+				$("#" + viewName + "Jobs tr."+type+"-end").after(window[viewName+subType+"WriteJob"](json.jobs[job], type));
+		 	}
+			window[viewName+"InitDetails"](type);
+		}
+	);
+}
+
 function indexingLoadDetails(messageID, type) {
 	$.get(restUrl + view + "/jobs/job/" + messageID, function(data){
 		var details = "<span>Status:</span>" + data.status.toLowerCase() + " (last refreshed " + new Date().toTimeString() + ")<br/>";
@@ -346,7 +372,7 @@ function indexingLoadDetails(messageID, type) {
 		
 		if (data.childrenPending > 0) {
 			details += "<span>Progress:</span>" + data.childrenProcessed + "/" + data.childrenPending + "<br/>";
-			details += "<span>Sub-operations:</span><br/><ul>";
+			details += "<span>Sub-operations <a class='drillDown' onclick=\"drillDownIndexing('indexing', 'jobs', '" + data.id + "')\">(view all)</a>:</span><br/><ul>";
 			for (statusKey in data.childrenCounts) {
 				if (data.childrenCounts[statusKey] > 0 )
 				details += "<li>" + statusKey + ": " + data.childrenCounts[statusKey] + "</li>"; 
@@ -365,24 +391,53 @@ function indexingLoadDetails(messageID, type) {
 	});
 }
 
+function drillDownIndexing(view, type, messageID) {
+	$("#" + view + "Data").data("scope", messageID);
+	$("#" + view + "Jobs").children("tr.parent").remove();
+	$("#" + view + "Jobs").children("tr."+type).remove();
+	refreshIndexingJobs(view, type, {});
+}
+
 function indexingInitDetails(type) {
-	$('tr.parent.' + type).attr("title","Click for message details")
+	$('#indexingData tr.parent').attr("title","Click for message details")
 		.click(function(){
 			var messageID = this.id.substring(1);
 			indexingLoadDetails(messageID, type);
 		});
+	
+	$('tr.parent.' + type + " td.drillDown").attr("title","Click to view this job's sub-operations")
+		.click(function(){
+			var messageID = $(this).parent().attr("id").substring(1);
+			drillDownIndexing(activeView, type, messageID);
+		});	
 }
 
 function indexingWriteJob(job, type) {
-	var out = "<tr class='parent "+ type +" " + job.status + " detailsLink' id='a"+job.id+"'>";
-	out += "<td>"+job.status.toLowerCase()+"</td>";
+	var status = job.status;
+	if (job.jobActive) {
+		status = "active";
+	}
+	
+	var out = "<tr class='parent "+ type +" " + status + " detailsLink' id='a"+job.id+"'>";
+	
+	if (type == "parentNode") {
+		out += "<td>Parent Operation</td>";
+	} else {
+		out += "<td>"+job.status.toLowerCase()+"</td>";
+	}
+	
 	if (job.targetLabel == null)
 		out += "<td>"+job.targetPID+"</td>";
 	else out += "<td>"+job.targetLabel+"</td>";
 	out += "<td>"+job.action.label+"</td>";
-	if (job.childrenPending > 0)
+	if (job.childrenPending > 0) {
 		out += "<td>"+job.childrenProcessed + "/" + job.childrenPending+"</td>";
-	else out += "<td></td>";
+		if (type == "parentNode")
+			out += "<td></td>";
+		else out += "<td class='drillDown'>&gt;</td>";
+	} else {
+		out += "<td></td><td></td>";
+	}
 	out += "</tr>";
 	return out;
 }

@@ -69,6 +69,12 @@ public class UpdateNodeRequest implements ActionMessage {
 		children.remove(node);
 	}
 	
+	public void remove() {
+		if (parent == null)
+			return;
+		parent.removeChild(this);
+	}
+	
 	private void childRemoved() {
 		childrenPending.decrementAndGet();
 		if (parent != null)

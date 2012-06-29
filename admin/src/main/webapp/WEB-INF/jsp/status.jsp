@@ -131,7 +131,7 @@
 					</td>
 				</tr>
 			</table>
-			<p>Indexing Jobs</p>
+			<p>Indexing Jobs.&nbsp;&nbsp;<a class="drillDown" onclick="drillDownIndexing('indexing', 'jobs', '')">Return to top level jobs</a></p>
 			<div id="indexingData">
 				<div class="detailsContainer">
 					<div class="detailsColumn">
@@ -150,9 +150,13 @@
 							<th>label</th>
 							<th>action</th>
 							<th>progress</th>
+							<th></th>
 						</tr>
 					</thead>
 					<tbody id="indexingJobs">
+						<tr class="parent-end" style="display: none">
+							<td></td>
+						</tr>
 						<tr class="jobs-end" style="display: none">
 							<td></td>
 						</tr>
