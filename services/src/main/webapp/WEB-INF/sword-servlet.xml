@@ -81,11 +81,11 @@
 				<bean class="edu.unc.lib.dl.ingest.aip.CheckPathConflictFilter">
 					<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 				</bean>
-				<bean class="edu.unc.lib.dl.ingest.aip.MODSValidationFilter">
-					<property name="schematronValidator" ref="schematronValidator" />
-				</bean>
 				<bean class="edu.unc.lib.dl.ingest.aip.BiomedCentralAIPFilter" init-method="init">
 					<property name="agentFactory" ref="agentFactory"/>
+				</bean>
+				<bean class="edu.unc.lib.dl.ingest.aip.MODSValidationFilter">
+					<property name="schematronValidator" ref="schematronValidator" />
 				</bean>
 				<bean class="edu.unc.lib.dl.ingest.aip.DublinCoreCrosswalkFilter" />
 				<bean class="edu.unc.lib.dl.ingest.aip.SetOriginalDepositRecordFilter"/>
