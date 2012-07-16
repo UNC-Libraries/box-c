@@ -55,6 +55,11 @@
 	<c:otherwise><c:set var="filePrimaryDownload" value="false"/></c:otherwise>
 </c:choose>
 
+<c:choose>
+	<c:when test="${not empty param.showSeeAllLinks}"><c:set var="showSeeAllLinks" value="${param.showSeeAllLinks}"/></c:when>
+	<c:otherwise><c:set var="showSeeAllLinks" value="true"/></c:otherwise>
+</c:choose>
+
 <c:if test="${not empty param.countLinkPath}">
 	<c:set var="countLinkUrlBase" value="${param.countLinkPath}?${sessionScope.recordNavigationState.searchStateUrl}"/>
 </c:if>
@@ -345,8 +350,10 @@
 			<div class="hier_entry">
 				${entryOut}
 			</div>
+			<c:if test="${showSeeAllLinks}">
+				${viewAllResultsLink}
+			</c:if>
 		</c:if>
-		${viewAllResultsLink}
 		<c:if test="${containerNode.resourceType != searchSettings.resourceTypeFile}">
 			${"<div id='hier_container_children_"}${fn:replace(containerNode.id,":","-")}${"'>"}
 		</c:if>

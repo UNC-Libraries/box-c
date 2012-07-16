@@ -870,7 +870,7 @@ p.navigation_bar a {
 }
 
 .collinfo .actionlink {
-	margin: 5px 5px 0 0;
+	margin: 0px 5px 6px 0;
 }
 
 .actionlink a {
@@ -878,7 +878,7 @@ p.navigation_bar a {
 	font-size: 12px;
 	border: 1px solid #084b6b;
 	color: #fff;
-	padding: 8px 10px;
+	padding: 5px 10px;
 	cursor: pointer;
 	background-color: #14668d;
 	text-decoration: none;
@@ -1003,6 +1003,12 @@ ul.crumblist li a {
 .metadata table th {
 	width: 107px;
 	background-color: #ebf5fa;
+}
+
+.metadata table p span {
+	text-indent: -1em;
+	margin-left: 1em;
+	display: block;
 }
 
 #contact_form label {

@@ -133,10 +133,17 @@
 					</h2>
 					<div class="halfwidth">
 						<c:if test="${not empty metadata.creator}">
-							<p>${searchSettings.searchFieldLabels[searchFieldKeys.CREATOR]}: 
-								<c:forEach var="creatorObject" items="${metadata.creator}" varStatus="creatorStatus">
+							<p>${searchSettings.searchFieldLabels[searchFieldKeys.CREATOR]}:
+								<c:choose>
+									<c:when test="${fn:length(metadata.creator) > 5}"><c:set var="creatorList" value="${cdr:subList(metadata.creator, 0, 5)}"/></c:when>
+									<c:otherwise><c:set var="creatorList" value="${metadata.creator}"/></c:otherwise>
+								</c:choose>
+								
+								<c:forEach var="creatorObject" items="${creatorList}" varStatus="creatorStatus">
 									<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
 								</c:forEach>
+								
+								<c:if test="${fn:length(metadata.creator) > 5}">; et al.</c:if>
 							</p>
 						</c:if>
 						<p>

@@ -220,6 +220,9 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 				String idType = identifier.getAttributeValue("idtype");
 				Element modsIdentifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
 				modsIdentifier.setAttribute("type", idType);
+				if (idType.equals("pmpid")){
+					modsIdentifier.setAttribute("displayLabel", "PMID");
+				}
 				modsIdentifier.setText(identifier.getTextTrim());
 				modsContent.addContent(modsIdentifier);
 			}

@@ -75,19 +75,6 @@
 					</c:forEach>
 				</p>
 			</c:if>
-			<p class="smaller">
-				<c:choose>
-					<c:when test="${not empty briefObject.contentType.highestTierDisplayValue}">
-						<span class="bold">File Type:</span> <c:out value="${briefObject.contentType.highestTierDisplayValue}" />
-						<c:if test="${briefObject.filesize != -1}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.FILESIZE]}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesize, 1)}"/></c:if>
-					</c:when>
-					<c:otherwise>
-						<span>Contains:</span> ${briefObject.childCount} item<c:if test="${briefObject.childCount != 1}">s</c:if>
-					</c:otherwise>
-				</c:choose>
-				<c:if test="${not empty briefObject.dateAdded}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.DATE_ADDED]}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></c:if>
-				<c:if test="${not empty briefObject.dateCreated}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.DATE_CREATED]}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></c:if>
-			</p>
 			<c:choose>
 				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
 					<div class="actionlink left download">
@@ -163,6 +150,21 @@
 					</c:choose>
 				</c:when>
 			</c:choose>
+			<div class="clear"></div>
+			<p class="smaller">
+				<c:choose>
+					<c:when test="${not empty briefObject.contentType.highestTierDisplayValue}">
+						<span class="bold">File Type:</span> <c:out value="${briefObject.contentType.highestTierDisplayValue}" />
+						<c:if test="${briefObject.filesize != -1}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.FILESIZE]}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesize, 1)}"/></c:if>
+					</c:when>
+					<c:otherwise>
+						<span>Contains:</span> ${briefObject.childCount} item<c:if test="${briefObject.childCount != 1}">s</c:if>
+					</c:otherwise>
+				</c:choose>
+				<c:if test="${not empty briefObject.dateAdded}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.DATE_ADDED]}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></c:if>
+				<c:if test="${not empty briefObject.dateCreated}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.DATE_CREATED]}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></c:if>
+			</p>
+			
 		</div>
 	</div>
 </div>
@@ -188,6 +190,7 @@
 			<c:param name="excludeParent" value="true"/>
 			<c:param name="filePrimaryDownload" value="true"/>
 			<c:param name="excludeIDs" value="${defaultWebObjectID}"/>
+			<c:param name="showSeeAllLinks" value="false"/>
 		</c:import>
 	</div>
 </c:if>
