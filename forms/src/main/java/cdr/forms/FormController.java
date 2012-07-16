@@ -1,0 +1,289 @@
+package cdr.forms;
+
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.security.access.UserSecurityProfile;
+import gov.loc.mods.mods.DocumentRoot;
+import gov.loc.mods.mods.MODSFactory;
+import gov.loc.mods.mods.MODSPackage;
+import gov.loc.mods.mods.ModsDefinition;
+import gov.loc.mods.mods.util.MODSResourceFactoryImpl;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.security.Principal;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.XMLResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+import org.w3._1999.xlink.XlinkPackage;
+
+import com.philvarner.clamavj.ClamScan;
+import com.philvarner.clamavj.ScanResult;
+
+import crosswalk.Form;
+import crosswalk.FormElement;
+import crosswalk.MetadataBlock;
+import crosswalk.OutputElement;
+
+@Controller
+@RequestMapping(value = { "/*", "/**" })
+@SessionAttributes("form")
+public class FormController {
+	ResourceSet rs = null;
+	
+	@Autowired
+	ClamScan clamScan = null;
+	
+	public ClamScan getClamScan() {
+		return clamScan;
+	}
+
+	public void setClamScan(ClamScan clamScan) {
+		this.clamScan = clamScan;
+	}
+
+	public FormController() {
+		rs = new ResourceSetImpl();
+		rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put("mods", new MODSResourceFactoryImpl());
+		rs.getPackageRegistry().put(MODSPackage.eNS_URI, MODSPackage.eINSTANCE);
+		rs.getPackageRegistry().put(XlinkPackage.eNS_URI, XlinkPackage.eINSTANCE);
+		LOG.debug("FormController created");
+	}
+
+	private static final Logger LOG = LoggerFactory.getLogger(FormController.class);
+	
+	@Autowired
+	private DepositHandler depositHandler;
+	
+	public DepositHandler getDepositHandler() {
+		return depositHandler;
+	}
+
+	public void setDepositHandler(DepositHandler depositHandler) {
+		this.depositHandler = depositHandler;
+	}
+
+	@Autowired
+	private PID defaultContainer = null;
+
+	public PID getDefaultContainer() {
+		return defaultContainer;
+	}
+
+	public void setDefaultContainer(PID defaultContainer) {
+		this.defaultContainer = defaultContainer;
+	}
+	
+	@Autowired
+	public String administratorEmail = null;
+
+	public String getAdministratorEmail() {
+		return administratorEmail;
+	}
+
+	public void setAdministratorEmail(String administratorEmail) {
+		this.administratorEmail = administratorEmail;
+	}
+
+	@Autowired
+	AbstractFormFactory factory = null;
+
+	public AbstractFormFactory getFactory() {
+		return factory;
+	}
+
+	public void setFactory(AbstractFormFactory factory) {
+		this.factory = factory;
+	}
+
+	@InitBinder
+   protected void initBinder(WebDataBinder binder) {
+       binder.setValidator(new FormValidator());
+       binder.registerCustomEditor(java.util.Date.class, new DateEditor(new SimpleDateFormat("yy-MM-dd")));
+       //binder.setBindEmptyMultipartFiles(false);
+       binder.registerCustomEditor(java.lang.String.class, new StringTrimmerEditor(true));
+   }
+	
+	@ModelAttribute("form")
+	protected Form getForm(@PathVariable String formId) {
+		return factory.getForm(formId);
+	}
+
+	@RequestMapping(value = "/{formId}.form", method = RequestMethod.GET)
+	public String showForm(@PathVariable String formId, @ModelAttribute("form") Form form, HttpSession session) throws PermissionDeniedException {
+		LOG.debug("in GET for form " + formId);
+		checkPermission(formId, form, session);
+		return "form";
+	}
+
+	private void checkPermission(String formId, Form form, HttpSession session) throws PermissionDeniedException {
+		// check permissions
+		UserSecurityProfile profile = (UserSecurityProfile)session.getAttribute("user");
+		LOG.debug("in permission check with profile: "+profile.getAccessGroups().toArray().toString());
+		if(profile == null || profile.getUserName() == null) {
+			if(!form.getAuthorizedGroups().contains("public")) {
+				throw new PermissionDeniedException("You must first log in to use this deposit form.", profile, form, formId);
+			}
+		} else {
+			if(!profile.getAccessGroups().containsAny(form.getAuthorizedGroups())) {
+				throw new PermissionDeniedException("Your login is not authorized to use this form. Send email to "+this.getAdministratorEmail()+" to request access.", profile, form, formId);
+			}
+		}
+	}
+
+	@RequestMapping(value = "/{formId}.form", method = RequestMethod.POST)
+	public String processForm(@PathVariable String formId, @Valid @ModelAttribute("form") Form form, BindingResult errors,
+			Principal user, @RequestParam("file") MultipartFile mpfile, SessionStatus sessionStatus, HttpSession session) throws PermissionDeniedException {
+		LOG.debug("in POST for form " + formId);
+		checkPermission(formId, form, session);
+		if (user != null) form.setCurrentUser(user.getName());
+		if (errors.hasErrors()) {
+			LOG.debug(errors.getErrorCount() + " errors");
+			return "form";
+		}
+		if(mpfile.isEmpty()) {
+			errors.addError( new FieldError("form", "file", "You must select a file for upload."));
+			return "form";
+		}
+		
+		String mods = makeMods(form);
+		LOG.debug(mods);
+		
+		File depositFile = handleUpload(mpfile);
+		
+		if(!virusScan(depositFile)) {
+			errors.addError( new FieldError("form", "file", "A virus was detected in your file. Please scan your computer for viruses or report this issue to technical support."));
+			return "form";
+		}
+		
+		// perform a deposit with the default handler.
+		this.getDepositHandler().deposit(form.getDepositContainerId(), mods, mpfile.getOriginalFilename(), depositFile);
+
+		
+		// TODO email notices
+		
+		// clear session
+		sessionStatus.setComplete();
+		// TODO delete files
+		depositFile.delete();
+		return "success";
+	}
+
+	private synchronized boolean virusScan(File depositFile) {
+		boolean passed = false;
+		try {
+			ScanResult result = this.getClamScan().scan(new FileInputStream(depositFile));
+			passed = ScanResult.Status.PASSED.equals(result.getStatus());
+		} catch (FileNotFoundException e) {
+			throw new Error(e);
+		}
+		return passed;
+	}
+
+	private File handleUpload(MultipartFile file) {
+		File result = null;
+		OutputStream out = null;
+		try {
+			result = File.createTempFile("form", ".data");
+			InputStream stream = file.getInputStream();
+			out = new BufferedOutputStream(new FileOutputStream(result));
+			for(int i = stream.read(); i > 0; i = stream.read()) {
+				out.write(i);
+			}
+			out.flush();
+		} catch(IOException e) {
+			throw new Error(e);
+		} finally {
+			if(out != null) {
+				try {
+					out.close();
+				} catch(IOException ignored) {}
+			}
+		}
+		return result;
+	}
+
+	@ExceptionHandler(PermissionDeniedException.class)
+	public ModelAndView handleForbidden(PermissionDeniedException e) {
+		ModelAndView modelview = new ModelAndView("403");
+		modelview.addObject("user", e.getUserSecurityProfile());
+		modelview.addObject("formId", e.getFormId());
+		modelview.addObject("form", e.getForm());
+		modelview.addObject("message", e.getMessage());
+		return modelview;
+	}
+	
+	private String makeMods(Form form) {
+		// run the mapping and get a MODS record. (report any errors)
+		ModsDefinition mods = MODSFactory.eINSTANCE.createModsDefinition();
+		DocumentRoot root = MODSFactory.eINSTANCE.createDocumentRoot();
+		root.setMods(mods);
+		for (FormElement fe : form.getElements()) {
+			if(MetadataBlock.class.isInstance(fe)) {
+				MetadataBlock mb = (MetadataBlock)fe;
+				for(OutputElement oe : mb.getElements()) {
+					oe.updateRecord(mods);
+				}
+			}
+		}
+		File tmp;
+		try {
+			tmp = File.createTempFile("tmp", ".mods");
+		} catch (IOException e1) {
+			throw new Error(e1);
+		}
+		URI uri = URI.createURI(tmp.toURI().toString());
+		XMLResource res = (XMLResource) rs.createResource(uri);
+		res.getContents().add(root);
+		
+		StringWriter sw = new StringWriter();
+		Map<Object, Object> options = new HashMap<Object, Object>();
+		options.put(XMLResource.OPTION_ENCODING, "utf-8");
+
+		options.put(XMLResource.OPTION_DECLARE_XML, "");
+		options.put(XMLResource.OPTION_LINE_WIDTH, new Integer(80));
+		options.put(XMLResource.OPTION_ROOT_OBJECTS, Collections.singletonList(mods));
+		try {
+			res.save(sw, options);
+		} catch (IOException e) {
+			throw new Error("failed to serialize XML for model object", e);
+		}
+		return sw.toString();
+	}
+
+}

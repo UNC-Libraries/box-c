@@ -22,16 +22,13 @@
 		<testResources>
 			<testResource>
 				<filtering>true</filtering>
-				<directory>src/test/resources</directory>
+				<directory>../etc</directory>
 				<includes>
 					<include>server.properties</include>
 				</includes>
 			</testResource>
 			<testResource>
 				<directory>src/test/resources</directory>
-				<excludes>
-					<exclude>server.properties</exclude>
-				</excludes>
 			</testResource>
 		</testResources>
 	</build>

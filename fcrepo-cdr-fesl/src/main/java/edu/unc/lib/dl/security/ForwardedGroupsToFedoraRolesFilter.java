@@ -63,6 +63,8 @@ public class ForwardedGroupsToFedoraRolesFilter implements Filter {
 		LOG.debug("remote user: " + req.getRemoteUser());
 		LOG.debug("uri: " + req.getRequestURI());
 		Set<String> forwardedRoles = new HashSet<String>();
+
+		// TODO what if the groups header is NULL!!!  make sure public is set regardless.
 		if (groups != null) {
 			for (String cdrRole : groups.split(this.separator)) {
 				forwardedRoles.add(cdrRole);

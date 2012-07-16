@@ -270,6 +270,7 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 			String fpage = bibRoot.getChildText("fpage");
 			String lpage = bibRoot.getChildText("lpage");
 			if (fpage != null || lpage != null){
+				Element extentPart = new Element("part", JDOMNamespaceUtil.MODS_V3_NS);
 				Element element = new Element("extent", JDOMNamespaceUtil.MODS_V3_NS);
 				element.setAttribute("unit", "page");
 				if (fpage != null){
@@ -282,7 +283,8 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 					pageElement.setText(lpage);
 					element.addContent(pageElement);
 				}
-				sourceElement.addContent(element);
+				extentPart.addContent(element);
+				sourceElement.addContent(extentPart);
 			}
 			
 		}
