@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.util;
 
+import java.util.Arrays;
+
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.Datastream;
 
@@ -55,6 +57,14 @@ public class FedoraUtil {
 			return "";
 		
 		StringBuilder url = new StringBuilder();
+		
+		if (metadata.getContentType() != null) {
+			String fileExtension = metadata.getContentType().getHighestTierDisplayValue();
+			int extensionIndex = Arrays.binarySearch(new String[]{"doc", "docx", "htm", "html", "pdf", "ppt", "pptx", "rtf", "txt", "xls", "xlsx", "xml"}, fileExtension);
+			if (extensionIndex >= 0)
+				url.append("indexable");
+		}
+		
 		url.append("content?id=");
 		if (preferredDS.getPid() == null) {
 			url.append(metadata.getId());

@@ -91,25 +91,7 @@
 			<c:choose>
 				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
 					<div class="actionlink left download">
-						<c:set var="indexableContent" scope="page">
-							<c:choose>
-								<c:when test="${briefObject.contentType.highestTierDisplayValue == 'doc'
-									|| briefObject.contentType.highestTierDisplayValue == 'docx'
-									|| briefObject.contentType.highestTierDisplayValue == 'txt'
-									|| briefObject.contentType.highestTierDisplayValue == 'rtf'
-									|| briefObject.contentType.highestTierDisplayValue == 'pdf'
-									|| briefObject.contentType.highestTierDisplayValue == 'htm'
-									|| briefObject.contentType.highestTierDisplayValue == 'html'
-									|| briefObject.contentType.highestTierDisplayValue == 'xml'
-									|| briefObject.contentType.highestTierDisplayValue == 'xls'
-									|| briefObject.contentType.highestTierDisplayValue == 'ppt'
-									|| briefObject.contentType.highestTierDisplayValue == 'xlsx'
-									|| briefObject.contentType.highestTierDisplayValue == 'pptx'}">
-									indexable
-								</c:when>
-							</c:choose>
-						</c:set>
-						<a href="${indexableContent}${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
+						<a href="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
 					</div>
 				</c:when>
 			</c:choose>
@@ -185,6 +167,14 @@
 	</div>
 </div>
 <c:if test="${hierarchicalViewResults.resultCount > 0}">
+	<c:set var="defaultWebObjectID">
+		<c:forEach items="${briefObject.datastream}" var="datastream">
+			<c:if test="${datastream.name == 'DATA_FILE'}">
+				<c:out value="${fn:substring(datastream.pid, 0, fn:indexOf(datastream.pid, '/'))}"/>
+			</c:if>
+		</c:forEach>
+	</c:set>
+
 	<div id="hierarchical_view_full_record" class="aggregate">
 		<c:import url="WEB-INF/jsp/browseResults/hierarchicalBrowse.jsp">
 			<c:param name="queryPath" value="search"/>
@@ -196,6 +186,8 @@
 			<c:param name="disableSecondaryBrowseLink" value="true"/>
 			<c:param name="disableSecondarySearchWithStateLink" value="true"/>
 			<c:param name="excludeParent" value="true"/>
+			<c:param name="filePrimaryDownload" value="true"/>
+			<c:param name="excludeIDs" value="${defaultWebObjectID}"/>
 		</c:import>
 	</div>
 </c:if>
@@ -214,7 +206,10 @@
 				<tr>
 					<th>Contains:</th>
 					<td>
-						${briefObject.childCount} item<c:if test="${briefObject.childCount != 1}">s</c:if>
+						<c:url var="contentsResultsUrl" scope="page" value='search'>
+							<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
+						</c:url>
+						<a href="<c:out value='${contentsResultsUrl}' />">${briefObject.childCount} item<c:if test="${briefObject.childCount != 1}">s</c:if></a>
 					</td>
 				</tr>
 				<c:if test="${not empty facetFields}">

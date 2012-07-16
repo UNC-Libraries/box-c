@@ -78,25 +78,7 @@
 			<c:choose>
 				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
 					<div class="actionlink left download">
-						<c:set var="indexableContent" scope="page">
-							<c:choose>
-								<c:when test="${briefObject.contentType.highestTierDisplayValue == 'doc'
-									|| briefObject.contentType.highestTierDisplayValue == 'docx'
-									|| briefObject.contentType.highestTierDisplayValue == 'txt'
-									|| briefObject.contentType.highestTierDisplayValue == 'rtf'
-									|| briefObject.contentType.highestTierDisplayValue == 'pdf'
-									|| briefObject.contentType.highestTierDisplayValue == 'htm'
-									|| briefObject.contentType.highestTierDisplayValue == 'html'
-									|| briefObject.contentType.highestTierDisplayValue == 'xml'
-									|| briefObject.contentType.highestTierDisplayValue == 'xls'
-									|| briefObject.contentType.highestTierDisplayValue == 'ppt'
-									|| briefObject.contentType.highestTierDisplayValue == 'xlsx'
-									|| briefObject.contentType.highestTierDisplayValue == 'pptx'}">
-									indexable
-								</c:when>
-							</c:choose>
-						</c:set>
-						<a href="${indexableContent}${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
+						<a href="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
 					</div>
 				</c:when>
 			</c:choose>
