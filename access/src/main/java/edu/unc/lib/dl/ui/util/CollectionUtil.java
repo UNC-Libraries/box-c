@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.util;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
 
@@ -25,6 +26,10 @@ public class CollectionUtil {
 		if (coll == null)
 			return false;
 		return coll.contains(target);
+	}
+	
+	public static List<?> subList(List<?> list, int fromIndex, int toIndex) {
+		return list.subList(fromIndex, toIndex);
 	}
 	
 	public static String joinLookup(Iterable<?> elements, String separator, Map<?,?> lookup){

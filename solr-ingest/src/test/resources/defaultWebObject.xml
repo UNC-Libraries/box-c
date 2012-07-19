@@ -1,0 +1,490 @@
+<view-inputs>
+	<foxml:digitalObject xmlns:foxml="info:fedora/fedora-system:def/foxml#"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" VERSION="1.1"
+		PID="uuid:30bedfee-79a5-4ad7-9add-c2615d43b466"
+		xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+		<foxml:objectProperties>
+			<foxml:property NAME="info:fedora/fedora-system:def/model#state"
+				VALUE="Active" />
+			<foxml:property NAME="info:fedora/fedora-system:def/model#label"
+				VALUE="Successful implementation of a wellness and tobacco cessation curriculum in psychosocial rehabilitation clubhouses" />
+			<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId"
+				VALUE="" />
+			<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate"
+				VALUE="2012-05-22T21:05:48.800Z" />
+			<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate"
+				VALUE="2012-05-22T21:05:48.800Z" />
+		</foxml:objectProperties>
+		<foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X"
+			VERSIONABLE="false">
+			<foxml:datastreamVersion ID="AUDIT.0"
+				LABEL="Audit Trail for this object" CREATED="2012-05-22T21:05:48.800Z"
+				MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+				<foxml:xmlContent>
+					<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+						<audit:record ID="AUDREC1">
+							<audit:process type="Fedora API-M" />
+							<audit:action>ingest</audit:action>
+							<audit:componentID />
+							<audit:responsibility>fedoraAdmin</audit:responsibility>
+							<audit:date>2012-05-22T21:05:48.800Z</audit:date>
+							<audit:justification>uuid:ac7c84a6-d28d-43dc-98e7-4b9ac6e8eaff</audit:justification>
+						</audit:record>
+					</audit:auditTrail>
+				</foxml:xmlContent>
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+		<foxml:datastream ID="RELS-EXT" STATE="A"
+			CONTROL_GROUP="X" VERSIONABLE="false">
+			<foxml:datastreamVersion ID="RELS-EXT.0"
+				LABEL="Fedora Object-to-Object Relationship Metadata" CREATED="2012-05-22T21:05:49.066Z"
+				MIMETYPE="text/xml" SIZE="2066">
+				<foxml:contentDigest TYPE="MD5"
+					DIGEST="15582c658629afa7d7cff441cf4e3f3b" />
+				<foxml:xmlContent>
+					<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+						xmlns:dcterms="http://purl.org/dc/terms/" xmlns:owl="http://www.w3.org/2002/07/owl#"
+						xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns5="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+						xmlns:ns6="info:fedora/fedora-system:def/model#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+						<rdf:Description
+							rdf:about="info:fedora/uuid:30bedfee-79a5-4ad7-9add-c2615d43b466">
+							<ns5:allowIndexing>yes</ns5:allowIndexing>
+							<ns5:contains
+								rdf:resource="info:fedora/uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4" />
+							<ns5:contains
+								rdf:resource="info:fedora/uuid:85be8e71-0aef-4e5a-a68c-4af72e2a2194" />
+							<ns5:contains
+								rdf:resource="info:fedora/uuid:9de5572e-2e37-4e69-86c1-2fd42e1455e6" />
+							<ns5:contains
+								rdf:resource="info:fedora/uuid:af408783-d0ef-4ac0-a2f9-96ca5cc2de30" />
+							<ns5:contains
+								rdf:resource="info:fedora/uuid:c632e12c-df63-441f-b1e5-649901b6a207" />
+							<ns5:defaultWebObject
+								rdf:resource="info:fedora/uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4" />
+							<ns5:originalDeposit
+								rdf:resource="info:fedora/uuid:ac7c84a6-d28d-43dc-98e7-4b9ac6e8eaff" />
+							<ns5:owner
+								rdf:resource="info:fedora/uuid:3d5370d4-bd0a-43f5-afa0-36abc8b0ffdf" />
+							<ns5:slug>Successful_implementation_of_a_wellness_and_tobac</ns5:slug>
+							<ns6:hasModel rdf:resource="info:fedora/cdr-model:AggregateWork" />
+							<ns6:hasModel rdf:resource="info:fedora/cdr-model:Container" />
+							<ns6:hasModel rdf:resource="info:fedora/cdr-model:PreservedObject" />
+						</rdf:Description>
+					</rdf:RDF>
+				</foxml:xmlContent>
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+		<foxml:datastream ID="MD_DESCRIPTIVE" STATE="A"
+			CONTROL_GROUP="X" VERSIONABLE="true">
+			<foxml:datastreamVersion ID="MD_DESCRIPTIVE.0"
+				LABEL="Descriptive Metadata" CREATED="2012-05-22T21:05:49.067Z"
+				MIMETYPE="text/xml" SIZE="7280">
+				<foxml:contentDigest TYPE="MD5"
+					DIGEST="0b81370670cdfac1438d2814497fa88a" />
+				<foxml:xmlContent>
+					<mods:mods xmlns:mods="http://www.loc.gov/mods/v3"
+						xmlns:epdcx="http://purl.org/eprint/epdcx/2006-11-16/"
+						xmlns:rights="http://www.cdlib.org/inside/diglib/copyrightMD"
+						xmlns:xlink2="http://www.w3.org/1999/xlink">
+						<mods:titleInfo>
+							<mods:title>
+								Successful implementation of a wellness and tobacco cessation curriculum
+								in psychosocial rehabilitation clubhouses
+</mods:title>
+						</mods:titleInfo>
+						<mods:abstract>
+							Abstract Background Tobacco remains a seemingly intractable problem for
+							individuals living with severe and persistent mental illness.
+							This study evaluated the implementation, technical assistance,
+							and perceived impact of a model curriculum ("Learning About
+							Healthy Living") to promote wellness and motivation to quit
+							tobacco use in psychosocial rehabilitation clubhouses. Methods We
+							used semi-structured interviews (n = 9) with clubhouse staff (n =
+							12) and a survey of participating clubhouse members (n = 271) in
+							nine clubhouses. Results Fifty-eight percent of clubhouse
+							participants completed surveys. Results showed tobacco users open
+							to tobacco-free policies (62%) and perceiving more discussions
+							about quitting tobacco with healthcare providers (69%). Analyses
+							of staff interviews and member surveys revealed four key themes:
+							(1) the curriculum was successfully implemented and appreciated;
+							(2) technical assistance kept implementation on track; (3) adding
+							wellness content and interactive components should enhance the
+							curriculum; and, (4) the curriculum advanced other healthful
+							policies and practices. Conclusions Mental health settings are
+							important locations for implementing programs to address tobacco
+							use. In this real-world implementation of a model curriculum in
+							psychosocial rehabilitation clubhouses, the curriculum tested
+							well, was feasible and well-received, and suggests potential
+							impact on tobacco use outcomes. Revision, dissemination, and a
+							randomized controlled trial evaluation of the model curriculum
+							should now occur.
+</mods:abstract>
+						<mods:language>
+							<mods:languageTerm type="code" authority="iso639-2b">eng</mods:languageTerm>
+						</mods:language>
+						<mods:typeOfResource>text</mods:typeOfResource>
+						<mods:genre authorityURI="http://purl.org/eprint/type/"
+							valueURI="http://purl.org/eprint/type/JournalArticle" type="work type">Journal
+							Article</mods:genre>
+						<mods:originInfo>
+							<mods:publisher>BioMed Central Ltd</mods:publisher>
+							<mods:dateIssued>2011-09-14</mods:dateIssued>
+						</mods:originInfo>
+						<mods:genre authority="local">Peer Reviewed</mods:genre>
+						<mods:accessCondition>
+							<rights:copyright copyright.status="copyrighted"
+								publication.status="published">
+								<rights:rights.holder>
+									<rights:name>Lee et al.; licensee BioMed Central Ltd.</rights:name>
+								</rights:rights.holder>
+							</rights:copyright>
+						</mods:accessCondition>
+						<mods:accessCondition type="use and reproduction"
+							xlink2:href="http://creativecommons.org/licenses/by/2.0" />
+						<mods:accessCondition type="restriction on access">Open Access</mods:accessCondition>
+						<mods:note type="citation/reference">BMC Public Health. 2011 Sep 14;11(1):702</mods:note>
+						<mods:location>
+							<mods:url>http://dx.doi.org/10.1186/1471-2458-11-702</mods:url>
+						</mods:location>
+						<mods:identifier type="doi">10.1186/1471-2458-11-702</mods:identifier>
+						<mods:identifier type="pmpid">21917179</mods:identifier>
+						<mods:name>
+							<mods:namePart>Lee, Joseph GL</mods:namePart>
+							<mods:affiliation>Tobacco Prevention and Evaluation Program</mods:affiliation>
+							<mods:affiliation>Department of Family Medicine</mods:affiliation>
+							<mods:affiliation>School of Medicine</mods:affiliation>
+						</mods:name>
+						<mods:name>
+							<mods:namePart>Ranney, Leah M</mods:namePart>
+							<mods:affiliation>Tobacco Prevention and Evaluation Program</mods:affiliation>
+							<mods:affiliation>Department of Family Medicine</mods:affiliation>
+							<mods:affiliation>School of Medicine</mods:affiliation>
+						</mods:name>
+						<mods:name>
+							<mods:namePart>Goldstein, Adam O</mods:namePart>
+							<mods:affiliation>Tobacco Prevention and Evaluation Program</mods:affiliation>
+							<mods:affiliation>Department of Family Medicine</mods:affiliation>
+							<mods:affiliation>School of Medicine</mods:affiliation>
+						</mods:name>
+						<mods:name>
+							<mods:namePart>McCullough, Anna</mods:namePart>
+							<mods:affiliation>Tobacco Prevention and Evaluation Program</mods:affiliation>
+							<mods:affiliation>Department of Family Medicine</mods:affiliation>
+							<mods:affiliation>School of Medicine</mods:affiliation>
+						</mods:name>
+						<mods:name>
+							<mods:namePart>Fulton-Smith, Sterling M</mods:namePart>
+							<mods:affiliation>
+								North Carolina Health and Wellness Trust Fund Commission
+</mods:affiliation>
+						</mods:name>
+						<mods:name>
+							<mods:namePart>Collins, Nicole O</mods:namePart>
+							<mods:affiliation>Southern Regional Area Health Education Center</mods:affiliation>
+						</mods:name>
+						<mods:relatedItem type="otherFormat"
+							displayLabel="Source">
+							<mods:titleInfo>
+								<mods:title>BMC Public Health</mods:title>
+							</mods:titleInfo>
+							<mods:identifier type="issn">1471-2458</mods:identifier>
+							<mods:originInfo>
+								<mods:dateIssued>2011</mods:dateIssued>
+							</mods:originInfo>
+							<mods:part>
+								<mods:detail type="volume">
+									<mods:number>11</mods:number>
+									<mods:caption>vol.</mods:caption>
+								</mods:detail>
+								<mods:detail type="issue">
+									<mods:number>1</mods:number>
+									<mods:caption>issue</mods:caption>
+								</mods:detail>
+							</mods:part>
+							<mods:extent unit="page">
+								<mods:start>702</mods:start>
+							</mods:extent>
+						</mods:relatedItem>
+					</mods:mods>
+				</foxml:xmlContent>
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+		<foxml:datastream ID="MD_CONTENTS" STATE="A"
+			CONTROL_GROUP="X" VERSIONABLE="false">
+			<foxml:datastreamVersion ID="MD_CONTENTS.0"
+				LABEL="List of Contents" CREATED="2012-05-22T21:05:49.068Z"
+				MIMETYPE="text/xml" SIZE="650">
+				<foxml:contentDigest TYPE="MD5"
+					DIGEST="e7de106bcf9c276c9d05347d7641b5a8" />
+				<foxml:xmlContent>
+					<m:structMap xmlns:m="http://www.loc.gov/METS/">
+						<m:div TYPE="Container">
+							<m:div ID="uuid:9de5572e-2e37-4e69-86c1-2fd42e1455e6"
+								ORDER="1" />
+							<m:div ID="uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4"
+								ORDER="2" />
+							<m:div ID="uuid:85be8e71-0aef-4e5a-a68c-4af72e2a2194"
+								ORDER="3" />
+							<m:div ID="uuid:af408783-d0ef-4ac0-a2f9-96ca5cc2de30"
+								ORDER="4" />
+							<m:div ID="uuid:c632e12c-df63-441f-b1e5-649901b6a207"
+								ORDER="5" />
+						</m:div>
+					</m:structMap>
+				</foxml:xmlContent>
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+		<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X"
+			VERSIONABLE="false">
+			<foxml:datastreamVersion ID="DC1.0"
+				LABEL="Internal XML Metadata" CREATED="2012-05-22T21:05:49.069Z"
+				MIMETYPE="text/xml" SIZE="3057">
+				<foxml:contentDigest TYPE="MD5"
+					DIGEST="8c744d153c685079df897273a8f1eb1a" />
+				<foxml:xmlContent>
+					<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+						xmlns:dc="http://purl.org/dc/elements/1.1/"
+						xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+						<dc:title>
+							Successful implementation of a wellness and tobacco cessation curriculum in
+							psychosocial rehabilitation clubhouses
+</dc:title>
+						<dc:description>
+							Abstract Background Tobacco remains a seemingly intractable problem for
+							individuals living with severe and persistent mental illness.
+							This study evaluated the implementation, technical assistance,
+							and perceived impact of a model curriculum ("Learning About
+							Healthy Living") to promote wellness and motivation to quit
+							tobacco use in psychosocial rehabilitation clubhouses. Methods We
+							used semi-structured interviews (n = 9) with clubhouse staff (n =
+							12) and a survey of participating clubhouse members (n = 271) in
+							nine clubhouses. Results Fifty-eight percent of clubhouse
+							participants completed surveys. Results showed tobacco users open
+							to tobacco-free policies (62%) and perceiving more discussions
+							about quitting tobacco with healthcare providers (69%). Analyses
+							of staff interviews and member surveys revealed four key themes:
+							(1) the curriculum was successfully implemented and appreciated;
+							(2) technical assistance kept implementation on track; (3) adding
+							wellness content and interactive components should enhance the
+							curriculum; and, (4) the curriculum advanced other healthful
+							policies and practices. Conclusions Mental health settings are
+							important locations for implementing programs to address tobacco
+							use. In this real-world implementation of a model curriculum in
+							psychosocial rehabilitation clubhouses, the curriculum tested
+							well, was feasible and well-received, and suggests potential
+							impact on tobacco use outcomes. Revision, dissemination, and a
+							randomized controlled trial evaluation of the model curriculum
+							should now occur.
+</dc:description>
+						<dc:description>BMC Public Health. 2011 Sep 14;11(1):702</dc:description>
+						<dc:publisher>BioMed Central Ltd</dc:publisher>
+						<dc:contributor>Lee, Joseph GL</dc:contributor>
+						<dc:contributor>Ranney, Leah M</dc:contributor>
+						<dc:contributor>Goldstein, Adam O</dc:contributor>
+						<dc:contributor>McCullough, Anna</dc:contributor>
+						<dc:contributor>Fulton-Smith, Sterling M</dc:contributor>
+						<dc:contributor>Collins, Nicole O</dc:contributor>
+						<dc:type>Text</dc:type>
+						<dc:type>Journal Article</dc:type>
+						<dc:type>Peer Reviewed</dc:type>
+						<dc:identifier>uuid:30bedfee-79a5-4ad7-9add-c2615d43b466</dc:identifier>
+						<dc:identifier>http://dx.doi.org/10.1186/1471-2458-11-702</dc:identifier>
+						<dc:identifier>doi: 10.1186/1471-2458-11-702</dc:identifier>
+						<dc:identifier>21917179</dc:identifier>
+						<dc:language>eng</dc:language>
+						<dc:relation>BMC Public Health--1471-2458</dc:relation>
+						<dc:rights>Lee et al.; licensee BioMed Central Ltd.</dc:rights>
+						<dc:rights />
+						<dc:rights>Open Access</dc:rights>
+					</oai_dc:dc>
+				</foxml:xmlContent>
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+		<foxml:datastream ID="MD_EVENTS" STATE="A"
+			CONTROL_GROUP="M" VERSIONABLE="false">
+			<foxml:datastreamVersion ID="MD_EVENTS.0"
+				LABEL="PREMIS Events Metadata" CREATED="2012-05-22T21:05:49.069Z"
+				MIMETYPE="text/xml" SIZE="5328">
+				<foxml:contentDigest TYPE="MD5"
+					DIGEST="253406ae27edf13eb2d558d0068732de" />
+				<foxml:contentLocation TYPE="INTERNAL_ID"
+					REF="uuid:30bedfee-79a5-4ad7-9add-c2615d43b466+MD_EVENTS+MD_EVENTS.0" />
+			</foxml:datastreamVersion>
+		</foxml:datastream>
+	</foxml:digitalObject>
+	<path>
+		<object label="Repository Home" pid="admin:REPOSITORY" slug="REPOSITORY" />
+		<object label="Collections" pid="uuid:e7c5566f-2b2f-46a9-87fb-0a90268c9aad"
+			slug="Collections" />
+		<object label="BiomedCentral" pid="uuid:f14be512-bed6-4dfb-a3cb-7643fce0329e"
+			slug="BiomedCentral" />
+		<object
+			label="Successful implementation of a wellness and tobacco cessation curriculum in psychosocial rehabilitation clubhouses"
+			pid="uuid:30bedfee-79a5-4ad7-9add-c2615d43b466" slug="Successful_implementation_of_a_wellness_and_tobac" />
+	</path>
+	<parentCollection>uuid:f14be512-bed6-4dfb-a3cb-7643fce0329e
+	</parentCollection>
+	<permissions>
+		<rights>
+			<permitDerivativesCreate>unc:app:lib:cdr:depositor:biomedcentral
+			</permitDerivativesCreate>
+			<permitMetadataUpdate>unc:app:lib:cdr:depositor:biomedcentral
+			</permitMetadataUpdate>
+			<permitOriginalsRead>public</permitOriginalsRead>
+			<permitOriginalsRead>unc:app:lib:cdr:depositor:biomedcentral
+			</permitOriginalsRead>
+			<permitDerivativesRead>public</permitDerivativesRead>
+			<permitDerivativesRead>unc:app:lib:cdr:depositor:biomedcentral
+			</permitDerivativesRead>
+			<permitDerivativesUpdate>unc:app:lib:cdr:depositor:biomedcentral
+			</permitDerivativesUpdate>
+			<permitOriginalsUpdate>unc:app:lib:cdr:depositor:biomedcentral
+			</permitOriginalsUpdate>
+			<permitMetadataCreate>unc:app:lib:cdr:depositor:biomedcentral
+			</permitMetadataCreate>
+			<permitOriginalsCreate>unc:app:lib:cdr:depositor:biomedcentral
+			</permitOriginalsCreate>
+			<permitMetadataRead>public</permitMetadataRead>
+			<permitMetadataRead>unc:app:lib:cdr:depositor:biomedcentral
+			</permitMetadataRead>
+		</rights>
+	</permissions>
+	<order>7</order>
+	<defaultWebObject
+		id="info:fedora/uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4">
+		<foxml:digitalObject xmlns:foxml="info:fedora/fedora-system:def/foxml#"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" VERSION="1.1"
+			PID="uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4"
+			xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+			<foxml:objectProperties>
+				<foxml:property NAME="info:fedora/fedora-system:def/model#state"
+					VALUE="Active" />
+				<foxml:property NAME="info:fedora/fedora-system:def/model#label"
+					VALUE="1471-2458-11-702.pdf" />
+				<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId"
+					VALUE="" />
+				<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate"
+					VALUE="2012-05-22T21:06:00.194Z" />
+				<foxml:property
+					NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2012-05-22T21:06:45.157Z" />
+			</foxml:objectProperties>
+			<foxml:datastream ID="AUDIT" STATE="A"
+				CONTROL_GROUP="X" VERSIONABLE="false">
+				<foxml:datastreamVersion ID="AUDIT.0"
+					LABEL="Audit Trail for this object" CREATED="2012-05-22T21:06:00.194Z"
+					MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+					<foxml:xmlContent>
+						<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+							<audit:record ID="AUDREC1">
+								<audit:process type="Fedora API-M" />
+								<audit:action>ingest</audit:action>
+								<audit:componentID />
+								<audit:responsibility>fedoraAdmin</audit:responsibility>
+								<audit:date>2012-05-22T21:06:00.194Z</audit:date>
+								<audit:justification>uuid:ac7c84a6-d28d-43dc-98e7-4b9ac6e8eaff</audit:justification>
+							</audit:record>
+							<audit:record ID="AUDREC2">
+								<audit:process type="Fedora API-M" />
+								<audit:action>addDatastream</audit:action>
+								<audit:componentID>MD_TECHNICAL</audit:componentID>
+								<audit:responsibility>fedoraAdmin</audit:responsibility>
+								<audit:date>2012-05-22T21:06:39.658Z</audit:date>
+								<audit:justification>Adding technical metadata derived by FITS</audit:justification>
+							</audit:record>
+						</audit:auditTrail>
+					</foxml:xmlContent>
+				</foxml:datastreamVersion>
+			</foxml:datastream>
+			<foxml:datastream ID="DATA_FILE" STATE="A"
+				CONTROL_GROUP="M" VERSIONABLE="true">
+				<foxml:datastreamVersion ID="DATA_FILE.0"
+					LABEL="1471-2458-11-702.pdf" CREATED="2012-05-22T21:06:00.296Z"
+					ALT_IDS="1471-2458-11-702.pdf" MIMETYPE="application/pdf" SIZE="290733">
+					<foxml:contentDigest TYPE="MD5"
+						DIGEST="e03216dcfe6eeb243f575a3bfb591419" />
+					<foxml:contentLocation TYPE="INTERNAL_ID"
+						REF="uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4+DATA_FILE+DATA_FILE.0" />
+				</foxml:datastreamVersion>
+			</foxml:datastream>
+			<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X"
+				VERSIONABLE="false">
+				<foxml:datastreamVersion ID="DC1.0"
+					LABEL="Internal XML Metadata" CREATED="2012-05-22T21:06:00.296Z"
+					MIMETYPE="text/xml" SIZE="414">
+					<foxml:contentDigest TYPE="MD5"
+						DIGEST="ea02def850abf8a49153937e0057afb1" />
+					<foxml:xmlContent>
+						<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+							xmlns:dc="http://purl.org/dc/elements/1.1/"
+							xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+							<dc:title>1471-2458-11-702.pdf</dc:title>
+							<dc:identifier>uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4</dc:identifier>
+						</oai_dc:dc>
+					</foxml:xmlContent>
+				</foxml:datastreamVersion>
+			</foxml:datastream>
+			<foxml:datastream ID="MD_EVENTS" STATE="A"
+				CONTROL_GROUP="M" VERSIONABLE="false">
+				<foxml:datastreamVersion ID="MD_EVENTS.0"
+					LABEL="PREMIS Events Metadata" CREATED="2012-05-22T21:06:00.297Z"
+					MIMETYPE="text/xml" SIZE="2937">
+					<foxml:contentDigest TYPE="MD5"
+						DIGEST="928aec29a52fe4304f40a43f2e7324e2" />
+					<foxml:contentLocation TYPE="INTERNAL_ID"
+						REF="uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4+MD_EVENTS+MD_EVENTS.0" />
+				</foxml:datastreamVersion>
+			</foxml:datastream>
+			<foxml:datastream ID="MD_TECHNICAL" STATE="A"
+				CONTROL_GROUP="M" VERSIONABLE="false">
+				<foxml:datastreamVersion ID="MD_TECHNICAL.0"
+					LABEL="PREMIS Technical Metadata" CREATED="2012-05-22T21:06:39.658Z"
+					MIMETYPE="text/xml" SIZE="8792">
+					<foxml:contentDigest TYPE="MD5"
+						DIGEST="b7f90f0703bc3d8b3ea7c6bfbeccab51" />
+					<foxml:contentLocation TYPE="INTERNAL_ID"
+						REF="uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4+MD_TECHNICAL+MD_TECHNICAL.0" />
+				</foxml:datastreamVersion>
+			</foxml:datastream>
+			<foxml:datastream ID="RELS-EXT" STATE="A"
+				CONTROL_GROUP="X" VERSIONABLE="false">
+				<foxml:datastreamVersion ID="RELS-EXT.3"
+					LABEL="Fedora Object-to-Object Relationship Metadata" CREATED="2012-05-22T21:06:45.157Z"
+					MIMETYPE="text/xml" SIZE="1691">
+					<foxml:contentDigest TYPE="MD5"
+						DIGEST="469e3a6d0de529db0df4604fb3dcc546" />
+					<foxml:xmlContent>
+						<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+							<rdf:Description
+								rdf:about="info:fedora/uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4">
+								<allowIndexing
+									xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">yes</allowIndexing>
+								<defaultWebData
+									xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+									rdf:resource="info:fedora/uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4/DATA_FILE" />
+								<originalDeposit
+									xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+									rdf:resource="info:fedora/uuid:ac7c84a6-d28d-43dc-98e7-4b9ac6e8eaff" />
+								<owner xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+									rdf:resource="info:fedora/uuid:3d5370d4-bd0a-43f5-afa0-36abc8b0ffdf" />
+								<slug xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">1471-2458-11-702.pdf</slug>
+								<sourceData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+									rdf:resource="info:fedora/uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4/DATA_FILE" />
+								<hasModel xmlns="info:fedora/fedora-system:def/model#"
+									rdf:resource="info:fedora/cdr-model:PreservedObject" />
+								<hasModel xmlns="info:fedora/fedora-system:def/model#"
+									rdf:resource="info:fedora/cdr-model:Simple" />
+								<hasSourceMimeType
+									xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">application/pdf</hasSourceMimeType>
+								<hasSourceFileSize
+									xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+									rdf:datatype="http://www.w3.org/2001/XMLSchema#long">290733</hasSourceFileSize>
+								<techData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+									rdf:resource="info:fedora/uuid:1deefe14-3be2-4a1c-8496-d54835ef40d4/MD_TECHNICAL" />
+							</rdf:Description>
+						</rdf:RDF>
+					</foxml:xmlContent>
+				</foxml:datastreamVersion>
+			</foxml:datastream>
+		</foxml:digitalObject>
+	</defaultWebObject>
+</view-inputs>

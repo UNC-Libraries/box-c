@@ -46,8 +46,8 @@
 				<c:when test="${cdr:contains(metadata.datastream, 'THUMB_LARGE')}">
 					<div class="largethumb_container">
 						<%--<img id="thumb_${param.resultNumber}" class="largethumb ph_large_${metadata.resourcetype}" 
-								src="${cdr:getDatastreamUrl(metadata.id, 'THUMB_LARGE', fedoraUtil)}"/> --%>
-						<img class="largethumb" src="${cdr:getDatastreamUrl(metadata.id, 'THUMB_LARGE', fedoraUtil)}"/>
+								src="${cdr:getDatastreamUrl(metadata, 'THUMB_LARGE', fedoraUtil)}"/> --%>
+						<img class="largethumb" src="${cdr:getDatastreamUrl(metadata, 'THUMB_LARGE', fedoraUtil)}"/>
 					</div>
 				</c:when>
 				<c:otherwise>

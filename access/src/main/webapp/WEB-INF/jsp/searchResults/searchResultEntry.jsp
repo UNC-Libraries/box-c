@@ -58,7 +58,7 @@
 				<c:when test="${cdr:contains(metadata.datastream, 'THUMB_SMALL')}">
 					<div class="smallthumb_container">
 						<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_${metadata.contentType.searchKey}" 
-								src="${cdr:getDatastreamUrl(metadata.id, 'THUMB_SMALL', fedoraUtil)}"/>
+								src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
 					</div>
 				</c:when>
 				<c:otherwise>
@@ -72,6 +72,11 @@
 							<div class="smallthumb_container">
 								<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_clear" 
 										src="/static/images/collections/${metadata.idWithoutPrefix}.jpg" style="height: 64px; width: 64px;"/>
+							</div>
+						</c:when>
+						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentType.searchKey}">
+							<div class="smallthumb_container">
+								<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
 							</div>
 						</c:when>
 						<c:otherwise>
@@ -120,14 +125,25 @@
 					</c:if>
 				</c:when>
 				<%-- Metadata body for items --%>
-				<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile}">
-					<h2><a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a></h2>
+				<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
+					<h2><a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
+						<c:if test="${metadata.resourceType == searchSettings.resourceTypeAggregate && metadata.childCount > 1}">
+							<p class="searchitem_container_count">(${metadata.childCount} item<c:if test="${metadata.childCount != 1}">s</c:if>)</p>
+						</c:if>
+					</h2>
 					<div class="halfwidth">
 						<c:if test="${not empty metadata.creator}">
-							<p>${searchSettings.searchFieldLabels[searchFieldKeys.CREATOR]}: 
-								<c:forEach var="creatorObject" items="${metadata.creator}" varStatus="creatorStatus">
+							<p>${searchSettings.searchFieldLabels[searchFieldKeys.CREATOR]}:
+								<c:choose>
+									<c:when test="${fn:length(metadata.creator) > 5}"><c:set var="creatorList" value="${cdr:subList(metadata.creator, 0, 5)}"/></c:when>
+									<c:otherwise><c:set var="creatorList" value="${metadata.creator}"/></c:otherwise>
+								</c:choose>
+								
+								<c:forEach var="creatorObject" items="${creatorList}" varStatus="creatorStatus">
 									<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
 								</c:forEach>
+								
+								<c:if test="${fn:length(metadata.creator) > 5}">; et al.</c:if>
 							</p>
 						</c:if>
 						<p>
@@ -156,7 +172,6 @@
 				</c:when>
 			</c:choose>
 		</div>
-		
 		<%-- Action buttons --%>
 		<c:choose>
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
@@ -184,45 +199,57 @@
 					</ul>
 				</div>
 			</c:when>
-			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile}">
+			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
 				<div class="fileinfo">
 					<c:choose>
 						<c:when test="${cdr:contains(metadata.datastream, 'DATA_FILE')}">
 							<div class="actionlink right download">
-								<a href="${cdr:getDatastreamUrl(metadata.id, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
+								<a href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
 							</div>
 						</c:when>
 						<c:when test="${cdr:contains(metadata.datastream, 'SURROGATE')}">
 							<div class="actionlink right download">
-								<a href="${cdr:getDatastreamUrl(metadata.id, 'SURROGATE', fedoraUtil)}">Preview</a>
+								<a href="${cdr:getDatastreamUrl(metadata, 'SURROGATE', fedoraUtil)}">Preview</a>
 							</div>
 						</c:when>
-						<c:otherwise>
+						<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile}">
 							<div class="actionlink right login">
 								<a href="${loginUrl}">Login</a>
 							</div>
+						</c:when>
+					</c:choose>
+					
+					<c:if test="${metadata.resourceType == searchSettings.resourceTypeFile || (metadata.resourceType == searchSettings.resourceTypeAggregate && not empty metadata.contentType)}">
+						<p class="right">
+							<c:out value="${metadata.contentType.highestTierDisplayValue}"/>
+							<c:if test="${not empty metadata.filesize}">
+								&nbsp;(<c:out value="${cdr:formatFilesize(metadata.filesize, 1)}"/>)
+							</c:if>
+						</p>
+					</c:if>
+					
+					<c:choose>
+						<c:when test="${cdr:contains(metadata.recordAccess, accessGroupConstants.PUBLIC_GROUP)}">
+							<c:if test="${!cdr:contains(metadata.surrogateAccess, accessGroupConstants.PUBLIC_GROUP) 
+										|| !cdr:contains(metadata.fileAccess, accessGroupConstants.PUBLIC_GROUP)}">
+								<p class="right">
+									Limited Access
+								</p>
+							</c:if>
+						</c:when>
+						<c:otherwise>
+							<p class="right">
+								Restricted Access
+							</p>
 						</c:otherwise>
 					</c:choose>
 					
-					<p class="right">
-						<c:out value="${metadata.contentType.highestTierDisplayValue}"/>
-						<c:if test="${not empty metadata.filesize}">
-							&nbsp;(<c:out value="${cdr:formatFilesize(metadata.filesize, 1)}"/>)
-						</c:if>
-					</p>
-					<p class="right">
-						<c:choose>
-							<c:when test="${cdr:contains(metadata.recordAccess, accessGroupConstants.PUBLIC_GROUP)}">
-								<c:if test="${!cdr:contains(metadata.surrogateAccess, accessGroupConstants.PUBLIC_GROUP) 
-											|| !cdr:contains(metadata.fileAccess, accessGroupConstants.PUBLIC_GROUP)}">
-									Limited Access
-								</c:if>
-							</c:when>
-							<c:otherwise>
-								Restricted Access
-							</c:otherwise>
-						</c:choose>
-					</p>
+					<c:if test="${metadata.childCount > 1}">
+						<p class="right">
+							<a href="<c:out value='${containerResultsUrl}'/>" title="View all files contained in this item" class="has_tooltip">View ${metadata.childCount} items</a>
+						</p>
+					</c:if>
+					
 				</div>
 			</c:when>
 		</c:choose>
