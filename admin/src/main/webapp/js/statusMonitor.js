@@ -84,7 +84,6 @@ function activateCatchupStatus(){
 function activateIndexingStatus(){
 	view = "indexing";
 	activeView = view;
-	//refresh(new Array("active"), 5, "enhancement", refreshJobType);
 	refresh(new Array("status"), 5, view, reloadIndexingStatus);
 	refresh(new Array("jobs"), 5, view, refreshIndexingJobs);
 }
@@ -338,7 +337,7 @@ function refreshIndexingJobs(viewName, type, params) {
 	else scoping = "";
 	
 	$.getJSON(
-	 	restUrl+viewName+"/"+type + scoping,
+	 	restUrl+viewName+"/"+type + scoping + "?begin=0&end=20",
 		{},
 		function(json) {
 			var subType = "";

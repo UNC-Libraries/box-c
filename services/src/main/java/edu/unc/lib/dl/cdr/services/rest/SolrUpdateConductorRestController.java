@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -124,9 +125,8 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 			return result;
 		}
 		
+		int[] statusCount = new int[ProcessingStatus.values().length];
 		List<ActionMessage> topLevelMessages = new ArrayList<ActionMessage>(root.getChildren());
-		
-		populateLabels(topLevelMessages);
 		
 		// Sort messages by status, backwards
 		Collections.sort(topLevelMessages, new Comparator<ActionMessage>() {
@@ -143,12 +143,29 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 				int compare = r1.getStatus().compareTo(r2.getStatus());
 				// Tie-break with timestamp
 				if (compare == 0) {
-					return (int) (o1.getTimeCreated() - o2.getTimeCreated());
+					return (int) (o2.getTimeCreated() - o1.getTimeCreated());
 				}
 				return compare;
 			}
-			
 		});
+		
+		if (begin == null)
+			begin = 0;
+		if (end == null)
+			end = topLevelMessages.size();
+		// Cut down result set to the current page
+		Iterator<ActionMessage> messageIt = topLevelMessages.iterator();
+		while (messageIt.hasNext()) {
+			SolrUpdateRequest next = (SolrUpdateRequest)messageIt.next();
+			if (next.getStatus() != null) {
+				if (statusCount[next.getStatus().ordinal()] < begin || statusCount[next.getStatus().ordinal()] >= end){
+					messageIt.remove();
+				}
+				statusCount[next.getStatus().ordinal()]++;
+			}
+		}
+		
+		populateLabels(topLevelMessages);
 		
 		for (ActionMessage message: topLevelMessages) {
 			Map<String,Object> jobInfo = getJobBriefInfo(message, "");
