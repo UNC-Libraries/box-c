@@ -1081,14 +1081,15 @@ ul.crumblist li a {
 }
 
 #hierarchical_view_full_record.aggregate .hier_secondary_actions a {
-	/*background-color: #5AABCF;
+	background-color: #5AABCF;
 	border: 1px solid #6A8693;
 	color: #ffffff; 
-	display : inline-block;*/
+	display : inline-block;
 	font-size: 10px;
 	font-weight: bold;
 	line-height: 16px;
 	padding: 0 4px;
+	margin-right: 3px;
 }
 
 #hierarchical_view_full_record.aggregate .hier_secondary_actions a {

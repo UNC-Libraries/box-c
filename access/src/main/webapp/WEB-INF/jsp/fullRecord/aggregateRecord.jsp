@@ -188,7 +188,7 @@
 			<c:param name="disableSecondaryBrowseLink" value="true"/>
 			<c:param name="disableSecondarySearchWithStateLink" value="true"/>
 			<c:param name="excludeParent" value="true"/>
-			<c:param name="filePrimaryDownload" value="true"/>
+			<c:param name="filePrimaryDownload" value="false"/>
 			<c:param name="excludeIDs" value="${defaultWebObjectID}"/>
 			<c:param name="showSeeAllLinks" value="false"/>
 		</c:import>
