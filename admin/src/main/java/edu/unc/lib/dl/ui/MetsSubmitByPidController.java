@@ -117,7 +117,9 @@ public class MetsSubmitByPidController extends CommonAdminObjectNavigationContro
 						folderManager.createPath(pidPath, ownerAgent, mediator);
 
 					} catch (Exception e) {
-						dao.setMessage(e.getLocalizedMessage().replace("\n", "<br />\n"));
+						if(e.getLocalizedMessage() != null) {
+							dao.setMessage(e.getLocalizedMessage().replace("\n", "<br />\n"));
+						}
 						noErrors = false;
 					}
 				}

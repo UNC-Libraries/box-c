@@ -72,8 +72,11 @@ public class VirusScanFilter implements AIPIngestFilter {
 					File file = aip.getFileForUrl(ref);
 					try {
 						ScanResult result = this.clamScan.scan(new FileInputStream(file));
-						if(!ScanResult.Status.PASSED.equals(result.getStatus())) {
-							throw new AIPException("Virus check failed on "+ref+"\n"+result);
+						if(ScanResult.Status.FAILED.equals(result.getStatus())) {
+							throw new AIPException("Virus check failed on "+ref+"\n"+result.getResult());
+						}
+						if(ScanResult.Status.ERROR.equals(result.getStatus())) {
+							throw new AIPException("Virus checks are producing errors: "+result.getException().getLocalizedMessage());
 						}
 					} catch (FileNotFoundException e) {
 						throw new AIPException("Cannot find local file referenced in METS manifest: "+ref, e);
