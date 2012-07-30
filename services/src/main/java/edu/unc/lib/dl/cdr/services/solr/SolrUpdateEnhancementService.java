@@ -36,7 +36,7 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
  * Service which determines when to update individual items in Solr.
- *
+ * 
  * @author bbpennel
  */
 public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementService {
@@ -60,6 +60,11 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	}
 
 	@Override
+	public int countCandidateObjects() throws EnhancementException {
+		return 0;
+	}
+
+	@Override
 	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
 		return new SolrUpdateEnhancement(this, message.getPid());
 	}
@@ -68,42 +73,43 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	public boolean prefilterMessage(EnhancementMessage message) throws EnhancementException {
 		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(message.getQualifiedAction()))
 			return this.getClass().getName().equals(message.getServiceName());
-		//Returns true if at least one other service passed prefilter
-		//It is okay for ingest messages to pass here since if they are still orphaned they are not indexed.
+		// Returns true if at least one other service passed prefilter
+		// It is okay for ingest messages to pass here since if they are still orphaned they are not indexed.
 		return message.getFilteredServices() != null && message.getFilteredServices().size() > 0;
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
 		// Get lastModified from Fedora
 		LOG.debug("isApplicable called with " + message);
-		
+
 		// Get dateUpdated from Solr
 		try {
-			Date solrDateModified = (Date) this.solrDataAccessLayer.getField(message.getTargetID(),
-					"dateUpdated");
+			Date solrDateModified = (Date) this.solrDataAccessLayer.getField(message.getTargetID(), "dateUpdated");
 			if (solrDateModified == null) {
 				LOG.debug("isApplicable due to solrDateModified being null");
 				return true;
 			} else {
-				String solrDateModifiedString = org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(solrDateModified);
-				
-				//This message was not created as a result of the record being changed, so need to get Fedora updated timestamp
+				String solrDateModifiedString = org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(
+						solrDateModified);
+
+				// This message was not created as a result of the record being changed, so need to get Fedora updated
+				// timestamp
 				String query = null;
 				String fedoraDateModified = null;
 				try {
 					// replace model URI and PID tokens
 					query = super.readFileAsString("solr-update-applicable.sparql");
-					query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), message.getPid()
-							.getURI());
+					query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), message
+							.getPid().getURI());
 
-					List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results"))
-							.get("bindings");
+					List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query)
+							.get("results")).get("bindings");
 					// Couldn't find the date modified, item likely no longer exists.
 					if (bindings.size() == 0)
 						return true;
-					//Compare Solr updated timestamp to Fedora's.  If Solr is older, than need to update.
+					// Compare Solr updated timestamp to Fedora's. If Solr is older, than need to update.
 					fedoraDateModified = (String) ((Map) bindings.get(0).get("modifiedDate")).get("value");
 					if (solrDateModifiedString.compareTo(fedoraDateModified) < 0) {
 						return true;
@@ -112,8 +118,9 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 					throw new EnhancementException(e, Severity.UNRECOVERABLE);
 				}
 			}
-		} catch (SolrServerException e){
-			throw new EnhancementException("Error determining isApplicable for SolrUpdateEnhancement.", e, Severity.RECOVERABLE);
+		} catch (SolrServerException e) {
+			throw new EnhancementException("Error determining isApplicable for SolrUpdateEnhancement.", e,
+					Severity.RECOVERABLE);
 		}
 		return false;
 	}
@@ -133,7 +140,8 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
 		EnhancementApplication lastApplied = null;
 		try {
-			Date timestamp = (Date)this.solrDataAccessLayer.getField(pid.getPid(), solrDataAccessLayer.getSolrSettings().getFieldName(SearchFieldKeys.TIMESTAMP));
+			Date timestamp = (Date) this.solrDataAccessLayer.getField(pid.getPid(), solrDataAccessLayer.getSolrSettings()
+					.getFieldName(SearchFieldKeys.TIMESTAMP));
 			lastApplied = new EnhancementApplication();
 			lastApplied.setLastApplied(timestamp);
 			lastApplied.setPid(pid);
@@ -143,7 +151,7 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 		}
 		return lastApplied;
 	}
-	
+
 	@Override
 	public String getName() {
 		return enhancementName;

@@ -35,35 +35,35 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
- * Service which determines items that have exited their embargo period within the last
- * window period.
+ * Service which determines items that have exited their embargo period within the last window period.
+ * 
  * @author bbpennel
- *
+ * 
  */
 public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 	private static final Logger LOG = LoggerFactory.getLogger(EmbargoUpdateService.class);
 	public static final String enhancementName = "Embargo Update";
-	
+
 	private Integer windowSizeHours;
-	
-	public EmbargoUpdateService(){
+
+	public EmbargoUpdateService() {
 		windowSizeHours = 24;
 	}
-	
-	public void updateEmbargoes(){
+
+	public void updateEmbargoes() {
 		List<PID> candidates = this.findCandidateObjects(-1);
-		if (candidates != null){
-			for (PID candidate: candidates){
+		if (candidates != null) {
+			for (PID candidate : candidates) {
 				getMessageDirector().direct(new SolrUpdateRequest(candidate.getPid(), SolrUpdateAction.RECURSIVE_ADD));
 			}
-		}	
+		}
 	}
-	
+
 	@Override
 	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
 		return null;
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public List<PID> findCandidateObjects(int maxResults) {
@@ -73,34 +73,41 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 		calendar.set(Calendar.MILLISECOND, 0);
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		String windowEnd = formatter.format(calendar.getTime());
-		
+
 		calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY) - windowSizeHours);
 		String windowStart = formatter.format(calendar.getTime());
-		
+
 		String query = null;
 		try {
 			// replace model URI and date tokens
 			query = super.readFileAsString("embargo-update-candidates.sparql");
-			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), windowStart, windowEnd);
-			
+			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), windowStart,
+					windowEnd);
+
 			List<PID> expiringEmbargoes = new ArrayList<PID>();
-			List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results")).get("bindings");
-			for (Map binding: bindings){
+			List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results"))
+					.get("bindings");
+			for (Map binding : bindings) {
 				expiringEmbargoes.add(new PID((String) ((Map) binding.get("pid")).get("value")));
 			}
 			return expiringEmbargoes;
 		} catch (IOException e) {
 			LOG.error("Failed to retrieve candidates.", e);
 		}
-		
+
 		return null;
+	}
+
+	@Override
+	public int countCandidateObjects() throws EnhancementException {
+		return 0;
 	}
 
 	@Override
 	public Enhancement<Element> getEnhancement(EnhancementMessage pid) {
 		return null;
 	}
-	
+
 	@Override
 	public boolean prefilterMessage(EnhancementMessage pid) throws EnhancementException {
 		return false;
@@ -128,7 +135,7 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
 		return null;
 	}
-	
+
 	@Override
 	public String getName() {
 		return enhancementName;

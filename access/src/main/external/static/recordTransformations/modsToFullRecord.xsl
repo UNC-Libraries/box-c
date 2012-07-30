@@ -87,7 +87,12 @@
 		
 		<xsl:variable name="affiliation" select="*[local-name() = 'affiliation']" />
 		<xsl:if test="boolean($affiliation)">
-			<xsl:text>Affiliation:  </xsl:text><xsl:value-of select="$affiliation"/><br/><xsl:value-of select="$newline"/>
+			<span>
+				<xsl:text>Affiliation:  </xsl:text>
+				<xsl:for-each select="*[local-name() = 'affiliation']">
+					<xsl:value-of select="text()"/><br/><xsl:value-of select="$newline"/>
+				</xsl:for-each>
+			</span>
 		</xsl:if>
 		
 		<xsl:variable name="description" select="*[local-name() = 'description']" />
@@ -280,13 +285,28 @@
 								<xsl:value-of select="$defaultLabel"/>
 							</xsl:when>
 							<xsl:otherwise>
-								<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
+								<xsl:choose>
+									<xsl:when test="$groupKey = 'doi' or $groupKey = 'issn'">
+										<xsl:value-of select="upper-case($groupKey)"/>
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
+									</xsl:otherwise>
+								</xsl:choose>
 							</xsl:otherwise>
 						</xsl:choose>
 					</th><xsl:value-of select="$newline"/>
 					<td>
 						<xsl:for-each select="current-group()">
-							<xsl:value-of select="text()"/><br/><xsl:value-of select="$newline"/>
+							<xsl:choose>
+								<xsl:when test="boolean(text())">
+									<xsl:value-of select="text()"/><br/><xsl:value-of select="$newline"/>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of select="./@*[local-name() = 'href']"/><br/><xsl:value-of select="$newline"/>
+								</xsl:otherwise>
+							</xsl:choose>
+							
 						</xsl:for-each>
 					</td>
 				</tr>

@@ -17,6 +17,7 @@
 package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +33,7 @@ import edu.unc.lib.dl.message.ActionMessage;
 
 public class SolrUpdateConductor extends SolrUpdateService implements MessageConductor, ServiceConductor {
 	private long beforeExecuteDelay = 50;
+	private long finishedMessageTimeout = 14400000;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -65,19 +67,19 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 				if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)){
 					//Move and add are both recursive adds of all subjects, plus a nonrecursive update for reordered children.
 					for (String pidString: cdrMessage.getSubjects()){
-						this.offer(new SolrUpdateRequest(pidString, SolrUpdateAction.RECURSIVE_ADD));
+						this.offer(pidString, SolrUpdateAction.RECURSIVE_ADD);
 					}
 				}
 				// Reorder is a non-recursive add.
 				for (String pidString: cdrMessage.getReordered()){
-					this.offer(new SolrUpdateRequest(pidString, SolrUpdateAction.ADD));
+					this.offer(pidString, SolrUpdateAction.ADD);
 				}
 			} else if (JMSMessageUtil.CDRActions.REINDEX.equals(action)){
 				//Determine which kind of reindex to perform based on the mode
 				if (cdrMessage.getMode().equals("inplace")){
-					this.offer(new SolrUpdateRequest(cdrMessage.getParent(), SolrUpdateAction.RECURSIVE_REINDEX));
+					this.offer(cdrMessage.getParent(), SolrUpdateAction.RECURSIVE_REINDEX);
 				} else {
-					this.offer(new SolrUpdateRequest(cdrMessage.getParent(), SolrUpdateAction.CLEAN_REINDEX));
+					this.offer(cdrMessage.getParent(), SolrUpdateAction.CLEAN_REINDEX);
 				}
 			}
 		} else {
@@ -106,7 +108,6 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	}
 
 	public Map<String, Object> getInfo() {
-		// TODO put values in separate keys
 		Map<String, Object> result = new HashMap<String, Object>();
 		StringBuilder sb = new StringBuilder();
 		sb.append("Solr Update Conductor Status:\n")
@@ -227,5 +228,28 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	@Override
 	public int getActiveThreadCount() {
 		return this.executor.getActiveCount();
+	}
+	
+	public void cleanupFinishedMessages() {
+		long currentTime = System.currentTimeMillis();
+		
+		synchronized (finishedMessages) {
+			Iterator<SolrUpdateRequest> iterator = this.finishedMessages.iterator();
+			while (iterator.hasNext()) {
+				SolrUpdateRequest message = iterator.next();
+				if (currentTime - message.getTimeFinished() >= finishedMessageTimeout) {
+					message.remove();
+					iterator.remove();
+				}
+			}
+		}
+	}
+
+	public long getFinishedMessageTimeout() {
+		return finishedMessageTimeout;
+	}
+
+	public void setFinishedMessageTimeout(long finishedMessageTimeout) {
+		this.finishedMessageTimeout = finishedMessageTimeout;
 	}
 }

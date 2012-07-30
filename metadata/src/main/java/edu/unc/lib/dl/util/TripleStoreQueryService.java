@@ -108,6 +108,8 @@ public interface TripleStoreQueryService {
 	 * @return a list of object IDs the include repository paths and PIDs
 	 */
 	public abstract List<PID> fetchByPredicateAndLiteral(String predicateURI, String literal);
+	
+	public abstract List<PID> fetchByPredicateAndLiteral(String predicateURI, PID pidLiteral);
 
 	/**
 	 * Retrieves an object ID based on repository path, i.e. container-slug path.
@@ -327,6 +329,8 @@ public interface TripleStoreQueryService {
 	 * @return
 	 */
 	public abstract String lookupLabel(PID pid);
+	
+	public abstract String lookupLabel(String pid);
 
 	/**
 	 * Looks up the slug for a given PID

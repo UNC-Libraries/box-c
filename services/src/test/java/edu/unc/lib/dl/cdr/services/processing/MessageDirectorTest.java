@@ -112,7 +112,7 @@ public class MessageDirectorTest extends Assert {
 	
 	@Test
 	public void solrAddMessage(){
-		ActionMessage message = new SolrUpdateRequest("cdr:test", SolrUpdateAction.ADD);
+		ActionMessage message = new SolrUpdateRequest("cdr:test", SolrUpdateAction.ADD, null);
 		messageDirector.direct(message);
 		verify(solrConductor).add(any(ActionMessage.class));
 		verify(enhancementConductor, never()).add(any(ActionMessage.class));

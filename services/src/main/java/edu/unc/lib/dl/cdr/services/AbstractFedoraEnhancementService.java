@@ -17,6 +17,9 @@ package edu.unc.lib.dl.cdr.services;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +28,11 @@ import org.springframework.context.ApplicationContextAware;
 
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.cdr.services.model.LabeledPID;
 import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.ManagementClient;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public abstract class AbstractFedoraEnhancementService implements ObjectEnhancementService, ApplicationContextAware {
@@ -41,17 +46,17 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 
 	@Override
 	public boolean prefilterMessage(EnhancementMessage message) throws EnhancementException {
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getQualifiedAction())){
+		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getQualifiedAction())) {
 			return true;
 		}
-			
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(message.getQualifiedAction()) && 
-				this.getClass().getName().equals(message.getServiceName())){
+
+		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(message.getQualifiedAction())
+				&& this.getClass().getName().equals(message.getServiceName())) {
 			return true;
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean isActive() {
 		return active;
@@ -65,7 +70,7 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 		this.applicationContext = applicationContext;
 	}
 
-	public MessageDirector getMessageDirector(){
+	public MessageDirector getMessageDirector() {
 		return this.applicationContext.getBean(MessageDirector.class);
 	}
 
@@ -83,6 +88,31 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 
 	public void setManagementClient(ManagementClient managementClient) {
 		this.managementClient = managementClient;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	protected Object executeCandidateQuery(String query, boolean countQuery) {
+		String format = "json";//((countQuery) ? "count/json" : "json");
+		Map results = this.getTripleStoreQueryService().sendSPARQL(query, format);
+		List<Map> bindings = (List<Map>) ((Map) results.get("results")).get("bindings");
+
+		LOG.debug(results.toString());
+		if (countQuery) {
+			// TODO Mulgara doesn't support count queries in SPARQL, will need to redo for other triple stores
+			return bindings.size();
+			/*Map binding = bindings.get(0);
+			int count = Integer.parseInt((String) ((Map) binding.get("count")).get("value"));
+			return count;*/
+		} else {
+			List<PID> result = new ArrayList<PID>();
+			for (Map binding : bindings) {
+				String pidURI = (String) ((Map) binding.get("pid")).get("value");
+				String label = (String) ((Map) binding.get("label")).get("value");
+				result.add(new LabeledPID(pidURI, label));
+			}
+
+			return result;
+		}
 	}
 
 	/**

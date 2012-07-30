@@ -37,7 +37,7 @@
 							<c:when test="${cdr:contains(neighbor.datastream, 'THUMB_SMALL')}">
 								<div class="smallthumb_container">
 									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_${neighbor.contentType.searchKey}" 
-											src="${cdr:getDatastreamUrl(neighbor.id, 'THUMB_SMALL', fedoraUtil)}"/>
+											src="${cdr:getDatastreamUrl(neighbor, 'THUMB_SMALL', fedoraUtil)}"/>
 								</div>
 							</c:when>
 							<c:otherwise>

@@ -165,7 +165,7 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 						throw new AIPException("Unable to process article XML from " + slug, e);
 					}
 				} else if (slug.matches("^[0-9\\-X]+\\.\\w+$")){
-					LOG.debug("Found primary Biomed XML document " + slug);
+					LOG.debug("Found primary Biomed content document " + slug);
 					// If this is a main object, then designate it as a default web object for its parent container
 					try {
 						JRDFGraphUtil.addCDRProperty(g, parentPID, ContentModelHelper.CDRProperty.defaultWebObject, new URI(pid.getURI()));
@@ -220,6 +220,9 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 				String idType = identifier.getAttributeValue("idtype");
 				Element modsIdentifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
 				modsIdentifier.setAttribute("type", idType);
+				if (idType.equals("pmpid")){
+					modsIdentifier.setAttribute("displayLabel", "PMID");
+				}
 				modsIdentifier.setText(identifier.getTextTrim());
 				modsContent.addContent(modsIdentifier);
 			}

@@ -18,17 +18,17 @@ package edu.unc.lib.dl.cdr.services.rest;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.AbstractXMLEventMessage;
 import edu.unc.lib.dl.cdr.services.model.CDREventMessage;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
@@ -47,7 +48,6 @@ import edu.unc.lib.dl.cdr.services.model.FailedEnhancementObject.MessageFailure;
 import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor;
-import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor.PerformServicesRunnable;
 import edu.unc.lib.dl.message.ActionMessage;
 
 /**
@@ -64,9 +64,20 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	public static final String BLOCKED_PATH = "blocked";
 	public static final String ACTIVE_PATH = "active";
 	public static final String FAILED_PATH = "failed";
+	public static final String FINISHED_PATH = "finished";
 	
 	@Resource
 	private EnhancementConductor enhancementConductor;
+	
+	private Map<String,String> serviceNameLookup;
+	
+	@PostConstruct
+	public void init(){
+		serviceNameLookup = new HashMap<String,String>();
+		for (ObjectEnhancementService service: enhancementConductor.getServices()){
+			serviceNameLookup.put(service.getClass().getName(), service.getName());
+		}
+	}
 	
 	@RequestMapping(value = { "", "/" }, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getInfo() {
@@ -76,7 +87,8 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		result.put("queuedJobs", this.enhancementConductor.getPidQueue().size());
 		result.put("blockedJobs", this.enhancementConductor.getCollisionList().size());
 		result.put("failedJobs", this.enhancementConductor.getFailedPids().size());
-		result.put("activeJobs", this.enhancementConductor.getExecutor().getRunningNow().size());
+		result.put("activeJobs", this.enhancementConductor.getActiveMessages().size());
+		result.put("finishedJobs", this.enhancementConductor.getFinishedMessages().size());
 		
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
@@ -85,6 +97,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		uris.put("blockedJobs", BASE_PATH + BLOCKED_PATH);
 		uris.put("activeJobs", BASE_PATH + ACTIVE_PATH);
 		uris.put("failedJobs", BASE_PATH + FAILED_PATH);
+		uris.put("finishedJobs", BASE_PATH + FINISHED_PATH);
 		
 		return result;
 	}
@@ -119,13 +132,20 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			@RequestParam(value = "begin", required = false) Integer begin,
 			@RequestParam(value = "end", required = false) Integer end) {
 		
-		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
-		List<ActionMessage> messages = new ArrayList<ActionMessage>();
-		for (PerformServicesRunnable task: currentlyRunning){
-			messages.add(task.getMessage());
-		}
 		Map<String, Object> result = new HashMap<String, Object>();
-		addMessageListInfo(result, messages, begin, end, ACTIVE_PATH);
+		List<ActionMessage> messageList = new ArrayList<ActionMessage>(this.enhancementConductor.getActiveMessages());
+		addMessageListInfo(result, messageList, begin, end, ACTIVE_PATH);
+		return result;
+	}
+	
+	@RequestMapping(value = FINISHED_PATH, method = RequestMethod.GET)
+	public @ResponseBody Map<String, ? extends Object> getFinishedInfo( 
+			@RequestParam(value = "begin", required = false) Integer begin,
+			@RequestParam(value = "end", required = false) Integer end) {
+		
+		Map<String, Object> result = new HashMap<String, Object>();
+		List<ActionMessage> messageList = new ArrayList<ActionMessage>(this.enhancementConductor.getFinishedMessages());
+		addMessageListInfo(result, messageList, begin, end, FINISHED_PATH);
 		return result;
 	}
 	
@@ -149,18 +169,28 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		while (iterator.hasNext()){
 			Entry<String,FailedEnhancementObject> entry = iterator.next();
 			Map<String, Object> failedEntry = new HashMap<String, Object>();
-			failedEntry.put("id", entry.getKey());
-			List<String> failedServices = new ArrayList<String>();
+			failedEntry.put("targetPID", entry.getKey());
+			Map<String,String> failedServices = new HashMap<String,String>();
 			failedEntry.put("failedServices", failedServices);
 			for (String failedService: entry.getValue().getFailedServices()){
-				failedServices.add(failedService);
+				failedServices.put(failedService, this.serviceNameLookup.get(failedService));
 			}
 			failedEntry.put("timestamp", entry.getValue().getTimestamp());
-			if (entry.getValue().getMessages() != null){
+			List<ActionMessage> messages = entry.getValue().getMessages();
+			if (messages != null && messages.size() > 0){
+				// Populate the label on all messages for this item
+				this.populateLabels(messages);
+				// Use the first message's label for the entry
+				failedEntry.put("targetLabel", messages.get(0).getTargetLabel());
+				
 				Map<String, Object> uris = new HashMap<String, Object>();
 				failedEntry.put("uris", uris);
-				for (ActionMessage message: entry.getValue().getMessages()){
-					uris.put("message_" + message.getMessageID(), BASE_PATH + FAILED_PATH + "/job/" + message.getMessageID());
+				uris.put("jobInfo", BASE_PATH + FAILED_PATH + "/job/");
+				
+				List<String> messageIDList = new ArrayList<String>();
+				failedEntry.put("messageIDs", messageIDList);
+				for (ActionMessage message: messages){
+					messageIDList.add(message.getMessageID());
 				}
 			}
 			jobs.add(failedEntry);
@@ -175,9 +205,16 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			return null;
 		MessageFailure messageFailure;
 		try {
+			FailedEnhancementObject failedObject = enhancementConductor.getFailedPids().getFailureByMessageID(id);
+			Map<String,String> failedServices = new HashMap<String,String>();
+			for (String failedService: failedObject.getFailedServices()){
+				failedServices.put(failedService, this.serviceNameLookup.get(failedService));
+			}
+			
 			messageFailure = this.enhancementConductor.getFailedPids().getMessageFailure(id);
 			Map<String, Object> jobInfo = getJobFullInfo(messageFailure.getMessage(), FAILED_PATH);
 			jobInfo.put("stackTrace", messageFailure.getFailureLog());			
+			jobInfo.put("failedServices", failedServices);
 			
 			return jobInfo;
 		} catch (IOException e) {
@@ -204,12 +241,54 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	
 	@RequestMapping(value = { ACTIVE_PATH + "/job/{id}" }, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getActiveJobInfo(@PathVariable("id") String id){
-		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
-		List<ActionMessage> messages = new ArrayList<ActionMessage>();
-		for (PerformServicesRunnable task: currentlyRunning){
-			messages.add(task.getMessage());
+		return getJobFullInfo(lookupJobInfo(id, new ArrayList<ActionMessage>(this.enhancementConductor.getActiveMessages())), ACTIVE_PATH);
+	}
+	
+	@RequestMapping(value = { FINISHED_PATH + "/job/{id}" }, method = RequestMethod.GET)
+	public @ResponseBody Map<String, ? extends Object> getFinishedJobInfo(@PathVariable("id") String id){
+		return getJobFullInfo(lookupJobInfo(id, new ArrayList<ActionMessage>(this.enhancementConductor.getFinishedMessages())), FINISHED_PATH);
+	}
+	
+	/**
+	 * Seeks out the job info for the given message id in each of the enhancement lists.  If a messageType is provided, then it will start
+	 * seeking in the specified list and work its way down the stack if not found there.
+	 * @param id
+	 * @param messageType
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = {"job/{id}" }, method = RequestMethod.GET)
+	public @ResponseBody Map<String, ? extends Object> getJobInfo(@PathVariable("id") String id, @RequestParam("type") String messageType){
+		String[] typeStack = {"queued", "blocked", "active", "finished", "failed"};
+		
+		LOG.debug("Retrieving message for enhancement " + id + " starting with type " + messageType);
+		
+		boolean reachedMessageType = messageType == null;
+		
+		for (String type: typeStack) {
+			if (!reachedMessageType && type.equals(messageType))
+				reachedMessageType = true;
+			if (reachedMessageType) {
+				Map<String, ?> result = null;
+				if ("queued".equals(type)) {
+					result = getQueuedJobInfo(id);
+				} else if ("blocked".equals(type)) {
+					result = getBlockedJobInfo(id);
+				} else if ("active".equals(type)) {
+					result = getActiveJobInfo(id);
+				} else if ("finished".equals(type)) {
+					result = getFinishedJobInfo(id);
+				} else if ("failed".equals(type)) {
+					result = getFailedMessageInfo(id);
+				}
+				
+				if (result != null) {
+					((Map<String, Object>)result).put("type", type);
+					return result;
+				}
+			}
 		}
-		return getJobFullInfo(lookupJobInfo(id, messages), ACTIVE_PATH);
+		return null;
 	}
 	
 	/**
@@ -225,9 +304,11 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		job.put("id", message.getMessageID());
 		job.put("targetPID", message.getTargetID());
+		job.put("targetLabel", message.getTargetLabel());
 		addJobPropertyIfNotEmpty("depositID", message.getDepositID(), job);
 		addJobPropertyIfNotEmpty("action", message.getQualifiedAction(), job);
 		addJobPropertyIfNotEmpty("serviceName", message.getServiceName(), job);
+		addJobPropertyIfNotEmpty("activeService", message.getActiveService(), job);
 
 		if (message instanceof FedoraEventMessage){
 			FedoraEventMessage fMessage = (FedoraEventMessage)message;
@@ -240,13 +321,15 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			addJobPropertyIfNotEmpty("targetParent", cdrMessage.getParent(), job);
 		}
 		
-		Date timeCreated = new Date(message.getTimeCreated());
-		job.put("queuedTimestamp", formatISO8601.format(timeCreated));
+		job.put("queuedTimestamp", formatISO8601.format(message.getTimeCreated()));
+		if (message.getTimeFinished() > 0) {
+			job.put("finishedTimestamp", formatISO8601.format(message.getTimeFinished()));
+		}
 		
 		if (message.getFilteredServices() != null){
-			List<String> filteredServices = new ArrayList<String>();
-			for (String service: message.getFilteredServices()){
-				filteredServices.add(service);
+			Map<String,String> filteredServices = new HashMap<String,String>();
+			for (String filteredService: message.getFilteredServices()){
+				filteredServices.put(filteredService, this.serviceNameLookup.get(filteredService));
 			}
 			job.put("filteredServices", filteredServices);
 		}
@@ -270,9 +353,11 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		job.put("id", message.getMessageID());
 		job.put("targetPID", message.getTargetID());
+		job.put("targetLabel", message.getTargetLabel());
 		addJobPropertyIfNotEmpty("depositID", message.getDepositID(), job);
 		addJobPropertyIfNotEmpty("action", message.getQualifiedAction(), job);
 		addJobPropertyIfNotEmpty("serviceName", message.getServiceName(), job);
+		addJobPropertyIfNotEmpty("activeService", message.getActiveService(), job);
 
 		if (message instanceof FedoraEventMessage){
 			FedoraEventMessage fMessage = (FedoraEventMessage)message;
@@ -289,13 +374,15 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			addJobPropertyIfNotEmpty("subjects", cdrMessage.getSubjects(), job);
 			addJobPropertyIfNotEmpty("generatedTimestamp", cdrMessage.getEventTimestamp(), job);
 		}
-		Date timeCreated = new Date(message.getTimeCreated());
-		job.put("queuedTimestamp", formatISO8601.format(timeCreated));
+		job.put("queuedTimestamp", formatISO8601.format(message.getTimeCreated()));
+		if (message.getTimeFinished() > 0) {
+			job.put("finishedTimestamp", formatISO8601.format(message.getTimeFinished()));
+		}
 		
 		if (message.getFilteredServices() != null){
-			List<String> filteredServices = new ArrayList<String>();
-			for (String service: message.getFilteredServices()){
-				filteredServices.add(service);
+			Map<String,String> filteredServices = new HashMap<String,String>();
+			for (String filteredService: message.getFilteredServices()){
+				filteredServices.put(filteredService, this.serviceNameLookup.get(filteredService));
 			}
 			job.put("filteredServices", filteredServices);
 		}
@@ -328,12 +415,14 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	public void getActiveJobXML(HttpServletResponse response, @PathVariable("id") String id) throws IOException{
 		response.setContentType("application/xml");
 		PrintWriter pr = response.getWriter();
-		Set<PerformServicesRunnable> currentlyRunning = this.enhancementConductor.getExecutor().getRunningNow();
-		List<ActionMessage> messages = new ArrayList<ActionMessage>();
-		for (PerformServicesRunnable task: currentlyRunning){
-			messages.add(task.getMessage());
-		}
-		pr.write(getJobXML(id, messages));
+		pr.write(getJobXML(id, new ArrayList<ActionMessage>(this.enhancementConductor.getActiveMessages())));
+	}
+	
+	@RequestMapping(value = { FINISHED_PATH + "/job/{id}/xml" }, method = RequestMethod.GET)
+	public void getFinishedJobXML(HttpServletResponse response, @PathVariable("id") String id) throws IOException{
+		response.setContentType("application/xml");
+		PrintWriter pr = response.getWriter();
+		pr.write(getJobXML(id, new ArrayList<ActionMessage>(this.enhancementConductor.getFinishedMessages())));
 	}
 	
 	private String getJobXML(String id, List<ActionMessage> messages){
@@ -342,7 +431,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			return null;
 		AbstractXMLEventMessage message = (AbstractXMLEventMessage)lookupJobInfo(id, messages);
 		if (message != null && message.getMessageBody() != null){
-			XMLOutputter outputter = new XMLOutputter();
+			XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
 			try {
 				return outputter.outputString(message.getMessageBody());
 			} catch (Exception e) {

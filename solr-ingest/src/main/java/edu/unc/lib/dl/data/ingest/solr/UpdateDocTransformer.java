@@ -30,6 +30,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jdom.transform.JDOMResult;
 import org.jdom.transform.JDOMSource;
@@ -161,7 +162,7 @@ public class UpdateDocTransformer {
 		Element addDocRoot = new Element("update");
 		addDoc.setRootElement(addDocRoot);
 		addDocRoot.addContent(addDocElements);
-		XMLOutputter out = new XMLOutputter();
+		XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
 		return out.outputString(addDoc);
 	}
 	

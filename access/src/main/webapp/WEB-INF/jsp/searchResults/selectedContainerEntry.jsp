@@ -25,14 +25,21 @@
 <div id="entry${metadata.id}" class="searchitem selected_container even">
 	<div class="selected_container_header">
 		<p>
-			Current ${metadata.resourceType}
+			<c:choose>
+				<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate}">
+					Containing item
+				</c:when>
+				<c:otherwise>
+					Current ${metadata.resourceType}
+				</c:otherwise>
+			</c:choose>
 		</p>
 	</div>
 	<div class="contentarea">
 		<c:choose>
 			<c:when test="${cdr:contains(metadata.datastream, 'THUMB_SMALL')}">
 				<div class="smallthumb_container">
-					<img class="smallthumb" src="${cdr:getDatastreamUrl(metadata.id, 'THUMB_SMALL', fedoraUtil)}"/>
+					<img class="smallthumb" src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
 				</div>
 			</c:when>
 			<c:otherwise>
@@ -40,6 +47,16 @@
 					<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
 						<div class="smallthumb_container">
 							<img class="smallthumb" src="/static/images/placeholder/small/folder.png"/>
+						</div>
+					</c:when>
+					<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && not empty metadata.contentType.searchKey}">
+						<div class="smallthumb_container">
+							<img class="smallthumb" src="/static/images/placeholder/small/${metadata.contentType.searchKey}.png"/>
+						</div>
+					</c:when>
+					<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate}">
+						<div class="smallthumb_container">
+							<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
 						</div>
 					</c:when>
 					<c:otherwise>
@@ -56,7 +73,7 @@
 		<div class="iteminfo">
 			<h2>
 				<c:choose>
-					<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
+					<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection || metadata.resourceType == searchSettings.resourceTypeAggregate}">
 						<a href="<c:out value='${fullRecordUrl}'/>"><c:out value="${metadata.title}"/></a>
 					</c:when>
 					<c:otherwise>
@@ -88,18 +105,47 @@
 				<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${metadata.path.searchValue}"/>
 				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${searchSettings.actions['RESET_NAVIGATION']}:structure"/>
 			</c:url>
-			<ul>
-				<c:choose>
-					<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
+			
+			<c:choose>
+				<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
+					<ul>
 						<li><a href="<c:out value='${browseUrl}'/>">Browse structure</a></li>
-					</c:when>
-					<c:otherwise>
+					</ul>
+				</c:when>
+				<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate}">
+					<c:choose>
+						<c:when test="${cdr:contains(metadata.datastream, 'DATA_FILE')}">
+							<div class="actionlink right download">
+								<a href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
+							</div>
+						</c:when>
+						<c:when test="${cdr:contains(metadata.datastream, 'SURROGATE')}">
+							<div class="actionlink right download">
+								<a href="${cdr:getDatastreamUrl(metadata, 'SURROGATE', fedoraUtil)}">Preview</a>
+							</div>
+						</c:when>
+						<c:otherwise>
+							<ul>
+								<li><a href="<c:out value='${fullRecordUrl}'/>">View details</a></li>
+							</ul>
+						</c:otherwise>
+					</c:choose>
+					<c:if test="${not empty metadata.contentType}">
+						<p class="right">
+							<c:out value="${metadata.contentType.highestTierDisplayValue}"/>
+							<c:if test="${not empty metadata.filesize}">
+								&nbsp;(<c:out value="${cdr:formatFilesize(metadata.filesize, 1)}"/>)
+							</c:if>
+						</p>
+					</c:if>
+				</c:when>
+				<c:otherwise>
+					<ul>
 						<li><a href="<c:out value='${fullRecordUrl}'/>">View ${fn:toLowerCase(metadata.resourceType)} details</a></li>
 						<li><a href="<c:out value='${browseUrl}'/>">Browse structure</a></li>
-					</c:otherwise>
-				</c:choose>
-				
-			</ul>
+					</ul>
+				</c:otherwise>
+			</c:choose>
 		</div>
 	</div>
 </div>

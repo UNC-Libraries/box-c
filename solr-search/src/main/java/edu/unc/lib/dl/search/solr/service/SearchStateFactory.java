@@ -148,6 +148,7 @@ public class SearchStateFactory {
 		List<String> containerTypes = new ArrayList<String>();
 		containerTypes.add(searchSettings.resourceTypeCollection);
 		containerTypes.add(searchSettings.resourceTypeFolder);
+		containerTypes.add(searchSettings.resourceTypeAggregate);
 		searchState.setResourceTypes(containerTypes);
 		
 		searchState.setSortType("collection");

@@ -15,58 +15,47 @@
  */
 package edu.unc.lib.dl.data.ingest.solr;
 
-import edu.unc.lib.dl.message.ActionMessage;
+import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Represents a request to update an object identified by pid.
  * @author bbpennel
  */
-public class SolrUpdateRequest implements ActionMessage {
-	protected String messageID;
-	protected String pid;
+public class SolrUpdateRequest extends UpdateNodeRequest {
+	private static final long serialVersionUID = 1L;
+	protected PID pid;
+	protected String targetLabel;
 	protected SolrUpdateAction action; 
 	protected SolrUpdateRequest linkedRequest;
-	protected long timeCreated = System.currentTimeMillis();
 	
-	protected SolrUpdateRequest(){
-		pid = null;
-		action = null;
-		linkedRequest = null;
+	public SolrUpdateRequest(String pid, SolrUpdateAction action) {
+		this(pid, action, null, null);
 	}
 	
-	public SolrUpdateRequest(String pid, SolrUpdateAction action){
-		this(pid, action, (String)null);
+	public SolrUpdateRequest(String pid, SolrUpdateAction action, String messageID) {
+		this(pid, action, messageID, null);
 	}
 	
-	public SolrUpdateRequest(String pid, SolrUpdateAction action, String messageID){
+	public SolrUpdateRequest(String pid, SolrUpdateAction action, String messageID, UpdateNodeRequest parent){
+		super(messageID, parent);
 		if (pid == null || action == null)
 			throw new IllegalArgumentException("Both a target pid and an action are required.");
 		this.setPid(pid);
 		this.action = action;
 		linkedRequest = null;
-		this.messageID = messageID;
 	}
 	
-	public SolrUpdateRequest(String pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest){
-		if (pid == null || action == null)
-			throw new IllegalArgumentException("Both a target pid and an action are required.");
-		this.setPid(pid);
-		this.action = action;
+	public SolrUpdateRequest(String pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
+		this(pid, action, messageID, parent);
 		this.setLinkedRequest(linkedRequest);
 	}
 	
-	public String getPid() {
+	public PID getPid() {
 		return pid;
 	}
 
 	public void setPid(String pid) {
-		if (pid == null){
-			this.pid = null;
-			return;
-		}
-		if (pid.indexOf("info:fedora/") == 0)
-			pid = pid.substring(pid.indexOf("/") + 1);
-		this.pid = pid;
+		this.pid = new PID(pid);
 	}
 	
 	public SolrUpdateAction getUpdateAction() {
@@ -98,6 +87,7 @@ public class SolrUpdateRequest implements ActionMessage {
 	}
 	
 	public void requestCompleted(){
+		super.requestCompleted();
 		if (linkedRequest != null){
 			linkedRequest.linkedRequestCompleted(this);
 		}
@@ -106,15 +96,20 @@ public class SolrUpdateRequest implements ActionMessage {
 	public void setMessageID(String messageID) {
 		this.messageID = messageID;
 	}
-
+	
 	@Override
-	public String getMessageID() {
-		return messageID;
+	public String getTargetID() {
+		return pid.getPid();
 	}
 
 	@Override
-	public String getTargetID() {
-		return pid;
+	public String getTargetLabel() {
+		return targetLabel;
+	}
+
+	@Override
+	public void setTargetLabel(String targetLabel) {
+		this.targetLabel = targetLabel;
 	}
 
 	@Override

@@ -85,7 +85,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		// Update the objects in progress status
 		this.setInProgress(targetPID, deposit, receipt);
-		
+
 		return receipt;
 	}
 
@@ -130,6 +130,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		Agent user = agentFactory.findPersonByOnyen(auth.getUsername(), false);
 		if (user == null) {
+			log.debug("Unable to find a user matching the submitted username credentials, " + auth.getUsername());
 			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, "
 					+ auth.getUsername());
 		}
@@ -141,7 +142,8 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		List<String> groupList = this.getGroups(auth, configImpl);
 
-		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.admin.getUri().toString())) {
+		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.curator.getUri().toString())) {
+			log.debug("Insufficient privileges to delete object " + targetPID.getPid());
 			throw new SwordAuthException("Insufficient privileges to delete object " + targetPID.getPid());
 		}
 
@@ -191,32 +193,32 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 	}
 
 	/**
-	 * After-the-fact deposit receipt retrieval method.  From the EDIT-IRI
+	 * After-the-fact deposit receipt retrieval method. From the EDIT-IRI
 	 */
 	@Override
 	public DepositReceipt getEntry(String editIRIString, Map<String, String> accept, AuthCredentials auth,
 			SwordConfiguration configBase) throws SwordServerException, SwordError, SwordAuthException {
-		
+
 		PID targetPID = extractPID(editIRIString, SwordConfigurationImpl.EDIT_PATH + "/");
-		
+
 		SwordConfigurationImpl config = (SwordConfigurationImpl) configBase;
-		
+
 		Agent user = agentFactory.findPersonByOnyen(auth.getUsername(), false);
 		if (user == null) {
 			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, "
 					+ auth.getUsername());
 		}
-		
+
 		List<String> groupList = this.getGroups(auth, config);
 		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.patron.getUri().toString())) {
 			throw new SwordAuthException("Insufficient privileges to get deposit receipt " + targetPID.getPid());
 		}
-		
-		DepositReceipt receipt =  depositReportingUtil.retrieveDepositReceipt(targetPID, config);
-		
+
+		DepositReceipt receipt = depositReportingUtil.retrieveDepositReceipt(targetPID, config);
+
 		return receipt;
 	}
-	
+
 	private void setInProgress(PID targetPID, Deposit deposit, DepositReceipt receipt) throws SwordServerException {
 		String state = tripleStoreQueryService.fetchState(targetPID);
 		if (deposit.isInProgress() != Boolean.parseBoolean(state)) {
@@ -224,7 +226,8 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 				log.debug("Updating active state of in-progress item");
 				managementClient.addLiteralStatement(targetPID, ContentModelHelper.FedoraProperty.Active.toString(),
 						"Active", null);
-				receipt.setVerboseDescription(targetPID.getPid() + " is " + ((deposit.isInProgress())? "": "not") + " in-progress");
+				receipt.setVerboseDescription(targetPID.getPid() + " is " + ((deposit.isInProgress()) ? "" : "not")
+						+ " in-progress");
 			} catch (FedoraException e) {
 				throw new SwordServerException("Failed to update active state for " + targetPID.getPid());
 			}

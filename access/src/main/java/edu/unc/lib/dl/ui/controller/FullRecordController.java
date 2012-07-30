@@ -15,13 +15,13 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
 import edu.unc.lib.dl.security.access.AccessGroupSet;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
-import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.ui.model.request.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.ui.model.response.HierarchicalBrowseResultResponse;
@@ -50,30 +50,31 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * Controller which retrieves extended metadata and returns a transformed view of it
+ * 
  * @author bbpennel
  */
 @Controller
 @RequestMapping("/record")
 public class FullRecordController extends AbstractSolrSearchController {
 	private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
-	
-	@Autowired(required=true)
+
+	@Autowired(required = true)
 	private XSLViewResolver xslViewResolver;
 	@Autowired
 	private SearchSettings searchSettings;
-	
+
 	@RequestMapping(method = RequestMethod.GET)
-	public String handleRequest(Model model, HttpServletRequest request){
+	public String handleRequest(Model model, HttpServletRequest request) {
 		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID));
 		AccessGroupSet accessGroups = getUserAccessGroups(request);
 		SimpleIdRequest idRequest = new SimpleIdRequest(id, accessGroups);
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
 		String fullObjectView = null;
-		
-		if (briefObject == null){
+
+		if (briefObject == null) {
 			throw new InvalidRecordRequestException();
 		} else {
-			//Filter the datastreams in the response according to the users permissions
+			// Filter the datastreams in the response according to the users permissions
 			DatastreamAccessValidator.filterBriefObject(briefObject, accessGroups);
 			try {
 				Document foxmlView = FullObjectMetadataFactory.getFoxmlViewXML(idRequest);
@@ -83,59 +84,107 @@ public class FullRecordController extends AbstractSolrSearchController {
 			}
 		}
 
-		if (fullObjectView == null){
+		if (fullObjectView == null) {
 			throw new InvalidRecordRequestException();
 		}
+
 		
-		
-		
-		//If the retrieved item is a collection then need to get supplemental info
-		if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection) || briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)){
-			SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(), accessGroups);
+		boolean retrieveFacets = briefObject.getResourceType().equals(searchSettings.resourceTypeCollection) || briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
+		boolean retrieveNeighbors = briefObject.getResourceType().equals(searchSettings.resourceTypeFile)
+				|| briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
+		boolean retrieveHierarchicalStructure = briefObject.getResourceType().equals(
+				searchSettings.resourceTypeCollection)
+				|| briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)
+				|| briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
+		boolean retrieveHierarchicalItems = briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
+
+		if (retrieveFacets) {
+			List<String> facetsToRetrieve = null;
+			if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)){
+				facetsToRetrieve = new ArrayList<String>(searchSettings.collectionBrowseFacetNames);
+			} else if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)){
+				facetsToRetrieve = new ArrayList<String>();
+				facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE);
+			}
 			
+			
+			SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
+					accessGroups, facetsToRetrieve);
+
 			briefObject.setChildCount(resultResponse.getResultCount());
-			String collectionSearchStateUrl = searchSettings.searchStateParams.get("FACET_FIELDS") + "=" 
-					+ searchSettings.searchFieldParams.get(SearchFieldKeys.ANCESTOR_PATH) + ":" + briefObject.getPath().getSearchValue(); 
+			String collectionSearchStateUrl = searchSettings.searchStateParams.get("FACET_FIELDS") + "="
+					+ searchSettings.searchFieldParams.get(SearchFieldKeys.ANCESTOR_PATH) + ":"
+					+ briefObject.getPath().getSearchValue();
 			model.addAttribute("facetFields", resultResponse.getFacetFields());
 			model.addAttribute("collectionSearchStateUrl", collectionSearchStateUrl);
-			
-			
-			//Retrieve hierarchical browse results
+		}
+		
+		if (retrieveHierarchicalStructure) {
+			LOG.debug("Retrieving hierarchical structure for " + briefObject.getResourceType() + " " + id);
+
+			// Retrieve hierarchical browse results
 			SearchState searchState = SearchStateFactory.createHierarchicalBrowseSearchState();
 			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, briefObject.getPath());
-			searchState.setRowsPerPage(0);
+			HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(searchState, 4, accessGroups);
 			
-			HierarchicalBrowseResultResponse hierarchicalResultResponse = queryLayer.getHierarchicalBrowseResults(new HierarchicalBrowseRequest(searchState, 4, accessGroups));
+			HierarchicalBrowseResultResponse hierarchicalResultResponse = null;
+
+			searchState.setRowsPerPage(0);
+			hierarchicalResultResponse = queryLayer.getHierarchicalBrowseResults(browseRequest);
+			
+			if (LOG.isDebugEnabled() && hierarchicalResultResponse != null)
+				LOG.debug(id + " returned " + hierarchicalResultResponse.getResultCount() + " hierarchical results.");
+			
+			if (retrieveHierarchicalItems) {
+				hierarchicalResultResponse.setResultCount(hierarchicalResultResponse.getResultList().size());
+				
+				LOG.debug(id + " result contains " + hierarchicalResultResponse.getResultList().size() + " objects after adding root for items.");
+				
+				searchState.setRowsPerPage(100);
+				
+				SearchResultResponse itemResults = queryLayer.getHierarchicalBrowseItemResult(browseRequest);
+				hierarchicalResultResponse.populateItemResults(itemResults.getResultList());
+				
+				if (LOG.isDebugEnabled() && hierarchicalResultResponse != null)
+					LOG.debug(id + " returned " + itemResults.getResultCount() + " item results." + hierarchicalResultResponse.getResultCount());
+			}
 			
 			model.addAttribute("hierarchicalViewResults", hierarchicalResultResponse);
-		} else if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile)){
-			List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject, searchSettings.maxNeighborResults, accessGroups);
-			for (BriefObjectMetadataBean neighbor: neighbors){
+			
+			
+		}
+		
+		if (retrieveNeighbors) {
+			List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
+					searchSettings.maxNeighborResults, accessGroups);
+			for (BriefObjectMetadataBean neighbor : neighbors) {
 				DatastreamAccessValidator.filterBriefObject(neighbor, accessGroups);
 			}
 			model.addAttribute("neighborList", neighbors);
 		}
+		
 		LOG.debug(briefObject.toString());
 		model.addAttribute("briefObject", briefObject);
 		model.addAttribute("fullObjectView", fullObjectView);
-		
-		RecordNavigationState recordNavigationState = (RecordNavigationState)request.getSession().getAttribute("recordNavigationState");
-		if (recordNavigationState != null){
+
+		RecordNavigationState recordNavigationState = (RecordNavigationState) request.getSession().getAttribute(
+				"recordNavigationState");
+		if (recordNavigationState != null) {
 			int index = recordNavigationState.indexOf(id);
-			if (index > -1){
+			if (index > -1) {
 				recordNavigationState.setCurrentRecordId(id);
 				recordNavigationState.setCurrentRecordIndex(index);
 				request.getSession().setAttribute("recordNavigationState", recordNavigationState);
 			}
 		}
-		
+
 		model.addAttribute("pageSubtitle", briefObject.getTitle());
 		return "fullRecord";
 	}
-	
+
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)
 	@ExceptionHandler(InvalidRecordRequestException.class)
-	public String handleInvalidRecordRequest(HttpServletRequest request){
+	public String handleInvalidRecordRequest(HttpServletRequest request) {
 		request.setAttribute("pageSubtitle", "Invalid record");
 		return "error/invalidRecord";
 	}

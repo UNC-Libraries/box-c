@@ -53,146 +53,152 @@ public class SolrUpdateConductorTest extends Assert {
 	private Document simpleObject;
 	private int numberTestMessages;
 	private List<MessageFilter> filters;
-	
+
 	public SolrUpdateConductorTest() throws Exception {
 		String simpleObjectXML = readFileAsString("fedoraObjectSimple.xml");
 		SAXBuilder sb = new SAXBuilder();
 		simpleObject = sb.build(new StringReader(simpleObjectXML));
-		
+
 		filters = new ArrayList<MessageFilter>();
 		filters.add(new SolrUpdateMessageFilter());
 	}
-	
+
 	@Before
 	public void setUp() throws Exception {
 		this.messageDirector = new MessageDirector();
 		this.solrUpdateConductor = new SolrUpdateConductor();
-		
+
 		SolrDataAccessLayer solrDataAccessLayer = mock(SolrDataAccessLayer.class);
 		SolrSearchService solrSearchService = mock(SolrSearchService.class);
-		
+
 		FedoraDataService fedoraDataService = mock(FedoraDataService.class);
 		when(fedoraDataService.getObjectViewXML(startsWith("uuid:"))).thenReturn(simpleObject);
 		when(fedoraDataService.getObjectViewXML(startsWith("uuid:"), anyBoolean())).thenReturn(simpleObject);
-		
+
 		tripleStoreQueryService = mock(TripleStoreQueryService.class);
 		when(tripleStoreQueryService.isOrphaned(argThat(new IsMatchingPID("uuid:")))).thenReturn(false);
 		when(tripleStoreQueryService.allowIndexing(argThat(new IsMatchingPID("uuid:")))).thenReturn(true);
 		when(tripleStoreQueryService.fetchByRepositoryPath("/Collections")).thenReturn(new PID("collections"));
-		
+
 		when(fedoraDataService.getTripleStoreQueryService()).thenReturn(tripleStoreQueryService);
-		
+
 		UpdateDocTransformer updateDocTransformer = mock(UpdateDocTransformer.class);
-		
+
 		solrUpdateConductor.setSolrSearchService(solrSearchService);
 		solrUpdateConductor.setSolrDataAccessLayer(solrDataAccessLayer);
 		solrUpdateConductor.setFedoraDataService(fedoraDataService);
 		solrUpdateConductor.setUpdateDocTransformer(updateDocTransformer);
 		solrUpdateConductor.setAutoCommit(false);
 		solrUpdateConductor.setMaxThreads(3);
-		
+
 		List<MessageConductor> conductorsList = new ArrayList<MessageConductor>();
 		conductorsList.add(solrUpdateConductor);
-		
+
 		messageDirector.setConductorsList(conductorsList);
 		messageDirector.setFilters(filters);
-		
+
 		solrUpdateConductor.init();
 		solrUpdateConductor.clearState();
-		
+
 		numberTestMessages = 10;
 	}
-	
+
 	@Test
 	public void modsModified() throws Exception {
 		Document doc = readFileAsDocument("modifyMODSMessage.xml");
 		FedoraEventMessage message = new FedoraEventMessage(doc);
-		
+
 		@SuppressWarnings("unchecked")
 		BlockingQueue<SolrUpdateRequest> pidQueue = mock(BlockingQueue.class);
 		solrUpdateConductor.setPidQueue(pidQueue);
-		
+
 		solrUpdateConductor.add(message);
-		
+
 		verify(pidQueue, times(1)).offer(any(SolrUpdateRequest.class));
 	}
-	
+
 	@Test
 	public void ingestMessage() throws Exception {
 		Document doc = readFileAsDocument("ingestMessage.xml");
 		FedoraEventMessage message = new FedoraEventMessage(doc);
-		
+
 		@SuppressWarnings("unchecked")
 		BlockingQueue<SolrUpdateRequest> pidQueue = mock(BlockingQueue.class);
 		solrUpdateConductor.setPidQueue(pidQueue);
-		
+
 		solrUpdateConductor.add(message);
-		
+
 		verify(pidQueue, times(1)).offer(any(SolrUpdateRequest.class));
 	}
-	
+
 	@Test
-	public void addRequests() throws Exception{
+	public void addRequests() throws Exception {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
-		//Add messages and check that they all ran
-		for (int i=0; i<numberTestMessages; i++){
-			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
+		// Add messages and check that they all ran
+		for (int i = 0; i < numberTestMessages; i++) {
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD, null);
 			messageDirector.direct(message);
 		}
-		while (!solrUpdateConductor.isEmpty());
-		
+		while (!solrUpdateConductor.isEmpty())
+			;
+
 		assertEquals(solrUpdateConductor.getQueueSize(), 0);
 		assertEquals(solrUpdateConductor.getLockedPids().size(), 0);
 		verify(solrUpdateConductor.getUpdateDocTransformer(), times(numberTestMessages)).addDocument(any(Document.class));
 	}
-	
+
 	@Test
-	public synchronized void addCollisions() throws Exception{
+	public synchronized void addCollisions() throws Exception {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		numberTestMessages = 4;
-		
+
 		BlockingFedoraDataService fds = new BlockingFedoraDataService();
 		solrUpdateConductor.setFedoraDataService(fds);
-		
-		//Check that collision list gets populated
-		for (int i=0; i<numberTestMessages; i++){
-			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
-			for (int j=0; j<numberTestMessages; j++){
+
+		// Check that collision list gets populated
+		for (int i = 0; i < numberTestMessages; i++) {
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD, null);
+			for (int j = 0; j < numberTestMessages; j++) {
 				messageDirector.direct(message);
 				assertTrue(solrUpdateConductor.getLockedPids().size() <= i + 1
 						&& solrUpdateConductor.getLockedPids().size() <= solrUpdateConductor.getMaxThreads());
 			}
 		}
-		
-		while (solrUpdateConductor.getLockedPids().size() < solrUpdateConductor.getMaxThreads());
-		
+
+		while (solrUpdateConductor.getLockedPids().size() < solrUpdateConductor.getMaxThreads())
+			;
+
 		assertEquals(solrUpdateConductor.getLockedPids().size(), solrUpdateConductor.getMaxThreads());
-		assertEquals(solrUpdateConductor.getCollisionList().size(), 
-				(solrUpdateConductor.getMaxThreads() - 1) * (numberTestMessages - 1));
-		assertEquals(solrUpdateConductor.getPidQueue().size(), 
+		assertEquals(solrUpdateConductor.getCollisionList().size(), (solrUpdateConductor.getMaxThreads() - 1)
+				* (numberTestMessages - 1));
+		assertEquals(
+				solrUpdateConductor.getPidQueue().size(),
 				(numberTestMessages * numberTestMessages - (solrUpdateConductor.getMaxThreads() - 1) * numberTestMessages) - 1);
-		assertEquals(solrUpdateConductor.getQueueSize(), (numberTestMessages * numberTestMessages) - solrUpdateConductor.getMaxThreads());
-		
-		while (fds.count.get() < solrUpdateConductor.getMaxThreads());
-		
-		//Process the remaining items to make sure all messages get processed.
-		synchronized(fds.blockingObject){
+		assertEquals(solrUpdateConductor.getQueueSize(),
+				(numberTestMessages * numberTestMessages) - solrUpdateConductor.getMaxThreads());
+
+		while (fds.count.get() < solrUpdateConductor.getMaxThreads())
+			;
+
+		// Process the remaining items to make sure all messages get processed.
+		synchronized (fds.blockingObject) {
 			fds.flag.set(false);
 			fds.blockingObject.notifyAll();
 		}
-		
-		while (!solrUpdateConductor.isEmpty());
-		
-		verify(solrUpdateConductor.getUpdateDocTransformer(), 
-				times(numberTestMessages * numberTestMessages)).addDocument(any(Document.class));
+
+		while (!solrUpdateConductor.isEmpty())
+			;
+
+		verify(solrUpdateConductor.getUpdateDocTransformer(), times(numberTestMessages * numberTestMessages))
+				.addDocument(any(Document.class));
 	}
-	
+
 	@Test
-	public void clearState() throws InterruptedException{
+	public void clearState() throws InterruptedException {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
-		for (int i=0; i<numberTestMessages; i++){
-			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
+		for (int i = 0; i < numberTestMessages; i++) {
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD, null);
 			messageDirector.direct(message);
 		}
 		solrUpdateConductor.resume();
@@ -204,63 +210,65 @@ public class SolrUpdateConductorTest extends Assert {
 		assertTrue(solrUpdateConductor.getLockedPids().size() == 0);
 		assertTrue(solrUpdateConductor.getThreadPoolExecutor().getQueue().size() == 0);
 	}
-	
-	//@Test
-	public void stressBlockingRequests() throws Exception{
-		for (int i=0; i < 50; i++){
+
+	// @Test
+	public void stressBlockingRequests() throws Exception {
+		for (int i = 0; i < 50; i++) {
 			blockingRequests();
-			while (!solrUpdateConductor.isEmpty());
+			while (!solrUpdateConductor.isEmpty())
+				;
 			setUp();
 		}
 	}
-	
+
 	@Test
-	public void blockingRequests() throws Exception{
+	public void blockingRequests() throws Exception {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
-		
-		//Create a blocked message and make sure that it doesn't get picked up until
+
+		// Create a blocked message and make sure that it doesn't get picked up until
 		int numberTestMessages = 5;
-		CountDownUpdateRequest blockedRequest = new DeleteChildrenPriorToTimestampRequest(
-				"uuid:blocked", SolrUpdateAction.ADD, System.currentTimeMillis());
-		
-		for (int i=0; i<numberTestMessages; i++){
-			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:1",
-					SolrUpdateAction.ADD, blockedRequest);
+		CountDownUpdateRequest blockedRequest = new DeleteChildrenPriorToTimestampRequest("uuid:blocked",
+				SolrUpdateAction.ADD, null, null, System.currentTimeMillis());
+
+		for (int i = 0; i < numberTestMessages; i++) {
+			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:1", SolrUpdateAction.ADD, blockedRequest, null,
+					null);
 			solrUpdateConductor.offer(childRequest);
 		}
-		for (int i=0; i<numberTestMessages; i++){
-			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:2",
-					SolrUpdateAction.ADD, blockedRequest);
+		for (int i = 0; i < numberTestMessages; i++) {
+			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:2", SolrUpdateAction.ADD, blockedRequest, null,
+					null);
 			solrUpdateConductor.offer(childRequest);
 		}
-		
+
 		solrUpdateConductor.offer(blockedRequest);
-		
-		//Add some post block non-blocked messages
-		for (int i=0; i<numberTestMessages; i++){
-			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:3",
-					SolrUpdateAction.ADD);
+
+		// Add some post block non-blocked messages
+		for (int i = 0; i < numberTestMessages; i++) {
+			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:3", SolrUpdateAction.ADD);
 			solrUpdateConductor.offer(childRequest);
 		}
-		
+
 		solrUpdateConductor.resume();
-		while (((DeleteChildrenPriorToTimestampRequest)blockedRequest).isBlocked()){
-			synchronized(solrUpdateConductor.getLockedPids()){
-				if (((DeleteChildrenPriorToTimestampRequest)blockedRequest).isBlocked())
+		while (((DeleteChildrenPriorToTimestampRequest) blockedRequest).isBlocked()) {
+			synchronized (solrUpdateConductor.getLockedPids()) {
+				if (((DeleteChildrenPriorToTimestampRequest) blockedRequest).isBlocked())
 					assertFalse(solrUpdateConductor.getLockedPids().contains("uuid:blocked"));
 			}
 		}
-		while (!solrUpdateConductor.isEmpty());
-		verify(solrUpdateConductor.getUpdateDocTransformer(), times(numberTestMessages * 3 + 1)).addDocument(any(Document.class));
+		while (!solrUpdateConductor.isEmpty())
+			;
+		verify(solrUpdateConductor.getUpdateDocTransformer(), times(numberTestMessages * 3 + 1)).addDocument(
+				any(Document.class));
 	}
-	
+
 	@Test
-	public void pauseExecutor() throws Exception{
+	public void pauseExecutor() throws Exception {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
-		//Test that nothing processes while paused
+		// Test that nothing processes while paused
 		solrUpdateConductor.pause();
-		for (int i=0; i<numberTestMessages; i++){
+		for (int i = 0; i < numberTestMessages; i++) {
 			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
 			messageDirector.direct(message);
 		}
@@ -270,87 +278,92 @@ public class SolrUpdateConductorTest extends Assert {
 		assertTrue(solrUpdateConductor.isReady());
 		assertTrue(solrUpdateConductor.isIdle());
 		verify(solrUpdateConductor.getUpdateDocTransformer(), never()).addDocument(any(Document.class));
-		
-		//Ensure paused items process when unpaused
+
+		// Ensure paused items process when unpaused
 		solrUpdateConductor.resume();
-		while (!solrUpdateConductor.isEmpty());
+		while (!solrUpdateConductor.isEmpty())
+			;
 		verify(solrUpdateConductor.getUpdateDocTransformer(), times(numberTestMessages)).addDocument(any(Document.class));
 		assertTrue(solrUpdateConductor.isEmpty());
 	}
-	
+
 	@Test
-	public void executorShutdown(){
+	public void executorShutdown() {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
-		for (int i=0; i<numberTestMessages; i++){
+		for (int i = 0; i < numberTestMessages; i++) {
 			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
 			messageDirector.direct(message);
 		}
-		
-		assertEquals(solrUpdateConductor.getThreadPoolExecutor().getQueue().size(), 
-				numberTestMessages - solrUpdateConductor.getMaxThreads());
-		
+
+		assertEquals(solrUpdateConductor.getThreadPoolExecutor().getQueue().size(), numberTestMessages
+				- solrUpdateConductor.getMaxThreads());
+
 		solrUpdateConductor.shutdownNow();
 		while (solrUpdateConductor.getThreadPoolExecutor().isTerminating()
-				&& !solrUpdateConductor.getThreadPoolExecutor().isShutdown());
+				&& !solrUpdateConductor.getThreadPoolExecutor().isShutdown())
+			;
 		assertEquals(solrUpdateConductor.getThreadPoolExecutor().getQueue().size(), 0);
 		assertFalse(solrUpdateConductor.isReady());
 	}
-	
-	//@Test
-	public void stressAbortOperation() throws Exception{
-		for (int i=0; i < 50; i++){
+
+	// @Test
+	public void stressAbortOperation() throws Exception {
+		for (int i = 0; i < 50; i++) {
 			abortOperation();
 			setUp();
 		}
 	}
-	
+
 	@Test
-	public void abortOperation(){
+	public void abortOperation() {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		int numberTestMessages = 20;
-		
+
 		BlockingFedoraDataService fds = new BlockingFedoraDataService();
 		solrUpdateConductor.setFedoraDataService(fds);
-		
-		//Add messages and check that they all ran
-		for (int i=0; i<numberTestMessages; i++){
+
+		// Add messages and check that they all ran
+		for (int i = 0; i < numberTestMessages; i++) {
 			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
 			messageDirector.direct(message);
 		}
 
 		while (solrUpdateConductor.getLockedPids().size() < solrUpdateConductor.getMaxThreads()
-				&& !solrUpdateConductor.isEmpty());
+				&& !solrUpdateConductor.isEmpty())
+			;
 		solrUpdateConductor.pause();
 		solrUpdateConductor.abort();
-		while (solrUpdateConductor.getThreadPoolExecutor().getQueue().size() == 0);
+		while (solrUpdateConductor.getThreadPoolExecutor().getQueue().size() == 0)
+			;
 		assertTrue(solrUpdateConductor.isIdle());
 		assertEquals(solrUpdateConductor.getLockedPids().size(), 0);
-		
-		//Process the remaining items to make sure all messages get processed.
-		synchronized(fds.blockingObject){
+
+		// Process the remaining items to make sure all messages get processed.
+		synchronized (fds.blockingObject) {
 			fds.flag.set(false);
 			fds.blockingObject.notifyAll();
 		}
-		
+
 		solrUpdateConductor.resume();
-		while (!solrUpdateConductor.isEmpty());
+		while (!solrUpdateConductor.isEmpty())
+			;
 		assertTrue(solrUpdateConductor.isIdle());
-		//Abort for solr updates only are dropped from interruption if it happens during grabbing next request
+		// Abort for solr updates only are dropped from interruption if it happens during grabbing next request
 	}
-	
+
 	class IsMatchingPID extends ArgumentMatcher<PID> {
 		private String pid;
-		
-		public IsMatchingPID(String pid){
+
+		public IsMatchingPID(String pid) {
 			this.pid = pid;
 		}
-		
-      public boolean matches(Object pid) {
-      	return ((PID) pid).getPid().startsWith(this.pid);
-      }
-   }
-	
+
+		public boolean matches(Object pid) {
+			return ((PID) pid).getPid().startsWith(this.pid);
+		}
+	}
+
 	protected String readFileAsString(String filePath) throws java.io.IOException {
 		StringBuffer fileData = new StringBuffer(1000);
 		java.io.InputStream inStream = this.getClass().getResourceAsStream(filePath);
@@ -368,39 +381,39 @@ public class SolrUpdateConductorTest extends Assert {
 		reader.close();
 		return fileData.toString();
 	}
-	
+
 	private Document readFileAsDocument(String filePath) throws Exception {
 		return new SAXBuilder().build(new InputStreamReader(this.getClass().getResourceAsStream(filePath)));
 	}
-	
+
 	public class BlockingFedoraDataService extends FedoraDataService {
 		public AtomicInteger count;
 		public AtomicBoolean flag;
 		public Object blockingObject;
-		
-		public BlockingFedoraDataService(){
+
+		public BlockingFedoraDataService() {
 			count = new AtomicInteger(0);
 			flag = new AtomicBoolean(true);
 			blockingObject = new Object();
 		}
-		
+
 		@Override
-		public TripleStoreQueryService getTripleStoreQueryService(){
+		public TripleStoreQueryService getTripleStoreQueryService() {
 			return tripleStoreQueryService;
 		}
-		
+
 		@Override
-		public Document getObjectViewXML(String pid, boolean fail){
+		public Document getObjectViewXML(String pid, boolean fail) {
 			boolean first = true;
-			while (flag.get()){
-				synchronized(blockingObject){
+			while (flag.get()) {
+				synchronized (blockingObject) {
 					try {
-						if (first){
+						if (first) {
 							count.incrementAndGet();
 							first = false;
 						}
 						blockingObject.wait();
-					} catch (InterruptedException e){
+					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
 						return null;
 					}

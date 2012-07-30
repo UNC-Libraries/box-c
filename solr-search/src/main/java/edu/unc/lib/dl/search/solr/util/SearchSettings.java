@@ -94,6 +94,7 @@ public class SearchSettings extends AbstractSettings {
 	public HashMap<String,String> searchStateParams;
 	//Resource/content model constants
 	public String resourceTypeFile;
+	public String resourceTypeAggregate;
 	public String resourceTypeFolder;
 	public String resourceTypeCollection;
 	//Default set of resource types to retrieve in a search request
@@ -197,6 +198,7 @@ public class SearchSettings extends AbstractSettings {
 		
 		//Resource Types
 		setResourceTypeFile(properties.getProperty("search.resource.type.file", ""));
+		setResourceTypeAggregate(properties.getProperty("search.resource.type.aggregate", ""));
 		setResourceTypeFolder(properties.getProperty("search.resource.type.folder", ""));
 		setResourceTypeCollection(properties.getProperty("search.resource.type.collection", ""));
 		populateCollectionFromProperty("search.resource.types", resourceTypes, properties, ",");
@@ -551,6 +553,14 @@ public class SearchSettings extends AbstractSettings {
 
 	public void setResourceTypeFile(String resourceTypeFile) {
 		this.resourceTypeFile = resourceTypeFile;
+	}
+	
+	public String getResourceTypeAggregate() {
+		return resourceTypeAggregate;
+	}
+
+	public void setResourceTypeAggregate(String resourceTypeAggregate) {
+		this.resourceTypeAggregate = resourceTypeAggregate;
 	}
 
 	public String getResourceTypeFolder() {

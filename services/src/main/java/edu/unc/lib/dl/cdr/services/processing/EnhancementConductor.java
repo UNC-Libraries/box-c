@@ -17,6 +17,7 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,6 +68,13 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	// List of pids which applied to locked pids when they were first called,
 	// preserved in order
 	private List<EnhancementMessage> collisionList = null;
+	// List of messages that are currently being processed
+	private List<EnhancementMessage> activeMessages = null;
+	// List of messages that have recently been processed.
+	private List<EnhancementMessage> finishedMessages = null;
+	private int maxFinishedMessages = 300;
+	private long finishedMessageTimeout = 86400000;
+	
 	// Set of locked pids, used to prevent items from being processed multiple
 	// times at once
 	private Set<String> lockedPids = null;
@@ -86,6 +94,8 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		// Initialize as synchronized collections for thread safety
 		collisionList = Collections.synchronizedList(new ArrayList<EnhancementMessage>());
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
+		activeMessages = Collections.synchronizedList(new ArrayList<EnhancementMessage>());
+		finishedMessages = Collections.synchronizedList(new LimitedWindowList<EnhancementMessage>(maxFinishedMessages));
 	}
 
 	public String getIdentifier() {
@@ -405,11 +415,84 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		this.failedPids = failedPids;
 	}
 
+	public List<EnhancementMessage> getActiveMessages() {
+		return activeMessages;
+	}
+
+	public List<EnhancementMessage> getFinishedMessages() {
+		return finishedMessages;
+	}
+	
+	public void cleanupFinishedMessages() {
+		long currentTime = System.currentTimeMillis();
+		
+		synchronized (finishedMessages) {
+			Iterator<EnhancementMessage> iterator = finishedMessages.iterator();
+			while (iterator.hasNext()) {
+				EnhancementMessage message = iterator.next();
+				if (currentTime - message.getTimeFinished() >= finishedMessageTimeout) {
+					iterator.remove();
+				}
+			}
+		}
+	}
+
+	public int getMaxFinishedMessages() {
+		return maxFinishedMessages;
+	}
+
+	public void setMaxFinishedMessages(int maxFinishedMessages) {
+		this.maxFinishedMessages = maxFinishedMessages;
+	}
+
+	public long getFinishedMessageTimeout() {
+		return finishedMessageTimeout;
+	}
+
+	public void setFinishedMessageTimeout(long finishedMessageTimeout) {
+		this.finishedMessageTimeout = finishedMessageTimeout;
+	}
+
 	@Override
 	public int getQueueSize() {
 		return this.pidQueue.size() + this.collisionList.size();
 	}
 
+	public static class LimitedWindowList<E> extends ArrayList<E> {
+		private static final long serialVersionUID = 1L;
+		private int maxWindowSize;
+		
+		public LimitedWindowList(int maxWindowSize) {
+			super(maxWindowSize);
+			this.maxWindowSize = maxWindowSize;
+		}
+		
+		@Override
+		public boolean addAll(Collection<? extends E> c) {
+			if (this.size() + c.size() >= maxWindowSize) {
+				if (c.size() >= maxWindowSize) {
+					for (E e: c) {
+						this.add(e);
+					}
+					return true;
+				}
+				int overage = this.size() + c.size() - maxWindowSize;
+				this.removeRange(0, overage);
+			}
+			super.addAll(c);
+			return true;
+		}
+		
+		@Override
+		public boolean add(E e) {
+			// if the list is full, remove the oldest first
+			if (this.size() == maxWindowSize)
+				this.remove(0);
+			super.add(e);
+			return true;
+		}
+	}
+	
 	/**
 	 * Runnable class which performs the actual processing of messages from the queue. Messages are read if they do not
 	 * apply to a pid that is already being processed, and a list of services are tested against each message to
@@ -564,6 +647,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 			if (log.isDebugEnabled())
 				log.debug("Received pid " + message.getTargetID() + ": " + message.getFilteredServices());
 
+			boolean serviceSuccess = false;
 			if (message != null && message.getFilteredServices() != null) {
 				try {
 					// Quit before doing work if thread was interrupted
@@ -571,6 +655,10 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 						log.debug("Thread was interrupted");
 						return;
 					}
+					
+					// Store message as active
+					activeMessages.add(message);
+					
 					for (String serviceClassName : message.getFilteredServices()) {
 						ObjectEnhancementService s = servicesMap.get(serviceClassName);
 						try {
@@ -582,8 +670,11 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 									log.debug("Thread was interrupted");
 									return;
 								}
+								// Store which service is presently active on this message
+								message.setActiveService(serviceClassName);
 								// Apply the service
 								this.applyService(s);
+								serviceSuccess = true;
 							}
 						} catch (EnhancementException e) {
 							switch (e.getSeverity()) {
@@ -622,6 +713,14 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 					}
 				} finally {
 					lockedPids.remove(message.getTargetID());
+					// Shift message to being finished
+					activeMessages.remove(message);
+					message.setTimeFinished(System.currentTimeMillis());
+					// Store the message as finished if any services completed for it
+					if (serviceSuccess)
+						finishedMessages.add(message);
+					// Unset the active service class
+					message.setActiveService(null);
 				}
 			}
 		}

@@ -30,6 +30,7 @@ public class FailedObjectHashMapTest extends Assert {
 			message.setFilteredServices(filteredServices);
 			
 			failedEnhancements.add(new PID("uuid:test"), service.getClass(), message);
+			assertTrue(failedEnhancements.contains("uuid:test", service.getClass().getName()));
 			
 			assertEquals(1, failedEnhancements.size());
 			

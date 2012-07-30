@@ -29,12 +29,15 @@ public class EnhancementMessage implements ActionMessage {
 	
 	protected String messageID = null;
 	protected PID pid;
+	protected String targetLabel;
 	protected PID depositID;
 	protected String namespace = null;
 	protected String action = null;
 	protected String qualifiedAction = null;
 	protected String serviceName = null;
+	protected String activeService = null;
 	protected long timeCreated = System.currentTimeMillis();
+	protected long timeFinished = -1;
 	protected List<String> filteredServices = null;
 	
 	protected EnhancementMessage(){
@@ -124,6 +127,15 @@ public class EnhancementMessage implements ActionMessage {
 		return this.pid.getPid();
 	}
 	
+	@Override
+	public String getTargetLabel() {
+		return this.targetLabel;
+	}
+	
+	public void setTargetLabel(String targetLabel) {
+		this.targetLabel = targetLabel;
+	}
+	
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
@@ -141,6 +153,14 @@ public class EnhancementMessage implements ActionMessage {
 		this.timeCreated = timeCreated;
 	}
 
+	public long getTimeFinished() {
+		return timeFinished;
+	}
+
+	public void setTimeFinished(long timeFinished) {
+		this.timeFinished = timeFinished;
+	}
+
 	public List<String> getFilteredServices() {
 		return filteredServices;
 	}
@@ -153,9 +173,16 @@ public class EnhancementMessage implements ActionMessage {
 		this.filteredServices = filteredServices;
 	}
 	
+	public String getActiveService() {
+		return activeService;
+	}
+
+	public void setActiveService(String activeService) {
+		this.activeService = activeService;
+	}
+
 	@Override
 	public String toString(){
 		return pid.getPid() + ":" + action;
 	}
-
 }

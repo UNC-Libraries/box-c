@@ -20,12 +20,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,20 +60,25 @@ public class SolrUpdateService {
 	protected ThreadPoolExecutor executor = null;
 	protected BlockingQueue<SolrUpdateRequest> pidQueue = null;
 	protected List<SolrUpdateRequest> collisionList = null;
+	protected List<SolrUpdateRequest> finishedMessages = null;
+	protected List<SolrUpdateRequest> activeMessages = null;
+	protected List<SolrUpdateRequest> failedMessages = null;
 	protected Set<String> lockedPids = null;
 	protected int maxThreads = 3;
 	protected long recoverableDelay = 0;
 	protected boolean autoCommit = true;
 	
-
-	protected AtomicLong idSequence;
+	protected UpdateNodeRequest root;
 	
 	public SolrUpdateService() {
 		pidQueue = new LinkedBlockingQueue<SolrUpdateRequest>();
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
 		collisionList = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
+		finishedMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
+		activeMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
+		failedMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		updateDocTransformer = new UpdateDocTransformer();
-		idSequence = new AtomicLong(0);
+		root = new UpdateNodeRequest(identifier + ":ROOT", null);
 	}
 
 	public void init() {
@@ -109,40 +114,36 @@ public class SolrUpdateService {
 	public void shutdown() {
 		executor.shutdown();
 	}
+	
+	public String nextMessageID() {
+		return identifier + ":" + UUID.randomUUID().toString();
+	}
 
 	public void offer(String pid, SolrUpdateAction action) {
-		offer(new SolrUpdateRequest(pid, action));
+		offer(new SolrUpdateRequest(pid, action, nextMessageID(), root));
 	}
 
 	public void offer(String pid) {
-		offer(new SolrUpdateRequest(pid, SolrUpdateAction.ADD));
+		offer(new SolrUpdateRequest(pid, SolrUpdateAction.ADD, nextMessageID(), root));
 	}
 
 	public void offer(SolrUpdateRequest ingestRequest) {
+		// Set the message's status to queued
+		ingestRequest.setStatus(ProcessingStatus.QUEUED);
+		
 		if (ingestRequest.getMessageID() == null){
-			synchronized(idSequence){
-				ingestRequest.setMessageID(identifier + ":" + idSequence.incrementAndGet());
-			}
+			ingestRequest.setMessageID(nextMessageID());
 		}
+		
+		// If no parent is provided, then this is a root node
+		if (ingestRequest.getParent() == null)
+			ingestRequest.setParent(root);
 		
 		synchronized (pidQueue) {
 			if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated())
 				return;
 			LOG.info("Queueing: " + ingestRequest.getPid());
 			pidQueue.offer(ingestRequest);
-			executor.execute(new SolrUpdateRunnable());
-		}
-	}
-
-	public void offer(List<String> pids) {
-		synchronized (pidQueue) {
-			if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated())
-				return;
-			for (String pid : pids) {
-				synchronized(idSequence){
-					pidQueue.offer(new SolrUpdateRequest(pid, SolrUpdateAction.ADD, identifier + ":" + idSequence.incrementAndGet()));
-				}
-			}
 			executor.execute(new SolrUpdateRunnable());
 		}
 	}
@@ -241,6 +242,22 @@ public class SolrUpdateService {
 
 	public void setLockedPids(Set<String> lockedPids) {
 		this.lockedPids = lockedPids;
+	}
+
+	public List<SolrUpdateRequest> getFinishedMessages() {
+		return finishedMessages;
+	}
+
+	public List<SolrUpdateRequest> getActiveMessages() {
+		return activeMessages;
+	}
+
+	public List<SolrUpdateRequest> getFailedMessages() {
+		return failedMessages;
+	}
+
+	public UpdateNodeRequest getRoot() {
+		return root;
 	}
 
 	public PID getCollectionsPid() {
