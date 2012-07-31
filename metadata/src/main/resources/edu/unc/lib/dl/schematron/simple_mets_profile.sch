@@ -164,7 +164,7 @@
         <sch:title>METS structLink Section</sch:title>
         <sch:let name="referenceURI" value="'http://cdr.unc.edu/definitions/1.0/base-model.xml#refersTo'"/>
         <sch:let name="predicates"
-            value="'http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSurrogate 
+            value="'http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSurrogate http://cdr.unc.edu/definitions/1.0/base-model.xml#hasAlphabeticalOrder 
             http://cdr.unc.edu/definitions/1.0/base-model.xml#refersTo'"/>
         <sch:rule context="m:structLink/m:smLink">
             <sch:assert test="@xlink:from">The smLink element MUST have an xlink:from attribute.</sch:assert>

@@ -92,7 +92,7 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 			vid = ds.getVersionID();
 
 			// Only need to process image datastreams.
-			if (mimetype.indexOf("image/") != -1 /* || mimetype.indexOf("application/pdf") != -1 */) {
+			if (mimetype != null && mimetype.indexOf("image/") != -1 /* || mimetype.indexOf("application/pdf") != -1 */) {
 				LOG.debug("Image DS found: " + surrogateDsId + ", " + mimetype);
 
 				Element dsEl = FOXMLJDOMUtil.getDatastream(surrogateFoxml, surrogateDsId);
