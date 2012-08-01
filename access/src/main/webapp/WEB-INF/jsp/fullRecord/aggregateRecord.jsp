@@ -93,7 +93,7 @@
 					
 					<script type="text/javascript">
 						$(function() {
-							$(".inline_viewer_link").bind("click", {id: '${briefObject.id}', viewerId:'jp2_imageviewer_window',
+							$(".inline_viewer_link").bind("click", {id: '${cdr:getPreferredDatastream(briefObject, "IMAGE_JP2000").pid}', viewerId:'jp2_imageviewer_window',
 								viewerContext: "${pageContext.request.contextPath}"}, displayJP2Viewer);
 							if (window.location.hash.replace("#", "") == "showJP2"){
 								$(".inline_viewer_link").trigger("click");
@@ -118,7 +118,7 @@
 							<div class="clear_space"></div>
 							<div id="audio_player"></div>
 							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentType.searchKey}</c:set>
-							<script language="JavaScript">
+							<script>
 								$(function() {
 									$(".inline_viewer_link").bind("click", {viewerId:'audio_player',
 										url: "${dataFileUrl}"}, displayAudioPlayer);
@@ -136,7 +136,7 @@
 							<script src="/static/plugins/flowplayer/flowplayer-3.2.6.min.js"></script>
 							<div id="video_player"></div>
 							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentType.searchKey}</c:set>
-							<script language="JavaScript">
+							<script>
 								$(function() {
 									$(".inline_viewer_link").bind("click", {viewerId:'video_player',
 										url: "${dataFileUrl}"}, displayVideoViewer);

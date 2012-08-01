@@ -63,6 +63,13 @@
 		</function-signature>
 	</function>
 	<function>
+		<name>getPreferredDatastream</name>
+		<function-class>edu.unc.lib.dl.ui.util.FedoraUtil</function-class>
+		<function-signature>
+			edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.Datastream getPreferredDatastream(edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean, java.lang.String)
+		</function-signature>
+	</function>
+	<function>
 		<name>formatFilesize</name>
 		<function-class>edu.unc.lib.dl.ui.util.StringFormatUtil</function-class>
 		<function-signature>

@@ -42,16 +42,7 @@ public class FedoraUtil {
 	
 	public String getDatastreamUrl(BriefObjectMetadataBean metadata, String datastreamName){
 		// Prefer the matching datastream from this object over the same datastream with a different pid prefix
-		Datastream preferredDS = null;
-		Datastream incomingDS = new Datastream(datastreamName);
-		for (Datastream ds: metadata.getDatastream()){
-			if (ds.equals(incomingDS)) {
-				preferredDS = ds;
-				if ((incomingDS.getPid() == null && preferredDS.getPid() == null) || (incomingDS.getPid() != null && preferredDS.getPid() != null)){
-						break;
-				}
-			}
-		}
+		Datastream preferredDS = getPreferredDatastream(metadata, datastreamName);
 		
 		if (preferredDS == null)
 			return "";
@@ -73,6 +64,21 @@ public class FedoraUtil {
 		}
 		url.append("&ds=").append(preferredDS.getName());
 		return url.toString(); 
+	}
+	
+	public static Datastream getPreferredDatastream(BriefObjectMetadataBean metadata, String datastreamName) {
+		Datastream preferredDS = null;
+		Datastream incomingDS = new Datastream(datastreamName);
+		for (Datastream ds: metadata.getDatastream()){
+			if (ds.equals(incomingDS)) {
+				preferredDS = ds;
+				if ((incomingDS.getPid() == null && preferredDS.getPid() == null) || (incomingDS.getPid() != null && preferredDS.getPid() != null)){
+						break;
+				}
+			}
+		}
+		
+		return preferredDS;
 	}
 
 	public String getFedoraUrl() {
