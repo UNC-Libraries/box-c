@@ -76,6 +76,7 @@
 		<property name="accessControlUtils" ref="accessControlUtils"/>
 		<property name="maxThreads" value="${fedoraDataService.maxThreads}"/>
 		<property name="threadGroupPrefix" value="Services"/>
+		<property name="serviceTimeout" value="12000" />
 	</bean>
 	
 	<bean id="accessControlUtils" class="edu.unc.lib.dl.fedora.AccessControlUtils" init-method="init">

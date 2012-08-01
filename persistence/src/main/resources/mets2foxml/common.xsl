@@ -28,6 +28,7 @@
     xmlns:acl="http://cdr.unc.edu/definitions/acl#" xmlns:premis="info:lc/xmlns/premis-v2"
     xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd"
     exclude-result-prefixes="common">
+    <xsl:import href="epdcx2mods.xsl"/>
 
     <!-- METS to FOXML DOCUMENTATION
         OVERVIEW
@@ -143,7 +144,6 @@
     <xsl:variable name="predicates">
         <rdf-predicates>
             <ir:hasSurrogate/>
-            <ir:hasAlphabeticalOrder/>
             <!--<ir:refersTo/> is not translated to foxml directly. -->
         </rdf-predicates>
     </xsl:variable>
@@ -174,28 +174,12 @@
             <xsl:variable name="output" select="concat($output.directory,'/',generate-id(),'.foxml')"/>
             <object>
                 <xsl:attribute name="DIVID" select="generate-id()"/>
-                <xsl:choose>
-                	<xsl:when test="contains(@CONTENTIDS, 'info:fedora/')">
-                		<xsl:variable name="pass1" select="substring-after(@CONTENTIDS,'info:fedora/')"/>
-                		<xsl:choose>
-                			<xsl:when test="contains($pass1,' ')">
-                				<xsl:attribute name="PID" select="substring-before($pass1, ' ')"/>
-                			</xsl:when>
-                			<xsl:otherwise>
-                				<xsl:attribute name="PID" select="$pass1"/>
-                			</xsl:otherwise>
-                		</xsl:choose>
-                	</xsl:when>
-                	<xsl:otherwise>
-                		<xsl:attribute name="PID" select="$pids//pid[position() = $pos]"/>
-                	</xsl:otherwise>
-                </xsl:choose>
-                
+                <xsl:attribute name="PID" select="$pids//pid[position() = $pos]"/>
                 <xsl:attribute name="OUTPUT" select="$output"/>
-                <xsl:if test="parent::m:structMap or parent::m:div[@TYPE = 'Bag']">
+                <xsl:if test="exists(parent::m:structMap) or exists(parent::m:div[@TYPE = 'Bag'])">
                     <xsl:attribute name="TOP">yes</xsl:attribute>
                     <xsl:attribute name="sipOrder" select="count(preceding-sibling::m:div) + 1"/>
-                    <xsl:if test="@ORDER">
+                    <xsl:if test="exists(@ORDER)">
                         <xsl:attribute name="designatedOrder" select="@ORDER"/>
                     </xsl:if>
                 </xsl:if>
@@ -254,10 +238,19 @@
                 </xsl:when>
                 <xsl:when test="@DMDID">
                 	<xsl:variable name="mdWrap" select="key('dmdid',@DMDID)/m:mdWrap"/>
-                	<xsl:if test="$mdWrap[@MDTYPE='MODS'] or $mdWrap[not(exists(@MDTYPE))]">
+                	<xsl:choose>
+                		<xsl:when test="$mdWrap[@OTHERMDTYPE='EPDCX']">
+                			<xsl:call-template name="getEPDCXTitle">
+                				<xsl:with-param name="xmlData" select="$mdWrap/m:xmlData"/>
+                			</xsl:call-template>
                 			<xsl:value-of
                         		select="$mdWrap/m:xmlData/mods:mods/mods:titleInfo/mods:title"/>
-                		</xsl:if>
+                		</xsl:when>
+                		<xsl:when test="$mdWrap[@MDTYPE='MODS'] or $mdWrap[not(exists(@MDTYPE))]">
+                			<xsl:value-of
+                        		select="$mdWrap/m:xmlData/mods:mods/mods:titleInfo/mods:title"/>
+                		</xsl:when>
+                	</xsl:choose>
                 </xsl:when>
                 <xsl:when test="starts-with($href, 'file:') or not(contains($href, ':'))">
                     <xsl:choose>
@@ -647,6 +640,12 @@
                                 <xsl:choose>
                                     <xsl:when test="$dmdSec/m:mdWrap[@MDTYPE='MODS']">
                                         <xsl:copy-of select="$dmdSec/m:mdWrap/m:xmlData/*"/>
+                                    </xsl:when>
+                                    <xsl:when test="$dmdSec/m:mdWrap[@OTHERMDTYPE='EPDCX']">
+                                        <!-- Transform eprint dc to mods -->
+                                        <xsl:call-template name="epdcx2mods">
+                                            <xsl:with-param name="xmlData" select="$dmdSec/m:mdWrap[@OTHERMDTYPE='EPDCX']/m:xmlData"/>
+                                        </xsl:call-template>
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <xsl:copy-of select="$dmdSec/m:mdWrap/m:xmlData/*"/>
