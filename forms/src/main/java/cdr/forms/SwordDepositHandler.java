@@ -27,6 +27,8 @@ import org.apache.commons.httpclient.methods.multipart.Part;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cdr.forms.DepositResult.Status;
+
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
 public class SwordDepositHandler implements DepositHandler {
@@ -108,18 +110,25 @@ public class SwordDepositHandler implements DepositHandler {
 		post.addRequestHeader(header);
 		post.setRequestEntity(multipartEntity);
 		int responseCode;
-		try {
-			responseCode = client.executeMethod(post);
-			LOG.debug(String.valueOf(responseCode));
-			//LOG.debug(post.getResponseBodyAsString());
-		} catch (HttpException e) {
-			throw new Error(e);
-		} catch (IOException e) {
-			throw new Error(e);
-		}
+
 		DepositResult result = new DepositResult();
 		result.setObjectPid(pid);
-		result.setStatus(responseCode);
+		try {
+			responseCode = client.executeMethod(post);
+			if(responseCode >= 300) {
+				LOG.error(String.valueOf(responseCode));
+				LOG.error(post.getResponseBodyAsString());
+				result.setStatus(Status.FAILED);
+			} else {
+				result.setStatus(Status.COMPLETE);
+			}
+		} catch (HttpException e) {
+			LOG.error("Exception during SWORD deposit", e);
+			throw new Error(e);
+		} catch (IOException e) {
+			LOG.error("Exception during SWORD deposit", e);
+			throw new Error(e);
+		}
 		return result;
 	}
 }

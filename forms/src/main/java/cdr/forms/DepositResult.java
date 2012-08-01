@@ -1,10 +1,7 @@
 package cdr.forms;
 
 public class DepositResult {
-	public static final int COMPLETE = 1;
-	public static final int PENDING = 2;
-	public static final int UNKNOWN = 0;
-	public static final int FAILED = 3;
+	public static enum Status {COMPLETE, PENDING, UNKNOWN, FAILED};
 	private String objectPid;
 	public String getObjectPid() {
 		return objectPid;
@@ -12,11 +9,11 @@ public class DepositResult {
 	public void setObjectPid(String objectPid) {
 		this.objectPid = objectPid;
 	}
-	public int getStatus() {
+	public Status getStatus() {
 		return status;
 	}
-	public void setStatus(int status) {
+	public void setStatus(Status status) {
 		this.status = status;
 	}
-	private int status = UNKNOWN;
+	private Status status = Status.UNKNOWN;
 }

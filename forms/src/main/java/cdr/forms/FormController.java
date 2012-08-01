@@ -51,6 +51,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.w3._1999.xlink.XlinkPackage;
 
+import cdr.forms.DepositResult.Status;
+
 import com.philvarner.clamavj.ClamScan;
 import com.philvarner.clamavj.ScanResult;
 
@@ -193,6 +195,12 @@ public class FormController {
 		// perform a deposit with the default handler.
 		DepositResult result = this.getDepositHandler().deposit(form.getDepositContainerId(), mods, mpfile.getOriginalFilename(), depositFile);
 		
+		if(result.getStatus() == Status.FAILED) {
+			LOG.error("deposit failed");
+			errors.addError( new FieldError("form","file", "Deposit failed with response code: "+result.getStatus()));
+			return "form";
+		}
+		
 		// TODO email notices
 
 		// delete files
@@ -226,7 +234,7 @@ public class FormController {
 			result = File.createTempFile("form", ".data");
 			InputStream stream = file.getInputStream();
 			out = new BufferedOutputStream(new FileOutputStream(result));
-			for(int i = stream.read(); i > 0; i = stream.read()) {
+			for(int i = stream.read(); i >= 0; i = stream.read()) {
 				out.write(i);
 			}
 			out.flush();

@@ -144,6 +144,7 @@
     <xsl:variable name="predicates">
         <rdf-predicates>
             <ir:hasSurrogate/>
+            <ir:hasAlphabeticalOrder/>
             <!--<ir:refersTo/> is not translated to foxml directly. -->
         </rdf-predicates>
     </xsl:variable>
@@ -174,12 +175,28 @@
             <xsl:variable name="output" select="concat($output.directory,'/',generate-id(),'.foxml')"/>
             <object>
                 <xsl:attribute name="DIVID" select="generate-id()"/>
-                <xsl:attribute name="PID" select="$pids//pid[position() = $pos]"/>
+                <xsl:choose>
+                	<xsl:when test="contains(@CONTENTIDS, 'info:fedora/')">
+                		<xsl:variable name="pass1" select="substring-after(@CONTENTIDS,'info:fedora/')"/>
+                		<xsl:choose>
+                			<xsl:when test="contains($pass1,' ')">
+                				<xsl:attribute name="PID" select="substring-before($pass1, ' ')"/>
+                			</xsl:when>
+                			<xsl:otherwise>
+                				<xsl:attribute name="PID" select="$pass1"/>
+                			</xsl:otherwise>
+                		</xsl:choose>
+                	</xsl:when>
+                	<xsl:otherwise>
+                		<xsl:attribute name="PID" select="$pids//pid[position() = $pos]"/>
+                	</xsl:otherwise>
+                </xsl:choose>
+                
                 <xsl:attribute name="OUTPUT" select="$output"/>
-                <xsl:if test="exists(parent::m:structMap) or exists(parent::m:div[@TYPE = 'Bag'])">
+                <xsl:if test="parent::m:structMap or parent::m:div[@TYPE = 'Bag']">
                     <xsl:attribute name="TOP">yes</xsl:attribute>
                     <xsl:attribute name="sipOrder" select="count(preceding-sibling::m:div) + 1"/>
-                    <xsl:if test="exists(@ORDER)">
+                    <xsl:if test="@ORDER">
                         <xsl:attribute name="designatedOrder" select="@ORDER"/>
                     </xsl:if>
                 </xsl:if>
