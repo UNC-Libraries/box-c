@@ -37,7 +37,6 @@ import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -172,47 +171,52 @@ public class FormController {
 		LOG.debug("in POST for form " + formId);
 		checkPermission(formId, form, session);
 		if (user != null) form.setCurrentUser(user.getName());
+		String mods = makeMods(form);
+		LOG.debug(mods);
+		File depositFile = null;
+		if(mpfile.isEmpty()) {
+			errors.addError( new FieldError("form", "file", "You must select a file for upload."));
+		} else {
+			depositFile = handleUpload(mpfile);
+			String scanResult = virusScan(depositFile);
+			if(scanResult != null) {
+				errors.addError( new FieldError("form", "file", scanResult));
+				depositFile.delete();
+				depositFile = null;
+			}
+		}
 		if (errors.hasErrors()) {
 			LOG.debug(errors.getErrorCount() + " errors");
 			return "form";
 		}
-		if(mpfile.isEmpty()) {
-			errors.addError( new FieldError("form", "file", "You must select a file for upload."));
-			return "form";
-		}
-		
-		String mods = makeMods(form);
-		LOG.debug(mods);
-		
-		File depositFile = handleUpload(mpfile);
-		
-		if(!virusScan(depositFile)) {
-			errors.addError( new FieldError("form", "file", "A virus was detected in your file. Please scan your computer for viruses or report this issue to technical support."));
-			return "form";
-		}
 		
 		// perform a deposit with the default handler.
-		this.getDepositHandler().deposit(form.getDepositContainerId(), mods, mpfile.getOriginalFilename(), depositFile);
-
+		DepositResult result = this.getDepositHandler().deposit(form.getDepositContainerId(), mods, mpfile.getOriginalFilename(), depositFile);
 		
 		// TODO email notices
-		
+
+		// delete files
+		if(depositFile != null) depositFile.delete();
 		// clear session
 		sessionStatus.setComplete();
-		// TODO delete files
-		depositFile.delete();
 		return "success";
 	}
 
-	private synchronized boolean virusScan(File depositFile) {
-		boolean passed = false;
+	private synchronized String virusScan(File depositFile) {
 		try {
 			ScanResult result = this.getClamScan().scan(new FileInputStream(depositFile));
-			passed = ScanResult.Status.PASSED.equals(result.getStatus());
+			switch(result.getStatus()) {
+				case PASSED:
+					return null;
+				case FAILED:
+					return "A virus was detected in your file. Please scan your computer for viruses or report this issue to technical support.";
+				case ERROR:
+					throw new Error("There was a problem running the virus scan.", result.getException());
+			}
 		} catch (FileNotFoundException e) {
-			throw new Error(e);
+			throw new Error("There was a problem finding the uploaded file: "+depositFile.getName(), e);
 		}
-		return passed;
+		return null;
 	}
 
 	private File handleUpload(MultipartFile file) {
