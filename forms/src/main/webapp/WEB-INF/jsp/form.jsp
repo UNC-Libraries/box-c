@@ -91,7 +91,7 @@
 	</c:forEach>
 	<br/><h3>File for Deposit</h3>
 	<div style="margin: 0em 2em;">
-		<p><input name="file" type="file" /><spring:hasBindErrors name="form"><span style="color:red"><%= errors.getFieldError("file").getDefaultMessage() %></span></spring:hasBindErrors></p>
+		<p><input name="file" type="file" /><spring:hasBindErrors name="form"><span style="color:red"><%= errors.getFieldError("file") == null ? "" : errors.getFieldError("file").getDefaultMessage() %></span></spring:hasBindErrors></p>
 	</div>
 	<div style="text-align: center; margin: 2em;">
 		<input type="submit" value="submit deposit" />

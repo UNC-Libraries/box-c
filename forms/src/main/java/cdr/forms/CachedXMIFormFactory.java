@@ -3,6 +3,8 @@ package cdr.forms;
 import gov.loc.mods.mods.MODSPackage;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +13,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMLResourceFactoryImpl;
 import org.eclipse.gmf.runtime.notation.NotationPackage;
@@ -54,7 +57,11 @@ public class CachedXMIFormFactory extends AbstractFormFactory {
 		if (true || !cache.containsKey(id)) {
 			loadForm(id);
 		}
-		return cache.get(id);
+		Form template = cache.get(id);
+		EcoreUtil.Copier copier = new EcoreUtil.Copier(false, true);
+		EObject copy = copier.copy(template);
+		copier.copyReferences();
+		return (Form)copy;
 	}
 
 	private void loadForm(String id) {
@@ -62,6 +69,14 @@ public class CachedXMIFormFactory extends AbstractFormFactory {
 		if (f.exists()) {
 			URI formURI = URI.createFileURI(f.getPath());
 			Resource formResource = rs.getResource(formURI, true);
+			formResource.unload();
+			try {
+				formResource.load(Collections.EMPTY_MAP);
+			} catch (IOException e) {
+				LOG.error("Cannot load form: "+f.getPath(), e);
+				cache.remove(id);
+				return;
+			}
 			EObject con = formResource.getContents().get(0);
 			if (con instanceof EditingContainer) {
 				Editable model = ((EditingContainer) con).getModel();
