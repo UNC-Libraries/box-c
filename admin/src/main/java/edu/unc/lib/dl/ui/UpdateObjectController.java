@@ -24,12 +24,17 @@ import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.xml.transform.stream.StreamSource;
 
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.springframework.validation.BindException;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -51,24 +56,82 @@ import edu.unc.lib.dl.util.UtilityMethods;
 public class UpdateObjectController extends
 		CommonAdminObjectNavigationController {
 	private String updateObjectUrl;
-
+	
 	protected ModelAndView onSubmit(HttpServletRequest request,
 			HttpServletResponse response, Object command, BindException errors)
 			throws ServletException, IOException {
 
 		return onSubmitInternal(request, response, command, errors);
 	}
-
+	
 	protected ModelAndView onSubmitInternal(HttpServletRequest request,
 			HttpServletResponse response, Object command, BindException errors)
 			throws ServletException, IOException {
 		Map model = errors.getModel();
+
+		logger.warn("submit value: "+(String)request.getParameter("submit"));
 
 		// get data transfer object if it exists
 		UpdateObjectDAO dao = (UpdateObjectDAO) command;
 		if (dao == null) {
 			dao = new UpdateObjectDAO();
 		}
+		
+		String submit = (String) request.getParameter("submit");
+		if(submit.equals("Edit MODS")) {
+			// get PID from session
+			String pid = dao.getPid();
+			
+			HttpSession session = request.getSession();
+			session.setAttribute("pid", dao.getPid());
+			
+			// call mods editor
+		
+			return new ModelAndView("modseditor", model);
+			
+		} else if(submit.equals("Submit MODS")) {
+			// get PID from session
+			
+			logger.warn("Submit MODS reached");
+			
+			// get MODS from session
+			
+			// clear out MODS from session
+			
+			// transform MODS
+			
+			// try to put MODS to SWORD
+		
+		
+			
+		} else if(submit.equals("Edit Access Control")) {
+			// get PID from session
+			String pid = dao.getPid();
+			
+			HttpSession session = request.getSession();
+			session.setAttribute("pid", dao.getPid());
+			
+			return new ModelAndView("aceditor", model);
+		} else if(submit.equals("Submit Access Control")) {
+			// get PID from Session
+			
+			// get access control xml from session
+			
+			// clear out access control xml from session
+			
+			// convert into triples
+			
+			// try to get RELS-EXT from SWORD
+			
+			// extract access control from RELS-EXT
+			
+			// put new access control into RELS-EXT
+			
+			// submit RELS-EXT to SWORD
+			
+		}
+		
+		
 		dao.setMessage(null);
 
 		try {

@@ -72,7 +72,9 @@
 </c:if>
 		</tbody>
 	</table>
-	<center><input type="submit" alignment="center" value="<fmt:message key="updateobject.submit"/>"/></center>
+	<!-- <center><input type="submit" alignment="center" name="submit" value="<fmt:message key="updateobject.editac"/>"/></center> -->
+	<center><a href="/cdradmin/ir/admin/updatemods?pid=<c:out value='${param.id}'/>">Edit MODS</a></center>
+	<center><input type="submit" alignment="center" name="submit" value="<fmt:message key="updateobject.submit"/>"/></center>
 	</form:form>
 <form method="LINK" action="<c:url value='/ir/admin/'/>"><input type="submit" value='<fmt:message key="um.return.to.admin.page"/>'></form>
 </div>

@@ -53,6 +53,7 @@ public class SolrUpdateMessageFilter implements MessageFilter {
 		return ContentModelHelper.Datastream.MD_DESCRIPTIVE.equals(datastream)
 				&& (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
 				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action)
-				|| JMSMessageUtil.FedoraActions.PURGE_DATASTREAM.equals(action));
+				|| JMSMessageUtil.FedoraActions.PURGE_DATASTREAM.equals(action)
+				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action));
 	}
 }

@@ -109,7 +109,7 @@ public class UserToGroupFilter extends OncePerRequestFilter {
 
 	public boolean hasAccess(HttpServletRequest request, List<String> groupList) {
 
-		try {
+		try {			
 			String path = request.getRequestURI();
 			if (path != null) {
 				path = path.trim();
@@ -129,8 +129,14 @@ public class UserToGroupFilter extends OncePerRequestFilter {
 			logger.debug("requestURI: " + path);
 
 			String members = request.getHeader("isMemberOf");
-			groupList.add(members);
 
+			
+			if((members == null) || (members.trim().equals(""))) {
+				logger.debug("members is NULL");
+			}
+
+			groupList.add(members);
+			
 			logger.debug("isMemberOf: " + members);
 
 			Map<String, List<String>> usersAndGroups = null;
@@ -186,8 +192,6 @@ public class UserToGroupFilter extends OncePerRequestFilter {
 								}
 							}
 							logger.debug("Did not have role for path; denying access");
-
-							return false;
 						} else {
 							logger.debug("User without roles; denying access");
 							return false;

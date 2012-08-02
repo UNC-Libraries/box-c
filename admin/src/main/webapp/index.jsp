@@ -17,10 +17,15 @@
 --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+ <html>  
+  <head>
 <%@ include file="WEB-INF/jsp/include.jsp"%>
 <%@ include file="html/head.html"%>
 
 <title>Carolina Digital Repository</title>
+</head>
+<body>
 <%@ include file="html/contents.html"%>
       <li> <a class='active'      href="index.jsp">Home </a></li>
       <li> <a href="ir/admin">Administration </a></li>
@@ -42,4 +47,5 @@
 <center><a href="ir/admin">Administration</a></center>
 				
 <%@ include file="html/footer.html"%>
-				
+</body>
+</html>

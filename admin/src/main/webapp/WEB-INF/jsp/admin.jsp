@@ -15,20 +15,33 @@
     limitations under the License.
 
 --%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
-<%@ include file="include.jsp"%>
-<%@ include file="../../html/head.html"%>
-<title><fmt:message key="admin.heading" /></title>
-<%@ include file="../../html/admincontents.html"%>
-      <div id="content">            
-        <p class="breadcrumbs"><a href="<c:url value='/index.jsp'/>">Home</a> > Administration    
-        </p>    
-        <h2 class="fontface">Administration</h2>    
-        <p>The CDR user manual is located <a href="https://intranet.lib.unc.edu:82/trac/cdr/wiki/UserManual">here</a>.</p>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<html>
+<head>
+	<%@ include file="include.jsp"%>
+	<%@ include file="../../html/head.html"%>
+	<title><fmt:message key="admin.heading" />
+	</title>
+</head>
+<body>
+	<%@ include file="../../html/admincontents.html"%>
+	<div id="content">
+		<p class="breadcrumbs">
+			<a href="<c:url value='/index.jsp'/>">Home</a> &gt; Administration
+		</p>
+		<h2 class="fontface">Administration</h2>
+		<p>
+			The CDR user manual is located <a href="https://intranet.lib.unc.edu:82/trac/cdr/wiki/UserManual">here</a>.
+		</p>
 		<br>
-        <p>The users and groups created and deleted on these pages are for ownership in the CDR.  To work with users and groups for access control, you will need to work with <a href="https://intranet.lib.unc.edu/wikis/staff/index.php/Adding_a_group_to_Grouper">Grouper</a>.</p>
+		<p>
+			The users and groups created and deleted on these pages are for ownership in the CDR. To work with users and groups
+			for access control, you will need to work with <a
+				href="https://intranet.lib.unc.edu/wikis/staff/index.php/Adding_a_group_to_Grouper">Grouper</a>.
+		</p>
 
 
-
-<%@ include file="../../html/footer.html"%>
+	</div>
+	<%@ include file="../../html/footer.html"%>
+</body>
+</html>

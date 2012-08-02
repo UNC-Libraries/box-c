@@ -110,9 +110,13 @@
 				<prop key="/admin/deletegroup">adminController</prop>
 				<prop key="/admin/addusertogroup0">addUserToGroupController</prop>
 				<prop key="/admin/removeuserfromgroup0">removeUserFromGroupController</prop>
+				<prop key="/admin/updatemods">updateModsController</prop>
+				<prop key="/admin/updateac">updateACController</prop>
 				<prop key="/admin/">adminController</prop>
 				<prop key="/admin/status">adminController</prop>
 				<prop key="/admin/reindexsearch">reindexSearchController</prop>
+				<prop key="/admin/ajax/mods">getModsController</prop>
+				<prop key="/admin/ajax/ac">getACController</prop>
 				<prop key="/services/rest/*">ajaxProxyController</prop>
 				<prop key="/services/rest/**/*">ajaxProxyController</prop>
 				<prop key="/*">passThroughController</prop>
@@ -168,6 +172,21 @@
 		<property name="baseUrl" value="${admin.base.path}"/>
 	</bean>
 
+	<bean id="getModsController" class="edu.unc.lib.dl.ui.GetModsController"
+		lazy-init="true">
+			<property name="servicesUrl" value="${admin.services.url}${services.context}/sword/"/>
+			<property name="username" value="${sword.username}"/>
+			<property name="password" value="${sword.password}"/>
+			<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+	</bean>
+
+	<bean id="getACController" class="edu.unc.lib.dl.ui.GetACController"
+		lazy-init="true">
+			<property name="servicesUrl" value="${admin.services.url}${services.context}/sword/"/>
+			<property name="username" value="${sword.username}"/>
+			<property name="password" value="${sword.password}"/>
+	</bean>
+
 	<bean id="fixityReplicationController" class="edu.unc.lib.dl.ui.FixityReplicationController">
 		<property name="commandClass" value="edu.unc.lib.dl.util.FixityReplicationDAO"/>
 		<property name="commandName" value="fixityReplicationDAO"/>
@@ -212,6 +231,24 @@
 	</bean>
 
 	<bean id="mediatedSubmitValidator" class="edu.unc.lib.dl.ui.MediatedSubmitValidator"/>
+
+	<bean id="updateModsController" class="edu.unc.lib.dl.ui.UpdateModsController">
+			<property name="servicesUrl" value="${admin.services.url}${services.context}/sword/"/>
+			<property name="username" value="${sword.username}"/>
+			<property name="password" value="${sword.password}"/>
+			<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+	</bean>
+
+	<bean id="updateACController" class="edu.unc.lib.dl.ui.UpdateACController">
+			<property name="servicesUrl" value="${admin.services.url}${services.context}/sword/"/>
+			<property name="username" value="${sword.username}"/>
+			<property name="password" value="${sword.password}"/>
+		<property name="commandClass" value="edu.unc.lib.dl.schema.DeleteObjectDAO"/>
+		<property name="commandName" value="deleteObjectDAO"/>
+		<property name="formView" value="deleteobject"/>
+		<property name="successView" value="deleteobject"/>
+	</bean>
+
 
 	<bean id="createCollectionController" class="edu.unc.lib.dl.ui.CreateCollectionController">
 		<property name="commandClass" value="edu.unc.lib.dl.util.MediatedSubmitDAO"/>

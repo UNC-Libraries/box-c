@@ -115,7 +115,7 @@ public class SolrUpdateMessageFilterTest extends Assert {
 		assertTrue(solrUpdateMessageFilter.filter(message));
 		
 		message.setAction(JMSMessageUtil.FedoraActions.ADD_DATASTREAM.getName());
-		assertFalse(solrUpdateMessageFilter.filter(message));
+		assertTrue(solrUpdateMessageFilter.filter(message));
 		
 		//Relationships
 		doc = readFileAsString("addRelSourceData.xml");

@@ -17,6 +17,8 @@
 --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<html>
+<head>
 <%@ include file="include.jsp"%>
 <%@ include file="../../html/head.html"%>
 <link rel="stylesheet" href="../../css/jquery/ui/jquery-ui.css" type="text/css" media="all" />
@@ -26,6 +28,8 @@
 <script type="text/javascript" src="../../js/statusMonitor.js"></script>
 
 <title><fmt:message key="admin.status.heading" /></title>
+</head>
+<body>
 <%@ include file="../../html/admincontents.html"%>
 <div id="content">
 	<p class="breadcrumbs">
@@ -289,4 +293,7 @@
 			</table>
 		</div>
 	</div>
-	<%@ include file="../../html/footer.html"%>
+</div>
+<%@ include file="../../html/footer.html"%>
+</body>
+</html>
