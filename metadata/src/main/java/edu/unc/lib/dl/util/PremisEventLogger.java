@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 
@@ -133,7 +132,7 @@ public class PremisEventLogger {
 	 *           detail XML element (any schema fits, can be null)
 	 * @return the event element
 	 */
-	public Element addDetailedOutcome(Element event, String outcome, String detailNote, Element detailExtension) {
+	public static Element addDetailedOutcome(Element event, String outcome, String detailNote, Element detailExtension) {
 		// log the detail xml
 		Element eventOutcomeInfo = new Element("eventOutcomeInformation", NS).addContent(new Element("eventOutcome", NS)
 				.setText(outcome));
@@ -237,6 +236,16 @@ public class PremisEventLogger {
 		id.addContent(new Element("objectIdentifierValue", NS).setText(pid.getPid()));
 		result.addContent(id);
 		return result;
+	}
+	
+	public static Element addSoftwareAgent(Element event, String name, String versionNumber) {
+		// add linked agent
+		Element lai = new Element("linkingAgentIdentifier", NS);
+		lai.addContent(new Element("linkingAgentIdentifierType", NS).setText("Name"));
+		lai.addContent(new Element("linkingAgentIdentifierValue", NS).setText(name+" ("+versionNumber+")"));
+		lai.addContent(new Element("linkingAgentRole", NS).setText("Software"));
+		event.addContent(lai);
+		return event;
 	}
 
 	public void addEvent(PID pid, Element event) {

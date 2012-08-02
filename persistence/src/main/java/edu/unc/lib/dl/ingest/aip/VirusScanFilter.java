@@ -20,6 +20,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,10 +60,17 @@ public class VirusScanFilter implements AIPIngestFilter {
 
 	public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException {
 		log.debug("Starting");
+		
+		// get ClamScan software and database versions
+		String version = this.clamScan.cmd("nVERSION\n".getBytes()).trim();
+		
+		Map<String, String> failures = new HashMap<String, String>();
+		
 		for (PID pid : aip.getPIDs()) {
 			Document foxml = aip.getFOXMLDocument(pid);
 			for (Element cLocation : FOXMLJDOMUtil.getFileLocators(foxml)) {
 				String ref = cLocation.getAttributeValue("REF");
+				String dsid = cLocation.getParentElement().getParentElement().getAttributeValue("ID");
 				URI uri;
 				try {
 					uri = new URI(ref);
@@ -72,18 +81,33 @@ public class VirusScanFilter implements AIPIngestFilter {
 					File file = aip.getFileForUrl(ref);
 					try {
 						ScanResult result = this.clamScan.scan(new FileInputStream(file));
-						if(ScanResult.Status.FAILED.equals(result.getStatus())) {
-							throw new AIPException("Virus check failed on "+ref+"\n"+result.getResult());
-						}
-						if(ScanResult.Status.ERROR.equals(result.getStatus())) {
-							throw new AIPException("Virus checks are producing errors: "+result.getException().getLocalizedMessage());
+						switch(result.getStatus()) {
+							case FAILED:
+								Element ev = aip.getEventLogger().logEvent(PremisEventLogger.Type.VIRUS_CHECK, "File failed pre-ingest scan for viruses.", pid, dsid);
+								PremisEventLogger.addSoftwareAgent(ev, "ClamAV", version);
+								PremisEventLogger.addDetailedOutcome(ev, "failure", "found virus signature "+result.getSignature(), null);
+								failures.put(uri.toString(), result.getSignature());
+								break;
+							case ERROR:
+								throw new AIPException("Virus checks are producing errors: "+result.getException().getLocalizedMessage());
+							case PASSED:
+								Element ev2 = aip.getEventLogger().logEvent(PremisEventLogger.Type.VIRUS_CHECK, "File passed pre-ingest scan for viruses.", pid, dsid);
+								PremisEventLogger.addSoftwareAgent(ev2, "ClamAV", version);
+								PremisEventLogger.addDetailedOutcome(ev2, "success", null, null);
+								break;
 						}
 					} catch (FileNotFoundException e) {
 						throw new AIPException("Cannot find local file referenced in METS manifest: "+ref, e);
 					}
 				}
 			}
-			aip.getEventLogger().logEvent(PremisEventLogger.Type.VIRUS_CHECK, "All packaged files passed pre-ingest scan for viruses", pid);
+		}
+		if(failures.size() > 0) {
+			StringBuilder sb = new StringBuilder("Virus checks failed for some files:\n");
+			for(String uri : failures.keySet()) {
+				sb.append(uri).append(" - ").append(failures.get(uri)).append("\n");
+			}
+			throw new AIPException(sb.toString());
 		}
 		log.debug("Finished");
 		return aip;

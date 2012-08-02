@@ -77,6 +77,10 @@ public class SingleFileSIPProcessor extends FileSIPProcessor {
 		} catch (IOException e) {
 			throw new IngestException("Error reading MODS xml file.", e);
 		}
+		
+		if(label == null) {
+			label = sip.getFileLabel();
+		}
 
 		// MAKE RDF AWARE AIP
 		RDFAwareAIPImpl rdfaip = null;
