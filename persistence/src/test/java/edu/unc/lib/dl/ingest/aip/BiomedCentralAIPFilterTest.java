@@ -120,6 +120,44 @@ public class BiomedCentralAIPFilterTest extends Assert {
 	}
 	
 	@Test
+	public void inconsistentFilenameCaseParseTest() throws Exception{
+		AgentFactory agentFactory = mock(AgentFactory.class);
+		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(biomedAgent);
+		BiomedCentralAIPFilter filter = new BiomedCentralAIPFilter();
+		filter.setAgentFactory(agentFactory);
+		filter.init();
+		
+		File ingestPackage = new File("src/test/resources/biomedInconsistentFileCase.zip");
+		PID containerPID = new PID("uuid:container");
+		METSPackageSIP sip = new METSPackageSIP(containerPID, ingestPackage, true);
+		
+		DepositRecord record = new DepositRecord(biomedAgent, biomedAgent, DepositMethod.SWORD13);
+		record.setPackagingType(PackagingType.METS_DSPACE_SIP_2);
+		
+		RDFAwareAIPImpl aip = (RDFAwareAIPImpl)metsPackageSIPProcessor.createAIP(sip, record);
+		
+		filter.doFilter(aip);
+		
+		Graph graph = aip.getGraph();
+		
+		PID articlePID = JRDFGraphUtil.getPIDRelationshipSubject(graph, ContentModelHelper.CDRProperty.slug.getURI(), "bcr3152.pdf");
+		PID aggregatePID = JRDFGraphUtil.getPIDRelationshipSubject(graph, ContentModelHelper.Relationship.contains.getURI(), articlePID);
+		PID xmlPID = JRDFGraphUtil.getPIDRelationshipSubject(graph, ContentModelHelper.CDRProperty.slug.getURI(), "bcr3152.xml");
+		PID s1PID = JRDFGraphUtil.getPIDRelationshipSubject(graph, ContentModelHelper.CDRProperty.slug.getURI(), "BCR3152-S1.XLSX");
+		PID s2PID = JRDFGraphUtil.getPIDRelationshipSubject(graph, ContentModelHelper.CDRProperty.slug.getURI(), "BCR3152-S2.XLSX");
+		PID s3PID = JRDFGraphUtil.getPIDRelationshipSubject(graph, ContentModelHelper.CDRProperty.slug.getURI(), "BCR3152-S3.PDF");
+		assertNotNull(articlePID);
+		assertNotNull(aggregatePID);
+		assertNotNull(xmlPID);
+		assertNotNull(s1PID);
+		assertNotNull(s2PID);
+		assertNotNull(s3PID);
+		
+		String defaultWebPID = JRDFGraphUtil.getRelationshipObjectURIs(graph, aggregatePID, ContentModelHelper.CDRProperty.defaultWebObject.getURI()).get(0).toString();
+		assertTrue(defaultWebPID.equals(articlePID.getURI()));
+	}
+	
+	@Test
 	public void rejectedAgentTest() throws Exception{
 		AgentFactory agentFactory = mock(AgentFactory.class);
 		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(biomedAgent);

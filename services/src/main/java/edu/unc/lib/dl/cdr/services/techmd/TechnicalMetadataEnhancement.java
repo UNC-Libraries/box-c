@@ -51,9 +51,9 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Executes irods script which uses FITS to extract technical metadata features of objects with data file datastreams.
- *
+ * 
  * @author Gregory Jansen
- *
+ * 
  */
 public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 	Namespace ns = JDOMNamespaceUtil.FITS_NS;
@@ -65,7 +65,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
@@ -79,6 +79,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 
 		// get sourceData data stream IDs
 		List<String> srcDSURIs = this.service.getTripleStoreQueryService().getSourceData(pid);
+		Map<String, String> sourceMimetype = new HashMap<String, String>(srcDSURIs.size());
 
 		Map<String, Document> ds2FitsDoc = new HashMap<String, Document>();
 		try {
@@ -100,6 +101,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 					if (o instanceof Element) {
 						Element dsvEl = (Element) o;
 						if (vid.equals(dsvEl.getAttributeValue("ID"))) {
+							sourceMimetype.put(dsid, dsvEl.getAttributeValue("MIMETYPE"));
 							dsLocation = dsvEl.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
 									.getAttributeValue("REF");
 							dsAltIds = dsvEl.getAttributeValue("ALT_IDS");
@@ -115,10 +117,10 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 				Document fits = null;
 				try {
 					fits = runFITS(dsIrodsPath, dsAltIds);
-				} catch (JDOMException e){
-					//Rethrow JDOM exception as an unrecoverable enhancement exception
+				} catch (JDOMException e) {
+					// Rethrow JDOM exception as an unrecoverable enhancement exception
 					throw new EnhancementException(e, Severity.UNRECOVERABLE);
-				} catch (Exception e){
+				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 
@@ -163,20 +165,25 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 					LOG.info(new XMLOutputter().outputString(fits));
 				}
 
+				// If fedora has a meaningful mimetype already, then override the fits generate one.
+				String fedoraMimetype = sourceMimetype.get(dsid);
+				if (fedoraMimetype != null && fedoraMimetype.trim().length() > 0
+						&& !fedoraMimetype.contains("octet-stream")) {
+					fitsMimetype = fedoraMimetype;
+				}
+
 				if ("DATA_FILE".equals(dsid)) {
 					if (fitsMimetype != null) {
 						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.toString(),
 								fitsMimetype, null);
 					} else { // application/octet-stream
-						setExclusiveTripleValue(pid,
-								ContentModelHelper.CDRProperty.hasSourceMimeType.toString(),
+						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.toString(),
 								"application/octet-stream", null);
 					}
-					
+
 					try {
 						Long.parseLong(size);
-						setExclusiveTripleValue(pid,
-								ContentModelHelper.CDRProperty.hasSourceFileSize.toString(), size,
+						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceFileSize.toString(), size,
 								"http://www.w3.org/2001/XMLSchema#long");
 					} catch (NumberFormatException e) {
 						LOG.error("FITS produced a non-integer value for size: " + size);
@@ -211,7 +218,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 
 			// Add or replace the MD_TECHNICAL datastream for the object
 			if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.MD_TECHNICAL.getName()) == null) {
-				LOG.debug("Adding FITS output to MD_TECHNICAL");				
+				LOG.debug("Adding FITS output to MD_TECHNICAL");
 				String message = "Adding technical metadata derived by FITS";
 				service.getManagementClient().addManagedDatastream(pid,
 						ContentModelHelper.Datastream.MD_TECHNICAL.getName(), false, message, new ArrayList<String>(),
@@ -247,7 +254,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 
 	/**
 	 * Set a single value for a given predicate and pid.
-	 *
+	 * 
 	 * @param pid
 	 * @param predicate
 	 * @param newExclusiveValue
@@ -275,7 +282,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 
 	/**
 	 * Executes fits extract irods script
-	 *
+	 * 
 	 * @param dsIrodsPath
 	 * @return FITS output XML Document
 	 */
@@ -289,15 +296,15 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 				if (altid.length() > 0) {
 					URI alt = new URI(altid);
 					String rawPath = alt.getRawPath();
-					//Narrow file name down to after the last /
+					// Narrow file name down to after the last /
 					int lastSlash = rawPath.lastIndexOf("/");
 					if (lastSlash > 0)
 						rawPath = rawPath.substring(lastSlash + 1);
 					int ind = rawPath.lastIndexOf(".");
-					//Use text after last . as extension if its length is 0 > len >= MAX_EXTENSION_LENGTH
+					// Use text after last . as extension if its length is 0 > len >= MAX_EXTENSION_LENGTH
 					if (ind > 0 && rawPath.length() - 1 > ind && (rawPath.length() - ind <= MAX_EXTENSION_LENGTH)) {
 						filename = rawPath.substring(ind + 1);
-						filename = URIUtil.decode("linkedfile."+filename);
+						filename = URIUtil.decode("linkedfile." + filename);
 						break;
 					}
 				}
@@ -340,9 +347,9 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 			}
 			result = new SAXBuilder().build(new StringReader(xmlstr));
 			return result;
-		} catch(JDOMException e) {
+		} catch (JDOMException e) {
 			LOG.warn("Failed to parse FITS output for path: " + dsIrodsPath);
-			LOG.info("FITS returned: \n"+xmlstr+"\n\n"+errstr);
+			LOG.info("FITS returned: \n" + xmlstr + "\n\n" + errstr);
 			throw e;
 		} finally {
 			if (reader != null) {
@@ -351,8 +358,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 		}
 	}
 
-	public TechnicalMetadataEnhancement(TechnicalMetadataEnhancementService technicalMetadataEnhancementService,
-			PID pid) {
+	public TechnicalMetadataEnhancement(TechnicalMetadataEnhancementService technicalMetadataEnhancementService, PID pid) {
 		super(pid);
 		this.service = technicalMetadataEnhancementService;
 	}

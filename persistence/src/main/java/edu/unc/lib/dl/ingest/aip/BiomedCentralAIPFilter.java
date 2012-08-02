@@ -154,28 +154,30 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 				if (slug == null) {
 					throw new AIPException(pid.getPid() + " missing slug.");
 				}
-				if (slug.matches("^[0-9\\-X]+\\.[xX][mM][lL]$")){
-					LOG.debug("Found primary Biomed XML document " + slug);
-					// suppress the XML main file by turning off indexing
-					JRDFGraphUtil.removeAllRelatedByPredicate(g, pid, ContentModelHelper.CDRProperty.allowIndexing.getURI());
-					JRDFGraphUtil.addCDRProperty(g, pid, ContentModelHelper.CDRProperty.allowIndexing, "no");
-					try {
-						processArticleXML(rdfaip, pid, parentPID);
-					} catch (Exception e){
-						throw new AIPException("Unable to process article XML from " + slug, e);
-					}
-				} else if (slug.matches("^[0-9\\-X]+\\.\\w+$")){
-					LOG.debug("Found primary Biomed content document " + slug);
-					// If this is a main object, then designate it as a default web object for its parent container
-					try {
-						JRDFGraphUtil.addCDRProperty(g, parentPID, ContentModelHelper.CDRProperty.defaultWebObject, new URI(pid.getURI()));
-					} catch (Exception e){
-						throw new AIPException("Could not add defaultWebObject triple for " + pid.getPid(), e);
+				
+				// Skip over supplements which end in -S<#>
+				if (!slug.matches("[\\w\\-]+\\-S\\d+\\.\\w+$")) {
+					if (slug.matches("[\\w\\-]+\\.[xX][mM][lL]$")) {
+						LOG.debug("Found primary Biomed XML document " + slug);
+						// suppress the XML main file by turning off indexing
+						JRDFGraphUtil.removeAllRelatedByPredicate(g, pid, ContentModelHelper.CDRProperty.allowIndexing.getURI());
+						JRDFGraphUtil.addCDRProperty(g, pid, ContentModelHelper.CDRProperty.allowIndexing, "no");
+						try {
+							processArticleXML(rdfaip, pid, parentPID);
+						} catch (Exception e){
+							throw new AIPException("Unable to process article XML from " + slug, e);
+						}
+					} else {
+						LOG.debug("Found primary Biomed content document " + slug);
+						// If this is a main object, then designate it as a default web object for its parent container
+						try {
+							JRDFGraphUtil.addCDRProperty(g, parentPID, ContentModelHelper.CDRProperty.defaultWebObject, new URI(pid.getURI()));
+						} catch (Exception e){
+							throw new AIPException("Could not add defaultWebObject triple for " + pid.getPid(), e);
+						}
 					}
 				}
-				// Ignore supplemental files, which end in -S<#>
 			}
-			
 		}
 	}
 	
@@ -298,6 +300,14 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 			for (Element supplement: elements){
 				String supplementFileName = ((Attribute)this.supplementFileNameXPath.selectSingleNode(supplement)).getValue();
 				PID supplementPID = JRDFGraphUtil.getPIDRelationshipSubject(g, ContentModelHelper.CDRProperty.slug.getURI(), supplementFileName);
+				// Try filename as all upper case, sometimes case can be inconsistent.
+				if (supplementPID == null) {
+					supplementFileName = supplementFileName.toUpperCase();
+					supplementPID = JRDFGraphUtil.getPIDRelationshipSubject(g, ContentModelHelper.CDRProperty.slug.getURI(), supplementFileName);
+				}
+				// Skip this record if can't find a pid
+				if (supplementPID == null)
+					continue;
 				String supplementTitle = ((Element)this.supplementTitleXPath.selectSingleNode(supplement)).getValue().trim();
 				//If the title is too long for the label field, then limit to just the main title
 				if (supplementTitle.length() >= 250){
