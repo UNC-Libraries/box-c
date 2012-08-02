@@ -3,7 +3,6 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -38,10 +37,7 @@ public class StatementManagerImpl extends AbstractFedoraManager implements State
 
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 
-		// Get the users group
-		List<String> groupList = this.getGroups(auth, configImpl);
-
-		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.patron.getUri().toString())) {
+		if (!hasAccess(auth, targetPID, AccessControlRole.patron, configImpl)) {
 			throw new SwordAuthException("Insufficient privileges to retrieve statement for " + targetPID.getPid());
 		}
 

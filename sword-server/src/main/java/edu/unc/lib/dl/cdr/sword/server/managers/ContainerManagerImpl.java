@@ -52,10 +52,8 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		}
 
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
-		// Get the users group
-		List<String> groupList = this.getGroups(auth, configImpl);
 
-		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.curator.getUri().toString())) {
+		if (!hasAccess(auth, targetPID, AccessControlRole.curator, configImpl)) {
 			throw new SwordAuthException("Insufficient privileges to update metadata for " + targetPID.getPid());
 		}
 
@@ -140,9 +138,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		PID targetPID = extractPID(editIRI, SwordConfigurationImpl.EDIT_PATH + "/");
 
-		List<String> groupList = this.getGroups(auth, configImpl);
-
-		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.curator.getUri().toString())) {
+		if (!hasAccess(auth, targetPID, AccessControlRole.curator, configImpl)) {
 			log.debug("Insufficient privileges to delete object " + targetPID.getPid());
 			throw new SwordAuthException("Insufficient privileges to delete object " + targetPID.getPid());
 		}
@@ -172,7 +168,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 		List<String> groupList = this.getGroups(auth, configImpl);
 
-		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.patron.getUri().toString())) {
+		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.curator.getUri().toString())) {
 			throw new SwordAuthException("Insufficient privileges to update object headers " + targetPID.getPid());
 		}
 

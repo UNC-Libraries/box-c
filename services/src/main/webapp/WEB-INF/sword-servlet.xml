@@ -256,6 +256,7 @@
 		<property name="generatorVersion" value="${cdr.version}"/>
 		<property name="generator" value="${repository.protocol}://${repository.host}"/>
 		<property name="depositorNamespace" value="${sword.depositorNamespace}"/>
+		<property name="adminDepositor" value="${sword.username}"/>
 	</bean>
 	
 	<bean id="depositReportingUtil" class="edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil">

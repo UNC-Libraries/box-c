@@ -46,6 +46,7 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 	private String generator = null;
 	private String generatorVersion = null;
 	private String depositorNamespace = null;
+	private String adminDepositor = null;
 
 	public SwordConfigurationImpl() {
 	}
@@ -173,5 +174,13 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 	@Override
 	public String getAlternateUrlContentType() {
 		return null;
+	}
+
+	public String getAdminDepositor() {
+		return adminDepositor;
+	}
+
+	public void setAdminDepositor(String adminDepositor) {
+		this.adminDepositor = adminDepositor;
 	}
 }

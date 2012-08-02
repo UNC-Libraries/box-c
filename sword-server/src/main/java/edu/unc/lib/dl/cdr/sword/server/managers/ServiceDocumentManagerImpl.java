@@ -73,12 +73,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 			pid = collectionsPidObject;
 		}
 
-		// Get the users group
-		List<String> groupList = new ArrayList<String>();
-		groupList.add(configImpl.getDepositorNamespace() + auth.getUsername());
-		groupList.add("public");
-
-		if (!accessControlUtils.hasAccess(pid, groupList, AccessControlRole.metadataOnlyPatron.getUri().toString())) {
+		if (!hasAccess(auth, pid, AccessControlRole.metadataOnlyPatron, configImpl)) {
 			LOG.debug("Insufficient privileges to access the service document for " + pid.getPid());
 			throw new SwordAuthException("Insufficient privileges to access the service document for " + pid.getPid());
 		}
@@ -87,7 +82,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 
 		List<SwordCollection> collections;
 		try {
-			collections = this.getImmediateContainerChildren(pid, groupList, configImpl);
+			collections = this.getImmediateContainerChildren(pid, auth, configImpl);
 			for (SwordCollection collection : collections) {
 				workspace.addCollection(collection);
 			}
@@ -105,13 +100,15 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 	 * Retrieves a list of SwordCollection objects representing all the children containers of container pid which the
 	 * groups in groupList have curator access to.
 	 * 
-	 * @param pid pid of the container to retrieve the children of.
-	 * @param groupList list of permission groups
+	 * @param pid
+	 *           pid of the container to retrieve the children of.
+	 * @param groupList
+	 *           list of permission groups
 	 * @param config
 	 * @return
 	 * @throws IOException
 	 */
-	protected List<SwordCollection> getImmediateContainerChildren(PID pid, List<String> groupList,
+	protected List<SwordCollection> getImmediateContainerChildren(PID pid, AuthCredentials auth,
 			SwordConfigurationImpl config) throws IOException {
 		String query = this.readFileAsString("immediateContainerChildren.sparql");
 		query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(), pid.getURI());
@@ -125,7 +122,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 			String slug = (String) ((Map<?, ?>) binding.get("slug")).get("value");
 
 			// Check that the user has curator access to this collection
-			if (accessControlUtils.hasAccess(containerPID, groupList, AccessControlRole.curator.getUri().toString())) {
+			if (hasAccess(auth, containerPID, AccessControlRole.curator, config)) {
 				collection.setHref(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/"
 						+ containerPID.getPid());
 				collection.setTitle(slug);

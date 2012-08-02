@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.jdom.JDOMException;
 import org.swordapp.server.AuthCredentials;
@@ -81,10 +79,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 
 		PID containerPID = extractPID(collectionURI, SwordConfigurationImpl.COLLECTION_PATH + "/");
 
-		// Get the users group
-		List<String> groupList = this.getGroups(auth, configImpl);
-
-		if (!accessControlUtils.hasAccess(containerPID, groupList, AccessControlRole.curator.getUri().toString())) {
+		if (!hasAccess(auth, containerPID, AccessControlRole.curator, configImpl)) {
 			throw new SwordAuthException("Insufficient privileges to deposit to container " + containerPID.getPid());
 		}
 
@@ -105,8 +100,8 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 							"Unexpected exception while attempting to perform an Atom Pub entry deposit", e);
 				}
 			}
-		} else { 
-			if (deposit.getFile() == null){
+		} else {
+			if (deposit.getFile() == null) {
 				// Invalid to have a package but no file
 				throw new SwordError("Could not ingest, a package type was provided but no content.");
 			} else {
@@ -128,14 +123,14 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 						throw new SwordError("Files in the package " + deposit.getFilename()
 								+ " did not match the provided METS manifest.", e);
 					} catch (IngestException e) {
-						log.warn("Files in the package " + deposit.getFilename() + " did not match the provided METS manifest.",
-								e);
-						throw new SwordError("An exception occurred while attempting to ingest package " + deposit.getFilename()
-								+ " of type " + deposit.getPackaging(), e);
+						log.warn("Files in the package " + deposit.getFilename()
+								+ " did not match the provided METS manifest.", e);
+						throw new SwordError("An exception occurred while attempting to ingest package "
+								+ deposit.getFilename() + " of type " + deposit.getPackaging(), e);
 					} catch (Exception e) {
 						throw new SwordServerException(e);
 					}
-				}				
+				}
 			}
 		}
 		return null;

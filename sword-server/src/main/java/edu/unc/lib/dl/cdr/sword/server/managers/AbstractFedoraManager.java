@@ -27,6 +27,7 @@ import org.swordapp.server.AuthCredentials;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.AccessControlUtils;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -34,11 +35,11 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 /**
  * 
  * @author bbpennel
- *
+ * 
  */
 public abstract class AbstractFedoraManager {
 	private static Logger LOG = Logger.getLogger(AbstractFedoraManager.class);
-	
+
 	@Autowired
 	protected AccessClient accessClient;
 	@Autowired
@@ -50,8 +51,8 @@ public abstract class AbstractFedoraManager {
 	protected PID collectionsPidObject;
 	@Autowired
 	protected AgentFactory agentFactory;
-	
-	public void init(){
+
+	public void init() {
 		collectionsPidObject = this.tripleStoreQueryService.fetchByRepositoryPath("/Collections");
 	}
 
@@ -71,24 +72,30 @@ public abstract class AbstractFedoraManager {
 		reader.close();
 		return fileData.toString();
 	}
-	
-	protected PID extractPID(String uri, String basePath){
+
+	protected PID extractPID(String uri, String basePath) {
 		String pidString = null;
 		int pidIndex = uri.indexOf(basePath);
-		if (pidIndex > -1){
+		if (pidIndex > -1) {
 			pidString = uri.substring(pidIndex + basePath.length());
 		}
 
 		PID targetPID = null;
-		if (pidString.trim().length() == 0){
+		if (pidString.trim().length() == 0) {
 			targetPID = collectionsPidObject;
 		} else {
 			targetPID = new PID(pidString);
 		}
 		return targetPID;
 	}
-	
-	protected List<String> getGroups(AuthCredentials auth, SwordConfigurationImpl config){
+
+	protected boolean hasAccess(AuthCredentials auth, PID pid, AccessControlRole role, SwordConfigurationImpl config) {
+		List<String> groupList = this.getGroups(auth, config);
+		return (config.getAdminDepositor() != null && config.getAdminDepositor().equals(auth.getUsername()))
+				|| accessControlUtils.hasAccess(pid, groupList, role.getUri().toString());
+	}
+
+	protected List<String> getGroups(AuthCredentials auth, SwordConfigurationImpl config) {
 		List<String> groupList = new ArrayList<String>();
 		groupList.add(config.getDepositorNamespace() + auth.getUsername());
 		groupList.add("public");
