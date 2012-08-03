@@ -34,6 +34,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.io.FileUtils;
 import org.jdom.Document;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -72,7 +73,6 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/bean-context-ingest-junit.xml" })
 public class BatchIngestServiceTest {
-	public static final String batchDir = "/tmp/batch-ingest";
 
 	@Resource private DigitalObjectManagerImpl digitalObjectManagerImpl;
 
@@ -118,6 +118,7 @@ public class BatchIngestServiceTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
+		this.batchIngestService.getBatchIngestQueue().init();
 		MIMETypedStream mts = mock(MIMETypedStream.class);
 		when(mts.getStream()).thenReturn(MD_CONTENTS.getBytes());
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq("MD_CONTENTS"), anyString())).thenReturn(mts);
@@ -127,6 +128,7 @@ public class BatchIngestServiceTest {
 		when(mts2.getStream()).thenReturn(MD_EVENTS.getBytes());
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq("MD_EVENTS"), any(String.class)))
 				.thenReturn(mts2);
+		
 	}
 
 	/**
@@ -134,6 +136,7 @@ public class BatchIngestServiceTest {
 	 */
 	@After
 	public void tearDown() throws Exception {
+		FileUtils.deleteQuietly(this.batchIngestService.getBatchIngestQueue().getServiceDirectory());
 	}
 
 	/**
@@ -230,7 +233,7 @@ public class BatchIngestServiceTest {
 			digitalObjectManagerImpl.addToIngestQueue(sip, record);
 
 			do {
-				Thread.sleep(5*1000);
+				Thread.sleep(10*1000);
 			} while(this.batchIngestService.executor.getAllRunningAndQueued().size() > 0);
 
 			// verify batch ingest called
