@@ -1356,12 +1356,20 @@
 					'id' : inputID,
 					'type' : 'text',
 					'value' : startingValue
-				}).appendTo(appendTarget);
+				}).appendTo(appendTarget).one('focus', function() {
+					if ($(this).val() == " ") {
+						$(this).val("");
+					}
+				});
 			} else if (elementType.type == 'textarea') {
 				input = $('<textarea/>').attr({
 					'id' : inputID,
 					'value' : startingValue
-				}).appendTo(appendTarget);
+				}).appendTo(appendTarget).one('focus', function() {
+					if ($(this).value() == " ") {
+						$(this).value("");
+					}
+				});
 			} else if (elementType.type == 'selection') {
 				var selectionValues = elementType.values;
 				input = $('<select />').attr({
