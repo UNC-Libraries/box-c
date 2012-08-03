@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>cdr</artifactId>
 		<groupId>edu.unc.lib.cdr</groupId>
-		<version>3.1-SNAPSHOT</version>
+		<version>3.2-SNAPSHOT</version>
 	</parent>
 	<artifactId>forms</artifactId>
 	<packaging>war</packaging>
