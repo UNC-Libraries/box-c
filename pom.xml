@@ -226,10 +226,10 @@
 						<exclude>**/resources/**</exclude>
 						<exclude>**/solr-config/**</exclude>
 						<exclude>**/external/static/**</exclude>
+						<exclude>**/*.css</exclude>
 						<exclude>**/add_to_maven/**</exclude>
 						<exclude>**/for_tomcat_common_endorsed/**</exclude>
-						<exclude>**/js/jquery/**</exclude>
-						<exclude>**/js/yahoo/**</exclude>
+						<exclude>**/js/**</exclude>
 						<exclude>**/*.tld</exclude>
 						<exclude>**/*.tld</exclude>
 						<exclude>**/*.zip</exclude>

@@ -98,11 +98,6 @@
 		</dependency>
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
-			<artifactId>persistence</artifactId>
-			<version>${cdr.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>sword-server</artifactId>
 			<version>${cdr.version}</version>
 		</dependency>
