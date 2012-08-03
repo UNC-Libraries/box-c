@@ -77,13 +77,11 @@ textarea:focus,input:focus {
 	margin-left: 0px;
 }
 
-.mods_element div { /*background-color: #73A2C1;
-	margin-left: 50px;*/
+.mods_element div { 
 	max-width: 100%;
 }
 
-.mods_element div div { /*background-color: #5E9AC1;
-	margin-left: 50px;*/
+.mods_element div div { 
 	max-width: 100%;
 }
 
@@ -129,7 +127,6 @@ textarea:focus,input:focus {
 	box-shadow: 0px 0px 6px 1px #FBD850;
 }
 
-/*typeOfResourceInstance mods_element ui-tabs ui-widget ui-widget-content ui-corner-all*/
 .mods_element.selected.ui-tabs.ui-widget.ui-widget-content > .element_header {
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#C4DFE7', endColorstr='#A4CABB');
 	background: -webkit-gradient(linear, left top, left bottom, from(#C4E9EE), color-stop(0.5, #5ECFE6), to(#76B6E1));
@@ -216,6 +213,18 @@ textarea:focus,input:focus {
 
 .add_components span:first-child:hover {
 	text-decoration: none;
+}
+
+#mods_content > div.placeholder, .mods_element > div > div.placeholder {
+	display: none;
+}
+
+#mods_content > div:last-child.placeholder, .mods_element > div > div:last-child.placeholder  {
+	display: block;
+	font-style: italic;
+	color: #bbb;
+	font-size: 13px;
+	padding: 5px;
 }
 
 /* Attributes */
@@ -444,7 +453,8 @@ textarea:focus,input:focus {
 
 #mods_menu_bar {
 	margin-bottom: 3px;
-	overflow: auto;	
+	overflow: auto;
+	width: inherit;	
 }
 
 #mods_menu_bar > ul > li {
@@ -452,14 +462,14 @@ textarea:focus,input:focus {
 	font-size: 14px;
 }
 
-#mods_menu_bar > ul > li > span {
+#mods_menu_bar > ul > li > a > span {
 	padding: 6px 8px;
 	display: inline-block;
 	font-size: 15px;
 	cursor: pointer;
 }
 
-#mods_menu_bar > ul > li > span:hover {
+#mods_menu_bar > ul > li > a > span:hover {
 	background-color: #eeeeee;	
 }
 
@@ -467,7 +477,7 @@ textarea:focus,input:focus {
 	display: none;
 }
 
-#mods_menu_bar.active > ul > li:hover > span {
+#mods_menu_bar.active > ul > li:hover > a > span {
 	padding: 5px 7px;
 	border: 1px solid #bbbbcc;
 	border-bottom: 0px;
@@ -502,7 +512,7 @@ textarea:focus,input:focus {
 	cursor: pointer;
 }
 
-#mods_menu_bar.active > ul > li > ul > li.disabled {
+#mods_menu_bar.active > ul > li > ul > li.disabled span {
 	color: #B4B7BA;
 	cursor: default;
 }

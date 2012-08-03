@@ -277,6 +277,16 @@
 				}
 			} ]
 		}, {
+			label : 'Help',
+			enabled : true,
+			action : activateMenu, 
+			items : [ {
+				label : 'MODS Outline of Elements',
+				enabled : true,
+				binding : null,
+				action : "http://www.loc.gov/standards/mods/mods-outline.html"
+			} ]
+		}, {
 			label : 'MODS',
 			enabled : true,
 			action : function() {
@@ -290,7 +300,6 @@
 				modsTabContainer.tabs('select', 1);
 			}, itemClass : 'header_mode_tab'
 		} ];
-		
 		if (options.enableGUIKeybindings)
 			$(window).keydown(keydownCallback);
 		if (options.confirmExitWhenUnsubmitted) {
@@ -319,10 +328,6 @@
 		function setupEditor(xmlString) {
 			constructEditor();
 			setXMLFromString(xmlString);
-			// Make the mods content panel point back to the root of the xml
-			modsContent.data("mods", {
-				"elementNode": xml.children().first()
-			});
 			// Top level element menu points to mods content as its target
 			$("#" + options.addTopMenuId).data("mods", {
 				'target': modsContent
@@ -368,6 +373,7 @@
 			}
 			
 			modsContent = $("<div id='" + options.modsContentId + "'/>");
+			modsContent.data("mods", {});
 			$(window).resize(function() {
 				selected = modsTabContainer.tabs('option', 'selected');
 				modsTabContainer.width(modsEditorContainer.outerWidth() - menuColumn.outerWidth());
@@ -376,10 +382,12 @@
 				} else {
 					resizeXMLEditor();
 				}
+				editorHeader.width(modsTabContainer.width());
 				if (options.floatingMenu) {
 					setMenuPosition();
 				}
 			});
+			$("<div/>").attr("class", "placeholder").html("There are no elements in this document.  Use the menu on the right to add new top level elements.").appendTo(modsContent);
 			
 			guiContent.append(modsContent);
 			
@@ -417,15 +425,19 @@
 			$("#" + options.submitButtonId).click(function() {
 				saveXML();
 			});
+			$(window).resize();
 		}
 		
 		function selectElement(selected) {
-			var selectedElement;
-			if (selected instanceof jQuery){
-				selectedElement = selected;
-			} else {
-				selected.stopPropagation();
-				selectedElement = $(this);
+			var selectedElement = null;
+			if (selected != null){
+				if (selected instanceof jQuery){
+					if (selected.length > 0)
+						selectedElement = selected;
+				} else {
+					selected.stopPropagation();
+					selectedElement = $(this);
+				}
 			}
 			
 			changeSelectedElement(selectedElement);
@@ -438,8 +450,7 @@
 				clearMenu(options.addAttrMenuId);
 			} else {
 				selected.addClass("selected");
-				populateMenu(selected, selected.data('mods').elementType, options.addElementMenuId);
-				populateAttributeMenu(selected, selected.data('mods').elementType, options.addAttrMenuId);
+				refreshContextualMenus(selected, selected.data('mods').elementType);
 			}
 		}
 		
@@ -484,6 +495,12 @@
 				menu.data('mods').target = null;
 			}
 			menuHeader.addClass('disabled');
+		}
+		
+		function refreshContextualMenus(targetElement, elementType) {
+			populateMenu(targetElement, elementType, options.addElementMenuId);
+			populateAttributeMenu(targetElement, elementType, options.addAttrMenuId);
+			setMenuPosition();
 		}
 		
 		function populateMenu(guiTarget, element, menuId) {
@@ -810,6 +827,7 @@
 				}
 			}
 			xml = $(xmlDoc);
+			modsContent.data("mods").elementNode = xml.children().first();
 			clearProblemPanel();
 		}
 		
@@ -950,7 +968,6 @@
 			      })[instanceNumber];
 				if (elementNode == null)
 					return;
-				//var xPath = getXPath(targetJQuery);
 				
 				var dummyTargetNode = $("<div/>").attr('id', prefixedTitle + "_" + instanceNumber).data("mods", {"elementNode" : $(elementNode)});
 				
@@ -968,9 +985,8 @@
 					clearMenu(options.addAttrMenuId);
 					return;
 				}
-					
-				populateMenu(dummyTargetNode, elementType, options.addElementMenuId);
-				populateAttributeMenu(dummyTargetNode, elementType, options.addAttrMenuId);
+				
+				refreshContextualMenus(dummyTargetNode, elementType);
 				
 				setMenuPosition();
 				
@@ -1280,6 +1296,8 @@
 			var tabContent = addElementTab(guiElement.attr("id") + "_tab_elements", contentContainer, listContainer, "Subelements");
 			tabContent.addClass(options.childrenContainerClass);
 			
+			$("<div/>").addClass("placeholder").html("Use the menu on the right to add subelements.").appendTo(tabContent);
+			
 			var count = 0;
 			// Add all the subchildren
 			guiElement.data("mods").elementNode.children().each(function() {
@@ -1301,6 +1319,8 @@
 			// Generate the tab
 			var tabContent = addElementTab(guiElement.attr("id") + "_tab_attr", contentContainer, listContainer, "Attributes");
 			tabContent.addClass(options.attributesContainerClass);
+			
+			$("<div/>").addClass("placeholder").html("Use the menu on the right to add attributes.").appendTo(tabContent);
 			
 			var count = 0;
 			$(guiElement.data("mods").elementNode[0].attributes).each(function(){
@@ -1651,6 +1671,7 @@
 					$("#" + selectedElement.attr('id') + "_del").click();
 					
 					selectElement(afterDeleteSelection);
+					return false;
 				}
 				
 				if (e.keyCode > 36 && e.keyCode < 41 && focused.length == 0){
@@ -1734,13 +1755,11 @@
 					} else return true;
 				}
 				
-				if (!e.metaKey || focused.length > 0)
-					return true;
-				if (e.keyCode == 'Z'.charCodeAt(0)) {
+				if (e.metaKey && focused.length == 0 && e.keyCode == 'Z'.charCodeAt(0)) {
 					// Undo
 					changeUndoHead(e.shiftKey? 1: -1);
 					return false;
-				} else if (e.keyCode == 'Y'.charCodeAt(0)){
+				} else if (e.metaKey && focused.length == 0 && e.keyCode == 'Y'.charCodeAt(0)){
 					// Redo
 					changeUndoHead(1);
 					return false;
@@ -1785,6 +1804,10 @@
 		}
 		
 		function activateMenu(event) {
+			if (menuBarContainer.hasClass("active")) {
+				menuBarContainer.removeClass("active");
+				return;
+			}
 			menuBarContainer.addClass("active");
 			menuBarContainer.children("ul").children("li").click(function (event) {
 				event.stopPropagation();
@@ -1809,12 +1832,17 @@
 		}
 		
 		function generateMenuItem(menuItemData, parentMenu) {
-			var menuItem = $("<li/>").html("<span>" + menuItemData.label + "</span>").appendTo(parentMenu);
+			var menuItem = $("<li/>").appendTo(parentMenu);
+			var menuItemLink = $("<a/>").appendTo(menuItem).html("<span>" + menuItemData.label + "</span>");
 			if (menuItemData.binding) {
-				menuItem.append("<span class='binding'>" + menuItemData.binding + "</span>");
+				menuItemLink.append("<span class='binding'>" + menuItemData.binding + "</span>");
 			}
 			if (menuItemData.action != null) {
-				menuItem.click(menuItemData.action);
+				if (Object.prototype.toString.call(menuItemData.action) == '[object Function]'){
+					menuItem.click(menuItemData.action);
+				} else {
+					menuItemLink.attr({"href": menuItemData.action, "target" : "_blank"});
+				}
 			}
 			if (!menuItemData.enabled) {
 				menuItem.addClass("disabled");
