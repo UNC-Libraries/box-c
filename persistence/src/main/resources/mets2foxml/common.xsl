@@ -313,10 +313,8 @@
         <xsl:param name="allowIndexing" required="yes"/>
         <xsl:variable name="adms" select="key('amdid',@ADMID)"/>
         <xsl:if test="count($adms) &gt; 0">
-            <xsl:message>found amdSec <xsl:copy-of select="$adms"/></xsl:message>
             <xsl:if test="$adms/m:mdWrap/m:xmlData/acl:accessControl">
                 <xsl:variable name="acl" select="$adms/m:mdWrap/m:xmlData/acl:accessControl"/>
-                <xsl:message>got an ACL</xsl:message>
                 <xsl:if test="$acl/@acl:embargo-until">
                     <xsl:element name="embargo-until"
                         namespace="http://cdr.unc.edu/definitions/acl#"><xsl:attribute
