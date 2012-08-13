@@ -49,6 +49,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -92,6 +94,17 @@ public class FormController {
 	public void setClamScan(ClamScan clamScan) {
 		this.clamScan = clamScan;
 	}
+	
+	@Autowired
+	public JavaMailSender mailSender = null;
+
+	public JavaMailSender getMailSender() {
+		return mailSender;
+	}
+
+	public void setMailSender(JavaMailSender mailSender) {
+		this.mailSender = mailSender;
+	}
 
 	public FormController() {
 		rs = new ResourceSetImpl();
@@ -134,6 +147,28 @@ public class FormController {
 
 	public void setAdministratorEmail(String administratorEmail) {
 		this.administratorEmail = administratorEmail;
+	}
+	
+	@Autowired
+	public String repositoryFromEmail = null;
+
+	public String getRepositoryFromEmail() {
+		return repositoryFromEmail;
+	}
+
+	public void setRepositoryFromEmail(String repositoryFromEmail) {
+		this.repositoryFromEmail = repositoryFromEmail;
+	}
+	
+	@Autowired
+	public String recordURLPrefix = null;
+
+	public String getRecordURLPrefix() {
+		return recordURLPrefix;
+	}
+
+	public void setRecordURLPrefix(String recordURLPrefix) {
+		this.recordURLPrefix = recordURLPrefix;
 	}
 
 	@Autowired
@@ -216,8 +251,21 @@ public class FormController {
 			return "form";
 		}
 		
-		// TODO email notices
-
+		// email notices
+		if(this.mailSender != null) {
+			if(form.getEmailDepositNoticeTo().size() > 0) {
+				SimpleMailMessage msg = new SimpleMailMessage();
+				msg.setTo(form.getEmailDepositNoticeTo().toArray(new String[]{}));
+				msg.setFrom(this.repositoryFromEmail);
+				msg.setSubject("User "+form.getCurrentUser()+" made deposit via "+formId);
+				StringBuilder text = new StringBuilder();
+				text.append("Deposit Folder: "+this.recordURLPrefix+form.getDepositContainerId());
+				text.append("\nItem Record URL: "+result.getAccessURL());
+				msg.setText(text.toString());
+				this.mailSender.send(msg);
+			}
+		}
+		
 		// delete files
 		if(depositFile != null) depositFile.delete();
 		// clear session

@@ -17,12 +17,12 @@ package cdr.forms;
 
 public class DepositResult {
 	public static enum Status {COMPLETE, PENDING, UNKNOWN, FAILED};
-	private String objectPid;
-	public String getObjectPid() {
-		return objectPid;
+	private String accessURL;
+	public String getAccessURL() {
+		return accessURL;
 	}
-	public void setObjectPid(String objectPid) {
-		this.objectPid = objectPid;
+	public void setAccessURL(String accessURL) {
+		this.accessURL = accessURL;
 	}
 	public Status getStatus() {
 		return status;
