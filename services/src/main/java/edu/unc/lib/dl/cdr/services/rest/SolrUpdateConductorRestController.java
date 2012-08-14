@@ -135,15 +135,15 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 				if (o1 == o2)
 					return 0;
 				if (o1 == null)
-					return -1;
-				if (o2 == null)
 					return 1;
+				if (o2 == null)
+					return -1;
 				UpdateNodeRequest r1 = (UpdateNodeRequest)o1;
 				UpdateNodeRequest r2 = (UpdateNodeRequest)o2;
-				int compare = r1.getStatus().compareTo(r2.getStatus());
+				int compare = r2.getStatus().compareTo(r1.getStatus());
 				// Tie-break with timestamp
 				if (compare == 0) {
-					return (int) (o2.getTimeCreated() - o1.getTimeCreated());
+					return (int) (o1.getTimeCreated() - o2.getTimeCreated());
 				}
 				return compare;
 			}
