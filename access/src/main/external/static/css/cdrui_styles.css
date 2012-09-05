@@ -1107,14 +1107,15 @@ ul.crumblist li a {
 	line-height: 16px;
 	padding: 0px 5px 10px 5px;
 	margin: -5px 0px 10px 0px;
+	max-height: 500px;
 }
 
-#facet_field_path_structure:hover,#facet_field_path:hover #facet_field_path_structure
-	{
+#facet_field_path_structure:hover,#facet_field_path:hover #facet_field_path_structure {
 	position: relative;
-	overflow: visible !important;
+	overflow-x: visible !important;
+	overflow-y: auto;
 	display: inline-block;
-	/*max-width: 900px;*/
+	max-width: 600px;
 	min-width: 190px;
 	z-index: 999;
 	-webkit-box-shadow: 4px 4px 3px #cdcdcd;
@@ -1144,20 +1145,16 @@ ul.crumblist li a {
 	overflow: hidden;
 	display: inline-block;
 	vertical-align: text-bottom;
-	/*position: relative;*/
+	text-overflow: ellipsis;
+	max-width: 130px;
 }
 
 #facet_field_path_structure .hier_entry_primary_action {
 	*display: inline-block;
 }
 
-#facet_field_path_structure .hier_ellipsis {
-	
-}
-
-#facet_field_path_structure:hover .hier_ellipsis,#facet_field_path:hover #facet_field_path_structure .hier_ellipsis
-	{
-	display: none;
+#facet_field_path_structure:hover .hier_entry_primary_action {
+	max-width: inherit;
 }
 
 #facet_field_path_structure .hier_segment {

@@ -104,13 +104,6 @@ $(function() {
 					childrenContainer.show();
 					initiatingLink.removeClass("hier_container_not_loaded");
 					loadingImage.remove();
-					if ($(".hier_truncate").length > 0){
-						$("#hier_container_children_" + pid + " .hier_entry_primary_action").ellipsis({
-							ellipsisClass: "hier_ellipsis",
-							segmentClass: "hier_segment",
-							trailingSelector: ".hier_count"
-						});
-					}
 				},
 				error: function(xhr, ajaxOptions, thrownError){
 					loadingImage.remove();
