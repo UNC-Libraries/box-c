@@ -114,7 +114,7 @@ public class FailedObjectHashMap extends ConcurrentHashMap<String, FailedEnhance
 				if (exception != null)
 					exception.printStackTrace(writer);
 			} catch (IOException e) {
-				log.error("Failed to create failure log for " + pid.getPid() + " message " + message.getMessageID());
+				log.error("Failed to create failure log for " + pid.getPid() + " message " + message.getMessageID(), e);
 				return false;
 			} finally {
 				if (writer != null) {

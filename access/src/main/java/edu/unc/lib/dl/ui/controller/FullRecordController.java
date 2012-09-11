@@ -88,7 +88,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 			throw new InvalidRecordRequestException();
 		}
 
-		
+		boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder); 
 		boolean retrieveFacets = briefObject.getResourceType().equals(searchSettings.resourceTypeCollection) || briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
 		boolean retrieveNeighbors = briefObject.getResourceType().equals(searchSettings.resourceTypeFile)
 				|| briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
@@ -98,6 +98,10 @@ public class FullRecordController extends AbstractSolrSearchController {
 				|| briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
 		boolean retrieveHierarchicalItems = briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
 
+		if (retrieveChildrenCount) {
+			briefObject.setChildCount(queryLayer.getChildrenCount(briefObject, accessGroups));
+		}
+		
 		if (retrieveFacets) {
 			List<String> facetsToRetrieve = null;
 			if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)){
@@ -106,7 +110,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 				facetsToRetrieve = new ArrayList<String>();
 				facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE);
 			}
-			
 			
 			SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
 					accessGroups, facetsToRetrieve);

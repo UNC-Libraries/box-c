@@ -206,11 +206,13 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		MessageFailure messageFailure;
 		try {
 			FailedEnhancementObject failedObject = enhancementConductor.getFailedPids().getFailureByMessageID(id);
-			Map<String,String> failedServices = new HashMap<String,String>();
-			for (String failedService: failedObject.getFailedServices()){
-				failedServices.put(failedService, this.serviceNameLookup.get(failedService));
-			}
 			
+			Map<String,String> failedServices = new HashMap<String,String>();
+			if (failedObject != null && failedObject.getFailedServices() != null) {
+				for (String failedService: failedObject.getFailedServices()){
+					failedServices.put(failedService, this.serviceNameLookup.get(failedService));
+				}
+			}
 			messageFailure = this.enhancementConductor.getFailedPids().getMessageFailure(id);
 			Map<String, Object> jobInfo = getJobFullInfo(messageFailure.getMessage(), FAILED_PATH);
 			jobInfo.put("stackTrace", messageFailure.getFailureLog());			

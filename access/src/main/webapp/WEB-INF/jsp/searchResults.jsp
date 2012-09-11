@@ -21,7 +21,6 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
 
-<script type="text/javascript" src="/static/js/jquery.ellipsistruncate.js"></script>
 <script type="text/javascript" src="/static/js/searchResults.js"></script>
 <script type="text/javascript" src="/static/js/browseResults.js"></script>
 
