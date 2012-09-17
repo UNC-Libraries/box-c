@@ -15,8 +15,6 @@
  */
 package cdr.forms;
 
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.security.access.UserSecurityProfile;
 import gov.loc.mods.mods.DocumentRoot;
 import gov.loc.mods.mods.MODSFactory;
 import gov.loc.mods.mods.MODSPackage;
@@ -38,7 +36,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.eclipse.emf.common.util.URI;
@@ -113,17 +111,6 @@ public class FormController {
 	public void setDepositHandler(DepositHandler depositHandler) {
 		this.depositHandler = depositHandler;
 	}
-
-	@Autowired
-	private PID defaultContainer = null;
-
-	public PID getDefaultContainer() {
-		return defaultContainer;
-	}
-
-	public void setDefaultContainer(PID defaultContainer) {
-		this.defaultContainer = defaultContainer;
-	}
 	
 	@Autowired
 	public String administratorEmail = null;
@@ -146,6 +133,17 @@ public class FormController {
 	public void setFactory(AbstractFormFactory factory) {
 		this.factory = factory;
 	}
+	
+	@Autowired
+	private AuthorizationHandler authorizationHandler = null;
+
+	public AuthorizationHandler getAuthorizationHandler() {
+		return authorizationHandler;
+	}
+
+	public void setAuthorizationHandler(AuthorizationHandler authorizationHandler) {
+		this.authorizationHandler = authorizationHandler;
+	}
 
 	@InitBinder
    protected void initBinder(WebDataBinder binder) {
@@ -161,32 +159,17 @@ public class FormController {
 	}
 
 	@RequestMapping(value = "/{formId}.form", method = RequestMethod.GET)
-	public String showForm(@PathVariable String formId, @ModelAttribute("form") Form form, HttpSession session) throws PermissionDeniedException {
+	public String showForm(@PathVariable String formId, @ModelAttribute("form") Form form, HttpServletRequest request) throws PermissionDeniedException {
 		LOG.debug("in GET for form " + formId);
-		checkPermission(formId, form, session);
+		this.getAuthorizationHandler().checkPermission(formId, form, request);
 		return "form";
-	}
-
-	private void checkPermission(String formId, Form form, HttpSession session) throws PermissionDeniedException {
-		// check permissions
-		UserSecurityProfile profile = (UserSecurityProfile)session.getAttribute("user");
-		LOG.debug("in permission check with profile: "+profile.getAccessGroups().toArray().toString());
-		if(profile == null || profile.getUserName() == null) {
-			if(!form.getAuthorizedGroups().contains("public")) {
-				throw new PermissionDeniedException("You must first log in to use this deposit form.", profile, form, formId);
-			}
-		} else {
-			if(!profile.getAccessGroups().containsAny(form.getAuthorizedGroups())) {
-				throw new PermissionDeniedException("Your login is not authorized to use this form. Send email to "+this.getAdministratorEmail()+" to request access.", profile, form, formId);
-			}
-		}
 	}
 
 	@RequestMapping(value = "/{formId}.form", method = RequestMethod.POST)
 	public String processForm(@PathVariable String formId, @Valid @ModelAttribute("form") Form form, BindingResult errors,
-			Principal user, @RequestParam("file") MultipartFile mpfile, SessionStatus sessionStatus, HttpSession session) throws PermissionDeniedException {
+			Principal user, @RequestParam("file") MultipartFile mpfile, SessionStatus sessionStatus, HttpServletRequest request) throws PermissionDeniedException {
 		LOG.debug("in POST for form " + formId);
-		checkPermission(formId, form, session);
+		this.getAuthorizationHandler().checkPermission(formId, form, request);
 		if (user != null) form.setCurrentUser(user.getName());
 		String mods = makeMods(form);
 		LOG.debug(mods);
@@ -268,10 +251,9 @@ public class FormController {
 	@ExceptionHandler(PermissionDeniedException.class)
 	public ModelAndView handleForbidden(PermissionDeniedException e) {
 		ModelAndView modelview = new ModelAndView("403");
-		modelview.addObject("user", e.getUserSecurityProfile());
 		modelview.addObject("formId", e.getFormId());
 		modelview.addObject("form", e.getForm());
-		modelview.addObject("message", e.getMessage());
+		modelview.addObject("message", e.getMessage()+"<br/><br/>Send email to "+this.getAdministratorEmail()+" to request access.");
 		return modelview;
 	}
 	

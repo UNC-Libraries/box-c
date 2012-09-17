@@ -20,7 +20,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.abdera.Abdera;
@@ -33,70 +36,98 @@ import org.apache.abdera.parser.stax.FOMExtensibleElement;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.Namespace;
+import org.jdom.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cdr.forms.DepositResult.Status;
 
-import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
 public class SwordDepositHandler implements DepositHandler {
-	
-	@SuppressWarnings("unused") 
+
+	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(SwordDepositHandler.class);
-	
+
 	private String serviceUrl;
 	private String username;
 	private String password;
+
 	public String getServiceUrl() {
 		return serviceUrl;
 	}
+
 	public void setServiceUrl(String serviceUrl) {
 		this.serviceUrl = serviceUrl;
 	}
+
 	public String getUsername() {
 		return username;
 	}
+
 	public void setUsername(String username) {
 		this.username = username;
 	}
+
 	public String getPassword() {
 		return password;
 	}
+
 	public void setPassword(String password) {
 		this.password = password;
 	}
 	
-	/* (non-Javadoc)
+	private String defaultContainer = null;
+
+	public String getDefaultContainer() {
+		return defaultContainer;
+	}
+
+	/**
+	 * Set the default deposit container. String should be appropriate
+	 * @param defaultContainer
+	 */
+	public void setDefaultContainer(String defaultContainer) {
+		this.defaultContainer = defaultContainer;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see cdr.forms.DepositHandler#deposit(java.lang.String, java.lang.String, java.io.InputStream)
 	 */
 	@Override
-	public DepositResult deposit(String containerPid, String modsXml, String title, File depositData) {
-      Abdera abdera = Abdera.getInstance();
-      Factory factory = abdera.getFactory();
-      Entry entry = factory.newEntry();
-      String pid = "uuid:"+UUID.randomUUID().toString();
-		entry.setId("urn:"+pid);
+	public DepositResult deposit(String containerId, String modsXml, String title, File depositData) {
+		if(containerId == null) containerId = this.getDefaultContainer();
+		Abdera abdera = Abdera.getInstance();
+		Factory factory = abdera.getFactory();
+		Entry entry = factory.newEntry();
+		String pid = "uuid:" + UUID.randomUUID().toString();
+		entry.setId("urn:" + pid);
 		entry.setSummary("mods and binary deposit", Type.TEXT);
 		entry.setTitle(title);
 		entry.setUpdated(new Date(System.currentTimeMillis()));
 		Parser parser = abdera.getParser();
 		Document<FOMExtensibleElement> doc = parser.parse(new ByteArrayInputStream(modsXml.getBytes()));
 		entry.addExtension(doc.getRoot());
-		
+
 		StringWriter swEntry = new StringWriter();
 		try {
 			entry.writeTo(swEntry);
 		} catch (IOException e2) {
 			throw new Error(e2);
 		}
-		
+
 		FilePart payloadPart;
 		try {
 			payloadPart = new FilePart("payload", title, depositData);
@@ -105,17 +136,16 @@ public class SwordDepositHandler implements DepositHandler {
 		}
 		payloadPart.setContentType("binary/octet-stream");
 		payloadPart.setTransferEncoding("binary");
-		
-		FilePart atomPart = new FilePart("atom", 
-				new ByteArrayPartSource("atom", swEntry.toString().getBytes()), "application/atom+xml", "utf-8");
-		
-		Part[] parts = {
-		      payloadPart,
-		      atomPart
-		  };
-		
-		String depositPath = getServiceUrl() + "collection/" + containerPid;
-		HttpClient client = HttpClientUtil.getAuthenticatedClient(depositPath, this.getUsername(), this.getPassword());
+
+		FilePart atomPart = new FilePart("atom", new ByteArrayPartSource("atom", swEntry.toString().getBytes()),
+				"application/atom+xml", "utf-8");
+
+		Part[] parts = { payloadPart, atomPart };
+
+		String depositPath = getServiceUrl() + "collection/" + containerId;
+		HttpClient client = new HttpClient();
+		UsernamePasswordCredentials creds = new UsernamePasswordCredentials(this.getUsername(), this.getPassword());
+		client.getState().setCredentials(getAuthenticationScope(depositPath), creds);
 		client.getParams().setAuthenticationPreemptive(true);
 		PostMethod post = new PostMethod(depositPath);
 		RequestEntity multipartEntity = new MultipartRequestEntity(parts, post.getParams());
@@ -127,16 +157,31 @@ public class SwordDepositHandler implements DepositHandler {
 		int responseCode;
 
 		DepositResult result = new DepositResult();
-		result.setObjectPid(pid);
+		// result.setObjectPid(pid);
 		try {
 			responseCode = client.executeMethod(post);
-			if(responseCode >= 300) {
+			if (responseCode >= 300) {
 				LOG.error(String.valueOf(responseCode));
 				LOG.error(post.getResponseBodyAsString());
 				result.setStatus(Status.FAILED);
 			} else {
 				result.setStatus(Status.COMPLETE);
 			}
+			SAXBuilder sx = new SAXBuilder();
+			try {
+				org.jdom.Document d = sx.build(post.getResponseBodyAsStream());
+				Namespace atom = d.getRootElement().getNamespace();
+				List<Element> links = d.getRootElement().getChildren("link", atom);
+				for (Element el : links) {
+					if ("alternate".equals(el.getAttributeValue("rel"))) {
+						String accessURL = el.getAttributeValue("href");
+						result.setAccessURL(accessURL);
+					}
+				}
+			} catch (JDOMException e) {
+				LOG.error("There was a problem parsing the SWORD response.", e);
+			}
+			LOG.debug("response was: \n" + post.getResponseBodyAsString());
 		} catch (HttpException e) {
 			LOG.error("Exception during SWORD deposit", e);
 			throw new Error(e);
@@ -145,5 +190,37 @@ public class SwordDepositHandler implements DepositHandler {
 			throw new Error(e);
 		}
 		return result;
+	}
+
+	/**
+	 * Generates a limited authentication scope for the supplied URL, so that an HTTP client will not send username and
+	 * passwords to other URLs.
+	 * 
+	 * @param queryURL
+	 *           the URL for the query.
+	 * @return an authentication scope tuned to the requested URL.
+	 * @throws IllegalArgumentException
+	 *            if <code>queryURL</code> is not a well-formed URL.
+	 */
+	public static AuthScope getAuthenticationScope(String queryURL) {
+		if (queryURL == null) {
+			throw new NullPointerException("Cannot derive authentication scope for null URL");
+		}
+		try {
+			URL url = new URL(queryURL);
+			// port defaults to 80 unless the scheme is https
+			// or the port is explicitly set in the URL.
+			int port = 80;
+			if (url.getPort() == -1) {
+				if ("https".equals(url.getProtocol())) {
+					port = 443;
+				}
+			} else {
+				port = url.getPort();
+			}
+			return new AuthScope(url.getHost(), port);
+		} catch (MalformedURLException mue) {
+			throw new IllegalArgumentException("supplied URL <" + queryURL + "> is ill-formed:" + mue.getMessage());
+		}
 	}
 }

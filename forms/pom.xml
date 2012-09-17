@@ -35,29 +35,6 @@
 			<version>2.7.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.irods.jargon</groupId>
-			<artifactId>jargon-core</artifactId>
-			<version>3.1.1-SNAPSHOT</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>de.stefanheintz</groupId>
-			<artifactId>logjmxservice</artifactId>
-			<version>1.1.1</version>
-			<type>jar</type>
-			<scope>compile</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>spring</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jms</artifactId>
-					<groupId>javax.jms</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 			<version>${spring.version}</version>
@@ -80,18 +57,12 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.1</version>
-			<scope>compile</scope>
+			<version>1.6.4</version>
 		</dependency>
 		<dependency>
 			<groupId>curators.workbench</groupId>
 			<artifactId>crosswalk-gmf</artifactId>
 			<version>4.0.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-			<version>3.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -114,9 +85,29 @@
 			<version>1.5.0</version>
 		</dependency>
 		<dependency>
-			<groupId>edu.unc.lib.cdr</groupId>
-			<artifactId>metadata</artifactId>
-			<version>3.0</version>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>1.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.philvarner.clamavj</groupId>
+			<artifactId>clamavj</artifactId>
+			<version>0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.5</version>
+		</dependency>
+		<dependency>
+			<groupId>jdom</groupId>
+			<artifactId>jdom</artifactId>
+			<version>1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -124,9 +115,9 @@
 			<version>4.3.0.Final</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-fileupload</groupId>
-			<artifactId>commons-fileupload</artifactId>
-			<version>1.2.2</version>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>3.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -134,19 +125,24 @@
 			<version>2.3</version>
 		</dependency>
 		<dependency>
-			<groupId>edu.unc.lib.cdr</groupId>
-			<artifactId>access-security</artifactId>
-			<version>3.0</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.abdera</groupId>
-			<artifactId>abdera-client</artifactId>
+			<artifactId>abdera-parser</artifactId>
 			<version>1.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.philvarner.clamavj</groupId>
 			<artifactId>clamavj</artifactId>
 			<version>0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
 		</dependency>
 	</dependencies>
 	<build>
