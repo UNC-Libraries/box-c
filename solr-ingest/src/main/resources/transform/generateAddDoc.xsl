@@ -11,7 +11,8 @@
 		xmlns:ns6="info:fedora/fedora-system:def/model#"
 		xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
 		xmlns:mods="http://www.loc.gov/mods/v3"
-		xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/">
+		xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+		xmlns:fn="http://www.w3.org/2005/xpath-functions">
 		
 	<xsl:import href="/xsl/languageMappings.xsl"/>
 	<xsl:import href="cdr-functions.xsl" />
@@ -101,8 +102,26 @@
 		</xsl:if>
 	</xsl:template>
 	
-	<xsl:template match="mods:name/mods:affiliation">
+	<xsl:template match="mods:name/mods:affiliation" mode="exact">
 		<field name="department"><xsl:value-of select="."/></field>
+	</xsl:template>
+	
+	<xsl:template match="mods:name/mods:affiliation" mode="split">
+		<xsl:variable name="trimmeddept" select="fn:normalize-space()"/>
+		<xsl:variable name="uncdept" select="fn:normalize-space(fn:substring-before(text(), ', University of North Carolina at Chapel Hill'))"/>
+		<xsl:choose>
+			<xsl:when test="boolean($uncdept) and $uncdept != $trimmeddept">
+				<field name="department"><xsl:value-of select="fn:normalize-space($uncdept)"/></field>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:variable name="chdept" select="fn:normalize-space(fn:substring-before(text(), ', Chapel Hill, North Carolina'))"/>
+				<xsl:choose>
+					<xsl:when test="boolean($chdept) and $chdept != $trimmeddept">
+						<field name="department"><xsl:value-of select="fn:normalize-space($chdept)"/></field>
+					</xsl:when>
+				</xsl:choose>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	
 	<xsl:template match="mods:genre">
@@ -150,6 +169,7 @@
 	
 	<xsl:template match="mods:mods" mode="modsDocument">
 		<xsl:param name="uuid" />
+		<xsl:param name="departmentSplitting" />
 		<!-- Get titles -->
 		<xsl:variable name="plainTitle" select="mods:titleInfo[not(@type) or @type != 'alternative'][1]/mods:title"></xsl:variable>
 		<xsl:choose>
@@ -188,8 +208,16 @@
 		<field name="abstract"><xsl:value-of select="mods:abstract[1]"/></field>
 		
 		<xsl:apply-templates select="mods:subject" mode="modsSubject"/>
-
-		<xsl:apply-templates select="mods:name/mods:affiliation"/>
+		<xsl:message>grop<xsl:value-of select="$departmentSplitting"/></xsl:message>
+		<xsl:choose>
+			<xsl:when test="$departmentSplitting = true()">
+				<xsl:apply-templates select="mods:name/mods:affiliation" mode="split"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates select="mods:name/mods:affiliation" mode="exact"/>
+			</xsl:otherwise>
+		</xsl:choose>
+		
 		
 		<xsl:apply-templates select="mods:language/mods:languageTerm"/>
 
@@ -392,6 +420,18 @@
 					</xsl:otherwise>
 				</xsl:choose>
 				
+				<xsl:for-each select="$pathObjects">
+					<xsl:message><xsl:value-of select="@slug"/></xsl:message>
+				</xsl:for-each>
+				
+				<xsl:variable name="departmentSplitting">
+					<xsl:choose>
+						<xsl:when test="count($pathObjects) > 3 and fn:contains($pathObjects[3]/@slug, 'BioMed_Central')"><xsl:value-of select="true()"/></xsl:when>
+						<xsl:otherwise><xsl:value-of select="false()"/></xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+				<xsl:message>greep<xsl:value-of select="$departmentSplitting"/></xsl:message>
+				
 				
 				<!-- Access control -->
 				<xsl:apply-templates select="/view-inputs/permissions/rights/permitMetadataRead"/>
@@ -438,7 +478,9 @@
 				<xsl:choose>
 					<xsl:when test="$hasMods">
 						<xsl:variable name="mostRecentDate" select="cdr-fn:getMostRecentDate('', /view-inputs/foxml:digitalObject/foxml:datastream[@ID='MD_DESCRIPTIVE']/foxml:datastreamVersion[1])"/>
-						<xsl:apply-templates select="/view-inputs/foxml:digitalObject/foxml:datastream[@ID='MD_DESCRIPTIVE']/foxml:datastreamVersion[@CREATED = $mostRecentDate]/foxml:xmlContent/mods:mods[1]" mode="modsDocument"/>
+						<xsl:apply-templates select="/view-inputs/foxml:digitalObject/foxml:datastream[@ID='MD_DESCRIPTIVE']/foxml:datastreamVersion[@CREATED = $mostRecentDate]/foxml:xmlContent/mods:mods[1]" mode="modsDocument">
+							<xsl:with-param name="departmentSplitting" select="$departmentSplitting"></xsl:with-param>
+						</xsl:apply-templates>
 					</xsl:when>
 					<xsl:when test="$hasDC">
 						<xsl:variable name="mostRecentDate" select="cdr-fn:getMostRecentDate('', /view-inputs/foxml:digitalObject/foxml:datastream[@ID='DC']/foxml:datastreamVersion)"/>

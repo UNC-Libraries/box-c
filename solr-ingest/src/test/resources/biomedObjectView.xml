@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view-inputs>
+<foxml:digitalObject xmlns:foxml="info:fedora/fedora-system:def/foxml#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" VERSION="1.1" PID="uuid:a2300b53-7de9-4981-a480-0fe457cccda2" xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+<foxml:objectProperties>
+<foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="A comprehensive system for evaluation of remote sequence similarity detection"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE=""/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2012-08-24T01:06:58.781Z"/>
+<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2012-09-26T19:11:19.810Z"/>
+</foxml:objectProperties>
+<foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="AUDIT.0" LABEL="Audit Trail for this object" CREATED="2012-08-24T01:06:58.781Z" MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+<foxml:xmlContent>
+<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+<audit:record ID="AUDREC1">
+<audit:process type="Fedora API-M"/>
+<audit:action>ingest</audit:action>
+<audit:componentID/>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-08-24T01:06:58.781Z</audit:date>
+<audit:justification>uuid:9f2fe102-4f8d-407b-9189-0956094c2c7d</audit:justification>
+</audit:record>
+<audit:record ID="AUDREC2">
+<audit:process type="Fedora API-M"/>
+<audit:action>modifyDatastreamByValue</audit:action>
+<audit:componentID>MD_DESCRIPTIVE</audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-09-26T19:11:19.810Z</audit:date>
+<audit:justification/>
+</audit:record>
+</audit:auditTrail>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="RELS-EXT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="RELS-EXT.0" LABEL="Fedora Object-to-Object Relationship Metadata" CREATED="2012-08-24T01:06:58.798Z" MIMETYPE="text/xml" SIZE="1820">
+<foxml:contentDigest TYPE="MD5" DIGEST="c1a0b936b29b027859718fdeaf45096e"/>
+<foxml:xmlContent>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns5="http://cdr.unc.edu/definitions/1.0/base-model.xml#" xmlns:ns6="info:fedora/fedora-system:def/model#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+<rdf:Description rdf:about="info:fedora/uuid:a2300b53-7de9-4981-a480-0fe457cccda2">
+<ns5:allowIndexing>yes</ns5:allowIndexing>
+<ns5:contains rdf:resource="info:fedora/uuid:7379cafc-6af8-4926-9635-ed29bbfceebc"/>
+<ns5:contains rdf:resource="info:fedora/uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe"/>
+<ns5:contains rdf:resource="info:fedora/uuid:de166187-b40c-4151-81db-50a2eb5915eb"/>
+<ns5:defaultWebObject rdf:resource="info:fedora/uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe"/>
+<ns5:originalDeposit rdf:resource="info:fedora/uuid:9f2fe102-4f8d-407b-9189-0956094c2c7d"/>
+<ns5:owner rdf:resource="info:fedora/uuid:ca7e3178-e603-4e71-b49b-21f15ddd3887"/>
+<ns5:slug>A_comprehensive_system_for_evaluation_of_remote_s</ns5:slug>
+<ns6:hasModel rdf:resource="info:fedora/cdr-model:AggregateWork"/>
+<ns6:hasModel rdf:resource="info:fedora/cdr-model:Container"/>
+<ns6:hasModel rdf:resource="info:fedora/cdr-model:PreservedObject"/>
+</rdf:Description>
+</rdf:RDF>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_DESCRIPTIVE" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+<foxml:datastreamVersion ID="MD_DESCRIPTIVE.0" LABEL="Descriptive Metadata" CREATED="2012-08-24T01:06:58.799Z" MIMETYPE="text/xml" SIZE="7632">
+<foxml:contentDigest TYPE="MD5" DIGEST="1e8ac19c2e215ea522090b4aad577a8b"/>
+<foxml:xmlContent>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:rights="http://www.cdlib.org/inside/diglib/copyrightMD" xmlns:epdcx="http://purl.org/eprint/epdcx/2006-11-16/" xmlns:xlink2="http://www.w3.org/1999/xlink">
+<mods:titleInfo>
+<mods:title>
+A comprehensive system for evaluation of remote sequence similarity detection
+</mods:title>
+</mods:titleInfo>
+<mods:abstract>
+Abstract Background Accurate and sensitive performance evaluation is crucial for both effective development of better structure prediction methods based on sequence similarity, and for the comparative analysis of existing methods. Up to date, there has been no satisfactory comprehensive evaluation method that (i) is based on a large and statistically unbiased set of proteins with clearly defined relationships; and (ii) covers all performance aspects of sequence-based structure predictors, such as sensitivity and specificity, alignment accuracy and coverage, and structure template quality. Results With the aim of designing such a method, we (i) select a statistically balanced set of divergent protein domains from SCOP, and define similarity relationships for the majority of these domains by complementing the best of information available in SCOP with a rigorous SVM-based algorithm; and (ii) develop protocols for the assessment of similarity detection and alignment quality from several complementary perspectives. The evaluation of similarity detection is based on ROC-like curves and includes several complementary approaches to the definition of true/false positives. Reference-dependent approaches use the 'gold standard' of pre-defined domain relationships and structure-based alignments. Reference-independent approaches assess the quality of structural match predicted by the sequence alignment, with respect to the whole domain length (global mode) or to the aligned region only (local mode). Similarly, the evaluation of alignment quality includes several reference-dependent and -independent measures, in global and local modes. As an illustration, we use our benchmark to compare the performance of several methods for the detection of remote sequence similarities, and show that different aspects of evaluation reveal different properties of the evaluated methods, highlighting their advantages, weaknesses, and potential for further development. Conclusion The presented benchmark provides a new tool for a statistically unbiased assessment of methods for remote sequence similarity detection, from various complementary perspectives. This tool should be useful both for users choosing the best method for a given purpose, and for developers designing new, more powerful methods. The benchmark set, reference alignments, and evaluation codes can be downloaded from ftp://iole.swmed.edu/pub/evaluation/.
+</mods:abstract>
+<mods:language>
+<mods:languageTerm type="code" authority="iso639-2b">eng</mods:languageTerm>
+</mods:language>
+<mods:typeOfResource>text</mods:typeOfResource>
+<mods:genre authorityURI="http://purl.org/eprint/type/" valueURI="http://purl.org/eprint/type/JournalArticle" type="work type">Journal Article</mods:genre>
+<mods:originInfo>
+<mods:publisher>BioMed Central Ltd</mods:publisher>
+<mods:dateIssued>2007-08-28</mods:dateIssued>
+</mods:originInfo>
+<mods:genre authority="local">Peer Reviewed</mods:genre>
+<mods:accessCondition>
+<rights:copyright copyright.status="copyrighted" publication.status="published">
+<rights:rights.holder>
+<rights:name>Yuan Qi et al.; licensee BioMed Central Ltd.</rights:name>
+</rights:rights.holder>
+</rights:copyright>
+</mods:accessCondition>
+<mods:accessCondition type="use and reproduction" xlink2:href="http://creativecommons.org/licenses/by/2.0"/>
+<mods:accessCondition type="restriction on access">Open Access</mods:accessCondition>
+<mods:note type="citation/reference">BMC Bioinformatics. 2007 Aug 28;8(1):314</mods:note>
+<mods:location>
+<mods:url>http://dx.doi.org/10.1186/1471-2105-8-314</mods:url>
+</mods:location>
+<mods:identifier type="pmpid" displayLabel="PMID">17725841</mods:identifier>
+<mods:identifier type="doi">10.1186/1471-2105-8-314</mods:identifier>
+<mods:name>
+<mods:namePart>Qi, Yuan</mods:namePart>
+<mods:affiliation>Department of Biochemistry</mods:affiliation>
+<mods:affiliation>Lineberger Comprehensive Cancer Center</mods:affiliation>
+</mods:name>
+<mods:name>
+<mods:namePart>Sadreyev, Ruslan I</mods:namePart>
+<mods:affiliation>Howard Hughes Medical Institute</mods:affiliation>
+</mods:name>
+<mods:name>
+<mods:namePart>Wang, Yong</mods:namePart>
+<mods:affiliation>Department of Biochemistry</mods:affiliation>
+</mods:name>
+<mods:name>
+<mods:namePart>Kim, Bong-Hyun</mods:namePart>
+<mods:affiliation>Department of Biochemistry</mods:affiliation>
+</mods:name>
+<mods:name>
+<mods:namePart>Grishin, Nick V</mods:namePart>
+<mods:affiliation>Howard Hughes Medical Institute</mods:affiliation>
+<mods:affiliation>Department of Biochemistry</mods:affiliation>
+</mods:name>
+<mods:relatedItem type="otherFormat" displayLabel="Source">
+<mods:titleInfo>
+<mods:title>BMC Bioinformatics</mods:title>
+</mods:titleInfo>
+<mods:identifier type="issn">1471-2105</mods:identifier>
+<mods:originInfo>
+<mods:dateIssued>2007</mods:dateIssued>
+</mods:originInfo>
+<mods:part>
+<mods:detail type="volume">
+<mods:number>8</mods:number>
+<mods:caption>vol.</mods:caption>
+</mods:detail>
+<mods:detail type="issue">
+<mods:number>1</mods:number>
+<mods:caption>issue</mods:caption>
+</mods:detail>
+</mods:part>
+<mods:part>
+<mods:extent unit="page">
+<mods:start>314</mods:start>
+</mods:extent>
+</mods:part>
+</mods:relatedItem>
+</mods:mods>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+<foxml:datastreamVersion ID="MD_DESCRIPTIVE.1" LABEL="Descriptive Metadata" CREATED="2012-09-26T19:11:19.810Z" MIMETYPE="text/xml" SIZE="6862">
+<foxml:contentDigest TYPE="MD5" DIGEST="c63a0457ffdaa4c0cdb3a5ef154a52aa"/>
+<foxml:xmlContent>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:epdcx="http://purl.org/eprint/epdcx/2006-11-16/" xmlns:rights="http://www.cdlib.org/inside/diglib/copyrightMD" xmlns:xlink2="http://www.w3.org/1999/xlink">
+<mods:titleInfo>
+<mods:title>
+A comprehensive system for evaluation of remote sequence similarity detection
+</mods:title>
+</mods:titleInfo>
+<mods:abstract>
+Abstract Background Accurate and sensitive performance evaluation is crucial for both effective development of better structure prediction methods based on sequence similarity, and for the comparative analysis of existing methods. Up to date, there has been no satisfactory comprehensive evaluation method that (i) is based on a large and statistically unbiased set of proteins with clearly defined relationships; and (ii) covers all performance aspects of sequence-based structure predictors, such as sensitivity and specificity, alignment accuracy and coverage, and structure template quality. Results With the aim of designing such a method, we (i) select a statistically balanced set of divergent protein domains from SCOP, and define similarity relationships for the majority of these domains by complementing the best of information available in SCOP with a rigorous SVM-based algorithm; and (ii) develop protocols for the assessment of similarity detection and alignment quality from several complementary perspectives. The evaluation of similarity detection is based on ROC-like curves and includes several complementary approaches to the definition of true/false positives. Reference-dependent approaches use the 'gold standard' of pre-defined domain relationships and structure-based alignments. Reference-independent approaches assess the quality of structural match predicted by the sequence alignment, with respect to the whole domain length (global mode) or to the aligned region only (local mode). Similarly, the evaluation of alignment quality includes several reference-dependent and -independent measures, in global and local modes. As an illustration, we use our benchmark to compare the performance of several methods for the detection of remote sequence similarities, and show that different aspects of evaluation reveal different properties of the evaluated methods, highlighting their advantages, weaknesses, and potential for further development. Conclusion The presented benchmark provides a new tool for a statistically unbiased assessment of methods for remote sequence similarity detection, from various complementary perspectives. This tool should be useful both for users choosing the best method for a given purpose, and for developers designing new, more powerful methods. The benchmark set, reference alignments, and evaluation codes can be downloaded from ftp://iole.swmed.edu/pub/evaluation/.
+</mods:abstract>
+<mods:language>
+<mods:languageTerm authority="iso639-2b" type="code">eng</mods:languageTerm>
+</mods:language>
+<mods:typeOfResource>text</mods:typeOfResource>
+<mods:genre authorityURI="http://purl.org/eprint/type/" type="work type" valueURI="http://purl.org/eprint/type/JournalArticle">Journal Article</mods:genre>
+<mods:originInfo>
+<mods:publisher>BioMed Central Ltd</mods:publisher>
+<mods:dateIssued>2007-08-28</mods:dateIssued>
+</mods:originInfo>
+<mods:genre authority="local">Peer Reviewed</mods:genre>
+<mods:accessCondition>
+<rights:copyright copyright.status="copyrighted" publication.status="published">
+<rights:rights.holder>
+<rights:name>Yuan Qi et al.; licensee BioMed Central Ltd.</rights:name>
+</rights:rights.holder>
+</rights:copyright>
+</mods:accessCondition>
+<mods:accessCondition type="use and reproduction" xlink2:href="http://creativecommons.org/licenses/by/2.0"/>
+<mods:accessCondition type="restriction on access">Open Access</mods:accessCondition>
+<mods:note type="citation/reference">BMC Bioinformatics. 2007 Aug 28;8(1):314</mods:note>
+<mods:location>
+<mods:url>http://dx.doi.org/10.1186/1471-2105-8-314</mods:url>
+</mods:location>
+<mods:identifier displayLabel="PMID" type="pmpid">17725841</mods:identifier>
+<mods:identifier type="doi">10.1186/1471-2105-8-314</mods:identifier>
+<mods:name>
+<mods:namePart>Qi, Yuan</mods:namePart>
+<mods:affiliation>
+Department of Biochemistry, University of Texas Southwestern Medical Center, 5323, Harry Hines Blvd, Dallas, TX 75390-9050, USA
+</mods:affiliation>
+<mods:affiliation>
+Lineberger Comprehensive Cancer Center, University of North Carolina at Chapel Hill
+</mods:affiliation>
+</mods:name>
+<mods:name>
+<mods:namePart>Sadreyev, Ruslan I</mods:namePart>
+<mods:affiliation>
+Howard Hughes Medical Institute, University of Texas Southwestern Medical Center, 5323, Harry Hines Blvd, Dallas, TX 75390-9050, USA
+</mods:affiliation>
+</mods:name>
+<mods:name>
+<mods:namePart>Wang, Yong</mods:namePart>
+<mods:affiliation>
+School of Studying Biostuff, Department of Biochemistry, University of North Carolina at Chapel Hill
+</mods:affiliation>
+</mods:name>
+<mods:name>
+<mods:namePart>Kim, Bong-Hyun</mods:namePart>
+<mods:affiliation>
+Department of Biochemistry
+</mods:affiliation>
+</mods:name>
+<mods:name>
+<mods:namePart>Grishin, Nick V</mods:namePart>
+<mods:affiliation>
+Howard Hughes Medical Institute, Chapel Hill, North Carolina
+</mods:affiliation>
+<mods:affiliation>
+Department of Biochemistry, University of Texas Southwestern Medical Center, 5323, Harry Hines Blvd, Dallas, TX 75390-9050, USA
+</mods:affiliation>
+</mods:name>
+<mods:relatedItem displayLabel="Source" type="otherFormat">
+<mods:titleInfo>
+<mods:title>BMC Bioinformatics</mods:title>
+</mods:titleInfo>
+<mods:identifier type="issn">1471-2105</mods:identifier>
+<mods:originInfo>
+<mods:dateIssued>2007</mods:dateIssued>
+</mods:originInfo>
+<mods:part>
+<mods:detail type="volume">
+<mods:number>8</mods:number>
+<mods:caption>vol.</mods:caption>
+</mods:detail>
+<mods:detail type="issue">
+<mods:number>1</mods:number>
+<mods:caption>issue</mods:caption>
+</mods:detail>
+</mods:part>
+<mods:part>
+<mods:extent unit="page">
+<mods:start>314</mods:start>
+</mods:extent>
+</mods:part>
+</mods:relatedItem>
+</mods:mods>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_CONTENTS" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_CONTENTS.0" LABEL="List of Contents" CREATED="2012-08-24T01:06:58.799Z" MIMETYPE="text/xml" SIZE="468">
+<foxml:contentDigest TYPE="MD5" DIGEST="bc0133a53cbb3c78ce30bf6ed5740775"/>
+<foxml:xmlContent>
+<m:structMap xmlns:m="http://www.loc.gov/METS/">
+<m:div TYPE="Container">
+<m:div ID="uuid:de166187-b40c-4151-81db-50a2eb5915eb" ORDER="1"/>
+<m:div ID="uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe" ORDER="2"/>
+<m:div ID="uuid:7379cafc-6af8-4926-9635-ed29bbfceebc" ORDER="3"/>
+</m:div>
+</m:structMap>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="DC1.0" LABEL="Internal XML Metadata" CREATED="2012-08-24T01:06:58.799Z" MIMETYPE="text/xml" SIZE="4090">
+<foxml:contentDigest TYPE="MD5" DIGEST="9b851bc43e5b830fc4770a1195206e3d"/>
+<foxml:xmlContent>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+<dc:title>
+A comprehensive system for evaluation of remote sequence similarity detection
+</dc:title>
+<dc:description>
+Abstract Background Accurate and sensitive performance evaluation is crucial for both effective development of better structure prediction methods based on sequence similarity, and for the comparative analysis of existing methods. Up to date, there has been no satisfactory comprehensive evaluation method that (i) is based on a large and statistically unbiased set of proteins with clearly defined relationships; and (ii) covers all performance aspects of sequence-based structure predictors, such as sensitivity and specificity, alignment accuracy and coverage, and structure template quality. Results With the aim of designing such a method, we (i) select a statistically balanced set of divergent protein domains from SCOP, and define similarity relationships for the majority of these domains by complementing the best of information available in SCOP with a rigorous SVM-based algorithm; and (ii) develop protocols for the assessment of similarity detection and alignment quality from several complementary perspectives. The evaluation of similarity detection is based on ROC-like curves and includes several complementary approaches to the definition of true/false positives. Reference-dependent approaches use the 'gold standard' of pre-defined domain relationships and structure-based alignments. Reference-independent approaches assess the quality of structural match predicted by the sequence alignment, with respect to the whole domain length (global mode) or to the aligned region only (local mode). Similarly, the evaluation of alignment quality includes several reference-dependent and -independent measures, in global and local modes. As an illustration, we use our benchmark to compare the performance of several methods for the detection of remote sequence similarities, and show that different aspects of evaluation reveal different properties of the evaluated methods, highlighting their advantages, weaknesses, and potential for further development. Conclusion The presented benchmark provides a new tool for a statistically unbiased assessment of methods for remote sequence similarity detection, from various complementary perspectives. This tool should be useful both for users choosing the best method for a given purpose, and for developers designing new, more powerful methods. The benchmark set, reference alignments, and evaluation codes can be downloaded from ftp://iole.swmed.edu/pub/evaluation/.
+</dc:description>
+<dc:description>BMC Bioinformatics. 2007 Aug 28;8(1):314</dc:description>
+<dc:publisher>BioMed Central Ltd</dc:publisher>
+<dc:contributor>Qi, Yuan</dc:contributor>
+<dc:contributor>Sadreyev, Ruslan I</dc:contributor>
+<dc:contributor>Wang, Yong</dc:contributor>
+<dc:contributor>Kim, Bong-Hyun</dc:contributor>
+<dc:contributor>Grishin, Nick V</dc:contributor>
+<dc:type>Text</dc:type>
+<dc:type>Journal Article</dc:type>
+<dc:type>Peer Reviewed</dc:type>
+<dc:identifier>uuid:a2300b53-7de9-4981-a480-0fe457cccda2</dc:identifier>
+<dc:identifier>http://dx.doi.org/10.1186/1471-2105-8-314</dc:identifier>
+<dc:identifier>17725841</dc:identifier>
+<dc:identifier>doi: 10.1186/1471-2105-8-314</dc:identifier>
+<dc:language>eng</dc:language>
+<dc:relation>BMC Bioinformatics--1471-2105</dc:relation>
+<dc:rights>Yuan Qi et al.; licensee BioMed Central Ltd.</dc:rights>
+<dc:rights/>
+<dc:rights>Open Access</dc:rights>
+</oai_dc:dc>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_EVENTS" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_EVENTS.0" LABEL="PREMIS Events Metadata" CREATED="2012-08-24T01:06:58.799Z" MIMETYPE="text/xml" SIZE="5328">
+<foxml:contentDigest TYPE="MD5" DIGEST="79bd0bcb475b7f104cfcd24a6599ac5d"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:a2300b53-7de9-4981-a480-0fe457cccda2+MD_EVENTS+MD_EVENTS.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+</foxml:digitalObject>
+<path>
+<object label="Repository Home" pid="admin:REPOSITORY" slug="REPOSITORY"/>
+<object label="Collections" pid="uuid:493d6c1c-b645-43a8-b301-5c14e2717313" slug="Collections"/>
+<object label="BioMed Central" pid="uuid:dfebbdf7-3361-4097-9fa4-7001ab6fcc11" slug="BioMed_Central"/>
+<object label="A comprehensive system for evaluation of remote sequence similarity detection" pid="uuid:a2300b53-7de9-4981-a480-0fe457cccda2" slug="A_comprehensive_system_for_evaluation_of_remote_s"/>
+</path>
+<parentCollection>uuid:dfebbdf7-3361-4097-9fa4-7001ab6fcc11</parentCollection>
+<permissions>
+<rights>
+<permitDerivativesCreate>unc:app:lib:cdr:admin</permitDerivativesCreate>
+<permitDerivativesCreate>unc:app:lib:cdr:depositor:biomedcentral</permitDerivativesCreate>
+<permitDerivativesCreate>unc:app:lib:cdr:adminltd</permitDerivativesCreate>
+<permitMetadataUpdate>unc:app:lib:cdr:admin</permitMetadataUpdate>
+<permitMetadataUpdate>unc:app:lib:cdr:depositor:biomedcentral</permitMetadataUpdate>
+<permitMetadataUpdate>unc:app:lib:cdr:adminltd</permitMetadataUpdate>
+<permitOriginalsRead>unc:app:lib:cdr:admin</permitOriginalsRead>
+<permitOriginalsRead>unc:app:lib:cdr:depositor:biomedcentral</permitOriginalsRead>
+<permitOriginalsRead>unc:app:lib:cdr:adminltd</permitOriginalsRead>
+<permitDerivativesRead>unc:app:lib:cdr:admin</permitDerivativesRead>
+<permitDerivativesRead>unc:app:lib:cdr:depositor:biomedcentral</permitDerivativesRead>
+<permitDerivativesRead>unc:app:lib:cdr:adminltd</permitDerivativesRead>
+<permitDerivativesUpdate>unc:app:lib:cdr:admin</permitDerivativesUpdate>
+<permitDerivativesUpdate>unc:app:lib:cdr:depositor:biomedcentral</permitDerivativesUpdate>
+<permitDerivativesUpdate>unc:app:lib:cdr:adminltd</permitDerivativesUpdate>
+<permitOriginalsUpdate>unc:app:lib:cdr:admin</permitOriginalsUpdate>
+<permitOriginalsUpdate>unc:app:lib:cdr:depositor:biomedcentral</permitOriginalsUpdate>
+<permitOriginalsUpdate>unc:app:lib:cdr:adminltd</permitOriginalsUpdate>
+<permitMetadataCreate>unc:app:lib:cdr:admin</permitMetadataCreate>
+<permitMetadataCreate>unc:app:lib:cdr:depositor:biomedcentral</permitMetadataCreate>
+<permitMetadataCreate>unc:app:lib:cdr:adminltd</permitMetadataCreate>
+<permitOriginalsCreate>unc:app:lib:cdr:admin</permitOriginalsCreate>
+<permitOriginalsCreate>unc:app:lib:cdr:depositor:biomedcentral</permitOriginalsCreate>
+<permitOriginalsCreate>unc:app:lib:cdr:adminltd</permitOriginalsCreate>
+<permitMetadataRead>unc:app:lib:cdr:admin</permitMetadataRead>
+<permitMetadataRead>unc:app:lib:cdr:depositor:biomedcentral</permitMetadataRead>
+<permitMetadataRead>unc:app:lib:cdr:adminltd</permitMetadataRead>
+</rights>
+</permissions>
+<order>560</order>
+<defaultWebObject id="info:fedora/uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe">
+<foxml:digitalObject xmlns:foxml="info:fedora/fedora-system:def/foxml#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" VERSION="1.1" PID="uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe" xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+<foxml:objectProperties>
+<foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="1471-2105-8-314.pdf"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE=""/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2012-08-24T01:07:08.582Z"/>
+<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2012-08-24T06:30:07.543Z"/>
+</foxml:objectProperties>
+<foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="AUDIT.0" LABEL="Audit Trail for this object" CREATED="2012-08-24T01:07:08.582Z" MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+<foxml:xmlContent>
+<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+<audit:record ID="AUDREC1">
+<audit:process type="Fedora API-M"/>
+<audit:action>ingest</audit:action>
+<audit:componentID/>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-08-24T01:07:08.582Z</audit:date>
+<audit:justification>uuid:9f2fe102-4f8d-407b-9189-0956094c2c7d</audit:justification>
+</audit:record>
+<audit:record ID="AUDREC2">
+<audit:process type="Fedora API-M"/>
+<audit:action>addDatastream</audit:action>
+<audit:componentID>MD_TECHNICAL</audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-08-24T06:30:01.997Z</audit:date>
+<audit:justification>Adding technical metadata derived by FITS</audit:justification>
+</audit:record>
+</audit:auditTrail>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DATA_FILE" STATE="A" CONTROL_GROUP="M" VERSIONABLE="true">
+<foxml:datastreamVersion ID="DATA_FILE.0" LABEL="1471-2105-8-314.pdf" CREATED="2012-08-24T01:07:08.600Z" ALT_IDS="1471-2105-8-314.pdf" MIMETYPE="application/pdf" SIZE="1231852">
+<foxml:contentDigest TYPE="MD5" DIGEST="15ad37f11beff67bc6bdf8ceb577f964"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe+DATA_FILE+DATA_FILE.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="DC1.0" LABEL="Internal XML Metadata" CREATED="2012-08-24T01:07:08.600Z" MIMETYPE="text/xml" SIZE="413">
+<foxml:contentDigest TYPE="MD5" DIGEST="ca26f920a43025aa7a267422bc079c2f"/>
+<foxml:xmlContent>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+<dc:title>1471-2105-8-314.pdf</dc:title>
+<dc:identifier>uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe</dc:identifier>
+</oai_dc:dc>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_EVENTS" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_EVENTS.0" LABEL="PREMIS Events Metadata" CREATED="2012-08-24T01:07:08.600Z" MIMETYPE="text/xml" SIZE="4189">
+<foxml:contentDigest TYPE="MD5" DIGEST="a8536075719dc83711643366afd71fdc"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe+MD_EVENTS+MD_EVENTS.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_TECHNICAL" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_TECHNICAL.0" LABEL="PREMIS Technical Metadata" CREATED="2012-08-24T06:30:01.997Z" MIMETYPE="text/xml" SIZE="25224">
+<foxml:contentDigest TYPE="MD5" DIGEST="4f7f0b62deb2021612375cb85e83d948"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe+MD_TECHNICAL+MD_TECHNICAL.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="RELS-EXT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="RELS-EXT.3" LABEL="Fedora Object-to-Object Relationship Metadata" CREATED="2012-08-24T06:30:07.543Z" MIMETYPE="text/xml" SIZE="1691">
+<foxml:contentDigest TYPE="MD5" DIGEST="407ebcd62777c11c263f45e52034ef98"/>
+<foxml:xmlContent>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="info:fedora/uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe">
+<allowIndexing xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">yes</allowIndexing>
+<defaultWebData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe/DATA_FILE"/>
+<originalDeposit xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:9f2fe102-4f8d-407b-9189-0956094c2c7d"/>
+<owner xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:ca7e3178-e603-4e71-b49b-21f15ddd3887"/>
+<slug xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">1471-2105-8-314.pdf</slug>
+<sourceData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe/DATA_FILE"/>
+<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:PreservedObject"/>
+<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:Simple"/>
+<hasSourceMimeType xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">application/pdf</hasSourceMimeType>
+<hasSourceFileSize xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:datatype="http://www.w3.org/2001/XMLSchema#long">1231852</hasSourceFileSize>
+<techData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:7efaea1d-d808-41d6-b14c-5a6ddfc7bafe/MD_TECHNICAL"/>
+</rdf:Description>
+</rdf:RDF>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+</foxml:digitalObject>
+</defaultWebObject>
+</view-inputs>

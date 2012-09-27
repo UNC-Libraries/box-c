@@ -100,7 +100,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	}
 
 	public SearchResultResponse getDepartmentList(AccessGroupSet accessGroups) {
-		SearchState searchState = SearchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT, "index", 500);
+		SearchState searchState = SearchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT, "index", 999999);
 
 		SearchRequest searchRequest = new SearchRequest(searchState, accessGroups);
 

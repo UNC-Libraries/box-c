@@ -17,8 +17,6 @@ package edu.unc.lib.dl.ingest.aip;
 
 import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -47,7 +45,6 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 	private static Logger LOG = Logger.getLogger(BiomedCentralAIPFilter.class);
 	
 	private static final String BIOMED_ONYEN = "biomedcentral";
-	private final String UNC_AFFIL_ADDRESS = "University of North Carolina at Chapel Hill";
 	private AgentFactory agentFactory;
 	
 	private Agent biomedAgent;
@@ -343,33 +340,11 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 	private void addAuthorsAndAffiliations(Element bibRoot, Element modsContent) throws JDOMException{
 		//Extract affiliations
 		List<Element> elements = (List<Element>)this.affiliationXPath.selectNodes(bibRoot);
-		Map<String,List<String>> affiliationMap = new HashMap<String,List<String>>();
+		Map<String,String> affiliationMap = new HashMap<String,String>();
 		if (elements != null){
 			for (Element element: elements){
 				String affiliation = element.getChildTextTrim("p");
-				if (affiliation != null) {
-					int index = affiliation.indexOf(UNC_AFFIL_ADDRESS);
-					if (index == -1){
-						//If not UNC affiliated, then use up to the first comma.
-						index = affiliation.indexOf(",");
-						if (index != -1){
-							affiliation = affiliation.substring(0,index);
-						}
-						affiliationMap.put(element.getAttributeValue("id"), Arrays.asList(affiliation));
-					} else {
-						//If it is a UNC affiliate, then break down all the address elements up to UNC
-						int commaIndex = affiliation.lastIndexOf(',', index);
-						if (commaIndex != -1){
-							affiliation = affiliation.substring(0, commaIndex);
-							String[] affiliationComponents = affiliation.split(",");
-							List<String> affiliationList = new ArrayList<String>();
-							for (String affiliationComponent: affiliationComponents){
-								affiliationList.add(affiliationComponent.trim());
-							}
-							affiliationMap.put(element.getAttributeValue("id"), affiliationList);
-						}
-					}
-				}
+				affiliationMap.put(element.getAttributeValue("id"), affiliation);
 			}
 		}
 		
@@ -405,14 +380,10 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 					Element affiliationRef = (Element)affiliationObject;
 					affiliationID = affiliationRef.getAttributeValue("iid");
 					if (affiliationID != null){
-						List<String> affiliationList = affiliationMap.get(affiliationID);
-						if (affiliationList != null){
-							for (String affiliation: affiliationList){
-								Element affiliationElement = new Element("affiliation", JDOMNamespaceUtil.MODS_V3_NS);
-								affiliationElement.setText(affiliation);
-								nameElement.addContent(affiliationElement);
-							}
-						}
+						String affiliation = affiliationMap.get(affiliationID);
+						Element affiliationElement = new Element("affiliation", JDOMNamespaceUtil.MODS_V3_NS);
+						affiliationElement.setText(affiliation);
+						nameElement.addContent(affiliationElement);
 					}
 				}
 				
