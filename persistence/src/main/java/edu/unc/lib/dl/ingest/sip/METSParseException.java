@@ -34,6 +34,23 @@ public class METSParseException extends IngestException implements ErrorHandler 
      *
      */
 	private static final long serialVersionUID = 1L;
+	@Override
+	public String getMessage() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(super.getMessage());
+		sb.append("The METS did not meet all requirements.\n");
+		for(SAXParseException e : this.fatalErrors) {
+			sb.append(e.getMessage()).append("\n");
+		}
+		for(SAXParseException e : this.errors) {
+			sb.append(e.getMessage()).append("\n");
+		}
+		for(SAXParseException e : this.warnings) {
+			sb.append(e.getMessage()).append("\n");
+		}
+		return sb.toString();
+	}
+
 	private List<SAXParseException> warnings = new ArrayList<SAXParseException>();
 
 	public List<SAXParseException> getWarnings() {

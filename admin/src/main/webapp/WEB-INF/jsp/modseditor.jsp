@@ -54,7 +54,7 @@ $(document).ready(function(){
 			modsRetrievalParams : {'pid' : '<c:out value="${param.pid}"/>'},
 			modsUploadPath : "/cdradmin/ir/admin/updatemods?pid=<c:out value='${param.pid}'/>"
 		},
-		documentTitle : '<c:out value="${objectLabel}"/>'
+		documentTitle : '<%= ((String)request.getAttribute("objectLabel")).replaceAll("'","\\\\'").replaceAll("[\u0000-\u001f]", "") %>'
 	});
 });
 

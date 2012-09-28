@@ -55,6 +55,24 @@
 	<bean id="multipartResolver"
 		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
 		<!-- one of the properties available; the maximum file size in bytes -->
-		<property name="maxUploadSize" value="5000000" />
+		<property name="maxUploadSize" value="20000000" />
+	</bean>
+
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${smtp.host}" />
+		<property name="port" value="${smtp.port}" />
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+	
+	<bean id="repositoryFromEmail" class="java.lang.String">
+		<constructor-arg value="${repository.from.email}"/>
+	</bean>
+	
+	<bean id="administratorEmail" class="java.lang.String">
+		<constructor-arg value="${administrator.email}"/>
+	</bean>
+	
+	<bean id="recordURLPrefix" class="java.lang.String">
+		<constructor-arg value="${repository.protocol}://${repository.host}${repository.port}${repository.context}/record?id="/>
 	</bean>
 </beans>

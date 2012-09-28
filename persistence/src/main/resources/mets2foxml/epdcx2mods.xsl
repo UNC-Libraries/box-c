@@ -58,7 +58,6 @@
 		<xsl:if test="./@epdcx:propertyURI='http://purl.org/dc/elements/1.1/creator'">
 			<mods:name>
 				<mods:namePart><xsl:value-of select="epdcx:valueString" /></mods:namePart>
-				<role type="text">creator</role>
 			</mods:name>
 		</xsl:if>
 		

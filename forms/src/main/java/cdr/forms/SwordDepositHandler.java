@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.abdera.Abdera;
@@ -39,11 +40,14 @@ import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.Namespace;
+import org.jdom.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cdr.forms.DepositResult.Status;
-
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
 public class SwordDepositHandler implements DepositHandler {
@@ -127,7 +131,7 @@ public class SwordDepositHandler implements DepositHandler {
 		int responseCode;
 
 		DepositResult result = new DepositResult();
-		result.setObjectPid(pid);
+		//result.setObjectPid(pid);
 		try {
 			responseCode = client.executeMethod(post);
 			if(responseCode >= 300) {
@@ -137,6 +141,21 @@ public class SwordDepositHandler implements DepositHandler {
 			} else {
 				result.setStatus(Status.COMPLETE);
 			}
+			SAXBuilder sx = new SAXBuilder();
+			try {
+				org.jdom.Document d = sx.build(post.getResponseBodyAsStream());
+				Namespace atom = d.getRootElement().getNamespace();
+				List<Element> links = d.getRootElement().getChildren("link", atom);
+				for(Element el : links) {
+					if("alternate".equals(el.getAttributeValue("rel"))) {
+						String accessURL = el.getAttributeValue("href");
+						result.setAccessURL(accessURL);
+					}
+				}
+			} catch(JDOMException e) {
+				LOG.error("There was a problem parsing the SWORD response.",e);
+			}
+			LOG.debug("response was: \n"+post.getResponseBodyAsString());
 		} catch (HttpException e) {
 			LOG.error("Exception during SWORD deposit", e);
 			throw new Error(e);
