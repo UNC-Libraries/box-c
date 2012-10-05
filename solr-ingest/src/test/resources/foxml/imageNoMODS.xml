@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<foxml:digitalObject VERSION="1.1" PID="uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b"
+xmlns:foxml="info:fedora/fedora-system:def/foxml#"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+<foxml:objectProperties>
+<foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="A1100-A800 NS final.jpg"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE=""/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2011-10-04T20:31:52.107Z"/>
+<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2011-10-05T04:25:07.169Z"/>
+</foxml:objectProperties>
+<foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="AUDIT.0" LABEL="Audit Trail for this object" CREATED="2011-10-04T20:31:52.107Z" MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+<foxml:xmlContent>
+<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+<audit:record ID="AUDREC1">
+<audit:process type="Fedora API-M"/>
+<audit:action>ingest</audit:action>
+<audit:componentID></audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2011-10-04T20:31:52.107Z</audit:date>
+<audit:justification>Added through UI</audit:justification>
+</audit:record>
+<audit:record ID="AUDREC2">
+<audit:process type="Fedora API-M"/>
+<audit:action>addDatastream</audit:action>
+<audit:componentID>MD_TECHNICAL</audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2011-10-05T04:23:43.029Z</audit:date>
+<audit:justification>Adding technical metadata derived by FITS</audit:justification>
+</audit:record>
+<audit:record ID="AUDREC3">
+<audit:process type="Fedora API-M"/>
+<audit:action>addDatastream</audit:action>
+<audit:componentID>IMAGE_JP2000</audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2011-10-05T04:24:04.850Z</audit:date>
+<audit:justification>Adding derived JP2000 image datastream.</audit:justification>
+</audit:record>
+<audit:record ID="AUDREC4">
+<audit:process type="Fedora API-M"/>
+<audit:action>addDatastream</audit:action>
+<audit:componentID>THUMB_SMALL</audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2011-10-05T04:24:46.602Z</audit:date>
+<audit:justification>adding thumbnail</audit:justification>
+</audit:record>
+<audit:record ID="AUDREC5">
+<audit:process type="Fedora API-M"/>
+<audit:action>addDatastream</audit:action>
+<audit:componentID>THUMB_LARGE</audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2011-10-05T04:25:04.609Z</audit:date>
+<audit:justification>adding thumbnail</audit:justification>
+</audit:record>
+</audit:auditTrail>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DATA_FILE" STATE="A" CONTROL_GROUP="M" VERSIONABLE="true">
+<foxml:datastreamVersion ID="DATA_FILE.0" LABEL="Submitted File" CREATED="2011-10-04T20:31:52.122Z" ALT_IDS="irods://eomeara@cdr-vault.libint.unc.edu:3333/cdrZone/home/eomeara/staging/Azoria/azoria_project/Azoria%20files%20for%20CDR/Stratigraphic%20sections/A1100/A1100-A800%20NS%20final.jpg" MIMETYPE="image/jpeg" SIZE="3645539">
+<foxml:contentDigest TYPE="MD5" DIGEST="1adeece64580be3b9a185e8f12e8653b"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b+DATA_FILE+DATA_FILE.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="DC.0" LABEL="Internal XML Metadata" CREATED="2011-10-04T20:31:52.122Z" MIMETYPE="text/xml" SIZE="417">
+<foxml:contentDigest TYPE="MD5" DIGEST="c177272d23b874fdcfd4fe8d6626c853"/>
+<foxml:xmlContent>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+  <dc:title>A1100-A800 NS final.jpg</dc:title>
+  <dc:identifier>uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b</dc:identifier>
+</oai_dc:dc>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_EVENTS" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_EVENTS.0" LABEL="PREMIS Events Metadata" CREATED="2011-10-04T20:31:52.122Z" MIMETYPE="text/xml" SIZE="4014">
+<foxml:contentDigest TYPE="MD5" DIGEST="8bb61c098c8362f31df204a3d69a6e88"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b+MD_EVENTS+MD_EVENTS.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_TECHNICAL" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_TECHNICAL.0" LABEL="PREMIS Technical Metadata" CREATED="2011-10-05T04:23:43.029Z" MIMETYPE="text/xml" SIZE="3872">
+<foxml:contentDigest TYPE="MD5" DIGEST="e2ccfe1b5576f4944d3f986cb849443a"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b+MD_TECHNICAL+MD_TECHNICAL.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="IMAGE_JP2000" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="IMAGE_JP2000.0" LABEL="Derived JP2000 image" CREATED="2011-10-05T04:24:04.850Z" MIMETYPE="image/jp2" SIZE="4893818">
+<foxml:contentDigest TYPE="MD5" DIGEST="2eef5ccd78d8e1f2854d8c5cb533f427"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b+IMAGE_JP2000+IMAGE_JP2000.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="THUMB_SMALL" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="THUMB_SMALL.0" LABEL="Thumbnail Image" CREATED="2011-10-05T04:24:46.602Z" MIMETYPE="image/png" SIZE="6387">
+<foxml:contentDigest TYPE="MD5" DIGEST="b9091ecee6f1df19d4847d4550c74f95"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b+THUMB_SMALL+THUMB_SMALL.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="THUMB_LARGE" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="THUMB_LARGE.0" LABEL="Thumbnail Image" CREATED="2011-10-05T04:25:04.609Z" MIMETYPE="image/png" SIZE="19623">
+<foxml:contentDigest TYPE="MD5" DIGEST="4a94dbc89a428ac265facf704d386420"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b+THUMB_LARGE+THUMB_LARGE.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="RELS-EXT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="RELS-EXT.7" LABEL="Fedora Object-to-Object Relationship Metadata" CREATED="2011-10-05T04:25:07.169Z" MIMETYPE="text/xml" SIZE="2128">
+<foxml:contentDigest TYPE="MD5" DIGEST="4ac9a05bbcc2828354d6811723e641ab"/>
+<foxml:xmlContent>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+<rdf:Description rdf:about="info:fedora/uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b">
+	<allowIndexing xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">yes</allowIndexing>
+	<defaultWebData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b/DATA_FILE"></defaultWebData>
+	<owner xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:4e6425d9-79d4-4d94-af51-c49ee7f31cf8"></owner>
+	<slug xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">A1100-A800_NS_final.jpg</slug>
+	<sourceData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b/DATA_FILE"></sourceData>
+	<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:PreservedObject"></hasModel>
+	<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:Simple"></hasModel>
+	<hasSourceMimeType xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">image/jpeg</hasSourceMimeType>
+	<hasSourceFileSize xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:datatype="http://www.w3.org/2001/XMLSchema#long">3645539</hasSourceFileSize>
+	<techData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b/MD_TECHNICAL"></techData>
+	<derivedJP2 xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b/IMAGE_JP2000"></derivedJP2>
+	<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:JP2DerivedImage"></hasModel>
+	<thumb xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b/THUMB_SMALL"></thumb>
+	<thumb xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b/THUMB_LARGE"></thumb>
+</rdf:Description>
+
+</rdf:RDF>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+</foxml:digitalObject>

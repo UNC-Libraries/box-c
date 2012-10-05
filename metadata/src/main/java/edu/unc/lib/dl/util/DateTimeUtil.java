@@ -77,4 +77,8 @@ public class DateTimeUtil {
 	public static Date parseUTCToDate(String utcDate) throws ParseException {
 		return utcFormatter.parse(utcDate);
 	}
+	
+	public static String formatDateToUTC(Date date) throws ParseException {
+		return utcFormatter.format(date);
+	}
 }

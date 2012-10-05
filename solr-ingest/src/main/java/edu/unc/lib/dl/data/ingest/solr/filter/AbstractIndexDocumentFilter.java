@@ -3,7 +3,11 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import edu.unc.lib.dl.util.TripleStoreQueryService;
+
 public abstract class AbstractIndexDocumentFilter implements IndexDocumentFilter {
+	protected TripleStoreQueryService tsqs;
+	
 	protected String readFileAsString(String filePath) throws java.io.IOException {
 		StringBuffer fileData = new StringBuffer(1000);
 		java.io.InputStream inStream = this.getClass().getResourceAsStream(filePath);
@@ -22,5 +26,9 @@ public abstract class AbstractIndexDocumentFilter implements IndexDocumentFilter
 		inStreamReader.close();
 		inStream.close();
 		return fileData.toString();
+	}
+
+	public void setTripleStoreQueryService(TripleStoreQueryService tsqs) {
+		this.tsqs = tsqs;
 	}
 }

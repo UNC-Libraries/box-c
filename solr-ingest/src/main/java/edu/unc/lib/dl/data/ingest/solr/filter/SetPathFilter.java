@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jdom.Attribute;
+import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.xpath.XPath;
 import org.slf4j.Logger;
@@ -14,35 +16,45 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.ResourceType;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
+/**
+ * Indexing filter which extracts and stores hierarchical path information for the object being processed. It also sets
+ * incidental fields that affect the hierarchy representation or are determined from it, including the parent
+ * collection, rollup identifier, and content models. It uses either the objects FOXML and its previously cached parent
+ * history (in the case of recursive reindexing) or queries the path information.
+ * 
+ * Sets: ancestorPath, ancestorNames, parentCollection, rollup, contentModel, label, resourceType
+ * 
+ * @author bbpennel
+ * 
+ */
 public class SetPathFilter extends AbstractIndexDocumentFilter {
 	protected static final Logger log = LoggerFactory.getLogger(SetPathFilter.class);
 
-	private TripleStoreQueryService tsqs;
 	private String ancestorInfoQuery;
 	private XPath contentModelXpath;
 
 	public SetPathFilter() {
 		try {
-			contentModelXpath = XPath.newInstance("/*[local-name() = 'digitalObject']/*[local-name() = 'datastream' and @ID='RELS-EXT']/"
-					+ "*[local-name() = 'datastreamVersion']/*[local-name() = 'xmlContent']/*[local-name() = 'RDF']/"
-					+ "*[local-name() = 'Description']");
+			contentModelXpath = XPath.newInstance("fedModel:hasModel/@rdf:resource");
+			contentModelXpath.addNamespace(JDOMNamespaceUtil.RDF_NS);
+			contentModelXpath.addNamespace(JDOMNamespaceUtil.FEDORA_MODEL_NS);
 		} catch (JDOMException e) {
 			log.error("Failed to initialize queries", e);
 		}
-		
+
 		try {
 			this.ancestorInfoQuery = this.readFileAsString("getAncestorInfo.itql");
 		} catch (IOException e) {
 			log.error("Unable to find query file", e);
 		}
 	}
-	
+
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-
-		if (dip.getParentDocuments() == null || dip.getParentDocuments().size() == 0) {
+		if (dip.getParentDocument() == null) {
+			// If there is no parent information available, then build the hierarchy from scratch.
 			buildFromQuery(dip);
 		} else {
 			// Must have parentDocuments and content models for this node
@@ -95,15 +107,12 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 			// Generate and store the current tiers ancestorPath value, except for the last tier
 			if (depth < pathNodes.size() - 1) {
-				StringBuilder ancestorTier = new StringBuilder();
-				ancestorTier.append(++depth).append(',').append(node.pid.getPid()).append(',')
-						.append(node.label.replaceAll(",", "\\\\,"));
-				ancestorPath.add(ancestorTier.toString());
-				ancestorNames.append('/').append(node.label.replaceAll("\\/", "\\\\/"));
+				ancestorPath.add(this.buildTier(++depth, node.pid, node.label));
+				this.buildAncestorNames(ancestorNames, node.label);
 			} else {
 				// Store the last node in ancestor names only if it is a container type
 				if (!ResourceType.Item.equals(node.resourceType))
-					ancestorNames.append('/').append(node.label.replaceAll("\\/", "\\\\/"));
+					this.buildAncestorNames(ancestorNames, node.label);
 			}
 		}
 
@@ -127,14 +136,81 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		// Since we have already generated the content models and resource type for this item, store them as side effects
 		idb.setContentModel(currentNode.contentModels);
 		idb.setResourceType(currentNode.resourceType.name());
+		dip.setResourceType(currentNode.resourceType);
+		dip.setLabel(currentNode.label);
 	}
 
 	private void buildFromParentDocuments(DocumentIndexingPackage dip) throws IndexingException {
+		IndexDocumentBean idb = dip.getDocument();
 
+		DocumentIndexingPackage parentDIP = dip.getParentDocument();
+		if (parentDIP.getDocument().getAncestorPath().size() == 0)
+			throw new IndexingException("Parent document " + parentDIP.getPid().getPid()
+					+ " did not contain ancestor information for object " + dip.getPid().getPid());
+
+		Element relsExt = dip.getRelsExt();
+		try {
+			// Retrieve and store content models from the FOXML
+			List<?> cmResults = this.contentModelXpath.selectNodes(relsExt);
+			List<String> contentModels = new ArrayList<String>(cmResults.size());
+			for (Object cmObject : cmResults) {
+				contentModels.add(((Attribute) cmObject).getValue());
+			}
+			idb.setContentModel(contentModels);
+
+			// Store the resourceType for this object
+			ResourceType resourceType = ResourceType.getResourceTypeByContentModels(idb.getContentModel());
+			idb.setResourceType(resourceType.name());
+			dip.setResourceType(resourceType);
+
+			// Set this items ancestor path to its parents ancestor path plus the parent itself.
+			List<String> parentAncestors = parentDIP.getDocument().getAncestorPath();
+			List<String> ancestorPath = new ArrayList<String>(parentAncestors.size() + 1);
+			ancestorPath.addAll(parentAncestors);
+			ancestorPath.add(this.buildTier(parentAncestors.size() + 1, parentDIP.getPid(), parentDIP.getLabel()));
+			idb.setAncestorPath(ancestorPath);
+
+			// If this object isn't any item, then add itself to its ancestorNames
+			if (!ResourceType.Item.equals(resourceType)) {
+				idb.setAncestorNames(this.buildAncestorNames(new StringBuilder(parentDIP.getDocument().getAncestorNames()),
+						dip.getLabel()).toString());
+			} else {
+				idb.setAncestorNames(parentDIP.getDocument().getAncestorNames());
+			}
+
+			// Use the parents rollup if it isn't just its ID
+			if (parentDIP.getPid().getPid().equals(parentDIP.getDocument().getRollup())) {
+				idb.setRollup(parentDIP.getDocument().getRollup());
+			} else {
+				// If the immediate parent was an aggregate, use its ID as this items rollup
+				if (ResourceType.Aggregate.equals(parentDIP.getResourceType())) {
+					idb.setRollup(parentDIP.getPid().getPid());
+				} else {
+					idb.setRollup(idb.getId());
+				}
+			}
+
+			// If the parent is a collection, then use it as this items parent collection
+			if (ResourceType.Collection.equals(parentDIP.getResourceType())) {
+				idb.setParentCollection(parentDIP.getPid().getPid());
+			} else {
+				// Otherwise, use whatever the parent had set as its collection
+				idb.setParentCollection(parentDIP.getDocument().getParentCollection());
+			}
+		} catch (JDOMException e) {
+			throw new IndexingException("Error while attempting to retrieve content models for " + dip.getPid().getPid(),
+					e);
+		}
 	}
 
-	public void setTripleStoreQueryService(TripleStoreQueryService tsqs) {
-		this.tsqs = tsqs;
+	private String buildTier(int depth, PID pid, String label) {
+		StringBuilder ancestorTier = new StringBuilder();
+		ancestorTier.append(depth).append(',').append(pid.getPid()).append(',').append(label.replaceAll(",", "\\\\,"));
+		return ancestorTier.toString();
+	}
+
+	private StringBuilder buildAncestorNames(StringBuilder ancestorNames, String label) {
+		return ancestorNames.append('/').append(label.replaceAll("\\/", "\\\\/"));
 	}
 
 	public void setAncestorInfoQuery(String ancestorInfoQuery) {

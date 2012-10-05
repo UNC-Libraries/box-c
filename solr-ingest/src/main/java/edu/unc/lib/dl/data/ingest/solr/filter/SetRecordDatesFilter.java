@@ -1,26 +1,81 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
+import org.jdom.Attribute;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.Namespace;
+import org.jdom.xpath.XPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.xml.NamespaceConstants;
 
-public class SetRecordDatesFilter implements IndexDocumentFilter {
+/**
+ * Indexing filter which extracts Fedora generated dates about the creation and modification state of the object
+ * being indexed.
+ * 
+ * Sets: dateAdded, dateUpdated
+ * @author bbpennel
+ *
+ */
+public class SetRecordDatesFilter extends AbstractIndexDocumentFilter {
 	protected static final Logger log = LoggerFactory.getLogger(SetRecordDatesFilter.class);
 
-	private TripleStoreQueryService tsqs;
 	private String recordDatesQuery;
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private XPath dateAddedXPath;
+	private XPath dateUpdatedXPath;
+
+	public SetRecordDatesFilter() {
+		try {
+			dateAddedXPath = XPath.newInstance("foxml:property[@NAME='info:fedora/fedora-system:def/model#createdDate']/@VALUE");
+			dateAddedXPath.addNamespace(Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI));
+			dateUpdatedXPath = XPath.newInstance("foxml:property[@NAME='info:fedora/fedora-system:def/view#lastModifiedDate']/@VALUE");
+			dateUpdatedXPath.addNamespace(Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI));
+		} catch (JDOMException e) {
+			log.error("Failed to initialize queries", e);
+		}
+
+		try {
+			this.recordDatesQuery = this.readFileAsString("getRecordDates.sparql");
+		} catch (IOException e) {
+			log.error("Unable to find query file", e);
+		}
+	}
+	
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
+		if (dip.getFoxml() == null) {
+			this.filterFromQuery(dip);
+		} else {
+			this.filterFromFOXML(dip);
+		}
+	}
+	
+	private void filterFromFOXML(DocumentIndexingPackage dip) throws IndexingException {
+		Element objectProperties = dip.getObjectProperties();
+		try {
+			Attribute dateAdded = (Attribute) dateAddedXPath.selectSingleNode(objectProperties);
+			Attribute dateUpdated = (Attribute) dateUpdatedXPath.selectSingleNode(objectProperties);
+			dip.getDocument().setDateAdded(dateAdded.getValue());
+			dip.getDocument().setDateUpdated(dateUpdated.getValue());
+		} catch (JDOMException e) {
+			throw new IndexingException("Failed to extract record dates from " + dip.getPid().getPid(), e);
+		} catch (ParseException e) {
+			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPid(), e);
+		}
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void filterFromQuery(DocumentIndexingPackage dip) throws IndexingException {
 		String query = String.format(recordDatesQuery, tsqs.getResourceIndexModelUri(), dip.getPid().getURI());
 		
 		Map results = tsqs.sendSPARQL(query);

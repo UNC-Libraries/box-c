@@ -17,6 +17,10 @@ public enum ResourceType {
 		return this.displayOrder;
 	}
 	
+	public boolean equals(String name) {
+		return this.name().equals(name);
+	}
+	
 	public static ResourceType getResourceTypeByContentModels(List<String> contentModels) {
 		if (contentModels.contains(ContentModelHelper.Model.COLLECTION.getPID().getURI())) {
 			return Collection;

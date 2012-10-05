@@ -1,16 +1,14 @@
 package edu.unc.lib.dl.search.solr.model;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.solr.client.solrj.beans.Field;
 
+import edu.unc.lib.dl.util.DateTimeUtil;
+
 public class IndexDocumentBean {
-	protected static SimpleDateFormat formatISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.SSS'Z'", Locale.ENGLISH);
-	
 	protected String id;
 	protected List<String> ancestorPath;
 	protected String ancestorNames;
@@ -400,7 +398,7 @@ public class IndexDocumentBean {
 	}
 	
 	public void setDateAdded(String dateAdded) throws ParseException {
-		this.dateAdded = IndexDocumentBean.formatISO8601.parse(dateAdded);
+		this.dateAdded = DateTimeUtil.parseUTCToDate(dateAdded);
 	}
 
 	public Date getDateUpdated() {
@@ -413,7 +411,7 @@ public class IndexDocumentBean {
 	}
 	
 	public void setDateUpdated(String dateUpdated) throws ParseException {
-		this.dateUpdated = IndexDocumentBean.formatISO8601.parse(dateUpdated);
+		this.dateUpdated = DateTimeUtil.parseUTCToDate(dateUpdated);
 	}
 
 	public String getCitation() {

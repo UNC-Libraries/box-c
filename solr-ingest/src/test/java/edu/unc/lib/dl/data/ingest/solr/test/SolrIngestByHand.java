@@ -44,6 +44,7 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.data.ingest.solr.UpdateDocTransformer;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.ClientUtils;
 import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.PID;
@@ -243,7 +244,6 @@ public class SolrIngestByHand {
 		}
 	}
 	
-	
 	@Test
 	public void testXMLSpeed() throws Exception {
 		long start = System.currentTimeMillis();
@@ -272,16 +272,30 @@ public class SolrIngestByHand {
 		
 		SAXBuilder builder = new SAXBuilder();
 		Document result = builder.build(new FileInputStream(new File("src/test/resources/foxml/aggregateSplitDepartments.xml")));
-		XPath contentModelXpath = XPath.newInstance("/foxml:datastream[@ID='RELS-EXT']/"
+		XPath contentModelXpath = XPath.newInstance("/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/"
 				+ "foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/"
 				+ "rdf:Description");
-		/*XPath contentModelXpath = XPath.newInstance("/*[local-name() = 'datastream' and @ID='RELS-EXT']/"
+		contentModelXpath.addNamespace("foxml", "info:fedora/fedora-system:def/foxml#");
+		contentModelXpath.addNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+		contentModelXpath.addNamespace("ns6", "info:fedora/fedora-system:def/model#");
+		/*Object value = contentModelXpath.selectSingleNode(result);
+		System.out.println(value);*/
+		
+		XPath valueXpath = XPath.newInstance("ns6:hasModel/@rdf:resource");
+		valueXpath.addNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+		valueXpath.addNamespace("ns6", "info:fedora/fedora-system:def/model#");
+
+		//System.out.println(value);
+		
+		/*XPath contentModelXpath = XPath.newInstance("/*[local-name() = 'digitalObject']/*[local-name() = 'datastream' and @ID='RELS-EXT']/"
 				+ "*[local-name() = 'datastreamVersion']/*[local-name() = 'xmlContent']/*[local-name() = 'RDF']/"
 				+ "*[local-name() = 'Description']");*/
 		long start = System.currentTimeMillis();
-		for (int i = 0; i < 10000; i++) {
-			
-			Element relsExt = (Element) contentModelXpath.selectSingleNode(result);
+		Element relsExt = (Element) contentModelXpath.selectSingleNode(result);
+		for (int i = 0; i < 100000; i++) {
+			Object value = valueXpath.selectSingleNode(relsExt);
+			if (value == null)
+				System.out.println("NULL");
 		}
 		System.out.println("Completed in " + (System.currentTimeMillis() - start));
 	}

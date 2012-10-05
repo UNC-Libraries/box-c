@@ -54,7 +54,11 @@ import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_MESSAGE_URI;
 
 import javax.xml.XMLConstants;
 
+import org.jdom.JDOMException;
 import org.jdom.Namespace;
+import org.jdom.xpath.XPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <strong>* EXPERIMENTAL *</strong> Utility class that contains JDOM
@@ -70,6 +74,7 @@ import org.jdom.Namespace;
  * @see org.jdom.Namespace
  */
 public class JDOMNamespaceUtil {
+	private static final Logger log = LoggerFactory.getLogger(JDOMNamespaceUtil.class);
 
     /**
      * CDR namespace with "cdr" prefix.
@@ -186,6 +191,25 @@ public class JDOMNamespaceUtil {
      */
     public static final Namespace XSI_NS = Namespace.getNamespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
 
+    /**
+     * Generates an XPath object from the given query, with the provided namespaces added.
+     * @param query
+     * @param namespaces
+     * @return
+     */
+    public static XPath instantiateXPath(String query, Namespace[] namespaces) {
+ 		try {
+ 			XPath xpath = XPath.newInstance(query);
+ 			for (Namespace namespace : namespaces) {
+ 				xpath.addNamespace(namespace);
+ 			}
+ 			return xpath;
+ 		} catch (JDOMException e) {
+ 			log.error("Failed to instantiate xpath: " + query, e);
+ 		}
+ 		return null;
+ 	}
+    
     // private constructor to prevent instantiation.
     private JDOMNamespaceUtil() {
     }
