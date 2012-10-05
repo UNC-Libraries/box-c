@@ -96,7 +96,7 @@ public class SolrSettings extends AbstractSettings  {
 		if (value == null)
 			return value;
 		return value.replaceAll("([\\+\\-!\\(\\)\\{\\}\\[\\]\\^\"~\\*\\?:\\\\])", "\\\\$1")
-				.replaceAll("(AND|OR|NOT)", "'$1'");
+				.replaceAll("\\b(AND|OR|NOT)\\b", "'$1'");
 	}
 	
 	public String getPath() {
