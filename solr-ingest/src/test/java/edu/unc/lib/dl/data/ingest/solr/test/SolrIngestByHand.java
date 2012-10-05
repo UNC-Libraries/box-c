@@ -27,8 +27,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.jdom.Document;
+import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
+import org.jdom.xpath.XPath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -239,6 +241,49 @@ public class SolrIngestByHand {
 			if (inputStream != null)
 				inputStream.close();
 		}
+	}
+	
+	
+	@Test
+	public void testXMLSpeed() throws Exception {
+		long start = System.currentTimeMillis();
+		for (int i = 0; i < 20000; i++) {
+			Document result = null;
+			SAXBuilder builder = new SAXBuilder();
+			result = builder.build(new FileInputStream(new File("src/test/resources/foxml/aggregateSplitDepartments.xml")));
+		}
+		System.out.println("Completed in " + (System.currentTimeMillis() - start));
+	}
+	
+	@Test
+	public void testXMLSpeed2() throws Exception {
+		long start = System.currentTimeMillis();
+		SAXBuilder builder = new SAXBuilder();
+		for (int i = 0; i < 20000; i++) {
+			Document result = null;
+			
+			result = builder.build(new FileInputStream(new File("src/test/resources/foxml/aggregateSplitDepartments.xml")));
+		}
+		System.out.println("Completed in " + (System.currentTimeMillis() - start));
+	}
+	
+	@Test
+	public void testXpathSpeed() throws Exception {
+		
+		SAXBuilder builder = new SAXBuilder();
+		Document result = builder.build(new FileInputStream(new File("src/test/resources/foxml/aggregateSplitDepartments.xml")));
+		XPath contentModelXpath = XPath.newInstance("/foxml:datastream[@ID='RELS-EXT']/"
+				+ "foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/"
+				+ "rdf:Description");
+		/*XPath contentModelXpath = XPath.newInstance("/*[local-name() = 'datastream' and @ID='RELS-EXT']/"
+				+ "*[local-name() = 'datastreamVersion']/*[local-name() = 'xmlContent']/*[local-name() = 'RDF']/"
+				+ "*[local-name() = 'Description']");*/
+		long start = System.currentTimeMillis();
+		for (int i = 0; i < 10000; i++) {
+			
+			Element relsExt = (Element) contentModelXpath.selectSingleNode(result);
+		}
+		System.out.println("Completed in " + (System.currentTimeMillis() - start));
 	}
 	
 	//@Test
