@@ -1,7 +1,0 @@
-SELECT ?pid ?modifiedDate ?createdDate
-FROM <%1$s>
-WHERE {
-	?pid <info:fedora/fedora-system:def/view#lastModifiedDate> ?modifiedDate .
-	?pid <info:fedora/fedora-system:def/model#createdDate> ?createdDate .
-	FILTER (?pid = <%2$s>) .
-}

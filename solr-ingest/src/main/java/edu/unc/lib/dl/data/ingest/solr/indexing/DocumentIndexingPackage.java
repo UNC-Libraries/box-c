@@ -31,6 +31,8 @@ public class DocumentIndexingPackage {
 
 	private PID pid;
 	private DocumentIndexingPackage parentDocument;
+	private DocumentIndexingPackage defaultWebObject;
+	private String defaultWebData;
 	private Document foxml;
 	private Element relsExt;
 	private Element objectProperties;
@@ -47,6 +49,13 @@ public class DocumentIndexingPackage {
 		this.pid = new PID(pid);
 		document.setId(this.pid.getPid());
 	}
+	
+	public DocumentIndexingPackage(PID pid, Document foxml) {
+		this();
+		this.pid = pid;
+		document.setId(this.pid.getPid());
+		this.foxml = foxml;
+	}
 
 	public PID getPid() {
 		return pid;
@@ -62,6 +71,22 @@ public class DocumentIndexingPackage {
 
 	public void setParentDocument(DocumentIndexingPackage parentDocument) {
 		this.parentDocument = parentDocument;
+	}
+
+	public DocumentIndexingPackage getDefaultWebObject() {
+		return defaultWebObject;
+	}
+
+	public void setDefaultWebObject(DocumentIndexingPackage defaultWebObject) {
+		this.defaultWebObject = defaultWebObject;
+	}
+
+	public String getDefaultWebData() {
+		return defaultWebData;
+	}
+
+	public void setDefaultWebData(String defaultWebData) {
+		this.defaultWebData = defaultWebData;
 	}
 
 	public Document getFoxml() {
