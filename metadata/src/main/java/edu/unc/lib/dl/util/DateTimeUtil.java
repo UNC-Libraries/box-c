@@ -73,8 +73,20 @@ public class DateTimeUtil {
 	}
 	
 	private final static SimpleDateFormat utcFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+	private final static SimpleDateFormat utcYMDFormatter = new SimpleDateFormat("yyyy-MM-dd");
+	private final static SimpleDateFormat utcYMDHMSFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	
 	public static Date parseUTCToDate(String utcDate) throws ParseException {
+		return utcFormatter.parse(utcDate);
+	}
+	
+	public static Date parsePartialUTCToDate(String utcDate) throws ParseException {
+		if (utcDate.length() == 10) {
+			return utcYMDFormatter.parse(utcDate);
+		}
+		if (utcDate.length() == 19) {
+			return utcYMDHMSFormatter.parse(utcDate);
+		}
 		return utcFormatter.parse(utcDate);
 	}
 	

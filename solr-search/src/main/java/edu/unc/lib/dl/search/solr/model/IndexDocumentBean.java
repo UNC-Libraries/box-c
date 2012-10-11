@@ -50,11 +50,10 @@ public class IndexDocumentBean {
 	protected String abstractText;
 	protected List<String> keyword;
 	protected List<String> subject;
-	protected String language;
+	protected List<String> language;
 	protected List<String> creator;
 	protected List<String> contributor;
 	protected List<String> department;
-	protected String creatorType;
 	
 	protected Date dateCreated;
 	protected Date dateAdded;
@@ -334,12 +333,12 @@ public class IndexDocumentBean {
 		this.subject = subject;
 	}
 
-	public String getLanguage() {
+	public List<String> getLanguage() {
 		return language;
 	}
 
 	@Field
-	public void setLanguage(String language) {
+	public void setLanguage(List<String> language) {
 		this.language = language;
 	}
 
@@ -369,16 +368,7 @@ public class IndexDocumentBean {
 	public void setDepartment(List<String> department) {
 		this.department = department;
 	}
-
-	public String getCreatorType() {
-		return creatorType;
-	}
-
-	@Field
-	public void setCreatorType(String creatorType) {
-		this.creatorType = creatorType;
-	}
-
+	
 	public Date getDateCreated() {
 		return dateCreated;
 	}

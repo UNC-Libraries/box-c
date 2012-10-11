@@ -9,24 +9,28 @@ import org.jdom.xpath.XPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.ResourceType;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public class DocumentIndexingPackage {
 	private static final Logger log = LoggerFactory.getLogger(DocumentIndexingPackage.class);
-	
+
 	private static XPath retrieveLabelXPath = JDOMNamespaceUtil.instantiateXPath(
 			"foxml:property[@NAME='info:fedora/fedora-system:def/model#label']/@VALUE",
 			new Namespace[] { Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI) });
 
-	private static XPath retrieveObjectPropertiesXPath = JDOMNamespaceUtil.instantiateXPath("/foxml:digitalObject/foxml:objectProperties",
+	private static XPath retrieveObjectPropertiesXPath = JDOMNamespaceUtil.instantiateXPath(
+			"/foxml:digitalObject/foxml:objectProperties",
 			new Namespace[] { Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI) });
-	
-	private static XPath retrieveRelsExtXPath = JDOMNamespaceUtil.instantiateXPath("/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/"
-			+ "foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/rdf:Description",
+
+	private static XPath retrieveRelsExtXPath = JDOMNamespaceUtil.instantiateXPath(
+			"/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/"
+					+ "foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/rdf:Description",
 			new Namespace[] { Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI), JDOMNamespaceUtil.RDF_NS });
 
 	private PID pid;
@@ -35,6 +39,8 @@ public class DocumentIndexingPackage {
 	private String defaultWebData;
 	private Document foxml;
 	private Element relsExt;
+	private Element mods;
+	private Element mdContents;
 	private Element objectProperties;
 	private IndexDocumentBean document;
 	private String label;
@@ -49,7 +55,7 @@ public class DocumentIndexingPackage {
 		this.pid = new PID(pid);
 		document.setId(this.pid.getPid());
 	}
-	
+
 	public DocumentIndexingPackage(PID pid, Document foxml) {
 		this();
 		this.pid = pid;
@@ -108,8 +114,8 @@ public class DocumentIndexingPackage {
 	public Element getRelsExt() {
 		if (relsExt == null && foxml != null) {
 			try {
-				setRelsExt((Element)retrieveRelsExtXPath.selectSingleNode(this.getFoxml()));
-			} catch (JDOMException e) {
+				setRelsExt(extractDatastream(ContentModelHelper.Datastream.RELS_EXT));
+			} catch (NullPointerException e) {
 				return null;
 			}
 		}
@@ -118,6 +124,49 @@ public class DocumentIndexingPackage {
 
 	public void setRelsExt(Element relsExt) {
 		this.relsExt = relsExt;
+	}
+
+	public Element getMods() {
+		if (mods == null && foxml != null) {
+			try {
+				setMods(extractDatastream(ContentModelHelper.Datastream.MD_DESCRIPTIVE));
+			} catch (NullPointerException e) {
+				return null;
+			}
+		}
+		return mods;
+	}
+	
+	public void setMods(Element mods) {
+		this.mods = mods;
+	}
+
+	public Element getMdContents() {
+		if (mdContents == null && foxml != null) {
+			try {
+				setMdContents(extractDatastream(ContentModelHelper.Datastream.MD_CONTENTS));
+			} catch (NullPointerException e) {
+				return null;
+			}
+		}
+		return mdContents;
+	}
+	
+	public void setMdContents(Element mdContents) {
+		this.mdContents = mdContents;
+	}
+
+	private Element extractDatastream(ContentModelHelper.Datastream datastream) {
+		Element datastreamEl = JDOMQueryUtil.getChildByAttribute(foxml.getRootElement(), "datastream",
+				JDOMNamespaceUtil.FOXML_NS, "ID", datastream.getName());
+		Element dsVersion;
+		if (datastream.isVersionable()) {
+			dsVersion = JDOMQueryUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
+					JDOMNamespaceUtil.FOXML_NS));
+		} else {
+			dsVersion = (Element) datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
+		}
+		return (Element)dsVersion.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS).getChildren().get(0);
 	}
 
 	public Element getObjectProperties() {
@@ -151,9 +200,11 @@ public class DocumentIndexingPackage {
 	}
 
 	public ResourceType getResourceType() {
-		/*if (resourceType == null && document != null && document.getResourceType() != null) {
-			
-		}*/
+		/*
+		 * if (resourceType == null && document != null && document.getResourceType() != null) {
+		 * 
+		 * }
+		 */
 		return resourceType;
 	}
 

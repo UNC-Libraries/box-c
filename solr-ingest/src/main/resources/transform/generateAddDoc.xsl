@@ -208,7 +208,6 @@
 		<field name="abstract"><xsl:value-of select="mods:abstract[1]"/></field>
 		
 		<xsl:apply-templates select="mods:subject" mode="modsSubject"/>
-		<xsl:message>grop<xsl:value-of select="$departmentSplitting"/></xsl:message>
 		<xsl:choose>
 			<xsl:when test="$departmentSplitting = true()">
 				<xsl:apply-templates select="mods:name/mods:affiliation" mode="split"/>

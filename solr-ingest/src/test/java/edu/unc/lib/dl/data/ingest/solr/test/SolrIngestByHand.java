@@ -45,12 +45,14 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.data.ingest.solr.UpdateDocTransformer;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.fedora.ClientUtils;
 import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 //@RunWith(SpringJUnit4ClassRunner.class)
 //@ContextConfiguration(locations = { "/services-context.xml" })
@@ -272,6 +274,11 @@ public class SolrIngestByHand {
 		
 		SAXBuilder builder = new SAXBuilder();
 		Document result = builder.build(new FileInputStream(new File("src/test/resources/foxml/aggregateSplitDepartments.xml")));
+		
+		Element modsDS = JDOMQueryUtil.getChildByAttribute(result.getRootElement(),
+				"datastream", JDOMNamespaceUtil.FOXML_NS, "ID", "MD_DESCRIPTIVE");
+		Element modsVersion = JDOMQueryUtil.getMostRecentDatastreamVersion(modsDS.getChildren("datastreamVersion", JDOMNamespaceUtil.FOXML_NS));
+		
 		XPath contentModelXpath = XPath.newInstance("/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/"
 				+ "foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/"
 				+ "rdf:Description");
@@ -296,6 +303,37 @@ public class SolrIngestByHand {
 			Object value = valueXpath.selectSingleNode(relsExt);
 			if (value == null)
 				System.out.println("NULL");
+		}
+		System.out.println("Completed in " + (System.currentTimeMillis() - start));
+	}
+	
+	@Test
+	public void testXpathSpeed2() throws Exception {
+		
+		SAXBuilder builder = new SAXBuilder();
+		Document result = builder.build(new FileInputStream(new File("src/test/resources/foxml/aggregateSplitDepartments.xml")));
+		XPath modsXpath = XPath.newInstance("/foxml:digitalObject/foxml:datastream[@ID='MD_DESCRIPTIVE']/"
+			+ "foxml:datastreamVersion/foxml:xmlContent/mods:mods");
+		modsXpath.addNamespace("foxml", "info:fedora/fedora-system:def/foxml#");
+		modsXpath.addNamespace(JDOMNamespaceUtil.MODS_V3_NS);
+		
+		XPath nameXPath = XPath.newInstance("mods:name");
+		nameXPath.addNamespace(JDOMNamespaceUtil.MODS_V3_NS);
+		
+		Element modsEl = (Element)modsXpath.selectSingleNode(result);
+		for (int i = 0; i < 1000000; i++) {
+			List<?> names = nameXPath.selectNodes(modsEl);
+		}
+		
+		long start = System.currentTimeMillis();
+		for (int i = 0; i < 1000000; i++) {
+			List<?> names = nameXPath.selectNodes(modsEl);
+		}
+		System.out.println("Completed in " + (System.currentTimeMillis() - start));
+		
+		start = System.currentTimeMillis();
+		for (int i = 0; i < 1000000; i++) {
+			List<?> names = modsEl.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
 		}
 		System.out.println("Completed in " + (System.currentTimeMillis() - start));
 	}

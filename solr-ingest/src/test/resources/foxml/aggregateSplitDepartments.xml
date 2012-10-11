@@ -115,6 +115,7 @@ xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/
                     <mods:name>
                         <mods:namePart>Judson, Richard</mods:namePart>
                         <mods:affiliation>National Center for Computational Toxicology</mods:affiliation>
+                        <mods:role><mods:roleTerm>creator</mods:roleTerm></mods:role>
                     </mods:name>
                     <mods:name>
                         <mods:namePart>Elloumi, Fathi</mods:namePart>
@@ -213,6 +214,7 @@ xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/
   <mods:name>
     <mods:namePart>Judson, Richard</mods:namePart>
     <mods:affiliation>National Center for Computational Toxicology, Office of Research and Development, U.S. Environmental Protection Agency, Research Triangle Park, North Carolina 27711, USA</mods:affiliation>
+    <mods:role><mods:roleTerm>creator</mods:roleTerm></mods:role>
   </mods:name>
   <mods:name>
     <mods:namePart>Elloumi, Fathi</mods:namePart>
@@ -229,6 +231,7 @@ xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/
   <mods:name>
     <mods:namePart>Shah, Imran</mods:namePart>
     <mods:affiliation>National Center for Computational Toxicology, Office of Research and Development, U.S. Environmental Protection Agency, Research Triangle Park, North Carolina 27711, USA</mods:affiliation>
+    <mods:role><mods:roleTerm>director</mods:roleTerm></mods:role>
   </mods:name>
   <mods:relatedItem displayLabel="Source" type="otherFormat">
     <mods:titleInfo>
@@ -254,6 +257,15 @@ xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/
       </mods:extent>
     </mods:part>
   </mods:relatedItem>
+  <mods:subject>
+  	<mods:topic>Machine Learning</mods:topic>
+  </mods:subject>
+  <mods:subject>
+  	<mods:name type="personal" authority="naf">
+  	  	<mods:namePart>Woolf, Virginia</mods:namePart>
+  	  	<mods:namePart type="date">1882-1941</mods:namePart>
+  	</mods:name>
+  </mods:subject>
 </mods:mods>
 </foxml:xmlContent>
 </foxml:datastreamVersion>
