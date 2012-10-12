@@ -174,7 +174,7 @@ public class SearchState implements Serializable, Cloneable  {
 		String value = this.searchFields.get(fieldType);
 		if (value == null)
 			return null;
-		Pattern pattern = Pattern.compile("(\"[^\"]*\"|[^\" ,':]+)"); 
+		Pattern pattern = Pattern.compile("(\"[^\"]*\"|[^\" ,:]+)"); 
 		Matcher matcher = pattern.matcher(value); 
 		ArrayList<String> fragments = new ArrayList<String>();
 		while (matcher.find()){

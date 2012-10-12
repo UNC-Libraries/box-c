@@ -208,7 +208,6 @@
 		<field name="abstract"><xsl:value-of select="mods:abstract[1]"/></field>
 		
 		<xsl:apply-templates select="mods:subject" mode="modsSubject"/>
-		<xsl:message>grop<xsl:value-of select="$departmentSplitting"/></xsl:message>
 		<xsl:choose>
 			<xsl:when test="$departmentSplitting = true()">
 				<xsl:apply-templates select="mods:name/mods:affiliation" mode="split"/>
@@ -420,17 +419,12 @@
 					</xsl:otherwise>
 				</xsl:choose>
 				
-				<xsl:for-each select="$pathObjects">
-					<xsl:message><xsl:value-of select="@slug"/></xsl:message>
-				</xsl:for-each>
-				
 				<xsl:variable name="departmentSplitting">
 					<xsl:choose>
 						<xsl:when test="count($pathObjects) > 3 and fn:contains($pathObjects[3]/@slug, 'BioMed_Central')"><xsl:value-of select="true()"/></xsl:when>
 						<xsl:otherwise><xsl:value-of select="false()"/></xsl:otherwise>
 					</xsl:choose>
 				</xsl:variable>
-				<xsl:message>greep<xsl:value-of select="$departmentSplitting"/></xsl:message>
 				
 				
 				<!-- Access control -->
