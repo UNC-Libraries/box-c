@@ -107,21 +107,14 @@
 	</xsl:template>
 	
 	<xsl:template match="mods:name/mods:affiliation" mode="split">
-		<xsl:variable name="trimmeddept" select="fn:normalize-space()"/>
-		<xsl:variable name="uncdept" select="fn:normalize-space(fn:substring-before(text(), ', University of North Carolina at Chapel Hill'))"/>
-		<xsl:choose>
-			<xsl:when test="boolean($uncdept) and $uncdept != $trimmeddept">
-				<field name="department"><xsl:value-of select="fn:normalize-space($uncdept)"/></field>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:variable name="chdept" select="fn:normalize-space(fn:substring-before(text(), ', Chapel Hill, North Carolina'))"/>
-				<xsl:choose>
-					<xsl:when test="boolean($chdept) and $chdept != $trimmeddept">
-						<field name="department"><xsl:value-of select="fn:normalize-space($chdept)"/></field>
-					</xsl:when>
-				</xsl:choose>
-			</xsl:otherwise>
-		</xsl:choose>
+		<xsl:variable name="trimmedDept" select="fn:normalize-space()"/>
+		<xsl:if test="fn:contains($trimmedDept, 'University of North Carolina') or fn:contains($trimmedDept, 'Chapel Hill, North Carolina')">
+			<xsl:variable name="deptFirstSeg" select="fn:replace(fn:substring-before($trimmedDept, ','), 'University of North Carolina', '')"/>
+			<xsl:if test="fn:starts-with($trimmedDept, 'Department of ') or fn:starts-with($trimmedDept, 'School of ') or fn:contains($trimmedDept, 'Center') or fn:ends-with($trimmedDept, ' Department') ">
+				<xsl:variable name="deptRemoveDeptPrefix" select="fn:replace(fn:replace(fn:replace($deptFirstSeg, 'Department of ', ''), 'School of ', ''), ' Department', '')"/>
+				<field name="department"><xsl:value-of select="$deptRemoveDeptPrefix"/></field>
+			</xsl:if>
+		</xsl:if>
 	</xsl:template>
 	
 	<xsl:template match="mods:genre">

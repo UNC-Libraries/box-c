@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view-inputs><foxml:digitalObject xmlns:foxml="info:fedora/fedora-system:def/foxml#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" VERSION="1.1" PID="uuid:ae20a71e-6ce6-4292-9612-244e06964171" xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+<foxml:objectProperties>
+<foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active" />
+<foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="A randomized trial of an intervention to improve use and adherence to effective coronary heart disease prevention strategies" />
+<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE="" />
+<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2012-10-12T17:15:39.226Z" />
+<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2012-10-12T17:15:39.226Z" />
+</foxml:objectProperties>
+<foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="AUDIT.0" LABEL="Audit Trail for this object" CREATED="2012-10-12T17:15:39.226Z" MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+<foxml:xmlContent>
+<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+<audit:record ID="AUDREC1">
+<audit:process type="Fedora API-M" />
+<audit:action>ingest</audit:action>
+<audit:componentID />
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-10-12T17:15:39.226Z</audit:date>
+<audit:justification>uuid:658eab9e-b00f-4959-8e7b-8f36437c9fe9</audit:justification>
+</audit:record>
+</audit:auditTrail>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="RELS-EXT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="RELS-EXT.0" LABEL="Fedora Object-to-Object Relationship Metadata" CREATED="2012-10-12T17:15:39.250Z" MIMETYPE="text/xml" SIZE="1942">
+<foxml:contentDigest TYPE="MD5" DIGEST="c792dbd0139f0d250a499ad262a1dd26" />
+<foxml:xmlContent>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns5="http://cdr.unc.edu/definitions/1.0/base-model.xml#" xmlns:ns6="info:fedora/fedora-system:def/model#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+                    <rdf:Description rdf:about="info:fedora/uuid:ae20a71e-6ce6-4292-9612-244e06964171">
+                        <ns5:allowIndexing>yes</ns5:allowIndexing>
+                        <ns5:contains rdf:resource="info:fedora/uuid:8b6c3d85-b06a-4076-9ba0-6c3fb6911d9f" />
+                        <ns5:contains rdf:resource="info:fedora/uuid:97d67ff8-c9cb-4a5f-8209-62f5ea062eab" />
+                        <ns5:contains rdf:resource="info:fedora/uuid:e0419be1-8491-4ce2-a070-f523c94330ae" />
+                        <ns5:contains rdf:resource="info:fedora/uuid:f7206d01-1074-4e3a-ac3f-825972fd15d2" />
+                        <ns5:defaultWebObject rdf:resource="info:fedora/uuid:e0419be1-8491-4ce2-a070-f523c94330ae" />
+                        <ns5:originalDeposit rdf:resource="info:fedora/uuid:658eab9e-b00f-4959-8e7b-8f36437c9fe9" />
+                        <ns5:owner rdf:resource="info:fedora/uuid:11fb29d4-d668-4664-ab16-8c04c36fc223" />
+                        <ns5:slug>A_randomized_trial_of_an_intervention_to_improve</ns5:slug>
+                        <ns6:hasModel rdf:resource="info:fedora/cdr-model:AggregateWork" />
+                        <ns6:hasModel rdf:resource="info:fedora/cdr-model:Container" />
+                        <ns6:hasModel rdf:resource="info:fedora/cdr-model:PreservedObject" />
+                    </rdf:Description>
+                </rdf:RDF>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_DESCRIPTIVE" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+<foxml:datastreamVersion ID="MD_DESCRIPTIVE.0" LABEL="Descriptive Metadata" CREATED="2012-10-12T17:15:39.251Z" MIMETYPE="text/xml" SIZE="9540">
+<foxml:contentDigest TYPE="MD5" DIGEST="a830ebb8d985b2cf6b7c241c48480d4a" />
+<foxml:xmlContent>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:rights="http://www.cdlib.org/inside/diglib/copyrightMD" xmlns:epdcx="http://purl.org/eprint/epdcx/2006-11-16/" xmlns:xlink2="http://www.w3.org/1999/xlink">
+               <mods:titleInfo>
+                  <mods:title>A randomized trial of an intervention to improve use and adherence to effective coronary heart disease prevention strategies</mods:title>
+               </mods:titleInfo>
+               <mods:abstract>Abstract
+
+
+
+Background
+
+Efficacious strategies for the primary prevention of coronary heart disease (CHD) are underused, and, when used, have low adherence. Existing efforts to improve use and adherence to these efficacious strategies have been so intensive that they are impractical for clinical practice.
+
+
+
+Methods
+
+We conducted a randomized trial of a CHD prevention intervention (including a computerized decision aid and automated tailored adherence messages) at one university general internal medicine practice. After obtaining informed consent and collecting baseline data, we randomized patients (men and women age 40-79 with no prior history of cardiovascular disease) to either the intervention or usual care. We then saw them for two additional study visits over 3 months. For intervention participants, we administered the decision aid at the primary study visit (1 week after baseline visit) and then mailed 3 tailored adherence reminders at 2, 4, and 6 weeks. We assessed our outcomes (including the predicted likelihood of angina, myocardial infarction, and CHD death over 10 years (CHD risk) and self-reported adherence) between groups at 3 month follow-up. Data collection occurred from June 2007 through December 2009. All study procedures were IRB approved.
+
+
+
+Results
+
+We randomized 160 eligible patients (81 intervention; 79 control) and followed 96% to study conclusion. Mean predicted CHD risk at baseline was 11.3%. The intervention increased self-reported adherence to chosen risk reducing strategies by 25 percentage points (95% CI 8% to 42%), with the biggest effect for aspirin. It also changed predicted CHD risk by -1.1% (95% CI -0.16% to -2%), with a larger effect in a pre-specified subgroup of high risk patients.
+
+
+
+Conclusion
+
+A computerized intervention that involves patients in CHD decision making and supports adherence to effective prevention strategies can improve adherence and reduce predicted CHD risk.
+
+
+
+Clinical trials registration number
+
+ClinicalTrials.gov: NCT00494052</mods:abstract>
+               
+               
+               
+               
+               
+               
+               
+               
+               
+               <mods:language>
+                  <mods:languageTerm type="code" authority="iso639-2b">eng</mods:languageTerm>
+               </mods:language>
+               <mods:typeOfResource>text</mods:typeOfResource>
+               <mods:genre authorityURI="http://purl.org/eprint/type/" valueURI="http://purl.org/eprint/type/JournalArticle" type="work type">Journal Article</mods:genre>
+               <mods:originInfo>
+                  <mods:publisher>BioMed Central Ltd</mods:publisher>
+                  <mods:dateIssued>2011-12-05</mods:dateIssued>
+               </mods:originInfo>
+               <mods:genre authority="local">Peer Reviewed</mods:genre>
+               <mods:accessCondition>
+                  <rights:copyright copyright.status="copyrighted" publication.status="published">
+                     <rights:rights.holder>
+                        <rights:name>Sheridan et al.; licensee BioMed Central Ltd.</rights:name>
+                     </rights:rights.holder>
+                  </rights:copyright>
+               </mods:accessCondition>
+               <mods:accessCondition type="use and reproduction" xlink2:href="http://creativecommons.org/licenses/by/2.0" />
+               <mods:accessCondition type="restriction on access">Open Access</mods:accessCondition>
+               <mods:note type="citation/reference">BMC Health Services Research. 2011 Dec 05;11(1):331</mods:note>
+               <mods:location>
+                  <mods:url>http://dx.doi.org/10.1186/1472-6963-11-331</mods:url>
+               </mods:location>
+            <mods:identifier type="doi">10.1186/1472-6963-11-331</mods:identifier>
+                    <mods:identifier type="pmpid" displayLabel="PMID">22141447</mods:identifier>
+                    <mods:name>
+                        <mods:namePart>Sheridan, Stacey L</mods:namePart>
+                        <mods:affiliation>Division of General Medicine and Clinical Epidemiology, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                        <mods:affiliation>Center for Health Promotion and Disease Prevention, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                    </mods:name>
+                    <mods:name>
+                        <mods:namePart>Draeger, Lindy B</mods:namePart>
+                        <mods:affiliation>Division of General Medicine and Clinical Epidemiology, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                        <mods:affiliation>Center for Health Promotion and Disease Prevention, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                    </mods:name>
+                    <mods:name>
+                        <mods:namePart>Pignone, Michael P</mods:namePart>
+                        <mods:affiliation>Division of General Medicine and Clinical Epidemiology, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                    </mods:name>
+                    <mods:name>
+                        <mods:namePart>Keyserling, Thomas C</mods:namePart>
+                        <mods:affiliation>Division of General Medicine and Clinical Epidemiology, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                        <mods:affiliation>Center for Health Promotion and Disease Prevention, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                    </mods:name>
+                    <mods:name>
+                        <mods:namePart>Simpson, Ross J</mods:namePart>
+                        <mods:affiliation>Division of Cardiology, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                    </mods:name>
+                    <mods:name>
+                        <mods:namePart>Rimer, Barbara</mods:namePart>
+                        <mods:affiliation>Gillings School of Global Public Health, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                    </mods:name>
+                    <mods:name>
+                        <mods:namePart>Bangdiwala, Shrikant I</mods:namePart>
+                        <mods:affiliation>Center for Health Promotion and Disease Prevention, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                        <mods:affiliation>Gillings School of Global Public Health, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                        <mods:affiliation>Department of Biostatistics, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                    </mods:name>
+                    <mods:name>
+                        <mods:namePart>Cai, Jianwen</mods:namePart>
+                        <mods:affiliation>Center for Health Promotion and Disease Prevention, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                        <mods:affiliation>Gillings School of Global Public Health, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                        <mods:affiliation>Department of Biostatistics, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                    </mods:name>
+                    <mods:name>
+                        <mods:namePart>Gizlice, Ziya</mods:namePart>
+                        <mods:affiliation>Center for Health Promotion and Disease Prevention, University of North Carolina, Chapel Hill, NC, USA</mods:affiliation>
+                    </mods:name>
+                    <mods:relatedItem type="otherFormat" displayLabel="Source">
+                        <mods:titleInfo>
+                            <mods:title>BMC Health Services Research</mods:title>
+                        </mods:titleInfo>
+                        <mods:identifier type="issn">1472-6963</mods:identifier>
+                        <mods:originInfo>
+                            <mods:dateIssued>2011</mods:dateIssued>
+                        </mods:originInfo>
+                        <mods:part>
+                            <mods:detail type="volume">
+                                <mods:number>11</mods:number>
+                                <mods:caption>vol.</mods:caption>
+                            </mods:detail>
+                            <mods:detail type="issue">
+                                <mods:number>1</mods:number>
+                                <mods:caption>issue</mods:caption>
+                            </mods:detail>
+                        </mods:part>
+                        <mods:part>
+                            <mods:extent unit="page">
+                                <mods:start>331</mods:start>
+                            </mods:extent>
+                        </mods:part>
+                    </mods:relatedItem>
+                </mods:mods>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_CONTENTS" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_CONTENTS.0" LABEL="List of Contents" CREATED="2012-10-12T17:15:39.251Z" MIMETYPE="text/xml" SIZE="559">
+<foxml:contentDigest TYPE="MD5" DIGEST="029febc88d6c987b3f448dca6ac33d00" />
+<foxml:xmlContent>
+<m:structMap xmlns:m="http://www.loc.gov/METS/">
+               <m:div TYPE="Container">
+                  <m:div ID="uuid:97d67ff8-c9cb-4a5f-8209-62f5ea062eab" ORDER="1" />
+                  <m:div ID="uuid:e0419be1-8491-4ce2-a070-f523c94330ae" ORDER="2" />
+                  <m:div ID="uuid:f7206d01-1074-4e3a-ac3f-825972fd15d2" ORDER="3" />
+                  <m:div ID="uuid:8b6c3d85-b06a-4076-9ba0-6c3fb6911d9f" ORDER="4" />
+               </m:div>
+            </m:structMap>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="DC1.0" LABEL="Internal XML Metadata" CREATED="2012-10-12T17:15:39.252Z" MIMETYPE="text/xml" SIZE="3698">
+<foxml:contentDigest TYPE="MD5" DIGEST="ca6d10b249b4291ecb24bfc0db6900ee" />
+<foxml:xmlContent>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+  <dc:title>A randomized trial of an intervention to improve use and adherence to effective coronary heart disease prevention strategies</dc:title>
+  <dc:description>Abstract
+
+
+
+Background
+
+Efficacious strategies for the primary prevention of coronary heart disease (CHD) are underused, and, when used, have low adherence. Existing efforts to improve use and adherence to these efficacious strategies have been so intensive that they are impractical for clinical practice.
+
+
+
+Methods
+
+We conducted a randomized trial of a CHD prevention intervention (including a computerized decision aid and automated tailored adherence messages) at one university general internal medicine practice. After obtaining informed consent and collecting baseline data, we randomized patients (men and women age 40-79 with no prior history of cardiovascular disease) to either the intervention or usual care. We then saw them for two additional study visits over 3 months. For intervention participants, we administered the decision aid at the primary study visit (1 week after baseline visit) and then mailed 3 tailored adherence reminders at 2, 4, and 6 weeks. We assessed our outcomes (including the predicted likelihood of angina, myocardial infarction, and CHD death over 10 years (CHD risk) and self-reported adherence) between groups at 3 month follow-up. Data collection occurred from June 2007 through December 2009. All study procedures were IRB approved.
+
+
+
+Results
+
+We randomized 160 eligible patients (81 intervention; 79 control) and followed 96% to study conclusion. Mean predicted CHD risk at baseline was 11.3%. The intervention increased self-reported adherence to chosen risk reducing strategies by 25 percentage points (95% CI 8% to 42%), with the biggest effect for aspirin. It also changed predicted CHD risk by -1.1% (95% CI -0.16% to -2%), with a larger effect in a pre-specified subgroup of high risk patients.
+
+
+
+Conclusion
+
+A computerized intervention that involves patients in CHD decision making and supports adherence to effective prevention strategies can improve adherence and reduce predicted CHD risk.
+
+
+
+Clinical trials registration number
+
+ClinicalTrials.gov: NCT00494052</dc:description>
+  <dc:description>BMC Health Services Research. 2011 Dec 05;11(1):331</dc:description>
+  <dc:publisher>BioMed Central Ltd</dc:publisher>
+  <dc:contributor>Sheridan, Stacey L</dc:contributor>
+  <dc:contributor>Draeger, Lindy B</dc:contributor>
+  <dc:contributor>Pignone, Michael P</dc:contributor>
+  <dc:contributor>Keyserling, Thomas C</dc:contributor>
+  <dc:contributor>Simpson, Ross J</dc:contributor>
+  <dc:contributor>Rimer, Barbara</dc:contributor>
+  <dc:contributor>Bangdiwala, Shrikant I</dc:contributor>
+  <dc:contributor>Cai, Jianwen</dc:contributor>
+  <dc:contributor>Gizlice, Ziya</dc:contributor>
+  <dc:type>Text</dc:type>
+  <dc:type>Journal Article</dc:type>
+  <dc:type>Peer Reviewed</dc:type>
+  <dc:identifier>uuid:ae20a71e-6ce6-4292-9612-244e06964171</dc:identifier>
+  <dc:identifier>http://dx.doi.org/10.1186/1472-6963-11-331</dc:identifier>
+  <dc:identifier>doi: 10.1186/1472-6963-11-331</dc:identifier>
+  <dc:identifier>22141447</dc:identifier>
+  <dc:language>eng</dc:language>
+  <dc:relation>BMC Health Services Research--1472-6963</dc:relation>
+  <dc:rights>Sheridan et al.; licensee BioMed Central Ltd.</dc:rights>
+  <dc:rights />
+  <dc:rights>Open Access</dc:rights>
+</oai_dc:dc>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_EVENTS" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_EVENTS.0" LABEL="PREMIS Events Metadata" CREATED="2012-10-12T17:15:39.252Z" MIMETYPE="text/xml" SIZE="5328">
+<foxml:contentDigest TYPE="MD5" DIGEST="bc943e5a3d5bf52cc709433a778037ea" />
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:ae20a71e-6ce6-4292-9612-244e06964171+MD_EVENTS+MD_EVENTS.0" />
+</foxml:datastreamVersion>
+</foxml:datastream>
+</foxml:digitalObject><path><object label="Repository Home" pid="admin:REPOSITORY" slug="REPOSITORY" /><object label="Collections" pid="uuid:e7c5566f-2b2f-46a9-87fb-0a90268c9aad" slug="Collections" /><object label="BiomedCentral" pid="uuid:f14be512-bed6-4dfb-a3cb-7643fce0329e" slug="BioMed_Central" /><object label="A randomized trial of an intervention to improve use and adherence to effective coronary heart disease prevention strategies" pid="uuid:ae20a71e-6ce6-4292-9612-244e06964171" slug="A_randomized_trial_of_an_intervention_to_improve" /></path><parentCollection>uuid:f14be512-bed6-4dfb-a3cb-7643fce0329e</parentCollection><permissions><rights><permitDerivativesCreate>unc:app:lib:cdr:depositor:cdradmin</permitDerivativesCreate><permitDerivativesCreate>unc:app:lib:cdr:depositor:biomedcentral</permitDerivativesCreate><permitMetadataUpdate>unc:app:lib:cdr:depositor:cdradmin</permitMetadataUpdate><permitMetadataUpdate>unc:app:lib:cdr:depositor:biomedcentral</permitMetadataUpdate><permitOriginalsRead>unc:app:lib:cdr:depositor:cdradmin</permitOriginalsRead><permitOriginalsRead>public</permitOriginalsRead><permitOriginalsRead>unc:app:lib:cdr:depositor:biomedcentral</permitOriginalsRead><permitDerivativesRead>unc:app:lib:cdr:depositor:cdradmin</permitDerivativesRead><permitDerivativesRead>public</permitDerivativesRead><permitDerivativesRead>unc:app:lib:cdr:depositor:biomedcentral</permitDerivativesRead><permitDerivativesUpdate>unc:app:lib:cdr:depositor:cdradmin</permitDerivativesUpdate><permitDerivativesUpdate>unc:app:lib:cdr:depositor:biomedcentral</permitDerivativesUpdate><permitOriginalsUpdate>unc:app:lib:cdr:depositor:cdradmin</permitOriginalsUpdate><permitOriginalsUpdate>unc:app:lib:cdr:depositor:biomedcentral</permitOriginalsUpdate><permitMetadataCreate>unc:app:lib:cdr:depositor:cdradmin</permitMetadataCreate><permitMetadataCreate>unc:app:lib:cdr:depositor:biomedcentral</permitMetadataCreate><permitOriginalsCreate>unc:app:lib:cdr:depositor:cdradmin</permitOriginalsCreate><permitOriginalsCreate>unc:app:lib:cdr:depositor:biomedcentral</permitOriginalsCreate><permitMetadataRead>unc:app:lib:cdr:depositor:cdradmin</permitMetadataRead><permitMetadataRead>public</permitMetadataRead><permitMetadataRead>unc:app:lib:cdr:depositor:biomedcentral</permitMetadataRead></rights></permissions><order>15</order><defaultWebObject id="info:fedora/uuid:e0419be1-8491-4ce2-a070-f523c94330ae"><foxml:digitalObject xmlns:foxml="info:fedora/fedora-system:def/foxml#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" VERSION="1.1" PID="uuid:e0419be1-8491-4ce2-a070-f523c94330ae" xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+<foxml:objectProperties>
+<foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active" />
+<foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="1472-6963-11-331.pdf" />
+<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE="" />
+<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2012-10-12T17:15:50.424Z" />
+<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2012-10-12T17:16:35.155Z" />
+</foxml:objectProperties>
+<foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="AUDIT.0" LABEL="Audit Trail for this object" CREATED="2012-10-12T17:15:50.424Z" MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+<foxml:xmlContent>
+<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+<audit:record ID="AUDREC1">
+<audit:process type="Fedora API-M" />
+<audit:action>ingest</audit:action>
+<audit:componentID />
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-10-12T17:15:50.424Z</audit:date>
+<audit:justification>uuid:658eab9e-b00f-4959-8e7b-8f36437c9fe9</audit:justification>
+</audit:record>
+<audit:record ID="AUDREC2">
+<audit:process type="Fedora API-M" />
+<audit:action>addDatastream</audit:action>
+<audit:componentID>MD_TECHNICAL</audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-10-12T17:16:26.849Z</audit:date>
+<audit:justification>Adding technical metadata derived by FITS</audit:justification>
+</audit:record>
+</audit:auditTrail>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DATA_FILE" STATE="A" CONTROL_GROUP="M" VERSIONABLE="true">
+<foxml:datastreamVersion ID="DATA_FILE.0" LABEL="1472-6963-11-331.pdf" CREATED="2012-10-12T17:15:50.445Z" ALT_IDS="1472-6963-11-331.pdf" MIMETYPE="application/pdf" SIZE="332116">
+<foxml:contentDigest TYPE="MD5" DIGEST="07ce4ec58202c5b2f74810441f1e9093" />
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:e0419be1-8491-4ce2-a070-f523c94330ae+DATA_FILE+DATA_FILE.0" />
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="DC1.0" LABEL="Internal XML Metadata" CREATED="2012-10-12T17:15:50.445Z" MIMETYPE="text/xml" SIZE="414">
+<foxml:contentDigest TYPE="MD5" DIGEST="2868acee92cdb5f944eb6196d90bbed3" />
+<foxml:xmlContent>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+  <dc:title>1472-6963-11-331.pdf</dc:title>
+  <dc:identifier>uuid:e0419be1-8491-4ce2-a070-f523c94330ae</dc:identifier>
+</oai_dc:dc>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_EVENTS" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_EVENTS.0" LABEL="PREMIS Events Metadata" CREATED="2012-10-12T17:15:50.445Z" MIMETYPE="text/xml" SIZE="4189">
+<foxml:contentDigest TYPE="MD5" DIGEST="ff308475a62d6c0ec625a15d983386ba" />
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:e0419be1-8491-4ce2-a070-f523c94330ae+MD_EVENTS+MD_EVENTS.0" />
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_TECHNICAL" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_TECHNICAL.0" LABEL="PREMIS Technical Metadata" CREATED="2012-10-12T17:16:26.849Z" MIMETYPE="text/xml" SIZE="8320">
+<foxml:contentDigest TYPE="MD5" DIGEST="86b37f376edbdca9a69cbc1ed63e29c1" />
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:e0419be1-8491-4ce2-a070-f523c94330ae+MD_TECHNICAL+MD_TECHNICAL.0" />
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="RELS-EXT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="RELS-EXT.3" LABEL="Fedora Object-to-Object Relationship Metadata" CREATED="2012-10-12T17:16:35.155Z" MIMETYPE="text/xml" SIZE="1691">
+<foxml:contentDigest TYPE="MD5" DIGEST="eaeec55fd64d95b27970ed26f42d2168" />
+<foxml:xmlContent>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+<rdf:Description rdf:about="info:fedora/uuid:e0419be1-8491-4ce2-a070-f523c94330ae">
+	<allowIndexing xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">yes</allowIndexing>
+	<defaultWebData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:e0419be1-8491-4ce2-a070-f523c94330ae/DATA_FILE" />
+	<originalDeposit xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:658eab9e-b00f-4959-8e7b-8f36437c9fe9" />
+	<owner xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:11fb29d4-d668-4664-ab16-8c04c36fc223" />
+	<slug xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">1472-6963-11-331.pdf</slug>
+	<sourceData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:e0419be1-8491-4ce2-a070-f523c94330ae/DATA_FILE" />
+	<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:PreservedObject" />
+	<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:Simple" />
+	<hasSourceMimeType xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">application/pdf</hasSourceMimeType>
+	<hasSourceFileSize xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:datatype="http://www.w3.org/2001/XMLSchema#long">332116</hasSourceFileSize>
+	<techData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:e0419be1-8491-4ce2-a070-f523c94330ae/MD_TECHNICAL" />
+</rdf:Description>
+
+</rdf:RDF>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+</foxml:digitalObject></defaultWebObject></view-inputs>
