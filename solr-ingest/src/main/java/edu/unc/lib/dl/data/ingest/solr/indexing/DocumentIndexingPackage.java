@@ -28,13 +28,9 @@ public class DocumentIndexingPackage {
 			"/foxml:digitalObject/foxml:objectProperties",
 			new Namespace[] { Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI) });
 
-	private static XPath retrieveRelsExtXPath = JDOMNamespaceUtil.instantiateXPath(
-			"/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/"
-					+ "foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/rdf:Description",
-			new Namespace[] { Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI), JDOMNamespaceUtil.RDF_NS });
-
 	private PID pid;
 	private DocumentIndexingPackage parentDocument;
+	private boolean attemptedToRetrieveDefaultWebObject;
 	private DocumentIndexingPackage defaultWebObject;
 	private String defaultWebData;
 	private Document foxml;
@@ -48,6 +44,7 @@ public class DocumentIndexingPackage {
 
 	public DocumentIndexingPackage() {
 		document = new IndexDocumentBean();
+		this.attemptedToRetrieveDefaultWebObject = false;
 	}
 
 	public DocumentIndexingPackage(String pid) {
@@ -77,6 +74,14 @@ public class DocumentIndexingPackage {
 
 	public void setParentDocument(DocumentIndexingPackage parentDocument) {
 		this.parentDocument = parentDocument;
+	}
+
+	public boolean isAttemptedToRetrieveDefaultWebObject() {
+		return attemptedToRetrieveDefaultWebObject;
+	}
+
+	public void setAttemptedToRetrieveDefaultWebObject(boolean attemptedToRetrieveDefaultWebObject) {
+		this.attemptedToRetrieveDefaultWebObject = attemptedToRetrieveDefaultWebObject;
 	}
 
 	public DocumentIndexingPackage getDefaultWebObject() {
@@ -114,7 +119,8 @@ public class DocumentIndexingPackage {
 	public Element getRelsExt() {
 		if (relsExt == null && foxml != null) {
 			try {
-				setRelsExt(extractDatastream(ContentModelHelper.Datastream.RELS_EXT));
+				Element rdf = extractDatastream(ContentModelHelper.Datastream.RELS_EXT);
+				setRelsExt((Element)rdf.getChildren().get(0));
 			} catch (NullPointerException e) {
 				return null;
 			}

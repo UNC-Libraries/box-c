@@ -40,6 +40,7 @@ xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/
                         <ns5:contains rdf:resource="info:fedora/uuid:c1e12d41-dcee-4c7c-9d5e-4d3e4b4fffeb"></ns5:contains>
                         <ns5:contains rdf:resource="info:fedora/uuid:e14acb11-b6a8-462f-8f21-aeb8ba9cff41"></ns5:contains>
                         <ns5:owner rdf:resource="info:fedora/uuid:4e6425d9-79d4-4d94-af51-c49ee7f31cf8"></ns5:owner>
+                        <ns5:sortOrder rdf:resource="http://cdr.unc.edu/definitions/1.0/base-model#ordered"></ns5:sortOrder>
                         <ns5:slug>Field_notes</ns5:slug>
                         <ns6:hasModel rdf:resource="info:fedora/cdr-model:Container"></ns6:hasModel>
                         <ns6:hasModel rdf:resource="info:fedora/cdr-model:PreservedObject"></ns6:hasModel>
