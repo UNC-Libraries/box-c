@@ -599,11 +599,22 @@
                                     <xsl:variable name="lname" select="local-name($pred)"/>
                                     <xsl:variable name="objectPID"
                                         select="common:get-pid(key('divid',substring(./@xlink:to,2)))"/>
-                                    <xsl:element namespace="{$ns}" name="{$lname}">
-                                        <xsl:attribute name="resource"
-                                            namespace="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-                                            select="concat('info:fedora/',$objectPID)"/>
-                                    </xsl:element>
+                                        <xsl:choose>
+                                            <xsl:when test="$lname eq 'hasAlphabeticalOrder'">
+                                                <xsl:element namespace="{$ns}" name="sortOrder">
+                                                    <xsl:attribute name="resource"
+                                                        namespace="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                                                        select="concat($ns,'alphabetical')"/>
+                                                </xsl:element>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:element namespace="{$ns}" name="{$lname}">
+                                                    <xsl:attribute name="resource"
+                                                        namespace="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                                                        select="concat('info:fedora/',$objectPID)"/>
+                                                </xsl:element>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                 </xsl:if>
                             </xsl:for-each>
                         </rdf:Description>
