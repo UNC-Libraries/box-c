@@ -21,6 +21,8 @@ package edu.unc.lib.dl.ingest.sip;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.xml.sax.SAXParseException;
+
 import edu.unc.lib.dl.ingest.IngestException;
 
 /**
@@ -40,6 +42,26 @@ public class FilesDoNotMatchManifestException extends IngestException {
 	 */
 	public FilesDoNotMatchManifestException(String msg, Throwable e) {
 		super(msg, e);
+	}
+
+	@Override
+	public String getMessage() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(super.getMessage());
+		sb.append("The METS did not meet all requirements.\n");
+		if(this.missingFiles.size() > 0) sb.append("Missing Files:\n");
+		for(String e : this.missingFiles) {
+			sb.append(e).append("\n");
+		}
+		if(this.extraFiles.size() > 0) sb.append("Extra Files:\n");
+		for(String e : this.extraFiles) {
+			sb.append(e).append("\n");
+		}
+		if(this.badChecksumFiles.size() > 0) sb.append("Files with Bad Checksums:\n");
+		for(String e : this.badChecksumFiles) {
+			sb.append(e).append("\n");
+		}
+		return sb.toString();
 	}
 
 	/**

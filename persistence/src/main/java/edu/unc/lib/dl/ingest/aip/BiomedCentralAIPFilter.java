@@ -17,8 +17,6 @@ package edu.unc.lib.dl.ingest.aip;
 
 import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -47,7 +45,6 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 	private static Logger LOG = Logger.getLogger(BiomedCentralAIPFilter.class);
 	
 	private static final String BIOMED_ONYEN = "biomedcentral";
-	private final String UNC_AFFIL_ADDRESS = "University of North Carolina at Chapel Hill";
 	private AgentFactory agentFactory;
 	
 	private Agent biomedAgent;
@@ -220,13 +217,15 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 		if (elements != null){
 			for (Element identifier: elements){
 				String idType = identifier.getAttributeValue("idtype");
-				Element modsIdentifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
-				modsIdentifier.setAttribute("type", idType);
-				if (idType.equals("pmpid")){
-					modsIdentifier.setAttribute("displayLabel", "PMID");
+				if (idType != null) {
+					Element modsIdentifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+					modsIdentifier.setAttribute("type", idType);
+					if (idType.equals("pmpid")){
+						modsIdentifier.setAttribute("displayLabel", "PMID");
+					}
+					modsIdentifier.setText(identifier.getTextTrim());
+					modsContent.addContent(modsIdentifier);
 				}
-				modsIdentifier.setText(identifier.getTextTrim());
-				modsContent.addContent(modsIdentifier);
 			}
 		}
 		
@@ -308,15 +307,25 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 				// Skip this record if can't find a pid
 				if (supplementPID == null)
 					continue;
-				String supplementTitle = ((Element)this.supplementTitleXPath.selectSingleNode(supplement)).getValue().trim();
-				//If the title is too long for the label field, then limit to just the main title
-				if (supplementTitle.length() >= 250){
-					supplementTitle = ((Element)this.supplementTitleXPath.selectSingleNode(supplement)).getChildTextTrim("b");
-					//If still too long, then truncate.
+				Element supplementTitleElement = (Element)this.supplementTitleXPath.selectSingleNode(supplement);
+				String supplementTitle = null;
+				if (supplementTitleElement != null && supplementTitleElement.getValue() != null) {
+					supplementTitle = supplementTitleElement.getValue().trim();
+					//If the title is too long for the label field, then limit to just the main title
 					if (supplementTitle.length() >= 250){
-						supplementTitle = supplementTitle.substring(0, 249);
+						String shortenedTitle = supplementTitleElement.getChildTextTrim("b");
+						if (shortenedTitle != null) {
+							supplementTitle = shortenedTitle;
+						}
+						//If still too long, then truncate.
+						if (supplementTitle.length() >= 250){
+							supplementTitle = supplementTitle.substring(0, 249);
+						}
 					}
 				}
+				
+				if (supplementTitle == null || supplementTitle.trim().length() == 0)
+					supplementTitle = supplementFileName;
 				Document supplementFOXML = aip.getFOXMLDocument(supplementPID);
 				FOXMLJDOMUtil.setProperty(supplementFOXML, ObjectProperty.label, supplementTitle);
 				aip.saveFOXMLDocument(supplementPID, supplementFOXML);
@@ -331,31 +340,11 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 	private void addAuthorsAndAffiliations(Element bibRoot, Element modsContent) throws JDOMException{
 		//Extract affiliations
 		List<Element> elements = (List<Element>)this.affiliationXPath.selectNodes(bibRoot);
-		Map<String,List<String>> affiliationMap = new HashMap<String,List<String>>();
+		Map<String,String> affiliationMap = new HashMap<String,String>();
 		if (elements != null){
 			for (Element element: elements){
 				String affiliation = element.getChildTextTrim("p");
-				int index = affiliation.indexOf(UNC_AFFIL_ADDRESS);
-				if (index == -1){
-					//If not UNC affiliated, then use up to the first comma.
-					index = affiliation.indexOf(",");
-					if (index != -1){
-						affiliation = affiliation.substring(0,index);
-					}
-					affiliationMap.put(element.getAttributeValue("id"), Arrays.asList(affiliation));
-				} else {
-					//If it is a UNC affiliate, then break down all the address elements up to UNC
-					int commaIndex = affiliation.lastIndexOf(',', index);
-					if (commaIndex != -1){
-						affiliation = affiliation.substring(0, commaIndex);
-						String[] affiliationComponents = affiliation.split(",");
-						List<String> affiliationList = new ArrayList<String>();
-						for (String affiliationComponent: affiliationComponents){
-							affiliationList.add(affiliationComponent.trim());
-						}
-						affiliationMap.put(element.getAttributeValue("id"), affiliationList);
-					}
-				}
+				affiliationMap.put(element.getAttributeValue("id"), affiliation);
 			}
 		}
 		
@@ -391,14 +380,10 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 					Element affiliationRef = (Element)affiliationObject;
 					affiliationID = affiliationRef.getAttributeValue("iid");
 					if (affiliationID != null){
-						List<String> affiliationList = affiliationMap.get(affiliationID);
-						if (affiliationList != null){
-							for (String affiliation: affiliationList){
-								Element affiliationElement = new Element("affiliation", JDOMNamespaceUtil.MODS_V3_NS);
-								affiliationElement.setText(affiliation);
-								nameElement.addContent(affiliationElement);
-							}
-						}
+						String affiliation = affiliationMap.get(affiliationID);
+						Element affiliationElement = new Element("affiliation", JDOMNamespaceUtil.MODS_V3_NS);
+						affiliationElement.setText(affiliation);
+						nameElement.addContent(affiliationElement);
 					}
 				}
 				

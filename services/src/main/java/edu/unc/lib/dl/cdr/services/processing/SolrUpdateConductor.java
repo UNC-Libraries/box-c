@@ -70,9 +70,11 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 						this.offer(pidString, SolrUpdateAction.RECURSIVE_ADD);
 					}
 				}
+				if (!JMSMessageUtil.CDRActions.ADD.equals(action)){
 				// Reorder is a non-recursive add.
-				for (String pidString: cdrMessage.getReordered()){
-					this.offer(pidString, SolrUpdateAction.ADD);
+					for (String pidString: cdrMessage.getReordered()){
+						this.offer(pidString, SolrUpdateAction.ADD);
+					}
 				}
 			} else if (JMSMessageUtil.CDRActions.REINDEX.equals(action)){
 				//Determine which kind of reindex to perform based on the mode

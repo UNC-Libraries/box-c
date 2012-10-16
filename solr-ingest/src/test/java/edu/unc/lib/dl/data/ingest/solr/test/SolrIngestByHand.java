@@ -221,7 +221,7 @@ public class SolrIngestByHand {
 	public void testTransform() throws IOException {
 		InputStream inputStream = null;
 		try {
-			Document doc = new SAXBuilder().build(new FileInputStream(new File("src/test/resources/defaultWebObject.xml")));
+			Document doc = new SAXBuilder().build(new FileInputStream(new File("src/test/resources/biomedObjectView.xml")));
 			
 			XMLOutputter out = new XMLOutputter();
 		   out.output(doc, System.out);

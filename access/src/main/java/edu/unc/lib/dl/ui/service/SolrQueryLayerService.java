@@ -100,7 +100,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	}
 
 	public SearchResultResponse getDepartmentList(AccessGroupSet accessGroups) {
-		SearchState searchState = SearchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT, "index", 500);
+		SearchState searchState = SearchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT, "index", 999999);
 
 		SearchRequest searchRequest = new SearchRequest(searchState, accessGroups);
 
@@ -382,6 +382,37 @@ public class SolrQueryLayerService extends SolrSearchService {
 		return getFacetList(searchState, accessGroups, facetsToRetrieve, false);
 	}
 
+	public long getChildrenCount(BriefObjectMetadataBean metadataObject, AccessGroupSet accessGroups) {
+		QueryResponse queryResponse = null;
+		SolrQuery solrQuery = new SolrQuery();
+		StringBuilder query = new StringBuilder();
+
+		try {
+			// Add access restrictions to query
+			addAccessRestrictions(query, accessGroups, SearchFieldKeys.RECORD_ACCESS);
+		} catch (AccessRestrictionException e) {
+			// If the user doesn't have any access groups, they don't have access to anything, return null.
+			LOG.error(e.getMessage());
+			return -1;
+		}
+		
+		solrQuery.setStart(0);
+		solrQuery.setRows(0);
+		
+		query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH)).append(':')
+			.append(solrSettings.sanitize(metadataObject.getPath().getSearchValue())).append(",*");
+		
+		solrQuery.setQuery(query.toString());
+		
+		try {
+			queryResponse = this.executeQuery(solrQuery);
+			return queryResponse.getResults().getNumFound();
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr search result request: " + e);
+		}
+		return -1;
+	}
+	
 	/**
 	 * Populates the child count attributes of all metadata objects in the given search result response by querying for
 	 * all non-folder objects which have the metadata object's highest ancestor path tier somewhere in its ancestor path.
