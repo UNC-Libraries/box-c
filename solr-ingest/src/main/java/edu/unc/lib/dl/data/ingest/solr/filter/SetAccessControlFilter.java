@@ -13,8 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.fedora;
+package edu.unc.lib.dl.data.ingest.solr.filter;
 
-public enum AccessControlCategory {
-	Administrative, Original, Metadata, Derivative;
+import edu.unc.lib.dl.data.ingest.solr.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+
+public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
+
+	@Override
+	public void filter(DocumentIndexingPackage dip) throws IndexingException {
+		// TODO Auto-generated method stub
+
+	}
+
 }

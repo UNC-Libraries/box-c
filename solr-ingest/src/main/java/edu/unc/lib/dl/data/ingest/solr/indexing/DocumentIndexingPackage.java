@@ -1,3 +1,18 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
 import org.jdom.Attribute;
@@ -38,6 +53,7 @@ public class DocumentIndexingPackage {
 	private Element mods;
 	private Element mdContents;
 	private Element objectProperties;
+	private Boolean isPublished;
 	private IndexDocumentBean document;
 	private String label;
 	private ResourceType resourceType;
@@ -206,11 +222,6 @@ public class DocumentIndexingPackage {
 	}
 
 	public ResourceType getResourceType() {
-		/*
-		 * if (resourceType == null && document != null && document.getResourceType() != null) {
-		 * 
-		 * }
-		 */
 		return resourceType;
 	}
 
@@ -218,108 +229,11 @@ public class DocumentIndexingPackage {
 		this.resourceType = resourceType;
 	}
 
-	public void setSystemDates() {
-
+	public Boolean getIsPublished() {
+		return isPublished;
 	}
 
-	/**
-	 * Retrieves and stores path related attributes, including ancestorPath, ancestorNames, parentCollection, rollup
-	 * 
-	 * Depends on parentDocuments or triple store Side effect of triple store query, retrieves content models
-	 */
-	public void setPath() {
-
+	public void setIsPublished(Boolean isPublished) {
+		this.isPublished = isPublished;
 	}
-
-	/**
-	 * 
-	 * Depends on parentDocuments and parent MD_CONTENTS
-	 */
-	public void setDisplayOrder() {
-
-	}
-
-	/**
-	 * Sets datastreams and file sizes
-	 * 
-	 * Depends on FOXML
-	 */
-	public void setDatastreams() {
-
-	}
-
-	/**
-	 * Sets the full tExt field
-	 * 
-	 * Same dependencies as setDatastreams and a FULL_TExt datastream
-	 */
-	public void setFullTExt() {
-
-	}
-
-	/**
-	 * Sets contentModel, resourceType, resourceTypeSort
-	 * 
-	 * Depends on contentModel
-	 */
-	public void setObjectType() {
-
-	}
-
-	/**
-	 * Sets contentType
-	 * 
-	 * Depends on datastreams, resourceType, defaultWebObject
-	 */
-	public void setContentType() {
-
-	}
-
-	/**
-	 * Adds datastreams from this objects default web object
-	 * 
-	 * Depends on FOXML of defaultWebObject if it is not the current object
-	 */
-	public void setDefaultWebObject() {
-
-	}
-
-	/**
-	 * Sets roleGroup, readGroup, adminGroup
-	 * 
-	 * Depends on accessControlUtils or foxml and parentDocuments or foxml and retrieve parents from solr
-	 */
-	public void setAccessControl() {
-
-	}
-
-	/**
-	 * Sets the publication status, taking into account the publication status of its parents Published, Unpublished,
-	 * UnpublishedParent
-	 * 
-	 * Depends on parentDocuments and RELS-Ext or triple query
-	 */
-	public void setPublicationStatus() {
-
-	}
-
-	/**
-	 * Sets all descriptive metadata fields
-	 * 
-	 * Depends on foxml / mods / dc
-	 */
-	public void setDescriptiveMetadata() {
-
-	}
-
-	/**
-	 * Populates the relations field with pertinent triples from RELS-Ext that are not intended for querying purposes.
-	 * defaultWebData, defaultWebObject,
-	 * 
-	 * Depends on FOXML/RELS-Ext or triple query
-	 */
-	public void setRelations() {
-
-	}
-
 }

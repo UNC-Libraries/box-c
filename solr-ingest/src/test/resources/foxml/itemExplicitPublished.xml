@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<foxml:digitalObject xmlns:foxml="info:fedora/fedora-system:def/foxml#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" VERSION="1.1" PID="uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4" xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+<foxml:objectProperties>
+<foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active" />
+<foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="Green Apple.gif" />
+<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE="" />
+<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2011-12-06T15:41:52.859Z" />
+<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2012-04-02T13:29:03.517Z" />
+</foxml:objectProperties>
+<foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="AUDIT.0" LABEL="Audit Trail for this object" CREATED="2011-12-06T15:41:52.859Z" MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+<foxml:xmlContent>
+<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+<audit:record ID="AUDREC1">
+<audit:process type="Fedora API-M" />
+<audit:action>ingest</audit:action>
+<audit:componentID />
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2011-12-06T15:41:52.859Z</audit:date>
+<audit:justification>Added through UI</audit:justification>
+</audit:record>
+</audit:auditTrail>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DATA_FILE" STATE="A" CONTROL_GROUP="M" VERSIONABLE="true">
+<foxml:datastreamVersion ID="DATA_FILE.0" LABEL="Submitted File" CREATED="2011-12-06T15:41:52.898Z" ALT_IDS="irods://count0@cdr-dev-vault.libint.unc.edu:5555/cdrTestZone/home/count0/staging/ingest%20dev%20test/Fruit/Green%20Apple.gif" MIMETYPE="image/gif" SIZE="2159">
+<foxml:contentDigest TYPE="MD5" DIGEST="f66884c691018cf8440155a82d91a368" />
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4+DATA_FILE+DATA_FILE.0" />
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="DC.0" LABEL="Internal XML Metadata" CREATED="2011-12-06T15:41:52.898Z" MIMETYPE="text/xml" SIZE="409">
+<foxml:contentDigest TYPE="MD5" DIGEST="173b232d7fecf22a061ed5eafcc783f0" />
+<foxml:xmlContent>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+  <dc:title>Green Apple.gif</dc:title>
+  <dc:identifier>uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4</dc:identifier>
+</oai_dc:dc>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_EVENTS" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_EVENTS.0" LABEL="PREMIS Events Metadata" CREATED="2011-12-06T15:41:52.898Z" MIMETYPE="text/xml" SIZE="3993">
+<foxml:contentDigest TYPE="MD5" DIGEST="50ceda10dc1974293a002c51e5ea23a4" />
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4+MD_EVENTS+MD_EVENTS.0" />
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="RELS-EXT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="RELS-EXT.7" LABEL="Fedora Object-to-Object Relationship Metadata" CREATED="2012-01-31T21:43:15.852Z" MIMETYPE="text/xml" SIZE="2116">
+<foxml:contentDigest TYPE="MD5" DIGEST="a968343dff4c8c0830611df1582aac44" />
+<foxml:xmlContent>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+<rdf:Description rdf:about="info:fedora/uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4">
+	<allowIndexing xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">yes</allowIndexing>
+	<defaultWebData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4/DATA_FILE" />
+	<owner xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:b33af198-f7b6-4beb-8f36-212fa06a2b53" />
+	<slug xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">Green_Apple.gif</slug>
+	<sourceData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4/DATA_FILE" />
+	<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:PreservedObject" />
+	<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:Simple" />
+	<hasSourceMimeType xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">image/gif</hasSourceMimeType>
+	<hasSourceFileSize xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:datatype="http://www.w3.org/2001/XMLSchema#long">2159</hasSourceFileSize>
+	<techData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4/MD_TECHNICAL" />
+	<thumb xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4/THUMB_SMALL" />
+	<thumb xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4/THUMB_LARGE" />
+	<derivedJP2 xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4/IMAGE_JP2000" />
+	<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:JP2DerivedImage" />
+	<isPublished xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">yes</isPublished>
+</rdf:Description>
+
+</rdf:RDF>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_TECHNICAL" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_TECHNICAL.210" LABEL="PREMIS Technical Metadata" CREATED="2012-02-22T13:49:55.339Z" MIMETYPE="text/xml" SIZE="3615">
+<foxml:contentDigest TYPE="MD5" DIGEST="c60cd64b625028c79c93613613a346e5" />
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4+MD_TECHNICAL+MD_TECHNICAL.210" />
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="IMAGE_JP2000" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="IMAGE_JP2000.1" LABEL="Derived JP2000 image" CREATED="2012-04-02T13:27:56.667Z" MIMETYPE="image/jp2" SIZE="4289">
+<foxml:contentDigest TYPE="MD5" DIGEST="019c5aaeb8bcf0a082152390164a76ab" />
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4+IMAGE_JP2000+IMAGE_JP2000.1" />
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="THUMB_SMALL" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="THUMB_SMALL.210" LABEL="Thumbnail Image" CREATED="2012-04-02T13:28:59.735Z" MIMETYPE="image/png" SIZE="15270">
+<foxml:contentDigest TYPE="MD5" DIGEST="8c6e2953803dc71eba2e7381b77524a1" />
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4+THUMB_SMALL+THUMB_SMALL.210" />
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="THUMB_LARGE" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="THUMB_LARGE.210" LABEL="Thumbnail Image" CREATED="2012-04-02T13:29:03.517Z" MIMETYPE="image/png" SIZE="53268">
+<foxml:contentDigest TYPE="MD5" DIGEST="39d09d489e895db5490cabcf6667f0be" />
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:7b6f90c6-756f-44ce-b69c-e5e972f5dcd4+THUMB_LARGE+THUMB_LARGE.210" />
+</foxml:datastreamVersion>
+</foxml:datastream>
+</foxml:digitalObject>

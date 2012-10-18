@@ -13,8 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.fedora;
+package edu.unc.lib.dl.data.ingest.solr.indexing;
 
-public enum AccessControlCategory {
-	Administrative, Original, Metadata, Derivative;
+import java.util.Collection;
+
+import edu.unc.lib.dl.data.ingest.solr.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
+
+public class DocumentIndexingPipeline implements DocumentFilteringPipeline {
+	protected Collection<IndexDocumentFilter> filters;
+	
+	@Override
+	public void process(DocumentIndexingPackage dip) throws IndexingException {
+		for (IndexDocumentFilter filter: filters) {
+			filter.filter(dip);
+		}
+	}
+
+	@Override
+	public void setFilters(Collection<IndexDocumentFilter> filters) {
+		this.filters = filters;
+	}
 }

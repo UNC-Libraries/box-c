@@ -1,3 +1,18 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.util.ArrayList;
@@ -12,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -39,7 +55,7 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 			// Retrieve the default web datastream
 			String defaultWebData = this.getDefaultWebData(dip, relsExt);
 			if (defaultWebData != null)
-				relations.add(ContentModelHelper.CDRProperty.defaultWebData.name() + "|" + defaultWebData);
+				relations.add(ContentModelHelper.CDRProperty.defaultWebData.name() + "|" + new PID(defaultWebData).getPid());
 			
 			// Retrieve the default web object, from the cached version if possible.
 			DocumentIndexingPackage defaultWebObjectPackage = dip.getDefaultWebObject();
@@ -47,13 +63,13 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 			if (defaultWebObjectPackage != null) {
 				defaultWebObject = defaultWebObjectPackage.getPid().getPid();
 			} else {
-				defaultWebObject = this.getRelationValue(ContentModelHelper.CDRProperty.defaultWebObject.name(), JDOMNamespaceUtil.CDR_NS, relsExt);
+				defaultWebObject = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebObject.name(), JDOMNamespaceUtil.CDR_NS, relsExt);
 			}
 			if (defaultWebObject != null)
 				relations.add(ContentModelHelper.CDRProperty.defaultWebObject.name() + "|" + (new PID(defaultWebObject)).getPid());
 			
 			// Retrieve original content datastream name for items with a main content payload
-			String sourceData = this.getRelationValue(ContentModelHelper.CDRProperty.sourceData.name(), JDOMNamespaceUtil.CDR_NS, relsExt);
+			String sourceData = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.sourceData.name(), JDOMNamespaceUtil.CDR_NS, relsExt);
 			if (sourceData != null)
 				relations.add(ContentModelHelper.CDRProperty.sourceData.name() + "|" + ((new PID(sourceData).getPid())));
 			// Retrieve and store slug
@@ -61,7 +77,7 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 			if (slug != null)
 				relations.add(ContentModelHelper.CDRProperty.slug.name() + "|" + slug);
 			// Retrieve the default sort order for a container if specified
-			String defaultSortOrder = this.getRelationValue(ContentModelHelper.CDRProperty.sortOrder.name(), JDOMNamespaceUtil.CDR_NS, relsExt);
+			String defaultSortOrder = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.sortOrder.name(), JDOMNamespaceUtil.CDR_NS, relsExt);
 			if (defaultSortOrder != null){
 				defaultSortOrder = defaultSortOrder.substring(defaultSortOrder.indexOf('#') + 1);
 				relations.add(ContentModelHelper.CDRProperty.sortOrder.name() + "|" + defaultSortOrder);
@@ -75,21 +91,13 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 	}
 	
 	private String getDefaultWebData(DocumentIndexingPackage dip, Element relsExt) throws JDOMException {
-		String defaultWebData = this.getRelationValue("defaultWebData", JDOMNamespaceUtil.CDR_NS, relsExt);
+		String defaultWebData = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(), JDOMNamespaceUtil.CDR_NS, relsExt);
 		// If this object does not have a defaultWebData but its defaultWebObject does, then use that instead.
 		if (defaultWebData == null && dip.getDefaultWebObject() != null) {
-			defaultWebData = this.getRelationValue("defaultWebData", JDOMNamespaceUtil.CDR_NS, dip.getDefaultWebObject().getRelsExt());
+			defaultWebData = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(), JDOMNamespaceUtil.CDR_NS, dip.getDefaultWebObject().getRelsExt());
 		}
 		if (defaultWebData == null)
 			return null;
-		return ContentModelHelper.CDRProperty.defaultWebData.getPredicate() + "|" + defaultWebData;
-	}
-	
-	private String getRelationValue(String relationName, Namespace relationNS, Element relsExt) {
-		Element relationEl = relsExt.getChild(relationName, relationNS);
-		if (relationEl != null) {
-			return relationEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS);
-		}
-		return null;
+		return defaultWebData;
 	}
 }

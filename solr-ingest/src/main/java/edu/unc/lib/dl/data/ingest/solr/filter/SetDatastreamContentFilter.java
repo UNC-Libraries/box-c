@@ -1,3 +1,18 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.io.FileNotFoundException;
@@ -9,7 +24,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -21,18 +35,20 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
+import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
 /**
- * Extracts datastreams from an object and sets related properties concerning the default datastream for the object, including
- * the mimetype and extension into the content type hierarchical facet. 
+ * Extracts datastreams from an object and sets related properties concerning the default datastream for the object,
+ * including the mimetype and extension into the content type hierarchical facet.
  * 
  * Sets datastream, contentType, filesizeTotal, filesizeSort
+ * 
  * @author bbpennel
- *
+ * 
  */
 public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDatastreamContentFilter.class);
@@ -48,8 +64,6 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	private final ContentCategory UNKNOWN = new ContentCategory("unknown", "Unknown");
 
 	private XPath datastreamVersionXPath;
-	private XPath defaultWebObjectXPath;
-	private XPath defaultWebDataXPath;
 	private Pattern extensionRegex;
 	private Properties mimetypeToExtensionMap;
 
@@ -59,12 +73,6 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		try {
 			datastreamVersionXPath = XPath.newInstance("/foxml:digitalObject/foxml:datastream/foxml:datastreamVersion");
 			datastreamVersionXPath.addNamespace(Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI));
-			defaultWebObjectXPath = XPath.newInstance("cdr:defaultWebObject/@rdf:resource");
-			defaultWebObjectXPath.addNamespace(JDOMNamespaceUtil.CDR_NS);
-			defaultWebObjectXPath.addNamespace(JDOMNamespaceUtil.RDF_NS);
-			defaultWebDataXPath = XPath.newInstance("cdr:defaultWebData/@rdf:resource");
-			defaultWebDataXPath.addNamespace(JDOMNamespaceUtil.CDR_NS);
-			defaultWebDataXPath.addNamespace(JDOMNamespaceUtil.RDF_NS);
 			extensionRegex = Pattern.compile("^[^\\n]*[^.]\\.(\\d*[a-zA-Z][a-zA-Z0-9]*)$");
 			mimetypeToExtensionMap = new Properties();
 			mimetypeToExtensionMap.load(new InputStreamReader(this.getClass().getResourceAsStream(
@@ -89,9 +97,12 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		List<Datastream> datastreams = new ArrayList<Datastream>();
 		this.extractDatastreams(dip, datastreams, false);
 
+		Element relsExt = dip.getRelsExt();
+
 		// Generatea defaultWebObject datastreams and add them to the list
 		try {
-			DocumentIndexingPackage dwoDIP = this.getDefaultWebObject(dip);
+			DocumentIndexingPackage dwoDIP = this.getDefaultWebObject(relsExt);
+			dip.setAttemptedToRetrieveDefaultWebObject(true);
 			if (dwoDIP != null) {
 				dip.setDefaultWebObject(dwoDIP);
 				this.extractDatastreams(dwoDIP, datastreams, true);
@@ -117,6 +128,18 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 			if (defaultWebData != null) {
 				// Store the pid/datastream name of the default web datastream
 				dip.setDefaultWebData(defaultWebData.getDatastreamIdentifier());
+
+				// If the mimetype listed on the datastream is not very specific (octet-stream), see if FITS provided a
+				// better one and use it instead
+				if ("application/octet-stream".equals(defaultWebData.mimetype)) {
+					String sourceDataMimetype = relsExt.getChildText("hasSourceMimeType", JDOMNamespaceUtil.CDR_NS);
+					if (sourceDataMimetype != null) {
+						defaultWebData.mimetype = sourceDataMimetype;
+						defaultWebData.extension = this.getExtension(null,
+								defaultWebData.mimetype);
+					}
+				}
+
 				// Add in the content types for the dwd
 				List<String> contentTypes = new ArrayList<String>();
 				this.extractContentType(defaultWebData, contentTypes);
@@ -186,29 +209,34 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		}
 	}
 
-	private DocumentIndexingPackage getDefaultWebObject(DocumentIndexingPackage dip) throws JDOMException {
-		Attribute dwoAttribute = (Attribute) defaultWebObjectXPath.selectSingleNode(dip.getRelsExt());
-		if (dwoAttribute == null)
+	private DocumentIndexingPackage getDefaultWebObject(Element relsExt) throws JDOMException {
+		String defaultWebObject = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebObject.name(),
+				JDOMNamespaceUtil.CDR_NS, relsExt);
+		if (defaultWebObject == null)
 			return null;
-		PID dwoPID = new PID(dwoAttribute.getValue());
+
+		PID dwoPID = new PID(defaultWebObject);
 		return dipFactory.createDocumentIndexingPackage(dwoPID);
 	}
 
 	// Used for determining sort file size, contentType. Store it for SetRelations
 	private Datastream getDefaultWebData(DocumentIndexingPackage dip, List<Datastream> datastreams) throws JDOMException {
 		String owner = null;
-		Attribute defaultWebData = (Attribute) defaultWebDataXPath.selectSingleNode(dip.getRelsExt());
+		Element relsExt = dip.getRelsExt();
+		String defaultWebData = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
+				JDOMNamespaceUtil.CDR_NS, relsExt);
+
 		// If this object does not have a defaultWebData but its defaultWebObject does, then use that instead.
 		if (defaultWebData == null && dip.getDefaultWebObject() != null) {
-			defaultWebData = (Attribute) defaultWebDataXPath.selectSingleNode(dip.getDefaultWebObject().getRelsExt());
+			defaultWebData = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
+					JDOMNamespaceUtil.CDR_NS, dip.getDefaultWebObject().getRelsExt());
 			owner = dip.getDefaultWebObject().getPid().getPid();
 		}
 		if (defaultWebData == null)
 			return null;
 
 		// Find the datastream that matches the defaultWebData datastream name and owner.
-		String dwdName = defaultWebData.getValue();
-		dwdName = dwdName.substring(dwdName.lastIndexOf('/') + 1);
+		String dwdName = defaultWebData.substring(defaultWebData.lastIndexOf('/') + 1);
 		for (Datastream ds : datastreams) {
 			if (ds.dsName.equals(dwdName) && (owner == ds.ownerPID || owner.equals(ds.ownerPID)))
 				return ds;
@@ -338,8 +366,8 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 				sb.append(ownerPID);
 			return sb.toString();
 		}
-		
-		public String getDatastreamIdentifier(){
+
+		public String getDatastreamIdentifier() {
 			if (ownerPID == null)
 				return dsName;
 			return ownerPID + "/" + dsName;

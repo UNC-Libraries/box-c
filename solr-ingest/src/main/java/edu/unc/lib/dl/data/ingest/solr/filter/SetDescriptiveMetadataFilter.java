@@ -1,3 +1,18 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.io.BufferedReader;
@@ -36,7 +51,27 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 	private Properties languageCodeMap;
 	private Set<String> departmentVocab;
 	
+	private Pattern addressPattern;
+	private Pattern addressTrailingPattern;
+	private Pattern deptTrimLeading;
+	private Pattern deptTrimTrailing;
+	private Pattern deptTrimLeadingColon;
+	private Pattern deptSplitPlural;
+	private Pattern deptSplit;
+	private Pattern deptStripUnitPrefix;
+	private Pattern deptHasDeptPrefix;
+	
 	public SetDescriptiveMetadataFilter() {
+		addressPattern = Pattern.compile("([^,]+,)+\\s*[a-zA-Z ]*\\d+[a-zA-Z]*\\s*[^\\n]*");
+		addressTrailingPattern = Pattern.compile("([^,]+,){2,}\\s*([a-zA-Z]+ ?){1,2}\\s*");
+		deptTrimLeading = Pattern.compile("^([.,?;:*&^%$#@!\\-]|[tT]he |at |[aA]nd |\\s)+");
+		deptTrimTrailing = Pattern.compile("([.,?;:*&^%$#@!\\-]|[tT]he |at |\\s)+$");
+		deptTrimLeadingColon = Pattern.compile("^[^:]*:");
+		deptSplitPlural = Pattern.compile("(and the |and (the )?(?=[dD]ep(t\\.?|artment(s)?)|[sS]chool|[dD]ivision|[sS]ection(s)?|[pP]rogram in|[cC]enter for)( of)?|and )");
+		deptSplit = Pattern.compile("(and the |and (the )?(?=[dD]ep(t\\.?|artment(s)?)|[sS]chool|[dD]ivision|[sS]ection(s)?|[pP]rogram in|[cC]enter for)(?= of)?)");
+		deptStripUnitPrefix = Pattern.compile("^\\s*([^,]+,)?\\s*([dD]ep(t\\.?|artment(s)?)|[sS]chools?|[dD]ivision|[sS]ections?|[pP]rogram in)( of)?\\s*");
+		deptHasDeptPrefix =  Pattern.compile("^\\s*[dD]ep(t\\.?|artment(s)?).+");
+		
 		languageCodeMap = new Properties();
 		try {
 			languageCodeMap.load(new InputStreamReader(this.getClass().getResourceAsStream(
@@ -351,8 +386,8 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		department = department.trim();
 		int indexUNC = department.indexOf(UNC_NAME);
 		boolean isUNC = indexUNC != -1;
+		
 		if (isUNC) {
-			
 			String afterUNC = department.substring(indexUNC + UNC_NAME.length());
 			if (afterUNC.trim().length() > 0 && !afterUNC.contains("Chapel Hill")){
 				// Skip, university is not Chapel Hill
@@ -362,14 +397,14 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			if (indexUNC == 0)
 				department = afterUNC;
 			else department = department.substring(0, indexUNC);
-			department = department.replaceAll("^([.,?;:*&^%$#@!\\-]|[tT]he |at |\\s)+", "").replaceAll("([.,?;:*&^%$#@!\\-]|[tT]he |at |\\s)+$", "");
+			department = deptTrimTrailing.matcher(deptTrimLeading.matcher(department).replaceAll("")).replaceAll("");
 		} else {
 			if (department.contains("University")){
 				// From another University, skip
 				return null;
 			}
 			// Does this look like an address?  If so, and its not a UNC address, toss it
-			if (department.matches("([^,]+,)+\\s*[a-zA-Z ]*\\d+[a-zA-Z]*\\s*[^\\n]*") || department.matches("([^,]+,){2,}\\s*([a-zA-Z]+ ?){1,2}\\s*")){
+			if (addressPattern.matcher(department).matches() || addressTrailingPattern.matcher(department).matches()){
 				return null;
 			}
 		}
@@ -377,27 +412,22 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		List<String> deptList = new ArrayList<String>();
 		
 		// Remove extraneous UNC's
-		department = department.replace("UNC", "").replace("Chapel Hill", "").replace("&", "and").replaceAll("^[^:]*:", "");
+		department = deptTrimLeadingColon.matcher(department.replace("UNC", "").replace("Chapel Hill", "").replace("&", "and")).replaceAll("");
 		
-		/*Pattern regex = Pattern.compile("((?:\\G)((?:\\w|\\s)*)(and the |and (?:the )?([dD]ep(?:t\\.?|artment(?:s)?)|[sS]chool|[dD]ivision|[sS]ection(?:s)?|[pP]rogram in|[cC]enter for)( of)?))+");
-		Matcher regexMatcher = regex.matcher(department);
-		while (regexMatcher.find()) {
-			System.out.println(regexMatcher.groupCount() + regexMatcher.group(1) + "|" + regexMatcher.group(2) + "|" + regexMatcher.group(3) + "|" + regexMatcher.group(3));
-		}*/
 		String[] departments;
 		if (department.startsWith("Departments")) {
-			departments = department.split("(and the |and (the )?(?=[dD]ep(t\\.?|artment(s)?)|[sS]chool|[dD]ivision|[sS]ection(s)?|[pP]rogram in|[cC]enter for)( of)?|and )");
+			departments = deptSplitPlural.split(department);
 		} else {
-			departments = department.split("(and the |and (the )?(?=[dD]ep(t\\.?|artment(s)?)|[sS]chool|[dD]ivision|[sS]ection(s)?|[pP]rogram in|[cC]enter for)(?= of)?)");
+			departments = deptSplit.split(department);
 		}
-		// Center for 
 		for (String dept: departments) {
 			String[] deptSegments = dept.split(",");
 			String preferredDept = null;
 			for (String deptSegment: deptSegments) {
 				if (deptSegment.trim().length() > 0) {
-					String strippedDept = deptSegment.replaceAll("^\\s*([^,]+,)?\\s*([dD]ep(t\\.?|artment(s)?)|[sS]chools?|[dD]ivision|[sS]ections?|[pP]rogram in)( of)?\\s*", "");
-					if (deptSegment.matches("^\\s*[dD]ep(t\\.?|artment(s)?).+")) {
+					String strippedDept = deptStripUnitPrefix.matcher(deptSegment).replaceAll("");
+					// Department actually begins with the prefix "Department", so use this as the preferred value for this entry.
+					if (deptHasDeptPrefix.matcher(deptSegment).matches()) {
 						preferredDept = strippedDept;
 						break;
 					} else {
@@ -406,11 +436,11 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 				}
 			}
 			if (preferredDept != null) {
-				preferredDept = preferredDept.replaceAll("^([.,?;:*&^%$#@!\\-]|[tT]he |[aA]nd |\\s)+", "").replaceAll("([.,?;:*&^%$#@!\\-]|\\s)+$", "");
+				preferredDept = deptTrimTrailing.matcher(deptTrimLeading.matcher(preferredDept).replaceAll("")).replaceAll("");
 				deptList.add(preferredDept.trim());
 			}
 				
-			log.debug("*" + preferredDept.trim());
+			
 		}
 		return deptList;
 	}

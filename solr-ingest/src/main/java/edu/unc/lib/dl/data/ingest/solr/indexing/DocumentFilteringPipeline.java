@@ -13,11 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.data.ingest.solr.filter;
+package edu.unc.lib.dl.data.ingest.solr.indexing;
+
+import java.util.Collection;
 
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
 
-public interface IndexDocumentFilter {
-	public void filter(DocumentIndexingPackage dip) throws IndexingException;
+/**
+ * Pipeline class which interates through a collection of filters to modify the document indexing package submitted to the process method.
+ * 
+ * @author bbpennel
+ *
+ */
+public interface DocumentFilteringPipeline {
+
+	/**
+	 * Performs a series of filters to the provided document indexing package.
+	 * 
+	 * @param dip Indexing package being modified
+	 * @throws IndexingException
+	 */
+	public void process(DocumentIndexingPackage dip) throws IndexingException;
+	
+	public void setFilters(Collection<IndexDocumentFilter> filters);
 }

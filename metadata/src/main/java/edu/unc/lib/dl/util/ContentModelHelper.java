@@ -62,7 +62,7 @@ public class ContentModelHelper {
 				"permitDerivativesCreate"), permitDerivativesRead("permitDerivativesRead"), permitDerivativesUpdate(
 				"permitDerivativesUpdate"), permitDerivativesDelete("permitDerivativesDelete"), inheritPermissions(
 				"inheritPermissions", "http://cdr.unc.edu/definitions/acl#"), embargo("embargo",
-				"http://cdr.unc.edu/definitions/acl#");
+				"http://cdr.unc.edu/definitions/acl#"), isPublished("isPublished");
 		private URI uri;
 		private String predicate;
 
