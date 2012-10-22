@@ -151,6 +151,11 @@ public class SetDescriptiveMetadataFilterTest extends Assert {
 				.splitDepartment("Department of Medicine and Department of Epidemiology, Section of Stuff, Johns Hopkins School of Medicine and Johns Hopkins Bloomberg School of Public Health");
 		assertEquals("Medicine", results.get(0));
 		assertEquals("Epidemiology", results.get(1));
+		
+		results = filter
+				.splitDepartment("Cancer Genetics Program, Lineburger Comprehensive Cancer Center, University of North Carolina at Chapel Hill");
+		System.out.println(results.get(0));
+		
 
 //		BufferedReader br = new BufferedReader(new FileReader("src/test/resources/departments.txt"));
 //		String line = null;

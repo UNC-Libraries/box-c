@@ -31,6 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentFilteringPipeline;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
+import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
@@ -47,7 +50,8 @@ public class SolrUpdateService {
 	public static final String identifier = "SOLR_UPDATE";
 	
 	protected FedoraDataService fedoraDataService;
-	protected UpdateDocTransformer updateDocTransformer;
+	protected SolrUpdateDriver solrUpdateDriver;
+	protected DocumentIndexingPackageFactory dipFactory;
 	protected SolrDataAccessLayer solrDataAccessLayer;
 	protected SolrSearchService solrSearchService;
 	protected AccessGroupSet accessGroups;
@@ -70,6 +74,8 @@ public class SolrUpdateService {
 	
 	protected UpdateNodeRequest root;
 	
+	private DocumentFilteringPipeline fullUpdatePipeline;
+	
 	public SolrUpdateService() {
 		pidQueue = new LinkedBlockingQueue<SolrUpdateRequest>();
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
@@ -77,24 +83,16 @@ public class SolrUpdateService {
 		finishedMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		activeMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		failedMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
-		updateDocTransformer = new UpdateDocTransformer();
 		root = new UpdateNodeRequest(identifier + ":ROOT", null);
 	}
 
 	public void init() {
-		try {
-			updateDocTransformer.init();
-		} catch (Exception e) {
-			LOG.error("Failed to initialize AddDocTransformer for SolrIngestService", e);
-		}
 
 		//Pass the runnables a reference back to the update service
 		SolrUpdateRunnable.setSolrUpdateService(this);
-		SolrUpdateRunnable.initQueries();
 		
 		initializeExecutor();
 		
-		collectionsPid = fedoraDataService.getTripleStoreQueryService().fetchByRepositoryPath("/Collections");
 		if (collectionsPid == null){
 			LOG.error("Initialization of SolrUpdateService failed.  It was unable to retrieve Collections object from repository.  Shutting down.");
 			this.executor.shutdownNow();
@@ -156,12 +154,12 @@ public class SolrUpdateService {
 		this.fedoraDataService = fedoraDataService;
 	}
 
-	public UpdateDocTransformer getUpdateDocTransformer() {
-		return updateDocTransformer;
+	public SolrUpdateDriver getSolrUpdateDriver() {
+		return solrUpdateDriver;
 	}
 
-	public void setUpdateDocTransformer(UpdateDocTransformer updateDocTransformer) {
-		this.updateDocTransformer = updateDocTransformer;
+	public void setSolrUpdateDriver(SolrUpdateDriver solrUpdateDriver) {
+		this.solrUpdateDriver = solrUpdateDriver;
 	}
 
 	public SolrDataAccessLayer getSolrDataAccessLayer() {
@@ -268,6 +266,14 @@ public class SolrUpdateService {
 		this.collectionsPid = collectionsPid;
 	}
 
+	public DocumentFilteringPipeline getFullUpdatePipeline() {
+		return fullUpdatePipeline;
+	}
+
+	public void setFullUpdatePipeline(DocumentFilteringPipeline fullUpdatePipeline) {
+		this.fullUpdatePipeline = fullUpdatePipeline;
+	}
+
 	public boolean isAutoCommit() {
 		return autoCommit;
 	}
@@ -296,6 +302,14 @@ public class SolrUpdateService {
 		return SolrUpdateService.TARGET_ALL;
 	}
 	
+	public DocumentIndexingPackageFactory getDipFactory() {
+		return dipFactory;
+	}
+
+	public void setDipFactory(DocumentIndexingPackageFactory dipFactory) {
+		this.dipFactory = dipFactory;
+	}
+
 	public String statusString(){
 		StringBuilder status = new StringBuilder();
 		status.append("\nPid Queue Size: ").append(pidQueue.size())

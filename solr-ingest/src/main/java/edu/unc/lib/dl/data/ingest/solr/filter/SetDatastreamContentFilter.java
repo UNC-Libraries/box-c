@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -66,8 +65,6 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	private XPath datastreamVersionXPath;
 	private Pattern extensionRegex;
 	private Properties mimetypeToExtensionMap;
-
-	private DocumentIndexingPackageFactory dipFactory;
 
 	public SetDatastreamContentFilter() {
 		try {
@@ -216,6 +213,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 			return null;
 
 		PID dwoPID = new PID(defaultWebObject);
+		log.debug("Retrieving default web object " + dwoPID.getPid());
 		return dipFactory.createDocumentIndexingPackage(dwoPID);
 	}
 
@@ -325,10 +323,6 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 			return DISK_IMAGE;
 
 		return UNKNOWN;
-	}
-
-	public void setDipFactory(DocumentIndexingPackageFactory dipFactory) {
-		this.dipFactory = dipFactory;
 	}
 
 	private static class ContentCategory {

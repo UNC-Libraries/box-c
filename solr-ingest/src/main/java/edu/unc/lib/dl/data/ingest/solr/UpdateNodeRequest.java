@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.message.ActionMessage;
 
 public class UpdateNodeRequest implements ActionMessage {
@@ -30,6 +31,8 @@ public class UpdateNodeRequest implements ActionMessage {
 	protected long timeCreated = System.currentTimeMillis();
 	protected long timeFinished;
 
+	protected DocumentIndexingPackage documentIndexingPackage;
+	
 	protected UpdateNodeRequest parent;
 	protected List<UpdateNodeRequest> children;
 
@@ -288,5 +291,13 @@ public class UpdateNodeRequest implements ActionMessage {
 
 	public List<UpdateNodeRequest> getChildren() {
 		return children;
+	}
+
+	public DocumentIndexingPackage getDocumentIndexingPackage() {
+		return documentIndexingPackage;
+	}
+
+	public void setDocumentIndexingPackage(DocumentIndexingPackage documentIndexingPackage) {
+		this.documentIndexingPackage = documentIndexingPackage;
 	}
 }

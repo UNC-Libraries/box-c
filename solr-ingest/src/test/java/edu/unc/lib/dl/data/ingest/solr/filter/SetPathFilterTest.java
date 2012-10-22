@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.ResourceType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -440,6 +441,7 @@ public class SetPathFilterTest extends Assert {
 		dip.setFoxml(foxml);
 
 		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPID(new PID("uuid:Collections"));
 		filter.filter(dip);
 	}
 }

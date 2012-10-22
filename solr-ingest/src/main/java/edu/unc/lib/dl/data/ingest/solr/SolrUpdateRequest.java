@@ -36,16 +36,24 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
 		this(pid, action, messageID, null);
 	}
 	
-	public SolrUpdateRequest(String pid, SolrUpdateAction action, String messageID, UpdateNodeRequest parent){
+	public SolrUpdateRequest(PID pid, SolrUpdateAction action, String messageID, UpdateNodeRequest parent){
 		super(messageID, parent);
 		if (pid == null || action == null)
 			throw new IllegalArgumentException("Both a target pid and an action are required.");
-		this.setPid(pid);
+		this.pid = pid;
 		this.action = action;
 		linkedRequest = null;
 	}
 	
+	public SolrUpdateRequest(String pid, SolrUpdateAction action, String messageID, UpdateNodeRequest parent){
+		this(new PID(pid), action, messageID, parent);
+	}
+	
 	public SolrUpdateRequest(String pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
+		this(new PID(pid), action, linkedRequest, messageID, parent);
+	}
+	
+	public SolrUpdateRequest(PID pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
 		this(pid, action, messageID, parent);
 		this.setLinkedRequest(linkedRequest);
 	}

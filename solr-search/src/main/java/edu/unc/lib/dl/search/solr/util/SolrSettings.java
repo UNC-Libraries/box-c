@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.solr.client.solrj.SolrServer;
-import org.apache.solr.client.solrj.impl.CommonsHttpSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,12 +80,12 @@ public class SolrSettings extends AbstractSettings  {
 		SolrServer server = null;
 		try {
 			LOG.debug("Establishing Solr server:" + getUrl());
-			server = new CommonsHttpSolrServer(getUrl());
-			((CommonsHttpSolrServer)server).setSoTimeout(getSocketTimeout());  // socket read timeout
-			((CommonsHttpSolrServer)server).setConnectionTimeout(getConnectionTimeout());
-			((CommonsHttpSolrServer)server).setDefaultMaxConnectionsPerHost(getDefaultMaxConnectionsPerHost());
-			((CommonsHttpSolrServer)server).setMaxTotalConnections(getMaxConnections());
-			((CommonsHttpSolrServer)server).setMaxRetries(maxRetries);
+			server = new HttpSolrServer(getUrl());
+			((HttpSolrServer)server).setSoTimeout(getSocketTimeout());  // socket read timeout
+			((HttpSolrServer)server).setConnectionTimeout(getConnectionTimeout());
+			((HttpSolrServer)server).setDefaultMaxConnectionsPerHost(getDefaultMaxConnectionsPerHost());
+			((HttpSolrServer)server).setMaxTotalConnections(getMaxConnections());
+			((HttpSolrServer)server).setMaxRetries(maxRetries);
 		} catch (Exception e) {
 			LOG.error("Error initializing Solr Server instance", e);
 		}

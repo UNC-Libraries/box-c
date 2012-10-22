@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
 import java.util.Collection;
+import java.util.List;
 
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
@@ -31,7 +32,7 @@ public class DocumentIndexingPipeline implements DocumentFilteringPipeline {
 	}
 
 	@Override
-	public void setFilters(Collection<IndexDocumentFilter> filters) {
+	public void setFilters(List<IndexDocumentFilter> filters) {
 		this.filters = filters;
 	}
 }

@@ -93,6 +93,7 @@ public class SetRecordDatesFilter extends AbstractIndexDocumentFilter {
 	private void filterFromQuery(DocumentIndexingPackage dip) throws IndexingException {
 		String query = String.format(recordDatesQuery, tsqs.getResourceIndexModelUri(), dip.getPid().getURI());
 		
+		log.debug("Retrieving modification dates for " + dip.getPid().getPid() + " from triple store.");
 		Map results = tsqs.sendSPARQL(query);
 		List<Map> bindings = (List<Map>) ((Map) results.get("results")).get("bindings");
 		if (bindings.size() == 0) {

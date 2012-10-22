@@ -1,11 +1,20 @@
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
+import java.security.NoSuchAlgorithmException;
 
+import javax.net.ssl.SSLContext;
+
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
+import org.apache.solr.client.solrj.request.UpdateRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.fedora.PID;
@@ -13,30 +22,43 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 public class SolrUpdateDriver {
-	private HttpSolrServer solrServer;
+	private static final Logger log = LoggerFactory.getLogger(SolrUpdateDriver.class);
+
+	private ConcurrentUpdateSolrServer solrServer;
 	private SolrSettings solrSettings;
 
 	private int autoPushCount;
-
-	private Collection<IndexDocumentBean> addDocuments;
-	private List<String> deleteList;
+	private int updateThreads;
 
 	public void init() {
-		solrServer = new HttpSolrServer(solrSettings.getUrl());
+//		SSLSocketFactory socketFactory;
+//		try {
+//			socketFactory = new SSLSocketFactory(SSLContext.getInstance("SSL"),
+//					SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+//		} catch (NoSuchAlgorithmException e) {
+//			log.error("Failed to created httpclient", e);
+//			return;
+//		}
+//		Scheme sch = new Scheme("https", 443, socketFactory);
+//		SchemeRegistry schemeRegistry = new SchemeRegistry();
+//		schemeRegistry.register(sch);
+//
+//		ThreadSafeClientConnManager ccm = new ThreadSafeClientConnManager(schemeRegistry);
+//		ccm.setDefaultMaxPerRoute(32);
+//		ccm.setMaxTotal(128);
+//		DefaultHttpClient httpClient = new DefaultHttpClient(ccm);
+
+		//solrServer = new ConcurrentUpdateSolrServer(solrSettings.getUrl(), httpClient, autoPushCount, updateThreads);
+		solrServer = new ConcurrentUpdateSolrServer(solrSettings.getUrl(), autoPushCount, updateThreads);
 	}
 
 	public void addDocument(IndexDocumentBean idb) throws IndexingException {
-		synchronized (addDocuments) {
-			synchronized (deleteList) {
-				if (deleteList.size() > 0) {
-					pushDeletes();
-				}
-
-				addDocuments.add(idb);
-				if (autoPushCount >= 0 && addDocuments.size() >= autoPushCount) {
-					pushAddDocuments();
-				}
-			}
+		try {
+			solrServer.addBean(idb);
+		} catch (IOException e) {
+			throw new IndexingException("Failed to add document to solr", e);
+		} catch (SolrServerException e) {
+			throw new IndexingException("Failed to add document to solr", e);
 		}
 	}
 
@@ -45,91 +67,69 @@ public class SolrUpdateDriver {
 	}
 
 	public void delete(String pid) {
-		synchronized (addDocuments) {
-			synchronized (deleteList) {
-				if (addDocuments.size() > 0) {
-					pushAddDocuments();
-				}
-				deleteList.add(pid);
-				if (autoPushCount >= 0 && deleteList.size() >= autoPushCount) {
-					pushDeletes();
-				}
-			}
+		try {
+			solrServer.deleteById(pid);
+		} catch (IOException e) {
+			throw new IndexingException("Failed to delete document from solr", e);
+		} catch (SolrServerException e) {
+			throw new IndexingException("Failed to delete document from solr", e);
 		}
 	}
 
 	public void deleteByQuery(String query) {
-		synchronized (addDocuments) {
-			synchronized (deleteList) {
-				if (addDocuments.size() > 0)
-					this.pushAddDocuments();
-				if (deleteList.size() > 0)
-					this.pushDeletes();
-
-				try {
-					synchronized (solrServer) {
-						solrServer.deleteByQuery(query);
-					}
-				} catch (IOException e) {
-					throw new IndexingException("Failed to add document batch to solr", e);
-				} catch (SolrServerException e) {
-					throw new IndexingException("Failed to add document batch to solr", e);
-				}
-			}
+		try {
+			solrServer.deleteByQuery(query);
+		} catch (IOException e) {
+			throw new IndexingException("Failed to add document batch to solr", e);
+		} catch (SolrServerException e) {
+			throw new IndexingException("Failed to add document batch to solr", e);
 		}
 	}
 
-	public void pushAddDocuments() {
-		synchronized (addDocuments) {
-			try {
-				synchronized (solrServer) {
-					solrServer.addBeans(addDocuments);
-				}
-				addDocuments.clear();
-			} catch (IOException e) {
-				throw new IndexingException("Failed to add document batch to solr", e);
-			} catch (SolrServerException e) {
-				throw new IndexingException("Failed to add document batch to solr", e);
-			}
-		}
-	}
-
-	public void pushDeletes() {
-		synchronized (deleteList) {
-			try {
-				synchronized (solrServer) {
-					solrServer.deleteById(deleteList);
-				}
-				deleteList.clear();
-			} catch (IOException e) {
-				throw new IndexingException("Failed to delete batch from solr", e);
-			} catch (SolrServerException e) {
-				throw new IndexingException("Failed to delete batch from solr", e);
-			}
-		}
-	}
-	
 	public void push() {
-		synchronized (addDocuments) {
-			synchronized (deleteList) {
-				if (this.addDocuments.size() > 0)
-					this.pushAddDocuments();
-				if (this.deleteList.size() > 0)
-					this.pushDeletes();
-			}
-		}
+		// Queue and empty request so that the concurrent server will push its queue
+//		UpdateRequest pushRequest = new UpdateRequest();
+//		try {
+//			solrServer.request(pushRequest);
+//		} catch (SolrServerException e) {
+//			throw new IndexingException("Failed to push to solr", e);
+//		} catch (IOException e) {
+//			throw new IndexingException("Failed to push to solr", e);
+//		}
 	}
 
 	public void commit() {
 		try {
-			synchronized (solrServer) {
-				solrServer.commit();
-			}
+			solrServer.commit();
 		} catch (SolrServerException e) {
 			throw new IndexingException("Failed to commit changes to solr", e);
 		} catch (IOException e) {
 			throw new IndexingException("Failed to commit changes to solr", e);
 		}
+	}
+
+	public int getAutoPushCount() {
+		return autoPushCount;
+	}
+
+	public void setAutoPushCount(int autoPushCount) {
+		this.autoPushCount = autoPushCount;
+	}
+
+	public int getUpdateThreads() {
+		return updateThreads;
+	}
+
+	public void setUpdateThreads(int updateThreads) {
+		this.updateThreads = updateThreads;
+	}
+
+	public void setSolrServer(ConcurrentUpdateSolrServer solrServer) {
+		this.solrServer = solrServer;
+	}
+
+	public void setSolrSettings(SolrSettings solrSettings) {
+		this.solrSettings = solrSettings;
 	}
 
 }

@@ -49,6 +49,8 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 	private String ancestorInfoQuery;
 	private XPath contentModelXpath;
+	
+	private PID collectionsPID;
 
 	public SetPathFilter() {
 		try {
@@ -68,18 +70,20 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		if (dip.getParentDocument() == null) {
-			// If there is no parent information available, then build the hierarchy from scratch.
-			buildFromQuery(dip);
-		} else {
+		DocumentIndexingPackage parentDIP = dip.getParentDocument();
+		if (parentDIP != null && parentDIP.getDocument() != null && parentDIP.getDocument().getAncestorPath() != null) {
 			// Must have parentDocuments and content models for this node
 			buildFromParentDocuments(dip);
+		} else {
+			// If there is no parent information available, then build the hierarchy from scratch.
+			buildFromQuery(dip);
 		}
 	}
 
 	private void buildFromQuery(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();
 		// Parent documents are not already cached, so query for the full path
+		log.debug("Retrieving path information for " + dip.getPid().getPid() + " from triple store.");
 		String query = String.format(ancestorInfoQuery, tsqs.getResourceIndexModelUri(), dip.getPid().getURI());
 		List<List<String>> results = tsqs.queryResourceIndex(query);
 		// Abandon ship if we couldn't get a path for this object.
@@ -159,9 +163,10 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		IndexDocumentBean idb = dip.getDocument();
 
 		DocumentIndexingPackage parentDIP = dip.getParentDocument();
-		if (parentDIP.getDocument().getAncestorPath().size() == 0)
+		if (parentDIP.getDocument().getAncestorPath().size() == 0 && !collectionsPID.equals(parentDIP.getPid())) {
 			throw new IndexingException("Parent document " + parentDIP.getPid().getPid()
 					+ " did not contain ancestor information for object " + dip.getPid().getPid());
+		}
 
 		Element relsExt = dip.getRelsExt();
 		try {
@@ -230,6 +235,10 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 	public void setAncestorInfoQuery(String ancestorInfoQuery) {
 		this.ancestorInfoQuery = ancestorInfoQuery;
+	}
+
+	public void setCollectionsPID(PID collectionsPID) {
+		this.collectionsPID = collectionsPID;
 	}
 
 	private static class PathNode {

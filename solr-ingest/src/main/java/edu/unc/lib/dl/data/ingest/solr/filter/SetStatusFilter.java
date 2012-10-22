@@ -67,6 +67,7 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 			String thisIsPublished = relsExt.getChildText(ContentModelHelper.CDRProperty.isPublished.name(), JDOMNamespaceUtil.CDR_NS);
 			isPublished = !("no".equals(thisIsPublished));
 		} else {
+			log.debug("Retrieving publication status for " + dip.getPid().getPid() + " from triple store.");
 			// Triple store route, query for the publication status of this item and all its parents
 			String query = String.format(isPublishedQuery, tsqs.getResourceIndexModelUri(), dip.getPid().getURI());
 			List<List<String>> results = tsqs.queryResourceIndex(query);

@@ -170,7 +170,7 @@ public class SolrSearchService {
 			throw new AccessRestrictionException("No access groups were provided.");
 		}
 		if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)){
-			query.append(" (").append(accessGroups.joinAccessGroups(" OR ", solrSettings.getFieldName(accessType) + ":", true)).append(')');
+			query.append(" (").append(accessGroups.joinAccessGroups(" OR ", "readGroup:", true)).append(')');
 		}
 		return query;
 	}

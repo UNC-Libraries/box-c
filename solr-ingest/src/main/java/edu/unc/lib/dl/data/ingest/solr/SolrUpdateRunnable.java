@@ -19,16 +19,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-
-import org.jdom.Attribute;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.jdom.xpath.XPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentFilteringPipeline;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -48,33 +43,10 @@ public class SolrUpdateRunnable implements Runnable {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateRunnable.class);
 	private static SolrUpdateService solrUpdateService;
 
-	private static Namespace foxmlNS = Namespace.getNamespace("foxml", "info:fedora/fedora-system:def/foxml#");
-
-	public static final int INGEST_PAGE_SIZE = 50;
-
-	private static XPath relsExtXpath;
-	private static XPath containerXpath;
-	private static XPath containsXpath;
-
 	private SolrUpdateRequest updateRequest = null;
 
 	public SolrUpdateRunnable() {
 		LOG.debug("Creating a new SolrIngestThread " + this);
-	}
-
-	public static void initQueries() {
-		try {
-			relsExtXpath = XPath
-					.newInstance("/view-inputs/*[local-name() = 'digitalObject']/*[local-name() = 'datastream' and @ID='RELS-EXT']/"
-							+ "*[local-name() = 'datastreamVersion']/*[local-name() = 'xmlContent']/*[local-name() = 'RDF']/"
-							+ "*[local-name() = 'Description']");
-
-			containerXpath = XPath
-					.newInstance("*[local-name() = 'hasModel' and @*[local-name() = 'resource'] = 'info:fedora/cdr-model:Container']");
-			containsXpath = XPath.newInstance("*[local-name() = 'contains']/@*[local-name() = 'resource']");
-		} catch (JDOMException e) {
-			LOG.error("Failed to initialize queries", e);
-		}
 	}
 
 	public SolrUpdateRequest getUpdateRequest() {
@@ -117,49 +89,6 @@ public class SolrUpdateRunnable implements Runnable {
 	}
 
 	/**
-	 * Adds or updates the pid from the request. If the pid was for an object which was a container, then all of its
-	 * immediate children (retrieved from pid's contains relations) generate recursive add requests for themselves.
-	 * 
-	 * @param updateRequest
-	 * @throws Exception
-	 */
-	private void recursiveAdd(SolrUpdateRequest updateRequest) throws Exception {
-		try {
-			boolean targetAll = false;
-			if (SolrUpdateService.TARGET_ALL.equals(updateRequest.getTargetID())) {
-				updateRequest.setPid(solrUpdateService.getCollectionsPid().getPid());
-				targetAll = true;
-			}
-
-			Document resultDoc = getObjectViewXML(updateRequest, targetAll);
-			LOG.debug("Recursively adding " + updateRequest.getTargetID());
-
-			if (resultDoc != null && resultDoc.getRootElement().getChild("digitalObject", foxmlNS) != null) {
-				// Do no index the current document if it is a full index flag
-				if (!targetAll) {
-					LOG.debug("Adding " + resultDoc.hashCode());
-					solrUpdateService.getUpdateDocTransformer().addDocument(resultDoc);
-				}
-
-				Element relsExt = (Element) relsExtXpath.selectSingleNode(resultDoc);
-				if (relsExt != null && containerXpath.selectSingleNode(relsExt) != null) {
-					// If the parent operation was blocking something, then the spawn actions will too.
-					SolrUpdateRequest parentLinkedRequest = updateRequest.getLinkedRequest();
-					@SuppressWarnings("unchecked")
-					List<Attribute> containsList = (List<Attribute>) containsXpath.selectNodes(relsExt);
-					for (Attribute containsResource : containsList) {
-						solrUpdateService.offer(new SolrUpdateRequest(containsResource.getValue(),
-								SolrUpdateAction.RECURSIVE_ADD, parentLinkedRequest, solrUpdateService.nextMessageID(),
-								updateRequest));
-					}
-				}
-			}
-		} catch (Exception e) {
-			throw new IndexingException("Error while performing a recursive add on " + updateRequest.getTargetID(), e);
-		}
-	}
-
-	/**
 	 * Removes all children of the requested pid if the children have timestamps that predate the timestamp in the
 	 * request.
 	 * 
@@ -171,7 +100,8 @@ public class SolrUpdateRunnable implements Runnable {
 	private void deleteChildrenPriorToTimestamp(SolrUpdateRequest updateRequest) throws Exception {
 		try {
 			if (!(updateRequest instanceof DeleteChildrenPriorToTimestampRequest)) {
-				throw new IndexingException("Improper request issued to deleteChildrenPriorToTimestamp.  The request must be of type DeleteChildrenPriorToTimestampRequest");
+				throw new IndexingException(
+						"Improper request issued to deleteChildrenPriorToTimestamp.  The request must be of type DeleteChildrenPriorToTimestampRequest");
 			}
 			DeleteChildrenPriorToTimestampRequest cleanupRequest = (DeleteChildrenPriorToTimestampRequest) updateRequest;
 
@@ -216,7 +146,8 @@ public class SolrUpdateRunnable implements Runnable {
 				solrUpdateService.offer(child.getId(), SolrUpdateAction.DELETE);
 			}
 		} catch (Exception e) {
-			throw new IndexingException("Error encountered in deleteChildrenPriorToTimestampRequest for " + updateRequest.getTargetID(), e);
+			throw new IndexingException("Error encountered in deleteChildrenPriorToTimestampRequest for "
+					+ updateRequest.getTargetID(), e);
 		}
 	}
 
@@ -230,7 +161,7 @@ public class SolrUpdateRunnable implements Runnable {
 		// If the all target is being deleted, then delete everything
 		if (SolrUpdateService.TARGET_ALL.equals(updateRequest.getTargetID())) {
 			LOG.debug("Delete Solr Tree, targeting all object.");
-			solrUpdateService.getUpdateDocTransformer().deleteQuery("*:*");
+			solrUpdateService.getSolrUpdateDriver().deleteByQuery("*:*");
 			return;
 		}
 
@@ -244,14 +175,15 @@ public class SolrUpdateRunnable implements Runnable {
 		if (ancestorPathBean.getResourceType().equals(solrUpdateService.getSearchSettings().getResourceTypeCollection())
 				|| ancestorPathBean.getResourceType().equals(solrUpdateService.getSearchSettings().getResourceTypeFolder())) {
 			// Deleting a folder or collection, so perform a full path delete.
-			solrUpdateService.getUpdateDocTransformer()
-					.deleteQuery(
+
+			solrUpdateService.getSolrUpdateDriver()
+					.deleteByQuery(
 							solrUpdateService.getSolrSearchService().getSolrSettings().getFieldName(SearchFieldKeys.ID)
 									+ ":"
 									+ solrUpdateService.getSolrSearchService().getSolrSettings()
 											.sanitize(updateRequest.getTargetID()));
 
-			solrUpdateService.getUpdateDocTransformer().deleteQuery(
+			solrUpdateService.getSolrUpdateDriver().deleteByQuery(
 					solrUpdateService.getSolrSearchService().getSolrSettings().getFieldName(SearchFieldKeys.ANCESTOR_PATH)
 							+ ":"
 							+ solrUpdateService.getSolrSearchService().getSolrSettings()
@@ -259,7 +191,7 @@ public class SolrUpdateRunnable implements Runnable {
 							+ solrUpdateService.getSearchSettings().getFacetSubfieldDelimiter() + "*");
 		} else {
 			// Targeting an individual file, just delete it.
-			solrUpdateService.getUpdateDocTransformer().deleteDocument(updateRequest.getTargetID());
+			solrUpdateService.getSolrUpdateDriver().delete(updateRequest.getTargetID());
 		}
 	}
 
@@ -288,90 +220,78 @@ public class SolrUpdateRunnable implements Runnable {
 	 * 
 	 * @param updateRequest
 	 */
-	private void recursiveReindex(SolrUpdateRequest updateRequest) {
+	private void recursiveReindex(SolrUpdateRequest updateRequest, DocumentFilteringPipeline pipeline,
+			boolean cleanupOutdated) {
 		try {
 			boolean targetAll = false;
 			if (SolrUpdateService.TARGET_ALL.equals(updateRequest.getTargetID())) {
 				updateRequest.setPid(solrUpdateService.getCollectionsPid().getPid());
 				targetAll = true;
+			} else if (solrUpdateService.getCollectionsPid().getPid().equals(updateRequest.getTargetID())) {
+				targetAll = true;
 			}
 
 			long startTime = System.currentTimeMillis();
-			Document resultDoc = getObjectViewXML(updateRequest, targetAll);
+			DocumentIndexingPackage dip = solrUpdateService.getDipFactory().createDocumentIndexingPackage(
+					updateRequest.getPid());
 
-			if (resultDoc != null && resultDoc.getRootElement().getChild("digitalObject", foxmlNS) != null) {
-				// Skip indexing current item if it is the target all flag
-				if (!targetAll) {
-					solrUpdateService.getUpdateDocTransformer().addDocument(resultDoc);
+			if (dip != null) {
+				// Store the DIP for this document in the request.
+				updateRequest.setDocumentIndexingPackage(dip);
+				// Retrieve the parent requests document indexing package and store it as the current dip's parent.
+				UpdateNodeRequest parentRequest = updateRequest.getParent();
+				if (parentRequest != null) {
+					dip.setParentDocument(parentRequest.getDocumentIndexingPackage());
 				}
 
-				Element relsExt = (Element) relsExtXpath.selectSingleNode(resultDoc);
-				if (relsExt != null && containerXpath.selectSingleNode(relsExt) != null) {
+				// Skip indexing this document if it was a reindex all flag
+				if (!targetAll) {
+					// Perform the indexing pipeline
+					pipeline.process(dip);
+					solrUpdateService.getSolrUpdateDriver().addDocument(dip.getDocument());
+				} else {
+					dip.getDocument().setAncestorNames("/Collections");
+					dip.getDocument().setAncestorPath(new ArrayList<String>());
+				}
 
-					@SuppressWarnings("unchecked")
-					List<Attribute> containsList = (List<Attribute>) containsXpath.selectNodes(relsExt);
+				List<PID> children = dip.getChildren();
+				if (children != null) {
+					CountDownUpdateRequest cleanupRequest = null;
+					CountDownUpdateRequest commitRequest = null;
 
-					// Generate cleanup request before offering children to be
-					// processed. Set start time to minus one so that the search is less than (instead of <=)
-					CountDownUpdateRequest cleanupRequest = new DeleteChildrenPriorToTimestampRequest(
-							updateRequest.getTargetID(), SolrUpdateAction.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP,
-							solrUpdateService.nextMessageID(), updateRequest, startTime - 1);
+					if (cleanupOutdated) {
+						// Generate cleanup request before offering children to be
+						// processed. Set start time to minus one so that the search is less than (instead of <=)
+						cleanupRequest = new DeleteChildrenPriorToTimestampRequest(updateRequest.getTargetID(),
+								SolrUpdateAction.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP, solrUpdateService.nextMessageID(),
+								updateRequest, startTime - 1);
 
-					CountDownUpdateRequest commitRequest = new CountDownUpdateRequest(updateRequest.getTargetID(),
-							SolrUpdateAction.COMMIT, cleanupRequest, solrUpdateService.nextMessageID(), updateRequest);
+						commitRequest = new CountDownUpdateRequest(updateRequest.getTargetID(), SolrUpdateAction.COMMIT,
+								cleanupRequest, solrUpdateService.nextMessageID(), updateRequest);
+					
+						LOG.debug("CleanupRequest: " + cleanupRequest.toString());
+					}
 
-					LOG.debug("CleanupRequest: " + cleanupRequest.toString());
+					
 
 					// Get all children, set to block the cleanup request
-					for (Attribute containsResource : containsList) {
-						SolrUpdateRequest childRequest = new SolrUpdateRequest(containsResource.getValue(),
-								SolrUpdateAction.RECURSIVE_ADD, commitRequest, solrUpdateService.nextMessageID(), updateRequest);
-						LOG.debug("Queueing for recursive reindex: " + containsResource.getValue() + "|"
-								+ childRequest.getTargetID());
+					for (PID child : children) {
+						SolrUpdateRequest childRequest = new SolrUpdateRequest(child, SolrUpdateAction.RECURSIVE_ADD,
+								commitRequest, solrUpdateService.nextMessageID(), updateRequest);
+						LOG.debug("Queueing for recursive reindex: " + child.getPid() + "|" + childRequest.getTargetID());
 						solrUpdateService.offer(childRequest);
 					}
 
-					solrUpdateService.offer(commitRequest);
-					// Add the cleanup request
-					solrUpdateService.offer(cleanupRequest);
+					if (cleanupOutdated) {
+						solrUpdateService.offer(commitRequest);
+						// Add the cleanup request
+						solrUpdateService.offer(cleanupRequest);
+					}
 				}
 			}
 		} catch (Exception e) {
 			throw new IndexingException("Error while performing a recursive add on " + updateRequest.getTargetID(), e);
 		}
-	}
-
-	private Document getObjectViewXML(SolrUpdateRequest updateRequest, boolean ignoreAllowIndexing) {
-		return getObjectViewXML(updateRequest, ignoreAllowIndexing, 2);
-	}
-
-	private Document getObjectViewXML(SolrUpdateRequest updateRequest, boolean ignoreAllowIndexing, int retries) {
-		Document resultDoc = null;
-		try {
-			PID pid = updateRequest.getPid();
-			if (ignoreAllowIndexing
-					|| (!solrUpdateService.getFedoraDataService().getTripleStoreQueryService().isOrphaned(pid) && solrUpdateService
-							.getFedoraDataService().getTripleStoreQueryService().allowIndexing(pid))) {
-				LOG.debug("Preparing to retrieve object view for " + updateRequest.getTargetID());
-				resultDoc = solrUpdateService.getFedoraDataService().getObjectViewXML(updateRequest.getTargetID(), true);
-			}
-		} catch (Exception e) {
-			LOG.warn("Failed to get ObjectViewXML for " + updateRequest.getTargetID() + ".  Retrying.");
-			LOG.debug("", e);
-			if (retries > 1) {
-				try {
-					Thread.sleep(30000L);
-					return this.getObjectViewXML(updateRequest, ignoreAllowIndexing, retries - 1);
-				} catch (InterruptedException e2) {
-					LOG.warn("Retry attempt to retrieve object view XML was interrupted", e);
-					Thread.currentThread().interrupt();
-				} catch (Exception e2) {
-					throw new IndexingException("Failed to get ObjectViewXML for " + updateRequest.getTargetID() + " after two attempts.", e2);
-				}
-			}
-
-		}
-		return resultDoc;
 	}
 
 	/**
@@ -380,12 +300,17 @@ public class SolrUpdateRunnable implements Runnable {
 	 * @param updateRequest
 	 * @throws Exception
 	 */
-	private void addObject(SolrUpdateRequest updateRequest) throws Exception {
+	private DocumentIndexingPackage addObject(SolrUpdateRequest updateRequest, DocumentFilteringPipeline pipeline)
+			throws Exception {
 		// Retrieve object metadata from Fedora and add to update document list
-		Document resultDoc = getObjectViewXML(updateRequest, false);
-		if (resultDoc != null && resultDoc.getRootElement().getChild("digitalObject", foxmlNS) != null) {
-			solrUpdateService.getUpdateDocTransformer().addDocument(resultDoc);
+		DocumentIndexingPackage dip = solrUpdateService.getDipFactory().createDocumentIndexingPackage(
+				updateRequest.getPid());
+		if (dip != null) {
+			updateRequest.setDocumentIndexingPackage(dip);
+			pipeline.process(dip);
+			solrUpdateService.getSolrUpdateDriver().addDocument(dip.getDocument());
 		}
+		return dip;
 	}
 
 	/**
@@ -395,7 +320,7 @@ public class SolrUpdateRunnable implements Runnable {
 	 * @throws Exception
 	 */
 	private void clearIndex(SolrUpdateRequest updateRequest) throws Exception {
-		solrUpdateService.getUpdateDocTransformer().deleteDocument("*:*");
+		solrUpdateService.getSolrUpdateDriver().deleteByQuery("*:*");
 		solrUpdateService.offer(new SolrUpdateRequest(updateRequest.getTargetID(), SolrUpdateAction.COMMIT,
 				solrUpdateService.nextMessageID(), updateRequest));
 	}
@@ -465,39 +390,29 @@ public class SolrUpdateRunnable implements Runnable {
 	}
 
 	/**
-	 * Determines if a commit to Solr is needed and performs it if so.
+	 * Pushes queued changes out to solr if there are no further jobs pending or if a push has been requested
 	 * 
-	 * @param forceCommit
+	 * @param forcePush
 	 */
-	private void commitSolrChanges(boolean forceCommit) {
+	private void pushSolrChanges(boolean forcePush) {
 		String addDocString = null;
-		ExecutionTimer t = new ExecutionTimer();
+
 		synchronized (solrUpdateService.getSolrSearchService()) {
 			synchronized (solrUpdateService.getSolrDataAccessLayer()) {
-				// Process documents into a single update document if there aren't
-				// any more items to process or exceeded page size
-				synchronized (solrUpdateService.getUpdateDocTransformer()) {
-					// Commit if forceCommit is true and there are documents to commit
-					// OR auto commit is on, and there are page size number of documents or no more requests pending
-					if ((forceCommit && solrUpdateService.getUpdateDocTransformer().getDocumentCount() > 0)
-							|| (solrUpdateService.autoCommit && ((solrUpdateService.getUpdateDocTransformer()
-									.getDocumentCount() >= INGEST_PAGE_SIZE) || (solrUpdateService.getPidQueue().size() == 0 && solrUpdateService
-									.getCollisionList().size() == 0)))) {
-						addDocString = solrUpdateService.getUpdateDocTransformer().exportUpdateDocument();
+				// Automatically push if the queue is empty
+				if (forcePush
+						|| ((solrUpdateService.getPidQueue().size() == 0 && solrUpdateService.getCollisionList().size() == 0))) {
+					ExecutionTimer t = null;
+					if (LOG.isDebugEnabled()) {
+						t = new ExecutionTimer();
+						LOG.debug("Submitting to solr: " + addDocString);
+						t.start();
 					}
-				}
-
-				// If the update document is populated, then upload it to Solr
-				if (addDocString != null) {
-					LOG.debug("Submitting to solr: " + addDocString);
-					t.start();
-					try {
-						solrUpdateService.getSolrDataAccessLayer().updateIndex(addDocString);
-					} catch (Exception e) {
-						throw new IndexingException("Failed to ingest update document to Solr", e, addDocString);
+					solrUpdateService.getSolrUpdateDriver().push();
+					if (LOG.isDebugEnabled()) {
+						t.end();
+						LOG.info("Uploaded document to Solr: " + t.duration());
 					}
-					t.end();
-					LOG.info("Uploaded document to Solr: " + t.duration());
 				}
 			}
 		}
@@ -515,13 +430,14 @@ public class SolrUpdateRunnable implements Runnable {
 			switch (updateRequest.getUpdateAction()) {
 				case DELETE:
 					// Add a delete request to the update document
-					solrUpdateService.getUpdateDocTransformer().deleteDocument(updateRequest.getTargetID());
+					solrUpdateService.getSolrUpdateDriver().delete(updateRequest.getTargetID());
+					// solrUpdateService.getUpdateDocTransformer().deleteDocument(updateRequest.getTargetID());
 					break;
 				case ADD:
-					addObject(updateRequest);
+					addObject(updateRequest, solrUpdateService.getFullUpdatePipeline());
 					break;
 				case RECURSIVE_ADD:
-					recursiveAdd(updateRequest);
+					recursiveReindex(updateRequest, solrUpdateService.getFullUpdatePipeline(), false);
 					break;
 				case DELETE_SOLR_TREE:
 					deleteSolrTree(updateRequest);
@@ -530,16 +446,20 @@ public class SolrUpdateRunnable implements Runnable {
 					cleanReindex(updateRequest);
 					break;
 				case RECURSIVE_REINDEX:
-					recursiveReindex(updateRequest);
+					recursiveReindex(updateRequest, solrUpdateService.getFullUpdatePipeline(), true);
 					break;
 				case DELETE_CHILDREN_PRIOR_TO_TIMESTAMP:
 					deleteChildrenPriorToTimestamp(updateRequest);
 					break;
 				case COMMIT:
-					forceCommit = true;
+					solrUpdateService.getSolrUpdateDriver().commit();
 					break;
 				case CLEAR_INDEX:
 					clearIndex(updateRequest);
+					break;
+				case RECURSIVE_DELETE:
+					break;
+				default:
 					break;
 			}
 		} catch (Exception e) {
@@ -554,7 +474,7 @@ public class SolrUpdateRunnable implements Runnable {
 	public void run() {
 		try {
 			String pid = null;
-			boolean forceCommit = false;
+			boolean forcePush = false;
 			// Get the next pid and lock it
 			updateRequest = nextRequest();
 
@@ -568,10 +488,10 @@ public class SolrUpdateRunnable implements Runnable {
 					// Get the next available pid
 					LOG.debug("Obtained " + updateRequest.getTargetID() + "|" + updateRequest.getAction());
 					pid = updateRequest.getTargetID();
-					forceCommit = performAction(updateRequest);
+					forcePush = performAction(updateRequest);
 				} finally {
 					// If needed, perform commit before completing this request
-					commitSolrChanges(forceCommit);
+					pushSolrChanges(forcePush);
 					// Finish request and cleanup
 					updateRequest.requestCompleted();
 					solrUpdateService.getActiveMessages().remove(updateRequest);
@@ -584,8 +504,8 @@ public class SolrUpdateRunnable implements Runnable {
 					LOG.debug("Processed pid " + pid);
 				}
 			} else {
-				// Commit changes to solr if they are ready to go
-				commitSolrChanges(forceCommit);
+				// Push changes to solr if they are ready to go
+				pushSolrChanges(forcePush);
 			}
 		} catch (Exception e) {
 			// Encountered an exception

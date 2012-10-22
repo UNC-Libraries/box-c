@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -215,6 +218,23 @@ public class DocumentIndexingPackage {
 			}
 		}
 		return label;
+	}
+	
+	public List<PID> getChildren() {
+		Element relsExt = getRelsExt();
+		if (relsExt == null)
+			return null;
+		
+		List<?> containsEls = relsExt.getChildren("contains", JDOMNamespaceUtil.CDR_NS);
+		if (containsEls.size() > 0) {
+			List<PID> children = new ArrayList<PID>(containsEls.size());
+			for (Object containsObj: containsEls) {
+				PID child = new PID(((Element)containsObj).getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
+				children.add(child);
+			}
+			return children;
+		}
+		return null;
 	}
 
 	public void setLabel(String label) {

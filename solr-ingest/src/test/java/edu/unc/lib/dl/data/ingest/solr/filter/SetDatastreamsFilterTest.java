@@ -94,7 +94,7 @@ public class SetDatastreamsFilterTest extends Assert {
 		dipFactory.setManagementClient(managementClient);
 
 		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
-		filter.setDipFactory(dipFactory);
+		filter.setDocumentIndexingPackageFactory(dipFactory);
 		filter.filter(dip);
 
 		IndexDocumentBean idb = dip.getDocument();
@@ -162,7 +162,7 @@ public class SetDatastreamsFilterTest extends Assert {
 		dipFactory.setManagementClient(managementClient);
 
 		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
-		filter.setDipFactory(dipFactory);
+		filter.setDocumentIndexingPackageFactory(dipFactory);
 		filter.filter(dip);
 	}
 }

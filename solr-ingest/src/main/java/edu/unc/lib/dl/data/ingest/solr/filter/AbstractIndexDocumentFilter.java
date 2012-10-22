@@ -18,6 +18,10 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.fedora.PID;
@@ -26,6 +30,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public abstract class AbstractIndexDocumentFilter implements IndexDocumentFilter {
+	private static final Logger log = LoggerFactory.getLogger(AbstractIndexDocumentFilter.class);
 	protected TripleStoreQueryService tsqs;
 	protected DocumentIndexingPackageFactory dipFactory;
 	
@@ -61,8 +66,14 @@ public abstract class AbstractIndexDocumentFilter implements IndexDocumentFilter
 			ancestor = ancestor.substring(0, index);
 			parentPID = new PID(ancestor);
 		} else {
-			parentPID = new PID(tsqs.fetchFirstBySubjectAndPredicate(dip.getPid(), ContentModelHelper.Relationship.contains.toString()));
+			try {
+				log.debug("Retrieving parent pid for " + dip.getPid().getPid());
+				parentPID = tsqs.fetchByPredicateAndLiteral(ContentModelHelper.Relationship.contains.toString(), dip.getPid()).get(0);
+			} catch (IndexOutOfBoundsException e) {
+				throw new IndexingException("Could not retrieve parent pid for " + dip.getPid().getPid(), e);
+			}
 		}
+		log.debug("Retrieving parent DIP " + parentPID.getPid() + " for " + dip.getPid().getPid());
 		DocumentIndexingPackage parentDIP = dipFactory.createDocumentIndexingPackage(parentPID);
 		dip.setParentDocument(parentDIP);
 		return parentDIP;
