@@ -52,7 +52,7 @@ public class IndexDocumentBean {
 	protected Date timestamp;
 	protected Date lastIndexed;
 	
-	protected List<String> accessGroup;
+	protected List<String> roleGroup;
 	protected List<String> readGroup;
 	protected List<String> adminGroup;
 	protected List<String> status;
@@ -258,13 +258,13 @@ public class IndexDocumentBean {
 		this.lastIndexed = lastIndexed;
 	}
 
-	public List<String> getAccessGroup() {
-		return accessGroup;
+	public List<String> getRoleGroup() {
+		return roleGroup;
 	}
 
 	@Field
-	public void setAccessGroup(List<String> accessGroup) {
-		this.accessGroup = accessGroup;
+	public void setRoleGroup(List<String> roleGroup) {
+		this.roleGroup = roleGroup;
 	}
 
 	public List<String> getReadGroup() {

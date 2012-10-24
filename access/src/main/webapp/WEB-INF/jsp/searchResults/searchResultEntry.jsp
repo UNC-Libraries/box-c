@@ -222,15 +222,15 @@
 					<c:if test="${metadata.resourceType == searchSettings.resourceTypeFile || (metadata.resourceType == searchSettings.resourceTypeAggregate && not empty metadata.contentType)}">
 						<p class="right">
 							<c:out value="${metadata.contentType.highestTierDisplayValue}"/>
-							<c:if test="${not empty metadata.filesize}">
-								&nbsp;(<c:out value="${cdr:formatFilesize(metadata.filesize, 1)}"/>)
+							<c:if test="${not empty metadata.filesizeSort}">
+								&nbsp;(<c:out value="${cdr:formatFilesize(metadata.filesizeSort, 1)}"/>)
 							</c:if>
 						</p>
 					</c:if>
 					
 					<c:choose>
-						<c:when test="${cdr:contains(metadata.recordAccess, accessGroupConstants.PUBLIC_GROUP)}">
-							<c:if test="${!cdr:contains(metadata.surrogateAccess, accessGroupConstants.PUBLIC_GROUP) 
+						<c:when test="${cdr:contains(metadata.readGroup, accessGroupConstants.PUBLIC_GROUP)}">
+							<c:if test="${!cdr:hasAccess(metadata.groupRoleMap[accessGroupConstants.PUBLIC_GROUP], "SURROGATE") 
 										|| !cdr:contains(metadata.fileAccess, accessGroupConstants.PUBLIC_GROUP)}">
 								<p class="right">
 									Limited Access

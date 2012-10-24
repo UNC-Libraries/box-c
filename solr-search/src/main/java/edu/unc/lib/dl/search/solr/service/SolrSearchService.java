@@ -32,9 +32,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -82,7 +85,7 @@ public class SolrSearchService {
 		QueryResponse queryResponse = null;
 		SolrQuery solrQuery = new SolrQuery();
 		StringBuilder query = new StringBuilder();
-		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':').append(solrSettings.sanitize(idRequest.getId()));
+		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':').append(SolrSettings.sanitize(idRequest.getId()));
 		try {
 			//Add access restrictions to query
 			addAccessRestrictions(query, idRequest.getAccessGroups(), SearchFieldKeys.RECORD_ACCESS);
@@ -205,7 +208,7 @@ public class SolrSearchService {
 		solrQuery.setFacetMinCount(1);
 		
 		solrQuery.addFacetField(solrSettings.getFieldName(fieldKey));
-		solrQuery.addFilterQuery(solrSettings.getFieldName(fieldKey) + ":" + solrSettings.sanitize(searchValue) + searchSettings.facetSubfieldDelimiter + "*");
+		solrQuery.addFilterQuery(solrSettings.getFieldName(fieldKey) + ":" + SolrSettings.sanitize(searchValue) + searchSettings.facetSubfieldDelimiter + "*");
 		
 		LOG.debug("getHierarchicalFacet query: " + solrQuery.toString());
 		try {
@@ -250,7 +253,7 @@ public class SolrSearchService {
 		QueryResponse queryResponse = null;
 		SolrQuery solrQuery = new SolrQuery();
 		StringBuilder query = new StringBuilder();
-		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':').append(solrSettings.sanitize(idRequest.getId()));
+		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':').append(SolrSettings.sanitize(idRequest.getId()));
 		
 		try {
 			//Add access restrictions to query
@@ -286,7 +289,7 @@ public class SolrSearchService {
 	 * @param accessGroups
 	 * @return
 	 */
-	public HierarchicalFacet getAncestorPath(String pid, AccessGroupSet accessGroups){
+	public CutoffFacet getAncestorPath(String pid, AccessGroupSet accessGroups){
 		List<String> resultFields = new ArrayList<String>();
 		resultFields.add(SearchFieldKeys.ANCESTOR_PATH);
 		
@@ -300,14 +303,14 @@ public class SolrSearchService {
 		}
 		if (rootNode == null)
 			return null;
-		return rootNode.getAncestorPath();
+		return rootNode.getAncestorPathFacet();
 	}
 	
 	public Date getTimestamp(String pid, AccessGroupSet accessGroups){
 		QueryResponse queryResponse = null;
 		SolrQuery solrQuery = new SolrQuery();
 		StringBuilder query = new StringBuilder();
-		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':').append(solrSettings.sanitize(pid));
+		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':').append(SolrSettings.sanitize(pid));
 		try {
 			//Add access restrictions to query
 			addAccessRestrictions(query, accessGroups, SearchFieldKeys.RECORD_ACCESS);
@@ -369,7 +372,7 @@ public class SolrSearchService {
 				if (searchFragments != null){
 					LOG.debug(searchType + ": "+searchFragments);
 					for (String searchFragment: searchFragments){
-						searchFragment = solrSettings.sanitize(searchFragment);
+						searchFragment = SolrSettings.sanitize(searchFragment);
 						if (firstTerm)
 							firstTerm = false;
 						else query.append(' ').append(searchState.getSearchTermOperator()).append(' ');
@@ -398,7 +401,7 @@ public class SolrSearchService {
 								query.append('*');
 							}
 						} else {
-							query.append(solrSettings.sanitize(rangeTerm.getValue().getLeftHand()));
+							query.append(SolrSettings.sanitize(rangeTerm.getValue().getLeftHand()));
 						}
 					}
 					query.append(" TO ");
@@ -412,7 +415,7 @@ public class SolrSearchService {
 								query.append('*');
 							}
 						} else {
-							query.append(solrSettings.sanitize(rangeTerm.getValue().getRightHand()));
+							query.append(SolrSettings.sanitize(rangeTerm.getValue().getRightHand()));
 						}
 					}
 					query.append("] ");
@@ -496,35 +499,12 @@ public class SolrSearchService {
 			while (facetIt.hasNext()){
 				Entry<String,Object> facetEntry = facetIt.next();
 				//Determine if the facet is hierarchical or not.
-				if (facetEntry.getValue() instanceof HierarchicalFacet){
-					HierarchicalFacet hierFacet = (HierarchicalFacet)facetEntry.getValue();
-					//If it is hierarchical, then need to add all the preceding tiers
-					if (hierFacet.getFacetTiers() != null){
-						for (HierarchicalFacet.HierarchicalFacetTier facetTier: hierFacet.getFacetTiers()){
-							StringBuilder filterQuery = new StringBuilder();
-							filterQuery.append(solrSettings.getFieldName(facetEntry.getKey())).append(":") 
-									.append(facetTier.getTier()).append(searchSettings.facetSubfieldDelimiter);
-							if (!facetTier.getSearchValue().equals("*")){
-								filterQuery.append(solrSettings.sanitize(facetTier.getSearchValue())).append(searchSettings.facetSubfieldDelimiter);
-							}
-							filterQuery.append('*');
-							
-							solrQuery.addFilterQuery(filterQuery.toString());
-							if (hierFacet.getCutoffTier() != null && searchRequest.isApplyFacetCutoffs()){
-								filterQuery = new StringBuilder();
-								filterQuery.append('!').append(solrSettings.getFieldName(facetEntry.getKey())).append(":") 
-										.append(hierFacet.getCutoffTier()).append(searchSettings.facetSubfieldDelimiter).append('*');
-								solrQuery.addFilterQuery(filterQuery.toString());
-							}
-						}
-						if (searchRequest.isApplyFacetPrefixes()){
-							hierarchyBaseTier.put(solrSettings.getFieldName(facetEntry.getKey()), hierFacet.getHighestTier());
-						}
-					}
+				if (facetEntry.getValue() instanceof AbstractHierarchicalFacet){
+					AbstractHierarchicalFacet hierFacet = (AbstractHierarchicalFacet)facetEntry.getValue();
+					hierFacet.addToSolrQuery(solrQuery);
 				} else {
-					//facetEntry.
 					//Add Normal facets
-					solrQuery.addFilterQuery(solrSettings.getFieldName(facetEntry.getKey()) + ":\"" + solrSettings.sanitize((String)facetEntry.getValue()) + "\"");
+					solrQuery.addFilterQuery(solrSettings.getFieldName(facetEntry.getKey()) + ":\"" + SolrSettings.sanitize((String)facetEntry.getValue()) + "\"");
 				}
 			}
 		}

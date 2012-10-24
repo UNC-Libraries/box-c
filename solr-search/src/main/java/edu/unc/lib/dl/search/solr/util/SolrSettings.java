@@ -17,6 +17,7 @@ package edu.unc.lib.dl.search.solr.util;
 
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
@@ -92,11 +93,12 @@ public class SolrSettings extends AbstractSettings  {
 		return server;
 	}
 	
-	public String sanitize(String value){
+	private static Pattern escapeReservedCharacters = Pattern.compile("([\\+\\-!\\(\\)\\{\\}\\[\\]\\^\"~\\*\\?:\\\\])");
+	private static Pattern escapeReservedWords = Pattern.compile("\\b(AND|OR|NOT)\\b");
+	public static String sanitize(String value){
 		if (value == null)
 			return value;
-		return value.replaceAll("([\\+\\-!\\(\\)\\{\\}\\[\\]\\^\"~\\*\\?:\\\\])", "\\\\$1")
-				.replaceAll("\\b(AND|OR|NOT)\\b", "'$1'");
+		return escapeReservedWords.matcher(escapeReservedCharacters.matcher(value).replaceAll("\\\\$1")).replaceAll("'$1'");
 	}
 	
 	public String getPath() {

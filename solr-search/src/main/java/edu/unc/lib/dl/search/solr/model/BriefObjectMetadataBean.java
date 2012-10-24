@@ -16,8 +16,10 @@
 package edu.unc.lib.dl.search.solr.model;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
@@ -25,7 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
 
 /**
  * Stores a single Solr tuple representing an object from a search result. Can be populated directly by Solrj's
@@ -33,40 +34,22 @@ import edu.unc.lib.dl.security.access.AccessGroupSet;
  * 
  * @author bbpennel
  */
-public class BriefObjectMetadataBean {
+public class BriefObjectMetadataBean extends IndexDocumentBean {
 	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(BriefObjectMetadataBean.class);
-	private String id;
-	private HierarchicalFacet ancestorPath;
-	private HierarchicalFacet path;
-	private String ancestorNames;
-	private AccessGroupSet fileAccess;
-	private AccessGroupSet recordAccess;
-	private AccessGroupSet surrogateAccess;
-	private String resourceType;
-	private Long displayOrder;
-	private HierarchicalFacet contentType;
+	private CutoffFacet ancestorPathFacet;
+	private CutoffFacet path;
+	private List<MultivaluedHierarchicalFacet> contentTypeFacet;
 	private List<Datastream> datastream;
-	private String parentCollection;
-	private String title;
-	private String abstractText;
-	private List<String> keyword;
-	private List<String> subject;
-	private String language;
-	private List<String> creator;
-	private List<String> name;
-	private List<String> department;
-	private String creatorType;
-	private Date dateCreated;
-	private Date dateAdded;
-	private Date dateUpdated;
-	private Date timestamp;
-	private String filesize;
+	// Inverted map of the roleGroup, clustering roles into buckets by group
+	Map<String,Collection<String>> groupRoleMap;
 	private long childCount;
 
 	public BriefObjectMetadataBean() {
 	}
 
+	// TODO getDefaultWebData getDefaultWebObject getFilesizeByDatastream
+	
 	public String getIdWithoutPrefix() {
 		int index = id.indexOf(":");
 		if (index != -1) {
@@ -75,26 +58,14 @@ public class BriefObjectMetadataBean {
 		return id;
 	}
 
-	public String getId() {
-		return id;
+	public CutoffFacet getAncestorPathFacet() {
+		return ancestorPathFacet;
 	}
 
 	@Field
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public HierarchicalFacet getAncestorPath() {
-		return ancestorPath;
-	}
-
-	@Field
-	public void setAncestorPath(ArrayList<String> ancestorPaths) {
-		ArrayList<HierarchicalFacet.HierarchicalFacetTier> tierList = HierarchicalFacet
-				.createFacetTierList(ancestorPaths);
-
-		if (tierList.size() > 0)
-			this.ancestorPath = new HierarchicalFacet(SearchFieldKeys.ANCESTOR_PATH, tierList, 0);
+	public void setAncestorPath(List<String> ancestorPaths) {
+		super.setAncestorPath(ancestorPaths);
+		this.ancestorPathFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH, ancestorPaths, 0);
 	}
 
 	/**
@@ -102,85 +73,29 @@ public class BriefObjectMetadataBean {
 	 * 
 	 * @return
 	 */
-	public HierarchicalFacet getPath() {
+	public CutoffFacet getPath() {
 		if (path == null) {
 			if (this.ancestorPath == null) {
-				path = new HierarchicalFacet(SearchFieldKeys.ANCESTOR_PATH, "1," + this.id + "," + this.title);
+				this.ancestorPathFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH, "1," + this.id + "," + this.title, 0);
 			} else {
-				path = new HierarchicalFacet(ancestorPath);
-				path.addTier(id, title);
+				path = new CutoffFacet(ancestorPathFacet);
+				path.addNode(id, title);
 			}
 		}
 		return path;
 	}
 
-	public String getAncestorNames() {
-		return ancestorNames;
-	}
-
-	@Field
-	public void setAncestorNames(String ancestorNames) {
-		this.ancestorNames = ancestorNames;
-	}
-
-	public AccessGroupSet getFileAccess() {
-		return fileAccess;
-	}
-
-	@Field
-	public void setFileAccess(String[] fileAccess) {
-		this.fileAccess = new AccessGroupSet(fileAccess);
-	}
-
-	public AccessGroupSet getRecordAccess() {
-		return recordAccess;
-	}
-
-	@Field
-	public void setRecordAccess(String[] recordAccess) {
-		this.recordAccess = new AccessGroupSet(recordAccess);
-	}
-
-	public AccessGroupSet getSurrogateAccess() {
-		return surrogateAccess;
-	}
-
-	@Field
-	public void setSurrogateAccess(String[] surrogateAccess) {
-		this.surrogateAccess = new AccessGroupSet(surrogateAccess);
-	}
-
-	public String getResourceType() {
-		return resourceType;
-	}
-
-	@Field
-	public void setResourceType(String resourceType) {
-		this.resourceType = resourceType;
-	}
-
-	public Long getDisplayOrder() {
-		return displayOrder;
-	}
-
-	@Field
-	public void setDisplayOrder(long displayOrder) {
-		this.displayOrder = displayOrder;
-	}
-
-	public HierarchicalFacet getContentType() {
-		return contentType;
+	public List<MultivaluedHierarchicalFacet> getContentTypeFacet() {
+		return contentTypeFacet;
 	}
 
 	@Field
 	public void setContentType(ArrayList<String> contentTypes) {
-		ArrayList<HierarchicalFacet.HierarchicalFacetTier> tierList = HierarchicalFacet.createFacetTierList(contentTypes);
-
-		if (tierList.size() > 0)
-			this.contentType = new HierarchicalFacet(SearchFieldKeys.CONTENT_TYPE, tierList, 0);
+		this.contentType = contentTypes;
+		this.contentTypeFacet = MultivaluedHierarchicalFacet.createMultivaluedHierarchicalFacets(SearchFieldKeys.CONTENT_TYPE, contentTypes);
 	}
 
-	public List<Datastream> getDatastream() {
+	public List<Datastream> getDatastreamObjects() {
 		return datastream;
 	}
 
@@ -202,135 +117,24 @@ public class BriefObjectMetadataBean {
 		}
 		this.datastream = datastreams;
 	}
-
-	public String getTitle() {
-		return title;
-	}
-
+	
+	@Override
 	@Field
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getAbstractText() {
-		return abstractText;
-	}
-
-	@Field
-	public void setAbstract(String abstractText) {
-		this.abstractText = abstractText;
-	}
-
-	public void setAbstractText(String abstractText) {
-		this.abstractText = abstractText;
-	}
-
-	public List<String> getKeyword() {
-		return keyword;
-	}
-
-	@Field
-	public void setKeyword(List<String> keyword) {
-		this.keyword = keyword;
-	}
-
-	public List<String> getSubject() {
-		return subject;
-	}
-
-	@Field
-	public void setSubject(List<String> subject) {
-		this.subject = subject;
-	}
-
-	public String getLanguage() {
-		return language;
-	}
-
-	@Field
-	public void setLanguage(String language) {
-		this.language = language;
-	}
-
-	public List<String> getCreator() {
-		return creator;
-	}
-
-	@Field
-	public void setCreator(List<String> creator) {
-		this.creator = creator;
-	}
-
-	public List<String> getName() {
-		return name;
-	}
-
-	@Field
-	public void setName(List<String> name) {
-		this.name = name;
-	}
-
-	public List<String> getDepartment() {
-		return department;
-	}
-
-	@Field
-	public void setDepartment(List<String> department) {
-		this.department = department;
-	}
-
-	public String getCreatorType() {
-		return creatorType;
-	}
-
-	@Field
-	public void setCreatorType(String creatorType) {
-		this.creatorType = creatorType;
-	}
-
-	public Date getDateCreated() {
-		return dateCreated;
-	}
-
-	@Field
-	public void setDateCreated(Date dateCreated) {
-		this.dateCreated = dateCreated;
-	}
-
-	public Date getDateAdded() {
-		return dateAdded;
-	}
-
-	@Field
-	public void setDateAdded(Date dateAdded) {
-		this.dateAdded = dateAdded;
-	}
-
-	public Date getDateUpdated() {
-		return dateUpdated;
-	}
-
-	@Field
-	public void setDateUpdated(Date dateUpdated) {
-		this.dateUpdated = dateUpdated;
-	}
-
-	public Date getTimestamp() {
-		return timestamp;
-	}
-
-	@Field
-	public void setTimestamp(Date timestamp) {
-		this.timestamp = timestamp;
-	}
-
-	public String getFilesize() {
-		return filesize;
-	}
-
-	@Field
-	public void setFilesize(String filesize) {
-		this.filesize = filesize;
+	public void setRoleGroup(List<String> roleGroup) {
+		this.setRoleGroup(roleGroup);
+		
+		groupRoleMap = new HashMap<String,Collection<String>>();
+		if (roleGroup != null){
+			for (String roleGroupPair: roleGroup) {
+				String[] roleGroupData = roleGroupPair.split("\\\\|");
+				Collection<String> roles = groupRoleMap.get(roleGroupData[1]);
+				if (roles == null) {
+					roles = new ArrayList<String>();
+					groupRoleMap.put(roleGroupData[1], roles);
+				}
+				roles.add(roleGroupData[0]);
+			}
+		}
 	}
 
 	public String toString() {
@@ -338,8 +142,6 @@ public class BriefObjectMetadataBean {
 		sb.append("id: " + id + "\n");
 		sb.append("ancestorPath: " + ancestorPath + "\n");
 		sb.append("ancestorNames: " + ancestorNames + "\n");
-		sb.append("fileAccess: " + fileAccess + "\n");
-		sb.append("recordAccess: " + recordAccess + "\n");
 		sb.append("resourceType: " + resourceType + "\n");
 		sb.append("displayOrder: " + displayOrder + "\n");
 		sb.append("contentType: " + contentType + "\n");
@@ -350,14 +152,11 @@ public class BriefObjectMetadataBean {
 		sb.append("subject: " + subject + "\n");
 		sb.append("language: " + language + "\n");
 		sb.append("creator: " + creator + "\n");
-		sb.append("name: " + name + "\n");
 		sb.append("department: " + department + "\n");
-		sb.append("creatorType: " + creatorType + "\n");
 		sb.append("dateCreated: " + dateCreated + "\n");
 		sb.append("dateAdded: " + dateAdded + "\n");
 		sb.append("dateUpdated: " + dateUpdated + "\n");
 		sb.append("timestamp: " + timestamp + "\n");
-		sb.append("filesize: " + filesize + "\n");
 		return sb.toString();
 	}
 
@@ -369,17 +168,11 @@ public class BriefObjectMetadataBean {
 	public void setParentCollection(String parentCollection) {
 		this.parentCollection = parentCollection;
 	}
-
-	public String getParentCollectionName() {
+	
+	public CutoffFacetNode getParentCollectionObject() {
 		if (ancestorPath == null || parentCollection == null)
 			return null;
-		return this.ancestorPath.getDisplayValue(parentCollection);
-	}
-
-	public String getParentCollectionSearchValue() {
-		if (ancestorPath == null || parentCollection == null)
-			return null;
-		return this.ancestorPath.getSearchValue(parentCollection);
+		return (CutoffFacetNode)this.ancestorPathFacet.getNode(this.parentCollection);
 	}
 
 	public long getChildCount() {
@@ -391,21 +184,31 @@ public class BriefObjectMetadataBean {
 	}
 
 	public static class Datastream {
-		private PID pid;
+		private PID owner;
 		private String name;
+		private long filesize;
+		private String mimetype;
+		private String extension;
+		private String category;
 
 		public Datastream(String datastream) {
 			if (datastream == null)
 				throw new IllegalArgumentException("Datastream value must not be null");
-			int pidDivider = datastream.lastIndexOf('/');
-			if (pidDivider > 0 && pidDivider < datastream.length() - 1) {
-				name = datastream.substring(pidDivider + 1);
-				pid = new PID(datastream.substring(0, pidDivider));
+			
+			String[] dsParts = datastream.split("\\\\|");
+			this.name = dsParts[0];
+			try {
+				this.filesize = Long.parseLong(dsParts[1]);
+			} catch (NumberFormatException e) {
+				this.filesize = 0;
+			}
+			this.mimetype = dsParts[2];
+			this.extension = dsParts[3];
+			this.category = dsParts[4];
+			if (dsParts[5].length() > 0) {
+				this.owner = new PID(dsParts[5]);
 			} else {
-				name = datastream;
-				if (pidDivider != -1)
-					name = name.replaceAll("/", "");
-				pid = null;
+				this.owner = null;
 			}
 		}
 		
@@ -416,7 +219,7 @@ public class BriefObjectMetadataBean {
 			if (object instanceof Datastream) {
 				Datastream rightHand = (Datastream)object;
 				// Equal if names match and either pids are null or both match
-				return name.equals(rightHand.name) && (rightHand.pid == null || pid == null || pid.equals(rightHand.pid));
+				return name.equals(rightHand.name) && (rightHand.owner == null || owner == null || owner.equals(rightHand.owner));
 			}
 			if (object instanceof String) {
 				String rightHandString = (String)object;
@@ -436,18 +239,28 @@ public class BriefObjectMetadataBean {
 			return result;
 		}
 
-		public PID getPidObject() {
-			return pid;
-		}
-		
-		public String getPid() {
-			if (pid == null)
-				return null;
-			return pid.getPid();
-		}
-
 		public String getName() {
 			return name;
+		}
+
+		public PID getOwner() {
+			return owner;
+		}
+
+		public long getFilesize() {
+			return filesize;
+		}
+
+		public String getMimetype() {
+			return mimetype;
+		}
+
+		public String getExtension() {
+			return extension;
+		}
+
+		public String getCategory() {
+			return category;
 		}
 	}
 }
