@@ -18,6 +18,7 @@ package edu.unc.lib.dl.util;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.unc.lib.dl.fedora.PID;
 
@@ -247,7 +248,7 @@ public interface TripleStoreQueryService {
 	 *           the pid for the object of interest
 	 * @return a map keyed by permission property with values including the set of subjects with that permission.
 	 */
-	public abstract Map<String, List<String>> lookupPermissions(PID pid);
+	public abstract Set<String[]> lookupGroupRoles(PID pid);
 
 	/**
 	 * Builds a list of all the containers above this one, starting with the REPOSITORY container and ending with the

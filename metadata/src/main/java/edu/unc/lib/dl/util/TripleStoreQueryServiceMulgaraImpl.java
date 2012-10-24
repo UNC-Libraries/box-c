@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPBody;
@@ -1021,51 +1023,32 @@ public class TripleStoreQueryServiceMulgaraImpl implements TripleStoreQueryServi
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#lookupPermissions (edu.unc.lib.dl.fedora.PID)
 	 */
 	@Override
-	public Map<String, List<String>> lookupPermissions(PID pid) {
-		Map<String, List<String>> result = new HashMap<String, List<String>>();
-
-		// construct path from contains relationships
+	public Set<String[]> lookupGroupRoles(PID pid) {
+		Set<String[]> result = new HashSet<String[]>();
 		StringBuffer query = new StringBuffer();
-		query.append("select $permission $subject from <%1$s>")
-				.append(" where <%2$s> $permission $subject")
+		query.append("select $group $role from <%1$s>")
+				.append(" where <%2$s> $role $group")
 				.append(" and (")
 				.append("       $permission <mulgara:is> <%3$s>")
-				// inheritPermissions
 				.append("       or $permission <mulgara:is> <%4$s>")
-				// metadataCreate
-				.append("       or $permission <mulgara:is> <%5$s>").append("       or $permission <mulgara:is> <%6$s>")
+				.append("       or $permission <mulgara:is> <%5$s>")
+				.append("       or $permission <mulgara:is> <%6$s>")
 				.append("       or $permission <mulgara:is> <%7$s>")
-				.append("       or $permission <mulgara:is> <%8$s>")
-				// originalCreate
-				.append("       or $permission <mulgara:is> <%9$s>").append("       or $permission <mulgara:is> <%10$s>")
-				.append("       or $permission <mulgara:is> <%11$s>").append("       or $permission <mulgara:is> <%12$s>")
-				// derivativeCreate
-				.append("       or $permission <mulgara:is> <%13$s>").append("       or $permission <mulgara:is> <%14$s>")
-				.append("       or $permission <mulgara:is> <%15$s> )").append(";");
+				.append("       or $permission <mulgara:is> <%7$s>")
+				.append("       or $permission <mulgara:is> <%8$s>").append(";");
 		String q = String.format(query.toString(), this.getResourceIndexModelUri(), pid.getURI(),
 				ContentModelHelper.CDRProperty.inheritPermissions.getURI(),
-				ContentModelHelper.CDRProperty.permitMetadataCreate.getURI(),
-				ContentModelHelper.CDRProperty.permitMetadataRead.getURI(),
-				ContentModelHelper.CDRProperty.permitMetadataUpdate.getURI(),
-				ContentModelHelper.CDRProperty.permitMetadataDelete.getURI(),
-				ContentModelHelper.CDRProperty.permitOriginalsCreate.getURI(),
-				ContentModelHelper.CDRProperty.permitOriginalsRead.getURI(),
-				ContentModelHelper.CDRProperty.permitOriginalsUpdate.getURI(),
-				ContentModelHelper.CDRProperty.permitOriginalsDelete.getURI(),
-				ContentModelHelper.CDRProperty.permitDerivativesCreate.getURI(),
-				ContentModelHelper.CDRProperty.permitDerivativesRead.getURI(),
-				ContentModelHelper.CDRProperty.permitDerivativesUpdate.getURI(),
-				ContentModelHelper.CDRProperty.permitDerivativesDelete.getURI());
-
+				ContentModelHelper.CDRProperty.patron.getURI(),
+				ContentModelHelper.CDRProperty.observer.getURI(),
+				ContentModelHelper.CDRProperty.ingester.getURI(),
+				ContentModelHelper.CDRProperty.processor.getURI(),
+				ContentModelHelper.CDRProperty.curator.getURI());
 		List<List<String>> response = this.lookupStrings(q);
 		if (!response.isEmpty()) {
 			for (List<String> solution : response) {
-				String permKey = solution.get(0);
-				String subjectValue = solution.get(1);
-				if (!result.containsKey(permKey)) {
-					result.put(permKey, new ArrayList<String>());
-				}
-				result.get(permKey).add(subjectValue);
+				String group = solution.get(0);
+				String role = solution.get(1);
+				result.add(new String[] {group, role});
 			}
 		}
 		return result;

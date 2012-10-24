@@ -70,6 +70,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.fcrepo</groupId>
+			<artifactId>fcrepo-security-pep</artifactId>
+			<version>${fcrepo.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.fcrepo</groupId>
 			<artifactId>fcrepo-security-jaas</artifactId>
 			<version>${fcrepo.version}</version>
 			<type>jar</type>
@@ -95,8 +102,14 @@
 		<dependency>
 			<groupId>org.fcrepo</groupId>
 			<artifactId>sunxacml</artifactId>
-			<version>1.2</version>
 			<classifier>melcoe</classifier>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.fcrepo</groupId>
+			<artifactId>fcrepo-security</artifactId>
+			<version>${fcrepo.version}</version>
+			<type>pom</type>
 		</dependency>
 	</dependencies>
 </project>

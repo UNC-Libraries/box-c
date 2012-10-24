@@ -101,8 +101,7 @@
 		<dependency>
 			<groupId>org.fcrepo</groupId>
 			<artifactId>fcrepo-server</artifactId>
-			<version>3.5</version>
-			<type>jar</type>
+			<version>${fcrepo.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
@@ -115,6 +114,11 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.6.0</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>metadata</artifactId>
+			<version>${cdr.version}</version>
 		</dependency>
 	</dependencies>
 </project>

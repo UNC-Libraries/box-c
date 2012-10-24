@@ -368,7 +368,10 @@ public class AccessControlUtils {
 		} else {
 			// Get the list of ancestors for the current UUID and add them to
 			// the cache with UUID as the key
-			ancestors = tripleStoreQueryService.lookupRepositoryAncestorPids(new edu.unc.lib.dl.fedora.PID(pid));
+			PID pidobj = new PID(pid);
+			ancestors = tripleStoreQueryService.lookupRepositoryAncestorPids(pidobj);
+			// Add the input pid as part of its ancestor path.
+			ancestors.add(pidobj);
 			ancestorMap.put(pid, ancestors);
 		}
 		return ancestors;
@@ -611,8 +614,6 @@ public class AccessControlUtils {
 		long repositoryPathInfoTime = System.currentTimeMillis();
 
 		List<PID> ancestors = getListOfAncestors(pid);
-		// Add the input pid as part of its ancestor path.
-		ancestors.add(inputPid);
 
 		LOG.debug("getPermissionGroupSets Time in tripleStore getting repository path: "
 				+ (System.currentTimeMillis() - repositoryPathInfoTime) + " milliseconds");

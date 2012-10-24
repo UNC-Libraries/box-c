@@ -51,17 +51,16 @@ public class ContentModelHelper {
 	public static enum CDRProperty {
 		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), defaultWebObject("defaultWebObject"), sourceData(
 				"sourceData"), indexText("indexText"), onyen("onyen"), slug("slug"), sortOrder("sortOrder"), hasSourceMimeType(
-				"hasSourceMimeType"), hasSourceFileSize("hasSourceFileSize"), hasSurrogate("hasSurrogate"), thumb("thumb"), derivedJP2(
+				"hasSourceMimeType"), hasSourceFileSize("hasSourceFileSize"), hasChecksum("hasChecksum"), hasSurrogate("hasSurrogate"), thumb("thumb"), derivedJP2(
 				"derivedJP2"), techData("techData"), depositedOnBehalfOf("depositedOnBehalfOf"), depositMethod(
-				"depositMethod"), depositPackageType("depositPackageType"), depositPackageSubType("depositPackageSubType"), permitMetadataCreate(
-				"permitMetadataCreate"), permitMetadataRead("permitMetadataRead"), permitMetadataUpdate(
-				"permitMetadataUpdate"), permitMetadataDelete("permitMetadataDelete"), permitOriginalsCreate(
-				"permitOriginalsCreate"), permitOriginalsRead("permitOriginalsRead"), permitOriginalsUpdate(
-				"permitOriginalsUpdate"), permitOriginalsDelete("permitOriginalsDelete"), permitDerivativesCreate(
-				"permitDerivativesCreate"), permitDerivativesRead("permitDerivativesRead"), permitDerivativesUpdate(
-				"permitDerivativesUpdate"), permitDerivativesDelete("permitDerivativesDelete"), inheritPermissions(
-				"inheritPermissions", "http://cdr.unc.edu/definitions/acl#"), embargo("embargo",
-				"http://cdr.unc.edu/definitions/acl#");
+				"depositMethod"), depositPackageType("depositPackageType"), depositPackageSubType("depositPackageSubType"), 
+				inheritPermissions("inheritPermissions", "http://cdr.unc.edu/definitions/acl#"), embargo("embargo",
+				"http://cdr.unc.edu/definitions/acl#"),
+				patron("patron", "http://cdr.unc.edu/definitions/roles#"),
+				observer("observer", "http://cdr.unc.edu/definitions/roles#"),
+				ingester("ingester", "http://cdr.unc.edu/definitions/roles#"),
+				processor("processor", "http://cdr.unc.edu/definitions/roles#"),
+				curator("curator", "http://cdr.unc.edu/definitions/roles#");
 		private URI uri;
 		private String predicate;
 
@@ -300,31 +299,37 @@ public class ContentModelHelper {
 			this.attributeValue = attributeValue;
 		}
 	}
+	
+	public static enum AccessType {
+		ORIGINAL, METADATA, DERIVATIVE 
+	}
 
 	public static enum Datastream {
-		RELS_EXT("RELS-EXT", ControlGroup.INTERNAL, false, "Fedora Object-to-Object Relationship Metadata"), 
-		DATA_FILE("DATA_FILE", ControlGroup.MANAGED, true, null), 
-		MD_TECHNICAL("MD_TECHNICAL", ControlGroup.MANAGED, false, "PREMIS Technical Metadata"), 
-		IMAGE_JP2000("IMAGE_JP2000", ControlGroup.MANAGED, false, "Derived JP2000 image"),
-		MD_DESCRIPTIVE("MD_DESCRIPTIVE", ControlGroup.INTERNAL, true, "Descriptive Metadata"), 
-		DC("DC", ControlGroup.INTERNAL, false, "Internal XML Metadata"), 
-		MD_EVENTS("MD_EVENTS", ControlGroup.MANAGED, false, "PREMIS Events Metadata"), 
-		THUMB_SMALL("THUMB_SMALL", ControlGroup.MANAGED, false, "Thumbnail Image"), 
-		THUMB_LARGE("THUMB_LARGE", ControlGroup.MANAGED, false, "Thumbnail Image"),
-		MD_CONTENTS("MD_CONTENTS", ControlGroup.INTERNAL, false, "List of Contents"), 
-		AUDIT("AUDIT", ControlGroup.INTERNAL, false, "Audit Trail for this object"),
-		DATA_MANIFEST("DATA_MANIFEST", ControlGroup.MANAGED, false, "Deposit Manifest");
+		RELS_EXT("RELS-EXT", ControlGroup.INTERNAL, false, "Fedora Object-to-Object Relationship Metadata", AccessType.METADATA), 
+		DATA_FILE("DATA_FILE", ControlGroup.MANAGED, true, null, AccessType.ORIGINAL), 
+		MD_TECHNICAL("MD_TECHNICAL", ControlGroup.MANAGED, false, "PREMIS Technical Metadata", AccessType.METADATA), 
+		IMAGE_JP2000("IMAGE_JP2000", ControlGroup.MANAGED, false, "Derived JP2000 image", AccessType.DERIVATIVE),
+		MD_DESCRIPTIVE("MD_DESCRIPTIVE", ControlGroup.INTERNAL, true, "Descriptive Metadata", AccessType.METADATA), 
+		DC("DC", ControlGroup.INTERNAL, false, "Internal XML Metadata", AccessType.METADATA), 
+		MD_EVENTS("MD_EVENTS", ControlGroup.MANAGED, false, "PREMIS Events Metadata", AccessType.METADATA), 
+		THUMB_SMALL("THUMB_SMALL", ControlGroup.MANAGED, false, "Thumbnail Image", AccessType.DERIVATIVE), 
+		THUMB_LARGE("THUMB_LARGE", ControlGroup.MANAGED, false, "Thumbnail Image", AccessType.DERIVATIVE),
+		MD_CONTENTS("MD_CONTENTS", ControlGroup.INTERNAL, false, "List of Contents", AccessType.METADATA), 
+		AUDIT("AUDIT", ControlGroup.INTERNAL, false, "Audit Trail for this object", AccessType.METADATA),
+		DATA_MANIFEST("DATA_MANIFEST", ControlGroup.MANAGED, false, "Deposit Manifest", AccessType.METADATA);
 
 		private String name;
 		private ControlGroup controlGroup;
 		private boolean versionable;
 		private String label;
+		private AccessType accessType;
 
-		Datastream(String name, ControlGroup controlGroup, boolean versionable, String label){
+		Datastream(String name, ControlGroup controlGroup, boolean versionable, String label, AccessType accessType){
 			this.setName(name);
 			this.setControlGroup(controlGroup);
 			this.setVersionable(versionable);
 			this.setLabel(label);
+			this.setAccessType(accessType);
 		}
 		
 		public static Datastream getDatastream(String name){
@@ -339,6 +344,14 @@ public class ContentModelHelper {
 
 		public void setName(String name) {
 			this.name = name;
+		}
+
+		public AccessType getAccessType() {
+			return accessType;
+		}
+
+		private void setAccessType(AccessType accessType) {
+			this.accessType = accessType;
 		}
 
 		public String getName() {
