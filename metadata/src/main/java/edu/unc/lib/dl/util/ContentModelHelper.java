@@ -20,6 +20,7 @@ import java.net.URISyntaxException;
 
 import org.jdom.Namespace;
 
+import edu.unc.lib.dl.fedora.AccessControlCategory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
@@ -61,7 +62,7 @@ public class ContentModelHelper {
 				"permitDerivativesCreate"), permitDerivativesRead("permitDerivativesRead"), permitDerivativesUpdate(
 				"permitDerivativesUpdate"), permitDerivativesDelete("permitDerivativesDelete"), inheritPermissions(
 				"inheritPermissions", "http://cdr.unc.edu/definitions/acl#"), embargo("embargo",
-				"http://cdr.unc.edu/definitions/acl#");
+				"http://cdr.unc.edu/definitions/acl#"), isPublished("isPublished");
 		private URI uri;
 		private String predicate;
 
@@ -302,29 +303,31 @@ public class ContentModelHelper {
 	}
 
 	public static enum Datastream {
-		RELS_EXT("RELS-EXT", ControlGroup.INTERNAL, false, "Fedora Object-to-Object Relationship Metadata"), 
-		DATA_FILE("DATA_FILE", ControlGroup.MANAGED, true, null), 
-		MD_TECHNICAL("MD_TECHNICAL", ControlGroup.MANAGED, false, "PREMIS Technical Metadata"), 
-		IMAGE_JP2000("IMAGE_JP2000", ControlGroup.MANAGED, false, "Derived JP2000 image"),
-		MD_DESCRIPTIVE("MD_DESCRIPTIVE", ControlGroup.INTERNAL, true, "Descriptive Metadata"), 
-		DC("DC", ControlGroup.INTERNAL, false, "Internal XML Metadata"), 
-		MD_EVENTS("MD_EVENTS", ControlGroup.MANAGED, false, "PREMIS Events Metadata"), 
-		THUMB_SMALL("THUMB_SMALL", ControlGroup.MANAGED, false, "Thumbnail Image"), 
-		THUMB_LARGE("THUMB_LARGE", ControlGroup.MANAGED, false, "Thumbnail Image"),
-		MD_CONTENTS("MD_CONTENTS", ControlGroup.INTERNAL, false, "List of Contents"), 
-		AUDIT("AUDIT", ControlGroup.INTERNAL, false, "Audit Trail for this object"),
-		DATA_MANIFEST("DATA_MANIFEST", ControlGroup.MANAGED, false, "Deposit Manifest");
+		RELS_EXT("RELS-EXT", ControlGroup.INTERNAL, false, "Fedora Object-to-Object Relationship Metadata", AccessControlCategory.Administrative), 
+		DATA_FILE("DATA_FILE", ControlGroup.MANAGED, true, null, AccessControlCategory.Original), 
+		MD_TECHNICAL("MD_TECHNICAL", ControlGroup.MANAGED, false, "PREMIS Technical Metadata", AccessControlCategory.Metadata), 
+		IMAGE_JP2000("IMAGE_JP2000", ControlGroup.MANAGED, false, "Derived JP2000 image", AccessControlCategory.Derivative),
+		MD_DESCRIPTIVE("MD_DESCRIPTIVE", ControlGroup.INTERNAL, true, "Descriptive Metadata", AccessControlCategory.Metadata), 
+		DC("DC", ControlGroup.INTERNAL, false, "Internal XML Metadata", AccessControlCategory.Metadata), 
+		MD_EVENTS("MD_EVENTS", ControlGroup.MANAGED, false, "PREMIS Events Metadata", AccessControlCategory.Metadata), 
+		THUMB_SMALL("THUMB_SMALL", ControlGroup.MANAGED, false, "Thumbnail Image", AccessControlCategory.Derivative), 
+		THUMB_LARGE("THUMB_LARGE", ControlGroup.MANAGED, false, "Thumbnail Image", AccessControlCategory.Derivative),
+		MD_CONTENTS("MD_CONTENTS", ControlGroup.INTERNAL, false, "List of Contents", AccessControlCategory.Administrative), 
+		AUDIT("AUDIT", ControlGroup.INTERNAL, false, "Audit Trail for this object", AccessControlCategory.Administrative),
+		DATA_MANIFEST("DATA_MANIFEST", ControlGroup.MANAGED, false, "Deposit Manifest", AccessControlCategory.Administrative);
 
 		private String name;
 		private ControlGroup controlGroup;
 		private boolean versionable;
 		private String label;
+		private AccessControlCategory category;
 
-		Datastream(String name, ControlGroup controlGroup, boolean versionable, String label){
+		Datastream(String name, ControlGroup controlGroup, boolean versionable, String label, AccessControlCategory category){
 			this.setName(name);
 			this.setControlGroup(controlGroup);
 			this.setVersionable(versionable);
 			this.setLabel(label);
+			this.setCategory(category);
 		}
 		
 		public static Datastream getDatastream(String name){
@@ -367,6 +370,14 @@ public class ContentModelHelper {
 
 		public void setLabel(String label) {
 			this.label = label;
+		}
+
+		public AccessControlCategory getCategory() {
+			return category;
+		}
+
+		public void setCategory(AccessControlCategory category) {
+			this.category = category;
 		}
 
 		public boolean equals(String value){
