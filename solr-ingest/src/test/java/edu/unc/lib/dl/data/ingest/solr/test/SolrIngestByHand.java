@@ -337,62 +337,6 @@ public class SolrIngestByHand {
 		}
 		System.out.println("Completed in " + (System.currentTimeMillis() - start));
 	}
-	
-	//@Test
-	public void testAllowIndexing(){
-		PID pid = new PID("uuid:b56b8fe0-aba3-41d6-8ff8-484129206f3d");
-		try {
-			
-			//List<PID> response = fedoraDataService.getTripleStoreQueryService().fetchByPredicateAndLiteral(ContentModelHelper.CDRProperty.allowIndexing.getURI().toString(), "yes");
-			/*String query = String.format("select $pid from <%1$s> where $pid <%3$s> 'yes' "
-					+ " and $pid <http://mulgara.org/mulgara#is> <%2$s>",
-					fedoraDataService.getTripleStoreQueryService().getResourceIndexModelUri(), pid.getURI(), ContentModelHelper.CDRProperty.allowIndexing.getURI());
-			List<List<String>> response = fedoraDataService.getTripleStoreQueryService().queryResourceIndex(query);
-			
-			PID responsePID = fedoraDataService.getTripleStoreQueryService().verify(pid);*/
-			//
-			System.out.println("Allow indexing " + fedoraDataService.getTripleStoreQueryService().allowIndexing(pid));
-			/*String query = String.format("select ?pid from <%1$s> where {" + 
-					"?pid <%2$s> 'yes' " + 
-					"filter (?pid = <%3$s>) }", 
-					fedoraDataService.getTripleStoreQueryService().getResourceIndexModelUri(), ContentModelHelper.CDRProperty.allowIndexing.getURI(), pid.getURI());
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			List response = (List<Map>) ((Map) fedoraDataService.getTripleStoreQueryService().sendSPARQL(query).get("results")).get("bindings");
-			*/
-			System.out.println("Done");		
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	//@Test
-	public void testHierarchicalFacet() {
-		try {
-			BriefObjectMetadataBean metadata = solrIngestService.getSolrSearchService().getObjectById(new SimpleIdRequest("uuid:b803dc0a-6952-47f8-97ee-9bd56947e443", solrIngestService.getAccessGroups()));
-			
-			HierarchicalFacet facet = metadata.getPath();
-			System.out.println(metadata.toString());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	//@Test
-	public void dateTest(){
-		int windowSizeHours = 14;
-		Calendar calendar = Calendar.getInstance();
-		calendar.set(Calendar.MINUTE, 0);
-		calendar.set(Calendar.SECOND, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-		String windowEnd = formatter.format(calendar.getTime());
-		
-		calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY) - windowSizeHours);
-		String windowStart = formatter.format(calendar.getTime());
-		
-		System.out.println("Window start: " + windowStart);
-		System.out.println("Window end: " + windowEnd);
-	}
 
 	public SolrUpdateService getSolrIngestService() {
 		return solrIngestService;

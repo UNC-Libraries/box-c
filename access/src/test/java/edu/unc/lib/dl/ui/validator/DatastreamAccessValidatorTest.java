@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.validator;
 
 import java.io.FileInputStream;
+import java.util.Arrays;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -51,9 +52,9 @@ public class DatastreamAccessValidatorTest extends Assert {
 		
 		
 		BriefObjectMetadataBean metadata = new BriefObjectMetadataBean();
-		metadata.setDatastream(new String[]{"DATA_FILE", "THUMB_SMALL"});
+		metadata.setDatastream(Arrays.asList("DATA_FILE", "THUMB_SMALL"));
 		
-		DatastreamAccessValidator.filterDatastreams(metadata.getDatastream(), surrogateAccess, fileAccess, surrogateAccess);
+		DatastreamAccessValidator.filterDatastreams(metadata.getDatastreamObjects(), surrogateAccess, fileAccess, surrogateAccess);
 		
 		assertFalse(metadata.getDatastream().contains("DATA_FILE"));
 		assertTrue(metadata.getDatastream().contains("THUMB_SMALL"));

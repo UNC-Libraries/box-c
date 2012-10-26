@@ -18,10 +18,32 @@ package edu.unc.lib.dl.search.solr.model;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.Datastream;
-
 public class BriefObjectMetadataBeanTest extends Assert {
 
+	@Test
+	public void datastreamParsing() {
+		Datastream ds = new Datastream("DATA_FILE|image/jpeg|jpg|30459|dc93eff50ca7dbd688971716e55e0084|");
+		
+		assertEquals("DATA_FILE", ds.getName());
+		assertEquals("image/jpeg", ds.getMimetype());
+		assertEquals("jpg", ds.getExtension());
+		assertEquals(30459, ds.getFilesize().longValue());
+		assertEquals("dc93eff50ca7dbd688971716e55e0084", ds.getChecksum());
+		assertNull(ds.getOwner());
+	}
+	
+	@Test
+	public void datastreamSurrogateParsing() {
+		Datastream ds = new Datastream("DATA_FILE|image/jpeg|jpg|30459|dc93eff50ca7dbd688971716e55e0084|uuid:73247248-e351-49dc-9b27-fe44df3884e7");
+		
+		assertEquals("DATA_FILE", ds.getName());
+		assertEquals("image/jpeg", ds.getMimetype());
+		assertEquals("jpg", ds.getExtension());
+		assertEquals(30459, ds.getFilesize().longValue());
+		assertEquals("dc93eff50ca7dbd688971716e55e0084", ds.getChecksum());
+		assertEquals("uuid:73247248-e351-49dc-9b27-fe44df3884e7", ds.getOwner().getPid());
+	}
+	
 	@Test
 	public void datastreamEquality(){
 		Datastream ds = new Datastream("DATA_FILE");

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.unc.lib.dl.fedora.AccessControlCategory;
 import edu.unc.lib.dl.security.access.AccessType;
 import edu.unc.lib.dl.security.access.UserSecurityProfile;
 
@@ -95,33 +96,33 @@ public class UserSecurityProfileTest extends Assert {
 		Assert.assertEquals(user.getDatastreamAccessCache().size(), 0);
 
 		String id = "id";
-		user.getDatastreamAccessCache().put(id, AccessType.FILE);
+		user.getDatastreamAccessCache().put(id, AccessControlCategory.Original);
 		Assert.assertEquals(user.getDatastreamAccessCache().size(), 1);
-		Assert.assertTrue(user.getDatastreamAccessCache().contains(id, AccessType.FILE));
-		Assert.assertFalse(user.getDatastreamAccessCache().contains(id, AccessType.ADMIN));
+		Assert.assertTrue(user.getDatastreamAccessCache().contains(id, AccessControlCategory.Original));
+		Assert.assertFalse(user.getDatastreamAccessCache().contains(id, AccessControlCategory.Administrative));
 
 		id = "uuid:12344578";
-		user.getDatastreamAccessCache().put(id, AccessType.RECORD);
-		user.getDatastreamAccessCache().put(id, AccessType.SURROGATE);
-		user.getDatastreamAccessCache().put(id, AccessType.FILE);
+		user.getDatastreamAccessCache().put(id, AccessControlCategory.Metadata);
+		user.getDatastreamAccessCache().put(id, AccessControlCategory.Derivative);
+		user.getDatastreamAccessCache().put(id, AccessControlCategory.Original);
 
 		Assert.assertEquals(user.getDatastreamAccessCache().size(), 2);
 		Assert.assertEquals(user.getDatastreamAccessCache().get(id).size(), 3);
-		Assert.assertTrue(user.getDatastreamAccessCache().contains(id, AccessType.FILE));
-		Assert.assertFalse(user.getDatastreamAccessCache().contains(id, AccessType.ADMIN));
+		Assert.assertTrue(user.getDatastreamAccessCache().contains(id, AccessControlCategory.Original));
+		Assert.assertFalse(user.getDatastreamAccessCache().contains(id, AccessControlCategory.Administrative));
 
-		user.getDatastreamAccessCache().get(id).remove(AccessType.SURROGATE);
+		user.getDatastreamAccessCache().get(id).remove(AccessControlCategory.Derivative);
 		Assert.assertEquals(user.getDatastreamAccessCache().get(id).size(), 2);
 
 		id = null;
-		user.getDatastreamAccessCache().put(id, AccessType.RECORD);
+		user.getDatastreamAccessCache().put(id, AccessControlCategory.Metadata);
 		Assert.assertEquals(user.getDatastreamAccessCache().size(), 3);
 		user.getDatastreamAccessCache().remove(id);
 		Assert.assertEquals(user.getDatastreamAccessCache().size(), 2);
 
 		id = "id";
-		user.getDatastreamAccessCache().get(id).remove(AccessType.FILE);
+		user.getDatastreamAccessCache().get(id).remove(AccessControlCategory.Original);
 		Assert.assertEquals(user.getDatastreamAccessCache().get(id).size(), 0);
-		Assert.assertFalse(user.getDatastreamAccessCache().contains(id, AccessType.FILE));
+		Assert.assertFalse(user.getDatastreamAccessCache().contains(id, AccessControlCategory.Original));
 	}
 }

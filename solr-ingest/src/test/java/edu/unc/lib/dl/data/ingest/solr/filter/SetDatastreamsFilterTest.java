@@ -46,11 +46,11 @@ public class SetDatastreamsFilterTest extends Assert {
 		IndexDocumentBean idb = dip.getDocument();
 
 		assertEquals(9, idb.getDatastream().size());
-		assertTrue(idb.getDatastream().contains("DATA_FILE|3645539|image/jpeg|jpg|Original|"));
-		assertTrue(idb.getDatastream().contains("AUDIT|0|text/xml|xml|Administrative|"));
-		assertTrue(idb.getDatastream().contains("DC|417|text/xml|xml|Metadata|"));
-		assertTrue(idb.getDatastream().contains("RELS-EXT|2128|text/xml|xml|Administrative|"));
-		assertTrue(idb.getDatastream().contains("IMAGE_JP2000|4893818|image/jp2|jp2|Derivative|"));
+		assertTrue(idb.getDatastream().contains("DATA_FILE|image/jpeg|jpg|3645539|1adeece64580be3b9a185e8f12e8653b|"));
+		assertTrue(idb.getDatastream().contains("AUDIT|text/xml|xml|0||"));
+		assertTrue(idb.getDatastream().contains("DC|text/xml|xml|417|c177272d23b874fdcfd4fe8d6626c853|"));
+		assertTrue(idb.getDatastream().contains("RELS-EXT|text/xml|xml|2128|4ac9a05bbcc2828354d6811723e641ab|"));
+		assertTrue(idb.getDatastream().contains("IMAGE_JP2000|image/jp2|jp2|4893818|2eef5ccd78d8e1f2854d8c5cb533f427|"));
 		assertEquals(8575798, idb.getFilesizeTotal().longValue());
 
 		assertEquals(2, idb.getContentType().size());
@@ -101,16 +101,16 @@ public class SetDatastreamsFilterTest extends Assert {
 
 		assertEquals(15, idb.getDatastream().size());
 
-		assertTrue(idb.getDatastream().contains("MD_DESCRIPTIVE|6533|text/xml|xml|Metadata|"));
-		assertTrue(idb.getDatastream().contains("RELS-EXT|1697|text/xml|xml|Administrative|"));
-
+		assertTrue(idb.getDatastream().contains("MD_DESCRIPTIVE|text/xml|xml|6533|84e583a9280840f9c18502bc115481cb|"));
+		assertTrue(idb.getDatastream().contains("RELS-EXT|text/xml|xml|1697|da8227f1a4d74d5a1b758bb47bf929aa|"));
+		
 		assertTrue(idb.getDatastream().contains(
-				"DATA_FILE|3645539|image/jpeg|jpg|Original|uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"));
-		assertTrue(idb.getDatastream().contains("DC|417|text/xml|xml|Metadata|uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"));
+				"DATA_FILE|image/jpeg|jpg|3645539|1adeece64580be3b9a185e8f12e8653b|uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"));
+		assertTrue(idb.getDatastream().contains("DC|text/xml|xml|417|c177272d23b874fdcfd4fe8d6626c853|uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"));
 		assertTrue(idb.getDatastream().contains(
-				"RELS-EXT|2128|text/xml|xml|Administrative|uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"));
+				"RELS-EXT|text/xml|xml|2128|4ac9a05bbcc2828354d6811723e641ab|uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"));
 		assertTrue(idb.getDatastream().contains(
-				"IMAGE_JP2000|4893818|image/jp2|jp2|Derivative|uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"));
+				"IMAGE_JP2000|image/jp2|jp2|4893818|2eef5ccd78d8e1f2854d8c5cb533f427|uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"));
 		// Does not include the filesize of the second copy of the MD_DESCRIPTIVE DS
 		assertEquals(17896, idb.getFilesizeTotal().longValue());
 
@@ -134,8 +134,8 @@ public class SetDatastreamsFilterTest extends Assert {
 
 		assertEquals(5, idb.getDatastream().size());
 
-		assertTrue(idb.getDatastream().contains("DC|405|text/xml|xml|Metadata|"));
-		assertTrue(idb.getDatastream().contains("RELS-EXT|1770|text/xml|xml|Administrative|"));
+		assertTrue(idb.getDatastream().contains("DC|text/xml|xml|405|e9f9b5ac744374e659fce6c65e2dd4c0|"));
+		assertTrue(idb.getDatastream().contains("RELS-EXT|text/xml|xml|1770|9c975fd3e2bbc34a4912adb5aea99e02|"));
 
 		assertNull(idb.getContentType());
 		assertNull(dip.getDefaultWebData());

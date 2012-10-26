@@ -27,6 +27,7 @@ import org.apache.solr.common.SolrDocumentList;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet.HierarchicalFacetTier;
+import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 
@@ -83,9 +84,9 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 				} else {
 					resultIt.remove();
 					//If an item is being filtered out, then decrement the counts for it and all its ancestors in subcontainer counts
-					if (briefObject.getAncestorPath() != null && briefObject.getAncestorPath().getFacetTiers() != null){
-						for (HierarchicalFacetTier facetTier: briefObject.getAncestorPath().getFacetTiers()){
-							String tierIdentifier = facetTier.getIdentifier();
+					if (briefObject.getAncestorPathFacet() != null && briefObject.getAncestorPathFacet().getFacetNodes() != null){
+						for (HierarchicalFacetNode facetTier: briefObject.getAncestorPathFacet().getFacetNodes()){
+							String tierIdentifier = facetTier.getSearchKey();
 							Long count = this.subcontainerCounts.get(tierIdentifier);
 							if (count != null)
 								this.subcontainerCounts.put(tierIdentifier, count - 1);
@@ -110,12 +111,12 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 	 */
 	public void populateItemResults(List<BriefObjectMetadataBean> itemResults){
 		if (this.getResultList().size() > 0 && this.getResultList().get(0).getPath() != null){
-			for (HierarchicalFacetTier rootTier: this.getResultList().get(0).getPath().getFacetTiers()){
-				Long count = this.subcontainerCounts.get(rootTier.getIdentifier());
+			for (HierarchicalFacetNode rootTier: this.getResultList().get(0).getPath().getFacetNodes()){
+				Long count = this.subcontainerCounts.get(rootTier.getSearchKey());
 				if (count == null){
-					this.subcontainerCounts.put(rootTier.getIdentifier(), (long)itemResults.size());
+					this.subcontainerCounts.put(rootTier.getSearchKey(), (long)itemResults.size());
 				} else {
-					this.subcontainerCounts.put(rootTier.getIdentifier(), count + itemResults.size());
+					this.subcontainerCounts.put(rootTier.getSearchKey(), count + itemResults.size());
 				}
 			}
 		}

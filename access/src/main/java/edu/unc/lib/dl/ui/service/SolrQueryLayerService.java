@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
@@ -148,7 +149,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 					for (i = 0; i < parentCollectionValues.size() && !pid.equals(parentCollectionValues.get(i).getId()); i++)
 						;
 					if (i < parentCollectionValues.size()) {
-						HierarchicalFacet parentPath = parentCollectionValues.get(i).getPath();
+						CutoffFacet parentPath = parentCollectionValues.get(i).getPath();
 						pidFacet.setFieldName(SearchFieldKeys.ANCESTOR_PATH);
 						pidFacet.setDisplayValue(parentPath.getDisplayValue());
 						pidFacet.setValue(parentPath.getSearchValue());
@@ -278,18 +279,14 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		solrQuery.setFacet(true);
 		solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE) + ":File");
-		HierarchicalFacet ancestorPath = null;
+		CutoffFacet ancestorPath = null;
 		if (metadata.getResourceType().equals(searchSettings.resourceTypeFile)) {
-			ancestorPath = metadata.getAncestorPath();
+			ancestorPath = metadata.getAncestorPathFacet();
 		} else {
 			ancestorPath = metadata.getPath();
 		}
-		if (ancestorPath != null && ancestorPath.getFacetTiers() != null) {
-			for (HierarchicalFacet.HierarchicalFacetTier facetTier : ancestorPath.getFacetTiers()) {
-				solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH) + ":"
-						+ facetTier.getTier() + searchSettings.facetSubfieldDelimiter
-						+ solrSettings.sanitize(facetTier.getSearchValue()) + searchSettings.facetSubfieldDelimiter + "*");
-			}
+		if (ancestorPath != null) {
+			ancestorPath.addToSolrQuery(solrQuery);
 		}
 
 		solrQuery.setStart(0);
@@ -375,7 +372,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * @param accessGroups
 	 * @return
 	 */
-	public SearchResultResponse getFullRecordSupplementalData(HierarchicalFacet ancestorPath, AccessGroupSet accessGroups, List<String> facetsToRetrieve) {
+	public SearchResultResponse getFullRecordSupplementalData(CutoffFacet ancestorPath, AccessGroupSet accessGroups, List<String> facetsToRetrieve) {
 		SearchState searchState = SearchStateFactory.createSearchState();
 		searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, ancestorPath);
 		searchState.setRowsPerPage(0);

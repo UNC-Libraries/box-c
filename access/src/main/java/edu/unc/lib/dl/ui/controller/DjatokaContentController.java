@@ -37,6 +37,7 @@ import edu.unc.lib.dl.security.access.UserSecurityProfile;
 import edu.unc.lib.dl.ui.service.DjatokaContentService;
 import edu.unc.lib.dl.ui.util.AccessControlSettings;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 /**
  * Controller for requests related to accessing jp2's through djatoka.  Applies 
@@ -71,13 +72,15 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 			datastream = ContentModelHelper.Datastream.IMAGE_JP2000.toString();
 		}
 		
-		AccessType accessType = accessSettings.getAccessType(datastream); 
+		Datastream datastreamClass = Datastream.getDatastream(datastream);
+		
 		String accessField = null;
-		switch (accessType){
-			case FILE:
+		//Administrative, Original, Metadata, Derivative
+		switch (datastreamClass.getCategory()){
+			case Original:
 				accessField = SearchFieldKeys.FILE_ACCESS;
 				break;
-			case SURROGATE:
+			case Derivative:
 				accessField = SearchFieldKeys.SURROGATE_ACCESS;
 				break;
 			default:
@@ -85,7 +88,7 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 		}
 		
 		//Check to see if the user has gotten this type of datastream for this object before
-		if (user.getDatastreamAccessCache().contains(id, accessType)){
+		if (user.getDatastreamAccessCache().contains(id, datastreamClass.getCategory())){
 			return true;
 		}
 		
@@ -102,7 +105,7 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 		}
 		
 		//Access allowed, cache this result.
-		user.getDatastreamAccessCache().put(id, accessType);
+		user.getDatastreamAccessCache().put(id, datastreamClass.getCategory());
 		
 		return true;
 	}

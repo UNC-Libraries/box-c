@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,7 +31,6 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -276,7 +276,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		
 		Set<String> failed = enhancementConductor.getFailedPids().getFailedServices(id);
 		if (failed == null){
-			result.put("failedEnhancements", ListUtils.EMPTY_LIST);
+			result.put("failedEnhancements", Collections.EMPTY_LIST);
 		} else {
 			result.put("failedEnhancements", failed);
 		}

@@ -23,6 +23,7 @@ import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+import edu.unc.lib.dl.fedora.AccessControlCategory;
 import edu.unc.lib.dl.security.access.AccessGroupConstants;
 import edu.unc.lib.dl.security.access.AccessType;
 import edu.unc.lib.dl.security.access.UserSecurityProfile;
@@ -75,7 +76,7 @@ public class UserSecurityProfileFilterTest {
 
 			user = new UserSecurityProfile();
 			user.setUserName("testUser");
-			user.getDatastreamAccessCache().put("testObject", AccessType.FILE);
+			user.getDatastreamAccessCache().put("testObject", AccessControlCategory.Original);
 			request.getSession().setAttribute("user", user);
 
 			filter.doFilterInternal(request, response, chain);
@@ -97,7 +98,7 @@ public class UserSecurityProfileFilterTest {
 			user = new UserSecurityProfile();
 			user.setUserName("testUser");
 			user.setAccessGroups(groups);
-			user.getDatastreamAccessCache().put("testObject", AccessType.FILE);
+			user.getDatastreamAccessCache().put("testObject", AccessControlCategory.Original);
 			request.getSession().setAttribute("user", user);
 
 			filter.doFilterInternal(request, response, chain);

@@ -66,5 +66,10 @@
 			<version>7.0.22</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>metadata</artifactId>
+			<version>${cdr.version}</version>
+		</dependency>
 	</dependencies>
 </project>

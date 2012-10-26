@@ -25,7 +25,6 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
@@ -40,7 +39,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean {
 	private CutoffFacet ancestorPathFacet;
 	private CutoffFacet path;
 	private List<MultivaluedHierarchicalFacet> contentTypeFacet;
-	private List<Datastream> datastream;
+	private List<Datastream> datastreamObjects;
 	// Inverted map of the roleGroup, clustering roles into buckets by group
 	Map<String,Collection<String>> groupRoleMap;
 	private long childCount;
@@ -96,11 +95,11 @@ public class BriefObjectMetadataBean extends IndexDocumentBean {
 	}
 
 	public List<Datastream> getDatastreamObjects() {
-		return datastream;
+		return datastreamObjects;
 	}
 
 	@Field
-	public void setDatastream(String[] datastream) {
+	public void setDatastream(List<String> datastream) {
 		ArrayList<Datastream> datastreams = new ArrayList<Datastream>() {
 			private static final long serialVersionUID = 1L;
 
@@ -115,7 +114,17 @@ public class BriefObjectMetadataBean extends IndexDocumentBean {
 		for (String value : datastream) {
 			datastreams.add(new Datastream(value));
 		}
-		this.datastream = datastreams;
+		this.datastream = datastream;
+	}
+	
+	public Datastream getDatastream(String datastreamName) {
+		if (datastream == null || this.datastreamObjects == null)
+			return null;
+		for (Datastream datastream: this.datastreamObjects) {
+			if (datastream.getName().equals(datastreamName))
+				return datastream;
+		}
+		return null;
 	}
 	
 	@Override
@@ -181,86 +190,5 @@ public class BriefObjectMetadataBean extends IndexDocumentBean {
 
 	public void setChildCount(long childCount) {
 		this.childCount = childCount;
-	}
-
-	public static class Datastream {
-		private PID owner;
-		private String name;
-		private long filesize;
-		private String mimetype;
-		private String extension;
-		private String category;
-
-		public Datastream(String datastream) {
-			if (datastream == null)
-				throw new IllegalArgumentException("Datastream value must not be null");
-			
-			String[] dsParts = datastream.split("\\\\|");
-			this.name = dsParts[0];
-			try {
-				this.filesize = Long.parseLong(dsParts[1]);
-			} catch (NumberFormatException e) {
-				this.filesize = 0;
-			}
-			this.mimetype = dsParts[2];
-			this.extension = dsParts[3];
-			this.category = dsParts[4];
-			if (dsParts[5].length() > 0) {
-				this.owner = new PID(dsParts[5]);
-			} else {
-				this.owner = null;
-			}
-		}
-		
-		@Override
-		public boolean equals(Object object) {
-			if (object == null)
-				return false;
-			if (object instanceof Datastream) {
-				Datastream rightHand = (Datastream)object;
-				// Equal if names match and either pids are null or both match
-				return name.equals(rightHand.name) && (rightHand.owner == null || owner == null || owner.equals(rightHand.owner));
-			}
-			if (object instanceof String) {
-				String rightHandString = (String)object;
-				if (rightHandString.equals(this.name))
-					return true;
-				Datastream rightHand = new Datastream(rightHandString);
-				return this.equals(rightHand);
-			}
-			return false;
-		}
-		
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((name == null) ? 0 : name.hashCode());
-			return result;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public PID getOwner() {
-			return owner;
-		}
-
-		public long getFilesize() {
-			return filesize;
-		}
-
-		public String getMimetype() {
-			return mimetype;
-		}
-
-		public String getExtension() {
-			return extension;
-		}
-
-		public String getCategory() {
-			return category;
-		}
 	}
 }

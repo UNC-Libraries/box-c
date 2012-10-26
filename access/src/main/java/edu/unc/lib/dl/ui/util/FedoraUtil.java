@@ -18,7 +18,7 @@ package edu.unc.lib.dl.ui.util;
 import java.util.Arrays;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.Datastream;
+import edu.unc.lib.dl.search.solr.model.Datastream;
 
 public class FedoraUtil {
 	private String fedoraUrl;
@@ -49,18 +49,18 @@ public class FedoraUtil {
 		
 		StringBuilder url = new StringBuilder();
 		
-		if (metadata.getContentType() != null) {
-			String fileExtension = metadata.getContentType().getHighestTierDisplayValue();
+		if (metadata.getContentTypeFacet() != null && metadata.getContentTypeFacet().size() > 0) {
+			String fileExtension = metadata.getContentTypeFacet().get(0).getDisplayValue();
 			int extensionIndex = Arrays.binarySearch(new String[]{"doc", "docx", "htm", "html", "pdf", "ppt", "pptx", "rtf", "txt", "xls", "xlsx", "xml"}, fileExtension);
 			if (extensionIndex >= 0)
 				url.append("indexable");
 		}
 		
 		url.append("content?id=");
-		if (preferredDS.getPid() == null) {
+		if (preferredDS.getOwner() == null) {
 			url.append(metadata.getId());
 		} else {
-			url.append(preferredDS.getPid());
+			url.append(preferredDS.getOwner());
 		}
 		url.append("&ds=").append(preferredDS.getName());
 		return url.toString(); 
@@ -69,10 +69,10 @@ public class FedoraUtil {
 	public static Datastream getPreferredDatastream(BriefObjectMetadataBean metadata, String datastreamName) {
 		Datastream preferredDS = null;
 		Datastream incomingDS = new Datastream(datastreamName);
-		for (Datastream ds: metadata.getDatastream()){
+		for (Datastream ds: metadata.getDatastreamObjects()){
 			if (ds.equals(incomingDS)) {
 				preferredDS = ds;
-				if ((incomingDS.getPid() == null && preferredDS.getPid() == null) || (incomingDS.getPid() != null && preferredDS.getPid() != null)){
+				if ((incomingDS.getOwner() == null && preferredDS.getOwner() == null) || (incomingDS.getOwner() != null && preferredDS.getOwner() != null)){
 						break;
 				}
 			}

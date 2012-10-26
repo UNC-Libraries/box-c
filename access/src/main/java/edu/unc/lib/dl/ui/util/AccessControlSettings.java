@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.Datastream;
+import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.util.AbstractSettings;
 import edu.unc.lib.dl.security.access.AccessType;
 
@@ -33,10 +33,10 @@ import edu.unc.lib.dl.security.access.AccessType;
  *
  */
 public class AccessControlSettings extends AbstractSettings {
-	private Set<Datastream> adminDatastreams;
+	/*private Set<Datastream> adminDatastreams;
 	private Set<Datastream> surrogateDatastreams;
 	private Set<Datastream> fileDatastreams;
-	private Set<Datastream> recordDatastreams;
+	private Set<Datastream> recordDatastreams;*/
 	private String adminGroup;
 	private String publicGroup;
 	
@@ -46,10 +46,10 @@ public class AccessControlSettings extends AbstractSettings {
 	
 	@Autowired(required = true)
 	public void setProperties(Properties properties){
-		this.adminDatastreams = this.getUnmodifiableDatastreamSetFromProperty("access.datastream.admin", new HashSet<Datastream>(), properties, ",");
-		this.surrogateDatastreams = this.getUnmodifiableDatastreamSetFromProperty("access.datastream.surrogate", new HashSet<Datastream>(), properties, ",");
-		this.fileDatastreams = this.getUnmodifiableDatastreamSetFromProperty("access.datastream.file", new HashSet<Datastream>(), properties, ",");
-		this.recordDatastreams = this.getUnmodifiableDatastreamSetFromProperty("access.datastream.record", new HashSet<Datastream>(), properties, ",");
+		//this.adminDatastreams = this.getUnmodifiableDatastreamSetFromProperty("access.datastream.admin", new HashSet<Datastream>(), properties, ",");
+		//this.surrogateDatastreams = this.getUnmodifiableDatastreamSetFromProperty("access.datastream.surrogate", new HashSet<Datastream>(), properties, ",");
+		//this.fileDatastreams = this.getUnmodifiableDatastreamSetFromProperty("access.datastream.file", new HashSet<Datastream>(), properties, ",");
+		//this.recordDatastreams = this.getUnmodifiableDatastreamSetFromProperty("access.datastream.record", new HashSet<Datastream>(), properties, ",");
 		this.setAdminGroup(properties.getProperty("access.group.admin", ""));
 		this.setPublicGroup(properties.getProperty("access.group.public", ""));
 	}
@@ -70,7 +70,7 @@ public class AccessControlSettings extends AbstractSettings {
 		}
 	}
 
-	public Set<Datastream> getAdminDatastreams() {
+	/*public Set<Datastream> getAdminDatastreams() {
 		return adminDatastreams;
 	}
 
@@ -100,7 +100,7 @@ public class AccessControlSettings extends AbstractSettings {
 
 	public void setRecordDatastreams(Set<Datastream> recordDatastreams) {
 		this.recordDatastreams = recordDatastreams;
-	}
+	}*/
 
 	public String getAdminGroup() {
 		return adminGroup;
@@ -123,7 +123,7 @@ public class AccessControlSettings extends AbstractSettings {
 	 * @param datastream
 	 * @return
 	 */
-	public AccessType getAccessType(String datastream){
+	/*public AccessType getAccessType(String datastream){
 		Datastream ds = new Datastream(datastream);
 		if (fileDatastreams.contains(ds)){
 			return AccessType.FILE;
@@ -135,5 +135,5 @@ public class AccessControlSettings extends AbstractSettings {
 			return AccessType.RECORD;
 		}
 		return AccessType.NONE;
-	}
+	}*/
 }

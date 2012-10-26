@@ -19,7 +19,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +39,7 @@ import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
@@ -62,21 +66,15 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	private final ContentCategory TEXT = new ContentCategory("text", "Text");
 	private final ContentCategory UNKNOWN = new ContentCategory("unknown", "Unknown");
 
-	private XPath datastreamVersionXPath;
 	private Pattern extensionRegex;
 	private Properties mimetypeToExtensionMap;
 
 	public SetDatastreamContentFilter() {
 		try {
-			datastreamVersionXPath = XPath.newInstance("/foxml:digitalObject/foxml:datastream/foxml:datastreamVersion");
-			datastreamVersionXPath.addNamespace(Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI));
 			extensionRegex = Pattern.compile("^[^\\n]*[^.]\\.(\\d*[a-zA-Z][a-zA-Z0-9]*)$");
 			mimetypeToExtensionMap = new Properties();
 			mimetypeToExtensionMap.load(new InputStreamReader(this.getClass().getResourceAsStream(
 					"mimetypeToExtension.txt")));
-
-		} catch (JDOMException e) {
-			log.error("Failed to initialize queries", e);
 		} catch (FileNotFoundException e) {
 			log.error("Failed to load mimetype mappings", e);
 		} catch (IOException e) {
@@ -114,8 +112,8 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		for (Datastream ds : datastreams) {
 			datastreamList.add(ds.toString());
 			// Only add the filesize for datastreams directly belonging to this object to the filesize total
-			if (ds.ownerPID == null)
-				totalSize += ds.filesize;
+			if (ds.getOwner() == null)
+				totalSize += ds.getFilesize();
 		}
 		dip.getDocument().setFilesizeTotal(totalSize);
 
@@ -128,12 +126,11 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 
 				// If the mimetype listed on the datastream is not very specific (octet-stream), see if FITS provided a
 				// better one and use it instead
-				if ("application/octet-stream".equals(defaultWebData.mimetype)) {
+				if ("application/octet-stream".equals(defaultWebData.getMimetype())) {
 					String sourceDataMimetype = relsExt.getChildText("hasSourceMimeType", JDOMNamespaceUtil.CDR_NS);
 					if (sourceDataMimetype != null) {
-						defaultWebData.mimetype = sourceDataMimetype;
-						defaultWebData.extension = this.getExtension(null,
-								defaultWebData.mimetype);
+						defaultWebData.setMimetype(sourceDataMimetype);
+						defaultWebData.setExtension(this.getExtension(null, defaultWebData.getMimetype()));
 					}
 				}
 
@@ -141,7 +138,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 				List<String> contentTypes = new ArrayList<String>();
 				this.extractContentType(defaultWebData, contentTypes);
 				dip.getDocument().setContentType(contentTypes);
-				dip.getDocument().setFilesizeSort(defaultWebData.filesize);
+				dip.getDocument().setFilesizeSort(defaultWebData.getFilesize());
 			}
 		} catch (JDOMException e) {
 			throw new IndexingException("Failed to extract default web data for " + dip.getPid().getPid(), e);
@@ -160,49 +157,35 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	 *           If true, then the PID of the provided DIP will be listed as the owner of the datastream
 	 */
 	private void extractDatastreams(DocumentIndexingPackage dip, List<Datastream> datastreams, boolean includePIDAsOwner) {
-		try {
-			Document foxml = dip.getFoxml();
+		Datastream currentDS = null;
+		long filesize = 0;
 
-			boolean newDS = true;
-			Datastream currentDS = null;
-			String mostRecentDate = null;
-			String createdDate;
-			long filesize = 0;
+		Map<String, Element> datastreamMap = dip.getMostRecentDatastreamMap();
+		Iterator<Entry<String, Element>> it = datastreamMap.entrySet().iterator();
+		while (it.hasNext()) {
+			Entry<String, Element> dsEntry = it.next();
+			String dsName = dsEntry.getKey();
+			Element datastreamVersion = dsEntry.getValue();
 
-			List<?> datastreamVersions = this.datastreamVersionXPath.selectNodes(foxml);
-			for (Object datastreamVersionObj : datastreamVersions) {
-				Element datastreamVersion = (Element) datastreamVersionObj;
-				String dsID = datastreamVersion.getAttributeValue("ID");
-				int index = dsID.lastIndexOf(".");
-				String dsName = dsID.substring(0, index);
-
-				createdDate = datastreamVersion.getAttributeValue("CREATED");
-				try {
-					filesize = Long.parseLong(datastreamVersion.getAttributeValue("SIZE"));
-				} catch (NumberFormatException numE) {
-					filesize = 0;
-				}
-
-				newDS = currentDS == null || !currentDS.dsName.equals(dsName);
-				if (newDS) {
-					currentDS = new Datastream(dsName);
-					datastreams.add(currentDS);
-				}
-
-				if (newDS || createdDate.compareTo(mostRecentDate) > 0) {
-					currentDS.mimetype = datastreamVersion.getAttributeValue("MIMETYPE");
-					currentDS.filesize = filesize;
-					currentDS.dsEnum = ContentModelHelper.Datastream.getDatastream(dsName);
-					currentDS.extension = this.getExtension(datastreamVersion.getAttributeValue("ALT_IDS"),
-							currentDS.mimetype);
-					if (includePIDAsOwner) {
-						currentDS.ownerPID = dip.getPid().getPid();
-					}
-					mostRecentDate = createdDate;
-				}
+			try {
+				filesize = Long.parseLong(datastreamVersion.getAttributeValue("SIZE"));
+			} catch (NumberFormatException numE) {
+				filesize = 0;
 			}
-		} catch (JDOMException e) {
-			throw new IndexingException("Could not extract datastream versions for " + dip.getPid());
+
+			currentDS = new Datastream(dsName);
+			currentDS.setMimetype(datastreamVersion.getAttributeValue("MIMETYPE"));
+			currentDS.setFilesize(filesize);
+			currentDS.setExtension(this.getExtension(datastreamVersion.getAttributeValue("ALT_IDS"),
+					currentDS.getMimetype()));
+			if (includePIDAsOwner) {
+				currentDS.setOwner(dip.getPid());
+			}
+			Element checksumEl = datastreamVersion.getChild("contentDigest", JDOMNamespaceUtil.FOXML_NS);
+			if (checksumEl != null) {
+				currentDS.setChecksum(checksumEl.getAttributeValue("DIGEST"));
+			}
+			datastreams.add(currentDS);
 		}
 	}
 
@@ -219,7 +202,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 
 	// Used for determining sort file size, contentType. Store it for SetRelations
 	private Datastream getDefaultWebData(DocumentIndexingPackage dip, List<Datastream> datastreams) throws JDOMException {
-		String owner = null;
+		PID owner = null;
 		Element relsExt = dip.getRelsExt();
 		String defaultWebData = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
 				JDOMNamespaceUtil.CDR_NS, relsExt);
@@ -228,7 +211,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		if (defaultWebData == null && dip.getDefaultWebObject() != null) {
 			defaultWebData = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
 					JDOMNamespaceUtil.CDR_NS, dip.getDefaultWebObject().getRelsExt());
-			owner = dip.getDefaultWebObject().getPid().getPid();
+			owner = dip.getDefaultWebObject().getPid();
 		}
 		if (defaultWebData == null)
 			return null;
@@ -236,7 +219,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		// Find the datastream that matches the defaultWebData datastream name and owner.
 		String dwdName = defaultWebData.substring(defaultWebData.lastIndexOf('/') + 1);
 		for (Datastream ds : datastreams) {
-			if (ds.dsName.equals(dwdName) && (owner == ds.ownerPID || owner.equals(ds.ownerPID)))
+			if (ds.getName().equals(dwdName) && (owner == ds.getOwner() || owner.equals(ds.getOwner())))
 				return ds;
 		}
 
@@ -260,13 +243,13 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	}
 
 	private void extractContentType(Datastream datastream, List<String> contentTypes) {
-		ContentCategory contentCategory = getContentCategory(datastream.mimetype, datastream.extension);
+		ContentCategory contentCategory = getContentCategory(datastream.getMimetype(), datastream.getExtension());
 		if (contentCategory == null)
 			return;
 		contentTypes.add('|' + contentCategory.joined);
 		StringBuilder contentType = new StringBuilder();
-		contentType.append('/').append(contentCategory.key).append('|').append(datastream.extension).append(',')
-				.append(datastream.extension);
+		contentType.append('/').append(contentCategory.key).append('|').append(datastream.getExtension()).append(',')
+				.append(datastream.getExtension());
 		contentTypes.add(contentType.toString());
 	}
 
@@ -334,38 +317,4 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 			this.joined = key + "," + label;
 		}
 	}
-
-	private static class Datastream {
-		ContentModelHelper.Datastream dsEnum;
-		String dsName;
-		long filesize;
-		String mimetype;
-		String extension;
-		String ownerPID;
-
-		public Datastream(String dsName) {
-			this.dsName = dsName;
-		}
-
-		public String toString() {
-			StringBuilder sb = new StringBuilder(dsName);
-			sb.append('|').append(filesize).append('|').append(mimetype).append('|');
-			if (extension != null)
-				sb.append(extension);
-			sb.append('|');
-			if (dsEnum != null)
-				sb.append(dsEnum.getCategory().name());
-			sb.append('|');
-			if (ownerPID != null)
-				sb.append(ownerPID);
-			return sb.toString();
-		}
-
-		public String getDatastreamIdentifier() {
-			if (ownerPID == null)
-				return dsName;
-			return ownerPID + "/" + dsName;
-		}
-	}
-
 }

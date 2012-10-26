@@ -19,7 +19,7 @@ import java.util.Collection;
 
 import edu.unc.lib.dl.security.access.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.Datastream;
+import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.ui.util.AccessControlSettings;
 
@@ -41,7 +41,8 @@ public class DatastreamAccessValidator {
 	}
 	
 	public static void filterBriefObject(BriefObjectMetadataBean metadata, AccessGroupSet userAccess){
-		filterDatastreams(metadata.getDatastream(), metadata.getSurrogateAccess(), metadata.getFileAccess(), userAccess);
+		if (userAccess.contains(accessSettings.getAdminGroup()))
+			return;
 	}
 	
 	public static void filterDatastreams(Collection<Datastream> datastreams, AccessGroupSet surrogateAccess, 
@@ -49,6 +50,8 @@ public class DatastreamAccessValidator {
 		
 		if (userAccess.contains(accessSettings.getAdminGroup()))
 			return;
+		
+		/*
 		
 		//Remove surrogate datastreams if no matching groups
 		if (!surrogateAccess.containsAny(userAccess)){
@@ -69,7 +72,7 @@ public class DatastreamAccessValidator {
 			for (Datastream accessDS: accessSettings.getAdminDatastreams()){
 				datastreams.remove(accessDS);
 			}
-		}
+		}*/
 	}
 
 	public AccessControlSettings getAccessSettings() {

@@ -16,7 +16,9 @@
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jdom.Attribute;
 import org.jdom.Document;
@@ -60,6 +62,7 @@ public class DocumentIndexingPackage {
 	private IndexDocumentBean document;
 	private String label;
 	private ResourceType resourceType;
+	private Map<String,Element> datastreams;
 
 	public DocumentIndexingPackage() {
 		document = new IndexDocumentBean();
@@ -139,7 +142,7 @@ public class DocumentIndexingPackage {
 		if (relsExt == null && foxml != null) {
 			try {
 				Element rdf = extractDatastream(ContentModelHelper.Datastream.RELS_EXT);
-				setRelsExt((Element)rdf.getChildren().get(0));
+				setRelsExt((Element) rdf.getChildren().get(0));
 			} catch (NullPointerException e) {
 				return null;
 			}
@@ -161,7 +164,7 @@ public class DocumentIndexingPackage {
 		}
 		return mods;
 	}
-	
+
 	public void setMods(Element mods) {
 		this.mods = mods;
 	}
@@ -176,22 +179,51 @@ public class DocumentIndexingPackage {
 		}
 		return mdContents;
 	}
-	
+
 	public void setMdContents(Element mdContents) {
 		this.mdContents = mdContents;
 	}
 
 	private Element extractDatastream(ContentModelHelper.Datastream datastream) {
-		Element datastreamEl = JDOMQueryUtil.getChildByAttribute(foxml.getRootElement(), "datastream",
-				JDOMNamespaceUtil.FOXML_NS, "ID", datastream.getName());
 		Element dsVersion;
-		if (datastream.isVersionable()) {
-			dsVersion = JDOMQueryUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
-					JDOMNamespaceUtil.FOXML_NS));
+		if (datastreams == null) {
+			Element datastreamEl = JDOMQueryUtil.getChildByAttribute(foxml.getRootElement(), "datastream",
+					JDOMNamespaceUtil.FOXML_NS, "ID", datastream.getName());
+			
+			if (datastream.isVersionable()) {
+				dsVersion = JDOMQueryUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
+						JDOMNamespaceUtil.FOXML_NS));
+			} else {
+				dsVersion = (Element) datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
+			}
 		} else {
-			dsVersion = (Element) datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
+			dsVersion = this.datastreams.get(datastream.getName());
 		}
-		return (Element)dsVersion.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS).getChildren().get(0);
+		return (Element) dsVersion.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS).getChildren().get(0);
+	}
+
+	public Map<String, Element> getMostRecentDatastreamMap() {
+		if (datastreams == null) {
+			datastreams = new HashMap<String, Element>();
+			List<?> datastreamList = foxml.getRootElement().getChildren("datastream", JDOMNamespaceUtil.FOXML_NS);
+			for (Object datastreamObject : datastreamList) {
+				Element datastreamEl = (Element) datastreamObject;
+				String datastreamName = datastreamEl.getAttributeValue("ID");
+				if (datastreamName != null) {
+					ContentModelHelper.Datastream datastreamClass = ContentModelHelper.Datastream.getDatastream(datastreamName);
+					Element dsVersion;
+					if (datastreamClass.isVersionable()) {
+						dsVersion = JDOMQueryUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
+								JDOMNamespaceUtil.FOXML_NS));
+					} else {
+						dsVersion = (Element) datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
+					}
+					datastreams.put(datastreamName, dsVersion);
+				}
+			}
+		}
+
+		return datastreams;
 	}
 
 	public Element getObjectProperties() {
@@ -219,17 +251,17 @@ public class DocumentIndexingPackage {
 		}
 		return label;
 	}
-	
+
 	public List<PID> getChildren() {
 		Element relsExt = getRelsExt();
 		if (relsExt == null)
 			return null;
-		
+
 		List<?> containsEls = relsExt.getChildren("contains", JDOMNamespaceUtil.CDR_NS);
 		if (containsEls.size() > 0) {
 			List<PID> children = new ArrayList<PID>(containsEls.size());
-			for (Object containsObj: containsEls) {
-				PID child = new PID(((Element)containsObj).getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
+			for (Object containsObj : containsEls) {
+				PID child = new PID(((Element) containsObj).getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
 				children.add(child);
 			}
 			return children;

@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.EnumSet;
 import java.util.HashMap;
 
+import edu.unc.lib.dl.fedora.AccessControlCategory;
+
 /**
  * Object stores a single users access control information, including what groups they are
  * a member of and what objects they have already authenticated to in this session.
@@ -74,22 +76,22 @@ public class UserSecurityProfile implements Serializable {
 		this.datastreamAccessCache = datastreamAccessCache;
 	}
 
-	public static class UserDatastreamAccessCache extends HashMap<String,EnumSet<AccessType>> {
+	public static class UserDatastreamAccessCache extends HashMap<String,EnumSet<AccessControlCategory>> {
 		private static final long serialVersionUID = 1L;
 
-		public void put(String id, AccessType accessType){
+		public void put(String id, AccessControlCategory accessType){
 			if (this.containsKey(id)){
-				EnumSet<AccessType> accessTypes = this.get(id);
+				EnumSet<AccessControlCategory> accessTypes = this.get(id);
 				accessTypes.add(accessType);
 			} else {
-				EnumSet<AccessType> accessTypes = EnumSet.noneOf(AccessType.class);
+				EnumSet<AccessControlCategory> accessTypes = EnumSet.noneOf(AccessControlCategory.class);
 				accessTypes.add(accessType);
 				this.put(id, accessTypes);
 			}
 		}
 		
-		public boolean contains(String id, AccessType accessType){
-			EnumSet<AccessType> accessTypes = this.get(id);
+		public boolean contains(String id, AccessControlCategory accessType){
+			EnumSet<AccessControlCategory> accessTypes = this.get(id);
 			if (accessTypes != null){
 				return accessTypes.contains(accessType);
 			}
