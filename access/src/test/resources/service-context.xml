@@ -1,46 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2008 The University of North Carolina at Chapel Hill Licensed 
+	under the Apache License, Version 2.0 (the "License"); you may not use this 
+	file except in compliance with the License. You may obtain a copy of the 
+	License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by 
+	applicable law or agreed to in writing, software distributed under the License 
+	is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY 
+	KIND, either express or implied. See the License for the specific language 
+	governing permissions and limitations under the License. -->
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
-	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
- xmlns="http://www.springframework.org/schema/beans">
-	<bean name="propertiesURI" class="java.lang.System" factory-method="getProperty">
-		<constructor-arg index="0" value="server.properties.uri"/>
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd"
+	xmlns="http://www.springframework.org/schema/beans">
+	<bean name="propertiesURI" class="java.lang.System"
+		factory-method="getProperty">
+		<constructor-arg index="0" value="server.properties.uri" />
 		<!-- property name for properties URI location -->
-		<constructor-arg index="1" value="classpath:server.properties"/>
+		<constructor-arg index="1" value="classpath:server.properties" />
 		<!-- default location for testing -->
 	</bean>
 	<bean id="serverProperties"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
 			<list>
-				<ref bean="propertiesURI"/>
-				<!-- additional non-runtime properties files <value>classpath:solr-ingest.properties</value>-->
+				<ref bean="propertiesURI" />
+				<!-- non-runtime stuff <value>classpath:solr-ingest.properties</value> -->
 			</list>
 		</property>
-		<property name="ignoreResourceNotFound" value="false"/>
+		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
 
-	<bean id="tripleStoreQueryService"
-		class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl" destroy-method="destroy">
+	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl"
+		destroy-method="destroy">
 		<property name="itqlEndpointURL"
-			value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService"/>
-		<property name="serverModelUri" value="rmi://${mulgara.host}/server1#"/>
-		<property name="name" value="${fedora.admin.username}"/>
-		<property name="pass" value="${fedora.admin.password}"/>
-	</bean>	
-	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient" init-method="init">
-		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.admin.username}" />
-		<property name="password" value="${fedora.admin.password}" />
+			value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService" />
+		<property name="serverModelUri" value="rmi://${mulgara.host}/server1#" />
 	</bean>
-	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient" init-method="init">
-		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.admin.username}" />
-		<property name="password" value="${fedora.admin.password}" />
-	</bean>	
-	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService">
-		<property name="accessClient" ref="accessClient"/>
-		<property name="managementClient" ref="managementClient"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
+		init-method="init">
+		<property name="fedoraContextUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="username" value="${fedora.appUser.username}" />
+		<property name="password" value="${fedora.appUser.password}" />
+		<property name="interceptors">
+			<list>
+				<bean class="edu.unc.lib.dl.fedora.GroupsToHttpHeaderInterceptor" />
+			</list>
+		</property>
+	</bean>
+	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient"
+		init-method="init">
+		<property name="fedoraContextUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="username" value="${fedora.appUser.username}" />
+		<property name="password" value="${fedora.appUser.password}" />
+		<property name="interceptors">
+			<list>
+				<bean class="edu.unc.lib.dl.fedora.GroupsToHttpHeaderInterceptor" />
+			</list>
+		</property>
+	</bean>
+	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService"
+		init-method="init" destroy-method="destroy">
+		<property name="accessClient" ref="accessClient" />
+		<property name="managementClient" ref="managementClient" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="maxThreads" value="5" />
+		<property name="threadGroupPrefix" value="Access" />
+	</bean>
+	<bean id="fullObjectMetadataFactory" class="edu.unc.lib.dl.ui.service.FullObjectMetadataFactory">
+		<property name="dataService" ref="fedoraDataService" />
+	</bean>
+	<bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
+		<property name="fedoraUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+	</bean>
+	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
+		<property name="accessClient" ref="accessClient" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+
+	<bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
+		<property name="fedoraPath"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="solrPath"
+			value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
+		<property name="djatokaPath" value="${djatoka.base.url}" />
+		<property name="externalContentPath" value="${external.base.url}" />
+	</bean>
+	<bean id="djatokaContentService" class="edu.unc.lib.dl.ui.service.DjatokaContentService">
+		<property name="applicationPathSettings" ref="applicationPathSettings" />
 	</bean>
 </beans>

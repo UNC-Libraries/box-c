@@ -51,6 +51,8 @@ public class SolrSearchServiceIT extends Assert  {
 	private SolrSearchService solrSearchService = null;
 	@Autowired
 	private SearchSettings searchSettings;
+	@Autowired
+	private SearchStateFactory searchStateFactory;
 	
 	/**
 	 * @throws java.lang.Exception
@@ -108,7 +110,7 @@ public class SolrSearchServiceIT extends Assert  {
 	public void testGetSearchResultsBlankSearch() {
 		AccessGroupSet accessGroups = new AccessGroupSet(new String[]{"all"});
 		SearchRequest requestObject = new SearchRequest();
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		
 		requestObject.setAccessGroups(accessGroups);
 		searchState.setRowsPerPage(searchSettings.defaultPerPage);
@@ -130,7 +132,7 @@ public class SolrSearchServiceIT extends Assert  {
 	public void testGetSearchResultsNavigationSearch() {
 		AccessGroupSet accessGroups = new AccessGroupSet(new String[]{"all"});
 		SearchRequest requestObject = new SearchRequest();
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		
 		requestObject.setAccessGroups(accessGroups);
 		searchState.setRowsPerPage(2);
@@ -152,7 +154,7 @@ public class SolrSearchServiceIT extends Assert  {
 	public void testGetSearchResultsNavigationSearchInvalidPage() {
 		AccessGroupSet accessGroups = new AccessGroupSet(new String[]{"all"});
 		SearchRequest requestObject = new SearchRequest();
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		
 		requestObject.setAccessGroups(accessGroups);
 		searchState.setRowsPerPage(2);
@@ -174,7 +176,7 @@ public class SolrSearchServiceIT extends Assert  {
 	public void testGetSearchResultsMultipleQueries() {
 		AccessGroupSet accessGroups = new AccessGroupSet(new String[]{"all"});
 		SearchRequest requestObject = new SearchRequest();
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		
 		searchState.setSearchTermOperator("AND");
 		requestObject.setAccessGroups(accessGroups);
@@ -205,7 +207,7 @@ public class SolrSearchServiceIT extends Assert  {
 	public void testGetSearchResultsQuotedSearch() {
 		AccessGroupSet accessGroups = new AccessGroupSet(new String[]{"all"});
 		SearchRequest requestObject = new SearchRequest();
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		
 		requestObject.setAccessGroups(accessGroups);
 		searchState.setRowsPerPage(searchSettings.defaultPerPage);
@@ -231,7 +233,7 @@ public class SolrSearchServiceIT extends Assert  {
 	/*public void testGetSearchResultsMultipleFacetsWithQuery() {
 		AccessGroupSet accessGroups = new AccessGroupSet(new String[]{"all"});
 		SearchRequest requestObject = new SearchRequest();
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		
 		requestObject.setAccessGroups(accessGroups);
 		searchState.setRowsPerPage(searchSettings.defaultPerPage);
@@ -264,7 +266,7 @@ public class SolrSearchServiceIT extends Assert  {
 	public void testGetSearchResultsSortSearch() {
 		AccessGroupSet accessGroups = new AccessGroupSet(new String[]{"all"});
 		SearchRequest requestObject = new SearchRequest();
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		
 		searchState.setSearchTermOperator("AND");
 		requestObject.setAccessGroups(accessGroups);
@@ -296,7 +298,7 @@ public class SolrSearchServiceIT extends Assert  {
 	public void testGetSearchResultsCollectionSortSearch() {
 		AccessGroupSet accessGroups = new AccessGroupSet(new String[]{"all"});
 		SearchRequest requestObject = new SearchRequest();
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		
 		requestObject.setAccessGroups(accessGroups);
 		searchState.setRowsPerPage(searchSettings.defaultPerPage);
@@ -321,7 +323,7 @@ public class SolrSearchServiceIT extends Assert  {
 	public void testGetSearchResultsRestrictedWithoutPermission() {
 		AccessGroupSet accessGroups = new AccessGroupSet(new String[]{"all"});
 		SearchRequest requestObject = new SearchRequest();
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		
 		requestObject.setAccessGroups(accessGroups);
 		searchState.setRowsPerPage(searchSettings.defaultPerPage);
@@ -346,7 +348,7 @@ public class SolrSearchServiceIT extends Assert  {
 	public void testGetSearchResultsRestrictedWithPermission() {
 		AccessGroupSet accessGroups = new AccessGroupSet(new String[]{"all", "rla"});
 		SearchRequest requestObject = new SearchRequest();
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		
 		requestObject.setAccessGroups(accessGroups);
 		searchState.setRowsPerPage(searchSettings.defaultPerPage);
@@ -372,7 +374,7 @@ public class SolrSearchServiceIT extends Assert  {
 	public void testGetSearchResultsDateRange() {
 		AccessGroupSet accessGroups = new AccessGroupSet(new String[]{"all"});
 		SearchRequest requestObject = new SearchRequest();
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		
 		requestObject.setAccessGroups(accessGroups);
 		

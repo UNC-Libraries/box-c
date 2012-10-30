@@ -30,8 +30,8 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
  * Thread which executes solr ingest requests, retrieving data from Fedora and uploading it to Solr in batches. Intended
@@ -106,7 +106,7 @@ public class SolrUpdateRunnable implements Runnable {
 			DeleteChildrenPriorToTimestampRequest cleanupRequest = (DeleteChildrenPriorToTimestampRequest) updateRequest;
 
 			// Query Solr for the full list of items that will be deleted
-			SearchState searchState = SearchStateFactory.createIDSearchState();
+			SearchState searchState = getSolrUpdateService().getSearchStateFactory().createIDSearchState();
 
 			// If the root is not the all target then restrict the delete query to its path.
 			if (!SolrUpdateService.TARGET_ALL.equals(updateRequest.getTargetID())) {
@@ -180,14 +180,12 @@ public class SolrUpdateRunnable implements Runnable {
 					.deleteByQuery(
 							solrUpdateService.getSolrSearchService().getSolrSettings().getFieldName(SearchFieldKeys.ID)
 									+ ":"
-									+ solrUpdateService.getSolrSearchService().getSolrSettings()
-											.sanitize(updateRequest.getTargetID()));
+									+ SolrSettings.sanitize(updateRequest.getTargetID()));
 
 			solrUpdateService.getSolrUpdateDriver().deleteByQuery(
 					solrUpdateService.getSolrSearchService().getSolrSettings().getFieldName(SearchFieldKeys.ANCESTOR_PATH)
 							+ ":"
-							+ solrUpdateService.getSolrSearchService().getSolrSettings()
-									.sanitize(ancestorPathBean.getPath().getSearchValue())
+							+ SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue())
 							+ solrUpdateService.getSearchSettings().getFacetSubfieldDelimiter() + "*");
 		} else {
 			// Targeting an individual file, just delete it.

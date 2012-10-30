@@ -38,7 +38,7 @@ public class SearchStateValidator {
 	
 	public void validate(SearchState searchState) {
 		//Validate search Fields and types
-		HashMap<String,String> searchFields = searchState.getSearchFields();
+		Map<String,String> searchFields = searchState.getSearchFields();
 		if (searchFields != null){
 			Iterator<String> searchTypeIt = searchFields.keySet().iterator();
 			while (searchTypeIt.hasNext()){
@@ -51,7 +51,7 @@ public class SearchStateValidator {
 		}
 			
 		//Validate range fields
-		HashMap<String,SearchState.RangePair> rangeFields = searchState.getRangeFields();
+		Map<String,SearchState.RangePair> rangeFields = searchState.getRangeFields();
 		if (rangeFields != null){
 			Iterator<Map.Entry<String, SearchState.RangePair>> rangeFieldIt = rangeFields.entrySet().iterator();
 			while (rangeFieldIt.hasNext()){
@@ -72,7 +72,7 @@ public class SearchStateValidator {
 		
 		//Validate facet fields
 		
-		HashMap<String,Object> facets = searchState.getFacets();
+		Map<String,Object> facets = searchState.getFacets();
 		if (facets != null){
 			Iterator<String> facetIt = facets.keySet().iterator();
 			while (facetIt.hasNext()){

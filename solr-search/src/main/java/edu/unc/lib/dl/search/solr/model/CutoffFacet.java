@@ -2,10 +2,7 @@
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.solr.client.solrj.SolrQuery;
-
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
+import org.apache.solr.client.solrj.response.FacetField;
 
 public class CutoffFacet extends AbstractHierarchicalFacet {
 	private Integer cutoff;
@@ -14,12 +11,14 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 		super(fieldName, facetString);
 		CutoffFacetNode node = new CutoffFacetNode(facetString);
 		this.facetNodes.add(node);
+		this.setCutoff(this.value);
 	}
 	
-	public CutoffFacet(String fieldName, String facetString, long count) {
+	public CutoffFacet(String fieldName, String facetString, Long count) {
 		super(fieldName, facetString, count);
 		CutoffFacetNode node = new CutoffFacetNode(facetString);
 		this.facetNodes.add(node);
+		this.setCutoff(this.value);
 	}
 	
 	public CutoffFacet(String fieldName, List<String> facetStrings, long count) {
@@ -31,10 +30,33 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 		this.sortTiers();
 	}
 	
+	public CutoffFacet(String fieldName, FacetField.Count countObject) {
+		super(fieldName, countObject);
+		CutoffFacetNode node = new CutoffFacetNode(this.value);
+		this.facetNodes.add(node);
+		this.setCutoff(this.value);
+	}
+	
 	public CutoffFacet(CutoffFacet facet) {
-		super(facet.getFieldName(), facet.getValue(), facet.getCount());
+		super((GenericFacet)facet);
 		this.cutoff = facet.getCutoff();
-		this.facetNodes = new ArrayList<HierarchicalFacetNode>(facet.getFacetNodes());
+		for (HierarchicalFacetNode node: facet.getFacetNodes()) {
+			CutoffFacetNode newNode = new CutoffFacetNode(node.getFacetValue());
+			this.facetNodes.add(newNode);
+		}
+	}
+	
+	private void setCutoff(String facetValue) {
+		if (facetValue == null)
+			return;
+		String[] facetParts = facetValue.split(",");
+		if (facetParts.length == 3) {
+			try {
+				this.cutoff = new Integer(facetParts[2]);
+			} catch (NumberFormatException e) {
+				// Was not a cut off value, ignore
+			}
+		}
 	}
 	
 	private void sortTiers(){
@@ -61,9 +83,9 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 		this.facetNodes.add(node);
 	}
 	
-	public HierarchicalFacetNode getNode(String searchValue) {
+	public HierarchicalFacetNode getNode(String searchKey) {
 		for (HierarchicalFacetNode node: this.facetNodes) {
-			if (((CutoffFacetNode)node).getSearchValue().equals(searchValue))
+			if (((CutoffFacetNode)node).getSearchKey().equals(searchKey))
 				return node;
 		}
 		return null;
@@ -105,39 +127,29 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 		return lastNode.getSearchKey();
 	}
 	
+	@Override
 	public String getSearchValue() {
 		CutoffFacetNode lastNode = this.getHighestTierNode();
 		if (lastNode == null)
 			return null;
 		return lastNode.getSearchValue();
 	}
-
-	@Override
-	public void addToSolrQuery(SolrQuery solrQuery) {
-		CutoffFacetNode endNode = (CutoffFacetNode)facetNodes.get(facetNodes.size() - 1);
-		
-		StringBuilder filterQuery = new StringBuilder();
-		filterQuery.append(this.fieldName).append(":") 
-				.append(endNode.getTier()).append(",");
-		if (!endNode.getSearchKey().equals("*")){
-			filterQuery.append(SolrSettings.sanitize(endNode.getSearchKey())).append(",");
-		}
-		filterQuery.append('*');
-		solrQuery.addFilterQuery(filterQuery.toString());
-		
-		if (this.getCutoff() != null){
-			filterQuery = new StringBuilder();
-			filterQuery.append('!').append(this.fieldName).append(':') 
-					.append(this.getCutoff()).append(',').append('*');
-			solrQuery.addFilterQuery(filterQuery.toString());
-		}
-	}
 	
+	@Override
+	public String getPivotValue() {
+		return (this.getHighestTier() + 1) + ",";
+	}
+
 	public Integer getCutoff() {
 		return cutoff;
 	}
 
 	public void setCutoff(Integer cutoff) {
 		this.cutoff = cutoff;
+	}
+	
+	@Override
+	public Object clone() {
+		return new CutoffFacet(this);
 	}
 }

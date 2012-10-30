@@ -40,7 +40,7 @@ import static org.mockito.Mockito.*;
 public class SetPathFilterTest extends Assert {
 
 	@Test
-	public void fromQueryItemTest() {
+	public void fromQueryFileTest() {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
@@ -54,14 +54,14 @@ public class SetPathFilterTest extends Assert {
 				"info:fedora/fedora-system:FedoraObject-3.0"));
 		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Container"));
 		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Collection"));
-		results.add(Arrays.asList("info:fedora/uuid:item", "item.jpg", "info:fedora/cdr-model:Simple"));
-		results.add(Arrays.asList("info:fedora/uuid:item", "item.jpg", "info:fedora/cdr-model:JP2DerivedImage"));
-		results.add(Arrays.asList("info:fedora/uuid:item", "item.jpg", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:item", "item.jpg", "info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/cdr-model:Simple"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/cdr-model:JP2DerivedImage"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/fedora-system:FedoraObject-3.0"));
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
@@ -70,12 +70,12 @@ public class SetPathFilterTest extends Assert {
 		filter.filter(dip);
 
 		assertEquals("/Collections/collection", idb.getAncestorNames());
-		assertEquals(ResourceType.Item.name(), idb.getResourceType());
+		assertEquals(ResourceType.File.name(), idb.getResourceType());
 		assertEquals(idb.getId(), idb.getRollup());
 		assertEquals("uuid:collection", idb.getParentCollection());
 		assertEquals(2, idb.getAncestorPath().size());
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection,collection"));
-		assertFalse(idb.getAncestorPath().contains("3,uuid:item,item.jpg"));
+		assertFalse(idb.getAncestorPath().contains("3,uuid:File,File.jpg"));
 		assertEquals(4, idb.getContentModel().size());
 	}
 
@@ -166,14 +166,14 @@ public class SetPathFilterTest extends Assert {
 				.asList("info:fedora/uuid:aggregate", "aggregate", "info:fedora/fedora-system:FedoraObject-3.0"));
 		results.add(Arrays.asList("info:fedora/uuid:aggregate", "aggregate", "info:fedora/cdr-model:Container"));
 		results.add(Arrays.asList("info:fedora/uuid:aggregate", "aggregate", "info:fedora/cdr-model:AggregateWork"));
-		results.add(Arrays.asList("info:fedora/uuid:item", "child.pdf", "info:fedora/cdr-model:Simple"));
-		results.add(Arrays.asList("info:fedora/uuid:item", "child.pdf", "info:fedora/cdr-model:JP2DerivedImage"));
-		results.add(Arrays.asList("info:fedora/uuid:item", "child.pdf", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:item", "child.pdf", "info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "child.pdf", "info:fedora/cdr-model:Simple"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "child.pdf", "info:fedora/cdr-model:JP2DerivedImage"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "child.pdf", "info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "child.pdf", "info:fedora/fedora-system:FedoraObject-3.0"));
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
@@ -182,13 +182,13 @@ public class SetPathFilterTest extends Assert {
 		filter.filter(dip);
 
 		assertEquals("/Collections/collection/aggregate", idb.getAncestorNames());
-		assertEquals(ResourceType.Item.name(), idb.getResourceType());
+		assertEquals(ResourceType.File.name(), idb.getResourceType());
 		assertEquals("uuid:aggregate", idb.getRollup());
 		assertEquals("uuid:collection", idb.getParentCollection());
 		assertEquals(3, idb.getAncestorPath().size());
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection,collection"));
 		assertTrue(idb.getAncestorPath().contains("3,uuid:aggregate,aggregate"));
-		assertFalse(idb.getAncestorPath().contains("4,uuid:item,child.pdf"));
+		assertFalse(idb.getAncestorPath().contains("4,uuid:File,child.pdf"));
 	}
 
 	@Test
@@ -212,7 +212,7 @@ public class SetPathFilterTest extends Assert {
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
@@ -243,13 +243,13 @@ public class SetPathFilterTest extends Assert {
 		results.add(Arrays.asList("info:fedora/uuid:folder", "folder", "info:fedora/cdr-model:PreservedObject"));
 		results.add(Arrays.asList("info:fedora/uuid:folder", "folder", "info:fedora/fedora-system:FedoraObject-3.0"));
 		results.add(Arrays.asList("info:fedora/uuid:folder", "folder", "info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:item", "item", "info:fedora/cdr-model:Simple"));
-		results.add(Arrays.asList("info:fedora/uuid:item", "item", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:item", "item", "info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "File", "info:fedora/cdr-model:Simple"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "File", "info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "File", "info:fedora/fedora-system:FedoraObject-3.0"));
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
@@ -258,7 +258,7 @@ public class SetPathFilterTest extends Assert {
 		filter.filter(dip);
 
 		assertEquals("/Collections/folder", idb.getAncestorNames());
-		assertEquals(ResourceType.Item.name(), idb.getResourceType());
+		assertEquals(ResourceType.File.name(), idb.getResourceType());
 		assertEquals(idb.getId(), idb.getRollup());
 		assertNull(idb.getParentCollection());
 		assertEquals(2, idb.getAncestorPath().size());
@@ -272,7 +272,7 @@ public class SetPathFilterTest extends Assert {
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
 
 		SetPathFilter filter = new SetPathFilter();
 		filter.setTripleStoreQueryService(tsqs);
@@ -331,10 +331,10 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test
-	public void fromParentsItemTest() throws FileNotFoundException, JDOMException, IOException {
+	public void fromParentsFileTest() throws FileNotFoundException, JDOMException, IOException {
 		DocumentIndexingPackage parentFolder = getParentFolderWithCollection();
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
 		dip.setParentDocument(parentFolder);
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
@@ -345,7 +345,7 @@ public class SetPathFilterTest extends Assert {
 		SetPathFilter filter = new SetPathFilter();
 		filter.filter(dip);
 
-		assertEquals(ResourceType.Item.name(), idb.getResourceType());
+		assertEquals(ResourceType.File.name(), idb.getResourceType());
 		assertEquals(idb.getId(), idb.getRollup());
 		assertEquals("uuid:collection", idb.getParentCollection());
 		assertEquals(3, idb.getAncestorPath().size());
@@ -366,7 +366,7 @@ public class SetPathFilterTest extends Assert {
 		parentFolder.getDocument().setAncestorPath(
 				Arrays.asList("1,uuid:Collections,Collections"));
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
 		dip.setParentDocument(parentFolder);
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
@@ -377,7 +377,7 @@ public class SetPathFilterTest extends Assert {
 		SetPathFilter filter = new SetPathFilter();
 		filter.filter(dip);
 
-		assertEquals(ResourceType.Item.name(), idb.getResourceType());
+		assertEquals(ResourceType.File.name(), idb.getResourceType());
 		assertEquals(idb.getId(), idb.getRollup());
 		assertNull(idb.getParentCollection());
 		assertEquals(2, idb.getAncestorPath().size());
@@ -404,7 +404,7 @@ public class SetPathFilterTest extends Assert {
 		parentFolder.getDocument().setAncestorPath(
 				Arrays.asList("1,uuid:Collections,Collections", "2,uuid:collection,collection"));
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
 		dip.setParentDocument(parentFolder);
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
@@ -415,7 +415,7 @@ public class SetPathFilterTest extends Assert {
 		SetPathFilter filter = new SetPathFilter();
 		filter.filter(dip);
 
-		assertEquals(ResourceType.Item.name(), idb.getResourceType());
+		assertEquals(ResourceType.File.name(), idb.getResourceType());
 		assertEquals("uuid:aggregate", idb.getRollup());
 		assertEquals("uuid:collection", idb.getParentCollection());
 		assertEquals(3, idb.getAncestorPath().size());
@@ -434,7 +434,7 @@ public class SetPathFilterTest extends Assert {
 		parentFolder.getDocument().setAncestorNames("");
 		parentFolder.getDocument().setAncestorPath(new ArrayList<String>());
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
 		dip.setParentDocument(parentFolder);
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));

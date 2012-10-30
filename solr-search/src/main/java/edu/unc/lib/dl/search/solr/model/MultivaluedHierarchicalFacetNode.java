@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 
 public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
-	private static Pattern extractFacetParts = Pattern.compile("[|/]");
+	private static Pattern extractFacetParts = Pattern.compile("[\\^/]");
 
 	private String displayValue;
 	private String searchKey;
@@ -15,14 +15,17 @@ public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
 	private List<String> tiers;
 
 	public MultivaluedHierarchicalFacetNode(String facetValue) {
-		this.facetValue = facetValue;
+		this.facetValue = facetValue.replaceAll("\"", "");
 		this.tiers = new ArrayList<String>();
 		try {
 			String[] facetParts = extractFacetParts.split(facetValue);
 			for (int i = 1; i < facetParts.length; i++) {
 				if (i == facetParts.length - 1) {
-					String[] facetPair = facetParts[i].split(",");
-					displayValue = facetPair[1];
+					String[] facetPair = facetParts[i].split(",", 2);
+					// Query values will not have the display value part of the pair
+					if (facetPair.length == 2)
+						displayValue = facetPair[1];
+					else displayValue = null;
 					searchKey = facetPair[0];
 					tiers.add(facetPair[0]);
 				} else {

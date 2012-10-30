@@ -246,9 +246,9 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		ContentCategory contentCategory = getContentCategory(datastream.getMimetype(), datastream.getExtension());
 		if (contentCategory == null)
 			return;
-		contentTypes.add('|' + contentCategory.joined);
+		contentTypes.add('^' + contentCategory.joined);
 		StringBuilder contentType = new StringBuilder();
-		contentType.append('/').append(contentCategory.key).append('|').append(datastream.getExtension()).append(',')
+		contentType.append('/').append(contentCategory.key).append('^').append(datastream.getExtension()).append(',')
 				.append(datastream.getExtension());
 		contentTypes.add(contentType.toString());
 	}

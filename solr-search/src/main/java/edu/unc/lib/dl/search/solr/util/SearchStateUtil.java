@@ -19,6 +19,7 @@ import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -124,11 +125,11 @@ public class SearchStateUtil {
 		return sb.toString();
 	}
 	
-	private static String joinFields(HashMap<?,?> fields, char pairDelimiter, char keyValueDelimiter){
+	private static String joinFields(Map<?,?> fields, char pairDelimiter, char keyValueDelimiter){
 		return joinFields(fields, pairDelimiter, keyValueDelimiter, true);
 	}
 	
-	private static String joinFields(HashMap<?,?> fields, char pairDelimiter, char keyValueDelimiter, boolean performFieldLookup){
+	private static String joinFields(Map<?,?> fields, char pairDelimiter, char keyValueDelimiter, boolean performFieldLookup){
 		StringBuilder sb = new StringBuilder();
 		boolean firstField = true;
 		Iterator<?> fieldIt = fields.keySet().iterator();
@@ -148,7 +149,7 @@ public class SearchStateUtil {
 		return sb.toString();
 	}
 	
-	private static String joinFacets(HashMap<String,Object> fields, char pairDelimiter, char keyValueDelimiter){
+	private static String joinFacets(Map<String,Object> fields, char pairDelimiter, char keyValueDelimiter){
 		StringBuffer sb = new StringBuffer();
 		boolean firstField = true;
 		Iterator<String> fieldIt = fields.keySet().iterator();
@@ -173,7 +174,7 @@ public class SearchStateUtil {
 		return sb.toString();
 	}
 	
-	private static String joinFields(HashMap<?,?> fields){
+	private static String joinFields(Map<?,?> fields){
 		return joinFields(fields, '|', ':');
 	}
 	

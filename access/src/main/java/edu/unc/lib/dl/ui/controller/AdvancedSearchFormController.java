@@ -26,7 +26,6 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.ui.util.LookupMappingsSettings;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 
 /**
  * Handles requests to the advanced search page, sending users to the form if there are no
@@ -55,8 +54,7 @@ public class AdvancedSearchFormController extends AbstractSolrSearchController {
 		}
 		
 		//If the user has submitted the search form, then generate a search state and forward them to the search servlet.
-		@SuppressWarnings("unchecked")
-		SearchState searchState = SearchStateFactory.createSearchStateAdvancedSearch(request.getParameterMap());
+		SearchState searchState = searchStateFactory.createSearchStateAdvancedSearch(request.getParameterMap());
 		
 		request.getSession().setAttribute("searchState", searchState);
 		

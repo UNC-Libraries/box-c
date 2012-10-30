@@ -93,7 +93,7 @@ public class SolrSettings extends AbstractSettings  {
 		return server;
 	}
 	
-	private static Pattern escapeReservedCharacters = Pattern.compile("([\\+\\-!\\(\\)\\{\\}\\[\\]\\^\"~\\*\\?:\\\\])");
+	private static Pattern escapeReservedCharacters = Pattern.compile("([/\\+\\-!\\(\\)\\{\\}\\[\\]\\^\"~\\*\\?:\\\\])");
 	private static Pattern escapeReservedWords = Pattern.compile("\\b(AND|OR|NOT)\\b");
 	public static String sanitize(String value){
 		if (value == null)

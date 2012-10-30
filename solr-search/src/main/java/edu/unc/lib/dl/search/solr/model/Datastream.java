@@ -31,7 +31,9 @@ public class Datastream {
 		} catch (NumberFormatException e) {
 			this.filesize = new Long(0);
 		}
-		this.checksum = dsParts[4];
+		if (dsParts.length > 4 && dsParts[4].length() > 0)
+			this.checksum = dsParts[4];
+		else this.checksum = null;
 		if (dsParts.length > 5 && dsParts[5].length() > 0) {
 			this.owner = new PID(dsParts[5]);
 		} else {

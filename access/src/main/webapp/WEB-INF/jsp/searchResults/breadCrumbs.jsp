@@ -51,13 +51,16 @@
 					(<a href="<c:out value="${removeUrl}"/>">x</a>)
 					<c:out value="${searchSettings.searchFieldLabels[field.key]}" />: 
 					<c:choose>
-						<c:when test='${field.value["class"].name == "edu.unc.lib.dl.search.solr.model.HierarchicalFacet"}'>
-							<c:set var="facetTiers" scope="request" value="${field.value.facetTiers}"/>
+						<c:when test='${field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.CutoffFacet"}'>
+							<c:set var="facetTiers" scope="request" value="${field.value.facetNodes}"/>
 							<c:import url="WEB-INF/jsp/common/hierarchyTrail.jsp">
 								<c:param name="fieldKey"><c:out value="${field.key}"/></c:param>
 								<c:param name="linkLast">false</c:param>
 								<c:param name="queryPath" value="${queryPath}"/>
 							</c:import>
+						</c:when>
+						<c:when test='${field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet"}'>
+							<c:out value="${field.value.displayValue}" />
 						</c:when>
 						<c:otherwise>
 							<c:out value="${field.value}" />

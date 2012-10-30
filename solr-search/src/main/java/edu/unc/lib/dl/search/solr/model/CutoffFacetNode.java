@@ -10,6 +10,7 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
 	private Integer tier;
 
 	public CutoffFacetNode(String facetValue) {
+		this.facetValue = facetValue;
 		String facetComponents[] = facetValue.split(",", 3);
 		if (facetComponents.length > 0) {
 			try {

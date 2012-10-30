@@ -36,6 +36,7 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.security.access.AccessGroupSet;
@@ -55,6 +56,7 @@ public class SolrUpdateService {
 	protected SolrDataAccessLayer solrDataAccessLayer;
 	protected SolrSearchService solrSearchService;
 	protected AccessGroupSet accessGroups;
+	protected SearchStateFactory searchStateFactory;
 	protected String solrPath;
 	@Autowired
 	protected SearchSettings searchSettings;
@@ -308,6 +310,14 @@ public class SolrUpdateService {
 
 	public void setDipFactory(DocumentIndexingPackageFactory dipFactory) {
 		this.dipFactory = dipFactory;
+	}
+
+	public SearchStateFactory getSearchStateFactory() {
+		return searchStateFactory;
+	}
+
+	public void setSearchStateFactory(SearchStateFactory searchStateFactory) {
+		this.searchStateFactory = searchStateFactory;
 	}
 
 	public String statusString(){

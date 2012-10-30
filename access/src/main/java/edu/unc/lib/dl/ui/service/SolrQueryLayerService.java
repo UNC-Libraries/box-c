@@ -28,9 +28,9 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
-import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
@@ -41,6 +41,7 @@ import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.security.access.AccessGroupSet;
 import edu.unc.lib.dl.security.access.AccessRestrictionException;
 import edu.unc.lib.dl.ui.model.request.HierarchicalBrowseRequest;
@@ -54,6 +55,7 @@ import edu.unc.lib.dl.ui.model.response.HierarchicalBrowseResultResponse;
  */
 public class SolrQueryLayerService extends SolrSearchService {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrQueryLayerService.class);
+	protected SearchStateFactory searchStateFactory;
 
 	/**
 	 * Returns a list of the most recently added items in the collection
@@ -65,7 +67,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		SearchRequest searchRequest = new SearchRequest();
 		searchRequest.setAccessGroups(accessGroups);
 
-		SearchState searchState = SearchStateFactory.createTitleListSearchState();
+		SearchState searchState = searchStateFactory.createTitleListSearchState();
 		List<String> resourceTypes = new ArrayList<String>();
 		resourceTypes.add(searchSettings.resourceTypeCollection);
 		searchState.setResourceTypes(resourceTypes);
@@ -86,7 +88,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		SearchRequest searchRequest = new SearchRequest();
 		searchRequest.setAccessGroups(accessGroups);
 
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		searchState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
 		searchState.setRowsPerPage(50);
 		searchState.setFacetsToRetrieve(null);
@@ -101,7 +103,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	}
 
 	public SearchResultResponse getDepartmentList(AccessGroupSet accessGroups) {
-		SearchState searchState = SearchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT, "index", 999999);
+		SearchState searchState = searchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT, "index", 999999);
 
 		SearchRequest searchRequest = new SearchRequest(searchState, accessGroups);
 
@@ -190,7 +192,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 					query.append(" OR ");
 				}
 				query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':')
-						.append(solrSettings.sanitize(pidFacet.getSearchValue()));
+						.append(SolrSettings.sanitize(pidFacet.getSearchValue()));
 			}
 		}
 		query.append(')');
@@ -286,7 +288,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			ancestorPath = metadata.getPath();
 		}
 		if (ancestorPath != null) {
-			ancestorPath.addToSolrQuery(solrQuery);
+			facetFieldUtil.addDefaultFacetPivot(ancestorPath, solrQuery);
 		}
 
 		solrQuery.setStart(0);
@@ -373,7 +375,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * @return
 	 */
 	public SearchResultResponse getFullRecordSupplementalData(CutoffFacet ancestorPath, AccessGroupSet accessGroups, List<String> facetsToRetrieve) {
-		SearchState searchState = SearchStateFactory.createSearchState();
+		SearchState searchState = searchStateFactory.createSearchState();
 		searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, ancestorPath);
 		searchState.setRowsPerPage(0);
 		return getFacetList(searchState, accessGroups, facetsToRetrieve, false);
@@ -397,7 +399,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		solrQuery.setRows(0);
 		
 		query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH)).append(':')
-			.append(solrSettings.sanitize(metadataObject.getPath().getSearchValue())).append(",*");
+			.append(SolrSettings.sanitize(metadataObject.getPath().getSearchValue())).append(",*");
 		
 		solrQuery.setQuery(query.toString());
 		
@@ -451,7 +453,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 					query.append(" OR ");
 				}
 				query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH)).append(':')
-						.append(solrSettings.sanitize(metadataObject.getPath().getSearchValue())).append(",*");
+						.append(SolrSettings.sanitize(metadataObject.getPath().getSearchValue())).append(",*");
 				containerObjects.add(metadataObject);
 				long highestTier = metadataObject.getPath().getHighestTier();
 				if (maxTier < highestTier)
@@ -523,7 +525,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		HierarchicalBrowseResultResponse browseResults = new HierarchicalBrowseResultResponse();
 
-		SearchState hierarchyState = SearchStateFactory.createHierarchyListSearchState();
+		SearchState hierarchyState = searchStateFactory.createHierarchyListSearchState();
 		//hierarchyState.getResourceTypes().add(searchSettings.resourceTypeFile);
 		if (!noRootNode) {
 			hierarchyState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH,
@@ -713,18 +715,21 @@ public class SolrQueryLayerService extends SolrSearchService {
 		Iterator<String> facetIt = searchState.getFacets().keySet().iterator();
 		while (facetIt.hasNext()) {
 			String facetKey = facetIt.next();
-			if (searchSettings.hierarchicalFacets.contains(facetKey)) {
-				Object facetValue = searchState.getFacets().get(facetKey);
-				if (facetValue instanceof HierarchicalFacet) {
-					HierarchicalFacet resultFacet = getHierarchicalFacet(facetKey,
-							((HierarchicalFacet) facetValue).getSearchValue(), accessGroups);
-					if (resultFacet != null) {
-						if (((HierarchicalFacet) facetValue).getCutoffTier() != null)
-							resultFacet.setCutoffTier(((HierarchicalFacet) facetValue).getCutoffTier());
-						searchState.getFacets().put(facetKey, resultFacet);
+			Object facetValue = searchState.getFacets().get(facetKey);
+			if (facetValue instanceof AbstractHierarchicalFacet) {
+				FacetFieldObject resultFacet = getHierarchicalFacet((AbstractHierarchicalFacet)facetValue, accessGroups);
+				if (resultFacet != null) {
+					GenericFacet facet = resultFacet.getValues().get(resultFacet.getValues().size() - 1);
+					searchState.getFacets().put(facetKey, facet);
+					if (facetValue instanceof CutoffFacet) {
+						((CutoffFacet)facet).setCutoff(((CutoffFacet) facetValue).getCutoff());
 					}
 				}
 			}
 		}
+	}
+
+	public void setSearchStateFactory(SearchStateFactory searchStateFactory) {
+		this.searchStateFactory = searchStateFactory;
 	}
 }

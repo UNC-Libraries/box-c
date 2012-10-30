@@ -39,7 +39,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/service-context.xml" })
+@ContextConfiguration(locations = { "/service-context.xml", "/uiapp-servlet.xml" })
 public class SpringContextLoadTest {
 
 	@Test

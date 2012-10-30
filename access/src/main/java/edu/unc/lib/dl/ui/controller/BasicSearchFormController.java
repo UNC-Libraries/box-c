@@ -53,6 +53,8 @@ public class BasicSearchFormController {
 	private SearchActionService searchActionService;
 	@Autowired
 	private SearchSettings searchSettings;
+	@Autowired
+	protected SearchStateFactory searchStateFactory;
 	
 	@RequestMapping(method = RequestMethod.GET)
 	public String handleRequest(Model model, HttpServletRequest request){
@@ -73,7 +75,7 @@ public class BasicSearchFormController {
 				e.printStackTrace();
 			}
 			HashMap<String,String[]> parameters = SearchStateUtil.getParametersAsHashMap(searchWithin);
-			searchState = SearchStateFactory.createSearchState(parameters);
+			searchState = searchStateFactory.createSearchState(parameters);
 			
 			if (searchState.getFacets() != null && searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)){
 				Object ancestorPathObject = searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH);
@@ -104,7 +106,7 @@ public class BasicSearchFormController {
 		}
 		
 		if (searchState == null)
-			searchState = SearchStateFactory.createSearchState();
+			searchState = searchStateFactory.createSearchState();
 		
 		LOG.debug("Actions:" + actions.toString());
 		try {
@@ -127,5 +129,9 @@ public class BasicSearchFormController {
 
 	public void setSearchActionService(SearchActionService searchActionService) {
 		this.searchActionService = searchActionService;
+	}
+
+	public void setSearchStateFactory(SearchStateFactory searchStateFactory) {
+		this.searchStateFactory = searchStateFactory;
 	}
 }

@@ -15,13 +15,14 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
 /**
  * Stores a individual facet entry
  * @author bbpennel
  */
-public class GenericFacet {
+public class GenericFacet implements Cloneable {
 	//Name of the facet group to which this facet belongs.
 	protected String fieldName;
 	protected long count;
@@ -44,10 +45,10 @@ public class GenericFacet {
 	}
 	
 	public GenericFacet(FacetField.Count countObject){
-		this(countObject, countObject.getFacetField().getName());
+		this(countObject.getFacetField().getName(), countObject);
 	}
 	
-	public GenericFacet(FacetField.Count countObject, String fieldName){
+	public GenericFacet(String fieldName, FacetField.Count countObject){
 		this.count = countObject.getCount();
 		this.fieldName = fieldName;
 		this.value = countObject.getName();
@@ -96,5 +97,10 @@ public class GenericFacet {
 
 	public String getSearchValue() {
 		return value;
+	}
+	
+	@Override
+	public Object clone() {
+		return new GenericFacet(this);
 	}
 }

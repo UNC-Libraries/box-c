@@ -25,8 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 
@@ -39,6 +38,8 @@ public class SearchActionService {
 	private final Logger LOG = LoggerFactory.getLogger(SolrSearchService.class);
 	@Autowired
 	private SearchSettings searchSettings;
+	@Autowired
+	private FacetFieldFactory facetFieldFactory;
 	
 	public SearchActionService(){
 		
@@ -247,23 +248,7 @@ public class SearchActionService {
 		if (value.lastIndexOf('"') == value.length()-1){
 			value = value.substring(0, value.length()-1);
 		}
-		if (searchSettings.hierarchicalFacets.contains(key)){
-			String[] parameterSubfields = value.split(",");
-			HierarchicalFacet hierFacet = null;
-			if (parameterSubfields.length >= 2){
-				hierFacet = new HierarchicalFacet(key, parameterSubfields[0] + "," + parameterSubfields[1]);
-				if (parameterSubfields.length >= 3){
-					try {
-						hierFacet.setCutoffTier(new Integer(parameterSubfields[2]));
-					} catch (NumberFormatException e){
-						throw new InvalidHierarchicalFacetException("Invalid hierarchical facet defined by " + value, e);
-					}
-				}
-				searchState.getFacets().put(key, hierFacet);
-			}
-		} else {
-			searchState.getFacets().put(key, value);
-		}
+		searchState.getFacets().put(key, facetFieldFactory.createFacet(key, value));
 	}
 	
 	private void setFacetLimit(SearchState searchState, ArrayList<String> parameters){
@@ -383,6 +368,10 @@ public class SearchActionService {
 
 	public void setSearchSettings(SearchSettings searchSettings) {
 		this.searchSettings = searchSettings;
+	}
+
+	public void setFacetFieldFactory(FacetFieldFactory facetFieldFactory) {
+		this.facetFieldFactory = facetFieldFactory;
 	}
 
 	public class ActionPair {

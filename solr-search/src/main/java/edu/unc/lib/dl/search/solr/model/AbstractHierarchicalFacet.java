@@ -2,10 +2,9 @@ package edu.unc.lib.dl.search.solr.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.solr.client.solrj.response.FacetField;
 
-import org.apache.solr.client.solrj.SolrQuery;
-
-public abstract class AbstractHierarchicalFacet extends GenericFacet {
+public abstract class AbstractHierarchicalFacet extends GenericFacet implements Cloneable {
 	protected List<HierarchicalFacetNode> facetNodes;
 	
 	protected AbstractHierarchicalFacet() {
@@ -31,6 +30,16 @@ public abstract class AbstractHierarchicalFacet extends GenericFacet {
 		this.count = count;
 	}
 	
+	protected AbstractHierarchicalFacet(String fieldName, FacetField.Count countObject){
+		super(fieldName, countObject);
+		facetNodes = new ArrayList<HierarchicalFacetNode>();
+	}
+	
+	protected AbstractHierarchicalFacet(GenericFacet facet){
+		super(facet);
+		facetNodes = new ArrayList<HierarchicalFacetNode>();
+	}
+	
 	public void addNode(HierarchicalFacetNode node) {
 		facetNodes.add(node);
 	}
@@ -44,5 +53,5 @@ public abstract class AbstractHierarchicalFacet extends GenericFacet {
 	}
 
 	public abstract String getSearchKey();
-	public abstract void addToSolrQuery(SolrQuery solrQuery);
+	public abstract String getPivotValue();
 }

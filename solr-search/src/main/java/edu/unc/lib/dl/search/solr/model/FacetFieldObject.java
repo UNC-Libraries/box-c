@@ -16,29 +16,21 @@
 package edu.unc.lib.dl.search.solr.model;
 
 import java.util.ArrayList;
-
-import org.apache.solr.client.solrj.response.FacetField;
+import java.util.List;
 
 /**
  * An individual hierarchical facet field, containing any number of specific hierarchical facet values in it.
+ * 
  * @author bbpennel
  */
-public class FacetFieldObject  {
+public class FacetFieldObject {
 	private String name;
-	private ArrayList<GenericFacet> values;
+	private List<GenericFacet> values;
 	private boolean hierarchical;
-	
-	public FacetFieldObject(String name, FacetField facetField, boolean hierarchical){
+
+	public FacetFieldObject(String name, List<GenericFacet> values) {
 		this.name = name;
-		this.values = new ArrayList<GenericFacet>();
-		this.hierarchical = hierarchical;
-		if (facetField != null){
-			for (FacetField.Count value: facetField.getValues()){
-				if (hierarchical)
-					this.values.add(new HierarchicalFacet(value, name));
-				else this.values.add(new GenericFacet(value, name));
-			}
-		}
+		this.values = values;
 	}
 
 	public String getName() {
@@ -49,7 +41,7 @@ public class FacetFieldObject  {
 		this.name = name;
 	}
 
-	public ArrayList<GenericFacet> getValues() {
+	public List<GenericFacet> getValues() {
 		return values;
 	}
 
@@ -64,6 +56,5 @@ public class FacetFieldObject  {
 	public void setHierarchical(boolean hierarchical) {
 		this.hierarchical = hierarchical;
 	}
-	
-	
+
 }

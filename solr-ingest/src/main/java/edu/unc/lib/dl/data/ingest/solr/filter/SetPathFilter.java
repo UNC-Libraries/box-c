@@ -49,7 +49,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 	private String ancestorInfoQuery;
 	private XPath contentModelXpath;
-	
+
 	private PID collectionsPID;
 
 	public SetPathFilter() {
@@ -130,7 +130,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 				this.buildAncestorNames(ancestorNames, node.label);
 			} else {
 				// Store the last node in ancestor names only if it is a container type
-				if (!ResourceType.Item.equals(node.resourceType))
+				if (!ResourceType.File.equals(node.resourceType))
 					this.buildAncestorNames(ancestorNames, node.label);
 			}
 		}
@@ -191,7 +191,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 			idb.setAncestorPath(ancestorPath);
 
 			// If this object isn't any item, then add itself to its ancestorNames
-			if (!ResourceType.Item.equals(resourceType)) {
+			if (!ResourceType.File.equals(resourceType)) {
 				idb.setAncestorNames(this.buildAncestorNames(new StringBuilder(parentDIP.getDocument().getAncestorNames()),
 						dip.getLabel()).toString());
 			} else {

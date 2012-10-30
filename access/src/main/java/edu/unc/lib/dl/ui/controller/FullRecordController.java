@@ -30,7 +30,6 @@ import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.ui.service.FullObjectMetadataFactory;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.ui.validator.DatastreamAccessValidator;
@@ -126,7 +125,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 			LOG.debug("Retrieving hierarchical structure for " + briefObject.getResourceType() + " " + id);
 
 			// Retrieve hierarchical browse results
-			SearchState searchState = SearchStateFactory.createHierarchicalBrowseSearchState();
+			SearchState searchState = searchStateFactory.createHierarchicalBrowseSearchState();
 			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, briefObject.getPath());
 			HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(searchState, 4, accessGroups);
 			

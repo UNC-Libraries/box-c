@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.search.solr.exception;
 
-public class InvalidHierarchicalFacetException extends RuntimeException {
+public class InvalidHierarchicalFacetException extends InvalidFacetException {
 	private static final long serialVersionUID = 1L;
 
 	public InvalidHierarchicalFacetException(String msg, Exception e){

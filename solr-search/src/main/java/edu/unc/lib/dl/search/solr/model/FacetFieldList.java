@@ -16,84 +16,70 @@
 package edu.unc.lib.dl.search.solr.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-
-import org.apache.solr.client.solrj.response.FacetField;
 
 /**
  * Object containing a list of facets, normal or Hierarchical facet.
+ * 
  * @author bbpennel
  */
 public class FacetFieldList extends ArrayList<FacetFieldObject> {
 	private static final long serialVersionUID = 1L;
-	
-	public FacetFieldList(List<FacetField> facetFields, HashSet<String> hierarchicalNames, HashMap<String,String> fieldNameMappings){
-		if (facetFields == null)
-			return;
-		for (FacetField facetField: facetFields){
-			String fieldName = fieldNameMappings.get(facetField.getName()); 
-			if (facetField.getValueCount() > 0){
-				this.add(new FacetFieldObject(fieldName, facetField, 
-						hierarchicalNames.contains(fieldName)));
-			}
-		}
+
+	public FacetFieldList() {
 	}
-	
-	public FacetFieldObject get(String facetName){
+
+	public FacetFieldObject get(String facetName) {
 		return FacetFieldList.get(this, facetName);
 	}
-	
-	public static FacetFieldObject get(FacetFieldList list, String facetName){
+
+	public static FacetFieldObject get(FacetFieldList list, String facetName) {
 		int index = indexOf(list, facetName);
 		if (index == -1)
 			return null;
 		return list.get(index);
 	}
-	
-	public int indexOf(String facetName){
+
+	public int indexOf(String facetName) {
 		return FacetFieldList.indexOf(this, facetName);
 	}
-	
+
 	/**
 	 * Returns the index of the facet with name facetName
-	 * @param facetName name of the facet to find the index of
+	 * 
+	 * @param facetName
+	 *           name of the facet to find the index of
 	 */
-	public static int indexOf(FacetFieldList list, String facetName){
+	public static int indexOf(FacetFieldList list, String facetName) {
 		return indexOf(list, facetName, 0);
 	}
-	
-	public int indexOf(String facetName, int startIndex){
+
+	public int indexOf(String facetName, int startIndex) {
 		return FacetFieldList.indexOf(this, facetName, startIndex);
 	}
-	
-	public static int indexOf(FacetFieldList list, String facetName, int startIndex){
-		int j=startIndex;
-		for (; j < list.size() && !list.get(j).getName().equals(facetName); j++);
+
+	public static int indexOf(FacetFieldList list, String facetName, int startIndex) {
+		int j = startIndex;
+		for (; j < list.size() && !list.get(j).getName().equals(facetName); j++)
+			;
 		if (j >= list.size())
 			return -1;
 		return j;
 	}
-	
-	public void addMissing(List<String> allFacetNames){
-		for (String facetName: allFacetNames){
-			if (!this.contains(facetName))
-				this.add(new FacetFieldObject(facetName, null, false));
-		}
-	}
-	
+
 	/**
-	 * Reorders the list of facets according to the order of field names
-	 * specified in orderedList, using a pseudo bubble sort.
-	 * @param orderedList List of field names indicating the order to sort the facet list to.
+	 * Reorders the list of facets according to the order of field names specified in orderedList, using a pseudo bubble
+	 * sort.
+	 * 
+	 * @param orderedList
+	 *           List of field names indicating the order to sort the facet list to.
 	 */
-	public void sort(List<String> orderedList){
+	public void sort(List<String> orderedList) {
 		int swapIndex = 0;
-		for (String orderEntry: orderedList){
+		for (String orderEntry : orderedList) {
 			int matchIndex = indexOf(this, orderEntry, swapIndex);
-			if (matchIndex != -1){
-				if (matchIndex != swapIndex){
+			if (matchIndex != -1) {
+				if (matchIndex != swapIndex) {
 					FacetFieldObject swap = this.get(swapIndex);
 					this.set(swapIndex, this.get(matchIndex));
 					this.set(matchIndex, swap);

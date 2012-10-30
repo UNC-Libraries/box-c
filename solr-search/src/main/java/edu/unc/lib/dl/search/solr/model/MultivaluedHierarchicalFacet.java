@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.response.FacetField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,18 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 	private static final Logger log = LoggerFactory.getLogger(MultivaluedHierarchicalFacet.class);
 
+	public MultivaluedHierarchicalFacet(String fieldName, String facetString) {
+		super(fieldName, facetString);
+		MultivaluedHierarchicalFacetNode node = new MultivaluedHierarchicalFacetNode(facetString);
+		this.facetNodes.add(node);
+	}
+	
+	public MultivaluedHierarchicalFacet(String fieldName, FacetField.Count countObject) {
+		super(fieldName, countObject);
+		MultivaluedHierarchicalFacetNode node = new MultivaluedHierarchicalFacetNode(this.value);
+		this.facetNodes.add(node);
+	}
+	
 	public static List<MultivaluedHierarchicalFacet> createMultivaluedHierarchicalFacets(String fieldName,
 			List<String> facetValues) {
 		Map<String, MultivaluedHierarchicalFacet> facetMap = new LinkedHashMap<String, MultivaluedHierarchicalFacet>();
@@ -43,6 +56,16 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 	public MultivaluedHierarchicalFacet(String fieldName) {
 		super(fieldName);
 	}
+	
+	public MultivaluedHierarchicalFacet(MultivaluedHierarchicalFacet facet) {
+		super((GenericFacet)facet);
+		this.displayValue = facet.getDisplayValue();
+		
+		for (HierarchicalFacetNode node: facet.getFacetNodes()) {
+			MultivaluedHierarchicalFacetNode newNode = new MultivaluedHierarchicalFacetNode(node.getFacetValue());
+			this.facetNodes.add(newNode);
+		}
+	}
 
 	public void sortTiers() {
 		for (int i = 0; i < this.facetNodes.size(); i++) {
@@ -67,14 +90,18 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 	
 	@Override
 	public String getSearchValue() {
+		return this.getSearchValue(true);
+	}
+	
+	public String getSearchValue(boolean designateLastNode) {
 		MultivaluedHierarchicalFacetNode lastNode = (MultivaluedHierarchicalFacetNode) this.facetNodes
 				.get(this.facetNodes.size() - 1);
 		
 		StringBuilder searchKey = new StringBuilder();
 		int i = 0;
 		for (String tier: lastNode.getTiers()) {
-			if (i++ == lastNode.getTiers().size() - 1) {
-				searchKey.append('|');
+			if (designateLastNode && i++ == lastNode.getTiers().size() - 1) {
+				searchKey.append('^');
 			} else {
 				searchKey.append('/');
 			}
@@ -83,13 +110,21 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 		
 		return searchKey.toString();
 	}
-
+	
 	@Override
-	public void addToSolrQuery(SolrQuery solrQuery) {
-		StringBuilder filterQuery = new StringBuilder();
+	public String getDisplayValue() {
+		MultivaluedHierarchicalFacetNode lastNode = (MultivaluedHierarchicalFacetNode) this.facetNodes
+				.get(this.facetNodes.size() - 1);
 		
-		filterQuery.append(this.fieldName).append(":").append(SolrSettings.sanitize(this.getSearchKey())).append(",*");
-		solrQuery.addFilterQuery(filterQuery.toString());
+		return lastNode.getDisplayValue();
 	}
-
+	
+	public String getPivotValue() {
+		return this.getSearchValue(false) + "^";
+	}
+	
+	@Override
+	public Object clone() {
+		return new MultivaluedHierarchicalFacet(this);
+	}
 }

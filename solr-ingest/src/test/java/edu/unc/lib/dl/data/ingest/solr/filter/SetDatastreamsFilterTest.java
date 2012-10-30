@@ -54,8 +54,8 @@ public class SetDatastreamsFilterTest extends Assert {
 		assertEquals(8575798, idb.getFilesizeTotal().longValue());
 
 		assertEquals(2, idb.getContentType().size());
-		assertTrue(idb.getContentType().contains("|image,Image"));
-		assertTrue(idb.getContentType().contains("/image|jpg,jpg"));
+		assertTrue(idb.getContentType().contains("^image,Image"));
+		assertTrue(idb.getContentType().contains("/image^jpg,jpg"));
 
 		assertEquals("DATA_FILE", dip.getDefaultWebData());
 	}
@@ -73,8 +73,8 @@ public class SetDatastreamsFilterTest extends Assert {
 		IndexDocumentBean idb = dip.getDocument();
 
 		assertEquals(2, idb.getContentType().size());
-		assertTrue(idb.getContentType().contains("|image,Image"));
-		assertTrue(idb.getContentType().contains("/image|png,png"));
+		assertTrue(idb.getContentType().contains("^image,Image"));
+		assertTrue(idb.getContentType().contains("/image^png,png"));
 
 		assertEquals("DATA_FILE", dip.getDefaultWebData());
 	}
@@ -115,8 +115,8 @@ public class SetDatastreamsFilterTest extends Assert {
 		assertEquals(17896, idb.getFilesizeTotal().longValue());
 
 		assertEquals(2, idb.getContentType().size());
-		assertTrue(idb.getContentType().contains("|image,Image"));
-		assertTrue(idb.getContentType().contains("/image|jpg,jpg"));
+		assertTrue(idb.getContentType().contains("^image,Image"));
+		assertTrue(idb.getContentType().contains("/image^jpg,jpg"));
 		assertEquals("uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194/DATA_FILE", dip.getDefaultWebData());
 	}
 

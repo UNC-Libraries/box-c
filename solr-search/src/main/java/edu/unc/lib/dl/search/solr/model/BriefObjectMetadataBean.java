@@ -41,14 +41,14 @@ public class BriefObjectMetadataBean extends IndexDocumentBean {
 	private List<MultivaluedHierarchicalFacet> contentTypeFacet;
 	private List<Datastream> datastreamObjects;
 	// Inverted map of the roleGroup, clustering roles into buckets by group
-	Map<String,Collection<String>> groupRoleMap;
+	Map<String, Collection<String>> groupRoleMap;
 	private long childCount;
 
 	public BriefObjectMetadataBean() {
 	}
 
 	// TODO getDefaultWebData getDefaultWebObject getFilesizeByDatastream
-	
+
 	public String getIdWithoutPrefix() {
 		int index = id.indexOf(":");
 		if (index != -1) {
@@ -75,7 +75,8 @@ public class BriefObjectMetadataBean extends IndexDocumentBean {
 	public CutoffFacet getPath() {
 		if (path == null) {
 			if (this.ancestorPath == null) {
-				this.ancestorPathFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH, "1," + this.id + "," + this.title, 0);
+				this.ancestorPathFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH, "1," + this.id + "," + this.title,
+						0L);
 			} else {
 				path = new CutoffFacet(ancestorPathFacet);
 				path.addNode(id, title);
@@ -90,8 +91,9 @@ public class BriefObjectMetadataBean extends IndexDocumentBean {
 
 	@Field
 	public void setContentType(ArrayList<String> contentTypes) {
-		this.contentType = contentTypes;
-		this.contentTypeFacet = MultivaluedHierarchicalFacet.createMultivaluedHierarchicalFacets(SearchFieldKeys.CONTENT_TYPE, contentTypes);
+		super.setContentType(contentTypes);
+		this.contentTypeFacet = MultivaluedHierarchicalFacet.createMultivaluedHierarchicalFacets(
+				SearchFieldKeys.CONTENT_TYPE, contentTypes);
 	}
 
 	public List<Datastream> getDatastreamObjects() {
@@ -100,50 +102,57 @@ public class BriefObjectMetadataBean extends IndexDocumentBean {
 
 	@Field
 	public void setDatastream(List<String> datastream) {
-		ArrayList<Datastream> datastreams = new ArrayList<Datastream>() {
+		super.setDatastream(datastream);
+
+		datastreamObjects = new ArrayList<Datastream>() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
 			public boolean contains(Object o) {
 				if (o instanceof String)
-					return indexOf(new Datastream((String)o)) != -1;
+					return indexOf(new Datastream((String) o)) != -1;
 				return indexOf(o) != -1;
 			}
 		};
-		
+
 		for (String value : datastream) {
-			datastreams.add(new Datastream(value));
+			datastreamObjects.add(new Datastream(value));
 		}
-		this.datastream = datastream;
 	}
-	
+
 	public Datastream getDatastream(String datastreamName) {
 		if (datastream == null || this.datastreamObjects == null)
 			return null;
-		for (Datastream datastream: this.datastreamObjects) {
+		for (Datastream datastream : this.datastreamObjects) {
 			if (datastream.getName().equals(datastreamName))
 				return datastream;
 		}
 		return null;
 	}
-	
+
 	@Override
 	@Field
 	public void setRoleGroup(List<String> roleGroup) {
-		this.setRoleGroup(roleGroup);
-		
-		groupRoleMap = new HashMap<String,Collection<String>>();
-		if (roleGroup != null){
-			for (String roleGroupPair: roleGroup) {
-				String[] roleGroupData = roleGroupPair.split("\\\\|");
-				Collection<String> roles = groupRoleMap.get(roleGroupData[1]);
-				if (roles == null) {
-					roles = new ArrayList<String>();
-					groupRoleMap.put(roleGroupData[1], roles);
+		super.setRoleGroup(roleGroup);
+
+		groupRoleMap = new HashMap<String, Collection<String>>();
+		if (roleGroup != null) {
+			for (String roleGroupPair : roleGroup) {
+				String[] roleGroupData = roleGroupPair.split("\\|");
+				if (roleGroupData.length == 2) {
+					Collection<String> roles = groupRoleMap.get(roleGroupData[1]);
+					if (roles == null) {
+						roles = new ArrayList<String>();
+						groupRoleMap.put(roleGroupData[1], roles);
+					}
+					roles.add(roleGroupData[0]);
 				}
-				roles.add(roleGroupData[0]);
 			}
 		}
+	}
+
+	public Map<String, Collection<String>> getGroupRoleMap() {
+		return groupRoleMap;
 	}
 
 	public String toString() {
@@ -169,19 +178,10 @@ public class BriefObjectMetadataBean extends IndexDocumentBean {
 		return sb.toString();
 	}
 
-	public String getParentCollection() {
-		return parentCollection;
-	}
-
-	@Field
-	public void setParentCollection(String parentCollection) {
-		this.parentCollection = parentCollection;
-	}
-	
 	public CutoffFacetNode getParentCollectionObject() {
-		if (ancestorPath == null || parentCollection == null)
+		if (ancestorPathFacet == null || parentCollection == null)
 			return null;
-		return (CutoffFacetNode)this.ancestorPathFacet.getNode(this.parentCollection);
+		return (CutoffFacetNode) this.ancestorPathFacet.getNode(this.parentCollection);
 	}
 
 	public long getChildCount() {

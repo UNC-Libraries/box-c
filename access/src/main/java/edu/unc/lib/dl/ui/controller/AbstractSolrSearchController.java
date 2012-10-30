@@ -49,6 +49,8 @@ public abstract class AbstractSolrSearchController extends CDRBaseController {
 	protected SearchActionService searchActionService;
 	@Autowired
 	protected SearchSettings searchSettings;
+	@Autowired
+	protected SearchStateFactory searchStateFactory;
 	
 	protected SearchRequest generateSearchRequest(HttpServletRequest request){
 		return this.generateSearchRequest(request, null, new SearchRequest());
@@ -80,13 +82,13 @@ public abstract class AbstractSolrSearchController extends CDRBaseController {
 			searchState = (SearchState)session.getAttribute("searchState");
 			if (searchState == null){
 				if (searchRequest != null && searchRequest instanceof HierarchicalBrowseRequest){
-					searchState = SearchStateFactory.createHierarchicalBrowseSearchState(request.getParameterMap());
+					searchState = searchStateFactory.createHierarchicalBrowseSearchState(request.getParameterMap());
 				} else {
 					String resourceTypes = request.getParameter(searchSettings.searchStateParam("RESOURCE_TYPES"));
 					if (resourceTypes == null || resourceTypes.contains(searchSettings.resourceTypeFile)){
-						searchState = SearchStateFactory.createSearchState(request.getParameterMap());
+						searchState = searchStateFactory.createSearchState(request.getParameterMap());
 					} else {
-						searchState = SearchStateFactory.createCollectionBrowseSearchState(request.getParameterMap());
+						searchState = searchStateFactory.createCollectionBrowseSearchState(request.getParameterMap());
 					}
 				}
 			} else {
@@ -131,5 +133,9 @@ public abstract class AbstractSolrSearchController extends CDRBaseController {
 
 	public void setQueryLayer(SolrQueryLayerService queryLayer) {
 		this.queryLayer = queryLayer;
+	}
+
+	public void setSearchStateFactory(SearchStateFactory searchStateFactory) {
+		this.searchStateFactory = searchStateFactory;
 	}
 }

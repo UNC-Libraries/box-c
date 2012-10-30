@@ -57,7 +57,7 @@
 			<c:choose>
 				<c:when test="${cdr:contains(metadata.datastream, 'THUMB_SMALL')}">
 					<div class="smallthumb_container">
-						<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_${metadata.contentType.searchKey}" 
+						<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_${metadata.contentTypeFacet[0].searchKey}" 
 								src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
 					</div>
 				</c:when>
@@ -74,7 +74,7 @@
 										src="/static/images/collections/${metadata.idWithoutPrefix}.jpg" style="height: 64px; width: 64px;"/>
 							</div>
 						</c:when>
-						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentType.searchKey}">
+						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentTypeFacet[0].searchKey}">
 							<div class="smallthumb_container">
 								<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
 							</div>
@@ -82,7 +82,7 @@
 						<c:otherwise>
 							<div class="smallthumb_container">
 								<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_default" 
-										src="/static/images/placeholder/small/${metadata.contentType.searchKey}.png"/>
+										src="/static/images/placeholder/small/${metadata.contentTypeFacet[0].searchKey}.png"/>
 							</div>
 						</c:otherwise>
 					</c:choose>
@@ -150,7 +150,7 @@
 							<c:url var="parentUrl" scope="page" value="record">
 								<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.parentCollection}"/>
 							</c:url>
-							${searchSettings.searchFieldLabels[searchFieldKeys.PARENT_COLLECTION]}: <a href="<c:out value='${parentUrl}' />"><c:out value="${metadata.parentCollectionName}"/></a>
+							${searchSettings.searchFieldLabels[searchFieldKeys.PARENT_COLLECTION]}: <a href="<c:out value='${parentUrl}' />"><c:out value="${metadata.parentCollectionObject.displayValue}"/></a>
 						</p>
 					</div>
 					<div class="halfwidth">
@@ -219,9 +219,9 @@
 						</c:when>
 					</c:choose>
 					
-					<c:if test="${metadata.resourceType == searchSettings.resourceTypeFile || (metadata.resourceType == searchSettings.resourceTypeAggregate && not empty metadata.contentType)}">
+					<c:if test="${metadata.resourceType == searchSettings.resourceTypeFile || (metadata.resourceType == searchSettings.resourceTypeAggregate && not empty metadata.contentTypeFacet)}">
 						<p class="right">
-							<c:out value="${metadata.contentType.highestTierDisplayValue}"/>
+							<c:out value="${metadata.contentTypeFacet[0].displayValue}"/>
 							<c:if test="${not empty metadata.filesizeSort}">
 								&nbsp;(<c:out value="${cdr:formatFilesize(metadata.filesizeSort, 1)}"/>)
 							</c:if>
@@ -230,12 +230,7 @@
 					
 					<c:choose>
 						<c:when test="${cdr:contains(metadata.readGroup, accessGroupConstants.PUBLIC_GROUP)}">
-							<c:if test="${!cdr:hasAccess(metadata.groupRoleMap[accessGroupConstants.PUBLIC_GROUP], "SURROGATE") 
-										|| !cdr:contains(metadata.fileAccess, accessGroupConstants.PUBLIC_GROUP)}">
-								<p class="right">
-									Limited Access
-								</p>
-							</c:if>
+							
 						</c:when>
 						<c:otherwise>
 							<p class="right">
