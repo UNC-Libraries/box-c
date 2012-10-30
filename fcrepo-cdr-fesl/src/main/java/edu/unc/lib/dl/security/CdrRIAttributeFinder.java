@@ -42,17 +42,25 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	private static Set<String> myAttributes = new HashSet<String>();
 
 	static {
-		myAttributes.add(ContentModelHelper.CDRProperty.curator.getURI()
+		myAttributes.add(ContentModelHelper.UserRole.curator.getURI()
 				.toString());
 		myAttributes.add(ContentModelHelper.CDRProperty.embargo.getURI()
 				.toString());
-		myAttributes.add(ContentModelHelper.CDRProperty.ingester.getURI()
+		myAttributes.add(ContentModelHelper.UserRole.ingester.getURI()
 				.toString());
-		myAttributes.add(ContentModelHelper.CDRProperty.observer.getURI()
+		myAttributes.add(ContentModelHelper.UserRole.observer.getURI()
 				.toString());
-		myAttributes.add(ContentModelHelper.CDRProperty.patron.getURI()
+		myAttributes.add(ContentModelHelper.UserRole.patron.getURI()
 				.toString());
-		myAttributes.add(ContentModelHelper.CDRProperty.processor.getURI()
+		myAttributes.add(ContentModelHelper.UserRole.metadataPatron.getURI()
+				.toString());
+		myAttributes.add(ContentModelHelper.UserRole.accessCopiesPatron.getURI()
+				.toString());
+		myAttributes.add(ContentModelHelper.UserRole.processor.getURI()
+				.toString());
+		myAttributes.add(ContentModelHelper.CDRProperty.embargo.getURI()
+				.toString());
+		myAttributes.add(ContentModelHelper.CDRProperty.dataAccessCategory.getURI()
 				.toString());
 	}
 
@@ -94,8 +102,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	 * @param context
 	 *            the representation of the request data
 	 * @param designatorType
-	 *            the type of designator, which must be ENVIRONMENT_TARGET for
-	 *            this module to resolve a value
+	 *            the type of designator
 	 * @return the result of attribute retrieval, which will be a bag with a
 	 *         single attribute, an empty bag, or an error
 	 */
@@ -200,7 +207,8 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 
 		logger.debug("Getting attribute " + attribute + " for resource " + pid);
 
-			Set<String> groups = accessControlUtils.getGroupsInRole(new PID(pid), attribute);
+		// also compute list permission
+		Set<String> groups = accessControlUtils.getGroupsInRole(new PID(pid), attribute);
 
 		if (groups == null || groups.isEmpty()) {
 			return new EvaluationResult(BagAttribute.createEmptyBag(type));

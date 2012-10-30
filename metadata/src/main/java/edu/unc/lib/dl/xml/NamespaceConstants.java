@@ -226,6 +226,10 @@ public final class NamespaceConstants {
 
     public static final String CDR_MESSAGE_AUTHOR_URI = "http://cdr.lib.unc.edu/schema/message#author";
 
+	public static final String CDR_ROLES_PREFIX = "cdr-role";
+
+	public static final String CDR_ROLE_NS_URI = "http://cdr.unc.edu/definitions/roles#";
+
     // Prevent instantiation.
     private NamespaceConstants() {
     }

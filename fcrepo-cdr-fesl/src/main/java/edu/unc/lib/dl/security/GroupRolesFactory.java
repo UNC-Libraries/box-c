@@ -40,11 +40,11 @@ public class GroupRolesFactory {
 	 * @param pid
 	 * @return the set of all the roles
 	 * */
-	public Set<String> getGroupsInRole(String pid, String role) throws ObjectNotFoundException {
-		if(!pids2Roles2Groups.containsKey(pid)) {
-			updateCache(pid);
+	public Set<String> getGroupsInRole(PID pid, String role) throws ObjectNotFoundException {
+		if(!pids2Roles2Groups.containsKey(pid.getPid())) {
+			updateCache(pid.getPid());
 		}
-		Map<String, Set<String>> roles2Groups = pids2Roles2Groups.get(pid);
+		Map<String, Set<String>> roles2Groups = pids2Roles2Groups.get(pid.getPid());
 		if(roles2Groups != null) {
 			return roles2Groups.get(role);
 		} else {
@@ -57,11 +57,11 @@ public class GroupRolesFactory {
 	 * @param pid
 	 * @return the map of all roles and groups assigned
 	 * */
-	public Map<String, Set<String>> getAllRolesAndGroups(String pid) throws ObjectNotFoundException {
-		if(!pids2Roles2Groups.containsKey(pid)) {
-			updateCache(pid);
+	public Map<String, Set<String>> getAllRolesAndGroups(PID pid) throws ObjectNotFoundException {
+		if(!pids2Roles2Groups.containsKey(pid.getPid())) {
+			updateCache(pid.getPid());
 		}
-		Map<String, Set<String>> roles2Groups = pids2Roles2Groups.get(pid);
+		Map<String, Set<String>> roles2Groups = pids2Roles2Groups.get(pid.getPid());
 		if(roles2Groups != null) {
 			return roles2Groups;
 		} else {
@@ -73,8 +73,8 @@ public class GroupRolesFactory {
 	 * Destroy the cached pointers to a parent when it is edited.
 	 * @param pid
 	 */
-	public void invalidate(String pid) {
-		pids2Roles2Groups.remove(pid);
+	public void invalidate(PID pid) {
+		pids2Roles2Groups.remove(pid.getPid());
 	}
 
 	private void updateCache(String pid) throws ObjectNotFoundException {

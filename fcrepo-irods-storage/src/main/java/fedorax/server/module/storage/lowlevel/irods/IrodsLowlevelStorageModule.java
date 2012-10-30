@@ -71,6 +71,8 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 	public static final String OBJECT_REGISTRY_TABLE = "objectPaths";
 
 	public static final String DATASTREAM_REGISTRY_TABLE = "datastreamPaths";
+	
+	public static final String STORAGE_LEVEL_HINT = "storage level"; 
 
 	public enum Parameter {
 		REGISTRY_NAME("registryName"), OBJECT_REGISTRY_TABLE("objectPaths"), DATASTREAM_REGISTRY_TABLE("datastreamPaths"), OBJECT_STORE_BASE(
@@ -227,12 +229,12 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 		return parameterValue;
 	}
 
-	public void addObject(String pid, InputStream content) throws LowlevelStorageException {
-		objectStore.add(pid, content);
+	public void addObject(String pid, InputStream content, Map<String, String> hints) throws LowlevelStorageException {
+		objectStore.add(pid, content, hints);
 	}
 
-	public void replaceObject(String pid, InputStream content) throws LowlevelStorageException {
-		objectStore.replace(pid, content);
+	public void replaceObject(String pid, InputStream content, Map<String, String> hints) throws LowlevelStorageException {
+		objectStore.replace(pid, content, hints);
 	}
 
 	public InputStream retrieveObject(String pid) throws LowlevelStorageException {
@@ -251,12 +253,12 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 		objectStore.audit();
 	}
 
-	public long addDatastream(String pid, InputStream content) throws LowlevelStorageException {
-		return datastreamStore.add(pid, content);
+	public long addDatastream(String pid, InputStream content, Map<String, String> hints) throws LowlevelStorageException {
+		return datastreamStore.add(pid, content, hints);
 	}
 
-	public long replaceDatastream(String pid, InputStream content) throws LowlevelStorageException {
-		return datastreamStore.replace(pid, content);
+	public long replaceDatastream(String pid, InputStream content, Map<String, String> hints) throws LowlevelStorageException {
+		return datastreamStore.replace(pid, content, hints);
 	}
 
 	public InputStream retrieveDatastream(String pid) throws LowlevelStorageException {

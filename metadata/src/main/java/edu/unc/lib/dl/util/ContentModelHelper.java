@@ -56,11 +56,7 @@ public class ContentModelHelper {
 				"depositMethod"), depositPackageType("depositPackageType"), depositPackageSubType("depositPackageSubType"), 
 				inheritPermissions("inheritPermissions", "http://cdr.unc.edu/definitions/acl#"), embargo("embargo",
 				"http://cdr.unc.edu/definitions/acl#"),
-				patron("patron", "http://cdr.unc.edu/definitions/roles#"),
-				observer("observer", "http://cdr.unc.edu/definitions/roles#"),
-				ingester("ingester", "http://cdr.unc.edu/definitions/roles#"),
-				processor("processor", "http://cdr.unc.edu/definitions/roles#"),
-				curator("curator", "http://cdr.unc.edu/definitions/roles#");
+				dataAccessCategory("data-access-category", "http://cdr.unc.edu/definitions/acl#");
 		private URI uri;
 		private String predicate;
 
@@ -88,6 +84,60 @@ public class ContentModelHelper {
 
 		public URI getURI() {
 			return this.uri;
+		}
+
+		public String getPredicate() {
+			return predicate;
+		}
+
+		public boolean equals(String value){
+			return this.uri.toString().equals(value);
+		}
+
+		@Override
+		public String toString() {
+			return this.uri.toString();
+		}
+	}
+	
+	/**
+	 * These are the properties that the repository manages in the rels-ext datastream.
+	 *
+	 * @author count0
+	 *
+	 */
+	public static enum UserRole {
+		patron("patron", new Permission[] {}),
+		observer("observer", new Permission[] {Permission.viewUserUI}),
+		ingester("ingester", new Permission[] {Permission.viewUserUI, Permission.addRemoveContents, Permission.editDescription}),
+		processor("processor", new Permission[] {Permission.viewUserUI, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash}),
+		curator("curator", new Permission[] {Permission.viewUserUI, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl}),
+		administrator("administrator", new Permission[] {Permission.viewUserUI, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl, Permission.purgeForever}),
+		list("list", new Permission[] {}),
+		accessCopiesPatron("access-copies-patron", new Permission[] {}),
+		metadataPatron("metadata-patron", new Permission[] {});
+		private URI uri;
+		private String predicate;
+		private Permission[] permissions;
+
+		UserRole(String predicate, Permission[] perms) {
+			try {
+				this.predicate = predicate;
+				this.uri = new URI(JDOMNamespaceUtil.CDR_ROLE_NS.getURI() + predicate);
+				this.permissions = perms;
+			} catch (URISyntaxException e) {
+				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
+				x.initCause(e);
+				throw x;
+			}
+		}
+
+		public URI getURI() {
+			return this.uri;
+		}
+		
+		public Permission[] getPermissions() {
+			return permissions;
 		}
 
 		public String getPredicate() {
@@ -301,7 +351,12 @@ public class ContentModelHelper {
 	}
 	
 	public static enum AccessType {
-		ORIGINAL, METADATA, DERIVATIVE 
+		ORIGINAL, METADATA, DERIVATIVE
+	}
+	
+	public enum Permission {
+		viewUserUI, addRemoveContents, publish, editDescription, editAccessControl, moveToTrash, purgeForever;
+		private Permission() {}
 	}
 
 	public static enum Datastream {

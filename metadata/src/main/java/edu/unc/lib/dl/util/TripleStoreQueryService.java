@@ -212,11 +212,20 @@ public interface TripleStoreQueryService {
 	public abstract List<PathInfo> lookupRepositoryPathInfo(PID key);
 
 	/**
-	 * Gathers PID of each step in the repository container structure.
+	 * Gathers PID of each step in the repository container structure and whether each inherits.
 	 *
 	 * @param pid
 	 *           the pid for the object of interest
 	 * @return an ordered list of PID objects starting from the REPOSITORY object.
+	 */
+	public abstract List<ParentBond> lookupRepositoryAncestorInheritance(PID pid);
+	
+	/**
+	 * Gathers each parent container in turn along with whether or not roles are inherited.
+	 *
+	 * @param pid
+	 *           the pid for the object of interest
+	 * @return an ordered list of parent bond objects starting the immediate parent.
 	 */
 	public abstract List<PID> lookupRepositoryAncestorPids(PID pid);
 
@@ -249,6 +258,13 @@ public interface TripleStoreQueryService {
 	 * @return a map keyed by permission property with values including the set of subjects with that permission.
 	 */
 	public abstract Set<String[]> lookupGroupRoles(PID pid);
+	
+	/**
+	 * Returns all the embargoes still active by pid.
+	 *
+	 * @return a map keyed by PID with values of embargo date.
+	 */
+	public abstract Map<PID, String> fetchActiveEmbargoes();
 
 	/**
 	 * Builds a list of all the containers above this one, starting with the REPOSITORY container and ending with the
