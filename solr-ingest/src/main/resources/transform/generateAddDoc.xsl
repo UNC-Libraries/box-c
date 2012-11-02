@@ -54,14 +54,14 @@
 		<xsl:variable name="dateTrim" select="normalize-space($dateNode)"/>
 		<xsl:variable name="formattedDate">
 			<xsl:choose>
-				<xsl:when test="$dateNode/@encoding = 'iso8601'">
+				<xsl:when test="$dateNode/@encoding = 'iso8601' or not(boolean($dateNode/@encoding))">
 					<xsl:choose>
 						<xsl:when test="string-length($dateTrim) = 4"><xsl:value-of select="$dateTrim"/>-01-01T00:00:00Z</xsl:when>
 						<xsl:when test="contains($dateTrim, '-')">
 							<xsl:choose>
 								<xsl:when test="string-length($dateTrim) = 7"><xsl:value-of select="substring($dateTrim, 1, 4)"/>-<xsl:value-of select="substring($dateTrim, 6, 2)"/>-01T00:00:00Z</xsl:when>
-								<xsl:when test="string-length($dateTrim) = 9"><xsl:value-of select="substring($dateTrim, 1, 4)"/>-<xsl:value-of select="substring($dateTrim, 6, 2)"/>-<xsl:value-of select="substring($dateTrim, 9, 2)"/>T00:00:00Z</xsl:when>
-								<xsl:when test="string-length($dateTrim) > 9"><xsl:value-of select="$dateTrim"/></xsl:when>
+								<xsl:when test="string-length($dateTrim) = 10"><xsl:value-of select="substring($dateTrim, 1, 4)"/>-<xsl:value-of select="substring($dateTrim, 6, 2)"/>-<xsl:value-of select="substring($dateTrim, 9, 2)"/>T00:00:00Z</xsl:when>
+								<xsl:when test="string-length($dateTrim) > 10"><xsl:value-of select="$dateTrim"/></xsl:when>
 							</xsl:choose>
 						</xsl:when>
 						<xsl:otherwise>
@@ -75,31 +75,6 @@
 			</xsl:choose>
 		</xsl:variable>
 		<xsl:if test="matches($formattedDate, '\d{2}\-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z')"><xsl:value-of select="$formattedDate"/></xsl:if>
-	</xsl:template>
-	
-	<xsl:template match="mods:originInfo">
-		<xsl:variable name="formattedDate">
-			<xsl:choose>
-				<xsl:when test="boolean(mods:dateCreated)">
-					<xsl:call-template name="formatDate">
-						<xsl:with-param name="dateNode" select="mods:dateCreated" />
-					</xsl:call-template>
-				</xsl:when>
-				<xsl:when test="boolean(mods:dateIssued)">
-					<xsl:call-template name="formatDate">
-						<xsl:with-param name="dateNode" select="mods:dateIssued" />
-					</xsl:call-template>
-				</xsl:when>
-				<xsl:when test="boolean(mods:dateCaptured)">
-					<xsl:call-template name="formatDate">
-						<xsl:with-param name="dateNode" select="mods:dateCaptured" />
-					</xsl:call-template>
-				</xsl:when>
-			</xsl:choose>
-		</xsl:variable>
-		<xsl:if test="$formattedDate != ''">
-			<field name="dateCreated"><xsl:value-of select="$formattedDate"/></field>
-		</xsl:if>
 	</xsl:template>
 	
 	<xsl:template match="mods:name/mods:affiliation" mode="exact">
@@ -214,7 +189,28 @@
 		<xsl:apply-templates select="mods:language/mods:languageTerm"/>
 
 		<!-- Get date created -->
-		<xsl:apply-templates select="mods:originInfo"/>
+		<xsl:variable name="formattedDate">
+			<xsl:choose>
+				<xsl:when test="boolean(mods:originInfo/mods:dateCreated)">
+					<xsl:call-template name="formatDate">
+						<xsl:with-param name="dateNode" select="mods:originInfo/mods:dateCreated" />
+					</xsl:call-template>
+				</xsl:when>
+				<xsl:when test="boolean(mods:originInfo/mods:dateIssued)">
+					<xsl:call-template name="formatDate">
+						<xsl:with-param name="dateNode" select="mods:originInfo/mods:dateIssued" />
+					</xsl:call-template>
+				</xsl:when>
+				<xsl:when test="boolean(mods:originInfo/mods:dateCaptured)">
+					<xsl:call-template name="formatDate">
+						<xsl:with-param name="dateNode" select="mods:originInfo/mods:dateCaptured" />
+					</xsl:call-template>
+				</xsl:when>
+			</xsl:choose>
+		</xsl:variable>
+		<xsl:if test="$formattedDate != ''">
+			<field name="dateCreated"><xsl:value-of select="$formattedDate"/></field>
+		</xsl:if>
 		
 		<!-- Get keywords -->
 		<xsl:apply-templates select="mods:typeOfResource"/>

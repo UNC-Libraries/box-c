@@ -72,6 +72,9 @@ Abstract Background Accurate and sensitive performance evaluation is crucial for
 </mods:language>
 <mods:typeOfResource>text</mods:typeOfResource>
 <mods:genre authorityURI="http://purl.org/eprint/type/" valueURI="http://purl.org/eprint/type/JournalArticle" type="work type">Journal Article</mods:genre>
+  <mods:originInfo>
+    <mods:dateCreated encoding="iso8601">2012</mods:dateCreated>
+  </mods:originInfo>
 <mods:originInfo>
 <mods:publisher>BioMed Central Ltd</mods:publisher>
 <mods:dateIssued>2007-08-28</mods:dateIssued>
