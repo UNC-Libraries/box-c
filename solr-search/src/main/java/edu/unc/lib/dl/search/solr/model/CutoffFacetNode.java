@@ -60,7 +60,18 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
 		return tier;
 	}
 
+	@Override
 	public String getSearchValue() {
 		return searchValue;
+	}
+	
+	@Override
+	public String getPivotValue() {
+		return (this.tier + 1) + ",";
+	}
+	
+	@Override
+	public String getLimitToValue() {
+		return getSearchValue() + "," + (this.tier + 1); 
 	}
 }

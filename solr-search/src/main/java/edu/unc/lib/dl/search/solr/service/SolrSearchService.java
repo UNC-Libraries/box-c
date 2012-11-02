@@ -228,6 +228,29 @@ public class SolrSearchService {
 		solrQuery.addFacetField(solrFieldName);
 		solrQuery.setFacetPrefix(solrFieldName, facet.getSearchValue());
 		//facetFieldUtil.addToSolrQuery(facet, solrQuery);
+		
+		
+		try {
+			int requestTier = Integer.parseInt(searchValue.substring(0, searchValue.indexOf(searchSettings.facetSubfieldDelimiter)));
+			ArrayList<HierarchicalFacet.HierarchicalFacetTier> tiers = new ArrayList<HierarchicalFacet.HierarchicalFacetTier>();
+			FacetField facetField = queryResponse.getFacetField(solrSettings.getFieldName(fieldKey));
+			for (FacetField.Count facet: facetField.getValues()){
+				String[] facetComponents = facet.getName().split(searchSettings.facetSubfieldDelimiter);
+				try {
+					int responseTier = Integer.parseInt(facetComponents[0]);
+					if (responseTier <= requestTier){
+						tiers.add(new HierarchicalFacet.HierarchicalFacetTier(responseTier, facetComponents[1], facetComponents[2]));
+					}
+				} catch (java.lang.NumberFormatException e){
+					LOG.error("Error parsing hierarchical facet strings:\n" + e);
+				}
+			}
+			if (facetField.getValueCount() > 0){
+				return new HierarchicalFacet(fieldKey, tiers, 0);
+			}
+		} catch (Exception e){
+			
+		}
 
 		LOG.debug("getHierarchicalFacet query: " + solrQuery.toString());
 		try {

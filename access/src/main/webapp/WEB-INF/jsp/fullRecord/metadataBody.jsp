@@ -21,7 +21,7 @@
 <div class="metadata">
 	<table>		
 		<c:set var="searchStateUrl" scope="request" value=""/>
-		<c:set var="facetTiers" scope="request" value="${briefObject.path.facetTiers}"/>
+		<c:set var="facetNodes" scope="request" value="${briefObject.path.facetNodes}"/>
 		<tr>
 			<th>${searchSettings.searchFieldLabels[searchFieldKeys.ANCESTOR_PATH]}</th>
 			<td>

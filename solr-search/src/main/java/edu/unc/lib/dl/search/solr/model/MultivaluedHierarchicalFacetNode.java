@@ -12,6 +12,8 @@ public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
 	private String displayValue;
 	private String searchKey;
 	private String facetValue;
+	private String searchValue;
+	private String pivotValue;
 	private List<String> tiers;
 
 	public MultivaluedHierarchicalFacetNode(String facetValue) {
@@ -63,5 +65,39 @@ public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
 
 	public List<String> getTiers() {
 		return tiers;
+	}
+	
+	private String joinTiers(boolean designateLastNode) {
+		StringBuilder joined = new StringBuilder();
+		int i = 0;
+		for (String tier: tiers) {
+			if (designateLastNode && i++ == tiers.size() - 1) {
+				joined.append('^');
+			} else {
+				joined.append('/');
+			}
+			joined.append(tier);
+		}
+		
+		return joined.toString();
+	}
+	
+	@Override
+	public String getSearchValue() {
+		if (searchValue == null)
+			this.searchValue = joinTiers(true);
+		return this.searchValue;
+	}
+	
+	@Override
+	public String getPivotValue() {
+		if (pivotValue == null)
+			this.pivotValue = joinTiers(false) + "^";
+		return this.pivotValue;
+	}
+	
+	@Override
+	public String getLimitToValue() { 
+		return getSearchValue();
 	}
 }

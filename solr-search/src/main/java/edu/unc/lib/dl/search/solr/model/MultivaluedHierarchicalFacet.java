@@ -5,13 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 	private static final Logger log = LoggerFactory.getLogger(MultivaluedHierarchicalFacet.class);
@@ -79,48 +77,29 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 			}
 		}
 	}
+	
+	private MultivaluedHierarchicalFacetNode getLastNode() {
+		return (MultivaluedHierarchicalFacetNode) this.facetNodes
+				.get(this.facetNodes.size() - 1);
+	}
 
 	@Override
 	public String getSearchKey() {
-		MultivaluedHierarchicalFacetNode lastNode = (MultivaluedHierarchicalFacetNode) this.facetNodes
-				.get(this.facetNodes.size() - 1);
-		
-		return lastNode.getSearchKey();
+		return getLastNode().getSearchKey();
 	}
 	
 	@Override
 	public String getSearchValue() {
-		return this.getSearchValue(true);
-	}
-	
-	public String getSearchValue(boolean designateLastNode) {
-		MultivaluedHierarchicalFacetNode lastNode = (MultivaluedHierarchicalFacetNode) this.facetNodes
-				.get(this.facetNodes.size() - 1);
-		
-		StringBuilder searchKey = new StringBuilder();
-		int i = 0;
-		for (String tier: lastNode.getTiers()) {
-			if (designateLastNode && i++ == lastNode.getTiers().size() - 1) {
-				searchKey.append('^');
-			} else {
-				searchKey.append('/');
-			}
-			searchKey.append(tier);
-		}
-		
-		return searchKey.toString();
+		return getLastNode().getSearchValue();
 	}
 	
 	@Override
 	public String getDisplayValue() {
-		MultivaluedHierarchicalFacetNode lastNode = (MultivaluedHierarchicalFacetNode) this.facetNodes
-				.get(this.facetNodes.size() - 1);
-		
-		return lastNode.getDisplayValue();
+		return getLastNode().getDisplayValue();
 	}
 	
 	public String getPivotValue() {
-		return this.getSearchValue(false) + "^";
+		return getLastNode().getPivotValue();
 	}
 	
 	@Override

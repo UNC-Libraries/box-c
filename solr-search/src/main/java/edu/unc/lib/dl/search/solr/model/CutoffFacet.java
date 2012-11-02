@@ -137,7 +137,10 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 	
 	@Override
 	public String getPivotValue() {
-		return (this.getHighestTier() + 1) + ",";
+		CutoffFacetNode lastNode = this.getHighestTierNode();
+		if (lastNode == null)
+			return null;
+		return lastNode.getPivotValue();
 	}
 
 	public Integer getCutoff() {

@@ -81,7 +81,7 @@ public class SwordDepositHandler implements DepositHandler {
 	 * @see cdr.forms.DepositHandler#deposit(java.lang.String, java.lang.String, java.io.InputStream)
 	 */
 	@Override
-	public DepositResult deposit(String containerPid, String modsXml, String title, File depositData) {
+	public DepositResult deposit(String containerPid, String modsXml, String title, File depositData, String mimetype) {
       Abdera abdera = Abdera.getInstance();
       Factory factory = abdera.getFactory();
       Entry entry = factory.newEntry();
@@ -107,7 +107,9 @@ public class SwordDepositHandler implements DepositHandler {
 		} catch (FileNotFoundException e1) {
 			throw new Error(e1);
 		}
-		payloadPart.setContentType("binary/octet-stream");
+		if (mimetype == null)
+			payloadPart.setContentType("binary/octet-stream");
+		else payloadPart.setContentType(mimetype);
 		payloadPart.setTransferEncoding("binary");
 		
 		FilePart atomPart = new FilePart("atom", 

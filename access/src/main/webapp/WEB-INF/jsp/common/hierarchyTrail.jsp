@@ -41,27 +41,27 @@
 		</c:url>
 		<a href="<c:out value="${shiftFacetUrl}"/>">Home</a>
 	</c:if>
-	<c:forEach items="${facetTiers}" var="facetTier" varStatus="status">
+	<c:forEach items="${facetNodes}" var="facetNode" varStatus="status">
 		<c:if test="${!status.first || param.displayHome}">
 			&gt; 
 		</c:if>
 		<c:choose>
 			<c:when test="${status.last && param.linkLast != true}">
-				<c:out value="${facetTier.displayValue}" />
+				<c:out value="${facetNode.displayValue}" />
 			</c:when>
 			<c:otherwise>
 				<c:url var="shiftFacetUrl" scope="page" value='${shiftFacetUrlBase}'>
 					<c:choose>
 						<c:when test="${param.limitToContainer == true}">
-							<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${fieldName},"${facetTier.identifier},${facetTier.tier + 1}"'/>
+							<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${fieldName},"${facetNode.limitToValue}"'/>
 						</c:when>
 						<c:otherwise>
-							<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${fieldName},"${facetTier.identifier}"'/>
+							<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${fieldName},"${facetNode.searchValue}"'/>
 						</c:otherwise>
 					</c:choose>
 					
 				</c:url>
-				<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${facetTier.displayValue}" /></a>
+				<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${facetNode.displayValue}" /></a>
 			</c:otherwise>
 		</c:choose>
 	</c:forEach>
