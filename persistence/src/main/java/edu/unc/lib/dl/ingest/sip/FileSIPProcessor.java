@@ -27,6 +27,7 @@ import org.jdom.Element;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.ingest.aip.AIPImpl;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.aip.RDFAwareAIPImpl;
@@ -68,7 +69,7 @@ public abstract class FileSIPProcessor implements SIPProcessor {
 		return new AIPImpl(batchPrepDir, record);
 	}
 
-	protected void setDataFile(PID pid, FileSIP sip, Document foxml, RDFAwareAIPImpl rdfaip) throws IngestException {
+	protected void setDataFile(PID pid, FileSIP sip, Document foxml, ArchivalInformationPackage aip) throws IngestException {
 		if (sip.getData() == null)
 			return;
 		Element locator = null;
@@ -84,7 +85,7 @@ public abstract class FileSIPProcessor implements SIPProcessor {
 					throw new IngestException(msg);
 				}
 				String msg = "Externally supplied checksum verified for data file.";
-				rdfaip.getEventLogger().logEvent(PremisEventLogger.Type.VALIDATION, msg, pid, "DATA_FILE");
+				aip.getEventLogger().logEvent(PremisEventLogger.Type.VALIDATION, msg, pid, "DATA_FILE");
 			} catch (IOException e) {
 				throw new IngestException("Checksum processor failed to find data file.");
 			}

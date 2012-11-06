@@ -133,6 +133,7 @@ public class AtomPubEntrySIPProcessor extends FileSIPProcessor {
 			}
 		}
 		
+		this.setDataFile(pid, sip, foxml, aip);
 		aip.saveFOXMLDocument(pid, foxml);
 
 		// MAKE RDF AWARE AIP
@@ -145,8 +146,9 @@ public class AtomPubEntrySIPProcessor extends FileSIPProcessor {
 		
 		this.assignFileTriples(pid, sip, record, foxml, label, rdfaip);
 		
-		this.setDataFile(pid, sip, foxml, rdfaip);
-		
+		//this.setDataFile(pid, sip, foxml, rdfaip);
+	
+		//rdfaip.saveFOXMLDocument(pid, foxml);	
 		return rdfaip;
 	}
 }
