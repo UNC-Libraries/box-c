@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ingest.sip;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Map.Entry;
 
 import javax.xml.transform.TransformerException;
@@ -24,6 +26,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
@@ -40,6 +44,12 @@ import edu.unc.lib.dl.xml.ModsXmlHelper;
 
 public class AtomPubEntrySIPProcessor extends FileSIPProcessor {
 	private static final Log log = LogFactory.getLog(AtomPubEntrySIPProcessor.class);
+	
+	private XMLOutputter outputter; 
+	
+	public AtomPubEntrySIPProcessor() {
+		outputter = new XMLOutputter();
+	}
 
 	@Override
 	public ArchivalInformationPackage createAIP(SubmissionInformationPackage genericSIP, DepositRecord record)
@@ -82,7 +92,7 @@ public class AtomPubEntrySIPProcessor extends FileSIPProcessor {
 
 			// Set the rdf:about attribute so the triples have the correct subject
 			Element relsEXT = sip.getMetadataStreams().get(Datastream.RELS_EXT.getName());
-			if (relsEXT != null) {
+			if (relsEXT != null && relsEXT.getAttribute("about", JDOMNamespaceUtil.RDF_NS) == null) {
 				Element descriptionElement = relsEXT.getChild("Description", JDOMNamespaceUtil.RDF_NS);
 				Attribute aboutAttribute = new Attribute("about", pid.getURI(), JDOMNamespaceUtil.RDF_NS);
 				descriptionElement.setAttribute(aboutAttribute);
@@ -108,6 +118,9 @@ public class AtomPubEntrySIPProcessor extends FileSIPProcessor {
 							foxml.addContent(managedElement);
 							break;
 						}
+						default:
+							log.debug("Ignoring " + datastream.getControlGroup().name() + " datastream " + datastream.getName());
+							break;
 					}
 				}
 			}
@@ -119,6 +132,8 @@ public class AtomPubEntrySIPProcessor extends FileSIPProcessor {
 				label = sip.getFileLabel();
 			}
 		}
+		
+		aip.saveFOXMLDocument(pid, foxml);
 
 		// MAKE RDF AWARE AIP
 		RDFAwareAIPImpl rdfaip = null;
@@ -131,8 +146,6 @@ public class AtomPubEntrySIPProcessor extends FileSIPProcessor {
 		this.assignFileTriples(pid, sip, record, foxml, label, rdfaip);
 		
 		this.setDataFile(pid, sip, foxml, rdfaip);
-		
-		rdfaip.saveFOXMLDocument(pid, foxml);
 		
 		return rdfaip;
 	}

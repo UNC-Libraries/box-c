@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
+import org.apache.abdera.Abdera;
+import org.apache.abdera.writer.Writer;
 import org.apache.log4j.Logger;
 import org.jdom.JDOMException;
 import org.swordapp.server.AuthCredentials;
@@ -145,6 +147,12 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			throw new SwordError("No AtomPub entry was included in the submission");
 
 		AtomPubEntrySIP sip = new AtomPubEntrySIP(containerPID, deposit.getSwordEntry().getEntry());
+		if (log.isDebugEnabled()) {
+			Abdera abdera = new Abdera();
+			Writer writer = abdera.getWriterFactory().getWriter("prettyxml");
+			writer.writeTo(deposit.getSwordEntry().getEntry(), System.out);
+		}
+		
 		if (deposit.getFile() == null) {
 			sip = new AtomPubEntrySIP(containerPID, deposit.getSwordEntry().getEntry());
 		} else {
