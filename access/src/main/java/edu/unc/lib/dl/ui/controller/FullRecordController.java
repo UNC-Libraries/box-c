@@ -110,6 +110,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 				facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE);
 			}
 			
+			LOG.debug("Retrieving supplemental information for container at path " + briefObject.getPath().toString());
 			SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
 					accessGroups, facetsToRetrieve);
 

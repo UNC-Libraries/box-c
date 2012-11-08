@@ -1,6 +1,6 @@
 package edu.unc.lib.dl.search.solr.model;
 
-public interface HierarchicalFacetNode {
+public interface HierarchicalFacetNode extends Cloneable {
 	/**
 	 * Display value for the current node
 	 * @return
@@ -32,4 +32,6 @@ public interface HierarchicalFacetNode {
 	 * @return
 	 */
 	public String getLimitToValue();
+	
+	public Object clone();
 }

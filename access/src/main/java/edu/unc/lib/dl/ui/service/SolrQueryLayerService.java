@@ -549,7 +549,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		StringBuilder cutoffQuery = new StringBuilder();
 		cutoffQuery.append('!').append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH)).append(":");
 		if (hierarchyState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)) {
-			cutoffQuery.append(((HierarchicalFacet) hierarchyState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH))
+			cutoffQuery.append(((CutoffFacet) hierarchyState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH))
 					.getHighestTier() + browseRequest.getRetrievalDepth());
 		} else {
 			cutoffQuery.append(browseRequest.getRetrievalDepth());
@@ -568,7 +568,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		// //////////////////////////////////////////////////////
 		// Get the root node for this search
 		if (!noRootNode) {
-			BriefObjectMetadataBean rootNode = getObjectById(new SimpleIdRequest(((HierarchicalFacet) browseRequest
+			BriefObjectMetadataBean rootNode = getObjectById(new SimpleIdRequest(((CutoffFacet) browseRequest
 					.getSearchState().getFacets().get(SearchFieldKeys.ANCESTOR_PATH)).getSearchKey(),
 					browseRequest.getAccessGroups()));
 			browseResults.getResultList().add(0, rootNode);
@@ -669,9 +669,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 				resourceTypes.add(searchSettings.resourceTypeFile);
 				fileSearchState.setResourceTypes(resourceTypes);
 				Object ancestorPath = fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH);
-				if (ancestorPath instanceof HierarchicalFacet) {
-					((HierarchicalFacet) ancestorPath)
-							.setCutoffTier(((HierarchicalFacet) ancestorPath).getHighestTier() + 1);
+				if (ancestorPath instanceof CutoffFacet) {
+					((CutoffFacet) ancestorPath)
+							.setCutoff(((CutoffFacet) ancestorPath).getHighestTier() + 1);
 				}
 				fileSearchState.setFacetsToRetrieve(null);
 				SearchRequest fileSearchRequest = new SearchRequest(fileSearchState, browseRequest.getAccessGroups());
@@ -693,8 +693,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 		resourceTypes.add(searchSettings.resourceTypeFile);
 		fileSearchState.setResourceTypes(resourceTypes);
 		Object ancestorPath = fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH);
-		if (ancestorPath instanceof HierarchicalFacet) {
-			((HierarchicalFacet) ancestorPath).setCutoffTier(((HierarchicalFacet) ancestorPath).getHighestTier() + 1);
+		if (ancestorPath instanceof CutoffFacet) {
+			((CutoffFacet) ancestorPath).setCutoff(((CutoffFacet) ancestorPath).getHighestTier() + 1);
 		}
 		fileSearchState.setFacetsToRetrieve(null);
 		SearchRequest fileSearchRequest = new SearchRequest(fileSearchState, browseRequest.getAccessGroups());

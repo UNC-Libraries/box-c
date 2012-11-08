@@ -36,13 +36,13 @@
 						<c:choose>
 							<c:when test="${cdr:contains(neighbor.datastream, 'THUMB_SMALL')}">
 								<div class="smallthumb_container">
-									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_${neighbor.contentType.searchKey}" 
+									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_${neighbor.contentTypeFacet[0].searchKey}" 
 											src="${cdr:getDatastreamUrl(neighbor, 'THUMB_SMALL', fedoraUtil)}"/>
 								</div>
 							</c:when>
 							<c:otherwise>
 								<div class="smallthumb_container">
-									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_default" src="/static/images/placeholder/small/${neighbor.contentType.searchKey}.png"/>
+									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_default" src="/static/images/placeholder/small/${neighbor.contentTypeFacet[0].searchKey}.png"/>
 								</div>
 							</c:otherwise>
 						</c:choose>

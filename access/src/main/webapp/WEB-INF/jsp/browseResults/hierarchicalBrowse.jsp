@@ -91,12 +91,12 @@
 		
 		<c:set var="retainedAsDirectMatch" value="${fn:length(hierarchicalViewResults.matchingContainerPids) > 0
 					&& (containerNode.childCount == 0
-					|| hierarchicalViewResults.subcontainerCounts[containerNode.path.facetTiers[fn:length(containerNode.path.facetTiers) - 1].identifier] == containerNode.childCount)}"/>
+					|| hierarchicalViewResults.subcontainerCounts[containerNode.path.facetNodes[fn:length(containerNode.path.facetNodes) - 1].searchValue] == containerNode.childCount)}"/>
 		
 		<c:set var="containerFacetAction">
 			<c:choose>
 				<c:when test="${containerNode.resourceType == searchSettings.resourceTypeFile}">
-					${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${containerNode.ancestorPath.searchValue},${containerNode.ancestorPath.highestTier + 1}"
+					${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${containerNode.ancestorPathFacet.searchValue},${containerNode.ancestorPathFacet.highestTier + 1}"
 				</c:when>
 				<c:when test="${applyCutoffs}">
 					${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${containerNode.path.searchValue},${containerNode.path.highestTier + 1}"
@@ -157,12 +157,12 @@
 				</c:choose>     
 			</c:forEach>
 		</c:if>
-		<c:set var="hasSubcontainers" value="${hierarchicalViewResults.subcontainerCounts[containerNode.path.facetTiers[fn:length(containerNode.path.facetTiers) - 1].identifier] > 0}" />
+		<c:set var="hasSubcontainers" value="${hierarchicalViewResults.subcontainerCounts[containerNode.path.facetNodes[fn:length(containerNode.path.facetNodes) - 1].searchValue] > 0}" />
 		<c:if test="${!resultStatus.first || empty hierarchicalViewResults.searchState.facets[searchFieldKeys.ANCESTOR_PATH]}">
-			<c:set var="precedingTierCount" value="${hierarchicalViewResults.subcontainerCounts[rootNode.path.facetTiers[fn:length(rootNode.path.facetTiers) - 1].identifier] - 1}"/>
-			<c:forEach var="pathTier" items="${containerNode.path.facetTiers}" varStatus="status">
-				<c:if test="${pathTier.tier >= baseTier}">
-					<c:set var="subcontainerCount" value="${hierarchicalViewResults.subcontainerCounts[pathTier.identifier]}"/>
+			<c:set var="precedingTierCount" value="${hierarchicalViewResults.subcontainerCounts[rootNode.path.facetNodes[fn:length(rootNode.path.facetNodes) - 1].searchValue] - 1}"/>
+			<c:forEach var="pathNode" items="${containerNode.path.facetNodes}" varStatus="status">
+				<c:if test="${pathNode.tier >= baseTier}">
+					<c:set var="subcontainerCount" value="${hierarchicalViewResults.subcontainerCounts[pathNode.searchValue]}"/>
 					<c:choose>
 						<c:when test="${status.last && (precedingTierCount == subcontainerCount 
 								|| (empty subcontainerCount && precedingTierCount == 0))}">
@@ -175,27 +175,27 @@
 							<c:set var="indentCode" value="${indentCode}1"/>
 							<c:set var="entryOut">${entryOut}${leadupIndent}<div class="indent_unit hier_container hier_with_siblings"></div></c:set>
 						</c:when>
-						<c:when test="${precedingTierCount >= hierarchicalViewResults.subcontainerCounts[pathTier.identifier]}">
+						<c:when test="${precedingTierCount >= hierarchicalViewResults.subcontainerCounts[pathNode.searchValue]}">
 							<c:set var="leadupIndent" value='${leadupIndent}<div class="indent_unit hier_with_siblings"></div>'/>
 							<c:set var="indentCode" value="${indentCode}1"/>
-							${cdr:decrementLongMap(hierarchicalViewResults.subcontainerCounts, pathTier.identifier) }
+							${cdr:decrementLongMap(hierarchicalViewResults.subcontainerCounts, pathNode.searchValue) }
 						</c:when>
-						<c:when test="${pathTier.tier == baseTier && param.excludeParent}">
-							${cdr:decrementLongMap(hierarchicalViewResults.subcontainerCounts, pathTier.identifier) }
+						<c:when test="${pathNode.tier == baseTier && param.excludeParent}">
+							${cdr:decrementLongMap(hierarchicalViewResults.subcontainerCounts, pathNode.searchValue) }
 						</c:when>
-						<c:when test="${pathTier.tier == baseTier}">
-							${cdr:decrementLongMap(hierarchicalViewResults.subcontainerCounts, pathTier.identifier) }
+						<c:when test="${pathNode.tier == baseTier}">
+							${cdr:decrementLongMap(hierarchicalViewResults.subcontainerCounts, pathNode.searchValue) }
 						</c:when>
 						<c:otherwise>
 							<c:set var="leadupIndent" value='${leadupIndent}<div class="indent_unit"></div>'/>
-							${cdr:decrementLongMap(hierarchicalViewResults.subcontainerCounts, pathTier.identifier) }
+							${cdr:decrementLongMap(hierarchicalViewResults.subcontainerCounts, pathNode.searchValue) }
 							<c:set var="indentCode" value="${indentCode}0"/>
 						</c:otherwise>
 					</c:choose>
-					<c:if test="${empty hierarchicalViewResults.subcontainerCounts[pathTier.identifier] 
-							|| hierarchicalViewResults.subcontainerCounts[pathTier.identifier] == 0}">
+					<c:if test="${empty hierarchicalViewResults.subcontainerCounts[pathNode.searchValue] 
+							|| hierarchicalViewResults.subcontainerCounts[pathNode.searchValue] == 0}">
 						<c:if test="${containerNode.resourceType == searchSettings.resourceTypeFile
-								&& status.count == containerNode.ancestorPath.highestTier}">
+								&& status.count == containerNode.ancestorPathFacet.highestTier}">
 							<c:set var="viewAllResultsLink">
 								<div class="hier_entry">
 									${leadupIndent}
@@ -203,7 +203,7 @@
 								</div>
 							</c:set>
 						</c:if>
-						<c:if test="${!(pathTier.tier == baseTier && param.excludeParent) 
+						<c:if test="${!(pathNode.tier == baseTier && param.excludeParent) 
 										&& (containerNode.resourceType != searchSettings.resourceTypeFile)}">
 							<c:set var="endContainerDivs" value="${endContainerDivs}</div>"/>
 						</c:if>
@@ -211,7 +211,7 @@
 					</c:if>
 					<%-- Shows sub container counts by depth --%>
 					<%-- <div style="float: right;">&nbsp;&nbsp;(${precedingTierCount}|${subcontainerCount})</div> --%>
-					<c:set var="precedingTierCount" value="${hierarchicalViewResults.subcontainerCounts[pathTier.identifier]}"/>
+					<c:set var="precedingTierCount" value="${hierarchicalViewResults.subcontainerCounts[pathNode.searchValue]}"/>
 				</c:if>
 			</c:forEach>
 		</c:if>
@@ -221,7 +221,7 @@
 		
 		<c:set var="entryOut">${entryOut}
 			<c:if test="${containerNode.resourceType != searchSettings.resourceTypeFile}">
-				<c:set var="subcontainerCount" value="${hierarchicalViewResults.subcontainerCounts[containerNode.path.facetTiers[fn:length(containerNode.path.facetTiers) - 1].identifier]}" scope="page"/>
+				<c:set var="subcontainerCount" value="${hierarchicalViewResults.subcontainerCounts[containerNode.path.facetNodes[fn:length(containerNode.path.facetNodes) - 1].searchValue]}" scope="page"/>
 				<%-- Determine whether to display a collapse or expand icon --%>
 				<c:choose>
 					<c:when test="${(empty subcontainerCount || subcontainerCount == 0) && retainedAsDirectMatch}">
@@ -293,9 +293,9 @@
 									<c:if test="${!filePrimaryDownload}">
 										<a href="${cdr:getDatastreamUrl(containerNode, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
 									</c:if>
-									(<c:out value="${containerNode.contentType.highestTierDisplayValue}"/> 
-									<c:if test="${not empty containerNode.filesize}">
-										&nbsp;<c:out value="${cdr:formatFilesize(containerNode.filesize, 1)}"/>
+									(<c:out value="${containerNode.contentTypeFacet[0].displayValue}"/> 
+									<c:if test="${not empty containerNode.filesizeSort}">
+										&nbsp;<c:out value="${cdr:formatFilesize(containerNode.filesizeSort, 1)}"/>
 									</c:if>)
 								</c:if>
 							</p>

@@ -49,9 +49,9 @@
 							<img class="smallthumb" src="/static/images/placeholder/small/folder.png"/>
 						</div>
 					</c:when>
-					<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && not empty metadata.contentType.searchKey}">
+					<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && not empty metadata.contentTypeFacet[0].searchKey}">
 						<div class="smallthumb_container">
-							<img class="smallthumb" src="/static/images/placeholder/small/${metadata.contentType.searchKey}.png"/>
+							<img class="smallthumb" src="/static/images/placeholder/small/${metadata.contentTypeFacet[0].searchKey}.png"/>
 						</div>
 					</c:when>
 					<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate}">
@@ -130,11 +130,11 @@
 							</ul>
 						</c:otherwise>
 					</c:choose>
-					<c:if test="${not empty metadata.contentType}">
+					<c:if test="${not empty metadata.contentTypeFacet}">
 						<p class="right">
-							<c:out value="${metadata.contentType.highestTierDisplayValue}"/>
-							<c:if test="${not empty metadata.filesize}">
-								&nbsp;(<c:out value="${cdr:formatFilesize(metadata.filesize, 1)}"/>)
+							<c:out value="${metadata.contentTypeFacet[0].displayValue}"/>
+							<c:if test="${not empty metadata.filesizeSort}">
+								&nbsp;(<c:out value="${cdr:formatFilesize(metadata.filesizeSort, 1)}"/>)
 							</c:if>
 						</p>
 					</c:if>

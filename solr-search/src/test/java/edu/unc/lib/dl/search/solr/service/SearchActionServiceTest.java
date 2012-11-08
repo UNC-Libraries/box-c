@@ -25,6 +25,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
@@ -311,7 +312,7 @@ public class SearchActionServiceTest extends Assert {
 		assertEquals(searchState.getFacets().size(), 1);
 		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"1%2caudio\"");
 		assertEquals(searchState.getFacets().size(), 1);
-		assertTrue(searchState.getFacets().get("CONTENT_TYPE").getClass().equals(HierarchicalFacet.class));
+		assertTrue(searchState.getFacets().get("CONTENT_TYPE").getClass().equals(MultivaluedHierarchicalFacet.class));
 		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_FACET") + ":format");
 		assertEquals(searchState.getFacets().size(), 0);
 		try {
@@ -331,7 +332,7 @@ public class SearchActionServiceTest extends Assert {
 		//With cutoff
 		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"1%2caudio%2c2\"");
 		assertEquals(searchState.getFacets().size(), 1);
-		assertTrue(searchState.getFacets().get("CONTENT_TYPE").getClass().equals(HierarchicalFacet.class));
+		assertTrue(searchState.getFacets().get("CONTENT_TYPE").getClass().equals(MultivaluedHierarchicalFacet.class));
 		
 		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET_SELECT"));
 		assertNull(searchState.getFacetsToRetrieve());

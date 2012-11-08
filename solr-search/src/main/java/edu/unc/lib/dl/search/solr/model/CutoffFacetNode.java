@@ -40,6 +40,14 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
 		this.tier = tier;
 		this.searchValue = this.tier + "," + this.searchKey;
 	}
+	
+	public CutoffFacetNode(CutoffFacetNode node) {
+		this.facetValue = node.facetValue;
+		this.displayValue = node.displayValue;
+		this.searchKey = node.searchKey;
+		this.searchValue = node.searchValue;
+		this.tier = new Integer(node.tier);
+	}
 
 	@Override
 	public String getDisplayValue() {
@@ -53,6 +61,11 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
 
 	@Override
 	public String getFacetValue() {
+		if (facetValue == null && searchValue != null){
+			facetValue = searchValue;
+			if (displayValue != null)
+				facetValue += "," + displayValue;
+		}
 		return facetValue;
 	}
 
@@ -73,5 +86,10 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
 	@Override
 	public String getLimitToValue() {
 		return getSearchValue() + "," + (this.tier + 1); 
+	}
+	
+	@Override
+	public Object clone() {
+		return new CutoffFacetNode(this);
 	}
 }

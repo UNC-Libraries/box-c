@@ -24,8 +24,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
@@ -433,13 +435,13 @@ public class SearchStateFactory {
 		
 		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.ANCESTOR_PATH));
 		if (parameter != null && parameter.length() > 0){
-			HierarchicalFacet hierFacet = new HierarchicalFacet(SearchFieldKeys.ANCESTOR_PATH, parameter);
+			CutoffFacet hierFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH, parameter);
 			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, hierFacet);
 		}
 		
 		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.CONTENT_TYPE));
 		if (parameter != null && parameter.length() > 0){
-			HierarchicalFacet hierFacet = new HierarchicalFacet(SearchFieldKeys.CONTENT_TYPE, parameter);
+			MultivaluedHierarchicalFacet hierFacet = new MultivaluedHierarchicalFacet(SearchFieldKeys.CONTENT_TYPE, parameter);
 			searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE, hierFacet);
 		}
 		

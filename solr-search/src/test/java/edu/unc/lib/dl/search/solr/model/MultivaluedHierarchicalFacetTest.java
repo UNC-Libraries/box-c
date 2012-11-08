@@ -127,4 +127,51 @@ public class MultivaluedHierarchicalFacetTest extends Assert {
 		assertEquals(1, ffo.getValues().get(0).getCount());
 		assertNull(ffo.getValues().get(0).getDisplayValue());
 	}
+	
+	@Test
+	public void setDisplayValuesMergeInMissingNode() {
+		List<String> facetValues = Arrays.asList("/image^jpg,jpg", "^image,Image");
+		List<MultivaluedHierarchicalFacet> facetsIncoming = MultivaluedHierarchicalFacet
+				.createMultivaluedHierarchicalFacets(null, facetValues);
+		
+		facetValues = Arrays.asList("/image^jpg,jpg");
+		List<MultivaluedHierarchicalFacet> facetsBase = MultivaluedHierarchicalFacet
+				.createMultivaluedHierarchicalFacets(null, facetValues);
+		
+		MultivaluedHierarchicalFacet facetBase = facetsBase.get(0);
+		assertEquals(1, facetBase.getFacetNodes().size());
+		
+		facetBase.setDisplayValues(facetsIncoming.get(0));
+		
+		assertEquals(2, facetBase.getFacetNodes().size());
+		
+		assertEquals("Image", facetBase.getFacetNodes().get(0).getDisplayValue());
+		assertEquals("jpg", facetBase.getFacetNodes().get(1).getDisplayValue());
+		
+		assertTrue(facetBase.getFacetNodes().get(0) != facetsIncoming.get(0).getFacetNodes().get(0));
+		assertTrue(facetBase.getFacetNodes().get(1) != facetsIncoming.get(0).getFacetNodes().get(1));
+	}
+	
+	@Test
+	public void setDisplayValuesFewerIncomingNodes() {
+		List<String> facetValues = Arrays.asList("^image,Image");
+		List<MultivaluedHierarchicalFacet> facetsIncoming = MultivaluedHierarchicalFacet
+				.createMultivaluedHierarchicalFacets(null, facetValues);
+		
+		facetValues = Arrays.asList("^image", "/image^jpg");
+		List<MultivaluedHierarchicalFacet> facetsBase = MultivaluedHierarchicalFacet
+				.createMultivaluedHierarchicalFacets(null, facetValues);
+		
+		MultivaluedHierarchicalFacet facetBase = facetsBase.get(0);
+		assertEquals(2, facetBase.getFacetNodes().size());
+		
+		facetBase.setDisplayValues(facetsIncoming.get(0));
+		
+		assertEquals(2, facetBase.getFacetNodes().size());
+		
+		assertEquals("Image", facetBase.getFacetNodes().get(0).getDisplayValue());
+		assertNull(facetBase.getFacetNodes().get(1).getDisplayValue());
+		
+		assertTrue(facetBase.getFacetNodes().get(0) != facetsIncoming.get(0).getFacetNodes().get(0));
+	}
 }

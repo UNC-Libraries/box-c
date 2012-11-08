@@ -31,12 +31,12 @@
 				</c:when>
 				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
 					<c:choose>
-						<c:when test="${briefObject.contentType.searchKey == 'pdf'}">
+						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}
 						</c:when>
-						<c:when test="${briefObject.contentType.highestTierDisplayValue == 'mp4'}">
+						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
 						</c:when>
-						<c:when test="${briefObject.contentType.highestTierDisplayValue == 'mp3'}">
+						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
 						</c:when>
 						<c:otherwise>
 							${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}
@@ -50,13 +50,13 @@
 			<c:choose>
 				<c:when test="${cdr:contains(briefObject.datastream, 'THUMB_LARGE')}">
 					<div class="largethumb_container">
-						<img id="thumb_main" class="largethumb ph_large_${briefObject.contentType.searchKey}" 
+						<img id="thumb_main" class="largethumb ph_large_${briefObject.contentTypeFacet[0].searchKey}" 
 								src="${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}"/>
 					</div>
 				</c:when>
-				<c:when test="${not empty briefObject.contentType.searchKey}">
+				<c:when test="${not empty briefObject.contentTypeFacet[0].searchKey}">
 					<div class="largethumb_container">
-						<img id="thumb_main" class="largethumb ph_large_default" src="/static/images/placeholder/large/${briefObject.contentType.searchKey}.png"/>
+						<img id="thumb_main" class="largethumb ph_large_default" src="/static/images/placeholder/large/${briefObject.contentTypeFacet[0].searchKey}.png"/>
 					</div>
 				</c:when>
 				<c:otherwise>
@@ -105,19 +105,19 @@
 				</c:when>
 				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
 					<c:choose>
-						<c:when test="${briefObject.contentType.searchKey == 'pdf'}">
+						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							<div class="actionlink left">
 								<a href="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}">View</a>
 							</div>
 						</c:when>
-						<c:when test="${briefObject.contentType.highestTierDisplayValue == 'mp3'}">
+						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
 							<script src="/static/plugins/flowplayer/flowplayer-3.2.6.min.js"></script>
 							<div class="actionlink left">
 								<a href="" class="inline_viewer_link audio_player_link">Listen</a>
 							</div>
 							<div class="clear_space"></div>
 							<div id="audio_player"></div>
-							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentType.searchKey}</c:set>
+							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentTypeFacet[0].searchKey}</c:set>
 							<script>
 								$(function() {
 									$(".inline_viewer_link").bind("click", {viewerId:'audio_player',
@@ -128,14 +128,14 @@
 								});
 							</script>
 						</c:when>
-						<c:when test="${briefObject.contentType.highestTierDisplayValue == 'mp4'}">
+						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
 							<div class="actionlink left">
 								<a href="" class="inline_viewer_link video_viewer_link">View</a>
 							</div>
 							<div class="clear_space"></div>
 							<script src="/static/plugins/flowplayer/flowplayer-3.2.6.min.js"></script>
 							<div id="video_player"></div>
-							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentType.searchKey}</c:set>
+							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentTypeFacet[0].searchKey}</c:set>
 							<script>
 								$(function() {
 									$(".inline_viewer_link").bind("click", {viewerId:'video_player',
@@ -153,9 +153,9 @@
 			<div class="clear"></div>
 			<p class="smaller">
 				<c:choose>
-					<c:when test="${not empty briefObject.contentType.highestTierDisplayValue}">
-						<span class="bold">File Type:</span> <c:out value="${briefObject.contentType.highestTierDisplayValue}" />
-						<c:if test="${briefObject.filesize != -1}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.FILESIZE]}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesize, 1)}"/></c:if>
+					<c:when test="${not empty briefObject.contentTypeFacet[0].displayValue}">
+						<span class="bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" />
+						<c:if test="${briefObject.filesizeSort != -1}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.FILESIZE]}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if>
 					</c:when>
 					<c:otherwise>
 						<span>Contains:</span> ${briefObject.childCount} item<c:if test="${briefObject.childCount != 1}">s</c:if>
@@ -170,9 +170,9 @@
 </div>
 <c:if test="${hierarchicalViewResults.resultCount > 0}">
 	<c:set var="defaultWebObjectID">
-		<c:forEach items="${briefObject.datastream}" var="datastream">
+		<c:forEach items="${briefObject.datastreamObjects}" var="datastream">
 			<c:if test="${datastream.name == 'DATA_FILE'}">
-				<c:out value="${fn:substring(datastream.pid, 0, fn:indexOf(datastream.pid, '/'))}"/>
+				<c:out value="${datastream.owner.pid}"/>
 			</c:if>
 		</c:forEach>
 	</c:set>

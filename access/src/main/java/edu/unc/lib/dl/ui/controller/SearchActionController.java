@@ -19,6 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.CutoffFacet;
+import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
+import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
@@ -33,6 +36,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.ui.Model;
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -73,7 +78,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 		
 		if (resultResponse != null){
 			//Get the display values for hierarchical facets from the search results.
-			queryLayer.lookupHierarchicalDisplayValues(searchState, searchRequest.getAccessGroups());
+			//queryLayer.lookupHierarchicalDisplayValues(searchState, searchRequest.getAccessGroups());
 			
 			//Retrieve the facet result set
 			SearchResultResponse resultResponseFacets = queryLayer.getFacetList(searchState, searchRequest.getAccessGroups(), facetsToRetrieve, false);
@@ -81,9 +86,9 @@ public class SearchActionController extends AbstractSolrSearchController {
 			//If the users query had no results but the facet query did have results, then if a path is set remove its cutoff and rerun
 			if (resultResponseFacets.getResultCount() > 0 && resultResponse.getResultCount() == 0 
 					&& searchState.getFacets() != null && searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)){
-				HierarchicalFacet ancestorPath = ((HierarchicalFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH));
-				if (ancestorPath.getCutoffTier() != null){
-					ancestorPath.setCutoffTier(null);
+				CutoffFacet ancestorPath = ((CutoffFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH));
+				if (ancestorPath.getCutoff() != null){
+					ancestorPath.setCutoff(null);
 					resultResponse = queryLayer.getSearchResults(searchRequest);
 				}
 			}
@@ -100,9 +105,34 @@ public class SearchActionController extends AbstractSolrSearchController {
 		//Get the record for the currently selected container if one is selected.
 		if (searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)){
 			BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(
-					((HierarchicalFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH)).getSearchKey(),
+					((CutoffFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH)).getSearchKey(),
 					searchRequest.getAccessGroups()));
 			model.addAttribute("selectedContainer", selectedContainer);
+			
+			// Store the path value from the selected container as the path for breadcrumbs
+			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, selectedContainer.getPath());
+		}
+		
+		// Use a representative content type value if there are any results.
+		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE) && resultResponse.getResultCount() > 0){
+			Object contentTypeValue = searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE);
+			if (contentTypeValue instanceof MultivaluedHierarchicalFacet) {
+				LOG.debug("Replacing content type search value " + searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE));
+				BriefObjectMetadataBean representative = resultResponse.getResultList().get(0);
+				MultivaluedHierarchicalFacet repFacet = representative.getContentTypeFacet().get(0);
+				((MultivaluedHierarchicalFacet)contentTypeValue).setDisplayValues(repFacet);
+				
+				for (HierarchicalFacetNode node: repFacet.getFacetNodes()) {
+					LOG.debug("rep:" + node.getSearchKey() + "|" + node.getDisplayValue());
+				}
+				
+				for (HierarchicalFacetNode node: ((MultivaluedHierarchicalFacet)contentTypeValue).getFacetNodes()) {
+					LOG.debug("search:" + node.getSearchKey() + "|" + node.getDisplayValue());
+				}
+				
+				searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE, contentTypeValue);
+			}
+			
 		}
 		
 		//Get the children counts for container entries.

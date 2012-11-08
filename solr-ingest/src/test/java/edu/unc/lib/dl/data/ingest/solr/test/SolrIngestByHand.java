@@ -139,7 +139,7 @@ public class SolrIngestByHand {
 	
 	//@Test
 	public void testHierarchical(){
-		HierarchicalFacet.HierarchicalFacetTier facet = new HierarchicalFacet.HierarchicalFacetTier("4,uuid:5e037fa7-cb29-42ff-8f69-4d05c57ab8d6,Trip Files");
+		//CutoffFacetNode facet = new HierarchicalFacet.HierarchicalFacetTier("4,uuid:5e037fa7-cb29-42ff-8f69-4d05c57ab8d6,Trip Files");
 	}
 	
 	//@Test

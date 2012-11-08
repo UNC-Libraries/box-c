@@ -82,6 +82,36 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 		return (MultivaluedHierarchicalFacetNode) this.facetNodes
 				.get(this.facetNodes.size() - 1);
 	}
+	
+	public HierarchicalFacetNode getNodeBySearchValue(String searchValue) {
+		for (HierarchicalFacetNode node: this.facetNodes) {
+			if (node.getSearchValue().equals(searchValue))
+				return node;
+		}
+		return null;
+	}
+	
+	public void setDisplayValues(MultivaluedHierarchicalFacet facet) {
+		int startingCount = this.facetNodes.size();
+		String targetJoined = ((MultivaluedHierarchicalFacetNode)this.getLastNode()).joinTiers(false);
+		for (HierarchicalFacetNode node: facet.getFacetNodes()) {
+			MultivaluedHierarchicalFacetNode targetNode = (MultivaluedHierarchicalFacetNode)this.getNodeBySearchValue(node.getSearchValue());
+			if (targetNode != null) {
+				log.debug("Adding in display value " + node.getDisplayValue());
+				((MultivaluedHierarchicalFacetNode)targetNode).setDisplayValue(node.getDisplayValue());
+			} else {
+				String joined = ((MultivaluedHierarchicalFacetNode)node).joinTiers(false);
+				if (targetJoined.indexOf(joined) == 0) {
+					log.debug("Adding in missing node " + node.getSearchValue() + "," + node.getDisplayValue());
+					this.facetNodes.add((HierarchicalFacetNode)node.clone());
+				}
+			}
+		}
+		// If the number of nodes has changed, then resort
+		if (this.facetNodes.size() != startingCount) {
+			this.sortTiers();
+		}
+	}
 
 	@Override
 	public String getSearchKey() {
@@ -98,8 +128,14 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 		return getLastNode().getDisplayValue();
 	}
 	
+	@Override
 	public String getPivotValue() {
 		return getLastNode().getPivotValue();
+	}
+	
+	@Override
+	public String getLimitToValue() {
+		return getLastNode().getLimitToValue();
 	}
 	
 	@Override

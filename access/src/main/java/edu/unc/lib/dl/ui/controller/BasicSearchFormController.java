@@ -18,6 +18,7 @@ package edu.unc.lib.dl.ui.controller;
 import javax.servlet.http.HttpServletRequest;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
+import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.SearchActionService;
@@ -72,16 +73,16 @@ public class BasicSearchFormController {
 			try {
 				searchWithin = URLDecoder.decode(searchWithin, "UTF-8");
 			} catch (Exception e){
-				e.printStackTrace();
+				LOG.error("Failed to decode searchWithin " + searchWithin, e);
 			}
 			HashMap<String,String[]> parameters = SearchStateUtil.getParametersAsHashMap(searchWithin);
 			searchState = searchStateFactory.createSearchState(parameters);
 			
 			if (searchState.getFacets() != null && searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)){
 				Object ancestorPathObject = searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH);
-				if (ancestorPathObject != null && ancestorPathObject instanceof HierarchicalFacet){
-					HierarchicalFacet ancestorPath  = (HierarchicalFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH);
-					ancestorPath.setCutoffTier(null);
+				if (ancestorPathObject != null && ancestorPathObject instanceof CutoffFacet){
+					CutoffFacet ancestorPath  = (CutoffFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH);
+					ancestorPath.setCutoff(null);
 				}
 			}
 		}

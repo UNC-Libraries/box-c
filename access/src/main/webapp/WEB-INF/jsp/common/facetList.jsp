@@ -50,7 +50,7 @@
 	<c:set var="additionalLimitActions" value="${param.additionalLimitActions}|"/>
 </c:if>
 
-<c:if test="${not empty searchState.facets[searchFieldKeys.ANCESTOR_PATH].cutoffTier}">
+<c:if test="${not empty searchState.facets[searchFieldKeys.ANCESTOR_PATH].cutoff}">
 	<c:set var="additionalLimitActions" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${searchState.facets[searchFieldKeys.ANCESTOR_PATH].searchValue}"|'/>
 </c:if>
 

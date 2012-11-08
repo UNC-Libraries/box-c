@@ -32,14 +32,14 @@
 			</td>
 		</tr>
 		<%-- Display parent collection if it is not empty and this is not a root node --%>
-		<c:if test="${not empty briefObject.parentCollection && briefObject.ancestorPath.highestTier > 0}">
+		<c:if test="${not empty briefObject.parentCollection && briefObject.ancestorPathFacet.highestTier > 0}">
 			<tr>
 				<th>Parent Collection</th>
 				<td>
 					<c:url var="parentUrl" scope="page" value="record">
 						<c:param name="${searchSettings.searchStateParams['ID']}" value="${briefObject.parentCollection}"/>
 					</c:url>
-					<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
+					<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionObject.displayValue}"/></a>
 				</td>
 			</tr>
 		</c:if>

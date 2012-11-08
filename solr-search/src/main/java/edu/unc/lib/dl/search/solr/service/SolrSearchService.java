@@ -230,7 +230,7 @@ public class SolrSearchService {
 		//facetFieldUtil.addToSolrQuery(facet, solrQuery);
 		
 		
-		try {
+		/*try {
 			int requestTier = Integer.parseInt(searchValue.substring(0, searchValue.indexOf(searchSettings.facetSubfieldDelimiter)));
 			ArrayList<HierarchicalFacet.HierarchicalFacetTier> tiers = new ArrayList<HierarchicalFacet.HierarchicalFacetTier>();
 			FacetField facetField = queryResponse.getFacetField(solrSettings.getFieldName(fieldKey));
@@ -250,7 +250,7 @@ public class SolrSearchService {
 			}
 		} catch (Exception e){
 			
-		}
+		}*/
 
 		LOG.debug("getHierarchicalFacet query: " + solrQuery.toString());
 		try {

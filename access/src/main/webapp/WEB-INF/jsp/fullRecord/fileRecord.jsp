@@ -30,12 +30,12 @@
 				</c:when>
 				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
 					<c:choose>
-						<c:when test="${briefObject.contentType.searchKey == 'pdf'}">
+						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}
 						</c:when>
-						<c:when test="${briefObject.contentType.highestTierDisplayValue == 'mp4'}">
+						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
 						</c:when>
-						<c:when test="${briefObject.contentType.highestTierDisplayValue == 'mp3'}">
+						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
 						</c:when>
 						<c:otherwise>
 							${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}
@@ -49,13 +49,13 @@
 			<c:choose>
 				<c:when test="${cdr:contains(briefObject.datastream, 'THUMB_LARGE')}">
 					<div class="largethumb_container">
-						<img id="thumb_main" class="largethumb ph_large_${briefObject.contentType.searchKey}" 
+						<img id="thumb_main" class="largethumb ph_large_${briefObject.contentTypeFacet[0].searchKey}" 
 								src="${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}"/>
 					</div>
 				</c:when>
 				<c:otherwise>
 					<div class="largethumb_container">
-						<img id="thumb_main" class="largethumb ph_large_default" src="/static/images/placeholder/large/${briefObject.contentType.searchKey}.png"/>
+						<img id="thumb_main" class="largethumb ph_large_default" src="/static/images/placeholder/large/${briefObject.contentTypeFacet[0].searchKey}.png"/>
 					</div>
 				</c:otherwise>
 			</c:choose>
@@ -70,8 +70,8 @@
 				</p>
 			</c:if>
 			<p class="smaller">
-				<span class="bold">File Type:</span> <c:out value="${briefObject.contentType.highestTierDisplayValue}" />
-				<c:if test="${briefObject.filesize != -1}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.FILESIZE]}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesize, 1)}"/></c:if>
+				<span class="bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" />
+				<c:if test="${briefObject.filesizeSort != -1}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.FILESIZE]}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if>
 				<c:if test="${not empty briefObject.dateAdded}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.DATE_ADDED]}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></c:if>
 				<c:if test="${not empty briefObject.dateCreated}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.DATE_CREATED]}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></c:if>
 			</p>
@@ -105,19 +105,19 @@
 				</c:when>
 				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
 					<c:choose>
-						<c:when test="${briefObject.contentType.searchKey == 'pdf'}">
+						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							<div class="actionlink left">
 								<a href="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}">View</a>
 							</div>
 						</c:when>
-						<c:when test="${briefObject.contentType.highestTierDisplayValue == 'mp3'}">
+						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
 							<script src="/static/plugins/flowplayer/flowplayer-3.2.6.min.js"></script>
 							<div class="actionlink left">
 								<a href="" class="inline_viewer_link audio_player_link">Listen</a>
 							</div>
 							<div class="clear_space"></div>
 							<div id="audio_player"></div>
-							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentType.searchKey}</c:set>
+							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentTypeFacet[0].searchKey}</c:set>
 							<script language="JavaScript">
 								$(function() {
 									$(".inline_viewer_link").bind("click", {viewerId:'audio_player',
@@ -128,14 +128,14 @@
 								});
 							</script>
 						</c:when>
-						<c:when test="${briefObject.contentType.highestTierDisplayValue == 'mp4'}">
+						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
 							<div class="actionlink left">
 								<a href="" class="inline_viewer_link video_viewer_link">View</a>
 							</div>
 							<div class="clear_space"></div>
 							<script src="/static/plugins/flowplayer/flowplayer-3.2.6.min.js"></script>
 							<div id="video_player"></div>
-							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentType.searchKey}</c:set>
+							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentTypeFacet[0].searchKey}</c:set>
 							<script language="JavaScript">
 								$(function() {
 									$(".inline_viewer_link").bind("click", {viewerId:'video_player',

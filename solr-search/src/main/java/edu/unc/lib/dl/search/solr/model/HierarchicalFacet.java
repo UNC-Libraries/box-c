@@ -94,12 +94,12 @@ public class HierarchicalFacet extends GenericFacet {
 		}
 	}
 	
-	public static ArrayList<HierarchicalFacetTier> createFacetTierList(ArrayList<String> tierStrings){
-		ArrayList<HierarchicalFacet.HierarchicalFacetTier> tierList = new ArrayList<HierarchicalFacet.HierarchicalFacetTier>();
+	public static ArrayList<CutoffFacetNode> createFacetTierList(ArrayList<String> tierStrings){
+		ArrayList<CutoffFacetNode> tierList = new ArrayList<CutoffFacetNode>();
 		for (String tierString: tierStrings){
 			if (tierString != null && tierString.length() > 0){
 				try {
-					tierList.add(new HierarchicalFacet.HierarchicalFacetTier(tierString));
+					tierList.add(new CutoffFacetNode(tierString));
 				} catch (InvalidHierarchicalFacetException e) {
 					LOG.error("Failed to create hierarchical facet tier", e);
 				}
