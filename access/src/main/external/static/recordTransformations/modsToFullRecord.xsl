@@ -102,7 +102,7 @@
 	</xsl:template>
 
 	<xsl:template name="modsNames">
-		<xsl:for-each-group select="*[local-name() = 'name']" group-by="*[local-name() = 'role']/*[local-name() = 'roleTerm']/text(), local-name(.[./not(*[local-name() = 'role']/*[local-name() = 'roleTerm'])])[. != '']">
+		<xsl:for-each-group select="*[local-name() = 'name']" group-by="@displayLabel, .[not(@displayLabel)]/*[local-name() = 'role']/*[local-name() = 'roleTerm']/text(), local-name(.[not(@displayLabel) and ./not(*[local-name() = 'role']/*[local-name() = 'roleTerm'])])[. != '']">
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>
 			<tr>
 				
