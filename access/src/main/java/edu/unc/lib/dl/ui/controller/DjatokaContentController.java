@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.security.access.AccessType;
 import edu.unc.lib.dl.security.access.UserSecurityProfile;
 import edu.unc.lib.dl.ui.service.DjatokaContentService;
 import edu.unc.lib.dl.ui.util.AccessControlSettings;

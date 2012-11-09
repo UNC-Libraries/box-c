@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
 /**

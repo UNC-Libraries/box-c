@@ -17,7 +17,6 @@ package edu.unc.lib.dl.search.solr.service;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,10 +36,7 @@ import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
-import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -227,30 +223,6 @@ public class SolrSearchService {
 		
 		solrQuery.addFacetField(solrFieldName);
 		solrQuery.setFacetPrefix(solrFieldName, facet.getSearchValue());
-		//facetFieldUtil.addToSolrQuery(facet, solrQuery);
-		
-		
-		/*try {
-			int requestTier = Integer.parseInt(searchValue.substring(0, searchValue.indexOf(searchSettings.facetSubfieldDelimiter)));
-			ArrayList<HierarchicalFacet.HierarchicalFacetTier> tiers = new ArrayList<HierarchicalFacet.HierarchicalFacetTier>();
-			FacetField facetField = queryResponse.getFacetField(solrSettings.getFieldName(fieldKey));
-			for (FacetField.Count facet: facetField.getValues()){
-				String[] facetComponents = facet.getName().split(searchSettings.facetSubfieldDelimiter);
-				try {
-					int responseTier = Integer.parseInt(facetComponents[0]);
-					if (responseTier <= requestTier){
-						tiers.add(new HierarchicalFacet.HierarchicalFacetTier(responseTier, facetComponents[1], facetComponents[2]));
-					}
-				} catch (java.lang.NumberFormatException e){
-					LOG.error("Error parsing hierarchical facet strings:\n" + e);
-				}
-			}
-			if (facetField.getValueCount() > 0){
-				return new HierarchicalFacet(fieldKey, tiers, 0);
-			}
-		} catch (Exception e){
-			
-		}*/
 
 		LOG.debug("getHierarchicalFacet query: " + solrQuery.toString());
 		try {

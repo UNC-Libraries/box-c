@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.SearchActionService;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;

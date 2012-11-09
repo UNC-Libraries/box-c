@@ -24,7 +24,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
@@ -299,40 +299,29 @@ public class SearchActionServiceTest extends Assert {
 		assertEquals(searchState.getFacets().size(), 1);
 		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":language,French");
 		assertEquals(searchState.getFacets().size(), 1);
-		assertTrue(searchState.getFacets().get("LANGUAGE").equals("French"));
+		assertEquals("French", ((GenericFacet)searchState.getFacets().get("LANGUAGE")).getDisplayValue());
 		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":subject,France");
 		assertEquals(searchState.getFacets().size(), 2);
 		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_FACET") + ":language");
 		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_FACET") + ":subject");
 		assertEquals(searchState.getFacets().size(), 0);
 		//Invalid hier
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"audio\"");
-		assertEquals(searchState.getFacets().size(), 0);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"1,audio\"");
+		try {
+			searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"audio\"");
+			fail();
+		} catch (InvalidHierarchicalFacetException e){
+			//Expected
+		}
+		assertEquals(0, searchState.getFacets().size());
+		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"^audio\"");
 		assertEquals(searchState.getFacets().size(), 1);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"1%2caudio\"");
+		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"%5Eaudio\"");
 		assertEquals(searchState.getFacets().size(), 1);
 		assertTrue(searchState.getFacets().get("CONTENT_TYPE").getClass().equals(MultivaluedHierarchicalFacet.class));
 		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_FACET") + ":format");
 		assertEquals(searchState.getFacets().size(), 0);
-		try {
-			searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"1,audio,wav\"");
-			assertTrue(false);
-		} catch (InvalidHierarchicalFacetException e){
-			assertEquals(searchState.getFacets().size(), 0);
-		}
-		//Invalid third field, should be a cutoff
-		try {
-			searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"1%2caudio%2cwav\"");
-			assertTrue(false);
-		} catch (InvalidHierarchicalFacetException e){
-			assertEquals(searchState.getFacets().size(), 0);
-		}
-		
-		//With cutoff
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"1%2caudio%2c2\"");
+		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"/audio^wav\"");
 		assertEquals(searchState.getFacets().size(), 1);
-		assertTrue(searchState.getFacets().get("CONTENT_TYPE").getClass().equals(MultivaluedHierarchicalFacet.class));
 		
 		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET_SELECT"));
 		assertNull(searchState.getFacetsToRetrieve());

@@ -17,7 +17,6 @@ package edu.unc.lib.dl.ui.util;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
@@ -25,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.util.AbstractSettings;
-import edu.unc.lib.dl.security.access.AccessType;
 
 /**
  * Settings object containing access control properties

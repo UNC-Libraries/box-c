@@ -24,7 +24,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 
 /**

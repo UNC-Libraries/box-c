@@ -1,6 +1,5 @@
  package edu.unc.lib.dl.search.solr.model;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.solr.client.solrj.response.FacetField;
 

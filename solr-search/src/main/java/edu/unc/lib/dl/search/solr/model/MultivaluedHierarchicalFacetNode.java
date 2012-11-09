@@ -21,6 +21,8 @@ public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
 		this.tiers = new ArrayList<String>();
 		try {
 			String[] facetParts = extractFacetParts.split(facetValue);
+			if (facetParts.length <= 1)
+				throw new InvalidHierarchicalFacetException("Incorrect facet format for value " + facetValue);
 			for (int i = 1; i < facetParts.length; i++) {
 				if (i == facetParts.length - 1) {
 					String[] facetPair = facetParts[i].split(",", 2);

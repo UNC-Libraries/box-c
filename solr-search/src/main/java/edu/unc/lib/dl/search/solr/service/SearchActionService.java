@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -40,9 +42,10 @@ public class SearchActionService {
 	private SearchSettings searchSettings;
 	@Autowired
 	private FacetFieldFactory facetFieldFactory;
+	private Pattern actionParameterPattern;
 	
 	public SearchActionService(){
-		
+		actionParameterPattern = Pattern.compile("(^(([^\",]*\"[^\"]*\"[^\",]*){1,})|,(([^\",]*\"[^\"]*\"[^\",]*){1,})|^([^,]+)|,([^,]+)|,|^$)");
 	}
 	
 	/**
@@ -134,8 +137,7 @@ public class SearchActionService {
 				ArrayList<String> parameters = null;
 				if (actionComponents.length > 1){
 					String actionParametersString = actionComponents[1];
-					Pattern pattern = Pattern.compile("(^(([^\",]*\"[^\"]*\"[^\",]*){1,})|,(([^\",]*\"[^\"]*\"[^\",]*){1,})|^([^,]+)|,([^,]+)|,|^$)");
-					Matcher matcher = pattern.matcher(actionParametersString); 
+					Matcher matcher = this.actionParameterPattern.matcher(actionParametersString); 
 					parameters = new ArrayList<String>();
 					while (matcher.find()){
 						int i = 2;
@@ -145,42 +147,14 @@ public class SearchActionService {
 							}
 						}
 						if (i <= matcher.groupCount() && matcher.group(i).length() > 0){
-							parameters.add(matcher.group(i).replaceAll("%2[cC]", ","));
+							try {
+								parameters.add(URLDecoder.decode(matcher.group(i), "UTF-8"));
+							} catch (UnsupportedEncodingException e) {
+								LOG.warn("Failed to decode action parameter", e);
+							}
 						} else {
 							parameters.add(null);
 						}
-						/*if (matcher.group(2) != null){
-							parameters.add(matcher.group(2).replaceAll("%2[cC]", ","));
-						} else if (matcher.group(4) != null){
-							parameters.add(matcher.group(4).replaceAll("%2[cC]", ","));
-						} else if (matcher.group(6) != null){
-							parameters.add(matcher.group(6).replaceAll("%2[cC]", ","));
-						} else if (matcher.group(7) != null){
-							parameters.add(matcher.group(7).replaceAll("%2[cC]", ","));
-						} else if (matcher.group(8) != null){
-							parameters.add(null);
-						} else if (matcher.group(1).equals("")){
-							parameters.add(null);
-						}*/
-						/*for (int i=2; i < matcher.groupCount(); i++){
-							
-						}*/
-						/*if (matcher.groupCount() > 1){
-							String match = matcher.group(1);
-							if (match.equals("")){
-								parameters.add(null);
-							} else if (match.lastIndexOf(",") == match.length() - 1){
-								for (int i = 0; i<match.length(); i++){
-									parameters.add(null);
-								}
-							} else if (match.contains("\"")){
-								if (match.indexOf(',') == 0){
-									match = match.substring(1).replaceAll("%2[cC]", ",");
-								}
-							} else {
-								parameters.add(match.replaceAll(",", "").replaceAll("%2[cC]", ","));
-							}
-						}*/
 					}
 				}
 				actionList.add(new ActionPair(actionName, parameters));

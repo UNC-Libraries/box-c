@@ -30,10 +30,10 @@
 		<property name="properties" ref="searchProperties" />
 	</bean>
 	<util:properties id="searchProperties" location="classpath:search.properties" />
-	<bean id="hierarchicalFacet" class="edu.unc.lib.dl.search.solr.model.HierarchicalFacet">
+	<bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
 		<property name="searchSettings" ref="searchSettings" />
 	</bean>
-	<bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
+	<bean id="facetFieldFactory" class="edu.unc.lib.dl.search.solr.model.FacetFieldFactory">
 		<property name="searchSettings" ref="searchSettings" />
 	</bean>
 	<bean id="searchActionService" class="edu.unc.lib.dl.search.solr.service.SearchActionService">

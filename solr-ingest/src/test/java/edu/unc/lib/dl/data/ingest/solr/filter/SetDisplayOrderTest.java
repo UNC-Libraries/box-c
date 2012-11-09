@@ -66,7 +66,7 @@ public class SetDisplayOrderTest extends Assert {
 		parentDIP.setFoxml(foxml);
 
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
-		when(tsqs.fetchFirstBySubjectAndPredicate(any(PID.class), anyString())).thenReturn("info:fedora/uuid:parent");
+		when(tsqs.fetchByPredicateAndLiteral(anyString(), any(PID.class))).thenReturn(Arrays.asList(new PID("info:fedora/uuid:parent")));
 
 		DocumentIndexingPackageFactory dipFactory = mock(DocumentIndexingPackageFactory.class);
 		when(dipFactory.createDocumentIndexingPackage(any(PID.class))).thenReturn(parentDIP);

@@ -33,14 +33,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import edu.unc.lib.dl.security.access.AccessGroupConstants;
 import edu.unc.lib.dl.security.access.AccessGroupSet;
-import edu.unc.lib.dl.security.access.AccessType;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.ui.service.FedoraContentService;
 import edu.unc.lib.dl.ui.util.AccessControlSettings;
-import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;

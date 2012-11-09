@@ -1,6 +1,7 @@
 package edu.unc.lib.dl.search.solr.model;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Map;
 import org.apache.solr.client.solrj.response.FacetField;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidFacetException;
+import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
@@ -17,10 +19,23 @@ public class FacetFieldFactory {
 
 	public GenericFacet createFacet(String fieldKey, String facetValue) {
 		Class<?> facetClass = searchSettings.getFacetClasses().get(fieldKey);
+		if (facetClass == null) {
+			facetClass = GenericFacet.class;
+		}
 		try {
 			Constructor<?> constructor = facetClass.getConstructor(String.class, String.class);
-			return (GenericFacet) constructor.newInstance(fieldKey, facetValue);
+			Object newFacet = constructor.newInstance(fieldKey, facetValue);
+			/*if (newFacet == null)
+				throw new Exception();*/
+			return (GenericFacet) newFacet;
+		} catch (InvocationTargetException e) {
+			if (e.getCause() instanceof InvalidHierarchicalFacetException)
+				throw (InvalidHierarchicalFacetException)e.getCause();
+			throw new InvalidFacetException(
+					"An exception occurred while attempting to instantiate a new facet field object for " + fieldKey + " "
+							+ facetValue, e);
 		} catch (Exception e) {
+			System.out.println(e.getClass().getName());
 			throw new InvalidFacetException(
 					"An exception occurred while attempting to instantiate a new facet field object for " + fieldKey + " "
 							+ facetValue, e);
