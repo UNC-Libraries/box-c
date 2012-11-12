@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
@@ -418,7 +419,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * @param resultResponse
 	 * @param accessGroups
 	 */
-	public void getChildrenCounts(List<BriefObjectMetadataBean> resultList, AccessGroupSet accessGroups) {
+	public void getChildrenCounts(List<BriefObjectMetadata> resultList, AccessGroupSet accessGroups) {
 		QueryResponse queryResponse = null;
 		SolrQuery solrQuery = new SolrQuery();
 		StringBuilder query = new StringBuilder();
@@ -438,9 +439,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 		long maxTier = 0;
 		boolean first = true;
 
-		List<BriefObjectMetadataBean> containerObjects = new ArrayList<BriefObjectMetadataBean>();
+		List<BriefObjectMetadata> containerObjects = new ArrayList<BriefObjectMetadata>();
 
-		for (BriefObjectMetadataBean metadataObject : resultList) {
+		for (BriefObjectMetadata metadataObject : resultList) {
 			if (metadataObject.getPath() != null
 					&& (metadataObject.getResourceType().equals(searchSettings.resourceTypeCollection)
 							|| metadataObject.getResourceType().equals(searchSettings.resourceTypeFolder) || metadataObject
@@ -493,12 +494,12 @@ public class SolrQueryLayerService extends SolrSearchService {
 		}
 	}
 
-	protected void assignChildrenCounts(QueryResponse queryResponse, List<BriefObjectMetadataBean> containerObjects) {
+	protected void assignChildrenCounts(QueryResponse queryResponse, List<BriefObjectMetadata> containerObjects) {
 		for (FacetField facetField : queryResponse.getFacetFields()) {
 			if (facetField.getValues() != null) {
 				for (FacetField.Count facetValue : facetField.getValues()) {
 					for (int i = 0; i < containerObjects.size(); i++) {
-						BriefObjectMetadataBean container = containerObjects.get(i);
+						BriefObjectMetadata container = containerObjects.get(i);
 						if (facetValue.getName().indexOf(container.getPath().getSearchValue()) == 0) {
 							container.setChildCount(facetValue.getCount());
 							break;

@@ -27,7 +27,7 @@ import org.apache.solr.client.solrj.SolrQuery;
  * @author bbpennel
  */
 public class SearchResultResponse {
-	private List<BriefObjectMetadataBean> resultList;
+	private List<BriefObjectMetadata> resultList;
 	private FacetFieldList facetFields;
 	private long resultCount;
 	private SearchState searchState;
@@ -36,11 +36,11 @@ public class SearchResultResponse {
 	public SearchResultResponse(){
 	}
 	
-	public List<BriefObjectMetadataBean> getResultList() {
+	public List<BriefObjectMetadata> getResultList() {
 		return resultList;
 	}
 
-	public void setResultList(List<BriefObjectMetadataBean> resultList) {
+	public void setResultList(List<BriefObjectMetadata> resultList) {
 		this.resultList = resultList;
 	}
 
@@ -78,7 +78,7 @@ public class SearchResultResponse {
 
 	public List<String> getIdList(){
 		List<String> ids = new ArrayList<String>();
-		for (BriefObjectMetadataBean brief: this.resultList){
+		for (BriefObjectMetadata brief: this.resultList){
 			ids.add(brief.getId());
 		}
 		return ids;

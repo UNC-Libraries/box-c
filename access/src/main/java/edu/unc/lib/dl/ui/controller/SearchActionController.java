@@ -18,6 +18,8 @@ package edu.unc.lib.dl.ui.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
@@ -116,7 +118,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 			Object contentTypeValue = searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE);
 			if (contentTypeValue instanceof MultivaluedHierarchicalFacet) {
 				LOG.debug("Replacing content type search value " + searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE));
-				BriefObjectMetadataBean representative = resultResponse.getResultList().get(0);
+				BriefObjectMetadata representative = resultResponse.getResultList().get(0);
 				MultivaluedHierarchicalFacet repFacet = representative.getContentTypeFacet().get(0);
 				((MultivaluedHierarchicalFacet)contentTypeValue).setDisplayValues(repFacet);
 				

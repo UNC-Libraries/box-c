@@ -26,6 +26,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -81,7 +82,7 @@ public class HierarchicalBrowseController extends AbstractSolrSearchController {
 			BriefObjectMetadataBean rootNode = queryLayer.getObjectById(new SimpleIdRequest(
 					((CutoffFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH)).getSearchKey(),
 					browseRequest.getAccessGroups()));
-			resultResponse.setResultList(new ArrayList<BriefObjectMetadataBean>());
+			resultResponse.setResultList(new ArrayList<BriefObjectMetadata>());
 			resultResponse.getResultList().add(rootNode);
 			
 			SearchResultResponse itemResults = queryLayer.getHierarchicalBrowseItemResult(browseRequest);

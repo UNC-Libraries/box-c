@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentFilteringPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -142,7 +143,7 @@ public class SolrUpdateRunnable implements Runnable {
 
 			// Queue up the children for processing, with a delete tree command for containers and a regular delete
 			// otherwise
-			for (BriefObjectMetadataBean child : orphanedChildResults.getResultList()) {
+			for (BriefObjectMetadata child : orphanedChildResults.getResultList()) {
 				solrUpdateService.offer(child.getId(), SolrUpdateAction.DELETE);
 			}
 		} catch (Exception e) {

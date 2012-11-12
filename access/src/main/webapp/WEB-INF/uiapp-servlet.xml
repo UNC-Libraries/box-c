@@ -72,10 +72,6 @@
 	<bean id="accessSettings" class="edu.unc.lib.dl.ui.util.AccessControlSettings">
 		<property name="properties" ref="accessProperties" />
 	</bean>
-
-	<bean id="hierarchicalFacet" class="edu.unc.lib.dl.search.solr.model.HierarchicalFacet">
-		<property name="searchSettings" ref="searchSettings" />
-	</bean>
 	
 	<bean id="hierarchicalBrowseResultResponse" class="edu.unc.lib.dl.ui.model.response.HierarchicalBrowseResultResponse">
 		<property name="searchSettings" ref="searchSettings" />

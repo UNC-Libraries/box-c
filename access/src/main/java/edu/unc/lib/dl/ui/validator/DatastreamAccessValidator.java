@@ -18,6 +18,7 @@ package edu.unc.lib.dl.ui.validator;
 import java.util.Collection;
 
 import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -35,12 +36,12 @@ public class DatastreamAccessValidator {
 	}
 	
 	public static void filterSearchResult(SearchResultResponse response, AccessGroupSet userAccess){
-		for (BriefObjectMetadataBean metadata: response.getResultList()){
+		for (BriefObjectMetadata metadata: response.getResultList()){
 			filterBriefObject(metadata, userAccess);
 		}
 	}
 	
-	public static void filterBriefObject(BriefObjectMetadataBean metadata, AccessGroupSet userAccess){
+	public static void filterBriefObject(BriefObjectMetadata metadata, AccessGroupSet userAccess){
 		if (userAccess.contains(accessSettings.getAdminGroup()))
 			return;
 	}

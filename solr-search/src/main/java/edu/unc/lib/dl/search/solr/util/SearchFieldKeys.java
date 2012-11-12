@@ -47,6 +47,7 @@ public class SearchFieldKeys {
 	public static String TITLE_INDEX = "TITLE_INDEX";
 	public static String CONTRIBUTOR_INDEX = "CONTRIBUTOR_INDEX";
 	public static String SUBJECT_INDEX = "SUBJECT_INDEX";
+	public static String ROLLUP_ID = "ROLLUP_ID";
 	
 	public SearchFieldKeys(){
 		

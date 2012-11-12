@@ -404,6 +404,11 @@ public class SearchStateFactory {
 			searchState.setFacetsToRetrieve(facetsToRetrieve);
 		}
 		
+		parameter = getParameter(request, searchSettings.searchStateParam("ROLLUP"));
+		if (parameter != null){
+			Boolean rollup = new Boolean(parameter);
+			searchState.setRollup(rollup);
+		}
 	}
 	
 	/**

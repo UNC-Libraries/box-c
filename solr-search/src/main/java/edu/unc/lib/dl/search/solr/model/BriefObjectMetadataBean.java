@@ -33,16 +33,16 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
  * 
  * @author bbpennel
  */
-public class BriefObjectMetadataBean extends IndexDocumentBean {
+public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefObjectMetadata{
 	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(BriefObjectMetadataBean.class);
-	private CutoffFacet ancestorPathFacet;
-	private CutoffFacet path;
-	private List<MultivaluedHierarchicalFacet> contentTypeFacet;
-	private List<Datastream> datastreamObjects;
+	protected CutoffFacet ancestorPathFacet;
+	protected CutoffFacet path;
+	protected List<MultivaluedHierarchicalFacet> contentTypeFacet;
+	protected List<Datastream> datastreamObjects;
 	// Inverted map of the roleGroup, clustering roles into buckets by group
 	Map<String, Collection<String>> groupRoleMap;
-	private long childCount;
+	protected long childCount;
 
 	public BriefObjectMetadataBean() {
 	}
@@ -188,7 +188,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean {
 		return childCount;
 	}
 
-	public void setChildCount(long childCount) {
+	public void setChildCount(Long childCount) {
 		this.childCount = childCount;
 	}
 }

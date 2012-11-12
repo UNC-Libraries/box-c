@@ -83,6 +83,4 @@ public class SearchRequest implements Serializable {
 	public void setApplyFacetPrefixes(boolean applyFacetPrefixes) {
 		this.applyFacetPrefixes = applyFacetPrefixes;
 	}
-	
-	
 }

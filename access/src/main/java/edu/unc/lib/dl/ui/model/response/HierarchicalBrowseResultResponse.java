@@ -25,6 +25,7 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -74,9 +75,9 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 	}
 	
 	public void removeContainersWithoutContents(){
-		ListIterator<BriefObjectMetadataBean> resultIt = this.getResultList().listIterator(this.getResultList().size());
+		ListIterator<BriefObjectMetadata> resultIt = this.getResultList().listIterator(this.getResultList().size());
 		while (resultIt.hasPrevious()){
-			BriefObjectMetadataBean briefObject = resultIt.previous();
+			BriefObjectMetadata briefObject = resultIt.previous();
 			if (briefObject.getChildCount() == 0 && searchSettings.isResourceTypeContainer(briefObject.getResourceType())){
 				if (this.matchingContainerPids != null && this.matchingContainerPids.contains(briefObject.getId())){
 					//The container was directly found by the users query, so leave it as is.
@@ -108,7 +109,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 	 * Appends item results to the end of the list and adds them as children of the root.
 	 * @param itemResults
 	 */
-	public void populateItemResults(List<BriefObjectMetadataBean> itemResults){
+	public void populateItemResults(List<BriefObjectMetadata> itemResults){
 		if (this.getResultList().size() > 0 && this.getResultList().get(0).getPath() != null){
 			for (HierarchicalFacetNode rootTier: this.getResultList().get(0).getPath().getFacetNodes()){
 				Long count = this.subcontainerCounts.get(rootTier.getSearchKey());
@@ -119,7 +120,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 				}
 			}
 		}
-		for (BriefObjectMetadataBean itemResult: itemResults){
+		for (BriefObjectMetadata itemResult: itemResults){
 			this.getResultList().add(itemResult);
 		}
 	}

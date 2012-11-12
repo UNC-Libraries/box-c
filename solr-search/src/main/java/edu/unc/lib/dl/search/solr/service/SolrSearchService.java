@@ -26,17 +26,25 @@ import java.util.Set;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
 import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.Group;
+import org.apache.solr.client.solrj.response.GroupCommand;
+import org.apache.solr.client.solrj.response.GroupResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.params.GroupParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
+import edu.unc.lib.dl.search.solr.model.GroupedMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -157,7 +165,23 @@ public class SolrSearchService {
 
 		LOG.debug("getSearchResults query: " + solrQuery);
 		try {
-			return executeSearch(solrQuery, searchRequest.getSearchState(), isRetrieveFacetsRequest, returnQuery);
+			SearchResultResponse resultResponse = executeSearch(solrQuery, searchRequest.getSearchState(),
+					isRetrieveFacetsRequest, returnQuery);
+
+			// Add in the correct rollup representatives when they are missing.
+			if (searchRequest.getSearchState().isRollup()) {
+				for (BriefObjectMetadata item : resultResponse.getResultList()) {
+					if (!item.getId().equals(item.getRollup())) {
+						BriefObjectMetadataBean representative = this.getObjectById(new SimpleIdRequest(item.getRollup(),
+								searchRequest.getAccessGroups()));
+						GroupedMetadataBean grouped = (GroupedMetadataBean) item;
+						grouped.getItems().add(representative);
+						grouped.setRepresentative(representative);
+					}
+				}
+			}
+			
+			return resultResponse;
 		} catch (SolrServerException e) {
 			LOG.error("Error retrieving Solr search result request", e);
 		}
@@ -218,9 +242,9 @@ public class SolrSearchService {
 
 		solrQuery.setFacet(true);
 		solrQuery.setFacetMinCount(1);
-		
+
 		String solrFieldName = solrSettings.getFieldName(facet.getFieldName());
-		
+
 		solrQuery.addFacetField(solrFieldName);
 		solrQuery.setFacetPrefix(solrFieldName, facet.getSearchValue());
 
@@ -234,8 +258,7 @@ public class SolrSearchService {
 		FacetField facetField = queryResponse.getFacetField(solrFieldName);
 		if (facetField.getValueCount() == 0)
 			return null;
-		return facetFieldFactory.createFacetFieldObject(facet.getFieldName(),
-				queryResponse.getFacetField(solrFieldName));
+		return facetFieldFactory.createFacetFieldObject(facet.getFieldName(), queryResponse.getFacetField(solrFieldName));
 	}
 
 	/**
@@ -449,11 +472,13 @@ public class SolrSearchService {
 			}
 		}
 
+		if (searchState.isRollup()) {
+			solrQuery.set(GroupParams.GROUP, true);
+			solrQuery.set(GroupParams.GROUP_FIELD, solrSettings.getFieldName(SearchFieldKeys.ROLLUP_ID));
+			solrQuery.set(GroupParams.GROUP_TOTAL_COUNT, true);
+		}
+
 		// Add sort parameters
-
-		if (searchSettings == null)
-			LOG.debug("searchSettings is NULL");
-
 		List<SearchSettings.SortField> sortFields = searchSettings.sortTypes.get(searchState.getSortType());
 		if (sortFields != null) {
 			for (int i = 0; i < sortFields.size(); i++) {
@@ -498,7 +523,7 @@ public class SolrSearchService {
 			Iterator<Entry<String, Object>> facetIt = facets.entrySet().iterator();
 			while (facetIt.hasNext()) {
 				Entry<String, Object> facetEntry = facetIt.next();
-				
+
 				if (facetEntry.getValue() instanceof String) {
 					LOG.debug("Adding facet " + facetEntry.getKey() + " as a String");
 					// Add Normal facets
@@ -552,12 +577,33 @@ public class SolrSearchService {
 	 * @return
 	 * @throws SolrServerException
 	 */
+	@SuppressWarnings("unchecked")
 	protected SearchResultResponse executeSearch(SolrQuery query, SearchState searchState,
 			boolean isRetrieveFacetsRequest, boolean returnQuery) throws SolrServerException {
 		QueryResponse queryResponse = server.query(query);
+
+		GroupResponse groupResponse = queryResponse.getGroupResponse();
 		SearchResultResponse response = new SearchResultResponse();
-		// Retrieve the results as BriefObjectMetadataBeans and store them to response
-		response.setResultList(queryResponse.getBeans(BriefObjectMetadataBean.class));
+		if (groupResponse != null) {
+			List<BriefObjectMetadata> groupResults = new ArrayList<BriefObjectMetadata>();
+			for (GroupCommand groupCmd : groupResponse.getValues()) {
+				//response.setResultCount(groupCmd.getMatches());
+				response.setResultCount(groupCmd.getNGroups());
+				for (Group group : groupCmd.getValues()) {
+					GroupedMetadataBean grouped = new GroupedMetadataBean(group.getGroupValue(), this.server.getBinder()
+							.getBeans(BriefObjectMetadataBean.class, group.getResult()), group.getResult().getNumFound());
+					groupResults.add(grouped);
+				}
+			}
+			response.setResultList(groupResults);
+			
+		} else {
+			List<?> results = queryResponse.getBeans(BriefObjectMetadataBean.class);
+			response.setResultList((List<BriefObjectMetadata>) results);
+			// Store the number of results
+			response.setResultCount(queryResponse.getResults().getNumFound());
+		}
+
 		if (isRetrieveFacetsRequest) {
 			// Store facet results
 			response.setFacetFields(facetFieldFactory.createFacetFieldList(queryResponse.getFacetFields()));
@@ -570,8 +616,7 @@ public class SolrSearchService {
 		} else {
 			response.setFacetFields(null);
 		}
-		// Store the number of results
-		response.setResultCount(queryResponse.getResults().getNumFound());
+		
 		// Set search state that generated this result
 		response.setSearchState(searchState);
 
