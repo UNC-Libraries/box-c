@@ -86,6 +86,8 @@ public class SearchSettings extends AbstractSettings {
 	public int expandedFacetsPerGroup;
 	// Max number of facet entries that can be returned for a single facet field result set.
 	public int maxFacetsPerGroup;
+	// Indicates whether to limit search results to only those with administrative viewing privileges
+	public Boolean allowPatronAccess;
 	// Fields which should be treated as access filters
 	public HashSet<String> accessFields;
 	// Access filter fields which users are allowed to filter by.
@@ -204,6 +206,7 @@ public class SearchSettings extends AbstractSettings {
 		populateCollectionFromProperty("search.sort.displayOrder", sortDisplayOrder, properties, "\\|");
 
 		// Access field names
+		this.setAllowPatronAccess(new Boolean(properties.getProperty("search.access.defaultFilter", "true")));
 		populateCollectionFromProperty("search.access.fields", accessFields, properties, ",");
 		populateCollectionFromProperty("search.access.filterableFields", accessFilterableFields, properties, ",");
 
@@ -352,6 +355,14 @@ public class SearchSettings extends AbstractSettings {
 
 	public void setRangeSearchableFields(HashSet<String> rangeSearchableFields) {
 		this.rangeSearchableFields = rangeSearchableFields;
+	}
+
+	public Boolean getAllowPatronAccess() {
+		return allowPatronAccess;
+	}
+
+	public void setAllowPatronAccess(Boolean allowPatronAccess) {
+		this.allowPatronAccess = allowPatronAccess;
 	}
 
 	public HashSet<String> getAccessFields() {

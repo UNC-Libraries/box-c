@@ -105,7 +105,8 @@
 		<module>solr-ingest</module>
 		<module>solr-search</module>
 		<module>sword-server</module>
-  </modules>
+		<module>admin-review</module>
+	</modules>
 
 	<reporting>
 		<plugins>

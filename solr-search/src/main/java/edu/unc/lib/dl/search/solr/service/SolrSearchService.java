@@ -102,10 +102,10 @@ public class SolrSearchService {
 				.append(SolrSettings.sanitize(idRequest.getId()));
 		try {
 			// Add access restrictions to query
-			addAccessRestrictions(query, idRequest.getAccessGroups(), SearchFieldKeys.RECORD_ACCESS);
-			if (idRequest.getAccessTypeFilter() != null) {
+			addAccessRestrictions(query, idRequest.getAccessGroups());
+			/*if (idRequest.getAccessTypeFilter() != null) {
 				addAccessRestrictions(query, idRequest.getAccessGroups(), idRequest.getAccessTypeFilter());
-			}
+			}*/
 		} catch (AccessRestrictionException e) {
 			// If the user doesn't have any access groups, they don't have access to anything, return null.
 			LOG.error("Error while attempting to add access restrictions to object " + idRequest.getId(), e);
@@ -201,13 +201,19 @@ public class SolrSearchService {
 	 * @throws AccessRestrictionException
 	 *            thrown if no groups are provided.
 	 */
-	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups, String accessType)
+	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups/*, String accessType*/)
 			throws AccessRestrictionException {
 		if (accessGroups == null || accessGroups.size() == 0) {
 			throw new AccessRestrictionException("No access groups were provided.");
 		}
 		if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)) {
-			query.append(" (").append(accessGroups.joinAccessGroups(" OR ", "readGroup:", true)).append(')');
+			String joinedGroups = accessGroups.joinAccessGroups(" OR ", true);
+			if (searchSettings.getAllowPatronAccess()) {
+				query.append(" AND ((").append("readGroup:(").append(joinedGroups).append(')')
+					.append("status:Published) OR adminGroup:(").append(joinedGroups).append(')');
+			} else {
+				query.append(" AND adminGroup:(").append(joinedGroups).append(')');
+			}
 		}
 		return query;
 	}
@@ -231,7 +237,7 @@ public class SolrSearchService {
 
 		try {
 			// Add access restrictions to query
-			addAccessRestrictions(query, accessGroups, SearchFieldKeys.RECORD_ACCESS);
+			addAccessRestrictions(query, accessGroups);
 		} catch (AccessRestrictionException e) {
 			// If the user doesn't have any access groups, they don't have access to anything, return null.
 			LOG.error(e.getMessage());
@@ -277,10 +283,10 @@ public class SolrSearchService {
 
 		try {
 			// Add access restrictions to query
-			addAccessRestrictions(query, idRequest.getAccessGroups(), SearchFieldKeys.RECORD_ACCESS);
-			if (accessType != null) {
+			addAccessRestrictions(query, idRequest.getAccessGroups());
+			/*if (accessType != null) {
 				addAccessRestrictions(query, idRequest.getAccessGroups(), accessType);
-			}
+			}*/
 		} catch (AccessRestrictionException e) {
 			// If the user doesn't have any access groups, they don't have access to anything, return null.
 			LOG.error(e.getMessage());
@@ -334,7 +340,7 @@ public class SolrSearchService {
 		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':').append(SolrSettings.sanitize(pid));
 		try {
 			// Add access restrictions to query
-			addAccessRestrictions(query, accessGroups, SearchFieldKeys.RECORD_ACCESS);
+			addAccessRestrictions(query, accessGroups);
 		} catch (AccessRestrictionException e) {
 			// If the user doesn't have any access groups, they don't have access to anything, return null.
 			LOG.error("Error while attempting to add access restrictions to object " + pid, e);
@@ -449,10 +455,10 @@ public class SolrSearchService {
 
 		try {
 			// Add access restrictions to query
-			addAccessRestrictions(query, searchRequest.getAccessGroups(), SearchFieldKeys.RECORD_ACCESS);
-			if (searchState.getAccessTypeFilter() != null) {
+			addAccessRestrictions(query, searchRequest.getAccessGroups());
+			/*if (searchState.getAccessTypeFilter() != null) {
 				addAccessRestrictions(query, searchRequest.getAccessGroups(), searchState.getAccessTypeFilter());
-			}
+			}*/
 		} catch (AccessRestrictionException e) {
 			// If the user doesn't have any access groups, they don't have access to anything, return null.
 			LOG.error(e.getMessage());

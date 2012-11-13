@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.ui.controller;
+package edu.unc.lib.dl.search.solr.controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -32,8 +32,8 @@ import edu.unc.lib.dl.search.solr.service.SearchActionService;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.validator.SearchStateValidator;
-import edu.unc.lib.dl.ui.model.request.HierarchicalBrowseRequest;
-import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
+import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
+import edu.unc.lib.dl.search.solr.service.SolrQueryLayerService;
 
 /**
  * Abstract base class for controllers which interact with solr services.
@@ -69,7 +69,6 @@ public abstract class AbstractSolrSearchController extends AccessBaseController 
 	 * @param request
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	protected SearchRequest generateSearchRequest(HttpServletRequest request, SearchState searchState, SearchRequest searchRequest){
 		
 		//Get user access groups.  Fill this in later, for now just set to public

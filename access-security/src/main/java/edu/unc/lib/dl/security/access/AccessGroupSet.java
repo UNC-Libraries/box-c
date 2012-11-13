@@ -103,6 +103,25 @@ public class AccessGroupSet extends HashSet<String> {
 		return sb.toString();
 	}
 	
+	public String joinAccessGroups(String delimiter, boolean escapeColons){
+		StringBuffer sb = new StringBuffer();
+		String value;
+		boolean firstEntry = true;
+		Iterator<String> agIt = this.iterator();
+		while (agIt.hasNext()){
+			value = agIt.next();
+			if (escapeColons)
+				value = value.replaceAll("\\:", "\\\\:");
+			if (firstEntry)
+				firstEntry = false;
+			else sb.append(delimiter);
+			sb.append(value);
+		}
+		
+		return sb.toString();
+	}
+	
+	
 	public String toString(){
 		return this.joinAccessGroups(" ", "", true);
 	}

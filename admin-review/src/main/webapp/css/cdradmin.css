@@ -1,0 +1,159 @@
+#pagewrap {
+	min-width: 960px;
+	width: inherit;
+}
+
+.contentarea.nobottom {
+	margin-bottom: 0px;
+}
+
+.threecol {
+	min-width: 720px;
+	width: 75%;
+}
+
+#header_search {
+	float: right;
+	width: 200px;
+}
+
+.browseitem {
+	border-top: 1px solid #eee;
+}
+
+.landing_page .browseitem > .contentarea {
+	margin: 20px 0px;
+}
+
+.landing_page .browseitem h2 {
+	margin-bottom: 15px;
+}
+
+.landing_page .browseitem > .contentarea > a {
+	float: left;
+	padding: 0px 20px 20px 0px;
+	width: 128px;
+	min-height: 128px;
+}
+
+.browseitem .itemdetails {
+	margin-left: 155px;
+	margin-right: 190px;
+}
+
+.browseitem .itemnavigation {
+	float: right;
+	width: 180px;
+	padding-left: 10px;
+}
+
+.description_text {
+	font-size: 13px;
+	padding-bottom: 10px;
+}
+
+/** Review page **/
+
+/*.review_page .browseitem {
+	border-width: 0px;
+}
+
+.even {
+	background-color: #fafafa;
+}*/
+
+.review_page .browseitem {
+}
+
+.even {
+	background-color: #fff;
+}
+
+.selected {
+	background-color: #f8f8ff;
+}
+
+.review_page .browseitem .itemdetails {
+	margin-left: 30px;
+}
+
+.review_page .browseitem .itemnavigation {
+	width: 110px;
+}
+
+.review_page .browseitem > .contentarea {
+	margin: 5px 0px;
+}
+
+.review_page .browseitem:first-child {
+	margin-top: 5px;
+	border-top: 1px solid #eee;
+}
+
+#results_list_actions {
+	margin-top: -5px;	
+}
+
+#results_list_actions p {
+	display: inline;
+	padding-right: 10px;
+}
+
+.browseitem .preview {
+	color: #0A5274;
+	display: inline;
+	white-space: nowrap;
+	font-size: 14px;
+	line-height: 14px;
+}
+
+/** Edit page **/
+.edit_page .preview {
+	display: block;
+	padding-top: 10px;
+}
+
+/** Light color theme **/
+
+.shadowbottom {
+	background-position: left 104%;
+}
+
+.dark {
+	background-color: #FBFBFE;
+}
+
+.darkest {
+	background-color: #DDF0FA;
+	/* background-color: #DDEAF0; */
+}
+
+.dark a, .darkest a {
+	color: #5AABCF;
+}
+
+div#username_wrap {
+	color: #0A5274;
+}
+
+ul.secondarymenu li a {
+	margin-right: 1px;
+	background-color: #FFFFFF;
+	border-right: 0px;
+	border: 1px solid #D8EDf5;
+	border-bottom: 0px;
+	color: #0A5274;
+	background-image: none;
+}
+
+ul#mainmenu li a {
+	margin-right: 1px;
+	border-right: 0px;
+	background-color: #FFFFFF;
+	border-right: 0px;
+	border: 1px solid #D8EDf5;
+	color: #0A5274;
+	background-image: none;
+}
+
+/** Light color theme end **/
