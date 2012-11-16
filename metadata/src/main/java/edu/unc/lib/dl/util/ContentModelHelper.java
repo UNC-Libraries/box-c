@@ -17,6 +17,9 @@ package edu.unc.lib.dl.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jdom.Namespace;
 
@@ -118,13 +121,15 @@ public class ContentModelHelper {
 		metadataPatron("metadata-patron", new Permission[] {});
 		private URI uri;
 		private String predicate;
-		private Permission[] permissions;
+		private Set<Permission> permissions;
 
 		UserRole(String predicate, Permission[] perms) {
 			try {
 				this.predicate = predicate;
 				this.uri = new URI(JDOMNamespaceUtil.CDR_ROLE_NS.getURI() + predicate);
-				this.permissions = perms;
+				HashSet<Permission> mypermissions = new HashSet<Permission>(perms.length);
+				Collections.addAll(mypermissions, perms);
+				this.permissions = Collections.unmodifiableSet(mypermissions);
 			} catch (URISyntaxException e) {
 				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
 				x.initCause(e);
@@ -136,7 +141,7 @@ public class ContentModelHelper {
 			return this.uri;
 		}
 		
-		public Permission[] getPermissions() {
+		public Set<Permission> getPermissions() {
 			return permissions;
 		}
 
