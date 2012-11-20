@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.search.solr.service;
+package edu.unc.lib.dl.ui.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -254,7 +254,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		if (pivotOrder == null)
 			pivotOrder = (long) 0;
 
-		StringBuilder accessQuery = new StringBuilder();
+		StringBuilder accessQuery = new StringBuilder("*:*");
 		try {
 			// Add access restrictions to query
 			addAccessRestrictions(accessQuery, accessGroups);
@@ -420,9 +420,16 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * @param accessGroups
 	 */
 	public void getChildrenCounts(List<BriefObjectMetadata> resultList, AccessGroupSet accessGroups) {
+		this.getChildrenCounts(resultList, accessGroups, "child", null);
+	}
+	
+	public void getChildrenCounts(List<BriefObjectMetadata> resultList, AccessGroupSet accessGroups, String countName, String queryAddendum) {
+		if (resultList.size() == 0)
+			return;
+		
 		QueryResponse queryResponse = null;
 		SolrQuery solrQuery = new SolrQuery();
-		StringBuilder query = new StringBuilder();
+		StringBuilder query = new StringBuilder("*:*");
 
 		try {
 			// Add access restrictions to query
@@ -464,6 +471,10 @@ public class SolrQueryLayerService extends SolrSearchService {
 		if (!first)
 			query.append(")");
 
+		if (queryAddendum != null) {
+			query.append(" AND ").append(queryAddendum);
+		}
+		
 		// Add query
 		if (query.length() > 0) {
 			solrQuery.setQuery(query.toString());
@@ -488,20 +499,20 @@ public class SolrQueryLayerService extends SolrSearchService {
 			solrQuery.addFacetQuery(facetQuery.toString());
 
 			queryResponse = this.executeQuery(solrQuery);
-			assignChildrenCounts(queryResponse, containerObjects);
+			assignChildrenCounts(queryResponse, containerObjects, countName);
 		} catch (SolrServerException e) {
 			LOG.error("Error retrieving Solr search result request: " + e);
 		}
 	}
 
-	protected void assignChildrenCounts(QueryResponse queryResponse, List<BriefObjectMetadata> containerObjects) {
+	protected void assignChildrenCounts(QueryResponse queryResponse, List<BriefObjectMetadata> containerObjects, String countName) {
 		for (FacetField facetField : queryResponse.getFacetFields()) {
 			if (facetField.getValues() != null) {
 				for (FacetField.Count facetValue : facetField.getValues()) {
 					for (int i = 0; i < containerObjects.size(); i++) {
 						BriefObjectMetadata container = containerObjects.get(i);
 						if (facetValue.getName().indexOf(container.getPath().getSearchValue()) == 0) {
-							container.setChildCount(facetValue.getCount());
+							container.getCountMap().put(countName, facetValue.getCount());
 							break;
 						}
 					}
@@ -623,7 +634,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		try {
 			queryResponse = this.executeQuery(childQuery);
 			// Populate children result counts
-			assignChildrenCounts(queryResponse, browseResults.getResultList());
+			assignChildrenCounts(queryResponse, browseResults.getResultList(), null);
 			browseResults.setRootCount(queryResponse.getResults().getNumFound());
 
 			// /////////////////////////////////////////////////////

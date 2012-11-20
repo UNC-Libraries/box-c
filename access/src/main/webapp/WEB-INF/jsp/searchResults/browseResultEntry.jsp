@@ -61,7 +61,7 @@
 		
 		<h2>
 			<a href="<c:out value='${primaryActionUrl}' />" class="has_tooltip" title="View details for ${metadata.title}."><c:out value="${metadata.title}"/></a> 
-			<p class="searchitem_container_count">(${metadata.childCount} item<c:if test="${metadata.childCount != 1}">s</c:if>)</p>
+			<span class="searchitem_container_count">(${metadata.childCount} item<c:if test="${metadata.childCount != 1}">s</c:if>)</span>
 		</h2>
 		<c:if test="${not empty metadata.creator}">
 			<p>${searchSettings.searchFieldLabels[searchFieldKeys.CREATOR]}: 

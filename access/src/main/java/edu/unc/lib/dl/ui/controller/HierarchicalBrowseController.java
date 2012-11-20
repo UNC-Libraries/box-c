@@ -35,8 +35,8 @@ import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
-import edu.unc.lib.dl.ui.model.request.HierarchicalBrowseRequest;
-import edu.unc.lib.dl.ui.model.response.HierarchicalBrowseResultResponse;
+import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
+import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 
 /**
  * Handles requests for the heirarchical structure view browse view.  The request may

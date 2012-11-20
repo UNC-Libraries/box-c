@@ -20,9 +20,9 @@ public interface BriefObjectMetadata {
 
 	public CutoffFacetNode getParentCollectionObject();
 
-	public void setChildCount(Long childCount);
+	public void setCountMap(Map<String,Long> countMap);
 	
-	public long getChildCount();
+	public Map<String,Long> getCountMap();
 
 	public String getId();
 	

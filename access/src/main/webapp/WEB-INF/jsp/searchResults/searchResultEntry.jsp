@@ -96,7 +96,7 @@
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection || metadata.resourceType == searchSettings.resourceTypeFolder}">
 					<h2><a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>
 						<c:if test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
-							<p class="searchitem_container_count">(${metadata.childCount} item<c:if test="${metadata.childCount != 1}">s</c:if>)</p>
+							<span class="searchitem_container_count">(${metadata.childCount} item<c:if test="${metadata.childCount != 1}">s</c:if>)</span>
 						</c:if>
 					</h2>
 					<div class="halfwidth">
@@ -128,7 +128,7 @@
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
 					<h2><a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
 						<c:if test="${metadata.resourceType == searchSettings.resourceTypeAggregate && metadata.childCount > 1}">
-							<p class="searchitem_container_count">(${metadata.childCount} item<c:if test="${metadata.childCount != 1}">s</c:if>)</p>
+							<span class="searchitem_container_count">(${metadata.childCount} item<c:if test="${metadata.childCount != 1}">s</c:if>)</span>
 						</c:if>
 					</h2>
 					<div class="halfwidth">

@@ -23,8 +23,8 @@ import javax.servlet.http.HttpServletRequest;
 import edu.unc.lib.dl.security.access.AccessGroupSet;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
-import edu.unc.lib.dl.ui.model.request.HierarchicalBrowseRequest;
-import edu.unc.lib.dl.ui.model.response.HierarchicalBrowseResultResponse;
+import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
+import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -98,7 +98,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 		boolean retrieveHierarchicalItems = briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
 
 		if (retrieveChildrenCount) {
-			briefObject.setChildCount(queryLayer.getChildrenCount(briefObject, accessGroups));
+			briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
 		}
 		
 		if (retrieveFacets) {
@@ -114,7 +114,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 			SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
 					accessGroups, facetsToRetrieve);
 
-			briefObject.setChildCount(resultResponse.getResultCount());
+			briefObject.getCountMap().put("child", resultResponse.getResultCount());
 			String collectionSearchStateUrl = searchSettings.searchStateParams.get("FACET_FIELDS") + "="
 					+ searchSettings.searchFieldParams.get(SearchFieldKeys.ANCESTOR_PATH) + ":"
 					+ briefObject.getPath().getSearchValue();

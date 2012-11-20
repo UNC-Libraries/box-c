@@ -210,7 +210,7 @@ public class SolrSearchService {
 			String joinedGroups = accessGroups.joinAccessGroups(" OR ", true);
 			if (searchSettings.getAllowPatronAccess()) {
 				query.append(" AND ((").append("readGroup:(").append(joinedGroups).append(')')
-					.append("status:Published) OR adminGroup:(").append(joinedGroups).append(')');
+					.append(" AND status:Published) OR adminGroup:(").append(joinedGroups).append("))");
 			} else {
 				query.append(" AND adminGroup:(").append(joinedGroups).append(')');
 			}
@@ -453,6 +453,11 @@ public class SolrSearchService {
 			}
 		}
 
+		// Blank query, make it an everything query
+		if (query.length() == 0) {
+			query.append("*:* ");
+		}
+		
 		try {
 			// Add access restrictions to query
 			addAccessRestrictions(query, searchRequest.getAccessGroups());
@@ -466,11 +471,7 @@ public class SolrSearchService {
 		}
 
 		// Add query
-		if (query.length() > 0) {
-			solrQuery.setQuery(query.toString());
-		} else {
-			solrQuery.setQuery("[* TO *]");
-		}
+		solrQuery.setQuery(query.toString());
 
 		if (searchState.getResultFields() != null) {
 			for (String field : searchState.getResultFields()) {

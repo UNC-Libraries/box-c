@@ -26,7 +26,6 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
@@ -78,7 +77,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 		ListIterator<BriefObjectMetadata> resultIt = this.getResultList().listIterator(this.getResultList().size());
 		while (resultIt.hasPrevious()){
 			BriefObjectMetadata briefObject = resultIt.previous();
-			if (briefObject.getChildCount() == 0 && searchSettings.isResourceTypeContainer(briefObject.getResourceType())){
+			if ((!briefObject.getCountMap().containsKey("child") || briefObject.getCountMap().get("child") == 0) && searchSettings.isResourceTypeContainer(briefObject.getResourceType())){
 				if (this.matchingContainerPids != null && this.matchingContainerPids.contains(briefObject.getId())){
 					//The container was directly found by the users query, so leave it as is.
 				} else {

@@ -31,8 +31,7 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.service.SearchActionService;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.search.solr.validator.SearchStateValidator;
-import edu.unc.lib.dl.ui.model.request.HierarchicalBrowseRequest;
+import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**
@@ -44,8 +43,8 @@ public abstract class AbstractSolrSearchController extends AccessBaseController 
 	
 	@Autowired(required=true)
 	protected SolrQueryLayerService queryLayer;
-	@Autowired(required=true)
-	protected SearchStateValidator briefSearchRequestValidator;
+	//@Autowired(required=true)
+	//protected SearchStateValidator briefSearchRequestValidator;
 	@Autowired(required=true)
 	protected SearchActionService searchActionService;
 	@Autowired
@@ -69,7 +68,6 @@ public abstract class AbstractSolrSearchController extends AccessBaseController 
 	 * @param request
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	protected SearchRequest generateSearchRequest(HttpServletRequest request, SearchState searchState, SearchRequest searchRequest){
 		
 		//Get user access groups.  Fill this in later, for now just set to public
@@ -108,7 +106,7 @@ public abstract class AbstractSolrSearchController extends AccessBaseController 
 		}
 		
 		//Validate the search state to make sure that it contains appropriate values and field names
-		briefSearchRequestValidator.validate(searchState);
+		//briefSearchRequestValidator.validate(searchState);
 		
 		//Store the search state into the search request
 		searchRequest.setSearchState(searchState);

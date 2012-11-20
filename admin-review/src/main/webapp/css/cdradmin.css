@@ -21,15 +21,15 @@
 	border-top: 1px solid #eee;
 }
 
-.landing_page .browseitem > .contentarea {
+.collection_list .browseitem > .contentarea {
 	margin: 20px 0px;
 }
 
-.landing_page .browseitem h2 {
+.collection_list .browseitem h2 {
 	margin-bottom: 15px;
 }
 
-.landing_page .browseitem > .contentarea > a {
+.collection_list .browseitem > .contentarea > a {
 	float: left;
 	padding: 0px 20px 20px 0px;
 	width: 128px;

@@ -42,9 +42,10 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	protected List<Datastream> datastreamObjects;
 	// Inverted map of the roleGroup, clustering roles into buckets by group
 	Map<String, Collection<String>> groupRoleMap;
-	protected long childCount;
+	protected Map<String,Long> countMap;
 
 	public BriefObjectMetadataBean() {
+		countMap = new HashMap<String,Long>(2);
 	}
 
 	// TODO getDefaultWebData getDefaultWebObject getFilesizeByDatastream
@@ -183,12 +184,12 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 			return null;
 		return (CutoffFacetNode) this.ancestorPathFacet.getNode(this.parentCollection);
 	}
-
-	public long getChildCount() {
-		return childCount;
+	
+	public Map<String,Long> getCountMap() {
+		return this.countMap;
 	}
-
-	public void setChildCount(Long childCount) {
-		this.childCount = childCount;
+	
+	public void setCountMap(Map<String,Long> countMap) {
+		this.countMap = countMap;
 	}
 }

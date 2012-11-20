@@ -106,6 +106,7 @@
 		<module>solr-search</module>
 		<module>sword-server</module>
 		<module>admin-review</module>
+		<module>access-common</module>
 	</modules>
 
 	<reporting>

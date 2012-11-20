@@ -78,13 +78,13 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 		return this.representative.getParentCollectionObject();
 	}
 
-	public void setChildCount(Long childCount) {
-		this.representative.setChildCount(childCount);
+	public void setCountMap(Map<String,Long> countMap) {
+		this.representative.setCountMap(countMap);
 	}
 	
 	@Override
-	public long getChildCount() {
-		return this.representative.getChildCount();
+	public Map<String,Long> getCountMap() {
+		return this.representative.getCountMap();
 	}
 
 	@Override

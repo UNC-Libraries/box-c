@@ -7,7 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import edu.unc.lib.dl.search.solr.controller.AbstractSolrSearchController;
+import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -28,10 +28,14 @@ public class DashboardController extends AbstractSolrSearchController {
 		searchRequest.setSearchState(collectionsState);
 		
 		SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
+		// Get children counts
+		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
+		// Get unpublished counts
+		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups(), "unpublished", "status:Unpublished");
 
 		model.addAttribute("userAccessGroups", searchRequest.getAccessGroups());
 		model.addAttribute("resultResponse", resultResponse);
 		
-		return "reviewer_dashboard";
+		return "dashboard/reviewer";
 	}
 }

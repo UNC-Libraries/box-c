@@ -359,10 +359,13 @@ div#username_wrap {
 	word-wrap: break-word;
 }
 
-p.searchitem_container_count {
+.searchitem_container_count {
 	color: #0A5274;
-	display: inline;
 	white-space: nowrap;
+	font-size: 11px;
+    line-height: 14px;
+    margin-bottom: 4px;
+    width: 100%;
 }
 
 .collinfo {

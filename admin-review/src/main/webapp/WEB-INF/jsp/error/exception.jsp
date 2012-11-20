@@ -17,31 +17,7 @@
 --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<!doctype html>
-<html>
-<head>
-	<c:import url="common/headElements.jsp" />
-	<title>
-		CDR Administration <c:if test="${not empty pageSubtitle}"> - <c:out value="${pageSubtitle}"/></c:if>
-	</title>
-</head>
-<body>
-<div id="pagewrap">
-	<div id="pagewrap_inside">
-		<c:import url="common/header.jsp" />
-		<div id="content">
-			<c:choose>
-				<c:when test="${not empty contentPage}">
-					<c:import url="${contentPage}" />
-				</c:when>
-				<c:otherwise>
-					<c:import url="error/404.jsp" />
-				</c:otherwise>
-			</c:choose>
-		</div>
-		<c:import url="common/footer.jsp"/>
-	</div>
+<div class="contentarea">
+	<h2>Error</h2>
+	An unexpected error occurred.  We apologize for the inconvenience.
 </div>
-</body>
-</html>
