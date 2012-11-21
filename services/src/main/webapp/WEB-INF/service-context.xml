@@ -439,10 +439,6 @@
 		<prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}</prop>
 	</util:properties>
 
-	<bean id="hierarchicalFacet" class="edu.unc.lib.dl.search.solr.model.HierarchicalFacet">
-		<property name="searchSettings" ref="searchSettings" />
-	</bean>
-
 	<bean id="solrUpdateDriver" class="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver"
 		init-method="init">
 		<property name="solrSettings" ref="solrSettings"/>

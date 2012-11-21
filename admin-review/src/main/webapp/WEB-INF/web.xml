@@ -30,6 +30,7 @@
 		<param-value> 
             /WEB-INF/uiapp-servlet.xml
             /WEB-INF/solr-search-context.xml
+            /WEB-INF/access-fedora-context.xml
         </param-value>
 	</context-param>
 

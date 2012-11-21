@@ -1,11 +1,12 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <c:forEach items="${resultResponse.resultList}" var="metadata" varStatus="status">
 	<div id="entry${metadata.id}" class="browseitem">
 		<div class="contentarea">
-			<c:set var="thumbnailUrl" value="${metadata.getDatastream('THUMB_LARGE')}"/>
+			<c:set var="thumbnailUrl" value="${cdr:getDatastreamUrl(metadata, 'THUMB_LARGE', fedoraUtil)}"/>
 			<a href="/record?id=${metadata.id}" target="_blank">
 				<c:choose>
-					<c:when test="${not empty thumbnailUrl}"><img class="largethumb" src="" /></c:when>
+					<c:when test="${metadata.datastreamObjects.contains('THUMB_LARGE')}"><img class="largethumb" src="${thumbnailUrl}" /></c:when>
 					<c:otherwise><img class="largethumb" src="/static/images/placeholder/large/oldwell.jpg" /></c:otherwise>
 				</c:choose>
 			</a>
@@ -15,7 +16,7 @@
 					<c:set var="unpublishedCount" value="${metadata.countMap.unpublished}"/>
 					<c:choose>
 						<c:when test="${not empty unpublishedCount}">
-							<a href="review.html">Review ${unpublishedCount} unpublished item<c:if test="${unpublishedCount != 1}">s</c:if></a>
+							<a href="review/uuid/${metadata.idWithoutPrefix}">Review ${unpublishedCount} unpublished item<c:if test="${unpublishedCount != 1}">s</c:if></a>
 						</c:when>
 						<c:otherwise>No unpublished items</c:otherwise>
 					</c:choose>
@@ -24,7 +25,7 @@
 
 			<div class="itemdetails">
 				<h2>
-					<a href="record?id=${metadata.id}" target="_blank"
+					<a href="/record?id=${metadata.id}" target="_blank"
 						class="has_tooltip" title="View details for <c:out value='${metadata.title}'/>."><c:out value='${metadata.title}'/></a>
 					<c:set var="childCount" value="${metadata.countMap.child}"/>
 					<span class="searchitem_container_count">

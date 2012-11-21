@@ -31,6 +31,7 @@
 		</property>
 	</bean>
 	<context:component-scan base-package="edu.unc.lib.dl.admin.controller" />
+	<context:component-scan base-package="edu.unc.lib.dl.ui.controller" />
 
 	<bean class="edu.unc.lib.dl.ui.view.CDRViewResolver" p:suffix=".jsp">
 		<property name="exposedContextBeanNames">
@@ -43,7 +44,7 @@
 		</property>
 		<property name="viewClass"
 			value="org.springframework.web.servlet.view.JstlView" />
-		<property name="baseView" value="WEB-INF/jsp/index" />
+		<property name="baseView" value="/WEB-INF/jsp/index" />
 		<property name="subViewPrefix" value="" />
 	</bean>
 </beans>

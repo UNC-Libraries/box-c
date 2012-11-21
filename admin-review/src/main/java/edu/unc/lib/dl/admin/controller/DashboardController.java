@@ -14,7 +14,7 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.security.access.AccessGroupSet;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping(value = {"/", ""})
 public class DashboardController extends AbstractSolrSearchController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String handleRequest(Model model, HttpServletRequest request){

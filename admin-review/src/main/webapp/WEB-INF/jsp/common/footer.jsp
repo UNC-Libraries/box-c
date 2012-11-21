@@ -18,8 +18,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page trimDirectiveWhitespaces="true" %>
-<div id="footer" class="darkest">
-	<div class="threecol dark">
+<div id="footer" class="darkest shadowtop">
+	<div class="threecol dark shadowtop">
 		<div class="contentarea">
 			<p>
 				<a href="${pageContext.request.contextPath}/">Home</a>&nbsp;|&nbsp;
@@ -42,7 +42,7 @@
 			</p>
 		</div>
 	</div>
-	<div class="fourcol darkest">
+	<div class="fourcol darkest right shadowtop">
 		<div class="contentarea"><p class="left"><a href="http://www.unc.edu">UNC Home </a></p><a href="http://www.unc.edu"><img src="/static/images/uncwell.png" id="footer_uncwell"></a></div>
 	</div>
 </div>

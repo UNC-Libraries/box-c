@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.admin.controller;
+package edu.unc.lib.dl.ui.controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -41,6 +41,7 @@ public class ErrorController {
 	
 	@RequestMapping("/404")
     public String handle404(Model model, HttpServletResponse response) {
+		LOG.debug("Page not found, forwarding to 404 page");
 		response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 		model.addAttribute("pageSubtitle", "Page not found");
         return "error/404";

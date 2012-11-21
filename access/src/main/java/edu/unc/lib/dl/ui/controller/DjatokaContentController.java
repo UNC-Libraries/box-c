@@ -47,8 +47,8 @@ import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 public class DjatokaContentController extends AbstractSolrSearchController {
 	private static final Logger LOG = LoggerFactory.getLogger(DjatokaContentController.class);
 	
-	@Autowired
-	private AccessControlSettings accessSettings;
+	/*@Autowired
+	private AccessControlSettings accessSettings;*/
 	@Autowired
 	private DjatokaContentService djatokaContentService;
 	

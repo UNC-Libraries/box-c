@@ -206,7 +206,7 @@ public class SearchSettings extends AbstractSettings {
 		populateCollectionFromProperty("search.sort.displayOrder", sortDisplayOrder, properties, "\\|");
 
 		// Access field names
-		this.setAllowPatronAccess(new Boolean(properties.getProperty("search.access.defaultFilter", "true")));
+		this.setAllowPatronAccess(new Boolean(properties.getProperty("search.access.allowPatrons", "true")));
 		populateCollectionFromProperty("search.access.fields", accessFields, properties, ",");
 		populateCollectionFromProperty("search.access.filterableFields", accessFilterableFields, properties, ",");
 

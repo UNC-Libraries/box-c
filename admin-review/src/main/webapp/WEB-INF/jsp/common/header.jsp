@@ -19,11 +19,18 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <div class="darkest shadowbottom" id="header">
+	<div id="header_search" class="fourcol darkest">
+		<div class="contentarea">
+			<c:if test="${not empty sessionScope.user && not empty sessionScope.user.userName}">
+				<div id="username_wrap">Welcome, <c:out value="${sessionScope.user.userName}"/></div>
+			</c:if>
+		</div>
+	</div>
 	<div class="threecol dark shadowbottom">
 		<div class="contentarea">
 			<h1>Carolina Digital Repository</h1>
 			
-			<a href="${pageContext.request.contextPath}/" id="titlelink"><img src="images/carolinadigitalrepository.png"></a>
+			<a href="${pageContext.request.contextPath}/" id="titlelink"><img src="/static/images/carolinadigitalrepository-trans.png"></a>
 			
 			<ul id="mainmenu">
 				<li>
@@ -54,13 +61,6 @@
 				</c:choose>
 				
 			</ul>
-		</div>
-	</div>
-	<div class="fourcol darkest">
-		<div class="contentarea">
-			<c:if test="${not empty sessionScope.user && not empty sessionScope.user.userName}">
-				<div id="username_wrap">Welcome, <c:out value="${sessionScope.user.userName}"/></div>
-			</c:if>
 		</div>
 	</div>
 </div>
