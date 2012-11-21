@@ -65,11 +65,13 @@ import fedorax.server.module.storage.lowlevel.irods.IrodsLowlevelStorageModule.P
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
-public class IrodsExternalContentManager extends Module implements ExternalContentManager {
+public class IrodsExternalContentManager extends Module implements
+		ExternalContentManager {
 
-	private static final Logger LOG = LoggerFactory.getLogger(IrodsExternalContentManager.class);
+	private static final Logger LOG = LoggerFactory
+			.getLogger(IrodsExternalContentManager.class);
 
 	IRODSAccount account;
 
@@ -96,18 +98,20 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 	 * @param role
 	 * @throws ModuleInitializationException
 	 */
-	public IrodsExternalContentManager(Map<String, String> moduleParameters, Server server, String role)
-			throws ModuleInitializationException {
+	public IrodsExternalContentManager(Map<String, String> moduleParameters,
+			Server server, String role) throws ModuleInitializationException {
 		super(moduleParameters, server, role);
 	}
 
 	/**
-	 * Initializes the Module based on configuration parameters. The implementation of this method is dependent on the
-	 * schema used to define the parameter names for the role of
+	 * Initializes the Module based on configuration parameters. The
+	 * implementation of this method is dependent on the schema used to define
+	 * the parameter names for the role of
 	 * <code>fedora.server.storage.DefaultExternalContentManager</code>.
-	 *
+	 * 
 	 * @throws ModuleInitializationException
-	 *            If initialization values are invalid or initialization fails for some other reason.
+	 *             If initialization values are invalid or initialization fails
+	 *             for some other reason.
 	 */
 	@Override
 	public void initModule() throws ModuleInitializationException {
@@ -120,50 +124,50 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 
 			fedoraServerPort = s_server.getParameter("fedoraServerPort");
 			// fedoraServerHost = s_server.getParameter("fedoraServerHost");
-			fedoraServerRedirectPort = s_server.getParameter("fedoraRedirectPort");
+			fedoraServerRedirectPort = s_server
+					.getParameter("fedoraRedirectPort");
 			try {
-				this.irodsReadBufferSize = Integer.parseInt(getModuleParameter(Parameter.IRODS_READ_BUFFER_SIZE, false));
+				this.irodsReadBufferSize = Integer.parseInt(getModuleParameter(
+						Parameter.IRODS_READ_BUFFER_SIZE, false));
 				if (this.irodsReadBufferSize < 1) {
-					throw new ModuleInitializationException("Parameter, \"" + Parameter.IRODS_READ_BUFFER_SIZE
+					throw new ModuleInitializationException("Parameter, \""
+							+ Parameter.IRODS_READ_BUFFER_SIZE
 							+ "\" must be greater than 0", getRole());
 				}
 			} catch (NumberFormatException e) {
-				throw new ModuleInitializationException(e.getMessage(), getRole());
+				throw new ModuleInitializationException(e.getMessage(),
+						getRole());
 			}
 
 			m_http = new WebClient();
 			// m_http.USER_AGENT = m_userAgent;
 
-			String stagingLocations = null;
-			try {
-				stagingLocations = getModuleParameter(Parameter.STAGING_LOCATIONS, false);
-				
-				if (stagingLocations.length() > 5) {
-					LOG.info("Configuring staging locations: " + stagingLocations);
-					String[] stages = stagingLocations.split("[\\s]+");
-					LOG.info("Number of staging locations: " + stages.length);
-					for (String stage : stages) {
-						String[] logical2Path = stage.split("\\|");
-						LOG.info("Adding staging location: " + logical2Path[0] + " => " + logical2Path[1]);
-						StagingManager.instance().addStage(logical2Path[0], logical2Path[1]);
-					}
+			// Each staging location is a space separated string of regex and
+			// replacement.
+			Map<String, String> params = getParameters();
+			for (String key : params.keySet()) {
+				if (key.startsWith(Parameter.STAGING_LOCATIONS_PREFIX
+						.toString())) {
+					String[] stage = params.get(key).split("[\\s]+");
+					StagingManager.instance().addURLPattern(stage[0], stage[1]);
 				}
-			} catch (ModuleInitializationException ignored) {
-				LOG.info("No staging locations configured with parameter " + Parameter.STAGING_LOCATIONS);
-			} catch (Exception e) {
-				LOG.warn("Cannot configure staging locations.", e);
 			}
+			StagingManager.instance().dumpPatternsToLog();
 
 			// register StagingManagerMBean
 			MBeanServer mbs = this.getMBeanServer();
-			ObjectName name = new ObjectName("edu.unc.lib.cdr:type=StagingManager");
+			ObjectName name = new ObjectName(
+					"edu.unc.lib.cdr:type=StagingManager");
 			mbs.registerMBean(StagingManager.instance(), name);
 
 		} catch (Throwable th) {
 			th.printStackTrace();
-			throw new ModuleInitializationException("[IrodsExternalContentManager] " + "An external content manager "
-					+ "could not be instantiated. The underlying error was a " + th.getClass() + "The message was \""
-					+ th.getMessage() + "\".", getRole());
+			throw new ModuleInitializationException(
+					"[IrodsExternalContentManager] "
+							+ "An external content manager "
+							+ "could not be instantiated. The underlying error was a "
+							+ th.getClass() + "The message was \""
+							+ th.getMessage() + "\".", getRole());
 		}
 	}
 
@@ -185,52 +189,52 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 	}
 
 	/*
-	 * Retrieves the external content. Currently the protocols <code>file</code> and <code>http[s]</code> are supported.
-	 *
-	 * @see fedora.server.storage.ExternalContentManager#getExternalContent(fedora .server.storage.ContentManagerParams)
+	 * Retrieves the external content. Currently the protocols <code>file</code>
+	 * and <code>http[s]</code> are supported.
+	 * 
+	 * @see
+	 * fedora.server.storage.ExternalContentManager#getExternalContent(fedora
+	 * .server.storage.ContentManagerParams)
 	 */
-	public MIMETypedStream getExternalContent(ContentManagerParams params) throws GeneralException,
-			HttpServiceNotFoundException {
+	public MIMETypedStream getExternalContent(ContentManagerParams params)
+			throws GeneralException, HttpServiceNotFoundException {
 		LOG.debug("in getExternalContent(), url=" + params.getUrl());
 
 		String protocol = params.getProtocol();
 		String url = params.getUrl();
-
-		// TODO rewrite if this is a staging url
-		boolean staged = StagingManager.instance().isStagedLocation(url);
-		if (staged) {
-			LOG.debug("detected a staged url: " + url);
-			url = StagingManager.instance().rewriteStagedLocation(url);
-			LOG.debug("staged url rewritten to: " + url);
-
-			URI temp = null;
-			try {
-				temp = new URI(url);
-			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			protocol = temp.getScheme();
-		}
+		boolean staged = false;
 
 		try {
+			String stageUrl = StagingManager.instance().resolveStageLocation(
+					url);
+			if (!url.equals(stageUrl)) {
+				staged = true;
+				URI temp = null;
+				try {
+					temp = new URI(url);
+				} catch (URISyntaxException e) {
+					e.printStackTrace();
+				}
+				url = stageUrl;
+				protocol = temp.getScheme();
+			}
 			LOG.debug("protocol is " + protocol + ", url is " + url);
 			if (protocol == null && url.startsWith("irods://")) {
 				return getFromIrods(url, params.getMimeType());
 			} else if (protocol == null || protocol.equals("file")) {
-				return getFromFilesystem(url, params.getMimeType(), staged, params);
+				return getFromFilesystem(url, params.getMimeType(), staged,
+						params);
 			} else if (protocol.equals("http") || protocol.equals("https")) {
 				return getFromWeb(params);
 			} else if (protocol.equals("irods")) {
 				return getFromIrods(url, params.getMimeType());
 			}
-			throw new GeneralException("protocol for retrieval of external content not supported. URL: " + params.getUrl());
+			throw new GeneralException(
+					"protocol for retrieval of external content not supported. URL: "
+							+ params.getUrl());
 		} catch (Exception ex) {
 			// catch anything but generalexception
-			ex.printStackTrace();
-			throw new HttpServiceNotFoundException("[" + this.getClass().getSimpleName() + "] "
-					+ "returned an error.  The underlying error was a " + ex.getClass().getName() + "  The message "
-					+ "was  \"" + ex.getMessage() + "\"  .  ", ex);
+			throw new HttpServiceNotFoundException("", ex);
 		}
 	}
 
@@ -238,14 +242,16 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 	 * @param params
 	 * @return
 	 */
-	private MIMETypedStream getFromIrods(String url, String mimeType) throws HttpServiceNotFoundException,
-			GeneralException {
+	private MIMETypedStream getFromIrods(String url, String mimeType)
+			throws HttpServiceNotFoundException, GeneralException {
 		LOG.debug("in getFromIrods(), url=" + url);
 		try {
 			// FIXME: cannot construct irods url b/c malformed
 			URI uri = new URI(url);
-			IRODSFileFactory ff = IRODSFileSystem.instance().getIRODSFileFactory(account);
-			IRODSFile file = ff.instanceIRODSFile(URLDecoder.decode(uri.getRawPath(), "UTF-8"));
+			IRODSFileFactory ff = IRODSFileSystem.instance()
+					.getIRODSFileFactory(account);
+			IRODSFile file = ff.instanceIRODSFile(URLDecoder.decode(
+					uri.getRawPath(), "UTF-8"));
 			InputStream result = ff.instanceIRODSFileInputStream(file);
 			final long start = System.currentTimeMillis();
 			result = new BufferedInputStream(result, this.irodsReadBufferSize) {
@@ -256,7 +262,8 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 					if (LOG.isInfoEnabled()) {
 						long time = System.currentTimeMillis() - start;
 						if (time > 0) {
-							LOG.info("closed irods stream: " + bytes + " bytes at " + (bytes / time) + " kb/sec");
+							LOG.info("closed irods stream: " + bytes
+									+ " bytes at " + (bytes / time) + " kb/sec");
 						}
 					}
 					super.close();
@@ -269,7 +276,8 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 				}
 
 				@Override
-				public synchronized int read(byte[] b, int off, int len) throws IOException {
+				public synchronized int read(byte[] b, int off, int len)
+						throws IOException {
 					bytes = bytes + len;
 					return super.read(b, off, len);
 				}
@@ -280,17 +288,21 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 			if (mimeType == null || mimeType.equalsIgnoreCase("")) {
 				String irodsFilename = file.getName();
 				if (irodsFilename != null) {
-					mimeType = new MimetypesFileTypeMap().getContentType(irodsFilename);
+					mimeType = new MimetypesFileTypeMap()
+							.getContentType(irodsFilename);
 				}
 				if (mimeType == null || mimeType.equalsIgnoreCase("")) {
 					mimeType = DEFAULT_MIMETYPE;
 				}
 			}
-			return new MIMETypedStream(mimeType, result, getPropertyArray(mimeType));
+			return new MIMETypedStream(mimeType, result,
+					getPropertyArray(mimeType));
 			/*
-			 * } catch (AuthzException ae) { LOG.error(ae.getMessage(), ae); throw new
-			 * HttpServiceNotFoundException("Policy blocked datastream resolution", ae); } catch (GeneralException me) {
-			 * LOG.error(me.getMessage(), me); throw me; }
+			 * } catch (AuthzException ae) { LOG.error(ae.getMessage(), ae);
+			 * throw new
+			 * HttpServiceNotFoundException("Policy blocked datastream resolution"
+			 * , ae); } catch (GeneralException me) { LOG.error(me.getMessage(),
+			 * me); throw me; }
 			 */
 
 		} catch (JargonException e) {
@@ -299,9 +311,11 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 			th.printStackTrace(System.err);
 			// catch anything but generalexception
 			LOG.error(th.getMessage(), th);
-			throw new HttpServiceNotFoundException("[FileExternalContentManager] "
-					+ "returned an error.  The underlying error was a " + th.getClass().getName() + "  The message "
-					+ "was  \"" + th.getMessage() + "\"  .  ", th);
+			throw new HttpServiceNotFoundException(
+					"[FileExternalContentManager] "
+							+ "returned an error.  The underlying error was a "
+							+ th.getClass().getName() + "  The message "
+							+ "was  \"" + th.getMessage() + "\"  .  ", th);
 		}
 	}
 
@@ -317,15 +331,18 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 	}
 
 	/**
-	 * Get a MIMETypedStream for the given URL. If user or password are <code>null</code>, basic authentication will not
-	 * be attempted.
+	 * Get a MIMETypedStream for the given URL. If user or password are
+	 * <code>null</code>, basic authentication will not be attempted.
 	 */
-	private MIMETypedStream get(String url, String user, String pass, String knownMimeType) throws GeneralException {
+	private MIMETypedStream get(String url, String user, String pass,
+			String knownMimeType) throws GeneralException {
 		LOG.debug("DefaultExternalContentManager.get(" + url + ")");
 		try {
 			HttpInputStream response = m_http.get(url, true, user, pass);
-			String mimeType = response.getResponseHeaderValue("Content-Type", knownMimeType);
-			Property[] headerArray = toPropertyArray(response.getResponseHeaders());
+			String mimeType = response.getResponseHeaderValue("Content-Type",
+					knownMimeType);
+			Property[] headerArray = toPropertyArray(response
+					.getResponseHeaders());
 			return new MIMETypedStream(mimeType, response, headerArray);
 		} catch (Exception e) {
 			throw new GeneralException("Error getting " + url, e);
@@ -333,7 +350,8 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 	}
 
 	/**
-	 * Convert the given HTTP <code>Headers</code> to an array of <code>Property</code> objects.
+	 * Convert the given HTTP <code>Headers</code> to an array of
+	 * <code>Property</code> objects.
 	 */
 	private static Property[] toPropertyArray(Header[] headers) {
 
@@ -347,15 +365,18 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 	}
 
 	/**
-	 * Creates a property array out of the MIME type and the length of the provided file.
-	 *
+	 * Creates a property array out of the MIME type and the length of the
+	 * provided file.
+	 * 
 	 * @param file
-	 *           the file containing the content.
-	 * @return an array of properties containing content-length and content-type.
+	 *            the file containing the content.
+	 * @return an array of properties containing content-length and
+	 *         content-type.
 	 */
 	private static Property[] getPropertyArray(File file, String mimeType) {
 		Property[] props = new Property[2];
-		Property clen = new Property("Content-Length", Long.toString(file.length()));
+		Property clen = new Property("Content-Length", Long.toString(file
+				.length()));
 		Property ctype = new Property("Content-Type", mimeType);
 		props[0] = clen;
 		props[1] = ctype;
@@ -363,15 +384,16 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 	}
 
 	/**
-	 * Get a MIMETypedStream for the given URL. If user or password are <code>null</code>, basic authentication will not
-	 * be attempted.
-	 *
+	 * Get a MIMETypedStream for the given URL. If user or password are
+	 * <code>null</code>, basic authentication will not be attempted.
+	 * 
 	 * @param params
 	 * @return
 	 * @throws HttpServiceNotFoundException
 	 * @throws GeneralException
 	 */
-	private MIMETypedStream getFromFilesystem(String url, String mimeType, boolean staged, ContentManagerParams params)
+	private MIMETypedStream getFromFilesystem(String url, String mimeType,
+			boolean staged, ContentManagerParams params)
 			throws HttpServiceNotFoundException, GeneralException {
 		LOG.debug("in getFile(), url=" + url);
 
@@ -381,18 +403,18 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 
 			// security check
 			if (staged) {
-				// canonical path must be within a stage file location
-				if (!StagingManager.instance().isFileInStagedLocation(cFile)) {
-					throw new AuthzDeniedException("Canonical staged path is not within staging area: " + cFile.toURI());
-				}
+				// staged files are checked by the StagingManager
 			} else {
 				URI cURI = cFile.toURI();
 				LOG.info("Checking resolution security on " + cURI);
-				Authorization authModule = (Authorization) getServer().getModule("fedora.server.security.Authorization");
+				Authorization authModule = (Authorization) getServer()
+						.getModule("fedora.server.security.Authorization");
 				if (authModule == null) {
-					throw new GeneralException("Missing required Authorization module");
+					throw new GeneralException(
+							"Missing required Authorization module");
 				}
-				authModule.enforceRetrieveFile(params.getContext(), cURI.toString());
+				authModule.enforceRetrieveFile(params.getContext(),
+						cURI.toString());
 			}
 			// end security check
 
@@ -400,10 +422,12 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 			if (mimeType == null || mimeType.equalsIgnoreCase("")) {
 				mimeType = determineMimeType(cFile);
 			}
-			return new MIMETypedStream(mimeType, fileUrl.openStream(), getPropertyArray(cFile, mimeType));
+			return new MIMETypedStream(mimeType, fileUrl.openStream(),
+					getPropertyArray(cFile, mimeType));
 		} catch (AuthzException ae) {
 			LOG.error(ae.getMessage(), ae);
-			throw new HttpServiceNotFoundException("Policy blocked datastream resolution", ae);
+			throw new HttpServiceNotFoundException(
+					"Policy blocked datastream resolution", ae);
 		} catch (GeneralException me) {
 			LOG.error(me.getMessage(), me);
 			throw me;
@@ -411,27 +435,30 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 			th.printStackTrace(System.err);
 			// catch anything but generalexception
 			LOG.error(th.getMessage(), th);
-			throw new HttpServiceNotFoundException("[FileExternalContentManager] "
-					+ "returned an error.  The underlying error was a " + th.getClass().getName() + "  The message "
-					+ "was  \"" + th.getMessage() + "\"  .  ", th);
+			throw new HttpServiceNotFoundException(
+					"[FileExternalContentManager] "
+							+ "returned an error.  The underlying error was a "
+							+ th.getClass().getName() + "  The message "
+							+ "was  \"" + th.getMessage() + "\"  .  ", th);
 		}
 	}
 
 	/**
 	 * Retrieves external content via http or https.
-	 *
+	 * 
 	 * @param url
-	 *           The url pointing to the content.
+	 *            The url pointing to the content.
 	 * @param context
-	 *           The Map containing parameters.
+	 *            The Map containing parameters.
 	 * @param mimeType
-	 *           The default MIME type to be used in case no MIME type can be detected.
+	 *            The default MIME type to be used in case no MIME type can be
+	 *            detected.
 	 * @return A MIMETypedStream
 	 * @throws ModuleInitializationException
 	 * @throws GeneralException
 	 */
-	private MIMETypedStream getFromWeb(ContentManagerParams params) throws ModuleInitializationException,
-			GeneralException {
+	private MIMETypedStream getFromWeb(ContentManagerParams params)
+			throws ModuleInitializationException, GeneralException {
 		String username = params.getUsername();
 		String password = params.getPassword();
 		boolean backendSSL = false;
@@ -439,15 +466,17 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 
 		if (ServerUtility.isURLFedoraServer(url) && !params.isBypassBackend()) {
 			BackendSecuritySpec m_beSS;
-			BackendSecurity m_beSecurity = (BackendSecurity) getServer().getModule(
-					"fedora.server.security.BackendSecurity");
+			BackendSecurity m_beSecurity = (BackendSecurity) getServer()
+					.getModule("fedora.server.security.BackendSecurity");
 			try {
 				m_beSS = m_beSecurity.getBackendSecuritySpec();
 			} catch (Exception e) {
 				throw new ModuleInitializationException(
-						"Can't intitialize BackendSecurity module (in default access) from Server.getModule", getRole());
+						"Can't intitialize BackendSecurity module (in default access) from Server.getModule",
+						getRole());
 			}
-			Hashtable<String, String> beHash = m_beSS.getSecuritySpec(BackendPolicies.FEDORA_INTERNAL_CALL);
+			Hashtable<String, String> beHash = m_beSS
+					.getSecuritySpec(BackendPolicies.FEDORA_INTERNAL_CALL);
 			username = beHash.get("callUsername");
 			password = beHash.get("callPassword");
 			backendSSL = new Boolean(beHash.get("callSSL")).booleanValue();
@@ -455,10 +484,12 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 				if (params.getProtocol().equals("http:")) {
 					url = url.replaceFirst("http:", "https:");
 				}
-				url = url.replaceFirst(":" + fedoraServerPort + "/", ":" + fedoraServerRedirectPort + "/");
+				url = url.replaceFirst(":" + fedoraServerPort + "/", ":"
+						+ fedoraServerRedirectPort + "/");
 			}
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("************************* backendUsername: " + username + "     backendPassword: " + password
+				LOG.debug("************************* backendUsername: "
+						+ username + "     backendPassword: " + password
 						+ "     backendSSL: " + backendSSL);
 				LOG.debug("************************* doAuthnGetURL: " + url);
 			}
@@ -469,9 +500,9 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 
 	/**
 	 * Determines the mime type of a given file
-	 *
+	 * 
 	 * @param file
-	 *           for which the mime type needs to be detected
+	 *            for which the mime type needs to be detected
 	 * @return the detected mime type
 	 */
 	private String determineMimeType(File file) {
@@ -488,11 +519,13 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 		super.postInitModule();
 		// check if Fedora is patched via ValidateURL utility thing
 		try {
-			ValidationUtility.validateURL("irods://example.com:1247/fooZone/home/foo", "M");
+			ValidationUtility.validateURL(
+					"irods://example.com:1247/fooZone/home/foo", "M");
 		} catch (ValidationException e1) {
 			String msg = "Fedora Server is not patched to support the IrodsExternalContentManager";
 			LOG.error(msg, e1);
-			throw new ModuleInitializationException(msg, "fedora.server.storage.ExternalContentManager", e1);
+			throw new ModuleInitializationException(msg,
+					"fedora.server.storage.ExternalContentManager", e1);
 		}
 		LOG.debug("Setting up IRODS account");
 		String irodsHost = getModuleParameter(Parameter.IRODS_HOST, false);
@@ -501,22 +534,30 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 		try {
 			irodsPort = Integer.parseInt(irodsPortString);
 			if (irodsPort < 1) {
-				throw new ModuleInitializationException("Parameter, " + "\"irods_port\" must be greater than 0", getRole());
+				throw new ModuleInitializationException("Parameter, "
+						+ "\"irods_port\" must be greater than 0", getRole());
 			}
 		} catch (NumberFormatException e) {
 			throw new ModuleInitializationException(e.getMessage(), getRole());
 		}
-		String irodsUsername = getModuleParameter(Parameter.IRODS_USERNAME, false);
-		String irodsPassword = getModuleParameter(Parameter.IRODS_PASSWORD, false);
-		String irodsHomeDir = getModuleParameter(Parameter.IRODS_HOME_DIRECTORY, false);
+		String irodsUsername = getModuleParameter(Parameter.IRODS_USERNAME,
+				false);
+		String irodsPassword = getModuleParameter(Parameter.IRODS_PASSWORD,
+				false);
+		String irodsHomeDir = getModuleParameter(
+				Parameter.IRODS_HOME_DIRECTORY, false);
 		String irodsZone = getModuleParameter(Parameter.IRODS_ZONE, false);
-		String irodsDefaultStorageResource = getModuleParameter(Parameter.IRODS_DEFAULT_RESOURCE, false);
-		this.account = new IRODSAccount(irodsHost, irodsPort, irodsUsername, irodsPassword, irodsHomeDir, irodsZone,
+		String irodsDefaultStorageResource = getModuleParameter(
+				Parameter.IRODS_DEFAULT_RESOURCE, false);
+		this.account = new IRODSAccount(irodsHost, irodsPort, irodsUsername,
+				irodsPassword, irodsHomeDir, irodsZone,
 				irodsDefaultStorageResource);
 		try {
-			this.irodsReadBufferSize = Integer.parseInt(getModuleParameter(Parameter.IRODS_READ_BUFFER_SIZE, false));
+			this.irodsReadBufferSize = Integer.parseInt(getModuleParameter(
+					Parameter.IRODS_READ_BUFFER_SIZE, false));
 			if (this.irodsReadBufferSize < 1) {
-				throw new ModuleInitializationException("Parameter, \"" + Parameter.IRODS_READ_BUFFER_SIZE
+				throw new ModuleInitializationException("Parameter, \""
+						+ Parameter.IRODS_READ_BUFFER_SIZE
 						+ "\" must be greater than 0", getRole());
 			}
 		} catch (NumberFormatException e) {
@@ -531,12 +572,15 @@ public class IrodsExternalContentManager extends Module implements ExternalConte
 		LOG.debug("irodsDefaultStorageResource=" + irodsDefaultStorageResource);
 	}
 
-	protected String getModuleParameter(Parameter parameter, boolean parameterAsAbsolutePath)
+	protected String getModuleParameter(Parameter parameter,
+			boolean parameterAsAbsolutePath)
 			throws ModuleInitializationException {
-		String parameterValue = getParameter(parameter.toString(), parameterAsAbsolutePath);
+		String parameterValue = getParameter(parameter.toString(),
+				parameterAsAbsolutePath);
 
 		if (parameterValue == null) {
-			throw new ModuleInitializationException(parameter + " parameter must be specified", getRole());
+			throw new ModuleInitializationException(parameter
+					+ " parameter must be specified", getRole());
 		}
 		return parameterValue;
 	}

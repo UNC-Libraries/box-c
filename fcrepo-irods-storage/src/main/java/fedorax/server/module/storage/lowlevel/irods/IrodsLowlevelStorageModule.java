@@ -78,7 +78,7 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 				"path_algorithm"), BACKSLASH_IS_ESCAPE("backslash_is_escape"), CONNECTION_POOL("connectionPool"), PATH_REGISTRY(
 				"path_registry"), IRODS_HOST("irods_host"), IRODS_PORT("irods_port"), IRODS_USERNAME("irods_username"), IRODS_PASSWORD(
 				"irods_password"), IRODS_HOME_DIRECTORY("irods_homeDirectory"), IRODS_ZONE("irods_zone"), IRODS_DEFAULT_RESOURCE(
-				"irods_defaultStorageResource"), IRODS_READ_BUFFER_SIZE("irods_readBufferSize"), STAGING_LOCATIONS("stagingLocations"),
+				"irods_defaultStorageResource"), IRODS_READ_BUFFER_SIZE("irods_readBufferSize"), STAGING_LOCATIONS_PREFIX("stagingLocation"),
 				IRODS_SOCKET_TIMEOUT("irods_socketTimeout");
 
 		private final String name;
