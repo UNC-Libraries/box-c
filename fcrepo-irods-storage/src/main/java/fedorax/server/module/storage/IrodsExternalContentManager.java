@@ -73,12 +73,22 @@ public class IrodsExternalContentManager extends Module implements
 
 	// injected properties
 	private IRODSAccount irodsAccount;
+	private StagingManager stagingManager;
+	public StagingManager getStagingManager() {
+		return stagingManager;
+	}
+
+
+	public void setStagingManager(StagingManager stagingManager) {
+		this.stagingManager = stagingManager;
+	}
+
 	private int irodsReadBufferSize;
-	private String stagingLocations;
 	
 	public IRODSAccount getIrodsAccount() {
 		return irodsAccount;
 	}
+
 
 	public void setIrodsAccount(IRODSAccount irodsAccount) {
 		this.irodsAccount = irodsAccount;
@@ -90,14 +100,6 @@ public class IrodsExternalContentManager extends Module implements
 
 	public void setIrodsReadBufferSize(int irodsReadBufferSize) {
 		this.irodsReadBufferSize = irodsReadBufferSize;
-	}
-
-	public String getStagingLocations() {
-		return stagingLocations;
-	}
-
-	public void setStagingLocations(String stagingLocations) {
-		this.stagingLocations = stagingLocations;
 	}
 
 	// runtime stats
@@ -143,24 +145,11 @@ public class IrodsExternalContentManager extends Module implements
 					.getParameter("fedoraRedirectPort");
 			m_http = new WebClient();
 
-			if (stagingLocations.length() > 5) {
-				LOG.info("Configuring staging locations: " + stagingLocations);
-				String[] stages = stagingLocations.split("[\\s]+");
-				LOG.info("Number of staging locations: " + stages.length);
-				for (String stage : stages) {
-					String[] logical2Path = stage.split("\\|");
-					LOG.info("Adding staging location: " + logical2Path[0]
-							+ " => " + logical2Path[1]);
-					StagingManager.instance().addStage(logical2Path[0],
-							logical2Path[1]);
-				}
-			}
-
 			// register StagingManagerMBean
 			MBeanServer mbs = this.getMBeanServer();
 			ObjectName name = new ObjectName(
 					"edu.unc.lib.cdr:type=StagingManager");
-			mbs.registerMBean(StagingManager.instance(), name);
+			mbs.registerMBean(this.getStagingManager(), name);
 
 		} catch (Throwable th) {
 			th.printStackTrace();
@@ -205,23 +194,21 @@ public class IrodsExternalContentManager extends Module implements
 		String protocol = params.getProtocol();
 		String url = params.getUrl();
 
-		// rewrite if this is a staging url
-		boolean staged = StagingManager.instance().isStagedLocation(url);
-		if (staged) {
-			LOG.debug("detected a staged url: " + url);
-			url = StagingManager.instance().rewriteStagedLocation(url);
-			LOG.debug("staged url rewritten to: " + url);
-
-			URI temp = null;
-			try {
-				temp = new URI(url);
-			} catch (URISyntaxException e) {
-				e.printStackTrace();
-			}
-			protocol = temp.getScheme();
-		}
-
+		boolean staged = false;
 		try {
+			String stageUrl = this.getStagingManager().resolveStageLocation(
+					url);
+			if (!url.equals(stageUrl)) {
+				staged = true;
+				URI temp = null;
+				try {
+					temp = new URI(url);
+				} catch (URISyntaxException e) {
+					e.printStackTrace();
+				}
+				url = stageUrl;
+				protocol = temp.getScheme();
+			}
 			LOG.debug("protocol is " + protocol + ", url is " + url);
 			if (protocol == null && url.startsWith("irods://")) {
 				return getFromIrods(url, params.getMimeType());
@@ -238,12 +225,7 @@ public class IrodsExternalContentManager extends Module implements
 							+ params.getUrl());
 		} catch (Exception ex) {
 			// catch anything but generalexception
-			ex.printStackTrace();
-			throw new HttpServiceNotFoundException("["
-					+ this.getClass().getSimpleName() + "] "
-					+ "returned an error.  The underlying error was a "
-					+ ex.getClass().getName() + "  The message " + "was  \""
-					+ ex.getMessage() + "\"  .  ", ex);
+			throw new HttpServiceNotFoundException("", ex);
 		}
 	}
 
@@ -255,7 +237,6 @@ public class IrodsExternalContentManager extends Module implements
 			throws HttpServiceNotFoundException, GeneralException {
 		LOG.debug("in getFromIrods(), url=" + url);
 		try {
-			// FIXME: cannot construct irods url b/c malformed
 			URI uri = new URI(url);
 			IRODSFileFactory ff = IRODSFileSystem.instance()
 					.getIRODSFileFactory(irodsAccount);
@@ -412,12 +393,7 @@ public class IrodsExternalContentManager extends Module implements
 
 			// security check
 			if (staged) {
-				// canonical path must be within a stage file location
-				if (!StagingManager.instance().isFileInStagedLocation(cFile)) {
-					throw new AuthzDeniedException(
-							"Canonical staged path is not within staging area: "
-									+ cFile.toURI());
-				}
+				// staged files are checked by the StagingManager
 			} else {
 				URI cURI = cFile.toURI();
 				LOG.info("Checking resolution security on " + cURI);
