@@ -41,7 +41,7 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public class OperationsMessageSender {
 
@@ -90,8 +90,7 @@ public class OperationsMessageSender {
 		LOG.debug("sent add operation JMS message using JMS template:" + this.getJmsTemplate().toString());
 	}
 
-	public void sendRemoveOperation(String userid, PID destination, Collection<PID> removed,
-			Collection<PID> reordered) {
+	public void sendRemoveOperation(String userid, PID destination, Collection<PID> removed, Collection<PID> reordered) {
 		Document msg = new Document();
 		Element contentEl = createAtomEntry(msg, userid, destination, "remove");
 		Element remove = new Element("remove", CDR_MESSAGE_NS);
@@ -125,8 +124,8 @@ public class OperationsMessageSender {
 		});
 	}
 
-	public void sendMoveOperation(String userid, Collection<PID> sources, PID destination,
-			Collection<PID> moved, Collection<PID> reordered) {
+	public void sendMoveOperation(String userid, Collection<PID> sources, PID destination, Collection<PID> moved,
+			Collection<PID> reordered) {
 		Document msg = new Document();
 		Element contentEl = createAtomEntry(msg, userid, destination, "move");
 		Element move = new Element("move", CDR_MESSAGE_NS);
@@ -177,6 +176,48 @@ public class OperationsMessageSender {
 		reorder.addContent(reorderedEl);
 		for (PID re : reordered) {
 			reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+		}
+
+		// send
+		XMLOutputter out = new XMLOutputter();
+		final String msgStr = out.outputString(msg);
+
+		this.jmsTemplate.send(new MessageCreator() {
+
+			@Override
+			public Message createMessage(Session session) throws JMSException {
+				return session.createTextMessage(msgStr);
+			}
+
+		});
+	}
+
+	/**
+	 * 
+	 * 
+	 * @param userid
+	 * @param pids
+	 * @param publish
+	 *           Subjects are published if true, unpublished if false
+	 */
+	public void sendPublishOperation(String userid, Collection<PID> pids, boolean publish) {
+		Document msg = new Document();
+		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), "publish");
+		Element publishEl = new Element("publish", CDR_MESSAGE_NS);
+		contentEl.addContent(publishEl);
+
+		Element publishValueEl = new Element("value", CDR_MESSAGE_NS);
+		publishEl.addContent(publishValueEl);
+		if (publish) {
+			publishValueEl.setText("yes");
+		} else {
+			publishValueEl.setText("no");
+		}
+
+		Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+		publishEl.addContent(subjects);
+		for (PID sub : pids) {
+			subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
 		}
 
 		// send

@@ -16,7 +16,7 @@
 					<c:set var="unpublishedCount" value="${metadata.countMap.unpublished}"/>
 					<c:choose>
 						<c:when test="${not empty unpublishedCount}">
-							<a href="review/uuid/${metadata.idWithoutPrefix}">Review ${unpublishedCount} unpublished item<c:if test="${unpublishedCount != 1}">s</c:if></a>
+							<a href="uuid/${metadata.idWithoutPrefix}/review">Review ${unpublishedCount} unpublished item<c:if test="${unpublishedCount != 1}">s</c:if></a>
 						</c:when>
 						<c:otherwise>No unpublished items</c:otherwise>
 					</c:choose>
@@ -31,7 +31,7 @@
 					<span class="searchitem_container_count">
 						<c:choose>
 							<c:when test="${not empty childCount}">
-								<a href="review.html">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</a>
+								<a href="">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</a>
 							</c:when>
 							<c:otherwise>(0 items)</c:otherwise>
 						</c:choose>

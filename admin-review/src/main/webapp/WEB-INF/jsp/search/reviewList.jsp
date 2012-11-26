@@ -2,8 +2,16 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <script>
 $(function() {
-	$("input[type='checkbox']").prop("checked", false).click(function(){
+	$(".browseitem input[type='checkbox']").prop("checked", false).click(function(){
 		$(this).parent().parent().parent().toggleClass("selected");
+	});
+	
+	$("#select_all").click(function(){
+		$(".browseitem input[type='checkbox']").prop("checked", true);
+	});
+	
+	$("#deselect_all").click(function(){
+		$(".browseitem input[type='checkbox']").prop("checked", false);
 	});
 	
 	$(".itemdetails").click(function(){
@@ -21,19 +29,17 @@ $(function() {
 });
 </script>
 
-<div class="contentarea review_page">
+<div class="review_page contentarea">
 	<div class="contentarea">
 		<h2>Reviewing items</h2>
+		<c:set var="facetNodes" scope="request" value="${containerBean.path.facetNodes}"/>
 		<div class="results_header_hierarchy_path">
-			<span class="hierarchicalTrail">  
-		<a href="search?action=removeFacet%3apath">Home</a>
-				&gt; 
-			<a href="">Master's Papers</a>
-				</span></div>
+			<c:import url="/jsp/util/hierarchyTrail.jsp" />
+		</div>
 	</div>
 	
 	<div id="results_list_actions">
-		<div class="left"><p><a class="select_all">Select All</a></p> <p><a>Deselect All</a></p></div>
+		<div class="left"><p><a id="select_all">Select All</a></p> <p><a id="deselect_all">Deselect All</a></p></div>
 		<div class="right"><input type="Button" value="Delete"/>&nbsp;&nbsp;<input type="Button" value="Publish Selected"/></div>
 	</div>
 	

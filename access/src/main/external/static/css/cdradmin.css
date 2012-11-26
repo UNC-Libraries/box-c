@@ -1,3 +1,7 @@
+a {
+	cursor: pointer;
+}
+
 #pagewrap {
 	min-width: 960px;
 	width: inherit;
