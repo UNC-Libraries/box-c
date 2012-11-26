@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.jdom.Namespace;
 
+import edu.unc.lib.dl.fedora.AccessControlCategory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
@@ -59,7 +60,8 @@ public class ContentModelHelper {
 				"depositMethod"), depositPackageType("depositPackageType"), depositPackageSubType("depositPackageSubType"), 
 				inheritPermissions("inheritPermissions", "http://cdr.unc.edu/definitions/acl#"), embargo("embargo",
 				"http://cdr.unc.edu/definitions/acl#"),
-				dataAccessCategory("data-access-category", "http://cdr.unc.edu/definitions/acl#");
+				dataAccessCategory("data-access-category", "http://cdr.unc.edu/definitions/acl#"),
+				 isPublished("isPublished");
 		private URI uri;
 		private String predicate;
 
