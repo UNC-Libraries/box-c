@@ -64,17 +64,21 @@ public class AncestorFactory {
 	/**
 	 * Destroy the cached pointers to a parent when it is edited.
 	 * 
-	 * @param pid
+	 * @param parentPID
 	 */
-	public void invalidate(String pid) {
-		child2Parent.remove(pid);
+	public void invalidateBondsToChildren(PID parentPID) {
+		child2Parent.remove(parentPID.getPid());
 		Iterator<Map.Entry<String, ParentBond>> sweep = child2Parent.entrySet().iterator();
 		while(sweep.hasNext()) {
 			Map.Entry<String, ParentBond> entry = sweep.next();
-			if (entry.getValue().parentPid.equals(pid)) {
+			if (entry.getValue().parentPid.equals(parentPID.getPid())) {
 				child2Parent.remove(entry.getKey());
 			}
 		}
+	}
+	
+	public void invalidateBondToParent(PID childPID) {
+		child2Parent.remove(childPID);
 	}
 
 	private void updateCache(String pid) throws ObjectNotFoundException {

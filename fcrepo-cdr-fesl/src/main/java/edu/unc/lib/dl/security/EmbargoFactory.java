@@ -46,11 +46,11 @@ public class EmbargoFactory {
 	}
 
 	/**
-	 * Destroy the cached embargo for a pid.
+	 * Call this method when any embargo triple is changed.
 	 * 
 	 * @param pid
 	 */
-	public void invalidate(PID pid) {
+	public void invalidate() {
 		this.cacheValid = false;
 	}
 

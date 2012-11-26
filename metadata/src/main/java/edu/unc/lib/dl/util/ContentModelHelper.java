@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.jdom.Namespace;
 
-import edu.unc.lib.dl.fedora.AccessControlCategory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
@@ -137,6 +136,15 @@ public class ContentModelHelper {
 				x.initCause(e);
 				throw x;
 			}
+		}
+		
+		public static boolean matchesMemberURI(String test) {
+			for(UserRole r : UserRole.values()) {
+				if(r.getURI().toString().equals(test)) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		public URI getURI() {
