@@ -30,8 +30,10 @@ import org.swordapp.server.AuthCredentials;
 
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl;
-import edu.unc.lib.dl.fedora.AccessControlUtils;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.AccessControlService;
+import edu.unc.lib.dl.util.ContentModelHelper.Permission;
+import edu.unc.lib.dl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import static org.mockito.Mockito.*;
 
@@ -41,15 +43,17 @@ public class CollectionListManagerTest extends Assert {
 	private CollectionListManagerImpl manager;
 	private SwordConfigurationImpl config;
 	private TripleStoreQueryService tripleStoreQueryService;
-	private AccessControlUtils accessControlUtils;
+	private AccessControlService aclService;
 	
 	@Before
 	public void setUp() throws Exception {
 		manager = new CollectionListManagerImpl();
 		
-		accessControlUtils = mock(AccessControlUtils.class);
-		when(accessControlUtils.hasAccess(any(PID.class), anyCollection(), anyString())).thenReturn(true);
-		manager.setAccessControlUtils(accessControlUtils);
+		aclService = mock(AccessControlService.class);
+		ObjectAccessControlsBean objectACLs = mock(ObjectAccessControlsBean.class);
+		when(objectACLs.hasPermission(any(String[].class), any(Permission.class))).thenReturn(true);
+		when(aclService.getObjectAccessControls(any(PID.class))).thenReturn(objectACLs);
+		manager.setAclService(aclService);
 		
 		tripleStoreQueryService = mock(TripleStoreQueryService.class);
 		

@@ -118,8 +118,17 @@
 		</property>
 	</bean>
 	
+	<bean id="forwardedManagementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
+		init-method="init">
+		<property name="fedoraContextUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="username" value="${fedora.appUser.username}" />
+		<property name="password" value="${fedora.appUser.password}" />
+		<property name="accessClient" ref="accessClient"/>
+	</bean>
+	
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
-		<property name="managementClient" ref="managementClient"/>
+		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="accessClient" ref="accessClient"/>
 		<property name="aipIngestPipeline" ref="aipIngestPipeline"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
@@ -141,7 +150,7 @@
 	</bean>
 	
 	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">
-		<property name="managementClient" ref="managementClient"/>
+		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="accessClient" ref="accessClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
@@ -290,7 +299,7 @@
 		init-method="init">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="uipProcessor" ref="uipProcessor"/>
-		<property name="managementClient" ref="managementClient"/>
+		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="depositReportingUtil" ref="depositReportingUtil"/>
 	</bean>
 	
@@ -307,7 +316,14 @@
 	<context:annotation-config />
 	
 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
-	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"></bean>
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+		<property name="interceptors">
+			<list>
+				<bean class="edu.unc.lib.dl.fedora.GroupsToThreadStoreInterceptor"/>
+			</list>
+		</property>
+	</bean>
 	<context:component-scan base-package="edu.unc.lib.dl.cdr.sword.server.servlets" />
 
 </beans>

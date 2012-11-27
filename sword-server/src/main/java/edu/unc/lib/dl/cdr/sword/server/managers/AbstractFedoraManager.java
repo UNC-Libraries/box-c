@@ -17,8 +17,6 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +25,11 @@ import org.swordapp.server.AuthCredentials;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.AccessClient;
-import edu.unc.lib.dl.fedora.AccessControlRole;
-import edu.unc.lib.dl.fedora.AccessControlUtils;
+import edu.unc.lib.dl.fedora.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper.Permission;
+import edu.unc.lib.dl.util.AccessControlService;
+import edu.unc.lib.dl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
@@ -46,11 +46,11 @@ public abstract class AbstractFedoraManager {
 	protected TripleStoreQueryService tripleStoreQueryService;
 	@Autowired
 	protected String swordPath;
-	@Autowired
-	protected AccessControlUtils accessControlUtils;
 	protected PID collectionsPidObject;
 	@Autowired
 	protected AgentFactory agentFactory;
+	@Autowired
+	protected AccessControlService aclService;
 
 	public void init() {
 		collectionsPidObject = this.tripleStoreQueryService.fetchByRepositoryPath("/Collections");
@@ -89,17 +89,28 @@ public abstract class AbstractFedoraManager {
 		return targetPID;
 	}
 
-	protected boolean hasAccess(AuthCredentials auth, PID pid, AccessControlRole role, SwordConfigurationImpl config) {
-		List<String> groupList = this.getGroups(auth, config);
-		return (config.getAdminDepositor() != null && config.getAdminDepositor().equals(auth.getUsername()))
-				|| accessControlUtils.hasAccess(pid, groupList, role.getUri().toString());
+	protected boolean hasAccess(AuthCredentials auth, PID pid, Permission permission, SwordConfigurationImpl config) {
+		if (config.getAdminDepositor() != null && config.getAdminDepositor().equals(auth.getUsername()))
+			return true;
+		ObjectAccessControlsBean aclBean = aclService.getObjectAccessControls(pid);
+		String[] groups = this.getGroups(auth, config);
+		
+		return aclBean.hasPermission(groups, permission);
 	}
-
-	protected List<String> getGroups(AuthCredentials auth, SwordConfigurationImpl config) {
-		List<String> groupList = new ArrayList<String>();
-		groupList.add(config.getDepositorNamespace() + auth.getUsername());
-		groupList.add("public");
-		return groupList;
+	
+	protected String[] getGroups(AuthCredentials auth, SwordConfigurationImpl config) {
+		String groupString = GroupsThreadStore.getGroups();
+		if (groupString != null) {
+			// Use the stored groups provided in the request
+			return groupString.split(";");
+		} else {
+			if (auth.getUsername() == null) {
+				return new String[] {"public"};
+			} else {
+				// For non-group forwarded requests
+				return new String[] {config.getDepositorNamespace() + auth.getUsername(), "public"};
+			}
+		}
 	}
 
 	public AccessClient getAccessClient() {
@@ -130,12 +141,8 @@ public abstract class AbstractFedoraManager {
 		this.swordPath = swordPath;
 	}
 
-	public AccessControlUtils getAccessControlUtils() {
-		return accessControlUtils;
-	}
-
-	public void setAccessControlUtils(AccessControlUtils accessControlUtils) {
-		this.accessControlUtils = accessControlUtils;
+	public void setAclService(AccessControlService aclService) {
+		this.aclService = aclService;
 	}
 
 	public void setAgentFactory(AgentFactory agentFactory) {

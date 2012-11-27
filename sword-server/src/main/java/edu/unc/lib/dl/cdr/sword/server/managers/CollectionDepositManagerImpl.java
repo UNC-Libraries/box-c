@@ -31,7 +31,6 @@ import org.swordapp.server.SwordServerException;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
-import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
@@ -40,6 +39,7 @@ import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.services.IngestResult;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.PackagingType;
 
@@ -63,16 +63,9 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			throw new SwordServerException("No collection URI was provided");
 
 		Agent depositor = agentFactory.findPersonByOnyen(auth.getUsername(), false);
-		if (depositor == null) {
-			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, "
-					+ auth.getUsername());
-		}
 		Agent owner = null;
 		if (auth.getOnBehalfOf() != null) {
 			owner = agentFactory.findPersonByOnyen(auth.getOnBehalfOf(), false);
-			if (owner == null) {
-				throw new SwordAuthException("Unable to find a user matching OnBehalfOf, " + auth.getOnBehalfOf());
-			}
 		} else {
 			owner = depositor;
 		}
@@ -81,7 +74,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 
 		PID containerPID = extractPID(collectionURI, SwordConfigurationImpl.COLLECTION_PATH + "/");
 
-		if (!hasAccess(auth, containerPID, AccessControlRole.curator, configImpl)) {
+		if (!hasAccess(auth, containerPID, ContentModelHelper.Permission.addRemoveContents, configImpl)) {
 			throw new SwordAuthException("Insufficient privileges to deposit to container " + containerPID.getPid());
 		}
 
