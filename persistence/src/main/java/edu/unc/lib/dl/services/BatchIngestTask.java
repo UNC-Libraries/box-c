@@ -451,7 +451,7 @@ public class BatchIngestTask implements Runnable {
 			containers = cSet.toArray(new PID[] {});
 			Arrays.sort(containers);
 
-			this.eventLogger = new PremisEventLogger(AgentFactory.getRepositorySoftwareAgentStub());
+			this.eventLogger = new PremisEventLogger(AgentFactory.getRepositorySoftwareAgentStub().getName());
 
 			this.state = STATE.CHECK;
 			if (ingestLog.exists()) { // this is a resume, find next foxml
@@ -579,7 +579,7 @@ public class BatchIngestTask implements Runnable {
 				log.warn("Ingest submitter is a software agent: " + submitter.getName() + " (" + submitter.getPID() + ")");
 			}
 		}
-		this.eventLogger = new PremisEventLogger(submitter);
+		this.eventLogger = new PremisEventLogger(((PersonAgent)submitter).getOnyen());
 		try {
 			if (!this.managementClient.pollForObject(ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID(), 30, 600)) {
 				throw fail("Cannot poll a basic expected Fedora object: "

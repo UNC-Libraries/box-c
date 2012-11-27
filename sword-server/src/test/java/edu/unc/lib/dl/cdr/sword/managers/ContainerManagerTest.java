@@ -24,6 +24,9 @@ import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordAuthException;
 
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
@@ -32,11 +35,8 @@ import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
-import edu.unc.lib.dl.util.AccessControlService;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import edu.unc.lib.dl.util.ContentModelHelper.Permission;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;

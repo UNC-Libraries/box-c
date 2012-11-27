@@ -30,6 +30,7 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.AtomStatementImpl;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
@@ -51,7 +52,7 @@ public class StatementManagerImpl extends AbstractFedoraManager implements State
 
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 
-		if (!hasAccess(auth, targetPID, ContentModelHelper.Permission.viewDescription, configImpl)) {
+		if (!hasAccess(auth, targetPID, Permission.viewDescription, configImpl)) {
 			throw new SwordAuthException("Insufficient privileges to retrieve statement for " + targetPID.getPid());
 		}
 

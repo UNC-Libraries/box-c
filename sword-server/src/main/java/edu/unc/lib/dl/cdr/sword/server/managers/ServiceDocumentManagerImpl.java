@@ -33,9 +33,9 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 import org.swordapp.server.SwordWorkspace;
 
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
  * Generates service document from all containers which are the immediate children of the starting path, given the users
@@ -73,7 +73,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 			pid = collectionsPidObject;
 		}
 
-		if (!hasAccess(auth, pid, ContentModelHelper.Permission.viewDescription, configImpl)) {
+		if (!hasAccess(auth, pid, Permission.viewDescription, configImpl)) {
 			LOG.debug("Insufficient privileges to access the service document for " + pid.getPid());
 			throw new SwordAuthException("Insufficient privileges to access the service document for " + pid.getPid());
 		}
@@ -122,7 +122,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 			String slug = (String) ((Map<?, ?>) binding.get("slug")).get("value");
 
 			// Check that the user has curator access to this collection
-			if (hasAccess(auth, containerPID, ContentModelHelper.Permission.addRemoveContents, config)) {
+			if (hasAccess(auth, containerPID, Permission.addRemoveContents, config)) {
 				collection.setHref(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/"
 						+ containerPID.getPid());
 				collection.setTitle(slug);

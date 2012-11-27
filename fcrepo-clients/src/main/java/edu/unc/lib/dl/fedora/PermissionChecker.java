@@ -2,7 +2,7 @@ package edu.unc.lib.dl.fedora;
 
 import java.util.Set;
 
-import edu.unc.lib.dl.util.ContentModelHelper.Permission;
+import edu.unc.lib.dl.acl.util.Permission;
 
 public class PermissionChecker {
 	public boolean hasPermission(Permission perm, Set<String> groups) {

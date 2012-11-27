@@ -56,7 +56,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 	private static final Log log = LogFactory.getLog(AIPImpl.class);
 	private File prepDir = null;
 
-	private PremisEventLogger eventLogger = new PremisEventLogger(AgentManager.getRepositorySoftwareAgentStub());
+	private PremisEventLogger eventLogger = new PremisEventLogger(AgentManager.getRepositorySoftwareAgentStub().getName());
 	private HashMap<PID, File> pid2FOXMLFile = new HashMap<PID, File>();
 	private Set<PID> topPID = null;
 	private final Map<PID, ContainerPlacement> topPID2Placement = new HashMap<PID, ContainerPlacement>();

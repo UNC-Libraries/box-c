@@ -28,12 +28,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.swordapp.server.AuthCredentials;
 
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.AccessControlService;
-import edu.unc.lib.dl.util.ContentModelHelper.Permission;
-import edu.unc.lib.dl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import static org.mockito.Mockito.*;
 

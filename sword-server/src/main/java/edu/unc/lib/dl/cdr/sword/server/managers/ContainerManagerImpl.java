@@ -27,6 +27,7 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
@@ -62,7 +63,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 		
-		if (!hasAccess(auth, targetPID, ContentModelHelper.Permission.editDescription, configImpl)) {
+		if (!hasAccess(auth, targetPID, Permission.editDescription, configImpl)) {
 			throw new SwordAuthException("Insufficient privileges to update metadata for " + targetPID.getPid());
 		}
 
@@ -147,7 +148,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		PID targetPID = extractPID(editIRI, SwordConfigurationImpl.EDIT_PATH + "/");
 
-		if (!hasAccess(auth, targetPID, ContentModelHelper.Permission.moveToTrash, configImpl)) {
+		if (!hasAccess(auth, targetPID, Permission.moveToTrash, configImpl)) {
 			log.debug("Insufficient privileges to delete object " + targetPID.getPid());
 			throw new SwordAuthException("Insufficient privileges to delete object " + targetPID.getPid());
 		}
@@ -176,7 +177,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 
-		if (!hasAccess(auth, targetPID, ContentModelHelper.Permission.editAccessControl, configImpl)) {
+		if (!hasAccess(auth, targetPID, Permission.editAccessControl, configImpl)) {
 			throw new SwordAuthException("Insufficient privileges to update object headers " + targetPID.getPid());
 		}
 
@@ -207,7 +208,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		SwordConfigurationImpl config = (SwordConfigurationImpl) configBase;
 		
-		if (!hasAccess(auth, targetPID, ContentModelHelper.Permission.viewDescription, config)) {
+		if (!hasAccess(auth, targetPID, Permission.viewDescription, config)) {
 			throw new SwordAuthException("Insufficient privileges to get deposit receipt " + targetPID.getPid());
 		}
 

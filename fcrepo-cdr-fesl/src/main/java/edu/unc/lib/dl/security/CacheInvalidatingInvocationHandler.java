@@ -11,6 +11,7 @@ import org.fcrepo.server.proxy.AbstractInvocationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
@@ -136,7 +137,7 @@ public class CacheInvalidatingInvocationHandler extends
 					// adding a contains relation invalidates just the old child-parent bond
 					String childPID = (String)fm.getParameters()[3];
 					getAncestorFactory().invalidateBondToParent(new PID(childPID)); // this is parent invalidation
-				} else if(ContentModelHelper.UserRole.matchesMemberURI(relationship)) {
+				} else if(UserRole.matchesMemberURI(relationship)) {
 					// cdr:<role> - adding a role invalidates cached roles
 					getGroupRolesFactory().invalidate(pid);
 				}
@@ -145,7 +146,7 @@ public class CacheInvalidatingInvocationHandler extends
 				if(ContentModelHelper.CDRProperty.inheritPermissions.getURI().toString().equals(relationship)) {
 					// removing inheritance triple invalidates ancestor cache
 					getAncestorFactory().invalidateBondToParent(pid);
-				} else if(ContentModelHelper.UserRole.matchesMemberURI(relationship)) {
+				} else if(UserRole.matchesMemberURI(relationship)) {
 					// removing a cdr:<role> invalidates cached roles
 					getGroupRolesFactory().invalidate(pid);
 				} else if(ContentModelHelper.Relationship.contains.getURI().toString().equals(relationship)) {

@@ -80,6 +80,11 @@
 			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>fcrepo-clients</artifactId>
+			<version>${cdr.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-servlet-api</artifactId>
 			<version>7.0.21</version>

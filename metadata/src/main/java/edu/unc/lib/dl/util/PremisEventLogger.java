@@ -27,7 +27,6 @@ import java.util.Map;
 import org.jdom.Element;
 import org.jdom.Namespace;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -93,7 +92,7 @@ public class PremisEventLogger {
 	// private String created = dateFormat.format(new
 	// Date(System.currentTimeMillis()));
 
-	private Agent defaultAgent = null;
+	private String defaultAgent = null;
 
 	/**
 	 * A list of the exception events logged.
@@ -111,7 +110,7 @@ public class PremisEventLogger {
 	 * @param agent
 	 *           the default initiator of events
 	 */
-	public PremisEventLogger(Agent defaultAgent) {
+	public PremisEventLogger(String defaultAgent) {
 		this.defaultAgent = defaultAgent;
 	}
 
@@ -282,7 +281,7 @@ public class PremisEventLogger {
 		// add linked agent
 		Element lai = new Element("linkingAgentIdentifier", NS);
 		lai.addContent(new Element("linkingAgentIdentifierType", NS).setText(PID_TYPE));
-		lai.addContent(new Element("linkingAgentIdentifierValue", NS).setText(this.defaultAgent.getPID().getPid()));
+		lai.addContent(new Element("linkingAgentIdentifierValue", NS).setText(this.defaultAgent));
 		lai.addContent(new Element("linkingAgentRole", NS).setText("Initiator"));
 		event.addContent(lai);
 

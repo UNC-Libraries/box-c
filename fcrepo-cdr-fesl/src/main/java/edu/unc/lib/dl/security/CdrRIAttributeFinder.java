@@ -31,6 +31,7 @@ import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.StandardAttributeFactory;
 import com.sun.xacml.cond.EvaluationResult;
 
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
@@ -42,21 +43,21 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	private static Set<String> myAttributes = new HashSet<String>();
 
 	static {
-		myAttributes.add(ContentModelHelper.UserRole.curator.getURI()
+		myAttributes.add(UserRole.curator.getURI()
 				.toString());
 		myAttributes.add(ContentModelHelper.CDRProperty.embargo.getURI()
 				.toString());
-		myAttributes.add(ContentModelHelper.UserRole.ingester.getURI()
+		myAttributes.add(UserRole.ingester.getURI()
 				.toString());
-		myAttributes.add(ContentModelHelper.UserRole.observer.getURI()
+		myAttributes.add(UserRole.observer.getURI()
 				.toString());
-		myAttributes.add(ContentModelHelper.UserRole.patron.getURI()
+		myAttributes.add(UserRole.patron.getURI()
 				.toString());
-		myAttributes.add(ContentModelHelper.UserRole.metadataPatron.getURI()
+		myAttributes.add(UserRole.metadataPatron.getURI()
 				.toString());
-		myAttributes.add(ContentModelHelper.UserRole.accessCopiesPatron.getURI()
+		myAttributes.add(UserRole.accessCopiesPatron.getURI()
 				.toString());
-		myAttributes.add(ContentModelHelper.UserRole.processor.getURI()
+		myAttributes.add(UserRole.processor.getURI()
 				.toString());
 		myAttributes.add(ContentModelHelper.CDRProperty.embargo.getURI()
 				.toString());

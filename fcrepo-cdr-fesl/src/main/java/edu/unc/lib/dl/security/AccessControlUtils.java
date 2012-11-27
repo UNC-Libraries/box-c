@@ -28,8 +28,8 @@ import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ParentBond;
 
 public class AccessControlUtils {
@@ -124,9 +124,9 @@ public class AccessControlUtils {
 			activeEmbargo = getEmbargoFactory().getActiveEmbargoDates(embargoPids);
 			
 			// add those with parent-implied list role
-			Set<String> listers = groupRolesFactory.getGroupsInRole(pid, ContentModelHelper.UserRole.list.getURI().toString());
+			Set<String> listers = groupRolesFactory.getGroupsInRole(pid, UserRole.list.getURI().toString());
 			if(listers.size() > 0) {
-				summary.put(ContentModelHelper.UserRole.list.getURI().toString(), listers);
+				summary.put(UserRole.list.getURI().toString(), listers);
 			}
 		} catch (ObjectNotFoundException e) {
 			LOG.error("Cannot find object in question", e);
@@ -186,7 +186,7 @@ public class AccessControlUtils {
 				groups.addAll(local);
 			}
 
-			if(ContentModelHelper.UserRole.list.getURI().equals(role)) {
+			if(UserRole.list.getURI().equals(role)) {
 				// special list inheritance logic
 				// if my bond with parent is non-inheriting, 
 				// then all groups with roles on parent have list

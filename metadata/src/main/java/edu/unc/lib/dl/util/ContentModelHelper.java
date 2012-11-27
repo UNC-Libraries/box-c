@@ -17,9 +17,6 @@ package edu.unc.lib.dl.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.jdom.Namespace;
 
@@ -104,71 +101,6 @@ public class ContentModelHelper {
 		}
 	}
 	
-	/**
-	 * These are the properties that the repository manages in the rels-ext datastream.
-	 *
-	 * @author count0
-	 *
-	 */
-	public static enum UserRole {
-		list("list", new Permission[] {}),
-		accessCopiesPatron("access-copies-patron", new Permission[] {Permission.viewDescription, Permission.viewDerivative}),
-		metadataPatron("metadata-patron", new Permission[] {Permission.viewDescription}),
-		patron("patron", new Permission[] {Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-		observer("observer", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-		ingester("ingester", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents, Permission.editDescription, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-		processor("processor", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-		curator("curator", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-		administrator("administrator", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl, Permission.purgeForever, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal});
-		private URI uri;
-		private String predicate;
-		private Set<Permission> permissions;
-
-		UserRole(String predicate, Permission[] perms) {
-			try {
-				this.predicate = predicate;
-				this.uri = new URI(JDOMNamespaceUtil.CDR_ROLE_NS.getURI() + predicate);
-				HashSet<Permission> mypermissions = new HashSet<Permission>(perms.length);
-				Collections.addAll(mypermissions, perms);
-				this.permissions = Collections.unmodifiableSet(mypermissions);
-			} catch (URISyntaxException e) {
-				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
-				x.initCause(e);
-				throw x;
-			}
-		}
-		
-		public static boolean matchesMemberURI(String test) {
-			for(UserRole r : UserRole.values()) {
-				if(r.getURI().toString().equals(test)) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		public URI getURI() {
-			return this.uri;
-		}
-		
-		public Set<Permission> getPermissions() {
-			return permissions;
-		}
-
-		public String getPredicate() {
-			return predicate;
-		}
-
-		public boolean equals(String value){
-			return this.uri.toString().equals(value);
-		}
-
-		@Override
-		public String toString() {
-			return this.uri.toString();
-		}
-	}
-
 	/**
 	 * These are the entailed relationships that the repository infers between objects.
 	 *
@@ -365,41 +297,36 @@ public class ContentModelHelper {
 		}
 	}
 	
-	public static enum AccessType {
+	public enum DatastreamCategory {
 		ORIGINAL, METADATA, DERIVATIVE
 	}
 	
-	public enum Permission {
-		addRemoveContents, editAccessControl, editDescription, moveToTrash, publish, purgeForever, viewAdminUI, viewDerivative, viewDescription, viewEmbargoed, viewOriginal;
-		private Permission() {}
-	}
-
 	public static enum Datastream {
-		RELS_EXT("RELS-EXT", ControlGroup.INTERNAL, false, "Fedora Object-to-Object Relationship Metadata", AccessType.METADATA), 
-		DATA_FILE("DATA_FILE", ControlGroup.MANAGED, true, null, AccessType.ORIGINAL), 
-		MD_TECHNICAL("MD_TECHNICAL", ControlGroup.MANAGED, false, "PREMIS Technical Metadata", AccessType.METADATA), 
-		IMAGE_JP2000("IMAGE_JP2000", ControlGroup.MANAGED, false, "Derived JP2000 image", AccessType.DERIVATIVE),
-		MD_DESCRIPTIVE("MD_DESCRIPTIVE", ControlGroup.INTERNAL, true, "Descriptive Metadata", AccessType.METADATA), 
-		DC("DC", ControlGroup.INTERNAL, false, "Internal XML Metadata", AccessType.METADATA), 
-		MD_EVENTS("MD_EVENTS", ControlGroup.MANAGED, false, "PREMIS Events Metadata", AccessType.METADATA), 
-		THUMB_SMALL("THUMB_SMALL", ControlGroup.MANAGED, false, "Thumbnail Image", AccessType.DERIVATIVE), 
-		THUMB_LARGE("THUMB_LARGE", ControlGroup.MANAGED, false, "Thumbnail Image", AccessType.DERIVATIVE),
-		MD_CONTENTS("MD_CONTENTS", ControlGroup.INTERNAL, false, "List of Contents", AccessType.METADATA), 
-		AUDIT("AUDIT", ControlGroup.INTERNAL, false, "Audit Trail for this object", AccessType.METADATA),
-		DATA_MANIFEST("DATA_MANIFEST", ControlGroup.MANAGED, false, "Deposit Manifest", AccessType.METADATA);
+		RELS_EXT("RELS-EXT", ControlGroup.INTERNAL, false, "Fedora Object-to-Object Relationship Metadata", DatastreamCategory.METADATA), 
+		DATA_FILE("DATA_FILE", ControlGroup.MANAGED, true, null, DatastreamCategory.ORIGINAL), 
+		MD_TECHNICAL("MD_TECHNICAL", ControlGroup.MANAGED, false, "PREMIS Technical Metadata", DatastreamCategory.METADATA), 
+		IMAGE_JP2000("IMAGE_JP2000", ControlGroup.MANAGED, false, "Derived JP2000 image", DatastreamCategory.DERIVATIVE),
+		MD_DESCRIPTIVE("MD_DESCRIPTIVE", ControlGroup.INTERNAL, true, "Descriptive Metadata", DatastreamCategory.METADATA), 
+		DC("DC", ControlGroup.INTERNAL, false, "Internal XML Metadata", DatastreamCategory.METADATA), 
+		MD_EVENTS("MD_EVENTS", ControlGroup.MANAGED, false, "PREMIS Events Metadata", DatastreamCategory.METADATA), 
+		THUMB_SMALL("THUMB_SMALL", ControlGroup.MANAGED, false, "Thumbnail Image", DatastreamCategory.DERIVATIVE), 
+		THUMB_LARGE("THUMB_LARGE", ControlGroup.MANAGED, false, "Thumbnail Image", DatastreamCategory.DERIVATIVE),
+		MD_CONTENTS("MD_CONTENTS", ControlGroup.INTERNAL, false, "List of Contents", DatastreamCategory.METADATA), 
+		AUDIT("AUDIT", ControlGroup.INTERNAL, false, "Audit Trail for this object", DatastreamCategory.METADATA),
+		DATA_MANIFEST("DATA_MANIFEST", ControlGroup.MANAGED, false, "Deposit Manifest", DatastreamCategory.METADATA);
 
 		private String name;
 		private ControlGroup controlGroup;
 		private boolean versionable;
 		private String label;
-		private AccessType accessType;
+		private DatastreamCategory category;
 
-		Datastream(String name, ControlGroup controlGroup, boolean versionable, String label, AccessType accessType){
+		Datastream(String name, ControlGroup controlGroup, boolean versionable, String label, DatastreamCategory category){
 			this.setName(name);
 			this.setControlGroup(controlGroup);
 			this.setVersionable(versionable);
 			this.setLabel(label);
-			this.setAccessType(accessType);
+			this.setCategory(category);
 		}
 		
 		public static Datastream getDatastream(String name){
@@ -416,12 +343,12 @@ public class ContentModelHelper {
 			this.name = name;
 		}
 
-		public AccessType getAccessType() {
-			return accessType;
+		public DatastreamCategory getCategory() {
+			return category;
 		}
 
-		private void setAccessType(AccessType accessType) {
-			this.accessType = accessType;
+		private void setCategory(DatastreamCategory category) {
+			this.category = category;
 		}
 
 		public String getName() {

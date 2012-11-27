@@ -36,7 +36,7 @@ public class UIPImpl implements UpdateInformationPackage {
 
 	protected String message;
 	
-	protected PremisEventLogger eventLogger = new PremisEventLogger(AgentManager.getRepositorySoftwareAgentStub());
+	protected PremisEventLogger eventLogger = new PremisEventLogger(AgentManager.getRepositorySoftwareAgentStub().getName());
 
 	public UIPImpl(PID pid, PersonAgent user, UpdateOperation operation) {
 		this.pid = pid;
