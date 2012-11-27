@@ -111,15 +111,15 @@ public class ContentModelHelper {
 	 *
 	 */
 	public static enum UserRole {
-		patron("patron", new Permission[] {}),
-		observer("observer", new Permission[] {Permission.viewUserUI}),
-		ingester("ingester", new Permission[] {Permission.viewUserUI, Permission.addRemoveContents, Permission.editDescription}),
-		processor("processor", new Permission[] {Permission.viewUserUI, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash}),
-		curator("curator", new Permission[] {Permission.viewUserUI, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl}),
-		administrator("administrator", new Permission[] {Permission.viewUserUI, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl, Permission.purgeForever}),
 		list("list", new Permission[] {}),
-		accessCopiesPatron("access-copies-patron", new Permission[] {}),
-		metadataPatron("metadata-patron", new Permission[] {});
+		accessCopiesPatron("access-copies-patron", new Permission[] {Permission.viewDescription, Permission.viewDerivative}),
+		metadataPatron("metadata-patron", new Permission[] {Permission.viewDescription}),
+		patron("patron", new Permission[] {Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
+		observer("observer", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
+		ingester("ingester", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents, Permission.editDescription, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
+		processor("processor", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
+		curator("curator", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
+		administrator("administrator", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl, Permission.purgeForever, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal});
 		private URI uri;
 		private String predicate;
 		private Set<Permission> permissions;
@@ -370,7 +370,7 @@ public class ContentModelHelper {
 	}
 	
 	public enum Permission {
-		viewUserUI, addRemoveContents, publish, editDescription, editAccessControl, moveToTrash, purgeForever;
+		addRemoveContents, editAccessControl, editDescription, moveToTrash, publish, purgeForever, viewAdminUI, viewDerivative, viewDescription, viewEmbargoed, viewOriginal;
 		private Permission() {}
 	}
 
