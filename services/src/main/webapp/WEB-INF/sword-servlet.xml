@@ -318,11 +318,6 @@
 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
 	<bean
 		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
-		<property name="interceptors">
-			<list>
-				<bean class="edu.unc.lib.dl.fedora.GroupsToThreadStoreInterceptor"/>
-			</list>
-		</property>
 	</bean>
 	<context:component-scan base-package="edu.unc.lib.dl.cdr.sword.server.servlets" />
 

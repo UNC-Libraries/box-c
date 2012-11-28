@@ -35,6 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService.PathInfo;
 
@@ -165,7 +167,7 @@ public class FedoraDataService {
 		Collection<Future<Content>> futures = new ArrayList<Future<Content>>(callables.size());
 		
 		if(GroupsThreadStore.getGroups() != null) {
-			String groups = GroupsThreadStore.getGroups();
+			AccessGroupSet groups = GroupsThreadStore.getGroups();
 			for(Callable<Content> c : callables) {
 				if(GroupForwardingCallable.class.isInstance(c)) {
 					GroupForwardingCallable rfc = (GroupForwardingCallable)c;
@@ -237,9 +239,9 @@ public class FedoraDataService {
 	}
 	
 	private abstract class GroupForwardingCallable implements Callable<Content> {
-		String groups = null;
+		AccessGroupSet groups = null;
 
-		public void setGroups(String groups) {
+		public void setGroups(AccessGroupSet groups) {
 			this.groups = groups;
 		}
 		

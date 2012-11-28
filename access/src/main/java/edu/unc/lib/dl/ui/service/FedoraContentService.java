@@ -28,7 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fedora.AccessClient;
-import edu.unc.lib.dl.fedora.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
@@ -97,9 +98,9 @@ public class FedoraContentService {
 		GetMethod method = new GetMethod(dataUrl);
 
 		try {
-			String groups = GroupsThreadStore.getGroups();
+			AccessGroupSet groups = GroupsThreadStore.getGroups();
 			if (groups != null) {
-				method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups);
+				method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";", null, false));
 			}
 			//method.setDoAuthentication(true);
 			client.executeMethod(method);

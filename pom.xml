@@ -94,7 +94,7 @@
 
 	<modules>
 		<module>access</module>
-		<module>access-control</module>
+		<module>security</module>
 		<module>admin</module>
 		<module>fcrepo-cdr-fesl</module>
 		<module>fcrepo-clients</module>

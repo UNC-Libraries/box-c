@@ -84,11 +84,6 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 				return false;
 		}
 		
-		//Check to see if the user has gotten this type of datastream for this object before
-		if (user.getDatastreamAccessCache().contains(id, accessType)){
-			return true;
-		}
-		
 		//Check to see if the user can access this datastream/object
 		List<String> resultFields = new ArrayList<String>();
 		resultFields.add(SearchFieldKeys.ID);
@@ -100,9 +95,6 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 		if (briefObject == null){
 			return false;
 		}
-		
-		//Access allowed, cache this result.
-		user.getDatastreamAccessCache().put(id, accessType);
 		
 		return true;
 	}

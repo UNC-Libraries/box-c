@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.output.XMLOutputter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -146,9 +147,9 @@ public class FedoraDataServiceTest extends Assert {
 
 		Document objectView = dataService.getObjectViewXML(pid);
 		assertNotNull(objectView);
-		/*XMLOutputter outputter = new XMLOutputter();;
+		XMLOutputter outputter = new XMLOutputter();
 		System.out.println(outputter.outputString(objectView));
-		System.out.println(objectView.getRootElement().getContentSize());*/
+		System.out.println(objectView.getRootElement().getContentSize());
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(managementClient).getObjectXML(any(PID.class));
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));

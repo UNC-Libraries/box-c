@@ -22,13 +22,14 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.swordapp.server.AuthCredentials;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.AccessClient;
-import edu.unc.lib.dl.fedora.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -93,24 +94,20 @@ public abstract class AbstractFedoraManager {
 		if (config.getAdminDepositor() != null && config.getAdminDepositor().equals(auth.getUsername()))
 			return true;
 		ObjectAccessControlsBean aclBean = aclService.getObjectAccessControls(pid);
-		String[] groups = this.getGroups(auth, config);
+		AccessGroupSet groups = this.getGroups(auth, config);
 		
 		return aclBean.hasPermission(groups, permission);
 	}
 	
-	protected String[] getGroups(AuthCredentials auth, SwordConfigurationImpl config) {
-		String groupString = GroupsThreadStore.getGroups();
-		if (groupString != null) {
-			// Use the stored groups provided in the request
-			return groupString.split(";");
-		} else {
-			if (auth.getUsername() == null) {
-				return new String[] {"public"};
-			} else {
-				// For non-group forwarded requests
-				return new String[] {config.getDepositorNamespace() + auth.getUsername(), "public"};
-			}
+	protected AccessGroupSet getGroups(AuthCredentials auth, SwordConfigurationImpl config) {
+		AccessGroupSet groupSet = GroupsThreadStore.getGroups();
+		if (groupSet == null) {
+			groupSet = new AccessGroupSet();
+			groupSet.addAccessGroup("public");
+		} else if (groupSet.size() == 0 || (groupSet.size() == 1 && groupSet.contains("public"))){
+			groupSet.addAccessGroup(config.getDepositorNamespace() + auth.getUsername());
 		}
+		return groupSet;
 	}
 
 	public AccessClient getAccessClient() {
