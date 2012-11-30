@@ -101,6 +101,7 @@ public class JMSMessageUtil {
 		REMOVE ("remove"),
 		ADD ("add"),
 		REORDER ("reorder"),
+		PUBLISH ("publish"),
 		REINDEX ("reindex");
 
 		private String name;

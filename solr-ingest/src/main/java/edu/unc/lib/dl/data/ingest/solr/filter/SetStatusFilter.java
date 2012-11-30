@@ -76,17 +76,21 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 				throw new IndexingException("Object " + dip.getPid() + " could not be found");
 			}
 			
+			if (log.isDebugEnabled()) {
+				log.debug("Publication query results: " + results);
+			}
+			
 			boolean selfOnly = true;
 			String pidString = dip.getPid().getURI().toString();
 			// Scan the results for any nodes that are not published
 			for (List<String> row : results) {
 				if (pidString.equals(row.get(0))) {
-					if (!"http://mulgara.org/mulgara#null".equals(row.get(1))) {
+					if ("no".equals(row.get(1))) {
 						isPublished = false;
 					}
 				} else {
 					selfOnly = false;
-					if (!"http://mulgara.org/mulgara#null".equals(row.get(1))) {
+					if ("no".equals(row.get(1))) {
 						parentIsPublished = false;
 					}
 				}
@@ -112,6 +116,13 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 				status.add("Unpublished");
 			}
 		}
+		
+		if (log.isDebugEnabled()) {
+			log.debug("Parent is published: " + parentIsPublished);
+			log.debug("Item is published: " + isPublished);
+			log.debug("Final Status: " + status);
+		}
+		
 		
 		dip.setIsPublished(parentIsPublished && isPublished);
 		dip.getDocument().setStatus(status);

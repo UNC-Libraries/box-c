@@ -137,6 +137,11 @@ public class Datastream {
 		if (datastreamClass == null) {
 			this.datastreamClass = ContentModelHelper.Datastream.getDatastream(this.name);
 		}
-		return datastreamClass.getCategory();
+		if (datastreamClass == null) {
+			System.out.println("No datastream class available for " + this.name);
+			return null;
+		}
+		System.out.println("Datastream class for " + this.name);
+		return null;//return datastreamClass.getCategory();
 	}
 }

@@ -57,7 +57,7 @@
 	</function>
 	<function>
 		<name>getDatastreamUrl</name>
-		<function-class>edu.unc.lib.dl.ui.util.CDRTagLibUtil</function-class>
+		<function-class>edu.unc.lib.dl.ui.util.FedoraUtil</function-class>
 		<function-signature>
 			java.lang.String getDatastreamUrl(java.lang.Object, java.lang.String, edu.unc.lib.dl.ui.util.FedoraUtil)
 		</function-signature>
@@ -85,23 +85,30 @@
 	</function>
 	<function>
 		<name>postImport</name>
-		<function-class>edu.unc.lib.dl.ui.util.CDRTagLibUtil</function-class>
+		<function-class>edu.unc.lib.dl.ui.util.FileIOUtil</function-class>
 		<function-signature>
 			java.lang.String postImport(javax.servlet.http.HttpServletRequest, java.lang.String)
 		</function-signature>
 	</function>
 	<function>
 		<name>decrementLongMap</name>
-		<function-class>edu.unc.lib.dl.ui.util.CDRTagLibUtil</function-class>
+		<function-class>edu.unc.lib.dl.ui.util.CollectionUtil</function-class>
 		<function-signature>
 			void decrementLongMap(java.util.Map, java.lang.String)
 		</function-signature>
 	</function>
 	<function>
 		<name>urlEncode</name>
-		<function-class>edu.unc.lib.dl.ui.util.CDRTagLibUtil</function-class>
+		<function-class>edu.unc.lib.dl.ui.util.StringFormatUtil</function-class>
 		<function-signature>
 			java.lang.String urlEncode(java.lang.String)
+		</function-signature>
+	</function>
+	<function>
+		<name>objectToJSON</name>
+		<function-class>edu.unc.lib.dl.ui.util.SerializationUtil</function-class>
+		<function-signature>
+			java.lang.String objectToJSON(java.lang.Object)
 		</function-signature>
 	</function>
 </taglib>

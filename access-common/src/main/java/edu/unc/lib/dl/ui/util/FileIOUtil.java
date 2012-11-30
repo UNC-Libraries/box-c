@@ -19,8 +19,18 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.params.HttpClientParams;
+
+import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 
 public class FileIOUtil {
 
@@ -44,6 +54,32 @@ public class FileIOUtil {
 				reader.close();
 			if (in != null)
 				in.close();
+		}
+	}
+	
+	public static String postImport(HttpServletRequest request, String url){
+		Map<String, String[]> parameters = request.getParameterMap();
+		HttpClientParams params = new HttpClientParams();
+		params.setContentCharset("UTF-8");
+		HttpClient client = new HttpClient();
+		client.setParams(params);
+		
+		PostMethod post = new PostMethod(url);
+		Iterator<Entry<String,String[]>> parameterIt = parameters.entrySet().iterator();
+		while (parameterIt.hasNext()){
+			Entry<String,String[]> parameter = parameterIt.next();
+			for (String parameterValue: parameter.getValue()){
+				post.addParameter(parameter.getKey(), parameterValue);
+			}
+		}
+		
+		try {
+			client.executeMethod(post);
+			return post.getResponseBodyAsString();
+		} catch (Exception e) {
+			throw new ResourceNotFoundException("Failed to retrieve POST import request for " + url, e);
+		} finally {
+			post.releaseConnection();
 		}
 	}
 }

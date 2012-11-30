@@ -17,6 +17,23 @@
 			http://www.springframework.org/schema/context 
 			http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
+	<bean name="propertiesURI" class="java.lang.System"
+		factory-method="getProperty">
+		<constructor-arg index="0" value="server.properties.uri" />
+		<!-- property name for properties URI location -->
+		<constructor-arg index="1" value="classpath:server.properties" />
+		<!-- default location for testing -->
+	</bean>
+	<bean id="serverProperties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<ref bean="propertiesURI" />
+			</list>
+		</property>
+		<property name="ignoreResourceNotFound" value="false" />
+	</bean>
+
 	<context:annotation-config />
 
 	<!-- Import controllers -->
@@ -32,6 +49,16 @@
 	</bean>
 	<context:component-scan base-package="edu.unc.lib.dl.admin.controller" />
 	<context:component-scan base-package="edu.unc.lib.dl.ui.controller" />
+	
+	<bean id="servicesUrl" class="java.lang.String">
+		<constructor-arg
+			value="${admin.services.url}${services.context}/rest/" />
+	</bean>
+	
+	<bean id="swordUrl" class="java.lang.String">
+		<constructor-arg
+			value="${admin.services.url}${services.context}/sword/" />
+	</bean>
 
 	<bean class="edu.unc.lib.dl.ui.view.CDRViewResolver" p:suffix=".jsp">
 		<property name="exposedContextBeanNames">

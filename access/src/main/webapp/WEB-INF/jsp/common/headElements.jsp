@@ -25,7 +25,7 @@
 	<link rel="stylesheet" type="text/css" href="/static/css/cdrui_styles_ie8.css" />
 <![endif]-->
 
-<script type="text/javascript" src="/static/js/jquery.js"></script>
+<script type="text/javascript" src="/static/js/jquery.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/slideshow.css" />
 
 <meta name="description" content="Carolina Digital Repository" />

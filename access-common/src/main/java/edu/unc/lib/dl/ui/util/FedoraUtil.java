@@ -23,6 +23,14 @@ import edu.unc.lib.dl.search.solr.model.Datastream;
 public class FedoraUtil {
 	private String fedoraUrl;
 	
+	public static String getDatastreamUrl(Object object, String datastream, FedoraUtil fedoraUtil){
+		if (object instanceof String)
+			return fedoraUtil.getDatastreamUrl((String)object, datastream);
+		if (object instanceof BriefObjectMetadataBean)
+			return fedoraUtil.getDatastreamUrl((BriefObjectMetadataBean)object, datastream);
+		return null;
+	}
+	
 	/**
 	 * Returns a URL for a specific datastream of the object identified by pid, according
 	 * to the RESTful Fedora API.

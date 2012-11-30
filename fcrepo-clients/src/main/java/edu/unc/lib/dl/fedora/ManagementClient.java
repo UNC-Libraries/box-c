@@ -92,9 +92,11 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class ManagementClient extends WebServiceTemplate {
 	private AccessClient accessClient = null;
+	private TripleStoreQueryService tripleStoreQueryService;
 
 	// ENUMS
 	private enum Action {
@@ -567,6 +569,27 @@ public class ManagementClient extends WebServiceTemplate {
 		PurgeDatastreamResponse resp = (PurgeDatastreamResponse) this.callService(req, Action.purgeDatastream);
 		return resp.getPurgedVersionDate();
 	}
+	
+	public boolean setExclusiveLiteral(PID pid, String relationship, String literal, String datatype) throws FedoraException {
+		List<String> rel = tripleStoreQueryService.fetchAllTriples(pid).get(relationship);
+		
+		if (rel != null) {
+			if (rel.contains(literal)) {
+				rel.remove(literal);
+			} else {
+				// add missing rel
+				this.addLiteralStatement(pid, relationship, literal, datatype);
+			}
+			// remove any other same predicate triples
+			for (String oldValue : rel) {
+				this.purgeLiteralStatement(pid, relationship, oldValue, datatype);
+			}
+			return true; 
+		} else {
+			// add missing rel
+			return this.addLiteralStatement(pid, relationship, literal, datatype);
+		}
+	}
 
 	public boolean purgeLiteralStatement(PID pid, String relationship, String literal, String datatype)
 			throws FedoraException {
@@ -844,5 +867,9 @@ public class ManagementClient extends WebServiceTemplate {
 	 */
 	public AccessClient getAccessClient() {
 		return accessClient;
+	}
+
+	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
 }

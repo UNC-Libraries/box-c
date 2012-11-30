@@ -62,6 +62,7 @@
 		<property name="username" value="${fedora.admin.username}" />
 		<property name="password" value="${fedora.admin.password}" />
 		<property name="accessClient" ref="accessClient"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 	</bean>
 	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient" init-method="init">
 		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />

@@ -83,6 +83,10 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 				} else {
 					this.offer(cdrMessage.getParent(), SolrUpdateAction.CLEAN_REINDEX);
 				}
+			} else if (JMSMessageUtil.CDRActions.PUBLISH.equals(action)){
+				for (String pidString: cdrMessage.getSubjects()){
+					this.offer(pidString, SolrUpdateAction.RECURSIVE_ADD);
+				}
 			}
 		} else {
 			//For all other message types, do a single record update

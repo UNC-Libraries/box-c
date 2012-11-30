@@ -200,9 +200,11 @@ public class OperationsMessageSender {
 	 * @param publish
 	 *           Subjects are published if true, unpublished if false
 	 */
-	public void sendPublishOperation(String userid, Collection<PID> pids, boolean publish) {
+	public String sendPublishOperation(String userid, Collection<PID> pids, boolean publish) {
+		String messageId = "urn:uuid:" + UUID.randomUUID().toString();
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), "publish");
+		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), "publish", messageId);
+		
 		Element publishEl = new Element("publish", CDR_MESSAGE_NS);
 		contentEl.addContent(publishEl);
 
@@ -232,18 +234,24 @@ public class OperationsMessageSender {
 			}
 
 		});
+		
+		return messageId;
 	}
 
+	private Element createAtomEntry(Document msg, String userid, PID contextpid, String operation) {
+		return createAtomEntry(msg, userid, contextpid, operation, "urn:uuid:" + UUID.randomUUID().toString());
+	}
+	
 	/**
 	 * @param msg
 	 * @param userid
 	 * @param pid
 	 * @return
 	 */
-	private Element createAtomEntry(Document msg, String userid, PID contextpid, String operation) {
+	private Element createAtomEntry(Document msg, String userid, PID contextpid, String operation, String messageId) {
 		Element entry = new Element("entry", ATOM_NS);
 		msg.addContent(entry);
-		entry.addContent(new Element("id", ATOM_NS).setText("urn:uuid:" + UUID.randomUUID().toString()));
+		entry.addContent(new Element("id", ATOM_NS).setText(messageId));
 		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
 		String timestamp = fmt.print(DateTimeUtils.currentTimeMillis());
 		entry.addContent(new Element("updated", ATOM_NS).setText(timestamp));

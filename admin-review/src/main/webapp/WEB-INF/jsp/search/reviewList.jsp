@@ -1,7 +1,34 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
+<script type="text/javascript" src="/static/js/admin/AjaxCallbackButton.js"></script>
+<script type="text/javascript" src="/static/js/admin/PID.js"></script>
 <script>
+function publishFollowup(data) {
+	if (data && data > this.completeTimestamp) {
+		return true;
+	}
+	return false;
+}
+
+function publishComplete() {
+	this.element.text("Unpublish");
+	this.setWorkURL("services/rest/edit/{idPath}/unpublish");
+	this.options.complete = unpublishComplete;
+}
+
+function unpublishComplete() {
+	this.element.text("Publish");
+	this.setWorkURL("services/rest/edit/{idPath}/publish");
+	this.options.complete = publishComplete;
+}
+
+function publishWorkDone(data) {
+	this.completeTimestamp = data.timestamp;
+}
+
 $(function() {
+	var resultObjects = ${cdr:objectToJSON(resultResponse.resultList)};
+	
 	$(".browseitem input[type='checkbox']").prop("checked", false).click(function(){
 		$(this).parent().parent().parent().toggleClass("selected");
 	});
@@ -20,11 +47,17 @@ $(function() {
 		$(this).parent().parent().toggleClass("selected");
 	});
 	
-	$(".publish_link").click(function(){
-		if ($(this).html() == "Publish")
-			$(this).html("Unpublish");
-		else $(this).html("Publish");
-		return false;
+	$.each(resultObjects, function(){
+		$("#entry_" + this.id.replace(":", "\\:") + " .publish_link").ajaxCallbackButton({
+			pid: this.id,
+			workLabel: "Publishing...",
+			workPath: "services/rest/edit/{idPath}/publish",
+			workDone: publishWorkDone,
+			followupLabel: "Publishing (refreshing)",
+			followupPath: "services/rest/item/{idPath}/solrRecord/lastIndexed",
+			followup: publishFollowup,
+			complete: publishComplete
+		});
 	});
 });
 </script>
@@ -45,7 +78,7 @@ $(function() {
 	
 	<div>
 		<c:forEach items="${resultResponse.resultList}" var="metadata" varStatus="status">
-			<div id="entry${metadata.id}" class="browseitem">
+			<div id="entry_${metadata.id}" class="browseitem">
 				<div class="contentarea">
 					<div class="left">
 						<input type="checkbox"/>

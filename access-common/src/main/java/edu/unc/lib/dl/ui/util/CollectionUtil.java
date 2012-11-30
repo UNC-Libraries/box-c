@@ -80,4 +80,10 @@ public class CollectionUtil {
 		}
 		return buf.toString();
 	}
+	
+	public static void decrementLongMap(Map<String,Long> map, String key){
+		if (!map.containsKey(key))
+			return;
+		map.put(key, map.get(key) - 1);
+	}
 }

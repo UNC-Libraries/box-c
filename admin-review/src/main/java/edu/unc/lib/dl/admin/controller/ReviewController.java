@@ -68,6 +68,5 @@ public class ReviewController extends AbstractSolrSearchController {
 		model.addAttribute("resultResponse", resultResponse);
 
 		return "search/reviewList";
-		// return "dashboard/reviewer";
 	}
 }

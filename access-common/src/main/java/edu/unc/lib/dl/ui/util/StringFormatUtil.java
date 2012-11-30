@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.util;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,5 +82,9 @@ public class StringFormatUtil {
 		Matcher m = Pattern.compile("(.|\n){0," + length + "}\\b").matcher(text);
 		m.find();
 		return m.group(0);
+	}
+	
+	public static String urlEncode(String value) throws UnsupportedEncodingException {
+	    return URLEncoder.encode(value, "UTF-8");
 	}
 }

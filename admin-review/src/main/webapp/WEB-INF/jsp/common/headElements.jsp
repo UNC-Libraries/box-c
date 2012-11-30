@@ -26,7 +26,8 @@
 <![endif]-->
 <link rel="stylesheet" type="text/css" href="/static/css/cdradmin.css" />
 
-<script type="text/javascript" src="/static/js/jquery.js"></script>
+<script type="text/javascript" src="/static/js/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
 
 <meta name="description" content="Carolina Digital Repository" />
 <meta name="keywords" content="Carolina Digital Repository" />
