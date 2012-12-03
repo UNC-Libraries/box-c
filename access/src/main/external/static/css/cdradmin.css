@@ -104,7 +104,7 @@ a {
 }
 
 .browseitem .preview {
-	color: #0A5274;
+	/*color: #0A5274;*/
 	display: inline;
 	white-space: nowrap;
 	font-size: 14px;
@@ -161,3 +161,49 @@ ul#mainmenu li a {
 }
 
 /** Light color theme end **/
+
+
+.browseitem.published {
+}
+
+.browseitem.unpublished {
+	background-color: rgba(224, 206, 206, 0.2);
+}
+
+.browseitem.selected {
+	background-color: #7DA1DB;
+	color: #fff;
+	box-shadow: 3px 3px 3px #99C5CF;
+}
+
+.browseitem.unpublished.selected {
+	background-color: #8393C6;
+}
+
+.browseitem.selected h2 a {
+	color: #ffffff;
+}
+
+.browseitem.selected a {
+	color: #F9F9FF;
+}
+
+.browseitem.selected + .browseitem {
+    border-top: 1px solid #6A88B7;
+}
+
+.browseitem.selected + .browseitem.selected {
+	border-top: 1px solid #6A88B7;
+}
+
+.browseitem.working, .browseitem.publishing {
+	color: #B7B7B7;
+}
+
+.browseitem.working a, .browseitem.publishing a {
+	color: #B7B7B7;
+}
+
+.browseitem.working h2 a, .browseitem.publishing h2 a {
+	color: #B7B7B7;
+} 

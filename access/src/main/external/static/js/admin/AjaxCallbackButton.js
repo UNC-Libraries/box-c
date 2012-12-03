@@ -30,7 +30,9 @@
 			followupPath: "",
 			followupLabel: undefined,
 			followupFrequency: 1000,
-			complete: this.defaultComplete
+			complete: this.defaultComplete,
+			parentElement: undefined,
+			animateSpeed: 80
 		},
 		
 		_create: function() {
@@ -47,19 +49,40 @@
 			var op = this;
 			this.element.text(this.options.defaultLabel);
 			this.element.click(function(){
+				if (op.options.disabled)
+					return false;
 				op.element.text(op.options.workLabel);
+				op.disable();
+				if (op.options.parentElement)
+					op.options.parentElement.addClass("working", "fast");
 				$.getJSON(op.workURL, function(data) {
 					if (op.options.followup) {
 						if (op.options.workDone) {
 							op.options.workDone.call(op, data);
 						}
+						if (op.options.parentElement) 
+							op.options.parentElement.switchClass("working", "followup", op.options.animateSpeed);
+						//op.options.parentElement.addClass("followup");
 						op.followupPing();
 					} else {
+						if (op.options.parentElement)
+							op.options.parentElement.removeClass("working", op.options.animateSpeed);
 						op.options.complete.call(op, data);
+						op.enable();
 					}
 				});
 				return false;
 			});
+		},
+		
+		disable: function() {
+			this.options.disabled = true;
+			this.element.css("cursor", "default");
+		},
+		
+		enable: function() {
+			this.options.disabled = false;
+			this.element.css("cursor", "pointer");
 		},
 		
 		setWorkURL: function(url) {
@@ -92,6 +115,10 @@
 						clearInterval(op.followupId);
 						op.followupId = null;
 					}
+					if (op.options.parentElement) {
+						op.options.parentElement.removeClass("followup", op.options.animateSpeed);
+					}
+					op.enable();
 					op.options.complete.call(op, data);
 				} else if (op.followupId == null) {
 					op.followupId = setInterval($.proxy(op.followupPing, op), op.options.followupFrequency);
