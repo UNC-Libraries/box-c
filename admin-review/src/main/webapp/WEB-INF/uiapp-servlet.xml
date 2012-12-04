@@ -59,6 +59,16 @@
 		<constructor-arg
 			value="${admin.services.url}${services.context}/sword/" />
 	</bean>
+	
+	<bean id="swordUsername" class="java.lang.String">
+		<constructor-arg
+			value="${sword.username}" />
+	</bean>
+	
+	<bean id="swordPassword" class="java.lang.String">
+		<constructor-arg
+			value="${sword.password}" />
+	</bean>
 
 	<bean class="edu.unc.lib.dl.ui.view.CDRViewResolver" p:suffix=".jsp">
 		<property name="exposedContextBeanNames">

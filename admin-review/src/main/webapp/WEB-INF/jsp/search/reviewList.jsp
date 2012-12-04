@@ -97,7 +97,7 @@ $(function() {
 					</div>
 					<ul class="itemnavigation">
 						<li><a href="#" class="publish_link">Publish</a></li>
-						<li><a href="edit_desc.html">
+						<li><a href="uuid/${metadata.idWithoutPrefix}/describe">
 							<c:choose>
 								<c:when test="${metadata.datastreamObjects.contains('MD_DESCRIPTIVE')}">
 									Edit Description
