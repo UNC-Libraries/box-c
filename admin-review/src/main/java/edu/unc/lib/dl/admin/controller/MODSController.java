@@ -61,7 +61,7 @@ public class MODSController extends AbstractSolrSearchController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "{prefix}/{id}/describe", method = RequestMethod.GET)
+	@RequestMapping(value = "describe/{prefix}/{id}", method = RequestMethod.GET)
 	public String editDescription(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
 			HttpServletRequest request) {
 
@@ -145,7 +145,7 @@ public class MODSController extends AbstractSolrSearchController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "{prefix}/{id}/describe", method = RequestMethod.POST)
+	@RequestMapping(value = "describe/{prefix}/{id}", method = RequestMethod.POST)
 	public @ResponseBody
 	String updateDescription(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
 			HttpServletRequest request) {

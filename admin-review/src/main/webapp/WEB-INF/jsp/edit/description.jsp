@@ -16,7 +16,22 @@
 
 <script>
 	var resultObject = ${cdr:objectToJSON(resultObject)};
+	var originalUrl = '${cdr:getDatastreamUrl(resultObject, "DATA_FILE", fedoraUtil)}';
+	
 	var pid = new PID(resultObject.id);
+	
+	var menuEntries = (originalUrl)? [{
+		insertPath : ["View"],
+		label : 'View original document',
+		enabled : true,
+		binding : null,
+		action : originalUrl
+	}, {
+		label : 'View Document',
+		enabled : true, 
+		itemClass : 'header_mode_tab',
+		action : originalUrl
+	}]: null;
 
 	var modsDocument = null;
 	
@@ -26,8 +41,9 @@
 			ajaxOptions : {
 				modsRetrievalPath : "/admin/" + pid.getPath() + "/mods",
 				modsRetrievalParams : {'pid' : pid.getPID()},
-				modsUploadPath : "/admin/" + pid.getPath() + "/describe"
-			}
+				modsUploadPath : "/admin/describe/" + pid.getPath()
+			},
+			'menuEntries': menuEntries
 		});
 		$(window).resize();
 	});
@@ -38,7 +54,7 @@
 		<h2>Reviewing items</h2>
 		<c:set var="facetNodes" scope="request" value="${resultObject.path.facetNodes}"/>
 		<div class="results_header_hierarchy_path">
-			<c:import url="/jsp/util/hierarchyTrail.jsp" />
+			<c:import url="/jsp/util/pathTrail.jsp" />
 		</div>
 	</div>
 

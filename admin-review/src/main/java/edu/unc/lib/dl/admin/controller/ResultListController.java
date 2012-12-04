@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
-import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -28,40 +27,50 @@ import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 
 @Controller
-public class ReviewController extends AbstractSolrSearchController {
-	private static final Logger log = LoggerFactory.getLogger(ReviewController.class);
-	private List<String> containerFieldList = Arrays.asList(SearchFieldKeys.ID, SearchFieldKeys.TITLE, SearchFieldKeys.ANCESTOR_PATH);
-	private List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID, SearchFieldKeys.TITLE, SearchFieldKeys.CREATOR,
-			SearchFieldKeys.DATASTREAM, SearchFieldKeys.DATE_ADDED, "STATUS");
+public class ResultListController extends AbstractSolrSearchController {
+	private static final Logger log = LoggerFactory.getLogger(ResultListController.class);
+	
 	@Autowired
 	private PID collectionsPid;
+	private List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID, SearchFieldKeys.TITLE, SearchFieldKeys.CREATOR,
+			SearchFieldKeys.DATASTREAM, SearchFieldKeys.DATE_ADDED, SearchFieldKeys.RESOURCE_TYPE, "STATUS", SearchFieldKeys.ANCESTOR_PATH);
 	
-	@RequestMapping(value = "review/{prefix}/{id}", method = RequestMethod.GET)
-	public String getReviewList(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
+	@RequestMapping(value = "list", method = RequestMethod.GET)
+	public String listRootContents(Model model, HttpServletRequest request) {
+		return this.listContainerContents(this.collectionsPid.getPid(), model, request);
+	}
+	
+	@RequestMapping(value = "list/{prefix}/{id}", method = RequestMethod.GET)
+	public String listContainerContents(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
 			HttpServletRequest request) {
-		log.debug("Reviewing " + idPrefix + id);
-		String idString = idPrefix + ":" + id;
+		String pid = idPrefix + ":" + id;
+		return this.listContainerContents(pid, model, request);
+	}
+	
+	public String listContainerContents(String pid, Model model, HttpServletRequest request) {
 		AccessGroupSet accessGroups = getUserAccessGroups(request);
 		
 		CutoffFacet path;
-		if (!collectionsPid.getPid().equals(idString)){
+		if (!collectionsPid.getPid().equals(pid)){
 			// Retrieve the record for the container being reviewed
-			SimpleIdRequest containerRequest = new SimpleIdRequest(idString, containerFieldList, accessGroups);
+			SimpleIdRequest containerRequest = new SimpleIdRequest(pid, resultsFieldList, accessGroups);
 			BriefObjectMetadataBean containerBean = queryLayer.getObjectById(containerRequest);
 			if (containerBean == null) {
-				log.debug("Could not find path for " + idString + " while trying to generate review list");
+				log.debug("Could not find path for " + pid + " while trying to generate review list");
 				throw new ResourceNotFoundException("The requested record either does not exist or is not accessible");
 			}
 			path = containerBean.getPath();
+			path.setCutoff(path.getHighestTier() + 1);
 			model.addAttribute("containerBean", containerBean);
 		} else {
 			path = new CutoffFacet("ANCESTOR_PATH", "1,*");
+			path.setCutoff(1);
 		}
 
 		// Retrieve the list of unpublished (not belonging to an unpublished parent) items within this container.
 		SearchState reviewListState = this.searchStateFactory.createSearchState();
-		GenericFacet facet = new GenericFacet("STATUS", "Unpublished");
-		reviewListState.getFacets().put("STATUS", facet);
+		// Limit to the current tier
+		
 		reviewListState.getFacets().put("ANCESTOR_PATH", path);
 
 		reviewListState.setRowsPerPage(500);
@@ -74,7 +83,7 @@ public class ReviewController extends AbstractSolrSearchController {
 		SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
 		log.debug("Retrieved " + resultResponse.getResultCount() + " results for the review list");
 		model.addAttribute("resultResponse", resultResponse);
-
+		
 		return "search/reviewList";
 	}
 	

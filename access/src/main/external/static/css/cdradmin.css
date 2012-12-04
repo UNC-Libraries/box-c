@@ -196,14 +196,14 @@ ul#mainmenu li a {
 	border-top: 1px solid #6A88B7;
 }
 
-.browseitem.working, .browseitem.publishing {
+.browseitem.working, .browseitem.followup {
 	color: #B7B7B7;
 }
 
-.browseitem.working a, .browseitem.publishing a {
+.browseitem.working a, .browseitem.followup a {
 	color: #B7B7B7;
 }
 
-.browseitem.working h2 a, .browseitem.publishing h2 a {
+.browseitem.working h2 a, .browseitem.followup h2 a {
 	color: #B7B7B7;
 } 

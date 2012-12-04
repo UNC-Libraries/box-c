@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.dl.fedora.PID;
+
 public class GroupedMetadataBean implements BriefObjectMetadata {
 	private List<BriefObjectMetadataBean> items;
 	private BriefObjectMetadataBean representative;
@@ -90,6 +92,11 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	@Override
 	public String getId() {
 		return this.representative.getId();
+	}
+	
+	@Override
+	public PID getPid() {
+		return this.representative.getPid();
 	}
 
 	@Override

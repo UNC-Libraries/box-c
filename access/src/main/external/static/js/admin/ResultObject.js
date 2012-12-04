@@ -15,25 +15,12 @@
     limitations under the License.
 
  */
-/*
- * @author Ben Pennell
- */
 (function($) {
-	$.widget( "cdr.ajaxCallbackButton", {
+	$.widget( "cdr.resultObject", {
 		options: {
 			pid: null,
-			defaultLabel: undefined,
-			workLabel: undefined,
-			workPath: "",
-			workDone: undefined,
-			followup: undefined,
-			followupPath: "",
-			followupLabel: undefined,
-			followupFrequency: 1000,
-			complete: this.defaultComplete,
-			parentElement: undefined,
 			animateSpeed: 80,
-			confirm: false
+			
 		},
 		
 		_create: function() {
@@ -47,60 +34,32 @@
 			this.setWorkURL(this.options.workPath);
 			this.setFollowupURL(this.options.followupPath);
 			
-			if (this.options.confirm) {
-				this.confirmDialog = $("<div class='confirm_dialogue'></div>").append("<p>Are you sure?</p>");
-				$("body").append(this.confirmDialog);
-			}
-			
 			var op = this;
 			this.element.text(this.options.defaultLabel);
 			this.element.click(function(){
 				if (op.options.disabled)
 					return false;
-				if (op.options.confirm) {
-					op.confirmDialog.dialog({
-			            resizable: false,
-			            height:140,
-			            modal: true,
-			            buttons: {
-			                "Yes": function() {
-			                    op.doWork();
-			                },
-			                "Cancel": function() {
-			                    $(this).dialog("close");
-			                }
-			            }
-			        });
-				} else {
-					op.doWork();
-				}
-				
-				return false;
-			});
-		},
-		
-		doWork: function() {
-			this.element.text(this.options.workLabel);
-			this.disable();
-			if (this.options.parentElement)
-				this.options.parentElement.addClass("working", "fast");
-			var op = this;
-			$.getJSON(this.workURL, function(data) {
-				if (op.options.followup) {
-					if (op.options.workDone) {
-						var workSuccessful = op.options.workDone.call(op, data);
-						if (!workSuccessful)
-							return;
+				op.element.text(op.options.workLabel);
+				op.disable();
+				if (op.options.parentElement)
+					op.options.parentElement.addClass("working", "fast");
+				$.getJSON(op.workURL, function(data) {
+					if (op.options.followup) {
+						if (op.options.workDone) {
+							op.options.workDone.call(op, data);
+						}
+						if (op.options.parentElement) 
+							op.options.parentElement.switchClass("working", "followup", op.options.animateSpeed);
+						//op.options.parentElement.addClass("followup");
+						op.followupPing();
+					} else {
+						if (op.options.parentElement)
+							op.options.parentElement.removeClass("working", op.options.animateSpeed);
+						op.options.complete.call(op, data);
+						op.enable();
 					}
-					if (op.options.parentElement) 
-						op.options.parentElement.switchClass("working", "followup", op.options.animateSpeed);
-					op.followupPing();
-				} else {
-					if (op.options.parentElement)
-						op.options.parentElement.removeClass("working", op.options.animateSpeed);
-					op.options.complete.call(op, data);
-					op.enable();
-				}
+				});
+				return false;
 			});
 		},
 		
@@ -130,6 +89,10 @@
 		
 		destroy: function() {
 			this.element.unbind("click");
+		},
+		
+		publish: function() {
+			
 		},
 		
 		followupPing: function() {

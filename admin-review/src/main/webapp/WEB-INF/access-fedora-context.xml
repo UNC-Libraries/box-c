@@ -74,4 +74,18 @@
 		<property name="accessClient" ref="accessClient" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
+	
+	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject">
+			<ref local="tripleStoreQueryService" />
+		</property>
+		<property name="targetMethod">
+			<value>fetchByRepositoryPath</value>
+		</property>
+		<property name="arguments">
+			<list>
+				<value>/Collections</value>
+			</list>
+		</property>
+	</bean>
 </beans>

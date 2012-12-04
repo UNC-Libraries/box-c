@@ -61,6 +61,10 @@ public class PID implements Serializable {
     public String getURI() {
 	return uriPrefix + this.pid;
     }
+    
+    public String getPath() {
+   	 return pid.replace(":", "/");
+    }
 
     @Override
     public int hashCode() {

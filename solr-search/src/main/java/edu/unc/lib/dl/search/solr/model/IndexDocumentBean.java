@@ -21,9 +21,11 @@ import java.util.List;
 
 import org.apache.solr.client.solrj.beans.Field;
 
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 public class IndexDocumentBean {
+	protected PID pid;
 	protected String id;
 	protected List<String> ancestorPath;
 	protected String ancestorNames;
@@ -85,6 +87,11 @@ public class IndexDocumentBean {
 	@Field
 	public void setId(String id) {
 		this.id = id;
+		this.pid = new PID(this.id);
+	}
+
+	public PID getPid() {
+		return pid;
 	}
 
 	public List<String> getAncestorPath() {

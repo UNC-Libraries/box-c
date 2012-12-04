@@ -12,7 +12,7 @@ function publishFollowup(data) {
 
 function publishComplete() {
 	this.element.text("Unpublish");
-	this.setWorkURL("services/rest/edit/{idPath}/unpublish");
+	this.setWorkURL("services/rest/edit/unpublish/{idPath}");
 	this.options.complete = unpublishComplete;
 	this.options.workLabel = "Unpublishing...";
 	this.options.followupLabel = "Unpublishing....";
@@ -21,7 +21,7 @@ function publishComplete() {
 
 function unpublishComplete() {
 	this.element.text("Publish");
-	this.setWorkURL("services/rest/edit/{idPath}/publish");
+	this.setWorkURL("services/rest/edit/publish/{idPath}");
 	this.options.complete = publishComplete;
 	this.options.workLabel = "Publishing...";
 	this.options.followupLabel = "Publishing....";
@@ -29,7 +29,33 @@ function unpublishComplete() {
 }
 
 function publishWorkDone(data) {
+	if (data == null) {
+		alert("Failed to change publication status for " + this.pid.pid);
+		return false;
+	}
 	this.completeTimestamp = data.timestamp;
+	return true;
+}
+
+function deleteFollowup(data) {
+	if (data && data > this.completeTimestamp) {
+		return true;
+	}
+	return false;
+}
+
+function deleteComplete() {
+	this.element.remove();
+	this.destroy();
+}
+
+function deleteWorkDone(data) {
+	if (data == null) {
+		alert("Unable to delete object " + this.pid.pid);
+		return false;
+	}
+	this.completeTimestamp = data.timestamp;
+	return true;
 }
 
 $(function() {
@@ -54,20 +80,47 @@ $(function() {
 		var checkbox = $(this).find("input");
 		checkbox.prop("checked", !checkbox.prop("checked"));
 		$(this).toggleClass("selected");
-	});
+	}).find('a').click(function(event){ event.stopPropagation(); });
 	
 	$.each(resultObjects, function(){
 		var parentEl = $("#entry_" + this.id.replace(":", "\\:"));
-		parentEl.find(".publish_link").ajaxCallbackButton({
+		if ($.inArray("Unpublished", this.status) != -1) {
+			parentEl.find(".publish_link").ajaxCallbackButton({
+				pid: this.id,
+				workLabel: "Publishing...",
+				workPath: "services/rest/edit/publish/{idPath}",
+				workDone: publishWorkDone,
+				followupLabel: "Publishing....",
+				followupPath: "services/rest/item/{idPath}/solrRecord/lastIndexed",
+				followup: publishFollowup,
+				complete: publishComplete,
+				parentElement: parentEl
+			});
+		} else {
+			parentEl.find(".publish_link").ajaxCallbackButton({
+				pid: this.id,
+				workLabel: "Unpublishing...",
+				workPath: "services/rest/edit/unpublish/{idPath}",
+				workDone: publishWorkDone,
+				followupLabel: "Unpublishing....",
+				followupPath: "services/rest/item/{idPath}/solrRecord/lastIndexed",
+				followup: publishFollowup,
+				complete: unpublishComplete,
+				parentElement: parentEl
+			});
+		}
+		
+		parentEl.find(".delete_link").ajaxCallbackButton({
 			pid: this.id,
-			workLabel: "Publishing...",
-			workPath: "services/rest/edit/{idPath}/publish",
-			workDone: publishWorkDone,
-			followupLabel: "Publishing....",
+			workLabel: "Deleting...",
+			workPath: "delete/{idPath}",
+			workDone: deleteWorkDone,
+			followupLabel: "Cleaning up...",
 			followupPath: "services/rest/item/{idPath}/solrRecord/lastIndexed",
-			followup: publishFollowup,
-			complete: publishComplete,
-			parentElement: parentEl
+			followup: deleteFollowup,
+			complete: deleteComplete,
+			parentElement: parentEl,
+			confirm: true
 		});
 	});
 });
@@ -78,7 +131,10 @@ $(function() {
 		<h2>Reviewing items</h2>
 		<c:set var="facetNodes" scope="request" value="${containerBean.path.facetNodes}"/>
 		<div class="results_header_hierarchy_path">
-			<c:import url="/jsp/util/hierarchyTrail.jsp" />
+			<c:import url="/jsp/util/pathTrail.jsp">
+				<c:param name="displayHome">true</c:param>
+				<c:param name="resultOperation">review</c:param>
+			</c:import>
 		</div>
 	</div>
 	
@@ -96,8 +152,13 @@ $(function() {
 						<input type="checkbox"/>
 					</div>
 					<ul class="itemnavigation">
-						<li><a href="#" class="publish_link">Publish</a></li>
-						<li><a href="uuid/${metadata.idWithoutPrefix}/describe">
+						<li><a href="#" class="publish_link">
+							<c:choose>
+								<c:when test="${metadata.status.contains('Unpublished')}">Publish</c:when>
+								<c:otherwise>Unpublish</c:otherwise>
+							</c:choose>
+						</a></li>
+						<li><a href="describe/${metadata.pid.path}">
 							<c:choose>
 								<c:when test="${metadata.datastreamObjects.contains('MD_DESCRIPTIVE')}">
 									Edit Description
@@ -112,10 +173,18 @@ $(function() {
 	
 					<div class="itemdetails">
 						<h2>
-							<a href="/record?id=${metadata.id}" target="_new" class="has_tooltip"
-								title="View details for <c:out value='${metadata.title}'/>."><c:out value='${metadata.title}'/></a>
+							<c:choose>
+								<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile}">
+									<a href="/record?id=${metadata.id}" target="_new" class="has_tooltip"
+										title="View details for <c:out value='${metadata.title}'/>."><c:out value='${metadata.title}'/></a>
+								</c:when>
+								<c:otherwise>
+									<a href="list/${metadata.pid.path}" class="has_tooltip"
+										title="View contents of <c:out value='${metadata.title}'/>."><c:out value='${metadata.title}'/></a>
+								</c:otherwise>
+							</c:choose>
 							<c:if test="${metadata.datastreamObjects.contains('DATA_FILE')}">
-								&nbsp;<a target="_preview" href="/indexablecontent?id=${metadata.id}&ds=DATA_FILE" class="preview">(preview pdf)</a>
+								&nbsp;<a target="_preview" href="/indexablecontent?id=${metadata.id}&ds=DATA_FILE" class="preview">(preview ${metadata.getDatastream("DATA_FILE").extension})</a>
 							</c:if>						
 						</h2>
 						<p>Added: <c:out value='${metadata.dateAdded}'/></p>

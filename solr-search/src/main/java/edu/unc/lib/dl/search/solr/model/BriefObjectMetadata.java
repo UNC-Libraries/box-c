@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.dl.fedora.PID;
+
 public interface BriefObjectMetadata {
 	public String getIdWithoutPrefix() ;
 
@@ -25,6 +27,8 @@ public interface BriefObjectMetadata {
 	public Map<String,Long> getCountMap();
 
 	public String getId();
+	
+	public PID getPid();
 	
 	public List<String> getAncestorPath();
 
