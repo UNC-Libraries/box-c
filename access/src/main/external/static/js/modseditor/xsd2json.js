@@ -745,7 +745,7 @@ Xsd2Json.prototype.exportJSON = function(filename, variableName, pretty) {
 	
 	var jsonString = this.stringify(pretty);
 	if (variableName != null){
-		jsonString = "var " + variableName + " = function() {return " + jsonString + "};";
+		jsonString = "var " + variableName + " = " + jsonString + ";";
 	}
 	var blobBuilder = new BlobBuilder();
 	blobBuilder.append(jsonString);
