@@ -54,7 +54,9 @@
 		<h2>Reviewing items</h2>
 		<c:set var="facetNodes" scope="request" value="${resultObject.path.facetNodes}"/>
 		<div class="results_header_hierarchy_path">
-			<c:import url="/jsp/util/pathTrail.jsp" />
+			<c:import url="/jsp/util/pathTrail.jsp">
+				<c:param name="resultOperation">${sessionScope.resultOperation}</c:param>
+			</c:import>
 		</div>
 	</div>
 

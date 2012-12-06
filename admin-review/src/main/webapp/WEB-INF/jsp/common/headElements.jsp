@@ -24,6 +24,7 @@
 <!--[if IE 8]>
 	<link rel="stylesheet" type="text/css" href="/static/css/cdrui_styles_ie8.css" />
 <![endif]-->
+<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/cdradmin.css" />
 
 <script type="text/javascript" src="/static/js/jquery.min.js"></script>

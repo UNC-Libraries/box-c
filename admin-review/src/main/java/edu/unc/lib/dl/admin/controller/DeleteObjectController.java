@@ -1,6 +1,8 @@
 package edu.unc.lib.dl.admin.controller;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -34,7 +36,7 @@ public class DeleteObjectController {
 	// TODO This controller should be replaced by a direct call to SWORD once group forwarding is fully up and running
 	@RequestMapping(value = "delete/{prefix}/{id}", method = RequestMethod.GET)
 	public @ResponseBody
-	Object updateDescription(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
+	Map<String, ? extends Object> updateDescription(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
 			HttpServletRequest request) {
 
 		String responseString;
@@ -51,13 +53,17 @@ public class DeleteObjectController {
 		String groups = GroupsThreadStore.getGroups();
 		method.addRequestHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER, groups);
 
+		Map<String, Object> result = new HashMap<String, Object>();
+		result.put("pid", pid);
+		result.put("action", "delete");
+		
 		try {
 			client.executeMethod(method);
 			if (method.getStatusCode() == HttpStatus.SC_NO_CONTENT) {
 				// success
 				try {
 					responseString = method.getResponseBodyAsString();
-					return System.currentTimeMillis();
+					result.put("timestamp", System.currentTimeMillis());
 				} catch (IOException e) {
 					log.info("Problem retrieving " + dataUrl + " for " + pid + ": " + e.getMessage());
 				} finally {
@@ -67,8 +73,7 @@ public class DeleteObjectController {
 				// probably a validation problem
 				try {
 					responseString = method.getResponseBodyAsString();
-
-					return responseString;
+					result.put("error", responseString);
 				} catch (IOException e) {
 					log.info("Problem retrieving " + dataUrl + " for " + pid + ": " + e.getMessage());
 				} finally {
@@ -90,6 +95,6 @@ public class DeleteObjectController {
 		} catch (Exception e) {
 			log.error("Error while attempting to stream Fedora content for " + pid, e);
 		}
-		return System.currentTimeMillis();
+		return result;
 	}
 }

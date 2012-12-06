@@ -165,4 +165,28 @@ public class SetDatastreamsFilterTest extends Assert {
 		filter.setDocumentIndexingPackageFactory(dipFactory);
 		filter.filter(dip);
 	}
+	
+	@Test
+	public void ocetetStreamExtensionDifficulties() throws Exception {
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:c19067ff-77af-4954-8aec-454d213846d8");
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/extensionDifficulty.xml")));
+		dip.setFoxml(foxml);
+
+		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
+		filter.filter(dip);
+
+		IndexDocumentBean idb = dip.getDocument();
+
+		assertEquals(6, idb.getDatastream().size());
+		assertTrue(idb.getDatastream().contains("DATA_FILE|application/vnd.oasis.opendocument.text|xlsx|6347|512f07d916af6984d46fd310204ec3ad|"));
+		assertTrue(idb.getDatastream().contains("AUDIT|text/xml|xml|0||"));
+		assertTrue(idb.getDatastream().contains("DC|text/xml|xml|403|b410382ce2ce61c7f266ceac530cc770|"));
+
+		assertEquals(2, idb.getContentType().size());
+		assertTrue(idb.getContentType().contains("^dataset,Dataset"));
+		assertTrue(idb.getContentType().contains("/dataset^xlsx,xlsx"));
+
+		assertEquals("DATA_FILE", dip.getDefaultWebData());
+	}
 }

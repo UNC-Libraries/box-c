@@ -657,6 +657,28 @@ public class SolrSearchService {
 		}
 		return sb.toString();
 	}
+	
+	/**
+	 * Returns the value of a single field from the object identified by pid.
+	 * 
+	 * @param pid
+	 * @param field
+	 * @return The value of the specified field or null if it wasn't found.
+	 */
+	public Object getField(String pid, String field) throws SolrServerException {
+		QueryResponse queryResponse = null;
+		SolrQuery solrQuery = new SolrQuery();
+		StringBuilder query = new StringBuilder();
+		query.append("id:").append(SolrSettings.sanitize(pid));
+		solrQuery.setQuery(query.toString());
+		solrQuery.addField(field);
+
+		queryResponse = server.query(solrQuery);
+		if (queryResponse.getResults().getNumFound() > 0) {
+			return queryResponse.getResults().get(0).getFirstValue(field);
+		}
+		return null;
+	}
 
 	public SolrSettings getSolrSettings() {
 		return solrSettings;

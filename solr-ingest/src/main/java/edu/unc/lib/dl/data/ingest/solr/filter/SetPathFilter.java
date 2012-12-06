@@ -50,7 +50,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 	private String ancestorInfoQuery;
 	private XPath contentModelXpath;
 
-	private PID collectionsPID;
+	private PID collectionsPid;
 
 	public SetPathFilter() {
 		try {
@@ -163,7 +163,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		IndexDocumentBean idb = dip.getDocument();
 
 		DocumentIndexingPackage parentDIP = dip.getParentDocument();
-		if (parentDIP.getDocument().getAncestorPath().size() == 0 && !collectionsPID.equals(parentDIP.getPid())) {
+		if (parentDIP.getDocument().getAncestorPath().size() == 0 && !collectionsPid.equals(parentDIP.getPid())) {
 			throw new IndexingException("Parent document " + parentDIP.getPid().getPid()
 					+ " did not contain ancestor information for object " + dip.getPid().getPid());
 		}
@@ -190,13 +190,13 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 			ancestorPath.add(this.buildTier(parentAncestors.size() + 1, parentDIP.getPid(), parentDIP.getLabel()));
 			idb.setAncestorPath(ancestorPath);
 
-			// If this object isn't any item, then add itself to its ancestorNames
+			StringBuilder ancestorNames = new StringBuilder(parentDIP.getDocument().getAncestorNames());
+			// If this object isn't an item, then add itself to its ancestorNames
 			if (!ResourceType.File.equals(resourceType)) {
-				idb.setAncestorNames(this.buildAncestorNames(new StringBuilder(parentDIP.getDocument().getAncestorNames()),
-						dip.getLabel()).toString());
-			} else {
-				idb.setAncestorNames(parentDIP.getDocument().getAncestorNames());
+				this.buildAncestorNames(ancestorNames, dip.getLabel());
 			}
+			idb.setAncestorNames(ancestorNames.toString());
+			
 
 			// Use the parents rollup if it isn't just its ID
 			if (parentDIP.getPid().getPid().equals(parentDIP.getDocument().getRollup())) {
@@ -237,8 +237,8 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		this.ancestorInfoQuery = ancestorInfoQuery;
 	}
 
-	public void setCollectionsPID(PID collectionsPID) {
-		this.collectionsPID = collectionsPID;
+	public void setCollectionsPid(PID collectionsPid) {
+		this.collectionsPid = collectionsPid;
 	}
 
 	private static class PathNode {

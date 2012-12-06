@@ -30,8 +30,6 @@ import java.util.regex.Pattern;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.jdom.xpath.XPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +40,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
-import edu.unc.lib.dl.xml.NamespaceConstants;
 
 /**
  * Extracts datastreams from an object and sets related properties concerning the default datastream for the object,
@@ -94,7 +91,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 
 		Element relsExt = dip.getRelsExt();
 
-		// Generatea defaultWebObject datastreams and add them to the list
+		// Generate a defaultWebObject datastreams and add them to the list
 		try {
 			DocumentIndexingPackage dwoDIP = this.getDefaultWebObject(relsExt);
 			dip.setAttemptedToRetrieveDefaultWebObject(true);
@@ -105,17 +102,6 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		} catch (JDOMException e) {
 			throw new IndexingException("Failed to parse document for default web object of " + dip.getPid().getPid(), e);
 		}
-
-		long totalSize = 0;
-		List<String> datastreamList = new ArrayList<String>(datastreams.size());
-		dip.getDocument().setDatastream(datastreamList);
-		for (Datastream ds : datastreams) {
-			datastreamList.add(ds.toString());
-			// Only add the filesize for datastreams directly belonging to this object to the filesize total
-			if (ds.getOwner() == null)
-				totalSize += ds.getFilesize();
-		}
-		dip.getDocument().setFilesizeTotal(totalSize);
 
 		// Retrieve the default web data datastreams and use it to determine the content type for this object
 		try {
@@ -130,7 +116,9 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 					String sourceDataMimetype = relsExt.getChildText("hasSourceMimeType", JDOMNamespaceUtil.CDR_NS);
 					if (sourceDataMimetype != null) {
 						defaultWebData.setMimetype(sourceDataMimetype);
-						defaultWebData.setExtension(this.getExtension(null, defaultWebData.getMimetype()));
+						// Use the extension if you've got it.  if not, get it
+						if (defaultWebData.getExtension() == null)
+							defaultWebData.setExtension(this.getExtension(null, defaultWebData.getMimetype()));
 					}
 				}
 
@@ -143,7 +131,17 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		} catch (JDOMException e) {
 			throw new IndexingException("Failed to extract default web data for " + dip.getPid().getPid(), e);
 		}
-
+		
+		long totalSize = 0;
+		List<String> datastreamList = new ArrayList<String>(datastreams.size());
+		dip.getDocument().setDatastream(datastreamList);
+		for (Datastream ds : datastreams) {
+			datastreamList.add(ds.toString());
+			// Only add the filesize for datastreams directly belonging to this object to the filesize total
+			if (ds.getOwner() == null)
+				totalSize += ds.getFilesize();
+		}
+		dip.getDocument().setFilesizeTotal(totalSize);
 	}
 
 	/**
@@ -263,46 +261,46 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		if (mimetypeType.equals("audio"))
 			return AUDIO;
 
-		if (extension.equals("exe") || extension.equals("app"))
+		if ("exe".equals(extension) || "app".equals(extension))
 			return SOFTWARE;
 
-		if (mimetype.equals("application/vnd.ms-excel") || extension.equals("csv") || extension.equals("mdb")
-				|| extension.equals("xlsx") || extension.equals("xls") || extension.equals("log") || extension.equals("db")
-				|| extension.equals("accdb"))
+		if ("application/vnd.ms-excel".equals(mimetype) || "csv".equals(extension) || "mdb".equals(extension)
+				|| "xlsx".equals(extension) || "xls".equals(extension) || "log".equals(extension) || "db".equals(extension)
+				|| "accdb".equals(extension))
 			return DATASET;
 
 		if (mimetypeType.equals("text"))
 			return TEXT;
-		if (mimetype.equals("application/msword") || mimetype.equals("application/rtf")
-				|| mimetype.equals("application/pdf") || mimetype.equals("application/postscript")
-				|| mimetype.equals("application/powerpoint") || mimetype.equals("application/vnd.ms-powerpoint")
-				|| extension.equals("pdf") || extension.equals("doc") || extension.equals("docx")
-				|| extension.equals("dotx") || extension.equals("ppt") || extension.equals("pptx")
-				|| extension.equals("wp") || extension.equals("wpd") || extension.equals("xml") || extension.equals("htm")
-				|| extension.equals("html") || extension.equals("shtml") || extension.equals("php")
-				|| extension.equals("js"))
+		if ("application/msword".equals(mimetype) || "application/rtf".equals(mimetype)
+				|| "application/pdf".equals(mimetype) || "application/postscript".equals(mimetype)
+				|| "application/powerpoint".equals(mimetype) || "application/vnd.ms-powerpoint".equals(mimetype)
+				|| "pdf".equals(extension) || "doc".equals(extension) || "docx".equals(extension)
+				|| "dotx".equals(extension) || "ppt".equals(extension) || "pptx".equals(extension)
+				|| "wp".equals(extension) || "wpd".equals(extension) || "xml".equals(extension) || "htm".equals(extension)
+				|| "html".equals(extension) || "shtml".equals(extension) || "php".equals(extension)
+				|| "js".equals(extension))
 			return TEXT;
 
-		if (mimetype.equals("application/ogg") || extension.equals("mp3") || extension.equals("wav")
-				|| extension.equals("rm"))
+		if ("application/ogg".equals(mimetype) || "mp3".equals(extension) || "wav".equals(extension)
+				|| "rm".equals(extension))
 			return AUDIO;
 
-		if (mimetype.equals("application/jpg") || extension.equals("jpg") || extension.equals("psd")
-				|| extension.equals("psf") || extension.equals("pct") || extension.equals("ttf")
-				|| extension.equals("jpeg") || extension.equals("indd"))
+		if ("application/jpg".equals(mimetype) || "jpg".equals(extension) || "psd".equals(extension)
+				|| "psf".equals(extension) || "pct".equals(extension) || "ttf".equals(extension)
+				|| "jpeg".equals(extension) || "indd".equals(extension))
 			return IMAGE;
 
-		if (extension.equals("mp4") || extension.equals("m4v") || extension.equals("mpg") || extension.equals("swf")
-				|| mimetype.equals("application/x-shockwave-flash") || mimetype.equals("application/x-silverlight-app"))
+		if ("mp4".equals(extension) || "m4v".equals(extension) || "mpg".equals(extension) || "swf".equals(extension)
+				|| "application/x-shockwave-flash".equals(mimetype) || "application/x-silverlight-app".equals(mimetype))
 			return VIDEO;
 
-		if (mimetype.equals("application/x-gtar") || mimetype.equals("application/x-gzip")
-				|| mimetype.equals("application/x-compress") || mimetype.equals("application/x-compressed")
-				|| mimetype.equals("application/zip") || mimetype.equals("application/x-stuffit")
-				|| mimetype.equals("application/x-tar") || extension.equals("gz") || extension.equals("zip"))
+		if ("application/x-gtar".equals(mimetype) || "application/x-gzip".equals(mimetype)
+				|| "application/x-compress".equals(mimetype) || "application/x-compressed".equals(mimetype)
+				|| "application/zip".equals(mimetype) || "application/x-stuffit".equals(mimetype)
+				|| "application/x-tar".equals(mimetype) || "gz".equals(extension) || "zip".equals(extension))
 			return ARCHIVE;
 
-		if (extension.equals("dmg") || extension.equals("iso") || extension.equals("disk"))
+		if ("dmg".equals(extension) || "iso".equals(extension) || "disk".equals(extension))
 			return DISK_IMAGE;
 
 		return UNKNOWN;

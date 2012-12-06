@@ -217,6 +217,8 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
 		SimpleIdRequest idRequest = new SimpleIdRequest(idPrefix + ":" + id, Arrays.asList("lastIndexed"), groupSet);
 		BriefObjectMetadataBean md = solrSearchService.getObjectById(idRequest);
+		if (md == null || md.getTimestamp() == null)
+			return null;
 		return md.getTimestamp().getTime();
 	}
 

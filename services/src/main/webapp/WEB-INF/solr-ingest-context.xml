@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2008 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation=" 
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/util 
+			http://www.springframework.org/schema/util/spring-util-3.0.xsd
+			http://www.springframework.org/schema/context 
+			http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+			
+	<bean name="propertiesURI" class="java.lang.System" factory-method="getProperty">
+		<constructor-arg index="0" value="server.properties.uri"/>
+		<!-- property name for properties URI location -->
+		<constructor-arg index="1" value="classpath:server.properties"/>
+		<!-- default location for testing -->
+	</bean>
+	<bean id="serverProperties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<ref bean="propertiesURI"/>
+				<value>classpath:cdr-services.properties</value>
+				<value>classpath:scheduled-events.properties</value>
+			</list>
+		</property>
+		<property name="ignoreResourceNotFound" value="false"/>
+	</bean>
+			
+	<bean id="solrUpdateConductor" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor"
+		init-method="init" destroy-method="destroy">
+		<property name="fedoraDataService" ref="fedoraDataService" />
+		<property name="fullUpdatePipeline" ref="solrFullUpdatePipeline" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="solrSearchService" ref="solrSearchService" />
+		<property name="searchStateFactory" ref="searchStateFactory" />
+		<property name="solrPath" value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
+		<property name="maxThreads" value="${conductor.solr.maxThreads}" />
+		<property name="recoverableDelay" value="${conductor.solr.recoverableDelay}"/>
+		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecuteDelay}"/>
+		<property name="accessGroups" ref="accessGroups" />
+		<property name="searchSettings" ref="searchSettings" />
+		<property name="finishedMessageTimeout" value="${scheduled.cleanupFinishedIndexing.windowMilli}"/>
+		<property name="collectionsPid" ref="collectionsPid"/>
+	</bean>
+	
+	<bean id="solrUpdateDriver" class="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver"
+		init-method="init">
+		<property name="solrSettings" ref="solrSettings"/>
+		<property name="autoPushCount" value="1000"/>
+		<property name="updateThreads" value="2"/>
+	</bean>
+	
+	<bean id="documentIndexingPackageFactory" class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
+		<property name="managementClient" ref="managementClient"/>
+	</bean>
+	
+	<!-- Ingest filters -->
+	<bean id="setDatastreamContentFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamContentFilter">
+		<property name="documentIndexingPackageFactory" ref="documentIndexingPackageFactory"/> 
+	</bean>
+	<bean id="setDisplayOrderFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetDisplayOrderFilter">
+		<property name="documentIndexingPackageFactory" ref="documentIndexingPackageFactory"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/> 
+	</bean>
+	<bean id="setRelationsFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
+	</bean>
+	<bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="collectionsPid" ref="collectionsPid"/>
+	</bean>
+	<bean id="setDescriptiveMetadataFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
+	</bean>
+	<bean id="setRecordDatesFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
+	</bean>
+	<bean id="setAccessControlFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
+	</bean>
+	<bean id="setStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetStatusFilter">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+	</bean>
+	
+	<!-- Ingest pipeline -->
+	<bean id="solrFullUpdatePipeline" class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+		<property name="filters">
+			<list>
+				<ref bean="setRecordDatesFilter"/>
+				<ref bean="setDatastreamContentFilter"/>
+				<ref bean="setDisplayOrderFilter"/>
+				<ref bean="setPathFilter"/>
+				<ref bean="setDescriptiveMetadataFilter"/>
+				<ref bean="setAccessControlFilter"/>
+				<ref bean="setStatusFilter"/>
+				<ref bean="setRelationsFilter"/>
+			</list>
+		</property>
+	</bean>
+</beans>

@@ -38,14 +38,15 @@ function publishWorkDone(data) {
 }
 
 function deleteFollowup(data) {
-	if (data && data > this.completeTimestamp) {
+	if (data == null) {
 		return true;
 	}
 	return false;
 }
 
 function deleteComplete() {
-	this.element.remove();
+	if (this.options.parentElement)
+		this.options.parentElement.remove();
 	this.destroy();
 }
 
@@ -120,7 +121,8 @@ $(function() {
 			followup: deleteFollowup,
 			complete: deleteComplete,
 			parentElement: parentEl,
-			confirm: true
+			confirm: true,
+			confirmMessage: "Delete this object?"
 		});
 	});
 });
@@ -128,12 +130,19 @@ $(function() {
 
 <div class="review_page contentarea">
 	<div class="contentarea">
-		<h2>Reviewing items</h2>
+		<c:choose>
+			<c:when test="${sessionScope.resultOperation == 'review'}">
+				<h2>Reviewing items</h2>
+			</c:when>
+			<c:otherwise>
+				<h2>Listing contents</h2>
+			</c:otherwise>
+		</c:choose>
 		<c:set var="facetNodes" scope="request" value="${containerBean.path.facetNodes}"/>
 		<div class="results_header_hierarchy_path">
 			<c:import url="/jsp/util/pathTrail.jsp">
 				<c:param name="displayHome">true</c:param>
-				<c:param name="resultOperation">review</c:param>
+				<c:param name="resultOperation">${sessionScope.resultOperation}</c:param>
 			</c:import>
 		</div>
 	</div>
@@ -181,12 +190,22 @@ $(function() {
 								<c:otherwise>
 									<a href="list/${metadata.pid.path}" class="has_tooltip"
 										title="View contents of <c:out value='${metadata.title}'/>."><c:out value='${metadata.title}'/></a>
+									<c:set var="childCount" value="${metadata.countMap.child}"/>
+									<span class="searchitem_container_count">
+										<c:choose>
+											<c:when test="${not empty childCount}">
+												(${childCount} item<c:if test="${childCount != 1}">s</c:if>)
+											</c:when>
+											<c:otherwise>(0 items)</c:otherwise>
+										</c:choose>
+									</span>
 								</c:otherwise>
 							</c:choose>
 							<c:if test="${metadata.datastreamObjects.contains('DATA_FILE')}">
-								&nbsp;<a target="_preview" href="/indexablecontent?id=${metadata.id}&ds=DATA_FILE" class="preview">(preview ${metadata.getDatastream("DATA_FILE").extension})</a>
+								&nbsp;<a target="_preview" href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}" class="preview">(preview ${metadata.getDatastream("DATA_FILE").extension})</a>
 							</c:if>						
 						</h2>
+						
 						<p>Added: <c:out value='${metadata.dateAdded}'/></p>
 						<c:if test="${not empty metadata.creator}">
 							<p>Creator: 

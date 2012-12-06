@@ -65,8 +65,8 @@ public class SetPathFilterTest extends Assert {
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.setTripleStoreQueryService(tsqs);
-
 		filter.filter(dip);
 
 		assertEquals("/Collections/collection", idb.getAncestorNames());
@@ -128,6 +128,7 @@ public class SetPathFilterTest extends Assert {
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.setTripleStoreQueryService(tsqs);
 
 		filter.filter(dip);
@@ -177,6 +178,7 @@ public class SetPathFilterTest extends Assert {
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.setTripleStoreQueryService(tsqs);
 
 		filter.filter(dip);
@@ -216,6 +218,7 @@ public class SetPathFilterTest extends Assert {
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.setTripleStoreQueryService(tsqs);
 
 		filter.filter(dip);
@@ -253,6 +256,7 @@ public class SetPathFilterTest extends Assert {
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.setTripleStoreQueryService(tsqs);
 
 		filter.filter(dip);
@@ -275,6 +279,7 @@ public class SetPathFilterTest extends Assert {
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
 
 		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.setTripleStoreQueryService(tsqs);
 
 		filter.filter(dip);
@@ -313,6 +318,7 @@ public class SetPathFilterTest extends Assert {
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.filter(dip);
 
 		assertEquals(ResourceType.Aggregate.name(), idb.getResourceType());
@@ -343,6 +349,7 @@ public class SetPathFilterTest extends Assert {
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.filter(dip);
 
 		assertEquals(ResourceType.File.name(), idb.getResourceType());
@@ -375,6 +382,7 @@ public class SetPathFilterTest extends Assert {
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.filter(dip);
 
 		assertEquals(ResourceType.File.name(), idb.getResourceType());
@@ -413,6 +421,7 @@ public class SetPathFilterTest extends Assert {
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.filter(dip);
 
 		assertEquals(ResourceType.File.name(), idb.getResourceType());
@@ -441,7 +450,31 @@ public class SetPathFilterTest extends Assert {
 		dip.setFoxml(foxml);
 
 		SetPathFilter filter = new SetPathFilter();
-		filter.setCollectionsPID(new PID("uuid:Collections"));
+		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.filter(dip);
+	}
+	
+	@Test
+	public void fromParentsImmediateChildOfCollections() throws FileNotFoundException, JDOMException, IOException {
+		DocumentIndexingPackage parentCollections = new DocumentIndexingPackage("info:fedora/uuid:Collections");
+		parentCollections.setResourceType(ResourceType.Collection);
+		parentCollections.setLabel("Collections");
+		parentCollections.getDocument().setAncestorNames("/Collections");
+		parentCollections.getDocument().setAncestorPath(new ArrayList<String>());
+
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		dip.setParentDocument(parentCollections);
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
+		dip.setFoxml(foxml);
+
+		IndexDocumentBean idb = dip.getDocument();
+
+		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
+		filter.filter(dip);
+		
+		assertEquals(1, idb.getAncestorPath().size());
+		//assertEquals("", idb.getAncestorNames());
 	}
 }

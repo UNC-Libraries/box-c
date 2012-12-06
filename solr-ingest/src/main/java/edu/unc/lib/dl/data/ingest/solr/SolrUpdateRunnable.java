@@ -107,7 +107,7 @@ public class SolrUpdateRunnable implements Runnable {
 			DeleteChildrenPriorToTimestampRequest cleanupRequest = (DeleteChildrenPriorToTimestampRequest) updateRequest;
 
 			// Query Solr for the full list of items that will be deleted
-			SearchState searchState = getSolrUpdateService().getSearchStateFactory().createIDSearchState();
+			SearchState searchState = solrUpdateService.getSearchStateFactory().createIDSearchState();
 
 			// If the root is not the all target then restrict the delete query to its path.
 			if (!SolrUpdateService.TARGET_ALL.equals(updateRequest.getTargetID())) {
@@ -397,7 +397,7 @@ public class SolrUpdateRunnable implements Runnable {
 		String addDocString = null;
 
 		synchronized (solrUpdateService.getSolrSearchService()) {
-			synchronized (solrUpdateService.getSolrDataAccessLayer()) {
+			synchronized (solrUpdateService.getSolrUpdateDriver()) {
 				// Automatically push if the queue is empty
 				if (forcePush
 						|| ((solrUpdateService.getPidQueue().size() == 0 && solrUpdateService.getCollisionList().size() == 0))) {

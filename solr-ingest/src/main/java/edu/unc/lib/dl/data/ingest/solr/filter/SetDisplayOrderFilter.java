@@ -47,6 +47,7 @@ public class SetDisplayOrderFilter extends AbstractIndexDocumentFilter {
 		
 		Element parentMdContents = parentDIP.getMdContents();
 		if (parentMdContents == null) {
+			log.debug("No parent MD contents, display order is null");
 			idb.setDisplayOrder(null);
 		} else {
 			Element containerDiv = parentMdContents.getChild("div", JDOMNamespaceUtil.METS_NS);

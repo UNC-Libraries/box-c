@@ -53,7 +53,6 @@ public class SolrUpdateService {
 	protected FedoraDataService fedoraDataService;
 	protected SolrUpdateDriver solrUpdateDriver;
 	protected DocumentIndexingPackageFactory dipFactory;
-	protected SolrDataAccessLayer solrDataAccessLayer;
 	protected SolrSearchService solrSearchService;
 	protected AccessGroupSet accessGroups;
 	protected SearchStateFactory searchStateFactory;
@@ -162,14 +161,6 @@ public class SolrUpdateService {
 
 	public void setSolrUpdateDriver(SolrUpdateDriver solrUpdateDriver) {
 		this.solrUpdateDriver = solrUpdateDriver;
-	}
-
-	public SolrDataAccessLayer getSolrDataAccessLayer() {
-		return solrDataAccessLayer;
-	}
-
-	public void setSolrDataAccessLayer(SolrDataAccessLayer solrDataAccessLayer) {
-		this.solrDataAccessLayer = solrDataAccessLayer;
 	}
 
 	public SolrSearchService getSolrSearchService() {

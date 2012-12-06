@@ -165,24 +165,6 @@
 		<property name="maxFinishedMessages" value="${conductor.services.maxFinishedMessages}"/>
 	</bean>
 	
-	<bean id="solrUpdateConductor" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor"
-		init-method="init" destroy-method="destroy">
-		<property name="fedoraDataService" ref="fedoraDataService" />
-		<property name="fullUpdatePipeline" ref="solrFullUpdatePipeline" />
-		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
-		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
-		<property name="solrSearchService" ref="solrSearchService" />
-		<property name="solrPath" value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
-		<property name="maxThreads" value="${conductor.solr.maxThreads}" />
-		<property name="recoverableDelay" value="${conductor.solr.recoverableDelay}"/>
-		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecuteDelay}"/>
-		<property name="accessGroups" ref="accessGroups" />
-		<property name="searchSettings" ref="searchSettings" />
-		<property name="finishedMessageTimeout" value="${scheduled.cleanupFinishedIndexing.windowMilli}"/>
-		<property name="collectionsPid" ref="collectionsPid"/>
-	</bean>
-	
 	<util:list id="messageConductorList" list-class="java.util.ArrayList" 
 		value-type="edu.unc.lib.dl.cdr.services.processing.MessageConductor">
 		<ref bean="enhancementConductor"/>
@@ -267,13 +249,13 @@
 	</bean>
 	
 	<bean id="solrUpdateEnhancementService" class="edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService">
-		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
+		<property name="solrSearchService" ref="solrSearchService" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="active" value="true"/>
 	</bean>
 	
 	<bean id="embargoUpdateService" class="edu.unc.lib.dl.cdr.services.solr.EmbargoUpdateService">
-		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
+		<property name="solrSearchService" ref="solrSearchService" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="active" value="true"/>
 		<property name="windowSizeHours" value="${scheduled.embargoUpdate.windowHours}" />
@@ -427,99 +409,6 @@
 	</bean>
 	
 	<!-- Solr ingest dependencies -->
-	
-	<bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
-		<property name="properties" ref="searchProperties" />
-	</bean>
-	<bean id="solrSettings" class="edu.unc.lib.dl.search.solr.util.SolrSettings">
-		<property name="properties" ref="solrProperties" />
-	</bean>
-	<util:properties id="searchProperties" location="classpath:search.properties" />
-	<util:properties id="solrProperties" location="classpath:solr.properties"
-		local-override="true">
-		<prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}</prop>
-	</util:properties>
-
-	<bean id="solrUpdateDriver" class="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver"
-		init-method="init">
-		<property name="solrSettings" ref="solrSettings"/>
-		<property name="autoPushCount" value="1000"/>
-		<property name="updateThreads" value="2"/>
-	</bean>
-	
-	<bean id="documentIndexingPackageFactory" class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
-		<property name="managementClient" ref="managementClient"/>
-	</bean>
-	
-	<bean id="setDatastreamContentFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamContentFilter">
-		<property name="documentIndexingPackageFactory" ref="documentIndexingPackageFactory"/> 
-	</bean>
-	<bean id="setDisplayOrderFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetDisplayOrderFilter">
-		<property name="documentIndexingPackageFactory" ref="documentIndexingPackageFactory"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/> 
-	</bean>
-	<bean id="setRelationsFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
-	</bean>
-	<bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="collectionsPID" ref="collectionsPid"/>
-	</bean>
-	<bean id="setDescriptiveMetadataFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
-	</bean>
-	<bean id="setRecordDatesFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
-	</bean>
-	<bean id="setAccessControlFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
-	</bean>
-	<bean id="setStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetStatusFilter">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-	</bean>
-	
-	
-	<bean id="solrFullUpdatePipeline" class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
-		<property name="filters">
-			<list>
-				<ref bean="setRecordDatesFilter"/>
-				<ref bean="setDatastreamContentFilter"/>
-				<ref bean="setDisplayOrderFilter"/>
-				<ref bean="setPathFilter"/>
-				<ref bean="setDescriptiveMetadataFilter"/>
-				<ref bean="setAccessControlFilter"/>
-				<ref bean="setStatusFilter"/>
-				<ref bean="setRelationsFilter"/>
-			</list>
-		</property>
-	</bean>
-
-	<bean id="solrDataAccessLayer" class="edu.unc.lib.dl.data.ingest.solr.SolrDataAccessLayer"
-		init-method="initializeSolrServer">
-		<property name="solrSettings" ref="solrSettings"/>
-	</bean>
-	
-	<bean id="facetFieldFactory" class="edu.unc.lib.dl.search.solr.model.FacetFieldFactory">
-		<property name="searchSettings" ref="searchSettings" />
-		<property name="solrSettings" ref="solrSettings" />
-	</bean>
-	
-	<bean id="facetFieldUtil" class="edu.unc.lib.dl.search.solr.util.FacetFieldUtil">
-		<property name="searchSettings" ref="searchSettings" />
-		<property name="solrSettings" ref="solrSettings" />
-	</bean>
-
-	<bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
-		<property name="searchSettings" ref="searchSettings" />
-		<property name="facetFieldFactory" ref="facetFieldFactory" />
-	</bean>
-	
-	<bean id="solrSearchService" class="edu.unc.lib.dl.search.solr.service.SolrSearchService"
-		init-method="initializeSolrServer">
-		<property name="solrSettings" ref="solrSettings"/>
-		<property name="searchSettings" ref="searchSettings" />
-		<property name="facetFieldUtil" ref="facetFieldUtil" />
-	</bean>
-	
-	<bean id="accessGroupConstants" class="edu.unc.lib.dl.security.access.AccessGroupConstants">
-		<property name="ADMIN_GROUP" value="${access.group.admin}"/>
-	</bean>
 	
 	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
 		<value>${access.group.admin}</value>

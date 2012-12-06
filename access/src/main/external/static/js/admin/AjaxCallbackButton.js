@@ -33,7 +33,8 @@
 			complete: this.defaultComplete,
 			parentElement: undefined,
 			animateSpeed: 80,
-			confirm: false
+			confirm: false,
+			confirmMessage: undefined
 		},
 		
 		_create: function() {
@@ -47,30 +48,42 @@
 			this.setWorkURL(this.options.workPath);
 			this.setFollowupURL(this.options.followupPath);
 			
+			var op = this;
+			
 			if (this.options.confirm) {
-				this.confirmDialog = $("<div class='confirm_dialogue'></div>").append("<p>Are you sure?</p>");
+				this.confirmDialog = $("<div class='confirm_dialogue'></div>");
+				if (this.options.confirmMessage === undefined) {
+					this.confirmDialog.append("<p>Are you sure?</p>");
+				} else {
+					this.confirmDialog.append("<p>" + this.options.confirmMessage + "</p>");
+				}
 				$("body").append(this.confirmDialog);
+				this.confirmDialog.dialog({
+					dialogClass: "no_titlebar",
+					position: {my: "right top", at: "right bottom", of: op.element},
+		            resizable: false,
+		            minHeight: 60,
+		            width: 180,
+		            modal: false,
+		            autoOpen: false,
+		            buttons: {
+		                "Yes": function() {
+		                    op.doWork();
+		                    $(this).dialog("close");
+		                },
+		                "Cancel": function() {
+		                    $(this).dialog("close");
+		                }
+		            }
+		        });
 			}
 			
-			var op = this;
 			this.element.text(this.options.defaultLabel);
 			this.element.click(function(){
 				if (op.options.disabled)
 					return false;
 				if (op.options.confirm) {
-					op.confirmDialog.dialog({
-			            resizable: false,
-			            height:140,
-			            modal: true,
-			            buttons: {
-			                "Yes": function() {
-			                    op.doWork();
-			                },
-			                "Cancel": function() {
-			                    $(this).dialog("close");
-			                }
-			            }
-			        });
+					op.confirmDialog.dialog("open");
 				} else {
 					op.doWork();
 				}

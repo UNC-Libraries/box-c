@@ -20,8 +20,6 @@ import java.util.List;
 
 import org.jdom.Element;
 import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.jdom.xpath.XPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +47,7 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 		if (dip.getFoxml() == null)
 			throw new IndexingException("Unable to extract relations, no FOXML document was provided for " + dip.getPid().getPid());
 		
+		log.debug("Applying setRelationsFilter");
 		List<String> relations = new ArrayList<String>();
 		Element relsExt = dip.getRelsExt();
 		try {

@@ -16,16 +16,16 @@
 package edu.unc.lib.dl.cdr.services.solr;
 
 import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancementService;
-import edu.unc.lib.dl.data.ingest.solr.SolrDataAccessLayer;
+import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 
 public abstract class AbstractSolrObjectEnhancementService extends AbstractFedoraEnhancementService {
-	protected SolrDataAccessLayer solrDataAccessLayer;
-	
-	public SolrDataAccessLayer getSolrDataAccessLayer() {
-		return solrDataAccessLayer;
+	protected SolrSearchService solrSearchService;
+
+	public SolrSearchService getSolrSearchService() {
+		return solrSearchService;
 	}
 
-	public void setSolrDataAccessLayer(SolrDataAccessLayer solrDataAccessLayer) {
-		this.solrDataAccessLayer = solrDataAccessLayer;
+	public void setSolrSearchService(SolrSearchService solrSearchService) {
+		this.solrSearchService = solrSearchService;
 	}
 }

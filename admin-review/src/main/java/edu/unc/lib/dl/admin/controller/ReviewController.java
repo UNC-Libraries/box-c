@@ -32,24 +32,32 @@ public class ReviewController extends AbstractSolrSearchController {
 	private static final Logger log = LoggerFactory.getLogger(ReviewController.class);
 	private List<String> containerFieldList = Arrays.asList(SearchFieldKeys.ID, SearchFieldKeys.TITLE, SearchFieldKeys.ANCESTOR_PATH);
 	private List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID, SearchFieldKeys.TITLE, SearchFieldKeys.CREATOR,
-			SearchFieldKeys.DATASTREAM, SearchFieldKeys.DATE_ADDED, "STATUS");
+			SearchFieldKeys.DATASTREAM, SearchFieldKeys.DATE_ADDED, "STATUS", SearchFieldKeys.RESOURCE_TYPE);
 	@Autowired
 	private PID collectionsPid;
+	
+	@RequestMapping(value = "review", method = RequestMethod.GET)
+	public String getReviewList(Model model, HttpServletRequest request) {
+		return this.getReviewList(collectionsPid.getPid(), model, request);
+	}
 	
 	@RequestMapping(value = "review/{prefix}/{id}", method = RequestMethod.GET)
 	public String getReviewList(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
 			HttpServletRequest request) {
-		log.debug("Reviewing " + idPrefix + id);
-		String idString = idPrefix + ":" + id;
+		return this.getReviewList(idPrefix + ":" + id, model, request);
+	}
+	
+	public String getReviewList(String pid, Model model, HttpServletRequest request) {
+		log.debug("Reviewing " + pid);
 		AccessGroupSet accessGroups = getUserAccessGroups(request);
 		
 		CutoffFacet path;
-		if (!collectionsPid.getPid().equals(idString)){
+		if (!collectionsPid.getPid().equals(pid)){
 			// Retrieve the record for the container being reviewed
-			SimpleIdRequest containerRequest = new SimpleIdRequest(idString, containerFieldList, accessGroups);
+			SimpleIdRequest containerRequest = new SimpleIdRequest(pid, containerFieldList, accessGroups);
 			BriefObjectMetadataBean containerBean = queryLayer.getObjectById(containerRequest);
 			if (containerBean == null) {
-				log.debug("Could not find path for " + idString + " while trying to generate review list");
+				log.debug("Could not find path for " + pid + " while trying to generate review list");
 				throw new ResourceNotFoundException("The requested record either does not exist or is not accessible");
 			}
 			path = containerBean.getPath();
@@ -74,6 +82,8 @@ public class ReviewController extends AbstractSolrSearchController {
 		SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
 		log.debug("Retrieved " + resultResponse.getResultCount() + " results for the review list");
 		model.addAttribute("resultResponse", resultResponse);
+		
+		request.getSession().setAttribute("resultOperation", "review");
 
 		return "search/reviewList";
 	}

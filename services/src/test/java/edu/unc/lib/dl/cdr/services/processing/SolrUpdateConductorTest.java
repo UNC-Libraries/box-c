@@ -36,7 +36,6 @@ import org.mockito.ArgumentMatcher;
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.data.ingest.solr.CountDownUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.DeleteChildrenPriorToTimestampRequest;
-import edu.unc.lib.dl.data.ingest.solr.SolrDataAccessLayer;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.UpdateDocTransformer;
@@ -68,7 +67,6 @@ public class SolrUpdateConductorTest extends Assert {
 		this.messageDirector = new MessageDirector();
 		this.solrUpdateConductor = new SolrUpdateConductor();
 
-		SolrDataAccessLayer solrDataAccessLayer = mock(SolrDataAccessLayer.class);
 		SolrSearchService solrSearchService = mock(SolrSearchService.class);
 
 		FedoraDataService fedoraDataService = mock(FedoraDataService.class);
@@ -85,7 +83,6 @@ public class SolrUpdateConductorTest extends Assert {
 		UpdateDocTransformer updateDocTransformer = mock(UpdateDocTransformer.class);
 
 		solrUpdateConductor.setSolrSearchService(solrSearchService);
-		solrUpdateConductor.setSolrDataAccessLayer(solrDataAccessLayer);
 		solrUpdateConductor.setFedoraDataService(fedoraDataService);
 		//solrUpdateConductor.setUpdateDocTransformer(updateDocTransformer);
 		solrUpdateConductor.setAutoCommit(false);

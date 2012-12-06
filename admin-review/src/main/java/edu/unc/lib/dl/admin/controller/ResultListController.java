@@ -64,7 +64,7 @@ public class ResultListController extends AbstractSolrSearchController {
 			model.addAttribute("containerBean", containerBean);
 		} else {
 			path = new CutoffFacet("ANCESTOR_PATH", "1,*");
-			path.setCutoff(1);
+			path.setCutoff(2);
 		}
 
 		// Retrieve the list of unpublished (not belonging to an unpublished parent) items within this container.
@@ -82,7 +82,12 @@ public class ResultListController extends AbstractSolrSearchController {
 
 		SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
 		log.debug("Retrieved " + resultResponse.getResultCount() + " results for the review list");
+		// Get children counts
+		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
+		
 		model.addAttribute("resultResponse", resultResponse);
+		
+		request.getSession().setAttribute("resultOperation", "list");
 		
 		return "search/reviewList";
 	}

@@ -86,7 +86,7 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 
 		// Get dateUpdated from Solr
 		try {
-			Date solrDateModified = (Date) this.solrDataAccessLayer.getField(message.getTargetID(), "dateUpdated");
+			Date solrDateModified = (Date) this.solrSearchService.getField(message.getTargetID(), "dateUpdated");
 			if (solrDateModified == null) {
 				LOG.debug("isApplicable due to solrDateModified being null");
 				return true;
@@ -140,8 +140,7 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
 		EnhancementApplication lastApplied = null;
 		try {
-			Date timestamp = (Date) this.solrDataAccessLayer.getField(pid.getPid(), solrDataAccessLayer.getSolrSettings()
-					.getFieldName(SearchFieldKeys.TIMESTAMP));
+			Date timestamp = (Date) this.solrSearchService.getField(pid.getPid(), "TIMESTAMP");
 			lastApplied = new EnhancementApplication();
 			lastApplied.setLastApplied(timestamp);
 			lastApplied.setPid(pid);
