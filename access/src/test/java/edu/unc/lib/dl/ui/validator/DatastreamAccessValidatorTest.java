@@ -21,8 +21,8 @@ import java.util.Properties;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
 import edu.unc.lib.dl.ui.util.AccessControlSettings;
 
 import static org.mockito.Mockito.*;
@@ -53,7 +53,7 @@ public class DatastreamAccessValidatorTest extends Assert {
 		BriefObjectMetadataBean metadata = new BriefObjectMetadataBean();
 		metadata.setDatastream(new String[]{"DATA_FILE", "THUMB_SMALL"});
 		
-		DatastreamAccessValidator.filterDatastreams(metadata.getDatastream(), surrogateAccess, fileAccess, surrogateAccess);
+		//DatastreamAccessValidator.filterDatastreams(metadata.getDatastream(), surrogateAccess, fileAccess, surrogateAccess);
 		
 		assertFalse(metadata.getDatastream().contains("DATA_FILE"));
 		assertTrue(metadata.getDatastream().contains("THUMB_SMALL"));

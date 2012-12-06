@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.ui.controller;
 
-import javax.servlet.http.HttpServletRequest;
-
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+package edu.unc.lib.dl.acl.exception;
 
 /**
- * Common base controller for use in the CDR UI, offers basic security functionality.
+ * Access restriction exceptions.
+ * 
  * @author bbpennel
  */
-public abstract class CDRBaseController {
-	protected AccessGroupSet getUserAccessGroups(HttpServletRequest request){
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		return groups;
+public class AccessRestrictionException extends Exception {
+	private static final long serialVersionUID = 1L;
+
+	public AccessRestrictionException() {
+	}
+
+	public AccessRestrictionException(String msg) {
+		super(msg);
 	}
 }

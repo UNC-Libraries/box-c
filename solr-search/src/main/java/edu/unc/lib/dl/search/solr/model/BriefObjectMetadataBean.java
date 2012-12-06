@@ -23,9 +23,9 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
 
 /**
  * Stores a single Solr tuple representing an object from a search result. Can be populated directly by Solrj's

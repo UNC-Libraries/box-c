@@ -17,7 +17,7 @@ package edu.unc.lib.dl.search.solr.model;
 
 import java.util.List;
 
-import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 
 /**
  * Request object for a single ID along with access restrictions and requested result data.

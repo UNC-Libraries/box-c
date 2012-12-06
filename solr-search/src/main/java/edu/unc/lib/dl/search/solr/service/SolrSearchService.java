@@ -32,6 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
@@ -43,9 +46,6 @@ import edu.unc.lib.dl.search.solr.util.DateFormatUtil;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
-import edu.unc.lib.dl.security.access.AccessGroupConstants;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
-import edu.unc.lib.dl.security.access.AccessRestrictionException;
 
 /**
  * Performs CDR specific Solr search tasks, using solrj for connecting to the 

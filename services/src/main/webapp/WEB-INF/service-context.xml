@@ -444,11 +444,11 @@
 		<property name="searchSettings" ref="searchSettings" />
 	</bean>
 	
-	<bean id="accessGroupConstants" class="edu.unc.lib.dl.security.access.AccessGroupConstants">
+	<bean id="accessGroupConstants" class="edu.unc.lib.dl.acl.util.AccessGroupConstants">
 		<property name="ADMIN_GROUP" value="${access.group.admin}"/>
 	</bean>
 	
-	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
+	<util:set id="accessGroups" set-class="edu.unc.lib.dl.acl.util.AccessGroupSet">
 		<value>${access.group.admin}</value>
 	</util:set>
 	

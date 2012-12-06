@@ -17,7 +17,7 @@ package edu.unc.lib.dl.ui.validator;
 
 import java.util.Collection;
 
-import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.Datastream;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;

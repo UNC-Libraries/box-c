@@ -25,8 +25,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import edu.unc.lib.dl.security.access.AccessGroupConstants;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.LookupMappingsSettings;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
