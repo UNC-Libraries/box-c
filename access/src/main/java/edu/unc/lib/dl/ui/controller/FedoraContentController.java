@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.security.access.AccessType;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
