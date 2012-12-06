@@ -18,7 +18,7 @@ package fedorax.server.module.storage.lowlevel.irods;
 import java.io.File;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Map;
+import java.util.HashMap;
 
 import org.fcrepo.server.errors.LowlevelStorageException;
 import org.fcrepo.server.storage.lowlevel.PathAlgorithm;
@@ -28,19 +28,19 @@ import org.fcrepo.server.storage.lowlevel.PathAlgorithm;
  * Fedora Commons. It has not changed at all yet, but the original had default scope and was unavailable to custom
  * modules.
  *
- * @author Bill Niebel
+ * @author Bill Niebel, Greg Jansen
  */
 class TimestampPathAlgorithm extends PathAlgorithm {
 
-	private final String storeBase;
+	private String storeBase;
 
 	private static final String[] PADDING = { "", "0", "00", "000" };
 
 	private static final String SEP = File.separator;
 
-	public TimestampPathAlgorithm(Map<String, ?> configuration) {
-		super(configuration);
-		storeBase = (String) configuration.get("storeBase");
+	public TimestampPathAlgorithm(String storeBase) {
+		super(new HashMap<String, String>());
+		this.storeBase = storeBase;
 	}
 
 	@Override

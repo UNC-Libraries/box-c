@@ -65,7 +65,7 @@ public class IrodsDBPathRegistry extends DBPathRegistry {
 
 	private static final Logger LOG = LoggerFactory.getLogger(IrodsDBPathRegistry.class);
 
-	public IrodsDBPathRegistry(IRODSFileSystem irodsFileSystem, IRODSAccount account, Map configuration) {
+	public IrodsDBPathRegistry(IRODSFileSystem irodsFileSystem, IRODSAccount account, Map<String, Object> configuration) {
 		super(configuration);
 		this.irodsFileSystem = irodsFileSystem;
 		this.account = account;
