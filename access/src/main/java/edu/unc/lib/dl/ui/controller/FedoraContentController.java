@@ -31,8 +31,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import edu.unc.lib.dl.security.access.AccessGroupConstants;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.security.access.AccessType;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
@@ -79,7 +79,8 @@ public class FedoraContentController extends AbstractSolrSearchController {
 			datastream = ContentModelHelper.Datastream.DATA_FILE.toString();
 		}
 		
-		AccessType accessType = accessSettings.getAccessType(datastream);
+		// TODO make this work with the new restriction objects
+		/*AccessType accessType = accessSettings.getAccessType(datastream);
 		String accessField = null;
 		//Determine which permission applies to accessing this datastream.
 		
@@ -100,7 +101,7 @@ public class FedoraContentController extends AbstractSolrSearchController {
 				break;
 			default:
 				throw new InvalidRecordRequestException();
-		}
+		}*/
 		
 		//Use solr to check if the user is allowed to view this item.
 		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID));
@@ -109,9 +110,9 @@ public class FedoraContentController extends AbstractSolrSearchController {
 		List<String> resultFields = new ArrayList<String>();
 		resultFields.add(SearchFieldKeys.ID);
 		resultFields.add(SearchFieldKeys.FILESIZE);
-		if (accessType != null)
+		//if (accessType != null)
 			resultFields.add(SearchFieldKeys.CONTENT_TYPE);
-		SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, accessGroups, accessField);
+		SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, accessGroups/*, accessField*/);
 		
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
 		//If the record isn't accessible then invalid record exception.
@@ -122,7 +123,7 @@ public class FedoraContentController extends AbstractSolrSearchController {
 		try {
 			String fileExtension = null;
 			
-			if (accessType.equals(AccessType.FILE)){
+			//if (accessType.equals(AccessType.FILE)){
 				if (briefObject.getContentType() != null){
 					fileExtension = briefObject.getContentType().getSearchKey();
 				}
@@ -133,7 +134,7 @@ public class FedoraContentController extends AbstractSolrSearchController {
 						LOG.warn("Non-numerical content length for " + id + " value " + briefObject.getFilesize(), e);
 					}
 				}
-			}
+			//}
 			
 			fedoraContentService.streamData(id, datastream, response.getOutputStream(), response, fileExtension, download);
 		} catch (Exception e){

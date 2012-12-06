@@ -53,7 +53,7 @@
 	<!-- _______________________________________________________________________________________________________________________ -->
 	<!-- Add services here -->
 
-	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
+	<util:set id="accessGroups" set-class="edu.unc.lib.dl.acl.util.AccessGroupSet">
 		<value>${admin.access.groups}</value>
 	</util:set>
 

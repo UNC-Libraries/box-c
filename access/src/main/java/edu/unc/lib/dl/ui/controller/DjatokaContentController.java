@@ -29,11 +29,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.security.access.AccessType;
-import edu.unc.lib.dl.security.access.UserSecurityProfile;
 import edu.unc.lib.dl.ui.service.DjatokaContentService;
 import edu.unc.lib.dl.ui.util.AccessControlSettings;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -61,17 +60,13 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 	 * @return
 	 */
 	private boolean hasAccess(String id, String datastream, HttpServletRequest request){
-		UserSecurityProfile user = getUserProfile(request);
-		if (user == null){
-			return false;
-		}
-
 		//Defaults to jp2 surrogate if no datastream specified
 		if (datastream == null){
 			datastream = ContentModelHelper.Datastream.IMAGE_JP2000.toString();
 		}
 		
-		AccessType accessType = accessSettings.getAccessType(datastream); 
+		// TODO make this work with the new model
+		/*AccessType accessType = accessSettings.getAccessType(datastream); 
 		String accessField = null;
 		switch (accessType){
 			case FILE:
@@ -82,13 +77,13 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 				break;
 			default:
 				return false;
-		}
+		}*/
 		
 		//Check to see if the user can access this datastream/object
 		List<String> resultFields = new ArrayList<String>();
 		resultFields.add(SearchFieldKeys.ID);
 		resultFields.add(SearchFieldKeys.CONTENT_TYPE);
-		SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, user.getAccessGroups(), accessField);
+		SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, GroupsThreadStore.getGroups()/*, accessField*/);
 		
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
 		//If the record isn't accessible then invalid record exception.

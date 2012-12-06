@@ -53,8 +53,8 @@ import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor.PerformServic
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnable;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.message.ActionMessage;
-import edu.unc.lib.dl.security.access.AccessGroupConstants;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.util.TripleStoreQueryService.PathInfo;

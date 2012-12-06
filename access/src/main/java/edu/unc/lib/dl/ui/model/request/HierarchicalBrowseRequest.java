@@ -17,7 +17,7 @@ package edu.unc.lib.dl.ui.model.request;
 
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 
 public class HierarchicalBrowseRequest extends SearchRequest {
 	private static final long serialVersionUID = 1L;

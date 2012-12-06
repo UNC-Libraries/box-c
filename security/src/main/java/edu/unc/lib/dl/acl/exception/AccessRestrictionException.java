@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.agents;
 
-import edu.unc.lib.dl.fedora.PID;
+package edu.unc.lib.dl.acl.exception;
 
 /**
- * Represents a Fedora object that may appear in PREMIS logs.
+ * Access restriction exceptions.
+ * 
+ * @author bbpennel
  */
-public interface Agent extends Comparable<Agent> {
+public class AccessRestrictionException extends Exception {
+	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Gets the common (user displayable) name of this agent.
-	 * 
-	 * @return a user-facing name for this agent.
-	 */
-	public abstract String getName();
+	public AccessRestrictionException() {
+	}
 
-	/**
-	 * Gets the Fedora PID of this agent.
-	 * 
-	 * @return the persistent identifier for the Fedora object.
-	 */
-	public abstract PID getPID();
-
+	public AccessRestrictionException(String msg) {
+		super(msg);
+	}
 }

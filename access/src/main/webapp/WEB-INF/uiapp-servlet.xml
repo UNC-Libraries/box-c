@@ -48,7 +48,7 @@
 
 	<!-- Utils -->
 
-	<bean id="accessGroupConstants" class="edu.unc.lib.dl.security.access.AccessGroupConstants">
+	<bean id="accessGroupConstants" class="edu.unc.lib.dl.acl.util.AccessGroupConstants">
 		<property name="ADMIN_GROUP" value="${access.group.admin}"/>
 	</bean>
 

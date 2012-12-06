@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.Datastream;
 import edu.unc.lib.dl.search.solr.util.AbstractSettings;
-import edu.unc.lib.dl.security.access.AccessType;
 
 /**
  * Settings object containing access control properties
@@ -123,7 +122,7 @@ public class AccessControlSettings extends AbstractSettings {
 	 * @param datastream
 	 * @return
 	 */
-	public AccessType getAccessType(String datastream){
+	/*public AccessType getAccessType(String datastream){
 		Datastream ds = new Datastream(datastream);
 		if (fileDatastreams.contains(ds)){
 			return AccessType.FILE;
@@ -135,5 +134,5 @@ public class AccessControlSettings extends AbstractSettings {
 			return AccessType.RECORD;
 		}
 		return AccessType.NONE;
-	}
+	}*/
 }
