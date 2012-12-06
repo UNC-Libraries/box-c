@@ -30,8 +30,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
@@ -44,8 +45,9 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 
 /**
- * Controller which handles requests for specific content datastreams from
- * Fedora and streams the results back as the response.
+ * Controller which handles requests for specific content datastreams from Fedora and streams the results back as the
+ * response.
+ * 
  * @author bbpennel
  */
 @Controller
@@ -57,94 +59,62 @@ public class FedoraContentController extends AbstractSolrSearchController {
 	private AccessControlSettings accessSettings;
 	@Autowired
 	private SearchSettings searchSettings;
-	
+
 	@RequestMapping("/indexablecontent")
-	public void handleIndexableRequest(Model model, HttpServletRequest request, HttpServletResponse response){
-		handleRequest(model, request, response);
+	public void handleIndexableRequest(@RequestParam("ds") String datastream,
+			@RequestParam(value = "dl", defaultValue = "false") boolean download, Model model, HttpServletRequest request,
+			HttpServletResponse response) {
+		handleRequest(datastream, download, model, request, response);
 	}
-	
+
 	@RequestMapping("/content")
-	public void handleRequest(Model model, HttpServletRequest request, HttpServletResponse response){
+	public void handleRequest(@RequestParam("ds") String datastream,
+			@RequestParam(value = "dl", defaultValue = "false") boolean download, Model model, HttpServletRequest request,
+			HttpServletResponse response) {
 		AccessGroupSet accessGroups = getUserAccessGroups(request);
-		
-		boolean download = false;
-		try {
-			download = Boolean.parseBoolean(request.getParameter("dl"));
-		} catch (Exception ignored){
-		}
-		String datastream = request.getParameter("ds");
-		//Defaults to data_file if no datastream specified
-		if (datastream == null){
+
+		if (datastream == null) {
 			datastream = ContentModelHelper.Datastream.DATA_FILE.toString();
 		}
-		
-		// TODO make this work with the new restriction objects
-		/*AccessType accessType = accessSettings.getAccessType(datastream);
-		String accessField = null;
-		//Determine which permission applies to accessing this datastream.
-		
-		switch (accessType){
-			case FILE:
-				accessField = SearchFieldKeys.FILE_ACCESS;
-				break;
-			case SURROGATE:
-				accessField = SearchFieldKeys.SURROGATE_ACCESS;
-				break;
-			case ADMIN:
-				if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP))
-					throw new InvalidRecordRequestException();
-				accessField = null;
-				break;
-			case RECORD:
-				accessField = null;
-				break;
-			default:
-				throw new InvalidRecordRequestException();
-		}*/
-		
-		//Use solr to check if the user is allowed to view this item.
+
+		// Use solr to check if the user is allowed to view this item.
 		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID));
-		
-		//Get the content type of the object if its accessible
+
+		// Get the content type of the object if its accessible
 		List<String> resultFields = new ArrayList<String>();
 		resultFields.add(SearchFieldKeys.ID);
-		resultFields.add(SearchFieldKeys.FILESIZE);
-		//if (accessType != null)
-			resultFields.add(SearchFieldKeys.CONTENT_TYPE);
-		SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, accessGroups/*, accessField*/);
-		
+		resultFields.add(SearchFieldKeys.DATASTREAM);
+
+		SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, accessGroups);
+
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
-		//If the record isn't accessible then invalid record exception.
-		if (briefObject == null){
+		// If the record isn't accessible then invalid record exception.
+		if (briefObject == null) {
 			throw new InvalidRecordRequestException();
 		}
-		
+
 		try {
 			String fileExtension = null;
-			
-			//if (accessType.equals(AccessType.FILE)){
-				if (briefObject.getContentType() != null){
-					fileExtension = briefObject.getContentType().getSearchKey();
-				}
-				if (briefObject.getFilesize() != null){
-					try {
-						response.setContentLength(Integer.parseInt(briefObject.getFilesize()));
-					} catch (NumberFormatException e){
-						LOG.warn("Non-numerical content length for " + id + " value " + briefObject.getFilesize(), e);
-					}
-				}
-			//}
-			
+			// TODO get the extension, mimetype, filesize and slug from
+			/*
+			 * if (briefObject.getContentType() != null){ fileExtension = briefObject.getContentType().getSearchKey(); } if
+			 * (briefObject.getFilesize() != null){ try {
+			 * response.setContentLength(Integer.parseInt(briefObject.getFilesize())); } catch (NumberFormatException e){
+			 * LOG.warn("Non-numerical content length for " + id + " value " + briefObject.getFilesize(), e); } }
+			 */
+
 			fedoraContentService.streamData(id, datastream, response.getOutputStream(), response, fileExtension, download);
-		} catch (Exception e){
+		} catch (AccessRestrictionException e) {
+			throw new InvalidRecordRequestException(e);
+		} catch (Exception e) {
 			LOG.error("Failed to retrieve content for " + id + " datastream: " + datastream, e);
 			throw new ResourceNotFoundException();
 		}
 	}
-	
+
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)
 	@ExceptionHandler(InvalidRecordRequestException.class)
-	public String handleInvalidRecordRequest(HttpServletRequest request){
+	public String handleInvalidRecordRequest(HttpServletRequest request) {
 		request.setAttribute("pageSubtitle", "Invalid content");
 		return "error/invalidRecord";
 	}

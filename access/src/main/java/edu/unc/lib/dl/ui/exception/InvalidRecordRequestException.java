@@ -17,4 +17,11 @@ package edu.unc.lib.dl.ui.exception;
 
 public class InvalidRecordRequestException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
+	
+	public InvalidRecordRequestException(){
+	}
+	
+	public InvalidRecordRequestException(Throwable cause){
+		super(cause);
+	}
 }

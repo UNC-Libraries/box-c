@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fedora.PID;
@@ -80,17 +81,17 @@ public class FedoraContentService {
 		this.fedoraUtil = fedoraUtil;
 	}
 
-	public void streamData(String simplepid, String datastream, OutputStream outStream) {
+	public void streamData(String simplepid, String datastream, OutputStream outStream) throws AccessRestrictionException {
 		streamData(simplepid, datastream, outStream, null, null, true);
 	}
 
 	public void streamData(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response,
-			String fileExtension, boolean asAttachment){
+			String fileExtension, boolean asAttachment) throws AccessRestrictionException {
 		this.streamData(simplepid, datastream, outStream, response, fileExtension, asAttachment, 1);
 	}
 
 	public void streamData(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response,
-			String fileExtension, boolean asAttachment, int retryServerError) {
+			String fileExtension, boolean asAttachment, int retryServerError) throws AccessRestrictionException {
 		String dataUrl = fedoraUtil.getFedoraUrl() + "/objects/" + simplepid + "/datastreams/" + datastream + "/content";
 
 		HttpClient client = HttpClientUtil.getAuthenticatedClient(dataUrl, accessClient.getUsername(), accessClient.getPassword());
@@ -147,6 +148,8 @@ public class FedoraContentService {
 				} finally {
 					method.releaseConnection();
 				}
+			} else if (method.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
+				throw new AccessRestrictionException("User does not have sufficient permissions to retrieve the specified object");
 			} else {
 				//Retry server errors
 				if (method.getStatusCode() == 500 && retryServerError > 0){
