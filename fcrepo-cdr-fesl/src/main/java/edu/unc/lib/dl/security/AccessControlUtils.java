@@ -37,7 +37,7 @@ public class AccessControlUtils {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(AccessControlUtils.class);
 	private edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService = null;
-	private AncestorFactory ancestoryFactory = null;
+	private AncestorFactory ancestorFactory = null;
 	private GroupRolesFactory groupRolesFactory = null;
 	private EmbargoFactory embargoFactory = null;
 
@@ -49,12 +49,12 @@ public class AccessControlUtils {
 		this.embargoFactory = embargoFactory;
 	}
 
-	public AncestorFactory getAncestoryFactory() {
-		return ancestoryFactory;
+	public AncestorFactory getAncestorFactory() {
+		return ancestorFactory;
 	}
 
-	public void setAncestoryFactory(AncestorFactory ancestoryFactory) {
-		this.ancestoryFactory = ancestoryFactory;
+	public void setAncestorFactory(AncestorFactory ancestorFactory) {
+		this.ancestorFactory = ancestorFactory;
 	}
 
 	public GroupRolesFactory getGroupRolesFactory() {
@@ -103,7 +103,7 @@ public class AccessControlUtils {
 			summary.putAll(local);
 
 			// list of ancestors from which this pid inherits access controls
-			List<PID> ancestors = this.ancestoryFactory.getInheritanceList(pid);
+			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
 			for (PID ancestor : ancestors) {
 				Map<String, Set<String>> inherited = groupRolesFactory.getAllRolesAndGroups(ancestor);
 				if (inherited != null && !inherited.isEmpty()) {
@@ -190,7 +190,7 @@ public class AccessControlUtils {
 				// special list inheritance logic
 				// if my bond with parent is non-inheriting, 
 				// then all groups with roles on parent have list
-				ParentBond bond = this.ancestoryFactory.getParentBond(pid);
+				ParentBond bond = this.ancestorFactory.getParentBond(pid);
 				if(!bond.inheritsRoles) {
 					Map<String, Set<String>> rolesMap = groupRolesFactory.getAllRolesAndGroups(new PID(bond.parentPid));
 					for(Set<String> rgroups : rolesMap.values()) {
@@ -199,7 +199,7 @@ public class AccessControlUtils {
 				}
 			} else {
 			// list of ancestors from which this pid inherits access controls
-			List<PID> ancestors = this.ancestoryFactory.getInheritanceList(pid);
+			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
 			for (PID ancestor : ancestors) {
 				Set<String> additions = groupRolesFactory.getGroupsInRole(ancestor, role);
 				if (additions != null) {

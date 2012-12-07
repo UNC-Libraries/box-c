@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.naming.resources.DirContextURLStreamHandlerFactory;
 import org.fcrepo.server.Module;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.ConnectionPoolNotFoundException;
@@ -41,6 +42,8 @@ import org.irods.jargon.core.query.IRODSQueryResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.util.IRODSURLStreamHandlerFactory;
+
 /**
  * iRODS implementation of the Fedora's LowlevelStorage.
  *
@@ -53,6 +56,12 @@ import org.slf4j.LoggerFactory;
 public class IrodsLowlevelStorageModule extends Module implements ILowlevelStorage, IListable {
 	/** Logger for this class. */
 	private static final Logger LOG = LoggerFactory.getLogger(IrodsLowlevelStorageModule.class.getName());
+	
+	static {
+		// Register IRODS URL Protocol Handler (see metadata project)
+		// https://issues.apache.org/bugzilla/show_bug.cgi?id=26701
+		DirContextURLStreamHandlerFactory.addUserFactory(new IRODSURLStreamHandlerFactory());
+	}
 
 	// constants
 	public static final String REGISTRY_NAME = "registryName";
