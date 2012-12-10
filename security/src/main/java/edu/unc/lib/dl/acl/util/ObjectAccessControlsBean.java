@@ -1,8 +1,11 @@
 package edu.unc.lib.dl.acl.util;
 
 import java.text.DateFormat;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +26,28 @@ public class ObjectAccessControlsBean {
 	public ObjectAccessControlsBean(PID pid, Map<UserRole, Set<String>> role2groups) {
 		this.object = pid;
 		this.role2groups = role2groups;
+	}
+	
+	/**
+	 * Factory method which generates an ObjectAccessControlBean from a map containing role to groups relations
+	 * 
+	 * @param pid
+	 * @param roleMappings
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static ObjectAccessControlsBean createObjectAccessControlBean(PID pid, Map<String, ? extends Collection<String>> roleMappings) {
+		Map<UserRole, Set<String>> role2groups = new HashMap<UserRole, Set<String>>(roleMappings.size());
+		
+		Iterator<?> roleIt = roleMappings.entrySet().iterator(); 
+		while (roleIt.hasNext()) {
+			Map.Entry<String, Collection<String>> entry = (Map.Entry<String, Collection<String>>)roleIt.next();
+			UserRole userRole = UserRole.getUserRole(entry.getKey());
+			Set<String> groups = new HashSet<String>((Collection<String>)entry.getValue());
+			role2groups.put(userRole, groups);
+		}
+
+		return new ObjectAccessControlsBean(pid, role2groups);
 	}
 	
 	public String toString() {

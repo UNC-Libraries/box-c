@@ -1,12 +1,8 @@
 package edu.unc.lib.dl.fedora;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -21,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
-import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
@@ -80,7 +75,7 @@ public class FedoraAccessControlService implements AccessControlService {
 				Map<?, ?> result = (Map<?, ?>) mapper.readValue(method.getResponseBodyAsStream(), Object.class);
 				Map<String, List<String>> roleMappings = (Map<String, List<String>>) result.get(ROLES_TO_GROUPS);
 
-				return createObjectAccessControlBean(pid, roleMappings);
+				return ObjectAccessControlsBean.createObjectAccessControlBean(pid, roleMappings);
 			}
 		} catch (HttpException e) {
 			log.error("Failed to retrieve object access control for " + pid, e);
@@ -91,26 +86,6 @@ public class FedoraAccessControlService implements AccessControlService {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Factory method which generates an ObjectAccessControlBean from a map containing role to groups relations
-	 * 
-	 * @param pid
-	 * @param roleMappings
-	 * @return
-	 */
-	public static ObjectAccessControlsBean createObjectAccessControlBean(PID pid, Map<String, List<String>> roleMappings) {
-		Map<UserRole, Set<String>> role2groups = new HashMap<UserRole, Set<String>>(roleMappings.size());
-		Iterator<Map.Entry<String, List<String>>> roleIt = roleMappings.entrySet().iterator();
-		while (roleIt.hasNext()) {
-			Map.Entry<String, List<String>> entry = roleIt.next();
-			UserRole userRole = UserRole.getUserRole(entry.getKey());
-			Set<String> groups = new HashSet<String>(entry.getValue());
-			role2groups.put(userRole, groups);
-		}
-
-		return new ObjectAccessControlsBean(pid, role2groups);
 	}
 
 	public void setAclEndpointUrl(String aclEndpointUrl) {
