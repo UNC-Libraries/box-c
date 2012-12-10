@@ -16,110 +16,144 @@
 
  */
 (function($) {
-	$.widget( "cdr.resultObject", {
-		options: {
-			pid: null,
-			animateSpeed: 80,
+	$.widget("cdr.resultObject", {
+		options : {
+			animateSpeed : 80,
+			metadata : null,
+			selected : false,
+			selectable : true,
+			selectCheckboxInitialState : false
+		},
+
+		_create : function() {
+			if (this.options.metadata instanceof MetadataObject) {
+				this.metadata = this.options.metadata;
+			} else {
+				this.metadata = new MetadataObject(this.options.metadata);
+			}
 			
+			this.pid = this.metadata.pid;
+			
+			if (this.options.selected)
+				this.select();
+
+			var obj = this;
+			if (this.options.selectable) {
+				this.checkbox = this.element.find("input[type='checkbox']");
+				if (this.checkbox) {
+					this.checkbox = $(this.checkbox[0]).click(function(event) {
+						$.proxy(obj.toggleSelect(), obj);
+						event.stopPropagation();
+					}).prop("checked", obj.options.selectCheckboxInitialState);
+				}
+				this.element.click($.proxy(obj.toggleSelect(), obj)).find('a').click(function(event) {
+					event.stopPropagation();
+				});
+			}
 		},
 		
-		_create: function() {
-			if (!this.options.defaultLabel)
-				this.options.defaultLabel = this.element.text();
-			if (!this.options.workLabel)
-				this.options.workLabel = this.element.text();
+		initializePublishLinks: function() {
+			var links = this.element.find(".publish_link");
+			if (!links)
+				return;
 			
-			this.followupId = null;
-			this.pid = new PID(this.options.pid);
-			this.setWorkURL(this.options.workPath);
-			this.setFollowupURL(this.options.followupPath);
-			
-			var op = this;
-			this.element.text(this.options.defaultLabel);
-			this.element.click(function(){
-				if (op.options.disabled)
-					return false;
-				op.element.text(op.options.workLabel);
-				op.disable();
-				if (op.options.parentElement)
-					op.options.parentElement.addClass("working", "fast");
-				$.getJSON(op.workURL, function(data) {
-					if (op.options.followup) {
-						if (op.options.workDone) {
-							op.options.workDone.call(op, data);
-						}
-						if (op.options.parentElement) 
-							op.options.parentElement.switchClass("working", "followup", op.options.animateSpeed);
-						//op.options.parentElement.addClass("followup");
-						op.followupPing();
-					} else {
-						if (op.options.parentElement)
-							op.options.parentElement.removeClass("working", op.options.animateSpeed);
-						op.options.complete.call(op, data);
-						op.enable();
-					}
-				});
-				return false;
+			links.ajaxCallbackButton({
+				pid: obj.pid,
+				parentObject: obj,
+				defaultPublish: $.inArray("Unpublished", this.metadata.status) != -1
 			});
 		},
 		
-		disable: function() {
+		initializeDeleteLinks: function() {
+			var obj = this;
+			
+			function deleteFollowup(data) {
+				if (data == null) {
+					return true;
+				}
+				return false;
+			}
+
+			function deleteComplete() {
+				obj.deleteObject();
+				this.destroy();
+			}
+
+			function deleteWorkDone(data) {
+				if (data == null) {
+					alert("Unable to delete object " + this.pid.pid);
+					return false;
+				}
+				this.completeTimestamp = data.timestamp;
+				return true;
+			}
+			
+			this.element.find(".delete_link").ajaxCallbackButton({
+				pid: obj.pid,
+				workLabel: "Deleting...",
+				workPath: "delete/{idPath}",
+				workDone: deleteWorkDone,
+				followupLabel: "Cleaning up...",
+				followupPath: "services/rest/item/{idPath}/solrRecord/lastIndexed",
+				followup: deleteFollowup,
+				complete: deleteComplete,
+				parentObject: obj,
+				confirm: true,
+				confirmMessage: "Delete this object?"
+			});
+		},
+
+		disable : function() {
 			this.options.disabled = true;
 			this.element.css("cursor", "default");
 		},
-		
-		enable: function() {
+
+		enable : function() {
 			this.options.disabled = false;
 			this.element.css("cursor", "pointer");
 		},
-		
-		setWorkURL: function(url) {
-			this.workURL = url;
-			this.workURL = this.resolveParameters(this.workURL);
-		},
-		
-		setFollowupURL: function(url) {
-			this.followupURL = url;
-			this.followupURL = this.resolveParameters(this.followupURL);
-		},
-		
-		resolveParameters: function(url) {
-			return url.replace("{idPath}", this.pid.getPath());
-		},
-		
-		destroy: function() {
-			this.element.unbind("click");
-		},
-		
-		publish: function() {
-			
-		},
-		
-		followupPing: function() {
-			var op = this;
-			if (this.options.followupLabel != null) {
-				this.element.text(this.options.followupLabel);
+
+		toggleSelect : function() {
+			if (this.element.hasClass("selected")) {
+				this.unselect();
+			} else {
+				this.select();
 			}
-			$.getJSON(this.followupURL, function(data) {
-				var isDone = op.options.followup.call(op, data);
-				if (isDone) {
-					if (op.followupId != null) {
-						clearInterval(op.followupId);
-						op.followupId = null;
-					}
-					if (op.options.parentElement) {
-						op.options.parentElement.removeClass("followup", op.options.animateSpeed);
-					}
-					op.enable();
-					op.options.complete.call(op, data);
-				} else if (op.followupId == null) {
-					op.followupId = setInterval($.proxy(op.followupPing, op), op.options.followupFrequency);
-				}
-			});
 		},
-		
-		defaultComplete: function(data) {
-			this.element.text(op.options.defaultLabel);
+
+		select : function() {
+			this.element.addClass("selected");
+			if (this.checkbox) {
+				this.checkbox.prop("checked", true);
+			}
+		},
+
+		unselect : function() {
+			this.element.removeClass("selected");
+			if (this.checkbox) {
+				this.checkbox.prop("checked", false);
+			}
+		},
+
+		publish : function() {
+			this.metadata.publish();
+			if (!$.inArray("Parent Unpublished", this.metadata.data.status)) {
+				this.element.switchClass("unpublished", "published", op.options.animateSpeed);
+			}
+		},
+
+		unpublish : function() {
+			this.metadata.unpublish();
+			if (!$.inArray("Parent Unpublished", this.metadata.data.status)) {
+				this.element.switchClass("published", "unpublished", op.options.animateSpeed);
+			}
+		},
+
+		deleteObject : function() {
+			var element = this.element;
+			this.element.hide(op.options.animateSpeed, function() {
+				element.remove();
+			});
 		}
 	});
 })(jQuery);

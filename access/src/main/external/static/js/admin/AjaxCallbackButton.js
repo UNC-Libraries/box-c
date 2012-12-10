@@ -44,7 +44,9 @@
 				this.options.workLabel = this.element.text();
 			
 			this.followupId = null;
-			this.pid = new PID(this.options.pid);
+			if (this.options.pid instanceof PID)
+				this.pid = this.options.pid;
+			else this.pid = new PID(this.options.pid);
 			this.setWorkURL(this.options.workPath);
 			this.setFollowupURL(this.options.followupPath);
 			
