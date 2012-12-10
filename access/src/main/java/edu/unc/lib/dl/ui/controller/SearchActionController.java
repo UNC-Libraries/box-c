@@ -25,7 +25,6 @@ import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacet;
-import edu.unc.lib.dl.ui.validator.DatastreamAccessValidator;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 
@@ -93,8 +92,8 @@ public class SearchActionController extends AbstractSolrSearchController {
 			//Add the search state to the response.
 			resultResponse.setSearchState(searchState);
 			
-			//Filter the datastreams in the response according to the users permissions
-			DatastreamAccessValidator.filterSearchResult(resultResponse, searchRequest.getAccessGroups());
+			// TODO Filter the datastreams in the response according to the users permissions
+			//DatastreamAccessValidator.filterSearchResult(resultResponse, searchRequest.getAccessGroups());
 		}
 		
 		//Get the record for the currently selected container if one is selected.

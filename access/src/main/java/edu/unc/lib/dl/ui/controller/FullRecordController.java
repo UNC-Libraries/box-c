@@ -33,7 +33,6 @@ import edu.unc.lib.dl.ui.service.FullObjectMetadataFactory;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.ui.validator.DatastreamAccessValidator;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 
 import org.jdom.Document;
@@ -74,8 +73,8 @@ public class FullRecordController extends AbstractSolrSearchController {
 		if (briefObject == null) {
 			throw new InvalidRecordRequestException();
 		} else {
-			// Filter the datastreams in the response according to the users permissions
-			DatastreamAccessValidator.filterBriefObject(briefObject, accessGroups);
+			// TODO Filter the datastreams in the response according to the users permissions
+			//DatastreamAccessValidator.filterBriefObject(briefObject, accessGroups);
 			try {
 				Document foxmlView = FullObjectMetadataFactory.getFoxmlViewXML(idRequest);
 				fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
@@ -161,7 +160,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 			List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
 					searchSettings.maxNeighborResults, accessGroups);
 			for (BriefObjectMetadataBean neighbor : neighbors) {
-				DatastreamAccessValidator.filterBriefObject(neighbor, accessGroups);
+				//DatastreamAccessValidator.filterBriefObject(neighbor, accessGroups);
 			}
 			model.addAttribute("neighborList", neighbors);
 		}
