@@ -20,6 +20,11 @@ public class ObjectAccessControlsBean {
 	List<Date> activeEmbargoes = null;
 	static DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
 	
+	public ObjectAccessControlsBean(PID pid, Map<UserRole, Set<String>> role2groups) {
+		this.object = pid;
+		this.role2groups = role2groups;
+	}
+	
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		result.append("Object Access Controls (").append(object.getPid()).append(")")

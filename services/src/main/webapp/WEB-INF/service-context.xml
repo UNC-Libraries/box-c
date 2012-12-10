@@ -515,5 +515,13 @@
 	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
 		<property name="jmsTemplate" ref="jmsTemplate" />
 	</bean>
+
+	<bean id="accessControlService" class="edu.unc.lib.dl.fedora.FedoraAccessControlService"
+		init-method="init">
+		<property name="aclEndpointUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}/getAccess" />
+		<property name="username" value="${fedora.appUser.username}" />
+		<property name="password" value="${fedora.appUser.password}" />
+	</bean>
 	
 </beans>

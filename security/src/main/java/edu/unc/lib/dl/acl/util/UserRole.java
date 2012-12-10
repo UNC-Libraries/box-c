@@ -50,6 +50,15 @@ public enum UserRole {
 		}
 		return false;
 	}
+	
+	public static UserRole getUserRole(String roleUri) {
+		for(UserRole r : UserRole.values()) {
+			if(r.getURI().toString().equals(roleUri)) {
+				return r;
+			}
+		}
+		return null;
+	}
 
 	public URI getURI() {
 		return this.uri;
