@@ -237,4 +237,12 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 		BagAttribute bag = new BagAttribute(type, bagValues);
 		return new EvaluationResult(bag);
 	}
+
+	public AccessControlUtils getAccessControlUtils() {
+		return accessControlUtils;
+	}
+
+	public void setAccessControlUtils(AccessControlUtils accessControlUtils) {
+		this.accessControlUtils = accessControlUtils;
+	}
 }

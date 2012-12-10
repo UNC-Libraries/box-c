@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.naming.resources.DirContextURLStreamHandlerFactory;
 import org.fcrepo.server.Module;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.ConnectionPoolNotFoundException;
@@ -41,6 +42,8 @@ import org.irods.jargon.core.query.IRODSQueryResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.util.IRODSURLStreamHandlerFactory;
+
 /**
  * iRODS implementation of the Fedora's LowlevelStorage.
  *
@@ -53,49 +56,73 @@ import org.slf4j.LoggerFactory;
 public class IrodsLowlevelStorageModule extends Module implements ILowlevelStorage, IListable {
 	/** Logger for this class. */
 	private static final Logger LOG = LoggerFactory.getLogger(IrodsLowlevelStorageModule.class.getName());
-
-	private IRODSFileSystem irodsFileSystem;
-
-	private IrodsFileStore objectStore;
-
-	private IrodsFileStore datastreamStore;
-
-	private ConnectionPool connectionPool;
-
-	IRODSAccount account;
-
-	private int irodsReadBufferSize;
-
-	public static final String REGISTRY_NAME = "registryName";
-
-	public static final String OBJECT_REGISTRY_TABLE = "objectPaths";
-
-	public static final String DATASTREAM_REGISTRY_TABLE = "datastreamPaths";
 	
-	public static final String STORAGE_LEVEL_HINT = "storage level"; 
-
-	public enum Parameter {
-		REGISTRY_NAME("registryName"), OBJECT_REGISTRY_TABLE("objectPaths"), DATASTREAM_REGISTRY_TABLE("datastreamPaths"), OBJECT_STORE_BASE(
-				"object_store_base"), DATASTREAM_STORE_BASE("datastream_store_base"), FILESYSTEM("file_system"), PATH_ALGORITHM(
-				"path_algorithm"), BACKSLASH_IS_ESCAPE("backslash_is_escape"), CONNECTION_POOL("connectionPool"), PATH_REGISTRY(
-				"path_registry"), IRODS_HOST("irods_host"), IRODS_PORT("irods_port"), IRODS_USERNAME("irods_username"), IRODS_PASSWORD(
-				"irods_password"), IRODS_HOME_DIRECTORY("irods_homeDirectory"), IRODS_ZONE("irods_zone"), IRODS_DEFAULT_RESOURCE(
-				"irods_defaultStorageResource"), IRODS_READ_BUFFER_SIZE("irods_readBufferSize"), STAGING_LOCATIONS("stagingLocations"),
-				IRODS_SOCKET_TIMEOUT("irods_socketTimeout");
-
-		private final String name;
-
-		Parameter(String name) {
-			this.name = name;
-		}
-
-		@Override
-		public String toString() {
-			return name;
-		}
+	static {
+		// Register IRODS URL Protocol Handler (see metadata project)
+		// https://issues.apache.org/bugzilla/show_bug.cgi?id=26701
+		DirContextURLStreamHandlerFactory.addUserFactory(new IRODSURLStreamHandlerFactory());
 	}
 
-	public IrodsLowlevelStorageModule(Map moduleParameters, Server server, String role)
+	// constants
+	public static final String REGISTRY_NAME = "registryName";
+	public static final String OBJECT_REGISTRY_TABLE = "objectPaths";
+	public static final String DATASTREAM_REGISTRY_TABLE = "datastreamPaths";	
+	public static final String STORAGE_LEVEL_HINT = "storage level";
+	
+	// injected properties
+	private IRODSAccount account;
+	private String objectStoreBase;
+	private String datastreamStoreBase;
+	private int irodsReadBufferSize;
+	private int irodsSocketTimeout;
+	
+	public IRODSAccount getAccount() {
+		return account;
+	}
+
+	public void setAccount(IRODSAccount account) {
+		this.account = account;
+	}
+
+	public String getObjectStoreBase() {
+		return objectStoreBase;
+	}
+
+	public void setObjectStoreBase(String objectStoreBase) {
+		this.objectStoreBase = objectStoreBase;
+	}
+
+	public String getDatastreamStoreBase() {
+		return datastreamStoreBase;
+	}
+
+	public void setDatastreamStoreBase(String datastreamStoreBase) {
+		this.datastreamStoreBase = datastreamStoreBase;
+	}
+
+	public int getIrodsReadBufferSize() {
+		return irodsReadBufferSize;
+	}
+
+	public void setIrodsReadBufferSize(int irodsReadBufferSize) {
+		this.irodsReadBufferSize = irodsReadBufferSize;
+	}
+
+	public int getIrodsSocketTimeout() {
+		return irodsSocketTimeout;
+	}
+
+	public void setIrodsSocketTimeout(int irodsSocketTimeout) {
+		this.irodsSocketTimeout = irodsSocketTimeout;
+	}
+	
+	// initialized properties
+	private IRODSFileSystem irodsFileSystem;
+	private IrodsFileStore objectStore;
+	private IrodsFileStore datastreamStore;
+	private ConnectionPool connectionPool;
+
+	public IrodsLowlevelStorageModule(Map<String, String> moduleParameters, Server server, String role)
 			throws ModuleInitializationException {
 		super(moduleParameters, server, role);
 		LOG.info("IrodsLowlevelStorageModule()");
@@ -103,64 +130,6 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 
 	@Override
 	public void postInitModule() throws ModuleInitializationException {
-		LOG.debug("Setting up IRODS account");
-		String irodsHost = getModuleParameter(Parameter.IRODS_HOST, false);
-		String irodsPortString = getModuleParameter(Parameter.IRODS_PORT, false);
-		int irodsPort = -1;
-		try {
-			irodsPort = Integer.parseInt(irodsPortString);
-			if (irodsPort < 1) {
-				throw new ModuleInitializationException("Parameter, " + "\"irods_port\" must be greater than 0", getRole());
-			}
-		} catch (NumberFormatException e) {
-			throw new ModuleInitializationException(e.getMessage(), getRole());
-		}
-		String irodsUsername = getModuleParameter(Parameter.IRODS_USERNAME, false);
-		String irodsPassword = getModuleParameter(Parameter.IRODS_PASSWORD, false);
-		String irodsHomeDir = getModuleParameter(Parameter.IRODS_HOME_DIRECTORY, false);
-		String irodsZone = getModuleParameter(Parameter.IRODS_ZONE, false);
-		String irodsDefaultStorageResource = getModuleParameter(Parameter.IRODS_DEFAULT_RESOURCE, false);
-		this.account = new IRODSAccount(irodsHost, irodsPort, irodsUsername, irodsPassword, irodsHomeDir, irodsZone,
-				irodsDefaultStorageResource);
-		try {
-			this.irodsReadBufferSize = Integer.parseInt(getModuleParameter(Parameter.IRODS_READ_BUFFER_SIZE, false));
-			if (this.irodsReadBufferSize < 1) {
-				throw new ModuleInitializationException("Parameter, \"" + Parameter.IRODS_READ_BUFFER_SIZE
-						+ "\" must be greater than 0", getRole());
-			}
-			String irodsSocketTimeout = getModuleParameter(Parameter.IRODS_SOCKET_TIMEOUT, false);
-		} catch (NumberFormatException e) {
-			throw new ModuleInitializationException("Cannot parse irods read buffer size "+ e.getMessage(), getRole());
-		}
-		int irodsSocketTimeout;
-		try {
-			irodsSocketTimeout = Integer.parseInt(getModuleParameter(Parameter.IRODS_SOCKET_TIMEOUT, false));
-			if (irodsSocketTimeout < 0) {
-				throw new ModuleInitializationException("Parameter, \"" + Parameter.IRODS_SOCKET_TIMEOUT
-						+ "\" cannot be negative", getRole());
-			}
-		} catch (NumberFormatException e) {
-			throw new ModuleInitializationException("Cannot configure irods socket timeout "+ e.getMessage(), getRole());
-		}
-		LOG.debug("irodsHost=" + irodsHost);
-		LOG.debug("irodsPort=" + irodsPort);
-		LOG.debug("irodsUsername=" + irodsUsername);
-		LOG.debug("irodsPassword=" + irodsPassword);
-		LOG.debug("irodsHomeDir=" + irodsHomeDir);
-		LOG.debug("irodsZone=" + irodsZone);
-		LOG.debug("irodsDefaultStorageResource=" + irodsDefaultStorageResource);
-
-		String objectStoreBase = getModuleParameter(Parameter.OBJECT_STORE_BASE, true);
-		String datastreamStoreBase = getModuleParameter(Parameter.DATASTREAM_STORE_BASE, true);
-
-		// parameter required by DBPathRegistry
-		String backslashIsEscape = getModuleParameter(Parameter.BACKSLASH_IS_ESCAPE, false).toLowerCase();
-		if (backslashIsEscape.equals("true") || backslashIsEscape.equals("false")) {
-		} else {
-			throw new ModuleInitializationException("backslash_is_escape parameter must be either true or false",
-					getRole());
-		}
-
 		// get connectionPool from ConnectionPoolManager
 		ConnectionPoolManager cpm = (ConnectionPoolManager) getServer().getModule(
 				"org.fcrepo.server.storage.ConnectionPoolManager");
@@ -185,48 +154,27 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 			throw new ModuleInitializationException("Could not create IRODSFileSystem: " + e.getLocalizedMessage(),
 					getRole());
 		}
-
-		// build up base config map for DBPathRegistry and PathAlgorithm
-		Map configuration = new HashMap();
-		configuration.put("connectionPool", this.connectionPool);
-		configuration.put("backslashIsEscape", backslashIsEscape);
-
-		Map<String, Object> objConfig = new HashMap<String, Object>();
-		objConfig.putAll(configuration);
-		objConfig.put(REGISTRY_NAME, OBJECT_REGISTRY_TABLE);
-		objConfig.put("storeBase", objectStoreBase);
-		objConfig.put("storeBases", new String[] { objectStoreBase });
-		objectStore = makeStore(objConfig);
-
-		Map<String, Object> dsConfig = new HashMap<String, Object>();
-		dsConfig.putAll(configuration);
-		dsConfig.put(REGISTRY_NAME, DATASTREAM_REGISTRY_TABLE);
-		dsConfig.put("storeBase", datastreamStoreBase);
-		dsConfig.put("storeBases", new String[] { datastreamStoreBase });
-		datastreamStore = makeStore(dsConfig);
+		objectStore = makeStore(objectStoreBase, OBJECT_REGISTRY_TABLE);
+		datastreamStore = makeStore(datastreamStoreBase, DATASTREAM_REGISTRY_TABLE);
 	}
 
-	private IrodsFileStore makeStore(Map configuration) throws ModuleInitializationException {
+	private IrodsFileStore makeStore(String storeBase, String registryTable) throws ModuleInitializationException {
 		IrodsFileStore result = null;
 		try {
 			IrodsIFileSystem filesystem = new IrodsIFileSystem(irodsReadBufferSize, irodsFileSystem, account);
-			IrodsDBPathRegistry pathRegistry = new IrodsDBPathRegistry(irodsFileSystem, account, configuration);
-			TimestampPathAlgorithm pathAlgorithm = new TimestampPathAlgorithm(configuration);
+			Map<String, Object> dsConfig = new HashMap<String, Object>();
+			dsConfig.put(REGISTRY_NAME, registryTable);
+			dsConfig.put("storeBase", storeBase);
+			dsConfig.put("storeBases", new String[] { storeBase });
+			dsConfig.put("connectionPool", connectionPool);
+			dsConfig.put("backslashIsEscape", "true");
+			IrodsDBPathRegistry pathRegistry = new IrodsDBPathRegistry(irodsFileSystem, account, dsConfig);
+			TimestampPathAlgorithm pathAlgorithm = new TimestampPathAlgorithm(storeBase);
 			result = new IrodsFileStore(pathAlgorithm, pathRegistry, filesystem);
 		} catch (LowlevelStorageException e) {
 			throw new ModuleInitializationException(e.getMessage(), getRole());
 		}
 		return result;
-	}
-
-	protected String getModuleParameter(Parameter parameter, boolean parameterAsAbsolutePath)
-			throws ModuleInitializationException {
-		String parameterValue = getParameter(parameter.toString(), parameterAsAbsolutePath);
-
-		if (parameterValue == null) {
-			throw new ModuleInitializationException(parameter + " parameter must be specified", getRole());
-		}
-		return parameterValue;
 	}
 
 	public void addObject(String pid, InputStream content, Map<String, String> hints) throws LowlevelStorageException {

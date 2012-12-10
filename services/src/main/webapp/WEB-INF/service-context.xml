@@ -73,16 +73,9 @@
 		<property name="accessClient" ref="accessClient"/>
 		<property name="managementClient" ref="managementClient"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="accessControlUtils" ref="accessControlUtils"/>
 		<property name="maxThreads" value="${fedoraDataService.maxThreads}"/>
 		<property name="threadGroupPrefix" value="Services"/>
 		<property name="serviceTimeout" value="12000" />
-	</bean>
-	
-	<bean id="accessControlUtils" class="edu.unc.lib.dl.fedora.AccessControlUtils" init-method="init">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="cacheDepth" value="${access.cache.depth}"/>
-		<property name="cacheLimit" value="${access.cache.limit}"/>
 	</bean>
 
 	<bean id="irodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">

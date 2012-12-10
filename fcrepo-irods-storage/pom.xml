@@ -119,5 +119,10 @@
 			<artifactId>metadata</artifactId>
 			<version>${cdr.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-catalina</artifactId>
+			<version>7.0.22</version>
+		</dependency>
 	</dependencies>
 </project>
