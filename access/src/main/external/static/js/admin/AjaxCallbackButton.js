@@ -26,11 +26,14 @@
 			workLabel: undefined,
 			workPath: "",
 			workDone: undefined,
+			workDoneTarget: undefined,
 			followup: undefined,
+			followupTarget: undefined,
 			followupPath: "",
 			followupLabel: undefined,
 			followupFrequency: 1000,
 			complete: this.defaultComplete,
+			completeTarget: undefined,
 			parentElement: undefined,
 			animateSpeed: 80,
 			confirm: false,
@@ -42,6 +45,12 @@
 				this.options.defaultLabel = this.element.text();
 			if (!this.options.workLabel)
 				this.options.workLabel = this.element.text();
+			if (this.options.workDoneTarget == undefined)
+				this.options.workDoneTarget = this;
+			if (this.options.completeTarget == undefined)
+				this.options.completeTarget = this;
+			if (this.options.followupTarget == undefined)
+				this.options.followupTarget = this;
 			
 			this.followupId = null;
 			if (this.options.pid instanceof PID)
@@ -97,23 +106,23 @@
 		doWork: function() {
 			this.element.text(this.options.workLabel);
 			this.disable();
-			if (this.options.parentElement)
-				this.options.parentElement.addClass("working", "fast");
+			if (this.options.parentObject) 
+				this.options.parentObject.setState("working");
 			var op = this;
 			$.getJSON(this.workURL, function(data) {
 				if (op.options.followup) {
 					if (op.options.workDone) {
-						var workSuccessful = op.options.workDone.call(op, data);
+						var workSuccessful = op.options.workDone.call(op.options.workDoneTarget, data);
 						if (!workSuccessful)
 							return;
 					}
-					if (op.options.parentElement) 
-						op.options.parentElement.switchClass("working", "followup", op.options.animateSpeed);
+					if (op.options.parentObject) 
+						op.options.parentObject.setState("followup");
 					op.followupPing();
 				} else {
-					if (op.options.parentElement)
-						op.options.parentElement.removeClass("working", op.options.animateSpeed);
-					op.options.complete.call(op, data);
+					if (op.options.parentObject) 
+						op.options.parentObject.setState("idle");
+					op.options.complete.call(op.options.completeTarget, data);
 					op.enable();
 				}
 			});
@@ -153,17 +162,17 @@
 				this.element.text(this.options.followupLabel);
 			}
 			$.getJSON(this.followupURL, function(data) {
-				var isDone = op.options.followup.call(op, data);
+				var isDone = op.options.followup.call(op.options.followupTarget, data);
 				if (isDone) {
 					if (op.followupId != null) {
 						clearInterval(op.followupId);
 						op.followupId = null;
 					}
-					if (op.options.parentElement) {
-						op.options.parentElement.removeClass("followup", op.options.animateSpeed);
+					if (op.options.parentObject) {
+						op.options.parentObject.setState("idle");
 					}
 					op.enable();
-					op.options.complete.call(op, data);
+					op.options.complete.call(op.options.completeTarget, data);
 				} else if (op.followupId == null) {
 					op.followupId = setInterval($.proxy(op.followupPing, op), op.options.followupFrequency);
 				}

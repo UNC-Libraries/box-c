@@ -18,7 +18,7 @@
 (function($) {
 	$.widget("cdr.resultObject", {
 		options : {
-			animateSpeed : 80,
+			animateSpeed : 100,
 			metadata : null,
 			selected : false,
 			selectable : true,
@@ -42,14 +42,17 @@
 				this.checkbox = this.element.find("input[type='checkbox']");
 				if (this.checkbox) {
 					this.checkbox = $(this.checkbox[0]).click(function(event) {
-						$.proxy(obj.toggleSelect(), obj);
+						$.proxy(obj.toggleSelect, obj);
 						event.stopPropagation();
 					}).prop("checked", obj.options.selectCheckboxInitialState);
 				}
-				this.element.click($.proxy(obj.toggleSelect(), obj)).find('a').click(function(event) {
+				this.element.click($.proxy(obj.toggleSelect, obj)).find('a').click(function(event) {
 					event.stopPropagation();
 				});
 			}
+			
+			this.initializePublishLinks();
+			this.initializeDeleteLinks();
 		},
 		
 		initializePublishLinks: function() {
@@ -57,49 +60,22 @@
 			if (!links)
 				return;
 			
-			links.ajaxCallbackButton({
+			var obj = this;
+			$(links).publishObjectButton({
 				pid: obj.pid,
 				parentObject: obj,
-				defaultPublish: $.inArray("Unpublished", this.metadata.status) != -1
+				defaultPublish: $.inArray("Unpublished", this.metadata.data.status) == -1
 			});
 		},
 		
 		initializeDeleteLinks: function() {
+			var links = this.element.find(".delete_link");
+			if (!links)
+				return;
 			var obj = this;
-			
-			function deleteFollowup(data) {
-				if (data == null) {
-					return true;
-				}
-				return false;
-			}
-
-			function deleteComplete() {
-				obj.deleteObject();
-				this.destroy();
-			}
-
-			function deleteWorkDone(data) {
-				if (data == null) {
-					alert("Unable to delete object " + this.pid.pid);
-					return false;
-				}
-				this.completeTimestamp = data.timestamp;
-				return true;
-			}
-			
-			this.element.find(".delete_link").ajaxCallbackButton({
+			$(links).deleteObjectButton({
 				pid: obj.pid,
-				workLabel: "Deleting...",
-				workPath: "delete/{idPath}",
-				workDone: deleteWorkDone,
-				followupLabel: "Cleaning up...",
-				followupPath: "services/rest/item/{idPath}/solrRecord/lastIndexed",
-				followup: deleteFollowup,
-				complete: deleteComplete,
-				parentObject: obj,
-				confirm: true,
-				confirmMessage: "Delete this object?"
+				parentObject: obj 
 			});
 		},
 
@@ -134,25 +110,40 @@
 				this.checkbox.prop("checked", false);
 			}
 		},
+		
+		setState : function(state) {
+			if ("idle" == state) {
+				this.element.removeClass("followup working").addClass("idle");
+				//this.element.switchClass("followup working", "idle", this.options.animateSpeed);
+			} else if ("working" == state) {
+				this.element.switchClass("idle followup", "working", this.options.animateSpeed);
+			} else if ("followup" == state) {
+				this.element.removeClass("idle").addClass("followup", this.options.animateSpeed);
+			}
+		},
 
 		publish : function() {
-			this.metadata.publish();
-			if (!$.inArray("Parent Unpublished", this.metadata.data.status)) {
-				this.element.switchClass("unpublished", "published", op.options.animateSpeed);
+			var obj = this;
+			obj.metadata.publish();
+			if ($.inArray("Parent Unpublished", obj.metadata.data.status) == -1) {
+				obj.element.switchClass("unpublished", "published", obj.options.animateSpeed);
 			}
+			this.element.find(":cdr-publishObjectButton").publishObjectButton("publishedState");
 		},
 
 		unpublish : function() {
-			this.metadata.unpublish();
-			if (!$.inArray("Parent Unpublished", this.metadata.data.status)) {
-				this.element.switchClass("published", "unpublished", op.options.animateSpeed);
+			var obj = this;
+			obj.metadata.unpublish();
+			if ($.inArray("Parent Unpublished", obj.metadata.data.status) == -1) {
+				obj.element.switchClass("published", "unpublished", obj.options.animateSpeed);
 			}
+			this.element.find(":cdr-publishObjectButton").publishObjectButton("unpublishedState");
 		},
 
 		deleteObject : function() {
-			var element = this.element;
-			this.element.hide(op.options.animateSpeed, function() {
-				element.remove();
+			var obj = this;
+			obj.element.hide(obj.options.animateSpeed, function() {
+				obj.element.remove();
 			});
 		}
 	});

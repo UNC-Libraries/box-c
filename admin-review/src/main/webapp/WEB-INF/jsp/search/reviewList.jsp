@@ -1,9 +1,12 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
-<script type="text/javascript" src="/static/js/admin/MetadataObject.js"></script>
-<script type="text/javascript" src="/static/js/admin/ResultObject.js"></script>
-<script type="text/javascript" src="/static/js/admin/AjaxCallbackButton.js"></script>
 <script type="text/javascript" src="/static/js/admin/PID.js"></script>
+<script type="text/javascript" src="/static/js/admin/MetadataObject.js"></script>
+<script type="text/javascript" src="/static/js/admin/AjaxCallbackButton.js"></script>
+<script type="text/javascript" src="/static/js/admin/PublishObjectButton.js"></script>
+<script type="text/javascript" src="/static/js/admin/DeleteObjectButton.js"></script>
+<script type="text/javascript" src="/static/js/admin/ResultObject.js"></script>
+
 <script>
 $(function() {
 	var resultObjects = ${cdr:objectToJSON(resultResponse.resultList)};
@@ -20,7 +23,7 @@ $(function() {
 	
 	$.each(resultObjects, function(){
 		var metadata = this;
-		var parentEl = $("#entry_" + metadata.replace(":", "\\:"));
+		var parentEl = $("#entry_" + metadata.id.replace(":", "\\:"));
 		parentEl.resultObject({"metadata" : metadata});
 	});
 	

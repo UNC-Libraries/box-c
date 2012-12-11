@@ -1,18 +1,21 @@
 (function($) {
-	$.widget("cdr.publishButton", $.cdr.ajaxCallbackButton, {
+	$.widget("cdr.publishObjectButton", $.cdr.ajaxCallbackButton, {
 		options : {
 			defaultPublish: false,
-			workDone: this.publishWorkDone,
-			followup: this.publishFollowup
+			followupPath: "services/rest/item/{idPath}/solrRecord/lastIndexed"
 		},
 		
 		_create: function() {
-			$.cdr.ajaxCallbackButton.prototype._create.apply(this, arguements);
+			$.cdr.ajaxCallbackButton.prototype._create.apply(this, arguments);
+			
+			this.options.workDone = this.publishWorkDone;
+			this.options.followup = this.publishFollowup;
+			this.options.completeTarget = this.options.parentObject;
 			
 			if (this.options.defaultPublish) {
-				this.publishState();
+				this.publishedState();
 			} else {
-				this.unpublishState();
+				this.unpublishedState();
 			}
 		},
 
@@ -23,18 +26,18 @@
 			return false;
 		},
 
-		publishState : function() {
+		publishedState : function() {
 			this.element.text("Unpublish");
 			this.setWorkURL("services/rest/edit/unpublish/{idPath}");
-			this.options.complete = this.options.parentObject.publish;
+			this.options.complete = this.options.parentObject.unpublish;
 			this.options.workLabel = "Unpublishing...";
 			this.options.followupLabel = "Unpublishing....";
 		},
 
-		unpublishState : function() {
+		unpublishedState : function() {
 			this.element.text("Publish");
 			this.setWorkURL("services/rest/edit/publish/{idPath}");
-			this.options.complete = this.options.parentObject.unpublish;
+			this.options.complete = this.options.parentObject.publish;
 			this.options.workLabel = "Publishing...";
 			this.options.followupLabel = "Publishing....";
 		},
@@ -48,4 +51,4 @@
 			return true;
 		}
 	});
-});
+})(jQuery);

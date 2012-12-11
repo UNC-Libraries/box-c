@@ -18,7 +18,7 @@ $.extend(MetadataObject.prototype, {
 	},
 	
 	publish: function () {
-		if (!$.isArray(this.metadata.status)){
+		if (!$.isArray(this.data.status)){
 			this.data.status = [];
 		} else {
 			this.data.status.splice($.inArray("Unpublished", this.data.status), 1);
