@@ -49,24 +49,26 @@ public class ForwardedGroupsToFedoraRolesFilter implements Filter {
 
 	private String header = null;
 	private String separator = null;
+	private String separatorQuoted = null;
 
-	@Override
-	public void init(FilterConfig filterConfig) throws ServletException {
-		this.header = filterConfig.getInitParameter("header");
-		if (this.header == null || this.header.trim().length() == 0) {
-			String msg = "The parameter 'header' must be supplied with a single header name.";
-			LOG.error(msg);
-		}
-		this.separator = filterConfig.getInitParameter("separator");
-		if (this.separator == null || this.separator.trim().length() == 0) {
-			String msg = "The parameter 'separator' must be supplied.";
-			LOG.error(msg);
-		} else {
-			this.separator = java.util.regex.Pattern.quote(this.separator);
-		}
-		if (this.header == null || this.separator == null) {
-			throw new ServletException("Filter is missing one of the init parameters: header, separator");
-		}
+	public String getHeader() {
+		return header;
+	}
+
+	public void setHeader(String header) {
+		this.header = header;
+	}
+
+	public String getSeparator() {
+		return separator;
+	}
+
+	public void setSeparator(String separator) {
+		this.separator = separator;
+	}
+
+	public void init() throws ServletException {
+		this.separatorQuoted = java.util.regex.Pattern.quote(this.separator);
 	}
 
 	@Override
@@ -81,7 +83,7 @@ public class ForwardedGroupsToFedoraRolesFilter implements Filter {
 
 		// TODO what if the groups header is NULL!!!  make sure public is set regardless.
 		if (groups != null) {
-			for (String cdrRole : groups.split(this.separator)) {
+			for (String cdrRole : groups.split(this.separatorQuoted)) {
 				forwardedRoles.add(cdrRole);
 			}
 		}
@@ -129,6 +131,12 @@ public class ForwardedGroupsToFedoraRolesFilter implements Filter {
 	@Override
 	public void destroy() {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void init(FilterConfig filterConfig) throws ServletException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

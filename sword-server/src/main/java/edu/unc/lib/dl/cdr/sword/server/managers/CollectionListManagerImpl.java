@@ -31,8 +31,8 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
-import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -84,7 +84,7 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 		}
 
 		// Verify access control
-		if (!hasAccess(auth, containerPID, AccessControlRole.metadataOnlyPatron, configImpl)) {
+		if (!hasAccess(auth, containerPID, Permission.viewDescription, configImpl)) {
 			throw new SwordAuthException("Insufficient privileges to view the collection list for "
 					+ containerPID.getPid());
 		}
@@ -116,7 +116,7 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 			PID childPID = new PID((String) ((Map<?, ?>) binding.get("pid")).get("value"));
 			String slug = (String) ((Map<?, ?>) binding.get("slug")).get("value");
 
-			if (hasAccess(auth, childPID, AccessControlRole.metadataOnlyPatron, config)) {
+			if (hasAccess(auth, childPID, Permission.viewDescription, config)) {
 				Entry entry = feed.addEntry();
 				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + childPID.getPid()
 						+ ".atom", "edit");

@@ -233,7 +233,7 @@ public class RepositoryInitializer implements Runnable {
 		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(pid.getPid());
 		FOXMLJDOMUtil.setProperty(foxml, FOXMLJDOMUtil.ObjectProperty.label, "Repository Folder");
 
-		PremisEventLogger logger = new PremisEventLogger(AgentManager.getRepositorySoftwareAgentStub());
+		PremisEventLogger logger = new PremisEventLogger(AgentManager.getRepositorySoftwareAgentStub().getName());
 		logger.logEvent(PremisEventLogger.Type.CREATION, "Created repository root container.", pid);
 
 		// upload the MD_EVENTS datastream

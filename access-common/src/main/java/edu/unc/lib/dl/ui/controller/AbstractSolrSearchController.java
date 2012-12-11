@@ -22,8 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.security.access.AccessBaseController;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -38,7 +38,7 @@ import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
  * Abstract base class for controllers which interact with solr services.
  * @author bbpennel
  */
-public abstract class AbstractSolrSearchController extends AccessBaseController {
+public abstract class AbstractSolrSearchController {
 	private final Logger LOG = LoggerFactory.getLogger(AbstractSolrSearchController.class);
 	
 	@Autowired(required=true)
@@ -73,7 +73,7 @@ public abstract class AbstractSolrSearchController extends AccessBaseController 
 		//Get user access groups.  Fill this in later, for now just set to public
 		HttpSession session = request.getSession();
 		//Get the access group list
-		AccessGroupSet accessGroups = getUserAccessGroups(request);
+		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 		searchRequest.setAccessGroups(accessGroups);
 		
 		//Retrieve the last search state

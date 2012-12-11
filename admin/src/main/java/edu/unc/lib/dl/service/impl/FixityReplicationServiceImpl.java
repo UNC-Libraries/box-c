@@ -76,7 +76,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 		return request;
 	}
 
-	private String processLogFile(LogType id, String logFile, Agent agent) {
+	private String processLogFile(LogType id, String logFile, String agent) {
 		String error = null;
 
 		try {
@@ -109,7 +109,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 		return error;
 	}
 
-	private String goodReplication(BufferedReader br, Agent agent) {
+	private String goodReplication(BufferedReader br, String agent) {
 		String error = null;
 
 		String strLine = null;
@@ -167,7 +167,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 		return error;
 	}
 
-	private String badReplication(BufferedReader br, Agent agent) {
+	private String badReplication(BufferedReader br, String agent) {
 		String error = null;
 
 		try {
@@ -232,7 +232,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 		return error;
 	}
 
-	private String goodFixity(BufferedReader br, Agent agent) {
+	private String goodFixity(BufferedReader br, String agent) {
 		String error = null;
 
 		try {
@@ -292,7 +292,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 		return error;
 	}
 
-	private String badFixity(BufferedReader br, Agent agent) {
+	private String badFixity(BufferedReader br, String agent) {
 		String error = null;
 
 		try {
@@ -428,7 +428,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 		@Override
 		public void run() {
 
-			Agent agent = agentManager.findPersonByOnyen(request.getAdminOnyen(), true);
+			String agent = request.getAdminOnyen();
 
 			if (notNull(request.getGoodReplicationFileName()))
 				processLogFile(LogType.GOOD_REPLICATION, request.getGoodReplicationFileName(), agent);

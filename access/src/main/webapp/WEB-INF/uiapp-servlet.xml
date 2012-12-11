@@ -48,7 +48,7 @@
 
 	<!-- Utils -->
 
-	<bean id="accessGroupConstants" class="edu.unc.lib.dl.security.access.AccessGroupConstants">
+	<bean id="accessGroupConstants" class="edu.unc.lib.dl.acl.util.AccessGroupConstants">
 		<property name="ADMIN_GROUP" value="${access.group.admin}"/>
 	</bean>
 
@@ -155,11 +155,6 @@
 		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
 	<bean
 		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
-		<property name="interceptors">
-			<list>
-				<bean class="edu.unc.lib.dl.fedora.GroupsToThreadStoreInterceptor"/>
-			</list>
-		</property>
 	</bean>
 	<context:component-scan base-package="edu.unc.lib.dl.ui.controller" />
 

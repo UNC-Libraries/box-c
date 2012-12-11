@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
+import org.apache.abdera.Abdera;
+import org.apache.abdera.writer.Writer;
 import org.apache.log4j.Logger;
 import org.jdom.JDOMException;
 import org.swordapp.server.AuthCredentials;
@@ -26,10 +28,10 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
-import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
@@ -61,16 +63,9 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			throw new SwordServerException("No collection URI was provided");
 
 		Agent depositor = agentFactory.findPersonByOnyen(auth.getUsername(), false);
-		if (depositor == null) {
-			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, "
-					+ auth.getUsername());
-		}
 		Agent owner = null;
 		if (auth.getOnBehalfOf() != null) {
 			owner = agentFactory.findPersonByOnyen(auth.getOnBehalfOf(), false);
-			if (owner == null) {
-				throw new SwordAuthException("Unable to find a user matching OnBehalfOf, " + auth.getOnBehalfOf());
-			}
 		} else {
 			owner = depositor;
 		}
@@ -79,7 +74,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 
 		PID containerPID = extractPID(collectionURI, SwordConfigurationImpl.COLLECTION_PATH + "/");
 
-		if (!hasAccess(auth, containerPID, AccessControlRole.curator, configImpl)) {
+		if (!hasAccess(auth, containerPID, Permission.addRemoveContents, configImpl)) {
 			throw new SwordAuthException("Insufficient privileges to deposit to container " + containerPID.getPid());
 		}
 
@@ -145,6 +140,12 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			throw new SwordError("No AtomPub entry was included in the submission");
 
 		AtomPubEntrySIP sip = new AtomPubEntrySIP(containerPID, deposit.getSwordEntry().getEntry());
+		if (log.isDebugEnabled()) {
+			Abdera abdera = new Abdera();
+			Writer writer = abdera.getWriterFactory().getWriter("prettyxml");
+			writer.writeTo(deposit.getSwordEntry().getEntry(), System.out);
+		}
+		
 		if (deposit.getFile() == null) {
 			sip = new AtomPubEntrySIP(containerPID, deposit.getSwordEntry().getEntry());
 		} else {

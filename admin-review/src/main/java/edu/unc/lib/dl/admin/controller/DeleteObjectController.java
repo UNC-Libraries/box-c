@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.unc.lib.dl.fedora.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
 @Controller
@@ -50,8 +51,7 @@ public class DeleteObjectController {
 		client.getParams().setAuthenticationPreemptive(true);
 		method = new DeleteMethod(dataUrl);
 		// Pass the users groups along with the request
-		String groups = GroupsThreadStore.getGroups();
-		method.addRequestHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER, groups);
+		method.addRequestHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER, GroupsThreadStore.getGroupString());
 
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("pid", pid);

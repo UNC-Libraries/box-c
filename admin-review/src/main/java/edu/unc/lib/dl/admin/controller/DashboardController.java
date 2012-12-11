@@ -8,10 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
 
 @Controller
 @RequestMapping(value = {"/", ""})
@@ -22,7 +23,7 @@ public class DashboardController extends AbstractSolrSearchController {
 		SearchState collectionsState = this.searchStateFactory.createSearchState();
 		collectionsState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
 		
-		AccessGroupSet accessGroups = getUserAccessGroups(request);
+		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 		SearchRequest searchRequest = new SearchRequest();
 		searchRequest.setAccessGroups(accessGroups);
 		searchRequest.setSearchState(collectionsState);

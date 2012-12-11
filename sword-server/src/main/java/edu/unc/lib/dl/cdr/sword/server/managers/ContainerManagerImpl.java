@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
-import java.util.List;
 import java.util.Map;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.log4j.Logger;
@@ -28,11 +27,11 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
-import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -61,14 +60,10 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		PID targetPID = extractPID(editIRI, SwordConfigurationImpl.EDIT_PATH + "/");
 
 		PersonAgent depositor = agentFactory.findPersonByOnyen(auth.getUsername(), false);
-		if (depositor == null) {
-			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, "
-					+ auth.getUsername());
-		}
 
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
-
-		if (!hasAccess(auth, targetPID, AccessControlRole.curator, configImpl)) {
+		
+		if (!hasAccess(auth, targetPID, Permission.editDescription, configImpl)) {
 			throw new SwordAuthException("Insufficient privileges to update metadata for " + targetPID.getPid());
 		}
 
@@ -153,7 +148,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		PID targetPID = extractPID(editIRI, SwordConfigurationImpl.EDIT_PATH + "/");
 
-		if (!hasAccess(auth, targetPID, AccessControlRole.curator, configImpl)) {
+		if (!hasAccess(auth, targetPID, Permission.moveToTrash, configImpl)) {
 			log.debug("Insufficient privileges to delete object " + targetPID.getPid());
 			throw new SwordAuthException("Insufficient privileges to delete object " + targetPID.getPid());
 		}
@@ -181,9 +176,8 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		receipt.setLocation(new IRI(editIRI));
 
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
-		List<String> groupList = this.getGroups(auth, configImpl);
 
-		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.curator.getUri().toString())) {
+		if (!hasAccess(auth, targetPID, Permission.editAccessControl, configImpl)) {
 			throw new SwordAuthException("Insufficient privileges to update object headers " + targetPID.getPid());
 		}
 
@@ -213,15 +207,8 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		PID targetPID = extractPID(editIRIString, SwordConfigurationImpl.EDIT_PATH + "/");
 
 		SwordConfigurationImpl config = (SwordConfigurationImpl) configBase;
-
-		Agent user = agentFactory.findPersonByOnyen(auth.getUsername(), false);
-		if (user == null) {
-			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, "
-					+ auth.getUsername());
-		}
-
-		List<String> groupList = this.getGroups(auth, config);
-		if (!accessControlUtils.hasAccess(targetPID, groupList, AccessControlRole.patron.getUri().toString())) {
+		
+		if (!hasAccess(auth, targetPID, Permission.viewDescription, config)) {
 			throw new SwordAuthException("Insufficient privileges to get deposit receipt " + targetPID.getPid());
 		}
 

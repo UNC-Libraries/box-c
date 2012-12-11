@@ -1,8 +1,8 @@
 package edu.unc.lib.dl.search.solr.model;
 
-import edu.unc.lib.dl.fedora.AccessControlCategory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 
 public class Datastream {
 	private PID owner;
@@ -133,7 +133,7 @@ public class Datastream {
 		this.filesize = filesize;
 	}
 
-	public AccessControlCategory getAccessControlCategory() {
+	public DatastreamCategory getDatastreamCategory() {
 		if (datastreamClass == null) {
 			this.datastreamClass = ContentModelHelper.Datastream.getDatastream(this.name);
 		}
@@ -142,6 +142,6 @@ public class Datastream {
 			return null;
 		}
 		System.out.println("Datastream class for " + this.name);
-		return null;//return datastreamClass.getCategory();
+		return datastreamClass.getCategory();
 	}
 }

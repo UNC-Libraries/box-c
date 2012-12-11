@@ -28,12 +28,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.unc.lib.dl.fedora.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -66,7 +66,7 @@ public class MODSController extends AbstractSolrSearchController {
 			HttpServletRequest request) {
 
 		String pid = idPrefix + ":" + id;
-		AccessGroupSet accessGroups = getUserAccessGroups(request);
+		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
 		// Retrieve the record for the container being reviewed
 		SimpleIdRequest objectRequest = new SimpleIdRequest(pid, accessGroups);
@@ -100,8 +100,8 @@ public class MODSController extends AbstractSolrSearchController {
 		GetMethod method = new GetMethod(dataUrl);
 
 		// Pass the users groups along with the request
-		String groups = GroupsThreadStore.getGroups();
-		method.addRequestHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER, groups);
+		AccessGroupSet groups = GroupsThreadStore.getGroups();
+		method.addRequestHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER, groups.joinAccessGroups(";"));
 
 		try {
 			client.executeMethod(method);
@@ -168,8 +168,7 @@ public class MODSController extends AbstractSolrSearchController {
 			client.getParams().setAuthenticationPreemptive(true);
 			method = new PutMethod(dataUrl);
 			// Pass the users groups along with the request
-			String groups = GroupsThreadStore.getGroups();
-			method.addRequestHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER, groups);
+			method.addRequestHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER, GroupsThreadStore.getGroupString());
 
 			Header header = new Header("Content-Type", "application/atom+xml");
 			method.setRequestHeader(header);

@@ -36,6 +36,8 @@ import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.IRODSGenQueryExecutor;
+import org.irods.jargon.core.pub.domain.AvuData;
+import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileOutputStream;
 import org.irods.jargon.core.pub.io.SessionClosingIRODSFileInputStream;
@@ -221,6 +223,16 @@ public class IrodsIFileSystem {
 				} catch (JargonException ignored) {
 				}
 			}
+		}
+	}
+	
+	public void setStorageLevel(File file, String level) throws LowlevelStorageException {
+		try {
+			DataObjectAO doao = irodsFileSystem.getIRODSAccessObjectFactory().getDataObjectAO(account);
+			AvuData avu = new AvuData(IrodsLowlevelStorageModule.STORAGE_LEVEL_HINT, level.trim(), null);
+			doao.modifyAvuValueBasedOnGivenAttributeAndUnit(file.getPath(), avu);
+		} catch(JargonException e) {
+			throw new LowlevelStorageException(true, "Failed to set storage level metadata", e);
 		}
 	}
 

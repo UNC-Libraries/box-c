@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.output.XMLOutputter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +40,6 @@ public class FedoraDataServiceTest extends Assert {
 	private AccessClient accessClient;
 	private ManagementClient managementClient;
 	private TripleStoreQueryService tripleStoreQueryService;
-	private AccessControlUtils accessControlUtils;
 
 	@Before
 	public void setup(){
@@ -47,12 +47,10 @@ public class FedoraDataServiceTest extends Assert {
 		accessClient = mock(AccessClient.class);
 		managementClient = mock(ManagementClient.class);
 		tripleStoreQueryService = mock(TripleStoreQueryService.class);
-		accessControlUtils = mock(AccessControlUtils.class);
 
 		dataService.setAccessClient(accessClient);
 		dataService.setManagementClient(managementClient);
 		dataService.setTripleStoreQueryService(tripleStoreQueryService);
-		dataService.setAccessControlUtils(accessControlUtils);
 		dataService.setMaxThreads(5);
 		dataService.init();
 	}
@@ -113,10 +111,6 @@ public class FedoraDataServiceTest extends Assert {
 		objectXML.addContent(root);
 		when(managementClient.getObjectXML(any(PID.class))).thenReturn(objectXML);
 
-		//Setup GetPermissions
-		Element accessControl = new Element("permissions");
-		when(accessControlUtils.processCdrAccessControl(any(PID.class))).thenReturn(accessControl);
-
 		PID parent = new PID("uuid:collection");
 
 		//Setup getPathInfo
@@ -153,12 +147,11 @@ public class FedoraDataServiceTest extends Assert {
 
 		Document objectView = dataService.getObjectViewXML(pid);
 		assertNotNull(objectView);
-		/*XMLOutputter outputter = new XMLOutputter();;
+		XMLOutputter outputter = new XMLOutputter();
 		System.out.println(outputter.outputString(objectView));
-		System.out.println(objectView.getRootElement().getContentSize());*/
+		System.out.println(objectView.getRootElement().getContentSize());
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(managementClient).getObjectXML(any(PID.class));
-		verify(accessControlUtils).processCdrAccessControl(any(PID.class));
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(tripleStoreQueryService).fetchParentCollection(any(PID.class));
 		assertEquals(objectView.getRootElement().getContentSize(), 5);
@@ -182,7 +175,6 @@ public class FedoraDataServiceTest extends Assert {
 		System.out.println(objectView.getRootElement().getContentSize());*/
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(managementClient).getObjectXML(any(PID.class));
-		verify(accessControlUtils).processCdrAccessControl(any(PID.class));
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(tripleStoreQueryService).fetchParentCollection(any(PID.class));
 		assertEquals(objectView.getRootElement().getContentSize(), 4);
@@ -232,7 +224,6 @@ public class FedoraDataServiceTest extends Assert {
 		assertEquals(objectView.getRootElement().getContentSize(), 3);
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(managementClient).getObjectXML(any(PID.class));
-		verify(accessControlUtils).processCdrAccessControl(any(PID.class));
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(tripleStoreQueryService).fetchParentCollection(any(PID.class));
 	}
@@ -266,7 +257,6 @@ public class FedoraDataServiceTest extends Assert {
 		assertEquals(objectView.getRootElement().getContentSize(), 3);
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(managementClient).getObjectXML(any(PID.class));
-		verify(accessControlUtils).processCdrAccessControl(any(PID.class));
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(tripleStoreQueryService).fetchParentCollection(any(PID.class));
 	}

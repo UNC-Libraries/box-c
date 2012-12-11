@@ -101,20 +101,28 @@
 		<dependency>
 			<groupId>org.fcrepo</groupId>
 			<artifactId>fcrepo-server</artifactId>
-			<version>3.5</version>
-			<type>jar</type>
+			<version>${fcrepo.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-core</artifactId>
-			<version>3.1.1-SNAPSHOT</version>
-			<type>jar</type>
+			<version>3.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.6.0</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>metadata</artifactId>
+			<version>${cdr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-catalina</artifactId>
+			<version>7.0.22</version>
 		</dependency>
 	</dependencies>
 </project>

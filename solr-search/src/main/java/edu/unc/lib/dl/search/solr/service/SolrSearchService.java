@@ -40,6 +40,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
@@ -54,9 +57,6 @@ import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
-import edu.unc.lib.dl.security.access.AccessGroupConstants;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
-import edu.unc.lib.dl.security.access.AccessRestrictionException;
 
 /**
  * Performs CDR specific Solr search tasks, using solrj for connecting to the solr instance.
@@ -207,7 +207,7 @@ public class SolrSearchService {
 			throw new AccessRestrictionException("No access groups were provided.");
 		}
 		if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)) {
-			String joinedGroups = accessGroups.joinAccessGroups(" OR ", true);
+			String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
 			if (searchSettings.getAllowPatronAccess()) {
 				query.append(" AND ((").append("readGroup:(").append(joinedGroups).append(')')
 					.append(" AND status:Published) OR adminGroup:(").append(joinedGroups).append("))");

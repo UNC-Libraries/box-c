@@ -21,8 +21,6 @@ import java.util.Properties;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.unc.lib.dl.security.access.AccessType;
-
 public class AccessControlSettingsTest extends Assert {
 
 	@Test

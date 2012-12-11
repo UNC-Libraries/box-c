@@ -22,6 +22,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 
 /**
@@ -33,8 +34,8 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 public class BrowseDepartmentsController extends AbstractSolrSearchController {
 	
 	@RequestMapping(method = RequestMethod.GET)
-	public String handleRequest(Model model, HttpServletRequest request){
-		SearchResultResponse results = queryLayer.getDepartmentList(this.getUserAccessGroups(request));
+	public String handleRequest(Model model){
+		SearchResultResponse results = queryLayer.getDepartmentList(GroupsThreadStore.getGroups());
 
 		model.addAttribute("departmentFacets", results.getFacetFields().get(0));
 		model.addAttribute("resultType", "departmentBrowse");

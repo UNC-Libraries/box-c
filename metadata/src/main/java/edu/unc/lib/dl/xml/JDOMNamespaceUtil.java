@@ -190,6 +190,11 @@ public class JDOMNamespaceUtil {
      * @see javax.xml.XMLConstants#W3C_XML_SCHEMA_INSTANCE_NS_URI
      */
     public static final Namespace XSI_NS = Namespace.getNamespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+    
+    /**
+     * CDR user roles namespace.
+     */
+    public static final Namespace CDR_ROLE_NS = Namespace.getNamespace(NamespaceConstants.CDR_ROLES_PREFIX, NamespaceConstants.CDR_ROLE_NS_URI);
 
     /**
      * Generates an XPath object from the given query, with the provided namespaces added.

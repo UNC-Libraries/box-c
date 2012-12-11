@@ -143,5 +143,10 @@
 			<version>3.0-alpha-1</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>security</artifactId>
+			<version>${cdr.version}</version>
+		</dependency>
 	</dependencies>
 </project>

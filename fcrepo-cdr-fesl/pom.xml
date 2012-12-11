@@ -1,7 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>edu.unc.lib.cdr</groupId>
 	<artifactId>fcrepo-cdr-fesl</artifactId>
 	<name>CDR Overrides of FeSL</name>
 	<description>Place to put CDR code which replaces FeSL code</description>
@@ -35,10 +34,24 @@
 			<artifactId>commons-logging</artifactId>
 			<version>1.1.1</version>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring</artifactId>
 			<version>2.5.6</version>
+		</dependency> -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ws</groupId>
+			<artifactId>spring-ws-core</artifactId>
+			<version>${spring.ws.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.fcrepo</groupId>
@@ -56,14 +69,14 @@
 		</dependency>
 		<dependency>
 			<groupId>org.fcrepo</groupId>
-			<artifactId>fcrepo</artifactId>
+			<artifactId>fcrepo-security-pdp</artifactId>
 			<version>${fcrepo.version}</version>
-			<type>pom</type>
+			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.fcrepo</groupId>
-			<artifactId>fcrepo-security-pdp</artifactId>
+			<artifactId>fcrepo-security-pep</artifactId>
 			<version>${fcrepo.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
@@ -81,6 +94,11 @@
 			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>fcrepo-clients</artifactId>
+			<version>${cdr.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-servlet-api</artifactId>
 			<version>7.0.21</version>
@@ -95,8 +113,8 @@
 		<dependency>
 			<groupId>org.fcrepo</groupId>
 			<artifactId>sunxacml</artifactId>
-			<version>1.2</version>
 			<classifier>melcoe</classifier>
+			<version>1.2</version>
 		</dependency>
 	</dependencies>
 </project>

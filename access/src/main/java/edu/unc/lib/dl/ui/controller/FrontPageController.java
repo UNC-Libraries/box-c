@@ -24,7 +24,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.ui.model.response.RssFeedBean;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.ui.service.RssParserService;
@@ -45,7 +46,7 @@ public class FrontPageController extends AbstractSolrSearchController {
 		LOG.debug("In front page controller");
 		
 		//Retrieve the list of newly added items
-		AccessGroupSet accessGroups = getUserAccessGroups(request);
+		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 		SearchResultResponse resultResponse = queryLayer.getNewlyAdded(accessGroups);
 		if (resultResponse != null){
 			model.addAttribute("newlyAddedList", resultResponse.getResultList());

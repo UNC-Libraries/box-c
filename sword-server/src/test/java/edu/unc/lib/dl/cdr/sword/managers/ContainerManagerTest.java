@@ -24,18 +24,21 @@ import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordAuthException;
 
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
 import edu.unc.lib.dl.fedora.AccessClient;
-import edu.unc.lib.dl.fedora.AccessControlUtils;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class ContainerManagerTest extends Assert {
@@ -76,8 +79,10 @@ public class ContainerManagerTest extends Assert {
 		AgentFactory agentFactory = mock(AgentFactory.class);
 		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(new PersonAgent("testuser", "testuser"));
 		
-		AccessControlUtils accessControlUtils = mock(AccessControlUtils.class);
-		when(accessControlUtils.hasAccess(any(PID.class), anyCollection(),anyString())).thenReturn(true);
+		AccessControlService aclService = mock(AccessControlService.class);
+		ObjectAccessControlsBean objectACLs = mock(ObjectAccessControlsBean.class);
+		when(objectACLs.hasPermission(any(String[].class), any(Permission.class))).thenReturn(true);
+		when(aclService.getObjectAccessControls(any(PID.class))).thenReturn(objectACLs);
 		
 		AccessClient accessClient = mock(AccessClient.class);
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()), anyString())).thenReturn(mimeStream);
@@ -87,7 +92,7 @@ public class ContainerManagerTest extends Assert {
 		containerManager.setTripleStoreQueryService(tripleStoreQueryService);
 		containerManager.setAccessClient(accessClient);
 		containerManager.setAgentFactory(agentFactory);
-		containerManager.setAccessControlUtils(accessControlUtils);
+		containerManager.setAclService(aclService);
 		
 		String editIRI = "http://localhost"  + SwordConfigurationImpl.EDIT_PATH + "/" + pid.getPid();
 		
@@ -97,22 +102,22 @@ public class ContainerManagerTest extends Assert {
 		
 		assertNotNull(receipt);
 		
+		// Check to make sure that not finding the user's onyen is not the end of the world
 		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(null);
-		
 		try {
 			receipt = containerManager.getEntry(editIRI, null, auth, config);
-			fail();
 		} catch (SwordAuthException e){
-			//pass
+			fail();
 		}
 		
 		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(new PersonAgent("testuser", "testuser"));
-		when(accessControlUtils.hasAccess(any(PID.class), anyCollection(),anyString())).thenReturn(false);
+		when(objectACLs.hasPermission(any(String[].class), any(Permission.class))).thenReturn(false);
 		try {
 			receipt = containerManager.getEntry(editIRI, null, auth, config);
 			fail();
 		} catch (SwordAuthException e){
 			//pass
 		}
+		modsFile.close();
 	}
 }

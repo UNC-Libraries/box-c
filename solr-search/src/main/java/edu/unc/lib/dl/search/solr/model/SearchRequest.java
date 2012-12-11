@@ -17,35 +17,36 @@ package edu.unc.lib.dl.search.solr.model;
 
 import java.io.Serializable;
 
-import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 
 /**
- * Request bean for a brief record search.  Handles basic searches and advanced searches. 
+ * Request bean for a brief record search. Handles basic searches and advanced searches.
+ * 
  * @author bbpennel
  */
 public class SearchRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
-	
+
 	private SearchState searchState;
 	private boolean applyFacetCutoffs;
 	private boolean applyFacetPrefixes;
 	private AccessGroupSet accessGroups;
-	
-	public SearchRequest(){
+
+	public SearchRequest() {
 		searchState = null;
 		accessGroups = null;
 		applyFacetCutoffs = true;
 		applyFacetPrefixes = true;
 	}
-	
-	public SearchRequest(SearchState searchState, AccessGroupSet accessGroups){
+
+	public SearchRequest(SearchState searchState, AccessGroupSet accessGroups) {
 		setSearchState(searchState);
 		setAccessGroups(accessGroups);
 		applyFacetCutoffs = true;
 		applyFacetPrefixes = true;
 	}
-	
-	public SearchRequest(SearchState searchState, AccessGroupSet accessGroups, boolean applyFacetCutoffs){
+
+	public SearchRequest(SearchState searchState, AccessGroupSet accessGroups, boolean applyFacetCutoffs) {
 		setSearchState(searchState);
 		setAccessGroups(accessGroups);
 		this.applyFacetCutoffs = applyFacetCutoffs;

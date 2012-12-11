@@ -20,7 +20,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
@@ -32,7 +33,6 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.ui.service.FullObjectMetadataFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.ui.validator.DatastreamAccessValidator;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 
 import org.jdom.Document;
@@ -65,7 +65,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String handleRequest(Model model, HttpServletRequest request) {
 		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID));
-		AccessGroupSet accessGroups = getUserAccessGroups(request);
+		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 		SimpleIdRequest idRequest = new SimpleIdRequest(id, accessGroups);
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
 		String fullObjectView = null;
@@ -73,8 +73,8 @@ public class FullRecordController extends AbstractSolrSearchController {
 		if (briefObject == null) {
 			throw new InvalidRecordRequestException();
 		} else {
-			// Filter the datastreams in the response according to the users permissions
-			DatastreamAccessValidator.filterBriefObject(briefObject, accessGroups);
+			// TODO Filter the datastreams in the response according to the users permissions
+			//DatastreamAccessValidator.filterBriefObject(briefObject, accessGroups);
 			try {
 				Document foxmlView = FullObjectMetadataFactory.getFoxmlViewXML(idRequest);
 				fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
@@ -161,7 +161,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 			List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
 					searchSettings.maxNeighborResults, accessGroups);
 			for (BriefObjectMetadataBean neighbor : neighbors) {
-				DatastreamAccessValidator.filterBriefObject(neighbor, accessGroups);
+				//DatastreamAccessValidator.filterBriefObject(neighbor, accessGroups);
 			}
 			model.addAttribute("neighborList", neighbors);
 		}

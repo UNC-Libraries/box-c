@@ -21,7 +21,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import edu.unc.lib.dl.security.access.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.ui.util.LookupMappingsSettings;
@@ -42,7 +43,7 @@ public class AdvancedSearchFormController extends AbstractSolrSearchController {
 		//If the user is coming to this servlet without any parameters set then send them to form.
 		if (request.getQueryString() == null || request.getQueryString().length() == 0){
 			//Populate the list of collections for the advanced search page drop down
-			AccessGroupSet accessGroups = getUserAccessGroups(request);
+			AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 			SearchResultResponse resultResponse = queryLayer.getCollectionList(accessGroups);
 			
 			model.addAttribute("collectionList", resultResponse.getResultList());

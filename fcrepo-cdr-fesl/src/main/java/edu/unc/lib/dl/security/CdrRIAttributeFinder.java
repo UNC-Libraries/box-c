@@ -17,15 +17,10 @@ package edu.unc.lib.dl.security;
 
 import java.net.URI;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
-import org.fcrepo.server.security.xacml.MelcoeXacmlException;
-import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderConfigUtil;
 import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderException;
-import org.fcrepo.server.security.xacml.util.AttributeFinderConfig;
-import org.fcrepo.server.security.xacml.util.ContextUtil;
-import org.fcrepo.server.security.xacml.util.RelationshipResolver;
+import org.fcrepo.server.security.xacml.pdp.finder.attribute.DesignatorAttributeFinderModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,147 +30,64 @@ import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.StandardAttributeFactory;
 import com.sun.xacml.cond.EvaluationResult;
-import com.sun.xacml.finder.AttributeFinderModule;
 
-import edu.unc.lib.dl.fedora.AccessControlUtils;
-import edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl;
+import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper;
 
-public class CdrRIAttributeFinder extends AttributeFinderModule {
+public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(CdrRIAttributeFinder.class);
 
+	private static Set<String> myAttributes = new HashSet<String>();
+
+	static {
+		myAttributes.add(UserRole.curator.getURI()
+				.toString());
+		myAttributes.add(ContentModelHelper.CDRProperty.embargo.getURI()
+				.toString());
+		myAttributes.add(UserRole.ingester.getURI()
+				.toString());
+		myAttributes.add(UserRole.observer.getURI()
+				.toString());
+		myAttributes.add(UserRole.patron.getURI()
+				.toString());
+		myAttributes.add(UserRole.metadataPatron.getURI()
+				.toString());
+		myAttributes.add(UserRole.accessCopiesPatron.getURI()
+				.toString());
+		myAttributes.add(UserRole.processor.getURI()
+				.toString());
+		myAttributes.add(ContentModelHelper.CDRProperty.embargo.getURI()
+				.toString());
+		myAttributes.add(ContentModelHelper.CDRProperty.dataAccessCategory.getURI()
+				.toString());
+	}
+
 	private AttributeFactory attributeFactory = null;
-
-	private RelationshipResolver relationshipResolver = null;
-
-	// private Map<Integer, Set<String>> attributes = null;
-	private AttributeFinderConfig attributes = null;
-
-	// Attributes used by the CDR
-	private String[] specialAttributes = {
-			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitMetadataRead",
-			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitOriginalsRead",
-			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitDerivativesRead",
-			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitMetadataCreate",
-			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitMetadataUpdate",
-			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitMetadataDelete",
-			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitOriginalsCreate",
-			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitOriginalsUpdate",
-			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitOriginalsDelete",
-			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitDerivativesCreate",
-			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitDerivativesUpdate",
-			"http://cdr.unc.edu/definitions/1.0/base-model.xml#permitDerivativesDelete" };
 
 	private AccessControlUtils accessControlUtils;
 
 	public CdrRIAttributeFinder() {
-		try {
-			attributes = AttributeFinderConfigUtil
-					.getAttributeFinderConfig(this.getClass().getName());
-			logger.info("Initialised AttributeFinder:"
-					+ this.getClass().getName());
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("registering the following attributes: ");
-				for (int desNum : attributes.getDesignatorIds()) {
-					for (String attrName : attributes.get(desNum)
-							.getAttributeNames()) {
-						logger.debug(desNum + ": " + attrName);
-					}
+		super();
+		attributeFactory = StandardAttributeFactory.getFactory();
+		logger.info("Initialised AttributeFinder:" + this.getClass().getName());
+		if (logger.isDebugEnabled()) {
+			logger.debug("registering the following attributes: ");
+			for (Integer desNum : this.getSupportedDesignatorTypes()) {
+				logger.debug("Designator Type: " + desNum);
+				for (String attrName : m_attributes.get(desNum).keySet()) {
+					logger.debug("\t" + attrName);
 				}
 			}
-
-			Map<String, String> resolverConfig = AttributeFinderConfigUtil
-					.getResolverConfig(this.getClass().getName());
-			if (logger.isDebugEnabled()) {
-				for (String s : resolverConfig.keySet()) {
-					logger.debug(s + ": " + resolverConfig.get(s));
-				}
-			}
-
-			relationshipResolver = ContextUtil.getInstance()
-					.getRelationshipResolver();
-
-			attributeFactory = StandardAttributeFactory.getFactory();
-
-			Map<String, String> options = AttributeFinderConfigUtil
-					.getOptionMap(this.getClass().getName());
-
-			String tripleStorePrefix = options.get("cdr.role.triplestore.prefix");
-
-			logger.debug("loadSettingsFromOptions: tripleStorePrefix: " + tripleStorePrefix);
-
-			// load caching settings and tripleStore
-			String username = options.get("cdr.username");
-			String password = options.get("cdr.password");
-			String itqlEndpointURL = options.get("cdr.itql.endpoint.url");
-			String serverModelUri = options.get("cdr.server.model.uri");
-			int cacheDepth = convertStringToIntOtherwiseReturnZero(options.get("cdr.cache.depth"));
-			int cacheLimit = convertStringToIntOtherwiseReturnZero(options.get("cdr.cache.limit"));
-			int cacheResetTime = convertStringToIntOtherwiseReturnZero(options.get("cdr.cache.reset.time.hours"));
-
-			TripleStoreQueryServiceMulgaraImpl tripleStoreQueryService = new TripleStoreQueryServiceMulgaraImpl();
-			tripleStoreQueryService.setName(username);
-			tripleStoreQueryService.setPass(password);
-			tripleStoreQueryService.setItqlEndpointURL(itqlEndpointURL);
-			tripleStoreQueryService.setServerModelUri(serverModelUri);
-
-			// Load CDR configuration
-			accessControlUtils = new AccessControlUtils();
-			accessControlUtils.setAttributeFactory(attributeFactory);
-			accessControlUtils.setOnlyCacheReadPermissions(false);
-			accessControlUtils.setTripleStoreQueryService(tripleStoreQueryService);
-			accessControlUtils.setCacheDepth(cacheDepth);
-			accessControlUtils.setCacheLimit(cacheLimit);
-			accessControlUtils.setCacheResetTime(cacheResetTime);
-			accessControlUtils.init();
-			accessControlUtils.startCacheCleanupThreadForFedoraBasedAccessControl();
-
-		} catch (AttributeFinderException afe) {
-			logger.error("Attribute finder not initialised:"
-					+ this.getClass().getName(), afe);
 		}
-	}
-
-	private int convertStringToIntOtherwiseReturnZero(String value) {
-		int result = 0;
-
-		try {
-			result = Integer.parseInt(value);
-		} catch (Exception e) {
-			return 0;
-		}
-
-		return result;
-	}
-
-	/**
-	 * Returns true always because this module supports designators.
-	 *
-	 * @return true always
-	 */
-	@Override
-	public boolean isDesignatorSupported() {
-		return true;
-	}
-
-	/**
-	 * Returns a <code>Set</code> with a single <code>Integer</code> specifying
-	 * that environment attributes are supported by this module.
-	 *
-	 * @return a <code>Set</code> with
-	 *         <code>AttributeDesignator.ENVIRONMENT_TARGET</code> included
-	 */
-	@Override
-	public Set<Integer> getSupportedDesignatorTypes() {
-		return attributes.getDesignatorIds();
 	}
 
 	/**
 	 * Used to get an attribute. If one of those values isn't being asked for,
 	 * or if the types are wrong, then an empty bag is returned.
-	 *
+	 * 
 	 * @param attributeType
 	 *            the datatype of the attributes to find, which must be time,
 	 *            date, or dateTime for this module to resolve a value
@@ -191,8 +103,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 	 * @param context
 	 *            the representation of the request data
 	 * @param designatorType
-	 *            the type of designator, which must be ENVIRONMENT_TARGET for
-	 *            this module to resolve a value
+	 *            the type of designator
 	 * @return the result of attribute retrieval, which will be a bag with a
 	 *         single attribute, an empty bag, or an error
 	 */
@@ -201,7 +112,7 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 			URI issuer, URI subjectCategory, EvaluationCtx context,
 			int designatorType) {
 
-		long totalTime = System.currentTimeMillis();
+		long startTime = System.currentTimeMillis();
 
 		String resourceId = context.getResourceId().encode();
 		if (logger.isDebugEnabled()) {
@@ -222,26 +133,8 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 		// figure out which attribute we're looking for
 		String attrName = attributeId.toString();
 
-		// CDR processing; skip other processing if found
-		for (int i = 0; i < specialAttributes.length; i++) {
-			if (specialAttributes[i].equals(attrName)) {
-
-				String temp;
-
-				if (resourceId.startsWith("/")) { // maybe this is always the
-					// case and we should just
-					// get the substring
-					temp = resourceId.substring(1);
-				} else {
-					temp = resourceId;
-				}
-
-				return accessControlUtils.processCdrAccessControl(temp,
-						attrName, attributeType);
-			}
-		}
 		// we only know about registered attributes from config file
-		if (!attributes.getDesignatorIds()
+		if (!getSupportedDesignatorTypes()
 				.contains(new Integer(designatorType))) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Does not know about designatorType: "
@@ -251,8 +144,8 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 					BagAttribute.createEmptyBag(attributeType));
 		}
 
-		Set<String> allowedAttributes = attributes.get(designatorType)
-				.getAttributeNames();
+		Set<String> allowedAttributes = m_attributes.get(designatorType)
+				.keySet();
 		if (!allowedAttributes.contains(attrName)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Does not know about attribute: " + attrName);
@@ -271,14 +164,13 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 					BagAttribute.createEmptyBag(attributeType));
 		}
 
-		logger.info("Total time for non-CDR call: "
-				+ (System.currentTimeMillis() - totalTime) + " milliseconds");
-
+		logger.info("Total time for CDR role lookup: "
+				+ (System.currentTimeMillis() - startTime) + " milliseconds");
 		return result;
 	}
 
 	/**
-	 *
+	 * 
 	 * @param resourceID
 	 *            - the hierarchical XACML resource ID
 	 * @param attribute
@@ -293,13 +185,9 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 			throws AttributeFinderException {
 
 		// split up the path of the hierarchical resource id
-		String resourceParts[] = resourceID.split("/");
-		Set<String> results;
-
 		// either the last part is the pid, or the last-but one is the pid and
 		// the last is the datastream
-		// if we have a pid, we query on that, if we have a datastream we query
-		// on the datastream
+		String resourceParts[] = resourceID.split("/");
 		String subject; // the full subject, ie pid or pid/ds
 		String pid;
 		if (resourceParts.length > 1) {
@@ -318,90 +206,18 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 			return new EvaluationResult(BagAttribute.createEmptyBag(type));
 		}
 
-		logger.debug("Getting attribute for resource " + subject);
+		logger.debug("Getting attribute " + attribute + " for resource " + pid);
 
-		// the different types of RI attribute specification...
-		// if there is no "query" option for the attribute
-		String query = attributes.get(designatorType).get(attribute)
-				.get("query");
-		if (query == null) {
-			// it's a simple relationship lookup
-			// see if a relationship is specified, otherwise default to the
-			// attribute name URI
-			String relationship = attributes.get(designatorType).get(attribute)
-					.get("relationship");
-			if (relationship == null) {
-				relationship = attribute; // default to use attribute URI as
-											// relationship if none specified
-			}
+		// also compute list permission
+		Set<String> groups = accessControlUtils.getGroupsInRole(new PID(pid), attribute);
 
-			// see if we are querying based on the resource (object, datstream
-			// etc) or just on the object (pid)
-			String target = attributes.get(designatorType).get(attribute)
-					.get("target");
-			String queryTarget;
-			if (target != null && target.equals("object")) {
-				queryTarget = pid;
-			} else {
-				queryTarget = subject;
-			}
-
-			Map<String, Set<String>> relationships;
-
-			try {
-				logger.debug("Getting attribute using relationship "
-						+ relationship);
-				relationships = relationshipResolver.getRelationships(
-						queryTarget, relationship);
-			} catch (MelcoeXacmlException e) {
-				throw new AttributeFinderException(e.getMessage(), e);
-			}
-
-			if (relationships == null || relationships.isEmpty()) {
-				return new EvaluationResult(BagAttribute.createEmptyBag(type));
-			}
-
-			// there will only be results for one attribute, this will get all
-			// the values
-			results = relationships.get(relationship);
-
-		} else {
-			// get the language and query output variable
-			String queryLang = attributes.get(designatorType).get(attribute)
-					.get("queryLang"); // language
-			String variable = attributes.get(designatorType).get(attribute)
-					.get("value"); // query text
-			String resource = attributes.get(designatorType).get(attribute)
-					.get("resource"); // resource marker in query
-			String object = attributes.get(designatorType).get(attribute)
-					.get("object"); // object/pid marker in query
-
-			String subjectURI = "info:fedora/" + subject;
-			String pidURI = "info:fedora/" + pid;
-
-			// replace the resource marker in the query with the subject
-			if (resource != null) {
-				query = query.replace(resource, subjectURI);
-			}
-			// and the pid/object marker
-			if (object != null) {
-				query = query.replace(object, pidURI);
-			}
-
-			// run it
-			try {
-				logger.debug("Using a " + queryLang
-						+ " query to get attribute " + attribute);
-				results = relationshipResolver.getAttributesFromQuery(query,
-						queryLang, variable);
-			} catch (MelcoeXacmlException e) {
-				throw new AttributeFinderException(e.getMessage(), e);
-			}
+		if (groups == null || groups.isEmpty()) {
+			return new EvaluationResult(BagAttribute.createEmptyBag(type));
 		}
 
 		Set<AttributeValue> bagValues = new HashSet<AttributeValue>();
-		logger.debug("Attribute values found: " + results.size());
-		for (String s : results) {
+		logger.debug("Attribute values found: " + groups.size());
+		for (String s : groups) {
 			AttributeValue attributeValue = null;
 			try {
 				attributeValue = attributeFactory.createValue(type, s);
@@ -418,9 +234,15 @@ public class CdrRIAttributeFinder extends AttributeFinderModule {
 			}
 
 		}
-
 		BagAttribute bag = new BagAttribute(type, bagValues);
 		return new EvaluationResult(bag);
+	}
 
+	public AccessControlUtils getAccessControlUtils() {
+		return accessControlUtils;
+	}
+
+	public void setAccessControlUtils(AccessControlUtils accessControlUtils) {
+		this.accessControlUtils = accessControlUtils;
 	}
 }

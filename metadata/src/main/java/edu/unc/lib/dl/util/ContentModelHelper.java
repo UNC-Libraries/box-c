@@ -20,7 +20,6 @@ import java.net.URISyntaxException;
 
 import org.jdom.Namespace;
 
-import edu.unc.lib.dl.fedora.AccessControlCategory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
@@ -52,17 +51,13 @@ public class ContentModelHelper {
 	public static enum CDRProperty {
 		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), defaultWebObject("defaultWebObject"), sourceData(
 				"sourceData"), indexText("indexText"), onyen("onyen"), slug("slug"), sortOrder("sortOrder"), hasSourceMimeType(
-				"hasSourceMimeType"), hasSourceFileSize("hasSourceFileSize"), hasSurrogate("hasSurrogate"), thumb("thumb"), derivedJP2(
+				"hasSourceMimeType"), hasSourceFileSize("hasSourceFileSize"), hasChecksum("hasChecksum"), hasSurrogate("hasSurrogate"), thumb("thumb"), derivedJP2(
 				"derivedJP2"), techData("techData"), depositedOnBehalfOf("depositedOnBehalfOf"), depositMethod(
-				"depositMethod"), depositPackageType("depositPackageType"), depositPackageSubType("depositPackageSubType"), permitMetadataCreate(
-				"permitMetadataCreate"), permitMetadataRead("permitMetadataRead"), permitMetadataUpdate(
-				"permitMetadataUpdate"), permitMetadataDelete("permitMetadataDelete"), permitOriginalsCreate(
-				"permitOriginalsCreate"), permitOriginalsRead("permitOriginalsRead"), permitOriginalsUpdate(
-				"permitOriginalsUpdate"), permitOriginalsDelete("permitOriginalsDelete"), permitDerivativesCreate(
-				"permitDerivativesCreate"), permitDerivativesRead("permitDerivativesRead"), permitDerivativesUpdate(
-				"permitDerivativesUpdate"), permitDerivativesDelete("permitDerivativesDelete"), inheritPermissions(
-				"inheritPermissions", "http://cdr.unc.edu/definitions/acl#"), embargo("embargo",
-				"http://cdr.unc.edu/definitions/acl#"), isPublished("isPublished");
+				"depositMethod"), depositPackageType("depositPackageType"), depositPackageSubType("depositPackageSubType"), 
+				inheritPermissions("inheritPermissions", "http://cdr.unc.edu/definitions/acl#"), embargo("embargo",
+				"http://cdr.unc.edu/definitions/acl#"),
+				dataAccessCategory("data-access-category", "http://cdr.unc.edu/definitions/acl#"),
+				 isPublished("isPublished");
 		private URI uri;
 		private String predicate;
 
@@ -105,7 +100,7 @@ public class ContentModelHelper {
 			return this.uri.toString();
 		}
 	}
-
+	
 	/**
 	 * These are the entailed relationships that the repository infers between objects.
 	 *
@@ -301,28 +296,32 @@ public class ContentModelHelper {
 			this.attributeValue = attributeValue;
 		}
 	}
-
+	
+	public enum DatastreamCategory {
+		ORIGINAL, METADATA, DERIVATIVE
+	}
+	
 	public static enum Datastream {
-		RELS_EXT("RELS-EXT", ControlGroup.INTERNAL, false, "Fedora Object-to-Object Relationship Metadata", AccessControlCategory.Administrative), 
-		DATA_FILE("DATA_FILE", ControlGroup.MANAGED, true, null, AccessControlCategory.Original), 
-		MD_TECHNICAL("MD_TECHNICAL", ControlGroup.MANAGED, false, "PREMIS Technical Metadata", AccessControlCategory.Metadata), 
-		IMAGE_JP2000("IMAGE_JP2000", ControlGroup.MANAGED, false, "Derived JP2000 image", AccessControlCategory.Derivative),
-		MD_DESCRIPTIVE("MD_DESCRIPTIVE", ControlGroup.INTERNAL, true, "Descriptive Metadata", AccessControlCategory.Metadata), 
-		DC("DC", ControlGroup.INTERNAL, false, "Internal XML Metadata", AccessControlCategory.Metadata), 
-		MD_EVENTS("MD_EVENTS", ControlGroup.MANAGED, false, "PREMIS Events Metadata", AccessControlCategory.Metadata), 
-		THUMB_SMALL("THUMB_SMALL", ControlGroup.MANAGED, false, "Thumbnail Image", AccessControlCategory.Derivative), 
-		THUMB_LARGE("THUMB_LARGE", ControlGroup.MANAGED, false, "Thumbnail Image", AccessControlCategory.Derivative),
-		MD_CONTENTS("MD_CONTENTS", ControlGroup.INTERNAL, false, "List of Contents", AccessControlCategory.Administrative), 
-		AUDIT("AUDIT", ControlGroup.INTERNAL, false, "Audit Trail for this object", AccessControlCategory.Administrative),
-		DATA_MANIFEST("DATA_MANIFEST", ControlGroup.MANAGED, false, "Deposit Manifest", AccessControlCategory.Administrative);
+		RELS_EXT("RELS-EXT", ControlGroup.INTERNAL, false, "Fedora Object-to-Object Relationship Metadata", DatastreamCategory.METADATA), 
+		DATA_FILE("DATA_FILE", ControlGroup.MANAGED, true, null, DatastreamCategory.ORIGINAL), 
+		MD_TECHNICAL("MD_TECHNICAL", ControlGroup.MANAGED, false, "PREMIS Technical Metadata", DatastreamCategory.METADATA), 
+		IMAGE_JP2000("IMAGE_JP2000", ControlGroup.MANAGED, false, "Derived JP2000 image", DatastreamCategory.DERIVATIVE),
+		MD_DESCRIPTIVE("MD_DESCRIPTIVE", ControlGroup.INTERNAL, true, "Descriptive Metadata", DatastreamCategory.METADATA), 
+		DC("DC", ControlGroup.INTERNAL, false, "Internal XML Metadata", DatastreamCategory.METADATA), 
+		MD_EVENTS("MD_EVENTS", ControlGroup.MANAGED, false, "PREMIS Events Metadata", DatastreamCategory.METADATA), 
+		THUMB_SMALL("THUMB_SMALL", ControlGroup.MANAGED, false, "Thumbnail Image", DatastreamCategory.DERIVATIVE), 
+		THUMB_LARGE("THUMB_LARGE", ControlGroup.MANAGED, false, "Thumbnail Image", DatastreamCategory.DERIVATIVE),
+		MD_CONTENTS("MD_CONTENTS", ControlGroup.INTERNAL, false, "List of Contents", DatastreamCategory.METADATA), 
+		AUDIT("AUDIT", ControlGroup.INTERNAL, false, "Audit Trail for this object", DatastreamCategory.METADATA),
+		DATA_MANIFEST("DATA_MANIFEST", ControlGroup.MANAGED, false, "Deposit Manifest", DatastreamCategory.METADATA);
 
 		private String name;
 		private ControlGroup controlGroup;
 		private boolean versionable;
 		private String label;
-		private AccessControlCategory category;
+		private DatastreamCategory category;
 
-		Datastream(String name, ControlGroup controlGroup, boolean versionable, String label, AccessControlCategory category){
+		Datastream(String name, ControlGroup controlGroup, boolean versionable, String label, DatastreamCategory category){
 			this.setName(name);
 			this.setControlGroup(controlGroup);
 			this.setVersionable(versionable);
@@ -342,6 +341,14 @@ public class ContentModelHelper {
 
 		public void setName(String name) {
 			this.name = name;
+		}
+
+		public DatastreamCategory getCategory() {
+			return category;
+		}
+
+		private void setCategory(DatastreamCategory category) {
+			this.category = category;
 		}
 
 		public String getName() {
@@ -370,14 +377,6 @@ public class ContentModelHelper {
 
 		public void setLabel(String label) {
 			this.label = label;
-		}
-
-		public AccessControlCategory getCategory() {
-			return category;
-		}
-
-		public void setCategory(AccessControlCategory category) {
-			this.category = category;
 		}
 
 		public boolean equals(String value){

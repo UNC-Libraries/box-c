@@ -88,16 +88,9 @@
 		<property name="accessClient" ref="accessClient"/>
 		<property name="managementClient" ref="managementClient"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="accessControlUtils" ref="accessControlUtils"/>
 		<property name="maxThreads" value="${fedoraDataService.maxThreads}"/>
 		<property name="threadGroupPrefix" value="Services"/>
 		<property name="serviceTimeout" value="12000" />
-	</bean>
-	
-	<bean id="accessControlUtils" class="edu.unc.lib.dl.fedora.AccessControlUtils" init-method="init">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="cacheDepth" value="${access.cache.depth}"/>
-		<property name="cacheLimit" value="${access.cache.limit}"/>
 	</bean>
 
 	<bean id="irodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">
@@ -408,12 +401,6 @@
 	<bean id="loggingMBean" class="de.stefanheintz.log.jmxservice.LoggingConfigImpl">
 	</bean>
 	
-	<!-- Solr ingest dependencies -->
-	
-	<util:set id="accessGroups" set-class="edu.unc.lib.dl.security.access.AccessGroupSet">
-		<value>${access.group.admin}</value>
-	</util:set>
-	
 	<!-- Batch Ingest Service -->
 	<bean id="batchIngestService" class="edu.unc.lib.dl.cdr.services.BatchIngestService" init-method="init" destroy-method="destroy">
 	  <property name="startOnInit" value="true"/>
@@ -476,6 +463,14 @@
 
 	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
 		<property name="jmsTemplate" ref="jmsTemplate" />
+	</bean>
+
+	<bean id="accessControlService" class="edu.unc.lib.dl.fedora.FedoraAccessControlService"
+		init-method="init">
+		<property name="aclEndpointUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}/getAccess" />
+		<property name="username" value="${fedora.appUser.username}" />
+		<property name="password" value="${fedora.appUser.password}" />
 	</bean>
 	
 </beans>

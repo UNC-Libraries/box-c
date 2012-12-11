@@ -323,7 +323,7 @@ public class PremisReport {
 	private void reportStorageLocation(Element object, IRODSQueryResultRow info) {
 		try {
 			String replicaNum = info.getColumn(RodsGenQueryEnum.COL_DATA_REPL_NUM.getName());
-			String port = String.valueOf(this.irodslls.account.getPort());
+			String port = String.valueOf(this.irodslls.getAccount().getPort());
 			String rescLocation = info.getColumn(RodsGenQueryEnum.COL_R_LOC.getName());
 			String dir = info.getColumn(RodsGenQueryEnum.COL_COLL_NAME.getName());
 			String filename = info.getColumn(RodsGenQueryEnum.COL_DATA_NAME.getName());

@@ -16,11 +16,9 @@
 package edu.unc.lib.dl.ui.controller;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
-import edu.unc.lib.dl.security.access.AccessGroupConstants;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
-import edu.unc.lib.dl.security.access.UserSecurityProfile;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 
 /**
  * Common base controller for use in the CDR UI, offers basic security functionality.
@@ -28,19 +26,7 @@ import edu.unc.lib.dl.security.access.UserSecurityProfile;
  */
 public abstract class CDRBaseController {
 	protected AccessGroupSet getUserAccessGroups(HttpServletRequest request){
-		HttpSession session = request.getSession();
-		UserSecurityProfile user = (UserSecurityProfile)session.getAttribute("user");
-		if (user == null){
-			//If we couldn't get the user, set it to public
-			return new AccessGroupSet(AccessGroupConstants.PUBLIC_GROUP);
-		}
-		return user.getAccessGroups();
+		AccessGroupSet groups = GroupsThreadStore.getGroups();
+		return groups;
 	}
-	
-	protected UserSecurityProfile getUserProfile(HttpServletRequest request){
-		HttpSession session = request.getSession();
-		UserSecurityProfile user = (UserSecurityProfile)session.getAttribute("user");
-		return user;
-	}
-	
 }

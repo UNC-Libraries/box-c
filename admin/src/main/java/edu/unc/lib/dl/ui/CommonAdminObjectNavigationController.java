@@ -36,9 +36,9 @@ import edu.unc.lib.dl.schema.GetBreadcrumbsAndChildrenResponse;
 import edu.unc.lib.dl.schema.IrUrlInfo;
 import edu.unc.lib.dl.schema.PathInfoDao;
 import edu.unc.lib.dl.schema.PathInfoResponse;
-import edu.unc.lib.dl.security.access.AccessGroupConstants;
-import edu.unc.lib.dl.security.access.AccessGroupSet;
-import edu.unc.lib.dl.security.access.UserSecurityProfile;
+import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.Constants;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -60,14 +60,6 @@ public class CommonAdminObjectNavigationController extends AbstractFileUploadCon
 		IrUrlInfo irUrlInfo = new IrUrlInfo();
 		
 		logger.debug("getBreadcrumbsAndChildren entry");
-		
-		HttpSession session = request.getSession();
-		UserSecurityProfile user = (UserSecurityProfile)session.getAttribute("user");
-		String accessGroups = null;
-		
-		if(user != null) {
-			accessGroups = user.getAccessGroups().toString();
-		}
 		
 		String pid = request.getParameter("id");
 		
@@ -100,7 +92,7 @@ public class CommonAdminObjectNavigationController extends AbstractFileUploadCon
 
 		logger.debug("getBreadcrumbsAndChildren exit");
 		
-		return uiWebService.getBreadcrumbsAndChildren(irUrlInfo, url, accessGroups, pid);		
+		return uiWebService.getBreadcrumbsAndChildren(irUrlInfo, url, GroupsThreadStore.getGroups().toString(), pid);		
 	}
 	
 	/**

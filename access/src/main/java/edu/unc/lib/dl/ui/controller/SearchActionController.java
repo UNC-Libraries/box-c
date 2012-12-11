@@ -98,8 +98,8 @@ public class SearchActionController extends AbstractSolrSearchController {
 			//Add the search state to the response.
 			resultResponse.setSearchState(searchState);
 			
-			//Filter the datastreams in the response according to the users permissions
-			DatastreamAccessValidator.filterSearchResult(resultResponse, searchRequest.getAccessGroups());
+			// TODO Filter the datastreams in the response according to the users permissions
+			//DatastreamAccessValidator.filterSearchResult(resultResponse, searchRequest.getAccessGroups());
 		}
 		
 		//Get the record for the currently selected container if one is selected.

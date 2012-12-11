@@ -40,10 +40,10 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.MethodAwareInputStream;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
-import edu.unc.lib.dl.fedora.AccessControlRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
@@ -82,7 +82,7 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 					+ auth.getUsername());
 		}
 
-		if (!hasAccess(auth, basePID, AccessControlRole.patron, configImpl)) {
+		if (!hasAccess(auth, basePID, Permission.viewDescription, configImpl)) {
 			log.debug("Insufficient privileges to get media resource for " + targetPID.getPid());
 			throw new SwordAuthException("Insufficient privileges to get media resource for " + targetPID.getPid());
 		}

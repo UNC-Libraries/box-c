@@ -129,7 +129,7 @@
 		</dependency>
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
-			<artifactId>access-security</artifactId>
+			<artifactId>security</artifactId>
 			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>

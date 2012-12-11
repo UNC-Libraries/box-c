@@ -75,7 +75,7 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		File testFile = tempCopy(new File(testFilePath));
 		Agent adminGroup = AgentManager.getAdministrativeGroupAgentStub();
 		DepositRecord record = new DepositRecord(adminGroup, adminGroup, DepositMethod.Unspecified);
-		PremisEventLogger logger = new PremisEventLogger(adminGroup);
+		PremisEventLogger logger = new PremisEventLogger("admin");
 		METSPackageSIP sip = null;
 		boolean isZip = testFilePath.endsWith(".zip") || testFilePath.endsWith(".ZIP");
 		try {

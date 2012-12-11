@@ -29,10 +29,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.security.access.UserSecurityProfile;
 import edu.unc.lib.dl.ui.service.DjatokaContentService;
 import edu.unc.lib.dl.ui.util.AccessControlSettings;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -60,12 +60,7 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 	 * @param request
 	 * @return
 	 */
-	private boolean hasAccess(String id, String datastream, HttpServletRequest request){
-		UserSecurityProfile user = getUserProfile(request);
-		if (user == null){
-			return false;
-		}
-
+	private boolean hasAccess(String id, String datastream){
 		//Defaults to jp2 surrogate if no datastream specified
 		if (datastream == null){
 			datastream = ContentModelHelper.Datastream.IMAGE_JP2000.toString();
@@ -73,6 +68,8 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 		
 		Datastream datastreamClass = Datastream.getDatastream(datastream);
 		
+		// TODO make this work with the new model
+		/*AccessType accessType = accessSettings.getAccessType(datastream); 
 		String accessField = null;
 		//Administrative, Original, Metadata, Derivative
 		switch (datastreamClass.getCategory()){
@@ -89,13 +86,13 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 		//Check to see if the user has gotten this type of datastream for this object before
 		if (user.getDatastreamAccessCache().contains(id, datastreamClass.getCategory())){
 			return true;
-		}
+		}*/
 		
 		//Check to see if the user can access this datastream/object
 		List<String> resultFields = new ArrayList<String>();
 		resultFields.add(SearchFieldKeys.ID);
 		resultFields.add(SearchFieldKeys.CONTENT_TYPE);
-		SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, user.getAccessGroups(), accessField);
+		SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, GroupsThreadStore.getGroups()/*, accessField*/);
 		
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
 		//If the record isn't accessible then invalid record exception.
@@ -103,8 +100,8 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 			return false;
 		}
 		
-		//Access allowed, cache this result.
-		user.getDatastreamAccessCache().put(id, datastreamClass.getCategory());
+		// TODO Access allowed, cache this result.
+		//user.getDatastreamAccessCache().put(id, datastreamClass.getCategory());
 		
 		return true;
 	}
@@ -120,7 +117,7 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 		//Check if the user is allowed to view this object
 		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID));
 		String datastream = request.getParameter("ds");
-		if (this.hasAccess(id, datastream, request)){
+		if (this.hasAccess(id, datastream)){
 			try {
 				djatokaContentService.getMetadata(id, datastream, response.getOutputStream(), response);
 			} catch (IOException e){
@@ -140,7 +137,7 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 		//Check if the user is allowed to view this object
 		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID));
 		String datastream = request.getParameter("ds");
-		if (this.hasAccess(id, datastream, request)){
+		if (this.hasAccess(id, datastream)){
 			//Retrieve region specific parameters
 			String region = request.getParameter("svc.region");
 			String scale = request.getParameter("svc.level");

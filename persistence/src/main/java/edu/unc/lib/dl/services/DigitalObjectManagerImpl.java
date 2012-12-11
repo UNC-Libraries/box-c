@@ -245,7 +245,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 		// begin transaction, must delete all content and modify parent or dump
 		// rollback info
-		PremisEventLogger logger = new PremisEventLogger(user);
+		PremisEventLogger logger;
+		if (user instanceof PersonAgent){
+			logger = new PremisEventLogger(((PersonAgent)user).getOnyen());
+		} else {
+			logger = new PremisEventLogger(user.getName());
+		}
 		DateTime transactionStart = new DateTime();
 		Throwable thrown = null;
 		List<PID> removed = new ArrayList<PID>();
@@ -473,7 +478,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			String mimetype, Agent user, String message) throws IngestException {
 		availableCheck();
 		String result = null;
-		PremisEventLogger logger = new PremisEventLogger(user);
+		PremisEventLogger logger;
+		if (user instanceof PersonAgent){
+			logger = new PremisEventLogger(((PersonAgent)user).getOnyen());
+		} else {
+			logger = new PremisEventLogger(user.getName());
+		}
 
 		// make sure the datastream is source data
 		if (!this.getTripleStoreQueryService().isSourceData(pid, dsid)) {
@@ -524,7 +534,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			throws IngestException {
 		availableCheck();
 		String result = null;
-		PremisEventLogger logger = new PremisEventLogger(user);
+		PremisEventLogger logger;
+		if (user instanceof PersonAgent){
+			logger = new PremisEventLogger(((PersonAgent)user).getOnyen());
+		} else {
+			logger = new PremisEventLogger(user.getName());
+		}
 
 		// compare checksum if one is supplied
 		if (checksum != null) {
@@ -681,7 +696,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	@Override
 	public void move(List<PID> moving, String destinationPath, Agent user, String message) throws IngestException {
 		availableCheck();
-		PremisEventLogger logger = new PremisEventLogger(user);
+		PremisEventLogger logger;
+		if (user instanceof PersonAgent){
+			logger = new PremisEventLogger(((PersonAgent)user).getOnyen());
+		} else {
+			logger = new PremisEventLogger(user.getName());
+		}
 
 		// destination exists
 		PID destination = this.getTripleStoreQueryService().fetchByRepositoryPath(destinationPath);

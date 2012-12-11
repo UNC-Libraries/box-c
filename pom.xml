@@ -62,7 +62,7 @@
 	<properties>
 		<cdr.version>3.2-SNAPSHOT</cdr.version>
 		<spring.version>3.0.6.RELEASE</spring.version>
-		<fcrepo.version>3.5</fcrepo.version>
+		<fcrepo.version>3.6.1</fcrepo.version>
 		<spring.security.version>3.0.6.RELEASE</spring.security.version>
 		<spring.ws.version>2.0.1.RELEASE</spring.ws.version>
 		<spring.tiger.ws.version>1.5.9</spring.tiger.ws.version>
@@ -94,7 +94,7 @@
 
 	<modules>
 		<module>access</module>
-		<module>access-security</module>
+		<module>security</module>
 		<module>admin</module>
 		<module>fcrepo-cdr-fesl</module>
 		<module>fcrepo-clients</module>

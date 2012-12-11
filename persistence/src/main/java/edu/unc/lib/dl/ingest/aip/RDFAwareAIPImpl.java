@@ -23,10 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +54,6 @@ import org.jrdf.parser.Parser;
 import org.jrdf.parser.StatementHandlerException;
 import org.jrdf.parser.rdfxml.GraphRdfXmlParser;
 import org.jrdf.util.ClosableIterator;
-import org.jrdf.util.EscapeURL;
 import org.jrdf.writer.BlankNodeRegistry;
 import org.jrdf.writer.RdfNamespaceMap;
 import org.jrdf.writer.mem.BlankNodeRegistryImpl;
@@ -130,12 +127,6 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 	}
 
 	public void addRELSEXT2Graph() throws AIPException {
-		URL url = null;
-		try {
-			url = new URL("http://example.com/");
-		} catch (MalformedURLException e) {
-			throw new Error("programming error", e);
-		}
 		for (PID pid : this.baseAIP.getPIDs()) {
 			Document doc = this.baseAIP.getFOXMLDocument(pid);
 			String str = getRELSEXT(doc);
@@ -145,7 +136,7 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 			StringReader r = new StringReader(str);
 			try {
 				Parser parser = new GraphRdfXmlParser(this.graph);
-				parser.parse(r, EscapeURL.toEscapedString(url));
+				parser.parse(r, "http://example.com/");
 			} catch (GraphException e) {
 				log.error(e);
 			} catch (IOException e) {
@@ -212,13 +203,12 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 		String result = null;
 		// get the RELS-EXT element
 		Namespace foxmlNS = Namespace.getNamespace("foxml", JDOMNamespaceUtil.FOXML_NS.getURI());
-		Namespace rdfNS = Namespace.getNamespace("rdf", JDOMNamespaceUtil.RDF_NS.getURI());
 		XPath relsNodeXPath;
 		try {
 			relsNodeXPath = XPath
 					.newInstance("/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion/foxml:xmlContent/rdf:RDF");
 			relsNodeXPath.addNamespace(foxmlNS);
-			relsNodeXPath.addNamespace(rdfNS);
+			relsNodeXPath.addNamespace(JDOMNamespaceUtil.RDF_NS);
 			Object o = relsNodeXPath.selectSingleNode(foxml);
 			if (o == null) {
 				log.debug("RELS-EXT not found");

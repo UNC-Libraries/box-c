@@ -19,7 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,7 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService.PathInfo;
 
@@ -56,8 +56,6 @@ public class FedoraDataService {
 	private edu.unc.lib.dl.fedora.ManagementClient managementClient = null;
 
 	private edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService = null;
-
-	private edu.unc.lib.dl.fedora.AccessControlUtils accessControlUtils = null;
 	
 	private String threadGroupPrefix = "";
 	
@@ -155,7 +153,7 @@ public class FedoraDataService {
 		callables.add(new GetFoxml(pid));
 		callables.add(new GetPathInfo(pid));
 		callables.add(new GetParentCollection(pid));
-		callables.add(new GetPermissions(pid));
+		//callables.add(new GetPermissions(pid));
 		callables.add(new GetOrderWithinParent(pid));
 		callables.add(new GetDefaultWebObject(pid));
 		
@@ -169,7 +167,7 @@ public class FedoraDataService {
 		Collection<Future<Content>> futures = new ArrayList<Future<Content>>(callables.size());
 		
 		if(GroupsThreadStore.getGroups() != null) {
-			String groups = GroupsThreadStore.getGroups();
+			AccessGroupSet groups = GroupsThreadStore.getGroups();
 			for(Callable<Content> c : callables) {
 				if(GroupForwardingCallable.class.isInstance(c)) {
 					GroupForwardingCallable rfc = (GroupForwardingCallable)c;
@@ -232,10 +230,6 @@ public class FedoraDataService {
 		this.serviceTimeout = serviceTimeout;
 	}
 
-	public void setAccessControlUtils(edu.unc.lib.dl.fedora.AccessControlUtils accessControlUtils) {
-		this.accessControlUtils = accessControlUtils;
-	}
-
 	public String getThreadGroupPrefix() {
 		return threadGroupPrefix;
 	}
@@ -245,9 +239,9 @@ public class FedoraDataService {
 	}
 	
 	private abstract class GroupForwardingCallable implements Callable<Content> {
-		String groups = null;
+		AccessGroupSet groups = null;
 
-		public void setGroups(String groups) {
+		public void setGroups(AccessGroupSet groups) {
 			this.groups = groups;
 		}
 		
@@ -381,24 +375,25 @@ public class FedoraDataService {
 		}
 	}
 
+	// TODO this information must come from a web request to our fedora module, no local cache.
 	/**
 	 * Calculates and returns the effective permissions for the given pid, taking into account inherited permissions.
 	 * Results are added as a child of inputs named "permissions".
 	 * 
 	 */
-	private class GetPermissions implements Callable<Content> {
-		private PID pid;
-
-		public GetPermissions(PID pid) {
-			this.pid = pid;
-		}
-
-		@Override
-		public Content call() {
-			LOG.debug("Get access control for " + pid.getPid());
-			return accessControlUtils.processCdrAccessControl(pid);
-		}
-	}
+//	private class GetPermissions implements Callable<Content> {
+//		private PID pid;
+//
+//		public GetPermissions(PID pid) {
+//			this.pid = pid;
+//		}
+//
+//		@Override
+//		public Content call() {
+//			LOG.debug("Get access control for " + pid.getPid());
+//			return accessControlUtils.processCdrAccessControl(pid);
+//		}
+//	}
 
 	/**
 	 * Retrieves the internal sort order value for the default sort within the folder/collection containing the object
