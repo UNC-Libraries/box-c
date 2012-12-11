@@ -90,7 +90,7 @@
 		only. --> 
 	<!-- <filter>
 		<filter-name>SpoofShibbolethHeadersFilter</filter-name>
-		<filter-class>edu.unc.lib.dl.security.SpoofShibbolethHeadersFilter</filter-class>
+		<filter-class>edu.unc.lib.dl.acl.filter.SpoofShibbolethHeadersFilter</filter-class>
 		<init-param>
 			<param-name>remoteUser</param-name>
 			<param-value>testuser</param-value>

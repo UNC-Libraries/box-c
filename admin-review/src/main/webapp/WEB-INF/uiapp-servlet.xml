@@ -40,9 +40,6 @@
 	<context:annotation-config />
 
 	<!-- Import controllers -->
-	<mvc:interceptors>
-		<bean class="edu.unc.lib.dl.fedora.GroupsToThreadStoreInterceptor" />
-	</mvc:interceptors>
 	<context:component-scan base-package="edu.unc.lib.dl.admin.controller" />
 	<context:component-scan base-package="edu.unc.lib.dl.ui.controller" />
 	

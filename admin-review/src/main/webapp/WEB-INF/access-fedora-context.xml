@@ -42,7 +42,7 @@
 		<property name="password" value="${fedora.appUser.password}" />
 		<property name="interceptors">
 			<list>
-				<bean class="edu.unc.lib.dl.fedora.GroupsToHttpHeaderInterceptor" />
+				<bean class="edu.unc.lib.dl.acl.filter.GroupsToHttpHeaderInterceptor" />
 			</list>
 		</property>
 	</bean>
@@ -54,7 +54,7 @@
 		<property name="password" value="${fedora.appUser.password}" />
 		<property name="interceptors">
 			<list>
-				<bean class="edu.unc.lib.dl.fedora.GroupsToHttpHeaderInterceptor" />
+				<bean class="edu.unc.lib.dl.acl.filter.GroupsToHttpHeaderInterceptor" />
 			</list>
 		</property>
 	</bean>

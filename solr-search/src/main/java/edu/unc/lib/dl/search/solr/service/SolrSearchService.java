@@ -615,11 +615,13 @@ public class SolrSearchService {
 			// Store facet results
 			response.setFacetFields(facetFieldFactory.createFacetFieldList(queryResponse.getFacetFields()));
 			// Add empty entries for any empty facets, then sort the list
-			if (searchState.getFacetsToRetrieve() != null
-					&& searchState.getFacetsToRetrieve().size() != response.getFacetFields().size()) {
-				facetFieldFactory.addMissingFacetFieldObjects(response.getFacetFields(), searchState.getFacetsToRetrieve());
+			if (response.getFacetFields() != null) {
+				if (searchState.getFacetsToRetrieve() != null
+						&& searchState.getFacetsToRetrieve().size() != response.getFacetFields().size()) {
+					facetFieldFactory.addMissingFacetFieldObjects(response.getFacetFields(), searchState.getFacetsToRetrieve());
+				}
+				response.getFacetFields().sort(searchSettings.facetDisplayOrder);
 			}
-			response.getFacetFields().sort(searchSettings.facetDisplayOrder);
 		} else {
 			response.setFacetFields(null);
 		}
