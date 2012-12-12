@@ -96,6 +96,7 @@
 	<bean id="setRecordDatesFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
 	</bean>
 	<bean id="setAccessControlFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
+		<property name="accessControlService" ref="accessControlService"/>
 	</bean>
 	<bean id="setStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetStatusFilter">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>

@@ -25,6 +25,7 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
@@ -43,6 +44,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	// Inverted map of the roleGroup, clustering roles into buckets by group
 	Map<String, Collection<String>> groupRoleMap;
 	protected Map<String,Long> countMap;
+	protected ObjectAccessControlsBean accessControlBean;
 
 	public BriefObjectMetadataBean() {
 		countMap = new HashMap<String,Long>(2);
@@ -154,6 +156,13 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
 	public Map<String, Collection<String>> getGroupRoleMap() {
 		return groupRoleMap;
+	}
+	
+	public ObjectAccessControlsBean getAccessControlBean() {
+		if (this.accessControlBean == null && this.roleGroup != null) {
+			this.accessControlBean = new ObjectAccessControlsBean(pid, this.roleGroup);
+		}
+		return this.accessControlBean;
 	}
 
 	public String toString() {

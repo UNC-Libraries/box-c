@@ -1,6 +1,7 @@
 package edu.unc.lib.dl.acl.util;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,6 +27,21 @@ public class ObjectAccessControlsBean {
 	public ObjectAccessControlsBean(PID pid, Map<UserRole, Set<String>> role2groups) {
 		this.object = pid;
 		this.role2groups = role2groups;
+	}
+	
+	public ObjectAccessControlsBean(PID pid, Collection<String> roleGroups) {
+		this.object = pid;
+		this.role2groups = new HashMap<UserRole, Set<String>>();
+		for (String roleGroup: roleGroups) {
+			String[] roleGroupArray = roleGroup.split("\\|");
+			UserRole userRole = UserRole.getUserRole(roleGroupArray[0]);
+			Set<String> groupSet = role2groups.get(userRole);
+			if (groupSet == null) {
+				groupSet = new HashSet<String>();
+				role2groups.put(userRole, groupSet);
+			}
+			groupSet.add(roleGroupArray[1]);
+		}
 	}
 	
 	/**
@@ -122,5 +138,35 @@ public class ObjectAccessControlsBean {
 			if(r.getPermissions().contains(permission)) return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * 
+	 * @param permission
+	 * @return
+	 */
+	public Set<String> getGroupsByPermission(Permission permission) {
+		Set<String> groups = new HashSet<String>();
+		for(Map.Entry<UserRole, Set<String>> r2g : this.role2groups.entrySet()) {
+			if (r2g.getKey().getPermissions().contains(permission)) {
+				groups.addAll(r2g.getValue());
+			}
+		}
+		return groups;
+	}
+	
+	public Set<String> getGroupsByUserRole(UserRole userRole) {
+		return this.role2groups.get(userRole);
+	}
+	
+	public List<String> roleGroupsToList() {
+		List<String> result = new ArrayList<String>();
+		for(Map.Entry<UserRole, Set<String>> r2g : this.role2groups.entrySet()) {
+			String roleName = r2g.getKey().getURI().toString();
+			for (String group: r2g.getValue()) {
+				result.add(roleName + "|" + group);
+			}
+		}
+		return result;
 	}
 }
