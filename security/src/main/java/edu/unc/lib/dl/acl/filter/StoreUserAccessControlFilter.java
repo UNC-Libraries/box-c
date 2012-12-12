@@ -39,12 +39,12 @@ import java.io.IOException;
  *
  */
 public class StoreUserAccessControlFilter extends OncePerRequestFilter implements ServletContextAware {
-	private static final Logger LOG = LoggerFactory.getLogger(StoreUserAccessControlFilter.class);
+	private static final Logger log = LoggerFactory.getLogger(StoreUserAccessControlFilter.class);
 	
 	@Override
 	public void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) 
 			throws IOException, ServletException {
-		LOG.debug("In UserSecurityProfileFilter");
+		log.debug("In UserSecurityProfileFilter");
 		//Don't check security for static files
 		if (!(req.getServletPath().startsWith("/js/") || req.getServletPath().startsWith("/css/")
 				|| req.getServletPath().startsWith("/images/"))){
@@ -64,17 +64,19 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 			if (shibGroups == null)
 				shibGroups = "";
 			
+			log.debug("User " + userName + " logged in with groups " + shibGroups);
+			
 			if (shibGroups.trim().length() > 0) {
 				AccessGroupSet accessGroups = new AccessGroupSet(shibGroups);
 				accessGroups.addAccessGroup(AccessGroupConstants.PUBLIC_GROUP);
 				request.setAttribute("accessGroupSet", accessGroups);
 				GroupsThreadStore.storeGroups(accessGroups);
-				LOG.debug("Setting cdr groups for request processing thread: "+shibGroups);
+				log.debug("Setting cdr groups for request processing thread: "+shibGroups);
 			} else {
 				GroupsThreadStore.clearGroups();
 			}
 		} catch (Exception e) {
-			LOG.debug("Error while retrieving the users profile", e);
+			log.debug("Error while retrieving the users profile", e);
 		}
 	}
 }

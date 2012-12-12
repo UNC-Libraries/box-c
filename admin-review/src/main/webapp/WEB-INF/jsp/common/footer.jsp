@@ -23,9 +23,9 @@
 		<div class="contentarea">
 			<p>
 				<a href="${pageContext.request.contextPath}/">Home</a>&nbsp;|&nbsp;
-				<a href="search?types=Collection">Browse Collections</a>&nbsp;|&nbsp;
-				<a href="external?page=about.about">About</a>&nbsp;|&nbsp;
-				<c:url var="contactUrl" scope="page" value="external">
+				<a href="https://${pageContext.request.serverName}/search?types=Collection">Browse Collections</a>&nbsp;|&nbsp;
+				<a href="https://${pageContext.request.serverName}/external?page=about.about">About</a>&nbsp;|&nbsp;
+				<c:url var="contactUrl" scope="page" value="https://${pageContext.request.serverName}/external">
 					<c:param name="page" value="contact" />
 					<c:choose>
 						<c:when test="${param.page == 'contact'}">

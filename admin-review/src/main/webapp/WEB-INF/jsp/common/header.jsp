@@ -43,10 +43,10 @@
 			</ul>
 			<ul class="secondarymenu">
 				<li>
-					<a href="external?page=cdradmin" target="_blank">Public</a>
+					<a href="https://${pageContext.request.serverName}/" target="_blank">Public</a>
 				</li>
 				<c:choose>
-					<c:when test="${not empty sessionScope.user && not empty sessionScope.user.userName}">
+					<c:when test="${not empty requestScope.accessGroupSet}">
 						<c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
 							<c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
 						</c:url>

@@ -13,22 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.util;
+package edu.unc.lib.dl.admin.controller;
 
-import java.net.URLStreamHandler;
-import java.net.URLStreamHandlerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
-import edu.unc.lib.dl.irods.Handler;
-
-public class IRODSURLStreamHandlerFactory implements URLStreamHandlerFactory {
-
-	@Override
-	public URLStreamHandler createURLStreamHandler(String protocol) {
-		if("irods".equals(protocol)) {
-			return new Handler();
-		} else {
-			return null;
-		}
+@Controller
+public class LoginRequiredController {
+	@RequestMapping(value = "login", method = RequestMethod.GET)
+	public String toLoginPage() {
+		return "error/login";
 	}
-
 }

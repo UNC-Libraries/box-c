@@ -79,4 +79,9 @@
 		<property name="baseView" value="/WEB-INF/jsp/index" />
 		<property name="subViewPrefix" value="" />
 	</bean>
+	
+	<bean name="requireLoginFilter" class="edu.unc.lib.dl.acl.filter.RequireLoginFilter">
+		<property name="notLoggedInUrl" value="/login"/>
+		<property name="forwardRequest" value="true"/>
+	</bean>
 </beans>
