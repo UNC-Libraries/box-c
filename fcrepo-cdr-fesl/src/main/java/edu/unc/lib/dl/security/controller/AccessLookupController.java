@@ -15,8 +15,9 @@
  */
 package edu.unc.lib.dl.security.controller;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.fcrepo.server.errors.ObjectNotFoundException;
 import org.slf4j.Logger;
@@ -32,15 +33,16 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fedora.FedoraAccessControlService;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.security.GroupRolesFactory;
+import edu.unc.lib.dl.security.AccessControlUtils;
+import edu.unc.lib.dl.security.AncestorFactory;
 
 @Controller
 public class AccessLookupController {
 	private static final Logger log = LoggerFactory.getLogger(AccessLookupController.class);
 
-	private GroupRolesFactory groupRolesFactory;
+	private AncestorFactory ancestorFactory = null;
+	private AccessControlUtils accessControlUtils;
 
 	/**
 	 * Returns a JSON representation of all the roles and groups for the provided pid
@@ -51,14 +53,7 @@ public class AccessLookupController {
 	@RequestMapping(value = "fesl/{id}/getAccess", method = RequestMethod.GET)
 	public @ResponseBody
 	Map<String, ? extends Object> getAccess(@PathVariable("id") String id) {
-		try {
-			Map<String, Object> result = new HashMap<String, Object>();
-			result.put(FedoraAccessControlService.ROLES_TO_GROUPS, groupRolesFactory.getAllRolesAndGroups(new PID(id)));
-			return result;
-		} catch (ObjectNotFoundException e) {
-			log.debug("Requested object " + id + " was not found");
-			return null;
-		}
+		return accessControlUtils.getAllCdrAccessControls(new PID(id));
 	}
 
 	/**
@@ -90,15 +85,22 @@ public class AccessLookupController {
 			Permission permission = Permission.getPermission(permissionName);
 			if (permission == null)
 				return false;
-			return ObjectAccessControlsBean.createObjectAccessControlBean(pid,
-					groupRolesFactory.getAllRolesAndGroups(pid)).hasPermission(accessGroups, permission);
+			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
+			Map<String, Set<String>> roles = accessControlUtils.getRoles(pid, ancestors);
+			List<String> activeEmbargoes = accessControlUtils.getActiveEmbargoes(pid, ancestors);
+			
+			return (new ObjectAccessControlsBean(pid, roles, activeEmbargoes)).hasPermission(accessGroups, permission);
 		} catch (ObjectNotFoundException e) {
 			log.debug("Requested object " + id + " was not found");
 			return false;
 		}
 	}
 
-	public void setGroupRolesFactory(GroupRolesFactory groupRolesFactory) {
-		this.groupRolesFactory = groupRolesFactory;
+	public void setAncestorFactory(AncestorFactory ancestorFactory) {
+		this.ancestorFactory = ancestorFactory;
+	}
+
+	public void setAccessControlUtils(AccessControlUtils accessControlUtils) {
+		this.accessControlUtils = accessControlUtils;
 	}
 }

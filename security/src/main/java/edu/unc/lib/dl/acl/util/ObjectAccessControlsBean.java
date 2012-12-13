@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.acl.util;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -26,6 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -34,6 +38,8 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 public class ObjectAccessControlsBean {
+	private static final Logger LOG = LoggerFactory.getLogger(ObjectAccessControlsBean.class);
+	
 	PID object = null;
 	Map<UserRole, Set<String>> role2groups = null;
 	List<Date> activeEmbargoes = null;
@@ -59,26 +65,26 @@ public class ObjectAccessControlsBean {
 		}
 	}
 	
-	/**
-	 * Factory method which generates an ObjectAccessControlBean from a map containing role to groups relations
-	 * 
-	 * @param pid
-	 * @param roleMappings
-	 * @return
-	 */
 	@SuppressWarnings("unchecked")
-	public static ObjectAccessControlsBean createObjectAccessControlBean(PID pid, Map<String, ? extends Collection<String>> roleMappings) {
-		Map<UserRole, Set<String>> role2groups = new HashMap<UserRole, Set<String>>(roleMappings.size());
+	public ObjectAccessControlsBean(PID pid, Map<String, ? extends Collection<String>> roles, Collection<String> embargoes) {
 		
-		Iterator<?> roleIt = roleMappings.entrySet().iterator(); 
+		this.object = pid;
+		Iterator<?> roleIt = roles.entrySet().iterator(); 
 		while (roleIt.hasNext()) {
 			Map.Entry<String, Collection<String>> entry = (Map.Entry<String, Collection<String>>)roleIt.next();
 			UserRole userRole = UserRole.getUserRole(entry.getKey());
 			Set<String> groups = new HashSet<String>((Collection<String>)entry.getValue());
 			role2groups.put(userRole, groups);
 		}
-
-		return new ObjectAccessControlsBean(pid, role2groups);
+		
+		this.activeEmbargoes = new ArrayList<Date>(embargoes.size());
+		for (String embargo: embargoes) {
+			try {
+				this.activeEmbargoes.add(ObjectAccessControlsBean.format.parse(embargo));
+			} catch (ParseException e) {
+				LOG.warn("Failed to parse embargo " + embargo + " for object " + pid, e);
+			}
+		}
 	}
 	
 	public String toString() {

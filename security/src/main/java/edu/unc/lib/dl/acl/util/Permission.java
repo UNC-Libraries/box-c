@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.acl.util;
 
+import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
+
 public enum Permission {
 	addRemoveContents, editAccessControl, editDescription, moveToTrash, publish, purgeForever, viewAdminUI, viewDerivative, viewDescription, viewEmbargoed, viewOriginal;
 	private Permission() {}
@@ -23,6 +25,18 @@ public enum Permission {
 		for (Permission permission: Permission.values()) {
 			if (permission.name().equals(permissionName))
 				return permission;
+		}
+		return null;
+	}
+	
+	public static Permission getPermissionByDatastreamCategory(DatastreamCategory category) {
+		switch (category) {
+			case DERIVATIVE:
+				return Permission.viewDerivative;
+			case METADATA:
+				return Permission.viewDescription;
+			case ORIGINAL:
+				return Permission.viewOriginal;
 		}
 		return null;
 	}

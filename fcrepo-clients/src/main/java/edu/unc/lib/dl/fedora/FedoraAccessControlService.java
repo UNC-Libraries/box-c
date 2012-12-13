@@ -42,8 +42,6 @@ import edu.unc.lib.dl.httpclient.HttpClientUtil;
  * 
  */
 public class FedoraAccessControlService implements AccessControlService {
-
-	public static final String ROLES_TO_GROUPS = "roles";
 	private static final Logger log = LoggerFactory.getLogger(FedoraAccessControlService.class);
 
 	private MultiThreadedHttpConnectionManager multiThreadedHttpConnectionManager;
@@ -88,9 +86,10 @@ public class FedoraAccessControlService implements AccessControlService {
 
 			if (statusCode != HttpStatus.SC_OK) {
 				Map<?, ?> result = (Map<?, ?>) mapper.readValue(method.getResponseBodyAsStream(), Object.class);
-				Map<String, List<String>> roleMappings = (Map<String, List<String>>) result.get(ROLES_TO_GROUPS);
-
-				return ObjectAccessControlsBean.createObjectAccessControlBean(pid, roleMappings);
+				Map<String, List<String>> roles = (Map<String, List<String>>) result.get("roles");
+				List<String> embargoes = (List<String>)result.get("embargoes");
+				
+				return new ObjectAccessControlsBean(pid, roles, embargoes);
 			}
 		} catch (HttpException e) {
 			log.error("Failed to retrieve object access control for " + pid, e);

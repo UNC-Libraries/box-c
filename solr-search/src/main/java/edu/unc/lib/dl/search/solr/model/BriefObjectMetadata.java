@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.PID;
 
 public interface BriefObjectMetadata {
@@ -34,6 +35,8 @@ public interface BriefObjectMetadata {
 	public List<Datastream> getDatastreamObjects();
 
 	public Map<String, Collection<String>> getGroupRoleMap();
+	
+	public ObjectAccessControlsBean getAccessControlBean();
 
 	public CutoffFacetNode getParentCollectionObject();
 
