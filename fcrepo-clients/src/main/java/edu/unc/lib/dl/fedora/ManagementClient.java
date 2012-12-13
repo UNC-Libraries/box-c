@@ -330,7 +330,9 @@ public class ManagementClient extends WebServiceTemplate {
 		try {
 			response = this.marshalSendAndReceive(request, action.callback());
 		} catch (WebServiceIOException e) {
-			if (e.getMessage().contains("503")) {
+			// Connection reset: Apache restarted during a call to ingest (at midnight)
+			// 503: an error indicating that Apache is already restarting
+			if (e.getMessage() != null && (e.getMessage().contains("503") || e.getMessage().contains("Connection reset"))) {
 				throw new FedoraTimeoutException(e);
 			} else if (java.net.SocketTimeoutException.class.isInstance(e.getCause())) {
 				throw new FedoraTimeoutException(e);
