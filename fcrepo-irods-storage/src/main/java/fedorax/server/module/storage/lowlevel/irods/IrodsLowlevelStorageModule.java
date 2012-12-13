@@ -19,6 +19,8 @@
 package fedorax.server.module.storage.lowlevel.irods;
 
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLStreamHandlerFactory;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -60,6 +62,10 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 	static {
 		// Register IRODS URL Protocol Handler (see metadata project)
 		// https://issues.apache.org/bugzilla/show_bug.cgi?id=26701
+		URLStreamHandlerFactory urlHandlerFactory = new IRODSURLStreamHandlerFactory();
+		try {
+			URL.setURLStreamHandlerFactory(urlHandlerFactory);
+		} catch(Error e) {}
 		DirContextURLStreamHandlerFactory.addUserFactory(new IRODSURLStreamHandlerFactory());
 	}
 
