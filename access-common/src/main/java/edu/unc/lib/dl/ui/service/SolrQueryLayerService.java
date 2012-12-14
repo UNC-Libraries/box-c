@@ -137,8 +137,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 		SearchResultResponse resultResponse = getSearchResults(searchRequest);
 
 		// If this facet list contains parent collections, then get further metadata about them
-		if (searchState.getFacetsToRetrieve() == null
-				|| searchState.getFacetsToRetrieve().contains(SearchFieldKeys.PARENT_COLLECTION)) {
+		if (resultResponse.getFacetFields() != null && (searchState.getFacetsToRetrieve() == null
+				|| searchState.getFacetsToRetrieve().contains(SearchFieldKeys.PARENT_COLLECTION))) {
 			FacetFieldObject parentCollectionFacet = resultResponse.getFacetFields()
 					.get(SearchFieldKeys.PARENT_COLLECTION);
 			List<BriefObjectMetadataBean> parentCollectionValues = getParentCollectionValues(resultResponse

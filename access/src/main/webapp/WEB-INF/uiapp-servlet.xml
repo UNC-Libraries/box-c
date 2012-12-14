@@ -73,7 +73,7 @@
 		<property name="properties" ref="accessProperties" />
 	</bean>
 	
-	<bean id="hierarchicalBrowseResultResponse" class="edu.unc.lib.dl.ui.model.response.HierarchicalBrowseResultResponse">
+	<bean id="hierarchicalBrowseResultResponse" class="edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse">
 		<property name="searchSettings" ref="searchSettings" />
 	</bean>
 
@@ -81,9 +81,9 @@
 		<property name="searchSettings" ref="searchSettings" />
 	</bean>
 	
-	<bean id="datastreamAccessValidator" class="edu.unc.lib.dl.ui.validator.DatastreamAccessValidator">
+	<!-- <bean id="datastreamAccessValidator" class="edu.unc.lib.dl.ui.validator.DatastreamAccessValidator">
 		<property name="accessSettings" ref="accessSettings" />
-	</bean>
+	</bean> -->
 
 	<!-- Services -->
 	<!-- Note, search service must initialize itself using solrSettings, 

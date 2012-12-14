@@ -54,14 +54,17 @@ public class ObjectAccessControlsBean {
 		this.object = pid;
 		this.role2groups = new HashMap<UserRole, Set<String>>();
 		for (String roleGroup: roleGroups) {
+			LOG.debug("roleGroup: " + roleGroup);
 			String[] roleGroupArray = roleGroup.split("\\|");
-			UserRole userRole = UserRole.getUserRole(roleGroupArray[0]);
-			Set<String> groupSet = role2groups.get(userRole);
-			if (groupSet == null) {
-				groupSet = new HashSet<String>();
-				role2groups.put(userRole, groupSet);
+			if (roleGroupArray.length == 2) {
+				UserRole userRole = UserRole.getUserRole(roleGroupArray[0]);
+				Set<String> groupSet = role2groups.get(userRole);
+				if (groupSet == null) {
+					groupSet = new HashSet<String>();
+					role2groups.put(userRole, groupSet);
+				}
+				groupSet.add(roleGroupArray[1]);
 			}
-			groupSet.add(roleGroupArray[1]);
 		}
 	}
 	
@@ -77,12 +80,14 @@ public class ObjectAccessControlsBean {
 			role2groups.put(userRole, groups);
 		}
 		
-		this.activeEmbargoes = new ArrayList<Date>(embargoes.size());
-		for (String embargo: embargoes) {
-			try {
-				this.activeEmbargoes.add(ObjectAccessControlsBean.format.parse(embargo));
-			} catch (ParseException e) {
-				LOG.warn("Failed to parse embargo " + embargo + " for object " + pid, e);
+		if (embargoes != null) {
+			this.activeEmbargoes = new ArrayList<Date>(embargoes.size());
+			for (String embargo: embargoes) {
+				try {
+					this.activeEmbargoes.add(ObjectAccessControlsBean.format.parse(embargo));
+				} catch (ParseException e) {
+					LOG.warn("Failed to parse embargo " + embargo + " for object " + pid, e);
+				}
 			}
 		}
 	}
@@ -144,6 +149,8 @@ public class ObjectAccessControlsBean {
 		for(UserRole r : roles) {
 			if(r.getPermissions().contains(permission)) return true;
 		}
+		
+		// TODO incorporate embargoes into this computation
 		return false;
 	}
 	

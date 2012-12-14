@@ -21,7 +21,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<jsp:useBean id="accessGroupConstants" class="edu.unc.lib.dl.security.access.AccessGroupConstants" scope="request"/>
+<jsp:useBean id="accessGroupConstants" class="edu.unc.lib.dl.acl.util.AccessGroupConstants" scope="request"/>
 
 <c:choose>
 	<c:when test="${param.resultNumber % 2 == 0 }">
@@ -31,6 +31,9 @@
 		<c:set var="resultEntryClass" value="" scope="page"/>
 	</c:otherwise>
 </c:choose>
+<c:if test="${not empty metadata.countMap}">
+	<c:set var="childCount" value="${metadata.countMap.child}"/>
+</c:if>
 <div id="entry${metadata.id}" class="searchitem ${resultEntryClass}">
 	<div class="contentarea">
 		<%-- Link to full record of the current item --%>
@@ -51,11 +54,10 @@
 				<c:set var="primaryActionTooltip" scope="page" value="View details for ${metadata.title}."/>
 			</c:otherwise>
 		</c:choose>
-		
 		<%-- Display thumbnail or placeholder graphic --%>
 		<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip">
 			<c:choose>
-				<c:when test="${cdr:contains(metadata.datastream, 'THUMB_SMALL')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', metadata)}">
 					<div class="smallthumb_container">
 						<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_${metadata.contentTypeFacet[0].searchKey}" 
 								src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
@@ -96,7 +98,7 @@
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection || metadata.resourceType == searchSettings.resourceTypeFolder}">
 					<h2><a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>
 						<c:if test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
-							<span class="searchitem_container_count">(${metadata.childCount} item<c:if test="${metadata.childCount != 1}">s</c:if>)</span>
+							<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
 						</c:if>
 					</h2>
 					<div class="halfwidth">
@@ -127,8 +129,8 @@
 				<%-- Metadata body for items --%>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
 					<h2><a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
-						<c:if test="${metadata.resourceType == searchSettings.resourceTypeAggregate && metadata.childCount > 1}">
-							<span class="searchitem_container_count">(${metadata.childCount} item<c:if test="${metadata.childCount != 1}">s</c:if>)</span>
+						<c:if test="${metadata.resourceType == searchSettings.resourceTypeAggregate && childCount > 1}">
+							<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
 						</c:if>
 					</h2>
 					<div class="halfwidth">
@@ -193,7 +195,7 @@
 						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${searchSettings.actions['RESET_NAVIGATION']}:structure"/>
 					</c:url>
 					<ul>
-						<li><a href="<c:out value='${containerResultsUrl}'/>" title="View the contents of this collection" class="has_tooltip">View ${metadata.childCount} items</a></li>
+						<li><a href="<c:out value='${containerResultsUrl}'/>" title="View the contents of this collection" class="has_tooltip">View ${childCount} items</a></li>
 						<li><a href="<c:out value='${browseUrl}'/>" title="View the structure of this collection in a file browser view." class="has_tooltip">Browse structure</a></li>
 						<li>${metadata.resourceType}</li>
 					</ul>
@@ -202,7 +204,7 @@
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
 				<div class="fileinfo">
 					<c:choose>
-						<c:when test="${cdr:contains(metadata.datastream, 'DATA_FILE')}">
+						<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', metadata)}">
 							<div class="actionlink right download">
 								<a href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
 							</div>
@@ -239,9 +241,9 @@
 						</c:otherwise>
 					</c:choose>
 					
-					<c:if test="${metadata.childCount > 1}">
+					<c:if test="${childCount > 1}">
 						<p class="right">
-							<a href="<c:out value='${containerResultsUrl}'/>" title="View all files contained in this item" class="has_tooltip">View ${metadata.childCount} items</a>
+							<a href="<c:out value='${containerResultsUrl}'/>" title="View all files contained in this item" class="has_tooltip">View ${childCount} items</a>
 						</p>
 					</c:if>
 					

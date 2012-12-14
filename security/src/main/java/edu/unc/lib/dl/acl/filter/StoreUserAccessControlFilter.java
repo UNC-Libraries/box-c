@@ -69,6 +69,8 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 			if (shibGroups.trim().length() > 0) {
 				AccessGroupSet accessGroups = new AccessGroupSet(shibGroups);
 				accessGroups.addAccessGroup(AccessGroupConstants.PUBLIC_GROUP);
+				if (userName != null && userName.trim().length() > 0)
+					accessGroups.addAccessGroup(AccessGroupConstants.AUTHENTICATED_GROUP);
 				request.setAttribute("accessGroupSet", accessGroups);
 				GroupsThreadStore.storeGroups(accessGroups);
 				log.debug("Setting cdr groups for request processing thread: "+shibGroups);

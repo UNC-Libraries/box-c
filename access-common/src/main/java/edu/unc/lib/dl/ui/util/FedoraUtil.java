@@ -17,7 +17,7 @@ package edu.unc.lib.dl.ui.util;
 
 import java.util.Arrays;
 
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 
 public class FedoraUtil {
@@ -26,8 +26,8 @@ public class FedoraUtil {
 	public static String getDatastreamUrl(Object object, String datastream, FedoraUtil fedoraUtil){
 		if (object instanceof String)
 			return fedoraUtil.getDatastreamUrl((String)object, datastream);
-		if (object instanceof BriefObjectMetadataBean)
-			return fedoraUtil.getDatastreamUrl((BriefObjectMetadataBean)object, datastream);
+		if (object instanceof BriefObjectMetadata)
+			return fedoraUtil.getDatastreamUrl((BriefObjectMetadata)object, datastream);
 		return null;
 	}
 	
@@ -48,7 +48,7 @@ public class FedoraUtil {
 		return url.toString(); 
 	}
 	
-	public String getDatastreamUrl(BriefObjectMetadataBean metadata, String datastreamName){
+	public String getDatastreamUrl(BriefObjectMetadata metadata, String datastreamName){
 		// Prefer the matching datastream from this object over the same datastream with a different pid prefix
 		Datastream preferredDS = getPreferredDatastream(metadata, datastreamName);
 		
@@ -74,7 +74,7 @@ public class FedoraUtil {
 		return url.toString(); 
 	}
 	
-	public static Datastream getPreferredDatastream(BriefObjectMetadataBean metadata, String datastreamName) {
+	public static Datastream getPreferredDatastream(BriefObjectMetadata metadata, String datastreamName) {
 		Datastream preferredDS = null;
 		Datastream incomingDS = new Datastream(datastreamName);
 		for (Datastream ds: metadata.getDatastreamObjects()){
