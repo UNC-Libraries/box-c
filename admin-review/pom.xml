@@ -162,15 +162,15 @@
 
 		<!-- Testing -->
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<version>1.8.4</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.8.4</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -183,12 +183,17 @@
 		<!-- CDR -->
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
-			<artifactId>persistence</artifactId>
+			<artifactId>access-common</artifactId>
 			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>fcrepo-clients</artifactId>
+			<version>${cdr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>persistence</artifactId>
 			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
@@ -199,11 +204,6 @@
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>solr-search</artifactId>
-			<version>${cdr.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>edu.unc.lib.cdr</groupId>
-			<artifactId>access-common</artifactId>
 			<version>${cdr.version}</version>
 		</dependency>
 	</dependencies>
