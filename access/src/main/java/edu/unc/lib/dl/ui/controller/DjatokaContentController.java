@@ -34,7 +34,6 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.service.DjatokaContentService;
-import edu.unc.lib.dl.ui.util.AccessControlSettings;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
@@ -47,8 +46,6 @@ import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 public class DjatokaContentController extends AbstractSolrSearchController {
 	private static final Logger LOG = LoggerFactory.getLogger(DjatokaContentController.class);
 	
-	/*@Autowired
-	private AccessControlSettings accessSettings;*/
 	@Autowired
 	private DjatokaContentService djatokaContentService;
 	

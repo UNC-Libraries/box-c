@@ -28,6 +28,7 @@
 		<param-value>
         	/WEB-INF/uiapp-servlet.xml
         	/WEB-INF/service-context.xml
+        	/WEB-INF/solr-search-context.xml
         </param-value>
 	</context-param>
 	

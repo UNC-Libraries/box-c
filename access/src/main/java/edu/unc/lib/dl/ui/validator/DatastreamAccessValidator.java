@@ -17,12 +17,11 @@ package edu.unc.lib.dl.ui.validator;
 
 import java.util.Collection;
 
+import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.ui.util.AccessControlSettings;
 
 /**
  * Validates and filters datastream lists to ensure that they only contain entries which the user is allowed to access.
@@ -30,7 +29,6 @@ import edu.unc.lib.dl.ui.util.AccessControlSettings;
  *
  */
 public class DatastreamAccessValidator {
-	private static AccessControlSettings accessSettings;
 	
 	public DatastreamAccessValidator(){
 	}
@@ -42,14 +40,14 @@ public class DatastreamAccessValidator {
 	}
 	
 	public static void filterBriefObject(BriefObjectMetadata metadata, AccessGroupSet userAccess){
-		if (userAccess.contains(accessSettings.getAdminGroup()))
+		if (userAccess.contains(AccessGroupConstants.ADMIN_GROUP))
 			return;
 	}
 	
 	public static void filterDatastreams(Collection<Datastream> datastreams, AccessGroupSet surrogateAccess, 
 			AccessGroupSet fileAccess, AccessGroupSet userAccess){
 		
-		if (userAccess.contains(accessSettings.getAdminGroup()))
+		if (userAccess.contains(AccessGroupConstants.ADMIN_GROUP))
 			return;
 		
 		/*
@@ -74,13 +72,5 @@ public class DatastreamAccessValidator {
 				datastreams.remove(accessDS);
 			}
 		}*/
-	}
-
-	public AccessControlSettings getAccessSettings() {
-		return accessSettings;
-	}
-
-	public void setAccessSettings(AccessControlSettings accessSettings) {
-		DatastreamAccessValidator.accessSettings = accessSettings;
 	}
 }
