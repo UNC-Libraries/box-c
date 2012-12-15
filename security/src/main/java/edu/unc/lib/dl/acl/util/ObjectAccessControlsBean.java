@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.acl.util;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,167 +30,268 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  * Encapsulates the complete set of access controls that apply to a particular object.
+ * 
  * @author count0
- *
+ * 
  */
 public class ObjectAccessControlsBean {
 	private static final Logger LOG = LoggerFactory.getLogger(ObjectAccessControlsBean.class);
-	
+
 	PID object = null;
-	Map<UserRole, Set<String>> role2groups = null;
+	Map<UserRole, Set<String>> baseRoleGroups = null;
+	Map<UserRole, Set<String>> activeRoleGroups = null;
 	List<Date> activeEmbargoes = null;
-	static DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
-	
-	public ObjectAccessControlsBean(PID pid, Map<UserRole, Set<String>> role2groups) {
+
+	public ObjectAccessControlsBean(PID pid, Map<UserRole, Set<String>> baseRoleGroups) {
 		this.object = pid;
-		this.role2groups = role2groups;
+		this.baseRoleGroups = baseRoleGroups;
+		this.activeRoleGroups = this.mergeRoleGroupsAndEmbargoes();
 	}
-	
+
+	/**
+	 * Constructs a new ObjectAccessControlsBean object from a collection of pipe delimited role uri/group pairings,
+	 * representing all role/group relationships assigned to this object
+	 * 
+	 * @param pid
+	 * @param roleGroups
+	 */
 	public ObjectAccessControlsBean(PID pid, Collection<String> roleGroups) {
 		this.object = pid;
-		this.role2groups = new HashMap<UserRole, Set<String>>();
-		for (String roleGroup: roleGroups) {
+		this.baseRoleGroups = new HashMap<UserRole, Set<String>>();
+		for (String roleGroup : roleGroups) {
 			LOG.debug("roleGroup: " + roleGroup);
 			String[] roleGroupArray = roleGroup.split("\\|");
 			if (roleGroupArray.length == 2) {
 				UserRole userRole = UserRole.getUserRole(roleGroupArray[0]);
-				Set<String> groupSet = role2groups.get(userRole);
+				Set<String> groupSet = baseRoleGroups.get(userRole);
 				if (groupSet == null) {
 					groupSet = new HashSet<String>();
-					role2groups.put(userRole, groupSet);
+					baseRoleGroups.put(userRole, groupSet);
 				}
 				groupSet.add(roleGroupArray[1]);
 			}
 		}
+
+		this.activeRoleGroups = this.mergeRoleGroupsAndEmbargoes();
 	}
-	
+
+	/**
+	 * Constructs a new ObjectAccessControlsBean object from a map of role/group relations and active embargoes
+	 * 
+	 * @param pid
+	 * @param roles
+	 * @param embargoes
+	 */
 	@SuppressWarnings("unchecked")
-	public ObjectAccessControlsBean(PID pid, Map<String, ? extends Collection<String>> roles, Collection<String> embargoes) {
-		
+	public ObjectAccessControlsBean(PID pid, Map<String, ? extends Collection<String>> roles,
+			Collection<String> embargoes) {
 		this.object = pid;
-		Iterator<?> roleIt = roles.entrySet().iterator(); 
+		this.baseRoleGroups = new HashMap<UserRole, Set<String>>();
+		Iterator<?> roleIt = roles.entrySet().iterator();
 		while (roleIt.hasNext()) {
-			Map.Entry<String, Collection<String>> entry = (Map.Entry<String, Collection<String>>)roleIt.next();
+			Map.Entry<String, Collection<String>> entry = (Map.Entry<String, Collection<String>>) roleIt.next();
 			UserRole userRole = UserRole.getUserRole(entry.getKey());
-			Set<String> groups = new HashSet<String>((Collection<String>)entry.getValue());
-			role2groups.put(userRole, groups);
+			Set<String> groups = new HashSet<String>((Collection<String>) entry.getValue());
+			baseRoleGroups.put(userRole, groups);
 		}
-		
+
 		if (embargoes != null) {
 			this.activeEmbargoes = new ArrayList<Date>(embargoes.size());
-			for (String embargo: embargoes) {
+			for (String embargo : embargoes) {
 				try {
-					this.activeEmbargoes.add(ObjectAccessControlsBean.format.parse(embargo));
+					this.activeEmbargoes.add(DateTimeUtil.parsePartialUTCToDate(embargo));
 				} catch (ParseException e) {
 					LOG.warn("Failed to parse embargo " + embargo + " for object " + pid, e);
 				}
 			}
 		}
+
+		this.activeRoleGroups = this.mergeRoleGroupsAndEmbargoes();
 	}
-	
+
+	public Map<UserRole, Set<String>> getActiveRoleGroups() {
+		return this.activeRoleGroups;
+	}
+
+	/**
+	 * Generates a new role/group mapping by filtering out role mappings that do not have administrative viewing rights
+	 * if there are any active embargoes.
+	 * 
+	 * @return
+	 */
+	private Map<UserRole, Set<String>> mergeRoleGroupsAndEmbargoes() {
+		// Check to see if there are active embargoes, and if there are that their window has not passed
+		boolean hasActiveEmbargo = false;
+		if (this.activeEmbargoes != null) {
+			Date dateNow = new Date();
+
+			for (Date embargoDate : this.activeEmbargoes) {
+				if (embargoDate.after(dateNow)) {
+					hasActiveEmbargo = true;
+					break;
+				}
+			}
+		}
+		Map<UserRole, Set<String>> activeRoleGroups = null;
+		if (hasActiveEmbargo) {
+			activeRoleGroups = new HashMap<UserRole, Set<String>>();
+			for (Map.Entry<UserRole, Set<String>> roleGroups : this.baseRoleGroups.entrySet()) {
+				if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI)) {
+					activeRoleGroups.put(roleGroups.getKey(), roleGroups.getValue());
+				}
+			}
+		} else {
+			activeRoleGroups = this.baseRoleGroups;
+		}
+		return activeRoleGroups;
+	}
+
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		result.append("Object Access Controls (").append(object.getPid()).append(")")
-		.append("\nRoles granted to groups:");
-		for(UserRole r : role2groups.keySet()) {
+				.append("\nRoles granted to groups:");
+		for (UserRole r : baseRoleGroups.keySet()) {
 			result.append(r.getPredicate()).append("\n");
-			for(String g : role2groups.get(r)) {
+			for (String g : baseRoleGroups.get(r)) {
 				result.append(g).append("\t");
 			}
 		}
 		result.append("\nActive embargo dates:");
-		for(Date d : activeEmbargoes) {
-			result.append(format.format(d));
+		for (Date d : activeEmbargoes) {
+			try {
+				result.append(DateTimeUtil.formatDateToUTC(d));
+			} catch (ParseException e) {
+				LOG.error("Failed to parse date " + d, e);
+			}
 		}
 		return result.toString();
 	}
-	
+
 	public PID getObject() {
 		return object;
 	}
-	
+
 	/**
-	 * Builds a set of all the user roles granted to the given groups.
+	 * Builds a set of all the active user roles granted to the given groups.
+	 * 
 	 * @param groups
 	 * @return
 	 */
-	public Set<UserRole> getRoles(String [] groups) {
+	public Set<UserRole> getRoles(String[] groups) {
+		return this.getRoles(groups, this.activeRoleGroups);
+	}
+
+	public Set<UserRole> getBaseRoles(String[] groups) {
+		return this.getRoles(groups, this.baseRoleGroups);
+	}
+
+	/**
+	 * Builds a set of all the user roles granted to the given groups.
+	 * 
+	 * @param groups
+	 * @param roleGroups
+	 * @return
+	 */
+	private Set<UserRole> getRoles(String[] groups, Map<UserRole, Set<String>> roleGroups) {
 		Set<UserRole> result = new HashSet<UserRole>();
-		for(String group : groups) { // get all user roles
-			for(UserRole r : role2groups.keySet()) {
-				if(role2groups.get(r).contains(group)) {
+		for (String group : groups) { // get all user roles
+			for (UserRole r : roleGroups.keySet()) {
+				if (roleGroups.get(r).contains(group)) {
 					result.add(r);
-					break;
 				}
 			}
 		}
 		return result;
 	}
-	
+
 	public Set<UserRole> getRoles(AccessGroupSet groups) {
+		return this.getRoles(groups, this.activeRoleGroups);
+	}
+
+	public Set<UserRole> getBaseRoles(AccessGroupSet groups) {
+		return this.getRoles(groups, this.baseRoleGroups);
+	}
+
+	private Set<UserRole> getRoles(AccessGroupSet groups, Map<UserRole, Set<String>> roleGroups) {
 		Set<UserRole> result = new HashSet<UserRole>();
-		for(String group : groups) { // get all user roles
-			for(UserRole r : role2groups.keySet()) {
-				if(role2groups.get(r).contains(group)) {
+		for (String group : groups) { // get all user roles
+			for (UserRole r : roleGroups.keySet()) {
+				if (roleGroups.get(r).contains(group)) {
 					result.add(r);
-					break;
 				}
 			}
 		}
 		return result;
 	}
-	
+
 	public boolean hasPermission(AccessGroupSet groups, Permission permission) {
 		Set<UserRole> roles = this.getRoles(groups);
-		for(UserRole r : roles) {
-			if(r.getPermissions().contains(permission)) return true;
+		for (UserRole r : roles) {
+			if (r.getPermissions().contains(permission))
+				return true;
 		}
-		
-		// TODO incorporate embargoes into this computation
 		return false;
 	}
-	
-	/**
+
+	/*
 	 * Determines a user permission, given a set of groups.
+	 * 
 	 * @param groups user memberships
+	 * 
 	 * @param permission the permission requested
+	 * 
 	 * @return true if permitted
 	 */
 	public boolean hasPermission(String[] groups, Permission permission) {
 		Set<UserRole> roles = this.getRoles(groups);
-		for(UserRole r : roles) {
-			if(r.getPermissions().contains(permission)) return true;
+		for (UserRole r : roles) {
+			if (r.getPermissions().contains(permission))
+				return true;
 		}
 		return false;
 	}
-	
+
 	/**
+	 * Returns all groups assigned to this object that possess the given permission
 	 * 
 	 * @param permission
 	 * @return
 	 */
 	public Set<String> getGroupsByPermission(Permission permission) {
 		Set<String> groups = new HashSet<String>();
-		for(Map.Entry<UserRole, Set<String>> r2g : this.role2groups.entrySet()) {
+		for (Map.Entry<UserRole, Set<String>> r2g : this.activeRoleGroups.entrySet()) {
 			if (r2g.getKey().getPermissions().contains(permission)) {
 				groups.addAll(r2g.getValue());
 			}
 		}
 		return groups;
 	}
-	
+
+	/**
+	 * Returns all groups assigned to the given role
+	 * 
+	 * @param userRole
+	 * @return
+	 */
 	public Set<String> getGroupsByUserRole(UserRole userRole) {
-		return this.role2groups.get(userRole);
+		return this.activeRoleGroups.get(userRole);
 	}
-	
+
+	/**
+	 * Returns a list where each entry contains a single role uri + group pairing assigned to this object. Values are
+	 * pipe delimited
+	 * 
+	 * @return
+	 */
 	public List<String> roleGroupsToList() {
 		List<String> result = new ArrayList<String>();
-		for(Map.Entry<UserRole, Set<String>> r2g : this.role2groups.entrySet()) {
+		for (Map.Entry<UserRole, Set<String>> r2g : this.activeRoleGroups.entrySet()) {
 			String roleName = r2g.getKey().getURI().toString();
-			for (String group: r2g.getValue()) {
+			for (String group : r2g.getValue()) {
 				result.add(roleName + "|" + group);
 			}
 		}
