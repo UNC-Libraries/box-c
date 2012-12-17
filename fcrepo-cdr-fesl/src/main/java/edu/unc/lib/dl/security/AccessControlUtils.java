@@ -16,6 +16,8 @@
 package edu.unc.lib.dl.security;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -115,11 +117,13 @@ public class AccessControlUtils {
 		// build a consolidated list of groups in each role and embargo dates
 		Map<String, Set<String>> summary = new HashMap<String, Set<String>>();
 		try {
-			Map<String, Set<String>> local = groupRolesFactory.getAllRolesAndGroups(pid);
+			Map<String, Set<String>> local = groupRolesFactory
+					.getAllRolesAndGroups(pid);
 			summary.putAll(local);
 
 			for (PID ancestor : ancestors) {
-				Map<String, Set<String>> inherited = groupRolesFactory.getAllRolesAndGroups(ancestor);
+				Map<String, Set<String>> inherited = groupRolesFactory
+						.getAllRolesAndGroups(ancestor);
 				if (inherited != null && !inherited.isEmpty()) {
 					for (String role : inherited.keySet()) {
 						if (summary.containsKey(role)) {
@@ -130,7 +134,6 @@ public class AccessControlUtils {
 					}
 				}
 			}
-
 			// add those with parent-implied list role
 			Set<String> listers = groupRolesFactory.getGroupsInRole(pid, UserRole.list.getURI().toString());
 			if (listers.size() > 0) {
@@ -216,7 +219,8 @@ public class AccessControlUtils {
 		Map<String, Object> stuff = this.getAllCdrAccessControls(pid);
 
 		@SuppressWarnings("unchecked")
-		Map<String, Set<String>> summary = (Map<String, Set<String>>) stuff.get("roles");
+		Map<String, Set<String>> summary = (Map<String, Set<String>>) stuff
+				.get("roles");
 		@SuppressWarnings("unchecked")
 		List<String> activeEmbargo = (List<String>) stuff.get("embargoes");
 
@@ -243,9 +247,74 @@ public class AccessControlUtils {
 		}
 		return permsEl;
 	}
+	
+	public List<String> getAllEmbargoes(PID pid) {
+		List<String> result = Collections.EMPTY_LIST;
+		try {
+			Set<PID> embargoPIDs = new HashSet<PID>();
+			embargoPIDs.addAll(this.getAncestorFactory().getInheritanceList(pid));
+			embargoPIDs.add(pid);
+			result = this.getEmbargoFactory().getActiveEmbargoDates(embargoPIDs);
+		} catch (ObjectNotFoundException e) {
+			// TODO Auto-generated catch block
+			LOG.error("Cannot find object to look up ancestors", e);
+		}
+		return result;
+	}
+
+	public Set<String> getRolesForGroups(Collection<String> groups, PID pid) {
+		Set<String> result = new HashSet<String>();
+		LOG.debug("getGroupsForRole: " + pid + " " + groups);
+
+		try {
+			Map<String, Set<String>> roles2Groups = groupRolesFactory
+					.getAllRolesAndGroups(pid);
+			if (roles2Groups != null) {
+				for (String role : roles2Groups.keySet()) {
+					if (!Collections.disjoint(roles2Groups.get(role), groups))
+						result.add(role);
+				}
+			}
+			// special list inheritance logic
+			// if my bond with parent is non-inheriting,
+			// then all groups with roles on parent have list
+			ParentBond bond = this.ancestorFactory.getParentBond(pid);
+			if(bond == null) {
+				return result;
+			}
+			if (!bond.inheritsRoles) {
+				Map<String, Set<String>> rolesMap = groupRolesFactory
+						.getAllRolesAndGroups(new PID(bond.parentPid));
+				for (Set<String> rgroups : rolesMap.values()) {
+					if (!Collections.disjoint(groups, rgroups)) {
+						result.add(UserRole.list.getURI().toString());
+						break;
+					}
+				}
+			} else {
+				// list of ancestors from which this pid inherits access
+				// controls
+				List<PID> ancestors = this.ancestorFactory
+						.getInheritanceList(pid);
+				for (PID ancestor : ancestors) {
+					Map<String, Set<String>> aroles2Groups = groupRolesFactory.getAllRolesAndGroups(ancestor);
+					if (aroles2Groups != null) {
+						for (String role : aroles2Groups.keySet()) {
+							if (!Collections.disjoint(aroles2Groups.get(role), groups))
+								result.add(role);
+						}
+					}
+				}
+			}
+		} catch (ObjectNotFoundException e) {
+			LOG.error("Cannot find object in question", e);
+		}
+		return result;
+	}
 
 	/**
-	 * Retrieves the set of groups in the requested role, including the parent-implied list role.
+	 * Retrieves the set of groups in the requested role, including the
+	 * parent-implied list role.
 	 */
 	public Set<String> getGroupsInRole(PID pid, String role) {
 		Set<String> groups = new HashSet<String>();
