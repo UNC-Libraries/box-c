@@ -92,7 +92,7 @@ public class CommonAdminObjectNavigationController extends AbstractFileUploadCon
 
 		logger.debug("getBreadcrumbsAndChildren exit");
 		
-		return uiWebService.getBreadcrumbsAndChildren(irUrlInfo, url, GroupsThreadStore.getGroups().toString(), pid);		
+		return uiWebService.getBreadcrumbsAndChildren(irUrlInfo, url, GroupsThreadStore.getGroupString(), pid);		
 	}
 	
 	/**

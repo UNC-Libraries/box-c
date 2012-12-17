@@ -45,7 +45,7 @@
 	</bean>
 	
 	<bean id="broker" class="org.apache.activemq.xbean.BrokerFactoryBean" destroy-method="destroy">
-		<property name="config" value="file:${activemq.home}/conf/activemq.xml" />
+		<property name="config" value="file:${services.activemq.config}" />
 		<property name="start" value="true" />
 	</bean>
 
@@ -265,16 +265,6 @@
 	</bean>
 	
 	<!-- Scheduler -->
-
-	<bean id="acCacheResetJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-		<property name="targetObject" ref="accessControlUtils" />
-		<property name="targetMethod" value="cacheCleanupForCdrBasedAccessControl" />
-	</bean>
-	
-	<bean id="acCacheResetCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-		<property name="jobDetail" ref="acCacheResetJobDetail" />
-		<property name="cronExpression" value="${scheduled.acCacheReset.cron}" />
-	</bean>
 	
 	<bean id="catchUpActivateJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
 		<property name="targetObject" ref="catchUpService" />
