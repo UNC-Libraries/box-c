@@ -105,6 +105,9 @@ public class HierarchicalBrowseController extends AbstractSolrSearchController {
 			resultResponse.setSearchState(searchState);
 		}
 		
+		//Get the children counts for container entries.
+		queryLayer.getChildrenCounts(resultResponse.getResultList(), browseRequest.getAccessGroups());
+		
 		model.addAttribute("resultType", "hierarchicalBrowse");
 		model.addAttribute("pageSubtitle", "Browse Results");
 		

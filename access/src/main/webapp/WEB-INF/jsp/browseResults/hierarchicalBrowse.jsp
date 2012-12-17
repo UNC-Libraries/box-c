@@ -84,14 +84,17 @@
 	</c:otherwise>
 </c:choose>
 <c:forEach items="${hierarchicalViewResults.resultList}" var="containerNode" varStatus="resultStatus">
+	<c:if test="${not empty containerNode.countMap}">
+		<c:set var="childCount" value="${containerNode.countMap.child}"/>
+	</c:if>
 	<c:if test="${!(param.excludeParent && resultStatus.first)}">
 		<c:set var="endContainerDivs" value="" />
 		<c:set var="indentCode" value="" />
 		<c:set var="entryOut" value="" />
 		
 		<c:set var="retainedAsDirectMatch" value="${fn:length(hierarchicalViewResults.matchingContainerPids) > 0
-					&& (containerNode.childCount == 0
-					|| hierarchicalViewResults.subcontainerCounts[containerNode.path.facetNodes[fn:length(containerNode.path.facetNodes) - 1].searchValue] == containerNode.childCount)}"/>
+					&& (childCount == 0
+					|| hierarchicalViewResults.subcontainerCounts[containerNode.path.facetNodes[fn:length(containerNode.path.facetNodes) - 1].searchValue] == childCount)}"/>
 		
 		<c:set var="containerFacetAction">
 			<c:choose>
@@ -132,7 +135,7 @@
 				<c:url var="primaryUrl" scope="page" value='search${containerUrlBase}'>
 					<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${containerFacetAction}|${searchSettings.actions['RESET_NAVIGATION']}:search"/>
 				</c:url>
-				<c:set var="primaryTooltip">View ${containerNode.childCount} matching item(s) contained within ${fn:toLowerCase(containerNode.resourceType)}&nbsp;${containerNode.title}</c:set>
+				<c:set var="primaryTooltip">View ${childCount} matching item(s) contained within ${fn:toLowerCase(containerNode.resourceType)}&nbsp;${containerNode.title}</c:set>
 			</c:when>
 			<c:otherwise>
 				<c:url var="primaryUrl" scope="page" value='browse${containerUrlBase}'>
@@ -216,7 +219,7 @@
 			</c:forEach>
 		</c:if>
 		
-		<c:set var="firstEntryBrowseSelected" value="${queryPath == 'browse' && (containerNode.childCount == 0 ||
+		<c:set var="firstEntryBrowseSelected" value="${queryPath == 'browse' && (childCount == 0 ||
 				(resultStatus.first && not empty hierarchicalViewResults.searchState.facets[searchFieldKeys.ANCESTOR_PATH]))}"/>
 		
 		<c:set var="entryOut">${entryOut}
@@ -289,7 +292,7 @@
 					<c:when test="${containerNode.resourceType == searchSettings.resourceTypeFile}">
 						<c:if test="${param.displaySecondaryActions}">
 							<p class="hier_secondary_actions">
-								<c:if test="${cdr:contains(containerNode.datastream, 'DATA_FILE')}">
+								<c:if test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', containerNode)}">
 									<c:if test="${!filePrimaryDownload}">
 										<a href="${cdr:getDatastreamUrl(containerNode, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
 									</c:if>
@@ -302,8 +305,8 @@
 						</c:if>
 					</c:when>
 					<c:otherwise>
-						<c:if test="${param.displayCounts && !(retainedAsDirectMatch && containerNode.childCount == 0)}">
-							<span class="hier_count">(${containerNode.childCount})</span>
+						<c:if test="${param.displayCounts && !(retainedAsDirectMatch && childCount == 0)}">
+							<span class="hier_count">(${childCount})</span>
 						</c:if>
 						
 						<c:if test="${param.displaySecondaryActions}">

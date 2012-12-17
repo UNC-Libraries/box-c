@@ -97,9 +97,6 @@ public class SearchActionController extends AbstractSolrSearchController {
 			
 			//Add the search state to the response.
 			resultResponse.setSearchState(searchState);
-			
-			// TODO Filter the datastreams in the response according to the users permissions
-			//DatastreamAccessValidator.filterSearchResult(resultResponse, searchRequest.getAccessGroups());
 		}
 		
 		//Get the record for the currently selected container if one is selected.
@@ -109,8 +106,10 @@ public class SearchActionController extends AbstractSolrSearchController {
 					searchRequest.getAccessGroups()));
 			model.addAttribute("selectedContainer", selectedContainer);
 			
-			// Store the path value from the selected container as the path for breadcrumbs
-			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, selectedContainer.getPath());
+			if (selectedContainer != null) {
+				// Store the path value from the selected container as the path for breadcrumbs
+				searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, selectedContainer.getPath());				
+			}
 		}
 		
 		// Use a representative content type value if there are any results.

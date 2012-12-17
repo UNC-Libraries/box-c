@@ -34,7 +34,7 @@
 				<div class="relatedthumb">
 					<a href="<c:out value='${fullRecordUrl}' />">
 						<c:choose>
-							<c:when test="${cdr:contains(neighbor.datastream, 'THUMB_SMALL')}">
+							<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', neighbor)}">
 								<div class="smallthumb_container">
 									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_${neighbor.contentTypeFacet[0].searchKey}" 
 											src="${cdr:getDatastreamUrl(neighbor, 'THUMB_SMALL', fedoraUtil)}"/>
