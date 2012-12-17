@@ -90,4 +90,18 @@
 	<bean id="djatokaContentService" class="edu.unc.lib.dl.ui.service.DjatokaContentService">
 		<property name="applicationPathSettings" ref="applicationPathSettings" />
 	</bean>
+	
+	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject">
+			<ref local="tripleStoreQueryService" />
+		</property>
+		<property name="targetMethod">
+			<value>fetchByRepositoryPath</value>
+		</property>
+		<property name="arguments">
+			<list>
+				<value>/Collections</value>
+			</list>
+		</property>
+	</bean>
 </beans>

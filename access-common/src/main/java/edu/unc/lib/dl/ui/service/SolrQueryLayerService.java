@@ -45,6 +45,7 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 
@@ -57,6 +58,7 @@ import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 public class SolrQueryLayerService extends SolrSearchService {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrQueryLayerService.class);
 	protected SearchStateFactory searchStateFactory;
+	protected PID collectionsPid;
 
 	/**
 	 * Returns a list of the most recently added items in the collection
@@ -123,6 +125,12 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public SearchResultResponse getFacetList(SearchState baseState, AccessGroupSet accessGroups,
 			List<String> facetsToRetrieve, boolean applyCutoffs) {
 		SearchState searchState = (SearchState)baseState.clone();
+		
+		if (!searchState.getFacets().containsKey("ANCESTOR_PATH")) {
+			CutoffFacet defaultAncestorPath = new CutoffFacet("ANCESTOR_PATH", "2,*");
+			defaultAncestorPath.setCutoff(3);
+			searchState.getFacets().put("ANCESTOR_PATH", defaultAncestorPath);
+		}
 		
 		SearchRequest searchRequest = new SearchRequest();
 		searchRequest.setAccessGroups(accessGroups);
@@ -449,6 +457,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		List<BriefObjectMetadata> containerObjects = new ArrayList<BriefObjectMetadata>();
 
+		// Operator to separate ACL's from query
+		query.append(" AND ");
+		
 		for (BriefObjectMetadata metadataObject : resultList) {
 			if (metadataObject.getPath() != null
 					&& (metadataObject.getResourceType().equals(searchSettings.resourceTypeCollection)
@@ -468,6 +479,10 @@ public class SolrQueryLayerService extends SolrSearchService {
 					maxTier = highestTier;
 			}
 		}
+		
+		// If there weren't any container entries in the results, then nothing to retrieve, lets get out of here
+		if (containerObjects.size() == 0)
+			return;
 
 		if (!first)
 			query.append(")");
@@ -532,17 +547,19 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 */
 	public HierarchicalBrowseResultResponse getHierarchicalBrowseResults(HierarchicalBrowseRequest browseRequest) {
 		AccessGroupSet accessGroups = browseRequest.getAccessGroups();
+		SearchState browseState = (SearchState)browseRequest.getSearchState().clone();
 
-		boolean noRootNode = !browseRequest.getSearchState().getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH);
+		boolean noRootNode = !browseState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH);
+		if (noRootNode) {
+			browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH, "1," + this.collectionsPid.getPid()));
+		}
 
 		HierarchicalBrowseResultResponse browseResults = new HierarchicalBrowseResultResponse();
 
 		SearchState hierarchyState = searchStateFactory.createHierarchyListSearchState();
-		//hierarchyState.getResourceTypes().add(searchSettings.resourceTypeFile);
-		if (!noRootNode) {
-			hierarchyState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH,
-					browseRequest.getSearchState().getFacets().get(SearchFieldKeys.ANCESTOR_PATH));
-		}
+		
+		hierarchyState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH,
+				browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH));
 
 		hierarchyState.setRowsPerPage(0);
 
@@ -579,17 +596,17 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		// //////////////////////////////////////////////////////
 		// Get the root node for this search
-		if (!noRootNode) {
-			BriefObjectMetadataBean rootNode = getObjectById(new SimpleIdRequest(((CutoffFacet) browseRequest
-					.getSearchState().getFacets().get(SearchFieldKeys.ANCESTOR_PATH)).getSearchKey(),
+		BriefObjectMetadataBean rootNode = getObjectById(new SimpleIdRequest(((CutoffFacet) 
+					browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH)).getSearchKey(),
 					browseRequest.getAccessGroups()));
+		if (rootNode != null)
 			browseResults.getResultList().add(0, rootNode);
-		}
+		
 
 		// //////////////////////////////////////////////////////
 		// Get the children counts per container
 		// Clear the resource types list for reuse purposes
-		SearchState searchState = new SearchState(browseRequest.getSearchState());
+		SearchState searchState = new SearchState(browseState);
 		SearchRequest searchRequest = new SearchRequest(searchState, accessGroups);
 
 		if (searchState.getResultFields() != null) {
@@ -623,7 +640,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		SolrQuery childQuery = this.generateSearch(searchRequest, true);
 
 		// Set the resource type filter query and restore it to the search state
-		if (resourceTypeFilter != null)
+		if (resourceTypeFilter != null && resourceTypeFilter.trim().length() > 0)
 			childQuery.addFilterQuery(resourceTypeFilter);
 
 		// Enable faceting for ancestorPath
@@ -672,11 +689,11 @@ public class SolrQueryLayerService extends SolrSearchService {
 				browseResults.removeContainersWithoutContents();
 			}
 
-			if (!noRootNode
-					&& browseRequest.getSearchState().getRowsPerPage() > 0
-					&& (browseRequest.getSearchState().getResourceTypes() == null || browseRequest.getSearchState()
+			// Retrieve normal item search results, which are restricted to a max number per page
+			if (browseState.getRowsPerPage() > 0
+					&& (browseState.getResourceTypes() == null || browseState
 							.getResourceTypes().contains(searchSettings.resourceTypeFile))) {
-				SearchState fileSearchState = new SearchState(browseRequest.getSearchState());
+				SearchState fileSearchState = new SearchState(browseState);
 				List<String> resourceTypes = new ArrayList<String>();
 				resourceTypes.add(searchSettings.resourceTypeFile);
 				fileSearchState.setResourceTypes(resourceTypes);
@@ -743,5 +760,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	public void setSearchStateFactory(SearchStateFactory searchStateFactory) {
 		this.searchStateFactory = searchStateFactory;
+	}
+
+	public void setCollectionsPid(PID collectionsPid) {
+		this.collectionsPid = collectionsPid;
 	}
 }

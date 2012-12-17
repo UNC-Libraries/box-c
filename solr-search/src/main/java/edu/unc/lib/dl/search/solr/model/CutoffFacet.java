@@ -17,12 +17,18 @@
 
 import java.util.List;
 import org.apache.solr.client.solrj.response.FacetField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CutoffFacet extends AbstractHierarchicalFacet {
+	private static final Logger LOG = LoggerFactory.getLogger(CutoffFacet.class);
+	
 	private Integer cutoff;
 	
 	public CutoffFacet(String fieldName, String facetString) {
 		super(fieldName, facetString);
+		LOG.debug("Instantiating cutoff facet for " + fieldName + " from " + facetString);
+		
 		CutoffFacetNode node = new CutoffFacetNode(facetString);
 		this.facetNodes.add(node);
 		this.setCutoff(this.value);

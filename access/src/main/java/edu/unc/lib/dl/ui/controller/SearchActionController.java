@@ -29,7 +29,6 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.ui.validator.DatastreamAccessValidator;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 
