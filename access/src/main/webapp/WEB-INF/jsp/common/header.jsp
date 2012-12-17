@@ -75,13 +75,13 @@
 				<li><a href="<c:out value='${contactUrl}'/>" id="contact">Contact</a></li>
 			</ul>
 			<ul class="secondarymenu">
-				<c:if test="${cdr:contains(sessionScope.user.accessGroups, accessGroupConstants.ADMIN_GROUP)}">
+				<c:if test="${cdr:contains(requestScope.accessGroupSet, accessGroupConstants.ADMIN_GROUP)}">
 					<li>
 						<a href="external?page=cdradmin" target="_blank">Admin</a>
 					</li>
 				</c:if>
 				<c:choose>
-					<c:when test="${not empty sessionScope.user && not empty sessionScope.user.userName}">
+					<c:when test="${not empty requestScope.accessGroupSet}">
 						<c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
 							<c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
 						</c:url>

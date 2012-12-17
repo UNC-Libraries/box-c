@@ -17,6 +17,7 @@ package edu.unc.lib.dl.acl.util;
 
 public class AccessGroupConstants {
 	public final static String PUBLIC_GROUP = "public";
+	public final static String AUTHENTICATED_GROUP = "authenticated";
 	public static String ADMIN_GROUP = null;
 	public static String ADMIN_GROUP_ESCAPED = null;
 	
