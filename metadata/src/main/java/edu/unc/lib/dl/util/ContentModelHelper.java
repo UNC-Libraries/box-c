@@ -57,6 +57,7 @@ public class ContentModelHelper {
 				inheritPermissions("inheritPermissions", "http://cdr.unc.edu/definitions/acl#"), embargo("embargo",
 				"http://cdr.unc.edu/definitions/acl#"),
 				dataAccessCategory("data-access-category", "http://cdr.unc.edu/definitions/acl#"),
+				userRole("user-role", "http://cdr.unc.edu/definitions/acl#"),
 				 isPublished("isPublished");
 		private URI uri;
 		private String predicate;

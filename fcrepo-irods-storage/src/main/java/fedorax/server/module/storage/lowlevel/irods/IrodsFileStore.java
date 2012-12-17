@@ -133,7 +133,7 @@ public class IrodsFileStore {
 			throw newFile;
 		}
 		long size = fileSystem.write(file, content);
-		if (hints.containsKey(IrodsLowlevelStorageModule.STORAGE_LEVEL_HINT)) {
+		if (hints != null && hints.containsKey(IrodsLowlevelStorageModule.STORAGE_LEVEL_HINT)) {
 			fileSystem.setStorageLevel(file,
 					hints.get(IrodsLowlevelStorageModule.STORAGE_LEVEL_HINT));
 		}

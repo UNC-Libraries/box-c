@@ -1158,14 +1158,15 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		StringBuffer query = new StringBuffer();
 		query.append("select $group $role from <%1$s>")
 				.append(" where <%2$s> $role $group").append(" and (")
-				.append("       $permission <mulgara:is> <%3$s>")
-				.append("       or $permission <mulgara:is> <%4$s>")
-				.append("       or $permission <mulgara:is> <%5$s>")
-				.append("       or $permission <mulgara:is> <%6$s>")
-				.append("       or $permission <mulgara:is> <%7$s>")
-				.append("       or $permission <mulgara:is> <%7$s>")
-				.append("       or $permission <mulgara:is> <%8$s>")
-				.append(";");
+				.append("       $role <mulgara:is> <%3$s>")
+				.append("       or $role <mulgara:is> <%4$s>")
+				.append("       or $role <mulgara:is> <%5$s>")
+				.append("       or $role <mulgara:is> <%6$s>")
+				.append("       or $role <mulgara:is> <%7$s>")
+				.append("       or $role <mulgara:is> <%8$s>")
+				.append("       or $role <mulgara:is> <%9$s>")
+				.append("       or $role <mulgara:is> <%10$s>")
+				.append(" );");
 		String q = String.format(query.toString(),
 				this.getResourceIndexModelUri(), pid.getURI(),
 				ContentModelHelper.CDRProperty.inheritPermissions.getURI(),
@@ -1173,7 +1174,9 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 				UserRole.observer.getURI(),
 				UserRole.ingester.getURI(),
 				UserRole.processor.getURI(),
-				UserRole.curator.getURI());
+				UserRole.curator.getURI(),
+				UserRole.metadataPatron.getURI(),
+				UserRole.accessCopiesPatron.getURI());
 		List<List<String>> response = this.lookupStrings(q);
 		if (!response.isEmpty()) {
 			for (List<String> solution : response) {
@@ -1469,9 +1472,9 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 	 * lookupRepositoryAncestorInheritance(edu.unc.lib.dl.fedora.PID)
 	 */
 	@Override
-	public List<ParentBond> lookupRepositoryAncestorInheritance(PID pid) {
+	public Map<String, ParentBond> lookupRepositoryAncestorInheritance(PID pid) {
 		// TODO needs many CDRs one Fedora fix
-		List<ParentBond> result = new ArrayList<ParentBond>();
+		Map<String, ParentBond> result = new HashMap<String, ParentBond>();
 
 		// construct path from contains relationships
 		StringBuffer query = new StringBuffer();
@@ -1487,17 +1490,16 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 		List<List<String>> response = this.lookupStrings(q);
 		if (!response.isEmpty()) {
-			Collections.reverse(response);
-			List<String> parentsNotInheritedFrom = new ArrayList<String>();
+			Set<String> parentsNotInheritedFrom = new HashSet<String>();
 			for (List<String> solution : response) {
 				if ("false".equals(solution.get(1).trim())) {
 					parentsNotInheritedFrom.add(solution.get(2));
 				}
 				ParentBond bond = new ParentBond();
 				bond.parentPid = solution.get(2);
-				result.add(bond);
+				result.put(solution.get(0), bond);
 			}
-			for (ParentBond bond : result) {
+			for (ParentBond bond : result.values()) {
 				if (parentsNotInheritedFrom.contains(bond.parentPid)) {
 					bond.inheritsRoles = false;
 				}

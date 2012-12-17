@@ -16,13 +16,17 @@
 package edu.unc.lib.dl.security;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.fcrepo.server.security.xacml.pdp.finder.AttributeFinderException;
 import org.fcrepo.server.security.xacml.pdp.finder.attribute.DesignatorAttributeFinderModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AttributeFactory;
@@ -31,38 +35,28 @@ import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.StandardAttributeFactory;
 import com.sun.xacml.cond.EvaluationResult;
 
-import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 
-	private static final Logger logger = LoggerFactory
+	private static final Logger log = LoggerFactory
 			.getLogger(CdrRIAttributeFinder.class);
 
-	private static Set<String> myAttributes = new HashSet<String>();
-
+	
+	URI embargo = ContentModelHelper.CDRProperty.embargo.getURI();
+	URI dataAccessCategory = ContentModelHelper.CDRProperty.dataAccessCategory.getURI();
+	URI userRole = ContentModelHelper.CDRProperty.userRole.getURI();
+	URI isPublished = ContentModelHelper.CDRProperty.isPublished.getURI();
+	static URI fedoraSubjectRoleAttribute = null;
+	static URI stringDataType = null;
 	static {
-		myAttributes.add(UserRole.curator.getURI()
-				.toString());
-		myAttributes.add(ContentModelHelper.CDRProperty.embargo.getURI()
-				.toString());
-		myAttributes.add(UserRole.ingester.getURI()
-				.toString());
-		myAttributes.add(UserRole.observer.getURI()
-				.toString());
-		myAttributes.add(UserRole.patron.getURI()
-				.toString());
-		myAttributes.add(UserRole.metadataPatron.getURI()
-				.toString());
-		myAttributes.add(UserRole.accessCopiesPatron.getURI()
-				.toString());
-		myAttributes.add(UserRole.processor.getURI()
-				.toString());
-		myAttributes.add(ContentModelHelper.CDRProperty.embargo.getURI()
-				.toString());
-		myAttributes.add(ContentModelHelper.CDRProperty.dataAccessCategory.getURI()
-				.toString());
+		try {
+			fedoraSubjectRoleAttribute = new URI("urn:fedora:names:fedora:2.1:subject:role");
+			stringDataType = new URI("http://www.w3.org/2001/XMLSchema#string");
+		} catch (URISyntaxException e) {
+			throw new Error(e);
+		}
 	}
 
 	private AttributeFactory attributeFactory = null;
@@ -72,13 +66,16 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	public CdrRIAttributeFinder() {
 		super();
 		attributeFactory = StandardAttributeFactory.getFactory();
-		logger.info("Initialised AttributeFinder:" + this.getClass().getName());
-		if (logger.isDebugEnabled()) {
-			logger.debug("registering the following attributes: ");
+	}
+	
+	public void init() {
+		log.info("Initialised AttributeFinder:" + this.getClass().getName());
+		if (log.isDebugEnabled()) {
+			log.debug("registering the following attributes: ");
 			for (Integer desNum : this.getSupportedDesignatorTypes()) {
-				logger.debug("Designator Type: " + desNum);
+				log.debug("Designator Type: " + desNum);
 				for (String attrName : m_attributes.get(desNum).keySet()) {
-					logger.debug("\t" + attrName);
+					log.debug("\t" + attrName);
 				}
 			}
 		}
@@ -115,8 +112,8 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 		long startTime = System.currentTimeMillis();
 
 		String resourceId = context.getResourceId().encode();
-		if (logger.isDebugEnabled()) {
-			logger.debug("CdrRIAttributeFinder: [" + attributeType.toString()
+		if (log.isDebugEnabled()) {
+			log.debug("CdrRIAttributeFinder: [" + attributeType.toString()
 					+ "] " + attributeId + ", rid=" + resourceId);
 		}
 
@@ -136,8 +133,8 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 		// we only know about registered attributes from config file
 		if (!getSupportedDesignatorTypes()
 				.contains(new Integer(designatorType))) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Does not know about designatorType: "
+			if (log.isDebugEnabled()) {
+				log.debug("Does not know about designatorType: "
 						+ designatorType);
 			}
 			return new EvaluationResult(
@@ -147,25 +144,50 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 		Set<String> allowedAttributes = m_attributes.get(designatorType)
 				.keySet();
 		if (!allowedAttributes.contains(attrName)) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Does not know about attribute: " + attrName);
+			if (log.isDebugEnabled()) {
+				log.debug("Does not know about attribute: " + attrName);
 			}
 			return new EvaluationResult(
 					BagAttribute.createEmptyBag(attributeType));
 		}
+		
+		Set<String> groups = getShibbolethGroups(context);
 
 		EvaluationResult result = null;
 		try {
-			result = getEvaluationResult(resourceId, attrName, designatorType,
-					attributeType);
+			result = getEvaluationResult(resourceId, attributeId, designatorType,
+					attributeType, groups);
 		} catch (Exception e) {
-			logger.error("Error finding attribute: " + e.getMessage(), e);
+			log.error("Error finding attribute: " + e.getMessage(), e);
 			return new EvaluationResult(
 					BagAttribute.createEmptyBag(attributeType));
 		}
 
-		logger.info("Total time for CDR role lookup: "
+		log.info("Total time for CDR role lookup: "
 				+ (System.currentTimeMillis() - startTime) + " milliseconds");
+		return result;
+	}
+
+	private Set<String> getShibbolethGroups(EvaluationCtx context) {
+		Set<String> result = new HashSet<String>();
+		Node root = context.getRequestRoot();
+		for(int i = 0; i < root.getChildNodes().getLength(); i++) {
+			Node subjectNode = root.getChildNodes().item(i);
+			if("Subject".equals(subjectNode.getNodeName())) {
+				for(int n = 0; n < subjectNode.getChildNodes().getLength(); n++) {
+					Node attributeNode = subjectNode.getChildNodes().item(n);
+					if("Attribute".equals(attributeNode.getNodeName())) {
+						Node attrIdNode = attributeNode.getAttributes().getNamedItem("AttributeId");
+						if(attrIdNode != null && fedoraSubjectRoleAttribute.toString().equals(attrIdNode.getNodeValue())) {
+							// this is the attribute we need
+							String groupName = attributeNode.getFirstChild().getTextContent();
+							log.debug("Found group name: "+groupName);
+							result.add(groupName);
+						}
+					}
+				}
+			}
+		}
 		return result;
 	}
 
@@ -181,7 +203,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	 * @throws AttributeFinderException
 	 */
 	private EvaluationResult getEvaluationResult(String resourceID,
-			String attribute, int designatorType, URI type)
+			URI attribute, int designatorType, URI type, Set<String> groups)
 			throws AttributeFinderException {
 
 		// split up the path of the hierarchical resource id
@@ -201,38 +223,59 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 			}
 		} else {
 			// eg /FedoraRepository, not a valid path to PID or PID/DS
-			logger.debug("Resource ID not valid path to PID or datastream: "
+			log.debug("Resource ID not valid path to PID or datastream: "
 					+ resourceID);
 			return new EvaluationResult(BagAttribute.createEmptyBag(type));
 		}
 
-		logger.debug("Getting attribute " + attribute + " for resource " + pid);
+		log.debug("Getting attribute " + attribute + " for resource " + pid);
 
-		// also compute list permission
-		Set<String> groups = accessControlUtils.getGroupsInRole(new PID(pid), attribute);
+		if(userRole.equals(attribute)) {
+			Set<String> roles = accessControlUtils.getRolesForGroups(groups, new PID(pid));
+			return makeStringBagResult(roles, type);
+		} else if(embargo.equals(attribute)) {
+			List<String> embargoes = getAccessControlUtils().getAllEmbargoes(new PID(pid));
+			return makeStringBagResult(embargoes, type);
+		}
 
 		if (groups == null || groups.isEmpty()) {
 			return new EvaluationResult(BagAttribute.createEmptyBag(type));
 		}
 
 		Set<AttributeValue> bagValues = new HashSet<AttributeValue>();
-		logger.debug("Attribute values found: " + groups.size());
+		log.debug("Attribute values found: " + groups.size());
 		for (String s : groups) {
 			AttributeValue attributeValue = null;
 			try {
 				attributeValue = attributeFactory.createValue(type, s);
 			} catch (Exception e) {
-				logger.error("Error creating attribute: " + e.getMessage(), e);
+				log.error("Error creating attribute: " + e.getMessage(), e);
 				continue;
 			}
 
 			bagValues.add(attributeValue);
 
-			if (logger.isDebugEnabled()) {
-				logger.debug("AttributeValue found: [" + type.toASCIIString()
+			if (log.isDebugEnabled()) {
+				log.debug("AttributeValue found: [" + type.toASCIIString()
 						+ "] " + s);
 			}
 
+		}
+		BagAttribute bag = new BagAttribute(type, bagValues);
+		return new EvaluationResult(bag);
+	}
+	
+	private EvaluationResult makeStringBagResult(Collection<String> values, URI type) {
+		Set<AttributeValue> bagValues = new HashSet<AttributeValue>();
+		for (String s : values) {
+			AttributeValue attributeValue = null;
+			try {
+				attributeValue = attributeFactory.createValue(type, s);
+			} catch (Exception e) {
+				log.error("Error creating attribute: " + e.getMessage(), e);
+				continue;
+			}
+			bagValues.add(attributeValue);
 		}
 		BagAttribute bag = new BagAttribute(type, bagValues);
 		return new EvaluationResult(bag);

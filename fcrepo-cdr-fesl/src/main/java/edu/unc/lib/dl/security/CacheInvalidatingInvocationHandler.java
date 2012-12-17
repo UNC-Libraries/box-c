@@ -126,6 +126,11 @@ public class CacheInvalidatingInvocationHandler extends
 			}
 			FedoraMethod fm = new FedoraMethod(method, args, returnValue);
 			String methodName = method.getName();
+			try {
+				fm.getPID();
+			} catch(NullPointerException e) {
+				return null;
+			}
 			PID pid = new PID(fm.getPID().getObjectId());
 			
 			if("purgeObject".equals(methodName)) {
