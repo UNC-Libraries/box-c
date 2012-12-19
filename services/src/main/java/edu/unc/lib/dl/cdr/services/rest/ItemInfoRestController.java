@@ -52,11 +52,13 @@ import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor;
 import edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor;
 import edu.unc.lib.dl.cdr.services.processing.EnhancementConductor.PerformServicesRunnable;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnable;
+import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.message.ActionMessage;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
+import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -79,6 +81,10 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 	private SolrUpdateConductor solrUpdateConductor;
 	@Resource
 	private SolrSearchService solrSearchService;
+	@Resource
+	private FedoraDataService fedoraDataService;
+	@Resource
+	private SolrSettings solrSettings;
 
 	@RequestMapping(value = { "", "/" }, method = RequestMethod.GET)
 	public @ResponseBody
@@ -162,7 +168,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		response.setContentType("application/xml");
 		PrintWriter pr = response.getWriter();
 		XMLOutputter xmlOutputter = new XMLOutputter();
-		xmlOutputter.output(solrUpdateConductor.getFedoraDataService().getFoxmlViewXML(id), pr);
+		xmlOutputter.output(fedoraDataService.getFoxmlViewXML(id), pr);
 	}
 
 	@RequestMapping(value = "{id}/objectViewXML", method = RequestMethod.GET)
@@ -170,49 +176,26 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		response.setContentType("application/xml");
 		PrintWriter pr = response.getWriter();
 		XMLOutputter xmlOutputter = new XMLOutputter();
-		xmlOutputter.output(solrUpdateConductor.getFedoraDataService().getObjectViewXML(id), pr);
+		xmlOutputter.output(fedoraDataService.getObjectViewXML(id), pr);
 	}
 
 	@RequestMapping(value = "{id}/solrRecord", method = RequestMethod.GET)
-	public void getItemSolrRecord(HttpServletResponse response, @PathVariable("id") String id) {
+	public @ResponseBody
+	BriefObjectMetadataBean getItemSolrRecord(HttpServletResponse response, @PathVariable("id") String id) {
 		response.setContentType("application/xml");
-		GetMethod method = new GetMethod(solrUpdateConductor.getSolrPath() + "/select");
-		method.setQueryString(new NameValuePair[] {
-				new NameValuePair("q", "id:" + solrUpdateConductor.getSolrSearchService().getSolrSettings().sanitize(id)),
-				new NameValuePair("omitHeader", "true") });
-
-		HttpClient httpClient = new HttpClient();
-		InputStream responseStream = null;
-
-		try {
-			httpClient.executeMethod(method);
-			responseStream = method.getResponseBodyAsStream();
-			int b;
-			while ((b = responseStream.read()) != -1) {
-				response.getOutputStream().write(b);
-			}
-			response.getOutputStream().flush();
-		} catch (Exception e) {
-			LOG.error("Failed to get solr record for " + id, e);
-		} finally {
-			if (method != null)
-				method.releaseConnection();
-			try {
-				if (responseStream != null)
-					responseStream.close();
-			} catch (IOException e) {
-				LOG.error("Failed to close response stream while getitng solr record for " + id, e);
-			}
-		}
+		AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
+		SimpleIdRequest idRequest = new SimpleIdRequest(id, groupSet);
+		BriefObjectMetadataBean metadata = solrSearchService.getObjectById(idRequest);
+		return metadata;
 	}
 
 	@RequestMapping(value = "{prefix}/{id}/solrRecord/lastIndexed", method = RequestMethod.GET)
 	public @ResponseBody
 	Long getItemLastIndexed(HttpServletResponse response, @PathVariable("prefix") String idPrefix,
 			@PathVariable("id") String id) {
-		
+
 		// For when group forwarding is enabled here
-		/*AccessGroupSet groupSet = new AccessGroupSet(GroupsThreadStore.getGroups().split(";"));*/
+		/* AccessGroupSet groupSet = new AccessGroupSet(GroupsThreadStore.getGroups().split(";")); */
 		AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
 		SimpleIdRequest idRequest = new SimpleIdRequest(idPrefix + ":" + id, Arrays.asList("lastIndexed"), groupSet);
 		BriefObjectMetadataBean md = solrSearchService.getObjectById(idRequest);
@@ -369,7 +352,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		// Add the last time the item was indexed
 		AccessGroupSet accessGroups = new AccessGroupSet();
 		accessGroups.add(AccessGroupConstants.ADMIN_GROUP);
-		Date lastIndexed = solrUpdateConductor.getSolrSearchService().getTimestamp(id, accessGroups);
+		Date lastIndexed = solrSearchService.getTimestamp(id, accessGroups);
 		if (lastIndexed == null) {
 			result.put("indexed", false);
 			result.put("lastIndexed", "");

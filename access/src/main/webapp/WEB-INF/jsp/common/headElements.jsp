@@ -36,6 +36,7 @@
 
 <script type="text/javascript" src="/static/js/cdrCommon.js"></script>
 <script type="text/javascript" src="/static/js/jquery.qtip.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/jquery.qtip.min.css" />
 
 <script type="text/javascript" src="/static/js/jquery.preload-1.0.8-unc.js"></script>
 <script type="text/javascript" src="/static/js/thumbnails.js"></script>

@@ -17,6 +17,9 @@ package edu.unc.lib.dl.data.ingest.solr.indexing;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 
@@ -28,6 +31,8 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
 import org.apache.solr.client.solrj.request.UpdateRequest;
+import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrInputField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,31 +50,55 @@ public class SolrUpdateDriver {
 	private int autoPushCount;
 	private int updateThreads;
 
-	public void init() {
-//		SSLSocketFactory socketFactory;
-//		try {
-//			socketFactory = new SSLSocketFactory(SSLContext.getInstance("SSL"),
-//					SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-//		} catch (NoSuchAlgorithmException e) {
-//			log.error("Failed to created httpclient", e);
-//			return;
-//		}
-//		Scheme sch = new Scheme("https", 443, socketFactory);
-//		SchemeRegistry schemeRegistry = new SchemeRegistry();
-//		schemeRegistry.register(sch);
-//
-//		ThreadSafeClientConnManager ccm = new ThreadSafeClientConnManager(schemeRegistry);
-//		ccm.setDefaultMaxPerRoute(32);
-//		ccm.setMaxTotal(128);
-//		DefaultHttpClient httpClient = new DefaultHttpClient(ccm);
+	private static String ID_FIELD = "id";
 
-		//solrServer = new ConcurrentUpdateSolrServer(solrSettings.getUrl(), httpClient, autoPushCount, updateThreads);
+	public void init() {
+		// SSLSocketFactory socketFactory;
+		// try {
+		// socketFactory = new SSLSocketFactory(SSLContext.getInstance("SSL"),
+		// SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+		// } catch (NoSuchAlgorithmException e) {
+		// log.error("Failed to created httpclient", e);
+		// return;
+		// }
+		// Scheme sch = new Scheme("https", 443, socketFactory);
+		// SchemeRegistry schemeRegistry = new SchemeRegistry();
+		// schemeRegistry.register(sch);
+		//
+		// ThreadSafeClientConnManager ccm = new ThreadSafeClientConnManager(schemeRegistry);
+		// ccm.setDefaultMaxPerRoute(32);
+		// ccm.setMaxTotal(128);
+		// DefaultHttpClient httpClient = new DefaultHttpClient(ccm);
+
+		// solrServer = new ConcurrentUpdateSolrServer(solrSettings.getUrl(), httpClient, autoPushCount, updateThreads);
 		solrServer = new ConcurrentUpdateSolrServer(solrSettings.getUrl(), autoPushCount, updateThreads);
 	}
 
 	public void addDocument(IndexDocumentBean idb) throws IndexingException {
 		try {
 			solrServer.addBean(idb);
+		} catch (IOException e) {
+			throw new IndexingException("Failed to add document to solr", e);
+		} catch (SolrServerException e) {
+			throw new IndexingException("Failed to add document to solr", e);
+		}
+	}
+
+	public void updateDocument(String operation, IndexDocumentBean idb) throws IndexingException {
+		try {
+			SolrInputDocument sid = solrServer.getBinder().toSolrInputDocument(idb);
+			for (String fieldName : sid.getFieldNames()) {
+				if (!ID_FIELD.equals(fieldName)) {
+					SolrInputField inputField = sid.getField(fieldName);
+					if (inputField != null && inputField.getValue() != null) {
+						Map<String, SolrInputField> partialUpdate = new HashMap<String, SolrInputField>();
+						partialUpdate.put(operation, sid.getField(fieldName));
+						sid.setField(fieldName, partialUpdate);
+					}
+
+				}
+			}
+			solrServer.add(sid);
 		} catch (IOException e) {
 			throw new IndexingException("Failed to add document to solr", e);
 		} catch (SolrServerException e) {
@@ -103,14 +132,14 @@ public class SolrUpdateDriver {
 
 	public void push() {
 		// Queue and empty request so that the concurrent server will push its queue
-//		UpdateRequest pushRequest = new UpdateRequest();
-//		try {
-//			solrServer.request(pushRequest);
-//		} catch (SolrServerException e) {
-//			throw new IndexingException("Failed to push to solr", e);
-//		} catch (IOException e) {
-//			throw new IndexingException("Failed to push to solr", e);
-//		}
+		// UpdateRequest pushRequest = new UpdateRequest();
+		// try {
+		// solrServer.request(pushRequest);
+		// } catch (SolrServerException e) {
+		// throw new IndexingException("Failed to push to solr", e);
+		// } catch (IOException e) {
+		// throw new IndexingException("Failed to push to solr", e);
+		// }
 	}
 
 	public void commit() {

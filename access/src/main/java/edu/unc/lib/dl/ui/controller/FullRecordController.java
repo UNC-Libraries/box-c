@@ -73,11 +73,11 @@ public class FullRecordController extends AbstractSolrSearchController {
 		if (briefObject == null) {
 			throw new InvalidRecordRequestException();
 		} else {
-			// TODO Filter the datastreams in the response according to the users permissions
-			//DatastreamAccessValidator.filterBriefObject(briefObject, accessGroups);
 			try {
 				Document foxmlView = FullObjectMetadataFactory.getFoxmlViewXML(idRequest);
-				fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
+				if (foxmlView == null) {
+					fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
+				}
 			} catch (Exception e) {
 				LOG.error("Failed to render full record view for " + idRequest.getId(), e);
 			}

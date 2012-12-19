@@ -22,6 +22,7 @@ import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
+import edu.unc.lib.dl.data.ingest.solr.action.AbstractIndexingAction;
 
 /**
  * Service which provides methods for directly issuing Solr update requests to allow JMX
@@ -35,7 +36,7 @@ public class SolrJMXService {
 	private boolean active;
 	
 	public String getTargetAllSelector(){
-		return SolrUpdateService.TARGET_ALL;
+		return AbstractIndexingAction.TARGET_ALL;
 	}
 	
 	public void update(String pid){
@@ -57,6 +58,11 @@ public class SolrJMXService {
 		if (!active || !confirmation.equalsIgnoreCase("yes")) return;
 		LOG.info("Issuing request to delete all Solr index contents.");
 		messageDirector.direct(new SolrUpdateRequest("", SolrUpdateAction.CLEAR_INDEX));
+	}
+	
+	public void updateStatus(String pid) {
+		if (!active) return;
+		messageDirector.direct(new SolrUpdateRequest(pid, SolrUpdateAction.UPDATE_STATUS));
 	}
 
 	public boolean isActive() {

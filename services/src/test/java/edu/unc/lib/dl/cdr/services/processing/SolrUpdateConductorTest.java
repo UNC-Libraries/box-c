@@ -40,6 +40,7 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.UpdateDocTransformer;
 import edu.unc.lib.dl.fedora.FedoraDataService;
+import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -67,8 +68,6 @@ public class SolrUpdateConductorTest extends Assert {
 		this.messageDirector = new MessageDirector();
 		this.solrUpdateConductor = new SolrUpdateConductor();
 
-		SolrSearchService solrSearchService = mock(SolrSearchService.class);
-
 		FedoraDataService fedoraDataService = mock(FedoraDataService.class);
 		when(fedoraDataService.getObjectViewXML(startsWith("uuid:"))).thenReturn(simpleObject);
 		when(fedoraDataService.getObjectViewXML(startsWith("uuid:"), anyBoolean())).thenReturn(simpleObject);
@@ -80,10 +79,6 @@ public class SolrUpdateConductorTest extends Assert {
 
 		when(fedoraDataService.getTripleStoreQueryService()).thenReturn(tripleStoreQueryService);
 
-		UpdateDocTransformer updateDocTransformer = mock(UpdateDocTransformer.class);
-
-		solrUpdateConductor.setSolrSearchService(solrSearchService);
-		solrUpdateConductor.setFedoraDataService(fedoraDataService);
 		//solrUpdateConductor.setUpdateDocTransformer(updateDocTransformer);
 		solrUpdateConductor.setAutoCommit(false);
 		solrUpdateConductor.setMaxThreads(3);
@@ -149,8 +144,7 @@ public class SolrUpdateConductorTest extends Assert {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		numberTestMessages = 4;
 
-		BlockingFedoraDataService fds = new BlockingFedoraDataService();
-		solrUpdateConductor.setFedoraDataService(fds);
+		BlockingManagementClient bmc = new BlockingManagementClient();
 
 		// Check that collision list gets populated
 		for (int i = 0; i < numberTestMessages; i++) {
@@ -174,13 +168,13 @@ public class SolrUpdateConductorTest extends Assert {
 		assertEquals(solrUpdateConductor.getQueueSize(),
 				(numberTestMessages * numberTestMessages) - solrUpdateConductor.getMaxThreads());
 
-		while (fds.count.get() < solrUpdateConductor.getMaxThreads())
+		while (bmc.count.get() < solrUpdateConductor.getMaxThreads())
 			;
 
 		// Process the remaining items to make sure all messages get processed.
-		synchronized (fds.blockingObject) {
-			fds.flag.set(false);
-			fds.blockingObject.notifyAll();
+		synchronized (bmc.blockingObject) {
+			bmc.flag.set(false);
+			bmc.blockingObject.notifyAll();
 		}
 
 		while (!solrUpdateConductor.isEmpty())
@@ -317,8 +311,7 @@ public class SolrUpdateConductorTest extends Assert {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		int numberTestMessages = 20;
 
-		BlockingFedoraDataService fds = new BlockingFedoraDataService();
-		solrUpdateConductor.setFedoraDataService(fds);
+		BlockingManagementClient bmc = new BlockingManagementClient();
 
 		// Add messages and check that they all ran
 		for (int i = 0; i < numberTestMessages; i++) {
@@ -337,9 +330,9 @@ public class SolrUpdateConductorTest extends Assert {
 		assertEquals(solrUpdateConductor.getLockedPids().size(), 0);
 
 		// Process the remaining items to make sure all messages get processed.
-		synchronized (fds.blockingObject) {
-			fds.flag.set(false);
-			fds.blockingObject.notifyAll();
+		synchronized (bmc.blockingObject) {
+			bmc.flag.set(false);
+			bmc.blockingObject.notifyAll();
 		}
 
 		solrUpdateConductor.resume();
@@ -383,24 +376,19 @@ public class SolrUpdateConductorTest extends Assert {
 		return new SAXBuilder().build(new InputStreamReader(this.getClass().getResourceAsStream(filePath)));
 	}
 
-	public class BlockingFedoraDataService extends FedoraDataService {
+	public class BlockingManagementClient extends ManagementClient {
 		public AtomicInteger count;
 		public AtomicBoolean flag;
 		public Object blockingObject;
 
-		public BlockingFedoraDataService() {
+		public BlockingManagementClient() {
 			count = new AtomicInteger(0);
 			flag = new AtomicBoolean(true);
 			blockingObject = new Object();
 		}
 
 		@Override
-		public TripleStoreQueryService getTripleStoreQueryService() {
-			return tripleStoreQueryService;
-		}
-
-		@Override
-		public Document getObjectViewXML(String pid, boolean fail) {
+		public Document getObjectXML(PID pid) {
 			boolean first = true;
 			while (flag.get()) {
 				synchronized (blockingObject) {
