@@ -135,35 +135,6 @@ public class SolrUpdateRunnable implements Runnable {
 	}
 
 	/**
-	 * Pushes queued changes out to solr if there are no further jobs pending or if a push has been requested
-	 * 
-	 * @param forcePush
-	 */
-	// private void pushSolrChanges(boolean forcePush) {
-	// String addDocString = null;
-	//
-	// synchronized (solrUpdateService.getSolrSearchService()) {
-	// synchronized (solrUpdateService.getSolrUpdateDriver()) {
-	// // Automatically push if the queue is empty
-	// if (forcePush
-	// || ((solrUpdateService.getPidQueue().size() == 0 && solrUpdateService.getCollisionList().size() == 0))) {
-	// ExecutionTimer t = null;
-	// if (LOG.isDebugEnabled()) {
-	// t = new ExecutionTimer();
-	// LOG.debug("Submitting to solr: " + addDocString);
-	// t.start();
-	// }
-	// solrUpdateService.getSolrUpdateDriver().push();
-	// if (LOG.isDebugEnabled()) {
-	// t.end();
-	// LOG.info("Uploaded document to Solr: " + t.duration());
-	// }
-	// }
-	// }
-	// }
-	// }
-
-	/**
 	 * Performs the action indicated by the updateRequest
 	 * 
 	 * @param updateRequest
@@ -216,9 +187,6 @@ public class SolrUpdateRunnable implements Runnable {
 						}
 						LOG.debug("Processed pid " + pid);
 					}
-				} else {
-					// Push changes to solr if they are ready to go
-					// pushSolrChanges(forcePush);
 				}
 				if (updateRequest == null) {
 					Thread.sleep(this.idleWaitTime);

@@ -19,12 +19,15 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
 	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans 
-			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-			http://www.springframework.org/schema/util 
-			http://www.springframework.org/schema/util/spring-util-2.5.xsd
-			http://www.springframework.org/schema/context 
-			http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/mvc
+		http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
 
 	<context:annotation-config />
 
@@ -65,18 +68,6 @@
 		<prop key="external.base.url">${external.base.url}</prop>
 	</util:properties>
 
-	<!-- JMX -->
-
-	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
-		lazy-init="false">
-		<property name="beans">
-			<map>
-				<entry key="cdr-access:name=searchSettings" value-ref="searchSettings" />
-			</map>
-		</property>
-		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
-	</bean>
-
 	<!-- Import controllers -->
 	<bean
 		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
@@ -109,5 +100,39 @@
 				<entry key="external.xslView.fullRecord.url" value="${external.base.file.url}recordTransformations/fullRecord.xsl"/>
 			</map>
 		</property>
+	</bean>
+	
+	<!-- JMX -->
+	<bean id="loggingExporter" class="org.springframework.jmx.export.MBeanExporter"
+		lazy-init="false">
+		<property name="beans">
+			<map>
+				<entry key="cdr-access:jmxservice=loggingConfiguration" value-ref="loggingMBean" />
+			</map>
+		</property>
+		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
+		<property name="assembler">
+			<bean class="org.springframework.jmx.export.assembler.InterfaceBasedMBeanInfoAssembler">
+				<property name="managedInterfaces">
+					<array value-type="java.lang.Class">
+						<value>de.stefanheintz.log.jmxservice.LoggingConfig</value>
+					</array>
+				</property>				
+			</bean>
+		</property>
+	</bean>
+	
+	<!-- http://code.google.com/p/logging-jmx-service/wiki/Tutorial -->
+	<bean id="loggingMBean" class="de.stefanheintz.log.jmxservice.LoggingConfigImpl">
+	</bean>
+
+	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
+		lazy-init="false">
+		<property name="beans">
+			<map>
+				<entry key="cdr-access:name=searchSettings" value-ref="searchSettings" />
+			</map>
+		</property>
+		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
 	</bean>
 </beans>
