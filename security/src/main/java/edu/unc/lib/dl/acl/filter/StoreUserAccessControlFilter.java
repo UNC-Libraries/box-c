@@ -44,7 +44,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 	@Override
 	public void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) 
 			throws IOException, ServletException {
-		log.debug("In UserSecurityProfileFilter");
+		log.debug("In StoreUserAccessControlFilter");
 		//Don't check security for static files
 		if (!(req.getServletPath().startsWith("/js/") || req.getServletPath().startsWith("/css/")
 				|| req.getServletPath().startsWith("/images/"))){
@@ -55,7 +55,6 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 	}
 	
 	public void storeUserGroupData(HttpServletRequest request) {
-		
 		try {
 			String userName = request.getRemoteUser();
 			if (userName == null)
