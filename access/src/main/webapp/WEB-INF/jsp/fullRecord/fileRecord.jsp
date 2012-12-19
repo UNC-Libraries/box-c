@@ -26,9 +26,9 @@
 	<div class="contentarea">
 		<c:set var="thumbUrl">
 			<c:choose>
-				<c:when test="${cdr:contains(briefObject.datastream, 'IMAGE_JP2000')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
 				</c:when>
-				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<c:choose>
 						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}
@@ -47,7 +47,7 @@
 		
 		<a href="${thumbUrl}" class="thumb_link">
 			<c:choose>
-				<c:when test="${cdr:contains(briefObject.datastream, 'THUMB_LARGE')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject)}">
 					<div class="largethumb_container">
 						<img id="thumb_main" class="largethumb ph_large_${briefObject.contentTypeFacet[0].searchKey}" 
 								src="${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}"/>
@@ -76,7 +76,7 @@
 				<c:if test="${not empty briefObject.dateCreated}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.DATE_CREATED]}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></c:if>
 			</p>
 			<c:choose>
-				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<div class="actionlink left download">
 						<a href="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
 					</div>
@@ -84,7 +84,7 @@
 			</c:choose>
 			
 			<c:choose>
-				<c:when test="${cdr:contains(briefObject.datastream, 'IMAGE_JP2000')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
 					<div class="actionlink left">
 						<a href="" class="inline_viewer_link jp2_viewer_link">View</a>
 					</div>
@@ -103,7 +103,7 @@
 					  <div id="jp2_imageviewer_window" class="djatokalayers_window not_loaded">&nbsp;</div>
 					
 				</c:when>
-				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<c:choose>
 						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							<div class="actionlink left">

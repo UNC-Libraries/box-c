@@ -28,6 +28,11 @@
 		<c:set var="resultEntryClass" value="" scope="page"/>
 	</c:otherwise>
 </c:choose>
+
+<c:if test="${not empty metadata.countMap}">
+	<c:set var="childCount" value="${metadata.countMap.child}"/>
+</c:if>
+
 <div id="entry${metadata.id}" class="browseitem ${resultEntryClass}">
 	<div class="contentarea">
 		<%-- Link to full record of the current item --%>
@@ -43,7 +48,7 @@
 		<%-- Display thumbnail or placeholder --%>
 		<a href="<c:out value='${primaryActionUrl}' />">
 			<c:choose>
-				<c:when test="${cdr:contains(metadata.datastream, 'THUMB_LARGE')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', metadata)}">
 					<div class="largethumb_container">
 						<%--<img id="thumb_${param.resultNumber}" class="largethumb ph_large_${metadata.resourcetype}" 
 								src="${cdr:getDatastreamUrl(metadata, 'THUMB_LARGE', fedoraUtil)}"/> --%>
@@ -61,7 +66,7 @@
 		
 		<h2>
 			<a href="<c:out value='${primaryActionUrl}' />" class="has_tooltip" title="View details for ${metadata.title}."><c:out value="${metadata.title}"/></a> 
-			<span class="searchitem_container_count">(${metadata.childCount} item<c:if test="${metadata.childCount != 1}">s</c:if>)</span>
+			<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
 		</h2>
 		<c:if test="${not empty metadata.creator}">
 			<p>${searchSettings.searchFieldLabels[searchFieldKeys.CREATOR]}: 

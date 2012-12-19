@@ -346,7 +346,8 @@ public class SearchStateFactory {
 		} else {
 			String resourceArray[] = parameter.split(",");
 			for (String resourceType: resourceArray){
-				resourceTypes.add(resourceType);
+				if (resourceType != null && resourceType.trim().length() > 0)
+					resourceTypes.add(resourceType);
 			}
 		}
 		searchState.setResourceTypes(resourceTypes);

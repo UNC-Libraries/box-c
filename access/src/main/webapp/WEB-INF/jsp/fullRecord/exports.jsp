@@ -22,19 +22,19 @@
 <div class="contentcolumn">
 	<h2>Export Metadata</h2>
 	<ul>
-		<c:if test="${cdr:contains(briefObject.datastream, 'RELS-EXT')}">
+		<c:if test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'RELS-EXT', briefObject)}">
 			<li><a href="${cdr:getDatastreamUrl(briefObject.id, 'RELS-EXT', fedoraUtil)}">Fedora Object-to-Object Relationships</a></li>
 		</c:if>
-		<c:if test="${cdr:contains(briefObject.datastream, 'MD_TECHNICAL')}">
+		<c:if test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'MD_TECHNICAL', briefObject)}">
 			<li><a href="${cdr:getDatastreamUrl(briefObject.id, 'MD_TECHNICAL', fedoraUtil)}">FITS Extract</a></li>
 		</c:if>
-		<c:if test="${cdr:contains(briefObject.datastream, 'MD_DESCRIPTIVE')}">
+		<c:if test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'MD_DESCRIPTIVE', briefObject)}">
 			<li><a href="${cdr:getDatastreamUrl(briefObject.id, 'MD_DESCRIPTIVE', fedoraUtil)}">MODS</a></li>
 		</c:if>
-		<c:if test="${cdr:contains(briefObject.datastream, 'DC')}">
+		<c:if test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DC', briefObject)}">
 			<li><a href="${cdr:getDatastreamUrl(briefObject.id, 'DC', fedoraUtil)}">OAI Dublin Core</a></li>
 		</c:if>
-		<c:if test="${cdr:contains(briefObject.datastream, 'MD_EVENTS')}">
+		<c:if test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'MD_EVENTS', briefObject)}">
 			<li><a href="${cdr:getDatastreamUrl(briefObject.id, 'MD_EVENTS', fedoraUtil)}">PREMIS Events</a></li>
 		</c:if>
 	</ul>

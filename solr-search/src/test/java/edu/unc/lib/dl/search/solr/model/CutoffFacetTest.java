@@ -78,4 +78,19 @@ public class CutoffFacetTest extends Assert {
 		assertEquals(1, ffo.getValues().get(0).getCount());
 		assertEquals("A", ffo.getValues().get(0).getDisplayValue());
 	}
+	
+	@Test
+	public void facetStringConstructorTest() {
+		CutoffFacet facet = new CutoffFacet("ANCESTOR_PATH", "1,uuid:123456");
+		
+		assertEquals("1,uuid:123456", facet.getNode("uuid:123456").getSearchValue());
+	}
+	
+	@Test
+	public void nullfacetStringConstructorTest() {
+		String facetString = null;
+		CutoffFacet facet = new CutoffFacet("ANCESTOR_PATH", ",uuid:123456");
+		
+		assertEquals("1,uuid:123456", facet.getNode("uuid:123456").getSearchValue());
+	}
 }

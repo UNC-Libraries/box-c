@@ -26,12 +26,12 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
 
 	public CutoffFacetNode(String facetValue) {
 		this.facetValue = facetValue;
-		String facetComponents[] = facetValue.split(",", 3);
+		String[] facetComponents = facetValue.split(",", 3);
 		if (facetComponents.length > 0) {
 			try {
 				this.tier = new Integer(facetComponents[0]);
 			} catch (Exception e) {
-				throw new InvalidHierarchicalFacetException("Invalid tier value.");
+				throw new InvalidHierarchicalFacetException("Invalid tier value " + facetComponents[0] + " from facet string " + facetValue);
 			}
 		}
 		if (facetComponents.length > 1) {

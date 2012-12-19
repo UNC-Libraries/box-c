@@ -103,9 +103,10 @@ public class SolrSearchService {
 		try {
 			// Add access restrictions to query
 			addAccessRestrictions(query, idRequest.getAccessGroups());
-			/*if (idRequest.getAccessTypeFilter() != null) {
-				addAccessRestrictions(query, idRequest.getAccessGroups(), idRequest.getAccessTypeFilter());
-			}*/
+			/*
+			 * if (idRequest.getAccessTypeFilter() != null) { addAccessRestrictions(query, idRequest.getAccessGroups(),
+			 * idRequest.getAccessTypeFilter()); }
+			 */
 		} catch (AccessRestrictionException e) {
 			// If the user doesn't have any access groups, they don't have access to anything, return null.
 			LOG.error("Error while attempting to add access restrictions to object " + idRequest.getId(), e);
@@ -180,7 +181,7 @@ public class SolrSearchService {
 					}
 				}
 			}
-			
+
 			return resultResponse;
 		} catch (SolrServerException e) {
 			LOG.error("Error retrieving Solr search result request", e);
@@ -201,7 +202,7 @@ public class SolrSearchService {
 	 * @throws AccessRestrictionException
 	 *            thrown if no groups are provided.
 	 */
-	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups/*, String accessType*/)
+	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups/* , String accessType */)
 			throws AccessRestrictionException {
 		if (accessGroups == null || accessGroups.size() == 0) {
 			throw new AccessRestrictionException("No access groups were provided.");
@@ -210,7 +211,7 @@ public class SolrSearchService {
 			String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
 			if (searchSettings.getAllowPatronAccess()) {
 				query.append(" AND ((").append("readGroup:(").append(joinedGroups).append(')')
-					.append(" AND status:Published) OR adminGroup:(").append(joinedGroups).append("))");
+						.append(" AND status:Published) OR adminGroup:(").append(joinedGroups).append("))");
 			} else {
 				query.append(" AND adminGroup:(").append(joinedGroups).append(')');
 			}
@@ -284,9 +285,9 @@ public class SolrSearchService {
 		try {
 			// Add access restrictions to query
 			addAccessRestrictions(query, idRequest.getAccessGroups());
-			/*if (accessType != null) {
-				addAccessRestrictions(query, idRequest.getAccessGroups(), accessType);
-			}*/
+			/*
+			 * if (accessType != null) { addAccessRestrictions(query, idRequest.getAccessGroups(), accessType); }
+			 */
 		} catch (AccessRestrictionException e) {
 			// If the user doesn't have any access groups, they don't have access to anything, return null.
 			LOG.error(e.getMessage());
@@ -457,13 +458,14 @@ public class SolrSearchService {
 		if (query.length() == 0) {
 			query.append("*:* ");
 		}
-		
+
 		try {
 			// Add access restrictions to query
 			addAccessRestrictions(query, searchRequest.getAccessGroups());
-			/*if (searchState.getAccessTypeFilter() != null) {
-				addAccessRestrictions(query, searchRequest.getAccessGroups(), searchState.getAccessTypeFilter());
-			}*/
+			/*
+			 * if (searchState.getAccessTypeFilter() != null) { addAccessRestrictions(query,
+			 * searchRequest.getAccessGroups(), searchState.getAccessTypeFilter()); }
+			 */
 		} catch (AccessRestrictionException e) {
 			// If the user doesn't have any access groups, they don't have access to anything, return null.
 			LOG.error(e.getMessage());
@@ -594,7 +596,7 @@ public class SolrSearchService {
 		if (groupResponse != null) {
 			List<BriefObjectMetadata> groupResults = new ArrayList<BriefObjectMetadata>();
 			for (GroupCommand groupCmd : groupResponse.getValues()) {
-				//response.setResultCount(groupCmd.getMatches());
+				// response.setResultCount(groupCmd.getMatches());
 				response.setResultCount(groupCmd.getNGroups());
 				for (Group group : groupCmd.getValues()) {
 					GroupedMetadataBean grouped = new GroupedMetadataBean(group.getGroupValue(), this.server.getBinder()
@@ -603,7 +605,7 @@ public class SolrSearchService {
 				}
 			}
 			response.setResultList(groupResults);
-			
+
 		} else {
 			List<?> results = queryResponse.getBeans(BriefObjectMetadataBean.class);
 			response.setResultList((List<BriefObjectMetadata>) results);
@@ -618,14 +620,15 @@ public class SolrSearchService {
 			if (response.getFacetFields() != null) {
 				if (searchState.getFacetsToRetrieve() != null
 						&& searchState.getFacetsToRetrieve().size() != response.getFacetFields().size()) {
-					facetFieldFactory.addMissingFacetFieldObjects(response.getFacetFields(), searchState.getFacetsToRetrieve());
+					facetFieldFactory.addMissingFacetFieldObjects(response.getFacetFields(),
+							searchState.getFacetsToRetrieve());
 				}
 				response.getFacetFields().sort(searchSettings.facetDisplayOrder);
 			}
 		} else {
 			response.setFacetFields(null);
 		}
-		
+
 		// Set search state that generated this result
 		response.setSearchState(searchState);
 
@@ -659,7 +662,7 @@ public class SolrSearchService {
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Returns the value of a single field from the object identified by pid.
 	 * 

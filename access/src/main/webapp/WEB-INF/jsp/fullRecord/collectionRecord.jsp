@@ -22,6 +22,10 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <script type="text/javascript" src="/static/js/browseResults.js"></script>
 
+<c:if test="${not empty briefObject.countMap}">
+	<c:set var="childCount" value="${briefObject.countMap.child}"/>
+</c:if>
+
 <div class="onecol container_record" id="full_record">
 	<c:url var="browseUrl" scope="page" value='browse'>
 		<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${briefObject.path.searchValue}"/>
@@ -29,7 +33,7 @@
 
 	<div class="contentarea">
 		<c:choose>
-			<c:when test="${cdr:contains(briefObject.datastream, 'THUMB_LARGE')}">
+			<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject)}">
 				<div class="largethumb_container">
 					<img id="thumb_main" class="largethumb" src="${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}"/>
 				</div>
@@ -80,7 +84,7 @@
 				<c:url var="collectionResultsUrl" scope="page" value='search'>
 					<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
 				</c:url>
-				<a href="<c:out value='${collectionResultsUrl}' />">Browse&nbsp;(<c:out value="${briefObject.childCount}"/> items)</a> or
+				<a href="<c:out value='${collectionResultsUrl}' />">Browse&nbsp;(<c:out value="${childCount}"/> items)</a> or
 				<a href="<c:out value='${browseUrl}' />">
 					View ${fn:toLowerCase(briefObject.resourceType)} structure
 				</a>

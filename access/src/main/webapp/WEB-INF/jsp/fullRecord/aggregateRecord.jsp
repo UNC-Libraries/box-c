@@ -23,13 +23,18 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <script src="/static/js/fullRecord.js"></script>
 <script src="/static/js/browseResults.js"></script>
+
+<c:if test="${not empty briefObject.countMap}">
+	<c:set var="childCount" value="${briefObject.countMap.child}"/>
+</c:if>
+
 <div class="onecol">
 	<div class="contentarea">
 		<c:set var="thumbUrl">
 			<c:choose>
-				<c:when test="${cdr:contains(briefObject.datastream, 'IMAGE_JP2000')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
 				</c:when>
-				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<c:choose>
 						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}
@@ -48,7 +53,7 @@
 		
 		<a href="${thumbUrl}" class="thumb_link">
 			<c:choose>
-				<c:when test="${cdr:contains(briefObject.datastream, 'THUMB_LARGE')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject)}">
 					<div class="largethumb_container">
 						<img id="thumb_main" class="largethumb ph_large_${briefObject.contentTypeFacet[0].searchKey}" 
 								src="${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}"/>
@@ -76,7 +81,7 @@
 				</p>
 			</c:if>
 			<c:choose>
-				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<div class="actionlink left download">
 						<a href="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
 					</div>
@@ -84,7 +89,7 @@
 			</c:choose>
 			
 			<c:choose>
-				<c:when test="${cdr:contains(briefObject.datastream, 'IMAGE_JP2000')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
 					<div class="actionlink left">
 						<a href="" class="inline_viewer_link jp2_viewer_link">View</a>
 					</div>
@@ -93,7 +98,7 @@
 					
 					<script type="text/javascript">
 						$(function() {
-							$(".inline_viewer_link").bind("click", {id: '${cdr:getPreferredDatastream(briefObject, "IMAGE_JP2000").pid}', viewerId:'jp2_imageviewer_window',
+							$(".inline_viewer_link").bind("click", {id: '${cdr:getPreferredDatastream(briefObject, "IMAGE_JP2000").owner}', viewerId:'jp2_imageviewer_window',
 								viewerContext: "${pageContext.request.contextPath}"}, displayJP2Viewer);
 							if (window.location.hash.replace("#", "") == "showJP2"){
 								$(".inline_viewer_link").trigger("click");
@@ -103,7 +108,7 @@
 					  <div id="jp2_imageviewer_window" class="djatokalayers_window not_loaded">&nbsp;</div>
 					
 				</c:when>
-				<c:when test="${cdr:contains(briefObject.datastream, 'DATA_FILE')}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<c:choose>
 						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							<div class="actionlink left">
@@ -158,7 +163,7 @@
 						<c:if test="${briefObject.filesizeSort != -1}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.FILESIZE]}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if>
 					</c:when>
 					<c:otherwise>
-						<span>Contains:</span> ${briefObject.childCount} item<c:if test="${briefObject.childCount != 1}">s</c:if>
+						<span>Contains:</span> ${childCount} item<c:if test="${childCount != 1}">s</c:if>
 					</c:otherwise>
 				</c:choose>
 				<c:if test="${not empty briefObject.dateAdded}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.DATE_ADDED]}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></c:if>
@@ -212,7 +217,7 @@
 						<c:url var="contentsResultsUrl" scope="page" value='search'>
 							<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
 						</c:url>
-						<a href="<c:out value='${contentsResultsUrl}' />">${briefObject.childCount} item<c:if test="${briefObject.childCount != 1}">s</c:if></a>
+						<a href="<c:out value='${contentsResultsUrl}' />">${childCount} item<c:if test="${childCount != 1}">s</c:if></a>
 					</td>
 				</tr>
 				<c:if test="${not empty facetFields}">
