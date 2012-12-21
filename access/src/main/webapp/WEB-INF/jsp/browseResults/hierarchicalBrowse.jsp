@@ -84,9 +84,14 @@
 	</c:otherwise>
 </c:choose>
 <c:forEach items="${hierarchicalViewResults.resultList}" var="containerNode" varStatus="resultStatus">
-	<c:if test="${not empty containerNode.countMap}">
-		<c:set var="childCount" value="${containerNode.countMap.child}"/>
-	</c:if>
+	<c:choose>
+		<c:when test="${not empty containerNode.countMap}">
+			<c:set var="childCount" value="${containerNode.countMap.child}"/>
+		</c:when>
+		<c:otherwise>
+			<c:set var="childCount" value="0"/>
+		</c:otherwise>
+	</c:choose>
 	<c:if test="${!(param.excludeParent && resultStatus.first)}">
 		<c:set var="endContainerDivs" value="" />
 		<c:set var="indentCode" value="" />

@@ -406,7 +406,9 @@ public class SearchStateFactory {
 		}
 		
 		parameter = getParameter(request, searchSettings.searchStateParam("ROLLUP"));
-		if (parameter != null){
+		if (parameter == null) {
+			searchState.setRollup(null);
+		} else {
 			Boolean rollup = new Boolean(parameter);
 			searchState.setRollup(rollup);
 		}

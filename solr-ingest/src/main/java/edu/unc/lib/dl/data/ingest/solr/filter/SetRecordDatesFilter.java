@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
 /**
@@ -46,19 +47,7 @@ public class SetRecordDatesFilter extends AbstractIndexDocumentFilter {
 
 	private String recordDatesQuery;
 
-	private XPath dateAddedXPath;
-	private XPath dateUpdatedXPath;
-
 	public SetRecordDatesFilter() {
-		try {
-			dateAddedXPath = XPath.newInstance("foxml:property[@NAME='info:fedora/fedora-system:def/model#createdDate']/@VALUE");
-			dateAddedXPath.addNamespace(Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI));
-			dateUpdatedXPath = XPath.newInstance("foxml:property[@NAME='info:fedora/fedora-system:def/view#lastModifiedDate']/@VALUE");
-			dateUpdatedXPath.addNamespace(Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI));
-		} catch (JDOMException e) {
-			log.error("Failed to initialize queries", e);
-		}
-
 		try {
 			this.recordDatesQuery = this.readFileAsString("getRecordDates.sparql");
 		} catch (IOException e) {
@@ -78,12 +67,15 @@ public class SetRecordDatesFilter extends AbstractIndexDocumentFilter {
 	private void filterFromFOXML(DocumentIndexingPackage dip) throws IndexingException {
 		Element objectProperties = dip.getObjectProperties();
 		try {
-			Attribute dateAdded = (Attribute) dateAddedXPath.selectSingleNode(objectProperties);
-			Attribute dateUpdated = (Attribute) dateUpdatedXPath.selectSingleNode(objectProperties);
-			dip.getDocument().setDateAdded(dateAdded.getValue());
-			dip.getDocument().setDateUpdated(dateUpdated.getValue());
-		} catch (JDOMException e) {
-			throw new IndexingException("Failed to extract record dates from " + dip.getPid().getPid(), e);
+			for (Object propertyObj: objectProperties.getChildren("property", JDOMNamespaceUtil.FOXML_NS)){
+				Element propertyEl = (Element)propertyObj;
+				String propertyName = propertyEl.getAttributeValue("NAME");
+				if ("info:fedora/fedora-system:def/model#createdDate".equals(propertyName)) {
+					dip.getDocument().setDateAdded(propertyEl.getAttributeValue("VALUE"));
+				} else if ("info:fedora/fedora-system:def/view#lastModifiedDate".equals(propertyName)) {
+					dip.getDocument().setDateUpdated(propertyEl.getAttributeValue("VALUE"));
+				}
+			}
 		} catch (ParseException e) {
 			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPid(), e);
 		}

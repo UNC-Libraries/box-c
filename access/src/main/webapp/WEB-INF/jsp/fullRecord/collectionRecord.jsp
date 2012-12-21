@@ -22,9 +22,14 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <script type="text/javascript" src="/static/js/browseResults.js"></script>
 
-<c:if test="${not empty briefObject.countMap}">
-	<c:set var="childCount" value="${briefObject.countMap.child}"/>
-</c:if>
+<c:choose>
+	<c:when test="${not empty briefObject.countMap}">
+		<c:set var="childCount" value="${briefObject.countMap.child}"/>
+	</c:when>
+	<c:otherwise>
+		<c:set var="childCount" value="0"/>
+	</c:otherwise>
+</c:choose>
 
 <div class="onecol container_record" id="full_record">
 	<c:url var="browseUrl" scope="page" value='browse'>

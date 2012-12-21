@@ -53,7 +53,7 @@ public class SearchState implements Serializable, Cloneable {
 	private List<String> resourceTypes;
 	private String searchTermOperator;
 	private List<String> resultFields;
-	private boolean rollup;
+	private Boolean rollup;
 
 	public SearchState() {
 		LOG.debug("Instantiating new SearchState");
@@ -64,7 +64,7 @@ public class SearchState implements Serializable, Cloneable {
 		facetSorts = new HashMap<String, String>();
 		resultFields = null;
 		facetsToRetrieve = null;
-		this.rollup = false;
+		this.rollup = null;
 	}
 
 	public SearchState(SearchState searchState) {
@@ -110,7 +110,7 @@ public class SearchState implements Serializable, Cloneable {
 		sortType = searchState.getSortType();
 		sortOrder = searchState.getSortOrder();
 		searchTermOperator = searchState.getSearchTermOperator();
-		this.rollup = searchState.isRollup();
+		this.rollup = searchState.getRollup();
 	}
 
 	public Map<String, String> getSearchFields() {
@@ -317,11 +317,11 @@ public class SearchState implements Serializable, Cloneable {
 		this.facetSorts = facetSorts;
 	}
 
-	public boolean isRollup() {
+	public Boolean getRollup() {
 		return rollup;
 	}
 
-	public void setRollup(boolean rollup) {
+	public void setRollup(Boolean rollup) {
 		this.rollup = rollup;
 	}
 

@@ -37,15 +37,25 @@ public class DocumentIndexingPackageFactory {
 	private ManagementClient managementClient = null;
 	private AccessClient accessClient = null;
 	private SAXBuilder builder = new SAXBuilder();
+	private int MAX_RETRIES = 2;
 	
 	public DocumentIndexingPackage createDocumentIndexingPackage(PID pid) {
 		try {
-			Document foxml = managementClient.getObjectXML(pid);
+			Document foxml = null;
+			int tries = MAX_RETRIES;
+			do {
+				if (tries < MAX_RETRIES)
+					Thread.sleep(1000L);
+				log.debug("Retrieving FOXML for DIP, tries remaining: " + tries);
+				foxml = managementClient.getObjectXML(pid);
+			} while (foxml == null && --tries > 0);
 			if (foxml == null)
 				throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid());
 			return new DocumentIndexingPackage(pid, foxml);
 		} catch (FedoraException e) {
 			throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid(), e);
+		} catch (InterruptedException e) {
+			throw new IndexingException("Interrupted while waiting to retry FOXML retrieval for " + pid.getPid(), e);
 		}
 	}
 	

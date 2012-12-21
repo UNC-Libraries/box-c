@@ -138,11 +138,13 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		// Store the completed ancestorNames field
 		idb.setAncestorNames(ancestorNames.toString());
 
-		// Set the rollup ID for this document, depending on if it was in an aggregate
-		if (firstAggregate == null) {
-			idb.setRollup(idb.getId());
-		} else {
+		// If this item is in an aggregate object then it should rollup as part of its parent
+		if (firstAggregate != null) {
 			idb.setRollup(firstAggregate.pid.getPid());
+			log.debug("From query, parent is in an aggregate: " + idb.getRollup());
+		} else {
+			idb.setRollup(idb.getId());
+			log.debug("From query, normal rollup: " + idb.getRollup());
 		}
 
 		// Store the parent collection if we found one.
@@ -197,16 +199,23 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 			}
 			idb.setAncestorNames(ancestorNames.toString());
 			
-
-			// Use the parents rollup if it isn't just its ID
-			if (parentDIP.getPid().getPid().equals(parentDIP.getDocument().getRollup())) {
-				idb.setRollup(parentDIP.getDocument().getRollup());
+			// If the parent has a rollup other than its own id, that means its nested inside an aggregate, so it inherits
+			if (!parentDIP.getPid().getPid().equals(parentDIP.getDocument().getRollup())) {
+				if (parentDIP.getDocument().getRollup() == null) {
+					idb.setRollup(idb.getId());
+					log.debug("From parent, parent rollup is null: " + idb.getRollup());
+				} else {
+					idb.setRollup(parentDIP.getDocument().getRollup());
+					log.debug("From parent, parent is in an aggregate: " + idb.getRollup());
+				}
 			} else {
 				// If the immediate parent was an aggregate, use its ID as this items rollup
 				if (ResourceType.Aggregate.equals(parentDIP.getResourceType())) {
 					idb.setRollup(parentDIP.getPid().getPid());
+					log.debug("From parent, parent is an aggregate: " + idb.getRollup());
 				} else {
 					idb.setRollup(idb.getId());
+					log.debug("From parent, normal rollup: " + idb.getRollup());
 				}
 			}
 

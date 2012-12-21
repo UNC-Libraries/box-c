@@ -170,7 +170,7 @@ public class SolrSearchService {
 					isRetrieveFacetsRequest, returnQuery);
 
 			// Add in the correct rollup representatives when they are missing.
-			if (searchRequest.getSearchState().isRollup()) {
+			if (searchRequest.getSearchState().getRollup() != null && searchRequest.getSearchState().getRollup()) {
 				for (BriefObjectMetadata item : resultResponse.getResultList()) {
 					if (!item.getId().equals(item.getRollup())) {
 						BriefObjectMetadataBean representative = this.getObjectById(new SimpleIdRequest(item.getRollup(),
@@ -481,7 +481,7 @@ public class SolrSearchService {
 			}
 		}
 
-		if (searchState.isRollup()) {
+		if (searchState.getRollup() != null && searchState.getRollup()) {
 			solrQuery.set(GroupParams.GROUP, true);
 			solrQuery.set(GroupParams.GROUP_FIELD, solrSettings.getFieldName(SearchFieldKeys.ROLLUP_ID));
 			solrQuery.set(GroupParams.GROUP_TOTAL_COUNT, true);

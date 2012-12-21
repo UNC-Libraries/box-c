@@ -293,6 +293,7 @@ public class SetPathFilterTest extends Assert {
 		parentCollection.getDocument().setAncestorPath(Arrays.asList("1,uuid:Collections,Collections"));
 
 		DocumentIndexingPackage parentFolder = new DocumentIndexingPackage("info:fedora/uuid:folder");
+		parentFolder.getDocument().setRollup("uuid:folder");
 		parentFolder.setResourceType(ResourceType.Folder);
 		parentFolder.setParentDocument(parentCollection);
 		parentFolder.getDocument().setParentCollection(parentCollection.getPid().getPid());
@@ -361,11 +362,13 @@ public class SetPathFilterTest extends Assert {
 		assertTrue(idb.getAncestorPath().contains("1,uuid:Collections,Collections"));
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection,collection"));
 		assertTrue(idb.getAncestorPath().contains("3,uuid:folder,folder"));
+		assertEquals(idb.getId(), idb.getRollup());
 	}
 	
 	@Test
 	public void fromParentsNoCollectionTest() throws FileNotFoundException, JDOMException, IOException {
 		DocumentIndexingPackage parentFolder = new DocumentIndexingPackage("info:fedora/uuid:folder");
+		parentFolder.getDocument().setRollup("uuid:folder");
 		parentFolder.setResourceType(ResourceType.Folder);
 		parentFolder.getDocument().setParentCollection(null);
 		parentFolder.setLabel("folder");
@@ -398,12 +401,14 @@ public class SetPathFilterTest extends Assert {
 	@Test
 	public void fromParentsAggregateChildTest() throws FileNotFoundException, JDOMException, IOException {
 		DocumentIndexingPackage parentCollection = new DocumentIndexingPackage("info:fedora/uuid:collection");
+		parentCollection.getDocument().setRollup("uuid:collection");
 		parentCollection.setResourceType(ResourceType.Collection);
 		parentCollection.setLabel("collection");
 		parentCollection.getDocument().setAncestorNames("/Collections/collection");
 		parentCollection.getDocument().setAncestorPath(Arrays.asList("1,uuid:Collections,Collections"));
 
 		DocumentIndexingPackage parentFolder = new DocumentIndexingPackage("info:fedora/uuid:aggregate");
+		parentFolder.getDocument().setRollup("uuid:aggregate");
 		parentFolder.setResourceType(ResourceType.Aggregate);
 		parentFolder.setParentDocument(parentCollection);
 		parentFolder.getDocument().setParentCollection(parentCollection.getPid().getPid());
