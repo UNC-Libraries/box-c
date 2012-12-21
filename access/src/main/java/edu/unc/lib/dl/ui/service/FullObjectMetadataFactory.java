@@ -52,7 +52,7 @@ public class FullObjectMetadataFactory {
 			}
 			return foxml;
 		} catch (Exception e){
-			LOG.error("Failed to retrieve XML object for " + idRequest.getId(), e);
+			LOG.debug("Failed to retrieve XML object for " + idRequest.getId(), e);
 		}
 		return null;
 	}

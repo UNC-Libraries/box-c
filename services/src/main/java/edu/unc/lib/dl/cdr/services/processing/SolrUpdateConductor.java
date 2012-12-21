@@ -37,59 +37,64 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void initializeExecutor(){
+	protected void initializeExecutor() {
 		LOG.debug("Initializing services thread pool executor with " + this.maxThreads + " threads.");
 		this.executor = new ServicesThreadPoolExecutor<SolrUpdateRunnable>(this.maxThreads, this.getIdentifier());
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
-		((ServicesThreadPoolExecutor<SolrUpdateRunnable>)this.executor).setBeforeExecuteDelay(beforeExecuteDelay);
+		((ServicesThreadPoolExecutor<SolrUpdateRunnable>) this.executor).setBeforeExecuteDelay(beforeExecuteDelay);
+		// Populate the runnables
+		for (int i = 0; i < this.maxThreads; i++) {
+			executor.execute(this.solrUpdateRunnableFactory.createJob());
+		}
 	}
 
 	@Override
 	public void add(ActionMessage message) {
-		if (message instanceof SolrUpdateRequest){
-			this.offer((SolrUpdateRequest)message);
+		if (message instanceof SolrUpdateRequest) {
+			this.offer((SolrUpdateRequest) message);
 			return;
 		}
 		String action = message.getQualifiedAction();
 		if (action == null)
 			return;
-		
-		if (message instanceof FedoraEventMessage){
-			if (JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)){
+
+		if (message instanceof FedoraEventMessage) {
+			if (JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)) {
 				this.offer(message.getTargetID(), SolrUpdateAction.DELETE_SOLR_TREE);
 			} else {
 				this.offer(message.getTargetID());
 			}
-		} else if (message instanceof CDREventMessage){
-			CDREventMessage cdrMessage = (CDREventMessage)message;
+		} else if (message instanceof CDREventMessage) {
+			CDREventMessage cdrMessage = (CDREventMessage) message;
 			if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)
-					|| JMSMessageUtil.CDRActions.REORDER.equals(action)){
-				if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)){
-					//Move and add are both recursive adds of all subjects, plus a nonrecursive update for reordered children.
-					for (String pidString: cdrMessage.getSubjects()){
+					|| JMSMessageUtil.CDRActions.REORDER.equals(action)) {
+				if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)) {
+					// Move and add are both recursive adds of all subjects, plus a nonrecursive update for reordered
+					// children.
+					for (String pidString : cdrMessage.getSubjects()) {
 						this.offer(pidString, SolrUpdateAction.RECURSIVE_ADD);
 					}
 				}
-				if (!JMSMessageUtil.CDRActions.ADD.equals(action)){
-				// Reorder is a non-recursive add.
-					for (String pidString: cdrMessage.getReordered()){
+				if (!JMSMessageUtil.CDRActions.ADD.equals(action)) {
+					// Reorder is a non-recursive add.
+					for (String pidString : cdrMessage.getReordered()) {
 						this.offer(pidString, SolrUpdateAction.ADD);
 					}
 				}
-			} else if (JMSMessageUtil.CDRActions.REINDEX.equals(action)){
-				//Determine which kind of reindex to perform based on the mode
-				if (cdrMessage.getMode().equals("inplace")){
+			} else if (JMSMessageUtil.CDRActions.REINDEX.equals(action)) {
+				// Determine which kind of reindex to perform based on the mode
+				if (cdrMessage.getMode().equals("inplace")) {
 					this.offer(cdrMessage.getParent(), SolrUpdateAction.RECURSIVE_REINDEX);
 				} else {
 					this.offer(cdrMessage.getParent(), SolrUpdateAction.CLEAN_REINDEX);
 				}
-			} else if (JMSMessageUtil.CDRActions.PUBLISH.equals(action)){
-				for (String pidString: cdrMessage.getSubjects()){
-					this.offer(pidString, SolrUpdateAction.RECURSIVE_ADD);
+			} else if (JMSMessageUtil.CDRActions.PUBLISH.equals(action)) {
+				for (String pidString : cdrMessage.getSubjects()) {
+					this.offer(pidString, SolrUpdateAction.UPDATE_STATUS);
 				}
 			}
 		} else {
-			//For all other message types, do a single record update
+			// For all other message types, do a single record update
 			this.offer(message.getTargetID());
 		}
 	}
@@ -97,42 +102,42 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void pause() {
-		((ServicesThreadPoolExecutor)this.executor).pause();
+		((ServicesThreadPoolExecutor) this.executor).pause();
 
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void resume() {
-		((ServicesThreadPoolExecutor)this.executor).resume();
+		((ServicesThreadPoolExecutor) this.executor).resume();
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public boolean isPaused(){
-		return ((ServicesThreadPoolExecutor)this.executor).isPaused();
+	public boolean isPaused() {
+		return ((ServicesThreadPoolExecutor) this.executor).isPaused();
 	}
 
 	public Map<String, Object> getInfo() {
 		Map<String, Object> result = new HashMap<String, Object>();
 		StringBuilder sb = new StringBuilder();
 		sb.append("Solr Update Conductor Status:\n")
-			.append("Paused: " + isPaused() + "\n")
-			.append("PID Queue: " + this.pidQueue.size() + "\n")
-			.append("Collision List: " + this.collisionList.size() + "\n")
-			.append("Locked pids: " + this.lockedPids.size() + "\n")
-			.append("Executor: " + executor.getActiveCount() + " active workers, " + executor.getQueue().size() + " queued");
+				.append("Paused: " + isPaused() + "\n")
+				.append("PID Queue: " + this.pidQueue.size() + "\n")
+				.append("Collision List: " + this.collisionList.size() + "\n")
+				.append("Locked pids: " + this.lockedPids.size() + "\n")
+				.append(
+						"Executor: " + executor.getActiveCount() + " active workers, " + executor.getQueue().size()
+								+ " queued");
 		result.put("message", sb.toString());
 		return result;
 	}
 
 	@Override
-	public String queuesToString(){
+	public String queuesToString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Solr Update Conductor Queues:\n")
-			.append("PID Queue: " + this.pidQueue + "\n")
-			.append("Collision List: " + this.collisionList + "\n")
-			.append("Locked pids: " + this.lockedPids + "\n");
+		sb.append("Solr Update Conductor Queues:\n").append("PID Queue: " + this.pidQueue + "\n")
+				.append("Collision List: " + this.collisionList + "\n").append("Locked pids: " + this.lockedPids + "\n");
 		return sb.toString();
 	}
 
@@ -142,13 +147,13 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	}
 
 	@Override
-	public synchronized void clearQueue(){
+	public synchronized void clearQueue() {
 		this.pidQueue.clear();
 		this.collisionList.clear();
 	}
 
 	@Override
-	public synchronized void clearState(){
+	public synchronized void clearState() {
 		this.pidQueue.clear();
 		this.collisionList.clear();
 		this.lockedPids.clear();
@@ -161,12 +166,12 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	}
 
 	@Override
-	public boolean isIdle(){
+	public boolean isIdle() {
 		return isPaused() || this.lockedPids.size() == 0;
 	}
 
 	@Override
-	public boolean isReady(){
+	public boolean isReady() {
 		return !this.executor.isShutdown() && !this.executor.isTerminated() && !this.executor.isTerminating();
 	}
 
@@ -189,15 +194,16 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	@Override
 	public synchronized void abort() {
 		this.lockedPids.clear();
-		//Perform hard shutdown and wait for it to finish
+		// Perform hard shutdown and wait for it to finish
 		List<Runnable> runnables = this.executor.shutdownNow();
-		while (this.executor.isTerminating() && !this.executor.isShutdown());
-		//restart and pause the executor
+		while (this.executor.isTerminating() && !this.executor.isShutdown())
+			;
+		// restart and pause the executor
 		initializeExecutor();
 		pause();
-		//Pass the old runnables on to the new executor.
-		if (runnables != null){
-			for (Runnable runnable: runnables){
+		// Pass the old runnables on to the new executor.
+		if (runnables != null) {
+			for (Runnable runnable : runnables) {
 				this.executor.submit(runnable);
 			}
 		}
@@ -214,10 +220,9 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 		return identifier;
 	}
 
-	
 	@SuppressWarnings("unchecked")
-	public ServicesThreadPoolExecutor<SolrUpdateRunnable> getThreadPoolExecutor(){
-		return (ServicesThreadPoolExecutor<SolrUpdateRunnable>)this.executor;
+	public ServicesThreadPoolExecutor<SolrUpdateRunnable> getThreadPoolExecutor() {
+		return (ServicesThreadPoolExecutor<SolrUpdateRunnable>) this.executor;
 	}
 
 	public long getBeforeExecuteDelay() {
@@ -228,17 +233,19 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 		this.beforeExecuteDelay = beforeExecuteDelay;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see edu.unc.lib.dl.cdr.services.processing.ServiceConductor#getActiveThreadCount()
 	 */
 	@Override
 	public int getActiveThreadCount() {
 		return this.executor.getActiveCount();
 	}
-	
+
 	public void cleanupFinishedMessages() {
 		long currentTime = System.currentTimeMillis();
-		
+
 		synchronized (finishedMessages) {
 			Iterator<SolrUpdateRequest> iterator = this.finishedMessages.iterator();
 			while (iterator.hasNext()) {

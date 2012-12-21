@@ -21,43 +21,44 @@ import java.net.URISyntaxException;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public enum SolrUpdateAction {
-	ADD("ADD", "Add/Update", "Adds or updates the entry for the specified object"),
-	DELETE("DELETE", "Remove from Index", "Removes the index entry for the specified object"),
-	COMMIT("COMMIT", "Commit", "Causes an immediate upload and commit of pending updates"), 
-	RECURSIVE_ADD("RECURSIVE_ADD", "Update Path", 
+	ADD("Add/Update", "Adds or updates the entry for the specified object"),
+	DELETE("Remove from Index", "Removes the index entry for the specified object"),
+	COMMIT("Commit", "Causes an immediate upload and commit of pending updates"), 
+	RECURSIVE_ADD("Update Path", 
 			"Updates this pid and issues recursive add actions for all of its Fedora children"), 
-	RECURSIVE_REINDEX("RECURSIVE_REINDEX", "In-place Reindex", 
+	RECURSIVE_REINDEX("In-place Reindex", 
 			"Performs a recursive reindex of this object and all its children Updates this pid based off the originating structure, then cleans up any stale records."),
-	RECURSIVE_DELETE("RECURSIVE_DELETE", "Delete Path from Index", 
+	RECURSIVE_DELETE("Delete Path from Index", 
 			"Recursively deletes from the index an object and all of its children, based on the original structure"),
-	DELETE_SOLR_TREE("DELETE_SOLR_TREE", "Delete Tree from Index", 
+	DELETE_SOLR_TREE("Delete Tree from Index", 
 			"Deletes an object and all children that contained the object in their collection path"),
-	CLEAN_REINDEX("CLEAN_REINDEX", "Clean Reindex", "Cleans out the path starting at the object specified and then reindexes it"),
-	DELETE_CHILDREN_PRIOR_TO_TIMESTAMP("DELETE_CHILDREN_PRIOR_TO_TIMESTAMP", "Cleanup Outdated Records", 
+	CLEAN_REINDEX("Clean Reindex", "Cleans out the path starting at the object specified and then reindexes it"),
+	DELETE_CHILDREN_PRIOR_TO_TIMESTAMP("Cleanup Outdated Records", 
 			"Deletes the trees of all children of the starting node if they have not been updated since the given timestamp"), 
-	CLEAR_INDEX("CLEAR_INDEX", "Delete Index", "Deletes everything from the index");
+	CLEAR_INDEX("Delete Index", "Deletes everything from the index"),
+	UPDATE_STATUS("Update status", "Partial update operation which refreshes the status of an object and all of its children"),
+	MOVE("Move", "Partial update which updates the location and access control of an object and all its children"),
+	UPDATE_ACCESS("Update access control", "Partial update which refreshes the access control for an object and all its children");
 	
-	private final String name;
 	private final String label;
 	private final String description;
 	private URI uri;
 	public static final String namespace = JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/solr";
 	
-	SolrUpdateAction(String name, String label, String description){
-		this.name = name;
+	SolrUpdateAction(String label, String description){
 		this.label = label;
 		this.description = description;
 		try {
-			this.uri = new URI(JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/solr/" + name);
+			this.uri = new URI(JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/solr/" + name());
 		} catch (URISyntaxException e) {
-			Error x = new ExceptionInInitializerError("Error creating URI for SolrUpdateAction " + name);
+			Error x = new ExceptionInInitializerError("Error creating URI for SolrUpdateAction " + name());
 			x.initCause(e);
 			throw x;
 		}
 	}
 	
 	public String getName(){
-		return this.name;
+		return this.name();
 	}
 	
 	public String getLabel() {

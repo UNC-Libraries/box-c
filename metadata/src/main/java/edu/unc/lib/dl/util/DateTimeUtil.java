@@ -72,25 +72,30 @@ public class DateTimeUtil {
 		return result;
 	}
 	
-	private final static SimpleDateFormat utcFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-	private final static SimpleDateFormat utcYMDFormatter = new SimpleDateFormat("yyyy-MM-dd");
-	private final static SimpleDateFormat utcYMDHMSFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	private final static DateTimeFormatter utcFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(DateTimeZone.UTC);
+	private final static DateTimeFormatter utcYMDFormatter = DateTimeFormat.forPattern("yyyy-MM-dd").withZone(DateTimeZone.UTC);
+	private final static DateTimeFormatter utcYMDHMSFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(DateTimeZone.UTC);
 	
 	public static Date parseUTCToDate(String utcDate) throws ParseException {
-		return utcFormatter.parse(utcDate);
+		DateTime dateTime = utcFormatter.parseDateTime(utcDate);
+		return dateTime.toDate();
 	}
 	
 	public static Date parsePartialUTCToDate(String utcDate) throws ParseException {
 		if (utcDate.length() == 10) {
-			return utcYMDFormatter.parse(utcDate);
+			DateTime dateTime = utcYMDFormatter.parseDateTime(utcDate);
+			return dateTime.toDate();
 		}
 		if (utcDate.length() == 19) {
-			return utcYMDHMSFormatter.parse(utcDate);
+			DateTime dateTime = utcYMDHMSFormatter.parseDateTime(utcDate);
+			return dateTime.toDate();
 		}
-		return utcFormatter.parse(utcDate);
+		DateTime dateTime = utcFormatter.parseDateTime(utcDate);
+		return dateTime.toDate();
 	}
 	
 	public static String formatDateToUTC(Date date) throws ParseException {
-		return utcFormatter.format(date);
+		DateTime dateTime = new DateTime(date);
+		return utcFormatter.print(dateTime);
 	}
 }

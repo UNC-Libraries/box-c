@@ -70,8 +70,12 @@ public class DocumentIndexingPackage {
 	}
 
 	public DocumentIndexingPackage(String pid) {
+		this(new PID(pid));
+	}
+	
+	public DocumentIndexingPackage(PID pid) {
 		this();
-		this.pid = new PID(pid);
+		this.pid = pid;
 		document.setId(this.pid.getPid());
 	}
 

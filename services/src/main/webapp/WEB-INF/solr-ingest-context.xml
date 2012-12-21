@@ -1,21 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-
-    Copyright 2008 The University of North Carolina at Chapel Hill
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-
--->
+<!-- Copyright 2008 The University of North Carolina at Chapel Hill Licensed 
+	under the Apache License, Version 2.0 (the "License"); you may not use this 
+	file except in compliance with the License. You may obtain a copy of the 
+	License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by 
+	applicable law or agreed to in writing, software distributed under the License 
+	is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY 
+	KIND, either express or implied. See the License for the specific language 
+	governing permissions and limitations under the License. -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
 	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
@@ -25,96 +16,205 @@
 			http://www.springframework.org/schema/util/spring-util-3.0.xsd
 			http://www.springframework.org/schema/context 
 			http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-			
-	<bean name="propertiesURI" class="java.lang.System" factory-method="getProperty">
-		<constructor-arg index="0" value="server.properties.uri"/>
+
+	<bean name="propertiesURI" class="java.lang.System"
+		factory-method="getProperty">
+		<constructor-arg index="0" value="server.properties.uri" />
 		<!-- property name for properties URI location -->
-		<constructor-arg index="1" value="classpath:server.properties"/>
+		<constructor-arg index="1" value="classpath:server.properties" />
 		<!-- default location for testing -->
 	</bean>
 	<bean id="serverProperties"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
 			<list>
-				<ref bean="propertiesURI"/>
+				<ref bean="propertiesURI" />
 				<value>classpath:cdr-services.properties</value>
 				<value>classpath:scheduled-events.properties</value>
 			</list>
 		</property>
-		<property name="ignoreResourceNotFound" value="false"/>
+		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
-	
+
 	<util:set id="accessGroups" set-class="edu.unc.lib.dl.acl.util.AccessGroupSet">
 		<value>${access.group.admin}</value>
 	</util:set>
-			
-	<bean id="solrUpdateConductor" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor"
+
+	<bean id="solrUpdateConductor"
+		class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor"
 		init-method="init" destroy-method="destroy">
-		<property name="fedoraDataService" ref="fedoraDataService" />
-		<property name="fullUpdatePipeline" ref="solrFullUpdatePipeline" />
-		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
-		<property name="solrSearchService" ref="solrSearchService" />
-		<property name="searchStateFactory" ref="searchStateFactory" />
-		<property name="solrPath" value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
+		<property name="solrUpdateRunnableFactory" ref="solrUpdateRunnableFactory"/>
 		<property name="maxThreads" value="${conductor.solr.maxThreads}" />
-		<property name="recoverableDelay" value="${conductor.solr.recoverableDelay}"/>
-		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecuteDelay}"/>
-		<property name="accessGroups" ref="accessGroups" />
-		<property name="searchSettings" ref="searchSettings" />
-		<property name="finishedMessageTimeout" value="${scheduled.cleanupFinishedIndexing.windowMilli}"/>
-		<property name="collectionsPid" ref="collectionsPid"/>
+		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecuteDelay}" />
+		<property name="finishedMessageTimeout"
+			value="${scheduled.cleanupFinishedIndexing.windowMilli}" />
 	</bean>
-	
-	<bean id="solrUpdateDriver" class="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver"
+
+	<bean id="solrUpdateDriver"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver"
 		init-method="init">
-		<property name="solrSettings" ref="solrSettings"/>
-		<property name="autoPushCount" value="1000"/>
-		<property name="updateThreads" value="2"/>
+		<property name="solrSettings" ref="solrSettings" />
+		<property name="autoPushCount" value="1000" />
+		<property name="updateThreads" value="2" />
 	</bean>
-	
-	<bean id="documentIndexingPackageFactory" class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
-		<property name="managementClient" ref="managementClient"/>
+
+	<bean id="documentIndexingPackageFactory"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
+		<property name="managementClient" ref="managementClient" />
+		<property name="accessClient" ref="accessClient" />
 	</bean>
-	
+
 	<!-- Ingest filters -->
-	<bean id="setDatastreamContentFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamContentFilter">
-		<property name="documentIndexingPackageFactory" ref="documentIndexingPackageFactory"/> 
+	<bean id="setDatastreamContentFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamContentFilter">
+		<property name="documentIndexingPackageFactory" ref="documentIndexingPackageFactory" />
 	</bean>
-	<bean id="setDisplayOrderFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetDisplayOrderFilter">
-		<property name="documentIndexingPackageFactory" ref="documentIndexingPackageFactory"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/> 
+	<bean id="setDisplayOrderFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDisplayOrderFilter">
+		<property name="documentIndexingPackageFactory" ref="documentIndexingPackageFactory" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
-	<bean id="setRelationsFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
+	<bean id="setRelationsFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
 	</bean>
 	<bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="collectionsPid" ref="collectionsPid"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="collectionsPid" ref="collectionsPid" />
 	</bean>
-	<bean id="setDescriptiveMetadataFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
+	<bean id="setDescriptiveMetadataFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
 	</bean>
-	<bean id="setRecordDatesFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
+	<bean id="setRecordDatesFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
 	</bean>
-	<bean id="setAccessControlFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
-		<property name="accessControlService" ref="accessControlService"/>
+	<bean id="setAccessControlFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
+		<property name="accessControlService" ref="accessControlService" />
 	</bean>
 	<bean id="setStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetStatusFilter">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
-	
+
 	<!-- Ingest pipeline -->
-	<bean id="solrFullUpdatePipeline" class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+	<bean id="solrFullUpdatePipeline"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
 		<property name="filters">
 			<list>
-				<ref bean="setRecordDatesFilter"/>
-				<ref bean="setDatastreamContentFilter"/>
-				<ref bean="setDisplayOrderFilter"/>
-				<ref bean="setPathFilter"/>
-				<ref bean="setDescriptiveMetadataFilter"/>
-				<ref bean="setAccessControlFilter"/>
-				<ref bean="setStatusFilter"/>
-				<ref bean="setRelationsFilter"/>
+				<ref bean="setRecordDatesFilter" />
+				<ref bean="setDatastreamContentFilter" />
+				<ref bean="setDisplayOrderFilter" />
+				<ref bean="setPathFilter" />
+				<ref bean="setDescriptiveMetadataFilter" />
+				<!-- <ref bean="setAccessControlFilter" /> -->
+				<ref bean="setStatusFilter" />
+				<ref bean="setRelationsFilter" />
 			</list>
 		</property>
+	</bean>
+
+	<bean id="solrStatusUpdatePipeline"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+		<property name="filters">
+			<list>
+				<ref bean="setStatusFilter" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- Ingest Actions -->
+	<bean id="updateObjectAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+		<property name="pipeline" ref="solrFullUpdatePipeline" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+	</bean>
+
+	<bean id="recursiveReindexAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.RecursiveReindexAction">
+		<property name="pipeline" ref="solrFullUpdatePipeline" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="solrUpdateService" ref="solrUpdateConductor" />
+		<property name="collectionsPid" ref="collectionsPid" />
+	</bean>
+	
+	<bean id="recursiveUpdateAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.RecursiveUpdateAction">
+		<property name="pipeline" ref="solrFullUpdatePipeline" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="solrUpdateService" ref="solrUpdateConductor" />
+		<property name="collectionsPid" ref="collectionsPid" />
+	</bean>
+	
+	<bean id="cleanReindexAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.CleanReindexAction">
+		<property name="solrUpdateService" ref="solrUpdateConductor" />
+	</bean>
+
+	<bean id="clearIndexAction" class="edu.unc.lib.dl.data.ingest.solr.action.ClearIndexAction">
+		<property name="solrUpdateService" ref="solrUpdateConductor" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+	</bean>
+
+	<bean id="deleteObjectAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.DeleteObjectAction">
+		<property name="solrUpdateService" ref="solrUpdateConductor" />
+	</bean>
+
+	<bean id="deleteSolrTreeAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.DeleteSolrTreeAction">
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="solrUpdateService" ref="solrUpdateConductor" />
+		<property name="solrSearchService" ref="solrSearchService" />
+		<property name="searchSettings" ref="searchSettings" />
+		<property name="accessGroups" ref="accessGroups" />
+	</bean>
+
+	<bean id="deleteChildrenPriorToTimestamp"
+		class="edu.unc.lib.dl.data.ingest.solr.action.DeleteChildrenPriorToTimestamp">
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="solrUpdateService" ref="solrUpdateConductor" />
+		<property name="solrSearchService" ref="solrSearchService" />
+		<property name="searchStateFactory" ref="searchStateFactory" />
+		<property name="searchSettings" ref="searchSettings" />
+		<property name="accessGroups" ref="accessGroups" />
+	</bean>
+
+	<bean id="commitAction" class="edu.unc.lib.dl.data.ingest.solr.action.CommitAction">
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+	</bean>
+
+	<bean id="updateStatusAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateStatusAction">
+		<property name="pipeline" ref="solrStatusUpdatePipeline" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="solrUpdateService" ref="solrUpdateConductor" />
+	</bean>
+
+	<util:map id="solrIndexingActionMap"
+		key-type="edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction"
+		value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
+		<entry key="ADD" value-ref="updateObjectAction" />
+		<entry key="RECURSIVE_REINDEX" value-ref="recursiveReindexAction" />
+		<entry key="RECURSIVE_ADD" value-ref="recursiveUpdateAction" />
+		<entry key="CLEAN_REINDEX" value-ref="cleanReindexAction" />
+		<entry key="CLEAR_INDEX" value-ref="clearIndexAction" />
+		<entry key="DELETE" value-ref="deleteObjectAction" />
+		<entry key="DELETE_SOLR_TREE" value-ref="deleteSolrTreeAction" />
+		<entry key="DELETE_CHILDREN_PRIOR_TO_TIMESTAMP" value-ref="deleteChildrenPriorToTimestamp" />
+		<entry key="COMMIT" value-ref="commitAction" />
+		<entry key="UPDATE_STATUS" value-ref="updateStatusAction" />
+	</util:map>
+	
+	<bean id="solrUpdateRunnableFactory" class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnableFactory">
+		<lookup-method name="createJob" bean="solrUpdateRunnable" />
+	</bean> 
+	
+	<bean id="solrUpdateRunnable"
+		class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnable" scope="prototype">
+		<property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
+		<property name="solrUpdateService" ref="solrUpdateConductor" />
 	</bean>
 </beans>

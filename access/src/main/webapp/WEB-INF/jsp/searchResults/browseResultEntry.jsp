@@ -29,9 +29,14 @@
 	</c:otherwise>
 </c:choose>
 
-<c:if test="${not empty metadata.countMap}">
-	<c:set var="childCount" value="${metadata.countMap.child}"/>
-</c:if>
+<c:choose>
+	<c:when test="${not empty metadata.countMap}">
+		<c:set var="childCount" value="${metadata.countMap.child}"/>
+	</c:when>
+	<c:otherwise>
+		<c:set var="childCount" value="0"/>
+	</c:otherwise>
+</c:choose>
 
 <div id="entry${metadata.id}" class="browseitem ${resultEntryClass}">
 	<div class="contentarea">

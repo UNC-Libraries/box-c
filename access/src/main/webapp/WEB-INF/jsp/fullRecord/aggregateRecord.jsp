@@ -24,9 +24,14 @@
 <script src="/static/js/fullRecord.js"></script>
 <script src="/static/js/browseResults.js"></script>
 
-<c:if test="${not empty briefObject.countMap}">
-	<c:set var="childCount" value="${briefObject.countMap.child}"/>
-</c:if>
+<c:choose>
+	<c:when test="${not empty briefObject.countMap}">
+		<c:set var="childCount" value="${briefObject.countMap.child}"/>
+	</c:when>
+	<c:otherwise>
+		<c:set var="childCount" value="0"/>
+	</c:otherwise>
+</c:choose>
 
 <div class="onecol">
 	<div class="contentarea">

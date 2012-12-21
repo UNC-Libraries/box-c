@@ -7,10 +7,10 @@
 	is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY 
 	KIND, either express or implied. See the License for the specific language 
 	governing permissions and limitations under the License. -->
-<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
 	xsi:schemaLocation="
-	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd"
-	xmlns="http://www.springframework.org/schema/beans">
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 	<bean name="propertiesURI" class="java.lang.System"
 		factory-method="getProperty">
 		<constructor-arg index="0" value="server.properties.uri" />
@@ -90,8 +90,9 @@
 	<bean id="djatokaContentService" class="edu.unc.lib.dl.ui.service.DjatokaContentService">
 		<property name="applicationPathSettings" ref="applicationPathSettings" />
 	</bean>
-	
-	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+
+	<bean id="collectionsPid"
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="targetObject">
 			<ref local="tripleStoreQueryService" />
 		</property>

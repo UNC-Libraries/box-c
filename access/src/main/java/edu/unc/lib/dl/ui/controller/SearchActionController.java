@@ -40,130 +40,150 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
- * Controller which interprets the provided search state, from either the last search state in the session or
- * from GET parameters, as well as actions performed on the state, and retrieves search results using it.
+ * Controller which interprets the provided search state, from either the last search state in the session or from GET
+ * parameters, as well as actions performed on the state, and retrieves search results using it.
+ * 
  * @author bbpennel
  */
 @Controller
 @RequestMapping("/search")
 public class SearchActionController extends AbstractSolrSearchController {
 	private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
-	
+
 	@RequestMapping(method = RequestMethod.GET)
-	public String handleSearchActions(Model model, HttpServletRequest request){
+	public String handleSearchActions(Model model, HttpServletRequest request) {
 		LOG.debug("In handle search actions");
-		
-		//Request object for the search
+
+		// Request object for the search
 		SearchRequest searchRequest = generateSearchRequest(request);
 		SearchState searchState = searchRequest.getSearchState();
+		SearchState responseState = (SearchState)searchState.clone();
+		
 		List<String> facetsToRetrieve = searchState.getFacetsToRetrieve();
 		searchState.setFacetsToRetrieve(null);
-		
-		//Determine if this is a collection browse request
-		boolean isCollectionBrowseRequest = searchState.getResourceTypes() != null 
-				&& searchState.getResourceTypes().size() == 1 
+
+		// Determine if this is a collection browse request
+		boolean isCollectionBrowseRequest = searchState.getResourceTypes() != null
+				&& searchState.getResourceTypes().size() == 1
 				&& searchState.getResourceTypes().contains(searchSettings.getResourceTypeCollection());
-		
-		if (searchState.getRowsPerPage() == null || searchState.getRowsPerPage() == 0){
-			if (isCollectionBrowseRequest){
+
+		if (searchState.getRowsPerPage() == null || searchState.getRowsPerPage() == 0) {
+			if (isCollectionBrowseRequest) {
 				searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
 			} else {
 				searchState.setRowsPerPage(searchSettings.defaultPerPage);
 			}
 		}
+
+		Boolean rollup = searchState.getRollup();
+		LOG.debug("Rollup is specified as " + rollup);
 		
-		//Retrieve search results
+		// Get the record for the currently selected container if one is selected.
+		if (searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)) {
+			BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(
+					((CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH)).getSearchKey(), searchRequest
+							.getAccessGroups()));
+			model.addAttribute("selectedContainer", selectedContainer);
+
+			if (selectedContainer != null) {
+				// Unless its explicitly set in the url, disable rollup if the container is an aggregate or its inside of an aggregate.
+				if (rollup == null) {
+					rollup = !(!selectedContainer.getRollup().equals(selectedContainer.getId()) || (selectedContainer.getRollup().equals(selectedContainer.getId()) && selectedContainer.getResourceType().equals("Aggregate")));
+					LOG.debug("Setting the default rollup value to " + rollup);
+					searchState.setRollup(rollup);
+				}
+				
+				// Store the path value from the selected container as the path for breadcrumbs
+				searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, selectedContainer.getPath());
+			}
+		} else if (rollup == null) {
+			LOG.debug("No container and no rollup, defaulting rollup to true");
+			searchState.setRollup(true);
+		}
+
+		// Retrieve search results
 		SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
-		
-		if (resultResponse != null){
-			//Get the display values for hierarchical facets from the search results.
-			//queryLayer.lookupHierarchicalDisplayValues(searchState, searchRequest.getAccessGroups());
-			
-			//Retrieve the facet result set
-			SearchResultResponse resultResponseFacets = queryLayer.getFacetList(searchState, searchRequest.getAccessGroups(), facetsToRetrieve, false);
-			
-			//If the users query had no results but the facet query did have results, then if a path is set remove its cutoff and rerun
-			if (resultResponseFacets.getResultCount() > 0 && resultResponse.getResultCount() == 0 
-					&& searchState.getFacets() != null && searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)){
-				CutoffFacet ancestorPath = ((CutoffFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH));
-				if (ancestorPath.getCutoff() != null){
+
+		if (resultResponse != null) {
+			// Get the display values for hierarchical facets from the search results.
+			// queryLayer.lookupHierarchicalDisplayValues(searchState, searchRequest.getAccessGroups());
+
+			// Retrieve the facet result set
+			SearchResultResponse resultResponseFacets = queryLayer.getFacetList(searchState,
+					searchRequest.getAccessGroups(), facetsToRetrieve, false);
+
+			// If the users query had no results but the facet query did have results, then if a path is set remove its
+			// cutoff and rerun
+			if (resultResponseFacets.getResultCount() > 0 && resultResponse.getResultCount() == 0
+					&& searchState.getFacets() != null && searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)) {
+				CutoffFacet ancestorPath = ((CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH));
+				if (ancestorPath.getCutoff() != null) {
 					ancestorPath.setCutoff(null);
 					resultResponse = queryLayer.getSearchResults(searchRequest);
 				}
 			}
-			
+
 			resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
-			
-			//Add the search state to the response.
+
+			// Add the search state to the response.
 			resultResponse.setSearchState(searchState);
 		}
-		
-		//Get the record for the currently selected container if one is selected.
-		if (searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)){
-			BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(
-					((CutoffFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH)).getSearchKey(),
-					searchRequest.getAccessGroups()));
-			model.addAttribute("selectedContainer", selectedContainer);
-			
-			if (selectedContainer != null) {
-				// Store the path value from the selected container as the path for breadcrumbs
-				searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, selectedContainer.getPath());				
-			}
-		}
-		
+
 		// Use a representative content type value if there are any results.
-		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE) && resultResponse.getResultCount() > 0){
+		// This saves a trip to Solr since we already have the full content type facet needed for the facet list inside of the results
+		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE) && resultResponse.getResultCount() > 0) {
 			Object contentTypeValue = searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE);
 			if (contentTypeValue instanceof MultivaluedHierarchicalFacet) {
-				LOG.debug("Replacing content type search value " + searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE));
+				LOG.debug("Replacing content type search value "
+						+ searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE));
 				BriefObjectMetadata representative = resultResponse.getResultList().get(0);
 				MultivaluedHierarchicalFacet repFacet = representative.getContentTypeFacet().get(0);
-				((MultivaluedHierarchicalFacet)contentTypeValue).setDisplayValues(repFacet);
-				
-				for (HierarchicalFacetNode node: repFacet.getFacetNodes()) {
+				((MultivaluedHierarchicalFacet) contentTypeValue).setDisplayValues(repFacet);
+
+				for (HierarchicalFacetNode node : repFacet.getFacetNodes()) {
 					LOG.debug("rep:" + node.getSearchKey() + "|" + node.getDisplayValue());
 				}
-				
-				for (HierarchicalFacetNode node: ((MultivaluedHierarchicalFacet)contentTypeValue).getFacetNodes()) {
+
+				for (HierarchicalFacetNode node : ((MultivaluedHierarchicalFacet) contentTypeValue).getFacetNodes()) {
 					LOG.debug("search:" + node.getSearchKey() + "|" + node.getDisplayValue());
 				}
-				
+
 				searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE, contentTypeValue);
 			}
-			
+
 		}
-		
-		//Get the children counts for container entries.
+
+		// Get the children counts for container entries.
 		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
-		
-		//Determine if this is a collection browse or search results page and inform the view.
-		if (isCollectionBrowseRequest){
+
+		// Determine if this is a collection browse or search results page and inform the view.
+		if (isCollectionBrowseRequest) {
 			model.addAttribute("resultType", "collectionBrowse");
 			model.addAttribute("pageSubtitle", "Browse Collections");
 		} else {
 			model.addAttribute("resultType", "searchResults");
 			model.addAttribute("pageSubtitle", "Search Results");
 		}
-		
-		String searchStateUrl = SearchStateUtil.generateStateParameterString(searchState);
+
+		String searchStateUrl = SearchStateUtil.generateStateParameterString(responseState);
 		model.addAttribute("searchStateUrl", searchStateUrl);
 		model.addAttribute("userAccessGroups", searchRequest.getAccessGroups());
 		model.addAttribute("resultResponse", resultResponse);
-		
+
 		LOG.debug("SAC qs: " + request.getQueryString());
-		
-		//Setup parameters for full record navigation
+
+		// Setup parameters for full record navigation
 		RecordNavigationState recordNavigationState = new RecordNavigationState();
-		recordNavigationState.setSearchState(searchState);
+		recordNavigationState.setSearchState(responseState);
 		recordNavigationState.setSearchStateUrl(searchStateUrl);
 
 		recordNavigationState.setRecordIdList(resultResponse.getIdList());
 		recordNavigationState.setTotalResults(resultResponse.getResultCount());
-		
+
 		request.getSession().setAttribute("recordNavigationState", recordNavigationState);
-		
+
 		LOG.debug("SAC state: " + searchStateUrl);
-		
+
 		return "searchResults";
 	}
 }

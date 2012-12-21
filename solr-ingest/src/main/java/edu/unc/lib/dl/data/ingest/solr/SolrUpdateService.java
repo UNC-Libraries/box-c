@@ -29,39 +29,18 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentFilteringPipeline;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
-import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.dl.fedora.FedoraDataService;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
 
 /**
- * Service which handles ingest and update of a solr index via threaded processors
- * which read from a queue of ordered update requests.
+ * Service which handles ingest and update of a solr index via threaded processors which read from a queue of ordered
+ * update requests.
+ * 
  * @author bbpennel
  */
 public class SolrUpdateService {
 	protected static final Logger LOG = LoggerFactory.getLogger(SolrUpdateService.class);
 	public static final String identifier = "SOLR_UPDATE";
-	
-	protected FedoraDataService fedoraDataService;
-	protected SolrUpdateDriver solrUpdateDriver;
-	protected DocumentIndexingPackageFactory dipFactory;
-	protected SolrSearchService solrSearchService;
-	protected AccessGroupSet accessGroups;
-	protected SearchStateFactory searchStateFactory;
-	protected String solrPath;
-	@Autowired
-	protected SearchSettings searchSettings;
-	public static final String TARGET_ALL = "fullIndex";
-	private PID collectionsPid = null;
 
+	protected SolrUpdateRunnableFactory solrUpdateRunnableFactory;
 	protected ThreadPoolExecutor executor = null;
 	protected BlockingQueue<SolrUpdateRequest> pidQueue = null;
 	protected List<SolrUpdateRequest> collisionList = null;
@@ -72,11 +51,9 @@ public class SolrUpdateService {
 	protected int maxThreads = 3;
 	protected long recoverableDelay = 0;
 	protected boolean autoCommit = true;
-	
+
 	protected UpdateNodeRequest root;
-	
-	private DocumentFilteringPipeline fullUpdatePipeline;
-	
+
 	public SolrUpdateService() {
 		pidQueue = new LinkedBlockingQueue<SolrUpdateRequest>();
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
@@ -88,24 +65,19 @@ public class SolrUpdateService {
 	}
 
 	public void init() {
-
-		//Pass the runnables a reference back to the update service
-		SolrUpdateRunnable.setSolrUpdateService(this);
-		
 		initializeExecutor();
-		
-		if (collectionsPid == null){
-			LOG.error("Initialization of SolrUpdateService failed.  It was unable to retrieve Collections object from repository.  Shutting down.");
-			this.executor.shutdownNow();
-		}
 	}
-	
-	protected void initializeExecutor(){
+
+	protected void initializeExecutor() {
 		LOG.debug("Initializing thread pool executor with " + this.maxThreads + " threads.");
 		this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(this.maxThreads);
 		this.executor.setKeepAliveTime(0, TimeUnit.DAYS);
+		// Populate the runnables
+		for (int i = 0; i < this.maxThreads; i++) {
+			executor.execute(this.solrUpdateRunnableFactory.createJob());
+		}
 	}
-	
+
 	public void destroy() {
 		executor.shutdownNow();
 	}
@@ -113,7 +85,7 @@ public class SolrUpdateService {
 	public void shutdown() {
 		executor.shutdown();
 	}
-	
+
 	public String nextMessageID() {
 		return identifier + ":" + UUID.randomUUID().toString();
 	}
@@ -129,86 +101,29 @@ public class SolrUpdateService {
 	public void offer(SolrUpdateRequest ingestRequest) {
 		// Set the message's status to queued
 		ingestRequest.setStatus(ProcessingStatus.QUEUED);
-		
-		if (ingestRequest.getMessageID() == null){
+
+		if (ingestRequest.getMessageID() == null) {
 			ingestRequest.setMessageID(nextMessageID());
 		}
-		
+
 		// If no parent is provided, then this is a root node
 		if (ingestRequest.getParent() == null)
 			ingestRequest.setParent(root);
-		
+
 		synchronized (pidQueue) {
 			if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated())
 				return;
 			LOG.info("Queueing: " + ingestRequest.getPid());
 			pidQueue.offer(ingestRequest);
-			executor.execute(new SolrUpdateRunnable());
 		}
 	}
 
-	public FedoraDataService getFedoraDataService() {
-		return fedoraDataService;
-	}
-
-	public void setFedoraDataService(FedoraDataService fedoraDataService) {
-		this.fedoraDataService = fedoraDataService;
-	}
-
-	public SolrUpdateDriver getSolrUpdateDriver() {
-		return solrUpdateDriver;
-	}
-
-	public void setSolrUpdateDriver(SolrUpdateDriver solrUpdateDriver) {
-		this.solrUpdateDriver = solrUpdateDriver;
-	}
-
-	public SolrSearchService getSolrSearchService() {
-		return solrSearchService;
-	}
-
-	public void setSolrSearchService(SolrSearchService solrSearchService) {
-		this.solrSearchService = solrSearchService;
-	}
-
-	public AccessGroupSet getAccessGroups() {
-		return accessGroups;
-	}
-
-	public void setAccessGroups(AccessGroupSet accessGroups) {
-		this.accessGroups = accessGroups;
-	}
-
-	public String getSolrPath() {
-		return solrPath;
-	}
-
-	public void setSolrPath(String solrPath) {
-		this.solrPath = solrPath;
-	}
-	
 	public int getMaxThreads() {
 		return maxThreads;
 	}
 
 	public void setMaxThreads(int maxThreads) {
 		this.maxThreads = maxThreads;
-	}
-	
-	public long getRecoverableDelay() {
-		return recoverableDelay;
-	}
-
-	public void setRecoverableDelay(long recoverableDelay) {
-		this.recoverableDelay = recoverableDelay;
-	}
-
-	public SearchSettings getSearchSettings() {
-		return searchSettings;
-	}
-
-	public void setSearchSettings(SearchSettings searchSettings) {
-		this.searchSettings = searchSettings;
 	}
 
 	public BlockingQueue<SolrUpdateRequest> getPidQueue() {
@@ -251,22 +166,6 @@ public class SolrUpdateService {
 		return root;
 	}
 
-	public PID getCollectionsPid() {
-		return collectionsPid;
-	}
-
-	public void setCollectionsPid(PID collectionsPid) {
-		this.collectionsPid = collectionsPid;
-	}
-
-	public DocumentFilteringPipeline getFullUpdatePipeline() {
-		return fullUpdatePipeline;
-	}
-
-	public void setFullUpdatePipeline(DocumentFilteringPipeline fullUpdatePipeline) {
-		this.fullUpdatePipeline = fullUpdatePipeline;
-	}
-
 	public boolean isAutoCommit() {
 		return autoCommit;
 	}
@@ -275,48 +174,31 @@ public class SolrUpdateService {
 		this.autoCommit = autoCommit;
 	}
 
-	public int queueSize(){
+	public int queueSize() {
 		return pidQueue.size();
 	}
-	
-	public int lockedSize(){
+
+	public int lockedSize() {
 		return lockedPids.size();
 	}
-	
-	public int collisionSize(){
+
+	public int collisionSize() {
 		return collisionList.size();
 	}
-	
-	public int activeThreadsCount(){
+
+	public int activeThreadsCount() {
 		return executor.getActiveCount();
 	}
-	
-	public String getTargetAllSelector(){
-		return SolrUpdateService.TARGET_ALL;
-	}
-	
-	public DocumentIndexingPackageFactory getDipFactory() {
-		return dipFactory;
+
+	public void setSolrUpdateRunnableFactory(SolrUpdateRunnableFactory solrUpdateRunnableFactory) {
+		this.solrUpdateRunnableFactory = solrUpdateRunnableFactory;
 	}
 
-	public void setDipFactory(DocumentIndexingPackageFactory dipFactory) {
-		this.dipFactory = dipFactory;
-	}
-
-	public SearchStateFactory getSearchStateFactory() {
-		return searchStateFactory;
-	}
-
-	public void setSearchStateFactory(SearchStateFactory searchStateFactory) {
-		this.searchStateFactory = searchStateFactory;
-	}
-
-	public String statusString(){
+	public String statusString() {
 		StringBuilder status = new StringBuilder();
-		status.append("\nPid Queue Size: ").append(pidQueue.size())
-				.append("\nCollision List size: ").append(collisionList.size()).append(collisionList.toString())
-				.append("\nPool size: ").append(executor.getPoolSize())
-				.append("\nPool queue size: ").append(executor.getQueue().size())
+		status.append("\nPid Queue Size: ").append(pidQueue.size()).append("\nCollision List size: ")
+				.append(collisionList.size()).append(collisionList.toString()).append("\nPool size: ")
+				.append(executor.getPoolSize()).append("\nPool queue size: ").append(executor.getQueue().size())
 				.append("\nLocked Pids: ").append(lockedPids.size()).append("(" + lockedPids + ")");
 		return status.toString();
 	}

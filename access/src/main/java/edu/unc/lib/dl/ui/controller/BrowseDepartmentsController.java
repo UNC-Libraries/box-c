@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +35,8 @@ public class BrowseDepartmentsController extends AbstractSolrSearchController {
 	public String handleRequest(Model model){
 		SearchResultResponse results = queryLayer.getDepartmentList(GroupsThreadStore.getGroups());
 
-		model.addAttribute("departmentFacets", results.getFacetFields().get(0));
+		if (results.getFacetFields() != null && results.getFacetFields().size() > 0)
+			model.addAttribute("departmentFacets", results.getFacetFields().get(0));
 		model.addAttribute("resultType", "departmentBrowse");
 		return "browseDepartments";
 	}

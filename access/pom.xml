@@ -51,7 +51,7 @@
 			<version>1.6.1</version>
 			<scope>compile</scope>
 		</dependency>
-		
+
 		<!-- Tomcat -->
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
@@ -75,7 +75,7 @@
 			<version>2.2</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -126,7 +126,7 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		
+
 		<!-- XML -->
 		<dependency>
 			<groupId>jaxen</groupId>
@@ -147,7 +147,33 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
+		<!-- JMX -->
+		<dependency>
+			<groupId>org.apache.xbean</groupId>
+			<artifactId>xbean-spring</artifactId>
+			<version>3.4.3</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>de.stefanheintz</groupId>
+			<artifactId>logjmxservice</artifactId>
+			<version>1.1.1</version>
+			<type>jar</type>
+			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>spring</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jms</artifactId>
+					<groupId>javax.jms</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 		<!-- Testing -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -167,7 +193,7 @@
 			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<!-- CDR -->
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
