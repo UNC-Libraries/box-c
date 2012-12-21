@@ -264,7 +264,7 @@ public class AccessControlUtils {
 
 	public Set<String> getRolesForGroups(Collection<String> groups, PID pid) {
 		Set<String> result = new HashSet<String>();
-		LOG.debug("getGroupsForRole: " + pid + " " + groups);
+		LOG.debug("getRolesForGroups: " + pid + " " + groups);
 
 		try {
 			Map<String, Set<String>> roles2Groups = groupRolesFactory
@@ -280,11 +280,12 @@ public class AccessControlUtils {
 			// then all groups with roles on parent have list
 			ParentBond bond = this.ancestorFactory.getParentBond(pid);
 			if(bond == null) {
+				LOG.debug("got no parent bond, returning");
 				return result;
 			}
 			if (!bond.inheritsRoles) {
 				Map<String, Set<String>> rolesMap = groupRolesFactory
-						.getAllRolesAndGroups(new PID(bond.parentPid));
+						.getAllRolesAndGroups(bond.parentPid);
 				for (Set<String> rgroups : rolesMap.values()) {
 					if (!Collections.disjoint(groups, rgroups)) {
 						result.add(UserRole.list.getURI().toString());
@@ -309,6 +310,7 @@ public class AccessControlUtils {
 		} catch (ObjectNotFoundException e) {
 			LOG.error("Cannot find object in question", e);
 		}
+		LOG.debug("found roles: "+result);
 		return result;
 	}
 
@@ -318,7 +320,7 @@ public class AccessControlUtils {
 	 */
 	public Set<String> getGroupsInRole(PID pid, String role) {
 		Set<String> groups = new HashSet<String>();
-		LOG.debug("getGroupsForRole: " + pid + " " + role);
+		LOG.debug("getGroupsInRole: " + pid + " " + role);
 
 		try {
 			Set<String> local = groupRolesFactory.getGroupsInRole(pid, role);
@@ -327,12 +329,13 @@ public class AccessControlUtils {
 			}
 
 			if (UserRole.list.getURI().equals(role)) {
+				LOG.debug("looking for list role");
 				// special list inheritance logic
 				// if my bond with parent is non-inheriting,
 				// then all groups with roles on parent have list
 				ParentBond bond = this.ancestorFactory.getParentBond(pid);
 				if (!bond.inheritsRoles) {
-					Map<String, Set<String>> rolesMap = groupRolesFactory.getAllRolesAndGroups(new PID(bond.parentPid));
+					Map<String, Set<String>> rolesMap = groupRolesFactory.getAllRolesAndGroups(bond.parentPid);
 					for (Set<String> rgroups : rolesMap.values()) {
 						groups.addAll(rgroups);
 					}
@@ -341,6 +344,7 @@ public class AccessControlUtils {
 				// list of ancestors from which this pid inherits access controls
 				List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
 				for (PID ancestor : ancestors) {
+					LOG.debug("checking for roles on ancestor: "+ancestor);
 					Set<String> additions = groupRolesFactory.getGroupsInRole(ancestor, role);
 					if (additions != null) {
 						groups.addAll(additions);
@@ -349,6 +353,14 @@ public class AccessControlUtils {
 			}
 		} catch (ObjectNotFoundException e) {
 			LOG.error("Cannot find object in question", e);
+		}
+		LOG.debug("getGroupsInRole: found the following groups in role "+role+" on pid "+pid);
+		if(LOG.isDebugEnabled()) {
+			StringBuilder b = new StringBuilder();
+			for(String s : groups) {
+				b.append(s).append("\t");
+			}
+			LOG.debug(b.toString());
 		}
 		return groups;
 	}

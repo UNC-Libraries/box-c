@@ -218,7 +218,7 @@ public interface TripleStoreQueryService {
 	 *           the pid for the object of interest
 	 * @return a map of child pids strings to their parent bonds.
 	 */
-	public abstract Map<String, ParentBond> lookupRepositoryAncestorInheritance(PID pid);
+	public abstract Map<PID, ParentBond> lookupRepositoryAncestorInheritance(PID pid);
 	
 	/**
 	 * Gathers each parent container in turn along with whether or not roles are inherited.

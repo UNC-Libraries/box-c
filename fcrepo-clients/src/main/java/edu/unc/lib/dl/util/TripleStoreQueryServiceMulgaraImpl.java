@@ -1472,9 +1472,9 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 	 * lookupRepositoryAncestorInheritance(edu.unc.lib.dl.fedora.PID)
 	 */
 	@Override
-	public Map<String, ParentBond> lookupRepositoryAncestorInheritance(PID pid) {
+	public Map<PID, ParentBond> lookupRepositoryAncestorInheritance(PID pid) {
 		// TODO needs many CDRs one Fedora fix
-		Map<String, ParentBond> result = new HashMap<String, ParentBond>();
+		Map<PID, ParentBond> result = new HashMap<PID, ParentBond>();
 
 		// construct path from contains relationships
 		StringBuffer query = new StringBuffer();
@@ -1490,14 +1490,14 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 		List<List<String>> response = this.lookupStrings(q);
 		if (!response.isEmpty()) {
-			Set<String> parentsNotInheritedFrom = new HashSet<String>();
+			Set<PID> parentsNotInheritedFrom = new HashSet<PID>();
 			for (List<String> solution : response) {
-				if ("false".equals(solution.get(1).trim())) {
-					parentsNotInheritedFrom.add(solution.get(2));
-				}
 				ParentBond bond = new ParentBond();
-				bond.parentPid = solution.get(2);
-				result.put(solution.get(0), bond);
+				bond.parentPid = new PID(solution.get(2));
+				if ("false".equals(solution.get(1).trim())) {
+					parentsNotInheritedFrom.add(bond.parentPid);
+				}
+				result.put(new PID(solution.get(0)), bond);
 			}
 			for (ParentBond bond : result.values()) {
 				if (parentsNotInheritedFrom.contains(bond.parentPid)) {

@@ -19,9 +19,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.WeakHashMap;
 
 import org.fcrepo.server.errors.ObjectNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ParentBond;
@@ -35,7 +38,9 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  * 
  */
 public class AncestorFactory {
-	private WeakHashMap<String, ParentBond> child2Parent = new WeakHashMap<String, ParentBond>(
+
+	private static final Logger LOG = LoggerFactory.getLogger(AncestorFactory.class);
+	private WeakHashMap<PID, ParentBond> child2Parent = new WeakHashMap<PID, ParentBond>(
 			256);
 
 	private TripleStoreQueryService tripleStoreQueryService = null;
@@ -56,19 +61,18 @@ public class AncestorFactory {
 	 * @param pid
 	 * @return a list of all the parents in order
 	 */
-	public List<PID> getInheritanceList(PID pido)
+	public List<PID> getInheritanceList(PID pid)
 			throws ObjectNotFoundException {
-		String pid = pido.getPid();
 		List<PID> result = new ArrayList<PID>();
 		while (true) {
 			if (!child2Parent.containsKey(pid))
 				updateCache(pid); // not cached
 			ParentBond bond = child2Parent.get(pid);
-			if (bond == null || !bond.inheritsRoles) { // no more parents or not
-														// inheriting further
+			if (bond == null || !bond.inheritsRoles) { 
+				// no more parents or not inheriting further
 				break;
 			} else {
-				result.add(new PID(bond.parentPid)); // add inheriting parent
+				result.add(bond.parentPid); // add inheriting parent
 				pid = bond.parentPid; // set up loop
 			}
 		}
@@ -76,9 +80,9 @@ public class AncestorFactory {
 	}
 
 	public ParentBond getParentBond(PID pid) throws ObjectNotFoundException {
-		if (!child2Parent.containsKey(pid.getPid()))
-			updateCache(pid.getPid()); // not cached
-		return child2Parent.get(pid.getPid());
+		if (!child2Parent.containsKey(pid))
+			updateCache(pid); // not cached
+		return child2Parent.get(pid);
 	}
 
 	/**
@@ -87,12 +91,12 @@ public class AncestorFactory {
 	 * @param parentPID
 	 */
 	public void invalidateBondsToChildren(PID parentPID) {
-		child2Parent.remove(parentPID.getPid());
-		Iterator<Map.Entry<String, ParentBond>> sweep = child2Parent.entrySet()
+		child2Parent.remove(parentPID);
+		Iterator<Map.Entry<PID, ParentBond>> sweep = child2Parent.entrySet()
 				.iterator();
 		while (sweep.hasNext()) {
-			Map.Entry<String, ParentBond> entry = sweep.next();
-			if (entry.getValue().parentPid.equals(parentPID.getPid())) {
+			Map.Entry<PID, ParentBond> entry = sweep.next();
+			if (entry.getValue().parentPid.equals(parentPID)) {
 				child2Parent.remove(entry.getKey());
 			}
 		}
@@ -102,9 +106,29 @@ public class AncestorFactory {
 		child2Parent.remove(childPID);
 	}
 
-	private void updateCache(String pid) throws ObjectNotFoundException {
-		Map<String, ParentBond> lineage = getTripleStoreQueryService()
-				.lookupRepositoryAncestorInheritance(new PID(pid));
+	private void updateCache(PID pid) throws ObjectNotFoundException {
+		Map<PID, ParentBond> lineage = getTripleStoreQueryService()
+				.lookupRepositoryAncestorInheritance(pid);
+		if(LOG.isDebugEnabled()) {
+			StringBuilder b = new StringBuilder();
+			for(Entry<PID, ParentBond> e : lineage.entrySet()) {
+				b.append(e.getKey()).append("==parent==>").append(e.getValue().parentPid).append("|").append(e.getValue().inheritsRoles);
+				b.append('\n');
+			}
+			LOG.debug(b.toString());
+		}
 		child2Parent.putAll(lineage);
+		// find a parent that is not a child, i.e. the root
+		PID root = null;
+		for(Entry<PID, ParentBond> e : lineage.entrySet()) {
+			if(!lineage.containsKey(e.getValue().parentPid)) {
+				root = e.getValue().parentPid;
+			}
+		}
+		if(root != null) {
+			child2Parent.put(root, null);
+		} else {
+			LOG.warn("Cannot find root pid");
+		}
 	}
 }
