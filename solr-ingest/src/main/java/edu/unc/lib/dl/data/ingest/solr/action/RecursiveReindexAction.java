@@ -55,14 +55,14 @@ public class RecursiveReindexAction extends AbstractIndexingAction {
 				}
 
 				// Skip indexing this document if it was a reindex all flag
-				if (!targetAll) {
+				//if (!targetAll) {
 					// Perform the indexing pipeline
 					pipeline.process(dip);
 					solrUpdateDriver.addDocument(dip.getDocument());
-				} else {
+				/*} else {
 					dip.getDocument().setAncestorNames("/Collections");
 					dip.getDocument().setAncestorPath(new ArrayList<String>());
-				}
+				}*/
 
 				List<PID> children = dip.getChildren();
 				if (children != null) {

@@ -19,10 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jdom.Attribute;
 import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.xpath.XPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,19 +45,10 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 	protected static final Logger log = LoggerFactory.getLogger(SetPathFilter.class);
 
 	private String ancestorInfoQuery;
-	private XPath contentModelXpath;
 
 	private PID collectionsPid;
 
 	public SetPathFilter() {
-		try {
-			contentModelXpath = XPath.newInstance("fedModel:hasModel/@rdf:resource");
-			contentModelXpath.addNamespace(JDOMNamespaceUtil.RDF_NS);
-			contentModelXpath.addNamespace(JDOMNamespaceUtil.FEDORA_MODEL_NS);
-		} catch (JDOMException e) {
-			log.error("Failed to initialize queries", e);
-		}
-
 		try {
 			this.ancestorInfoQuery = this.readFileAsString("getAncestorInfo.itql");
 		} catch (IOException e) {
@@ -93,16 +81,23 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		List<PathNode> pathNodes = new ArrayList<PathNode>(results.size());
 		PathNode currentNode = null;
 		String previousPID = null;
+		boolean orphaned = true;
 		// Rollup content models by pid
 		for (List<String> row : results) {
-			if (row.get(0).equals(previousPID)) {
+			String currentPid = row.get(0);
+			if (orphaned && collectionsPid.equals(currentPid)) {
+				orphaned = false;
+			}
+			if (currentPid.equals(previousPID)) {
 				currentNode.contentModels.add(row.get(2));
 			} else {
-				previousPID = row.get(0);
+				previousPID = currentPid;
 				currentNode = new PathNode(row);
 				pathNodes.add(currentNode);
 			}
 		}
+		if (orphaned && !collectionsPid.equals(dip.getPid()))
+			throw new IndexingException("Object " + dip.getPid() + " is orphaned");
 
 		// Create the ancestorPath, which contains the path up to be not including the node being indexed
 		List<String> ancestorPath = new ArrayList<String>(pathNodes.size() - 1);
@@ -171,64 +166,61 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		}
 
 		Element relsExt = dip.getRelsExt();
-		try {
-			// Retrieve and store content models from the FOXML
-			List<?> cmResults = this.contentModelXpath.selectNodes(relsExt);
-			List<String> contentModels = new ArrayList<String>(cmResults.size());
-			for (Object cmObject : cmResults) {
-				contentModels.add(((Attribute) cmObject).getValue());
-			}
-			idb.setContentModel(contentModels);
+		// Retrieve and store content models from the FOXML
+		//fedModel:hasModel/@rdf:resource
+		List<?> cmResults = relsExt.getChildren("hasModel", JDOMNamespaceUtil.FEDORA_MODEL_NS);
+		List<String> contentModels = new ArrayList<String>(cmResults.size());
+		for (Object modelObj: cmResults){
+			Element modelEl = (Element)modelObj;
+			contentModels.add(modelEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
+		}
+		idb.setContentModel(contentModels);
 
-			// Store the resourceType for this object
-			ResourceType resourceType = ResourceType.getResourceTypeByContentModels(idb.getContentModel());
-			idb.setResourceType(resourceType.name());
-			dip.setResourceType(resourceType);
+		// Store the resourceType for this object
+		ResourceType resourceType = ResourceType.getResourceTypeByContentModels(idb.getContentModel());
+		idb.setResourceType(resourceType.name());
+		dip.setResourceType(resourceType);
 
-			// Set this items ancestor path to its parents ancestor path plus the parent itself.
-			List<String> parentAncestors = parentDIP.getDocument().getAncestorPath();
-			List<String> ancestorPath = new ArrayList<String>(parentAncestors.size() + 1);
-			ancestorPath.addAll(parentAncestors);
-			ancestorPath.add(this.buildTier(parentAncestors.size() + 1, parentDIP.getPid(), parentDIP.getLabel()));
-			idb.setAncestorPath(ancestorPath);
+		// Set this items ancestor path to its parents ancestor path plus the parent itself.
+		List<String> parentAncestors = parentDIP.getDocument().getAncestorPath();
+		List<String> ancestorPath = new ArrayList<String>(parentAncestors.size() + 1);
+		ancestorPath.addAll(parentAncestors);
+		ancestorPath.add(this.buildTier(parentAncestors.size() + 1, parentDIP.getPid(), parentDIP.getLabel()));
+		idb.setAncestorPath(ancestorPath);
 
-			StringBuilder ancestorNames = new StringBuilder(parentDIP.getDocument().getAncestorNames());
-			// If this object isn't an item, then add itself to its ancestorNames
-			if (!ResourceType.File.equals(resourceType)) {
-				this.buildAncestorNames(ancestorNames, dip.getLabel());
-			}
-			idb.setAncestorNames(ancestorNames.toString());
-			
-			// If the parent has a rollup other than its own id, that means its nested inside an aggregate, so it inherits
-			if (!parentDIP.getPid().getPid().equals(parentDIP.getDocument().getRollup())) {
-				if (parentDIP.getDocument().getRollup() == null) {
-					idb.setRollup(idb.getId());
-					log.debug("From parent, parent rollup is null: " + idb.getRollup());
-				} else {
-					idb.setRollup(parentDIP.getDocument().getRollup());
-					log.debug("From parent, parent is in an aggregate: " + idb.getRollup());
-				}
+		StringBuilder ancestorNames = new StringBuilder(parentDIP.getDocument().getAncestorNames());
+		// If this object isn't an item, then add itself to its ancestorNames
+		if (!ResourceType.File.equals(resourceType)) {
+			this.buildAncestorNames(ancestorNames, dip.getLabel());
+		}
+		idb.setAncestorNames(ancestorNames.toString());
+		
+		// If the parent has a rollup other than its own id, that means its nested inside an aggregate, so it inherits
+		if (!parentDIP.getPid().getPid().equals(parentDIP.getDocument().getRollup())) {
+			if (parentDIP.getDocument().getRollup() == null) {
+				idb.setRollup(idb.getId());
+				log.debug("From parent, parent rollup is null: " + idb.getRollup());
 			} else {
-				// If the immediate parent was an aggregate, use its ID as this items rollup
-				if (ResourceType.Aggregate.equals(parentDIP.getResourceType())) {
-					idb.setRollup(parentDIP.getPid().getPid());
-					log.debug("From parent, parent is an aggregate: " + idb.getRollup());
-				} else {
-					idb.setRollup(idb.getId());
-					log.debug("From parent, normal rollup: " + idb.getRollup());
-				}
+				idb.setRollup(parentDIP.getDocument().getRollup());
+				log.debug("From parent, parent is in an aggregate: " + idb.getRollup());
 			}
-
-			// If the parent is a collection, then use it as this items parent collection
-			if (ResourceType.Collection.equals(parentDIP.getResourceType())) {
-				idb.setParentCollection(parentDIP.getPid().getPid());
+		} else {
+			// If the immediate parent was an aggregate, use its ID as this items rollup
+			if (ResourceType.Aggregate.equals(parentDIP.getResourceType())) {
+				idb.setRollup(parentDIP.getPid().getPid());
+				log.debug("From parent, parent is an aggregate: " + idb.getRollup());
 			} else {
-				// Otherwise, use whatever the parent had set as its collection
-				idb.setParentCollection(parentDIP.getDocument().getParentCollection());
+				idb.setRollup(idb.getId());
+				log.debug("From parent, normal rollup: " + idb.getRollup());
 			}
-		} catch (JDOMException e) {
-			throw new IndexingException("Error while attempting to retrieve content models for " + dip.getPid().getPid(),
-					e);
+		}
+
+		// If the parent is a collection, then use it as this items parent collection
+		if (ResourceType.Collection.equals(parentDIP.getResourceType())) {
+			idb.setParentCollection(parentDIP.getPid().getPid());
+		} else {
+			// Otherwise, use whatever the parent had set as its collection
+			idb.setParentCollection(parentDIP.getDocument().getParentCollection());
 		}
 	}
 

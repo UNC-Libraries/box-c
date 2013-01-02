@@ -76,21 +76,7 @@ public class HierarchicalBrowseController extends AbstractSolrSearchController {
 		}
 		
 		HierarchicalBrowseResultResponse resultResponse = null;
-		if (searchState.getResourceTypes() != null && searchState.getResourceTypes().size() == 1 
-				&& searchState.getResourceTypes().contains(searchSettings.resourceTypeFile)){
-			resultResponse = new HierarchicalBrowseResultResponse();
-			BriefObjectMetadataBean rootNode = queryLayer.getObjectById(new SimpleIdRequest(
-					((CutoffFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH)).getSearchKey(),
-					browseRequest.getAccessGroups()));
-			resultResponse.setResultList(new ArrayList<BriefObjectMetadata>());
-			resultResponse.getResultList().add(rootNode);
-			
-			SearchResultResponse itemResults = queryLayer.getHierarchicalBrowseItemResult(browseRequest);
-			resultResponse.populateItemResults(itemResults.getResultList());
-		} else {
-			resultResponse = queryLayer.getHierarchicalBrowseResults(browseRequest);
-		}
-		
+		resultResponse = queryLayer.getHierarchicalBrowseResults(browseRequest);
 		
 		if (resultResponse != null){
 			//Get the display values for hierarchical facets from the search results.
@@ -104,9 +90,6 @@ public class HierarchicalBrowseController extends AbstractSolrSearchController {
 			//Add the search state to the response.
 			resultResponse.setSearchState(searchState);
 		}
-		
-		//Get the children counts for container entries.
-		queryLayer.getChildrenCounts(resultResponse.getResultList(), browseRequest.getAccessGroups());
 		
 		model.addAttribute("resultType", "hierarchicalBrowse");
 		model.addAttribute("pageSubtitle", "Browse Results");
