@@ -1514,7 +1514,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		StringBuffer query = new StringBuffer();
 		query.append("select $pid $embargoDate from <%1$s>")
 				.append(" where $pid <%2$s> $embargoDate ")
-				.append(" and $embargoDate <mulgara:after> '%3$F' in <#xsd>;");
+				.append(" and $embargoDate <mulgara:after> '%3$tY-%3$tm-%3$td' in <#xsd>;");
 		String q = String.format(query.toString(),
 				this.getResourceIndexModelUri(),
 				ContentModelHelper.CDRProperty.embargo.getURI(),

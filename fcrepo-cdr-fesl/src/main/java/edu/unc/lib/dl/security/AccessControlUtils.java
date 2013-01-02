@@ -136,7 +136,7 @@ public class AccessControlUtils {
 			}
 			// add those with parent-implied list role
 			Set<String> listers = groupRolesFactory.getGroupsInRole(pid, UserRole.list.getURI().toString());
-			if (listers.size() > 0) {
+			if (listers != null && listers.size() > 0) {
 				summary.put(UserRole.list.getURI().toString(), listers);
 			}
 			
