@@ -173,4 +173,34 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.patron));
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.metadataPatron));
 	}
+	
+	@Test
+	public void invalidRole() {
+		Map<String, List<String>> roles = getRoleGroups();
+		roles.put("http://cdr.unc.edu/definitions/acl#inheritPermissions", Arrays.asList("true"));
+		
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null);
+		
+		List<String> roleGroups = aclBean.roleGroupsToList();
+		aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roleGroups);
+		
+		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.curator));
+		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.patron));
+		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.metadataPatron));
+		assertFalse(aclBean.getActiveRoleGroups().containsKey(null));
+	}
+	
+	@Test
+	public void noBlankAdmin() {
+		List<String> roleGroupList = Arrays.asList("http://cdr.unc.edu/definitions/roles#patron|unc:app:lib:cdr:patron");
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roleGroupList);
+
+		assertTrue(aclBean.hasPermission(new AccessGroupSet("unc:app:lib:cdr:patron"), Permission.viewDescription));
+		
+		Set<String> groupsByPermission = aclBean.getGroupsByPermission(Permission.viewDescription);
+		assertTrue(groupsByPermission.contains("unc:app:lib:cdr:patron"));
+		
+		groupsByPermission = aclBean.getGroupsByPermission(Permission.viewAdminUI);
+		System.out.println(groupsByPermission);
+	}
 }

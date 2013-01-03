@@ -77,14 +77,11 @@ public class FedoraAccessControlService implements AccessControlService {
 	@SuppressWarnings("unchecked")
 	@Override
 	public ObjectAccessControlsBean getObjectAccessControls(PID pid) {
-		GetMethod method = new GetMethod(this.aclEndpointUrl);
-		method.setRequestHeader("Content-Type", "application/json");
-		method.setQueryString(new NameValuePair[] { new NameValuePair("pid", pid.getPid()) });
-
+		GetMethod method = new GetMethod(this.aclEndpointUrl + pid.getPid() + "/getAccess");
 		try {
 			int statusCode = httpClient.executeMethod(method);
 
-			if (statusCode != HttpStatus.SC_OK) {
+			if (statusCode == HttpStatus.SC_OK) {
 				Map<?, ?> result = (Map<?, ?>) mapper.readValue(method.getResponseBodyAsStream(), Object.class);
 				Map<String, List<String>> roles = (Map<String, List<String>>) result.get("roles");
 				List<String> embargoes = (List<String>)result.get("embargoes");

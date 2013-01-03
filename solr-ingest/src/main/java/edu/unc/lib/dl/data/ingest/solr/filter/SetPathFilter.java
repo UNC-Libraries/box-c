@@ -85,7 +85,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		// Rollup content models by pid
 		for (List<String> row : results) {
 			String currentPid = row.get(0);
-			if (orphaned && collectionsPid.equals(currentPid)) {
+			if (orphaned && collectionsPid.getURI().equals(currentPid)) {
 				orphaned = false;
 			}
 			if (currentPid.equals(previousPID)) {
@@ -96,7 +96,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 				pathNodes.add(currentNode);
 			}
 		}
-		if (orphaned && !collectionsPid.equals(dip.getPid()))
+		if (orphaned && !collectionsPid.getPid().equals(dip.getPid()))
 			throw new IndexingException("Object " + dip.getPid() + " is orphaned");
 
 		// Create the ancestorPath, which contains the path up to be not including the node being indexed

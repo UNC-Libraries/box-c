@@ -36,7 +36,6 @@
 
 <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
 
-<script type="text/javascript" src="/static/js/cdrCommon.js"></script>
 <script type="text/javascript" src="/static/js/jquery.qtip.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/jquery.qtip.min.css" />
 

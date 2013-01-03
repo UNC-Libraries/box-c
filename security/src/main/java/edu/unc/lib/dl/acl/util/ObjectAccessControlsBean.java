@@ -67,6 +67,9 @@ public class ObjectAccessControlsBean {
 			String[] roleGroupArray = roleGroup.split("\\|");
 			if (roleGroupArray.length == 2) {
 				UserRole userRole = UserRole.getUserRole(roleGroupArray[0]);
+				if (userRole == null) {
+					continue;
+				}
 				Set<String> groupSet = baseRoleGroups.get(userRole);
 				if (groupSet == null) {
 					groupSet = new HashSet<String>();
@@ -95,8 +98,10 @@ public class ObjectAccessControlsBean {
 		while (roleIt.hasNext()) {
 			Map.Entry<String, Collection<String>> entry = (Map.Entry<String, Collection<String>>) roleIt.next();
 			UserRole userRole = UserRole.getUserRole(entry.getKey());
-			Set<String> groups = new HashSet<String>((Collection<String>) entry.getValue());
-			baseRoleGroups.put(userRole, groups);
+			if (userRole != null) {
+				Set<String> groups = new HashSet<String>((Collection<String>) entry.getValue());
+				baseRoleGroups.put(userRole, groups);
+			}
 		}
 
 		if (embargoes != null) {
@@ -153,7 +158,7 @@ public class ObjectAccessControlsBean {
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		result.append("Object Access Controls (").append(object.getPid()).append(")")
-				.append("\nRoles granted to groups:");
+				.append("\nRoles granted to groups:\n");
 		for (UserRole r : baseRoleGroups.keySet()) {
 			result.append(r.getPredicate()).append("\n");
 			for (String g : baseRoleGroups.get(r)) {
@@ -161,11 +166,13 @@ public class ObjectAccessControlsBean {
 			}
 		}
 		result.append("\nActive embargo dates:");
-		for (Date d : activeEmbargoes) {
-			try {
-				result.append(DateTimeUtil.formatDateToUTC(d));
-			} catch (ParseException e) {
-				LOG.error("Failed to parse date " + d, e);
+		if (activeEmbargoes != null) {
+			for (Date d : activeEmbargoes) {
+				try {
+					result.append(DateTimeUtil.formatDateToUTC(d));
+				} catch (ParseException e) {
+					LOG.error("Failed to parse date " + d, e);
+				}
 			}
 		}
 		return result.toString();

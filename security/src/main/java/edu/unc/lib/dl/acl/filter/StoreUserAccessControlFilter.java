@@ -64,18 +64,19 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 				shibGroups = "";
 			
 			log.debug("User " + userName + " logged in with groups " + shibGroups);
-			
+			AccessGroupSet accessGroups;
 			if (shibGroups.trim().length() > 0) {
-				AccessGroupSet accessGroups = new AccessGroupSet(shibGroups);
-				accessGroups.addAccessGroup(AccessGroupConstants.PUBLIC_GROUP);
-				if (userName != null && userName.trim().length() > 0)
-					accessGroups.addAccessGroup(AccessGroupConstants.AUTHENTICATED_GROUP);
-				request.setAttribute("accessGroupSet", accessGroups);
-				GroupsThreadStore.storeGroups(accessGroups);
-				log.debug("Setting cdr groups for request processing thread: "+shibGroups);
+				accessGroups = new AccessGroupSet(shibGroups);
 			} else {
-				GroupsThreadStore.clearGroups();
+				accessGroups = new AccessGroupSet();
 			}
+			accessGroups.addAccessGroup(AccessGroupConstants.PUBLIC_GROUP);
+			if (userName != null && userName.trim().length() > 0)
+				accessGroups.addAccessGroup(AccessGroupConstants.AUTHENTICATED_GROUP);
+			request.setAttribute("accessGroupSet", accessGroups);
+			GroupsThreadStore.storeGroups(accessGroups);
+			if (log.isDebugEnabled())
+				log.debug("Setting cdr groups for request processing thread: "+GroupsThreadStore.getGroupString());
 		} catch (Exception e) {
 			log.debug("Error while retrieving the users profile", e);
 		}

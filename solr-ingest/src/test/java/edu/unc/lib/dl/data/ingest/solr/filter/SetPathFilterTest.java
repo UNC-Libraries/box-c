@@ -482,4 +482,29 @@ public class SetPathFilterTest extends Assert {
 		assertEquals(1, idb.getAncestorPath().size());
 		//assertEquals("", idb.getAncestorNames());
 	}
+	
+	@Test(expected = IndexingException.class)
+	public void orphanedTest() {
+		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
+		List<List<String>> results = new ArrayList<List<String>>();
+
+		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "collection",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Collection"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/cdr-model:Simple"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/cdr-model:JP2DerivedImage"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/fedora-system:FedoraObject-3.0"));
+
+		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
+
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+
+		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
+		filter.setTripleStoreQueryService(tsqs);
+		filter.filter(dip);
+	}
 }
