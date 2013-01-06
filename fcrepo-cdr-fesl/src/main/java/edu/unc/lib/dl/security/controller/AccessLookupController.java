@@ -90,7 +90,7 @@ public class AccessLookupController {
 				return false;
 			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
 			Map<String, Set<String>> roles = accessControlUtils.getRoles(pid, ancestors);
-			List<String> activeEmbargoes = accessControlUtils.getActiveEmbargoes(pid, ancestors);
+			List<String> activeEmbargoes = accessControlUtils.getEmbargoes(pid, ancestors);
 			
 			return (new ObjectAccessControlsBean(pid, roles, activeEmbargoes)).hasPermission(accessGroups, permission);
 		} catch (ObjectNotFoundException e) {

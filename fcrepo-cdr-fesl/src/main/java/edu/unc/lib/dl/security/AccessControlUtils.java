@@ -154,10 +154,10 @@ public class AccessControlUtils {
 		return summary;
 	}
 
-	public List<String> getActiveEmbargoes(PID pid) {
+	public List<String> getEmbargoes(PID pid) {
 		try {
 			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
-			return this.getActiveEmbargoes(pid, ancestors);
+			return this.getEmbargoes(pid, ancestors);
 		} catch (ObjectNotFoundException e) {
 			LOG.error("Cannot find object in question", e);
 		}
@@ -173,7 +173,7 @@ public class AccessControlUtils {
 	 *           list of ancestors from which this pid inherits access controls
 	 * @return
 	 */
-	public List<String> getActiveEmbargoes(PID pid, List<PID> ancestors) {
+	public List<String> getEmbargoes(PID pid, List<PID> ancestors) {
 		List<String> activeEmbargo = new ArrayList<String>();
 
 		// get embargo dates
@@ -181,7 +181,7 @@ public class AccessControlUtils {
 		embargoPids.add(pid);
 		embargoPids.addAll(ancestors);
 		try {
-			activeEmbargo = getEmbargoFactory().getActiveEmbargoDates(embargoPids);
+			activeEmbargo = getEmbargoFactory().getEmbargoDates(embargoPids);
 		} catch (ObjectNotFoundException e) {
 			LOG.error("Cannot find object in question", e);
 		}
@@ -200,7 +200,7 @@ public class AccessControlUtils {
 
 			Map<String, Object> result = new HashMap<String, Object>();
 			result.put("roles", this.getRoles(pid, ancestors));
-			result.put("embargoes", this.getActiveEmbargoes(pid, ancestors));
+			result.put("embargoes", this.getEmbargoes(pid, ancestors));
 			return result;
 		} catch (ObjectNotFoundException e) {
 			LOG.error("Cannot find object in question", e);
@@ -254,7 +254,7 @@ public class AccessControlUtils {
 			Set<PID> embargoPIDs = new HashSet<PID>();
 			embargoPIDs.addAll(this.getAncestorFactory().getInheritanceList(pid));
 			embargoPIDs.add(pid);
-			result = this.getEmbargoFactory().getActiveEmbargoDates(embargoPIDs);
+			result = this.getEmbargoFactory().getEmbargoDates(embargoPIDs);
 		} catch (ObjectNotFoundException e) {
 			// TODO Auto-generated catch block
 			LOG.error("Cannot find object to look up ancestors", e);

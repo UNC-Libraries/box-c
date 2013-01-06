@@ -49,7 +49,7 @@ public class EmbargoFactory {
 		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
 	
-	public List<String> getActiveEmbargoDates(Set<PID> pids) throws ObjectNotFoundException {
+	public List<String> getEmbargoDates(Set<PID> pids) throws ObjectNotFoundException {
 		List<String>  result = new ArrayList<String>();
 		if(!cacheValid) updateCache();
 		for(PID pid : pids) {
@@ -71,6 +71,6 @@ public class EmbargoFactory {
 
 	private synchronized void updateCache() throws ObjectNotFoundException {
 		this.pid2Date.clear();
-		this.pid2Date.putAll(this.tripleStoreQueryService.fetchActiveEmbargoes());
+		this.pid2Date.putAll(this.tripleStoreQueryService.fetchEmbargoes());
 	}
 }

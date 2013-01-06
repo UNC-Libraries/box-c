@@ -55,7 +55,8 @@ public class ContentModelHelper {
 				"derivedJP2"), techData("techData"), depositedOnBehalfOf("depositedOnBehalfOf"), depositMethod(
 				"depositMethod"), depositPackageType("depositPackageType"), depositPackageSubType("depositPackageSubType"), 
 				inheritPermissions("inheritPermissions", "http://cdr.unc.edu/definitions/acl#"), embargo("embargo",
-				"http://cdr.unc.edu/definitions/acl#"),
+				"http://cdr.unc.edu/definitions/acl#"), embargoUntil("embargo-until",
+						"http://cdr.unc.edu/definitions/acl#"),
 				dataAccessCategory("data-access-category", "http://cdr.unc.edu/definitions/acl#"),
 				userRole("user-role", "http://cdr.unc.edu/definitions/acl#"),
 				 isPublished("isPublished");

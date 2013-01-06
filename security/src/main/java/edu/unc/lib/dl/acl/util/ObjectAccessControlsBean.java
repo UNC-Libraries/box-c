@@ -229,6 +229,7 @@ public class ObjectAccessControlsBean {
 	}
 
 	public boolean hasPermission(AccessGroupSet groups, Permission permission) {
+		// TODO: this method has to be made to respect embargoes
 		Set<UserRole> roles = this.getRoles(groups);
 		for (UserRole r : roles) {
 			if (r.getPermissions().contains(permission))
@@ -247,6 +248,7 @@ public class ObjectAccessControlsBean {
 	 * @return true if permitted
 	 */
 	public boolean hasPermission(String[] groups, Permission permission) {
+		// TODO: this method has to be made to respect embargoes
 		Set<UserRole> roles = this.getRoles(groups);
 		for (UserRole r : roles) {
 			if (r.getPermissions().contains(permission))

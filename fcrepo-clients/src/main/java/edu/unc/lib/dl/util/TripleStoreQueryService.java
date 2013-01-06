@@ -264,7 +264,7 @@ public interface TripleStoreQueryService {
 	 *
 	 * @return a map keyed by PID with values of embargo date.
 	 */
-	public abstract Map<PID, String> fetchActiveEmbargoes();
+	public abstract Map<PID, String> fetchEmbargoes();
 
 	/**
 	 * Builds a list of all the containers above this one, starting with the REPOSITORY container and ending with the

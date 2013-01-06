@@ -1165,11 +1165,9 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 				.append("       or $role <mulgara:is> <%7$s>")
 				.append("       or $role <mulgara:is> <%8$s>")
 				.append("       or $role <mulgara:is> <%9$s>")
-				.append("       or $role <mulgara:is> <%10$s>")
 				.append(" );");
 		String q = String.format(query.toString(),
 				this.getResourceIndexModelUri(), pid.getURI(),
-				ContentModelHelper.CDRProperty.inheritPermissions.getURI(),
 				UserRole.patron.getURI(),
 				UserRole.observer.getURI(),
 				UserRole.ingester.getURI(),
@@ -1509,16 +1507,14 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 	}
 
 	@Override
-	public Map<PID, String> fetchActiveEmbargoes() {
+	public Map<PID, String> fetchEmbargoes() {
 		Map<PID, String> result = new HashMap<PID, String>();
 		StringBuffer query = new StringBuffer();
 		query.append("select $pid $embargoDate from <%1$s>")
-				.append(" where $pid <%2$s> $embargoDate ")
-				.append(" and $embargoDate <mulgara:after> '%3$tY-%3$tm-%3$td' in <#xsd>;");
+				.append(" where $pid <%2$s> $embargoDate;");
 		String q = String.format(query.toString(),
 				this.getResourceIndexModelUri(),
-				ContentModelHelper.CDRProperty.embargo.getURI(),
-				GregorianCalendar.getInstance());
+				ContentModelHelper.CDRProperty.embargoUntil.getURI());
 		List<List<String>> response = this.lookupStrings(q);
 		if (!response.isEmpty()) {
 			for(List<String> row : response) {
