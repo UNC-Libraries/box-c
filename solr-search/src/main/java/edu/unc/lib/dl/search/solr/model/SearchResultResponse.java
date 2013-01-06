@@ -77,6 +77,8 @@ public class SearchResultResponse {
 	}
 
 	public List<String> getIdList(){
+		if (this.resultList == null)
+			return null;
 		List<String> ids = new ArrayList<String>();
 		for (BriefObjectMetadata brief: this.resultList){
 			ids.add(brief.getId());

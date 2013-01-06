@@ -20,12 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.jdom.xpath.XPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,18 +31,9 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.ResourceType;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
-import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public class DocumentIndexingPackage {
 	private static final Logger log = LoggerFactory.getLogger(DocumentIndexingPackage.class);
-
-	private static XPath retrieveLabelXPath = JDOMNamespaceUtil.instantiateXPath(
-			"foxml:property[@NAME='info:fedora/fedora-system:def/model#label']/@VALUE",
-			new Namespace[] { Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI) });
-
-	private static XPath retrieveObjectPropertiesXPath = JDOMNamespaceUtil.instantiateXPath(
-			"/foxml:digitalObject/foxml:objectProperties",
-			new Namespace[] { Namespace.getNamespace("foxml", NamespaceConstants.FOXML_URI) });
 
 	private PID pid;
 	private DocumentIndexingPackage parentDocument;
@@ -62,7 +49,7 @@ public class DocumentIndexingPackage {
 	private IndexDocumentBean document;
 	private String label;
 	private ResourceType resourceType;
-	private Map<String,Element> datastreams;
+	private Map<String, Element> datastreams;
 
 	public DocumentIndexingPackage() {
 		document = new IndexDocumentBean();
@@ -72,7 +59,7 @@ public class DocumentIndexingPackage {
 	public DocumentIndexingPackage(String pid) {
 		this(new PID(pid));
 	}
-	
+
 	public DocumentIndexingPackage(PID pid) {
 		this();
 		this.pid = pid;
@@ -178,6 +165,7 @@ public class DocumentIndexingPackage {
 			try {
 				setMdContents(extractDatastream(ContentModelHelper.Datastream.MD_CONTENTS));
 			} catch (NullPointerException e) {
+				log.debug("Unable to extract MD contents for " + this.getPid());
 				return null;
 			}
 		}
@@ -193,7 +181,7 @@ public class DocumentIndexingPackage {
 		if (datastreams == null) {
 			Element datastreamEl = JDOMQueryUtil.getChildByAttribute(foxml.getRootElement(), "datastream",
 					JDOMNamespaceUtil.FOXML_NS, "ID", datastream.getName());
-			
+
 			if (datastream.isVersionable()) {
 				dsVersion = JDOMQueryUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
 						JDOMNamespaceUtil.FOXML_NS));
@@ -214,11 +202,12 @@ public class DocumentIndexingPackage {
 				Element datastreamEl = (Element) datastreamObject;
 				String datastreamName = datastreamEl.getAttributeValue("ID");
 				if (datastreamName != null) {
-					ContentModelHelper.Datastream datastreamClass = ContentModelHelper.Datastream.getDatastream(datastreamName);
+					ContentModelHelper.Datastream datastreamClass = ContentModelHelper.Datastream
+							.getDatastream(datastreamName);
 					Element dsVersion;
 					if (datastreamClass.isVersionable()) {
-						dsVersion = JDOMQueryUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
-								JDOMNamespaceUtil.FOXML_NS));
+						dsVersion = JDOMQueryUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren(
+								"datastreamVersion", JDOMNamespaceUtil.FOXML_NS));
 					} else {
 						dsVersion = (Element) datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
 					}
@@ -232,13 +221,8 @@ public class DocumentIndexingPackage {
 
 	public Element getObjectProperties() {
 		if (objectProperties == null && foxml != null) {
-			try {
-				this.objectProperties = (Element) DocumentIndexingPackage.retrieveObjectPropertiesXPath
-						.selectSingleNode(this.foxml);
-			} catch (JDOMException e) {
-				log.debug("Did not find object properties", e);
-				return null;
-			}
+			// /foxml:digitalObject/foxml:objectProperties
+			this.objectProperties = this.foxml.getRootElement().getChild("objectProperties", JDOMNamespaceUtil.FOXML_NS);
 		}
 		return this.objectProperties;
 	}
@@ -246,12 +230,9 @@ public class DocumentIndexingPackage {
 	public String getLabel() {
 		if (label == null && foxml != null) {
 			Element objectProperties = this.getObjectProperties();
-			try {
-				Attribute value = (Attribute) retrieveLabelXPath.selectSingleNode(objectProperties);
-				this.label = value.getValue();
-			} catch (JDOMException e) {
-				return null;
-			}
+			Element labelElement = JDOMQueryUtil.getChildByAttribute(objectProperties, "property",
+					JDOMNamespaceUtil.FOXML_NS, "NAME", "info:fedora/fedora-system:def/model#label");
+			this.label = labelElement.getAttributeValue("VALUE");
 		}
 		return label;
 	}

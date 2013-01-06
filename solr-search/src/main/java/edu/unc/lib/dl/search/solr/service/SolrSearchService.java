@@ -519,7 +519,7 @@ public class SolrSearchService {
 			}
 		}
 
-		if (isRetrieveFacetsRequest) {
+		if (isRetrieveFacetsRequest && searchState.getFacetsToRetrieve() != null) {
 			// Add facet fields
 			for (String facetName : searchState.getFacetsToRetrieve()) {
 				solrQuery.addFacetField(solrSettings.getFieldName(facetName));
@@ -546,10 +546,10 @@ public class SolrSearchService {
 		}
 
 		// Scope hierarchical facet results to the highest tier selected within the facet tree
-		if (isRetrieveFacetsRequest && searchRequest.isApplyFacetPrefixes()) {
+		if (isRetrieveFacetsRequest && searchRequest.isApplyFacetPrefixes() && searchState.getFacetsToRetrieve() != null) {
 			Set<String> facetsQueried = searchState.getFacets().keySet();
 			// Apply closing cutoff to all cutoff facets that are being retrieved but not being queried for
-			for (String fieldKey : searchRequest.getSearchState().getFacetsToRetrieve()) {
+			for (String fieldKey : searchState.getFacetsToRetrieve()) {
 				if (!facetsQueried.contains(fieldKey)) {
 					facetFieldUtil.addDefaultFacetPivot(fieldKey, solrQuery);
 				}

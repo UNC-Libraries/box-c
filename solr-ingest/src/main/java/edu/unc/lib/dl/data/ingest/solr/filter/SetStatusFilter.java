@@ -80,7 +80,6 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 				log.debug("Publication query results: " + results);
 			}
 			
-			boolean selfOnly = true;
 			String pidString = dip.getPid().getURI().toString();
 			// Scan the results for any nodes that are not published
 			for (List<String> row : results) {
@@ -89,14 +88,10 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 						isPublished = false;
 					}
 				} else {
-					selfOnly = false;
 					if ("no".equals(row.get(1))) {
 						parentIsPublished = false;
 					}
 				}
-			}
-			if (selfOnly) {
-				throw new IndexingException("Object " + dip.getPid().getPid() + " is orphaned.");
 			}
 		}
 		

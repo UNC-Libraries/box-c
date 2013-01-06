@@ -34,7 +34,7 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
  * 
  * @author bbpennel
  */
-public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefObjectMetadata{
+public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefObjectMetadata {
 	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(BriefObjectMetadataBean.class);
 	protected CutoffFacet ancestorPathFacet;
@@ -43,11 +43,11 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	protected List<Datastream> datastreamObjects;
 	// Inverted map of the roleGroup, clustering roles into buckets by group
 	Map<String, Collection<String>> groupRoleMap;
-	protected Map<String,Long> countMap;
+	protected Map<String, Long> countMap;
 	protected ObjectAccessControlsBean accessControlBean;
 
 	public BriefObjectMetadataBean() {
-		countMap = new HashMap<String,Long>(2);
+		countMap = new HashMap<String, Long>(2);
 	}
 
 	// TODO getDefaultWebData getDefaultWebObject getFilesizeByDatastream
@@ -78,7 +78,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	public CutoffFacet getPath() {
 		if (path == null) {
 			if (this.ancestorPath == null) {
-				this.ancestorPathFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH, "1," + this.id + "," + this.title,
+				this.path = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH, "1," + this.id + "," + this.title,
 						0L);
 			} else {
 				path = new CutoffFacet(ancestorPathFacet);
@@ -157,7 +157,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	public Map<String, Collection<String>> getGroupRoleMap() {
 		return groupRoleMap;
 	}
-	
+
 	public ObjectAccessControlsBean getAccessControlBean() {
 		if (this.accessControlBean == null && this.roleGroup != null) {
 			this.accessControlBean = new ObjectAccessControlsBean(pid, this.roleGroup);
@@ -193,12 +193,12 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 			return null;
 		return (CutoffFacetNode) this.ancestorPathFacet.getNode(this.parentCollection);
 	}
-	
-	public Map<String,Long> getCountMap() {
+
+	public Map<String, Long> getCountMap() {
 		return this.countMap;
 	}
-	
-	public void setCountMap(Map<String,Long> countMap) {
+
+	public void setCountMap(Map<String, Long> countMap) {
 		this.countMap = countMap;
 	}
 }

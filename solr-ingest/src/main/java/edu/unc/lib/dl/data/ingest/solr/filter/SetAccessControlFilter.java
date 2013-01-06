@@ -18,6 +18,9 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import java.util.ArrayList;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -26,7 +29,8 @@ import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 
 public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
-
+	private static final Logger log = LoggerFactory.getLogger(SetAccessControlFilter.class);
+	
 	private AccessControlService accessControlService;
 	
 	@Override

@@ -457,7 +457,7 @@
 	<bean id="accessControlService" class="edu.unc.lib.dl.fedora.FedoraAccessControlService"
 		init-method="init">
 		<property name="aclEndpointUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}/getAccess" />
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}/addons/fesl/" />
 		<property name="username" value="${fedora.appUser.username}" />
 		<property name="password" value="${fedora.appUser.password}" />
 	</bean>

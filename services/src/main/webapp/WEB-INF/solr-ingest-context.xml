@@ -105,7 +105,7 @@
 				<ref bean="setDisplayOrderFilter" />
 				<ref bean="setPathFilter" />
 				<ref bean="setDescriptiveMetadataFilter" />
-				<!-- <ref bean="setAccessControlFilter" /> -->
+				<ref bean="setAccessControlFilter" />
 				<ref bean="setStatusFilter" />
 				<ref bean="setRelationsFilter" />
 			</list>

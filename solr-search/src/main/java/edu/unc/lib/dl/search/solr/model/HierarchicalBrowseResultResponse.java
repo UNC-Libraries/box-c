@@ -24,6 +24,8 @@ import java.util.Map;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
@@ -31,6 +33,8 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 
 public class HierarchicalBrowseResultResponse extends SearchResultResponse {
+	protected static final Logger log = LoggerFactory.getLogger(HierarchicalBrowseResultResponse.class);
+	
 	private Map<String,Long> subcontainerCounts;
 	private HashSet<String> matchingContainerPids = null;
 	private Long rootCount;
@@ -64,6 +68,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 		for (FacetField facetField: facetFields){
 			if (facetField.getValues() != null){
 				for (FacetField.Count facetValue: facetField.getValues()){
+					log.debug("Popsub|" + facetValue.getName() + ":" + facetValue.getCount());
 					int index = facetValue.getName().indexOf(",");
 					index = facetValue.getName().indexOf(",", index+1);
 					if (index != -1)
@@ -81,11 +86,12 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 				if (this.matchingContainerPids != null && this.matchingContainerPids.contains(briefObject.getId())){
 					//The container was directly found by the users query, so leave it as is.
 				} else {
+					log.debug("Removing container " + briefObject.getId() + "from hierarchical result because it has no children");
 					resultIt.remove();
 					//If an item is being filtered out, then decrement the counts for it and all its ancestors in subcontainer counts
 					if (briefObject.getAncestorPathFacet() != null && briefObject.getAncestorPathFacet().getFacetNodes() != null){
 						for (HierarchicalFacetNode facetTier: briefObject.getAncestorPathFacet().getFacetNodes()){
-							String tierIdentifier = facetTier.getSearchKey();
+							String tierIdentifier = facetTier.getSearchValue();
 							Long count = this.subcontainerCounts.get(tierIdentifier);
 							if (count != null)
 								this.subcontainerCounts.put(tierIdentifier, count - 1);
@@ -109,13 +115,14 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 	 * @param itemResults
 	 */
 	public void populateItemResults(List<BriefObjectMetadata> itemResults){
-		if (this.getResultList().size() > 0 && this.getResultList().get(0).getPath() != null){
+		if (this.getResultList() != null && this.getResultList().size() > 0 && this.getResultList().get(0).getPath() != null){
 			for (HierarchicalFacetNode rootTier: this.getResultList().get(0).getPath().getFacetNodes()){
-				Long count = this.subcontainerCounts.get(rootTier.getSearchKey());
+				Long count = this.subcontainerCounts.get(rootTier.getSearchValue());
+				log.debug("Adding " + itemResults.size() + " items to existing count of " + count + " for searchKey of " + rootTier.getSearchValue());
 				if (count == null){
-					this.subcontainerCounts.put(rootTier.getSearchKey(), (long)itemResults.size());
+					this.subcontainerCounts.put(rootTier.getSearchValue(), (long)itemResults.size());
 				} else {
-					this.subcontainerCounts.put(rootTier.getSearchKey(), count + itemResults.size());
+					this.subcontainerCounts.put(rootTier.getSearchValue(), count + itemResults.size());
 				}
 			}
 		}

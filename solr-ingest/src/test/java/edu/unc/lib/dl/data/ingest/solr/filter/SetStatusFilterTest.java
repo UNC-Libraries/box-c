@@ -357,18 +357,4 @@ public class SetStatusFilterTest extends Assert {
 		filter.setTripleStoreQueryService(tsqs);
 		filter.filter(dip);
 	}
-	
-	@Test(expected=IndexingException.class)
-	public void querySelfOnlyResults() throws Exception {
-		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
-		List<List<String>> results = new ArrayList<List<String>>();when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
-		results.add(Arrays.asList("info:fedora/uuid:item", "http://mulgara.org/mulgara#null"));
-		results.add(Arrays.asList("info:fedora/uuid:item", "no"));
-		
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
-		
-		SetStatusFilter filter = new SetStatusFilter();
-		filter.setTripleStoreQueryService(tsqs);
-		filter.filter(dip);
-	}
 }

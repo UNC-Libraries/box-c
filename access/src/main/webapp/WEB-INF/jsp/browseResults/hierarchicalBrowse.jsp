@@ -32,7 +32,6 @@
 	displaySecondaryActions - whether or not ot show the secondary actions for each container
 --%>
 <c:set var="rootNode" value="${hierarchicalViewResults.resultList[0]}"/>
-
 <c:set var="baseTier" scope="page" value="${rootNode.path.highestTier}"/> 
 
 <c:choose>
@@ -84,15 +83,16 @@
 	</c:otherwise>
 </c:choose>
 <c:forEach items="${hierarchicalViewResults.resultList}" var="containerNode" varStatus="resultStatus">
-	<c:choose>
-		<c:when test="${not empty containerNode.countMap}">
-			<c:set var="childCount" value="${containerNode.countMap.child}"/>
-		</c:when>
-		<c:otherwise>
-			<c:set var="childCount" value="0"/>
-		</c:otherwise>
-	</c:choose>
 	<c:if test="${!(param.excludeParent && resultStatus.first)}">
+		<c:choose>
+			<c:when test="${not empty containerNode.countMap}">
+				<c:set var="childCount" value="${containerNode.countMap.child}"/>
+			</c:when>
+			<c:otherwise>
+				<c:set var="childCount" value="0"/>
+			</c:otherwise>
+		</c:choose>
+		
 		<c:set var="endContainerDivs" value="" />
 		<c:set var="indentCode" value="" />
 		<c:set var="entryOut" value="" />
@@ -166,8 +166,10 @@
 			</c:forEach>
 		</c:if>
 		<c:set var="hasSubcontainers" value="${hierarchicalViewResults.subcontainerCounts[containerNode.path.facetNodes[fn:length(containerNode.path.facetNodes) - 1].searchValue] > 0}" />
-		<c:if test="${!resultStatus.first || empty hierarchicalViewResults.searchState.facets[searchFieldKeys.ANCESTOR_PATH]}">
+		<%-- Show the next entry unless its the Collections object --%>
+		<c:if test="${!resultStatus.first}">
 			<c:set var="precedingTierCount" value="${hierarchicalViewResults.subcontainerCounts[rootNode.path.facetNodes[fn:length(rootNode.path.facetNodes) - 1].searchValue] - 1}"/>
+			<%-- Step through the current items ancestor path to figure out and render its indentation --%>
 			<c:forEach var="pathNode" items="${containerNode.path.facetNodes}" varStatus="status">
 				<c:if test="${pathNode.tier >= baseTier}">
 					<c:set var="subcontainerCount" value="${hierarchicalViewResults.subcontainerCounts[pathNode.searchValue]}"/>
@@ -200,8 +202,9 @@
 							<c:set var="indentCode" value="${indentCode}0"/>
 						</c:otherwise>
 					</c:choose>
+					<%-- No children reported for this item, so finish it off --%>
 					<c:if test="${empty hierarchicalViewResults.subcontainerCounts[pathNode.searchValue] 
-							|| hierarchicalViewResults.subcontainerCounts[pathNode.searchValue] == 0}">
+							|| hierarchicalViewResults.subcontainerCounts[pathNode.searchValue] <= 0}">
 						<c:if test="${containerNode.resourceType == searchSettings.resourceTypeFile
 								&& status.count == containerNode.ancestorPathFacet.highestTier}">
 							<c:set var="viewAllResultsLink">
@@ -211,6 +214,7 @@
 								</div>
 							</c:set>
 						</c:if>
+						<%-- Ended a container, so add a closing div --%>
 						<c:if test="${!(pathNode.tier == baseTier && param.excludeParent) 
 										&& (containerNode.resourceType != searchSettings.resourceTypeFile)}">
 							<c:set var="endContainerDivs" value="${endContainerDivs}</div>"/>

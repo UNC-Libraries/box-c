@@ -46,5 +46,7 @@ public class DocumentIndexingPackageTest extends Assert {
 		assertTrue(datastreams.containsKey(ContentModelHelper.Datastream.RELS_EXT.getName()));
 		assertTrue(datastreams.containsKey(ContentModelHelper.Datastream.AUDIT.name()));
 		assertTrue(datastreams.containsKey(ContentModelHelper.Datastream.MD_EVENTS.name()));
+		
+		dip.getObjectProperties();
 	}
 }
