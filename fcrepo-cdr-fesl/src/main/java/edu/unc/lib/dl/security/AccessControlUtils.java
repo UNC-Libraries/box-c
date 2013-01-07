@@ -36,7 +36,8 @@ import edu.unc.lib.dl.util.ParentBond;
 
 public class AccessControlUtils {
 	private PID collectionsPid;
-	private static final Logger LOG = LoggerFactory.getLogger(AccessControlUtils.class);
+	private static final Logger LOG = LoggerFactory
+			.getLogger(AccessControlUtils.class);
 	private edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService = null;
 	private AncestorFactory ancestorFactory = null;
 	private GroupRolesFactory groupRolesFactory = null;
@@ -71,10 +72,11 @@ public class AccessControlUtils {
 		return tripleStoreQueryService;
 	}
 
-	public void setTripleStoreQueryService(edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService) {
+	public void setTripleStoreQueryService(
+			edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService) {
 		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
-	
+
 	public String getAdminGroup() {
 		return adminGroup;
 	}
@@ -84,7 +86,8 @@ public class AccessControlUtils {
 	}
 
 	public void init() {
-		collectionsPid = tripleStoreQueryService.fetchByRepositoryPath("/Collections");
+		collectionsPid = tripleStoreQueryService
+				.fetchByRepositoryPath("/Collections");
 		if (collectionsPid == null)
 			throw new Error("Cannot find collections pid, failing.");
 	}
@@ -92,72 +95,25 @@ public class AccessControlUtils {
 	public AccessControlUtils() {
 	}
 
-	public Map<String, Set<String>> getRoles(PID pid) {
-		// list of ancestors from which this pid inherits access controls
-		try {
-			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
-			return this.getRoles(pid, ancestors);
-		} catch (ObjectNotFoundException e) {
-			LOG.error("Cannot find object in question", e);
-		}
-		return null;
-	}
-
 	/**
-	 * Retrieves a map representing the roles and groups assigned to those roles for the specified object, computed from
+	 * Retrieves list of active embargoes for the specified item, computed from
 	 * it and its ancestors.
 	 * 
 	 * @param pid
-	 *           identifier of the object being queried
-	 * @param ancestors
-	 *           list of ancestors from which this pid inherits access controls
-	 * @return
+	 *            identifier of the object being queried
+	 * @return a list of embargo dates for this object
 	 */
-	public Map<String, Set<String>> getRoles(PID pid, List<PID> ancestors) {
-		// build a consolidated list of groups in each role and embargo dates
-		Map<String, Set<String>> summary = new HashMap<String, Set<String>>();
-		try {
-			Map<String, Set<String>> local = groupRolesFactory
-					.getAllRolesAndGroups(pid);
-			summary.putAll(local);
-
-			for (PID ancestor : ancestors) {
-				Map<String, Set<String>> inherited = groupRolesFactory
-						.getAllRolesAndGroups(ancestor);
-				if (inherited != null && !inherited.isEmpty()) {
-					for (String role : inherited.keySet()) {
-						if (summary.containsKey(role)) {
-							summary.get(role).addAll(inherited.get(role));
-						} else {
-							summary.put(role, inherited.get(role));
-						}
-					}
-				}
-			}
-			// add those with parent-implied list role
-			Set<String> listers = groupRolesFactory.getGroupsInRole(pid, UserRole.list.getURI().toString());
-			if (listers != null && listers.size() > 0) {
-				summary.put(UserRole.list.getURI().toString(), listers);
-			}
-			
-			// Add the admin group into the results
-			if (this.adminGroup != null) {
-				Set<String> adminGroups = summary.get(UserRole.administrator.getURI().toString());
-				if (adminGroups == null) {
-					adminGroups = new HashSet<String>();
-				}
-				adminGroups.add(this.adminGroup);
-			}
-		} catch (ObjectNotFoundException e) {
-			LOG.error("Cannot find object in question", e);
-		}
-		return summary;
-	}
-
 	public List<String> getEmbargoes(PID pid) {
 		try {
 			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
-			return this.getEmbargoes(pid, ancestors);
+			List<String> activeEmbargo = new ArrayList<String>();
+
+			// get embargo dates
+			Set<PID> embargoPids = new HashSet<PID>();
+			embargoPids.add(pid);
+			embargoPids.addAll(ancestors);
+			activeEmbargo = getEmbargoFactory().getEmbargoDates(embargoPids);
+			return activeEmbargo;
 		} catch (ObjectNotFoundException e) {
 			LOG.error("Cannot find object in question", e);
 		}
@@ -165,52 +121,23 @@ public class AccessControlUtils {
 	}
 
 	/**
-	 * Retrieves list of active embargoes for the specified item, computed from it and its ancestors.
-	 * 
-	 * @param pid
-	 *           identifier of the object being queried
-	 * @param ancestors
-	 *           list of ancestors from which this pid inherits access controls
-	 * @return
-	 */
-	public List<String> getEmbargoes(PID pid, List<PID> ancestors) {
-		List<String> activeEmbargo = new ArrayList<String>();
-
-		// get embargo dates
-		Set<PID> embargoPids = new HashSet<PID>();
-		embargoPids.add(pid);
-		embargoPids.addAll(ancestors);
-		try {
-			activeEmbargo = getEmbargoFactory().getEmbargoDates(embargoPids);
-		} catch (ObjectNotFoundException e) {
-			LOG.error("Cannot find object in question", e);
-		}
-		return activeEmbargo;
-	}
-
-	/**
-	 * Given a PID, return a map containing the group permissions organized by rights type and active embargoes
+	 * Given a PID, return a map containing the group permissions organized by
+	 * rights type and active embargoes
 	 * 
 	 * @param pid
 	 * @return
 	 */
 	public Map<String, Object> getAllCdrAccessControls(PID pid) {
-		try {
-			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
-
-			Map<String, Object> result = new HashMap<String, Object>();
-			result.put("roles", this.getRoles(pid, ancestors));
-			result.put("embargoes", this.getEmbargoes(pid, ancestors));
-			return result;
-		} catch (ObjectNotFoundException e) {
-			LOG.error("Cannot find object in question", e);
-		}
-		return null;
+		Map<String, Object> result = new HashMap<String, Object>();
+		result.put("roles", this.getRoles(pid));
+		result.put("embargoes", this.getEmbargoes(pid));
+		return result;
 	}
 
 	/**
-	 * Given a PID, return the group permissions organized by rights type in an XML structure:
-	 * <permissions><roles><originalsRead>rla</originalsRead> <originalsRead>abc</originalsRead></roles></permissions>
+	 * Given a PID, return the group permissions organized by rights type in an
+	 * XML structure: <permissions><roles><originalsRead>rla</originalsRead>
+	 * <originalsRead>abc</originalsRead></roles></permissions>
 	 * 
 	 * @param inputPid
 	 * @return XML representation of the access control for this PID.
@@ -247,12 +174,13 @@ public class AccessControlUtils {
 		}
 		return permsEl;
 	}
-	
+
 	public List<String> getAllEmbargoes(PID pid) {
 		List<String> result = Collections.EMPTY_LIST;
 		try {
 			Set<PID> embargoPIDs = new HashSet<PID>();
-			embargoPIDs.addAll(this.getAncestorFactory().getInheritanceList(pid));
+			embargoPIDs.addAll(this.getAncestorFactory()
+					.getInheritanceList(pid));
 			embargoPIDs.add(pid);
 			result = this.getEmbargoFactory().getEmbargoDates(embargoPIDs);
 		} catch (ObjectNotFoundException e) {
@@ -260,6 +188,77 @@ public class AccessControlUtils {
 			LOG.error("Cannot find object to look up ancestors", e);
 		}
 		return result;
+	}
+
+	/**
+	 * Retrieves a map representing the roles and groups assigned to those roles
+	 * for the specified object, computed from it and its ancestors.
+	 * 
+	 * @param pid
+	 *            identifier of the object being queried
+	 * @return
+	 */
+	public Map<String, Set<String>> getRoles(PID pid) {
+		Map<String, Set<String>> summary = new HashMap<String, Set<String>>();
+		try {
+			Map<String, Set<String>> local = groupRolesFactory
+					.getAllRolesAndGroups(pid);
+			summary.putAll(local);
+
+			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
+			for (PID ancestor : ancestors) {
+				Map<String, Set<String>> inherited = groupRolesFactory
+						.getAllRolesAndGroups(ancestor);
+				if (inherited != null && !inherited.isEmpty()) {
+					for (String role : inherited.keySet()) {
+						if (summary.containsKey(role)) {
+							summary.get(role).addAll(inherited.get(role));
+						} else {
+							summary.put(role, inherited.get(role));
+						}
+					}
+				}
+			}
+
+			// special list inheritance
+			// if my bond with parent is non-inheriting,
+			// then all groups with roles (inherited or not) on parent have the
+			// list role
+			ParentBond bond = this.ancestorFactory.getParentBond(pid);
+			if (bond != null && !bond.inheritsRoles) {
+				Set<String> listGroups = new HashSet<String>();
+				Map<String, Set<String>> rolesMap = groupRolesFactory
+						.getAllRolesAndGroups(bond.parentPid);
+				for (Set<String> rgroups : rolesMap.values()) {
+					listGroups.addAll(rgroups);
+				}
+				List<PID> parentAncestors = this.ancestorFactory
+						.getInheritanceList(bond.parentPid);
+				for (PID ancestor : parentAncestors) {
+					Map<String, Set<String>> inherited = groupRolesFactory
+							.getAllRolesAndGroups(ancestor);
+					for (Set<String> rgroups : inherited.values()) {
+						listGroups.addAll(rgroups);
+					}
+				}
+				if (listGroups.size() > 0) {
+					summary.put(UserRole.list.getURI().toString(), listGroups);
+				}
+			}
+
+			// Add the admin group into the results
+			if (this.adminGroup != null) {
+				Set<String> adminGroups = summary.get(UserRole.administrator
+						.getURI().toString());
+				if (adminGroups == null) {
+					adminGroups = new HashSet<String>();
+				}
+				adminGroups.add(this.adminGroup);
+			}
+		} catch (ObjectNotFoundException e) {
+			LOG.error("Cannot find object in question", e);
+		}
+		return summary;
 	}
 
 	public Set<String> getRolesForGroups(Collection<String> groups, PID pid) {
@@ -275,21 +274,39 @@ public class AccessControlUtils {
 						result.add(role);
 				}
 			}
+
 			// special list inheritance logic
 			// if my bond with parent is non-inheriting,
-			// then all groups with roles on parent have list
+			// then all groups with roles (local or inherited) on parent have
+			// list
 			ParentBond bond = this.ancestorFactory.getParentBond(pid);
-			if(bond == null) {
+			if (bond == null) {
 				LOG.debug("got no parent bond, returning");
 				return result;
 			}
 			if (!bond.inheritsRoles) {
+				boolean foundList = false;
 				Map<String, Set<String>> rolesMap = groupRolesFactory
 						.getAllRolesAndGroups(bond.parentPid);
 				for (Set<String> rgroups : rolesMap.values()) {
 					if (!Collections.disjoint(groups, rgroups)) {
 						result.add(UserRole.list.getURI().toString());
+						foundList = true;
 						break;
+					}
+				}
+				if (!foundList) {
+					List<PID> parentAncestors = this.ancestorFactory
+							.getInheritanceList(bond.parentPid);
+					foo: for (PID ancestor : parentAncestors) {
+						Map<String, Set<String>> inheritedRoles = groupRolesFactory
+								.getAllRolesAndGroups(ancestor);
+						for (Set<String> rgroups : inheritedRoles.values()) {
+							if (!Collections.disjoint(groups, rgroups)) {
+								result.add(UserRole.list.getURI().toString());
+								break foo;
+							}
+						}
 					}
 				}
 			} else {
@@ -298,10 +315,12 @@ public class AccessControlUtils {
 				List<PID> ancestors = this.ancestorFactory
 						.getInheritanceList(pid);
 				for (PID ancestor : ancestors) {
-					Map<String, Set<String>> aroles2Groups = groupRolesFactory.getAllRolesAndGroups(ancestor);
+					Map<String, Set<String>> aroles2Groups = groupRolesFactory
+							.getAllRolesAndGroups(ancestor);
 					if (aroles2Groups != null) {
 						for (String role : aroles2Groups.keySet()) {
-							if (!Collections.disjoint(aroles2Groups.get(role), groups))
+							if (!Collections.disjoint(aroles2Groups.get(role),
+									groups))
 								result.add(role);
 						}
 					}
@@ -310,7 +329,7 @@ public class AccessControlUtils {
 		} catch (ObjectNotFoundException e) {
 			LOG.error("Cannot find object in question", e);
 		}
-		LOG.debug("found roles: "+result);
+		LOG.debug("found roles: " + result);
 		return result;
 	}
 
@@ -335,17 +354,21 @@ public class AccessControlUtils {
 				// then all groups with roles on parent have list
 				ParentBond bond = this.ancestorFactory.getParentBond(pid);
 				if (!bond.inheritsRoles) {
-					Map<String, Set<String>> rolesMap = groupRolesFactory.getAllRolesAndGroups(bond.parentPid);
+					Map<String, Set<String>> rolesMap = groupRolesFactory
+							.getAllRolesAndGroups(bond.parentPid);
 					for (Set<String> rgroups : rolesMap.values()) {
 						groups.addAll(rgroups);
 					}
 				}
 			} else {
-				// list of ancestors from which this pid inherits access controls
-				List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
+				// list of ancestors from which this pid inherits access
+				// controls
+				List<PID> ancestors = this.ancestorFactory
+						.getInheritanceList(pid);
 				for (PID ancestor : ancestors) {
-					LOG.debug("checking for roles on ancestor: "+ancestor);
-					Set<String> additions = groupRolesFactory.getGroupsInRole(ancestor, role);
+					LOG.debug("checking for roles on ancestor: " + ancestor);
+					Set<String> additions = groupRolesFactory.getGroupsInRole(
+							ancestor, role);
 					if (additions != null) {
 						groups.addAll(additions);
 					}
@@ -354,10 +377,11 @@ public class AccessControlUtils {
 		} catch (ObjectNotFoundException e) {
 			LOG.error("Cannot find object in question", e);
 		}
-		LOG.debug("getGroupsInRole: found the following groups in role "+role+" on pid "+pid);
-		if(LOG.isDebugEnabled()) {
+		LOG.debug("getGroupsInRole: found the following groups in role " + role
+				+ " on pid " + pid);
+		if (LOG.isDebugEnabled()) {
 			StringBuilder b = new StringBuilder();
-			for(String s : groups) {
+			for (String s : groups) {
 				b.append(s).append("\t");
 			}
 			LOG.debug(b.toString());
