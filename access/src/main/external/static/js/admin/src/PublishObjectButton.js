@@ -1,8 +1,8 @@
-(function($) {
+define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton'], function($) {
 	$.widget("cdr.publishObjectButton", $.cdr.ajaxCallbackButton, {
 		options : {
 			defaultPublish: false,
-			followupPath: "services/rest/item/{idPath}/solrRecord/lastIndexed"
+			followupPath: "services/rest/item/{idPath}/solrRecord/version"
 		},
 		
 		_create: function() {
@@ -12,6 +12,8 @@
 			this.options.followup = this.publishFollowup;
 			this.options.completeTarget = this.options.parentObject;
 			
+			this.element.data("callbackButtonClass", "publishObjectButton");
+			
 			if (this.options.defaultPublish) {
 				this.publishedState();
 			} else {
@@ -20,8 +22,8 @@
 		},
 
 		publishFollowup : function(data) {
-			if (data && data > this.completeTimestamp) {
-				return true;
+			if (data) {
+				return this.options.parentObject.updateVersion(data);
 			}
 			return false;
 		},
@@ -51,4 +53,4 @@
 			return true;
 		}
 	});
-})(jQuery);
+});

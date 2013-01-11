@@ -50,8 +50,8 @@
 	<c:set var="additionalLimitActions" value="${param.additionalLimitActions}|"/>
 </c:if>
 
-<c:if test="${not empty searchState.facets[searchFieldKeys.ANCESTOR_PATH].cutoff}">
-	<c:set var="additionalLimitActions" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${searchState.facets[searchFieldKeys.ANCESTOR_PATH].searchValue}"|'/>
+<c:if test="${not empty searchState.facets['ANCESTOR_PATH'].cutoff}">
+	<c:set var="additionalLimitActions" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${searchState.facets["ANCESTOR_PATH"].searchValue}"|'/>
 </c:if>
 
 <div id="facetList" class="contentarea">
@@ -75,7 +75,7 @@
 				</c:when>
 			</c:choose>
 			<c:if test="${not empty facetField.values}">
-				<c:if test="${facetField.name == searchFieldKeys.ANCESTOR_PATH}">
+				<c:if test="${facetField.name == 'ANCESTOR_PATH'}">
 					<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}_structure" class="hidden facet_field_structure hier_truncate">
 						<c:url var="structureUrl" scope="page" value='browse?${searchStateUrl}'>
 							<c:param name="${searchSettings.searchStateParams['ROWS_PER_PAGE']}" value="0"/>

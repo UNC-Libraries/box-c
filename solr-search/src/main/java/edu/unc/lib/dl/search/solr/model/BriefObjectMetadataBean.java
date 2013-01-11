@@ -67,7 +67,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	@Field
 	public void setAncestorPath(List<String> ancestorPaths) {
 		super.setAncestorPath(ancestorPaths);
-		this.ancestorPathFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH, ancestorPaths, 0);
+		this.ancestorPathFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPaths, 0);
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	public CutoffFacet getPath() {
 		if (path == null) {
 			if (this.ancestorPath == null) {
-				this.path = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH, "1," + this.id + "," + this.title,
+				this.path = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + this.id + "," + this.title,
 						0L);
 			} else {
 				path = new CutoffFacet(ancestorPathFacet);
@@ -96,7 +96,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	public void setContentType(ArrayList<String> contentTypes) {
 		super.setContentType(contentTypes);
 		this.contentTypeFacet = MultivaluedHierarchicalFacet.createMultivaluedHierarchicalFacets(
-				SearchFieldKeys.CONTENT_TYPE, contentTypes);
+				SearchFieldKeys.CONTENT_TYPE.name(), contentTypes);
 	}
 
 	public List<Datastream> getDatastreamObjects() {

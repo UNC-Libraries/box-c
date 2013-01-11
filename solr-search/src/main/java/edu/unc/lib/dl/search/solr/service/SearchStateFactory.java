@@ -117,7 +117,7 @@ public class SearchStateFactory {
 		SearchState searchState = new SearchState();
 		
 		List<String> resultFields = new ArrayList<String>();
-		resultFields.add(SearchFieldKeys.ID);
+		resultFields.add(SearchFieldKeys.ID.name());
 		searchState.setResultFields(resultFields);
 		
 		searchState.setSearchTermOperator(searchSettings.defaultOperator);
@@ -134,7 +134,7 @@ public class SearchStateFactory {
 	 */
 	public SearchState createTitleListSearchState(){
 		SearchState searchState = createIDSearchState();
-		searchState.getResultFields().add(SearchFieldKeys.TITLE);
+		searchState.getResultFields().add(SearchFieldKeys.TITLE.name());
 		return searchState;
 	}
 	
@@ -144,10 +144,10 @@ public class SearchStateFactory {
 	 */
 	public SearchState createHierarchyListSearchState(){
 		SearchState searchState = createIDSearchState();
-		searchState.getResultFields().add(SearchFieldKeys.TITLE);
-		searchState.getResultFields().add(SearchFieldKeys.ANCESTOR_PATH);
-		searchState.getResultFields().add(SearchFieldKeys.ANCESTOR_NAMES);
-		searchState.getResultFields().add(SearchFieldKeys.RESOURCE_TYPE);
+		searchState.getResultFields().add(SearchFieldKeys.TITLE.name());
+		searchState.getResultFields().add(SearchFieldKeys.ANCESTOR_PATH.name());
+		searchState.getResultFields().add(SearchFieldKeys.ANCESTOR_NAMES.name());
+		searchState.getResultFields().add(SearchFieldKeys.RESOURCE_TYPE.name());
 		
 		List<String> containerTypes = new ArrayList<String>();
 		containerTypes.add(searchSettings.resourceTypeCollection);
@@ -420,36 +420,36 @@ public class SearchStateFactory {
 	 * @param request
 	 */
 	private void populateSearchStateAdvancedSearch(SearchState searchState, Map<String,String[]> request){
-		String parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DEFAULT_INDEX));
+		String parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DEFAULT_INDEX.name()));
 		if (parameter != null && parameter.length() > 0){
-			searchState.getSearchFields().put(SearchFieldKeys.DEFAULT_INDEX, parameter);
+			searchState.getSearchFields().put(SearchFieldKeys.DEFAULT_INDEX.name(), parameter);
 		}
 		
-		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.SUBJECT_INDEX));
+		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.SUBJECT_INDEX.name()));
 		if (parameter != null && parameter.length() > 0){
-			searchState.getSearchFields().put(SearchFieldKeys.SUBJECT_INDEX, parameter);
+			searchState.getSearchFields().put(SearchFieldKeys.SUBJECT_INDEX.name(), parameter);
 		}
 		
-		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.CONTRIBUTOR_INDEX));
+		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.CONTRIBUTOR_INDEX.name()));
 		if (parameter != null && parameter.length() > 0){
-			searchState.getSearchFields().put(SearchFieldKeys.CONTRIBUTOR_INDEX, parameter);
+			searchState.getSearchFields().put(SearchFieldKeys.CONTRIBUTOR_INDEX.name(), parameter);
 		}
 		
-		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.TITLE_INDEX));
+		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.TITLE_INDEX.name()));
 		if (parameter != null && parameter.length() > 0){
-			searchState.getSearchFields().put(SearchFieldKeys.TITLE_INDEX, parameter);
+			searchState.getSearchFields().put(SearchFieldKeys.TITLE_INDEX.name(), parameter);
 		}
 		
-		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.ANCESTOR_PATH));
+		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.ANCESTOR_PATH.name()));
 		if (parameter != null && parameter.length() > 0){
-			CutoffFacet hierFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH, parameter);
-			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, hierFacet);
+			CutoffFacet hierFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), parameter);
+			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), hierFacet);
 		}
 		
-		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.CONTENT_TYPE));
+		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.CONTENT_TYPE.name()));
 		if (parameter != null && parameter.length() > 0){
-			MultivaluedHierarchicalFacet hierFacet = new MultivaluedHierarchicalFacet(SearchFieldKeys.CONTENT_TYPE, parameter);
-			searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE, hierFacet);
+			MultivaluedHierarchicalFacet hierFacet = new MultivaluedHierarchicalFacet(SearchFieldKeys.CONTENT_TYPE.name(), parameter);
+			searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(), hierFacet);
 		}
 		
 		parameter = getParameter(request, searchSettings.searchStateParams.get("ACCESS_FILTER_TYPE"));
@@ -459,34 +459,34 @@ public class SearchStateFactory {
 		
 		//Store date added.
 		SearchState.RangePair dateAdded = new SearchState.RangePair();
-		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DATE_ADDED) + "Start");
+		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DATE_ADDED.name()) + "Start");
 		if (parameter != null && parameter.length() > 0){
 			dateAdded.setLeftHand(parameter);
 		}
 		
-		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DATE_ADDED) + "End");
+		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DATE_ADDED.name()) + "End");
 		if (parameter != null && parameter.length() > 0){
 			dateAdded.setRightHand(parameter);
 		}
 		
 		if (dateAdded.getLeftHand() != null || dateAdded.getRightHand() != null){
-			searchState.getRangeFields().put(SearchFieldKeys.DATE_ADDED, dateAdded);
+			searchState.getRangeFields().put(SearchFieldKeys.DATE_ADDED.name(), dateAdded);
 		}
 		
 		//Store date added.
 		SearchState.RangePair dateCreated = new SearchState.RangePair();
-		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DATE_CREATED) + "Start");
+		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DATE_CREATED.name()) + "Start");
 		if (parameter != null && parameter.length() > 0){
 			dateCreated.setLeftHand(parameter);
 		}
 		
-		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DATE_CREATED) + "End");
+		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DATE_CREATED.name()) + "End");
 		if (parameter != null && parameter.length() > 0){
 			dateCreated.setRightHand(parameter);
 		}
 		
 		if (dateCreated.getLeftHand() != null || dateCreated.getRightHand() != null){
-			searchState.getRangeFields().put(SearchFieldKeys.DATE_CREATED, dateCreated);
+			searchState.getRangeFields().put(SearchFieldKeys.DATE_CREATED.name(), dateCreated);
 		}
 	}
 

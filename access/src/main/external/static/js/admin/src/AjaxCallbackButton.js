@@ -18,29 +18,32 @@
 /*
  * @author Ben Pennell
  */
-(function($) {
-	$.widget( "cdr.ajaxCallbackButton", {
-		options: {
-			pid: null,
-			defaultLabel: undefined,
-			workLabel: undefined,
-			workPath: "",
-			workDone: undefined,
-			workDoneTarget: undefined,
-			followup: undefined,
-			followupTarget: undefined,
-			followupPath: "",
-			followupLabel: undefined,
-			followupFrequency: 1000,
-			complete: this.defaultComplete,
-			completeTarget: undefined,
-			parentElement: undefined,
-			animateSpeed: 80,
-			confirm: false,
-			confirmMessage: undefined
+define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, MetadataObject) {
+	var test = new PID("test");
+	console.log("arrest" + test.getPath());
+	$.widget("cdr.ajaxCallbackButton", {
+		options : {
+			pid : null,
+			defaultLabel : undefined,
+			workLabel : undefined,
+			workPath : "",
+			workDone : undefined,
+			workDoneTarget : undefined,
+			followup : undefined,
+			followupTarget : undefined,
+			followupPath : "",
+			followupLabel : undefined,
+			followupFrequency : 1000,
+			complete : this.defaultComplete,
+			completeTarget : undefined,
+			parentElement : undefined,
+			animateSpeed : 80,
+			confirm : false,
+			confirmMessage : undefined
 		},
-		
-		_create: function() {
+
+		_create : function() {
+			console.log("setting it up");
 			if (!this.options.defaultLabel)
 				this.options.defaultLabel = this.element.text();
 			if (!this.options.workLabel)
@@ -52,15 +55,20 @@
 			if (this.options.followupTarget == undefined)
 				this.options.followupTarget = this;
 			
+			this.element.addClass("ajaxCallbackButton");
+
 			this.followupId = null;
-			if (this.options.pid instanceof PID)
-				this.pid = this.options.pid;
-			else this.pid = new PID(this.options.pid);
+			if (this.options.pid !== undefined && this.options.pid != null) {
+				if (this.options.pid instanceof PID)
+					this.pid = this.options.pid;
+				else
+					this.pid = new PID(this.options.pid);
+			}
 			this.setWorkURL(this.options.workPath);
 			this.setFollowupURL(this.options.followupPath);
-			
+
 			var op = this;
-			
+
 			if (this.options.confirm) {
 				this.confirmDialog = $("<div class='confirm_dialogue'></div>");
 				if (this.options.confirmMessage === undefined) {
@@ -70,27 +78,31 @@
 				}
 				$("body").append(this.confirmDialog);
 				this.confirmDialog.dialog({
-					dialogClass: "no_titlebar",
-					position: {my: "right top", at: "right bottom", of: op.element},
-		            resizable: false,
-		            minHeight: 60,
-		            width: 180,
-		            modal: false,
-		            autoOpen: false,
-		            buttons: {
-		                "Yes": function() {
-		                    op.doWork();
-		                    $(this).dialog("close");
-		                },
-		                "Cancel": function() {
-		                    $(this).dialog("close");
-		                }
-		            }
-		        });
+					dialogClass : "no_titlebar",
+					position : {
+						my : "right top",
+						at : "right bottom",
+						of : op.element
+					},
+					resizable : false,
+					minHeight : 60,
+					width : 180,
+					modal : false,
+					autoOpen : false,
+					buttons : {
+						"Yes" : function() {
+							op.doWork();
+							$(this).dialog("close");
+						},
+						"Cancel" : function() {
+							$(this).dialog("close");
+						}
+					}
+				});
 			}
-			
+
 			this.element.text(this.options.defaultLabel);
-			this.element.click(function(){
+			this.element.click(function() {
 				if (op.options.disabled)
 					return false;
 				if (op.options.confirm) {
@@ -98,70 +110,90 @@
 				} else {
 					op.doWork();
 				}
-				
+
 				return false;
 			});
 		},
+
+		doWork : function(workMethod, workData) {
+			this.performWork($.getJSON, null);
+		},
 		
-		doWork: function() {
+		workState : function() {
 			this.element.text(this.options.workLabel);
 			this.disable();
-			if (this.options.parentObject) 
+			if (this.options.parentObject)
 				this.options.parentObject.setState("working");
+		},
+
+		performWork : function(workMethod, workData) {
+			this.workState();
 			var op = this;
-			$.getJSON(this.workURL, function(data) {
+			workMethod(this.workURL, workData, function(data) {
 				if (op.options.followup) {
 					if (op.options.workDone) {
 						var workSuccessful = op.options.workDone.call(op.options.workDoneTarget, data);
 						if (!workSuccessful)
 							return;
 					}
-					if (op.options.parentObject) 
+					if (op.options.parentObject)
 						op.options.parentObject.setState("followup");
 					op.followupPing();
 				} else {
-					if (op.options.parentObject) 
+					if (op.options.parentObject)
 						op.options.parentObject.setState("idle");
 					op.options.complete.call(op.options.completeTarget, data);
 					op.enable();
 				}
 			});
 		},
-		
-		disable: function() {
+
+		disable : function() {
 			this.options.disabled = true;
 			this.element.css("cursor", "default");
 		},
-		
-		enable: function() {
+
+		enable : function() {
 			this.options.disabled = false;
 			this.element.css("cursor", "pointer");
 		},
-		
-		setWorkURL: function(url) {
+
+		setWorkURL : function(url) {
 			this.workURL = url;
 			this.workURL = this.resolveParameters(this.workURL);
 		},
-		
-		setFollowupURL: function(url) {
+
+		setFollowupURL : function(url) {
 			this.followupURL = url;
 			this.followupURL = this.resolveParameters(this.followupURL);
 		},
-		
-		resolveParameters: function(url) {
+
+		resolveParameters : function(url) {
+			if (!url || !this.pid)
+				return url;
 			return url.replace("{idPath}", this.pid.getPath());
 		},
-		
-		destroy: function() {
+
+		destroy : function() {
 			this.element.unbind("click");
 		},
 		
-		followupPing: function() {
-			var op = this;
+		followupPing : function() {
+			this.performFollowupPing($.getJSON, null);
+		},
+		
+		followupState : function () {
 			if (this.options.followupLabel != null) {
 				this.element.text(this.options.followupLabel);
 			}
-			$.getJSON(this.followupURL, function(data) {
+		},
+
+		performFollowupPing : function(followupMethod, followupData) {
+			var op = this;
+			
+			this.followupState();
+			
+			followupMethod(this.followupURL, followupData, function(data) {
 				var isDone = op.options.followup.call(op.options.followupTarget, data);
 				if (isDone) {
 					if (op.followupId != null) {
@@ -178,9 +210,9 @@
 				}
 			});
 		},
-		
-		defaultComplete: function(data) {
+
+		defaultComplete : function(data) {
 			this.element.text(op.options.defaultLabel);
 		}
 	});
-})(jQuery);
+});

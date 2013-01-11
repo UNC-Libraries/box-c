@@ -61,19 +61,19 @@ public class FullRecordNavigationController extends AbstractSolrSearchController
 			searchState = recordNavigationState.getSearchState();
 		
 		if (searchState == null){
-			String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID));
+			String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID.name()));
 			if (id == null){
 				//Don't have anywhere to go, so go home
 				return "redirect:/";
 			} else {
 				//Forward back to self since users session timed out
-				model.addAttribute(searchSettings.searchStateParam(SearchFieldKeys.ID), id);
+				model.addAttribute(searchSettings.searchStateParam(SearchFieldKeys.ID.name()), id);
 				return "redirect:/record";
 			}
 		}
 		
 		List<String> resultFields = new ArrayList<String>();
-		resultFields.add(SearchFieldKeys.ID);
+		resultFields.add(SearchFieldKeys.ID.name());
 		searchState.setResultFields(resultFields);
 		
 		SearchRequest searchRequest = generateSearchRequest(request, searchState);
@@ -98,7 +98,7 @@ public class FullRecordNavigationController extends AbstractSolrSearchController
 			}
 		}
 		request.getSession().setAttribute("recordNavigationState", recordNavigationState);
-		model.addAttribute(searchSettings.searchStateParam(SearchFieldKeys.ID), recordNavigationState.getCurrentRecordId());
+		model.addAttribute(searchSettings.searchStateParam(SearchFieldKeys.ID.name()), recordNavigationState.getCurrentRecordId());
 
 		return "redirect:/record";
 	}

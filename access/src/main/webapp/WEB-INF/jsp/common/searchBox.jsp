@@ -41,10 +41,10 @@
 		<div id="fpsearch_inputwrap">
 			<input type="text" id="fpsearch_text" name="query">
 			<select id="fpsearch_select" name="queryType">
-				<option value="${searchSettings.searchFieldParams[searchFieldKeys.DEFAULT_INDEX]}"><c:out value="${searchSettings.searchFieldLabels[searchFieldKeys.DEFAULT_INDEX]}"/></option>
-				<option value="${searchSettings.searchFieldParams[searchFieldKeys.TITLE_INDEX]}"><c:out value="${searchSettings.searchFieldLabels[searchFieldKeys.TITLE_INDEX]}"/></option>
-				<option value="${searchSettings.searchFieldParams[searchFieldKeys.CONTRIBUTOR_INDEX]}"><c:out value="${searchSettings.searchFieldLabels[searchFieldKeys.CONTRIBUTOR_INDEX]}"/></option>
-				<option value="${searchSettings.searchFieldParams[searchFieldKeys.SUBJECT_INDEX]}"><c:out value="${searchSettings.searchFieldLabels[searchFieldKeys.SUBJECT_INDEX]}"/></option>
+				<option value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}"><c:out value="${searchSettings.searchFieldLabels['DEFAULT_INDEX']}"/></option>
+				<option value="${searchSettings.searchFieldParams['TITLE_INDEX']}"><c:out value="${searchSettings.searchFieldLabels['TITLE_INDEX']}"/></option>
+				<option value="${searchSettings.searchFieldParams['CONTRIBUTOR_INDEX']}"><c:out value="${searchSettings.searchFieldLabels['CONTRIBUTOR_INDEX']}"/></option>
+				<option value="${searchSettings.searchFieldParams['SUBJECT_INDEX']}"><c:out value="${searchSettings.searchFieldLabels['SUBJECT_INDEX']}"/></option>
 			</select>
 		</div>
 		<div id="fpsearch_submitwrap">
@@ -54,20 +54,20 @@
 		<c:if test="${param.showSearchWithin == 'true'}">
 			<p class="fpsearch_search_within">
 				<c:choose>
-					<c:when test="${not empty searchState.facets[searchFieldKeys.ANCESTOR_PATH]}">
+					<c:when test="${not empty searchState.facets['ANCESTOR_PATH']}">
 						<input type="radio" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" value="" /> Everything
 						<c:url var="containerQuery" scope="page" value='${queryPath}'>
-							<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${searchState.facets[searchFieldKeys.ANCESTOR_PATH].searchValue}"/>
+							<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${searchState.facets['ANCESTOR_PATH'].searchValue}"/>
 						</c:url>
 						<input type="radio" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" 
-							value="${searchSettings.searchStateParams['FACET_FIELDS']}=<c:out value='${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${searchState.facets[searchFieldKeys.ANCESTOR_PATH].searchValue}' />" checked="checked" /> In current <c:out value="${containerResourceType}"/>
+							value="${searchSettings.searchStateParams['FACET_FIELDS']}=<c:out value='${searchSettings.searchFieldParams["ANCESTOR_PATH"]}:${searchState.facets["ANCESTOR_PATH"].searchValue}' />" checked="checked" /> In current <c:out value="${containerResourceType}"/>
 					</c:when>
 					<c:otherwise>
 						<input type="radio" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" value="" checked="checked" /> Everything
 					</c:otherwise>
 				</c:choose>
-				<c:if test="${(not empty searchState.facets && ((not empty searchState.facets[searchFieldKeys.ANCESTOR_PATH] && fn:length(searchState.facets) > 1)
-						|| empty searchState.facets[searchFieldKeys.ANCESTOR_PATH]))
+				<c:if test="${(not empty searchState.facets && ((not empty searchState.facets['ANCESTOR_PATH'] && fn:length(searchState.facets) > 1)
+						|| empty searchState.facets['ANCESTOR_PATH']))
 						|| not empty searchState.rangeFields 
 						|| not empty searchState.searchFields || not empty searchState.accessTypeFilter}">
 					<c:set var="searchStateParameters" value='${fn:replace(searchStateUrl, "\\\"", "%22")}'/>

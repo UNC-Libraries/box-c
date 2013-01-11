@@ -15,7 +15,9 @@
     limitations under the License.
 
  */
-(function($) {
+define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'DeleteObjectButton',
+		'PublishObjectButton' ], function($, ui, PID, MetadataObject) {
+	console.log("ResultObject loaded");
 	$.widget("cdr.resultObject", {
 		options : {
 			animateSpeed : 100,
@@ -31,9 +33,9 @@
 			} else {
 				this.metadata = new MetadataObject(this.options.metadata);
 			}
-			
+
 			this.pid = this.metadata.pid;
-			
+
 			if (this.options.selected)
 				this.select();
 
@@ -50,43 +52,49 @@
 					event.stopPropagation();
 				});
 			}
-			
+
 			this.initializePublishLinks();
 			this.initializeDeleteLinks();
 		},
-		
-		initializePublishLinks: function() {
+
+		initializePublishLinks : function() {
 			var links = this.element.find(".publish_link");
 			if (!links)
 				return;
-			
+
 			var obj = this;
 			$(links).publishObjectButton({
-				pid: obj.pid,
-				parentObject: obj,
-				defaultPublish: $.inArray("Unpublished", this.metadata.data.status) == -1
+				pid : obj.pid,
+				parentObject : obj,
+				defaultPublish : $.inArray("Unpublished", this.metadata.data.status) == -1
 			});
 		},
-		
-		initializeDeleteLinks: function() {
+
+		initializeDeleteLinks : function() {
 			var links = this.element.find(".delete_link");
 			if (!links)
 				return;
 			var obj = this;
 			$(links).deleteObjectButton({
-				pid: obj.pid,
-				parentObject: obj 
+				pid : obj.pid,
+				parentObject : obj
 			});
 		},
 
 		disable : function() {
 			this.options.disabled = true;
 			this.element.css("cursor", "default");
+			this.element.find(".ajaxCallbackButton").each(function(){
+				$(this)[$(this).data("callbackButtonClass")].call($(this), "disable");
+			});
 		},
 
 		enable : function() {
 			this.options.disabled = false;
 			this.element.css("cursor", "pointer");
+			this.element.find(".ajaxCallbackButton").each(function(){
+				$(this)[$(this).data("callbackButtonClass")].call($(this), "enable");
+			});
 		},
 
 		toggleSelect : function() {
@@ -95,6 +103,14 @@
 			} else {
 				this.select();
 			}
+		},
+		
+		getPid : function () {
+			return this.pid;
+		},
+		
+		getMetadata : function () {
+			return this.metadata;
 		},
 
 		select : function() {
@@ -110,12 +126,18 @@
 				this.checkbox.prop("checked", false);
 			}
 		},
-		
+
+		isSelected : function() {
+			return this.element.hasClass("selected");
+		},
+
 		setState : function(state) {
 			if ("idle" == state) {
+				this.enable();
 				this.element.removeClass("followup working").addClass("idle");
-				//this.element.switchClass("followup working", "idle", this.options.animateSpeed);
+				// this.element.switchClass("followup working", "idle", this.options.animateSpeed);
 			} else if ("working" == state) {
+				this.disable();
 				this.element.switchClass("idle followup", "working", this.options.animateSpeed);
 			} else if ("followup" == state) {
 				this.element.removeClass("idle").addClass("followup", this.options.animateSpeed);
@@ -145,6 +167,14 @@
 			obj.element.hide(obj.options.animateSpeed, function() {
 				obj.element.remove();
 			});
+		},
+		
+		updateVersion : function(newVersion) {
+			if (newVersion != this.metadata.data._version_) {
+				this.metadata.data._version_ = newVersion;
+				return true;
+			}
+			return false;
 		}
 	});
-})(jQuery);
+});

@@ -68,7 +68,7 @@
 			</c:otherwise>
 		</c:choose>
 		<c:url var="fullRecordUrl" scope="page" value="record">
-			<c:param name="${searchSettings.searchStateParams[searchFieldKeys.ID]}" value="${metadata.id}"/>
+			<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.id}"/>
 		</c:url>
 		<div class="iteminfo">
 			<h2>
@@ -82,13 +82,13 @@
 				</c:choose>
 			</h2>
 			<c:if test="${not empty metadata.creator}">
-				<p>${searchSettings.searchFieldLabels[searchFieldKeys.CREATOR]}: 
+				<p>${searchSettings.searchFieldLabels['CREATOR']}: 
 					<c:forEach var="creatorObject" items="${metadata.creator}" varStatus="creatorStatus">
 						<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">, </c:if>
 					</c:forEach>
 				</p>
 			</c:if>
-			<p>${searchSettings.searchFieldLabels[searchFieldKeys.DATE_UPDATED]}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}"/></p>
+			<p>${searchSettings.searchFieldLabels['DATE_UPDATED']}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}"/></p>
 			
 			<c:if test="${not empty metadata['abstractText']}">
 				<c:set var="truncatedAbstract" value="${cdr:truncateText(metadata.abstractText, 250)}"/>
@@ -102,7 +102,7 @@
 		</div>
 		<div class="containerinfo">
 			<c:url var="browseUrl" scope="page" value='browse?${searchStateUrl}'>
-				<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${metadata.path.searchValue}"/>
+				<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.searchValue}"/>
 				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${searchSettings.actions['RESET_NAVIGATION']}:structure"/>
 			</c:url>
 			

@@ -104,13 +104,13 @@
 		<c:set var="containerFacetAction">
 			<c:choose>
 				<c:when test="${containerNode.resourceType == searchSettings.resourceTypeFile}">
-					${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${containerNode.ancestorPathFacet.searchValue},${containerNode.ancestorPathFacet.highestTier + 1}"
+					${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams['ANCESTOR_PATH']},"${containerNode.ancestorPathFacet.searchValue},${containerNode.ancestorPathFacet.highestTier + 1}"
 				</c:when>
 				<c:when test="${applyCutoffs}">
-					${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${containerNode.path.searchValue},${containerNode.path.highestTier + 1}"
+					${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams['ANCESTOR_PATH']},"${containerNode.path.searchValue},${containerNode.path.highestTier + 1}"
 				</c:when>
 				<c:otherwise>
-					${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${containerNode.path.searchValue}"
+					${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams['ANCESTOR_PATH']},"${containerNode.path.searchValue}"
 				</c:otherwise>
 			</c:choose>
 		</c:set>
@@ -229,7 +229,7 @@
 		</c:if>
 		
 		<c:set var="firstEntryBrowseSelected" value="${queryPath == 'browse' && (childCount == 0 ||
-				(resultStatus.first && not empty hierarchicalViewResults.searchState.facets[searchFieldKeys.ANCESTOR_PATH]))}"/>
+				(resultStatus.first && not empty hierarchicalViewResults.searchState.facets['ANCESTOR_PATH']))}"/>
 		
 		<c:set var="entryOut">${entryOut}
 			<c:if test="${containerNode.resourceType != searchSettings.resourceTypeFile}">
@@ -245,7 +245,7 @@
 						<a href="#" class="hier_container_collapse" title="Collapse ${containerNode.title}" id="container_toggle_${fn:replace(containerNode.id, ':', '-')}"><img src="/static/images/collapse.png"/></a>
 					</c:when>
 					<c:otherwise>
-						<c:set var="actions" scope="page" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${containerNode.path.searchValue}"'/>
+						<c:set var="actions" scope="page" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${containerNode.path.searchValue}"'/>
 						<c:if test="${hasSubcontainers}">
 							<c:set var="actions" value='${actions}|${searchSettings.actions["SET_RESOURCE_TYPE"]}:${searchSettings.resourceTypeFile}'/>
 						</c:if>
@@ -320,15 +320,15 @@
 						
 						<c:if test="${param.displaySecondaryActions}">
 							<c:url var="secondaryBrowseUrl" scope="page" value='browse${containerUrlBase}'>
-								<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${containerNode.path.searchValue}"'/>
+								<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${containerNode.path.searchValue}"'/>
 							</c:url>
 							
 							<c:url var="secondarySearchWithStateUrl" scope="page" value='search?${sessionScope.recordNavigationState.searchStateUrl}'>
-								<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${containerNode.path.searchValue},${containerNode.path.highestTier + 1}"'/>
+								<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${containerNode.path.searchValue},${containerNode.path.highestTier + 1}"'/>
 							</c:url>
 							
 							<c:url var="secondarySearchPathUrl" scope="page" value='search'>
-								<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${containerNode.path.searchValue},${containerNode.path.highestTier + 1}"'/>
+								<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${containerNode.path.searchValue},${containerNode.path.highestTier + 1}"'/>
 							</c:url>
 					
 							<p class="hier_secondary_actions">

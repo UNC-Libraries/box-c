@@ -55,7 +55,7 @@
 		<ul class="fpfeed_list">
 			<c:forEach items="${newlyAddedList}" var="entry">
 				<c:url var="entryUrl" value="record">
-					<c:param name="${searchSettings.searchStateParams[searchFieldKeys.ID]}" value="${entry.id}" />
+					<c:param name="${searchSettings.searchStateParams['ID']}" value="${entry.id}" />
 				</c:url>
 				<li><a href="<c:out value='${entryUrl}'/>"><c:out value="${cdr:truncateText(entry.title, 65)}"/></a></li>
 			</c:forEach>

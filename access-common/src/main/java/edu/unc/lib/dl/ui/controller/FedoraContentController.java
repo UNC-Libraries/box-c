@@ -77,12 +77,12 @@ public class FedoraContentController extends AbstractSolrSearchController {
 		
 
 		// Use solr to check if the user is allowed to view this item.
-		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID));
+		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID.name()));
 
 		// Get the content type of the object if its accessible
 		List<String> resultFields = new ArrayList<String>();
-		resultFields.add(SearchFieldKeys.ID);
-		resultFields.add(SearchFieldKeys.DATASTREAM);
+		resultFields.add(SearchFieldKeys.ID.name());
+		resultFields.add(SearchFieldKeys.DATASTREAM.name());
 
 		SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, accessGroups);
 

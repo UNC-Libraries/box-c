@@ -48,6 +48,7 @@ import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GroupedMetadataBean;
+import edu.unc.lib.dl.search.solr.model.IdListRequest;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -98,7 +99,7 @@ public class SolrSearchService {
 		QueryResponse queryResponse = null;
 		SolrQuery solrQuery = new SolrQuery();
 		StringBuilder query = new StringBuilder();
-		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':')
+		query.append(solrSettings.getFieldName(SearchFieldKeys.ID.name())).append(':')
 				.append(SolrSettings.sanitize(idRequest.getId()));
 		try {
 			// Add access restrictions to query
@@ -136,6 +137,55 @@ public class SolrSearchService {
 			return results.get(0);
 		}
 		return null;
+	}
+
+	public List<BriefObjectMetadataBean> getObjectsById(IdListRequest listRequest) {
+		QueryResponse queryResponse = null;
+		SolrQuery solrQuery = new SolrQuery();
+		StringBuilder query = new StringBuilder("*:* ");
+
+		try {
+			// Add access restrictions to query
+			addAccessRestrictions(query, listRequest.getAccessGroups());
+		} catch (AccessRestrictionException e) {
+			// If the user doesn't have any access groups, they don't have access to anything, return null.
+			LOG.error("Error while attempting to add access restrictions to object " + listRequest.getId(), e);
+			return null;
+		}
+
+		query.append(" AND (");
+
+		boolean first = true;
+		for (String id : listRequest.getIds()) {
+			if (first)
+				first = false;
+			else
+				query.append(" OR ");
+			query.append(solrSettings.getFieldName(SearchFieldKeys.ID.name())).append(':').append(SolrSettings.sanitize(id));
+		}
+		
+		query.append(")");
+
+		// Restrict the result fields if set
+		if (listRequest.getResultFields() != null) {
+			for (String field : listRequest.getResultFields()) {
+				solrQuery.addField(solrSettings.getFieldName(field));
+			}
+		}
+
+		solrQuery.setQuery(query.toString());
+		solrQuery.setRows(listRequest.getIds().size());
+
+		
+		LOG.debug("getObjectsById query: " + solrQuery.toString());
+		try {
+			queryResponse = server.query(solrQuery);
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+			return null;
+		}
+
+		return queryResponse.getBeans(BriefObjectMetadataBean.class);
 	}
 
 	/**
@@ -279,7 +329,7 @@ public class SolrSearchService {
 		QueryResponse queryResponse = null;
 		SolrQuery solrQuery = new SolrQuery();
 		StringBuilder query = new StringBuilder();
-		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':')
+		query.append(solrSettings.getFieldName(SearchFieldKeys.ID.name())).append(':')
 				.append(SolrSettings.sanitize(idRequest.getId()));
 
 		try {
@@ -297,7 +347,7 @@ public class SolrSearchService {
 		solrQuery.setQuery(query.toString());
 		solrQuery.setRows(0);
 
-		solrQuery.addField(solrSettings.getFieldName(SearchFieldKeys.ID));
+		solrQuery.addField(solrSettings.getFieldName(SearchFieldKeys.ID.name()));
 
 		LOG.debug("getObjectById query: " + solrQuery.toString());
 		try {
@@ -319,7 +369,7 @@ public class SolrSearchService {
 	 */
 	public CutoffFacet getAncestorPath(String pid, AccessGroupSet accessGroups) {
 		List<String> resultFields = new ArrayList<String>();
-		resultFields.add(SearchFieldKeys.ANCESTOR_PATH);
+		resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
 
 		SimpleIdRequest idRequest = new SimpleIdRequest(pid, resultFields, accessGroups);
 
@@ -338,7 +388,7 @@ public class SolrSearchService {
 		QueryResponse queryResponse = null;
 		SolrQuery solrQuery = new SolrQuery();
 		StringBuilder query = new StringBuilder();
-		query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':').append(SolrSettings.sanitize(pid));
+		query.append(solrSettings.getFieldName(SearchFieldKeys.ID.name())).append(':').append(SolrSettings.sanitize(pid));
 		try {
 			// Add access restrictions to query
 			addAccessRestrictions(query, accessGroups);
@@ -348,7 +398,7 @@ public class SolrSearchService {
 			return null;
 		}
 
-		solrQuery.addField(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP));
+		solrQuery.addField(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name()));
 
 		solrQuery.setQuery(query.toString());
 		solrQuery.setRows(1);
@@ -483,7 +533,7 @@ public class SolrSearchService {
 
 		if (searchState.getRollup() != null && searchState.getRollup()) {
 			solrQuery.set(GroupParams.GROUP, true);
-			solrQuery.set(GroupParams.GROUP_FIELD, solrSettings.getFieldName(SearchFieldKeys.ROLLUP_ID));
+			solrQuery.set(GroupParams.GROUP_FIELD, solrSettings.getFieldName(SearchFieldKeys.ROLLUP_ID.name()));
 			solrQuery.set(GroupParams.GROUP_TOTAL_COUNT, true);
 		}
 
@@ -651,7 +701,7 @@ public class SolrSearchService {
 
 		StringBuilder sb = new StringBuilder();
 		boolean firstType = true;
-		String resourceTypeLabel = solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE);
+		String resourceTypeLabel = solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name());
 		Iterator<String> resourceTypeIt = resourceTypes.iterator();
 		while (resourceTypeIt.hasNext()) {
 			if (firstType)

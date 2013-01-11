@@ -24,10 +24,15 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
  * @author bbpennel
  */
 public class SimpleIdRequest {
-	private String id;
-	private List<String> resultFields;
-	private AccessGroupSet accessGroups;
-	private String accessTypeFilter;
+	protected String id;
+	protected List<String> resultFields;
+	protected AccessGroupSet accessGroups;
+	protected String accessTypeFilter;
+	
+	public SimpleIdRequest(List<String> resultFields, AccessGroupSet accessGroups) {
+		this.accessGroups = accessGroups;
+		this.resultFields = resultFields;
+	}
 	
 	public SimpleIdRequest(String id, List<String> resultFields, AccessGroupSet accessGroups, String accessTypeFilter) {
 		this.id = id;

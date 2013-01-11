@@ -79,9 +79,9 @@ public class SearchActionController extends AbstractSolrSearchController {
 		LOG.debug("Rollup is specified as " + rollup);
 		
 		// Get the record for the currently selected container if one is selected.
-		if (searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)) {
+		if (searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
 			BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(
-					((CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH)).getSearchKey(), searchRequest
+					((CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name())).getSearchKey(), searchRequest
 							.getAccessGroups()));
 			model.addAttribute("selectedContainer", selectedContainer);
 
@@ -94,7 +94,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 				}
 				
 				// Store the path value from the selected container as the path for breadcrumbs
-				searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, selectedContainer.getPath());
+				searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedContainer.getPath());
 			}
 		} else if (rollup == null) {
 			LOG.debug("No container and no rollup, defaulting rollup to true");
@@ -115,8 +115,8 @@ public class SearchActionController extends AbstractSolrSearchController {
 			// If the users query had no results but the facet query did have results, then if a path is set remove its
 			// cutoff and rerun
 			if (resultResponseFacets.getResultCount() > 0 && resultResponse.getResultCount() == 0
-					&& searchState.getFacets() != null && searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)) {
-				CutoffFacet ancestorPath = ((CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH));
+					&& searchState.getFacets() != null && searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
+				CutoffFacet ancestorPath = ((CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name()));
 				if (ancestorPath.getCutoff() != null) {
 					ancestorPath.setCutoff(null);
 					resultResponse = queryLayer.getSearchResults(searchRequest);
@@ -131,11 +131,11 @@ public class SearchActionController extends AbstractSolrSearchController {
 
 		// Use a representative content type value if there are any results.
 		// This saves a trip to Solr since we already have the full content type facet needed for the facet list inside of the results
-		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE) && resultResponse.getResultCount() > 0) {
-			Object contentTypeValue = searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE);
+		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE.name()) && resultResponse.getResultCount() > 0) {
+			Object contentTypeValue = searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name());
 			if (contentTypeValue instanceof MultivaluedHierarchicalFacet) {
 				LOG.debug("Replacing content type search value "
-						+ searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE));
+						+ searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name()));
 				BriefObjectMetadata representative = resultResponse.getResultList().get(0);
 				MultivaluedHierarchicalFacet repFacet = representative.getContentTypeFacet().get(0);
 				((MultivaluedHierarchicalFacet) contentTypeValue).setDisplayValues(repFacet);
@@ -148,7 +148,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 					LOG.debug("search:" + node.getSearchKey() + "|" + node.getDisplayValue());
 				}
 
-				searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE, contentTypeValue);
+				searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(), contentTypeValue);
 			}
 
 		}
