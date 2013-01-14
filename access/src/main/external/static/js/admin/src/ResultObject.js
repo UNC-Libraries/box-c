@@ -96,6 +96,10 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'DeleteObjectButton',
 				$(this)[$(this).data("callbackButtonClass")].call($(this), "enable");
 			});
 		},
+		
+		isEnabled : function() {
+			return !this.options.disabled;
+		},
 
 		toggleSelect : function() {
 			if (this.element.hasClass("selected")) {

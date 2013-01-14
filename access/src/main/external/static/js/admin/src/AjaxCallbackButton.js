@@ -150,11 +150,13 @@ define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, Me
 		disable : function() {
 			this.options.disabled = true;
 			this.element.css("cursor", "default");
+			this.element.addClass("disabled");
 		},
 
 		enable : function() {
 			this.options.disabled = false;
 			this.element.css("cursor", "pointer");
+			this.element.removeClass("disabled");
 		},
 
 		setWorkURL : function(url) {

@@ -75,7 +75,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 		} else {
 			try {
 				Document foxmlView = FullObjectMetadataFactory.getFoxmlViewXML(idRequest);
-				if (foxmlView == null) {
+				if (foxmlView != null) {
 					fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
 				}
 			} catch (Exception e) {
