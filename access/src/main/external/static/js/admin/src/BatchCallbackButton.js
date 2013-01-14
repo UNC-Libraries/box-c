@@ -11,7 +11,6 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], func
 
 			this.options.workDone = this.workDone;
 			this.options.followup = this.followup;
-			this.options.complete = this.completeResult;
 			this.options.completeTarget = this;
 		},
 
@@ -29,9 +28,11 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], func
 			}
 			
 			var self = this;
-			this.performWork($.post, {
-				'ids' : self.targetIds.join('\n')
-			});
+			if (this.targetIds.length > 0) {
+				this.performWork($.post, {
+					'ids' : self.targetIds.join('\n')
+				});
+			}
 		},
 
 		workDone : function(data) {
@@ -66,11 +67,13 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], func
 					if (index != -1) {
 						this.followupObjects.splice(index, 1);
 						
+						var resultObject = this.options.resultObjectList.resultObjects[id];
+						resultObject.resultObject("setState", "idle");
+						
 						// Trigger the complete function on targeted child callback buttons
 						if (this.options.childCallbackButtonSelector) {
-							var resultObject = this.options.resultObjectList.resultObjects[id];
 							var childButton = resultObject.find(this.options.childCallbackButtonSelector);
-							childButton[childButton.data("callbackButtonClass")].call(childButton, "options").complete.call(childButton);
+							childButton[childButton.data("callbackButtonClass")].call(childButton, "completeState");
 						}
 					}
 				}
@@ -78,7 +81,7 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], func
 			return this.followupObjects.length == 0;
 		},
 		
-		completeResult : function(id) {
+		completeState : function(id) {
 			this.targetIds = null;
 			this.enable();
 		},

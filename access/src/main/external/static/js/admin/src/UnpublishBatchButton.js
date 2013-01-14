@@ -2,7 +2,8 @@ define([ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], function($) {
 	$.widget("cdr.unpublishBatchButton", $.cdr.batchCallbackButton, {
 		options : {
 			resultObjectList : undefined,
-			workPath: "services/rest/edit/unpublish"
+			workPath: "services/rest/edit/unpublish",
+			childCallbackButtonSelector : ":cdr-publishObjectButton"
 		},
 
 		getTargetIds : function() {
@@ -14,13 +15,13 @@ define([ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], function($) {
 				}
 			}
 			return targetIds;
-		},
+		}/*,
 
 		completeResult : function(id) {
+			$.cdr.batchCallbackButton.prototype._completeState.apply(this, arguments);
 			for (var index in this.targetIds) {
 				this.options.resultObjectList.resultObjects[this.targetIds[index]].resultObject("unpublish");
 			}
-			this.targetIds = null;
-		}
+		}*/
 	});
 });

@@ -34,7 +34,6 @@ define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, Me
 			followupPath : "",
 			followupLabel : undefined,
 			followupFrequency : 1000,
-			complete : this.defaultComplete,
 			completeTarget : undefined,
 			parentElement : undefined,
 			animateSpeed : 80,
@@ -204,15 +203,15 @@ define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, Me
 						op.options.parentObject.setState("idle");
 					}
 					op.enable();
-					op.options.complete.call(op.options.completeTarget, data);
+					op.completeState.call(op.options.completeTarget, data);
 				} else if (op.followupId == null) {
 					op.followupId = setInterval($.proxy(op.followupPing, op), op.options.followupFrequency);
 				}
 			});
 		},
 
-		defaultComplete : function(data) {
-			this.element.text(op.options.defaultLabel);
+		completeState : function(data) {
+			this.element.text(this.options.defaultLabel);
 		}
 	});
 });

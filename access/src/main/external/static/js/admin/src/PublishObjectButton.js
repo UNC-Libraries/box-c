@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton'], function($) {
+define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObject'], function($) {
 	$.widget("cdr.publishObjectButton", $.cdr.ajaxCallbackButton, {
 		options : {
 			defaultPublish: false,
@@ -14,7 +14,8 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton'], function($) {
 			
 			this.element.data("callbackButtonClass", "publishObjectButton");
 			
-			if (this.options.defaultPublish) {
+			this.published = this.options.defaultPublish;
+			if (this.published) {
 				this.publishedState();
 			} else {
 				this.unpublishedState();
@@ -27,19 +28,37 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton'], function($) {
 			}
 			return false;
 		},
+		
+		completeState : function() {
+			if (this.options.parentObject) {
+				if (this.published)
+					this.options.parentObject.unpublish();
+				else this.options.parentObject.publish();
+			} else {
+				this.toggleState();
+			}
+		},
+		
+		toggleState : function() {
+			if (this.published) {
+				this.unpublishedState();
+			} else {
+				this.publishedState();
+			}
+		},
 
 		publishedState : function() {
+			this.published = true;
 			this.element.text("Unpublish");
 			this.setWorkURL("services/rest/edit/unpublish/{idPath}");
-			this.options.complete = this.options.parentObject.unpublish;
 			this.options.workLabel = "Unpublishing...";
 			this.options.followupLabel = "Unpublishing....";
 		},
 
 		unpublishedState : function() {
+			this.published = false;
 			this.element.text("Publish");
 			this.setWorkURL("services/rest/edit/publish/{idPath}");
-			this.options.complete = this.options.parentObject.publish;
 			this.options.workLabel = "Publishing...";
 			this.options.followupLabel = "Publishing....";
 		},
