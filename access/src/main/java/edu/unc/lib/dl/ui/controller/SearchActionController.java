@@ -22,7 +22,7 @@ import org.springframework.stereotype.Controller;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
+import edu.unc.lib.dl.search.solr.model.GroupedMetadataBean;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -137,20 +137,35 @@ public class SearchActionController extends AbstractSolrSearchController {
 				LOG.debug("Replacing content type search value "
 						+ searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name()));
 				BriefObjectMetadata representative = resultResponse.getResultList().get(0);
-				MultivaluedHierarchicalFacet repFacet = representative.getContentTypeFacet().get(0);
-				((MultivaluedHierarchicalFacet) contentTypeValue).setDisplayValues(repFacet);
-
-				for (HierarchicalFacetNode node : repFacet.getFacetNodes()) {
-					LOG.debug("rep:" + node.getSearchKey() + "|" + node.getDisplayValue());
+				MultivaluedHierarchicalFacet repFacet = null;
+				// If we're dealing with a rolled up result then hunt through all its items to find the matching content type
+				if (representative instanceof GroupedMetadataBean) {
+					GroupedMetadataBean groupRep = (GroupedMetadataBean)representative;
+					
+					int i = 0;
+					do {
+						representative = groupRep.getItems().get(i);
+						
+						if (representative.getContentTypeFacet() != null) {
+							repFacet = representative.getContentTypeFacet().get(0);
+							LOG.debug("Pulling content type from representative " + representative.getId() + ": " + repFacet);
+							if (repFacet.contains(((MultivaluedHierarchicalFacet) contentTypeValue))) {
+								break;
+							} else {
+								repFacet = null;
+							}
+						}
+					} while (++i < groupRep.getItems().size());
+				} else {
+					// If its not a rolled up result, take it easy
+					repFacet = representative.getContentTypeFacet().get(0);
 				}
-
-				for (HierarchicalFacetNode node : ((MultivaluedHierarchicalFacet) contentTypeValue).getFacetNodes()) {
-					LOG.debug("search:" + node.getSearchKey() + "|" + node.getDisplayValue());
+				
+				if (repFacet != null) {
+					((MultivaluedHierarchicalFacet) contentTypeValue).setDisplayValues(repFacet);
+					searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(), contentTypeValue);
 				}
-
-				searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(), contentTypeValue);
 			}
-
 		}
 
 		// Get the children counts for container entries.

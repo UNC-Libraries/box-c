@@ -66,6 +66,12 @@ public class FacetFieldUtil {
 
 			solrQuery.setFacetPrefix(solrFieldName, facet.getPivotValue());
 		}
+		
+		if (facet.getFacetCutoff() != null) {
+			filterQuery = new StringBuilder();
+			filterQuery.append(solrFieldName).append(':').append(facet.getFacetCutoff()).append(',').append('*');
+			solrQuery.addFacetQuery(filterQuery.toString());
+		}
 	}
 
 	private void addMultivaluedFacetValue(MultivaluedHierarchicalFacet facet, SolrQuery solrQuery) {

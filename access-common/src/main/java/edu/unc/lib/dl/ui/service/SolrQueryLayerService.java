@@ -126,10 +126,13 @@ public class SolrQueryLayerService extends SolrSearchService {
 			List<String> facetsToRetrieve, boolean applyCutoffs) {
 		SearchState searchState = (SearchState) baseState.clone();
 
-		if (!searchState.getFacets().containsKey("ANCESTOR_PATH")) {
-			CutoffFacet defaultAncestorPath = new CutoffFacet("ANCESTOR_PATH", "2,*");
-			defaultAncestorPath.setCutoff(3);
-			searchState.getFacets().put("ANCESTOR_PATH", defaultAncestorPath);
+		if (!searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)) {
+			CutoffFacet defaultAncestorPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "2,*");
+			defaultAncestorPath.setFacetCutoff(3);
+			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), defaultAncestorPath);
+		} else {
+			CutoffFacet ancestorPath = (CutoffFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
+			ancestorPath.setFacetCutoff(ancestorPath.getHighestTier() + 1);
 		}
 
 		SearchRequest searchRequest = new SearchRequest();
@@ -140,6 +143,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 		if (facetsToRetrieve != null)
 			searchState.setFacetsToRetrieve(facetsToRetrieve);
 		searchState.setResourceTypes(null);
+		// Rollup causes incorrect counts when faceting
+		searchState.setRollup(false);
 		searchRequest.setApplyFacetCutoffs(applyCutoffs);
 
 		SearchResultResponse resultResponse = getSearchResults(searchRequest);

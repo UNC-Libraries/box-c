@@ -31,14 +31,27 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 
 	public MultivaluedHierarchicalFacet(String fieldName, String facetString) {
 		super(fieldName, facetString);
-		MultivaluedHierarchicalFacetNode node = new MultivaluedHierarchicalFacetNode(facetString);
-		this.facetNodes.add(node);
+		this.populateFacetNodes(facetString);
 	}
 	
 	public MultivaluedHierarchicalFacet(String fieldName, FacetField.Count countObject) {
 		super(fieldName, countObject);
-		MultivaluedHierarchicalFacetNode node = new MultivaluedHierarchicalFacetNode(this.value);
-		this.facetNodes.add(node);
+		this.populateFacetNodes(this.value);
+	}
+	
+	private void populateFacetNodes(String facetString) {
+		String[] tiers = MultivaluedHierarchicalFacetNode.extractFacetParts.split(facetString);
+		
+		for (int i = 1; i < tiers.length; i++) {
+			StringBuilder nodeFacet = new StringBuilder();
+			for (int j = 1; j <= i; j++) {
+				if (j == i)
+					nodeFacet.append('^');
+				else nodeFacet.append('/');
+				nodeFacet.append(tiers[j]);
+			}
+			this.facetNodes.add(new MultivaluedHierarchicalFacetNode(nodeFacet.toString()));
+		}
 	}
 	
 	public static List<MultivaluedHierarchicalFacet> createMultivaluedHierarchicalFacets(String fieldName,
@@ -98,12 +111,31 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 				.get(this.facetNodes.size() - 1);
 	}
 	
+	public HierarchicalFacetNode getNode(String searchKey) {
+		for (HierarchicalFacetNode node: this.facetNodes) {
+			if (node.getSearchKey().equals(searchKey))
+				return node;
+		}
+		return null;
+	}
+	
 	public HierarchicalFacetNode getNodeBySearchValue(String searchValue) {
 		for (HierarchicalFacetNode node: this.facetNodes) {
 			if (node.getSearchValue().equals(searchValue))
 				return node;
 		}
 		return null;
+	}
+	
+	public boolean contains(MultivaluedHierarchicalFacet facet) {
+		if (facet.facetNodes.size() > this.facetNodes.size())
+			return false;
+		
+		for (int i = 0; i < facet.facetNodes.size(); i++) {
+			if (!facet.facetNodes.get(i).getSearchKey().equals(this.facetNodes.get(i).getSearchKey()))
+				return false;
+		}
+		return true;
 	}
 	
 	public void setDisplayValues(MultivaluedHierarchicalFacet facet) {

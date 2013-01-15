@@ -23,7 +23,10 @@ import org.slf4j.LoggerFactory;
 public class CutoffFacet extends AbstractHierarchicalFacet {
 	private static final Logger LOG = LoggerFactory.getLogger(CutoffFacet.class);
 	
+	// Maximum tier allowable in results
 	private Integer cutoff;
+	// Maximum tier allowable in facet results
+	private Integer facetCutoff;
 	
 	public CutoffFacet(String fieldName, String facetString) {
 		super(fieldName, facetString);
@@ -179,6 +182,14 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 		this.cutoff = cutoff;
 	}
 	
+	public Integer getFacetCutoff() {
+		return facetCutoff;
+	}
+
+	public void setFacetCutoff(Integer facetCutoff) {
+		this.facetCutoff = facetCutoff;
+	}
+
 	@Override
 	public Object clone() {
 		return new CutoffFacet(this);
