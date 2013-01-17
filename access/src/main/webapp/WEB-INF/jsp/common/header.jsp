@@ -81,7 +81,7 @@
 					</li>
 				</c:if>
 				<c:choose>
-					<c:when test="${not empty requestScope.accessGroupSet}">
+					<c:when test="${not empty pageContext.request.remoteUser}">
 						<c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
 							<c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
 						</c:url>
@@ -100,8 +100,8 @@
 	</div>
 	<div class="fourcol darkest">
 		<div class="contentarea">
-			<c:if test="${not empty sessionScope.user && not empty sessionScope.user.userName}">
-				<div id="username_wrap">Welcome, <c:out value="${sessionScope.user.userName}"/></div>
+			<c:if test="${not empty pageContext.request.remoteUser}">
+				<div id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></div>
 			</c:if>
 			<c:if test="${contentPage != 'WEB-INF/jsp/frontPage.jsp'}">
 				<form class="right clear_on_submit_without_focus" method="get" action="basicSearch" id="hsearch_form">
