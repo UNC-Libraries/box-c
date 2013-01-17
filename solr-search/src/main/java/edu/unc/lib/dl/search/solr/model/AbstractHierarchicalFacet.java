@@ -69,7 +69,6 @@ public abstract class AbstractHierarchicalFacet extends GenericFacet implements 
 
 	public abstract String getSearchKey();
 	public abstract String getPivotValue();
-	public abstract String getLimitToValue();
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder('[');

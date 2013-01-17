@@ -48,7 +48,7 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
 
 		this.searchValue = this.tier + "," + this.searchKey;
 	}
-
+	
 	public CutoffFacetNode(String displayValue, String searchKey, Integer tier) {
 		this.displayValue = displayValue;
 		this.searchKey = searchKey;
@@ -100,7 +100,7 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
 	
 	@Override
 	public String getLimitToValue() {
-		return getSearchValue() + "," + (this.tier + 1); 
+		return getSearchValue() + "!" + (this.tier + 1); 
 	}
 	
 	@Override

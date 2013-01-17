@@ -58,6 +58,7 @@
 								<c:param name="fieldKey"><c:out value="${field.key}"/></c:param>
 								<c:param name="linkLast">false</c:param>
 								<c:param name="queryPath" value="${queryPath}"/>
+								<c:param name="limitToContainer">true</c:param>
 							</c:import>
 						</c:when>
 						<c:otherwise>

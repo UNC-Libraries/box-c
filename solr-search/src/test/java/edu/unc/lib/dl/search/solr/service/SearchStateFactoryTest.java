@@ -7,6 +7,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import edu.unc.lib.dl.search.solr.model.CutoffFacet;
+import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 
@@ -28,5 +30,35 @@ public class SearchStateFactoryTest extends Assert {
 		SearchState searchState = searchStateFactory.createSearchState(request.getParameterMap());
 		
 		assertFalse(searchState.getFacets().containsKey("ANCESTOR_PATH"));
+	}
+	
+	
+	@Test
+	public void cutoffTier() throws Exception {
+		Properties properties = new Properties();
+		properties.load(new FileInputStream("src/test/resources/search.properties"));
+		
+		SearchSettings searchSettings = new SearchSettings();
+		searchSettings.setProperties(properties);
+		
+		SearchStateFactory searchStateFactory = new SearchStateFactory();
+		searchStateFactory.setSearchSettings(searchSettings);
+		MockHttpServletRequest request = new MockHttpServletRequest(
+				"GET",
+				"https://localhost/search?action=setFacet%3apath%2c%222%2cuuid%3a52726582-2cea-455a-8220-c360dbe5082b%2c3%22|resetNav%3asearch&sort=default&sortOrder=&terms=anywhere:&rows=20");
+		SearchState searchState = searchStateFactory.createSearchState(request.getParameterMap());
+		SearchActionService sas = new SearchActionService();
+		sas.setSearchSettings(searchSettings);
+		FacetFieldFactory fff = new FacetFieldFactory();
+		fff.setSearchSettings(searchSettings);
+		sas.setFacetFieldFactory(fff);
+		
+		sas.executeActions(searchState, "setFacet:path,\"2,uuid:52726582-2cea-455a-8220-c360dbe5082b!3\"|resetNav:search");
+		
+		System.out.println(searchState);
+		
+		assertTrue(searchState.getFacets().containsKey("ANCESTOR_PATH"));
+		CutoffFacet facet = (CutoffFacet)searchState.getFacets().get("ANCESTOR_PATH");
+		assertEquals(3, facet.getCutoff().intValue());
 	}
 }

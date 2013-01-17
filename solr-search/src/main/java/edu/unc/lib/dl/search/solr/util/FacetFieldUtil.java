@@ -63,8 +63,6 @@ public class FacetFieldUtil {
 			filterQuery = new StringBuilder();
 			filterQuery.append('!').append(solrFieldName).append(':').append(facet.getCutoff()).append(',').append('*');
 			solrQuery.addFilterQuery(filterQuery.toString());
-
-			solrQuery.setFacetPrefix(solrFieldName, facet.getPivotValue());
 		}
 		
 		if (facet.getFacetCutoff() != null) {

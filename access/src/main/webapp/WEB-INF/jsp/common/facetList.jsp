@@ -84,7 +84,7 @@
 							<c:param name="depth" value="1"/>
 							<c:param name="hideTypeIcon" value="true"/>
 							<c:param name="excludeParent" value="false"/>
-							<c:param name="applyCutoffs" value="false"/>
+							<c:param name="applyCutoffs" value="true"/>
 							<c:param name="hideTypeIcon" value="true"/>
 							<c:param name="disableSecondaryDetailsLink" value="true"/>
 						</c:url>
@@ -104,7 +104,7 @@
 								<c:if test="${not empty facetValue.displayValue && not empty facetValue.searchValue}">
 									<li>
 										<c:url var="facetActionUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-											<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[facetValue.fieldName]},"${facetValue.searchValue}"'/>
+											<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[facetValue.fieldName]},"${facetValue.limitToValue}"'/>
 										</c:url>
 										<a href="<c:out value="${facetActionUrl}"/>"><c:out value="${facetValue.displayValue}" /></a> (<c:out value="${facetValue.count}" />)
 									</li>

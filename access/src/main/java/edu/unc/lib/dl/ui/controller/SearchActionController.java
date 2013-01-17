@@ -57,8 +57,8 @@ public class SearchActionController extends AbstractSolrSearchController {
 		// Request object for the search
 		SearchRequest searchRequest = generateSearchRequest(request);
 		SearchState searchState = searchRequest.getSearchState();
-		SearchState responseState = (SearchState)searchState.clone();
-		
+		SearchState responseState = (SearchState) searchState.clone();
+
 		List<String> facetsToRetrieve = searchState.getFacetsToRetrieve();
 		searchState.setFacetsToRetrieve(null);
 
@@ -77,24 +77,33 @@ public class SearchActionController extends AbstractSolrSearchController {
 
 		Boolean rollup = searchState.getRollup();
 		LOG.debug("Rollup is specified as " + rollup);
-		
+
 		// Get the record for the currently selected container if one is selected.
 		if (searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
-			BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(
-					((CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name())).getSearchKey(), searchRequest
-							.getAccessGroups()));
+			CutoffFacet queryAncestorPath = (CutoffFacet) searchState.getFacets()
+					.get(SearchFieldKeys.ANCESTOR_PATH.name());
+
+			BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(queryAncestorPath
+					.getSearchKey(), searchRequest.getAccessGroups()));
 			model.addAttribute("selectedContainer", selectedContainer);
 
 			if (selectedContainer != null) {
-				// Unless its explicitly set in the url, disable rollup if the container is an aggregate or its inside of an aggregate.
+				// Unless its explicitly set in the url, disable rollup if the container is an aggregate or its inside of an
+				// aggregate.
 				if (rollup == null) {
-					rollup = !(!selectedContainer.getRollup().equals(selectedContainer.getId()) || (selectedContainer.getRollup().equals(selectedContainer.getId()) && selectedContainer.getResourceType().equals("Aggregate")));
+					rollup = !(!selectedContainer.getRollup().equals(selectedContainer.getId()) || (selectedContainer
+							.getRollup().equals(selectedContainer.getId()) && selectedContainer.getResourceType().equals(
+							"Aggregate")));
 					LOG.debug("Setting the default rollup value to " + rollup);
 					searchState.setRollup(rollup);
 				}
-				
-				// Store the path value from the selected container as the path for breadcrumbs
-				searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedContainer.getPath());
+
+				// Store the path value from the selected container as the path for breadcrumbs, making sure cutoff values
+				// live on
+				CutoffFacet selectedPath = selectedContainer.getPath();
+				selectedPath.setCutoff(queryAncestorPath.getCutoff());
+				selectedPath.setFacetCutoff(queryAncestorPath.getFacetCutoff());
+				searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedPath);
 			}
 		} else if (rollup == null) {
 			LOG.debug("No container and no rollup, defaulting rollup to true");
@@ -115,7 +124,8 @@ public class SearchActionController extends AbstractSolrSearchController {
 			// If the users query had no results but the facet query did have results, then if a path is set remove its
 			// cutoff and rerun
 			if (resultResponseFacets.getResultCount() > 0 && resultResponse.getResultCount() == 0
-					&& searchState.getFacets() != null && searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
+					&& searchState.getFacets() != null
+					&& searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
 				CutoffFacet ancestorPath = ((CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name()));
 				if (ancestorPath.getCutoff() != null) {
 					ancestorPath.setCutoff(null);
@@ -130,42 +140,11 @@ public class SearchActionController extends AbstractSolrSearchController {
 		}
 
 		// Use a representative content type value if there are any results.
-		// This saves a trip to Solr since we already have the full content type facet needed for the facet list inside of the results
-		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE.name()) && resultResponse.getResultCount() > 0) {
-			Object contentTypeValue = searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name());
-			if (contentTypeValue instanceof MultivaluedHierarchicalFacet) {
-				LOG.debug("Replacing content type search value "
-						+ searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name()));
-				BriefObjectMetadata representative = resultResponse.getResultList().get(0);
-				MultivaluedHierarchicalFacet repFacet = null;
-				// If we're dealing with a rolled up result then hunt through all its items to find the matching content type
-				if (representative instanceof GroupedMetadataBean) {
-					GroupedMetadataBean groupRep = (GroupedMetadataBean)representative;
-					
-					int i = 0;
-					do {
-						representative = groupRep.getItems().get(i);
-						
-						if (representative.getContentTypeFacet() != null) {
-							repFacet = representative.getContentTypeFacet().get(0);
-							LOG.debug("Pulling content type from representative " + representative.getId() + ": " + repFacet);
-							if (repFacet.contains(((MultivaluedHierarchicalFacet) contentTypeValue))) {
-								break;
-							} else {
-								repFacet = null;
-							}
-						}
-					} while (++i < groupRep.getItems().size());
-				} else {
-					// If its not a rolled up result, take it easy
-					repFacet = representative.getContentTypeFacet().get(0);
-				}
-				
-				if (repFacet != null) {
-					((MultivaluedHierarchicalFacet) contentTypeValue).setDisplayValues(repFacet);
-					searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(), contentTypeValue);
-				}
-			}
+		// This saves a trip to Solr since we already have the full content type facet needed for the facet list inside of
+		// the results
+		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE.name())
+				&& resultResponse.getResultCount() > 0) {
+			extractCrumbDisplayValueFromRepresentative(searchState, resultResponse.getResultList().get(0));
 		}
 
 		// Get the children counts for container entries.
@@ -200,5 +179,42 @@ public class SearchActionController extends AbstractSolrSearchController {
 		LOG.debug("SAC state: " + searchStateUrl);
 
 		return "searchResults";
+	}
+
+	private void extractCrumbDisplayValueFromRepresentative(SearchState searchState, BriefObjectMetadata representative) {
+		Object contentTypeValue = searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name());
+		if (contentTypeValue instanceof MultivaluedHierarchicalFacet) {
+			LOG.debug("Replacing content type search value "
+					+ searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name()));
+			MultivaluedHierarchicalFacet repFacet = null;
+			// If we're dealing with a rolled up result then hunt through all its items to find the matching content
+			// type
+			if (representative instanceof GroupedMetadataBean) {
+				GroupedMetadataBean groupRep = (GroupedMetadataBean) representative;
+
+				int i = 0;
+				do {
+					representative = groupRep.getItems().get(i);
+
+					if (representative.getContentTypeFacet() != null) {
+						repFacet = representative.getContentTypeFacet().get(0);
+						LOG.debug("Pulling content type from representative " + representative.getId() + ": " + repFacet);
+						if (repFacet.contains(((MultivaluedHierarchicalFacet) contentTypeValue))) {
+							break;
+						} else {
+							repFacet = null;
+						}
+					}
+				} while (++i < groupRep.getItems().size());
+			} else {
+				// If its not a rolled up result, take it easy
+				repFacet = representative.getContentTypeFacet().get(0);
+			}
+
+			if (repFacet != null) {
+				((MultivaluedHierarchicalFacet) contentTypeValue).setDisplayValues(repFacet);
+				searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(), contentTypeValue);
+			}
+		}
 	}
 }

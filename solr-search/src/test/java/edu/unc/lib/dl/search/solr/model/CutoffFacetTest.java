@@ -24,6 +24,7 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import static org.mockito.Mockito.*;
 
@@ -86,11 +87,19 @@ public class CutoffFacetTest extends Assert {
 		assertEquals("1,uuid:123456", facet.getNode("uuid:123456").getSearchValue());
 	}
 	
-	@Test
+	@Test(expected=InvalidHierarchicalFacetException.class)
 	public void nullfacetStringConstructorTest() {
-		String facetString = null;
-		CutoffFacet facet = new CutoffFacet("ANCESTOR_PATH", ",uuid:123456");
+		new CutoffFacet("ANCESTOR_PATH", ",uuid:123456");
+	}
+	
+	@Test
+	public void constructWithCutoff() {
+		CutoffFacet facet = new CutoffFacet("ANCESTOR_PATH", "3,uuid:test|5");
 		
-		assertEquals("1,uuid:123456", facet.getNode("uuid:123456").getSearchValue());
+		assertEquals("ANCESTOR_PATH", facet.getFieldName());
+		assertEquals("uuid:test", facet.getSearchKey());
+		assertEquals("3,uuid:test", facet.getSearchValue());
+		assertEquals(5, facet.getCutoff().intValue());
+		assertNull(facet.getFacetCutoff());
 	}
 }

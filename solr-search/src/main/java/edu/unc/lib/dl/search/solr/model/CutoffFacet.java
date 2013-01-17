@@ -31,17 +31,18 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 	public CutoffFacet(String fieldName, String facetString) {
 		super(fieldName, facetString);
 		LOG.debug("Instantiating cutoff facet for " + fieldName + " from " + facetString);
-		
-		CutoffFacetNode node = new CutoffFacetNode(facetString);
+		this.value = this.extractCutoffs(this.value);
+		CutoffFacetNode node = new CutoffFacetNode(this.value);
 		this.facetNodes.add(node);
-		this.setCutoff(this.value);
+		
 	}
 	
 	public CutoffFacet(String fieldName, String facetString, Long count) {
 		super(fieldName, facetString, count);
-		CutoffFacetNode node = new CutoffFacetNode(facetString);
+		this.value = this.extractCutoffs(this.value);
+		CutoffFacetNode node = new CutoffFacetNode(this.value);
 		this.facetNodes.add(node);
-		this.setCutoff(this.value);
+		
 	}
 	
 	public CutoffFacet(String fieldName, List<String> facetStrings, long count) {
@@ -55,31 +56,40 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 	
 	public CutoffFacet(String fieldName, FacetField.Count countObject) {
 		super(fieldName, countObject);
+		this.value = this.extractCutoffs(this.value);
 		CutoffFacetNode node = new CutoffFacetNode(this.value);
 		this.facetNodes.add(node);
-		this.setCutoff(this.value);
 	}
 	
 	public CutoffFacet(CutoffFacet facet) {
 		super((GenericFacet)facet);
 		this.cutoff = facet.getCutoff();
+		this.facetCutoff = facet.getFacetCutoff();
 		for (HierarchicalFacetNode node: facet.getFacetNodes()) {
-			CutoffFacetNode newNode = new CutoffFacetNode(node.getFacetValue());
-			this.facetNodes.add(newNode);
+			this.facetNodes.add((HierarchicalFacetNode)node.clone());
 		}
 	}
 	
-	private void setCutoff(String facetValue) {
+	private String extractCutoffs(String facetValue) {
 		if (facetValue == null)
-			return;
-		String[] facetParts = facetValue.split(",");
-		if (facetParts.length == 3) {
+			return null;
+		String[] facetParts = facetValue.split("!");
+		if (facetParts.length >= 2) {
 			try {
-				this.cutoff = new Integer(facetParts[2]);
+				this.cutoff = new Integer(facetParts[1]);
 			} catch (NumberFormatException e) {
 				// Was not a cut off value, ignore
 			}
 		}
+		
+		if (facetParts.length >= 3) {
+			try {
+				this.facetCutoff = new Integer(facetParts[2]);
+			} catch (NumberFormatException e) {
+				// Was not a cut off value, ignore
+			}
+		}
+		return facetParts[0];
 	}
 	
 	private void sortTiers(){

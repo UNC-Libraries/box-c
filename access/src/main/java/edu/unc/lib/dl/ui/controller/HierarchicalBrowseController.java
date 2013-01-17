@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
-import java.util.ArrayList;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -26,12 +24,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
@@ -71,7 +65,7 @@ public class HierarchicalBrowseController extends AbstractSolrSearchController {
 		generateSearchRequest(request, null, browseRequest);
 		SearchState searchState = browseRequest.getSearchState();
 		
-		if (!searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)){
+		if (!searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())){
 			browseRequest.setRetrievalDepth(1);
 		}
 		
