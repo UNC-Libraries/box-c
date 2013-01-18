@@ -45,29 +45,30 @@ import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 @Controller
 public class ResultListController extends AbstractSolrSearchController {
 	private static final Logger log = LoggerFactory.getLogger(ResultListController.class);
-	
+
 	@Autowired
 	private PID collectionsPid;
-	private List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID, SearchFieldKeys.TITLE, SearchFieldKeys.CREATOR,
-			SearchFieldKeys.DATASTREAM, SearchFieldKeys.DATE_ADDED, SearchFieldKeys.RESOURCE_TYPE, "STATUS", SearchFieldKeys.ANCESTOR_PATH);
-	
+	private List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
+			SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.DATE_ADDED.name(),
+			SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.VERSION.name());
+
 	@RequestMapping(value = "list", method = RequestMethod.GET)
 	public String listRootContents(Model model, HttpServletRequest request) {
 		return this.listContainerContents(this.collectionsPid.getPid(), model, request);
 	}
-	
+
 	@RequestMapping(value = "list/{prefix}/{id}", method = RequestMethod.GET)
-	public String listContainerContents(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
-			HttpServletRequest request) {
+	public String listContainerContents(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
+			Model model, HttpServletRequest request) {
 		String pid = idPrefix + ":" + id;
 		return this.listContainerContents(pid, model, request);
 	}
-	
+
 	public String listContainerContents(String pid, Model model, HttpServletRequest request) {
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-		
+
 		CutoffFacet path;
-		if (!collectionsPid.getPid().equals(pid)){
+		if (!collectionsPid.getPid().equals(pid)) {
 			// Retrieve the record for the container being reviewed
 			SimpleIdRequest containerRequest = new SimpleIdRequest(pid, resultsFieldList, accessGroups);
 			BriefObjectMetadataBean containerBean = queryLayer.getObjectById(containerRequest);
@@ -86,7 +87,7 @@ public class ResultListController extends AbstractSolrSearchController {
 		// Retrieve the list of unpublished (not belonging to an unpublished parent) items within this container.
 		SearchState reviewListState = this.searchStateFactory.createSearchState();
 		// Limit to the current tier
-		
+
 		reviewListState.getFacets().put("ANCESTOR_PATH", path);
 
 		reviewListState.setRowsPerPage(500);
@@ -100,14 +101,14 @@ public class ResultListController extends AbstractSolrSearchController {
 		log.debug("Retrieved " + resultResponse.getResultCount() + " results for the review list");
 		// Get children counts
 		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
-		
+
 		model.addAttribute("resultResponse", resultResponse);
-		
+
 		request.getSession().setAttribute("resultOperation", "list");
-		
+
 		return "search/reviewList";
 	}
-	
+
 	public void setCollectionsPid(PID collectionsPid) {
 		this.collectionsPid = collectionsPid;
 	}

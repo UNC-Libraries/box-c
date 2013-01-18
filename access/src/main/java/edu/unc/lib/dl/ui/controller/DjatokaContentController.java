@@ -71,10 +71,10 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 		//Administrative, Original, Metadata, Derivative
 		switch (datastreamClass.getCategory()){
 			case Original:
-				accessField = SearchFieldKeys.FILE_ACCESS;
+				accessField = SearchFieldKeys.FILE_ACCESS.name();
 				break;
 			case Derivative:
-				accessField = SearchFieldKeys.SURROGATE_ACCESS;
+				accessField = SearchFieldKeys.SURROGATE_ACCESS.name();
 				break;
 			default:
 				return false;
@@ -87,8 +87,8 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 		
 		//Check to see if the user can access this datastream/object
 		List<String> resultFields = new ArrayList<String>();
-		resultFields.add(SearchFieldKeys.ID);
-		resultFields.add(SearchFieldKeys.CONTENT_TYPE);
+		resultFields.add(SearchFieldKeys.ID.name());
+		resultFields.add(SearchFieldKeys.CONTENT_TYPE.name());
 		SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, GroupsThreadStore.getGroups()/*, accessField*/);
 		
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
@@ -112,7 +112,7 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 	@RequestMapping("/jp2Metadata")
 	public void getMetadata(Model model, HttpServletRequest request, HttpServletResponse response){
 		//Check if the user is allowed to view this object
-		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID));
+		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID.name()));
 		String datastream = request.getParameter("ds");
 		if (this.hasAccess(id, datastream)){
 			try {
@@ -132,7 +132,7 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 	@RequestMapping("/jp2Region")
 	public void getRegion(Model model, HttpServletRequest request, HttpServletResponse response){
 		//Check if the user is allowed to view this object
-		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID));
+		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID.name()));
 		String datastream = request.getParameter("ds");
 		if (this.hasAccess(id, datastream)){
 			//Retrieve region specific parameters

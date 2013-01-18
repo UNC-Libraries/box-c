@@ -45,7 +45,7 @@ public class DeleteChildrenPriorToTimestamp extends AbstractIndexingAction {
 				}
 
 				HashMap<String, Object> facets = new HashMap<String, Object>();
-				facets.put(SearchFieldKeys.ANCESTOR_PATH, ancestorPathBean.getPath());
+				facets.put(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPathBean.getPath());
 				searchState.setFacets(facets);
 			}
 
@@ -58,7 +58,7 @@ public class DeleteChildrenPriorToTimestamp extends AbstractIndexingAction {
 			// Filter the results to only contain children with timestamps from before the requests timestamp.
 			HashMap<String, SearchState.RangePair> rangePairs = new HashMap<String, SearchState.RangePair>();
 			rangePairs
-					.put(SearchFieldKeys.TIMESTAMP, new SearchState.RangePair(null, cleanupRequest.getTimestampString()));
+					.put(SearchFieldKeys.TIMESTAMP.name(), new SearchState.RangePair(null, cleanupRequest.getTimestampString()));
 			searchState.setRangeFields(rangePairs);
 
 			SearchRequest searchRequest = new SearchRequest(searchState, accessGroups);

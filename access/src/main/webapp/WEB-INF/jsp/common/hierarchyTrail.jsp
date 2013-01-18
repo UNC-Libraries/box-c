@@ -37,7 +37,7 @@
 <span class="hierarchicalTrail">  
 	<c:if test="${param.displayHome == true }">
 		<c:url var="shiftFacetUrl" scope="page" value='${shiftFacetUrlBase}'>
-			<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}'/>
+			<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]}'/>
 		</c:url>
 		<a href="<c:out value="${shiftFacetUrl}"/>">Home</a>
 	</c:if>

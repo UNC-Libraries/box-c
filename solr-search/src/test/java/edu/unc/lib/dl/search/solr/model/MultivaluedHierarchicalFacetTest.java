@@ -189,4 +189,69 @@ public class MultivaluedHierarchicalFacetTest extends Assert {
 		
 		assertTrue(facetBase.getFacetNodes().get(0) != facetsIncoming.get(0).getFacetNodes().get(0));
 	}
+	
+	@Test
+	public void individualConstructorTest() {
+		MultivaluedHierarchicalFacet facet = new MultivaluedHierarchicalFacet("", "/image^jpg");
+		
+		assertEquals(2, facet.getFacetNodes().size());
+	}
+	
+	@Test
+	public void containsTest() {
+		List<MultivaluedHierarchicalFacet> facets = MultivaluedHierarchicalFacet
+				.createMultivaluedHierarchicalFacets(null, Arrays.asList("^image,Image", "/image^jpg,jpg"));
+		MultivaluedHierarchicalFacet facet1 = facets.get(0);
+		
+		facets = MultivaluedHierarchicalFacet
+				.createMultivaluedHierarchicalFacets(null, Arrays.asList("^image"));
+		MultivaluedHierarchicalFacet facet2 = facets.get(0);
+		
+		assertTrue(facet1.contains(facet2));
+	}
+	
+	@Test
+	public void containsMultipleTierTest() {
+		List<MultivaluedHierarchicalFacet> facets = MultivaluedHierarchicalFacet
+				.createMultivaluedHierarchicalFacets(null, Arrays.asList("^image,Image", "/image^jpg,jpg"));
+		MultivaluedHierarchicalFacet facet1 = facets.get(0);
+		
+		facets = MultivaluedHierarchicalFacet
+				.createMultivaluedHierarchicalFacets(null, Arrays.asList("^image", "/image^jpg"));
+		MultivaluedHierarchicalFacet facet2 = facets.get(0);
+		
+		assertTrue(facet1.contains(facet2));
+	}
+	
+	@Test
+	public void containsMultipleTierTest2() {
+		List<MultivaluedHierarchicalFacet> facets = MultivaluedHierarchicalFacet
+				.createMultivaluedHierarchicalFacets(null, Arrays.asList("^text,Text", "/text^pdf,pdf"));
+		MultivaluedHierarchicalFacet facet1 = facets.get(0);
+		
+		//This constructor probably isn't working since it only creates one node
+		MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet(null, "/text^pdf");
+		assertEquals(2, facet2.getFacetNodes().size());
+		
+		assertTrue(facet1.contains(facet2));
+	}
+	
+	@Test
+	public void containsNotMatchTest() {
+		List<MultivaluedHierarchicalFacet> facets = MultivaluedHierarchicalFacet
+				.createMultivaluedHierarchicalFacets(null, Arrays.asList("^image,Image", "/image^jpg,jpg"));
+		MultivaluedHierarchicalFacet facet1 = facets.get(0);
+		
+		facets = MultivaluedHierarchicalFacet
+				.createMultivaluedHierarchicalFacets(null, Arrays.asList("^text", "/text^pdf"));
+		MultivaluedHierarchicalFacet facet2 = facets.get(0);
+		
+		assertFalse(facet1.contains(facet2));
+		
+		facets = MultivaluedHierarchicalFacet
+				.createMultivaluedHierarchicalFacets(null, Arrays.asList("^text"));
+		facet2 = facets.get(0);
+		
+		assertFalse(facet1.contains(facet2));
+	}
 }

@@ -17,36 +17,6 @@
 --%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
-<script type="text/javascript" src="/static/js/admin/PID.js"></script>
-<script type="text/javascript" src="/static/js/admin/MetadataObject.js"></script>
-<script type="text/javascript" src="/static/js/admin/AjaxCallbackButton.js"></script>
-<script type="text/javascript" src="/static/js/admin/PublishObjectButton.js"></script>
-<script type="text/javascript" src="/static/js/admin/DeleteObjectButton.js"></script>
-<script type="text/javascript" src="/static/js/admin/ResultObject.js"></script>
-
-<script>
-$(function() {
-	var resultObjects = ${cdr:objectToJSON(resultResponse.resultList)};
-	
-	$("#select_all").click(function(){
-		$(".browseitem input[type='checkbox']").prop("checked", true);
-		$(".browseitem").addClass("selected");
-	});
-	
-	$("#deselect_all").click(function(){
-		$(".browseitem input[type='checkbox']").prop("checked", false);
-		$(".browseitem").removeClass("selected");
-	});
-	
-	$.each(resultObjects, function(){
-		var metadata = this;
-		var parentEl = $("#entry_" + metadata.id.replace(":", "\\:"));
-		parentEl.resultObject({"metadata" : metadata});
-	});
-	
-});
-</script>
-
 <div class="review_page contentarea">
 	<div class="contentarea">
 		<c:choose>
@@ -68,7 +38,7 @@ $(function() {
 	
 	<div id="results_list_actions">
 		<div class="left"><p><a id="select_all">Select All</a></p> <p><a id="deselect_all">Deselect All</a></p></div>
-		<div class="right"><input type="Button" value="Delete"/>&nbsp;&nbsp;<input type="Button" value="Publish Selected"/></div>
+		<div class="right"><input type="Button" value="Delete"/>&nbsp;&nbsp;<input id="publish_selected" type="Button" value="Publish Selected"/><input id="unpublish_selected" type="Button" value="Unpublish Selected"/></div>
 	</div>
 	
 	<div>
@@ -141,3 +111,14 @@ $(function() {
 		<div class="clear"></div>
 	</div>
 </div>
+<script>
+	var require = {
+		config: {
+			'reviewList' : {
+				'test' : 'awesome',
+				'metadataObjects': ${cdr:objectToJSON(resultResponse.resultList)}
+			}
+		}
+	};
+</script>
+<script type="text/javascript" src="/static/js/require.js" data-main="/static/js/admin/reviewList"></script>

@@ -99,6 +99,7 @@ public abstract class AbstractSolrSearchController {
 		String actionsParam = request.getParameter(searchSettings.searchStateParams.get("ACTIONS"));
 		if (actionsParam != null){
 			try {
+				LOG.debug("Performing actions on users search state:" + actionsParam);
 				searchActionService.executeActions(searchState, actionsParam);
 			} catch (InvalidHierarchicalFacetException e){
 				LOG.warn("An invalid facet was provided: " + request.getQueryString(), e);

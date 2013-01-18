@@ -45,7 +45,9 @@ public class SearchActionService {
 	private Pattern actionParameterPattern;
 	
 	public SearchActionService(){
-		actionParameterPattern = Pattern.compile("(^(([^\",]*\"[^\"]*\"[^\",]*){1,})|,(([^\",]*\"[^\"]*\"[^\",]*){1,})|^([^,]+)|,([^,]+)|,|^$)");
+		// path   ,"  
+		// ^aaaa"bbb"cccc   ,aaaa"bbb"cccc   ^dgsdg"  ,ddasfd"   ,   nothing  
+		actionParameterPattern = Pattern.compile("(^(([^\",]*\"[^\"]*\"[^\",]*)+)|,(([^\",]*\"[^\"]*\"[^\",]*)+)|^([^,]+)|,([^,]+)|,|^$)");
 	}
 	
 	/**
@@ -128,6 +130,7 @@ public class SearchActionService {
 	}
 	
 	private ArrayList<ActionPair> parseActions(String actionsString){
+		LOG.debug(actionsString);
 		ArrayList<ActionPair> actionList = new ArrayList<ActionPair>();
 		String actions[] = actionsString.split("\\|");
 		for (String action: actions){
@@ -142,6 +145,7 @@ public class SearchActionService {
 					while (matcher.find()){
 						int i = 2;
 						for (; i <= matcher.groupCount(); i++){
+							LOG.debug(i + ":" + matcher.group(i));
 							if (matcher.group(i) != null){
 								break;
 							}

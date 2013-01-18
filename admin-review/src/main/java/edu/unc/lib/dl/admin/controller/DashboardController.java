@@ -47,7 +47,7 @@ public class DashboardController extends AbstractSolrSearchController {
 		// Get children counts
 		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
 		// Get unpublished counts
-		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups(), "unpublished", "status:Unpublished");
+		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups(), "unpublished", "status:Unpublished", null);
 
 		model.addAttribute("resultResponse", resultResponse);
 		

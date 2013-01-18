@@ -77,6 +77,8 @@ public class JDOMQueryUtil {
 				return DateTimeUtil.parsePartialUTCToDate(dateString);
 			} catch (ParseException e) {
 				// Wasn't a valid date, ignore it.
+			} catch (IllegalArgumentException e) {
+				// Wasn't a valid date, ignore it.
 			}
 		}
 		return null;

@@ -64,7 +64,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String handleRequest(Model model, HttpServletRequest request) {
-		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID));
+		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID.name()));
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 		SimpleIdRequest idRequest = new SimpleIdRequest(id, accessGroups);
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
@@ -75,7 +75,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 		} else {
 			try {
 				Document foxmlView = FullObjectMetadataFactory.getFoxmlViewXML(idRequest);
-				if (foxmlView == null) {
+				if (foxmlView != null) {
 					fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
 				}
 			} catch (Exception e) {
@@ -107,7 +107,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 				facetsToRetrieve = new ArrayList<String>(searchSettings.collectionBrowseFacetNames);
 			} else if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)){
 				facetsToRetrieve = new ArrayList<String>();
-				facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE);
+				facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE.name());
 			}
 			
 			LOG.debug("Retrieving supplemental information for container at path " + briefObject.getPath().toString());
@@ -116,7 +116,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 
 			briefObject.getCountMap().put("child", resultResponse.getResultCount());
 			String collectionSearchStateUrl = searchSettings.searchStateParams.get("FACET_FIELDS") + "="
-					+ searchSettings.searchFieldParams.get(SearchFieldKeys.ANCESTOR_PATH) + ":"
+					+ searchSettings.searchFieldParams.get(SearchFieldKeys.ANCESTOR_PATH.name()) + ":"
 					+ briefObject.getPath().getSearchValue();
 			model.addAttribute("facetFields", resultResponse.getFacetFields());
 			model.addAttribute("collectionSearchStateUrl", collectionSearchStateUrl);
@@ -127,7 +127,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 
 			// Retrieve hierarchical browse results
 			SearchState searchState = searchStateFactory.createHierarchicalBrowseSearchState();
-			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, briefObject.getPath());
+			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), briefObject.getPath());
 			HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(searchState, 4, accessGroups);
 			
 			HierarchicalBrowseResultResponse hierarchicalResultResponse = null;

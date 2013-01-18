@@ -1,8 +1,8 @@
-(function($) {
+define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObject'], function($) {
 	$.widget("cdr.publishObjectButton", $.cdr.ajaxCallbackButton, {
 		options : {
 			defaultPublish: false,
-			followupPath: "services/rest/item/{idPath}/solrRecord/lastIndexed"
+			followupPath: "services/rest/item/{idPath}/solrRecord/version"
 		},
 		
 		_create: function() {
@@ -12,7 +12,10 @@
 			this.options.followup = this.publishFollowup;
 			this.options.completeTarget = this.options.parentObject;
 			
-			if (this.options.defaultPublish) {
+			this.element.data("callbackButtonClass", "publishObjectButton");
+			
+			this.published = this.options.defaultPublish;
+			if (this.published) {
 				this.publishedState();
 			} else {
 				this.unpublishedState();
@@ -20,24 +23,42 @@
 		},
 
 		publishFollowup : function(data) {
-			if (data && data > this.completeTimestamp) {
-				return true;
+			if (data) {
+				return this.options.parentObject.updateVersion(data);
 			}
 			return false;
 		},
+		
+		completeState : function() {
+			if (this.options.parentObject) {
+				if (this.published)
+					this.options.parentObject.unpublish();
+				else this.options.parentObject.publish();
+			} else {
+				this.toggleState();
+			}
+		},
+		
+		toggleState : function() {
+			if (this.published) {
+				this.unpublishedState();
+			} else {
+				this.publishedState();
+			}
+		},
 
 		publishedState : function() {
+			this.published = true;
 			this.element.text("Unpublish");
 			this.setWorkURL("services/rest/edit/unpublish/{idPath}");
-			this.options.complete = this.options.parentObject.unpublish;
 			this.options.workLabel = "Unpublishing...";
 			this.options.followupLabel = "Unpublishing....";
 		},
 
 		unpublishedState : function() {
+			this.published = false;
 			this.element.text("Publish");
 			this.setWorkURL("services/rest/edit/publish/{idPath}");
-			this.options.complete = this.options.parentObject.publish;
 			this.options.workLabel = "Publishing...";
 			this.options.followupLabel = "Publishing....";
 		},
@@ -51,4 +72,4 @@
 			return true;
 		}
 	});
-})(jQuery);
+});

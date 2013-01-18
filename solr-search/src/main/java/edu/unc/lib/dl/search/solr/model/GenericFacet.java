@@ -21,7 +21,7 @@ import org.apache.solr.client.solrj.response.FacetField;
  * Stores a individual facet entry
  * @author bbpennel
  */
-public class GenericFacet implements Cloneable {
+public class GenericFacet implements Cloneable, SearchFacet {
 	//Name of the facet group to which this facet belongs.
 	protected String fieldName;
 	protected long count;
@@ -62,6 +62,7 @@ public class GenericFacet implements Cloneable {
 	}
 	
 
+	@Override
 	public String getFieldName() {
 		return fieldName;
 	}
@@ -70,6 +71,7 @@ public class GenericFacet implements Cloneable {
 		this.fieldName = fieldName;
 	}
 
+	@Override
 	public long getCount() {
 		return count;
 	}
@@ -78,6 +80,7 @@ public class GenericFacet implements Cloneable {
 		this.count = count;
 	}
 
+	@Override
 	public String getValue() {
 		return value;
 	}
@@ -90,11 +93,18 @@ public class GenericFacet implements Cloneable {
 		this.displayValue = displayValue;
 	}
 	
+	@Override
 	public String getDisplayValue() {
 		return displayValue;
 	}
 
+	@Override
 	public String getSearchValue() {
+		return value;
+	}
+	
+	@Override
+	public String getLimitToValue() {
 		return value;
 	}
 	

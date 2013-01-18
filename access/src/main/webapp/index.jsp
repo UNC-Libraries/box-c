@@ -19,7 +19,6 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<jsp:useBean id="searchFieldKeys" class="edu.unc.lib.dl.search.solr.util.SearchFieldKeys" scope="request"/>
 <fmt:setTimeZone value="GMT" scope="session"/>
 <c:choose>
 	<c:when test="${empty requestScope['javax.servlet.forward.request_uri']}">

@@ -46,7 +46,7 @@
 		</c:url>
 		<%-- Set primary action URL based on content model and container results URL as appropriate --%>
 		<c:url var="containerResultsUrl" scope="page" value='search'>
-			<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${metadata.path.searchValue},${metadata.path.highestTier + 1}"/>
+			<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.searchValue},${metadata.path.highestTier + 1}"/>
 		</c:url>
 		<c:set var="primaryActionUrl" scope="page" value="${fullRecordUrl}"/>
 		
@@ -74,13 +74,13 @@
 			<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
 		</h2>
 		<c:if test="${not empty metadata.creator}">
-			<p>${searchSettings.searchFieldLabels[searchFieldKeys.CREATOR]}: 
+			<p>${searchSettings.searchFieldLabels['CREATOR']}: 
 				<c:forEach var="creatorObject" items="${metadata.creator}" varStatus="creatorStatus">
 					<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">, </c:if>
 				</c:forEach>
 			</p>
 		</c:if>
-		<p>${searchSettings.searchFieldLabels[searchFieldKeys.DATE_UPDATED]}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}"/></p>
+		<p>${searchSettings.searchFieldLabels['DATE_UPDATED']}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}"/></p>
 		<p><c:out value="${metadata['abstractText']}"/></p>
 	</div>
 </div>

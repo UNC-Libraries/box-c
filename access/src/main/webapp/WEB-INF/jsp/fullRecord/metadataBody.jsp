@@ -23,10 +23,10 @@
 		<c:set var="searchStateUrl" scope="request" value=""/>
 		<c:set var="facetNodes" scope="request" value="${briefObject.path.facetNodes}"/>
 		<tr>
-			<th>${searchSettings.searchFieldLabels[searchFieldKeys.ANCESTOR_PATH]}</th>
+			<th>${searchSettings.searchFieldLabels['ANCESTOR_PATH']}</th>
 			<td>
 				<c:import url="WEB-INF/jsp/common/hierarchyTrail.jsp">
-					<c:param name="fieldKey"><c:out value="${searchFieldKeys.ANCESTOR_PATH}"/></c:param>
+					<c:param name="fieldKey"><c:out value="${'ANCESTOR_PATH'}"/></c:param>
 					<c:param name="linkLast"><c:choose><c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile}">false</c:when><c:otherwise>true</c:otherwise></c:choose></c:param>
 				</c:import>
 			</td>

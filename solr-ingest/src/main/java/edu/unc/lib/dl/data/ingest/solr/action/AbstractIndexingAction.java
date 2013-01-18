@@ -37,9 +37,9 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 	 */
 	protected BriefObjectMetadataBean getRootAncestorPath(SolrUpdateRequest updateRequest) {
 		List<String> resultFields = new ArrayList<String>();
-		resultFields.add(SearchFieldKeys.ID);
-		resultFields.add(SearchFieldKeys.ANCESTOR_PATH);
-		resultFields.add(SearchFieldKeys.RESOURCE_TYPE);
+		resultFields.add(SearchFieldKeys.ID.name());
+		resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
+		resultFields.add(SearchFieldKeys.RESOURCE_TYPE.name());
 
 		SimpleIdRequest idRequest = new SimpleIdRequest(updateRequest.getTargetID(), resultFields,
 				accessGroups);

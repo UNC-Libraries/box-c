@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -48,7 +49,7 @@ public class PublishRestController {
 	private ManagementClient managementClient;
 	@Autowired(required = true)
 	private OperationsMessageSender messageSender;
-
+	
 	@RequestMapping(value = "edit/publish/{prefix}/{id}", method = RequestMethod.GET)
 	public @ResponseBody
 	Map<String, ? extends Object> publishObject(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
@@ -72,6 +73,7 @@ public class PublishRestController {
 		log.debug("Publishing object " + pid);
 
 		try {
+			// TODO Need to forward groups for security check 
 			// Update relation
 			managementClient.setExclusiveLiteral(pid, ContentModelHelper.CDRProperty.isPublished.toString(),
 					(publish) ? "yes" : "no", null);
@@ -87,22 +89,25 @@ public class PublishRestController {
 		return result;
 	}
 
-	@RequestMapping(value = "edit/publish", method = RequestMethod.GET)
+	@RequestMapping(value = "edit/publish", method = RequestMethod.POST)
 	public @ResponseBody
-	List<? extends Object> publishObjects(@RequestParam(value = "ids", required = true) String ids, Model model,
-			HttpServletRequest request) {
-
-		String[] idArray = ids.split(",");
-		if (idArray.length == 0)
+	List<? extends Object> publishObjects(@RequestParam("ids") String ids, HttpServletRequest request) {
+		return publishObjects(ids, true, request.getRemoteUser());
+	}
+	
+	@RequestMapping(value = "edit/unpublish", method = RequestMethod.POST)
+	public @ResponseBody
+	List<? extends Object> unpublishObjects(@RequestParam("ids") String ids, HttpServletRequest request) {
+		return publishObjects(ids, false, request.getRemoteUser());
+	}
+	
+	public List<? extends Object> publishObjects(@RequestParam("ids") String ids, boolean publish, String username) {
+		if (ids == null)
 			return null;
-
 		List<Object> results = new ArrayList<Object>();
-
-		String user = request.getRemoteUser();
-		for (String id : idArray) {
-			results.add(this.publishObject(new PID(id), false, user));
+		for (String id : ids.split("\n")) {
+			results.add(this.publishObject(new PID(id), publish, username));
 		}
-
 		return results;
 	}
 }

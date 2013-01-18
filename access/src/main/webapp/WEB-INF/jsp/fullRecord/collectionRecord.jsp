@@ -33,7 +33,7 @@
 
 <div class="onecol container_record" id="full_record">
 	<c:url var="browseUrl" scope="page" value='browse'>
-		<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${briefObject.path.searchValue}"/>
+		<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.searchValue}"/>
 	</c:url>
 
 	<div class="contentarea">
@@ -80,14 +80,14 @@
 				<div id="csearch_inputwrap">
 					<input type="text" name="query" id="csearch_text" class="clear_on_first_focus" value="Search the collection"><input type="submit" value="Go" id="csearch_submit">
 				</div>
-				<input type="hidden" name="queryType" value="${searchSettings.searchFieldParams[searchFieldKeys.DEFAULT_INDEX]}"/>
+				<input type="hidden" name="queryType" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}"/>
 				<input type="hidden" name="${searchSettings.searchStateParams['ACTIONS']}" 
-					value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]},"${briefObject.path.searchValue}",${briefObject.path.highestTier + 1}'/>
+					value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${briefObject.path.searchValue}",${briefObject.path.highestTier + 1}'/>
 			</form>
 			<div class="clear"></div>
 			<p class="full_record_browse">
 				<c:url var="collectionResultsUrl" scope="page" value='search'>
-					<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
+					<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
 				</c:url>
 				<a href="<c:out value='${collectionResultsUrl}' />">Browse&nbsp;(<c:out value="${childCount}"/> items)</a> or
 				<a href="<c:out value='${browseUrl}' />">

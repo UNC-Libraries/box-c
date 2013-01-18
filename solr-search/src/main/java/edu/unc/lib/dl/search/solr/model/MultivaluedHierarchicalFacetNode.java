@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 
 public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
-	private static Pattern extractFacetParts = Pattern.compile("[\\^/]");
+	public static Pattern extractFacetParts = Pattern.compile("[\\^/]");
 
 	private String displayValue;
 	private String searchKey;

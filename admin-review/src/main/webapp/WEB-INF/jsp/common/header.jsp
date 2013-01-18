@@ -21,8 +21,8 @@
 <div class="darkest shadowbottom" id="header">
 	<div id="header_search" class="fourcol darkest">
 		<div class="contentarea">
-			<c:if test="${not empty sessionScope.user && not empty sessionScope.user.userName}">
-				<div id="username_wrap">Welcome, <c:out value="${sessionScope.user.userName}"/></div>
+			<c:if test="${pageContext.request.remoteUser}">
+				<div id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></div>
 			</c:if>
 		</div>
 	</div>
@@ -46,7 +46,7 @@
 					<a href="https://${pageContext.request.serverName}/" target="_blank">Public</a>
 				</li>
 				<c:choose>
-					<c:when test="${not empty requestScope.accessGroupSet}">
+					<c:when test="${not empty pageContext.request.remoteUser}">
 						<c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
 							<c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
 						</c:url>

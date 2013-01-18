@@ -29,7 +29,7 @@
 		<c:if test="${not empty selectedContainer}">
 			<c:set var="facetNodes" scope="request" value="${selectedContainer.path.facetNodes}"/>
 			<c:import url="WEB-INF/jsp/common/hierarchyTrail.jsp">
-				<c:param name="fieldKey"><c:out value="${searchFieldKeys.ANCESTOR_PATH}"/></c:param>
+				<c:param name="fieldKey">ANCESTOR_PATH</c:param>
 				<c:param name="linkLast">true</c:param>
 				<c:param name="displayHome">true</c:param>
 				<c:param name="limitToContainer">false</c:param>
@@ -60,7 +60,7 @@
 	
 	<div class="threecol">
 		<div class="threecol lightest shadowtop searchwithin">
-			<c:if test="${not empty searchState.facets[searchFieldKeys.ANCESTOR_PATH] && resultResponse.resultCount > 0}">
+			<c:if test="${not empty searchState.facets['ANCESTOR_PATH'] && resultResponse.resultCount > 0}">
 				<c:set var="containerResourceType" scope="page">${fn:toLowerCase(resultResponse.resultList[0].resourceType)}</c:set>
 			</c:if>
 			<c:import url="WEB-INF/jsp/common/searchBox.jsp">

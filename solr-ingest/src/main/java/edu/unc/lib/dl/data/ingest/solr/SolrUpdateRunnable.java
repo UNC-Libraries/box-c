@@ -126,7 +126,7 @@ public class SolrUpdateRunnable implements Runnable {
 			try {
 				Thread.sleep(blockedWaitTime);
 			} catch (InterruptedException e) {
-				LOG.warn("Services runnable interrupted while waiting to get next message", e);
+				LOG.info("Services runnable interrupted while waiting to get next message", e);
 				throw e;
 			}
 		} while (updateRequest == null && !Thread.currentThread().isInterrupted()
@@ -195,7 +195,7 @@ public class SolrUpdateRunnable implements Runnable {
 						Thread.sleep(this.nextMessageWaitTime);
 				}
 			} catch (InterruptedException e) {
-				LOG.warn("Services runnable interrupted, shutting down.");
+				LOG.info("Solr update runnable interrupted, shutting down.");
 				break;
 			} catch (Exception e) {
 				// Encountered an exception

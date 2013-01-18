@@ -1,10 +1,10 @@
-(function($) {
+define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton'], function($) {
 	$.widget("cdr.deleteObjectButton", $.cdr.ajaxCallbackButton, {
 		options : {
 			workLabel: "Deleting...",
 			workPath: "delete/{idPath}",
 			followupLabel: "Cleaning up...",
-			followupPath: "services/rest/item/{idPath}/solrRecord/lastIndexed",
+			followupPath: "services/rest/item/{idPath}/solrRecord/version",
 			confirm: true,
 			confirmMessage: "Delete this object?",
 			animateSpeed: 'fast'
@@ -17,6 +17,8 @@
 			this.options.followup = this.deleteFollowup;
 			this.options.completeTarget = this.options.parentObject;
 			this.options.complete = this.options.parentObject.deleteObject;
+			
+			this.element.data("callbackButtonClass", "deleteObjectButton");
 		},
 
 		deleteFollowup: function(data) {
@@ -40,4 +42,4 @@
 			return true;
 		}
 	});
-})(jQuery);
+});

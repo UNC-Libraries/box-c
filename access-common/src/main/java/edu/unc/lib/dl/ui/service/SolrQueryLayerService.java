@@ -17,7 +17,6 @@ package edu.unc.lib.dl.ui.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -97,9 +96,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 		searchState.setRowsPerPage(50);
 		searchState.setFacetsToRetrieve(null);
 		ArrayList<String> resultFields = new ArrayList<String>();
-		resultFields.add(SearchFieldKeys.ANCESTOR_PATH);
-		resultFields.add(SearchFieldKeys.TITLE);
-		resultFields.add(SearchFieldKeys.ID);
+		resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
+		resultFields.add(SearchFieldKeys.TITLE.name());
+		resultFields.add(SearchFieldKeys.ID.name());
 		searchState.setResultFields(resultFields);
 
 		searchRequest.setSearchState(searchState);
@@ -107,7 +106,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	}
 
 	public SearchResultResponse getDepartmentList(AccessGroupSet accessGroups) {
-		SearchState searchState = searchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT, "index", 999999);
+		SearchState searchState = searchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT.name(), "index", 999999);
 
 		SearchRequest searchRequest = new SearchRequest(searchState, accessGroups);
 
@@ -127,10 +126,20 @@ public class SolrQueryLayerService extends SolrSearchService {
 			List<String> facetsToRetrieve, boolean applyCutoffs) {
 		SearchState searchState = (SearchState) baseState.clone();
 
-		if (!searchState.getFacets().containsKey("ANCESTOR_PATH")) {
-			CutoffFacet defaultAncestorPath = new CutoffFacet("ANCESTOR_PATH", "2,*");
-			defaultAncestorPath.setCutoff(3);
-			searchState.getFacets().put("ANCESTOR_PATH", defaultAncestorPath);
+		CutoffFacet ancestorPath;
+		LOG.debug("Retrieving facet list");
+		if (!searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
+			ancestorPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "2,*");
+			ancestorPath.setFacetCutoff(3);
+			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPath);
+		} else {
+			ancestorPath = (CutoffFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
+			if (ancestorPath.getFacetCutoff() == null)
+				ancestorPath.setFacetCutoff(ancestorPath.getHighestTier() + 1);
+		}
+		
+		if (!applyCutoffs) {
+			ancestorPath.setCutoff(null);
 		}
 
 		SearchRequest searchRequest = new SearchRequest();
@@ -141,18 +150,19 @@ public class SolrQueryLayerService extends SolrSearchService {
 		if (facetsToRetrieve != null)
 			searchState.setFacetsToRetrieve(facetsToRetrieve);
 		searchState.setResourceTypes(null);
-		searchRequest.setApplyFacetCutoffs(applyCutoffs);
+		// Rollup causes incorrect counts when faceting
+		searchState.setRollup(false);
 
 		SearchResultResponse resultResponse = getSearchResults(searchRequest);
 
 		// If this facet list contains parent collections, then get further metadata about them
 		if (resultResponse.getFacetFields() != null
 				&& (searchState.getFacetsToRetrieve() == null || searchState.getFacetsToRetrieve().contains(
-						SearchFieldKeys.PARENT_COLLECTION))) {
+						SearchFieldKeys.PARENT_COLLECTION.name()))) {
 			FacetFieldObject parentCollectionFacet = resultResponse.getFacetFields()
-					.get(SearchFieldKeys.PARENT_COLLECTION);
+					.get(SearchFieldKeys.PARENT_COLLECTION.name());
 			List<BriefObjectMetadataBean> parentCollectionValues = getParentCollectionValues(resultResponse
-					.getFacetFields().get(SearchFieldKeys.PARENT_COLLECTION), accessGroups);
+					.getFacetFields().get(SearchFieldKeys.PARENT_COLLECTION.name()), accessGroups);
 			int i;
 			// If the parent collection facet yielded further metadata, then edit the original facet value to contain the
 			// additional metadata
@@ -163,7 +173,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 						;
 					if (i < parentCollectionValues.size()) {
 						CutoffFacet parentPath = parentCollectionValues.get(i).getPath();
-						pidFacet.setFieldName(SearchFieldKeys.ANCESTOR_PATH);
+						pidFacet.setFieldName(SearchFieldKeys.ANCESTOR_PATH.name());
 						pidFacet.setDisplayValue(parentPath.getDisplayValue());
 						pidFacet.setValue(parentPath.getSearchValue());
 					}
@@ -202,7 +212,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 				} else {
 					query.append(" OR ");
 				}
-				query.append(solrSettings.getFieldName(SearchFieldKeys.ID)).append(':')
+				query.append(solrSettings.getFieldName(SearchFieldKeys.ID.name())).append(':')
 						.append(SolrSettings.sanitize(pidFacet.getSearchValue()));
 			}
 		}
@@ -225,8 +235,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 		solrQuery.setQuery(query.toString());
 
 		solrQuery.setFacet(true);
-		solrQuery.setFields(solrSettings.getFieldName(SearchFieldKeys.ID),
-				solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH), solrSettings.getFieldName(SearchFieldKeys.TITLE));
+		solrQuery.setFields(solrSettings.getFieldName(SearchFieldKeys.ID.name()),
+				solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name()), solrSettings.getFieldName(SearchFieldKeys.TITLE.name()));
 
 		solrQuery.setRows(parentCollectionFacet.getValues().size());
 
@@ -280,7 +290,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		StringBuilder query = new StringBuilder();
 
 		// Get the first half of the window to the left of the pivot record
-		query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER)).append(":[* TO ");
+		query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[* TO ");
 		if (pivotOrder == 0)
 			query.append(0);
 		else
@@ -291,7 +301,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		solrQuery.setQuery(query.toString());
 
 		solrQuery.setFacet(true);
-		solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE) + ":File");
+		solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":File");
 		CutoffFacet ancestorPath = null;
 		if (metadata.getResourceType().equals(searchSettings.resourceTypeFile)) {
 			ancestorPath = metadata.getAncestorPathFacet();
@@ -305,8 +315,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 		solrQuery.setStart(0);
 		solrQuery.setRows(rows);
 
-		solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_NAMES), SolrQuery.ORDER.asc);
-		solrQuery.addSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER), SolrQuery.ORDER.desc);
+		solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_NAMES.name()), SolrQuery.ORDER.asc);
+		solrQuery.addSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
 
 		// Execute left hand query
 		try {
@@ -324,15 +334,15 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		query = new StringBuilder();
 		// Get the right half of the window where display order is greater than the pivot
-		query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER)).append(":[").append(pivotOrder + 1)
+		query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[").append(pivotOrder + 1)
 				.append(" TO *]");
 		query.append(accessQuery);
 		solrQuery.setQuery(query.toString());
 
 		solrQuery.setRows(rows);
 
-		solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_NAMES), SolrQuery.ORDER.asc);
-		solrQuery.addSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER), SolrQuery.ORDER.asc);
+		solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_NAMES.name()), SolrQuery.ORDER.asc);
+		solrQuery.addSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.asc);
 
 		// Execute right hand query
 		try {
@@ -353,15 +363,15 @@ public class SolrQueryLayerService extends SolrSearchService {
 		}
 
 		// Less than split size from the right side but not touching the left side, so we need to expand the left side
-		query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER)).append(":[* TO ")
+		query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[* TO ")
 				.append(leftList.get(leftList.size() - 1).getDisplayOrder() - 1).append(']');
 		query.append(accessQuery);
 		solrQuery.setQuery(query.toString());
 
 		solrQuery.setRows(splitSize * 2 - leftList.size());
 
-		solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_NAMES), SolrQuery.ORDER.asc);
-		solrQuery.addSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER), SolrQuery.ORDER.desc);
+		solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_NAMES.name()), SolrQuery.ORDER.asc);
+		solrQuery.addSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
 
 		// Execute query and add the results to the end of the left list
 		try {
@@ -388,7 +398,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public SearchResultResponse getFullRecordSupplementalData(CutoffFacet ancestorPath, AccessGroupSet accessGroups,
 			List<String> facetsToRetrieve) {
 		SearchState searchState = searchStateFactory.createSearchState();
-		searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH, ancestorPath);
+		searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPath);
 		searchState.setRowsPerPage(0);
 		return getFacetList(searchState, accessGroups, facetsToRetrieve, false);
 	}
@@ -396,7 +406,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public long getChildrenCount(BriefObjectMetadataBean metadataObject, AccessGroupSet accessGroups) {
 		QueryResponse queryResponse = null;
 		SolrQuery solrQuery = new SolrQuery();
-		StringBuilder query = new StringBuilder();
+		StringBuilder query = new StringBuilder("*:* ");
 
 		try {
 			// Add access restrictions to query
@@ -409,11 +419,15 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		solrQuery.setStart(0);
 		solrQuery.setRows(0);
+		
+		solrQuery.setQuery(query.toString());
 
-		query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH)).append(':')
+		query = new StringBuilder();
+		query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':')
 				.append(SolrSettings.sanitize(metadataObject.getPath().getSearchValue())).append(",*");
 
-		solrQuery.setQuery(query.toString());
+		solrQuery.setFacet(true);
+		solrQuery.addFilterQuery(query.toString());
 
 		try {
 			queryResponse = this.executeQuery(solrQuery);
@@ -432,38 +446,53 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * @param accessGroups
 	 */
 	public long getChildrenCounts(List<BriefObjectMetadata> resultList, AccessGroupSet accessGroups) {
-		return this.getChildrenCounts(resultList, accessGroups, "child", null);
+		return this.getChildrenCounts(resultList, accessGroups, "child", null, null);
 	}
 
 	public long getChildrenCounts(List<BriefObjectMetadata> resultList, AccessGroupSet accessGroups, String countName,
-			String queryAddendum) {
+			String queryAddendum, SolrQuery baseQuery) {
 		if (resultList == null || resultList.size() == 0)
 			return 0;
 
-		QueryResponse queryResponse = null;
-		SolrQuery solrQuery = new SolrQuery();
-		StringBuilder query = new StringBuilder("*:*");
-
-		try {
-			// Add access restrictions to query
-			addAccessRestrictions(query, accessGroups);
-		} catch (AccessRestrictionException e) {
-			// If the user doesn't have any access groups, they don't have access to anything, return null.
-			LOG.error(e.getMessage());
-			return 0;
-		}
-
-		solrQuery.setStart(0);
-		solrQuery.setRows(0);
-
+		String ancestorPathField = solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name());
 		long maxTier = 0;
 		boolean first = true;
+		StringBuilder query;
+		
+		QueryResponse queryResponse = null;
+		SolrQuery solrQuery;
+		if (baseQuery == null) {
+			// Create a base query since we didn't receive one
+			solrQuery = new SolrQuery();
+			
+			query = new StringBuilder("*:*");
 
-		if (queryAddendum != null) {
-			query.append(" AND ").append(queryAddendum);
+			try {
+				// Add access restrictions to query
+				addAccessRestrictions(query, accessGroups);
+			} catch (AccessRestrictionException e) {
+				// If the user doesn't have any access groups, they don't have access to anything, return null.
+				LOG.error(e.getMessage());
+				return 0;
+			}
+
+			solrQuery.setStart(0);
+			solrQuery.setRows(0);
+
+			solrQuery.setQuery(query.toString());
+		} else {
+			solrQuery = baseQuery;
+			// Remove all ancestor path related filter queries so the counts won't be cut off
+			for (String filterQuery: solrQuery.getFilterQueries()) {
+				if (filterQuery.contains(ancestorPathField)) {
+					solrQuery.removeFilterQuery(filterQuery);
+				}
+			}
 		}
-
-		solrQuery.setQuery(query.toString());
+		
+		if (queryAddendum != null) {
+			solrQuery.setQuery(solrQuery.getQuery() + " AND " + queryAddendum);
+		}
 
 		query = new StringBuilder();
 
@@ -481,7 +510,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 				} else {
 					query.append(" OR ");
 				}
-				query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH)).append(':')
+				query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':')
 						.append(SolrSettings.sanitize(metadataObject.getPath().getSearchValue())).append(",*");
 				containerObjects.add(metadataObject);
 				long highestTier = metadataObject.getPath().getHighestTier();
@@ -509,16 +538,16 @@ public class SolrQueryLayerService extends SolrSearchService {
 		try {
 			solrQuery.setFacet(true);
 			solrQuery.setFacetMinCount(1);
-			solrQuery.addFacetField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH));
+			solrQuery.addFacetField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name()));
 
 			// Retrieve as many ancestor paths as we can get
-			solrQuery.add("f." + solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH) + ".facet.limit",
+			solrQuery.add("f." + solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name()) + ".facet.limit",
 					String.valueOf(Integer.MAX_VALUE));
 
 			// Don't return any facets past the max tier in the contain set, but don't filter to this since that'd effect
 			// counts
 			StringBuilder facetQuery = new StringBuilder();
-			facetQuery.append('!').append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH)).append(':')
+			facetQuery.append('!').append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':')
 					.append(maxTier + 1).append(searchSettings.facetSubfieldDelimiter).append('*');
 			solrQuery.addFacetQuery(facetQuery.toString());
 
@@ -560,18 +589,18 @@ public class SolrQueryLayerService extends SolrSearchService {
 		AccessGroupSet accessGroups = browseRequest.getAccessGroups();
 		SearchState browseState = (SearchState) browseRequest.getSearchState().clone();
 
-		boolean noRootNode = !browseState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH);
+		boolean noRootNode = !browseState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name());
 		// Default the ancestor path to the collections object so we always have a root
 		if (noRootNode) {
-			browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH,
-					new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH, "1," + this.collectionsPid.getPid()));
+			browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(),
+					new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + this.collectionsPid.getPid()));
 		}
 
 		HierarchicalBrowseResultResponse browseResults = new HierarchicalBrowseResultResponse();
 		SearchState hierarchyState = searchStateFactory.createHierarchyListSearchState();
 		// Use the ancestor path facet from the state where we will have set a default value
-		hierarchyState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH,
-				browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH));
+		hierarchyState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(),
+				browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name()));
 
 		hierarchyState.setRowsPerPage(0);
 
@@ -584,8 +613,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		// Reusable query segment for limiting the results to just the depth asked for
 		StringBuilder cutoffQuery = new StringBuilder();
-		cutoffQuery.append('!').append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH)).append(":");
-		cutoffQuery.append(((CutoffFacet) hierarchyState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH)).getHighestTier()
+		cutoffQuery.append('!').append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(":");
+		cutoffQuery.append(((CutoffFacet) hierarchyState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name())).getHighestTier()
 				+ browseRequest.getRetrievalDepth());
 		cutoffQuery.append(searchSettings.facetSubfieldDelimiter).append('*');
 		hierarchyQuery.addFilterQuery(cutoffQuery.toString());
@@ -601,7 +630,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		if (results.getResultCount() > 0) {
 			// Get the root node for this search so that it can be displayed as the top tier
 			BriefObjectMetadataBean rootNode = getObjectById(new SimpleIdRequest(((CutoffFacet) browseState.getFacets()
-						.get(SearchFieldKeys.ANCESTOR_PATH)).getSearchKey(), browseRequest.getAccessGroups()));
+						.get(SearchFieldKeys.ANCESTOR_PATH.name())).getSearchKey(), browseRequest.getAccessGroups()));
 			if (rootNode == null){
 				throw new ResourceNotFoundException();
 			}
@@ -609,18 +638,20 @@ public class SolrQueryLayerService extends SolrSearchService {
 			browseResults.getResultList().add(0, rootNode);
 
 			// Get the children counts per container
-			browseResults.setRootCount(this.getChildrenCounts(results.getResultList(), accessGroups));
+			SearchRequest filteredChildrenRequest = new SearchRequest(browseState, browseRequest.getAccessGroups());
+			browseResults.setRootCount(this.getChildrenCounts(results.getResultList(), accessGroups, "child", null, this.generateSearch(filteredChildrenRequest, true)));
 
 			try {
 				// Add in the sub-container counts per container for indentation purposes
 				browseResults.populateSubcontainerCounts(getSubcontainerCounts(
-						((CutoffFacet) browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH)),
+						((CutoffFacet) browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name())),
 						browseRequest.getRetrievalDepth(), baseQuery));
 
-				// If the user has specified any state fields that constitute a search, then clear out all items with 0
-				// results
-				retainMatchingHierarchicalResults(browseState, accessGroups, browseResults,
-						hierarchyState.getResourceTypes(), cutoffQuery.toString());
+				// If anything that constituted a search is in the request then trim out possible empty folders
+				if (browseState.getFacets().size() > 1 || browseState.getRangeFields().size() > 0
+						|| browseState.getSearchFields().size() > 0 || browseState.getAccessTypeFilter() != null) {
+					browseResults.removeContainersWithoutContents();
+				}
 			} catch (SolrServerException e) {
 				LOG.error("Error while getting children counts for hierarchical browse", e);
 				return null;
@@ -635,7 +666,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			List<String> resourceTypes = new ArrayList<String>();
 			resourceTypes.add(searchSettings.resourceTypeFile);
 			fileSearchState.setResourceTypes(resourceTypes);
-			Object ancestorPath = fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH);
+			Object ancestorPath = fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
 			if (ancestorPath instanceof CutoffFacet) {
 				((CutoffFacet) ancestorPath).setCutoff(((CutoffFacet) ancestorPath).getHighestTier() + 1);
 			}
@@ -648,38 +679,6 @@ public class SolrQueryLayerService extends SolrSearchService {
 		return browseResults;
 	}
 
-	private void retainMatchingHierarchicalResults(SearchState browseState, AccessGroupSet accessGroups,
-			HierarchicalBrowseResultResponse browseResults, List<String> resourceTypes, String cutoffQuery)
-			throws SolrServerException {
-		SearchState searchState = new SearchState(browseState);
-		SearchRequest searchRequest = new SearchRequest(searchState, accessGroups);
-
-		searchState.setResourceTypes(null);
-
-		searchRequest.setApplyFacetPrefixes(false);
-		searchRequest.setApplyFacetCutoffs(false);
-
-		boolean containsPathFacet = searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH);
-
-		if ((searchState.getFacets().size() > 1 && containsPathFacet)
-				|| (searchState.getFacets().size() > 0 && !containsPathFacet) || searchState.getRangeFields().size() > 0
-				|| searchState.getSearchFields().size() > 0 || searchState.getAccessTypeFilter() != null) {
-			// Look up containers that match the user query so that they can be retained in the result set
-			SolrQuery childQuery = this.generateSearch(searchRequest, true);
-			childQuery.setFacet(true);
-			childQuery.setRows(Integer.MAX_VALUE);
-			childQuery.addFilterQuery(cutoffQuery);
-			childQuery.addFilterQuery(getResourceTypeFilter(resourceTypes));
-			childQuery.setFields(solrSettings.getFieldName(SearchFieldKeys.ID));
-
-			QueryResponse queryResponse = this.executeQuery(childQuery);
-			browseResults.populateMatchingContainerPids(queryResponse.getResults(),
-					solrSettings.getFieldName(SearchFieldKeys.ID));
-
-			browseResults.removeContainersWithoutContents();
-		}
-	}
-
 	private List<FacetField> getSubcontainerCounts(CutoffFacet ancestorPath, int retrievalDepth, SolrQuery baseQuery)
 			throws SolrServerException {
 		SolrQuery subcontainerQuery = baseQuery.getCopy();
@@ -687,7 +686,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		// Limit the results to one tier past the depth being retrieved, since ancestor path does not include the
 		// container itself, and going only to the depth requested would get the counts for the previous tier
 		StringBuilder cutoffNextTierQuery = new StringBuilder();
-		cutoffNextTierQuery.append('!').append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH)).append(":");
+		cutoffNextTierQuery.append('!').append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(":");
 		if (ancestorPath != null) {
 			LOG.debug("Restricting subcontainer counts to " + ancestorPath.getHighestTier() + " + " + (retrievalDepth + 1));
 			cutoffNextTierQuery.append(ancestorPath.getHighestTier() + retrievalDepth);
@@ -703,7 +702,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		subcontainerQuery.setFacet(true);
 		subcontainerQuery.setFacetMinCount(1);
-		subcontainerQuery.addFacetField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH));
+		subcontainerQuery.addFacetField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name()));
 
 		subcontainerQuery.setFacetLimit(-1);
 
@@ -716,7 +715,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		List<String> resourceTypes = new ArrayList<String>();
 		resourceTypes.add(searchSettings.resourceTypeFile);
 		fileSearchState.setResourceTypes(resourceTypes);
-		Object ancestorPath = fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH);
+		Object ancestorPath = fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
 		if (ancestorPath instanceof CutoffFacet) {
 			((CutoffFacet) ancestorPath).setCutoff(((CutoffFacet) ancestorPath).getHighestTier() + 1);
 		}

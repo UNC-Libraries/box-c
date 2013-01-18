@@ -63,8 +63,12 @@ public class FacetFieldUtil {
 			filterQuery = new StringBuilder();
 			filterQuery.append('!').append(solrFieldName).append(':').append(facet.getCutoff()).append(',').append('*');
 			solrQuery.addFilterQuery(filterQuery.toString());
-
-			solrQuery.setFacetPrefix(solrFieldName, facet.getPivotValue());
+		}
+		
+		if (facet.getFacetCutoff() != null) {
+			filterQuery = new StringBuilder();
+			filterQuery.append(solrFieldName).append(':').append(facet.getFacetCutoff()).append(',').append('*');
+			solrQuery.addFacetQuery(filterQuery.toString());
 		}
 	}
 

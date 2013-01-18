@@ -165,14 +165,14 @@
 				<c:choose>
 					<c:when test="${not empty briefObject.contentTypeFacet[0].displayValue}">
 						<span class="bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" />
-						<c:if test="${briefObject.filesizeSort != -1}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.FILESIZE]}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if>
+						<c:if test="${briefObject.filesizeSort != -1}">  | <span class="bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if>
 					</c:when>
 					<c:otherwise>
 						<span>Contains:</span> ${childCount} item<c:if test="${childCount != 1}">s</c:if>
 					</c:otherwise>
 				</c:choose>
-				<c:if test="${not empty briefObject.dateAdded}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.DATE_ADDED]}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></c:if>
-				<c:if test="${not empty briefObject.dateCreated}">  | <span class="bold">${searchSettings.searchFieldLabels[searchFieldKeys.DATE_CREATED]}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></c:if>
+				<c:if test="${not empty briefObject.dateAdded}">  | <span class="bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></c:if>
+				<c:if test="${not empty briefObject.dateCreated}">  | <span class="bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></c:if>
 			</p>
 			
 		</div>
@@ -220,7 +220,7 @@
 					<th>Contains:</th>
 					<td>
 						<c:url var="contentsResultsUrl" scope="page" value='search'>
-							<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
+							<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
 						</c:url>
 						<a href="<c:out value='${contentsResultsUrl}' />">${childCount} item<c:if test="${childCount != 1}">s</c:if></a>
 					</td>
@@ -234,7 +234,7 @@
 									<c:forEach items="${facetField.values}" var="facetValue" varStatus="status">
 										<li>
 											<c:url var="facetActionUrl" scope="page" value='search'>
-												<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
+												<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
 												<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[facetValue.fieldName]},"${facetValue.searchValue}"'/>
 											</c:url>
 											<a href="<c:out value="${facetActionUrl}"/>"><c:out value="${facetValue.displayValue}" /></a> (<c:out value="${facetValue.count}" />)

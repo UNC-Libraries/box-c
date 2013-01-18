@@ -24,6 +24,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
+import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -333,5 +334,29 @@ public class SearchActionServiceTest extends Assert {
 		assertEquals(searchState.getFacetsToRetrieve().size(), 1);
 		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET_SELECT") + ":format,contributor,subject");
 		assertEquals(searchState.getFacetsToRetrieve().size(), 3);
+	}
+	
+	@Test
+	public void cutoffFacet() {
+		SearchState searchState = new SearchState();
+		
+		searchActionService.executeActions(searchState, "setFacet:path,\"2,uuid:test!3\"");
+		
+		CutoffFacet facet = (CutoffFacet)searchState.getFacets().get("ANCESTOR_PATH");
+		
+		assertEquals(3, facet.getCutoff().intValue());
+		assertEquals("uuid:test", facet.getSearchKey());
+	}
+	
+	@Test
+	public void cutoffAndReset() {
+		SearchState searchState = new SearchState();
+		
+		searchActionService.executeActions(searchState, "setFacet:path,\"2,uuid:test!3\"|resetNav:search");
+		
+		CutoffFacet facet = (CutoffFacet)searchState.getFacets().get("ANCESTOR_PATH");
+		
+		assertEquals(3, facet.getCutoff().intValue());
+		assertEquals("uuid:test", facet.getSearchKey());
 	}
 }

@@ -46,7 +46,7 @@
 			<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.id}"/>
 		</c:url>
 		<c:url var="containerResultsUrl" scope="page" value='search'>
-			<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${metadata.path.searchValue},${metadata.path.highestTier + 1}"/>
+			<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.limitToValue}"/>
 		</c:url>
 		<%-- Set primary action URL based on content model and container results URL as appropriate --%>
 		<c:choose>
@@ -109,23 +109,23 @@
 					<div class="halfwidth">
 						<c:choose>
 							<c:when test="${not empty metadata.creator}">
-								<p>${searchSettings.searchFieldLabels[searchFieldKeys.CREATOR]}:
+								<p>${searchSettings.searchFieldLabels['CREATOR']}:
 									<c:forEach var="creatorObject" items="${metadata.creator}" varStatus="creatorStatus">
 										<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
 									</c:forEach>
 								</p>		
 							</c:when>
 							<c:otherwise>
-								<p>${searchSettings.searchFieldLabels[searchFieldKeys.DATE_ADDED]}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateAdded}" /></p>
+								<p>${searchSettings.searchFieldLabels['DATE_ADDED']}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateAdded}" /></p>
 							</c:otherwise>
 						</c:choose>
 					</div>
 					<div class="halfwidth">
-						<p>${searchSettings.searchFieldLabels[searchFieldKeys.DATE_UPDATED]}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}" /></p> 
+						<p>${searchSettings.searchFieldLabels['DATE_UPDATED']}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}" /></p> 
 					</div>
 					<c:if test="${not empty metadata.abstractText}">
 						<div class="clear"></div>
-						<p>${searchSettings.searchFieldLabels[searchFieldKeys.ABSTRACT]}: 
+						<p>${searchSettings.searchFieldLabels['ABSTRACT']}: 
 							<c:out value="${cdr:truncateText(metadata.abstractText, 250)}"/>
 							<c:if test="${fn:length(metadata.abstractText) > 250}">...</c:if>
 							</p>
@@ -140,7 +140,7 @@
 					</h2>
 					<div class="halfwidth">
 						<c:if test="${not empty metadata.creator}">
-							<p>${searchSettings.searchFieldLabels[searchFieldKeys.CREATOR]}:
+							<p>${searchSettings.searchFieldLabels['CREATOR']}:
 								<c:choose>
 									<c:when test="${fn:length(metadata.creator) > 5}"><c:set var="creatorList" value="${cdr:subList(metadata.creator, 0, 5)}"/></c:when>
 									<c:otherwise><c:set var="creatorList" value="${metadata.creator}"/></c:otherwise>
@@ -157,14 +157,14 @@
 							<c:url var="parentUrl" scope="page" value="record">
 								<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.parentCollection}"/>
 							</c:url>
-							${searchSettings.searchFieldLabels[searchFieldKeys.PARENT_COLLECTION]}: <a href="<c:out value='${parentUrl}' />"><c:out value="${metadata.parentCollectionObject.displayValue}"/></a>
+							${searchSettings.searchFieldLabels['PARENT_COLLECTION']}: <a href="<c:out value='${parentUrl}' />"><c:out value="${metadata.parentCollectionObject.displayValue}"/></a>
 						</p>
 					</div>
 					<div class="halfwidth">
-						<p>${searchSettings.searchFieldLabels[searchFieldKeys.DATE_ADDED]}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateAdded}" /></p>
+						<p>${searchSettings.searchFieldLabels['DATE_ADDED']}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateAdded}" /></p>
 						<c:if test="${not empty metadata.dateCreated}">
 							<c:set var="dateCreatedMonthDay" scope="page"><fmt:formatDate pattern="MM-dd" timeZone="GMT" value="${metadata.dateCreated}" /></c:set>
-							<p>${searchSettings.searchFieldLabels[searchFieldKeys.DATE_CREATED]}: 
+							<p>${searchSettings.searchFieldLabels['DATE_CREATED']}: 
 								<c:choose>
 									<c:when test="${dateCreatedMonthDay == '01-01'}">
 										<fmt:formatDate pattern="yyyy" timeZone="GMT" value="${metadata.dateCreated}" />
@@ -184,7 +184,7 @@
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
 				<div class="containerinfo">
 					<c:url var="browseUrl" scope="page" value='browse?${searchStateUrl}'>
-						<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${metadata.path.searchValue}"/>
+						<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.searchValue}"/>
 						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${searchSettings.actions['RESET_NAVIGATION']}:structure"/>
 					</c:url>
 					<ul>
@@ -196,7 +196,7 @@
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
 				<div class="containerinfo">
 					<c:url var="browseUrl" scope="page" value='browse?${searchStateUrl}'>
-						<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams[searchFieldKeys.ANCESTOR_PATH]}:${metadata.path.searchValue}"/>
+						<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.searchValue}"/>
 						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${searchSettings.actions['RESET_NAVIGATION']}:structure"/>
 					</c:url>
 					<ul>

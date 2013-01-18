@@ -33,11 +33,11 @@ public class DeleteSolrTreeAction extends AbstractIndexingAction {
 			// Deleting a folder or collection, so perform a full path delete.
 
 			solrUpdateDriver.deleteByQuery(
-					solrSearchService.getSolrSettings().getFieldName(SearchFieldKeys.ID) + ":"
+					solrSearchService.getSolrSettings().getFieldName(SearchFieldKeys.ID.name()) + ":"
 							+ SolrSettings.sanitize(updateRequest.getTargetID()));
 
 			solrUpdateDriver.deleteByQuery(
-					solrSearchService.getSolrSettings().getFieldName(SearchFieldKeys.ANCESTOR_PATH)
+					solrSearchService.getSolrSettings().getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())
 							+ ":" + SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue())
 							+ searchSettings.getFacetSubfieldDelimiter() + "*");
 		} else {
