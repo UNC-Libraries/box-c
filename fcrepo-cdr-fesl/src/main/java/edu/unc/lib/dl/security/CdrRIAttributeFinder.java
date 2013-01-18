@@ -48,12 +48,14 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	URI dataAccessCategory = ContentModelHelper.CDRProperty.dataAccessCategory.getURI();
 	URI userRole = ContentModelHelper.CDRProperty.userRole.getURI();
 	URI isPublished = ContentModelHelper.CDRProperty.isPublished.getURI();
+	static URI datastreamIdAttribute = null;
 	static URI fedoraSubjectRoleAttribute = null;
 	static URI stringDataType = null;
 	static {
 		try {
 			fedoraSubjectRoleAttribute = new URI("urn:fedora:names:fedora:2.1:subject:role");
 			stringDataType = new URI("http://www.w3.org/2001/XMLSchema#string");
+			datastreamIdAttribute = new URI("urn:fedora:names:fedora:2.1:resource:datastream:id");
 		} catch (URISyntaxException e) {
 			throw new Error(e);
 		}
@@ -112,6 +114,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 		long startTime = System.currentTimeMillis();
 
 		String resourceId = context.getResourceId().encode();
+		String datastreamId = getDatastreamID(context);
 		if (log.isDebugEnabled()) {
 			log.debug("CdrRIAttributeFinder: [" + attributeType.toString()
 					+ "] " + attributeId + ", rid=" + resourceId);
@@ -155,7 +158,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 
 		EvaluationResult result = null;
 		try {
-			result = getEvaluationResult(resourceId, attributeId, designatorType,
+			result = getEvaluationResult(resourceId, attributeId, datastreamId, designatorType,
 					attributeType, groups);
 		} catch (Exception e) {
 			log.error("Error finding attribute: " + e.getMessage(), e);
@@ -190,6 +193,30 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 		}
 		return result;
 	}
+	
+	private String getDatastreamID(EvaluationCtx context) {
+		String result = null;
+		Node root = context.getRequestRoot();
+		big: for(int i = 0; i < root.getChildNodes().getLength(); i++) {
+			Node rescNode = root.getChildNodes().item(i);
+			if("Resource".equals(rescNode.getNodeName())) {
+				for(int n = 0; n < rescNode.getChildNodes().getLength(); n++) {
+					Node attributeNode = rescNode.getChildNodes().item(n);
+					if("Attribute".equals(attributeNode.getNodeName())) {
+						Node attrIdNode = attributeNode.getAttributes().getNamedItem("AttributeId");
+						if(attrIdNode != null && datastreamIdAttribute.toString().equals(attrIdNode.getNodeValue())) {
+							// this is the attribute we need
+							String dsId = attributeNode.getFirstChild().getTextContent();
+							log.debug("Found datastream ID: "+dsId);
+							result = dsId;
+							break big;
+						}
+					}
+				}
+			}
+		}
+		return result;
+	}
 
 	/**
 	 * 
@@ -203,7 +230,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	 * @throws AttributeFinderException
 	 */
 	private EvaluationResult getEvaluationResult(String resourceID,
-			URI attribute, int designatorType, URI type, Set<String> groups)
+			URI attribute, String datastreamId, int designatorType, URI type, Set<String> groups)
 			throws AttributeFinderException {
 
 		// split up the path of the hierarchical resource id
@@ -236,6 +263,13 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 		} else if(embargo.equals(attribute)) {
 			List<String> embargoes = getAccessControlUtils().getAllEmbargoes(new PID(pid));
 			return makeStringBagResult(embargoes, type);
+		} else if(dataAccessCategory.equals(attribute)) {
+			if(datastreamId == null) {
+				return  new EvaluationResult(BagAttribute.createEmptyBag(type));
+			} else {
+				List<String> categories = getAccessControlUtils().getDatastreamCategories(datastreamId);
+				return makeStringBagResult(categories, type);
+			}
 		}
 
 		if (groups == null || groups.isEmpty()) {

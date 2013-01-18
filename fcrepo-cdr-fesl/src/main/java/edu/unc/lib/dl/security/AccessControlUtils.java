@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ParentBond;
 
 public class AccessControlUtils {
@@ -387,5 +389,16 @@ public class AccessControlUtils {
 			LOG.debug(b.toString());
 		}
 		return groups;
+	}
+
+	public List<String> getDatastreamCategories(String datastreamId) {
+		List<String> result = new ArrayList<String>();
+		for(Datastream ds : ContentModelHelper.Datastream.values()) {
+			if(ds.getName().equals(datastreamId)) {
+				result.add(ds.getCategory().name());
+				break;
+			}
+		}
+		return result;
 	}
 }
