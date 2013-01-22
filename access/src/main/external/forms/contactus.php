@@ -83,6 +83,7 @@ $name = strip_tags(isset($_POST['name']) ? $_POST['name'] : '');
 $email = strip_tags(isset($_POST['email']) ? $_POST['email'] : '');
 $dept = strip_tags(isset($_POST['dept']) ? $_POST['dept'] : '');
 $comments = strip_tags(isset($_POST['comments']) ? $_POST['comments'] : '');
+$refer = strip_tags(isset($_REQUEST['refer']) ? $_REQUEST['refer'] : '(refer missing)');
 
 ?>
 
@@ -121,7 +122,6 @@ $comments = strip_tags(isset($_POST['comments']) ? $_POST['comments'] : '');
 		</div>
 		
 		<div class="form_section">
-			<?php $refer = isset($_POST['refer']) ? $_POST['refer'] : '(refer missing)'; ?>
 			<input type="hidden" name="refer" value="<?php echo $refer; ?>" />
 			<input class="submitbutton" type="submit" value="Submit" name="submit"/>
 		</div>
