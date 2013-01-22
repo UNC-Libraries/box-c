@@ -158,6 +158,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		return groupRoleMap;
 	}
 
+	@Override
 	public ObjectAccessControlsBean getAccessControlBean() {
 		if (this.accessControlBean == null && this.roleGroup != null) {
 			this.accessControlBean = new ObjectAccessControlsBean(pid, this.roleGroup);

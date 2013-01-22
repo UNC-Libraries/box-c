@@ -39,6 +39,7 @@
 		<c:set var="childCount" value="0"/>
 	</c:otherwise>
 </c:choose>
+<c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, metadata)}"/>
 <div id="entry${metadata.id}" class="searchitem ${resultEntryClass}">
 	<div class="contentarea">
 		<%-- Link to full record of the current item --%>
@@ -60,7 +61,7 @@
 			</c:otherwise>
 		</c:choose>
 		<%-- Display thumbnail or placeholder graphic --%>
-		<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip">
+		<c:set var="iconContent">
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', metadata)}">
 					<div class="smallthumb_container">
@@ -71,41 +72,57 @@
 				<c:otherwise>
 					<c:choose>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
-							<div class="smallthumb_container">
-								<img class="smallthumb" src="/static/images/placeholder/small/folder.png"/>
-							</div>
+							<img class="smallthumb" src="/static/images/placeholder/small/folder.png"/>
 						</c:when>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
-							<div class="smallthumb_container">
-								<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_clear" 
-										src="/static/images/collections/${metadata.idWithoutPrefix}.jpg" style="height: 64px; width: 64px;"/>
-							</div>
+							<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_clear" 
+									src="/static/images/collections/${metadata.idWithoutPrefix}.jpg" style="height: 64px; width: 64px;"/>
 						</c:when>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentTypeFacet[0].searchKey}">
-							<div class="smallthumb_container">
-								<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
-							</div>
+							<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
 						</c:when>
 						<c:otherwise>
-							<div class="smallthumb_container">
-								<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_default" 
-										src="/static/images/placeholder/small/${metadata.contentTypeFacet[0].searchKey}.png"/>
-							</div>
+							<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_default" 
+									src="/static/images/placeholder/small/${metadata.contentTypeFacet[0].searchKey}.png"/>
 						</c:otherwise>
 					</c:choose>
 				</c:otherwise>
 			</c:choose>
-		</a>
+		</c:set>
+		<c:choose>
+			<c:when test="${hasListAccessOnly}">
+				<a>
+					<div class="smallthumb_container">
+						${iconContent}
+						<span><img src="/static/images/lockedstate.gif"/></span>
+					</div>
+				</a>
+			</c:when>
+			<c:otherwise>
+				<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip">
+					<div class="smallthumb_container">
+						${iconContent}
+					</div>
+				</a>
+			</c:otherwise>
+		</c:choose>
 		<%-- Main result entry metadata body --%>
 		<div class="iteminfo">
 			<c:choose>
 				<%-- Metadata body for containers --%>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection || metadata.resourceType == searchSettings.resourceTypeFolder}">
-					<h2><a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>
-						<c:if test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
-							<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
-						</c:if>
-					</h2>
+					<c:choose>
+						<c:when test="${hasListAccessOnly}">
+							<h2><c:out value="${metadata.title}"/>&nbsp;<span class="searchitem_container_count">(access by request)</span></h2>
+						</c:when>
+						<c:otherwise>
+							<h2><a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>
+								<c:if test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
+									<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
+								</c:if>
+							</h2>
+						</c:otherwise>
+					</c:choose>
 					<div class="halfwidth">
 						<c:choose>
 							<c:when test="${not empty metadata.creator}">
@@ -133,11 +150,18 @@
 				</c:when>
 				<%-- Metadata body for items --%>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
-					<h2><a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
-						<c:if test="${metadata.resourceType == searchSettings.resourceTypeAggregate && childCount > 1}">
-							<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
-						</c:if>
-					</h2>
+					<c:choose>
+						<c:when test="${hasListAccessOnly}">
+							<h2><c:out value="${metadata.title}"/></h2>
+						</c:when>
+						<c:otherwise>
+							<h2><a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
+								<c:if test="${metadata.resourceType == searchSettings.resourceTypeAggregate && childCount > 1}">
+									<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
+								</c:if>
+							</h2>
+						</c:otherwise>
+					</c:choose>
 					<div class="halfwidth">
 						<c:if test="${not empty metadata.creator}">
 							<p>${searchSettings.searchFieldLabels['CREATOR']}:
@@ -181,6 +205,23 @@
 		</div>
 		<%-- Action buttons --%>
 		<c:choose>
+			<c:when test="${hasListAccessOnly}">
+				<div class="containerinfo">
+					<ul>
+						<c:if test="${empty pageContext.request.remoteUser}">
+							<c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
+								<c:param name="target" value="${currentAbsoluteUrl}" />
+							</c:url>
+							<li><a href="<c:out value='${loginUrl}' />">Log in</a> or</li>
+						</c:if>
+						<li>
+							<a href="/external?page=contact&refer=request_${metadata.id}" 
+								title="Contact us to request access to this item">Request Access</a>
+						</li>
+						<li>${metadata.resourceType}</li>
+					</ul>
+				</div>
+			</c:when>
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
 				<div class="containerinfo">
 					<c:url var="browseUrl" scope="page" value='browse?${searchStateUrl}'>

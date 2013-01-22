@@ -118,4 +118,11 @@
 			boolean permitDatastreamAccess(edu.unc.lib.dl.acl.util.AccessGroupSet, java.lang.String, edu.unc.lib.dl.search.solr.model.BriefObjectMetadata)
 		</function-signature>
 	</function>
+	<function>
+		<name>hasListAccessOnly</name>
+		<function-class>edu.unc.lib.dl.ui.util.AccessUtil</function-class>
+		<function-signature>
+			boolean hasListAccessOnly(edu.unc.lib.dl.acl.util.AccessGroupSet, edu.unc.lib.dl.search.solr.model.BriefObjectMetadata)
+		</function-signature>
+	</function>
 </taglib>

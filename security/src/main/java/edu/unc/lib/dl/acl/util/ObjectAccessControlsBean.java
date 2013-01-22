@@ -235,9 +235,36 @@ public class ObjectAccessControlsBean {
 		return result;
 	}
 
+	/**
+	 * Determines if this access object contains roles matching any of the groups in the supplied access group set
+	 * 
+	 * @param groups group membershps
+	 * @return true if any of the groups are associated with a role for this object
+	 */
+	public boolean containsAny(AccessGroupSet groups) {
+		Map<UserRole, Set<String>> roleGroups = this.activeRoleGroups;
+		for (String group : groups) {
+			for (UserRole r : roleGroups.keySet()) {
+				if (roleGroups.get(r).contains(group)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Determines if a user has a specific type of permission on this object, given a set of groups.
+	 * @param groups user memberships
+	 * @param permission the permission requested
+	 * @return if permitted
+	 */
 	public boolean hasPermission(AccessGroupSet groups, Permission permission) {
-		// TODO: this method has to be made to respect embargoes
 		Set<UserRole> roles = this.getRoles(groups);
+		return hasPermission(groups, permission, roles);
+	}
+	
+	public static boolean hasPermission(AccessGroupSet groups, Permission permission, Set<UserRole> roles) {
 		for (UserRole r : roles) {
 			if (r.getPermissions().contains(permission))
 				return true;
@@ -245,17 +272,14 @@ public class ObjectAccessControlsBean {
 		return false;
 	}
 
-	/*
-	 * Determines a user permission, given a set of groups.
-	 * 
+	
+	/**
+	 * Determines if a user has a specific type of permission on this object, given a set of groups.
 	 * @param groups user memberships
-	 * 
 	 * @param permission the permission requested
-	 * 
-	 * @return true if permitted
+	 * @return if permitted
 	 */
 	public boolean hasPermission(String[] groups, Permission permission) {
-		// TODO: this method has to be made to respect embargoes
 		Set<UserRole> roles = this.getRoles(groups);
 		for (UserRole r : roles) {
 			if (r.getPermissions().contains(permission))

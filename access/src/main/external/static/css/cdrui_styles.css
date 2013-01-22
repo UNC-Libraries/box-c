@@ -334,6 +334,7 @@ div#username_wrap {
 }
 
 .smallthumb_container {
+	position:relative;
 	width: 64px;
 	height: 64px;
 	float: left;
@@ -347,6 +348,12 @@ div#username_wrap {
 
 .smallthumb_container.empty {
 	height: 64px;
+}
+
+.smallthumb_container span {
+	position:absolute;
+	bottom: 3px;
+	right: -2px;
 }
 
 .iteminfo {
@@ -544,7 +551,7 @@ ul li a:hover {
 }
 
 .white h2 {
-	color: #0A5274;
+	color: #919FA5;
 }
 
 .white h2 a {
