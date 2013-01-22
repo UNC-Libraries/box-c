@@ -17,7 +17,11 @@ package edu.unc.lib.dl.data.ingest.solr;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class CountDownUpdateRequest extends SolrUpdateRequest {
+	private static final Logger LOG = LoggerFactory.getLogger(CountDownUpdateRequest.class);
 	private static final long serialVersionUID = 1L;
 	AtomicInteger blockCount;
 	

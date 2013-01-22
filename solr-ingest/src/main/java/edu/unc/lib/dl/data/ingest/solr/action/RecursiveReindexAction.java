@@ -1,12 +1,11 @@
 package edu.unc.lib.dl.data.ingest.solr.action;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.data.ingest.solr.CountDownUpdateRequest;
+import edu.unc.lib.dl.data.ingest.solr.BlockUntilTargetCompleteRequest;
 import edu.unc.lib.dl.data.ingest.solr.DeleteChildrenPriorToTimestampRequest;
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
@@ -33,12 +32,8 @@ public class RecursiveReindexAction extends AbstractIndexingAction {
 	 */
 	protected void recursiveReindex(SolrUpdateRequest updateRequest, boolean cleanupOutdated) {
 		try {
-			boolean targetAll = false;
 			if (TARGET_ALL.equals(updateRequest.getTargetID())) {
 				updateRequest.setPid(collectionsPid.getPid());
-				targetAll = true;
-			} else if (collectionsPid.getPid().equals(updateRequest.getTargetID())) {
-				targetAll = true;
 			}
 
 			long startTime = System.currentTimeMillis();
@@ -54,30 +49,25 @@ public class RecursiveReindexAction extends AbstractIndexingAction {
 					dip.setParentDocument(parentRequest.getDocumentIndexingPackage());
 				}
 
-				// Skip indexing this document if it was a reindex all flag
-				//if (!targetAll) {
-					// Perform the indexing pipeline
-					pipeline.process(dip);
-					solrUpdateDriver.addDocument(dip.getDocument());
-				/*} else {
-					dip.getDocument().setAncestorNames("/Collections");
-					dip.getDocument().setAncestorPath(new ArrayList<String>());
-				}*/
+				// Reindex the target
+				pipeline.process(dip);
+				solrUpdateDriver.addDocument(dip.getDocument());
 
 				List<PID> children = dip.getChildren();
 				if (children != null) {
-					CountDownUpdateRequest cleanupRequest = null;
-					CountDownUpdateRequest commitRequest = null;
+					
+					BlockUntilTargetCompleteRequest cleanupRequest = null;
+					BlockUntilTargetCompleteRequest commitRequest = null;
 
 					if (cleanupOutdated) {
+						commitRequest = new BlockUntilTargetCompleteRequest(updateRequest.getTargetID(), SolrUpdateAction.COMMIT,
+								solrUpdateService.nextMessageID(), null, updateRequest);
+						
 						// Generate cleanup request before offering children to be
 						// processed. Set start time to minus one so that the search is less than (instead of <=)
 						cleanupRequest = new DeleteChildrenPriorToTimestampRequest(updateRequest.getTargetID(),
 								SolrUpdateAction.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP, solrUpdateService.nextMessageID(),
-								updateRequest, startTime - 1);
-
-						commitRequest = new CountDownUpdateRequest(updateRequest.getTargetID(), SolrUpdateAction.COMMIT,
-								cleanupRequest, solrUpdateService.nextMessageID(), updateRequest);
+								commitRequest, updateRequest, startTime - 1);
 
 						LOG.debug("CleanupRequest: " + cleanupRequest.toString());
 					}
@@ -85,7 +75,7 @@ public class RecursiveReindexAction extends AbstractIndexingAction {
 					// Get all children, set to block the cleanup request
 					for (PID child : children) {
 						SolrUpdateRequest childRequest = new SolrUpdateRequest(child, SolrUpdateAction.RECURSIVE_ADD,
-								commitRequest, solrUpdateService.nextMessageID(), updateRequest);
+								solrUpdateService.nextMessageID(), updateRequest);
 						LOG.debug("Queueing for recursive reindex: " + child.getPid() + "|" + childRequest.getTargetID());
 						solrUpdateService.offer(childRequest);
 					}

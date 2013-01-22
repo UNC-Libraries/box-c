@@ -36,7 +36,8 @@ public class GroupsThreadStore {
 	 */
 	public static void storeGroups(AccessGroupSet groups) {
 		GroupsThreadStore.groups.set(groups);
-		GroupsThreadStore.groupString.set(groups.joinAccessGroups(";"));
+		if (groups != null)
+			GroupsThreadStore.groupString.set(groups.joinAccessGroups(";"));
 	}
 	
 	public static AccessGroupSet getGroups() {

@@ -159,6 +159,7 @@
 
 	<bean id="deleteObjectAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.DeleteObjectAction">
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="solrUpdateService" ref="solrUpdateConductor" />
 	</bean>
 
