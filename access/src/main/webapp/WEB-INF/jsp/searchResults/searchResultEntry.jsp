@@ -72,7 +72,14 @@
 				<c:otherwise>
 					<c:choose>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
-							<img class="smallthumb" src="/static/images/placeholder/small/folder.png"/>
+							<c:choose>
+								<c:when test="${hasListAccessOnly}">
+									<img class="smallthumb" src="/static/images/placeholder/small/folder-grey.png"/>
+								</c:when>
+								<c:otherwise>
+									<img class="smallthumb" src="/static/images/placeholder/small/folder.png"/>
+								</c:otherwise>
+							</c:choose>
 						</c:when>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
 							<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_clear" 
