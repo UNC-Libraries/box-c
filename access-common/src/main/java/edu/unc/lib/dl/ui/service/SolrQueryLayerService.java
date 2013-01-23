@@ -627,16 +627,16 @@ public class SolrQueryLayerService extends SolrSearchService {
 			LOG.error("Error while getting container results for hierarchical browse results", e);
 			return null;
 		}
+		// Get the root node for this search so that it can be displayed as the top tier
+		BriefObjectMetadataBean rootNode = getObjectById(new SimpleIdRequest(((CutoffFacet) browseState.getFacets()
+					.get(SearchFieldKeys.ANCESTOR_PATH.name())).getSearchKey(), browseRequest.getAccessGroups()));
+		if (rootNode == null){
+			throw new ResourceNotFoundException();
+		}
+		LOG.debug("Found a root node, adding " + rootNode);
+		browseResults.getResultList().add(0, rootNode);
+		
 		if (results.getResultCount() > 0) {
-			// Get the root node for this search so that it can be displayed as the top tier
-			BriefObjectMetadataBean rootNode = getObjectById(new SimpleIdRequest(((CutoffFacet) browseState.getFacets()
-						.get(SearchFieldKeys.ANCESTOR_PATH.name())).getSearchKey(), browseRequest.getAccessGroups()));
-			if (rootNode == null){
-				throw new ResourceNotFoundException();
-			}
-			LOG.debug("Found a root node, adding " + rootNode);
-			browseResults.getResultList().add(0, rootNode);
-
 			// Get the children counts per container
 			SearchRequest filteredChildrenRequest = new SearchRequest(browseState, browseRequest.getAccessGroups());
 			browseResults.setRootCount(this.getChildrenCounts(results.getResultList(), accessGroups, "child", null, this.generateSearch(filteredChildrenRequest, true)));

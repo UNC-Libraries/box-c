@@ -128,29 +128,22 @@ public class FullRecordController extends AbstractSolrSearchController {
 			// Retrieve hierarchical browse results
 			SearchState searchState = searchStateFactory.createHierarchicalBrowseSearchState();
 			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), briefObject.getPath());
+			searchState.setResourceTypes(null);
 			HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(searchState, 4, accessGroups);
 			
 			HierarchicalBrowseResultResponse hierarchicalResultResponse = null;
 
-			searchState.setRowsPerPage(0);
+			if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
+				searchState.setRowsPerPage(100);
+			} else {
+				searchState.setRowsPerPage(20);
+			}
 			hierarchicalResultResponse = queryLayer.getHierarchicalBrowseResults(browseRequest);
+			
+			hierarchicalResultResponse.setResultCount(hierarchicalResultResponse.getResultList().size());
 			
 			if (LOG.isDebugEnabled() && hierarchicalResultResponse != null)
 				LOG.debug(id + " returned " + hierarchicalResultResponse.getResultCount() + " hierarchical results.");
-			
-			if (retrieveHierarchicalItems) {
-				hierarchicalResultResponse.setResultCount(hierarchicalResultResponse.getResultList().size());
-				
-				LOG.debug(id + " result contains " + hierarchicalResultResponse.getResultList().size() + " objects after adding root for items.");
-				
-				searchState.setRowsPerPage(100);
-				
-				SearchResultResponse itemResults = queryLayer.getHierarchicalBrowseItemResult(browseRequest);
-				hierarchicalResultResponse.populateItemResults(itemResults.getResultList());
-				
-				if (LOG.isDebugEnabled() && hierarchicalResultResponse != null)
-					LOG.debug(id + " returned " + itemResults.getResultCount() + " item results." + hierarchicalResultResponse.getResultCount());
-			}
 			
 			model.addAttribute("hierarchicalViewResults", hierarchicalResultResponse);
 			
@@ -160,9 +153,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 		if (retrieveNeighbors) {
 			List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
 					searchSettings.maxNeighborResults, accessGroups);
-			for (BriefObjectMetadataBean neighbor : neighbors) {
-				//DatastreamAccessValidator.filterBriefObject(neighbor, accessGroups);
-			}
 			model.addAttribute("neighborList", neighbors);
 		}
 		
