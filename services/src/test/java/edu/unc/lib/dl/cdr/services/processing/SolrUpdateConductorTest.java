@@ -34,10 +34,12 @@ import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
+import edu.unc.lib.dl.data.ingest.solr.BlockUntilTargetCompleteRequest;
 import edu.unc.lib.dl.data.ingest.solr.CountDownUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.DeleteChildrenPriorToTimestampRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
+import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnableFactory;
 import edu.unc.lib.dl.data.ingest.solr.UpdateDocTransformer;
 import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -45,6 +47,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
+// TODO this test is going to fail until solrUpdateRunnableFactory is injected, which will require using a spring context
 public class SolrUpdateConductorTest extends Assert {
 
 	private SolrUpdateConductor solrUpdateConductor;
@@ -88,6 +91,8 @@ public class SolrUpdateConductorTest extends Assert {
 
 		messageDirector.setConductorsList(conductorsList);
 		messageDirector.setFilters(filters);
+		
+		//SolrUpdateRunnableFactory solrUpdateRunnableFactory = ;
 
 		solrUpdateConductor.init();
 		solrUpdateConductor.clearState();
@@ -219,8 +224,10 @@ public class SolrUpdateConductorTest extends Assert {
 
 		// Create a blocked message and make sure that it doesn't get picked up until
 		int numberTestMessages = 5;
-		CountDownUpdateRequest blockedRequest = new DeleteChildrenPriorToTimestampRequest("uuid:blocked",
-				SolrUpdateAction.ADD, null, null, System.currentTimeMillis());
+		SolrUpdateRequest parentRequest = new SolrUpdateRequest("uuid:parent", SolrUpdateAction.ADD);
+		
+		SolrUpdateRequest blockedRequest = new BlockUntilTargetCompleteRequest("uuid:blocked",
+				SolrUpdateAction.ADD, "urn:uuid:msg", null, parentRequest);
 
 		for (int i = 0; i < numberTestMessages; i++) {
 			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:1", SolrUpdateAction.ADD, blockedRequest, null,

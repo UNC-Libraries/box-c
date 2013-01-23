@@ -32,7 +32,7 @@
 			<c:import url="WEB-INF/jsp/common/hierarchyTrail.jsp">
 				<c:param name="fieldKey">ANCESTOR_PATH</c:param>
 				<c:param name="linkLast">true</c:param>
-				<c:param name="displayHome">true</c:param>
+				<c:param name="displayHome">false</c:param>
 				<c:param name="limitToContainer">true</c:param>
 				<c:param name="ignoreSearchState">true</c:param>
 			</c:import>
