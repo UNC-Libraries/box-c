@@ -51,7 +51,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 		Element relsExt = dip.getRelsExt();
 		
 		Element allowIndexingEl = relsExt.getChild(ContentModelHelper.CDRProperty.allowIndexing.name(), JDOMNamespaceUtil.CDR_NS);
-		boolean allowIndexing = (allowIndexingEl == null) ? true : allowIndexingEl.getText().equals("no");
+		boolean allowIndexing = (allowIndexingEl == null) ? true : !allowIndexingEl.getText().equals("no");
 		
 		// If indexing is disallowed then block all patron groups
 		if (allowIndexing) {

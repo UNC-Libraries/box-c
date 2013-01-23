@@ -1,5 +1,7 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -7,8 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
-import org.apache.solr.common.SolrInputDocument;
+//import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
+//import org.apache.solr.common.SolrInputDocument;
+import org.jdom.Document;
+import org.jdom.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,6 +34,10 @@ public class SetAccessControlFilterTest extends Assert {
 		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
 		
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(new FileInputStream(new File(
+				"src/test/resources/foxml/fileOctetStream.xml")));
+		dip.setFoxml(foxml);
 		
 		SetAccessControlFilter filter = new SetAccessControlFilter();
 		filter.setAccessControlService(accessControlService);
@@ -55,6 +63,10 @@ public class SetAccessControlFilterTest extends Assert {
 		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
 		
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(new FileInputStream(new File(
+				"src/test/resources/foxml/fileOctetStream.xml")));
+		dip.setFoxml(foxml);
 		
 		SetAccessControlFilter filter = new SetAccessControlFilter();
 		filter.setAccessControlService(accessControlService);
@@ -66,9 +78,39 @@ public class SetAccessControlFilterTest extends Assert {
 		
 		assertNull(dip.getDocument().getAdminGroup());
 		
-		DocumentObjectBinder binder = new DocumentObjectBinder();
-		SolrInputDocument solrDoc = binder.toSolrInputDocument(dip.getDocument());
+//		DocumentObjectBinder binder = new DocumentObjectBinder();
+//		SolrInputDocument solrDoc = binder.toSolrInputDocument(dip.getDocument());
+//		
+//		System.out.println(solrDoc);
+	}
+	
+	@Test
+	public void allowIndexingNo() throws Exception {
+		Map<String,Collection<String>> roles = new HashMap<String,Collection<String>>();
+		roles.put("http://cdr.unc.edu/definitions/roles#patron", Arrays.asList("public"));
+		roles.put("http://cdr.unc.edu/definitions/roles#curator", Arrays.asList("curator"));
+		roles.put("http://cdr.unc.edu/definitions/acl#inheritPermissions", Arrays.asList("false"));
 		
-		System.out.println(solrDoc);
+		List<String> embargoes = new ArrayList<String>();
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, embargoes);
+		
+		AccessControlService accessControlService = mock(AccessControlService.class);
+		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
+		
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(new FileInputStream(new File(
+				"src/test/resources/foxml/allowIndexingNo.xml")));
+		dip.setFoxml(foxml);
+		
+		SetAccessControlFilter filter = new SetAccessControlFilter();
+		filter.setAccessControlService(accessControlService);
+		
+		filter.filter(dip);
+		
+		assertNull(dip.getDocument().getReadGroup());
+		
+		assertEquals(1, dip.getDocument().getAdminGroup().size());
+		assertTrue(dip.getDocument().getAdminGroup().contains("curator"));
 	}
 }
