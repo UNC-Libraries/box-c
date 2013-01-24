@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 
 /**
  * Populates a list of department values and forwards to the dept browse.
@@ -33,10 +33,10 @@ public class BrowseDepartmentsController extends AbstractSolrSearchController {
 	
 	@RequestMapping(method = RequestMethod.GET)
 	public String handleRequest(Model model){
-		SearchResultResponse results = queryLayer.getDepartmentList(GroupsThreadStore.getGroups());
+		FacetFieldObject deptField = queryLayer.getDepartmentList(GroupsThreadStore.getGroups());
 
-		if (results.getFacetFields() != null && results.getFacetFields().size() > 0)
-			model.addAttribute("departmentFacets", results.getFacetFields().get(0));
+		if (deptField != null)
+			model.addAttribute("departmentFacets", deptField);
 		model.addAttribute("resultType", "departmentBrowse");
 		return "browseDepartments";
 	}

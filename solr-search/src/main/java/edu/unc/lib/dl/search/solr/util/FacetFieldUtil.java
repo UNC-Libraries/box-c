@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.solr.client.solrj.SolrQuery;
 
+import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacetNode;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
@@ -41,6 +42,8 @@ public class FacetFieldUtil {
 			this.addCutoffFacetValue((CutoffFacet) facetObject, solrQuery);
 		} else if (facetObject instanceof MultivaluedHierarchicalFacet) {
 			this.addMultivaluedFacetValue((MultivaluedHierarchicalFacet) facetObject, solrQuery);
+		} else if (facetObject instanceof CaseInsensitiveFacet) {
+			this.addCaseInsensitiveFacetValue((CaseInsensitiveFacet) facetObject, solrQuery);
 		} else if (facetObject instanceof GenericFacet) {
 			this.addGenericFacetValue((GenericFacet) facetObject, solrQuery);
 		}
@@ -84,6 +87,11 @@ public class FacetFieldUtil {
 
 	private void addGenericFacetValue(GenericFacet facet, SolrQuery solrQuery) {
 		solrQuery.addFilterQuery(solrSettings.getFieldName(facet.getFieldName()) + ":\""
+				+ SolrSettings.sanitize((String) facet.getSearchValue()) + "\"");
+	}
+	
+	private void addCaseInsensitiveFacetValue(CaseInsensitiveFacet facet, SolrQuery solrQuery) {
+		solrQuery.addFilterQuery(solrSettings.getFieldName(facet.getSearchName()) + ":\""
 				+ SolrSettings.sanitize((String) facet.getSearchValue()) + "\"");
 	}
 

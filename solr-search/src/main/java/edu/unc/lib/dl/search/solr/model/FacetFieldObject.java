@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.search.solr.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -45,8 +46,8 @@ public class FacetFieldObject {
 		return values;
 	}
 
-	public void setValues(ArrayList<GenericFacet> values) {
-		this.values = values;
+	public void setValues(Collection<GenericFacet> values) {
+		this.values = new ArrayList<GenericFacet>(values);
 	}
 
 	public boolean isHierarchical() {

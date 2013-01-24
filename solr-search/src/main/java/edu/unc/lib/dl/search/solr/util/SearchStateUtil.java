@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 
 /**
@@ -161,8 +161,8 @@ public class SearchStateUtil {
 			sb.append(searchSettings.searchFieldParam(fieldName)).append(keyValueDelimiter);
 			Object fieldValue = fields.get(fieldName);
 			if (fieldValue != null){
-				if (fieldValue instanceof AbstractHierarchicalFacet){
-					sb.append(((AbstractHierarchicalFacet) fieldValue).getLimitToValue());
+				if (fieldValue instanceof SearchFacet){
+					sb.append(((SearchFacet) fieldValue).getLimitToValue());
 				} else {
 					sb.append(fieldValue);
 				}

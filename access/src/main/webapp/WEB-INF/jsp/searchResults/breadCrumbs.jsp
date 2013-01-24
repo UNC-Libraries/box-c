@@ -61,8 +61,11 @@
 								<c:param name="limitToContainer">true</c:param>
 							</c:import>
 						</c:when>
-						<c:otherwise>
+						<c:when test="${field.value.getClass().name == 'java.lang.String'}">
 							<c:out value="${field.value}" />
+						</c:when>
+						<c:otherwise>
+							<c:out value="${field.value.displayValue}" />
 						</c:otherwise>
 					</c:choose>
 				</li>

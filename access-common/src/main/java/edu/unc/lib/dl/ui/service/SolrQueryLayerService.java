@@ -17,8 +17,11 @@ package edu.unc.lib.dl.ui.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -30,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
@@ -105,12 +109,21 @@ public class SolrQueryLayerService extends SolrSearchService {
 		return getSearchResults(searchRequest);
 	}
 
-	public SearchResultResponse getDepartmentList(AccessGroupSet accessGroups) {
-		SearchState searchState = searchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT.name(), "index", 999999);
+	public FacetFieldObject getDepartmentList(AccessGroupSet accessGroups) {
+		SearchState searchState = searchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT.name(), "index", Integer.MAX_VALUE);
 
 		SearchRequest searchRequest = new SearchRequest(searchState, accessGroups);
 
-		return getSearchResults(searchRequest);
+		SearchResultResponse results = getSearchResults(searchRequest);
+		
+		if (results.getFacetFields() != null && results.getFacetFields().size() > 0) {
+			FacetFieldObject deptField = results.getFacetFields().get(0);
+			if (deptField != null) {
+				CaseInsensitiveFacet.deduplicateCaseInsensitiveValues(deptField);
+			}
+			return deptField;
+		}
+		return null;
 	}
 
 	/**

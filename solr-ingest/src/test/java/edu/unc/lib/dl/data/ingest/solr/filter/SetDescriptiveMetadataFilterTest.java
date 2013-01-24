@@ -45,7 +45,9 @@ public class SetDescriptiveMetadataFilterTest extends Assert {
 		assertEquals("Judson, Richard", idb.getCreatorSort());
 		assertEquals(4, idb.getCreator().size());
 		assertEquals(5, idb.getContributor().size());
-		assertEquals(5, idb.getDepartment().size());
+		assertEquals(1, idb.getDepartment().size());
+		assertEquals("Biostatistics", idb.getDepartment().get(0));
+		
 		assertNotNull(idb.getAbstractText());
 		assertEquals(
 				"A Comparison of Machine Learning Algorithms for Chemical Toxicity Classification Using a Simulated Multi-Scale Data Model",
@@ -156,6 +158,10 @@ public class SetDescriptiveMetadataFilterTest extends Assert {
 				.splitDepartment("Cancer Genetics Program, Lineburger Comprehensive Cancer Center, University of North Carolina at Chapel Hill");
 		System.out.println(results.get(0));
 		
+		
+		results = filter
+				.splitDepartment("Tobacco Prevention and Evaluation Program, Department of Family Medicine, School of Medicine, University of North Carolina at Chapel Hill, CB 7595, 590 Manning Drive, Chapel Hill, North Carolina 27599 USA");
+		System.out.println(results.get(0));
 
 //		BufferedReader br = new BufferedReader(new FileReader("src/test/resources/departments.txt"));
 //		String line = null;

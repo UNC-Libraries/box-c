@@ -142,7 +142,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		List<?> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
 		List<String> creators = new ArrayList<String>();
 		List<String> contributors = new ArrayList<String>();
-		List<String> departments = new ArrayList<String>();
+		Set<String> departments = new HashSet<String>();
 		Element nameEl;
 		for (Object nameObj : names) {
 			nameEl = (Element) nameObj;
@@ -209,8 +209,11 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 
 				for (Object affilObj : affiliations) {
 					String affiliation = ((Element) affilObj).getValue();
-					if (affiliation != null && affiliation.trim().length() > 0)
-						departments.add(affiliation);
+					if (affiliation != null && affiliation.trim().length() > 0) {
+						List<String> individualDepartments = this.splitDepartment(affiliation);
+						if (individualDepartments != null && individualDepartments.size() > 0)
+							departments.addAll(individualDepartments);
+					}
 				}
 			}
 		}
@@ -222,7 +225,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			idb.setCreatorSort(creators.get(0));
 		}
 		if (departments.size() > 0)
-			idb.setDepartment(departments);
+			idb.setDepartment(new ArrayList<String>(departments));
 	}
 	
 	private void extractAbstract(Element mods, IndexDocumentBean idb) throws JDOMException {
@@ -349,33 +352,6 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 	}
 	
 	private final String UNC_NAME = "University of North Carolina";
-	
-	private void splitDepartments(IndexDocumentBean idb) {
-		Iterator<String> departmentIt = idb.getDepartment().iterator();
-		while (departmentIt.hasNext()) {
-			String department = departmentIt.next();
-			
-			int indexUNC = department.indexOf(UNC_NAME);
-			boolean isUNC = indexUNC != -1;
-			if (isUNC) {
-				String afterUNC = department.substring(indexUNC + UNC_NAME.length());
-				if (afterUNC.trim().length() > 0 && !afterUNC.contains("Chapel Hill")){
-					// Skip, university is not Chapel Hill
-					continue;
-				}
-				// Strip off UNC
-				department = department.substring(0, indexUNC);
-			} else if (department.contains("University of")){
-				// From another University, skip
-				continue;
-			}
-			
-			// Remove extraneous UNC's
-			department = department.replace("UNC", "");
-			
-			department.split("and (the )?Dep(t\\.?|artment(s)?)");
-		}
-	}
 	
 	public boolean departmentInVocabulary(String department) {
 		return this.departmentVocab.contains(department);

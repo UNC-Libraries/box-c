@@ -34,7 +34,7 @@
 				<c:url var="resultsUrl" scope="page" value="search">
 					<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["DEPARTMENT"]},"${departmentFacet.searchValue}"'/>
 				</c:url>
-				<a href="<c:out value='${resultsUrl}' />"><c:out value="${departmentFacet.value}"/></a> (<c:out value="${departmentFacet.count}"/>)
+				<a href="<c:out value='${resultsUrl}' />"><c:out value="${departmentFacet.displayValue}"/></a> (<c:out value="${departmentFacet.count}"/>)
 			</li>
 		</c:forEach>
 	</ul>
