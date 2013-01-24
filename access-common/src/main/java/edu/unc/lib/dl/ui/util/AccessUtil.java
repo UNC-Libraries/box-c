@@ -23,6 +23,10 @@ public class AccessUtil {
 
 		if (!metadata.getDatastreamObjects().contains(datastream.getName()))
 			return false;
+		
+		if (groups.contains(AccessGroupConstants.ADMIN_GROUP)) {
+			return true;
+		}
 
 		return metadata.getAccessControlBean().hasPermission(groups,
 				Permission.getPermissionByDatastreamCategory(datastream.getCategory()));

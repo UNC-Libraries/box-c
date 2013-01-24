@@ -37,6 +37,8 @@ public enum Permission {
 				return Permission.viewDescription;
 			case ORIGINAL:
 				return Permission.viewOriginal;
+			case ADMINISTRATIVE:
+				return Permission.viewAdminUI;
 		}
 		return null;
 	}
