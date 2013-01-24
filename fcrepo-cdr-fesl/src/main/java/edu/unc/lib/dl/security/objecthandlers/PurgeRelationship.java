@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.fcrepo.common.Constants;
 
 import org.fcrepo.server.security.xacml.pep.PEPException;
+import org.fcrepo.server.security.xacml.pep.ResourceAttributes;
 import org.fcrepo.server.security.xacml.pep.rest.filters.AbstractFilter;
 import org.fcrepo.server.security.xacml.util.LogUtil;
 
@@ -71,36 +72,24 @@ public class PurgeRelationship
             logger.debug(this.getClass().getName() + "/handleRequest!");
         }
 
-        String path = request.getPathInfo();
-        String[] parts = path.split("/");
-
-        String pid = parts[1];
-
         RequestCtx req = null;
         Map<URI, AttributeValue> actions = new HashMap<URI, AttributeValue>();
-        Map<URI, AttributeValue> resAttr = new HashMap<URI, AttributeValue>();
+        Map<URI, AttributeValue> resAttr;
         try {
-            if (pid != null && !"".equals(pid)) {
-                resAttr.put(Constants.OBJECT.PID.getURI(),
-                            new StringAttribute(pid));
-            }
-            if (pid != null && !"".equals(pid)) {
-                resAttr.put(new URI(XACML_RESOURCE_ID),
-                            new AnyURIAttribute(new URI(pid)));
-            }
+            String[] parts = getPathParts(request);
+            resAttr = ResourceAttributes.getResources(parts);
+
+            actions.put(Constants.ACTION.ID.getURI(),
+                        Constants.ACTION.PURGE_RELATIONSHIP
+                                .getStringAttribute());
+            actions.put(Constants.ACTION.API.getURI(),
+                        Constants.ACTION.APIM.getStringAttribute());
             
             // adding predicates to the evaluation context
-            String predicate = request.getParameter("relationship");
+            String predicate = request.getParameter("predicate");
             if (predicate != null && !"".equals(predicate)) {
             	resAttr.put(new URI(AddRelationship.RESOURCE_RELATIONSHIP_PREDICATE), new AnyURIAttribute(new URI(predicate)));
             }
-
-            actions.put(Constants.ACTION.ID.getURI(),
-                        new StringAttribute(Constants.ACTION.PURGE_RELATIONSHIP
-                                .getURI().toASCIIString()));
-            actions.put(Constants.ACTION.API.getURI(),
-                        new StringAttribute(Constants.ACTION.APIM.getURI()
-                                .toASCIIString()));
 
             req =
                     getContextHandler().buildRequest(getSubjects(request),
@@ -111,7 +100,7 @@ public class PurgeRelationship
             LogUtil.statLog(request.getRemoteUser(),
                             Constants.ACTION.PURGE_RELATIONSHIP.getURI()
                                     .toASCIIString(),
-                            pid,
+                                    parts[1],
                             null);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
