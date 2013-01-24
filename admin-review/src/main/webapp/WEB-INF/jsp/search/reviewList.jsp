@@ -115,7 +115,6 @@
 	var require = {
 		config: {
 			'reviewList' : {
-				'test' : 'awesome',
 				'metadataObjects': ${cdr:objectToJSON(resultResponse.resultList)}
 			}
 		}
