@@ -15,8 +15,8 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton'], function($) {
 			
 			this.options.workDone = this.deleteWorkDone;
 			this.options.followup = this.deleteFollowup;
-			this.options.completeTarget = this.options.parentObject;
-			this.options.complete = this.options.parentObject.deleteObject;
+			//this.options.completeTarget = this.options.parentObject;
+			//this.options.complete = this.options.parentObject.deleteObject;
 			
 			this.element.data("callbackButtonClass", "deleteObjectButton");
 		},
@@ -28,8 +28,9 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton'], function($) {
 			return false;
 		},
 
-		deleteComplete: function() {
-			obj.deleteObject();
+		completeState: function() {
+			if (this.options.parentObject != null)
+				this.options.parentObject.deleteObject();
 			this.destroy();
 		},
 

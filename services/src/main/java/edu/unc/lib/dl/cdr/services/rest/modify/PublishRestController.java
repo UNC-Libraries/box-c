@@ -68,7 +68,7 @@ public class PublishRestController {
 
 	private Map<String, ? extends Object> publishObject(PID pid, boolean publish, String username) {
 		Map<String, Object> result = new HashMap<String, Object>();
-		result.put("pid", pid);
+		result.put("pid", pid.getPid());
 		result.put("action", (publish) ? "publish" : "unpublish");
 		log.debug("Publishing object " + pid);
 

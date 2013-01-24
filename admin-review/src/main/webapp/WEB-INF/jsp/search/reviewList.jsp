@@ -38,7 +38,7 @@
 	
 	<div id="results_list_actions">
 		<div class="left"><p><a id="select_all">Select All</a></p> <p><a id="deselect_all">Deselect All</a></p></div>
-		<div class="right"><input type="Button" value="Delete"/>&nbsp;&nbsp;<input id="publish_selected" type="Button" value="Publish Selected"/><input id="unpublish_selected" type="Button" value="Unpublish Selected"/></div>
+		<div class="right"><input id="delete_selected" type="Button" value="Delete"/>&nbsp;&nbsp;<input id="publish_selected" type="Button" value="Publish Selected"/><input id="unpublish_selected" type="Button" value="Unpublish Selected"/></div>
 	</div>
 	
 	<div>

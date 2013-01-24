@@ -39,7 +39,7 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], func
 			if ($.isArray(data)) {
 				this.followupObjects = [];
 				for (var index in data) {
-					var id = data[index].pid.pid;
+					var id = data[index].pid;
 					this.followupObjects.push(id);
 					
 					if (this.options.childCallbackButtonSelector) {

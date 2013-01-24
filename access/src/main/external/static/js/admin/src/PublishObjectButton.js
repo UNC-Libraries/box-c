@@ -10,7 +10,6 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObject'], function(
 			
 			this.options.workDone = this.publishWorkDone;
 			this.options.followup = this.publishFollowup;
-			this.options.completeTarget = this.options.parentObject;
 			
 			this.element.data("callbackButtonClass", "publishObjectButton");
 			

@@ -20,7 +20,6 @@
  */
 define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, MetadataObject) {
 	var test = new PID("test");
-	console.log("arrest" + test.getPath());
 	$.widget("cdr.ajaxCallbackButton", {
 		options : {
 			pid : null,
@@ -42,7 +41,6 @@ define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, Me
 		},
 
 		_create : function() {
-			console.log("setting it up");
 			if (!this.options.defaultLabel)
 				this.options.defaultLabel = this.element.text();
 			if (!this.options.workLabel)
@@ -90,7 +88,8 @@ define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, Me
 					autoOpen : false,
 					buttons : {
 						"Yes" : function() {
-							op.doWork();
+							if (!op.options.disabled)
+								op.doWork();
 							$(this).dialog("close");
 						},
 						"Cancel" : function() {
@@ -151,12 +150,14 @@ define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, Me
 			this.options.disabled = true;
 			this.element.css("cursor", "default");
 			this.element.addClass("disabled");
+			this.element.attr('disabled', 'disabled');
 		},
 
 		enable : function() {
 			this.options.disabled = false;
 			this.element.css("cursor", "pointer");
 			this.element.removeClass("disabled");
+			this.element.removeAttr('disabled');
 		},
 
 		setWorkURL : function(url) {

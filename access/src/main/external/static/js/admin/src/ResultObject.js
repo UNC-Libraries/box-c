@@ -17,7 +17,6 @@
  */
 define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'DeleteObjectButton',
 		'PublishObjectButton' ], function($, ui, PID, MetadataObject) {
-	console.log("ResultObject loaded");
 	$.widget("cdr.resultObject", {
 		options : {
 			animateSpeed : 100,
@@ -44,7 +43,7 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'DeleteObjectButton',
 				this.checkbox = this.element.find("input[type='checkbox']");
 				if (this.checkbox) {
 					this.checkbox = $(this.checkbox[0]).click(function(event) {
-						$.proxy(obj.toggleSelect, obj);
+						obj.toggleSelect.apply(obj);
 						event.stopPropagation();
 					}).prop("checked", obj.options.selectCheckboxInitialState);
 				}
@@ -170,6 +169,11 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'DeleteObjectButton',
 			var obj = this;
 			obj.element.hide(obj.options.animateSpeed, function() {
 				obj.element.remove();
+				if (obj.options.resultObjectList) {
+					for (var index in obj.options.resultObjectList) {
+						obj.options.resultObjectList[index].removeResultObject(obj.pid.getPid());
+					}
+				}
 			});
 		},
 		

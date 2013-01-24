@@ -1,5 +1,4 @@
 define('MetadataObject', [ 'jquery', 'PID' ], function($, PID) {
-	console.log("Metadataobject");
 	function MetadataObject(metadata) {
 		this.init(metadata);
 	};
