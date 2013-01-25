@@ -1176,7 +1176,7 @@ ul.crumblist li a {
 	display: inline;
 }
 
-.hier_container_collapse img,.hier_container_expand img {
+.hier_container img {
 	width: 10px;
 	display: inline-block;
 }

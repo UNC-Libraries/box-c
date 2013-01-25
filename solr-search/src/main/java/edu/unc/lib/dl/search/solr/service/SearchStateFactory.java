@@ -255,11 +255,9 @@ public class SearchStateFactory {
 		if (parameter != null){
 			String parameterArray[] = parameter.split("\\|");
 			for (String parameterPair: parameterArray){
-				log.debug(parameterPair);
 				String parameterPairArray[] = parameterPair.split(":", 2);
-				log.debug(parameterPairArray.length + "searchTermPairArray" + parameterPairArray);
 				//if a field label is specified, store the search term under it.
-				if (parameterPairArray.length > 1){
+				if (parameterPairArray.length > 1 && parameterPairArray[1].trim().length() > 0){
 					searchFields.put(searchSettings.searchFieldKey(parameterPairArray[0]), parameterPairArray[1]);
 				}
 			}

@@ -242,7 +242,10 @@
 					<c:when test="${subcontainerCount > 0 &&
 							((resultStatus.first && queryPath != 'browse') ||
 							hierarchicalViewResults.searchState.rowsPerPage == 0)}">
-						<a href="#" class="hier_container_collapse" title="Collapse ${containerNode.title}" id="container_toggle_${fn:replace(containerNode.id, ':', '-')}"><img src="/static/images/collapse.png"/></a>
+						<a href="#" class="hier_action collapse" title="Collapse ${containerNode.title}" id="container_toggle_${fn:replace(containerNode.id, ':', '-')}"><img src="/static/images/collapse.png"/></a>
+					</c:when>
+					<c:when test="${!hasSubcontainers && childCount == 0}">
+						<a class="hier_action" title="${containerNode.title} is empty"><img src="/static/images/no_action.png"/></a>
 					</c:when>
 					<c:otherwise>
 						<c:set var="actions" scope="page" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${containerNode.path.searchValue}"'/>
@@ -254,7 +257,7 @@
 							<c:param name="disableSecondaryDetailsLink" value='${param.disableSecondaryDetailsLink}'/>
 							<c:param name="hideTypeIcon" value='${param.hideTypeIcon}'/>
 						</c:url>
-						<a href="<c:out value='${expandUrl}' />" title="Expand ${containerNode.title}" class="hier_container_expand hier_container_not_loaded" id="container_toggle_${fn:replace(containerNode.id, ':', '-')}"><img src="/static/images/expand.png"/></a>
+						<a href="<c:out value='${expandUrl}' />" title="Expand ${containerNode.title}" class="hier_action expand hier_container_not_loaded" id="container_toggle_${fn:replace(containerNode.id, ':', '-')}"><img src="/static/images/expand.png"/></a>
 					</c:otherwise>
 				</c:choose>
 			</c:if>

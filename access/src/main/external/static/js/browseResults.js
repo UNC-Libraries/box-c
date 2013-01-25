@@ -46,24 +46,24 @@ $(function() {
 	actionTooltipSettings['show']['delay'] = 100;
 	$(".hier_entry_secondary_action").qtip(actionTooltipSettings);
 	
-	$(".hier_container_collapse").live('click', function(){
+	$(".hier_action.collapse").live('click', function(){
 		var toggleImage = $("#" + this.id + " img");
 		toggleImage.attr("src", "/static/images/expand.png");
 		
 		var pid = this.id.substring(this.id.lastIndexOf("_") + 1);
 		$("#hier_container_children_" + pid).hide();
-		$(this).removeClass("hier_container_collapse");
-		$(this).addClass("hier_container_expand");
+		$(this).removeClass("collapse");
+		$(this).addClass("expand");
 		return false;
 	});
 	
-	$(".hier_container_expand").live('click', function(){
+	$(".hier_action.expand").live('click', function(){
 		var initiatingLink = $(this);
 		var toggleImage = $("#" + this.id + " img");
 		toggleImage.attr("src", "/static/images/collapse.png");
 		
-		$(this).removeClass("hier_container_expand");
-		$(this).addClass("hier_container_collapse");
+		$(this).removeClass("expand");
+		$(this).addClass("collapse");
 		
 		var pid = this.id.substring(this.id.lastIndexOf("_") + 1);
 		var structureUrl = $(this).attr("href");

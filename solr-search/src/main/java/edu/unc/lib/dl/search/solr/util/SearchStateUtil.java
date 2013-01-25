@@ -135,16 +135,19 @@ public class SearchStateUtil {
 		Iterator<?> fieldIt = fields.keySet().iterator();
 		while (fieldIt.hasNext()){
 			String fieldName = (String)fieldIt.next();
-			if (firstField)
-				firstField = false;
-			else sb.append(pairDelimiter);
-			if (performFieldLookup)
-				sb.append(searchSettings.searchFieldParam(fieldName));
-			else sb.append(fieldName);
-			sb.append(keyValueDelimiter);
 			Object value = fields.get(fieldName);
-			if (value != null)
-				sb.append(value);
+			if (value != null && value.toString().trim().length() > 0) {
+				if (firstField)
+					firstField = false;
+				else sb.append(pairDelimiter);
+				if (performFieldLookup)
+					sb.append(searchSettings.searchFieldParam(fieldName));
+				else sb.append(fieldName);
+				sb.append(keyValueDelimiter);
+				
+				if (value != null)
+					sb.append(value);
+			}
 		}
 		return sb.toString();
 	}
