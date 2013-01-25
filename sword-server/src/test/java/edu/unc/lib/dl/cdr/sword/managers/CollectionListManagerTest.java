@@ -63,6 +63,7 @@ public class CollectionListManagerTest extends Assert {
 		config.setBasePath("https://localhost/services");
 		config.setSwordPath("https://localhost/services/sword");
 		config.setSwordVersion("1.3");
+		config.setAdminDepositor("admin");
 	}
 	
 	@Test
@@ -75,7 +76,7 @@ public class CollectionListManagerTest extends Assert {
 		
 		when(tripleStoreQueryService.sendSPARQL(anyString())).thenReturn(response);
 		
-		Feed feed = manager.listCollectionContents(iri, new AuthCredentials("","",""), config);
+		Feed feed = manager.listCollectionContents(iri, new AuthCredentials("admin","",""), config);
 		assertEquals(feed.getEntries().size(), 10);
 		assertEquals(feed.getLinks().size(), 1);
 		assertTrue(pidString.equals(feed.getId().toString()));
@@ -93,7 +94,7 @@ public class CollectionListManagerTest extends Assert {
 		when(tripleStoreQueryService.sendSPARQL(endsWith(" 0"))).thenReturn(null);
 		when(tripleStoreQueryService.sendSPARQL(endsWith(" 10"))).thenReturn(response);
 		
-		Feed feed = manager.listCollectionContents(iri, new AuthCredentials("","",""), config);
+		Feed feed = manager.listCollectionContents(iri, new AuthCredentials("admin","",""), config);
 		assertEquals(feed.getEntries().size(), 10);
 		assertEquals(feed.getLinks().size(), 1);
 		String nextLink = feed.getLink("next").getHref().toString();

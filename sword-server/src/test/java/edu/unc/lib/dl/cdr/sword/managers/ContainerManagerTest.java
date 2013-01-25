@@ -25,6 +25,7 @@ import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordAuthException;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.agents.AgentFactory;
@@ -49,6 +50,7 @@ public class ContainerManagerTest extends Assert {
 		config = new SwordConfigurationImpl();
 		config.setBasePath("http://localhost");
 		config.setSwordPath("http://localhost/sword");
+		config.setAdminDepositor("admin");
 	}
 	
 	
@@ -98,22 +100,20 @@ public class ContainerManagerTest extends Assert {
 		
 		AuthCredentials auth = new AuthCredentials("testuser", "", null);
 		
-		DepositReceipt receipt = containerManager.getEntry(editIRI, null, auth, config);
-		
-		assertNotNull(receipt);
-		
 		// Check to make sure that not finding the user's onyen is not the end of the world
 		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(null);
+		when(objectACLs.hasPermission(any(AccessGroupSet.class), any(Permission.class))).thenReturn(true);
 		try {
-			receipt = containerManager.getEntry(editIRI, null, auth, config);
+			DepositReceipt receipt = containerManager.getEntry(editIRI, null, auth, config);
+			assertNotNull(receipt);
 		} catch (SwordAuthException e){
 			fail();
 		}
 		
 		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(new PersonAgent("testuser", "testuser"));
-		when(objectACLs.hasPermission(any(String[].class), any(Permission.class))).thenReturn(false);
+		when(objectACLs.hasPermission(any(AccessGroupSet.class), any(Permission.class))).thenReturn(false);
 		try {
-			receipt = containerManager.getEntry(editIRI, null, auth, config);
+			containerManager.getEntry(editIRI, null, auth, config);
 			fail();
 		} catch (SwordAuthException e){
 			//pass

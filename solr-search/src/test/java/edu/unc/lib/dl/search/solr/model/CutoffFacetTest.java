@@ -94,7 +94,7 @@ public class CutoffFacetTest extends Assert {
 	
 	@Test
 	public void constructWithCutoff() {
-		CutoffFacet facet = new CutoffFacet("ANCESTOR_PATH", "3,uuid:test|5");
+		CutoffFacet facet = new CutoffFacet("ANCESTOR_PATH", "3,uuid:test!5");
 		
 		assertEquals("ANCESTOR_PATH", facet.getFieldName());
 		assertEquals("uuid:test", facet.getSearchKey());
