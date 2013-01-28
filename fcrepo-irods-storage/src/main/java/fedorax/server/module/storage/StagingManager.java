@@ -102,7 +102,7 @@ public class StagingManager implements StagingManagerMBean {
 		return result;
 	}
 
-	public void setStageToFileMap(Map<String, String> stageToFileMap) {
+	public void setReplacementUrlPatterns(Map<String, String> stageToFileMap) {
 		this.urlPatternMap.clear();
 		this.safeCanonicalFilePaths.clear();
 		for(Entry<String, String> e: stageToFileMap.entrySet()) {
