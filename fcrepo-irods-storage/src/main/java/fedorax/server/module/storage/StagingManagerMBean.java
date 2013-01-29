@@ -22,11 +22,11 @@ import java.util.Map;
  *
  */
 public interface StagingManagerMBean {
-	public Map<String, String> getStageToFileMap();
+	public Map<String, String> getURLPatternMap();
 
-	public void addStage(String stageBase, String fileBase);
+	public void addURLPattern(String regex, String replacement);
 
-	public void removeStage(String stageBase);
+	public void removeURLPattern(String regex);
 
-	public void dumpMappingsToLog();
+	public void dumpPatternsToLog();
 }

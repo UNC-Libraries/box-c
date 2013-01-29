@@ -268,6 +268,10 @@ public class AccessControlUtils {
 		LOG.debug("getRolesForGroups: " + pid + " " + groups);
 
 		try {
+			if(groups.contains(this.getAdminGroup())) {
+				result.add(UserRole.administrator.getURI().toString());
+			}
+			
 			Map<String, Set<String>> roles2Groups = groupRolesFactory
 					.getAllRolesAndGroups(pid);
 			if (roles2Groups != null) {

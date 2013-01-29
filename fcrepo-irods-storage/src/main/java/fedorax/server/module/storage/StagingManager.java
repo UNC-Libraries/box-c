@@ -17,105 +17,130 @@ package fedorax.server.module.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.fcrepo.server.errors.authorization.AuthzDeniedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * This class resolves URIs to staged file locations accessible to the Fedora
+ * server. In addition it performs path security checks on any file protocol
+ * URLs. (The absolute path to a resolved file must match a file staging
+ * location.)
+ * 
  * @author Gregory Jansen
- *
+ * 
  */
 public class StagingManager implements StagingManagerMBean {
 
-	private static final Logger LOG = LoggerFactory.getLogger(StagingManager.class);
+	private static final Logger LOG = LoggerFactory
+			.getLogger(StagingManager.class);
 
-	private static StagingManager _instance = null;
-
-	private Map<String, String> stageToFileMap = new HashMap<String, String>();
-
-	public static StagingManager instance() {
-		if(_instance == null) {
-			_instance = new StagingManager();
-		}
-		return _instance;
-	}
+	private Map<Pattern, String> urlPatternMap = new HashMap<Pattern, String>();
+	private Set<String> safeCanonicalFilePaths = new HashSet<String>();
 
 	private StagingManager() {
-		// load mappings if any on disk
 	}
 
 	/**
 	 * @param url
 	 * @return
 	 */
-	public boolean isStagedLocation(String url) {
-		if(url == null || url.trim().length() == 0) {
-			return false;
-		}
-		for(String stage : this.stageToFileMap.keySet()) {
-			if(url.startsWith(stage)) return true;
-		}
-		return false;
-	}
-
-	/**
-	 * @param url
-	 * @return
-	 */
-	public String rewriteStagedLocation(String url) {
+	public String resolveStageLocation(String url) throws AuthzDeniedException {
 		if(url == null || url.trim().length() == 0) {
 			return url;
 		}
-		for(String stage : this.stageToFileMap.keySet()) {
-			if(url.startsWith(stage)) {
-				// rewrite
-				return url.replaceFirst(stage, this.stageToFileMap.get(stage));
+		for(Pattern p : this.urlPatternMap.keySet()) {
+			Matcher matcher = p.matcher(url);
+			if(matcher.matches()) {
+				url = matcher.replaceFirst(this.urlPatternMap.get(p));
+				if(url.startsWith("file:")) {
+					if(!isSafeFilePath(url)) {
+						throw new AuthzDeniedException(
+								"Canonical staged path is not within a safe staging area: "
+										+ url);
+					}
+				}
 			}
 		}
 		return url;
 	}
 
-	public boolean isFileInStagedLocation(File f) {
+	private boolean isSafeFilePath(String url) {
 		try {
-			f = f.getCanonicalFile();
-		} catch (IOException e) {
-			return false;
-		}
-		String fileURI = f.toURI().toString();
-		for(String stageURL : this.stageToFileMap.values()) {
-			if(fileURI.startsWith(stageURL)) {
-				return true;
+			URL fileUrl = new URL(url);
+			File f = new File(fileUrl.toURI()).getCanonicalFile();
+			try {
+				f = f.getCanonicalFile();
+			} catch (IOException e) {
+				return false;
 			}
+			String fileURI = f.toURI().toString();
+			for (String safeCanonicalPath : this.safeCanonicalFilePaths) {
+				if (fileURI.startsWith(safeCanonicalPath)) {
+					return true;
+				}
+			}
+		} catch (Exception e) {
 		}
 		return false;
 	}
 
-	public Map<String, String> getStageToFileMap() {
-		return stageToFileMap;
+	public Map<String, String> getURLPatternMap() {
+		Map<String, String> result = new HashMap<String, String>();
+		for(Entry<Pattern, String> e : this.urlPatternMap.entrySet()) {
+			result.put(e.getKey().pattern(), e.getValue());
+		}
+		return result;
 	}
 
-	public void setStageToFileMap(Map<String, String> stageToFileMap) {
-		this.stageToFileMap = stageToFileMap;
-		dumpMappingsToLog();
+	public void setReplacementUrlPatterns(Map<String, String> stageToFileMap) {
+		this.urlPatternMap.clear();
+		this.safeCanonicalFilePaths.clear();
+		for(Entry<String, String> e: stageToFileMap.entrySet()) {
+			this.addURLPattern(e.getKey(), e.getValue());
+		}
+		dumpPatternsToLog();
 	}
 
-	public void addStage(String stageBase, String fileBase) {
-		this.stageToFileMap.put(stageBase, fileBase);
-		dumpMappingsToLog();
+	public void addURLPattern(String matchRegex, String replacement) {
+		LOG.info("Adding staging location regex: " + matchRegex + " => "
+				+ replacement);
+		this.urlPatternMap.put(Pattern.compile(matchRegex), replacement);
+		if(replacement.startsWith("file:")) {
+			// replacement strings using file: protocol must start with safe canonical file paths
+			// e.g. file:/mnt/sfc/$1 starts with file:/mnt/sfc/
+			//      so any staged locations that are canonical under there are safe
+			this.safeCanonicalFilePaths.add(replacement.substring(0, replacement.indexOf('$')));
+		}
 	}
 
-	public void removeStage(String stageBase) {
-		this.stageToFileMap.remove(stageBase);
-		dumpMappingsToLog();
+	public void removeURLPattern(String regex) {
+		for(Pattern p : this.urlPatternMap.keySet()) {
+			if(regex.equals(p.pattern())) {
+				this.urlPatternMap.remove(p);
+			}
+		}
+		dumpPatternsToLog();
+	}
+	
+	public void clearURLPatterns() {
+		this.urlPatternMap.clear();
+		this.safeCanonicalFilePaths.clear();
 	}
 
-	public void dumpMappingsToLog() {
+	public void dumpPatternsToLog() {
 		StringBuilder prn = new StringBuilder();
 		prn.append("StagingManager mappings:\n");
-		for(Entry<String, String> e : this.stageToFileMap.entrySet()) {
+		for (Entry<Pattern, String> e : this.urlPatternMap.entrySet()) {
 			prn.append(e.getKey()).append(" => ").append(e.getValue());
 		}
 		System.out.println(prn.toString());
