@@ -43,6 +43,7 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
@@ -316,48 +317,6 @@ public class SolrSearchService {
 		if (facetField.getValueCount() == 0)
 			return null;
 		return facetFieldFactory.createFacetFieldObject(facet.getFieldName(), queryResponse.getFacetField(solrFieldName));
-	}
-
-	/**
-	 * Checks if an item is accessible given the specified access restrictions
-	 * 
-	 * @param idRequest
-	 * @param accessType
-	 * @return
-	 */
-	public boolean isAccessible(SimpleIdRequest idRequest, String accessType) {
-		QueryResponse queryResponse = null;
-		SolrQuery solrQuery = new SolrQuery();
-		StringBuilder query = new StringBuilder();
-		query.append(solrSettings.getFieldName(SearchFieldKeys.ID.name())).append(':')
-				.append(SolrSettings.sanitize(idRequest.getId()));
-
-		try {
-			// Add access restrictions to query
-			addAccessRestrictions(query, idRequest.getAccessGroups());
-			/*
-			 * if (accessType != null) { addAccessRestrictions(query, idRequest.getAccessGroups(), accessType); }
-			 */
-		} catch (AccessRestrictionException e) {
-			// If the user doesn't have any access groups, they don't have access to anything, return null.
-			LOG.error(e.getMessage());
-			return false;
-		}
-
-		solrQuery.setQuery(query.toString());
-		solrQuery.setRows(0);
-
-		solrQuery.addField(solrSettings.getFieldName(SearchFieldKeys.ID.name()));
-
-		LOG.debug("getObjectById query: " + solrQuery.toString());
-		try {
-			queryResponse = server.query(solrQuery);
-		} catch (SolrServerException e) {
-			LOG.error("Error retrieving Solr object request: " + e);
-			return false;
-		}
-
-		return queryResponse.getResults().getNumFound() > 0;
 	}
 
 	/**

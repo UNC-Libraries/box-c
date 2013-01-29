@@ -16,17 +16,17 @@ function djatokalayersViewer(img_url, viewer_id, context) {
 
 	// set some variables
 	
-	OpenLayers.Layer.OpenURL.djatokaURL = context + '/jp2Region';
+	OpenLayers.Layer.OpenURL.djatokaURL = context + '/jp2Region/' + img_url.replace(':', '/') + '/IMAGE_JP2000';
 	var viewer = $('#' + viewer_id);
 	OpenLayers.Layer.OpenURL.viewerWidth = viewer.width(); // Get width from map_div
 	OpenLayers.Layer.OpenURL.viewerHeight = viewer.height(); // Get height from map_div
-	var metadataUrl = "jp2Metadata?id=" + img_url + "&ds=IMAGE_JP2000";
+	var metadataUrl = 'jp2Metadata/' + img_url.replace(':', '/') + '/IMAGE_JP2000';
 	
 	// define the layer (content, filetypes, etc)
 	var OUlayer = new OpenLayers.Layer.OpenURL("OpenURL", "", {
 			layername: 'basic',
 			format:'image/jpeg',
-			rft_id: "ignore&id=" + img_url + "&ds=IMAGE_JP2000",
+			rft_id: "ignore",
 			height: 200,
 			width: 200,
 			metadataUrl: metadataUrl

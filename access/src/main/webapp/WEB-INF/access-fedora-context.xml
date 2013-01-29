@@ -78,6 +78,14 @@
 		<property name="accessClient" ref="accessClient" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
+	
+	<bean id="accessControlService" class="edu.unc.lib.dl.fedora.FedoraAccessControlService"
+		init-method="init">
+		<property name="aclEndpointUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}/addons/fesl/" />
+		<property name="username" value="${fedora.appUser.username}" />
+		<property name="password" value="${fedora.appUser.password}" />
+	</bean>
 
 	<bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
 		<property name="fedoraPath"
@@ -87,8 +95,13 @@
 		<property name="djatokaPath" value="${djatoka.base.url}" />
 		<property name="externalContentPath" value="${external.base.url}" />
 	</bean>
+	
 	<bean id="djatokaContentService" class="edu.unc.lib.dl.ui.service.DjatokaContentService">
 		<property name="applicationPathSettings" ref="applicationPathSettings" />
+	</bean>
+	
+	<bean id="djatokaUserAccessUtil" class="edu.unc.lib.dl.ui.util.UserAccessUtil">
+		<property name="accessControlService" ref="accessControlService" />
 	</bean>
 
 	<bean id="collectionsPid"
