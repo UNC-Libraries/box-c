@@ -25,16 +25,29 @@ public class CaseInsensitiveFacet extends GenericFacet {
 	 */
 	public CaseInsensitiveFacet(String fieldName, FacetField.Count countObject){
 		super(fieldName, countObject);
-		this.searchName = this.fieldName + SEARCH_FIELD_SUFFIX; 
+		this.setFieldName(fieldName);
+		 
 		if (countObject != null && countObject.getName() != null)
 			this.value = countObject.getName().toLowerCase();
 	}
 	
 	public CaseInsensitiveFacet(String fieldName, String facetValue){
 		super(fieldName, facetValue);
-		this.searchName = this.fieldName + SEARCH_FIELD_SUFFIX;
+		this.setFieldName(fieldName);
 		if (facetValue != null)
 			this.value = facetValue.toLowerCase();
+	}
+	
+	@Override
+	public void setFieldName(String fieldName) {
+		int index = fieldName.indexOf(SEARCH_FIELD_SUFFIX);
+		if (index != -1) {
+			this.searchName = fieldName;
+			this.fieldName = fieldName.substring(0, index);
+		} else {
+			this.fieldName = fieldName;
+			this.searchName = fieldName + SEARCH_FIELD_SUFFIX;
+		}
 	}
 
 	public String getSearchName() {

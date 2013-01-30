@@ -531,7 +531,9 @@ public class SolrSearchService {
 		if (isRetrieveFacetsRequest && searchState.getFacetsToRetrieve() != null) {
 			// Add facet fields
 			for (String facetName : searchState.getFacetsToRetrieve()) {
-				solrQuery.addFacetField(solrSettings.getFieldName(facetName));
+				String facetField = solrSettings.getFieldName(facetName);
+				if (facetField != null)
+					solrQuery.addFacetField(solrSettings.getFieldName(facetName));
 			}
 		}
 

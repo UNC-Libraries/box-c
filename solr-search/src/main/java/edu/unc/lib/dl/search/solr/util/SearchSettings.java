@@ -382,7 +382,7 @@ public class SearchSettings extends AbstractSettings {
 	}
 
 	public boolean isResourceTypeContainer(String resourceType) {
-		return (resourceTypeCollection.equals(resourceType) || resourceTypeFolder.equals(resourceType));
+		return (resourceTypeCollection.equals(resourceType) || resourceTypeFolder.equals(resourceType) || resourceTypeAggregate.equals(resourceType));
 	}
 
 	public HashSet<String> getResourceTypes() {
