@@ -141,9 +141,8 @@ public class StagingManager implements StagingManagerMBean {
 		StringBuilder prn = new StringBuilder();
 		prn.append("StagingManager mappings:\n");
 		for (Entry<Pattern, String> e : this.urlPatternMap.entrySet()) {
-			prn.append(e.getKey()).append(" => ").append(e.getValue());
+			prn.append('\t').append(e.getKey()).append(" => ").append(e.getValue()).append('\n');
 		}
-		System.out.println(prn.toString());
 		LOG.info(prn.toString());
 	}
 
