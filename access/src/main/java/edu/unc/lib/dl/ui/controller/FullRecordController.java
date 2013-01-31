@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
@@ -78,6 +79,8 @@ public class FullRecordController extends AbstractSolrSearchController {
 				if (foxmlView != null) {
 					fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
 				}
+			} catch(AuthorizationException e) {
+				// TODO Go to the list only record page
 			} catch (Exception e) {
 				LOG.error("Failed to render full record view for " + idRequest.getId(), e);
 			}
@@ -95,7 +98,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 				searchSettings.resourceTypeCollection)
 				|| briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)
 				|| briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
-		boolean retrieveHierarchicalItems = briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
 
 		if (retrieveChildrenCount) {
 			briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));

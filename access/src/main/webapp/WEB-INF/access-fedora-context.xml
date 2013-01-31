@@ -77,6 +77,7 @@
 	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
 		<property name="accessClient" ref="accessClient" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="fedoraUtil" ref="fedoraUtil" />
 	</bean>
 	
 	<bean id="accessControlService" class="edu.unc.lib.dl.fedora.FedoraAccessControlService"
@@ -102,6 +103,7 @@
 	
 	<bean id="djatokaUserAccessUtil" class="edu.unc.lib.dl.ui.util.UserAccessUtil">
 		<property name="accessControlService" ref="accessControlService" />
+		<property name="solrQueryLayer" ref="queryLayer" />
 	</bean>
 
 	<bean id="collectionsPid"

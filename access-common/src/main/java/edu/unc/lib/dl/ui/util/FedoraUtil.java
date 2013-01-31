@@ -57,9 +57,8 @@ public class FedoraUtil {
 		
 		StringBuilder url = new StringBuilder();
 		
-		if (metadata.getContentTypeFacet() != null && metadata.getContentTypeFacet().size() > 0) {
-			String fileExtension = metadata.getContentTypeFacet().get(0).getDisplayValue();
-			int extensionIndex = Arrays.binarySearch(new String[]{"doc", "docx", "htm", "html", "pdf", "ppt", "pptx", "rtf", "txt", "xls", "xlsx", "xml"}, fileExtension);
+		if (preferredDS.getExtension() != null) {
+			int extensionIndex = Arrays.binarySearch(new String[]{"doc", "docx", "htm", "html", "pdf", "ppt", "pptx", "rtf", "txt", "xls", "xlsx", "xml"}, preferredDS.getExtension());
 			if (extensionIndex >= 0)
 				url.append("indexable");
 		}

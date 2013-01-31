@@ -18,6 +18,7 @@ package edu.unc.lib.dl.ui.controller;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,11 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 		if (datastream == null) {
 			datastream = ContentModelHelper.Datastream.IMAGE_JP2000.toString();
 		}
+		
+		id = id + "/" + datastream;
 
+		LOG.debug("Checking if user " + GroupsThreadStore.getUsername() + " with groups " + GroupsThreadStore.getGroups() + " has access to " + id);
+		// TODO check publication status in Solr
 		return userAccessUtil.hasAccess(id, GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups());
 	}
 
@@ -86,6 +91,9 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 			} catch (IOException e) {
 				LOG.error("Error retrieving JP2 metadata content for " + id, e);
 			}
+		} else {
+			LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
+			response.setStatus(HttpStatus.SC_FORBIDDEN);
 		}
 	}
 
@@ -110,6 +118,9 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 			} catch (IOException e) {
 				LOG.error("Error retrieving streaming JP2 content for " + id, e);
 			}
+		} else {
+			LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
+			response.setStatus(HttpStatus.SC_FORBIDDEN);
 		}
 	}
 

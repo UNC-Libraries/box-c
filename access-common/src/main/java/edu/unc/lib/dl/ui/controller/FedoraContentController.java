@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -95,25 +96,15 @@ public class FedoraContentController extends AbstractSolrSearchController {
 		try {
 			String fileExtension = null;
 
-			edu.unc.lib.dl.search.solr.model.Datastream datastreamResult = briefObject.getDatastream(datastream);
+			edu.unc.lib.dl.search.solr.model.Datastream datastreamResult = briefObject.getDatastreamObject(datastream);
 			if (datastreamResult != null) {
 				fileExtension = datastreamResult.getExtension();
 				response.setContentLength(datastreamResult.getFilesize().intValue());
 			}
 
-			// TODO get the extension, mimetype, filesize and slug from
-			/*
-			 * if (briefObject.getContentType() != null){ fileExtension = briefObject.getContentType().getSearchKey(); } if
-			 * (briefObject.getFilesize() != null){ try {
-			 * response.setContentLength(Integer.parseInt(briefObject.getFilesize())); } catch (NumberFormatException e){
-			 * LOG.warn("Non-numerical content length for " + id + " value " + briefObject.getFilesize(), e); } }
-			 */
-
 			fedoraContentService.streamData(id, datastream, response.getOutputStream(), response,
 					fileExtension, download);
-			// fedoraContentService.streamData(id, datastream, response.getOutputStream(), response, fileExtension,
-			// download);
-		} catch (AccessRestrictionException e) {
+		} catch (AuthorizationException e) {
 			throw new InvalidRecordRequestException(e);
 		} catch (Exception e) {
 			LOG.error("Failed to retrieve content for " + id + " datastream: " + datastream, e);

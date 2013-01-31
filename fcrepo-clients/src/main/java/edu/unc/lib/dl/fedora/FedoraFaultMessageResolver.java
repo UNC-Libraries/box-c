@@ -33,6 +33,8 @@ public class FedoraFaultMessageResolver {
 				throw new ObjectExistsException(e);
 			} else if (r.contains("LowlevelStorageException")) {
 				throw new FileSystemException(e);
+			} else if (r.contains("org.fcrepo.server.security.xacml.pep.AuthzDeniedException")) {
+				throw new AuthorizationException(e);
 			} else {
 				throw new FedoraException(e);
 			}
@@ -40,5 +42,4 @@ public class FedoraFaultMessageResolver {
 			throw new FedoraException(e);
 		}
 	}
-
 }

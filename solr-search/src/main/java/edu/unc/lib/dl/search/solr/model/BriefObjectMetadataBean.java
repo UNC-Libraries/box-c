@@ -75,6 +75,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	 * 
 	 * @return
 	 */
+	@Override
 	public CutoffFacet getPath() {
 		if (path == null) {
 			if (this.ancestorPath == null) {
@@ -88,6 +89,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		return path;
 	}
 
+	@Override
 	public List<MultivaluedHierarchicalFacet> getContentTypeFacet() {
 		return contentTypeFacet;
 	}
@@ -99,8 +101,20 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 				SearchFieldKeys.CONTENT_TYPE.name(), contentTypes);
 	}
 
+	@Override
 	public List<Datastream> getDatastreamObjects() {
 		return datastreamObjects;
+	}
+	
+	@Override
+	public Datastream getDatastreamObject(String datastreamName) {
+		if (datastreamName == null || this.datastreamObjects == null)
+			return null;
+		for (Datastream datastream: this.datastreamObjects) {
+			if (datastream.equals(datastreamName))
+				return datastream;
+		}
+		return null;
 	}
 
 	@Field
@@ -121,16 +135,6 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		for (String value : datastream) {
 			datastreamObjects.add(new Datastream(value));
 		}
-	}
-
-	public Datastream getDatastream(String datastreamName) {
-		if (datastream == null || this.datastreamObjects == null)
-			return null;
-		for (Datastream datastream : this.datastreamObjects) {
-			if (datastream.getName().equals(datastreamName))
-				return datastream;
-		}
-		return null;
 	}
 
 	@Override
@@ -154,6 +158,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		}
 	}
 
+	@Override
 	public Map<String, Collection<String>> getGroupRoleMap() {
 		return groupRoleMap;
 	}
@@ -189,12 +194,14 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		return sb.toString();
 	}
 
+	@Override
 	public CutoffFacetNode getParentCollectionObject() {
 		if (ancestorPathFacet == null || parentCollection == null)
 			return null;
 		return (CutoffFacetNode) this.ancestorPathFacet.getNode(this.parentCollection);
 	}
 
+	@Override
 	public Map<String, Long> getCountMap() {
 		return this.countMap;
 	}

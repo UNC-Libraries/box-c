@@ -85,6 +85,11 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	public List<Datastream> getDatastreamObjects() {
 		return this.representative.getDatastreamObjects();
 	}
+	
+	@Override
+	public Datastream getDatastreamObject(String datastreamName) {
+		return this.representative.getDatastreamObject(datastreamName);
+	}
 
 	@Override
 	public Map<String, Collection<String>> getGroupRoleMap() {

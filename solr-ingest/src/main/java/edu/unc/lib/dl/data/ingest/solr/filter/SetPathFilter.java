@@ -226,7 +226,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 	private String buildTier(int depth, PID pid, String label) {
 		StringBuilder ancestorTier = new StringBuilder();
-		ancestorTier.append(depth).append(',').append(pid.getPid()).append(',').append(label.replaceAll(",", "\\\\,"));
+		ancestorTier.append(depth).append(',').append(pid.getPid().replaceAll(",", "\\\\,")).append(',').append(label);
 		return ancestorTier.toString();
 	}
 

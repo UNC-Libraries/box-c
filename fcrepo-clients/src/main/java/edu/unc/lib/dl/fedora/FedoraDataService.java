@@ -34,6 +34,7 @@ import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+import org.springframework.ws.soap.client.SoapFaultClientException;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -189,6 +190,8 @@ public class FedoraDataService {
 			} catch (InterruptedException e){
 				LOG.warn("Attempt to get asynchronous results was interrupted for " + pid.getPid(), e);
 				return;
+			} catch(SoapFaultClientException e) {
+				FedoraFaultMessageResolver.resolveFault(e);
 			} catch (Exception e) {
 				if (failOnException) {
 					throw new ServiceException("Failed to get asynchronous results for " + pid.getPid(), e);

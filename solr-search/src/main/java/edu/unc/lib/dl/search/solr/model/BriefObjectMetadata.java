@@ -33,6 +33,8 @@ public interface BriefObjectMetadata {
 	public List<MultivaluedHierarchicalFacet> getContentTypeFacet();
 
 	public List<Datastream> getDatastreamObjects();
+	
+	public Datastream getDatastreamObject(String datastreamName);
 
 	public Map<String, Collection<String>> getGroupRoleMap();
 	

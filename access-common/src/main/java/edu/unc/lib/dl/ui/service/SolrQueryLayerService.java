@@ -167,8 +167,6 @@ public class SolrQueryLayerService extends SolrSearchService {
 		if (facetsToRetrieve != null)
 			searchState.setFacetsToRetrieve(facetsToRetrieve);
 		searchState.setResourceTypes(null);
-		// Rollup causes incorrect counts when faceting
-		searchState.setRollup(false);
 
 		SearchResultResponse resultResponse = getSearchResults(searchRequest);
 

@@ -102,4 +102,14 @@ public class CutoffFacetTest extends Assert {
 		assertEquals(5, facet.getCutoff().intValue());
 		assertNull(facet.getFacetCutoff());
 	}
+	
+	@Test
+	public void getEscapedDisplayValue() {
+		List<String> facetValues = Arrays.asList("1,uuid:a,A", "2,uuid:b,Child object\\,how are you?", "3,uuid:c,I am quite well\\, parent container");
+		CutoffFacet facet = new CutoffFacet(null, facetValues, 0);
+		
+		assertEquals("A", facet.getNode("uuid:a").getDisplayValue());
+		assertEquals("Child object,how are you?", facet.getNode("uuid:b").getDisplayValue());
+		assertEquals("I am quite well, parent container", facet.getNode("uuid:c").getDisplayValue());
+	}
 }

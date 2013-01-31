@@ -494,6 +494,9 @@ public class SolrSearchService {
 			solrQuery.set(GroupParams.GROUP, true);
 			solrQuery.set(GroupParams.GROUP_FIELD, solrSettings.getFieldName(SearchFieldKeys.ROLLUP_ID.name()));
 			solrQuery.set(GroupParams.GROUP_TOTAL_COUNT, true);
+			if (searchState.getFacetsToRetrieve() != null && searchState.getFacetsToRetrieve().size() > 0) {
+				solrQuery.set(GroupParams.GROUP_FACET, true);
+			}
 		}
 
 		// Add sort parameters
