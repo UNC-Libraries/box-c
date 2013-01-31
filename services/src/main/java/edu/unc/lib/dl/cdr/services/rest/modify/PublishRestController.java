@@ -26,15 +26,17 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.ws.soap.client.SoapFaultClientException;
 
+import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
@@ -46,6 +48,7 @@ public class PublishRestController {
 	private static final Logger log = LoggerFactory.getLogger(PublishRestController.class);
 
 	@Autowired(required = true)
+	@Qualifier("forwardedManagementClient")
 	private ManagementClient managementClient;
 	@Autowired(required = true)
 	private OperationsMessageSender messageSender;
@@ -73,7 +76,6 @@ public class PublishRestController {
 		log.debug("Publishing object " + pid);
 
 		try {
-			// TODO Need to forward groups for security check 
 			// Update relation
 			managementClient.setExclusiveLiteral(pid, ContentModelHelper.CDRProperty.isPublished.toString(),
 					(publish) ? "yes" : "no", null);
@@ -81,6 +83,8 @@ public class PublishRestController {
 			// Send message to trigger solr update
 			String messageId = messageSender.sendPublishOperation(username, Arrays.asList(pid), true);
 			result.put("messageId", messageId);
+		} catch (AuthorizationException e) {
+			result.put("error", "Insufficient privileges to publish object " + pid.getPid());
 		} catch (FedoraException e) {
 			log.error("Failed to update relation on " + pid, e);
 			result.put("error", e.toString());

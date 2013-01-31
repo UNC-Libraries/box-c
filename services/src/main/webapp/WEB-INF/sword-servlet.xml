@@ -118,15 +118,6 @@
 		</property>
 	</bean>
 	
-	<bean id="forwardedManagementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
-		init-method="init">
-		<property name="fedoraContextUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.appUser.username}" />
-		<property name="password" value="${fedora.appUser.password}" />
-		<property name="accessClient" ref="accessClient"/>
-	</bean>
-	
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
 		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="accessClient" ref="accessClient"/>

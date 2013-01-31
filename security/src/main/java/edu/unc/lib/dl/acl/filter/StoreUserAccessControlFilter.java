@@ -33,36 +33,39 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Filter which retrieves the users shibboleth and grouper session information in order to construct
- * their profile as needed.
+ * Filter which retrieves the users shibboleth and grouper session information in order to construct their profile as
+ * needed.
+ * 
  * @author bbpennel
- *
+ * 
  */
 public class StoreUserAccessControlFilter extends OncePerRequestFilter implements ServletContextAware {
 	private static final Logger log = LoggerFactory.getLogger(StoreUserAccessControlFilter.class);
-	
+
 	@Override
-	public void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) 
-			throws IOException, ServletException {
+	public void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException,
+			ServletException {
 		log.debug("In StoreUserAccessControlFilter");
-		//Don't check security for static files
-		if (!(req.getServletPath().startsWith("/js/") || req.getServletPath().startsWith("/css/")
-				|| req.getServletPath().startsWith("/images/"))){
+		// Don't check security for static files
+		if (!(req.getServletPath().startsWith("/js/") || req.getServletPath().startsWith("/css/") || req.getServletPath()
+				.startsWith("/images/"))) {
 			storeUserGroupData(req);
 		}
 		chain.doFilter(req, res);
 		GroupsThreadStore.clearStore();
 	}
-	
+
 	public void storeUserGroupData(HttpServletRequest request) {
 		try {
 			String userName = request.getRemoteUser();
 			if (userName == null)
 				userName = "";
+			else
+				userName = userName.trim();
 			String shibGroups = (String) request.getHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER);
 			if (shibGroups == null)
 				shibGroups = "";
-			
+
 			log.debug("User " + userName + " logged in with groups " + shibGroups);
 			AccessGroupSet accessGroups;
 			if (shibGroups.trim().length() > 0) {
@@ -71,12 +74,15 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 				accessGroups = new AccessGroupSet();
 			}
 			accessGroups.addAccessGroup(AccessGroupConstants.PUBLIC_GROUP);
-			if (userName != null && userName.trim().length() > 0)
+			if (userName.length() > 0) {
 				accessGroups.addAccessGroup(AccessGroupConstants.AUTHENTICATED_GROUP);
+				GroupsThreadStore.storeUsername(userName);
+			}
+			
 			request.setAttribute("accessGroupSet", accessGroups);
 			GroupsThreadStore.storeGroups(accessGroups);
 			if (log.isDebugEnabled())
-				log.debug("Setting cdr groups for request processing thread: "+GroupsThreadStore.getGroupString());
+				log.debug("Setting cdr groups for request processing thread: " + GroupsThreadStore.getGroupString());
 		} catch (Exception e) {
 			log.debug("Error while retrieving the users profile", e);
 		}

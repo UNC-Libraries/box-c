@@ -69,9 +69,7 @@ public class FacetFieldUtil {
 		}
 		
 		if (facet.getFacetCutoff() != null) {
-			filterQuery = new StringBuilder();
-			filterQuery.append(solrFieldName).append(':').append(facet.getFacetCutoff()).append(',').append('*');
-			solrQuery.addFacetQuery(filterQuery.toString());
+			solrQuery.setFacetPrefix(solrFieldName, facet.getFacetCutoff() + ",");
 		}
 	}
 

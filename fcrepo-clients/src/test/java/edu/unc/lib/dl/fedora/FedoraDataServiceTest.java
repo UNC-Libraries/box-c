@@ -147,14 +147,11 @@ public class FedoraDataServiceTest extends Assert {
 
 		Document objectView = dataService.getObjectViewXML(pid);
 		assertNotNull(objectView);
-		XMLOutputter outputter = new XMLOutputter();
-		System.out.println(outputter.outputString(objectView));
-		System.out.println(objectView.getRootElement().getContentSize());
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(managementClient).getObjectXML(any(PID.class));
-		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
+		verify(tripleStoreQueryService).fetchFirstBySubjectAndPredicate(any(PID.class), anyString());
 		verify(tripleStoreQueryService).fetchParentCollection(any(PID.class));
-		assertEquals(objectView.getRootElement().getContentSize(), 5);
+		assertEquals(objectView.getRootElement().getContentSize(), 4);
 	}
 
 
@@ -177,7 +174,7 @@ public class FedoraDataServiceTest extends Assert {
 		verify(managementClient).getObjectXML(any(PID.class));
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(tripleStoreQueryService).fetchParentCollection(any(PID.class));
-		assertEquals(objectView.getRootElement().getContentSize(), 4);
+		assertEquals(objectView.getRootElement().getContentSize(), 3);
 	}
 
 	@Test
@@ -221,7 +218,7 @@ public class FedoraDataServiceTest extends Assert {
 
 		Document objectView = dataService.getObjectViewXML(pid);
 
-		assertEquals(objectView.getRootElement().getContentSize(), 3);
+		assertEquals(objectView.getRootElement().getContentSize(), 2);
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(managementClient).getObjectXML(any(PID.class));
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
@@ -254,7 +251,7 @@ public class FedoraDataServiceTest extends Assert {
 			fail();
 		}
 
-		assertEquals(objectView.getRootElement().getContentSize(), 3);
+		assertEquals(objectView.getRootElement().getContentSize(), 2);
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(managementClient).getObjectXML(any(PID.class));
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));

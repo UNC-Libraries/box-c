@@ -53,6 +53,7 @@ public class GroupsThreadStore {
 	 */
 	public static void clearGroups() {
 		GroupsThreadStore.groups.remove();
+		GroupsThreadStore.groupString.remove();
 	}
 	
 	public static void storeUsername(String username) {
@@ -73,5 +74,6 @@ public class GroupsThreadStore {
 	public static void clearStore() {
 		GroupsThreadStore.groups.remove();
 		GroupsThreadStore.username.remove();
+		GroupsThreadStore.groupString.remove();
 	}
 }

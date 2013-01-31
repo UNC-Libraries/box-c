@@ -148,6 +148,7 @@ public class SearchStateFactory {
 		searchState.getResultFields().add(SearchFieldKeys.ANCESTOR_PATH.name());
 		searchState.getResultFields().add(SearchFieldKeys.ANCESTOR_NAMES.name());
 		searchState.getResultFields().add(SearchFieldKeys.RESOURCE_TYPE.name());
+		searchState.getResultFields().add(SearchFieldKeys.CONTENT_MODEL.name());
 		
 		List<String> containerTypes = new ArrayList<String>();
 		containerTypes.add(searchSettings.resourceTypeCollection);
