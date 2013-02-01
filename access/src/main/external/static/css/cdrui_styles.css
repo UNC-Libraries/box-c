@@ -776,6 +776,18 @@ ul.fpfeed_list li {
 	color: #0A5274;
 }
 
+.pipe_list li {
+	border-right: 1px solid #ECECEC;
+	display: block;
+	float: left;
+	margin-right: 5px;
+	padding-right: 7px;
+}
+
+.pipe_list li:last-child {
+  border-right: 0 none;
+}
+
 #sort_select {
 	width: 100px;
 	color: #666;

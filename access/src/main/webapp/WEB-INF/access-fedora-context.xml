@@ -67,9 +67,6 @@
 		<property name="maxThreads" value="5" />
 		<property name="threadGroupPrefix" value="Access" />
 	</bean>
-	<bean id="fullObjectMetadataFactory" class="edu.unc.lib.dl.ui.service.FullObjectMetadataFactory">
-		<property name="dataService" ref="fedoraDataService" />
-	</bean>
 	<bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
 		<property name="fedoraUrl"
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />

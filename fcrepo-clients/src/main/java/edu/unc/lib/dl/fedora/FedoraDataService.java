@@ -20,10 +20,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -34,7 +36,7 @@ import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
-import org.springframework.ws.soap.client.SoapFaultClientException;
+import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -190,13 +192,18 @@ public class FedoraDataService {
 			} catch (InterruptedException e){
 				LOG.warn("Attempt to get asynchronous results was interrupted for " + pid.getPid(), e);
 				return;
-			} catch(SoapFaultClientException e) {
-				FedoraFaultMessageResolver.resolveFault(e);
-			} catch (Exception e) {
+			} catch (ExecutionException e) {
+				if (failOnException) {
+					if (e.getCause() instanceof FedoraException)
+						throw (FedoraException) e.getCause();
+					throw new ServiceException("Failed to get asynchronous results for " + pid.getPid(), e);
+				}
+				LOG.warn("Failed to get asynchronous results for " + pid.getPid() + ", continuing.", e);
+			} catch (TimeoutException e) {
 				if (failOnException) {
 					throw new ServiceException("Failed to get asynchronous results for " + pid.getPid(), e);
 				}
-				LOG.error("Failed to get asynchronous results for " + pid.getPid() + ", continuing.", e);
+				LOG.warn("Request for asynchronous results timed out for " + pid.getPid() + ", continuing.", e);
 			}
 		}
 	}
@@ -271,7 +278,7 @@ public class FedoraDataService {
 		}
 
 		@Override
-		public Content call() {
+		public Content call() throws FedoraException {
 			try {
 				this.storeGroupsOnCurrentThread();
 				LOG.debug("HERE Get FOXML for pid " + pid.getPid());
@@ -281,10 +288,6 @@ public class FedoraDataService {
 				foxml = managementClient.getObjectXML(pid);
 
 				return foxml.getRootElement().detach();
-			} catch (FedoraException e) {
-				throw new ServiceException("Failed to retrieve FOXML for " + pid.getPid() + " due to Fedora Exception", e);
-			} catch (Exception e) {
-				throw new ServiceException("Failed to retrieve FOXML for " + pid.getPid(), e);
 			} finally {
 				this.clearGroupsOnCurrentThread();
 			}
@@ -334,7 +337,7 @@ public class FedoraDataService {
 		}
 
 		@Override
-		public Content call() {
+		public Content call() throws FedoraException, ServiceException, SAXException {
 			// add MODS
 			try {
 				this.storeGroupsOnCurrentThread();
@@ -342,8 +345,6 @@ public class FedoraDataService {
 				byte[] modsBytes = getAccessClient().getDatastreamDissemination(pid, "MD_DESCRIPTIVE", null).getStream();
 				Document mods = edu.unc.lib.dl.fedora.ClientUtils.parseXML(modsBytes);
 				return mods.getRootElement().detach();
-			} catch (Exception e) {
-				throw new ServiceException(e);
 			} finally {
 				this.clearGroupsOnCurrentThread();
 			}
@@ -364,39 +365,15 @@ public class FedoraDataService {
 
 		@Override
 		public Content call() {
-			try {
-				LOG.debug("Get parent collection for " + pid.getPid());
-				PID parentCollection = tripleStoreQueryService.fetchParentCollection(pid);
-				if (parentCollection == null)
-					return null;
-				Element parentColEl = new Element("parentCollection");
-				parentColEl.setText(parentCollection.getPid());
-				return parentColEl;
-			} catch (Exception e) {
-				throw new ServiceException(e);
-			}
+			LOG.debug("Get parent collection for " + pid.getPid());
+			PID parentCollection = tripleStoreQueryService.fetchParentCollection(pid);
+			if (parentCollection == null)
+				return null;
+			Element parentColEl = new Element("parentCollection");
+			parentColEl.setText(parentCollection.getPid());
+			return parentColEl;
 		}
 	}
-
-	// TODO this information must come from a web request to our fedora module, no local cache.
-	/**
-	 * Calculates and returns the effective permissions for the given pid, taking into account inherited permissions.
-	 * Results are added as a child of inputs named "permissions".
-	 * 
-	 */
-//	private class GetPermissions implements Callable<Content> {
-//		private PID pid;
-//
-//		public GetPermissions(PID pid) {
-//			this.pid = pid;
-//		}
-//
-//		@Override
-//		public Content call() {
-//			LOG.debug("Get access control for " + pid.getPid());
-//			return accessControlUtils.processCdrAccessControl(pid);
-//		}
-//	}
 
 	/**
 	 * Retrieves the internal sort order value for the default sort within the folder/collection containing the object

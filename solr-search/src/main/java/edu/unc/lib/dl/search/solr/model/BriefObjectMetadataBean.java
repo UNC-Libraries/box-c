@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
  * Stores a single Solr tuple representing an object from a search result. Can be populated directly by Solrj's
@@ -45,6 +46,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	Map<String, Collection<String>> groupRoleMap;
 	protected Map<String, Long> countMap;
 	protected ObjectAccessControlsBean accessControlBean;
+	protected Map<String, List<String>> relationsMap;
 
 	public BriefObjectMetadataBean() {
 		countMap = new HashMap<String, Long>(2);
@@ -110,8 +112,21 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	public Datastream getDatastreamObject(String datastreamName) {
 		if (datastreamName == null || this.datastreamObjects == null)
 			return null;
+		
+		String[] datastreamParts = datastreamName.split("/", 2);
+		String pid;
+		if (datastreamParts.length > 1) {
+			pid = datastreamParts[0];
+			if (pid.equals(this.id)) {
+				pid = null;
+			}
+			datastreamName = datastreamParts[1];
+		} else {
+			pid = null;
+		}
+		
 		for (Datastream datastream: this.datastreamObjects) {
-			if (datastream.equals(datastreamName))
+			if (datastream.equals(datastreamName) && (pid == null || pid.equals(datastream.getOwner().getPid())))
 				return datastream;
 		}
 		return null;
@@ -169,6 +184,39 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 			this.accessControlBean = new ObjectAccessControlsBean(pid, this.roleGroup);
 		}
 		return this.accessControlBean;
+	}
+	
+	@Override
+	@Field
+	public void setRelations(List<String> relations) {
+		super.setRelations(relations);
+		
+		this.relationsMap = new HashMap<String, List<String>>(this.relations.size());
+		for (String relation: this.relations) {
+			if (relation == null)
+				continue;
+			String[] rdfParts = relation.split("\\|");
+			
+			List<String> values = this.relationsMap.get(rdfParts[0]);
+			if (values == null) {
+				values = new ArrayList<String>();
+				this.relationsMap.put(rdfParts[0], values);
+			}
+			values.add(rdfParts[1]);
+		}
+	}
+	
+	@Override
+	public Datastream getDefaultWebData() {
+		if (this.relationsMap == null)
+			return null;
+		List<String> defaultWebDataValues = this.relationsMap.get(ContentModelHelper.CDRProperty.defaultWebData.getPredicate());
+		if (defaultWebDataValues == null)
+			return null;
+		String defaultWebData = defaultWebDataValues.get(0);
+		if (defaultWebData == null)
+			return null;
+		return this.getDatastreamObject(defaultWebData);
 	}
 
 	public String toString() {

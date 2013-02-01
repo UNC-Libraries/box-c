@@ -21,6 +21,10 @@ public class InvalidRecordRequestException extends RuntimeException {
 	public InvalidRecordRequestException(){
 	}
 	
+	public InvalidRecordRequestException(String message){
+		super(message);
+	}
+	
 	public InvalidRecordRequestException(Throwable cause){
 		super(cause);
 	}

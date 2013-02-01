@@ -69,6 +69,8 @@ public interface BriefObjectMetadata {
 	public Long getFilesizeTotal();
 
 	public List<String> getRelations();
+	
+	public Datastream getDefaultWebData();
 
 	public List<String> getContentModel();
 

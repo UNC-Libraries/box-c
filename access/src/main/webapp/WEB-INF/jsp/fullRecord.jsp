@@ -21,6 +21,9 @@
 
 <c:import url="WEB-INF/jsp/fullRecord/navigationBar.jsp" />
 <c:choose>
+	<c:when test="${requestScope.listAccess == true}">
+		<c:import url="WEB-INF/jsp/fullRecord/listAccessRecord.jsp" />
+	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection || briefObject.resourceType == searchSettings.resourceTypeFolder}">
 		<c:import url="WEB-INF/jsp/fullRecord/collectionRecord.jsp" />
 	</c:when>

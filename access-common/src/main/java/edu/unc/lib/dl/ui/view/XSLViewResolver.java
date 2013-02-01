@@ -18,11 +18,13 @@ package edu.unc.lib.dl.ui.view;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.transform.TransformerException;
+
 import org.jdom.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
+import edu.unc.lib.dl.ui.exception.RenderViewException;
 
 public class XSLViewResolver {
 	private static final Logger LOG = LoggerFactory.getLogger(XSLViewResolver.class);
@@ -57,15 +59,23 @@ public class XSLViewResolver {
 		}
 	}
 	
-	public String renderView(String key, Document doc, Map<String,Object> parameters) throws Exception {
+	public String renderView(String key, Document doc, Map<String,Object> parameters) throws RenderViewException {
 		if (key == null || !views.containsKey(key))
-			throw new ResourceNotFoundException();
-		return views.get(key).renderView(doc, parameters);
+			throw new RenderViewException("The view " + key + " was requested but is not bound");
+		try {
+			return views.get(key).renderView(doc, parameters);
+		} catch (TransformerException e) {
+			throw new RenderViewException("Failed to transform the document to the specified view " + key, e);
+		}
 	}
 	
-	public String renderView(String key, Document doc) throws Exception {
+	public String renderView(String key, Document doc) throws RenderViewException {
 		if (key == null || !views.containsKey(key))
-			throw new ResourceNotFoundException();
-		return views.get(key).renderView(doc);
+			throw new RenderViewException("The view " + key + " was requested but is not bound");
+		try {
+			return views.get(key).renderView(doc);
+		} catch (TransformerException e) {
+			throw new RenderViewException("Failed to transform the document to the specified view " + key, e);
+		}
 	}
 }
