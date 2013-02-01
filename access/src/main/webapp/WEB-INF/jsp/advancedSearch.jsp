@@ -59,12 +59,6 @@
 					<c:forEach items="${formatMap}" var="formatEntry">
 						<option value="${formatEntry.key}"><c:out value="${formatEntry.value}"/></option>
 					</c:forEach>
-				</select> 
-				<select name="${searchSettings.searchStateParams['ACCESS_FILTER_TYPE']}" class="advsearch_select">
-					<option value="">Access</option>
-					<c:forEach items="${accessMap}" var="accessEntry">
-						<option value="${accessEntry.key}"><c:out value="${accessEntry.value}"/></option>
-					</c:forEach>
 				</select>
 				
 				<p class="clear"><br /></p>
