@@ -96,7 +96,9 @@ public class AncestorFactory {
 				.iterator();
 		while (sweep.hasNext()) {
 			Map.Entry<PID, ParentBond> entry = sweep.next();
-			if (entry.getValue().parentPid.equals(parentPID)) {
+			if (entry.getValue() != null
+					&& entry.getValue().parentPid != null
+					&& entry.getValue().parentPid.equals(parentPID)) {
 				child2Parent.remove(entry.getKey());
 			}
 		}
