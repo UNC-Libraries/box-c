@@ -78,7 +78,7 @@
 			</c:if>
 			<form id="collectionsearch" class="clear_on_submit_without_focus" action="basicSearch" method="get">
 				<div id="csearch_inputwrap">
-					<input type="text" name="query" id="csearch_text" class="clear_on_first_focus" value="Search the collection"><input type="submit" value="Go" id="csearch_submit">
+					<input type="text" name="query" id="csearch_text" class="clear_on_first_focus" value="Search the ${fn:toLowerCase(briefObject.resourceType)}"><input type="submit" value="Go" id="csearch_submit">
 				</div>
 				<input type="hidden" name="queryType" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}"/>
 				<input type="hidden" name="${searchSettings.searchStateParams['ACTIONS']}" 

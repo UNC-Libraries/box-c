@@ -50,7 +50,6 @@ public class AdvancedSearchFormController extends AbstractSolrSearchController {
 			model.addAttribute("pageSubtitle", "Advanced Search");
 			
 			model.addAttribute("formatMap", LookupMappingsSettings.getMapping("advancedFormats"));
-			model.addAttribute("accessMap", LookupMappingsSettings.getMapping("advancedAccess"));
 			return "advancedSearch";
 		}
 		

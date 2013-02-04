@@ -35,6 +35,7 @@ import edu.unc.lib.dl.ui.service.FullObjectMetadataFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
+import edu.unc.lib.dl.util.ContentModelHelper;
 
 import org.jdom.Document;
 import org.slf4j.Logger;
@@ -91,7 +92,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 		}
 
 		boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder); 
-		boolean retrieveFacets = briefObject.getResourceType().equals(searchSettings.resourceTypeCollection) || briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
+		boolean retrieveFacets = briefObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString());
 		boolean retrieveNeighbors = briefObject.getResourceType().equals(searchSettings.resourceTypeFile)
 				|| briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
 		boolean retrieveHierarchicalStructure = briefObject.getResourceType().equals(

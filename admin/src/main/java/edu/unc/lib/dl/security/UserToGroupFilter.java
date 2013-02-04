@@ -192,6 +192,7 @@ public class UserToGroupFilter extends OncePerRequestFilter {
 								}
 							}
 							logger.debug("Did not have role for path; denying access");
+							return false;
 						} else {
 							logger.debug("User without roles; denying access");
 							return false;
