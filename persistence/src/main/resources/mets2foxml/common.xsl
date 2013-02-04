@@ -341,7 +341,7 @@
                 <xsl:for-each select="$acl/acl:grant">
                     <!-- ignore all unrecognized roles!! -->
                     <xsl:if
-                        test="(@acl:group and string-length(@acl:group) &gt; 0) and (@acl:role eq 'curator' or @acl:role eq 'patron')">
+                        test="@acl:group and string-length(@acl:group) &gt; 0">
                         <xsl:element name="{@acl:role}"
                             namespace="http://cdr.unc.edu/definitions/roles#">
                             <xsl:value-of select="@acl:group"/>
