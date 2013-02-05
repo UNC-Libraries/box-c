@@ -54,7 +54,7 @@
 						<c:when test='${field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.CutoffFacet" 
 								|| field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet"}'>
 							<c:set var="facetNodes" scope="request" value="${field.value.facetNodes}"/>
-							<c:import url="WEB-INF/jsp/common/hierarchyTrail.jsp">
+							<c:import url="common/hierarchyTrail.jsp">
 								<c:param name="fieldKey"><c:out value="${field.key}"/></c:param>
 								<c:param name="linkLast">false</c:param>
 								<c:param name="queryPath" value="${queryPath}"/>

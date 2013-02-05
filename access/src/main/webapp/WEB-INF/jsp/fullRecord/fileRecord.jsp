@@ -162,8 +162,8 @@
 				</p>
 			</div>
 		</c:if>
-		<c:import url="WEB-INF/jsp/fullRecord/metadataBody.jsp" />
-		<c:import url="WEB-INF/jsp/fullRecord/exports.jsp" />
+		<c:import url="fullRecord/metadataBody.jsp" />
+		<c:import url="fullRecord/exports.jsp" />
 	</div>
 </div>
-<c:import url="WEB-INF/jsp/fullRecord/neighborList.jsp" />
+<c:import url="fullRecord/neighborList.jsp" />

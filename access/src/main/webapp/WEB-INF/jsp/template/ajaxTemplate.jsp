@@ -23,6 +23,6 @@
 		<c:import url="${contentPage}" />
 	</c:when>
 	<c:otherwise>
-		<c:import url="WEB-INF/jsp/error/404.jsp" />
+		<c:import url="error/404.jsp" />
 	</c:otherwise>
 </c:choose>

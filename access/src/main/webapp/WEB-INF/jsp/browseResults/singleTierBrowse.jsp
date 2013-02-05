@@ -19,7 +19,7 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<c:import url="WEB-INF/jsp/browseResults/hierarchicalBrowse.jsp">
+<c:import url="browseResults/hierarchicalBrowse.jsp">
 	<c:param name="queryPath" value="search"/>
 	<c:param name="applyCutoffs" value="${empty param.applyCutoffs? 'true': param.applyCutoffs}"/>
 	<c:param name="displayCounts" value="true"/>

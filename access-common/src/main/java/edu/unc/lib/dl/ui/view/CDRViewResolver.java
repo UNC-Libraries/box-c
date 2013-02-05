@@ -32,7 +32,7 @@ public class CDRViewResolver extends InternalResourceViewResolver {
 	protected String subViewPrefix;
 	
 	protected AbstractUrlBasedView buildView(String viewName) throws Exception {
-		LOG.debug("In CDR View Resolver:" + viewName);
+		LOG.debug("In CDR View Resolver:" + viewName + " to base view: " + baseView);
 		this.getAttributesMap().put("contentPage", subViewPrefix + viewName + this.getSuffix());
 		return super.buildView(baseView);
 	}

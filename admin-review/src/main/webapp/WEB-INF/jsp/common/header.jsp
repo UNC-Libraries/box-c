@@ -35,7 +35,7 @@
 			<ul id="mainmenu">
 				<li>
 					<c:set var="homeTabClass" value=""/>
-					<c:if test="${contentPage == 'WEB-INF/jsp/frontPage.jsp'}">
+					<c:if test="${contentPage == 'frontPage.jsp'}">
 						<c:set var="homeTabClass" value="active"/>
 					</c:if>
 					<a href="${pageContext.request.contextPath}/" class="${homeTabClass}" id="home">Home</a>

@@ -22,7 +22,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-	<c:import url="WEB-INF/jsp/common/headElements.jsp" />
+	<c:import url="common/headElements.jsp" />
 	<title>
 		Carolina Digital Repository<c:if test="${not empty pageSubtitle}"> - <c:out value="${pageSubtitle}"/></c:if>
 	</title>
@@ -30,18 +30,18 @@
 <body>
 <div id="pagewrap">
 	<div id="pagewrap_inside">
-		<c:import url="WEB-INF/jsp/common/header.jsp" />
+		<c:import url="common/header.jsp" />
 		<div id="content">
 			<c:choose>
 				<c:when test="${not empty contentPage}">
 					<c:import url="${contentPage}" />
 				</c:when>
 				<c:otherwise>
-					<c:import url="WEB-INF/jsp/error/404.jsp" />
+					<c:import url="error/404.jsp" />
 				</c:otherwise>
 			</c:choose>
 		</div>
-		<c:import url="WEB-INF/jsp/common/footer.jsp"/>
+		<c:import url="common/footer.jsp"/>
 	</div>
 </div>
 </body>

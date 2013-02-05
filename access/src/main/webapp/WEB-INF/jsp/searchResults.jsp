@@ -29,7 +29,7 @@
 	<div class="results_header_hierarchy_path">
 		<c:if test="${not empty selectedContainer}">
 			<c:set var="facetNodes" scope="request" value="${selectedContainer.path.facetNodes}"/>
-			<c:import url="WEB-INF/jsp/common/hierarchyTrail.jsp">
+			<c:import url="common/hierarchyTrail.jsp">
 				<c:param name="fieldKey">ANCESTOR_PATH</c:param>
 				<c:param name="linkLast">true</c:param>
 				<c:param name="displayHome">false</c:param>
@@ -46,20 +46,20 @@
 		<c:set var="searchState" scope="request" value="${searchState}"/>
 		<c:if test="${resultType != 'collectionBrowse'}">
 			<div class="fourcol light shadowtop breadcrumbs">
-				<c:import url="WEB-INF/jsp/searchResults/breadCrumbs.jsp"></c:import>
+				<c:import url="searchResults/breadCrumbs.jsp"></c:import>
 			</div>
 		</c:if>
 		<div class="fourcol gray">
 			<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
 			<c:choose>
 				<c:when test="${resultType == 'collectionBrowse'}">
-					<c:import url="WEB-INF/jsp/common/facetList.jsp">
+					<c:import url="common/facetList.jsp">
 						<c:param name="title" value="Refine your results"/>
 						<c:param name="additionalLimitActions">${searchSettings.actions["SET_RESOURCE_TYPE"]}:${cdr:join(searchSettings.defaultResourceTypes, ",")}|${searchSettings.actions["SET_FACET_SELECT"]}:${cdr:join(searchSettings.facetNames, ",")}|${searchSettings.actions["SET_ROWS_PER_PAGE"]}:${searchSettings.defaultPerPage}</c:param>
 					</c:import>
 				</c:when>
 				<c:otherwise>
-					<c:import url="WEB-INF/jsp/common/facetList.jsp">
+					<c:import url="common/facetList.jsp">
 						<c:param name="title" value="Refine your search"/>
 					</c:import>
 				</c:otherwise>
@@ -73,7 +73,7 @@
 				<c:if test="${not empty selectedContainer}">
 					<c:set var="containerResourceType" value="${fn:toLowerCase(selectedContainer.resourceType)}" scope="page"/>
 				</c:if>
-				<c:import url="WEB-INF/jsp/common/searchBox.jsp">
+				<c:import url="common/searchBox.jsp">
 					<c:param name="title">Search</c:param>
 					<c:param name="showSearchWithin">true</c:param>
 					<c:param name="containerResourceType">${containerResourceType}</c:param>
@@ -89,28 +89,28 @@
 				<c:choose>
 					<c:when test="${resultCount > 0}">
 						<div class="bottomline paddedline">
-							<c:import var="navigationBar" url="WEB-INF/jsp/searchResults/navigationBar.jsp"/>
+							<c:import var="navigationBar" url="searchResults/navigationBar.jsp"/>
 							${navigationBar}
-							<c:import url="WEB-INF/jsp/searchResults/sortForm.jsp">
+							<c:import url="searchResults/sortForm.jsp">
 								<c:param name="currentSort">${searchState.sortType}</c:param>
 								<c:param name="currentSortOrder">${searchState.sortOrder}</c:param>
 							</c:import>
 						</div>
 						<c:if test="${not empty selectedContainer}">
 							<c:set var="metadata" value="${selectedContainer}" scope="request"/>
-							<c:import url="WEB-INF/jsp/searchResults/selectedContainerEntry.jsp">
+							<c:import url="searchResults/selectedContainerEntry.jsp">
 							</c:import>
 						</c:if>
 						<c:forEach items="${resultResponse.resultList}" var="metadataEntry" varStatus="status">
 							<c:set var="metadata" scope="request" value="${metadataEntry}"/>
 							<c:choose>
 								<c:when test="${resultType == 'searchResults'}">
-									<c:import url="WEB-INF/jsp/searchResults/searchResultEntry.jsp">
+									<c:import url="searchResults/searchResultEntry.jsp">
 										<c:param name="resultNumber" value="${status.count}"/>
 									</c:import>
 								</c:when>
 								<c:when test="${resultType == 'collectionBrowse'}">
-									<c:import url="WEB-INF/jsp/searchResults/browseResultEntry.jsp">
+									<c:import url="searchResults/browseResultEntry.jsp">
 										<c:param name="resultNumber" value="${status.count}"/>
 									</c:import>
 								</c:when>
@@ -121,7 +121,7 @@
 						</div>	
 					</c:when>
 					<c:otherwise>
-						<c:import url="WEB-INF/jsp/error/noResults.jsp"/>
+						<c:import url="error/noResults.jsp"/>
 					</c:otherwise>
 				</c:choose>
 				

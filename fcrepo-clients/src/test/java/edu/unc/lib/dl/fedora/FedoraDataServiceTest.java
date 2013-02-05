@@ -87,7 +87,7 @@ public class FedoraDataServiceTest extends Assert {
 
 	}
 
-	@Test
+	@Test(expected=FedoraException.class)
 	public void getFoxmlRetrievalException() throws FedoraException {
 		String pid = "uuid:test";
 
@@ -96,12 +96,7 @@ public class FedoraDataServiceTest extends Assert {
 		objectXML.addContent(root);
 		when(managementClient.getObjectXML(any(PID.class))).thenThrow(new FedoraException("Fail"));
 
-		try {
-			dataService.getFoxmlViewXML(pid);
-			fail();
-		} catch (ServiceException e){
-			verify(managementClient).getObjectXML(any(PID.class));
-		}
+		dataService.getFoxmlViewXML(pid);
 	}
 
 	private void setupObjectView() throws FedoraException, ServiceException {

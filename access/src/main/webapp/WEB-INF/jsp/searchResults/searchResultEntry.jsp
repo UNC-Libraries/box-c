@@ -222,7 +222,7 @@
 							<li><a href="<c:out value='${loginUrl}' />">Log in</a> or</li>
 						</c:if>
 						<li>
-							<a href="/external?page=contact&refer=request_${metadata.id}" 
+							<a href="/requestAccess/${metadata.pid.path}" 
 								title="Contact us to request access to this item">Request Access</a>
 						</li>
 						<li>${metadata.resourceType}</li>

@@ -73,7 +73,7 @@
 			<p class="smaller">
 				<c:set var="facetNodes" scope="request" value="${briefObject.path.facetNodes}"/>
 				<span class="bold">Path:&nbsp;</span>
-				<c:import url="WEB-INF/jsp/common/hierarchyTrail.jsp">
+				<c:import url="common/hierarchyTrail.jsp">
 					<c:param name="fieldKey"><c:out value="${'ANCESTOR_PATH'}"/></c:param>
 					<c:param name="linkLast"><c:choose><c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile}">false</c:when><c:otherwise>true</c:otherwise></c:choose></c:param>
 					<c:param name="limitToContainer">true</c:param>
@@ -89,7 +89,7 @@
 				</div>
 			</c:if>
 			<div class="actionlink left">
-				<a href="/external?page=contact&refer=request_${briefObject.id}">Request Access</a>
+				<a href="/requestAccess/${briefObject.pid.path}">Request Access</a>
 			</div>
 			
 			<c:if test="${briefObject['abstractText'] != null}">
@@ -112,7 +112,7 @@
 				</c:url>
 				<a href="<c:out value='${loginUrl}' />">log in</a> or
 			</c:if>
-			<a href="/external?page=contact&refer=request_${briefObject.id}">request access</a>.
+			<a href="/requestAccess/${briefObject.pid.path}">request access</a>.
 		</p>
 	</div>
 </div>

@@ -1037,32 +1037,32 @@ ul.crumblist li a {
 	display: block;
 }
 
-#contact_form label {
+.user_form label {
 	width: 140px;
 	float: left;
 	font-size: 80%;
 	font-weight: bold;
 }
 
-#contact_form .form_section {
+.user_form .form_section {
 	float: left;
 	clear: both;
 	margin-bottom: 20px;
 }
 
-#contact_form input,#contact_form textarea {
+.user_form input,.user_form textarea {
 	border: 1px solid #c8d8e0;
 	background-color: #fff;
 	padding: 4px;
 	color: #666666;
 }
 
-#contact_form input.error,#contact_form textarea.error {
+.user_form input.error,.user_form textarea.error {
 	border: 1px solid #FFAAAA;
 	background-color: #fff;
 }
 
-#contact_form strong {
+.user_form strong {
 	color: #FF3333;
 	display: block;
 	font-size: 80%;

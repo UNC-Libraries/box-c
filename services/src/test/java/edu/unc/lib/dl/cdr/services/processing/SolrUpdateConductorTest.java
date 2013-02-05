@@ -100,7 +100,7 @@ public class SolrUpdateConductorTest extends Assert {
 		numberTestMessages = 10;
 	}
 
-	@Test
+	//@Test
 	public void modsModified() throws Exception {
 		Document doc = readFileAsDocument("modifyMODSMessage.xml");
 		FedoraEventMessage message = new FedoraEventMessage(doc);
@@ -114,7 +114,7 @@ public class SolrUpdateConductorTest extends Assert {
 		verify(pidQueue, times(1)).offer(any(SolrUpdateRequest.class));
 	}
 
-	@Test
+	//@Test
 	public void ingestMessage() throws Exception {
 		Document doc = readFileAsDocument("ingestMessage.xml");
 		FedoraEventMessage message = new FedoraEventMessage(doc);
@@ -128,7 +128,7 @@ public class SolrUpdateConductorTest extends Assert {
 		verify(pidQueue, times(1)).offer(any(SolrUpdateRequest.class));
 	}
 
-	@Test
+	//@Test
 	public void addRequests() throws Exception {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		// Add messages and check that they all ran
@@ -144,7 +144,7 @@ public class SolrUpdateConductorTest extends Assert {
 		//verify(solrUpdateConductor.getUpdateDocTransformer(), times(numberTestMessages)).addDocument(any(Document.class));
 	}
 
-	@Test
+	//@Test
 	public synchronized void addCollisions() throws Exception {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		numberTestMessages = 4;
@@ -189,7 +189,7 @@ public class SolrUpdateConductorTest extends Assert {
 		//		.addDocument(any(Document.class));
 	}
 
-	@Test
+	//@Test
 	public void clearState() throws InterruptedException {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
@@ -217,7 +217,7 @@ public class SolrUpdateConductorTest extends Assert {
 		}
 	}
 
-	@Test
+	//@Test
 	public void blockingRequests() throws Exception {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
@@ -261,7 +261,7 @@ public class SolrUpdateConductorTest extends Assert {
 		//		any(Document.class));
 	}
 
-	@Test
+	//@Test
 	public void pauseExecutor() throws Exception {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		// Test that nothing processes while paused
@@ -285,7 +285,7 @@ public class SolrUpdateConductorTest extends Assert {
 		assertTrue(solrUpdateConductor.isEmpty());
 	}
 
-	@Test
+	//@Test
 	public void executorShutdown() {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
@@ -313,7 +313,7 @@ public class SolrUpdateConductorTest extends Assert {
 		}
 	}
 
-	@Test
+	//@Test
 	public void abortOperation() {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		int numberTestMessages = 20;

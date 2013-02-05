@@ -29,7 +29,7 @@
 			<ul id="mainmenu">
 				<li>
 					<c:set var="homeTabClass" value=""/>
-					<c:if test="${contentPage == 'WEB-INF/jsp/frontPage.jsp'}">
+					<c:if test="${contentPage == 'frontPage.jsp'}">
 						<c:set var="homeTabClass" value="active"/>
 					</c:if>
 					<a href="${pageContext.request.contextPath}/" class="${homeTabClass}" id="home">Home</a>
@@ -103,7 +103,7 @@
 			<c:if test="${not empty pageContext.request.remoteUser}">
 				<div id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></div>
 			</c:if>
-			<c:if test="${contentPage != 'WEB-INF/jsp/frontPage.jsp'}">
+			<c:if test="${contentPage != 'frontPage.jsp'}">
 				<form class="right clear_on_submit_without_focus" method="get" action="basicSearch" id="hsearch_form">
 					<input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}"/>
 					<div id="hsearch_inputwrap">

@@ -67,6 +67,13 @@
 		location="classpath:externalContent.properties">
 		<prop key="external.base.url">${external.base.url}</prop>
 	</util:properties>
+	
+	<bean id="messageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename" value="RequestAccessForm" />
+	</bean>
+	
+	<bean class="edu.unc.lib.dl.ui.validator.RequestAccessFormValidator"/>
 
 	<!-- Import controllers -->
 	<bean
@@ -89,8 +96,8 @@
 		</property>
 		<property name="viewClass"
 			value="org.springframework.web.servlet.view.JstlView" />
-		<property name="baseView" value="index" />
-		<property name="subViewPrefix" value="WEB-INF/jsp/" />
+		<property name="baseView" value="/WEB-INF/jsp/index" />
+		<property name="subViewPrefix" value="" />
 	</bean>
 
 	<bean class="edu.unc.lib.dl.ui.view.XSLViewResolver">

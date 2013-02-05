@@ -39,6 +39,8 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 				break;
 			}
 		}
+		if (this.representative == null && items.size() > 0)
+			this.representative = items.get(0);
 	}
 
 	public BriefObjectMetadataBean getRepresentative() {

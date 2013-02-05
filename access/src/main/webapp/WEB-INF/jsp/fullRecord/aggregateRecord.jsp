@@ -188,7 +188,7 @@
 	</c:set>
 
 	<div id="hierarchical_view_full_record" class="aggregate">
-		<c:import url="WEB-INF/jsp/browseResults/hierarchicalBrowse.jsp">
+		<c:import url="browseResults/hierarchicalBrowse.jsp">
 			<c:param name="queryPath" value="search"/>
 			<c:param name="applyCutoffs" value="true"/>
 			<c:param name="displayCounts" value="true"/>
@@ -247,8 +247,8 @@
 				</c:if>
 			</table>
 		</div>
-		<c:import url="WEB-INF/jsp/fullRecord/metadataBody.jsp" />
-		<c:import url="WEB-INF/jsp/fullRecord/exports.jsp" />
+		<c:import url="fullRecord/metadataBody.jsp" />
+		<c:import url="fullRecord/exports.jsp" />
 	</div>
 </div>
-<c:import url="WEB-INF/jsp/fullRecord/neighborList.jsp" />
+<c:import url="fullRecord/neighborList.jsp" />

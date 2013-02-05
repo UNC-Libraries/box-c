@@ -92,7 +92,7 @@ $refer = strip_tags(isset($_REQUEST['refer']) ? $_REQUEST['refer'] : '(refer mis
 	
 	<p>Please, describe any problem(s) you are having with website and/or suggestions for improvement.</p>
 	<br/>
-	<form id="contact_form" action="" method="post" accept-charset="utf-8">
+	<form class="user_form" action="" method="post" accept-charset="utf-8">
 		<div class="form_section">
 			<label for="name">Name<?php render_error($errors, 'name'); ?></label>
 			<input type="text" id="name" name="name" value="<?php echo $name; ?>"

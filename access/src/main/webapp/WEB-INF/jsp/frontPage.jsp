@@ -31,7 +31,7 @@
 </div>
 <div class="lightest">
 <div class="threecol lightest shadowtop">
-	<c:import url="WEB-INF/jsp/common/searchBox.jsp">
+	<c:import url="common/searchBox.jsp">
 		<c:param name="title">Search the Carolina Digital Repository</c:param>
 		<c:param name="showSearchWithin">false</c:param>
 		<c:param name="showBrowse">true</c:param>

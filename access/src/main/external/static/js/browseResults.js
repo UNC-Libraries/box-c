@@ -1,8 +1,7 @@
 $(function() {
-	$.preload(['expand', 'collapse', 'hier_vertical_line', 'hier_container_with_siblings', 'hier_container', 
-	           'hier_file', 'hier_folder', 'hier_collection'], {
-		base: "/static/images/",
-		extension: ".png"
+	$.preload(['expand.png', 'collapse.png', 'hier_vertical_line.png', 'hier_container_with_siblings.png', 'hier_container.png', 
+	           'hier_file.png', 'hier_folder.png', 'hier_collection.png'], {
+		base: "/static/images/"
 	});
 	
 	var actionTooltipSettings = {

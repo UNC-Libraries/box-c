@@ -226,9 +226,11 @@ public class SolrSearchService {
 					if (!item.getId().equals(item.getRollup())) {
 						BriefObjectMetadataBean representative = this.getObjectById(new SimpleIdRequest(item.getRollup(),
 								searchRequest.getAccessGroups()));
-						GroupedMetadataBean grouped = (GroupedMetadataBean) item;
-						grouped.getItems().add(representative);
-						grouped.setRepresentative(representative);
+						if (representative != null) {
+							GroupedMetadataBean grouped = (GroupedMetadataBean) item;
+							grouped.getItems().add(representative);
+							grouped.setRepresentative(representative);
+						}
 					}
 				}
 			}

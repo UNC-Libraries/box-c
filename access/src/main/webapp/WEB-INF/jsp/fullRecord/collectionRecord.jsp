@@ -100,18 +100,18 @@
 <div class="lightest">
 	<div class="fourcol lightest shadowtop">
 		<c:set var="searchStateUrl" value="${collectionSearchStateUrl}" scope="request"/>
-		<c:import url="WEB-INF/jsp/common/facetList.jsp">
+		<c:import url="common/facetList.jsp">
 			<c:param name="title" value="Contents"/>
 		</c:import>
 	</div>
 	<div class="threecol white shadowtop">
 		<div class="contentarea">
-			<c:import url="WEB-INF/jsp/fullRecord/metadataBody.jsp" />
+			<c:import url="fullRecord/metadataBody.jsp" />
 			
 			<c:if test="${hierarchicalViewResults.resultCount > 0}">
 				<div id="hierarchical_view_full_record">
 					<h2>Folder Browse View (or <a href="<c:out value="${browseUrl}" />">switch to structure browse</a>)</h2>
-					<c:import url="WEB-INF/jsp/browseResults/hierarchicalBrowse.jsp">
+					<c:import url="browseResults/hierarchicalBrowse.jsp">
 						<c:param name="displayCounts" value="true"/>
 						<c:param name="hideTypeIcon">false</c:param>
 					</c:import>
@@ -119,7 +119,7 @@
 				<br/>
 			</c:if>
 			
-			<c:import url="WEB-INF/jsp/fullRecord/exports.jsp" />
+			<c:import url="fullRecord/exports.jsp" />
 		</div>
 	</div>
 	

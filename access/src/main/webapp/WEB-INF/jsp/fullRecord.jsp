@@ -19,18 +19,18 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<c:import url="WEB-INF/jsp/fullRecord/navigationBar.jsp" />
+<c:import url="fullRecord/navigationBar.jsp" />
 <c:choose>
 	<c:when test="${requestScope.listAccess == true}">
-		<c:import url="WEB-INF/jsp/fullRecord/listAccessRecord.jsp" />
+		<c:import url="fullRecord/listAccessRecord.jsp" />
 	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection || briefObject.resourceType == searchSettings.resourceTypeFolder}">
-		<c:import url="WEB-INF/jsp/fullRecord/collectionRecord.jsp" />
+		<c:import url="fullRecord/collectionRecord.jsp" />
 	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeAggregate}">
-		<c:import url="WEB-INF/jsp/fullRecord/aggregateRecord.jsp" />
+		<c:import url="fullRecord/aggregateRecord.jsp" />
 	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile}">
-		<c:import url="WEB-INF/jsp/fullRecord/fileRecord.jsp" />
+		<c:import url="fullRecord/fileRecord.jsp" />
 	</c:when>
 </c:choose>
