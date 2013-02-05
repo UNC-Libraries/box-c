@@ -19,51 +19,62 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpSession;
 
+import org.apache.catalina.Lifecycle;
+import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.buf.MessageBytes;
+import org.apache.tomcat.util.http.MimeHeaders;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public class SpoofShibbolethHeadersValve extends ValveBase {
-	String remoteUser = null;
-	String isMemberOf = null;
 
-	/* (non-Javadoc)
-	 * @see org.apache.catalina.valves.ValveBase#invoke(org.apache.catalina.connector.Request, org.apache.catalina.connector.Response)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.catalina.valves.ValveBase#invoke(org.apache.catalina.connector
+	 * .Request, org.apache.catalina.connector.Response)
 	 */
 	@Override
-	public void invoke(Request request, Response response) throws IOException, ServletException {
-		MessageBytes memb = request.getCoyoteRequest().getMimeHeaders().addValue("isMemberOf");
-	   memb.setString(this.getIsMemberOf());
-      final String credentials = "credentials";
-      final List<String> roles = new ArrayList<String>();
-      final Principal principal = new GenericPrincipal(this.getRemoteUser(), credentials, roles);
-      request.setUserPrincipal(principal);
-	   getNext().invoke(request, response);
+	public void invoke(Request request, Response response) throws IOException,
+			ServletException {
+		HttpSession session = request.getSession(false);
+		if (session != null && session.getAttribute("spoofHeaders") != null) {
+			@SuppressWarnings("unchecked")
+			Map<String, String> spoofHeaders = (Map<String, String>)session.getAttribute("spoofHeaders");
+			MimeHeaders headers = request.getCoyoteRequest().getMimeHeaders();
+			for(Entry<String, String> ent : spoofHeaders.entrySet()) {
+				headers.removeHeader(ent.getKey());
+				MessageBytes memb = headers.addValue(ent.getKey());
+				memb.setString(ent.getValue());
+			}
+			if(spoofHeaders.containsKey("REMOTE_USER")) {
+				String remoteUser = spoofHeaders.get("REMOTE_USER");
+				final String credentials = "credentials";
+				final List<String> roles = new ArrayList<String>();
+				final Principal principal = new GenericPrincipal(
+						remoteUser, credentials, roles);
+				request.setUserPrincipal(principal);
+			}
+		}
+		getNext().invoke(request, response);
 	}
 
-	public String getRemoteUser() {
-		return remoteUser;
+	@Override
+	protected void initInternal() throws LifecycleException {
+		super.initInternal();
+		System.err.println("WARNING WARNING "+this.getClass().getName()+" is configured for "+this.getContainer().getName());
 	}
-
-	public void setRemoteUser(String remoteUser) {
-		this.remoteUser = remoteUser;
-	}
-
-	public String getIsMemberOf() {
-		return isMemberOf;
-	}
-
-	public void setIsMemberOf(String isMemberOf) {
-		this.isMemberOf = isMemberOf;
-	}
-
 }

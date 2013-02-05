@@ -18,6 +18,7 @@ package edu.unc.lib.dl.security;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -97,7 +98,13 @@ public class CacheInvalidatingInvocationHandler extends
 		}
 
 		if (!exec.isShutdown()) {
-			exec.submit(new CacheInvalidator(method, args, returnValue)).get();
+			try {
+				exec.submit(new CacheInvalidator(method, args, returnValue)).get();
+			} catch(RuntimeException e) {
+				log.error("Error while clearing FRACAS caches", e);
+			} catch(Exception e) {
+				log.error("Error while clearing FRACAS caches", e);				
+			}
 		}
 
 		return returnValue;
