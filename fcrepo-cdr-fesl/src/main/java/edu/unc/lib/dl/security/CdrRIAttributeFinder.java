@@ -44,7 +44,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 			.getLogger(CdrRIAttributeFinder.class);
 
 	
-	URI embargo = ContentModelHelper.CDRProperty.embargo.getURI();
+	URI embargoUntil = ContentModelHelper.CDRProperty.embargoUntil.getURI();
 	URI dataAccessCategory = ContentModelHelper.CDRProperty.dataAccessCategory.getURI();
 	URI userRole = ContentModelHelper.CDRProperty.userRole.getURI();
 	URI isPublished = ContentModelHelper.CDRProperty.isPublished.getURI();
@@ -260,7 +260,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 		if(userRole.equals(attribute)) {
 			Set<String> roles = accessControlUtils.getRolesForGroups(groups, new PID(pid));
 			return makeStringBagResult(roles, type);
-		} else if(embargo.equals(attribute)) {
+		} else if(embargoUntil.equals(attribute)) {
 			List<String> embargoes = getAccessControlUtils().getAllEmbargoes(new PID(pid));
 			return makeStringBagResult(embargoes, type);
 		} else if(dataAccessCategory.equals(attribute)) {
@@ -271,32 +271,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 				return makeStringBagResult(categories, type);
 			}
 		}
-
-		if (groups == null || groups.isEmpty()) {
-			return new EvaluationResult(BagAttribute.createEmptyBag(type));
-		}
-
-		Set<AttributeValue> bagValues = new HashSet<AttributeValue>();
-		log.debug("Attribute values found: " + groups.size());
-		for (String s : groups) {
-			AttributeValue attributeValue = null;
-			try {
-				attributeValue = attributeFactory.createValue(type, s);
-			} catch (Exception e) {
-				log.error("Error creating attribute: " + e.getMessage(), e);
-				continue;
-			}
-
-			bagValues.add(attributeValue);
-
-			if (log.isDebugEnabled()) {
-				log.debug("AttributeValue found: [" + type.toASCIIString()
-						+ "] " + s);
-			}
-
-		}
-		BagAttribute bag = new BagAttribute(type, bagValues);
-		return new EvaluationResult(bag);
+		return new EvaluationResult(BagAttribute.createEmptyBag(type));
 	}
 	
 	private EvaluationResult makeStringBagResult(Collection<String> values, URI type) {

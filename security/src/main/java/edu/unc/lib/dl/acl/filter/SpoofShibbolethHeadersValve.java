@@ -25,6 +25,8 @@ import java.util.Map.Entry;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
+import org.apache.catalina.Lifecycle;
+import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.realm.GenericPrincipal;
@@ -68,5 +70,11 @@ public class SpoofShibbolethHeadersValve extends ValveBase {
 			}
 		}
 		getNext().invoke(request, response);
+	}
+
+	@Override
+	protected void initInternal() throws LifecycleException {
+		super.initInternal();
+		System.err.println("WARNING WARNING "+this.getClass().getName()+" is configured for "+this.getContainer().getName());
 	}
 }
