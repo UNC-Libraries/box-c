@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -34,6 +35,7 @@ import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
 import org.apache.commons.httpclient.Header;
+import org.apache.naming.resources.DirContextURLStreamHandlerFactory;
 import org.fcrepo.common.http.HttpInputStream;
 import org.fcrepo.common.http.WebClient;
 import org.fcrepo.server.Module;
@@ -62,6 +64,8 @@ import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.util.IRODSURLStreamHandlerFactory;
+
 /**
  * @author Gregory Jansen
  * 
@@ -71,6 +75,16 @@ public class IrodsExternalContentManager extends Module implements
 	private static final Logger LOG = LoggerFactory
 			.getLogger(IrodsExternalContentManager.class);
 
+	static {
+		// Register IRODS URL Protocol Handler (see metadata project)
+		// https://issues.apache.org/bugzilla/show_bug.cgi?id=26701
+		URLStreamHandlerFactory urlHandlerFactory = new IRODSURLStreamHandlerFactory();
+		try {
+			URL.setURLStreamHandlerFactory(urlHandlerFactory);
+		} catch(Error e) {}
+		DirContextURLStreamHandlerFactory.addUserFactory(new IRODSURLStreamHandlerFactory());
+	}
+	
 	// injected properties
 	private IRODSAccount irodsAccount;
 	private StagingManager stagingManager;
