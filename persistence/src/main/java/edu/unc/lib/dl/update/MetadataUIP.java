@@ -29,7 +29,10 @@ import org.jdom.input.SAXBuilder;
 
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.ClientUtils;
+import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
@@ -85,6 +88,11 @@ public class MetadataUIP extends FedoraObjectUIP {
 				}
 			} catch (NotFoundException e){
 				//Datastream wasn't found, therefore it doesn't exist and no original should be added
+			} catch (FedoraException e) { 
+				if (e instanceof FileSystemException || e instanceof AuthorizationException)
+					throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
+							+ pid.getPid(), e);
+				// Fedora isn't correctly identifying NotFoundExceptions in 3.6.2's soap client, so identify it by process of elimination
 			} catch (Exception e) {
 				throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
 						+ pid.getPid(), e);
