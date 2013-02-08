@@ -398,15 +398,15 @@
 	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
 		init-method="init">
 		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.appUser.username}" />
-		<property name="password" value="${fedora.appUser.password}" />
+		<property name="username" value="${fedora.admin.username}" />
+		<property name="password" value="${fedora.admin.password}" />
 		<property name="accessClient" ref="accessClient"/>
 	</bean>
 	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient"
 		init-method="init">
 		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.appUser.username}" />
-		<property name="password" value="${fedora.appUser.password}" />
+		<property name="username" value="${fedora.admin.username}" />
+		<property name="password" value="${fedora.admin.password}" />
 	</bean>
 
 	<!-- a pooling based JMS provider -->
