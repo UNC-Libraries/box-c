@@ -32,6 +32,7 @@ import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
+import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -79,6 +80,9 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		try {
 			uipProcessor.process(uip);
 		} catch (UpdateException e) {
+			if (e.getCause() instanceof AuthorizationException) {
+				throw new SwordAuthException("Failed to authorize update metadata operation", e);
+			}
 			throw new SwordServerException(
 					"An exception occurred while attempting to update object " + targetPID.getPid(), e);
 		} catch (UIPException e) {

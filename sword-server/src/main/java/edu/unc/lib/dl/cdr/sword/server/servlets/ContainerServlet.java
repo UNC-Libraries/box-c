@@ -21,6 +21,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +54,7 @@ public class ContainerServlet extends BaseSwordServlet {
 			this.api.delete(req, resp);
 		} catch (Exception e) {
 			log.error("Failed to delete container " + req.getQueryString(), e);
+			resp.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -62,6 +64,7 @@ public class ContainerServlet extends BaseSwordServlet {
 			this.api.put(req, resp);
 		} catch (Exception e) {
 			log.error("Failed to update container " + req.getQueryString(), e);
+			resp.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -71,6 +74,7 @@ public class ContainerServlet extends BaseSwordServlet {
 			this.api.post(req, resp);
 		} catch (Exception e) {
 			log.error("Failed to update container " + req.getQueryString(), e);
+			resp.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -80,6 +84,7 @@ public class ContainerServlet extends BaseSwordServlet {
 			this.api.get(req, resp);
 		} catch (Exception e) {
 			log.error("Failed to get deposit receipt for " + req.getQueryString(), e);
+			resp.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
 
