@@ -76,6 +76,32 @@
 		<property name="fedoraUtil" ref="fedoraUtil" />
 	</bean>
 	
+	<bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
+		<property name="fedoraPath"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="solrPath"
+			value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
+		<property name="djatokaPath" value="${djatoka.base.url}" />
+		<property name="externalContentPath" value="${external.base.url}" />
+	</bean>
+	
+	<bean id="accessControlService" class="edu.unc.lib.dl.fedora.FedoraAccessControlService"
+		init-method="init">
+		<property name="aclEndpointUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}/addons/fesl/" />
+		<property name="username" value="${fedora.appUser.username}" />
+		<property name="password" value="${fedora.appUser.password}" />
+	</bean>
+	
+	<bean id="djatokaContentService" class="edu.unc.lib.dl.ui.service.DjatokaContentService">
+		<property name="applicationPathSettings" ref="applicationPathSettings" />
+	</bean>
+	
+	<bean id="djatokaUserAccessUtil" class="edu.unc.lib.dl.ui.util.UserAccessUtil">
+		<property name="accessControlService" ref="accessControlService" />
+		<property name="solrQueryLayer" ref="queryLayer" />
+	</bean>
+	
 	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="targetObject">
 			<ref local="tripleStoreQueryService" />
