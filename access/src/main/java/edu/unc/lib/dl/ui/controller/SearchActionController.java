@@ -114,9 +114,6 @@ public class SearchActionController extends AbstractSolrSearchController {
 		SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
 
 		if (resultResponse != null) {
-			// Get the display values for hierarchical facets from the search results.
-			// queryLayer.lookupHierarchicalDisplayValues(searchState, searchRequest.getAccessGroups());
-
 			// Retrieve the facet result set
 			SearchResultResponse resultResponseFacets = queryLayer.getFacetList(searchState,
 					searchRequest.getAccessGroups(), facetsToRetrieve, false);
