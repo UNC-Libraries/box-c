@@ -53,37 +53,43 @@ public class SpoofShibbolethHeadersValve extends ValveBase {
 	 */
 	@Override
 	public void invoke(Request request, Response response) throws IOException, ServletException {
+		
+		Cookie[] cookies = request.getCookies();
+		
+		if (cookies != null) {
 			
-		// Pull spoofed values (those beginning with the prefix defined above) in from cookies
-		
-		HashMap<String, String> values = new HashMap<String, String>();
-		
-		for (Cookie c : request.getCookies()) {
-			if (c.getName().startsWith(SPOOF_COOKIE_PREFIX)) {
-				String key = c.getName().substring(SPOOF_COOKIE_PREFIX.length());
-				String value = c.getValue();
-				values.put(key, value);
+			// Pull spoofed values (those beginning with the prefix defined above) in from cookies
+			
+			HashMap<String, String> values = new HashMap<String, String>();
+			
+			for (Cookie c : cookies) {
+				if (c.getName().startsWith(SPOOF_COOKIE_PREFIX)) {
+					String key = c.getName().substring(SPOOF_COOKIE_PREFIX.length());
+					String value = c.getValue();
+					values.put(key, value);
+				}
 			}
-		}
-		
-		// Set spoofed values on the request headers
-		
-		MimeHeaders headers = request.getCoyoteRequest().getMimeHeaders();
-		
-		for (Entry<String, String> ent : values.entrySet()) {
-			headers.removeHeader(ent.getKey());
-			MessageBytes memb = headers.addValue(ent.getKey());
-			memb.setString(ent.getValue());
-		}
-		
-		// Use the REMOTE_USER value to set a spoofed principal
-		
-		if (values.containsKey("REMOTE_USER")) {
-			String remoteUser = values.get("REMOTE_USER");
-			final String credentials = "credentials";
-			final List<String> roles = new ArrayList<String>();
-			final Principal principal = new GenericPrincipal(remoteUser, credentials, roles);
-			request.setUserPrincipal(principal);
+			
+			// Set spoofed values on the request headers
+			
+			MimeHeaders headers = request.getCoyoteRequest().getMimeHeaders();
+			
+			for (Entry<String, String> ent : values.entrySet()) {
+				headers.removeHeader(ent.getKey());
+				MessageBytes memb = headers.addValue(ent.getKey());
+				memb.setString(ent.getValue());
+			}
+			
+			// Use the REMOTE_USER value to set a spoofed principal
+			
+			if (values.containsKey("REMOTE_USER")) {
+				String remoteUser = values.get("REMOTE_USER");
+				final String credentials = "credentials";
+				final List<String> roles = new ArrayList<String>();
+				final Principal principal = new GenericPrincipal(remoteUser, credentials, roles);
+				request.setUserPrincipal(principal);
+			}
+			
 		}
 		
 		getNext().invoke(request, response);
