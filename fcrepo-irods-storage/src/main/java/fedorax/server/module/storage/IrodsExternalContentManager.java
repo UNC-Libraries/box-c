@@ -65,6 +65,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.util.IRODSURLStreamHandlerFactory;
+import fedorax.server.module.storage.lowlevel.irods.IrodsLowlevelStorageModule;
 
 /**
  * @author Gregory Jansen
@@ -77,12 +78,8 @@ public class IrodsExternalContentManager extends Module implements
 
 	static {
 		// Register IRODS URL Protocol Handler (see metadata project)
-		// https://issues.apache.org/bugzilla/show_bug.cgi?id=26701
-		URLStreamHandlerFactory urlHandlerFactory = new IRODSURLStreamHandlerFactory();
-		try {
-			URL.setURLStreamHandlerFactory(urlHandlerFactory);
-		} catch(Error e) {}
-		DirContextURLStreamHandlerFactory.addUserFactory(new IRODSURLStreamHandlerFactory());
+		// by making a static reference to the class that loads it
+		String foo = IrodsLowlevelStorageModule.REGISTRY_NAME;
 	}
 	
 	// injected properties
