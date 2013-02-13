@@ -53,27 +53,16 @@
 		<location>/exception</location>
 	</error-page>
      
-	
 	<servlet>
 		<servlet-name>uiapp</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
 	</servlet>
-
+	
 	<servlet-mapping>
         <servlet-name>default</servlet-name>
-        <url-pattern>*.css</url-pattern>
-        <url-pattern>*.html</url-pattern>
-        <url-pattern>*.htm</url-pattern>
-        <url-pattern>*.xml</url-pattern>
-        <url-pattern>*.js</url-pattern>
-        <url-pattern>*.jpg</url-pattern>
-        <url-pattern>*.png</url-pattern>
-        <url-pattern>*.gif</url-pattern>
-        <url-pattern>*.ico</url-pattern>
-        <url-pattern>*.txt</url-pattern>
-        <url-pattern>*.swf</url-pattern>
+        <url-pattern>/static/*</url-pattern>
+        <url-pattern>/robots.txt</url-pattern>
     </servlet-mapping>
-	
 	
 	<servlet-mapping>
 		<servlet-name>uiapp</servlet-name>

@@ -27,52 +27,60 @@
 			<a href="${pageContext.request.contextPath}/" id="titlelink"><img src="/static/images/carolinadigitalrepository.png"></a>
 			
 			<ul id="mainmenu">
-				<li>
-					<c:set var="homeTabClass" value=""/>
-					<c:if test="${contentPage == 'frontPage.jsp'}">
-						<c:set var="homeTabClass" value="active"/>
-					</c:if>
-					<a href="${pageContext.request.contextPath}/" class="${homeTabClass}" id="home">Home</a>
-				</li>
-				<li>
-					<c:set var="browseTabClass" value=""/>
-					<c:if test="${resultType == 'collectionBrowse' || resultType == 'departmentBrowse'}">
-						<c:set var="browseTabClass" value="active"/>
-					</c:if>
-					<c:url value="search" scope="page" var="browseCollectionUrl">
-						<c:param name="${searchSettings.searchStateParams['RESOURCE_TYPES']}" value="${cdr:join(searchSettings.defaultCollectionResourceTypes, ',')}"/>
-					</c:url>
-					<a href="<c:out value='${browseCollectionUrl}' />" id="browseall" class="${browseTabClass}">Browse</a>
-					<ul class="submenu">
-						<li><a href="<c:out value='${browseCollectionUrl}' />">Browse Collections</a></li>
-						<li><a href="browseDepartments">Browse Departments</a></li>
-					</ul>	
-				</li>
-				<li><a href="external?page=about.about" id="about">About</a>
-					<ul class="submenu">
-						<c:forEach var="aboutPage" items="${externalContentSettings.aboutPages}">
-							<c:set var="aboutTarget" scope="page">
-								<c:choose>
-									<c:when test="${not empty aboutPage.target}">target="_blank"</c:when>
-									<c:otherwise></c:otherwise>
-								</c:choose>
-							</c:set>
-							<li><a href="external?page=${aboutPage.key}" ${aboutTarget}>${aboutPage.label}</a></li>
-						</c:forEach>
-					</ul>
-				</li>
-				<c:url var="contactUrl" scope="page" value="external">
-					<c:param name="page" value="contact" />
+				<c:set var="referUrl">
 					<c:choose>
-						<c:when test="${param.page == 'contact'}">
-							<c:param name="refer" value="${param.refer}"/>
+						<c:when test="${not empty param.refer}">
+							${param.refer}
 						</c:when>
 						<c:otherwise>
-							<c:param name="refer" value="${currentAbsoluteUrl}"/>
+							${currentAbsoluteUrl}
 						</c:otherwise>
 					</c:choose>
-				</c:url>
-				<li><a href="<c:out value='${contactUrl}'/>" id="contact">Contact</a></li>
+				</c:set>
+			
+				<c:forEach items="${headerMenuSettings.menuRoot.subMenus}" var="menuEntry">
+					<li>
+						<c:set var="activeClass">
+							<c:if test="${requestScope.menuId == menuEntry.key}">
+								active
+							</c:if>
+						</c:set>
+						<c:set var="menuTarget">
+							<c:choose>
+								<c:when test="${not empty menuEntry.value.target}">target="${menuEntry.value.target}"</c:when>
+								<c:otherwise></c:otherwise>
+							</c:choose>
+						</c:set>
+						<c:if test="${not empty menuEntry.value.url}">
+							<c:url var="menuUrl" value="${menuEntry.value.url}">
+								<c:if test="${menuEntry.value.includeReferer}">
+									<c:param name="refer" value="${referUrl}"/>
+								</c:if>
+							</c:url>
+							<a href="<c:out value='${menuUrl}' />" class="${activeClass}" ${menuTarget}>${menuEntry.value.label}</a>
+						</c:if>
+						<c:if test="${not empty menuEntry.value.subMenus}">
+							<ul class="submenu">
+								<c:forEach items="${menuEntry.value.subMenus}" var="subEntry">
+									<li>
+										<c:set var="menuTarget">
+											<c:choose>
+												<c:when test="${not empty subEntry.value.target}">target="${subEntry.value.target}"</c:when>
+												<c:otherwise></c:otherwise>
+											</c:choose>
+										</c:set>
+										<c:url var="menuUrl" value="${subEntry.value.url}">
+											<c:if test="${subEntry.value.includeReferer}">
+												<c:param name="refer" value="${referUrl}"/>
+											</c:if>
+										</c:url>
+										<a href="<c:out value='${menuUrl}' />" ${menuTarget}>${subEntry.value.label}</a>
+									</li>
+								</c:forEach>
+							</ul>
+						</c:if>
+					</li>
+				</c:forEach>
 			</ul>
 			<ul class="secondarymenu">
 				<c:if test="${cdr:contains(requestScope.accessGroupSet, accessGroupConstants.ADMIN_GROUP)}">

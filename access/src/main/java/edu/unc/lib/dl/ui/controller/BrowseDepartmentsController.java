@@ -38,6 +38,7 @@ public class BrowseDepartmentsController extends AbstractSolrSearchController {
 		if (deptField != null)
 			model.addAttribute("departmentFacets", deptField);
 		model.addAttribute("resultType", "departmentBrowse");
+		model.addAttribute("menuId", "browse");
 		return "browseDepartments";
 	}
 }

@@ -152,6 +152,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 
 		// Determine if this is a collection browse or search results page and inform the view.
 		if (isCollectionBrowseRequest) {
+			model.addAttribute("menuId", "browse");
 			model.addAttribute("resultType", "collectionBrowse");
 			model.addAttribute("pageSubtitle", "Browse Collections");
 		} else {

@@ -63,6 +63,7 @@ public class FrontPageController extends AbstractSolrSearchController {
 			
 		}
 		
+		model.addAttribute("menuId", "home");
 		
 		return "frontPage";
 	}

@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
+import edu.unc.lib.dl.ui.util.HeaderMenuSettings;
 import edu.unc.lib.dl.ui.util.LookupMappingsSettings;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 
@@ -42,6 +43,9 @@ public class RefreshMappingsController extends CDRBaseController {
 	
 	@Autowired(required=true)
 	private XSLViewResolver xslViewResolver;
+	
+	@Autowired
+	private HeaderMenuSettings headerMenuSettings;
 	
 	@RequestMapping(method = RequestMethod.GET)
 	public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -63,6 +67,17 @@ public class RefreshMappingsController extends CDRBaseController {
 			response.getWriter().append("Failed to refresh transform mappings, check logs.");
 			LOG.error("Failed to refresh transform mappings", e);
 		}
+		
+		headerMenuSettings.init();
+		
 		response.getWriter().append("Mappings refresh was successful.");
+	}
+
+	public void setXslViewResolver(XSLViewResolver xslViewResolver) {
+		this.xslViewResolver = xslViewResolver;
+	}
+
+	public void setHeaderMenuSettings(HeaderMenuSettings headerMenuSettings) {
+		this.headerMenuSettings = headerMenuSettings;
 	}
 }
