@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 public class ExternalContentSettings {
 	private static final Logger LOG = LoggerFactory.getLogger(ExternalContentSettings.class);
 	public static Properties properties;
-	public static List<AboutPage> aboutPages;
 	
 	public ExternalContentSettings(){
 		
@@ -98,53 +97,5 @@ public class ExternalContentSettings {
 			}
 			LOG.debug(property.getKey() + ": " + property.getValue());
 		}
-		String aboutDisplayOrder = properties.getProperty("external.about.displayOrder");
-		String[] aboutDisplayOrderArray = aboutDisplayOrder.split(",");
-		aboutPages = new ArrayList<AboutPage>();
-		for (String aboutKey: aboutDisplayOrderArray){
-			AboutPage aboutPage = new AboutPage();
-			aboutPage.setKey(aboutKey);
-			aboutPage.setLabel(ExternalContentSettings.properties.getProperty("external." + aboutKey + ".label", ""));
-			aboutPage.setUrl(ExternalContentSettings.properties.getProperty("external." + aboutKey + ".url", ""));
-			aboutPage.setTarget(ExternalContentSettings.properties.getProperty("external." + aboutKey + ".target", ""));
-			aboutPages.add(aboutPage);
-		}
-		
-	}
-	
-	public List<AboutPage> getAboutPages(){
-		return ExternalContentSettings.aboutPages;
-	}
-	
-	public static class AboutPage {
-		private String url;
-		private String label;
-		private String key;
-		private String target;
-		public String getTarget() {
-			return target;
-		}
-		public void setTarget(String target) {
-			this.target = target;
-		}
-		public String getKey() {
-			return key;
-		}
-		public void setKey(String key) {
-			this.key = key;
-		}
-		public String getUrl() {
-			return url;
-		}
-		public void setUrl(String url) {
-			this.url = url;
-		}
-		public String getLabel() {
-			return label;
-		}
-		public void setLabel(String label) {
-			this.label = label;
-		}
-		
 	}
 }

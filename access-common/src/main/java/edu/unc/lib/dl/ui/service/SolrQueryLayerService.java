@@ -158,6 +158,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 		if (!applyCutoffs) {
 			ancestorPath.setCutoff(null);
 		}
+		
+		// Turning off rollup because it is really slow
+		searchState.setRollup(false);
 
 		SearchRequest searchRequest = new SearchRequest();
 		searchRequest.setAccessGroups(accessGroups);

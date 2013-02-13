@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.util;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
