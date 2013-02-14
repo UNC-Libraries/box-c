@@ -125,10 +125,11 @@ body {
 	text-align: center;
 	overflow: hidden;
 	word-wrap: break-word;
+	border: 1px solid transparent;
 }
 
 .relateditem.current_item,.relateditem:hover {
-	border: 1px solid #ddd;
+	border-color: #ddd;
 	background-color: #eee;
 }
 
