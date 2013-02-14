@@ -42,13 +42,6 @@
 			</c:when>
 			<c:otherwise>
 				<form:form commandName="requestAccessForm" class="user_form">
-					<c:if test="${not empty metadata && not empty metadata.parentCollection}">
-						<c:url var="parentUrl" scope="page" value="/search">
-							<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" 
-									value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.parentCollectionObject.limitToValue}"/>
-						</c:url>
-						<p>From collection: <a href="${parentUrl}">${metadata.parentCollectionObject.displayValue }</a></p>
-					</c:if>
 					<p>Thank you for your interest in the Carolina Digital Repository.  
 					Please note that requesting access does not guarantee that access will be granted, since it is for the original content owners to decide on access to their materials.</p>
 					
