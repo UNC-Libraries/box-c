@@ -177,7 +177,7 @@ public class UpdateNodeRequestTest extends Assert {
 				parent = node;
 			}
 			// Start next path from first child
-			startParent = startParent.getChildren().get(0);
+			startParent = startParent.getChildren().get(0).get();
 		}
 		
 		assertEquals(nestDepth * nestDepth, root.countChildren());
@@ -192,7 +192,7 @@ public class UpdateNodeRequestTest extends Assert {
 		assertEquals(25, root.countChildren(9));
 		assertEquals(25, root.countChildren(10));
 		
-		UpdateNodeRequest thirdChild = root.getChildren().get(0).getChildren().get(0).getChildren().get(0);
+		UpdateNodeRequest thirdChild = root.getChildren().get(0).get().getChildren().get(0).get().getChildren().get(0).get();
 		assertEquals((nestDepth - 3) + 2 * nestDepth, thirdChild.countChildren());
 		assertEquals(2, thirdChild.countChildren(1));
 		assertEquals(5, thirdChild.countChildren(2));

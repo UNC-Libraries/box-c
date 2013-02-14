@@ -46,8 +46,7 @@
 		<property name="solrUpdateRunnableFactory" ref="solrUpdateRunnableFactory"/>
 		<property name="maxThreads" value="${conductor.solr.maxThreads}" />
 		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecuteDelay}" />
-		<property name="finishedMessageTimeout"
-			value="${scheduled.cleanupFinishedIndexing.windowMilli}" />
+		<property name="finishedQueueSize" value="1024"/>
 	</bean>
 
 	<bean id="solrUpdateDriver"

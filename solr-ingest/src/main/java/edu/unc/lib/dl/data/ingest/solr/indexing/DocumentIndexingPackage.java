@@ -50,7 +50,7 @@ public class DocumentIndexingPackage {
 	private String label;
 	private ResourceType resourceType;
 	private Map<String, Element> datastreams;
-
+	
 	public DocumentIndexingPackage() {
 		document = new IndexDocumentBean();
 		this.attemptedToRetrieveDefaultWebObject = false;
@@ -87,6 +87,10 @@ public class DocumentIndexingPackage {
 
 	public void setParentDocument(DocumentIndexingPackage parentDocument) {
 		this.parentDocument = parentDocument;
+		// Break the grand parent bond
+		if (this.parentDocument != null) {
+			this.parentDocument.setParentDocument(null);
+		}
 	}
 
 	public boolean isAttemptedToRetrieveDefaultWebObject() {

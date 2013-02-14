@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,12 +35,13 @@ public class UpdateNodeRequest implements ActionMessage {
 	protected DocumentIndexingPackage documentIndexingPackage;
 	
 	protected UpdateNodeRequest parent;
-	protected List<UpdateNodeRequest> children;
+	protected WeakReference<UpdateNodeRequest> weakParent;
+	protected List<WeakReference<UpdateNodeRequest>> children;
 
 	protected ProcessingStatus status;
 	protected AtomicInteger childrenPending;
 	protected AtomicInteger childrenProcessed;
-
+	
 	public UpdateNodeRequest(String messageID, UpdateNodeRequest parent) {
 		this.messageID = messageID;
 		this.setParent(parent);
@@ -58,10 +60,10 @@ public class UpdateNodeRequest implements ActionMessage {
 		if (node == null)
 			return;
 		if (children == null)
-			children = new ArrayList<UpdateNodeRequest>();
+			children = new ArrayList<WeakReference<UpdateNodeRequest>>();
 		
 		this.childAdded();
-		children.add(node);
+		children.add(new WeakReference<UpdateNodeRequest>(node));
 	}
 	
 	public void removeChild(UpdateNodeRequest node) {
@@ -73,30 +75,32 @@ public class UpdateNodeRequest implements ActionMessage {
 	}
 	
 	public void remove() {
-		if (parent == null)
+		if (getParent() == null)
 			return;
-		parent.removeChild(this);
+		getParent().removeChild(this);
 	}
 	
 	private void childRemoved() {
 		childrenPending.decrementAndGet();
-		if (parent != null)
-			parent.childRemoved();
+		if (getParent() != null)
+			getParent().childRemoved();
 	}
 	
 	protected void childAdded() {
 		childrenPending.incrementAndGet();
-		if (parent != null)
-			parent.childAdded();
+		if (getParent() != null)
+			getParent().childAdded();
 	}
 	
 	protected void childCompleted() {
 		int value = childrenProcessed.incrementAndGet();
 		if (value == childrenPending.get() && ProcessingStatus.INPROGRESS.equals(status)) {
 			status = ProcessingStatus.FINISHED;
+			if (this.parent != null)
+				this.weakParent = new WeakReference<UpdateNodeRequest>(this.parent);
 		}
-		if (parent != null)
-			parent.childCompleted();
+		if (getParent() != null)
+			getParent().childCompleted();
 	}
 	
 	public void requestCompleted() {
@@ -113,7 +117,8 @@ public class UpdateNodeRequest implements ActionMessage {
 				status = ProcessingStatus.INPROGRESS;
 			}
 		}
-		parent.childCompleted();
+		if (getParent() != null)
+			getParent().childCompleted();
 	}
 
 	/**
@@ -123,9 +128,9 @@ public class UpdateNodeRequest implements ActionMessage {
 	 * @return
 	 */
 	public boolean hasAncestor(String messageID) {
-		if (messageID == null)
+		if (messageID == null && this.getParent() != null)
 			return false;
-		for (UpdateNodeRequest parent = this.parent; parent != null; parent = parent.getParent()) {
+		for (UpdateNodeRequest parent = this.getParent(); parent != null; parent = parent.getParent()) {
 			if (messageID.equals(parent.getMessageID()))
 				return true;
 		}
@@ -139,7 +144,7 @@ public class UpdateNodeRequest implements ActionMessage {
 	 */
 	public List<UpdateNodeRequest> getAncestors() {
 		List<UpdateNodeRequest> ancestors = new ArrayList<UpdateNodeRequest>();
-		for (UpdateNodeRequest parent = this.parent; parent != null; parent = parent.getParent()) {
+		for (UpdateNodeRequest parent = this.getParent(); parent != null; parent = parent.getParent()) {
 			ancestors.add(parent);
 		}
 		return ancestors;
@@ -156,14 +161,14 @@ public class UpdateNodeRequest implements ActionMessage {
 			return null;
 
 		// Breadth first
-		for (UpdateNodeRequest child : children) {
-			if (messageID.equals(child.getMessageID()))
-				return child;
+		for (WeakReference<UpdateNodeRequest> child : children) {
+			if (messageID.equals(child.get().getMessageID()))
+				return child.get();
 		}
 		UpdateNodeRequest match = null;
 		// No matches, so check children's children
-		for (UpdateNodeRequest child : children) {
-			match = child.getChild(messageID);
+		for (WeakReference<UpdateNodeRequest> child : children) {
+			match = child.get().getChild(messageID);
 			if (match != null)
 				return match;
 		}
@@ -179,8 +184,8 @@ public class UpdateNodeRequest implements ActionMessage {
 			return 0;
 		int count = children.size();
 		if (depth != 1) {
-			for (UpdateNodeRequest child : children) {
-				count += child.countChildren(depth - 1);
+			for (WeakReference<UpdateNodeRequest> child : children) {
+				count += child.get().countChildren(depth - 1);
 			}
 		}
 		return count;
@@ -202,11 +207,11 @@ public class UpdateNodeRequest implements ActionMessage {
 		if (children == null)
 			return counts;
 		
-		for (UpdateNodeRequest child : children) {
+		for (WeakReference<UpdateNodeRequest> child : children) {
 			// Increment the status count
-			counts.put(child.getStatus(), counts.get(child.getStatus()) + 1);
+			counts.put(child.get().getStatus(), counts.get(child.get().getStatus()) + 1);
 			if (depth != 1) {
-				child.countChildrenByStatus(depth - 1, counts);
+				child.get().countChildrenByStatus(depth - 1, counts);
 			}
 		}
 		
@@ -273,23 +278,36 @@ public class UpdateNodeRequest implements ActionMessage {
 	}
 
 	public UpdateNodeRequest getParent() {
-		return parent;
+		if (parent != null)
+			return parent;
+		if (weakParent == null)
+			return null;
+		return weakParent.get();
 	}
 
 	public void setParent(UpdateNodeRequest parent) {
-		if (this.parent == parent)
+		if (this.parent != null && this.getParent() == parent)
 			return;
+		UpdateNodeRequest currentParent = this.getParent();
 		// Remove from previous parent
-		if (this.parent != null)
-			this.parent.removeChild(this);
-		this.parent = parent;
+		if (currentParent != null)
+			this.getParent().removeChild(this);
+		
+		if (this.status != null && this.status.equals(ProcessingStatus.FINISHED)) {
+			this.parent = null;
+			this.weakParent = new WeakReference<UpdateNodeRequest>(parent);
+		} else {
+			this.parent = parent;
+			this.weakParent = null;
+		}
 		// Add to new parent
-		if (parent != null) {
-			parent.addChild(this);
+		currentParent = this.getParent();
+		if (currentParent != null) {
+			currentParent.addChild(this);
 		}
 	}
 
-	public List<UpdateNodeRequest> getChildren() {
+	public List<WeakReference<UpdateNodeRequest>> getChildren() {
 		return children;
 	}
 

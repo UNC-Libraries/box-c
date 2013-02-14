@@ -299,11 +299,6 @@
 		<property name="targetObject" ref="enhancementConductor" />
 		<property name="targetMethod" value="cleanupFinishedMessages" />
 	</bean>
-	
-	<bean id="cleanupFinishedIndexingJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-		<property name="targetObject" ref="solrUpdateConductor" />
-		<property name="targetMethod" value="cleanupFinishedMessages" />
-	</bean>
 		
 	<bean id="backupFailedPidsJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
 		<property name="targetObject" ref="servicesFailedPids" />
@@ -335,11 +330,6 @@
 		<property name="cronExpression" value="${scheduled.cleanupFinishedEnhancements.cron}" />
 	</bean>
 	
-	<bean id="cleanupFinishedIndexingCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-		<property name="jobDetail" ref="cleanupFinishedIndexingJobDetail" />
-		<property name="cronExpression" value="${scheduled.cleanupFinishedIndexing.cron}" />
-	</bean>
-	
 	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
@@ -348,7 +338,6 @@
 				<ref bean="catchUpDeactivateCronTrigger" />
 				<ref bean="backupFailedPidsCronTrigger" />
 				<ref bean="cleanupFinishedEnhancementsCronTrigger" />
-				<ref bean="cleanupFinishedIndexingCronTrigger" />
 			</list>
 		</property>
 		<property name="autoStartup">

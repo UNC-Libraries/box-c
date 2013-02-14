@@ -33,7 +33,6 @@ import edu.unc.lib.dl.message.ActionMessage;
 
 public class SolrUpdateConductor extends SolrUpdateService implements MessageConductor, ServiceConductor {
 	private long beforeExecuteDelay = 50;
-	private long finishedMessageTimeout = 14400000;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -243,28 +242,5 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	@Override
 	public int getActiveThreadCount() {
 		return this.executor.getActiveCount();
-	}
-
-	public void cleanupFinishedMessages() {
-		long currentTime = System.currentTimeMillis();
-
-		synchronized (finishedMessages) {
-			Iterator<SolrUpdateRequest> iterator = this.finishedMessages.iterator();
-			while (iterator.hasNext()) {
-				SolrUpdateRequest message = iterator.next();
-				if (currentTime - message.getTimeFinished() >= finishedMessageTimeout) {
-					message.remove();
-					iterator.remove();
-				}
-			}
-		}
-	}
-
-	public long getFinishedMessageTimeout() {
-		return finishedMessageTimeout;
-	}
-
-	public void setFinishedMessageTimeout(long finishedMessageTimeout) {
-		this.finishedMessageTimeout = finishedMessageTimeout;
 	}
 }

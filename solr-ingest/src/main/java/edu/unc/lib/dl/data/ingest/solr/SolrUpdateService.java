@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.data.ingest.solr;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +52,7 @@ public class SolrUpdateService {
 	protected int maxThreads = 3;
 	protected long recoverableDelay = 0;
 	protected boolean autoCommit = true;
+	protected int finishedQueueSize = 1000;
 
 	protected UpdateNodeRequest root;
 
@@ -58,10 +60,11 @@ public class SolrUpdateService {
 		pidQueue = new LinkedBlockingQueue<SolrUpdateRequest>();
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
 		collisionList = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
-		finishedMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		activeMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		failedMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
-		root = new UpdateNodeRequest(identifier + ":ROOT", null);
+		finishedMessages = Collections.synchronizedList(new LimitedQueue<SolrUpdateRequest>(this.finishedQueueSize));
+		
+		root = new UpdateNodeWithManagedChildrenRequest(identifier + ":ROOT", null);
 	}
 
 	public void init() {
@@ -174,6 +177,10 @@ public class SolrUpdateService {
 		this.autoCommit = autoCommit;
 	}
 
+	public void setFinishedQueueSize(int finishedQueueSize) {
+		this.finishedQueueSize = finishedQueueSize;
+	}
+
 	public int queueSize() {
 		return pidQueue.size();
 	}
@@ -201,5 +208,21 @@ public class SolrUpdateService {
 				.append(executor.getPoolSize()).append("\nPool queue size: ").append(executor.getQueue().size())
 				.append("\nLocked Pids: ").append(lockedPids.size()).append("(" + lockedPids + ")");
 		return status.toString();
+	}
+	
+	public class LimitedQueue<E> extends LinkedList<E> {
+		private static final long serialVersionUID = 1L;
+		private int limit;
+
+	    public LimitedQueue(int limit) {
+	        this.limit = limit;
+	    }
+
+	    @Override
+	    public boolean add(E o) {
+	        super.add(o);
+	        while (size() > limit) { super.remove(); }
+	        return true;
+	    }
 	}
 }

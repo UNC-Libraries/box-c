@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -126,7 +127,13 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 		}
 		
 		int[] statusCount = new int[ProcessingStatus.values().length];
-		List<ActionMessage> topLevelMessages = new ArrayList<ActionMessage>(root.getChildren());
+		
+		List<ActionMessage> topLevelMessages = new ArrayList<ActionMessage>(root.getChildren().size());
+		for (WeakReference<UpdateNodeRequest> child: root.getChildren()){
+			if (child != null && child.get() != null)
+				topLevelMessages.add(child.get());
+		}
+		
 		
 		// Sort messages by status, backwards
 		Collections.sort(topLevelMessages, new Comparator<ActionMessage>() {
