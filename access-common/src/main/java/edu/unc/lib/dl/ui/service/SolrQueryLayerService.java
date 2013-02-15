@@ -328,7 +328,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			ancestorPath = metadata.getPath();
 		}
 		if (ancestorPath != null) {
-			facetFieldUtil.addDefaultFacetPivot(ancestorPath, solrQuery);
+			facetFieldUtil.addToSolrQuery(ancestorPath, solrQuery);
 		}
 
 		solrQuery.setStart(0);
