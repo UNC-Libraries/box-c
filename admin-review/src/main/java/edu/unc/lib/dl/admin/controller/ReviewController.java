@@ -47,10 +47,10 @@ import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 public class ReviewController extends AbstractSolrSearchController {
 	private static final Logger log = LoggerFactory.getLogger(ReviewController.class);
 	private List<String> containerFieldList = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
-			SearchFieldKeys.ANCESTOR_PATH.name());
+			SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name());
 	private List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
 			SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.DATE_ADDED.name(),
-			SearchFieldKeys.STATUS.name(), SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.VERSION.name());
+			SearchFieldKeys.STATUS.name(), SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.VERSION.name());
 	@Autowired
 	private PID collectionsPid;
 

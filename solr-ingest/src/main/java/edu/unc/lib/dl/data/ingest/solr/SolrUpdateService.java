@@ -53,6 +53,7 @@ public class SolrUpdateService {
 	protected long recoverableDelay = 0;
 	protected boolean autoCommit = true;
 	protected int finishedQueueSize = 1000;
+	protected boolean isPaused = false;
 
 	protected UpdateNodeRequest root;
 
@@ -195,6 +196,10 @@ public class SolrUpdateService {
 
 	public int activeThreadsCount() {
 		return executor.getActiveCount();
+	}
+	
+	public boolean isPaused() {
+		return this.isPaused;
 	}
 
 	public void setSolrUpdateRunnableFactory(SolrUpdateRunnableFactory solrUpdateRunnableFactory) {

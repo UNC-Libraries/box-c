@@ -104,19 +104,19 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 	@Override
 	public void pause() {
 		((ServicesThreadPoolExecutor) this.executor).pause();
-
+		this.isPaused = true;
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void resume() {
 		((ServicesThreadPoolExecutor) this.executor).resume();
+		this.isPaused = false;
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean isPaused() {
-		return ((ServicesThreadPoolExecutor) this.executor).isPaused();
+		return this.isPaused;
 	}
 
 	public Map<String, Object> getInfo() {

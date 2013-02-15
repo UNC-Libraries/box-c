@@ -91,7 +91,7 @@
 								</c:otherwise>
 							</c:choose>
 							<c:if test="${metadata.datastreamObjects.contains('DATA_FILE')}">
-								&nbsp;<a target="_preview" href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}" class="preview">(preview ${metadata.getDatastream("DATA_FILE").extension})</a>
+								&nbsp;<a target="_preview" href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}" class="preview">(preview ${metadata.getDatastreamObject("DATA_FILE").extension})</a>
 							</c:if>						
 						</h2>
 						

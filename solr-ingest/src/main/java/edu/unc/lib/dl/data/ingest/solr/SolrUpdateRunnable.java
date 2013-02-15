@@ -160,6 +160,10 @@ public class SolrUpdateRunnable implements Runnable {
 		LOG.debug("Starting up SolrUpdateRunnable");
 		do {
 			try {
+				while (this.solrUpdateService.isPaused() && !Thread.currentThread().isInterrupted()) {
+					Thread.sleep(this.idleWaitTime);
+				}
+				
 				String pid = null;
 				// Get the next pid and lock it
 				updateRequest = nextRequest();

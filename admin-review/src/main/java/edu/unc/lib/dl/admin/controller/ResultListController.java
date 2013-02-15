@@ -50,7 +50,7 @@ public class ResultListController extends AbstractSolrSearchController {
 	private PID collectionsPid;
 	private List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
 			SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.DATE_ADDED.name(),
-			SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.VERSION.name());
+			SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.VERSION.name());
 
 	@RequestMapping(value = "list", method = RequestMethod.GET)
 	public String listRootContents(Model model, HttpServletRequest request) {
