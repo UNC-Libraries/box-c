@@ -41,44 +41,31 @@ import java.io.IOException;
  */
 public class StoreUserAccessControlFilter extends OncePerRequestFilter implements ServletContextAware {
 	private static final Logger log = LoggerFactory.getLogger(StoreUserAccessControlFilter.class);
+	
+	protected static String FORWARDING_ROLE = "group-forwarding";
 
 	@Override
 	public void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException,
 			ServletException {
 		log.debug("In StoreUserAccessControlFilter");
-		// Don't check security for static files
-		if (!(req.getServletPath().startsWith("/js/") || req.getServletPath().startsWith("/css/") || req.getServletPath()
-				.startsWith("/images/"))) {
+		// Skip processing static content
+		if (!req.getServletPath().startsWith("/static/")) {
 			storeUserGroupData(req);
 		}
 		chain.doFilter(req, res);
 		GroupsThreadStore.clearStore();
 	}
 
-	public void storeUserGroupData(HttpServletRequest request) {
+	protected void storeUserGroupData(HttpServletRequest request) {
 		try {
 			String userName = request.getRemoteUser();
 			if (userName == null)
 				userName = "";
 			else
 				userName = userName.trim();
-			String shibGroups = (String) request.getHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER);
-			if (shibGroups == null)
-				shibGroups = "";
-
-			log.debug("User " + userName + " logged in with groups " + shibGroups);
-			AccessGroupSet accessGroups;
-			if (shibGroups.trim().length() > 0) {
-				accessGroups = new AccessGroupSet(shibGroups);
-			} else {
-				accessGroups = new AccessGroupSet();
-			}
-			accessGroups.addAccessGroup(AccessGroupConstants.PUBLIC_GROUP);
-			if (userName.length() > 0) {
-				accessGroups.addAccessGroup(AccessGroupConstants.AUTHENTICATED_GROUP);
-				GroupsThreadStore.storeUsername(userName);
-			}
+			GroupsThreadStore.storeUsername(userName);
 			
+			AccessGroupSet accessGroups = getUserGroups(request);
 			request.setAttribute("accessGroupSet", accessGroups);
 			GroupsThreadStore.storeGroups(accessGroups);
 			if (log.isDebugEnabled())
@@ -86,5 +73,47 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 		} catch (Exception e) {
 			log.debug("Error while retrieving the users profile", e);
 		}
+	}
+	
+	protected AccessGroupSet getUserGroups(HttpServletRequest request) {
+		if (request.isUserInRole(FORWARDING_ROLE)) {
+			return this.getForwardedGroups(request);
+		} else {
+			return this.getGrouperGroups(request);
+		}
+	}
+	
+	protected AccessGroupSet getForwardedGroups(HttpServletRequest request) {
+		String forwardedGroups = (String) request.getHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER);
+		if (log.isDebugEnabled())
+			log.debug("Forwarding user " + request.getRemoteUser() + " logged in with forwarded groups " + forwardedGroups);
+		if (forwardedGroups == null)
+			return new AccessGroupSet();
+		
+		if (forwardedGroups.trim().length() > 0) {
+			return new AccessGroupSet(forwardedGroups);
+		}
+		return new AccessGroupSet();
+	}
+	
+	protected AccessGroupSet getGrouperGroups(HttpServletRequest request) {
+		String shibGroups = (String) request.getHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER);
+		AccessGroupSet accessGroups = null;
+		String userName = request.getRemoteUser();
+		if (log.isDebugEnabled())
+			log.debug("Normal user " + userName + " logged in with groups " + shibGroups);
+		
+		if (shibGroups == null || shibGroups.trim().length() == 0)
+			accessGroups = new AccessGroupSet();
+		else {
+			accessGroups = new AccessGroupSet(shibGroups);
+		}
+		
+		accessGroups.addAccessGroup(AccessGroupConstants.PUBLIC_GROUP);
+		if (userName.length() > 0) {
+			accessGroups.addAccessGroup(AccessGroupConstants.AUTHENTICATED_GROUP);
+		}
+		
+		return accessGroups;
 	}
 }

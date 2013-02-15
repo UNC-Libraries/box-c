@@ -116,7 +116,7 @@ public class MODSController extends AbstractSolrSearchController {
 
 		// Pass the users groups along with the request
 		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		method.addRequestHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER, groups.joinAccessGroups(";"));
+		method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";"));
 
 		try {
 			client.executeMethod(method);
@@ -183,7 +183,7 @@ public class MODSController extends AbstractSolrSearchController {
 			client.getParams().setAuthenticationPreemptive(true);
 			method = new PutMethod(dataUrl);
 			// Pass the users groups along with the request
-			method.addRequestHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER, GroupsThreadStore.getGroupString());
+			method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
 
 			Header header = new Header("Content-Type", "application/atom+xml");
 			method.setRequestHeader(header);

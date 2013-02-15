@@ -22,6 +22,7 @@
 			/WEB-INF/service-context.xml
 			/WEB-INF/solr-search-context.xml
 			/WEB-INF/solr-ingest-context.xml
+			/WEB-INF/sword-servlet.xml
 		</param-value>
 	</context-param>
 	
@@ -60,8 +61,16 @@
 	</filter>
 	<filter-mapping>
 		<filter-name>StoreUserAccessControlFilter</filter-name>
-		<url-pattern>/sword/*</url-pattern>
 		<url-pattern>/rest/*</url-pattern>
+	</filter-mapping>
+	
+	<filter>
+		<filter-name>depositorAccessControlFilter</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>depositorAccessControlFilter</filter-name>
+		<url-pattern>/sword/*</url-pattern>
 	</filter-mapping>
 
 	<!-- SWORD basic authentication configuration -->

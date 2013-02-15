@@ -55,6 +55,7 @@ import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
 import org.springframework.ws.transport.http.CommonsHttpMessageSender;
 import org.xml.sax.SAXException;
 
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.types.AddDatastream;
 import edu.unc.lib.dl.fedora.types.AddDatastreamResponse;
 import edu.unc.lib.dl.fedora.types.AddRelationship;
@@ -642,6 +643,8 @@ public class ManagementClient extends WebServiceTemplate {
 		HttpClient http = HttpClientUtil.getAuthenticatedClient(uploadURL, this.getUsername(), this.getPassword());
 		PostMethod post = new PostMethod(uploadURL);
 		post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, false);
+		log.debug("Uploading file with forwarded groups: " + GroupsThreadStore.getGroupString());
+		post.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
 		try {
 			log.debug("Uploading to " + uploadURL);
 			Part[] parts = { new FilePart("file", file) };
@@ -707,6 +710,8 @@ public class ManagementClient extends WebServiceTemplate {
 		HttpClient http = HttpClientUtil.getAuthenticatedClient(uploadURL, this.getUsername(), this.getPassword());
 		PostMethod post = new PostMethod(uploadURL);
 		post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, false);
+		log.debug("Uploading XML with forwarded groups: " + GroupsThreadStore.getGroupString());
+		post.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
 		try {
 			log.debug("Uploading to " + uploadURL);
 			Part[] parts = { new FilePart("file", new ByteArrayPartSource("md_events.xml", baos.toByteArray())) };

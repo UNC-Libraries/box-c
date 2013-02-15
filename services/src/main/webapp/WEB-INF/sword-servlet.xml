@@ -304,6 +304,10 @@
 		<property name="depositReportingUtil" ref="depositReportingUtil"/>
 	</bean>
 	
+	<bean id="depositorAccessControlFilter" class="edu.unc.lib.dl.cdr.sword.server.filters.DepositorAccessControlFilter">
+		<property name="swordConfig" ref="config"/>
+	</bean>
+	
 	<context:annotation-config />
 	
 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>

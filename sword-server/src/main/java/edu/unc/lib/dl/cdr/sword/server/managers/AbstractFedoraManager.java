@@ -94,20 +94,9 @@ public abstract class AbstractFedoraManager {
 		if (config.getAdminDepositor() != null && config.getAdminDepositor().equals(auth.getUsername()))
 			return true;
 		ObjectAccessControlsBean aclBean = aclService.getObjectAccessControls(pid);
-		AccessGroupSet groups = this.getGroups(auth, config);
+		AccessGroupSet groups = GroupsThreadStore.getGroups();
 		
 		return aclBean.hasPermission(groups, permission);
-	}
-	
-	protected AccessGroupSet getGroups(AuthCredentials auth, SwordConfigurationImpl config) {
-		AccessGroupSet groupSet = GroupsThreadStore.getGroups();
-		if (groupSet == null) {
-			groupSet = new AccessGroupSet();
-			groupSet.addAccessGroup("public");
-		} else if (groupSet.size() == 0 || (groupSet.size() == 1 && groupSet.contains("public"))){
-			groupSet.addAccessGroup(config.getDepositorNamespace() + auth.getUsername());
-		}
-		return groupSet;
 	}
 
 	public AccessClient getAccessClient() {
