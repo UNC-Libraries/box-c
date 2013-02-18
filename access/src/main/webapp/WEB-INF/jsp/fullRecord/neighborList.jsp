@@ -30,6 +30,7 @@
 			<c:set var="currentItemClass" scope="page">
 				<c:if test="${briefObject.id == neighbor.id}"> current_item</c:if>
 			</c:set>
+			<c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, neighbor)}"/>
 			<div class="relateditem ${currentItemClass}">
 				<div class="relatedthumb">
 					<a href="<c:out value='${fullRecordUrl}' />">
@@ -38,11 +39,17 @@
 								<div class="smallthumb_container">
 									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_${neighbor.contentTypeFacet[0].searchKey}" 
 											src="${cdr:getDatastreamUrl(neighbor, 'THUMB_SMALL', fedoraUtil)}"/>
+									<c:if test="${hasListAccessOnly}">
+										<span><img src="/static/images/lockedstate.gif"/></span>
+									</c:if>
 								</div>
 							</c:when>
 							<c:otherwise>
 								<div class="smallthumb_container">
 									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_default" src="/static/images/placeholder/small/${neighbor.contentTypeFacet[0].searchKey}.png"/>
+									<c:if test="${hasListAccessOnly}">
+										<span><img src="/static/images/lockedstate.gif"/></span>
+									</c:if>
 								</div>
 							</c:otherwise>
 						</c:choose>
