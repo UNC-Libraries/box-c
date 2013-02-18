@@ -270,10 +270,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Retrieves a list of the nearest windowSize neighbors within the nearest parent collection or folder around the
-	 * item metadata, based on the order field of the item. The first windowSize/2 neighbors are retrieved to each side
-	 * of the item. If there are fewer than windowSize/2 items to a side, then the opposite side of the window is
-	 * expanded by the difference so that the total number of records will equal windowSize if there are enough total
-	 * records in the parent container.
+	 * item metadata, based on the order field of the item. The first windowSize - 1 neighbors are retrieved to each
+	 * side of the item, and trimmed so that there are always windowSize - 1 neighbors surrounding the item if possible.  
+	 * If no order field is available, a list of arbitrary windowSize neighbors is returned.
 	 * 
 	 * @param metadata
 	 *           Record which the window pivots around.
@@ -285,126 +284,187 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 */
 	public List<BriefObjectMetadataBean> getNeighboringItems(BriefObjectMetadataBean metadata, int windowSize,
 			AccessGroupSet accessGroups) {
-		int splitSize = windowSize / 2;
-		int rows = splitSize;
-		List<BriefObjectMetadataBean> leftList = null;
-		List<BriefObjectMetadataBean> rightList = null;
-
-		Long pivotOrder = metadata.getDisplayOrder();
-		if (pivotOrder == null)
-			pivotOrder = (long) 0;
-
-		StringBuilder accessQuery = new StringBuilder("*:*");
+		
+		// Get the common access restriction clause (starts with "AND ...")
+		
+		StringBuilder accessRestrictionClause = new StringBuilder();
+		
 		try {
-			// Add access restrictions to query
-			addAccessRestrictions(accessQuery, accessGroups);
+			addAccessRestrictions(accessRestrictionClause, accessGroups);
 		} catch (AccessRestrictionException e) {
 			// If the user doesn't have any access groups, they don't have access to anything, return null.
 			LOG.error(e.getMessage());
 			return null;
 		}
+		
+		// Prepare the common query object, including a filter for resource type and the
+		// facet which selects only the item's siblings.
 
-		QueryResponse queryResponse = null;
 		SolrQuery solrQuery = new SolrQuery();
-		StringBuilder query = new StringBuilder();
-
-		// Get the first half of the window to the left of the pivot record
-		query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[* TO ");
-		if (pivotOrder == 0)
-			query.append(0);
-		else
-			query.append(pivotOrder - 1);
-		query.append(']');
-
-		query.append(accessQuery);
-		solrQuery.setQuery(query.toString());
-
+		
 		solrQuery.setFacet(true);
-		solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":File");
+		solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":File " +
+				solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":Aggregate");
+		
 		CutoffFacet ancestorPath = null;
-		if (metadata.getResourceType().equals(searchSettings.resourceTypeFile)) {
+		
+		if (metadata.getResourceType().equals(searchSettings.resourceTypeFile) ||
+				metadata.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
 			ancestorPath = metadata.getAncestorPathFacet();
 		} else {
 			ancestorPath = metadata.getPath();
 		}
+		
 		if (ancestorPath != null) {
+			// We want only objects at the same level of the hierarchy
+			ancestorPath.setCutoff(ancestorPath.getHighestTier() + 1);
+			
 			facetFieldUtil.addToSolrQuery(ancestorPath, solrQuery);
 		}
+		
+		// If this item has no display order, get arbitrary items surrounding it.
+		
+		Long pivotOrder = metadata.getDisplayOrder();
+		
+		if (pivotOrder == null) {
+			
+			LOG.debug("No display order, just querying for " + windowSize + " siblings");
+			
+			StringBuilder query = new StringBuilder();
 
-		solrQuery.setStart(0);
-		solrQuery.setRows(rows);
+			List<BriefObjectMetadataBean> list = null;
+			
+			query.append("*:*");
+			query.append(accessRestrictionClause);
+			solrQuery.setQuery(query.toString());
 
-		solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_NAMES.name()), SolrQuery.ORDER.asc);
-		solrQuery.addSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
+			solrQuery.setStart(0);
+			solrQuery.setRows(windowSize);
 
-		// Execute left hand query
-		try {
-			queryResponse = this.executeQuery(solrQuery);
-			leftList = queryResponse.getBeans(BriefObjectMetadataBean.class);
-		} catch (SolrServerException e) {
-			LOG.error("Error retrieving Neighboring items: " + e);
-			return null;
-		}
+			solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
+			
+			try {
+				QueryResponse queryResponse = this.executeQuery(solrQuery);
+				list = queryResponse.getBeans(BriefObjectMetadataBean.class);
+			} catch (SolrServerException e) {
+				LOG.error("Error retrieving Neighboring items: " + e);
+				return null;
+			}
+			
+			return list;
+			
+		// Otherwise, query for items surrounding this item.
+		
+		} else {
+			
+			LOG.debug("Display order is " + pivotOrder);
+			
+			// Find the right and left lists
+			
+			StringBuilder query;
+			
+			List<BriefObjectMetadataBean> leftList = null;
+			List<BriefObjectMetadataBean> rightList = null;
+			
+			solrQuery.setStart(0);
+			solrQuery.setRows(windowSize - 1);
+			
+			// Right list
 
-		// Expand the right side window size by the difference between the split size and the left window result count.
-		if (leftList.size() < splitSize) {
-			rows = splitSize * 2 - leftList.size();
-		}
+			query = new StringBuilder();
+			
+			query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[").append(pivotOrder + 1).append(" TO *]");
+			query.append(accessRestrictionClause);
+			solrQuery.setQuery(query.toString());
 
-		query = new StringBuilder();
-		// Get the right half of the window where display order is greater than the pivot
-		query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[").append(pivotOrder + 1)
-				.append(" TO *]");
-		query.append(accessQuery);
-		solrQuery.setQuery(query.toString());
+			solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.asc);
+			
+			try {
+				QueryResponse queryResponse = this.executeQuery(solrQuery);
+				rightList = queryResponse.getBeans(BriefObjectMetadataBean.class);
+			} catch (SolrServerException e) {
+				LOG.error("Error retrieving Neighboring items: " + e);
+				return null;
+			}
 
-		solrQuery.setRows(rows);
+			LOG.debug("Got " + rightList.size() + " items for right list");
+			
+			// Left list
+			
+			// (Note that display order stuff is reversed.)
 
-		solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_NAMES.name()), SolrQuery.ORDER.asc);
-		solrQuery.addSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.asc);
+			query = new StringBuilder();
+			
+			query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[* TO ").append(pivotOrder - 1).append("]");
+			query.append(accessRestrictionClause);
+			solrQuery.setQuery(query.toString());
 
-		// Execute right hand query
-		try {
-			queryResponse = this.executeQuery(solrQuery);
-			rightList = queryResponse.getBeans(BriefObjectMetadataBean.class);
-		} catch (SolrServerException e) {
-			LOG.error("Error retrieving Neighboring items: " + e);
-			return null;
-		}
+			solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
+			
+			try {
+				QueryResponse queryResponse = this.executeQuery(solrQuery);
+				leftList = queryResponse.getBeans(BriefObjectMetadataBean.class);
+			} catch (SolrServerException e) {
+				LOG.error("Error retrieving Neighboring items: " + e);
+				return null;
+			}
 
-		// If there are no more items to the left or the left and right windows plus pivot equals the window size, then
-		// we're done.
-		if (leftList.size() < splitSize || rightList.size() + leftList.size() + 1 == windowSize) {
+			LOG.debug("Got " + leftList.size() + " items for left list");
+			
+			// Trim the lists
+			
+			int halfWindow = windowSize / 2;
+			
+			// If we have enough in both lists, trim both to be
+		    // halfWindow long.
+		    
+			if (leftList.size() >= halfWindow && rightList.size() >= halfWindow) {
+
+				LOG.debug("Trimming both lists");
+
+				leftList.subList(halfWindow, leftList.size()).clear();
+				rightList.subList(halfWindow, rightList.size()).clear();
+
+			// If we don't have enough in the left list and we have extra in the right list,
+			// try to pick up the slack by trimming fewer items from the right list.
+
+			} else if (leftList.size() < halfWindow && rightList.size() > halfWindow) {
+
+				LOG.debug("Picking up slack from right list");
+
+				// How much extra do we need from the right list?
+
+				int extra = halfWindow - leftList.size();
+
+				// Only "take" the extra (ie, clear less of the right list) if we have it available.
+
+				if (halfWindow + extra < rightList.size())
+					rightList.subList(halfWindow + extra, rightList.size()).clear();
+
+			} else if (rightList.size() < halfWindow && leftList.size() > halfWindow) {
+
+				LOG.debug("Picking up slack from left list");
+
+				int extra = halfWindow - rightList.size();
+
+				if (halfWindow + extra < leftList.size())
+					leftList.subList(halfWindow + extra, leftList.size()).clear();
+
+			}
+		    
+		    // (Otherwise, we do no trimming, since both lists are smaller or the same size
+		    // as the window.)
+			
+			// Assemble the result.
+			
 			Collections.reverse(leftList);
 			leftList.add(metadata);
 			leftList.addAll(rightList);
+			
 			return leftList;
+			
 		}
-
-		// Less than split size from the right side but not touching the left side, so we need to expand the left side
-		query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[* TO ")
-				.append(leftList.get(leftList.size() - 1).getDisplayOrder() - 1).append(']');
-		query.append(accessQuery);
-		solrQuery.setQuery(query.toString());
-
-		solrQuery.setRows(splitSize * 2 - leftList.size());
-
-		solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_NAMES.name()), SolrQuery.ORDER.asc);
-		solrQuery.addSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
-
-		// Execute query and add the results to the end of the left list
-		try {
-			queryResponse = this.executeQuery(solrQuery);
-			leftList.addAll(queryResponse.getBeans(BriefObjectMetadataBean.class));
-		} catch (SolrServerException e) {
-			LOG.error("Error retrieving Neighboring items: " + e);
-			return null;
-		}
-
-		Collections.reverse(leftList);
-		leftList.add(metadata);
-		leftList.addAll(rightList);
-		return leftList;
+		
 	}
 
 	/**
