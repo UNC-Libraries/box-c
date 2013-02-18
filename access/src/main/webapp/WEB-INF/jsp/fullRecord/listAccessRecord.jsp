@@ -116,3 +116,5 @@
 		</p>
 	</div>
 </div>
+
+<c:import url="fullRecord/neighborList.jsp" />
