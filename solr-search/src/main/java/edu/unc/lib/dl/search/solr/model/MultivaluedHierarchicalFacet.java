@@ -16,6 +16,8 @@
 package edu.unc.lib.dl.search.solr.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,16 +98,11 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 	}
 
 	public void sortTiers() {
-		for (int i = 0; i < this.facetNodes.size(); i++) {
-			MultivaluedHierarchicalFacetNode node = (MultivaluedHierarchicalFacetNode) this.facetNodes.get(i);
-			for (int j = i + 1; j < this.getFacetNodes().size(); j++) {
-				MultivaluedHierarchicalFacetNode swap = (MultivaluedHierarchicalFacetNode) this.facetNodes.get(j);
-				if (node.getTiers().size() > swap.getTiers().size()) {
-					this.facetNodes.set(i, swap);
-					this.facetNodes.set(j, node);
-				}
+		Collections.sort(this.facetNodes, new Comparator<HierarchicalFacetNode>(){
+			public int compare(HierarchicalFacetNode node1, HierarchicalFacetNode node2) {
+				return ((MultivaluedHierarchicalFacetNode)node1).getTiers().size() - ((MultivaluedHierarchicalFacetNode)node2).getTiers().size();
 			}
-		}
+		});
 	}
 	
 	private MultivaluedHierarchicalFacetNode getLastNode() {

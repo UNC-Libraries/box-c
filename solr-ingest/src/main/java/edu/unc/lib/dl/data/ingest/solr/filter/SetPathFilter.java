@@ -152,6 +152,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		// Since we have already generated the content models and resource type for this item, store them as side effects
 		idb.setContentModel(currentNode.contentModels);
 		idb.setResourceType(currentNode.resourceType.name());
+		idb.setResourceTypeSort(currentNode.resourceType.getDisplayOrder());
 		dip.setResourceType(currentNode.resourceType);
 		dip.setLabel(currentNode.label);
 	}

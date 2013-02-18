@@ -110,7 +110,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 		}
 		
 		accessGroups.addAccessGroup(AccessGroupConstants.PUBLIC_GROUP);
-		if (userName.length() > 0) {
+		if (userName != null && userName.length() > 0) {
 			accessGroups.addAccessGroup(AccessGroupConstants.AUTHENTICATED_GROUP);
 		}
 		

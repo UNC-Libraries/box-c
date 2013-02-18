@@ -15,6 +15,8 @@
  */
  package edu.unc.lib.dl.search.solr.model;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.slf4j.Logger;
@@ -92,18 +94,12 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 		return facetParts[0];
 	}
 	
-	private void sortTiers(){
-		// Hooray for bubble sorts
-		for (int i = 0; i < this.facetNodes.size(); i++) {
-			CutoffFacetNode node = (CutoffFacetNode)this.facetNodes.get(i);
-			for (int j = i + 1; j < this.getFacetNodes().size(); j++) {
-				CutoffFacetNode swap = (CutoffFacetNode)this.facetNodes.get(j);
-				if (node.getTier() > swap.getTier()) {
-					this.facetNodes.set(i, swap);
-					this.facetNodes.set(j, node);
-				}
+	public void sortTiers() {
+		Collections.sort(this.facetNodes, new Comparator<HierarchicalFacetNode>(){
+			public int compare(HierarchicalFacetNode node1, HierarchicalFacetNode node2) {
+				return ((CutoffFacetNode)node1).getTier() - ((CutoffFacetNode)node2).getTier();
 			}
-		}
+		});
 	}
 	
 	public void addNode(HierarchicalFacetNode node) {
