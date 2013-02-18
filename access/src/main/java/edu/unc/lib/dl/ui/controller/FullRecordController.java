@@ -112,8 +112,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 		if (fullObjectView != null) {
 			boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
 			boolean retrieveFacets = briefObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString());
-			boolean retrieveNeighbors = briefObject.getResourceType().equals(searchSettings.resourceTypeFile)
-					|| briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
 			boolean retrieveHierarchicalStructure = briefObject.getResourceType().equals(
 					searchSettings.resourceTypeCollection)
 					|| briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)
@@ -170,13 +168,14 @@ public class FullRecordController extends AbstractSolrSearchController {
 				model.addAttribute("hierarchicalViewResults", hierarchicalResultResponse);
 			}
 
-			if (retrieveNeighbors) {
-				List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
-						searchSettings.maxNeighborResults, accessGroups);
-				model.addAttribute("neighborList", neighbors);
-			}
-
 			model.addAttribute("fullObjectView", fullObjectView);
+		}
+		
+		if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
+				briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
+			List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
+					searchSettings.maxNeighborResults, accessGroups);
+			model.addAttribute("neighborList", neighbors);
 		}
 
 		// Store search state information to the users session to enable page to page navigation
