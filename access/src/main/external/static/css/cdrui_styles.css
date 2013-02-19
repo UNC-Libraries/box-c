@@ -1038,6 +1038,10 @@ ul.crumblist li a {
 	display: block;
 }
 
+.user_form p {
+	width: 62em;
+}
+
 .user_form label {
 	width: 140px;
 	float: left;

@@ -602,8 +602,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 		query.append(")");
 
 		// Make sure that the query isn't too big for solr to accept
-		if (query.length() < 10000)
+		if (query.length() < 10000) {
 			solrQuery.addFilterQuery(query.toString());
+		}
 
 		try {
 			solrQuery.setFacet(true);
@@ -612,7 +613,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 			// Retrieve as many ancestor paths as we can get
 			solrQuery.add("f." + solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name()) + ".facet.limit",
-					String.valueOf(Integer.MAX_VALUE));
+					searchSettings.getProperty("search.facet.maxChildCounts"));
 
 			// Don't return any facets past the max tier in the contain set, but don't filter to this since that'd effect
 			// counts
@@ -679,7 +680,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		SolrQuery baseQuery = this.generateSearch(hierarchyRequest, false);
 		// Get the set of all applicable containers
 		SolrQuery hierarchyQuery = baseQuery.getCopy();
-		hierarchyQuery.setRows(Integer.MAX_VALUE);
+		hierarchyQuery.setRows(new Integer(searchSettings.getProperty("search.results.maxBrowsePerPage")));
 
 		// Reusable query segment for limiting the results to just the depth asked for
 		StringBuilder cutoffQuery = new StringBuilder();
@@ -799,7 +800,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		directMatchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name()));
 		directMatchState.getFacets().put(SearchFieldKeys.CONTENT_MODEL.name(),
 				ContentModelHelper.Model.CONTAINER.toString());
-		directMatchState.setRowsPerPage(Integer.MAX_VALUE);
+		directMatchState.setRowsPerPage(new Integer(searchSettings.getProperty("search.results.maxBrowsePerPage")));
 		SearchRequest directMatchRequest = new SearchRequest(directMatchState, accessGroups);
 		SolrQuery directMatchQuery = this.generateSearch(directMatchRequest, false);
 		QueryResponse directMatchResponse = this.executeQuery(directMatchQuery);

@@ -35,6 +35,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SearchSettings extends AbstractSettings {
 	private static final Logger log = LoggerFactory.getLogger(SearchSettings.class);
+	
+	private Properties properties;
 	// Upper limit to the number of characters allowed in a single query field.
 	public int queryMaxLength;
 	// Default operator for looking up keyword terms.
@@ -127,6 +129,8 @@ public class SearchSettings extends AbstractSettings {
 	 */
 	@Autowired(required = true)
 	public void setProperties(Properties properties) {
+		this.properties = properties;
+		
 		facetDisplayOrder = new ArrayList<String>();
 		facetNames = new HashSet<String>();
 		collectionBrowseFacetNames = new HashSet<String>();
@@ -648,6 +652,10 @@ public class SearchSettings extends AbstractSettings {
 
 	public void setStructuredDepthDefault(int structuredDepthDefault) {
 		this.structuredDepthDefault = structuredDepthDefault;
+	}
+	
+	public String getProperty(String key) {
+		return this.properties.getProperty(key);
 	}
 
 	@Override

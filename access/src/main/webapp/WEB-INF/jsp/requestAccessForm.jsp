@@ -38,13 +38,19 @@
 		
 		<c:choose>
 			<c:when test="${requestScope.success}">
-				<p>Thank you for your interest in the Carolina Digital Repository!  Your request has been sent and we will respond soon.</p>
+				<p>Your request has been submitted.  You will receive an update on the status of your request within two business days.</p>
 			</c:when>
 			<c:otherwise>
 				<form:form commandName="requestAccessForm" class="user_form">
-					<p>Thank you for your interest in the Carolina Digital Repository.  
-					Please note that requesting access does not guarantee that access will be granted, since it is for the original content owners to decide on access to their materials.</p>
-					
+					<p>Use this form to request access to materials held in the Carolina Digital Repository that are restricted from public view.</p>
+
+					<p>A restricted status does not necessarily mean that a collection cannot be viewed, it simply means that those wishing to access 
+					the collection must first obtain permission from the collection owner.  
+					Please note that requesting access does not guarantee that access will be granted.</p>
+
+					<p>When your request is submitted, Library staff will forward your request to the collection owner for consideration.  
+					The collection owner will then determine if access to the requested content can be granted and will get in touch with you directly.</p>
+					<br/>
 					<div class="form_section">
 						<label for="name">Name</label>
 						<form:input path="personalName" size="40"/>&nbsp;<span>*<form:errors path="personalName" /></span>
@@ -66,8 +72,9 @@
 						<form:input path="phoneNumber" size="40"/>
 					</div>
 					<div class="form_section">
-						<p>Please leave any additional information about what you are requesting access for and why you are requesting it.</p>
-						<form:textarea path="comments" cols="80" rows="8"/>
+						<p>Please provide a brief description of the materials you are requesting and include a brief explanation of why you are 
+						requesting access to the materials.</p>
+						<form:textarea path="comments" cols="90" rows="8"/>
 					</div>
 					<div class="form_section">
 						${requestScope.reCaptcha}

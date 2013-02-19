@@ -23,7 +23,8 @@
 </head>
 <body>
   <h3>Carolina Digital Repository</h3>
-  <p>Thank you for your interest, ${form.personalName!}.  This email is to confirm that your request for access has been sent.</p>
+  <p>Thank you for your interest, ${form.personalName!}.  This email is to confirm that your request for access has been sent.  
+  You will receive an update on the status of your request within two business days.</p>
   <p>The following information was sent:</p>  
   <table>
   	<#if form.requestedId?has_content>
