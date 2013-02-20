@@ -33,6 +33,7 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.PID;
@@ -188,6 +189,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 				submitter = user.getName();
 			}
 			props.setSubmitter(submitter);
+			props.setSubmitterGroups(GroupsThreadStore.getGroupString());
 			props.setSubmissionTime(System.currentTimeMillis());
 			props.save();
 		} catch (Exception e) {

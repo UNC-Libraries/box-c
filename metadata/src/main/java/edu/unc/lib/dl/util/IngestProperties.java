@@ -44,6 +44,7 @@ public class IngestProperties {
 	private String message = null;
 	private String originalDepositId = null;
 	private long submissionTime = -1;
+	private String submitterGroups = null;
 	/**
 	 * Not yet recorded
 	 */
@@ -79,6 +80,10 @@ public class IngestProperties {
 			} catch(IOException ignored) {}
 		}
 		this.submitter = props.getProperty("submitter");
+		String submitterGroups = props.getProperty("submitterGroups");
+		if (submitterGroups != null) {
+			this.submitterGroups = submitterGroups;
+		}
 		String er = props.getProperty("email.recipients");
 		if (er != null) {
 			this.emailRecipients = er.split(",");
@@ -145,6 +150,9 @@ public class IngestProperties {
 		Properties props = new Properties();
 		if (this.submitter != null)
 			props.put("submitter", this.submitter);
+		if (this.submitterGroups != null) {
+			props.put("submitterGroups", this.submitterGroups);
+		}
 		if (this.emailRecipients != null && this.emailRecipients.length > 0) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(this.emailRecipients[0]);
@@ -254,6 +262,14 @@ public class IngestProperties {
 
 	public void setSubmissionTime(long submissionTime) {
 		this.submissionTime = submissionTime;
+	}
+
+	public String getSubmitterGroups() {
+		return submitterGroups;
+	}
+
+	public void setSubmitterGroups(String submitterGroups) {
+		this.submitterGroups = submitterGroups;
 	}
 
 	/**

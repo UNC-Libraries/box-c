@@ -46,6 +46,8 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.agents.PersonAgent;
@@ -514,6 +516,12 @@ public class BatchIngestTask implements Runnable {
 	@Override
 	public void run() {
 		startTime = System.currentTimeMillis();
+		if (ingestProperties.getSubmitterGroups() != null) {
+			GroupsThreadStore.storeGroups(new AccessGroupSet(ingestProperties.getSubmitterGroups()));
+			log.debug("Groups loaded to thread from in run: " + GroupsThreadStore.getGroupString());
+		} else {
+			GroupsThreadStore.clearStore();
+		}
 		while (this.state != STATE.FINISHED) {
 			log.debug("Batch ingest: state=" + this.state.name() + ", dir=" + this.getBaseDir().getName());
 			if (Thread.interrupted()) {
@@ -550,6 +558,7 @@ public class BatchIngestTask implements Runnable {
 							this.ingestProperties.setFinishedTime(this.finishedTime);
 							this.ingestProperties.setStartTime(this.startTime);
 							this.ingestProperties.save();
+							GroupsThreadStore.clearStore();
 							deleteDataFiles();
 							handleFinishedDir();
 							this.state = STATE.FINISHED;
