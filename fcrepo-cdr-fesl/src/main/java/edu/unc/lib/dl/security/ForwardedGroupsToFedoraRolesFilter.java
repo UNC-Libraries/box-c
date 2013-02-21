@@ -122,7 +122,11 @@ public class ForwardedGroupsToFedoraRolesFilter implements Filter {
 			}
 		}
 		if (roles.contains(FEDORA_ROLE_ALLOWED_TO_FORWARD_GROUPS)) {
+			boolean canWrite = request.isUserInRole("canWrite");
+			// purge admin roles from forwarded groups
+			forwardedGroups.remove("administrator");
 			roles.clear();
+			if(canWrite) roles.add("canWrite");
 			roles.addAll(forwardedGroups);
 		}
 		roles.add("public");
