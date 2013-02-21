@@ -22,6 +22,8 @@ import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 
@@ -42,6 +44,7 @@ import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
 
 public abstract class FileSIPProcessor implements SIPProcessor {
+	private static final Log log = LogFactory.getLog(FileSIPProcessor.class);
 	protected PIDGenerator pidGenerator = null;
 	protected TripleStoreQueryService tripleStoreQueryService = null;
 
@@ -74,6 +77,7 @@ public abstract class FileSIPProcessor implements SIPProcessor {
 		Element locator = null;
 		// TYPE="MD5" and DIGEST="aaaaaa" on datastreamVersion
 		// verify checksum if one is present in SIP, then set it in FOXML
+		log.debug("Setting data file for " + pid + " to " + sip.getData().getAbsolutePath());
 		if (sip.getMd5checksum() != null && sip.getMd5checksum().trim().length() > 0) {
 			Checksum checker = new Checksum();
 			try {

@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.ingest.sip;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Map.Entry;
 
 import javax.xml.transform.TransformerException;
@@ -26,8 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
@@ -44,12 +40,6 @@ import edu.unc.lib.dl.xml.ModsXmlHelper;
 
 public class AtomPubEntrySIPProcessor extends FileSIPProcessor {
 	private static final Log log = LogFactory.getLog(AtomPubEntrySIPProcessor.class);
-	
-	private XMLOutputter outputter; 
-	
-	public AtomPubEntrySIPProcessor() {
-		outputter = new XMLOutputter();
-	}
 
 	@Override
 	public ArchivalInformationPackage createAIP(SubmissionInformationPackage genericSIP, DepositRecord record)
@@ -143,9 +133,9 @@ public class AtomPubEntrySIPProcessor extends FileSIPProcessor {
 			throw new IngestException("Could not create RDF AIP for simplified RELS-EXT setup of agent", e);
 		}
 		
-		this.assignFileTriples(pid, sip, record, foxml, label, rdfaip);
-		
+		// Need to call setDataFile before assignFileTriples so that it will get saved to the foxml file
 		this.setDataFile(pid, sip, foxml, rdfaip);
+		this.assignFileTriples(pid, sip, record, foxml, label, rdfaip);
 		
 		return rdfaip;
 	}
