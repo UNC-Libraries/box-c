@@ -169,6 +169,7 @@ public class SearchState implements Serializable, Cloneable {
 		this.sortOrder = sortOrder;
 	}
 
+	private static Pattern splitTermFragmentsRegex = Pattern.compile("(\"[^\"]*\"|[^\" ,]+)");
 	/**
 	 * Retrieves all the search term fragments contained in the selected field. Fragments are either single words
 	 * separated by non-alphanumeric characters, or phrases encapsulated by quotes.
@@ -183,8 +184,7 @@ public class SearchState implements Serializable, Cloneable {
 		String value = this.searchFields.get(fieldType);
 		if (value == null)
 			return null;
-		Pattern pattern = Pattern.compile("(\"[^\"]*\"|[^\" ,':]+)");
-		Matcher matcher = pattern.matcher(value);
+		Matcher matcher = splitTermFragmentsRegex.matcher(value);
 		ArrayList<String> fragments = new ArrayList<String>();
 		while (matcher.find()) {
 			if (matcher.groupCount() == 1) {
