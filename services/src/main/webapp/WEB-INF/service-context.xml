@@ -53,7 +53,7 @@
 		class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl" destroy-method="destroy">
 		<property name="itqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService"/>
 		<property name="sparqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/sparql/"/>
-		<property name="serverModelUri" value="rmi://${mulgara.host}/server1#"/>
+		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#"/>
 	</bean>
 	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
 		init-method="init">
