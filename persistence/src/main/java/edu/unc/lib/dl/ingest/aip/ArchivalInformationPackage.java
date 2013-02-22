@@ -84,4 +84,8 @@ public interface ArchivalInformationPackage {
 
 	public DepositRecord getDepositRecord();
 
+	public void setSubmitterGroups(String submitterGroupsOverride);
+	
+	public String getSubmitterGroups();
+
 }

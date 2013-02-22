@@ -42,6 +42,8 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.joda.time.DateTime;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
@@ -94,6 +96,15 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private BatchIngestQueue batchIngestQueue = null;
 	private BatchIngestTaskFactory batchIngestTaskFactory = null;
 	private MailNotifier mailNotifier;
+	private String submitterGroupsOverride = null;
+
+	public String getSubmitterGroupsOverride() {
+		return submitterGroupsOverride;
+	}
+
+	public void setSubmitterGroupsOverride(String submitterGroupsOverride) {
+		this.submitterGroupsOverride = submitterGroupsOverride;
+	}
 
 	public void setMailNotifier(MailNotifier mailNotifier) {
 		this.mailNotifier = mailNotifier;
@@ -152,6 +163,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				}
 			} else {
 				submitter = user.getName();
+			}
+			if(this.getSubmitterGroupsOverride() != null) {
+				aip.setSubmitterGroups(this.getSubmitterGroupsOverride());
+			} else {
+				aip.setSubmitterGroups(GroupsThreadStore.getGroupString());
 			}
 			aip.prepareIngest();
 
@@ -877,6 +893,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 			aip.setEmailRecipients(null); // no emails for blocking ingests
 
+			if(this.getSubmitterGroupsOverride() != null) {
+				aip.setSubmitterGroups(this.getSubmitterGroupsOverride());
+			} else {
+				aip.setSubmitterGroups(GroupsThreadStore.getGroupString());
+			}
+			
 			// persist the AIP to disk
 			aip.prepareIngest();
 

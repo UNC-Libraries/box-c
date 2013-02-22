@@ -64,6 +64,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 	private boolean sendEmail = false;
 	private List<URI> emailRecipients = new ArrayList<URI>();
 	private DepositRecord depositRecord = null;
+	private String submitterGroups = null;
 
 	/**
 	 * Makes an AIP with a pre-populated prep dir.
@@ -189,7 +190,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 				submitter = user.getName();
 			}
 			props.setSubmitter(submitter);
-			props.setSubmitterGroups(GroupsThreadStore.getGroupString());
+			props.setSubmitterGroups(this.submitterGroups);
 			props.setSubmissionTime(System.currentTimeMillis());
 			props.save();
 		} catch (Exception e) {
@@ -357,6 +358,16 @@ public class AIPImpl implements ArchivalInformationPackage {
 	@Override
 	public DepositRecord getDepositRecord() {
 		return this.depositRecord;
+	}
+
+	@Override
+	public void setSubmitterGroups(String submitterGroups) {
+		this.submitterGroups = submitterGroups;
+	}
+
+	@Override
+	public String getSubmitterGroups() {
+		return this.submitterGroups;
 	}
 
 }

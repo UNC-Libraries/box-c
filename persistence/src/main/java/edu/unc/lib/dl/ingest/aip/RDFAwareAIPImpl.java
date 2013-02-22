@@ -504,4 +504,14 @@ public class RDFAwareAIPImpl implements ArchivalInformationPackage {
 	public DepositRecord getDepositRecord() {
 		return this.baseAIP.getDepositRecord();
 	}
+
+	@Override
+	public void setSubmitterGroups(String submitterGroups) {
+		this.baseAIP.setSubmitterGroups(submitterGroups);
+	}
+
+	@Override
+	public String getSubmitterGroups() {
+		return this.baseAIP.getSubmitterGroups();
+	}
 }
