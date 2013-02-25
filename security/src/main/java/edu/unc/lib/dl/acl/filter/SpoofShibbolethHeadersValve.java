@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.acl.filter;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +66,7 @@ public class SpoofShibbolethHeadersValve extends ValveBase {
 			for (Cookie c : cookies) {
 				if (c.getName().startsWith(SPOOF_COOKIE_PREFIX)) {
 					String key = c.getName().substring(SPOOF_COOKIE_PREFIX.length());
-					String value = c.getValue();
+					String value = URLDecoder.decode(c.getValue(), "UTF-8");
 					values.put(key, value);
 				}
 			}
