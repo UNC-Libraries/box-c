@@ -65,6 +65,10 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	public CutoffFacet getAncestorPathFacet() {
 		return ancestorPathFacet;
 	}
+	
+	public void setAncestorPathFacet(CutoffFacet ancestorPathFacet) {
+		this.ancestorPathFacet = ancestorPathFacet;
+	}
 
 	@Field
 	public void setAncestorPath(List<String> ancestorPaths) {

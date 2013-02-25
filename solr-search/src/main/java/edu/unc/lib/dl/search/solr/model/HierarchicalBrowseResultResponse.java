@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 public class HierarchicalBrowseResultResponse extends SearchResultResponse {
@@ -40,8 +40,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 	private Map<String, Long> subcontainerCounts;
 	private Set<String> matchingContainerPids = null;
 	private Long rootCount;
-
-	private static SearchSettings searchSettings;
+	private ResultNode rootNode;
 
 	public HierarchicalBrowseResultResponse() {
 		super();
@@ -122,21 +121,36 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 	 * @param itemResults
 	 */
 	public void populateItemResults(List<BriefObjectMetadata> itemResults) {
-		if (this.getResultList() != null && this.getResultList().size() > 0
-				&& this.getResultList().get(0).getPath() != null) {
-			for (HierarchicalFacetNode rootTier : this.getResultList().get(0).getPath().getFacetNodes()) {
-				Long count = this.subcontainerCounts.get(rootTier.getSearchValue());
-				log.debug("Adding " + itemResults.size() + " items to existing count of " + count + " for searchKey of "
-						+ rootTier.getSearchValue());
-				if (count == null) {
-					this.subcontainerCounts.put(rootTier.getSearchValue(), (long) itemResults.size());
-				} else {
-					this.subcontainerCounts.put(rootTier.getSearchValue(), count + itemResults.size());
-				}
-			}
-		}
-		for (BriefObjectMetadata itemResult : itemResults) {
-			this.getResultList().add(itemResult);
+		this.getResultList().addAll(itemResults);
+	}
+
+	/**
+	 * Generates a tree representation of the current result set and stores its root.
+	 * 
+	 * Assumes the first result is the root node
+	 * Assumes that the result set is sorted such that a parent always appears before its children.
+	 */
+	public void generateResultTree() {
+		if (this.getResultList() == null || this.getResultList().size() == 0)
+			return;
+
+		Map<String, ResultNode> nodeMap = new HashMap<String, ResultNode>();
+		ResultNode parentNode = new ResultNode(this.getResultList().get(0));
+		nodeMap.put(parentNode.getMetadata().getId(), parentNode);
+		this.rootNode = parentNode;
+		
+		for (int i = 1; i < this.getResultList().size(); i++) {
+			BriefObjectMetadata metadata = this.getResultList().get(i);
+			
+			String parentId = metadata.getAncestorPathFacet().getSearchKey();
+			parentNode = nodeMap.get(parentId);
+			/*if (parentNode == null) {
+				parentNode = new ResultNode();
+				nodeMap.put(parentId, parentNode);
+			}*/
+			ResultNode currentNode = new ResultNode(metadata);
+			parentNode.getChildren().add(currentNode);
+			nodeMap.put(metadata.getId(), currentNode);
 		}
 	}
 
@@ -148,10 +162,6 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 		this.rootCount = rootCount;
 	}
 
-	public void setSearchSettings(SearchSettings searchSettings) {
-		HierarchicalBrowseResultResponse.searchSettings = searchSettings;
-	}
-
 	public Set<String> getMatchingContainerPids() {
 		return matchingContainerPids;
 	}
@@ -159,8 +169,47 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 	public void setMatchingContainerPids(Set<String> matchingContainerPids) {
 		this.matchingContainerPids = matchingContainerPids;
 	}
-	
+
 	public void setMatchingContainerPids(List<String> matchingContainerPids) {
 		this.matchingContainerPids = new HashSet<String>(matchingContainerPids);
+	}
+
+	public ResultNode getRootNode() {
+		return rootNode;
+	}
+
+	public void setRootNode(ResultNode rootNode) {
+		this.rootNode = rootNode;
+	}
+
+	public static class ResultNode {
+		private BriefObjectMetadata metadata;
+		private List<ResultNode> children;
+
+		public ResultNode() {
+			this.children = new ArrayList<ResultNode>();
+		}
+
+		public ResultNode(BriefObjectMetadata metadata) {
+			this();
+			this.metadata = metadata;
+		}
+
+		public BriefObjectMetadata getMetadata() {
+			return metadata;
+		}
+
+		public void setMetadata(BriefObjectMetadata metadata) {
+			this.metadata = metadata;
+		}
+
+		public List<ResultNode> getChildren() {
+			return children;
+		}
+
+		public void setChildren(List<ResultNode> children) {
+			this.children = children;
+		}
+
 	}
 }

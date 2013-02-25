@@ -77,30 +77,32 @@ $(function() {
 			$.ajax({
 				url: structureUrl,
 				success: function(data){
-					var childrenContainer = $("#hier_container_children_" + pid);
-					$("#hier_container_children_" + pid + " .hier_entry .indent_unit:nth-child(" + indentDepth + ")").each(function(){
-						if (!$(this).hasClass("hier_with_siblings")){
-							$(this).addClass("hier_with_siblings");
-						}
-					});
-					
-					$("#hier_container_children_" + pid + " .hier_entry .hier_container_not_loaded").each(function(){
-						var expandUrl = $(this).attr("href");
-						beginIndentCode = expandUrl.indexOf("&indentCode=") + 12;
-						if (beginIndentCode != -1){
-							endIndentCode = expandUrl.indexOf("&", beginIndentCode);
-							if (endIndentCode == -1){
-								endIndentCode = expandUrl.length-1;
+					if (data) {
+						var childrenContainer = $("#hier_container_children_" + pid);
+						$("#hier_container_children_" + pid + " .hier_entry .indent_unit:nth-child(" + indentDepth + ")").each(function(){
+							if (!$(this).hasClass("hier_with_siblings")){
+								$(this).addClass("hier_with_siblings");
 							}
-							indentCode = expandUrl.substring(beginIndentCode, endIndentCode);
-							indentCode = indentCode.substring(0, indentDepth-1) + "1" + indentCode.substring(indentDepth+1);
-							
-							$(this).attr("href", expandUrl.substring(0, beginIndentCode) + indentCode + expandUrl.substring(endIndentCode));
-						}
+						});
 						
-					});
-					childrenContainer.html(childrenContainer.html() + data);
-					childrenContainer.show();
+						$("#hier_container_children_" + pid + " .hier_entry .hier_container_not_loaded").each(function(){
+							var expandUrl = $(this).attr("href");
+							beginIndentCode = expandUrl.indexOf("&indentCode=") + 12;
+							if (beginIndentCode != -1){
+								endIndentCode = expandUrl.indexOf("&", beginIndentCode);
+								if (endIndentCode == -1){
+									endIndentCode = expandUrl.length-1;
+								}
+								indentCode = expandUrl.substring(beginIndentCode, endIndentCode);
+								indentCode = indentCode.substring(0, indentDepth-1) + "1" + indentCode.substring(indentDepth+1);
+								
+								$(this).attr("href", expandUrl.substring(0, beginIndentCode) + indentCode + expandUrl.substring(endIndentCode));
+							}
+							
+						});
+						childrenContainer.html(childrenContainer.html() + data);
+						childrenContainer.show();
+					}
 					initiatingLink.removeClass("hier_container_not_loaded");
 					loadingImage.remove();
 				},

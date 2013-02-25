@@ -5,6 +5,31 @@
 	<tlib-version>1.0</tlib-version>
 	<short-name>cdr</short-name>
 	<uri>http://cdr.lib.unc.edu/cdrUI</uri>
+	<tag>
+		<name>hierarchicalTree</name>
+		<tag-class>edu.unc.lib.dl.ui.view.HierarchicalTreeRecurseTag</tag-class>
+		<body-content>scriptless</body-content> 
+		<attribute>
+			<name>items</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>baseIndentCode</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>hideRoot</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>excludeIds</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>var</name>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
 	<function>
 		<name>containsAny</name>
 		<function-class>edu.unc.lib.dl.security.access.AccessGroupSet</function-class>

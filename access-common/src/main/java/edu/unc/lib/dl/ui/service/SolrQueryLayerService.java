@@ -18,6 +18,7 @@ package edu.unc.lib.dl.ui.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Set;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
@@ -36,6 +38,7 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
+import edu.unc.lib.dl.search.solr.model.CutoffFacetNode;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -158,7 +161,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		if (!applyCutoffs) {
 			ancestorPath.setCutoff(null);
 		}
-		
+
 		// Turning off rollup because it is really slow
 		searchState.setRollup(false);
 
@@ -270,9 +273,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Retrieves a list of the nearest windowSize neighbors within the nearest parent collection or folder around the
-	 * item metadata, based on the order field of the item. The first windowSize - 1 neighbors are retrieved to each
-	 * side of the item, and trimmed so that there are always windowSize - 1 neighbors surrounding the item if possible.  
-	 * If no order field is available, a list of arbitrary windowSize neighbors is returned.
+	 * item metadata, based on the order field of the item. The first windowSize - 1 neighbors are retrieved to each side
+	 * of the item, and trimmed so that there are always windowSize - 1 neighbors surrounding the item if possible. If no
+	 * order field is available, a list of arbitrary windowSize neighbors is returned.
 	 * 
 	 * @param metadata
 	 *           Record which the window pivots around.
@@ -284,11 +287,11 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 */
 	public List<BriefObjectMetadataBean> getNeighboringItems(BriefObjectMetadataBean metadata, int windowSize,
 			AccessGroupSet accessGroups) {
-		
+
 		// Get the common access restriction clause (starts with "AND ...")
-		
+
 		StringBuilder accessRestrictionClause = new StringBuilder();
-		
+
 		try {
 			addAccessRestrictions(accessRestrictionClause, accessGroups);
 		} catch (AccessRestrictionException e) {
@@ -296,44 +299,44 @@ public class SolrQueryLayerService extends SolrSearchService {
 			LOG.error(e.getMessage());
 			return null;
 		}
-		
+
 		// Prepare the common query object, including a filter for resource type and the
 		// facet which selects only the item's siblings.
 
 		SolrQuery solrQuery = new SolrQuery();
-		
+
 		solrQuery.setFacet(true);
-		solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":File " +
-				solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":Aggregate");
-		
+		solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":File "
+				+ solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":Aggregate");
+
 		CutoffFacet ancestorPath = null;
-		
-		if (metadata.getResourceType().equals(searchSettings.resourceTypeFile) ||
-				metadata.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
+
+		if (metadata.getResourceType().equals(searchSettings.resourceTypeFile)
+				|| metadata.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
 			ancestorPath = metadata.getAncestorPathFacet();
 		} else {
 			ancestorPath = metadata.getPath();
 		}
-		
+
 		if (ancestorPath != null) {
 			// We want only objects at the same level of the hierarchy
 			ancestorPath.setCutoff(ancestorPath.getHighestTier() + 1);
-			
+
 			facetFieldUtil.addToSolrQuery(ancestorPath, solrQuery);
 		}
-		
+
 		// If this item has no display order, get arbitrary items surrounding it.
-		
+
 		Long pivotOrder = metadata.getDisplayOrder();
-		
+
 		if (pivotOrder == null) {
-			
+
 			LOG.debug("No display order, just querying for " + windowSize + " siblings");
-			
+
 			StringBuilder query = new StringBuilder();
 
 			List<BriefObjectMetadataBean> list = null;
-			
+
 			query.append("*:*");
 			query.append(accessRestrictionClause);
 			solrQuery.setQuery(query.toString());
@@ -342,7 +345,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			solrQuery.setRows(windowSize);
 
 			solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
-			
+
 			try {
 				QueryResponse queryResponse = this.executeQuery(solrQuery);
 				list = queryResponse.getBeans(BriefObjectMetadataBean.class);
@@ -350,35 +353,36 @@ public class SolrQueryLayerService extends SolrSearchService {
 				LOG.error("Error retrieving Neighboring items: " + e);
 				return null;
 			}
-			
+
 			return list;
-			
-		// Otherwise, query for items surrounding this item.
-		
+
+			// Otherwise, query for items surrounding this item.
+
 		} else {
-			
+
 			LOG.debug("Display order is " + pivotOrder);
-			
+
 			// Find the right and left lists
-			
+
 			StringBuilder query;
-			
+
 			List<BriefObjectMetadataBean> leftList = null;
 			List<BriefObjectMetadataBean> rightList = null;
-			
+
 			solrQuery.setStart(0);
 			solrQuery.setRows(windowSize - 1);
-			
+
 			// Right list
 
 			query = new StringBuilder();
-			
-			query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[").append(pivotOrder + 1).append(" TO *]");
+
+			query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[")
+					.append(pivotOrder + 1).append(" TO *]");
 			query.append(accessRestrictionClause);
 			solrQuery.setQuery(query.toString());
 
 			solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.asc);
-			
+
 			try {
 				QueryResponse queryResponse = this.executeQuery(solrQuery);
 				rightList = queryResponse.getBeans(BriefObjectMetadataBean.class);
@@ -388,19 +392,20 @@ public class SolrQueryLayerService extends SolrSearchService {
 			}
 
 			LOG.debug("Got " + rightList.size() + " items for right list");
-			
+
 			// Left list
-			
+
 			// (Note that display order stuff is reversed.)
 
 			query = new StringBuilder();
-			
-			query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[* TO ").append(pivotOrder - 1).append("]");
+
+			query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[* TO ")
+					.append(pivotOrder - 1).append("]");
 			query.append(accessRestrictionClause);
 			solrQuery.setQuery(query.toString());
 
 			solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
-			
+
 			try {
 				QueryResponse queryResponse = this.executeQuery(solrQuery);
 				leftList = queryResponse.getBeans(BriefObjectMetadataBean.class);
@@ -410,14 +415,14 @@ public class SolrQueryLayerService extends SolrSearchService {
 			}
 
 			LOG.debug("Got " + leftList.size() + " items for left list");
-			
+
 			// Trim the lists
-			
+
 			int halfWindow = windowSize / 2;
-			
+
 			// If we have enough in both lists, trim both to be
-		    // halfWindow long.
-		    
+			// halfWindow long.
+
 			if (leftList.size() >= halfWindow && rightList.size() >= halfWindow) {
 
 				LOG.debug("Trimming both lists");
@@ -425,8 +430,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 				leftList.subList(halfWindow, leftList.size()).clear();
 				rightList.subList(halfWindow, rightList.size()).clear();
 
-			// If we don't have enough in the left list and we have extra in the right list,
-			// try to pick up the slack by trimming fewer items from the right list.
+				// If we don't have enough in the left list and we have extra in the right list,
+				// try to pick up the slack by trimming fewer items from the right list.
 
 			} else if (leftList.size() < halfWindow && rightList.size() > halfWindow) {
 
@@ -451,20 +456,20 @@ public class SolrQueryLayerService extends SolrSearchService {
 					leftList.subList(halfWindow + extra, leftList.size()).clear();
 
 			}
-		    
-		    // (Otherwise, we do no trimming, since both lists are smaller or the same size
-		    // as the window.)
-			
+
+			// (Otherwise, we do no trimming, since both lists are smaller or the same size
+			// as the window.)
+
 			// Assemble the result.
-			
+
 			Collections.reverse(leftList);
 			leftList.add(metadata);
 			leftList.addAll(rightList);
-			
+
 			return leftList;
-			
+
 		}
-		
+
 	}
 
 	/**
@@ -534,7 +539,6 @@ public class SolrQueryLayerService extends SolrSearchService {
 			return 0;
 
 		String ancestorPathField = solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name());
-		long maxTier = 0;
 		boolean first = true;
 		StringBuilder query;
 
@@ -560,12 +564,19 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 			solrQuery.setQuery(query.toString());
 		} else {
-			solrQuery = baseQuery;
+			// Starting from a base query
+			solrQuery = baseQuery.getCopy();
 			// Remove all ancestor path related filter queries so the counts won't be cut off
 			for (String filterQuery : solrQuery.getFilterQueries()) {
 				if (filterQuery.contains(ancestorPathField)) {
 					solrQuery.removeFilterQuery(filterQuery);
 				}
+			}
+			// Make sure we aren't returning any normal results
+			solrQuery.setRows(0);
+			// Remove all facet fields so we are only getting ancestor path
+			for (String facetField : solrQuery.getFacetFields()) {
+				solrQuery.removeFacetField(facetField);
 			}
 		}
 
@@ -575,22 +586,29 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		query = new StringBuilder();
 
-		query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':');
+		int baseTier = Integer.MAX_VALUE;
+		query.append(ancestorPathField).append(':');
 		List<BriefObjectMetadata> containerObjects = new ArrayList<BriefObjectMetadata>();
+		// Pare the list of ids we are searching for and assigning counts to down to just containers
 		for (BriefObjectMetadata metadataObject : resultList) {
 			if (metadataObject.getPath() != null
 					&& metadataObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString())) {
-				if (first) {
-					first = false;
-					query.append("(");
-				} else {
-					query.append(" OR ");
+
+				CutoffFacetNode highestTier = metadataObject.getPath().getHighestTierNode();
+				// Limiting count results to those containing the lowest tier container search values
+				if (highestTier.getTier() <= baseTier) {
+					if (highestTier.getTier() != baseTier)
+						baseTier = highestTier.getTier();
+					if (first) {
+						first = false;
+						query.append("(");
+					} else {
+						query.append(" OR ");
+					}
+
+					query.append(SolrSettings.sanitize(highestTier.getSearchValue())).append(",*");
 				}
-				query.append(SolrSettings.sanitize(metadataObject.getPath().getSearchValue())).append(",*");
 				containerObjects.add(metadataObject);
-				long highestTier = metadataObject.getPath().getHighestTier();
-				if (maxTier < highestTier)
-					maxTier = highestTier;
 			}
 		}
 
@@ -601,29 +619,21 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		query.append(")");
 
-		// Make sure that the query isn't too big for solr to accept
-		if (query.length() < 10000) {
-			solrQuery.addFilterQuery(query.toString());
-		}
+		solrQuery.addFilterQuery(query.toString());
 
 		try {
 			solrQuery.setFacet(true);
 			solrQuery.setFacetMinCount(1);
-			solrQuery.addFacetField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name()));
+			solrQuery.addFacetField(ancestorPathField);
 
-			// Retrieve as many ancestor paths as we can get
-			solrQuery.add("f." + solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name()) + ".facet.limit",
+			// Cap the number of facet results so it doesn't get too crazy
+			solrQuery.add("f." + ancestorPathField + ".facet.limit",
 					searchSettings.getProperty("search.facet.maxChildCounts"));
-
-			// Don't return any facets past the max tier in the contain set, but don't filter to this since that'd effect
-			// counts
-			StringBuilder facetQuery = new StringBuilder();
-			facetQuery.append('!').append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':')
-					.append(maxTier + 1).append(searchSettings.facetSubfieldDelimiter).append('*');
-			solrQuery.addFacetQuery(facetQuery.toString());
+			// Sort by value rather than count so that earlier tiers will come first in case the result gets cut off
+			solrQuery.setFacetSort("index");
 
 			queryResponse = this.executeQuery(solrQuery);
-			assignChildrenCounts(queryResponse, containerObjects, countName);
+			assignChildrenCounts(queryResponse.getFacetField(ancestorPathField), containerObjects, countName);
 			return queryResponse.getResults().getNumFound();
 		} catch (SolrServerException e) {
 			LOG.error("Error retrieving Solr search result request: " + e);
@@ -631,18 +641,44 @@ public class SolrQueryLayerService extends SolrSearchService {
 		return 0;
 	}
 
-	protected void assignChildrenCounts(QueryResponse queryResponse, List<BriefObjectMetadata> containerObjects,
+	/**
+	 * Assigns children counts to container objects from ancestor path facet results based on matching search values
+	 * 
+	 * @param facetField
+	 * @param containerObjects
+	 * @param countName
+	 */
+	protected void assignChildrenCounts(FacetField facetField, List<BriefObjectMetadata> containerObjects,
 			String countName) {
-		for (FacetField facetField : queryResponse.getFacetFields()) {
-			if (facetField.getValues() != null) {
-				for (FacetField.Count facetValue : facetField.getValues()) {
-					for (int i = 0; i < containerObjects.size(); i++) {
-						BriefObjectMetadata container = containerObjects.get(i);
-						if (facetValue.getName().indexOf(container.getPath().getSearchValue()) == 0) {
-							container.getCountMap().put(countName, facetValue.getCount());
+		if (facetField.getValues() != null) {
+			boolean binarySearch = facetField.getValues().size() > 64;
+			for (BriefObjectMetadata container : containerObjects) {
+				// Find the facet count for this container, either using a binary or linear search
+				String searchValue = container.getPath().getSearchValue();
+				int matchIndex = -1;
+				if (binarySearch) {
+					matchIndex = Collections.binarySearch(facetField.getValues(), searchValue, new Comparator<Object>() {
+						@Override
+						public int compare(Object currentFacetValueObject, Object searchValueObject) {
+							if (searchValueObject == null)
+								throw new NullPointerException();
+							String searchValue = (String) searchValueObject;
+							Count facetValue = (Count) currentFacetValueObject;
+							return facetValue.getName().indexOf(searchValue) == 0 ? 0 : facetValue.getName().compareTo(
+									searchValue);
+						}
+					});
+				} else {
+					for (int i = 0; i < facetField.getValues().size(); i++) {
+						Count facetValue = facetField.getValues().get(i);
+						if (facetValue.getName().indexOf(searchValue) == 0) {
+							matchIndex = i;
 							break;
 						}
 					}
+				}
+				if (matchIndex > -1) {
+					container.getCountMap().put(countName, facetField.getValues().get(matchIndex).getCount());
 				}
 			}
 		}
@@ -709,21 +745,16 @@ public class SolrQueryLayerService extends SolrSearchService {
 		if (results.getResultCount() > 0) {
 			// Get the children counts per container
 			SearchRequest filteredChildrenRequest = new SearchRequest(browseState, browseRequest.getAccessGroups());
-			browseResults.setRootCount(this.getChildrenCounts(results.getResultList(), accessGroups, "child", null,
-					this.generateSearch(filteredChildrenRequest, true)));
+			this.getChildrenCounts(results.getResultList(), accessGroups, "child", null,
+					this.generateSearch(filteredChildrenRequest, true));
 
 			try {
-				// Add in the sub-container counts per container for indentation purposes
-				browseResults.populateSubcontainerCounts(getSubcontainerCounts(
-						((CutoffFacet) browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name())),
-						browseRequest.getRetrievalDepth(), baseQuery));
-
 				// If anything that constituted a search is in the request then trim out possible empty folders
 				if (browseState.getFacets().size() > 1 || browseState.getRangeFields().size() > 0
 						|| browseState.getSearchFields().size() > 0 || browseState.getAccessTypeFilter() != null) {
 					// Get the list of any direct matches for the current query
 					browseResults.setMatchingContainerPids(this.getDirectContainerMatches(browseState, accessGroups));
-					// Remove all containers that are not direct matches for the user's query and have 0 children  
+					// Remove all containers that are not direct matches for the user's query and have 0 children
 					browseResults.removeContainersWithoutContents();
 				}
 			} catch (SolrServerException e) {
@@ -750,39 +781,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 			browseResults.populateItemResults(fileResults.getResultList());
 		}
 
+		browseResults.generateResultTree();
+
 		return browseResults;
-	}
-
-	private List<FacetField> getSubcontainerCounts(CutoffFacet ancestorPath, int retrievalDepth, SolrQuery baseQuery)
-			throws SolrServerException {
-		SolrQuery subcontainerQuery = baseQuery.getCopy();
-
-		// Limit the results to one tier past the depth being retrieved, since ancestor path does not include the
-		// container itself, and going only to the depth requested would get the counts for the previous tier
-		StringBuilder cutoffNextTierQuery = new StringBuilder();
-		cutoffNextTierQuery.append('!').append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name()))
-				.append(":");
-		if (ancestorPath != null) {
-			LOG.debug("Restricting subcontainer counts to " + ancestorPath.getHighestTier() + " + " + (retrievalDepth + 1));
-			cutoffNextTierQuery.append(ancestorPath.getHighestTier() + retrievalDepth);
-		} else {
-			LOG.debug("Restricting subcontainer counts to " + (retrievalDepth));
-
-			cutoffNextTierQuery.append(retrievalDepth + 1);
-		}
-		cutoffNextTierQuery.append(searchSettings.facetSubfieldDelimiter).append('*');
-		subcontainerQuery.addFilterQuery(cutoffNextTierQuery.toString());
-
-		subcontainerQuery.setRows(0);
-
-		subcontainerQuery.setFacet(true);
-		subcontainerQuery.setFacetMinCount(1);
-		subcontainerQuery.addFacetField(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name()));
-
-		subcontainerQuery.setFacetLimit(-1);
-
-		QueryResponse queryResponse = this.executeQuery(subcontainerQuery);
-		return queryResponse.getFacetFields();
 	}
 
 	/**
@@ -812,19 +813,35 @@ public class SolrQueryLayerService extends SolrSearchService {
 		return directMatchIds;
 	}
 
-	public SearchResultResponse getHierarchicalBrowseItemResult(HierarchicalBrowseRequest browseRequest) {
+	public HierarchicalBrowseResultResponse getHierarchicalBrowseItemResult(SearchRequest browseRequest) {
 		SearchState fileSearchState = new SearchState(browseRequest.getSearchState());
 		List<String> resourceTypes = new ArrayList<String>();
 		resourceTypes.add(searchSettings.resourceTypeFile);
+		//resourceTypes.add(searchSettings.resourceTypeAggregate);
 		fileSearchState.setResourceTypes(resourceTypes);
-		Object ancestorPath = fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
-		if (ancestorPath instanceof CutoffFacet) {
+		CutoffFacet ancestorPath = (CutoffFacet)fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
+		if (ancestorPath != null) {
 			((CutoffFacet) ancestorPath).setCutoff(((CutoffFacet) ancestorPath).getHighestTier() + 1);
+		} else {
+			ancestorPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + this.collectionsPid.getPid());
+			fileSearchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPath);
 		}
+		
 		fileSearchState.setFacetsToRetrieve(null);
 		SearchRequest fileSearchRequest = new SearchRequest(fileSearchState, browseRequest.getAccessGroups());
 		SearchResultResponse fileResults = this.getSearchResults(fileSearchRequest);
-		return fileResults;
+		
+		HierarchicalBrowseResultResponse response = new HierarchicalBrowseResultResponse();
+		response.setResultList(fileResults.getResultList());
+		
+		// Add in a stub root node to top the tree
+		BriefObjectMetadataBean rootNode = new BriefObjectMetadataBean();
+		rootNode.setId(ancestorPath.getSearchKey());
+		rootNode.setAncestorPathFacet(ancestorPath);
+		response.getResultList().add(0, rootNode);
+		
+		response.generateResultTree();
+		return response;
 	}
 
 	/**

@@ -98,9 +98,4 @@
 	<bean id="searchStateValidator"
 		class="edu.unc.lib.dl.search.solr.validator.SearchStateValidator">
 	</bean>
-	
-	<!-- Bean static inits -->
-	<bean id="hierarchicalBrowseResultResponse" class="edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse">
-		<property name="searchSettings" ref="searchSettings" />
-	</bean>
 </beans>

@@ -23,7 +23,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import edu.unc.lib.dl.search.solr.model.CutoffFacet;
+import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
@@ -41,11 +44,29 @@ import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
  * @author bbpennel
  */
 @Controller
-@RequestMapping("/browse")
 public class HierarchicalBrowseController extends AbstractSolrSearchController {
 	private static final Logger LOG = LoggerFactory.getLogger(HierarchicalBrowseController.class);
 	
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping("/browseChildren")
+	public String getItemChildren(Model model, HttpServletRequest request, @RequestParam("tier") String tier) {
+		LOG.debug("In browse children controller for " + tier);
+		SearchRequest browseRequest = new SearchRequest();
+		generateSearchRequest(request, null, browseRequest);
+		
+		CutoffFacet path = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), tier);
+		browseRequest.getSearchState().getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), path);
+		
+		HierarchicalBrowseResultResponse resultResponse = queryLayer.getHierarchicalBrowseItemResult(browseRequest);
+		model.addAttribute("hierarchicalViewResults", resultResponse);
+		
+		String searchStateUrl = SearchStateUtil.generateStateParameterString(browseRequest.getSearchState());
+		model.addAttribute("searchStateUrl", searchStateUrl);
+		
+		model.addAttribute("template", "ajax");
+		return "browseResults/singleTierBrowse";
+	}
+	
+	@RequestMapping(value = "/browse", method = RequestMethod.GET)
 	public String handleGet(Model model, HttpServletRequest request){
 		LOG.debug("In Hierarchical Browse controller");
 		
@@ -90,7 +111,6 @@ public class HierarchicalBrowseController extends AbstractSolrSearchController {
 		
 		String searchStateUrl = SearchStateUtil.generateStateParameterString(searchState);
 		model.addAttribute("searchStateUrl", searchStateUrl);
-		model.addAttribute("userAccessGroups", browseRequest.getAccessGroups());
 		model.addAttribute("resultResponse", resultResponse);
 		model.addAttribute("hierarchicalViewResults", resultResponse);
 		
