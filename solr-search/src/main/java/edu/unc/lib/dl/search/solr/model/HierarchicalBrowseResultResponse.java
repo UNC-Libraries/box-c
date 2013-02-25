@@ -144,10 +144,10 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 			
 			String parentId = metadata.getAncestorPathFacet().getSearchKey();
 			parentNode = nodeMap.get(parentId);
-			/*if (parentNode == null) {
-				parentNode = new ResultNode();
-				nodeMap.put(parentId, parentNode);
-			}*/
+			if (parentNode == null) {
+				// Parent isn't found, so something is wrong, skip this item
+				continue;
+			}
 			ResultNode currentNode = new ResultNode(metadata);
 			parentNode.getChildren().add(currentNode);
 			nodeMap.put(metadata.getId(), currentNode);

@@ -84,12 +84,12 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		boolean orphaned = true;
 		// Rollup content models by pid
 		for (List<String> row : results) {
-			String currentPid = row.get(0);
+			String currentPid = row.get(1);
 			if (orphaned && collectionsPid.getURI().equals(currentPid)) {
 				orphaned = false;
 			}
 			if (currentPid.equals(previousPID)) {
-				currentNode.contentModels.add(row.get(2));
+				currentNode.contentModels.add(row.get(3));
 			} else {
 				previousPID = currentPid;
 				currentNode = new PathNode(row);
@@ -98,6 +98,11 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		}
 		if (orphaned && !collectionsPid.getPid().equals(dip.getPid()))
 			throw new IndexingException("Object " + dip.getPid() + " is orphaned");
+		
+		// Sort the path nodes since they aren't guaranteed to be in order
+		this.sortPathNodes(dip.getPid().getPid(), pathNodes);
+		// Move the currentNode pointer to the last item in the sorted list
+		currentNode = pathNodes.get(pathNodes.size() - 1);
 
 		// Create the ancestorPath, which contains the path up to be not including the node being indexed
 		List<String> ancestorPath = new ArrayList<String>(pathNodes.size() - 1);
@@ -155,6 +160,25 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		idb.setResourceTypeSort(currentNode.resourceType.getDisplayOrder());
 		dip.setResourceType(currentNode.resourceType);
 		dip.setLabel(currentNode.label);
+	}
+	
+	/**
+	 * Performs an in-place selection sort of the nodes, sorting by child to parent relationship
+	 *  
+	 * @param endPID The pid for the node at the end of the chain
+	 * @param pathNodes
+	 */
+	private void sortPathNodes(String endPID, List<PathNode> pathNodes) {
+		for (int i = pathNodes.size() - 1; i >= 0; i--) {
+			int j = 0;
+			for (; j < i && !pathNodes.get(j).pid.getPid().equals(endPID); j++);
+			if (j < i) {
+				PathNode swap = pathNodes.get(j);
+				pathNodes.set(j, pathNodes.get(i));
+				pathNodes.set(i, swap);
+				endPID = swap.parentPID.getPid();
+			}
+		}
 	}
 
 	private void buildFromParentDocuments(DocumentIndexingPackage dip) throws IndexingException {
@@ -244,17 +268,19 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 	}
 
 	private static class PathNode {
+		PID parentPID;
 		PID pid;
 		String label;
 		List<String> contentModels;
 		ResourceType resourceType;
 
 		public PathNode(List<String> row) {
-			// $p $pid $slug $label $contentModel
-			this.pid = new PID(row.get(0));
-			this.label = row.get(1);
+			// $p $pid $label $contentModel
+			this.parentPID = new PID(row.get(0));
+			this.pid = new PID(row.get(1));
+			this.label = row.get(2);
 			this.contentModels = new ArrayList<String>();
-			this.contentModels.add(row.get(2));
+			this.contentModels.add(row.get(3));
 		}
 	}
 }

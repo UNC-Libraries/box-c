@@ -44,20 +44,28 @@ public class SetPathFilterTest extends Assert {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
-		results
-				.add(Arrays.asList("info:fedora/uuid:Collections", "Collections", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:Collections", "Collections",
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:Collections", "Collections", "info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection",
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Collection"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/cdr-model:Simple"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/cdr-model:JP2DerivedImage"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:Collection"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/cdr-model:Simple"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/cdr-model:JP2DerivedImage"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
@@ -84,40 +92,45 @@ public class SetPathFilterTest extends Assert {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
-		results
-				.add(Arrays.asList("info:fedora/uuid:Collections", "Collections", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:Collections", "Collections",
-				"info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:Collections", "Collections", "info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "Article/Aggregate Collection",
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
 				"info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "Article/Aggregate Collection",
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "Article/Aggregate Collectionl",
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
 				"info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "Article/Aggregate Collection",
-				"info:fedora/cdr-model:Collection"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection",
+				"Article/Aggregate Collection", "info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection",
+				"Article/Aggregate Collection", "info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection",
+				"Article/Aggregate Collectionl", "info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection",
+				"Article/Aggregate Collection", "info:fedora/cdr-model:Collection"));
 		results
 				.add(Arrays
 						.asList(
+								"info:fedora/uuid:collection",
 								"info:fedora/uuid:aggregate",
 								"2, 4-Diamino-6- hydroxy pyrimidine inhibits NSAIDs induced nitrosyl-complex EPR signals and ulcer in rat jejunum",
 								"info:fedora/cdr-model:PreservedObject"));
 		results
 				.add(Arrays
 						.asList(
+								"info:fedora/uuid:collection",
 								"info:fedora/uuid:aggregate",
 								"2, 4-Diamino-6- hydroxy pyrimidine inhibits NSAIDs induced nitrosyl-complex EPR signals and ulcer in rat jejunum",
 								"info:fedora/fedora-system:FedoraObject-3.0"));
 		results
 				.add(Arrays
 						.asList(
+								"info:fedora/uuid:collection",
 								"info:fedora/uuid:aggregate",
 								"2, 4-Diamino-6- hydroxy pyrimidine inhibits NSAIDs induced nitrosyl-complex EPR signals and ulcer in rat jejunum",
 								"info:fedora/cdr-model:Container"));
 		results
 				.add(Arrays
 						.asList(
+								"info:fedora/uuid:collection",
 								"info:fedora/uuid:aggregate",
 								"2, 4-Diamino-6- hydroxy pyrimidine inhibits NSAIDs induced nitrosyl-complex EPR signals and ulcer in rat jejunum",
 								"info:fedora/cdr-model:AggregateWork"));
@@ -152,25 +165,36 @@ public class SetPathFilterTest extends Assert {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
-		results
-				.add(Arrays.asList("info:fedora/uuid:Collections", "Collections", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:Collections", "Collections",
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:Collections", "Collections", "info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection",
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Collection"));
-		results.add(Arrays.asList("info:fedora/uuid:aggregate", "aggregate", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays
-				.asList("info:fedora/uuid:aggregate", "aggregate", "info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:aggregate", "aggregate", "info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:aggregate", "aggregate", "info:fedora/cdr-model:AggregateWork"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "child.pdf", "info:fedora/cdr-model:Simple"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "child.pdf", "info:fedora/cdr-model:JP2DerivedImage"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "child.pdf", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "child.pdf", "info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:Collection"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:aggregate", "aggregate",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:aggregate", "aggregate",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:aggregate", "aggregate",
+				"info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:aggregate", "aggregate",
+				"info:fedora/cdr-model:AggregateWork"));
+		results.add(Arrays.asList("info:fedora/uuid:aggregate", "info:fedora/uuid:File", "child.pdf",
+				"info:fedora/cdr-model:Simple"));
+		results.add(Arrays.asList("info:fedora/uuid:aggregate", "info:fedora/uuid:File", "child.pdf",
+				"info:fedora/cdr-model:JP2DerivedImage"));
+		results.add(Arrays.asList("info:fedora/uuid:aggregate", "info:fedora/uuid:File", "child.pdf",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:aggregate", "info:fedora/uuid:File", "child.pdf",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
@@ -198,19 +222,26 @@ public class SetPathFilterTest extends Assert {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
-		results
-				.add(Arrays.asList("info:fedora/uuid:Collections", "Collections", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:Collections", "Collections",
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:Collections", "Collections", "info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection",
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Collection"));
-		results.add(Arrays.asList("info:fedora/uuid:folder", "folder", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:folder", "folder", "info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:folder", "folder", "info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:Collection"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:folder", "folder",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:folder", "folder",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:folder", "folder",
+				"info:fedora/cdr-model:Container"));
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
@@ -234,21 +265,79 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test
+	public void fromQueryOrderTest() {
+		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
+		List<List<String>> results = new ArrayList<List<String>>();
+
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:folder", "folder",
+				"info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:folder", "folder",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:folder", "folder",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:Collection"));
+		results.add(Arrays.asList("info:fedora/uuid:folder", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/cdr-model:Simple"));
+		results.add(Arrays.asList("info:fedora/uuid:folder", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/cdr-model:JP2DerivedImage"));
+		results.add(Arrays.asList("info:fedora/uuid:folder", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:folder", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/cdr-model:Container"));
+
+		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
+
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		IndexDocumentBean idb = dip.getDocument();
+
+		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
+		filter.setTripleStoreQueryService(tsqs);
+		filter.filter(dip);
+
+		assertEquals("/Collections/collection/folder", idb.getAncestorNames());
+		assertEquals("1,uuid:Collections,Collections", idb.getAncestorPath().get(0));
+		assertEquals("2,uuid:collection,collection", idb.getAncestorPath().get(1));
+		assertEquals("3,uuid:folder,folder", idb.getAncestorPath().get(2));
+		assertEquals(3, idb.getAncestorPath().size());
+	}
+
+	@Test
 	public void fromQueryNoCollectionTest() {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
-		results
-				.add(Arrays.asList("info:fedora/uuid:Collections", "Collections", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:Collections", "Collections",
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:Collections", "Collections", "info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:folder", "folder", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:folder", "folder", "info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:folder", "folder", "info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "File", "info:fedora/cdr-model:Simple"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "File", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "File", "info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("root", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:folder", "folder",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:folder", "folder",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:folder", "folder",
+				"info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:folder", "info:fedora/uuid:File", "File",
+				"info:fedora/cdr-model:Simple"));
+		results.add(Arrays.asList("info:fedora/uuid:folder", "info:fedora/uuid:File", "File",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:folder", "info:fedora/uuid:File", "File",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
@@ -284,7 +373,7 @@ public class SetPathFilterTest extends Assert {
 
 		filter.filter(dip);
 	}
-	
+
 	private DocumentIndexingPackage getParentFolderWithCollection() {
 		DocumentIndexingPackage parentCollection = new DocumentIndexingPackage("info:fedora/uuid:collection");
 		parentCollection.setResourceType(ResourceType.Collection);
@@ -301,7 +390,7 @@ public class SetPathFilterTest extends Assert {
 		parentFolder.getDocument().setAncestorNames("/Collections/collection/folder");
 		parentFolder.getDocument().setAncestorPath(
 				Arrays.asList("1,uuid:Collections,Collections", "2,uuid:collection,collection"));
-		
+
 		return parentFolder;
 	}
 
@@ -364,7 +453,7 @@ public class SetPathFilterTest extends Assert {
 		assertTrue(idb.getAncestorPath().contains("3,uuid:folder,folder"));
 		assertEquals(idb.getId(), idb.getRollup());
 	}
-	
+
 	@Test
 	public void fromParentsNoCollectionTest() throws FileNotFoundException, JDOMException, IOException {
 		DocumentIndexingPackage parentFolder = new DocumentIndexingPackage("info:fedora/uuid:folder");
@@ -373,8 +462,7 @@ public class SetPathFilterTest extends Assert {
 		parentFolder.getDocument().setParentCollection(null);
 		parentFolder.setLabel("folder");
 		parentFolder.getDocument().setAncestorNames("/Collections/folder");
-		parentFolder.getDocument().setAncestorPath(
-				Arrays.asList("1,uuid:Collections,Collections"));
+		parentFolder.getDocument().setAncestorPath(Arrays.asList("1,uuid:Collections,Collections"));
 
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
 		dip.setParentDocument(parentFolder);
@@ -397,7 +485,7 @@ public class SetPathFilterTest extends Assert {
 		assertTrue(idb.getAncestorPath().contains("1,uuid:Collections,Collections"));
 		assertTrue(idb.getAncestorPath().contains("2,uuid:folder,folder"));
 	}
-	
+
 	@Test
 	public void fromParentsAggregateChildTest() throws FileNotFoundException, JDOMException, IOException {
 		DocumentIndexingPackage parentCollection = new DocumentIndexingPackage("info:fedora/uuid:collection");
@@ -439,7 +527,7 @@ public class SetPathFilterTest extends Assert {
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection,collection"));
 		assertTrue(idb.getAncestorPath().contains("3,uuid:aggregate,aggregate"));
 	}
-	
+
 	@Test(expected = IndexingException.class)
 	public void fromParentsNoAncestorsTest() throws FileNotFoundException, JDOMException, IOException {
 		DocumentIndexingPackage parentFolder = new DocumentIndexingPackage("info:fedora/uuid:folder");
@@ -458,7 +546,7 @@ public class SetPathFilterTest extends Assert {
 		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.filter(dip);
 	}
-	
+
 	@Test
 	public void fromParentsImmediateChildOfCollections() throws FileNotFoundException, JDOMException, IOException {
 		DocumentIndexingPackage parentCollections = new DocumentIndexingPackage("info:fedora/uuid:Collections");
@@ -478,25 +566,30 @@ public class SetPathFilterTest extends Assert {
 		SetPathFilter filter = new SetPathFilter();
 		filter.setCollectionsPid(new PID("uuid:Collections"));
 		filter.filter(dip);
-		
+
 		assertEquals(1, idb.getAncestorPath().size());
-		//assertEquals("", idb.getAncestorNames());
+		// assertEquals("", idb.getAncestorNames());
 	}
-	
+
 	@Test(expected = IndexingException.class)
 	public void orphanedTest() {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection",
+		results.add(Arrays.asList("", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("", "info:fedora/uuid:collection", "collection",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Container"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Collection"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/cdr-model:Simple"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/cdr-model:JP2DerivedImage"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/cdr-model:PreservedObject"));
-		results.add(Arrays.asList("info:fedora/uuid:File", "File.jpg", "info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("", "info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("", "info:fedora/uuid:collection", "collection", "info:fedora/cdr-model:Collection"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/cdr-model:Simple"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/cdr-model:JP2DerivedImage"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
