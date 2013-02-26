@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
@@ -445,15 +446,16 @@ public class SearchStateFactory {
 			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), hierFacet);
 		}
 		
+		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DEPARTMENT.name()));
+		if (parameter != null && parameter.length() > 0){
+			CaseInsensitiveFacet facet = new CaseInsensitiveFacet(SearchFieldKeys.DEPARTMENT.name(), parameter);
+			searchState.getFacets().put(SearchFieldKeys.DEPARTMENT.name(), facet);
+		}
+		
 		parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.CONTENT_TYPE.name()));
 		if (parameter != null && parameter.length() > 0){
 			MultivaluedHierarchicalFacet hierFacet = new MultivaluedHierarchicalFacet(SearchFieldKeys.CONTENT_TYPE.name(), parameter);
 			searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(), hierFacet);
-		}
-		
-		parameter = getParameter(request, searchSettings.searchStateParams.get("ACCESS_FILTER_TYPE"));
-		if (parameter != null && parameter.length() > 0){
-			searchState.setAccessTypeFilter(searchSettings.searchFieldKey(parameter));
 		}
 		
 		//Store date added.

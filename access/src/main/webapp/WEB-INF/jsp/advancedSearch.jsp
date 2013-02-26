@@ -54,6 +54,12 @@
 						<option value="<c:out value='${collectionRecord.path.searchValue}' />"><c:out value="${collectionRecord.title}" /></option>
 					</c:forEach>
 				</select>
+				<select name="${searchSettings.searchFieldParams['DEPARTMENT']}" class="advsearch_select">
+					<option value="">Department</option>
+					<c:forEach items="${departmentList}" var="departmentFacet">
+						<option value="<c:out value='${departmentFacet.value}' />"><c:out value="${departmentFacet.displayValue}" /></option>
+					</c:forEach>
+				</select>
 				<select name="${searchSettings.searchFieldParams['CONTENT_TYPE']}" class="advsearch_select">
 					<option value="">Format</option>
 					<c:forEach items="${formatMap}" var="formatEntry">

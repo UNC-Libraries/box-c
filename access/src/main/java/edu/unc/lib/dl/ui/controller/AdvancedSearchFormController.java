@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.ui.util.LookupMappingsSettings;
@@ -44,9 +45,13 @@ public class AdvancedSearchFormController extends AbstractSolrSearchController {
 		if (request.getQueryString() == null || request.getQueryString().length() == 0){
 			//Populate the list of collections for the advanced search page drop down
 			AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-			SearchResultResponse resultResponse = queryLayer.getCollectionList(accessGroups);
 			
-			model.addAttribute("collectionList", resultResponse.getResultList());
+			SearchResultResponse collectionResultResponse = queryLayer.getCollectionList(accessGroups);
+			model.addAttribute("collectionList", collectionResultResponse.getResultList());
+			
+			FacetFieldObject departmentFacetFieldObject = queryLayer.getDepartmentList(accessGroups);
+			model.addAttribute("departmentList", departmentFacetFieldObject.getValues());
+			
 			model.addAttribute("pageSubtitle", "Advanced Search");
 			
 			model.addAttribute("formatMap", LookupMappingsSettings.getMapping("advancedFormats"));
