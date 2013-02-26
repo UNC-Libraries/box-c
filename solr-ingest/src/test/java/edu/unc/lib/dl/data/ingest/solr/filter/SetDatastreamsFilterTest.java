@@ -189,4 +189,21 @@ public class SetDatastreamsFilterTest extends Assert {
 
 		assertEquals("DATA_FILE", dip.getDefaultWebData());
 	}
+	
+	@Test
+	public void noDatastreamSize() throws Exception {
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:c19067ff-77af-4954-8aec-454d213846d8");
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/noDatastreamSize.xml")));
+		dip.setFoxml(foxml);
+
+		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
+		filter.filter(dip);
+
+		IndexDocumentBean idb = dip.getDocument();
+		
+		assertTrue(idb.getDatastream().contains("DATA_FILE|image/tiff|tif|329972188|7994a13933f2729aabb6fc954787506f|"));
+
+		assertEquals("DATA_FILE", dip.getDefaultWebData());
+	}
 }

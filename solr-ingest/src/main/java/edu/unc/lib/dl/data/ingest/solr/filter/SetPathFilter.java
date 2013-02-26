@@ -205,6 +205,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		ResourceType resourceType = ResourceType.getResourceTypeByContentModels(idb.getContentModel());
 		idb.setResourceType(resourceType.name());
 		dip.setResourceType(resourceType);
+		idb.setResourceTypeSort(resourceType.getDisplayOrder());
 
 		// Set this items ancestor path to its parents ancestor path plus the parent itself.
 		List<String> parentAncestors = parentDIP.getDocument().getAncestorPath();

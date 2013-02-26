@@ -85,6 +85,7 @@ public class SetPathFilterTest extends Assert {
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection,collection"));
 		assertFalse(idb.getAncestorPath().contains("3,uuid:File,File.jpg"));
 		assertEquals(4, idb.getContentModel().size());
+		assertEquals(3, idb.getResourceTypeSort().intValue());
 	}
 
 	@Test
@@ -158,6 +159,7 @@ public class SetPathFilterTest extends Assert {
 				.getAncestorPath()
 				.contains(
 						"3,uuid:aggregate,2\\, 4-Diamino-6- hydroxy pyrimidine inhibits NSAIDs induced nitrosyl-complex EPR signals and ulcer in rat jejunum"));
+		assertEquals(3, idb.getResourceTypeSort().intValue());
 	}
 
 	@Test
@@ -215,6 +217,8 @@ public class SetPathFilterTest extends Assert {
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection,collection"));
 		assertTrue(idb.getAncestorPath().contains("3,uuid:aggregate,aggregate"));
 		assertFalse(idb.getAncestorPath().contains("4,uuid:File,child.pdf"));
+		
+		assertEquals(3, idb.getResourceTypeSort().intValue());
 	}
 
 	@Test
@@ -262,6 +266,8 @@ public class SetPathFilterTest extends Assert {
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection,collection"));
 		assertFalse(idb.getAncestorPath().contains("3,uuid:folder,folder"));
 		assertEquals(3, idb.getContentModel().size());
+		
+		assertEquals(2, idb.getResourceTypeSort().intValue());
 	}
 
 	@Test
@@ -424,6 +430,7 @@ public class SetPathFilterTest extends Assert {
 		assertTrue(idb.getAncestorPath().contains("1,uuid:Collections,Collections"));
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection,collection"));
 		assertTrue(idb.getAncestorPath().contains("3,uuid:folder,folder"));
+		assertEquals(3, idb.getResourceTypeSort().intValue());
 	}
 
 	@Test
@@ -452,6 +459,7 @@ public class SetPathFilterTest extends Assert {
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection,collection"));
 		assertTrue(idb.getAncestorPath().contains("3,uuid:folder,folder"));
 		assertEquals(idb.getId(), idb.getRollup());
+		assertEquals(3, idb.getResourceTypeSort().intValue());
 	}
 
 	@Test

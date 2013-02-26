@@ -121,6 +121,14 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 							defaultWebData.setExtension(this.getExtension(null, defaultWebData.getMimetype()));
 					}
 				}
+				
+				// If the filesize on the datastream is not set (due to old version of fedora creating it), then grab it from rels-ext
+				if (defaultWebData.getFilesize() < 0) {
+					String sourceFileSize = relsExt.getChildText(ContentModelHelper.CDRProperty.hasSourceFileSize.name(), JDOMNamespaceUtil.CDR_NS);
+					if (sourceFileSize != null) {
+						defaultWebData.setFilesize(Long.parseLong(sourceFileSize));
+					}
+				}
 
 				// Add in the content types for the dwd
 				List<String> contentTypes = new ArrayList<String>();

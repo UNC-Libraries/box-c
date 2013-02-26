@@ -73,6 +73,7 @@ public class DateTimeUtil {
 	}
 	
 	private final static DateTimeFormatter utcFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(DateTimeZone.UTC);
+	private final static DateTimeFormatter utcYFormatter = DateTimeFormat.forPattern("yyyy").withZone(DateTimeZone.UTC);
 	private final static DateTimeFormatter utcYMDFormatter = DateTimeFormat.forPattern("yyyy-MM-dd").withZone(DateTimeZone.UTC);
 	private final static DateTimeFormatter utcYMDHMSFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(DateTimeZone.UTC);
 	
@@ -82,6 +83,10 @@ public class DateTimeUtil {
 	}
 	
 	public static Date parsePartialUTCToDate(String utcDate) throws ParseException {
+		if (utcDate.length() == 4) {
+			DateTime dateTime = utcYFormatter.parseDateTime(utcDate);
+			return dateTime.toDate();
+		}
 		if (utcDate.length() == 10) {
 			DateTime dateTime = utcYMDFormatter.parseDateTime(utcDate);
 			return dateTime.toDate();
