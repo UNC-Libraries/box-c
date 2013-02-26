@@ -27,15 +27,17 @@
 		<c:set var="halfwayPoint" value="${fn:length(departmentFacets.values) / 2}"/>
 		<c:set var="halfwayPoint" value="${halfwayPoint + (1-(halfwayPoint % 1)) % 1 }"/>
 		<c:forEach items="${departmentFacets.values}" var="departmentFacet" varStatus="status">
-			<c:if test="${status.count == halfwayPoint + 1}">
-				<c:out value="</ul><ul class='light twocol light browse_departments'>" escapeXml="false" />
+			<c:if test="${not empty departmentFacet.displayValue}">
+				<c:if test="${status.count == halfwayPoint + 1}">
+					<c:out value="</ul><ul class='light twocol light browse_departments'>" escapeXml="false" />
+				</c:if>
+				<li>
+					<c:url var="resultsUrl" scope="page" value="search">
+						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["DEPARTMENT"]},"${departmentFacet.searchValue}"'/>
+					</c:url>
+					<a href="<c:out value='${resultsUrl}' />"><c:out value="${departmentFacet.displayValue}"/></a> (<c:out value="${departmentFacet.count}"/>)
+				</li>
 			</c:if>
-			<li>
-				<c:url var="resultsUrl" scope="page" value="search">
-					<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["DEPARTMENT"]},"${departmentFacet.searchValue}"'/>
-				</c:url>
-				<a href="<c:out value='${resultsUrl}' />"><c:out value="${departmentFacet.displayValue}"/></a> (<c:out value="${departmentFacet.count}"/>)
-			</li>
 		</c:forEach>
 	</ul>
 </div>

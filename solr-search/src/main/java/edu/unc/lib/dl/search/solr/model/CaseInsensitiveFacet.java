@@ -53,6 +53,13 @@ public class CaseInsensitiveFacet extends GenericFacet {
 			this.value = facetValue.toLowerCase();
 	}
 	
+	public CaseInsensitiveFacet(CaseInsensitiveFacet facet) {
+		super(facet);
+		this.searchName = facet.searchName;
+		if (this.value != null)
+			this.value = this.value.toLowerCase();
+	}
+	
 	@Override
 	public void setFieldName(String fieldName) {
 		int index = fieldName.indexOf(SEARCH_FIELD_SUFFIX);
@@ -87,5 +94,10 @@ public class CaseInsensitiveFacet extends GenericFacet {
 		if (rollupMap.size() < facetFieldObject.getValues().size()) {
 			facetFieldObject.setValues(rollupMap.values());
 		}
+	}
+	
+	@Override
+	public Object clone(){
+		return new CaseInsensitiveFacet(this);
 	}
 }
