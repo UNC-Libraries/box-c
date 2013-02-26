@@ -47,28 +47,30 @@
 				<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
 					<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_FACET"]}:${searchSettings.searchFieldParams[field.key]}'/>
 				</c:url>
-				<li>
-					(<a href="<c:out value="${removeUrl}"/>">x</a>)
-					<c:out value="${searchSettings.searchFieldLabels[field.key]}" />: 
-					<c:choose>
-						<c:when test='${field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.CutoffFacet" 
-								|| field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet"}'>
-							<c:set var="facetNodes" scope="request" value="${field.value.facetNodes}"/>
-							<c:import url="common/hierarchyTrail.jsp">
-								<c:param name="fieldKey"><c:out value="${field.key}"/></c:param>
-								<c:param name="linkLast">false</c:param>
-								<c:param name="queryPath" value="${queryPath}"/>
-								<c:param name="limitToContainer">true</c:param>
-							</c:import>
-						</c:when>
-						<c:when test="${field.value.getClass().name == 'java.lang.String'}">
-							<c:out value="${field.value}" />
-						</c:when>
-						<c:otherwise>
-							<c:out value="${field.value.displayValue}" />
-						</c:otherwise>
-					</c:choose>
-				</li>
+				<c:if test="${field.value.getClass().name == 'java.lang.String' || not empty field.value.displayValue}">
+					<li>
+						(<a href="<c:out value="${removeUrl}"/>">x</a>)
+						<c:out value="${searchSettings.searchFieldLabels[field.key]}" />: 
+						<c:choose>
+							<c:when test='${field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.CutoffFacet" 
+									|| field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet"}'>
+								<c:set var="facetNodes" scope="request" value="${field.value.facetNodes}"/>
+								<c:import url="common/hierarchyTrail.jsp">
+									<c:param name="fieldKey"><c:out value="${field.key}"/></c:param>
+									<c:param name="linkLast">false</c:param>
+									<c:param name="queryPath" value="${queryPath}"/>
+									<c:param name="limitToContainer">true</c:param>
+								</c:import>
+							</c:when>
+							<c:when test="${field.value.getClass().name == 'java.lang.String'}">
+								<c:out value="${field.value}" />
+							</c:when>
+							<c:otherwise>
+								<c:out value="${field.value.displayValue}" />
+							</c:otherwise>
+						</c:choose>
+					</li>
+				</c:if>
 			</c:forEach>
 		</c:if>
 		<c:if test="${not empty searchState.rangeFields}">

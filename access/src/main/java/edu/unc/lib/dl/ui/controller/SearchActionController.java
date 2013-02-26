@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.ui.Model;
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -136,12 +138,23 @@ public class SearchActionController extends AbstractSolrSearchController {
 			resultResponse.setSearchState(searchState);
 		}
 
-		// Use a representative content type value if there are any results.
-		// This saves a trip to Solr since we already have the full content type facet needed for the facet list inside of
-		// the results
-		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE.name())
-				&& resultResponse.getResultCount() > 0) {
-			extractCrumbDisplayValueFromRepresentative(searchState, resultResponse.getResultList().get(0));
+		// Use a representative content type value for the breadcrumb display value if there are any results
+		// Otherwise retrieve a representative record from solr if the user can get one
+		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE.name())) {
+			if (resultResponse.getResultCount() == 0) {
+				SearchState contentTypeSearchState = new SearchState();
+				contentTypeSearchState.setRowsPerPage(1);
+				contentTypeSearchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(),
+						searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name()));
+				contentTypeSearchState.setResultFields(Arrays.asList(SearchFieldKeys.CONTENT_TYPE.name()));
+				
+				SearchRequest contentTypeRequest = new SearchRequest(contentTypeSearchState, GroupsThreadStore.getGroups());
+				SearchResultResponse contentTypeResponse = this.queryLayer.getSearchResults(contentTypeRequest);
+				if (contentTypeResponse.getResultCount() > 0)
+					extractCrumbDisplayValueFromRepresentative(searchState, contentTypeResponse.getResultList().get(0));
+			} else {
+				extractCrumbDisplayValueFromRepresentative(searchState, resultResponse.getResultList().get(0));
+			}
 		}
 
 		// Get the children counts for container entries.
