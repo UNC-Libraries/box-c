@@ -47,7 +47,7 @@ public class StagingManager implements StagingManagerMBean {
 	private Map<Pattern, String> urlPatternMap = new HashMap<Pattern, String>();
 	private Set<String> safeCanonicalFilePaths = new HashSet<String>();
 
-	private StagingManager() {
+	public StagingManager() {
 	}
 
 	/**

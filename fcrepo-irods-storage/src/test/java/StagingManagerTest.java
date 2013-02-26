@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import fedorax.server.module.storage.StagingManager;
 
@@ -29,8 +28,7 @@ public class StagingManagerTest {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(StagingManagerTest.class);
 
-	@Autowired
-	private StagingManager stagingManager;
+	private StagingManager stagingManager = new StagingManager();
 
 	public StagingManager getStagingManager() {
 		return stagingManager;
