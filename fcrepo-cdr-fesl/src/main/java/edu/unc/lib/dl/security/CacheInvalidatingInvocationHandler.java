@@ -115,7 +115,7 @@ public class CacheInvalidatingInvocationHandler extends
 		exec.shutdown();
 	}
 
-	class CacheInvalidator implements Callable<Void> {
+	class CacheInvalidator implements Callable<String> {
 		private final Method method;
 		private final Object[] args;
 		private final Object returnValue;
@@ -126,7 +126,7 @@ public class CacheInvalidatingInvocationHandler extends
 			this.returnValue = returnValue;
 		}
 
-		public Void call() throws Exception {
+		public String call() throws Exception {
 			if (ancestorFactory == null || embargoFactory == null
 					|| groupRolesFactory == null) {
 				init(); // load spring beans
@@ -136,7 +136,7 @@ public class CacheInvalidatingInvocationHandler extends
 			try {
 				fm.getPID();
 			} catch(NullPointerException e) {
-				return null;
+				return e.getMessage();
 			}
 			PID pid = new PID(fm.getPID().getObjectId());
 			
@@ -184,7 +184,7 @@ public class CacheInvalidatingInvocationHandler extends
 					getEmbargoFactory().invalidate();
 				}
 			}
-			return null;
+			return "ok";
 		}
 	}
 }
