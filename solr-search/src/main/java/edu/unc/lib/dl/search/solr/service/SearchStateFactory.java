@@ -400,7 +400,9 @@ public class SearchStateFactory {
 		if (parameter != null){
 			String facetArray[] = parameter.split(",");
 			for (String facet: facetArray){
-				facetsToRetrieve.add(searchSettings.searchFieldKey(facet));
+				String facetKey = searchSettings.searchFieldKey(facet);
+				if (searchSettings.getFacetNames().contains(facetKey))
+					facetsToRetrieve.add(searchSettings.searchFieldKey(facet));
 			}
 			searchState.setFacetsToRetrieve(facetsToRetrieve);
 		}

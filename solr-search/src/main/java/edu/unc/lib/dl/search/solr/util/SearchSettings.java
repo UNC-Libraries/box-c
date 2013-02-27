@@ -19,9 +19,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,14 +37,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SearchSettings extends AbstractSettings {
 	private static final Logger log = LoggerFactory.getLogger(SearchSettings.class);
-	
+
 	private Properties properties;
 	// Upper limit to the number of characters allowed in a single query field.
 	public int queryMaxLength;
 	// Default operator for looking up keyword terms.
 	public String defaultOperator;
 	// Set of possible boolean operators for looking up keyword terms.
-	public HashSet<String> operators;
+	public Set<String> operators;
 	// Default number of rows to return for a search request.
 	public int defaultPerPage;
 	// Default number of entries to return for a collection browse request.
@@ -59,25 +61,23 @@ public class SearchSettings extends AbstractSettings {
 	public int structuredDepthMax;
 	public int structuredDepthDefault;
 	// Search field parameter names as they appear in GET requests to controllers
-	public HashMap<String, String> searchFieldParams;
+	public Map<String, String> searchFieldParams;
 	// Search field display labels
-	public HashMap<String, String> searchFieldLabels;
+	public Map<String, String> searchFieldLabels;
 	// Fields which are allowed to be directly queried via keyword searches
-	public HashSet<String> searchableFields;
+	public Set<String> searchableFields;
 	// Fields which should be searched as ranged queries.
-	public HashSet<String> rangeSearchableFields;
+	public Set<String> rangeSearchableFields;
 	// Fields which are searched as date fields
-	public HashSet<String> dateSearchableFields;
+	public Set<String> dateSearchableFields;
 	// Fields which are filterable as facets
-	public HashSet<String> facetNames;
+	public Set<String> facetNames;
 	// Fields which are filterable as facets in a collection browse
-	public HashSet<String> collectionBrowseFacetNames;
+	public Set<String> collectionBrowseFacetNames;
 	// Fields which are filterable as facets in a structure browse
-	public HashSet<String> facetNamesStructureBrowse;
+	public Set<String> facetNamesStructureBrowse;
 	// Classes for facet fields. If not specified, then it is a GenericFacet
 	public Map<String, Class<?>> facetClasses;
-	// Order which facet fields should be displayed in facet lists.
-	public List<String> facetDisplayOrder;
 	// Delimiter which separates the components of a hierarchical facet in string form (such as tier, search value).
 	public String facetSubfieldDelimiter;
 	// Delimiter string which separates tiers of a hierarchical facet from each other.
@@ -91,15 +91,15 @@ public class SearchSettings extends AbstractSettings {
 	// Indicates whether to limit search results to only those with administrative viewing privileges
 	public Boolean allowPatronAccess;
 	// Fields which should be treated as access filters
-	public HashSet<String> accessFields;
+	public Set<String> accessFields;
 	// Access filter fields which users are allowed to filter by.
-	public HashSet<String> accessFilterableFields;
+	public Set<String> accessFilterableFields;
 	// Set of accepted resource types/content models that results can be limited to.
-	public HashSet<String> resourceTypes;
+	public Set<String> resourceTypes;
 	// Search manipulation related actions
-	public HashMap<String, String> actions;
+	public Map<String, String> actions;
 	// Request parameter names for parameters used to construct search states.
-	public HashMap<String, String> searchStateParams;
+	public Map<String, String> searchStateParams;
 	// Resource/content model constants
 	public String resourceTypeFile;
 	public String resourceTypeAggregate;
@@ -110,9 +110,9 @@ public class SearchSettings extends AbstractSettings {
 	// Default set of resources types to retrieve in collection browse requests.
 	public List<String> defaultCollectionResourceTypes;
 	// Sort types, which are groupings of any number of field names with matching sort orders.
-	public HashMap<String, List<SortField>> sortTypes;
+	public Map<String, List<SortField>> sortTypes;
 	// Display names for sort types.
-	public HashMap<String, String> sortDisplayNames;
+	public Map<String, String> sortDisplayNames;
 	// Order in which sort names should be displayed to the user.
 	public List<String> sortDisplayOrder;
 	// Sort direction constants
@@ -130,11 +130,10 @@ public class SearchSettings extends AbstractSettings {
 	@Autowired(required = true)
 	public void setProperties(Properties properties) {
 		this.properties = properties;
-		
-		facetDisplayOrder = new ArrayList<String>();
-		facetNames = new HashSet<String>();
-		collectionBrowseFacetNames = new HashSet<String>();
-		facetNamesStructureBrowse = new HashSet<String>();
+
+		facetNames = new LinkedHashSet<String>();
+		collectionBrowseFacetNames = new LinkedHashSet<String>();
+		facetNamesStructureBrowse = new LinkedHashSet<String>();
 		this.facetClasses = new HashMap<String, Class<?>>();
 		operators = new HashSet<String>();
 
@@ -185,9 +184,9 @@ public class SearchSettings extends AbstractSettings {
 		populateCollectionFromProperty("search.facet.defaultCollectionBrowse", collectionBrowseFacetNames, properties,
 				",");
 		populateCollectionFromProperty("search.facet.defaultStructureBrowse", facetNamesStructureBrowse, properties, ",");
-		populateCollectionFromProperty("search.facet.displayOrder", facetDisplayOrder, properties, ",");
 		try {
-			populateClassMapFromProperty("search.facet.class.", "edu.unc.lib.dl.search.solr.model.", this.facetClasses, properties);
+			populateClassMapFromProperty("search.facet.class.", "edu.unc.lib.dl.search.solr.model.", this.facetClasses,
+					properties);
 		} catch (ClassNotFoundException e) {
 			log.error("Invalid facet class specified in search.facet.class property", e);
 		}
@@ -289,43 +288,35 @@ public class SearchSettings extends AbstractSettings {
 		this.maxPerPage = maxPerPage;
 	}
 
-	public HashSet<String> getSearchableFields() {
+	public Set<String> getSearchableFields() {
 		return searchableFields;
 	}
 
-	public void setSearchableFields(HashSet<String> searchableFields) {
+	public void setSearchableFields(Set<String> searchableFields) {
 		this.searchableFields = searchableFields;
 	}
 
-	public HashSet<String> getFacetNames() {
+	public Set<String> getFacetNames() {
 		return facetNames;
 	}
 
-	public void setFacetNames(HashSet<String> facetNames) {
+	public void setFacetNames(Set<String> facetNames) {
 		this.facetNames = facetNames;
 	}
 
-	public HashSet<String> getFacetNamesStructureBrowse() {
+	public Set<String> getFacetNamesStructureBrowse() {
 		return facetNamesStructureBrowse;
 	}
 
-	public void setFacetNamesStructureBrowse(HashSet<String> facetNamesStructureBrowse) {
+	public void setFacetNamesStructureBrowse(Set<String> facetNamesStructureBrowse) {
 		this.facetNamesStructureBrowse = facetNamesStructureBrowse;
 	}
 
-	public List<String> getFacetDisplayOrder() {
-		return facetDisplayOrder;
-	}
-
-	public void setFacetDisplayOrder(List<String> facetDisplayOrder) {
-		this.facetDisplayOrder = facetDisplayOrder;
-	}
-
-	public HashMap<String, List<SortField>> getSortTypes() {
+	public Map<String, List<SortField>> getSortTypes() {
 		return sortTypes;
 	}
 
-	public void setSortTypes(HashMap<String, List<SortField>> sortTypes) {
+	public void setSortTypes(Map<String, List<SortField>> sortTypes) {
 		this.sortTypes = sortTypes;
 	}
 
@@ -353,11 +344,11 @@ public class SearchSettings extends AbstractSettings {
 		this.facetClasses = facetClasses;
 	}
 
-	public HashSet<String> getRangeSearchableFields() {
+	public Set<String> getRangeSearchableFields() {
 		return rangeSearchableFields;
 	}
 
-	public void setRangeSearchableFields(HashSet<String> rangeSearchableFields) {
+	public void setRangeSearchableFields(Set<String> rangeSearchableFields) {
 		this.rangeSearchableFields = rangeSearchableFields;
 	}
 
@@ -369,31 +360,32 @@ public class SearchSettings extends AbstractSettings {
 		this.allowPatronAccess = allowPatronAccess;
 	}
 
-	public HashSet<String> getAccessFields() {
+	public Set<String> getAccessFields() {
 		return accessFields;
 	}
 
-	public void setAccessFields(HashSet<String> accessFields) {
+	public void setAccessFields(Set<String> accessFields) {
 		this.accessFields = accessFields;
 	}
 
-	public HashSet<String> getAccessFilterableFields() {
+	public Set<String> getAccessFilterableFields() {
 		return accessFilterableFields;
 	}
 
-	public void setAccessFilterableFields(HashSet<String> accessFilterableFields) {
+	public void setAccessFilterableFields(Set<String> accessFilterableFields) {
 		this.accessFilterableFields = accessFilterableFields;
 	}
 
 	public boolean isResourceTypeContainer(String resourceType) {
-		return (resourceTypeCollection.equals(resourceType) || resourceTypeFolder.equals(resourceType) || resourceTypeAggregate.equals(resourceType));
+		return (resourceTypeCollection.equals(resourceType) || resourceTypeFolder.equals(resourceType) || resourceTypeAggregate
+				.equals(resourceType));
 	}
 
-	public HashSet<String> getResourceTypes() {
+	public Set<String> getResourceTypes() {
 		return resourceTypes;
 	}
 
-	public void setResourceTypes(HashSet<String> resourceTypes) {
+	public void setResourceTypes(Set<String> resourceTypes) {
 		this.resourceTypes = resourceTypes;
 	}
 
@@ -413,19 +405,19 @@ public class SearchSettings extends AbstractSettings {
 		this.defaultOperator = defaultOperator;
 	}
 
-	public HashSet<String> getOperators() {
+	public Set<String> getOperators() {
 		return operators;
 	}
 
-	public void setOperators(HashSet<String> operators) {
+	public void setOperators(Set<String> operators) {
 		this.operators = operators;
 	}
 
-	public HashMap<String, String> getActions() {
+	public Map<String, String> getActions() {
 		return actions;
 	}
 
-	public void setActions(HashMap<String, String> actions) {
+	public void setActions(Map<String, String> actions) {
 		this.actions = actions;
 	}
 
@@ -445,11 +437,11 @@ public class SearchSettings extends AbstractSettings {
 		this.defaultCollectionResourceTypes = defaultCollectionResourceTypes;
 	}
 
-	public HashMap<String, String> getSearchStateParams() {
+	public Map<String, String> getSearchStateParams() {
 		return searchStateParams;
 	}
 
-	public void setSearchStateParams(HashMap<String, String> searchStateParams) {
+	public void setSearchStateParams(Map<String, String> searchStateParams) {
 		this.searchStateParams = searchStateParams;
 	}
 
@@ -534,19 +526,19 @@ public class SearchSettings extends AbstractSettings {
 		return searchFieldKey(name);
 	}
 
-	public HashMap<String, String> getSearchFieldParams() {
+	public Map<String, String> getSearchFieldParams() {
 		return searchFieldParams;
 	}
 
-	public void setSearchFieldParams(HashMap<String, String> searchFieldParams) {
+	public void setSearchFieldParams(Map<String, String> searchFieldParams) {
 		this.searchFieldParams = searchFieldParams;
 	}
 
-	public HashMap<String, String> getSearchFieldLabels() {
+	public Map<String, String> getSearchFieldLabels() {
 		return searchFieldLabels;
 	}
 
-	public void setSearchFieldLabels(HashMap<String, String> searchFieldLabels) {
+	public void setSearchFieldLabels(Map<String, String> searchFieldLabels) {
 		this.searchFieldLabels = searchFieldLabels;
 	}
 
@@ -558,11 +550,11 @@ public class SearchSettings extends AbstractSettings {
 		this.pagesToDisplay = pagesToDisplay;
 	}
 
-	public HashMap<String, String> getSortDisplayNames() {
+	public Map<String, String> getSortDisplayNames() {
 		return sortDisplayNames;
 	}
 
-	public void setSortDisplayNames(HashMap<String, String> sortDisplayNames) {
+	public void setSortDisplayNames(Map<String, String> sortDisplayNames) {
 		this.sortDisplayNames = sortDisplayNames;
 	}
 
@@ -606,11 +598,11 @@ public class SearchSettings extends AbstractSettings {
 		this.resourceTypeCollection = resourceTypeCollection;
 	}
 
-	public HashSet<String> getCollectionBrowseFacetNames() {
+	public Set<String> getCollectionBrowseFacetNames() {
 		return collectionBrowseFacetNames;
 	}
 
-	public void setCollectionBrowseFacetNames(HashSet<String> collectionBrowseFacetNames) {
+	public void setCollectionBrowseFacetNames(Set<String> collectionBrowseFacetNames) {
 		this.collectionBrowseFacetNames = collectionBrowseFacetNames;
 	}
 
@@ -622,11 +614,11 @@ public class SearchSettings extends AbstractSettings {
 		this.defaultListResultsPerPage = defaultListResultsPerPage;
 	}
 
-	public HashSet<String> getDateSearchableFields() {
+	public Set<String> getDateSearchableFields() {
 		return dateSearchableFields;
 	}
 
-	public void setDateSearchableFields(HashSet<String> dateSearchableFields) {
+	public void setDateSearchableFields(Set<String> dateSearchableFields) {
 		this.dateSearchableFields = dateSearchableFields;
 	}
 
@@ -653,7 +645,7 @@ public class SearchSettings extends AbstractSettings {
 	public void setStructuredDepthDefault(int structuredDepthDefault) {
 		this.structuredDepthDefault = structuredDepthDefault;
 	}
-	
+
 	public String getProperty(String key) {
 		return this.properties.getProperty(key);
 	}
@@ -667,15 +659,15 @@ public class SearchSettings extends AbstractSettings {
 				+ ", searchFieldParams=" + searchFieldParams + ", searchFieldLabels=" + searchFieldLabels
 				+ ", searchableFields=" + searchableFields + ", rangeSearchableFields=" + rangeSearchableFields
 				+ ", dateSearchableFields=" + dateSearchableFields + ", facetNames=" + facetNames
-				+ ", collectionBrowseFacetNames=" + collectionBrowseFacetNames + ", facetDisplayOrder=" + facetDisplayOrder
-				+ ", facetSubfieldDelimiter=" + facetSubfieldDelimiter + ", facetTierDelimiter=" + facetTierDelimiter
-				+ ", facetsPerGroup=" + facetsPerGroup + ", maxFacetsPerGroup=" + maxFacetsPerGroup + ", accessFields="
-				+ accessFields + ", accessFilterableFields=" + accessFilterableFields + ", resourceTypes=" + resourceTypes
-				+ ", actions=" + actions + ", searchStateParams=" + searchStateParams + ", resourceTypeFile="
-				+ resourceTypeFile + ", resourceTypeFolder=" + resourceTypeFolder + ", resourceTypeCollection="
-				+ resourceTypeCollection + ", defaultResourceTypes=" + defaultResourceTypes
-				+ ", defaultCollectionResourceTypes=" + defaultCollectionResourceTypes + ", sortTypes=" + sortTypes
-				+ ", sortDisplayNames=" + sortDisplayNames + ", sortDisplayOrder=" + sortDisplayOrder + ", sortReverse="
-				+ sortReverse + ", sortNormal=" + sortNormal + "]";
+				+ ", collectionBrowseFacetNames=" + collectionBrowseFacetNames + ", facetSubfieldDelimiter="
+				+ facetSubfieldDelimiter + ", facetTierDelimiter=" + facetTierDelimiter + ", facetsPerGroup="
+				+ facetsPerGroup + ", maxFacetsPerGroup=" + maxFacetsPerGroup + ", accessFields=" + accessFields
+				+ ", accessFilterableFields=" + accessFilterableFields + ", resourceTypes=" + resourceTypes + ", actions="
+				+ actions + ", searchStateParams=" + searchStateParams + ", resourceTypeFile=" + resourceTypeFile
+				+ ", resourceTypeFolder=" + resourceTypeFolder + ", resourceTypeCollection=" + resourceTypeCollection
+				+ ", defaultResourceTypes=" + defaultResourceTypes + ", defaultCollectionResourceTypes="
+				+ defaultCollectionResourceTypes + ", sortTypes=" + sortTypes + ", sortDisplayNames=" + sortDisplayNames
+				+ ", sortDisplayOrder=" + sortDisplayOrder + ", sortReverse=" + sortReverse + ", sortNormal=" + sortNormal
+				+ "]";
 	}
 }
