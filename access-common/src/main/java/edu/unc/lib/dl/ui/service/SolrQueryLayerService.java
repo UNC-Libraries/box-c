@@ -574,8 +574,10 @@ public class SolrQueryLayerService extends SolrSearchService {
 			// Make sure we aren't returning any normal results
 			solrQuery.setRows(0);
 			// Remove all facet fields so we are only getting ancestor path
-			for (String facetField : solrQuery.getFacetFields()) {
-				solrQuery.removeFacetField(facetField);
+			if (solrQuery.getFacetFields() != null) {
+				for (String facetField : solrQuery.getFacetFields()) {
+					solrQuery.removeFacetField(facetField);
+				}
 			}
 		}
 
