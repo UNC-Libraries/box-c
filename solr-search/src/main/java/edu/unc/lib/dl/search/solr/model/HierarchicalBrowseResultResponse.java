@@ -127,8 +127,8 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 	/**
 	 * Generates a tree representation of the current result set and stores its root.
 	 * 
-	 * Assumes the first result is the root node
-	 * Assumes that the result set is sorted such that a parent always appears before its children.
+	 * Assumes the first result is the root node Assumes that the result set is sorted such that if a parent is present,
+	 * it will always appear before its children
 	 */
 	public void generateResultTree() {
 		if (this.getResultList() == null || this.getResultList().size() == 0)
@@ -138,16 +138,20 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 		ResultNode parentNode = new ResultNode(this.getResultList().get(0));
 		nodeMap.put(parentNode.getMetadata().getId(), parentNode);
 		this.rootNode = parentNode;
-		
+
 		for (int i = 1; i < this.getResultList().size(); i++) {
 			BriefObjectMetadata metadata = this.getResultList().get(i);
-			
-			String parentId = metadata.getAncestorPathFacet().getSearchKey();
-			parentNode = nodeMap.get(parentId);
-			if (parentNode == null) {
-				// Parent isn't found, so something is wrong, skip this item
-				continue;
+
+			// Find the closest parent record
+			for (int j = metadata.getAncestorPathFacet().getFacetNodes().size() - 1; j >= 0; j--) {
+				parentNode = nodeMap.get(metadata.getAncestorPathFacet().getFacetNodes().get(j).getSearchKey());
+				if (parentNode != null)
+					break;
 			}
+			// Couldn't find any parent record, skip this item
+			if (parentNode == null)
+				continue;
+
 			ResultNode currentNode = new ResultNode(metadata);
 			parentNode.getChildren().add(currentNode);
 			nodeMap.put(metadata.getId(), currentNode);
