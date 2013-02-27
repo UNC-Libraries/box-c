@@ -62,13 +62,15 @@ public class HierarchicalTreeRecurseTag extends SimpleTagSupport {
 			return;
 		}
 		
+		// If this entry is a stub, then skip over it but render the children
+		boolean isStub = metadata.getTitle() == null;
+		
 		String currentIndent;
 		String nextGenerationIndent;
 		String nextGenerationCode;
-		if (firstEntry) {
+		if (firstEntry || isStub) {
 			currentIndent = leadupIndent;
 			nextGenerationIndent = leadupIndent;
-			
 			nextGenerationCode = indentCode;
 		} else {
 			currentIndent = leadupIndent + this.getIndent(true, true, lastSibling);
@@ -76,7 +78,7 @@ public class HierarchicalTreeRecurseTag extends SimpleTagSupport {
 			nextGenerationCode = indentCode + ((lastSibling)? '0' : '1');
 		}
 		
-		if (!(this.hideRoot && firstEntry)) {
+		if (!(this.hideRoot && firstEntry) && !isStub) {
 			// Render the main entry, containing the contents from the jsp tag
 			out.println("<div class='hier_entry'>");
 			out.println(currentIndent);
@@ -95,16 +97,18 @@ public class HierarchicalTreeRecurseTag extends SimpleTagSupport {
 
 		if ((currentNode.getChildren() != null && currentNode.getChildren().size() > 0)
 				|| (metadata.getContentModel() != null && metadata.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString()))) {
-			out.println("<div id='hier_container_children_" + metadata.getId().replace(':', '-') + "'>");
+			if (!isStub)
+				out.println("<div id='hier_container_children_" + metadata.getId().replace(':', '-') + "'>");
 
 			if (currentNode.getChildren() != null) {
 				for (int i = 0; i < currentNode.getChildren().size(); i++) {
 					ResultNode childNode = currentNode.getChildren().get(i);
-					this.renderNode(childNode, nextGenerationIndent, nextGenerationCode, false, i == currentNode.getChildren().size() - 1);
+					this.renderNode(childNode, nextGenerationIndent, nextGenerationCode, firstEntry && isStub, i == currentNode.getChildren().size() - 1);
 				}
 			}
 
-			out.println("</div>");
+			if (!isStub)
+				out.println("</div>");
 		}
 	}
 	

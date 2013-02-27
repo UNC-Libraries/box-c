@@ -18,9 +18,14 @@ package edu.unc.lib.dl.data.ingest.solr;
 import java.lang.ref.WeakReference;
 
 import javax.annotation.Resource;
+
+import junit.framework.Assert;
 import static org.mockito.Mockito.*;
 
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -50,7 +55,8 @@ import org.jdom.Document;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/solr-update-service-context.xml" })
-public class SolrUpdateServiceTest {
+public class SolrUpdateServiceTest extends Assert {
+	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateServiceTest.class);
 
 	@Resource
 	SolrUpdateService solrUpdateService;
@@ -70,46 +76,54 @@ public class SolrUpdateServiceTest {
 	@Resource
 	AccessClient accessClient;
 	
-	//@Test
+	@Test
+	public void startup() {
+		
+	}
+	
+	@Test
 	public void stressFinishedTest() throws Exception {
 		Document document = mock(Document.class);
 		when(managementClient.getObjectXML(any(PID.class))).thenReturn(document);
 		
 		long startTime = System.currentTimeMillis();
-		int documentCount = 500000;
+		int documentCount = 5000;
 		
 		for (int i=0; i < documentCount; i++){
 			solrUpdateService.offer("uuid:test"+i, SolrUpdateAction.ADD);
 			if (i % 50 == 0)
-				System.out.println("Walk count: " + walkCount(solrUpdateService.getRoot(), 0));
+				LOG.debug("Walk count: " + walkCount(solrUpdateService.getRoot(), 0));
 			if (i % 100 == 0) {
-				System.out.println("*********************COUNTS*********************");
-				System.out.println("Queued: " + solrUpdateService.getPidQueue().size());
-				System.out.println("Blocked: " + solrUpdateService.getLockedPids().size());
-				System.out.println("Finished: " + solrUpdateService.getFinishedMessages().size());
-				System.out.println("Failed: " + solrUpdateService.getFailedMessages().size());
-				System.out.println("Root Children: " + solrUpdateService.getRoot().getChildren().size());
+				/*LOG.debug("*********************COUNTS*********************");
+				LOG.debug("Queued: " + solrUpdateService.getPidQueue().size());
+				LOG.debug("Blocked: " + solrUpdateService.getLockedPids().size());
+				LOG.debug("Finished: " + solrUpdateService.getFinishedMessages().size());
+				LOG.debug("Failed: " + solrUpdateService.getFailedMessages().size());
+				LOG.debug("Root Children: " + solrUpdateService.getRoot().getChildren().size());*/
 				reset(solrFullUpdatePipeline);
 				reset(solrUpdateDriver);
 				reset(managementClient);
 				when(managementClient.getObjectXML(any(PID.class))).thenReturn(document);
 				reset(accessClient);
 			}
-			if (i % 500 == 0) {
-				System.out.println("*********************GC TIME*********************");
-				//System.gc();
-			}
 		}
-		//Thread.sleep(5000L);
-		System.out.println("Queue: " + solrUpdateService.getPidQueue());
-		//System.out.println("Finished: " + solrUpdateService.getFinishedMessages());
+		while (solrUpdateService.getPidQueue().size() > 0) {
+			Thread.sleep(100L);
+		}
+		assertEquals(1000, solrUpdateService.getFinishedMessages().size());
+		// After garbage collection, the message tree should only contain the root and the non-discarded finished messages 
+		System.gc();
+		assertEquals(1001, walkCount(solrUpdateService.getRoot(), 0));
+
+		LOG.debug("Queue: " + solrUpdateService.getPidQueue());
+		//LOG.debug("Finished: " + solrUpdateService.getFinishedMessages());
 		for (int i=0; i<10; i++)
-			System.out.println(i + ":" + solrUpdateService.getFinishedMessages().get(i).getPid());
-		System.out.println("Finished: " + solrUpdateService.getFinishedMessages().size());
-		System.out.println(solrUpdateService.getRoot().getChildrenPending());
-		System.out.println(solrUpdateService.getRoot().getChildrenProcessed());
+			LOG.debug(i + ":" + solrUpdateService.getFinishedMessages().get(i).getPid());
+		LOG.debug("Finished: " + solrUpdateService.getFinishedMessages().size());
+		LOG.debug("" + solrUpdateService.getRoot().getChildrenPending());
+		LOG.debug("" + solrUpdateService.getRoot().getChildrenProcessed());
 		
-		System.out.print("Completed stress test of " + documentCount + " in " + (System.currentTimeMillis() - startTime) + "ms");
+		LOG.debug("Completed stress test of " + documentCount + " in " + (System.currentTimeMillis() - startTime) + "ms");
 	}
 	
 	public long walkCount(UpdateNodeRequest node, long count) {
