@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.AuthorizationException;
@@ -72,16 +71,17 @@ public class FedoraContentController extends AbstractSolrSearchController {
 			HttpServletResponse response) {
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 		
+		// Default datastream is DATA_FILE
 		if (datastream == null) {
 			datastream = Datastream.DATA_FILE.toString();
 		}
-		
 
 		// Use solr to check if the user is allowed to view this item.
 		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID.name()));
 
 		// Get the content type of the object if its accessible
 		List<String> resultFields = new ArrayList<String>();
+		resultFields.add(SearchFieldKeys.RELATIONS.name());
 		resultFields.add(SearchFieldKeys.ID.name());
 		resultFields.add(SearchFieldKeys.DATASTREAM.name());
 
@@ -92,24 +92,33 @@ public class FedoraContentController extends AbstractSolrSearchController {
 		if (briefObject == null) {
 			throw new InvalidRecordRequestException();
 		}
+		// Grab out the slug if its available, to be used as the filename.
+		List<String> slugRelations = briefObject.getRelation("slug");
+		String slug = null;
+		if (slugRelations != null && slugRelations.size() > 0)
+			slug = slugRelations.get(0);
 
 		try {
-			String fileExtension = null;
-
 			edu.unc.lib.dl.search.solr.model.Datastream datastreamResult = briefObject.getDatastreamObject(datastream);
-			if (datastreamResult != null) {
-				fileExtension = datastreamResult.getExtension();
-				response.setContentLength(datastreamResult.getFilesize().intValue());
-			}
-
-			fedoraContentService.streamData(id, datastream, response.getOutputStream(), response,
-					fileExtension, download);
+			if (datastreamResult == null)
+				throw new ResourceNotFoundException("Datastream " + datastream + " was not found on object " + id);
+			fedoraContentService.streamData(id, datastreamResult, slug, response, download);
 		} catch (AuthorizationException e) {
 			throw new InvalidRecordRequestException(e);
+		} catch (ResourceNotFoundException e) {
+			LOG.info("Resource not found while attempting to stream datastream", e);
+			throw e;
 		} catch (Exception e) {
 			LOG.error("Failed to retrieve content for " + id + " datastream: " + datastream, e);
 			throw new ResourceNotFoundException();
 		}
+	}
+	
+	@ResponseStatus(value = HttpStatus.NOT_FOUND)
+	@ExceptionHandler(ResourceNotFoundException.class)
+	public String handleResourceNotFound(HttpServletRequest request) {
+		request.setAttribute("pageSubtitle", "Invalid content");
+		return "error/invalidRecord";
 	}
 
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)

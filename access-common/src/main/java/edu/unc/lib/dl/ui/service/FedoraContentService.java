@@ -33,11 +33,11 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
+import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.FedoraUtil;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
-import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 
 /**
  * Connects to and streams datastreams from Fedora.
@@ -49,34 +49,27 @@ public class FedoraContentService {
 
 	private AccessClient accessClient;
 
-	private TripleStoreQueryService tripleStoreQueryService;
-
 	private FedoraUtil fedoraUtil;
 
 	public void setAccessClient(edu.unc.lib.dl.fedora.AccessClient accessClient) {
 		this.accessClient = accessClient;
 	}
 
-	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-		this.tripleStoreQueryService = tripleStoreQueryService;
-	}
-
 	public void setFedoraUtil(FedoraUtil fedoraUtil) {
 		this.fedoraUtil = fedoraUtil;
 	}
 
-	public void streamData(String simplepid, String datastream, OutputStream outStream) throws FedoraException {
-		streamData(simplepid, datastream, outStream, null, null, true);
+	public void streamData(String simplepid, Datastream datastream, String slug, HttpServletResponse response,
+			boolean asAttachment) throws FedoraException, IOException {
+		this.streamData(simplepid, datastream, slug, response, asAttachment, 1);
 	}
 
-	public void streamData(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response,
-			String fileExtension, boolean asAttachment) throws FedoraException {
-		this.streamData(simplepid, datastream, outStream, response, fileExtension, asAttachment, 1);
-	}
+	public void streamData(String simplepid, Datastream datastream, String slug, HttpServletResponse response,
+			boolean asAttachment, int retryServerError) throws FedoraException, IOException {
+		OutputStream outStream = response.getOutputStream();
 
-	public void streamData(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response,
-			String fileExtension, boolean asAttachment, int retryServerError) throws FedoraException {
-		String dataUrl = fedoraUtil.getFedoraUrl() + "/objects/" + simplepid + "/datastreams/" + datastream + "/content";
+		String dataUrl = fedoraUtil.getFedoraUrl() + "/objects/" + simplepid + "/datastreams/" + datastream.getName()
+				+ "/content";
 
 		HttpClient client = HttpClientUtil.getAuthenticatedClient(dataUrl, accessClient.getUsername(),
 				accessClient.getPassword());
@@ -86,66 +79,86 @@ public class FedoraContentService {
 
 		try {
 			client.executeMethod(method);
+
+			if (method.getStatusCode() == HttpStatus.SC_OK) {
+				if (response != null) {
+					PID pid = new PID(simplepid);
+
+					// Adjusting content related headers
+
+					// Use the content length from Fedora it is not provided or negative, in which case use solr's
+					long contentLength;
+					try {
+						String contentLengthString = method.getResponseHeader("content-length").getValue();
+						contentLength = Long.parseLong(contentLengthString);
+					} catch (Exception e) {
+						// If the content length wasn't provided or wasn't a number, set it to -1
+						contentLength = -1L;
+					}
+					if (contentLength < 0L) {
+						contentLength = datastream.getFilesize();
+					}
+					response.setHeader("Content-Length", Long.toString(contentLength));
+
+					// Use Fedora's content type unless it is unset or octet-stream
+					String mimeType;
+					try {
+						mimeType = method.getResponseHeader("content-type").getValue();
+						if (mimeType == null || "application/octet-stream".equals(mimeType)) {
+							if ("mp3".equals(datastream.getExtension())) {
+								mimeType = "audio/mpeg";
+							} else {
+								mimeType = datastream.getMimetype();
+							}
+						}
+					} catch (Exception e) {
+						mimeType = datastream.getMimetype();
+					}
+					response.setHeader("Content-Type", mimeType);
+
+					// Setting the filename header for the response
+					if (slug == null) {
+						slug = pid.getPid();
+					}
+					// For metadata types files, append the datastream name
+					if (datastream.getDatastreamCategory().equals(DatastreamCategory.METADATA)
+							|| datastream.getDatastreamCategory().equals(DatastreamCategory.ADMINISTRATIVE)) {
+						slug += "_" + datastream.getName();
+					}
+					// Add the file extension unless its already in there.
+					if (datastream.getExtension() != null && !slug.toLowerCase().contains("." + datastream.getExtension())) {
+						slug += "." + datastream.getExtension();
+					}
+					if (asAttachment) {
+						response.setHeader("content-disposition", "attachment; filename=\"" + slug + "\"");
+					} else {
+						response.setHeader("content-disposition", "inline; filename=\"" + slug + "\"");
+					}
+				}
+
+				// Stream the content
+				FileIOUtil.stream(outStream, method);
+			} else if (method.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
+				throw new AuthorizationException(
+						"User does not have sufficient permissions to retrieve the specified object");
+			} else {
+				// Retry server errors
+				if (method.getStatusCode() == 500 && retryServerError > 0) {
+					LOG.warn("Failed to retrieve " + dataUrl + ", retrying.");
+					this.streamData(simplepid, datastream, slug, response, asAttachment, retryServerError - 1);
+				} else {
+					throw new ResourceNotFoundException("Failure to stream fedora content due to response of: "
+							+ method.getStatusLine().toString() + "\nPath was: " + dataUrl);
+				}
+			}
 		} catch (HttpException e) {
 			LOG.error("Error while attempting to stream Fedora content for " + simplepid, e);
 		} catch (IOException e) {
-			LOG.error("Error while attempting to stream Fedora content for " + simplepid, e);
-		}
-		if (method.getStatusCode() == HttpStatus.SC_OK) {
-			if (response != null) {
-				PID pid = new PID(simplepid);
-
-				String mimeType = null;
-				if (fileExtension != null && fileExtension.equals("mp3")) {
-					mimeType = "audio/mpeg";
-				}
-				if (mimeType == null && datastream.equals(ContentModelHelper.Datastream.DATA_FILE.getName())) {
-					mimeType = tripleStoreQueryService.lookupSourceMimeType(pid);
-				}
-				if (mimeType == null) {
-					response.setHeader("Content-Type", method.getResponseHeader("content-type").getValue());
-				} else {
-					response.setHeader("Content-Type", mimeType);
-				}
-
-				String slug = null;
-				try {
-					slug = tripleStoreQueryService.lookupSlug(pid);
-					if (slug != null) {
-						if (fileExtension != null && !slug.toLowerCase().contains("." + fileExtension.toLowerCase())) {
-							slug += "." + fileExtension;
-						}
-					}
-				} catch (Exception e) {
-					LOG.error("Error while attempting to retrieve slug for " + simplepid, e);
-				}
-
-				if (asAttachment) {
-					response.setHeader("content-disposition", "attachment; filename=\"" + slug + "\"");
-				} else {
-					response.setHeader("content-disposition", "inline; filename=\"" + slug + "\"");
-				}
-			}
-
-			try {
-				FileIOUtil.stream(outStream, method);
-			} catch (IOException e) {
-				LOG.warn("Problem retrieving " + dataUrl + " for " + simplepid + ": " + e.getMessage());
-			} finally {
+			LOG.warn("Problem retrieving " + dataUrl + " for " + simplepid, e);
+		} finally {
+			if (method != null)
 				method.releaseConnection();
-			}
-		} else if (method.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
-			throw new AuthorizationException("User does not have sufficient permissions to retrieve the specified object");
-		} else {
-			// Retry server errors
-			if (method.getStatusCode() == 500 && retryServerError > 0) {
-				LOG.warn("Failed to retrieve " + dataUrl + ", retrying.");
-				this.streamData(simplepid, datastream, outStream, response, fileExtension, asAttachment,
-						retryServerError - 1);
-			} else {
-				throw new ResourceNotFoundException("Failure to fedora content due to response of: "
-						+ method.getStatusLine().toString() + "\nPath was: " + dataUrl);
-			}
 		}
+
 	}
 }

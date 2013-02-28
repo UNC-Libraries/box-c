@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.solr.client.solrj.response.FacetField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidFacetException;
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
@@ -29,6 +31,8 @@ import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 public class FacetFieldFactory {
+	private static final Logger LOG = LoggerFactory.getLogger(FacetFieldFactory.class);
+	
 	private SearchSettings searchSettings;
 	private SolrSettings solrSettings;
 
@@ -50,7 +54,7 @@ public class FacetFieldFactory {
 					"An exception occurred while attempting to instantiate a new facet field object for " + fieldKey + " "
 							+ facetValue, e);
 		} catch (Exception e) {
-			System.out.println(e.getClass().getName());
+			LOG.debug(e.getClass().getName());
 			throw new InvalidFacetException(
 					"An exception occurred while attempting to instantiate a new facet field object for " + fieldKey + " "
 							+ facetValue, e);
