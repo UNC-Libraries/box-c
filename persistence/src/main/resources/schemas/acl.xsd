@@ -16,6 +16,7 @@
             <xs:attribute use="optional" default="true" name="inherit" type="xs:boolean"/>
             <xs:attribute use="optional" default="true" name="discoverable" type="xs:boolean"/>
             <xs:attribute use="optional" name="embargo-until" type="xs:date" ecore:unsettable="true"/>
+            <xs:attribute use="optional" default="true" name="published" type="xs:boolean"/>
         </xs:complexType>
     </xs:element>
 </xs:schema>
