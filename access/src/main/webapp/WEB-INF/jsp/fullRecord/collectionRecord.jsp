@@ -87,7 +87,7 @@
 			<div class="clear"></div>
 			<p class="full_record_browse">
 				<c:url var="collectionResultsUrl" scope="page" value='search'>
-					<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
+					<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.limitToValue}"/>
 				</c:url>
 				<a href="<c:out value='${collectionResultsUrl}' />">Browse&nbsp;(<c:out value="${childCount}"/> items)</a> or
 				<a href="<c:out value='${browseUrl}' />">

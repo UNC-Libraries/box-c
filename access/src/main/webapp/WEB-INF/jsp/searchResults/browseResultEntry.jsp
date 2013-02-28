@@ -55,15 +55,13 @@
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', metadata)}">
 					<div class="largethumb_container">
-						<%--<img id="thumb_${param.resultNumber}" class="largethumb ph_large_${metadata.resourcetype}" 
-								src="${cdr:getDatastreamUrl(metadata, 'THUMB_LARGE', fedoraUtil)}"/> --%>
 						<img class="largethumb" src="${cdr:getDatastreamUrl(metadata, 'THUMB_LARGE', fedoraUtil)}"/>
 					</div>
 				</c:when>
 				<c:otherwise>
 					<div class="largethumb_container">
 						<img id="thumb_${param.resultNumber}" class="largethumb" 
-								src="/static/images/collections/${metadata.idWithoutPrefix}.jpg"/>
+								src="/static/images/placeholder/large/collection.png"/>
 					</div>
 				</c:otherwise>
 			</c:choose>

@@ -83,7 +83,7 @@
 						</c:when>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
 							<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_clear" 
-									src="/static/images/collections/${metadata.idWithoutPrefix}.jpg" style="height: 64px; width: 64px;"/>
+									src="/static/images/placeholder/small/collection.png" style="height: 64px; width: 64px;"/>
 						</c:when>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentTypeFacet[0].searchKey}">
 							<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
