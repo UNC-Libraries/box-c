@@ -228,7 +228,7 @@ public class IngestServiceRestController extends
 				}
 				if(lastLine != null) {
 					String[] lastarray = lastLine.split("\\t");
-					if (BatchIngestTask.CONTAINER_UPDATED_CODE.equals(lastarray[1])) {
+					if (lastarray.length > 1 && BatchIngestTask.CONTAINER_UPDATED_CODE.equals(lastarray[1])) {
 						job.put("worked", c);
 					} else {
 						if (lastarray.length > 2) {
