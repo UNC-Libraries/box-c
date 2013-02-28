@@ -17,31 +17,33 @@ package edu.unc.lib.dl.ui.service;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import edu.unc.lib.dl.ui.model.response.RssFeedBean;
 
 /**
  * Retrieves and processes RSS feeds
+ * 
  * @author bbpennel
  */
 public class RssParserService extends XMLRetrievalService {
+	private static final Logger LOG = LoggerFactory.getLogger(RssParserService.class);
 
 	public static RssFeedBean getRssFeed(String url) throws Exception {
 		return getRssFeed(url, -1);
 	}
-	
+
 	public static RssFeedBean getRssFeed(String url, int maxResults) throws Exception {
 		try {
 			Document document = getXMLDocument(url);
 			return buildRssFeed(document, maxResults);
 		} catch (Exception e) {
-            // if we get an error trying to build from a non-valid uri, 
-            // just return an empty LookupTable
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
-		
+			// if we get an error trying to build from a non-valid uri,
+			// just return an empty LookupTable
+			LOG.error("Failed to retrieve RSS feed " + url, e);
+		}
 		return null;
 	}
 
@@ -86,13 +88,13 @@ public class RssParserService extends XMLRetrievalService {
 		Element childElement = null;
 		String tagValue = null;
 		childElement = parentElement.getChild(tagName);
-		tagValue = (null != childElement) ? childElement.getValue().trim(): null;
+		tagValue = (null != childElement) ? childElement.getValue().trim() : null;
 		return (tagValue);
 	}
-	
-	private static RssFeedBean.RssItem.EnclosureObject getEnclosure(Element parentElement){
+
+	private static RssFeedBean.RssItem.EnclosureObject getEnclosure(Element parentElement) {
 		Element childElement = null;
-		
+
 		childElement = parentElement.getChild("enclosure");
 		if (childElement == null)
 			return null;
@@ -110,10 +112,10 @@ public class RssParserService extends XMLRetrievalService {
 
 		itemElements = channelElement.getChildren("item");
 		if (null != itemElements) {
-			if (maxResults == -1){
+			if (maxResults == -1) {
 				maxResults = itemElements.size();
 			}
-			for (int i=0; i < maxResults; i++){
+			for (int i = 0; i < maxResults; i++) {
 				Element anItemElement = itemElements.get(i);
 				anRssItem = new RssFeedBean.RssItem();
 				anRssItem.setTitle(getValueOfChildElement(anItemElement, "title"));

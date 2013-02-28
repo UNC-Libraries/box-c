@@ -72,7 +72,6 @@
 	</bean>
 	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
 		<property name="accessClient" ref="accessClient" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 		<property name="fedoraUtil" ref="fedoraUtil" />
 	</bean>
 	

@@ -210,6 +210,10 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		}
 	}
 	
+	public List<String> getRelation(String relationName) {
+		return this.relationsMap.get(relationName);
+	}
+	
 	@Override
 	public Datastream getDefaultWebData() {
 		if (this.relationsMap == null)
