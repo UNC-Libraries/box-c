@@ -51,7 +51,7 @@
         </sch:rule>
         <sch:rule context="m:metsHdr">
             <sch:assert test="matches(@CREATEDATE,'^(\d\d\d\d)(-(\d\d)(-(\d\d))?)?([T| ]?(\d\d):(\d\d)(:((\d\d)(\.(\d+))?)?)?(Z|([\+\-]\d\d:\d\d)|([A-Z]{3}))?)?$')">The metsHdr CREATEDATE MUST be valid ISO 8601. (<sch:value-of select="@CREATEDATE"/>)</sch:assert>
-            <sch:assert test="m:agent[@ROLE = 'CREATOR' and @TYPE = 'INDIVIDUAL']">The metsHdr MUST have at least one agent with ROLE of CREATOR and TYPE INDIVIDUAL.</sch:assert>
+            <sch:assert test="m:agent[@ROLE = 'CREATOR']">The metsHdr MUST have at least one agent with ROLE of CREATOR.</sch:assert>
         </sch:rule>
     </sch:pattern>
     
@@ -167,8 +167,11 @@
         <sch:title>METS structLink Section</sch:title>
         <sch:let name="referenceURI" value="'http://cdr.unc.edu/definitions/1.0/base-model.xml#refersTo'"/>
         <sch:let name="predicates"
-            value="'http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSurrogate http://cdr.unc.edu/definitions/1.0/base-model.xml#hasAlphabeticalOrder 
-            http://cdr.unc.edu/definitions/1.0/base-model.xml#refersTo'"/>
+            value="'http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSurrogate
+            		http://cdr.unc.edu/definitions/1.0/base-model.xml#hasAlphabeticalOrder 
+            		http://cdr.unc.edu/definitions/1.0/base-model.xml#refersTo
+            		http://cdr.unc.edu/definitions/1.0/base-model.xml#defaultWebObject
+            		http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSupplemental'"/>
         <sch:rule context="m:structLink/m:smLink">
             <sch:assert test="@xlink:from">The smLink element MUST have an xlink:from attribute.</sch:assert>
             <sch:assert test="@xlink:arcrole">The smLink element MUST have an xlink:arcrole attribute.</sch:assert>
