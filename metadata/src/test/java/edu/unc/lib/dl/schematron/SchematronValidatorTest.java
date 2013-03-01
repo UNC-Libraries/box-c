@@ -34,6 +34,34 @@ import org.springframework.core.io.ClassPathResource;
  */
 public class SchematronValidatorTest extends Assert {
     private static final Log log = LogFactory.getLog(SchematronValidatorTest.class);
+    
+    /**
+     * Tests the result of a missing metsHdr section.
+     */
+    @Test
+    public void testMissingMetsHdr() {
+  
+    	SchematronValidator sv = new SchematronValidator();
+    	sv.loadSchemas();
+    	
+    	ClassPathResource test = new ClassPathResource("simple_mets_profile.sch", SchematronValidator.class);
+    	sv.getSchemas().put("test", test);
+    	sv.loadSchemas();
+    	
+    	ClassPathResource bad = new ClassPathResource("/samples/bad-missing-mets-hdr.xml", SchematronValidator.class);
+    	
+    	try {
+    	    boolean valid = sv.isValid(bad, "test");
+    	    Document output = sv.validate(bad, "test");
+    	    XMLOutputter dbout = new XMLOutputter();
+    	    dbout.setFormat(Format.getPrettyFormat());
+    	    log.info(dbout.outputString(output));
+    	    assertFalse("This XML must be invalid according to the schema", valid);
+    	} catch (IOException e) {
+    	    fail("Got exception" + e.getMessage());
+    	}
+    	
+    }
 
     /**
      * Tests the result of isValid on an invalid document.

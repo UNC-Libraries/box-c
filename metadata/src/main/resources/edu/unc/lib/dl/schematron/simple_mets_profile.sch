@@ -46,6 +46,9 @@
     
     <sch:pattern>
         <sch:title>METS metsHdr validation</sch:title>
+        <sch:rule context="m:mets">
+        	<sch:assert test="m:metsHdr">The mets MUST include a metsHdr element.</sch:assert>
+        </sch:rule>
         <sch:rule context="m:metsHdr">
             <sch:assert test="matches(@CREATEDATE,'^(\d\d\d\d)(-(\d\d)(-(\d\d))?)?([T| ]?(\d\d):(\d\d)(:((\d\d)(\.(\d+))?)?)?(Z|([\+\-]\d\d:\d\d)|([A-Z]{3}))?)?$')">The metsHdr CREATEDATE MUST be valid ISO 8601. (<sch:value-of select="@CREATEDATE"/>)</sch:assert>
             <sch:assert test="m:agent[@ROLE = 'CREATOR' and @TYPE = 'INDIVIDUAL']">The metsHdr MUST have at least one agent with ROLE of CREATOR and TYPE INDIVIDUAL.</sch:assert>
