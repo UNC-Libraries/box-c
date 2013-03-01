@@ -365,6 +365,9 @@
                 </xsl:choose>                
             </xsl:otherwise>
         </xsl:choose>
+        <xsl:if test="$adms/m:mdWrap/m:xmlData/acl:accessControl/@acl:published and ($adms/m:mdWrap/m:xmlData/acl:accessControl/@acl:published eq 'false')">
+        	<ir:isPublished>no</ir:isPublished>
+        </xsl:if>
     </xsl:template>
 
     <!--<xsl:variable name="defaultContentModel" select="'FileSystem'"/>-->
