@@ -145,6 +145,7 @@
         <rdf-predicates>
             <ir:hasSurrogate/>
             <ir:hasAlphabeticalOrder/>
+            <ir:defaultWebObject/>
             <!--<ir:refersTo/> is not translated to foxml directly. -->
         </rdf-predicates>
     </xsl:variable>
