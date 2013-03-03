@@ -8,7 +8,7 @@
         </p>
 	<h3>Criteria for Inclusion</h3>
 	
-	<p><a href="external?page=about.collectionPolicy">Collection Development Policy</a></p>
+	<p><a href="scontent/aboutPages/collectionDevPolicy.xml">Collection Development Policy</a></p>
 	
 	<p>Digital objects eligible for inclusion in the CDR include works of a
 		scholarly or creative nature, as well as university records kept in
@@ -44,7 +44,7 @@
         </p>
 	<ul class="contentul">
 		<li>
-			<a href="external?page=about.takeDownPolicy">Take Down Policy</a>
+			<a href="scontent/aboutPages/takeDownPolicy.xml">Take Down Policy</a>
 		</li>
 	</ul>
 	<h3>Rights</h3>
@@ -78,7 +78,7 @@
 	<ul class="contentul">
 		<li>
 
-			<a href="external?page=about.nonexclusiveDepositLicense">Non-Exclusive Deposit License</a>
+			<a href="scontent/aboutPages/nonexclusiveDepositLicense.xml">Non-Exclusive Deposit License</a>
 
 		</li>
 	</ul>
@@ -89,7 +89,7 @@
         </p>
 	<ul class="contentul">
 		<li>
-			<a href="external?page=about.preservationAndStewardship">Preservation and Stewardship Policy</a>
+			<a href="scontent/aboutPages/preservationAndStewardship.xml">Preservation and Stewardship Policy</a>
 
 		</li>
 	</ul>

@@ -12,22 +12,22 @@
 
 <p>
 		<br/>
-		<a href="external?page=about.depositors">How to contribute material to the CDR</a>
+		<a href="scontent/aboutPages/infoForDepositors.xml">How to contribute material to the CDR</a>
 		<br/>
 		<br/>
-		<a href="external?page=about.faq">Frequently Asked Questions</a>
+		<a href="scontent/aboutPages/repoFAQ.xml">Frequently Asked Questions</a>
 		<br/>
 		<br/>
-		<a href="external?page=about.guidelines">CDR Policies and Guidelines</a>
+		<a href="scontent/aboutPages/policiesGuidelines.xml">CDR Policies and Guidelines</a>
 		<br/>
 		<br/>
-		<a href="external?page=about.pubs">Outreach and Partnerships</a>
+		<a href="scontent/aboutPages/partners.xml">Outreach and Partnerships</a>
 		<br/>
 		<br/>
-		<a href="external?page=about.technology">Technology Overview</a>
+		<a href="scontent/aboutPages/techOverview.xml">Technology Overview</a>
 		<br/>
 		<br/>
-		<a href="external?page=about.blog">CDR Blog</a>
+		<a href="http://www.lib.unc.edu/blogs/cdr/">CDR Blog</a>
 		<br/>
 	</p>
 </div>
