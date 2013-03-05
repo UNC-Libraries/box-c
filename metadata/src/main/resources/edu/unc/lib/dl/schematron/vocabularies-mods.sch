@@ -63,7 +63,7 @@
     <sch:pattern>
         <sch:title>Valid Genre Authorities</sch:title>
         <sch:rule context="mods:genre">
-            <sch:assert test="@authority = 'lctgm' or @authority = 'local' or @authority = 'eprints' or exists(@authorityURI)">Valid genre authorities are 'lctgm' or 'local'.</sch:assert>
+            <sch:assert test="@authority = 'lctgm' or @authority = 'local' or @authority = 'eprints' or @authority = 'marcgt' or exists(@authorityURI)">Valid genre authorities are 'lctgm', 'eprint', 'marcgt', or 'local'.</sch:assert>
         </sch:rule>
     </sch:pattern>
 
