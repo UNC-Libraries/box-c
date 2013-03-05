@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import static org.mockito.Mockito.*;
 
@@ -111,5 +112,14 @@ public class CutoffFacetTest extends Assert {
 		assertEquals("A", facet.getNode("uuid:a").getDisplayValue());
 		assertEquals("Child object,how are you?", facet.getNode("uuid:b").getDisplayValue());
 		assertEquals("I am quite well, parent container", facet.getNode("uuid:c").getDisplayValue());
+	}
+	
+	@Test
+	public void starKeyLimitTo() {
+		CutoffFacet depthFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
+		depthFacet.setCutoff(2);
+		
+		String limitToValue = depthFacet.getLimitToValue();
+		assertEquals("1,*!2", limitToValue);
 	}
 }

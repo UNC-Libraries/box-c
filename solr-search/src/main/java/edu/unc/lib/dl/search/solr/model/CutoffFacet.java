@@ -174,9 +174,9 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 	
 	@Override
 	public String getLimitToValue() {
-		CutoffFacetNode lastNode = this.getHighestTierNode();
-		if (lastNode == null)
+		if (this.facetNodes.size() == 0)
 			return null;
+		CutoffFacetNode lastNode = (CutoffFacetNode)this.facetNodes.get(this.facetNodes.size() - 1);
 		return lastNode.getLimitToValue();
 	}
 

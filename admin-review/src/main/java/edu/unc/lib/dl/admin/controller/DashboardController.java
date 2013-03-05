@@ -25,18 +25,23 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 @Controller
 @RequestMapping(value = {"/", ""})
 public class DashboardController extends AbstractSolrSearchController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String handleRequest(Model model, HttpServletRequest request){
-		
 		SearchState collectionsState = this.searchStateFactory.createSearchState();
 		collectionsState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
+		collectionsState.setRowsPerPage(5000);
+		CutoffFacet depthFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
+		depthFacet.setCutoff(2);
+		collectionsState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), depthFacet);
 		
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 		SearchRequest searchRequest = new SearchRequest();

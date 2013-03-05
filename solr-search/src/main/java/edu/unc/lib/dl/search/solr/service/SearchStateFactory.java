@@ -80,6 +80,10 @@ public class SearchStateFactory {
 		searchState.setResourceTypes(new ArrayList<String>(searchSettings.defaultCollectionResourceTypes));
 		searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.collectionBrowseFacetNames));
 		
+		CutoffFacet depthFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
+		depthFacet.setCutoff(2);
+		searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), depthFacet);
+		
 		populateSearchState(searchState, request);
 		return searchState;
 	}
