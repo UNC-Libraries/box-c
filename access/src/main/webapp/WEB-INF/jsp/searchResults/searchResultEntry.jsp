@@ -64,7 +64,7 @@
 		<c:set var="iconContent">
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', metadata)}">
-					<div class="smallthumb_container">
+					<div class="small thumb_container">
 						<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_${metadata.contentTypeFacet[0].searchKey}" 
 								src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
 					</div>
@@ -83,7 +83,7 @@
 						</c:when>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
 							<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_clear" 
-									src="/static/images/placeholder/small/collection.png" style="height: 64px; width: 64px;"/>
+									src="/static/images/placeholder/small/collection.png"/>
 						</c:when>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentTypeFacet[0].searchKey}">
 							<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
@@ -99,7 +99,7 @@
 		<c:choose>
 			<c:when test="${hasListAccessOnly}">
 				<a>
-					<div class="smallthumb_container">
+					<div class="small thumb_container">
 						${iconContent}
 						<span><img src="/static/images/lockedstate.gif"/></span>
 					</div>
@@ -107,7 +107,7 @@
 			</c:when>
 			<c:otherwise>
 				<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip">
-					<div class="smallthumb_container">
+					<div class="small thumb_container">
 						${iconContent}
 					</div>
 				</a>

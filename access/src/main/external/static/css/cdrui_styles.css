@@ -306,13 +306,6 @@ div#username_wrap {
 	margin-bottom: 2px;
 }
 
-.largethumb_container {
-	width: 128px;
-	float: left;
-	margin: 0 20px 20px 0;
-	text-align: center;
-}
-
 #full_record.container_record {
 	margin-left: 92px;
 }
@@ -321,20 +314,17 @@ div#username_wrap {
 	width: 668px !important;
 }
 
-#full_record .largethumb_container {
+/** Thumbnail styles **/
+.large.thumb_container {
+	position: relative;
+	width: 128px;
 	height: 128px;
+	float: left;
+	margin: 0 20px 20px 0;
+	text-align: center;
 }
 
-.largethumb_container.empty {
-	height: 128px;
-	background-color: transparent !important;
-}
-
-.largethumb_container.no_background {
-	background-color: transparent !important;
-}
-
-.smallthumb_container {
+.small.thumb_container {
 	position:relative;
 	width: 64px;
 	height: 64px;
@@ -343,15 +333,15 @@ div#username_wrap {
 	text-align: center;
 }
 
-.smallthumb_container img {
+.small.thumb_container img {
 	max-width: 64px;
 }
 
-.smallthumb_container.empty {
+.small.thumb_container.empty {
 	height: 64px;
 }
 
-.smallthumb_container span {
+.thumb_container span {
 	position:absolute;
 	bottom: 2px;
 	right: -2px;

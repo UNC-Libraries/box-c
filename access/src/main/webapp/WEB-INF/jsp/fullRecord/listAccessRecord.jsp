@@ -29,6 +29,9 @@
 	<div class="contentarea">
 		<c:set var="thumbUrl">
 			<c:choose>
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject)}">
+					${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}
+				</c:when>
 				<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFolder}">
 					/static/images/placeholder/large/folder.png
 				</c:when>
@@ -46,8 +49,9 @@
 		</c:set>
 		
 		<a class="thumb_link">
-			<div class="largethumb_container">
+			<div class="large thumb_container">
 				<img id="thumb_main" class="largethumb" src="${thumbUrl}"/>
+				<span><img src="/static/images/lockedstate.gif"/></span>
 			</div>
 		</a>
 		<div class="collinfo">

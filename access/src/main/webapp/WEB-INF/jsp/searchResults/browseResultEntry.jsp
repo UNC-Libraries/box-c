@@ -54,12 +54,12 @@
 		<a href="<c:out value='${primaryActionUrl}' />">
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', metadata)}">
-					<div class="largethumb_container">
+					<div class="large thumb_container">
 						<img class="largethumb" src="${cdr:getDatastreamUrl(metadata, 'THUMB_LARGE', fedoraUtil)}"/>
 					</div>
 				</c:when>
 				<c:otherwise>
-					<div class="largethumb_container">
+					<div class="large thumb_container">
 						<img id="thumb_${param.resultNumber}" class="largethumb" 
 								src="/static/images/placeholder/large/collection.png"/>
 					</div>

@@ -37,30 +37,19 @@
 	</c:url>
 
 	<div class="contentarea">
+		<div class="large thumb_container">
 		<c:choose>
 			<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject)}">
-				<div class="largethumb_container">
-					<img id="thumb_main" class="largethumb" src="${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}"/>
-				</div>
+				<img id="thumb_main" class="largethumb" src="${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}"/>
+			</c:when>
+			<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFolder}">
+				<img id="thumb_main" class="largethumb" src="/static/images/placeholder/small/folder.png"/>
 			</c:when>
 			<c:otherwise>
-				<c:choose>
-					<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFolder}">
-						<div class="largethumb_container no_background">
-							<img id="thumb_main" class="largethumb" src="/static/images/placeholder/small/folder.png"/>
-						</div>
-					</c:when>
-					<c:otherwise>
-						<%-- <div class="smallthumb_container empty">
-						</div> --%>
-						<div class="largethumb_container no_background">
-							<img id="thumb_main" class="largethumb ph_large_clear" 
-									src="/static/images/collections/${briefObject.idWithoutPrefix}.jpg"/>
-						</div>
-					</c:otherwise>
-				</c:choose>
+				<img id="thumb_main" class="largethumb" src="/static/images/placeholder/large/collection.png"/>
 			</c:otherwise>
 		</c:choose>
+		</div>
 		
 		<div class="collinfo">
 			<h2><c:out value="${briefObject.title}" /></h2>

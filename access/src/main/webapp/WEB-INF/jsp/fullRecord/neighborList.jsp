@@ -34,25 +34,23 @@
 			<div class="relateditem ${currentItemClass}">
 				<div class="relatedthumb">
 					<a href="<c:out value='${fullRecordUrl}' />">
-						<c:choose>
-							<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', neighbor)}">
-								<div class="smallthumb_container">
+						<div class="small thumb_container">
+							<c:choose>
+								<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', neighbor)}">
 									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_${neighbor.contentTypeFacet[0].searchKey}" 
 											src="${cdr:getDatastreamUrl(neighbor, 'THUMB_SMALL', fedoraUtil)}"/>
-									<c:if test="${hasListAccessOnly}">
-										<span><img src="/static/images/lockedstate.gif"/></span>
-									</c:if>
-								</div>
-							</c:when>
-							<c:otherwise>
-								<div class="smallthumb_container">
+								</c:when>
+								<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentTypeFacet[0].searchKey}">
+									<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
+								</c:when>
+								<c:otherwise>
 									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_default" src="/static/images/placeholder/small/${neighbor.contentTypeFacet[0].searchKey}.png"/>
-									<c:if test="${hasListAccessOnly}">
-										<span><img src="/static/images/lockedstate.gif"/></span>
-									</c:if>
-								</div>
-							</c:otherwise>
-						</c:choose>
+								</c:otherwise>
+							</c:choose>
+							<c:if test="${hasListAccessOnly}">
+								<span><img src="/static/images/lockedstate.gif"/></span>
+							</c:if>
+						</div>
 					</a>
 				</div>
 				<p><a href="<c:out value='${fullRecordUrl}' />"><c:out value="${cdr:truncateText(neighbor.title, 50)}" /></a></p>

@@ -36,37 +36,30 @@
 		</p>
 	</div>
 	<div class="contentarea">
-		<c:choose>
-			<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', metadata)}">
-				<div class="smallthumb_container">
-					<img class="smallthumb" src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
-				</div>
-			</c:when>
-			<c:otherwise>
-				<c:choose>
-					<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
-						<div class="smallthumb_container">
+		<div class="small thumb_container">
+			<c:choose>
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', metadata)}">
+					<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_${metadata.contentTypeFacet[0].searchKey}" 
+							src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
+				</c:when>
+				<c:otherwise>
+					<c:choose>
+						<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
 							<img class="smallthumb" src="/static/images/placeholder/small/folder.png"/>
-						</div>
-					</c:when>
-					<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && not empty metadata.contentTypeFacet[0].searchKey}">
-						<div class="smallthumb_container">
+						</c:when>
+						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && not empty metadata.contentTypeFacet[0].searchKey}">
 							<img class="smallthumb" src="/static/images/placeholder/small/${metadata.contentTypeFacet[0].searchKey}.png"/>
-						</div>
-					</c:when>
-					<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate}">
-						<div class="smallthumb_container">
+						</c:when>
+						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate}">
 							<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
-						</div>
-					</c:when>
-					<c:otherwise>
-						<div class="smallthumb_container">
-							<img class="smallthumb" src="/static/images/collections/${metadata.idWithoutPrefix}.jpg"/>
-						</div>
-					</c:otherwise>
-				</c:choose>
-			</c:otherwise>
-		</c:choose>
+						</c:when>
+						<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
+							<img class="smallthumb" src="/static/images/placeholder/small/collection.png"/>
+						</c:when>
+					</c:choose>
+				</c:otherwise>
+			</c:choose>
+		</div>
 		<c:url var="fullRecordUrl" scope="page" value="record">
 			<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.id}"/>
 		</c:url>

@@ -59,18 +59,18 @@
 		<a href="${thumbUrl}" class="thumb_link">
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject)}">
-					<div class="largethumb_container">
+					<div class="large thumb_container">
 						<img id="thumb_main" class="largethumb ph_large_${briefObject.contentTypeFacet[0].searchKey}" 
 								src="${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}"/>
 					</div>
 				</c:when>
 				<c:when test="${not empty briefObject.contentTypeFacet[0].searchKey}">
-					<div class="largethumb_container">
+					<div class="large thumb_container">
 						<img id="thumb_main" class="largethumb ph_large_default" src="/static/images/placeholder/large/${briefObject.contentTypeFacet[0].searchKey}.png"/>
 					</div>
 				</c:when>
 				<c:otherwise>
-					<div class="largethumb_container">
+					<div class="large thumb_container">
 						<img id="thumb_main" class="largethumb ph_large_default" src="/static/images/placeholder/large/default.png"/>
 					</div>
 				</c:otherwise>

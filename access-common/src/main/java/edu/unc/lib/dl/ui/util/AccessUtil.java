@@ -42,6 +42,12 @@ public class AccessUtil {
 		if (groups.contains(AccessGroupConstants.ADMIN_GROUP)) {
 			return true;
 		}
+		
+		// Thumbnails are accessible to users with the list role
+		if ((Datastream.THUMB_LARGE.equals(datastream) || Datastream.THUMB_SMALL.equals(datastream)) 
+				&& metadata.getAccessControlBean().getRoles(groups).contains(UserRole.list)) {
+			return true;
+		}
 
 		return metadata.getAccessControlBean().hasPermission(groups,
 				Permission.getPermissionByDatastreamCategory(datastream.getCategory()));
