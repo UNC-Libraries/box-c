@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
@@ -98,6 +99,12 @@ public class ZipFileUtil {
 		while ((entry = zis.getNextZipEntry()) != null) {
 			if (!entry.isDirectory()) {
 				File f = new File(destDir, entry.getName());
+				
+				if (!isFileInsideDirectory(f, destDir)) {
+					zis.close();
+					throw new IOException("Attempt to write to path outside of destination directory: " + entry.getName());
+				}
+				
 				f.getParentFile().mkdirs();
 				int count;
 				byte data[] = new byte[8192];
@@ -112,6 +119,20 @@ public class ZipFileUtil {
 			}
 		}
 		zis.close();
+	}
+	
+	private static boolean isFileInsideDirectory(File child, File parent) throws IOException {
+		
+		File test = child.getCanonicalFile();
+		
+		while (test != null) {
+			test = test.getParentFile();
+			if (parent.equals(test))
+				return true;
+		}
+		
+		return false;
+		
 	}
 
 }
