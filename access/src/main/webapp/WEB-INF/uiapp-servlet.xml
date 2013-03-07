@@ -166,6 +166,10 @@
 		</property>
 	</bean>
 	
+	<bean name="hasViewAdminPermissionFilter" class="edu.unc.lib.dl.ui.filter.HasViewAdminPermissionFilter">
+		<property name="queryLayer" ref="queryLayer" />
+	</bean>
+	
 	<!-- JMX -->
 	<bean id="loggingExporter" class="org.springframework.jmx.export.MBeanExporter"
 		lazy-init="false">

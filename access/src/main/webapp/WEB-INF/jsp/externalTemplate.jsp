@@ -30,6 +30,8 @@
 		${cdr:postImport(pageContext.request, contentUrl)}
 	</c:when>
 	<c:otherwise>
-		<c:import url="${contentPath}"/>
+		<c:catch>
+			<c:import url="${contentPath}"/>
+		</c:catch>
 	</c:otherwise>
 </c:choose>

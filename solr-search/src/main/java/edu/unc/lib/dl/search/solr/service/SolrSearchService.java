@@ -252,14 +252,20 @@ public class SolrSearchService {
 	 * @throws AccessRestrictionException
 	 *            thrown if no groups are provided.
 	 */
-	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups/* , String accessType */)
+	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups)
+			throws AccessRestrictionException {
+		return this.addAccessRestrictions(query, accessGroups, searchSettings.getAllowPatronAccess());
+	}
+		
+	
+	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups, boolean allowPatronAccess)
 			throws AccessRestrictionException {
 		if (accessGroups == null || accessGroups.size() == 0) {
 			throw new AccessRestrictionException("No access groups were provided.");
 		}
 		if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)) {
 			String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
-			if (searchSettings.getAllowPatronAccess()) {
+			if (allowPatronAccess) {
 				query.append(" AND ((").append("readGroup:(").append(joinedGroups).append(')')
 						.append(" AND status:Published) OR adminGroup:(").append(joinedGroups).append("))");
 			} else {

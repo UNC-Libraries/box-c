@@ -88,6 +88,11 @@
 						<a href="external?page=cdradmin" target="_blank">Admin</a>
 					</li>
 				</c:if>
+				<c:if test="${requestScope.hasAdminViewPermission}">
+					<li>
+						<a href="/admin/" target="_blank">Review</a>
+					</li>
+				</c:if>
 				<c:choose>
 					<c:when test="${not empty pageContext.request.remoteUser}">
 						<c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">

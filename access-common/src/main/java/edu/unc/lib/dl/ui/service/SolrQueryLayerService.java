@@ -50,6 +50,7 @@ import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
+import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.fedora.PID;
@@ -930,6 +931,32 @@ public class SolrQueryLayerService extends SolrSearchService {
 			LOG.error("Error retrieving Solr object request: " + e);
 		}
 
+		return false;
+	}
+	
+	/**
+	 * Determines if the user has adminRole permissions on any items
+	 * @param accessGroups
+	 * @return
+	 */
+	public boolean hasAdminViewPermission(AccessGroupSet accessGroups) {
+		if (accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)) {
+			return true;
+		}
+		StringBuilder query = new StringBuilder();
+		String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
+		query.append("adminGroup:(").append(joinedGroups).append(')');
+		
+		SolrQuery solrQuery = new SolrQuery();
+		solrQuery.setQuery(query.toString());
+		solrQuery.setRows(0);
+		
+		try {
+			QueryResponse queryResponse = this.executeQuery(solrQuery);
+			return queryResponse.getResults().getNumFound() > 0;
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+		}
 		return false;
 	}
 
