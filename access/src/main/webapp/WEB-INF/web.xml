@@ -52,6 +52,10 @@
 		<exception-type>java.lang.Exception</exception-type>
 		<location>/exception</location>
 	</error-page>
+	
+	<session-config>
+		<tracking-mode>COOKIE</tracking-mode>
+	</session-config>
      
 	<servlet>
 		<servlet-name>uiapp</servlet-name>
