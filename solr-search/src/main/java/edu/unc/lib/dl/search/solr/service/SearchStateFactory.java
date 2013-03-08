@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
@@ -264,7 +265,9 @@ public class SearchStateFactory {
 				String parameterPairArray[] = parameterPair.split(":", 2);
 				//if a field label is specified, store the search term under it.
 				if (parameterPairArray.length > 1 && parameterPairArray[1].trim().length() > 0){
-					searchFields.put(searchSettings.searchFieldKey(parameterPairArray[0]), parameterPairArray[1]);
+					String key = searchSettings.searchFieldKey(parameterPairArray[0]);
+					if (key != null)
+						searchFields.put(key, parameterPairArray[1]);
 				}
 			}
 			searchState.setSearchFields(searchFields);
@@ -279,7 +282,9 @@ public class SearchStateFactory {
 				try {
 					String parameterPairArray[] = parameterPair.split(":", 2);
 					String rangeEndpoints[] = parameterPairArray[1].split(",");
-					rangeFields.put(searchSettings.searchFieldKey(parameterPairArray[0]), new SearchState.RangePair(rangeEndpoints[0], rangeEndpoints[1]));
+					String key = searchSettings.searchFieldKey(parameterPairArray[0]);
+					if (key != null)
+						rangeFields.put(key, new SearchState.RangePair(rangeEndpoints[0], rangeEndpoints[1]));
 				} catch (ArrayIndexOutOfBoundsException e){
 					//An invalid range was specified, throw away the term pair
 				}
@@ -296,8 +301,15 @@ public class SearchStateFactory {
 				String parameterPairArray[] = parameterPair.split(":", 2);
 				//if a field label is specified, store the facet under it.
 				if (parameterPairArray.length > 1){
-					String key = searchSettings.searchFieldKey(parameterPairArray[0]);
-					facets.put(key, this.facetFieldFactory.createFacet(key, parameterPairArray[1]));
+					try {
+						String key = searchSettings.searchFieldKey(parameterPairArray[0]);
+						if (key != null)
+							facets.put(key, this.facetFieldFactory.createFacet(key, parameterPairArray[1]));
+					} catch (InvalidHierarchicalFacetException e) {
+						log.warn("Invalid hierarchical facet for " + parameterPair);
+						log.debug("Root cause", e);
+					}
+					
 				}
 			}
 			searchState.setFacets(facets);
@@ -313,7 +325,7 @@ public class SearchStateFactory {
 				if (parameterPairArray.length > 1){
 					String fieldKey = searchSettings.searchFieldKey(parameterPairArray[0]);
 					//if a field label is specified, store the facet under it.
-					if (searchSettings.facetNames.contains(fieldKey)){
+					if (fieldKey != null && searchSettings.facetNames.contains(fieldKey)){
 						try {
 							facetLimits.put(fieldKey, Integer.parseInt(parameterPairArray[1]));
 						} catch (Exception e){
@@ -333,12 +345,6 @@ public class SearchStateFactory {
 			} catch (Exception e){
 				log.error("Failed to parse base facet limit: " + parameter);
 			}
-		}
-		
-		//accessTypeFilter
-		parameter = getParameter(request, searchSettings.searchStateParam("ACCESS_FILTER_TYPE"));
-		if (parameter != null){
-			searchState.setAccessTypeFilter(searchSettings.searchFieldKey(parameter));
 		}
 		
 		//Determine resource types selected
@@ -405,7 +411,7 @@ public class SearchStateFactory {
 			String facetArray[] = parameter.split(",");
 			for (String facet: facetArray){
 				String facetKey = searchSettings.searchFieldKey(facet);
-				if (searchSettings.getFacetNames().contains(facetKey))
+				if (facetKey != null && searchSettings.getFacetNames().contains(facetKey))
 					facetsToRetrieve.add(searchSettings.searchFieldKey(facet));
 			}
 			searchState.setFacetsToRetrieve(facetsToRetrieve);
