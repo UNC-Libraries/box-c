@@ -41,6 +41,23 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 public class ImageEnhancementService extends AbstractIrodsObjectEnhancementService {
 	private static final Logger LOG = LoggerFactory.getLogger(ImageEnhancementService.class);
 	public static final String enhancementName = "Image Derivative Generation";
+	
+	private String isApplicableQuery;
+	private String lastAppliedQuery;
+	private String findCandidatesQuery;
+	private String findStaleCandidatesQuery;
+	
+	public ImageEnhancementService(){
+		super();
+		try {
+			this.isApplicableQuery = this.readFileAsString("image-applicable.sparql");
+			this.findCandidatesQuery = this.readFileAsString("image-candidates.sparql");
+			this.findStaleCandidatesQuery = this.readFileAsString("image-stale-candidates.sparql");
+			this.lastAppliedQuery = this.readFileAsString("image-last-applied.sparql");
+		} catch (IOException e) {
+			LOG.error("Failed to read service query", e);
+		}
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -62,21 +79,15 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 	public Object findCandidateObjects(int maxResults, String priorToDate, boolean countQuery)
 			throws EnhancementException {
 		String query = null;
-		try {
-			String limitClause = "";
-			if (maxResults >= 0 && !countQuery) {
-				limitClause = "LIMIT " + maxResults;
-			}
-			if (priorToDate == null) {
-				query = this.readFileAsString("image-candidates.sparql");
-				query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), limitClause);
-			} else {
-				query = this.readFileAsString("image-stale-candidates.sparql");
-				query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), priorToDate,
-						limitClause);
-			}
-		} catch (IOException e) {
-			throw new EnhancementException(e);
+		String limitClause = "";
+		if (maxResults >= 0 && !countQuery) {
+			limitClause = "LIMIT " + maxResults;
+		}
+		if (priorToDate == null) {
+			query = String.format(this.findCandidatesQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(), limitClause);
+		} else {
+			query = String.format(this.findStaleCandidatesQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(), priorToDate,
+					limitClause);
 		}
 		return this.executeCandidateQuery(query, countQuery);
 	}
@@ -120,15 +131,9 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
 		LOG.debug("isApplicable called with " + message.getTargetID());
 
-		String query = null;
-		try {
-			// replace model URI and PID tokens
-			query = this.readFileAsString("image-applicable.sparql");
-			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), message.getPid()
-					.getURI(), "http://cdr.unc.edu/definitions/1.0/base-model.xml#derivedJP2");
-		} catch (IOException e) {
-			throw new EnhancementException(e);
-		}
+		// replace model URI and PID tokens
+		String query = String.format(this.isApplicableQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(), message.getPid()
+				.getURI(), "http://cdr.unc.edu/definitions/1.0/base-model.xml#derivedJP2");
 		Map<String, Object> result = this.getTripleStoreQueryService().sendSPARQL(query);
 		LOG.debug("checking if Applicable");
 		if (Boolean.TRUE.equals(result.get("boolean"))) {
@@ -152,14 +157,9 @@ public class ImageEnhancementService extends AbstractIrodsObjectEnhancementServi
 	@SuppressWarnings("rawtypes")
 	@Override
 	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
-		String query = null;
-		try {
-			// replace model URI and PID tokens
-			query = this.readFileAsString("image-last-applied.sparql");
-			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid.getURI());
-		} catch (IOException e) {
-			throw new EnhancementException(e);
-		}
+		// replace model URI and PID tokens
+		String query = String.format(this.lastAppliedQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid.getURI());
+		
 		@SuppressWarnings("unchecked")
 		List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results"))
 				.get("bindings");

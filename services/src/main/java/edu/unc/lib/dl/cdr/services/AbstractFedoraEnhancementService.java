@@ -124,8 +124,6 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 		java.io.InputStream inStream = this.getClass().getResourceAsStream(filePath);
 		java.io.InputStreamReader inStreamReader = new InputStreamReader(inStream);
 		BufferedReader reader = new BufferedReader(inStreamReader);
-		// BufferedReader reader = new BufferedReader(new
-		// InputStreamReader(this.getClass().getResourceAsStream(filePath)));
 		char[] buf = new char[1024];
 		int numRead = 0;
 		while ((numRead = reader.read(buf)) != -1) {

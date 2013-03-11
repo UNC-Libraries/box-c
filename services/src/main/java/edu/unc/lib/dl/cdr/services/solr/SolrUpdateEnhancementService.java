@@ -43,6 +43,17 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateEnhancementService.class);
 	public static final String enhancementName = "Solr Update";
 
+	private String isApplicableQuery;
+	
+	public SolrUpdateEnhancementService(){
+		super();
+		try {
+			this.isApplicableQuery = this.readFileAsString("solr-update-applicable.sparql");
+		} catch (IOException e) {
+			LOG.error("Failed to read service query", e);
+		}
+	}
+	
 	@Override
 	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) {
 		// All simple objects are candidates for loading into solr since we likely
@@ -96,26 +107,20 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 
 				// This message was not created as a result of the record being changed, so need to get Fedora updated
 				// timestamp
-				String query = null;
 				String fedoraDateModified = null;
-				try {
-					// replace model URI and PID tokens
-					query = super.readFileAsString("solr-update-applicable.sparql");
-					query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), message
-							.getPid().getURI());
+				// replace model URI and PID tokens
+				String query = String.format(this.isApplicableQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(), message
+						.getPid().getURI());
 
-					List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query)
-							.get("results")).get("bindings");
-					// Couldn't find the date modified, item likely no longer exists.
-					if (bindings.size() == 0)
-						return true;
-					// Compare Solr updated timestamp to Fedora's. If Solr is older, than need to update.
-					fedoraDateModified = (String) ((Map) bindings.get(0).get("modifiedDate")).get("value");
-					if (solrDateModifiedString.compareTo(fedoraDateModified) < 0) {
-						return true;
-					}
-				} catch (IOException e) {
-					throw new EnhancementException(e, Severity.UNRECOVERABLE);
+				List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query)
+						.get("results")).get("bindings");
+				// Couldn't find the date modified, item likely no longer exists.
+				if (bindings.size() == 0)
+					return true;
+				// Compare Solr updated timestamp to Fedora's. If Solr is older, than need to update.
+				fedoraDateModified = (String) ((Map) bindings.get(0).get("modifiedDate")).get("value");
+				if (solrDateModifiedString.compareTo(fedoraDateModified) < 0) {
+					return true;
 				}
 			}
 		} catch (SolrServerException e) {

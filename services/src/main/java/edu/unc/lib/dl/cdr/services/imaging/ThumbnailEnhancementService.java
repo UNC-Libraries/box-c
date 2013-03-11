@@ -45,6 +45,24 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 	private static final Logger LOG = LoggerFactory.getLogger(ThumbnailEnhancementService.class);
 	public static final String enhancementName = "Thumbnail Generation";
 	
+	private String isApplicableQuery;
+	private String lastAppliedQuery;
+	private String findCandidatesQuery;
+	private String findStaleCandidatesQuery;
+	
+	public ThumbnailEnhancementService() {
+		super();
+		
+		try {
+			this.isApplicableQuery = this.readFileAsString("thumbnail-applicable.sparql");
+			this.findCandidatesQuery = this.readFileAsString("thumbnail-candidates.sparql");
+			this.findStaleCandidatesQuery = this.readFileAsString("thumbnail-stale-candidates.sparql");
+			this.lastAppliedQuery = this.readFileAsString("thumbnail-last-applied.sparql");
+		} catch (IOException e) {
+			LOG.error("Failed to read service query", e);
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
@@ -64,23 +82,16 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 
 	public Object findCandidateObjects(int maxResults, String priorToDate, boolean countQuery) throws EnhancementException {
 		String query = null;
-		try {
-			String limitClause = "";
-			if (maxResults >= 0 && !countQuery) {
-				limitClause = "LIMIT " + maxResults; 
-			}
-			if (priorToDate == null) {
-				query = this.readFileAsString("thumbnail-candidates.sparql");
-				query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(),
-						ContentModelHelper.Datastream.THUMB_SMALL.getName(), limitClause);
-			} else {
-				query = this.readFileAsString("thumbnail-stale-candidates.sparql");
-				query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(),
-						ContentModelHelper.Datastream.THUMB_SMALL.getName(), priorToDate, limitClause);
-			}
-		} catch (IOException e) {
-			LOG.error("Failed to retrieve candidates for ThumbnailEnhancementService", e);
-			throw new EnhancementException(e);
+		String limitClause = "";
+		if (maxResults >= 0 && !countQuery) {
+			limitClause = "LIMIT " + maxResults; 
+		}
+		if (priorToDate == null) {
+			query = String.format(this.findCandidatesQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(),
+					ContentModelHelper.Datastream.THUMB_SMALL.getName(), limitClause);
+		} else {
+			query = String.format(this.findStaleCandidatesQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(),
+					ContentModelHelper.Datastream.THUMB_SMALL.getName(), priorToDate, limitClause);
 		}
 		return this.executeCandidateQuery(query, countQuery);
 	}
@@ -138,24 +149,16 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 					+ new XMLOutputter().outputString(((AbstractXMLEventMessage) message).getMessageBody()));
 		}
 
-		String query = null;
-		try {
-			// replace model URI and PID tokens
-			query = this.readFileAsString("thumbnail-applicable.sparql");
-			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), message.getPid()
-					.getURI(), "http://cdr.unc.edu/definitions/1.0/base-model.xml#thumb");
-			Map<String, Object> result = this.getTripleStoreQueryService().sendSPARQL(query);
-			LOG.debug("checking if Applicable");
-			if (Boolean.TRUE.equals(result.get("boolean"))) {
-				// Needs thumb for itself
-				return true;
-			}
-		} catch (IOException e) {
-			LOG.error("isApplicable failed for ThumbnailEnhancementService " + message.getTargetID(), e);
-			throw new EnhancementException(e);
+		// replace model URI and PID tokens
+		String query = String.format(this.isApplicableQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(), message.getPid()
+				.getURI(), "http://cdr.unc.edu/definitions/1.0/base-model.xml#thumb");
+		Map<String, Object> result = this.getTripleStoreQueryService().sendSPARQL(query);
+		LOG.debug("checking if Applicable");
+		if (Boolean.TRUE.equals(result.get("boolean"))) {
+			// Needs thumb for itself
+			return true;
 		}
 
-		// replace model URI and PID tokens
 		List<PID> haveThisSurrogate = this.getTripleStoreQueryService().fetchPIDsSurrogateFor(message.getPid());
 		if (haveThisSurrogate.size() > 0) {
 			// Needs thumb as the surrogate for another object
@@ -178,15 +181,9 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 	@SuppressWarnings("rawtypes")
 	@Override
 	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
-		String query = null;
-		try {
-			// replace model URI and PID tokens
-			query = this.readFileAsString("thumbnail-last-applied.sparql");
-			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid
-					.getURI());
-		} catch (IOException e) {
-			throw new EnhancementException(e);
-		}
+		// replace model URI and PID tokens
+		String query = String.format(this.lastAppliedQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid
+				.getURI());
 		@SuppressWarnings("unchecked")
 		List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results"))
 				.get("bindings");
