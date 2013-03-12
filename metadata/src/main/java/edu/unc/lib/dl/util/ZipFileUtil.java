@@ -123,11 +123,13 @@ public class ZipFileUtil {
 	
 	private static boolean isFileInsideDirectory(File child, File parent) throws IOException {
 		
-		File test = child.getCanonicalFile();
+		child = child.getCanonicalFile();
+		parent = parent.getCanonicalFile();
 		
-		while (test != null) {
-			test = test.getParentFile();
-			if (parent.equals(test))
+		while (child != null) {
+			child = child.getParentFile();
+
+			if (parent.equals(child))
 				return true;
 		}
 		

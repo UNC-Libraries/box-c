@@ -35,5 +35,31 @@ public class ZipFileUtilTest {
 		}
 		
 	}
+	
+	/*
+	 * Test that entries not pointing outside the directory to which we're unzipping
+	 * will NOT cause an IOException.
+	 */
+	@Test
+	public void testUnzipInsideDir() throws IOException {
+		
+		File zipFile;
+		
+		ClassPathResource resource = new ClassPathResource("/samples/test-mets-zip.zip");
+		
+		zipFile = resource.getFile();
+		
+		File tempDir = File.createTempFile("test", null);
+		tempDir.delete();
+		tempDir.mkdir();
+		tempDir.deleteOnExit();
+		
+		try {
+			ZipFileUtil.unzipToDir(zipFile, tempDir);
+		} catch (IOException e) {
+			fail("Expected IOException to not be thrown");
+		}
+		
+	}
 
 }
