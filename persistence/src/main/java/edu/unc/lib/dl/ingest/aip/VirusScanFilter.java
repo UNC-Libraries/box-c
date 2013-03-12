@@ -79,26 +79,24 @@ public class VirusScanFilter implements AIPIngestFilter {
 				}
 				if (uri.getScheme() == null || uri.getScheme().contains("file")) {
 					File file = aip.getFileForUrl(ref);
-					try {
-						ScanResult result = this.clamScan.scan(new FileInputStream(file));
-						switch(result.getStatus()) {
-							case FAILED:
-								Element ev = aip.getEventLogger().logEvent(PremisEventLogger.Type.VIRUS_CHECK, "File failed pre-ingest scan for viruses.", pid, dsid);
-								PremisEventLogger.addSoftwareAgent(ev, "ClamAV", version);
-								PremisEventLogger.addDetailedOutcome(ev, "failure", "found virus signature "+result.getSignature(), null);
-								failures.put(uri.toString(), result.getSignature());
-								break;
-							case ERROR:
-								throw new AIPException("Virus checks are producing errors: "+result.getException().getLocalizedMessage());
-							case PASSED:
-								Element ev2 = aip.getEventLogger().logEvent(PremisEventLogger.Type.VIRUS_CHECK, "File passed pre-ingest scan for viruses.", pid, dsid);
-								PremisEventLogger.addSoftwareAgent(ev2, "ClamAV", version);
-								PremisEventLogger.addDetailedOutcome(ev2, "success", null, null);
-								break;
-						}
-					} catch (FileNotFoundException e) {
-						throw new AIPException("Cannot find local file referenced in METS manifest: "+ref, e);
+					
+					ScanResult result = this.clamScan.scan(file);
+					switch(result.getStatus()) {
+						case FAILED:
+							Element ev = aip.getEventLogger().logEvent(PremisEventLogger.Type.VIRUS_CHECK, "File failed pre-ingest scan for viruses.", pid, dsid);
+							PremisEventLogger.addSoftwareAgent(ev, "ClamAV", version);
+							PremisEventLogger.addDetailedOutcome(ev, "failure", "found virus signature "+result.getSignature(), null);
+							failures.put(uri.toString(), result.getSignature());
+							break;
+						case ERROR:
+							throw new AIPException("Virus checks are producing errors: "+result.getException().getLocalizedMessage());
+						case PASSED:
+							Element ev2 = aip.getEventLogger().logEvent(PremisEventLogger.Type.VIRUS_CHECK, "File passed pre-ingest scan for viruses.", pid, dsid);
+							PremisEventLogger.addSoftwareAgent(ev2, "ClamAV", version);
+							PremisEventLogger.addDetailedOutcome(ev2, "success", null, null);
+							break;
 					}
+					
 				}
 			}
 		}
