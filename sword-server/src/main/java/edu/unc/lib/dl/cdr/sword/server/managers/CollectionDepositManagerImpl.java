@@ -118,8 +118,8 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 						throw new SwordError("Files in the package " + deposit.getFilename()
 								+ " did not match the provided METS manifest.", e);
 					} catch (IngestException e) {
-						log.warn("Files in the package " + deposit.getFilename()
-								+ " did not match the provided METS manifest.", e);
+						log.warn("An exception occurred while attempting to ingest package "
+								+ deposit.getFilename() + " of type " + deposit.getPackaging(), e);
 						throw new SwordError("An exception occurred while attempting to ingest package "
 								+ deposit.getFilename() + " of type " + deposit.getPackaging(), e);
 					} catch (Exception e) {
