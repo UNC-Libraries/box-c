@@ -26,6 +26,28 @@ import java.util.regex.Pattern;
  */
 public class PathUtil {
 	private static Pattern incremented = Pattern.compile("[_][0-9]+$");
+	
+	/**
+	 * Adds an underscore and a number to the input string. If the input string already ends with an underscore and a string
+	 * of digits, then it will increment the number. (leading zeros on the digits are removed)
+	 * 
+	 * @param input
+	 *           input string to increment
+	 * @return an incremented string
+	 */
+	public static String increment(String input) {
+		// if ends with _digit, then increment digit, other wise add _1
+		Matcher m = incremented.matcher(input);
+		if (m.find()) {
+			String num = input.substring(m.start() + 1);
+			int i = Integer.parseInt(num);
+			i++;
+			input = input.substring(0, m.start() + 1) + i;
+		} else {
+			input = input + "_1";
+		}
+		return input;
+	}
 
 	/**
 	 * Adds an underscore and a number to a slug string. If the input string already ends with an underscore and a string
@@ -37,17 +59,7 @@ public class PathUtil {
 	 */
 	public static String incrementSlug(String input) {
 		String result = makeSlug(input);
-		// if ends with _digit, then increment digit, other wise add _1
-		Matcher m = incremented.matcher(result);
-		if (m.find()) {
-			String num = result.substring(m.start() + 1);
-			int i = Integer.parseInt(num);
-			i++;
-			result = result.substring(0, m.start() + 1) + i;
-		} else {
-			result = result + "_1";
-		}
-		return result;
+		return increment(result);
 	}
 
 	/**
