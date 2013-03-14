@@ -267,7 +267,7 @@ public class DepositReportingUtil {
 				receipt.getWrappedEntry().addExtension(entryDoc.getRoot());
 			}
 		} catch (FedoraException e) {
-			log.error("Error retriving MD_DESCRIPTIVE for object " + targetPID.getPid(), e);
+			log.error("Error retrieving MD_DESCRIPTIVE for object " + targetPID.getPid(), e);
 		}
 		
 		return receipt;
