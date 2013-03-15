@@ -34,6 +34,7 @@ import org.swordapp.server.SwordServerException;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ErrorURIRegistry;
 
 /**
  * 
@@ -71,7 +72,7 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 				if (startPage < 0)
 					startPage = 0;
 			} catch (NumberFormatException e) {
-				throw new SwordServerException("Collection content page number was not a valid integer");
+				throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, 404, "Collection content page number was not valid.");
 			}
 		} else {
 			pidString = query;
@@ -85,8 +86,8 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 
 		// Verify access control
 		if (!hasAccess(auth, containerPID, Permission.viewDescription, configImpl)) {
-			throw new SwordAuthException("Insufficient privileges to view the collection list for "
-					+ containerPID.getPid());
+			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
+					"Insufficient privileges to view the collection list for " + containerPID.getPid());
 		}
 
 		Feed feed = abdera.getFactory().newFeed();
@@ -98,7 +99,8 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 		try {
 			this.getImmediateChildren(containerPID, startPage, feed, auth, configImpl);
 		} catch (IOException e) {
-			throw new SwordServerException("Failed to retrieve children for " + containerPID.getPid(), e);
+			throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, 500, "Failed to retrieve children for "
+					+ containerPID.getPid(), e);
 		}
 
 		return feed;

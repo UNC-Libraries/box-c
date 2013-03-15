@@ -37,11 +37,12 @@ import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DateTimeUtil;
+import edu.unc.lib.dl.util.ErrorURIRegistry;
 
 public class StatementManagerImpl extends AbstractFedoraManager implements StatementManager {
 
 	private static Logger log = Logger.getLogger(StatementManagerImpl.class);
-	
+
 	private DepositReportingUtil depositReportingUtil;
 
 	@Override
@@ -53,7 +54,8 @@ public class StatementManagerImpl extends AbstractFedoraManager implements State
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 
 		if (!hasAccess(auth, targetPID, Permission.viewDescription, configImpl)) {
-			throw new SwordAuthException("Insufficient privileges to retrieve statement for " + targetPID.getPid());
+			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
+					"Insufficient privileges to retrieve statement for " + targetPID.getPid());
 		}
 
 		String label = tripleStoreQueryService.lookupLabel(targetPID);
@@ -78,7 +80,7 @@ public class StatementManagerImpl extends AbstractFedoraManager implements State
 
 		return statement;
 	}
-	
+
 	public void setDepositReportingUtil(DepositReportingUtil depositReportingUtil) {
 		this.depositReportingUtil = depositReportingUtil;
 	}

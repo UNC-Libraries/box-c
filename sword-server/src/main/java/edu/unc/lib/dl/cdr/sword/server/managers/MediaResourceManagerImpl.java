@@ -41,12 +41,12 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.MethodAwareInputStream;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.ErrorURIRegistry;
 
 public class MediaResourceManagerImpl extends AbstractFedoraManager implements MediaResourceManager {
 	private static Logger log = Logger.getLogger(MediaResourceManagerImpl.class);
@@ -75,20 +75,14 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 
 		Datastream datastream = Datastream.getDatastream(datastreamString);
 
-		PersonAgent user = agentFactory.findPersonByOnyen(auth.getUsername(), false);
-		if (user == null) {
-			log.debug("Unable to find a user matching the submitted username credentials, " + auth.getUsername());
-			throw new SwordAuthException("Unable to find a user matching the submitted username credentials, "
-					+ auth.getUsername());
-		}
-
 		if (!hasAccess(auth, basePID, Permission.viewDescription, configImpl)) {
 			log.debug("Insufficient privileges to get media resource for " + targetPID.getPid());
-			throw new SwordAuthException("Insufficient privileges to get media resource for " + targetPID.getPid());
+			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
+					"Insufficient privileges to get media resource for " + targetPID.getPid());
 		}
 
 		if (datastream == null)
-			throw new SwordServerException(
+			throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404,
 					"Media representations other than those of datastreams are not currently supported");
 
 		HttpClient client = new HttpClient();
@@ -117,16 +111,17 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 				if (dsRowList.size() > 0)
 					lastModified = dsRowList.get(0);
 				inputStream = new MethodAwareInputStream(method);
-			} else if (method.getStatusCode() == 500) {
-				throw new SwordServerException("Failed to retrieve " + targetPID.getPid() + ": "
-						+ method.getStatusLine().toString());
+			} else if (method.getStatusCode() >= 500) {
+				throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, method.getStatusCode(), "Failed to retrieve "
+						+ targetPID.getPid() + ": " + method.getStatusLine().toString());
 			} else if (method.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
-				throw new SwordError("Object " + targetPID.getPid() + " could not be found.");
+				throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404, "Object " + targetPID.getPid()
+						+ " could not be found.");
 			}
 		} catch (HttpException e) {
-			throw new SwordServerException("An exception occurred while attempting to retrieve " + targetPID.getPid(), e);
+			throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, "An exception occurred while attempting to retrieve " + targetPID.getPid());
 		} catch (IOException e) {
-			throw new SwordServerException("An exception occurred while attempting to retrieve " + targetPID.getPid(), e);
+			throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, "An exception occurred while attempting to retrieve " + targetPID.getPid());
 		}
 
 		MediaResource resource = new MediaResource(inputStream, mimeType, null, true);
