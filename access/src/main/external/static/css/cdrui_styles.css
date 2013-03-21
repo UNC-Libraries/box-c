@@ -319,7 +319,7 @@ div#username_wrap {
 .large.thumb_container {
 	position: relative;
 	width: 128px;
-	height: 128px;
+	max-height: 128px;
 	float: left;
 	margin: 0 20px 20px 0;
 	text-align: center;
