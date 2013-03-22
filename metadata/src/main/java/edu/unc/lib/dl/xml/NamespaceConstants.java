@@ -229,6 +229,10 @@ public final class NamespaceConstants {
 	public static final String CDR_ROLES_PREFIX = "cdr-role";
 
 	public static final String CDR_ROLE_NS_URI = "http://cdr.unc.edu/definitions/roles#";
+	
+	public static final String CDR_ACL_PREFIX = "cdr-acl";
+	
+	public static final String CDR_ACL_NS_URI = "http://cdr.unc.edu/definitions/acl#";
 
     // Prevent instantiation.
     private NamespaceConstants() {

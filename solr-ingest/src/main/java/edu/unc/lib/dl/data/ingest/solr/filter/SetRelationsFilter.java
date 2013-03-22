@@ -81,7 +81,9 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 				defaultSortOrder = defaultSortOrder.substring(defaultSortOrder.indexOf('#') + 1);
 				relations.add(ContentModelHelper.CDRProperty.sortOrder.name() + "|" + defaultSortOrder);
 			}
-				
+			String embargoUntil = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.embargoUntil.name(), JDOMNamespaceUtil.CDR_ACL_NS, relsExt);
+			if (embargoUntil != null)
+				relations.add(ContentModelHelper.CDRProperty.embargoUntil.name() + "|" + embargoUntil);
 			
 			dip.getDocument().setRelations(relations);
 		} catch (JDOMException e) {
