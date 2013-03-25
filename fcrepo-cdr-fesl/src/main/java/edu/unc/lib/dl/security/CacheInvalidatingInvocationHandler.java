@@ -180,8 +180,6 @@ public class CacheInvalidatingInvocationHandler extends
 					// removing a contains relation invalidates just that one child-parent bond
 					String childPID = (String)fm.getParameters()[3];
 					getAncestorFactory().invalidateBondToParent(new PID(childPID)); // this is parent invalidation
-				} else if(ContentModelHelper.CDRProperty.embargo.getURI().toString().equals(relationship)) {
-					getEmbargoFactory().invalidate();
 				}
 			}
 			return "ok";
