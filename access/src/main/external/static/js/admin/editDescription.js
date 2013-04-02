@@ -17,9 +17,7 @@ require.config({
 		'modseditor' : 'modseditor/jquery.modseditor'
 	},
 	shim: {
-		'jquery-ui' : {
-			deps: ['jquery']
-		},
+		'jquery-ui' : ['jquery'],
 		'qtip' : ['jquery'],
 		'adminCommon' : ['jquery'],
 		'jquery-xmlns' : ['jquery'],

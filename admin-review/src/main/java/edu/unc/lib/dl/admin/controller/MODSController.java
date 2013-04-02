@@ -129,7 +129,7 @@ public class MODSController extends AbstractSolrSearchController {
 					method.releaseConnection();
 				}
 			} else {
-				if (method.getStatusCode() == HttpStatus.SC_BAD_REQUEST) {
+				if (method.getStatusCode() == HttpStatus.SC_BAD_REQUEST || method.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
 					// Ensure that the object actually exists
 					PID existingPID = tripleStoreQueryService.verify(new PID(pid));
 					if (existingPID != null) {
@@ -211,7 +211,7 @@ public class MODSController extends AbstractSolrSearchController {
 				} finally {
 					method.releaseConnection();
 				}
-			} else if (method.getStatusCode() == HttpStatus.SC_BAD_REQUEST) {
+			} else if (method.getStatusCode() >= 400 && method.getStatusCode() < 500) {
 				// probably a validation problem
 				try {
 					responseString = method.getResponseBodyAsString();
