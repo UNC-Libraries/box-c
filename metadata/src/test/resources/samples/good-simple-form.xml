@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mets:mets xmlns:acl="http://cdr.unc.edu/definitions/acl#"
+<mets:mets xmlns:acl="http://cdr.unc.edu/definitions/acl"
     xmlns:mets="http://www.loc.gov/METS/" xmlns:mods="http://www.loc.gov/mods/v3"
     xmlns:xlink="http://www.w3.org/1999/xlink" PROFILE="http://cdr.unc.edu/METS/profiles/Simple">
   <mets:metsHdr CREATEDATE="2013-03-01T18:35:35.100Z" LASTMODDATE="2013-03-01T18:35:35.100Z">

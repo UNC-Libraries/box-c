@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://www.loc.gov/METS/ ../schemas/mets.xsd"
 	xmlns:METS="http://www.loc.gov/METS/" xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-	xmlns:acl="http://cdr.unc.edu/definitions/acl#"
+	xmlns:acl="http://cdr.unc.edu/definitions/acl"
 	PROFILE="http://cdr.unc.edu/METS/profiles/Simple">
 
 	<METS:metsHdr CREATEDATE="2009-03-02T13:56:21.297-05:00">
