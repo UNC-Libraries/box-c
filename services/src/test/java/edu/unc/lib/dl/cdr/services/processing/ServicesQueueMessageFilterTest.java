@@ -33,7 +33,7 @@ import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
+import edu.unc.lib.dl.cdr.services.model.FailedEnhancementMap;
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
@@ -58,7 +58,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		servicesMessageFilter = new ServicesQueueMessageFilter();
 		servicesMessageFilter.setServices(services);
 		
-		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
+		FailedEnhancementMap failedPids = mock(FailedEnhancementMap.class);
 		when(failedPids.get(anyString())).thenReturn(null);
 		
 		EnhancementConductor enhancementConductor = mock(EnhancementConductor.class);
@@ -205,7 +205,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		Set<String> failedServices = new HashSet<String>();
 		failedServices.add(TechnicalMetadataEnhancementService.class.getName());
 		
-		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
+		FailedEnhancementMap failedPids = mock(FailedEnhancementMap.class);
 		when(failedPids.getFailedServices(anyString())).thenReturn(failedServices);
 		
 		EnhancementConductor enhancementConductor = mock(EnhancementConductor.class);
@@ -260,7 +260,7 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		failedServices.add(ImageEnhancementService.class.getName());
 		failedServices.add(SolrUpdateEnhancementService.class.getName());
 		
-		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
+		FailedEnhancementMap failedPids = mock(FailedEnhancementMap.class);
 		when(failedPids.getFailedServices(anyString())).thenReturn(failedServices);
 		
 		EnhancementConductor enhancementConductor = mock(EnhancementConductor.class);

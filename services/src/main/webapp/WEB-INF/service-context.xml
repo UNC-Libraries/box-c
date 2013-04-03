@@ -155,9 +155,8 @@
 		<ref bean="solrUpdateEnhancementService"/>
 	</util:list>
 	
-	<bean id="servicesFailedPids" class="edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap" factory-method="loadFailedEnhancements">
-		<constructor-arg><value>${services.enhancements.failed.path}</value></constructor-arg>
-		<constructor-arg><value>${services.enhancements.failedTraces.path}</value></constructor-arg>
+	<bean id="servicesFailedPids" class="edu.unc.lib.dl.cdr.services.model.FailedEnhancementMap" init-method="init">
+		<property name="failureLogPath" value="${services.enhancements.failed.path}"/>
 	</bean>
 	
 	<bean id="enhancementConductor" class="edu.unc.lib.dl.cdr.services.processing.EnhancementConductor"
@@ -231,7 +230,8 @@
 	</bean>
 	
 	<!-- Services -->
-	<bean id="technicalMetadataEnhancementService" class="edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService">
+	<bean id="technicalMetadataEnhancementService" class="edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService"
+			init-method="init">
 		<property name="irodsAccount" ref="irodsAccount"/>
 		<property name="irodsFileSystem" ref="irodsFileSystem"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
@@ -239,7 +239,8 @@
 		<property name="active" value="true"/>
 	</bean>
 	
-	<bean id="imageEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService">
+	<bean id="imageEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService"
+			init-method="init">
 		<property name="irodsAccount" ref="irodsAccount"/>
 		<property name="irodsFileSystem" ref="irodsFileSystem"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
@@ -247,7 +248,8 @@
 		<property name="active" value="true"/>
 	</bean>
 	
-	<bean id="thumbnailEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService">
+	<bean id="thumbnailEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService"
+			init-method="init">
 		<property name="irodsAccount" ref="irodsAccount"/>
 		<property name="irodsFileSystem" ref="irodsFileSystem"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
@@ -255,7 +257,8 @@
 		<property name="active" value="true"/>
 	</bean>
 	
-	<bean id="solrUpdateEnhancementService" class="edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService">
+	<bean id="solrUpdateEnhancementService" class="edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService"
+			init-method="init">
 		<property name="solrSearchService" ref="solrSearchService" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="active" value="true"/>
@@ -299,11 +302,6 @@
 		<property name="targetObject" ref="enhancementConductor" />
 		<property name="targetMethod" value="cleanupFinishedMessages" />
 	</bean>
-		
-	<bean id="backupFailedPidsJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-		<property name="targetObject" ref="servicesFailedPids" />
-		<property name="targetMethod" value="serializeFailedEnhancements" />
-	</bean>
 	
 	<bean id="embargoCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="embargoJobDetail" />
@@ -320,11 +318,6 @@
 		<property name="cronExpression" value="${scheduled.catchUpDeactivate.cron}" />
 	</bean>
 	
-	<bean id="backupFailedPidsCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-		<property name="jobDetail" ref="backupFailedPidsJobDetail" />
-		<property name="cronExpression" value="${scheduled.backupFailedPids.cron}" />
-	</bean>
-	
 	<bean id="cleanupFinishedEnhancementsCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="cleanupFinishedEnhancementsJobDetail" />
 		<property name="cronExpression" value="${scheduled.cleanupFinishedEnhancements.cron}" />
@@ -336,7 +329,6 @@
 				<ref bean="embargoCronTrigger" />
 				<ref bean="catchUpActivateCronTrigger" />
 				<ref bean="catchUpDeactivateCronTrigger" />
-				<ref bean="backupFailedPidsCronTrigger" />
 				<ref bean="cleanupFinishedEnhancementsCronTrigger" />
 			</list>
 		</property>

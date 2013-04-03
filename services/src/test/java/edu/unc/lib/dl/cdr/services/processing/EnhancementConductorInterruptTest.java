@@ -33,7 +33,7 @@ import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
+import edu.unc.lib.dl.cdr.services.model.FailedEnhancementMap;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -69,7 +69,7 @@ public class EnhancementConductorInterruptTest extends Assert {
 		enhancementConductor.setRecoverableDelay(0);
 		enhancementConductor.setUnexpectedExceptionDelay(0);
 		enhancementConductor.setMaxThreads(3);
-		enhancementConductor.setFailedPids(new FailedObjectHashMap());
+		enhancementConductor.setFailedPids(new FailedEnhancementMap());
 		enhancementConductor.setServices(delayServices);
 		enhancementConductor.init();
 		

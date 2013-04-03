@@ -16,23 +16,19 @@
 package edu.unc.lib.dl.cdr.services.imaging;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.jdom.Element;
-import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
+import edu.unc.lib.dl.cdr.services.AbstractDatastreamEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.AbstractXMLEventMessage;
-import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
@@ -41,59 +37,60 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  * @author Gregory Jansen, bbpennel
  * 
  */
-public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementService {
+public class ThumbnailEnhancementService extends AbstractDatastreamEnhancementService {
 	private static final Logger LOG = LoggerFactory.getLogger(ThumbnailEnhancementService.class);
 	public static final String enhancementName = "Thumbnail Generation";
-	
-	private String isApplicableQuery;
-	private String lastAppliedQuery;
-	private String findCandidatesQuery;
-	private String findStaleCandidatesQuery;
-	
+
+	private List<String> applicableNoDSQueries;
+	private List<String> applicableStaleDSQueries;
+
 	public ThumbnailEnhancementService() {
 		super();
-		
+	}
+
+	public void init() {
 		try {
-			this.isApplicableQuery = this.readFileAsString("thumbnail-applicable.sparql");
-			this.findCandidatesQuery = this.readFileAsString("thumbnail-candidates.sparql");
 			this.findStaleCandidatesQuery = this.readFileAsString("thumbnail-stale-candidates.sparql");
 			this.lastAppliedQuery = this.readFileAsString("thumbnail-last-applied.sparql");
+			this.findCandidatesQueries = Arrays.asList(this.readFileAsString("thumbnail-candidates-no-ds.sparql"),
+					this.readFileAsString("thumbnail-candidates-stale-ds.sparql"),
+					this.readFileAsString("thumbnail-candidates-no-surrogate-ds.sparql"),
+					this.readFileAsString("thumbnail-candidates-stale-surrogate-ds.sparql"));
+			for (int i = 0; i < this.findCandidatesQueries.size(); i++) {
+				this.findCandidatesQueries.set(
+						i,
+						String.format(this.findCandidatesQueries.get(i),
+								this.tripleStoreQueryService.getResourceIndexModelUri()));
+			}
+
+			this.isApplicableQueries = Arrays.asList(readFileAsString("thumbnail-applicable-no-ds.sparql"),
+					readFileAsString("thumbnail-applicable-stale-ds.sparql"),
+					readFileAsString("thumbnail-applicable-no-surrogate-ds.sparql"),
+					readFileAsString("thumbnail-applicable-stale-surrogate-ds.sparql"));
+
+			this.applicableNoDSQueries = Arrays.asList(this.isApplicableQueries.get(0), this.isApplicableQueries.get(2));
+			this.applicableStaleDSQueries = Arrays
+					.asList(this.isApplicableQueries.get(1), this.isApplicableQueries.get(3));
+
 		} catch (IOException e) {
 			LOG.error("Failed to read service query", e);
 		}
 	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
-		return (List<PID>)this.findCandidateObjects(maxResults, priorToDate, false);
-	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public List<PID> findCandidateObjects(int maxResults) throws EnhancementException {
-		return (List<PID>)this.findCandidateObjects(maxResults, null, false);
-	}
-	
-	@Override
-	public int countCandidateObjects() throws EnhancementException {
-		return (Integer)this.findCandidateObjects(-1, null, true);
-	}
+	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
+		String action = message.getQualifiedAction();
+		// Shortcuts based on the particular message received
+		// If the message indicates the target was just ingested, then we only need to check if the thumb DS exists
+		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
+			return this.askQueries(this.applicableNoDSQueries, message.getTargetID());
+		// If a datastream was modified then check to see if the thumbs are stale
+		if (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
+				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)
+				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action))
+			return this.askQueries(this.applicableStaleDSQueries, message.getTargetID());
 
-	public Object findCandidateObjects(int maxResults, String priorToDate, boolean countQuery) throws EnhancementException {
-		String query = null;
-		String limitClause = "";
-		if (maxResults >= 0 && !countQuery) {
-			limitClause = "LIMIT " + maxResults; 
-		}
-		if (priorToDate == null) {
-			query = String.format(this.findCandidatesQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(),
-					ContentModelHelper.Datastream.THUMB_SMALL.getName(), limitClause);
-		} else {
-			query = String.format(this.findStaleCandidatesQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(),
-					ContentModelHelper.Datastream.THUMB_SMALL.getName(), priorToDate, limitClause);
-		}
-		return this.executeCandidateQuery(query, countQuery);
+		return super.isApplicable(message);
 	}
 
 	@Override
@@ -134,71 +131,6 @@ public class ThumbnailEnhancementService extends AbstractIrodsObjectEnhancementS
 				|| ContentModelHelper.CDRProperty.hasSurrogate.equals(relationship);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#isApplicable(edu .unc.lib.dl.fedora.PID)
-	 */
-	@SuppressWarnings({ "unchecked" })
-	@Override
-	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
-		LOG.debug("isApplicable called with " + message);
-		if (LOG.isDebugEnabled() && message instanceof AbstractXMLEventMessage
-				&& ((AbstractXMLEventMessage) message).getMessageBody() != null) {
-			LOG.debug("isApplicable called with message:\n "
-					+ new XMLOutputter().outputString(((AbstractXMLEventMessage) message).getMessageBody()));
-		}
-
-		// replace model URI and PID tokens
-		String query = String.format(this.isApplicableQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(), message.getPid()
-				.getURI(), "http://cdr.unc.edu/definitions/1.0/base-model.xml#thumb");
-		Map<String, Object> result = this.getTripleStoreQueryService().sendSPARQL(query);
-		LOG.debug("checking if Applicable");
-		if (Boolean.TRUE.equals(result.get("boolean"))) {
-			// Needs thumb for itself
-			return true;
-		}
-
-		List<PID> haveThisSurrogate = this.getTripleStoreQueryService().fetchPIDsSurrogateFor(message.getPid());
-		if (haveThisSurrogate.size() > 0) {
-			// Needs thumb as the surrogate for another object
-			return true;
-		}
-		return false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#isStale(edu.unc. lib.dl.fedora.PID)
-	 */
-	@Override
-	public boolean isStale(PID pid) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@SuppressWarnings("rawtypes")
-	@Override
-	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
-		// replace model URI and PID tokens
-		String query = String.format(this.lastAppliedQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid
-				.getURI());
-		@SuppressWarnings("unchecked")
-		List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results"))
-				.get("bindings");
-		if (bindings.size() == 0)
-			return null;
-		
-		EnhancementApplication lastApplied = new EnhancementApplication();
-		String lastModified = (String) ((Map) bindings.get(0).get("lastModified")).get("value");
-		lastApplied.setLastAppliedFromISO8601(lastModified);
-		lastApplied.setPid(pid);
-		lastApplied.setEnhancementClass(this.getClass());
-		
-		return lastApplied;
-	}
-	
 	@Override
 	public String getName() {
 		return enhancementName;

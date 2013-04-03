@@ -1,0 +1,18 @@
+PREFIX fedora-view: <info:fedora/fedora-system:def/view#> 
+PREFIX fedora-model: <info:fedora/fedora-system:def/model#> 
+PREFIX cdr-base: <http://cdr.unc.edu/definitions/1.0/base-model.xml#> 
+ASK 
+FROM <%1$s>
+WHERE {
+    ?pid cdr-base:hasSurrogate ?srg .
+    ?srg cdr-base:sourceData ?srcDS . 
+    ?srcDS fedora-view:lastModifiedDate ?srcModified . 
+    ?srg cdr-base:hasSourceMimeType ?srcMime .
+    ?pid cdr-base:thumb ?thumbDS . 
+    ?thumbDS fedora-view:lastModifiedDate ?thumbModified . 
+    FILTER (
+      ?pid = <%2$s> 
+      && regex( str(?srcMime), 'image/')
+      && ?srcModified > ?thumbModified 
+    ) 
+}

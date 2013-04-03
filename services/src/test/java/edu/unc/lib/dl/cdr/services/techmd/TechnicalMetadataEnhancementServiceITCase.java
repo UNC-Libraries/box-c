@@ -152,7 +152,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 	@Test
 	public void testFindCandidateObjects() throws Exception {
 		EnhancementMessage pid1 = ingestSample("techmd-test-single.xml", "sample.pdf", "application/pdf");
-		List<PID> results = this.getTechnicalMetadataEnhancementService().findCandidateObjects(50);
+		List<PID> results = this.getTechnicalMetadataEnhancementService().findCandidateObjects(50, 0);
 		for (PID p : results) {
 			LOG.debug("found candidate: " + p);
 		}
@@ -232,7 +232,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 		boolean stillApplicable = this.getTechnicalMetadataEnhancementService().isApplicable(pid1);
 		assertFalse("A pid should no longer be applicable after the service runs: " + pid1, stillApplicable);
 
-		List<PID> candidates = this.getTechnicalMetadataEnhancementService().findCandidateObjects(50);
+		List<PID> candidates = this.getTechnicalMetadataEnhancementService().findCandidateObjects(50, 0);
 		assertFalse("Test pid should no longer be a candidate", candidates.contains(pid1.getPid()));
 
 		// now update source
@@ -323,7 +323,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 		boolean stillApplicable = this.getTechnicalMetadataEnhancementService().isApplicable(pidErr);
 		assertFalse("A pid should no longer be applicable after the service runs: " + pidErr, stillApplicable);
 
-		List<PID> candidates = this.getTechnicalMetadataEnhancementService().findCandidateObjects(50);
+		List<PID> candidates = this.getTechnicalMetadataEnhancementService().findCandidateObjects(50, 0);
 		assertFalse("Test pid should no longer be a candidate", candidates.contains(pidErr.getPid()));
 	}
 

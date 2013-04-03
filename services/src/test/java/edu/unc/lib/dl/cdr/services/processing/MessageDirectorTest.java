@@ -27,7 +27,7 @@ import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
+import edu.unc.lib.dl.cdr.services.model.FailedEnhancementMap;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
@@ -60,7 +60,7 @@ public class MessageDirectorTest extends Assert {
 		when(solrConductor.getIdentifier()).thenReturn(SolrUpdateConductor.identifier);
 		enhancementConductor = mock(EnhancementConductor.class);
 		when(enhancementConductor.getIdentifier()).thenReturn(EnhancementConductor.identifier);
-		FailedObjectHashMap failedPids = mock(FailedObjectHashMap.class);
+		FailedEnhancementMap failedPids = mock(FailedEnhancementMap.class);
 		when(failedPids.get(anyString())).thenReturn(null);
 		when(enhancementConductor.getFailedPids()).thenReturn(failedPids);
 		

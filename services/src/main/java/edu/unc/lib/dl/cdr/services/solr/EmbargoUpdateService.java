@@ -51,7 +51,7 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 	}
 
 	public void updateEmbargoes() {
-		List<PID> candidates = this.findCandidateObjects(-1);
+		List<PID> candidates = this.findCandidateObjects(-1, 0);
 		if (candidates != null) {
 			for (PID candidate : candidates) {
 				getMessageDirector().direct(new SolrUpdateRequest(candidate.getPid(), SolrUpdateAction.RECURSIVE_ADD));
@@ -66,7 +66,7 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public List<PID> findCandidateObjects(int maxResults) {
+	public List<PID> findCandidateObjects(int maxResults, int offset) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(Calendar.MINUTE, 0);
 		calendar.set(Calendar.SECOND, 0);

@@ -123,7 +123,7 @@ public class CatchupConductorRestController extends AbstractServiceConductorRest
 
 			if (serviceName == null || unqualifiedName.equals(serviceName)) {
 				try {
-					List<PID> candidates = service.findCandidateObjects(maxResults);
+					List<PID> candidates = service.findCandidateObjects(maxResults, 0);
 					result.put(unqualifiedName, candidates);
 
 					// If a service was specified, then we're done

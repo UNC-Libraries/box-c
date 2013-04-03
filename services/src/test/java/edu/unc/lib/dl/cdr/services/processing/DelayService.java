@@ -28,7 +28,6 @@ import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.PID;
 
 public class DelayService extends AbstractFedoraEnhancementService {
-	private static final long serialVersionUID = 1L;
 	public List<PID> candidateList = new ArrayList<PID>();
 
 	public DelayService(){
@@ -36,14 +35,14 @@ public class DelayService extends AbstractFedoraEnhancementService {
 	}
 	
 	@Override
-	public List<PID> findCandidateObjects(int maxResults) throws EnhancementException {
+	public List<PID> findCandidateObjects(int maxResults, int offset) throws EnhancementException {
 		(new DelayEnhancement(this, new PID("delaying"))).call();
 		return candidateList;
 	}
 
 	@Override
 	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
-		return findCandidateObjects(maxResults);
+		return findCandidateObjects(maxResults, 0);
 	}
 
 	@Override

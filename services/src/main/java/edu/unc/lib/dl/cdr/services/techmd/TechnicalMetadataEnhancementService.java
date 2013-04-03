@@ -16,22 +16,17 @@
 package edu.unc.lib.dl.cdr.services.techmd;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
 
 import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
+import edu.unc.lib.dl.cdr.services.AbstractDatastreamEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
  * This service will enhance repository objects by extracting technical metadata from source data. It will store
@@ -41,59 +36,53 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  * @author Gregory Jansen
  * 
  */
-public class TechnicalMetadataEnhancementService extends AbstractIrodsObjectEnhancementService {
+public class TechnicalMetadataEnhancementService extends AbstractDatastreamEnhancementService {
 	private static final Logger LOG = LoggerFactory.getLogger(TechnicalMetadataEnhancementService.class);
 	public static final String enhancementName = "Technical Metadata Extraction";
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
-		return (List<PID>)this.findCandidateObjects(maxResults, priorToDate, false);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#findCandidateObjects (int)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<PID> findCandidateObjects(int maxResults) throws EnhancementException {
-		return (List<PID>)this.findCandidateObjects(maxResults, null, false);
+	public TechnicalMetadataEnhancementService() {
+		super();
 	}
 	
-	@Override
-	public int countCandidateObjects() throws EnhancementException {
-		return (Integer)this.findCandidateObjects(-1, null, true);
-	}
-
-	/*
-	 * Finds objects that are candidates for technical metadata enhancement. Only returns PIDs that have a cdr:sourceData
-	 * data stream where there is no cdr:techData or cdr:techData is younger than cdr:sourceData.
-	 * 
-	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#findCandidateObjects (int)
-	 */
-	public Object findCandidateObjects(int maxResults, String priorToDate, boolean countQuery) throws EnhancementException {
-		String query = null;
+	public void init() {
 		try {
-			String limitClause = "";
-			if (maxResults >= 0 && !countQuery) {
-				limitClause = "LIMIT " + maxResults; 
+			this.findCandidatesQueries = Arrays.asList(this.readFileAsString("techmd-candidates-no-ds.sparql"),
+					this.readFileAsString("techmd-candidates-stale-ds.sparql"));
+			for (int i = 0; i < this.findCandidatesQueries.size(); i++) {
+				this.findCandidatesQueries.set(
+						i,
+						String.format(this.findCandidatesQueries.get(i),
+								this.tripleStoreQueryService.getResourceIndexModelUri()));
 			}
-			if (priorToDate == null) {
-				query = this.readFileAsString("techmd-candidates.sparql");
-				query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), limitClause);
-			} else {
-				query = this.readFileAsString("techmd-stale-candidates.sparql");
-				query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), priorToDate, limitClause);
-			}
+			
+			this.isApplicableQueries = Arrays.asList(this.readFileAsString("techmd-applicable-no-ds.sparql"),
+					this.readFileAsString("techmd-applicable-stale-ds.sparql"));
+			this.applicableNoDSQuery = this.isApplicableQueries.get(0);
+			this.applicableStaleDSQuery = this.isApplicableQueries.get(1);
+			
+			this.findStaleCandidatesQuery = this.readFileAsString("techmd-stale-candidates.sparql");
+			this.lastAppliedQuery = this.readFileAsString("techmd-last-applied.sparql");
 		} catch (IOException e) {
-			throw new EnhancementException(e);
+			LOG.error("Failed to read service query", e);
 		}
-		return this.executeCandidateQuery(query, countQuery);
 	}
 	
+	@Override
+	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
+		String action = message.getQualifiedAction();
+		// Shortcuts based on the particular message received
+		// If the message indicates the target was just ingested, then we only need to check if the DS exists
+		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
+			return this.askQuery(this.applicableNoDSQuery, message.getTargetID());
+		// If a datastream was modified then check to see if the DS is stale
+		if (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
+				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)
+				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action))
+			return this.askQuery(this.applicableStaleDSQuery, message.getTargetID());
 
+		return super.isApplicable(message);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -102,98 +91,6 @@ public class TechnicalMetadataEnhancementService extends AbstractIrodsObjectEnha
 	@Override
 	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
 		return new TechnicalMetadataEnhancement(this, message.getPid());
-	}
-	
-	@Override
-	public boolean prefilterMessage(EnhancementMessage message) throws EnhancementException {
-		String action = message.getQualifiedAction();
-		
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(action))
-			return true;
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(action))
-			return this.getClass().getName().equals(message.getServiceName());
-		
-		// If its not a Fedora message at this point, then its not going to match anything else
-		if (!(message instanceof FedoraEventMessage))
-			return false;
-		
-		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
-			return true;
-		
-		if (!(JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action) 
-				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)))
-			return false;
-		String datastream = ((FedoraEventMessage)message).getDatastream();
-		
-		return ContentModelHelper.Datastream.DATA_FILE.equals(datastream);
-	}
-
-	/*
-	 * Tests to see if this enhancement is applicable for the object with the supplied PID. Checks to make sure that the
-	 * object has a cdr:sourceData data stream and either there is no cdr:techData or cdr:techData is younger than
-	 * cdr:sourceData.
-	 * 
-	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#isApplicable(edu .unc.lib.dl.fedora.PID)
-	 */
-	@Override
-	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
-		LOG.debug("isApplicable called with " + message);
-		
-		String query = null;
-		try {
-			// replace model URI and PID tokens
-			query = this.readFileAsString("techmd-applicable.sparql");
-			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), message.getPid()
-					.getURI());
-		} catch (IOException e) {
-			throw new EnhancementException(e);
-		}
-		@SuppressWarnings("unchecked")
-		Map<String, Object> result = this.getTripleStoreQueryService().sendSPARQL(query);
-		LOG.debug("checking if Applicable");
-		if (Boolean.TRUE.equals(result.get("boolean"))) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/*
-	 * For the moment technical metadata is never considered old or stale. Later on we might consider it stale each time
-	 * more capable tools are brought online.
-	 * 
-	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#isStale(edu.unc. lib.dl.fedora.PID)
-	 */
-	@Override
-	public boolean isStale(PID pid) {
-		return false;
-	}
-
-	@SuppressWarnings("rawtypes")
-	@Override
-	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
-		String query = null;
-		try {
-			// replace model URI and PID tokens
-			query = this.readFileAsString("techmd-last-applied.sparql");
-			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), pid
-					.getURI());
-		} catch (IOException e) {
-			throw new EnhancementException(e);
-		}
-		@SuppressWarnings("unchecked")
-		List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results"))
-				.get("bindings");
-		if (bindings.size() == 0)
-			return null;
-		
-		EnhancementApplication lastApplied = new EnhancementApplication();
-		String lastModified = (String) ((Map) bindings.get(0).get("lastModified")).get("value");
-		lastApplied.setLastAppliedFromISO8601(lastModified);
-		lastApplied.setPid(pid);
-		lastApplied.setEnhancementClass(this.getClass());
-		
-		return lastApplied;
 	}
 
 	@Override
