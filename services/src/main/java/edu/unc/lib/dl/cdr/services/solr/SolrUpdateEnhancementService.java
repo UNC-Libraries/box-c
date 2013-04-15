@@ -86,9 +86,6 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	public boolean prefilterMessage(EnhancementMessage message) throws EnhancementException {
 		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(message.getQualifiedAction()))
 			return this.getClass().getName().equals(message.getServiceName());
-		// Only perform indexing once a package is fully ingested, not the individual items in the package
-		if (JMSMessageUtil.FedoraActions.INGEST.equals(message.getQualifiedAction()))
-			return false;
 		// Returns true if at least one other service passed prefilter
 		// It is okay for ingest messages to pass here since if they are still orphaned they are not indexed.
 		return message.getFilteredServices() != null && message.getFilteredServices().size() > 0;
