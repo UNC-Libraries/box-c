@@ -184,20 +184,20 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 				&& this.getClass().getName().equals(message.getServiceName()))
 			return true;
 		
-		return askQueries(this.isApplicableQueries, message.getPid().getURI());
+		return askQueries(this.isApplicableQueries, message);
 	}
 	
-	protected boolean askQueries(List<String> queries, String targetID) {
+	protected boolean askQueries(List<String> queries, EnhancementMessage message) {
 		for (String query: queries)
-			if (askQuery(query, targetID))
+			if (askQuery(query, message))
 				return true;
 		return false;
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected boolean askQuery(String query, String targetID) {
+	protected boolean askQuery(String query, EnhancementMessage message) {
 		query = String.format(query,
-				this.tripleStoreQueryService.getResourceIndexModelUri(), targetID);
+				this.tripleStoreQueryService.getResourceIndexModelUri(), message.getPid().getURI());
 		Map<String, Object> result = this.getTripleStoreQueryService().sendSPARQL(query);
 		return (Boolean.TRUE.equals(result.get("boolean")));
 	}

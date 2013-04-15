@@ -70,12 +70,12 @@ public class ImageEnhancementService extends AbstractDatastreamEnhancementServic
 		// Shortcuts based on the particular message received
 		// If the message indicates the target was just ingested, then we only need to check if the DS exists
 		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
-			return this.askQuery(this.applicableNoDSQuery, message.getTargetID());
+			return this.askQuery(this.applicableNoDSQuery, message);
 		// If a datastream was modified then check to see if the DS is stale
 		if (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
 				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)
 				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action))
-			return this.askQuery(this.applicableStaleDSQuery, message.getTargetID());
+			return this.askQuery(this.applicableStaleDSQuery, message);
 
 		return super.isApplicable(message);
 	}

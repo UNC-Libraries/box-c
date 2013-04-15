@@ -83,12 +83,12 @@ public class ThumbnailEnhancementService extends AbstractDatastreamEnhancementSe
 		// Shortcuts based on the particular message received
 		// If the message indicates the target was just ingested, then we only need to check if the thumb DS exists
 		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
-			return this.askQueries(this.applicableNoDSQueries, message.getTargetID());
+			return this.askQueries(this.applicableNoDSQueries, message);
 		// If a datastream was modified then check to see if the thumbs are stale
 		if (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
 				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)
 				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action))
-			return this.askQueries(this.applicableStaleDSQueries, message.getTargetID());
+			return this.askQueries(this.applicableStaleDSQueries, message);
 
 		return super.isApplicable(message);
 	}
