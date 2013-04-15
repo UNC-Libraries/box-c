@@ -213,7 +213,7 @@ public class IrodsExternalContentManager extends Module implements
 				staged = true;
 				URI temp = null;
 				try {
-					temp = new URI(url);
+					temp = new URI(stageUrl);
 				} catch (URISyntaxException e) {
 					e.printStackTrace();
 				}
