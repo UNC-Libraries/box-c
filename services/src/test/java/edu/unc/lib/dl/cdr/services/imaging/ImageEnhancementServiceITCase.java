@@ -152,7 +152,7 @@ public class ImageEnhancementServiceITCase {
 		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", "sample.tiff", "image/tiff");
 		EnhancementMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
 
-		List<PID> results = this.getImageEnhancementService().findCandidateObjects(50);
+		List<PID> results = this.getImageEnhancementService().findCandidateObjects(50, 0);
 		for (PID p : results) {
 			LOG.debug("found candidate: " + p);
 		}
@@ -200,7 +200,7 @@ public class ImageEnhancementServiceITCase {
 		assertFalse("The PID " + pidTIFF + " must not be applicable after service has run.", this
 				.getImageEnhancementService().isApplicable(pidTIFF));
 		assertFalse("The PID " + pidTIFF + " must not be a candidate after service has run.", this
-				.getImageEnhancementService().findCandidateObjects(50).contains(pidTIFF.getPid()));
+				.getImageEnhancementService().findCandidateObjects(50, 0).contains(pidTIFF.getPid()));
 
 		// now update source
 		File dataFile = new File("src/test/resources", "sample.tiff");

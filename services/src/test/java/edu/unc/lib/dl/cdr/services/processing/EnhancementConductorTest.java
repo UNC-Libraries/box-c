@@ -28,7 +28,7 @@ import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
 import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
+import edu.unc.lib.dl.cdr.services.model.FailedEnhancementMap;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 
@@ -63,7 +63,7 @@ public class EnhancementConductorTest extends Assert {
 		enhancementConductor.setRecoverableDelay(0);
 		enhancementConductor.setUnexpectedExceptionDelay(0);
 		enhancementConductor.setMaxThreads(3);
-		enhancementConductor.setFailedPids(new FailedObjectHashMap());
+		enhancementConductor.setFailedPids(new FailedEnhancementMap());
 		enhancementConductor.init();
 
 		List<MessageConductor> conductors = new ArrayList<MessageConductor>(1);

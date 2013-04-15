@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<foxml:digitalObject VERSION="1.1" PID="uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8"
+xmlns:foxml="info:fedora/fedora-system:def/foxml#"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+<foxml:objectProperties>
+<foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="Post-Modern Thought and the Arbitrary Nature of Web Services"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE=""/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2012-08-01T18:38:06.820Z"/>
+<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2012-08-01T18:39:25.322Z"/>
+</foxml:objectProperties>
+<foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="AUDIT.0" LABEL="Audit Trail for this object" CREATED="2012-08-01T18:38:06.820Z" MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+<foxml:xmlContent>
+<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+<audit:record ID="AUDREC1">
+<audit:process type="Fedora API-M"/>
+<audit:action>ingest</audit:action>
+<audit:componentID></audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-08-01T18:38:06.820Z</audit:date>
+<audit:justification>uuid:664208e7-c9af-4b70-b5fe-b4fec7598c3e</audit:justification>
+</audit:record>
+<audit:record ID="AUDREC2">
+<audit:process type="Fedora API-M"/>
+<audit:action>addDatastream</audit:action>
+<audit:componentID>MD_TECHNICAL</audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-08-01T18:38:36.958Z</audit:date>
+<audit:justification>Adding technical metadata derived by FITS</audit:justification>
+</audit:record>
+<audit:record ID="AUDREC3">
+<audit:process type="Fedora API-M"/>
+<audit:action>addDatastream</audit:action>
+<audit:componentID>IMAGE_JP2000</audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-08-01T18:38:50.729Z</audit:date>
+<audit:justification>Adding derived JP2000 image datastream.</audit:justification>
+</audit:record>
+<audit:record ID="AUDREC4">
+<audit:process type="Fedora API-M"/>
+<audit:action>addDatastream</audit:action>
+<audit:componentID>THUMB_SMALL</audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-08-01T18:39:06.092Z</audit:date>
+<audit:justification>adding thumbnail</audit:justification>
+</audit:record>
+<audit:record ID="AUDREC5">
+<audit:process type="Fedora API-M"/>
+<audit:action>addDatastream</audit:action>
+<audit:componentID>THUMB_LARGE</audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-08-01T18:39:18.372Z</audit:date>
+<audit:justification>adding thumbnail</audit:justification>
+</audit:record>
+</audit:auditTrail>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_DESCRIPTIVE" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+<foxml:datastreamVersion ID="MD_DESCRIPTIVE1.0" LABEL="Descriptive Metadata" CREATED="2012-08-01T18:38:06.841Z" MIMETYPE="text/xml" SIZE="894">
+<foxml:contentDigest TYPE="MD5" DIGEST="bdd0d941b905543a5b7b679b5d6e50bd"/>
+<foxml:xmlContent>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <mods:name type="personal">
+    <mods:namePart type="given">Verner</mods:namePart>
+    <mods:namePart type="family">Osterkatz</mods:namePart>
+  </mods:name>
+  <mods:titleInfo>
+    <mods:title>Post-Modern Thought and the Arbitrary Nature of Web Services</mods:title>
+  </mods:titleInfo>
+  <mods:name type="corporate">
+    <mods:namePart>SILS</mods:namePart>
+  </mods:name>
+  <mods:name type="personal">
+    <mods:namePart type="given">Terrence</mods:namePart>
+    <mods:namePart type="family">Phillips</mods:namePart>
+  </mods:name>
+  <mods:abstract>The ennui resulting form arbitrary web services frameworks is explored with sober earnestness.</mods:abstract>
+  <mods:originInfo>
+    <mods:dateCreated encoding="iso8601">2012-08-01</mods:dateCreated>
+  </mods:originInfo>
+</mods:mods>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DATA_FILE" STATE="A" CONTROL_GROUP="M" VERSIONABLE="true">
+<foxml:datastreamVersion ID="DATA_FILE.0" ALT_IDS="&quot;screenshot.png&quot;" CREATED="2012-08-01T18:38:06.842Z" MIMETYPE="binary/octet-stream" SIZE="560384">
+<foxml:contentDigest TYPE="MD5" DIGEST="6f0961c59c5ebeb7bc931f0830f5a80e"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8+DATA_FILE+DATA_FILE.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="DC1.0" LABEL="Internal XML Metadata" CREATED="2012-08-01T18:38:06.842Z" MIMETYPE="text/xml" SIZE="731">
+<foxml:contentDigest TYPE="MD5" DIGEST="8b37be59593e5cc90fa84e2b08e59dd8"/>
+<foxml:xmlContent>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+  <dc:title>Post-Modern Thought and the Arbitrary Nature of Web Services</dc:title>
+  <dc:description>The ennui resulting form arbitrary web services frameworks is explored with sober earnestness.</dc:description>
+  <dc:contributor>Osterkatz, Verner</dc:contributor>
+  <dc:contributor>SILS</dc:contributor>
+  <dc:contributor>Phillips, Terrence</dc:contributor>
+  <dc:identifier>uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8</dc:identifier>
+</oai_dc:dc>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_EVENTS" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_EVENTS.0" LABEL="PREMIS Events Metadata" CREATED="2012-08-01T18:38:06.842Z" MIMETYPE="text/xml" SIZE="4745">
+<foxml:contentDigest TYPE="MD5" DIGEST="9c4b224d3532cbed24fa9cce77bb0471"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8+MD_EVENTS+MD_EVENTS.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_TECHNICAL" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_TECHNICAL.0" LABEL="PREMIS Technical Metadata" CREATED="2012-08-01T18:38:36.958Z" MIMETYPE="text/xml" SIZE="2934">
+<foxml:contentDigest TYPE="MD5" DIGEST="6945ccd9eccdf09aebc49da5780fff0c"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8+MD_TECHNICAL+MD_TECHNICAL.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="IMAGE_JP2000" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="IMAGE_JP2000.0" LABEL="Derived JP2000 image" CREATED="2012-08-01T18:38:50.729Z" MIMETYPE="image/jp2" SIZE="835314">
+<foxml:contentDigest TYPE="MD5" DIGEST="fb418c921056e1ca24408d9e2dcee0b1"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8+IMAGE_JP2000+IMAGE_JP2000.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="THUMB_SMALL" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="THUMB_SMALL.0" LABEL="Thumbnail Image" CREATED="2012-08-01T18:39:06.092Z" MIMETYPE="image/png" SIZE="13085">
+<foxml:contentDigest TYPE="MD5" DIGEST="953eca800f526ef107458f998791202f"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8+THUMB_SMALL+THUMB_SMALL.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="THUMB_LARGE" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="THUMB_LARGE.0" LABEL="Thumbnail Image" CREATED="2012-08-01T18:39:18.372Z" MIMETYPE="image/png" SIZE="42607">
+<foxml:contentDigest TYPE="MD5" DIGEST="c9eabc47bd58059b9506c8f75a28cfeb"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8+THUMB_LARGE+THUMB_LARGE.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="RELS-EXT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="RELS-EXT.7" LABEL="Relationship Metadata" CREATED="2012-08-01T18:39:25.322Z" MIMETYPE="text/xml" SIZE="2328">
+<foxml:contentDigest TYPE="MD5" DIGEST="9cd6d9107b8f0c43a2e1c53dbf89eb73"/>
+<foxml:xmlContent>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+<rdf:Description rdf:about="info:fedora/uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8">
+	<allowIndexing xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">yes</allowIndexing>
+	<defaultWebData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8/DATA_FILE"></defaultWebData>
+	<originalDeposit xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:664208e7-c9af-4b70-b5fe-b4fec7598c3e"></originalDeposit>
+	<owner xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:afbbf67c-5b38-4179-857b-f17d7ec446e5"></owner>
+	<slug xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">Post-Modern_Thought_and_the_Arbitrary_Nature_of_Web_Services</slug>
+	<sourceData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8/DATA_FILE"></sourceData>
+	<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:PreservedObject"></hasModel>
+	<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:Simple"></hasModel>
+	<techData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8/MD_TECHNICAL"></techData>
+	<derivedJP2 xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8/IMAGE_JP2000"></derivedJP2>
+	<hasModel xmlns="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/cdr-model:JP2DerivedImage"></hasModel>
+	<thumb xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8/THUMB_SMALL"></thumb>
+	<thumb xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#" rdf:resource="info:fedora/uuid:d787d03f-4c6b-43dd-aadc-8c823716edb8/THUMB_LARGE"></thumb>
+</rdf:Description>
+
+</rdf:RDF>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+</foxml:digitalObject>

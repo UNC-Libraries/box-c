@@ -32,7 +32,6 @@ import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
  * Service which determines when to update individual items in Solr.
@@ -47,6 +46,9 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	
 	public SolrUpdateEnhancementService(){
 		super();
+	}
+	
+	public void init() {
 		try {
 			this.isApplicableQuery = this.readFileAsString("solr-update-applicable.sparql");
 		} catch (IOException e) {
@@ -63,7 +65,7 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	}
 
 	@Override
-	public List<PID> findCandidateObjects(int maxResults) {
+	public List<PID> findCandidateObjects(int maxResults, int offset) {
 		// All simple objects are candidates for loading into solr since we likely
 		// don't
 		// want to have to run double queries for every pid.

@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,7 +37,7 @@ import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.model.FailedObjectHashMap;
+import edu.unc.lib.dl.cdr.services.model.FailedEnhancementMap;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.message.ActionMessage;
 
@@ -80,7 +79,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	private Set<String> lockedPids = null;
 	// Set of pids which failed to process one or more services. Contents of the entry indicate which services have
 	// failed
-	private FailedObjectHashMap failedPids = null;
+	private FailedEnhancementMap failedPids = null;
 
 	private ServicesThreadPoolExecutor<PerformServicesRunnable> executor = null;
 
@@ -120,11 +119,6 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	 * Deconstructor method, stops the thread pool.
 	 */
 	public void destroy() {
-		try {
-			this.failedPids.serializeFailedEnhancements();
-		} catch (IOException e) {
-			log.error("Failed to serialize the failed enhancements list during shutdown", e);
-		}
 		this.executor.shutdownNow();
 	}
 
@@ -258,17 +252,13 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		this.lockedPids.remove(pid);
 	}
 
-	public synchronized void repopulateFailedPids(String dump) {
-		this.failedPids.repopulate(dump);
-	}
-
 	public synchronized void removeFailedPid(String pid) {
 		this.failedPids.remove(pid);
 	}
 
 	public void reprocessFailedPids() {
 		synchronized (failedPids) {
-			for (String pid : failedPids.keySet()) {
+			for (String pid : failedPids.getPidToService().keySet()) {
 				this.add(new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace,
 						JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName()));
 			}
@@ -407,11 +397,11 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 		this.collisionList = collisionList;
 	}
 
-	public FailedObjectHashMap getFailedPids() {
+	public FailedEnhancementMap getFailedPids() {
 		return failedPids;
 	}
 
-	public void setFailedPids(FailedObjectHashMap failedPids) {
+	public void setFailedPids(FailedEnhancementMap failedPids) {
 		this.failedPids = failedPids;
 	}
 

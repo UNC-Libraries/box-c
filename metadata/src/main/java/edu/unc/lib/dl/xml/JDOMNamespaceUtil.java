@@ -195,6 +195,8 @@ public class JDOMNamespaceUtil {
      * CDR user roles namespace.
      */
     public static final Namespace CDR_ROLE_NS = Namespace.getNamespace(NamespaceConstants.CDR_ROLES_PREFIX, NamespaceConstants.CDR_ROLE_NS_URI);
+    
+    public static final Namespace CDR_ACL_NS = Namespace.getNamespace(NamespaceConstants.CDR_ACL_PREFIX, NamespaceConstants.CDR_ACL_NS_URI);
 
     /**
      * Generates an XPath object from the given query, with the provided namespaces added.

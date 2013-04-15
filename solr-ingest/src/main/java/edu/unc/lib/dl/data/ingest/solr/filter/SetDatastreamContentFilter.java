@@ -38,6 +38,7 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.dl.search.solr.util.ContentCategory;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -53,25 +54,19 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDatastreamContentFilter.class);
 
-	private final ContentCategory DATASET = new ContentCategory("dataset", "Dataset");
-	private final ContentCategory IMAGE = new ContentCategory("image", "Image");
-	private final ContentCategory DISK_IMAGE = new ContentCategory("diskimage", "Disk Image");
-	private final ContentCategory VIDEO = new ContentCategory("video", "Video");
-	private final ContentCategory SOFTWARE = new ContentCategory("software", "Software");
-	private final ContentCategory AUDIO = new ContentCategory("audio", "Audio");
-	private final ContentCategory ARCHIVE = new ContentCategory("archive", "Archive File");
-	private final ContentCategory TEXT = new ContentCategory("text", "Text");
-	private final ContentCategory UNKNOWN = new ContentCategory("unknown", "Unknown");
-
 	private Pattern extensionRegex;
 	private Properties mimetypeToExtensionMap;
+	private Properties contentTypeProperties;
 
 	public SetDatastreamContentFilter() {
 		try {
-			extensionRegex = Pattern.compile("^[^\\n]*[^.]\\.(\\d*[a-zA-Z][a-zA-Z0-9]*)$");
+			extensionRegex = Pattern.compile("^[^\\n]*[^.]\\.(\\d*[a-zA-Z][a-zA-Z0-9]*)[\"'{}, _\\-`()*]*$");
 			mimetypeToExtensionMap = new Properties();
 			mimetypeToExtensionMap.load(new InputStreamReader(this.getClass().getResourceAsStream(
 					"mimetypeToExtension.txt")));
+			this.contentTypeProperties = new Properties();
+			this.contentTypeProperties.load(new InputStreamReader(this.getClass().getResourceAsStream(
+					"toContentType.properties")));
 		} catch (FileNotFoundException e) {
 			log.error("Failed to load mimetype mappings", e);
 		} catch (IOException e) {
@@ -112,13 +107,17 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 
 				// If the mimetype listed on the datastream is not very specific (octet-stream), see if FITS provided a
 				// better one and use it instead
-				if ("application/octet-stream".equals(defaultWebData.getMimetype())) {
+				if (defaultWebData.getMimetype() != null && defaultWebData.getMimetype().endsWith("/octet-stream")) {
 					String sourceDataMimetype = relsExt.getChildText("hasSourceMimeType", JDOMNamespaceUtil.CDR_NS);
 					if (sourceDataMimetype != null) {
 						defaultWebData.setMimetype(sourceDataMimetype);
 						// Use the extension if you've got it.  if not, get it
 						if (defaultWebData.getExtension() == null)
 							defaultWebData.setExtension(this.getExtension(null, defaultWebData.getMimetype()));
+					} else if (defaultWebData.getExtension() != null) {
+						String mimetype = this.getMimetypeFromExtension(defaultWebData.getExtension());
+						if (mimetype != null)
+							defaultWebData.setMimetype(mimetype);
 					}
 				}
 				
@@ -248,14 +247,27 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		return null;
 	}
 
+	private String getMimetypeFromExtension(String extension) {
+		if (extension == null)
+			return null;
+		Iterator<Entry<Object, Object>> mimetypeIt = this.mimetypeToExtensionMap.entrySet().iterator();
+		while (mimetypeIt.hasNext()) {
+			Entry<Object, Object> mimetypeEntry = mimetypeIt.next();
+			if (extension.equals(mimetypeEntry.getValue()))
+				return (String) mimetypeEntry.getKey();
+		}
+		return null;
+	}
+
 	private void extractContentType(Datastream datastream, List<String> contentTypes) {
 		ContentCategory contentCategory = getContentCategory(datastream.getMimetype(), datastream.getExtension());
-		if (contentCategory == null)
-			return;
-		contentTypes.add('^' + contentCategory.joined);
+		contentTypes.add('^' + contentCategory.getJoined());
 		StringBuilder contentType = new StringBuilder();
-		contentType.append('/').append(contentCategory.key).append('^').append(datastream.getExtension()).append(',')
-				.append(datastream.getExtension());
+		contentType.append('/').append(contentCategory.name()).append('^');
+		if (datastream.getExtension() == null)
+			contentType.append("unknown,unknown");
+		else
+			contentType.append(datastream.getExtension()).append(',').append(datastream.getExtension());
 		contentTypes.add(contentType.toString());
 	}
 
@@ -263,64 +275,15 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		int index = mimetype.indexOf('/');
 		String mimetypeType = mimetype.substring(0, index);
 		if (mimetypeType.equals("image"))
-			return IMAGE;
+			return ContentCategory.image;
 		if (mimetypeType.equals("video"))
-			return VIDEO;
+			return ContentCategory.video;
 		if (mimetypeType.equals("audio"))
-			return AUDIO;
-
-		if ("exe".equals(extension) || "app".equals(extension))
-			return SOFTWARE;
-
-		if ("application/vnd.ms-excel".equals(mimetype) || "csv".equals(extension) || "mdb".equals(extension)
-				|| "xlsx".equals(extension) || "xls".equals(extension) || "log".equals(extension) || "db".equals(extension)
-				|| "accdb".equals(extension))
-			return DATASET;
-
-		if (mimetypeType.equals("text"))
-			return TEXT;
-		if ("application/msword".equals(mimetype) || "application/rtf".equals(mimetype)
-				|| "application/pdf".equals(mimetype) || "application/postscript".equals(mimetype)
-				|| "application/powerpoint".equals(mimetype) || "application/vnd.ms-powerpoint".equals(mimetype)
-				|| "pdf".equals(extension) || "doc".equals(extension) || "docx".equals(extension)
-				|| "dotx".equals(extension) || "ppt".equals(extension) || "pptx".equals(extension)
-				|| "wp".equals(extension) || "wpd".equals(extension) || "xml".equals(extension) || "htm".equals(extension)
-				|| "html".equals(extension) || "shtml".equals(extension) || "php".equals(extension)
-				|| "js".equals(extension))
-			return TEXT;
-
-		if ("application/ogg".equals(mimetype) || "mp3".equals(extension) || "wav".equals(extension)
-				|| "rm".equals(extension))
-			return AUDIO;
-
-		if ("application/jpg".equals(mimetype) || "jpg".equals(extension) || "psd".equals(extension)
-				|| "psf".equals(extension) || "pct".equals(extension) || "ttf".equals(extension)
-				|| "jpeg".equals(extension) || "indd".equals(extension))
-			return IMAGE;
-
-		if ("mp4".equals(extension) || "m4v".equals(extension) || "mpg".equals(extension) || "swf".equals(extension)
-				|| "application/x-shockwave-flash".equals(mimetype) || "application/x-silverlight-app".equals(mimetype))
-			return VIDEO;
-
-		if ("application/x-gtar".equals(mimetype) || "application/x-gzip".equals(mimetype)
-				|| "application/x-compress".equals(mimetype) || "application/x-compressed".equals(mimetype)
-				|| "application/zip".equals(mimetype) || "application/x-stuffit".equals(mimetype)
-				|| "application/x-tar".equals(mimetype) || "gz".equals(extension) || "zip".equals(extension))
-			return ARCHIVE;
-
-		if ("dmg".equals(extension) || "iso".equals(extension) || "disk".equals(extension))
-			return DISK_IMAGE;
-
-		return UNKNOWN;
-	}
-
-	private static class ContentCategory {
-		String key;
-		String joined;
-
-		public ContentCategory(String key, String label) {
-			this.key = key;
-			this.joined = key + "," + label;
-		}
+			return ContentCategory.audio;
+		
+		String contentCategory = (String)this.contentTypeProperties.get("mime." + mimetype);
+		if (contentCategory == null)
+			contentCategory = (String)this.contentTypeProperties.get("ext." + extension);
+		return ContentCategory.getContentCategory(contentCategory);
 	}
 }

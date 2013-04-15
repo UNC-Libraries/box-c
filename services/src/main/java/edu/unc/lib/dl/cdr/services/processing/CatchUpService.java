@@ -16,13 +16,16 @@
 package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
+import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
@@ -54,33 +57,36 @@ public class CatchUpService {
 
 	private long itemsProcessed = 0;
 	private long itemsProcessedThisSession = 0;
+	
+	private int candidateQueryRetries = 2;
 
-	public CatchUpService(){
+	public CatchUpService() {
 		inCatchUp = false;
 	}
-	
+
 	/**
-	 * Turns on catchup services if they are enabled.  Return true if catchup ran, false if it was unable to.
+	 * Turns on catchup services if they are enabled. Return true if catchup ran, false if it was unable to.
 	 */
-	public boolean activate(){
+	public boolean activate() {
 		return activate(null);
 	}
-	
+
 	/**
-	 * Turns on catchup services if they are enabled.  If a date is provided, then services run in stale mode.
-	 * Return true if catchup ran, false if it was unable to.
+	 * Turns on catchup services if they are enabled. If a date is provided, then services run in stale mode. Return true
+	 * if catchup ran, false if it was unable to.
+	 * 
 	 * @param priorToDate
 	 */
-	public boolean activate(String priorToDate){
-		if (!isEnabled){
+	public boolean activate(String priorToDate) {
+		if (!isEnabled) {
 			LOG.info("Catchup services are disabled.");
 			return false;
 		}
-		if (priorToDate != null){
+		if (priorToDate != null) {
 			// Validate that the date is actually a date.
 			Pattern p = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}([.]\\d{3})?Z$");
-			if (!p.matcher(priorToDate).matches()){
-				throw new IllegalArgumentException("Catchup activation failed, " + priorToDate 
+			if (!p.matcher(priorToDate).matches()) {
+				throw new IllegalArgumentException("Catchup activation failed, " + priorToDate
 						+ " is not a valid date.  Please use iso8601 format, ie 2011-05-23T16:13:07.126Z.");
 			}
 		}
@@ -90,21 +96,23 @@ public class CatchUpService {
 		isActive = false;
 		return result;
 	}
-	
+
 	/**
 	 * Sets isActive to false, deactivating the service so that no more candidates will be sought.
 	 */
-	public void deactivate(){
+	public void deactivate() {
 		LOG.info("Deactivating CatchUp Service");
 		isActive = false;
 	}
-	
+
 	/**
 	 * Queues batches of candidates from each service for processing. New batches of candidates are retrieved when there
 	 * until the conductor becomes inactive or there are no more candidates retrieved while the processing queue is
-	 * empty.  
-	 * @param priorToDate - if supplied, then catchup services are run in stale mode, where all suitable objects
-	 * 	with modification dates prior to this parameter are selected as candidates.
+	 * empty.
+	 * 
+	 * @param priorToDate
+	 *           - if supplied, then catchup services are run in stale mode, where all suitable objects with modification
+	 *           dates prior to this parameter are selected as candidates.
 	 * @return Return true if catchup ran, false if it was blocked.
 	 */
 	private boolean catchUp(String priorToDate) {
@@ -115,74 +123,113 @@ public class CatchUpService {
 			inCatchUp = true;
 			itemsProcessedThisSession = 0;
 			LOG.info("Catchup Services starting");
-	
-			boolean candidatesFound = false;
-			boolean pidsQueued = false;
-	
-			do {
-				pidsQueued = !enhancementConductor.isEmpty();
-				if (!pidsQueued) {
-					LOG.debug("Searching for new candidate batch");
-					candidatesFound = addBatch(priorToDate);
-				}
+
+			Iterator<ObjectEnhancementService> serviceIt = services.iterator();
+			// Step through the service stack adding candidates, depth first per service
+			while (serviceIt.hasNext() && isActive) {
+				ObjectEnhancementService service = serviceIt.next();
 				try {
-					Thread.sleep(catchUpCheckDelay);
-				} catch (InterruptedException e) {
-					Thread.currentThread().isInterrupted();
+					this.addServiceCandidates(service, priorToDate);
+				} catch (EnhancementException e) {
+					LOG.error("An exception occured while performing catchup on service " + service.getClass().getName(), e);
 				}
-			} while (isActive && (candidatesFound || pidsQueued));
+			}
+
 			LOG.info("Catchup Services ending.  " + itemsProcessedThisSession + " items were queued/processed.");
 		} finally {
 			inCatchUp = false;
 		}
 		return true;
 	}
+	
+	private void addServiceCandidates(ObjectEnhancementService service, String priorToDate) throws EnhancementException {
+		if (!service.isActive())
+			return;
+		
+		boolean staleCatchup = (priorToDate != null);
+		
+		Set<String> failedPIDSet = this.enhancementConductor.getFailedPids().getOrCreateServicePIDSet(service);
+		
+		int resultLimit;
+		List<PID> candidates = null;
+		boolean candidatesAdded;
+		int candidatesRetries;
+
+		do {
+			// Wait for the enhancement queue to be empty
+			while (isActive && !enhancementConductor.isEmpty()) {
+				try {
+					Thread.sleep(catchUpCheckDelay);
+				} catch (InterruptedException e) {
+					Thread.currentThread().isInterrupted();
+				}
+			}
+			// Make sure that catchup didn't turn off while we were waiting
+			if (!isActive)
+				break;
+
+			candidatesRetries = this.candidateQueryRetries;
+			
+			// Have to grow the number of results by the number of failed pids per service since they are
+			// generally at the beginning of the result set. Order is not guaranteed and sorting the results is
+			// much slower than getting a larger page size.
+			resultLimit = pageSize + failedPIDSet.size();
+			// Retrieve candidates for the current service, with retries.
+			while (candidatesRetries-- > 0) {
+				try {
+					if (staleCatchup)
+						candidates = service.findStaleCandidateObjects(resultLimit, priorToDate);
+					else candidates = service.findCandidateObjects(resultLimit, 0);
+					break;
+				} catch (Exception e) {
+					LOG.error("An error occurred while attempting to get candidates for service " + service.getClass().getName(), e);
+				}
+			}
+			
+			candidatesAdded = addBatch(candidates, service, failedPIDSet, staleCatchup);
+			// Done this service if no more candidates were added or there are no more results
+		} while (isActive && service.isActive() && resultLimit == candidates.size() && candidatesAdded);
+	}
 
 	/**
-	 * Adds a page of results to the processing queue from each service's findCandidates method.
+	 * Directs a batch of candidates to the enhancement conductor if they have no failed previously for this particular
+	 * service.
 	 * 
-	 * @return true if any candidate items were queued.
+	 * @param candidates
+	 * @param service
+	 * @param failedPIDSet
+	 * @return True if any of the candidates were added to the enhancement conductor
 	 */
-	private boolean addBatch(String priorToDate) {
-		boolean candidatesFound = false;
-		for (ObjectEnhancementService s : services) {
-			String serviceName = s.getClass().getName();
-			try {
-				if (s.isActive()) {
-					int pageSize = this.pageSize + enhancementConductor.getFailedPids().size();
-	
-					List<PID> candidates = null;
-					if (priorToDate == null){
-						candidates = s.findCandidateObjects(pageSize);
-					} else {
-						candidates = s.findStaleCandidateObjects(pageSize, priorToDate);
-					}
-					LOG.debug("Searched for " + pageSize + " candidates, found " + candidates.size() + " for "
-							+ s.getClass().getName());
-					if (candidates.size() > 0) {
-						for (PID candidate : candidates) {
-							if (!enhancementConductor.getFailedPids().contains(candidate.getPid(), serviceName)){
-								candidatesFound = true;
-								if (priorToDate == null){
-									EnhancementMessage message = new EnhancementMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
-											JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), s.getClass().getName());
-									messageDirector.direct(message);
-								} else {
-									EnhancementMessage message = new EnhancementMessage(candidate, JMSMessageUtil.servicesMessageNamespace, 
-											JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), s.getClass().getName());
-									messageDirector.direct(message);
-								}
-								this.itemsProcessed++;
-								this.itemsProcessedThisSession++;
-							}
-						}
-					}
-				}
-			} catch (Exception e){
-				LOG.error("Failed to add batch for " + s.getClass().getName(), e);
+	private boolean addBatch(List<PID> candidates, ObjectEnhancementService service, Set<String> failedPIDSet,
+			boolean staleCatchup) {
+		if (candidates == null || candidates.size() == 0)
+			return false;
+		boolean candidatesAdded = false;
+		String serviceName = service.getClass().getName();
+		for (PID candidate : candidates) {
+			if (LOG.isDebugEnabled())
+				LOG.debug("Failed pid cache for " + serviceName + " contains pid " + candidate.getPid() + ": " + failedPIDSet.contains(candidate.getPid()));
+			if (failedPIDSet.contains(candidate.getPid()))
+				continue;
+
+			if (staleCatchup) {
+				EnhancementMessage message = new EnhancementMessage(candidate, JMSMessageUtil.servicesMessageNamespace,
+						JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), serviceName);
+				messageDirector.direct(message);
+			} else {
+				EnhancementMessage message = new EnhancementMessage(candidate, JMSMessageUtil.servicesMessageNamespace,
+						JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), serviceName);
+				messageDirector.direct(message);
 			}
+
+			this.itemsProcessed++;
+			this.itemsProcessedThisSession++;
+
+			if (!candidatesAdded)
+				candidatesAdded = true;
 		}
-		return candidatesFound;
+
+		return candidatesAdded;
 	}
 
 	public EnhancementConductor getenhancementConductor() {
@@ -201,14 +248,14 @@ public class CatchUpService {
 		this.services = services;
 	}
 
-	public boolean isInCatchUp(){
+	public boolean isInCatchUp() {
 		return inCatchUp;
 	}
-	
-	public void setInCatchUp(boolean inCatchUp){
+
+	public void setInCatchUp(boolean inCatchUp) {
 		this.inCatchUp = inCatchUp;
 	}
-	
+
 	public boolean isActive() {
 		return isActive;
 	}

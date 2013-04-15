@@ -36,6 +36,7 @@ import org.swordapp.server.SwordWorkspace;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ErrorURIRegistry;
 
 /**
  * Generates service document from all containers which are the immediate children of the starting path, given the users
@@ -75,7 +76,8 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 
 		if (!hasAccess(auth, pid, Permission.viewDescription, configImpl)) {
 			LOG.debug("Insufficient privileges to access the service document for " + pid.getPid());
-			throw new SwordAuthException("Insufficient privileges to access the service document for " + pid.getPid());
+			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
+					"Insufficient privileges to access the service document for " + pid.getPid());
 		}
 
 		LOG.debug("Retrieving service document for " + pid);
@@ -91,9 +93,9 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 			return sd;
 		} catch (Exception e) {
 			LOG.error("An exception occurred while generating the service document for " + pid, e);
+			throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, 500,
+					"An unexpected exception occurred while retrieving service document.");
 		}
-
-		return null;
 	}
 
 	/**

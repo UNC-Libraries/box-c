@@ -23,7 +23,7 @@
     <sch:ns uri="http://www.loc.gov/METS/" prefix="m"/>
     <sch:ns uri="info:lc/xmlns/premis-v2" prefix="p"/>
     <sch:ns uri="http://www.w3.org/1999/xlink" prefix="xlink"/>
-    <sch:ns uri="http://cdr.unc.edu/definitions/acl#" prefix="acl"/>
+    <sch:ns uri="http://cdr.unc.edu/definitions/acl" prefix="acl"/>
         
     <sch:title>Simple Content Model Validation</sch:title>
     

@@ -64,7 +64,7 @@ public class AbstractServiceConductorRestController implements ServletContextAwa
 		if(begin == null) {
 			begin = 0;
 		}
-		if(end == null) {
+		if(end == null || end > messages.size()) {
 			end = messages.size();
 		}
 		result.put("begin", begin);
@@ -90,22 +90,19 @@ public class AbstractServiceConductorRestController implements ServletContextAwa
 	 * @param messages
 	 */
 	protected void populateLabels(List<?> messages) {
-		List<String> retrievalList = new ArrayList<String>();
-		List<ActionMessage> targetedMessages = new ArrayList<ActionMessage>();
-		
 		for (Object messageObject: messages) {
 			ActionMessage message = (ActionMessage)messageObject;
-			if (message.getTargetLabel() == null) {
-				retrievalList.add(message.getTargetID());
-				targetedMessages.add(message);
-			}
+			this.populateLabel(message);
 		}
-		
-		String label;
-		for (ActionMessage message: targetedMessages) {
-			label = tripleStoreQueryService.lookupLabel(message.getTargetID());
-			message.setTargetLabel(label);
-		}
+	}
+	
+	protected void populateLabel(ActionMessage message) {
+		if (message.getTargetLabel() != null)
+			return;
+		String label = tripleStoreQueryService.lookupLabel(message.getTargetID());
+		if (label == null)
+			message.setTargetLabel("");
+		else message.setTargetLabel(label);
 	}
 	
 	protected Map<String,Object> getJobBriefInfo(ActionMessage message, String queuePath){

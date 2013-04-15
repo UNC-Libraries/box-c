@@ -126,7 +126,8 @@ public class FedoraContentService {
 						slug += "_" + datastream.getName();
 					}
 					// Add the file extension unless its already in there.
-					if (datastream.getExtension() != null && !slug.toLowerCase().contains("." + datastream.getExtension())) {
+					if (datastream.getExtension() != null && !slug.toLowerCase().contains("." + datastream.getExtension())
+							&& !"unknown".equals(datastream.getExtension())) {
 						slug += "." + datastream.getExtension();
 					}
 					if (asAttachment) {

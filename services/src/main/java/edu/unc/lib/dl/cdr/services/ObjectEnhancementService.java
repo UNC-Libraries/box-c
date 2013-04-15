@@ -36,7 +36,7 @@ public interface ObjectEnhancementService {
 	 * 
 	 * @return
 	 */
-	public List<PID> findCandidateObjects(int maxResults) throws EnhancementException;
+	public List<PID> findCandidateObjects(int maxResults, int offset) throws EnhancementException;
 
 	/**
 	 * Returns the total number of objects that would be returned by findCandidateObjects.

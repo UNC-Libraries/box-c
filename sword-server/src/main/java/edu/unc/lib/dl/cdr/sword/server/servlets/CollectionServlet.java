@@ -60,9 +60,9 @@ public class CollectionServlet extends BaseSwordServlet {
 
 	@RequestMapping(value = { "", "/", "/{pid}" }, method = RequestMethod.POST)
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		LOG.debug("POST request to submit to collection: " + req.getQueryString());
-		LOG.debug("Packaging: " + req.getHeader("Packaging"));
 		if (LOG.isDebugEnabled()) {
+			LOG.debug("POST request to submit to collection: " + req.getQueryString());
+			LOG.debug("Packaging: " + req.getHeader("Packaging"));
 			String headers = null;
 			Enumeration<String> e = req.getHeaderNames();
 			LOG.debug("Collection submission headers:");

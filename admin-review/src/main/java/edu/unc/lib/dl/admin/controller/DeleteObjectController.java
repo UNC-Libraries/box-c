@@ -84,7 +84,7 @@ public class DeleteObjectController {
 
 		method = new DeleteMethod(dataUrl);
 		// Pass the users groups along with the request
-		method.addRequestHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER, GroupsThreadStore.getGroupString());
+		method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
 
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("pid", pid);

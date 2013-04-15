@@ -25,7 +25,7 @@
     xmlns:rels="info:fedora/fedora-system:def/relations-external#"
     xmlns:fmodel="info:fedora/fedora-system:def/model#"
     xmlns:ir="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
-    xmlns:acl="http://cdr.unc.edu/definitions/acl#" xmlns:premis="info:lc/xmlns/premis-v2"
+    xmlns:acl="http://cdr.unc.edu/definitions/acl" xmlns:premis="info:lc/xmlns/premis-v2"
     xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd"
     exclude-result-prefixes="common">
     <xsl:import href="epdcx2mods.xsl"/>
