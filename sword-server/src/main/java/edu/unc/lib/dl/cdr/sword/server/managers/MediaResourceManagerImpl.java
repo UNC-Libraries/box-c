@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -30,6 +31,10 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
+import org.jdom.output.XMLOutputter;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
@@ -40,10 +45,10 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
-import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.acl.util.AccessControlTransformationUtil;
 import edu.unc.lib.dl.cdr.sword.server.MethodAwareInputStream;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.DatastreamPID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
@@ -52,6 +57,7 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 	private static Logger log = Logger.getLogger(MediaResourceManagerImpl.class);
 
 	private String fedoraPath;
+	private Map<String, Datastream> virtualDatastreamMap;
 
 	@Override
 	public MediaResource getMediaResourceRepresentation(String uri, Map<String, String> accept, AuthCredentials auth,
@@ -59,27 +65,11 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 
 		log.debug("Retrieving media resource representation for " + uri);
 
-		PID targetPID = extractPID(uri, SwordConfigurationImpl.EDIT_MEDIA_PATH + "/");
-		PID basePID = null;
-		String pidString = targetPID.getPid();
-		String datastreamString = null;
-		int index = pidString.indexOf("/");
-		if (index != -1 && index < pidString.length() - 1) {
-			datastreamString = pidString.substring(index + 1);
-			basePID = new PID(pidString.substring(0, index));
-		} else {
-			basePID = targetPID;
-		}
+		DatastreamPID targetPID = (DatastreamPID) extractPID(uri, SwordConfigurationImpl.EDIT_MEDIA_PATH + "/");
 
-		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
-
-		Datastream datastream = Datastream.getDatastream(datastreamString);
-
-		if (!hasAccess(auth, basePID, Permission.viewDescription, configImpl)) {
-			log.debug("Insufficient privileges to get media resource for " + targetPID.getPid());
-			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to get media resource for " + targetPID.getPid());
-		}
+		Datastream datastream = Datastream.getDatastream(targetPID.getDatastream());
+		if (datastream == null)
+			datastream = virtualDatastreamMap.get(targetPID.getDatastream());
 
 		if (datastream == null)
 			throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404,
@@ -92,7 +82,7 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 		client.getState().setCredentials(new AuthScope(null, 443), cred);
 		client.getState().setCredentials(new AuthScope(null, 80), cred);
 
-		GetMethod method = new GetMethod(fedoraPath + "/objects/" + basePID.getPid() + "/datastreams/" + datastream
+		GetMethod method = new GetMethod(fedoraPath + "/objects/" + targetPID.getPid() + "/datastreams/" + datastream.getName()
 				+ "/content");
 
 		InputStream inputStream = null;
@@ -103,13 +93,18 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 			method.setDoAuthentication(true);
 			client.executeMethod(method);
 			if (method.getStatusCode() == HttpStatus.SC_OK) {
-				Map<String, List<String>> dsTriples = tripleStoreQueryService.fetchAllTriples(targetPID);
-				List<String> dsRowList = dsTriples.get(ContentModelHelper.FedoraProperty.mimeType.getURI().toString());
-				if (dsRowList.size() > 0)
-					mimeType = dsRowList.get(0);
-				dsRowList = dsTriples.get(ContentModelHelper.FedoraProperty.lastModifiedDate.getURI().toString());
-				if (dsRowList.size() > 0)
-					lastModified = dsRowList.get(0);
+				StringBuffer query = new StringBuffer();
+				query.append("select $mimeType $lastModified from <%1$s>")
+						.append(" where <%2$s> <%3$s> $mimeType and <%2$s> <%4$s> $lastModified").append(";");
+				String formatted = String.format(query.toString(),
+						tripleStoreQueryService.getResourceIndexModelUri(), targetPID.getURI() + "/" + datastream.getName(), 
+						ContentModelHelper.FedoraProperty.mimeType.getURI().toString(),
+						ContentModelHelper.FedoraProperty.lastModifiedDate.getURI().toString());
+				List<List<String>> datastreamResults = tripleStoreQueryService.queryResourceIndex(formatted);
+				if (datastreamResults.size() > 0) {
+					mimeType = datastreamResults.get(0).get(0);
+					lastModified = datastreamResults.get(0).get(1);
+				}
 				inputStream = new MethodAwareInputStream(method);
 			} else if (method.getStatusCode() >= 500) {
 				throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, method.getStatusCode(), "Failed to retrieve "
@@ -122,6 +117,22 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 			throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, "An exception occurred while attempting to retrieve " + targetPID.getPid());
 		} catch (IOException e) {
 			throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, "An exception occurred while attempting to retrieve " + targetPID.getPid());
+		}
+		
+		// For the ACL virtual datastream, transform RELS-EXT into accessControl tag
+		if ("ACL".equals(targetPID.getDatastream())) {
+			try {
+				log.debug("Converting response XML to ACL format");
+				SAXBuilder saxBuilder = new SAXBuilder();
+				Document relsExt = saxBuilder.build(inputStream);
+				XMLOutputter outputter = new XMLOutputter();
+				Element accessElement = AccessControlTransformationUtil.rdfToACL(relsExt.getRootElement());
+				inputStream.close();
+				inputStream = new ByteArrayInputStream(outputter.outputString(accessElement).getBytes());
+			} catch (Exception e) {
+				log.debug("Failed to parse response from " + targetPID.getDatastreamURI() + " into ACL format", e);
+				throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, "An exception occurred while attempting to retrieve " + targetPID.getPid());
+			}
 		}
 
 		MediaResource resource = new MediaResource(inputStream, mimeType, null, true);
@@ -166,4 +177,7 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 		this.fedoraPath = fedoraPath;
 	}
 
+	public void setVirtualDatastreamMap(Map<String, Datastream> virtualDatastreamMap) {
+		this.virtualDatastreamMap = virtualDatastreamMap;
+	}
 }

@@ -127,4 +127,8 @@ public interface BriefObjectMetadata {
 	public String getCitation();
 
 	public String getFullText();
+	
+	public List<Tag> getTags();
+	
+	public void addTag(Tag t);
 }

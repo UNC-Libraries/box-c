@@ -3,7 +3,7 @@ define([ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], function($) {
 		options : {
 			resultObjectList : undefined,
 			workPath: "services/rest/edit/unpublish",
-			childCallbackButtonSelector : ":cdr-publishObjectButton"
+			childWorkLinkName : 'publish'
 		},
 
 		getTargetIds : function() {

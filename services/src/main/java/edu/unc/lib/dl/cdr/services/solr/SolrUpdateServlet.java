@@ -25,8 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
+import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  * Servlet which allows a subset of solr updating methods to be directly called via http request.
@@ -52,14 +52,14 @@ public class SolrUpdateServlet {
 		if (action != null) {
 			if (action.equals("reindex")) {
 				if (pid != null) {
-					solrUpdateService.offer(pid, SolrUpdateAction.CLEAN_REINDEX);
+					solrUpdateService.offer(pid, IndexingActionType.CLEAN_REINDEX);
 				}
 			} else if (action.equals("reindexInplace")) {
 				if (pid != null) {
-					solrUpdateService.offer(pid, SolrUpdateAction.RECURSIVE_REINDEX);
+					solrUpdateService.offer(pid, IndexingActionType.RECURSIVE_REINDEX);
 				}
 			} else if (action.equals("clearIndex")) {
-				solrUpdateService.offer("", SolrUpdateAction.CLEAR_INDEX);
+				solrUpdateService.offer("", IndexingActionType.CLEAR_INDEX);
 			}
 		}
 	}

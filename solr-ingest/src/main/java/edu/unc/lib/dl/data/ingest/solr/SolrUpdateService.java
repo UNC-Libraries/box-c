@@ -31,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.util.IndexingActionType;
+
 /**
  * Service which handles ingest and update of a solr index via threaded processors which read from a queue of ordered
  * update requests.
@@ -94,12 +96,12 @@ public class SolrUpdateService {
 		return identifier + ":" + UUID.randomUUID().toString();
 	}
 
-	public void offer(String pid, SolrUpdateAction action) {
+	public void offer(String pid, IndexingActionType action) {
 		offer(new SolrUpdateRequest(pid, action, nextMessageID(), root));
 	}
 
 	public void offer(String pid) {
-		offer(new SolrUpdateRequest(pid, SolrUpdateAction.ADD, nextMessageID(), root));
+		offer(new SolrUpdateRequest(pid, IndexingActionType.ADD, nextMessageID(), root));
 	}
 
 	public void offer(SolrUpdateRequest ingestRequest) {

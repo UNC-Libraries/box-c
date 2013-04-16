@@ -37,7 +37,6 @@ import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.data.ingest.solr.BlockUntilTargetCompleteRequest;
 import edu.unc.lib.dl.data.ingest.solr.CountDownUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.DeleteChildrenPriorToTimestampRequest;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnableFactory;
 import edu.unc.lib.dl.data.ingest.solr.UpdateDocTransformer;
@@ -45,6 +44,7 @@ import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
+import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 // TODO this test is going to fail until solrUpdateRunnableFactory is injected, which will require using a spring context
@@ -133,7 +133,7 @@ public class SolrUpdateConductorTest extends Assert {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		// Add messages and check that they all ran
 		for (int i = 0; i < numberTestMessages; i++) {
-			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD, null);
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, IndexingActionType.ADD, null);
 			messageDirector.direct(message);
 		}
 		while (!solrUpdateConductor.isEmpty())
@@ -153,7 +153,7 @@ public class SolrUpdateConductorTest extends Assert {
 
 		// Check that collision list gets populated
 		for (int i = 0; i < numberTestMessages; i++) {
-			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD, null);
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, IndexingActionType.ADD, null);
 			for (int j = 0; j < numberTestMessages; j++) {
 				messageDirector.direct(message);
 				assertTrue(solrUpdateConductor.getLockedPids().size() <= i + 1
@@ -194,7 +194,7 @@ public class SolrUpdateConductorTest extends Assert {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
 		for (int i = 0; i < numberTestMessages; i++) {
-			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD, null);
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, IndexingActionType.ADD, null);
 			messageDirector.direct(message);
 		}
 		solrUpdateConductor.resume();
@@ -224,18 +224,18 @@ public class SolrUpdateConductorTest extends Assert {
 
 		// Create a blocked message and make sure that it doesn't get picked up until
 		int numberTestMessages = 5;
-		SolrUpdateRequest parentRequest = new SolrUpdateRequest("uuid:parent", SolrUpdateAction.ADD);
+		SolrUpdateRequest parentRequest = new SolrUpdateRequest("uuid:parent", IndexingActionType.ADD);
 		
 		SolrUpdateRequest blockedRequest = new BlockUntilTargetCompleteRequest("uuid:blocked",
-				SolrUpdateAction.ADD, "urn:uuid:msg", null, parentRequest);
+				IndexingActionType.ADD, "urn:uuid:msg", null, parentRequest);
 
 		for (int i = 0; i < numberTestMessages; i++) {
-			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:1", SolrUpdateAction.ADD, blockedRequest, null,
+			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:1", IndexingActionType.ADD, blockedRequest, null,
 					null);
 			solrUpdateConductor.offer(childRequest);
 		}
 		for (int i = 0; i < numberTestMessages; i++) {
-			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:2", SolrUpdateAction.ADD, blockedRequest, null,
+			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:2", IndexingActionType.ADD, blockedRequest, null,
 					null);
 			solrUpdateConductor.offer(childRequest);
 		}
@@ -244,7 +244,7 @@ public class SolrUpdateConductorTest extends Assert {
 
 		// Add some post block non-blocked messages
 		for (int i = 0; i < numberTestMessages; i++) {
-			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:3", SolrUpdateAction.ADD);
+			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:3", IndexingActionType.ADD);
 			solrUpdateConductor.offer(childRequest);
 		}
 
@@ -267,7 +267,7 @@ public class SolrUpdateConductorTest extends Assert {
 		// Test that nothing processes while paused
 		solrUpdateConductor.pause();
 		for (int i = 0; i < numberTestMessages; i++) {
-			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, IndexingActionType.ADD);
 			messageDirector.direct(message);
 		}
 		assertEquals(solrUpdateConductor.getQueueSize(), numberTestMessages);
@@ -290,7 +290,7 @@ public class SolrUpdateConductorTest extends Assert {
 		SolrUpdateConductor solrUpdateConductor = this.solrUpdateConductor;
 		solrUpdateConductor.pause();
 		for (int i = 0; i < numberTestMessages; i++) {
-			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, IndexingActionType.ADD);
 			messageDirector.direct(message);
 		}
 
@@ -322,7 +322,7 @@ public class SolrUpdateConductorTest extends Assert {
 
 		// Add messages and check that they all ran
 		for (int i = 0; i < numberTestMessages; i++) {
-			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, SolrUpdateAction.ADD);
+			SolrUpdateRequest message = new SolrUpdateRequest("uuid:" + i, IndexingActionType.ADD);
 			messageDirector.direct(message);
 		}
 

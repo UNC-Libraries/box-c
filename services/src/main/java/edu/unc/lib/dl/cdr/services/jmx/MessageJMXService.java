@@ -28,8 +28,8 @@ import edu.unc.lib.dl.cdr.services.model.CDREventMessage;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.ClientUtils;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 
 public class MessageJMXService {
 	private static final Logger LOG = LoggerFactory.getLogger(MessageJMXService.class);

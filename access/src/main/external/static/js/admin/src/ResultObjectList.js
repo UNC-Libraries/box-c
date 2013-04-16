@@ -6,7 +6,8 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 	$.extend(ResultObjectList.prototype, {
 		options: {
 			resultIdPrefix : "entry_",
-			metadataObjects : undefined
+			metadataObjects : undefined,
+			refreshEntryUrl : "entry/"
 		},
 		resultObjects: {},
 		
@@ -14,8 +15,9 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 			this.options = $.extend({}, this.options, options);
 			for (var i = 0; i < this.options.metadataObjects.length; i++) {
 				var metadata = this.options.metadataObjects[i];
-				var parentEl = $("#" + this.options.resultIdPrefix + metadata.id.replace(":", "\\:"));
-				this.resultObjects[metadata.id] = parentEl.resultObject({"metadata" : metadata, "resultObjectList" : [this]});
+				var parentEl = $(".entry[data-pid='" + metadata.id + "']");
+				//var parentEl = $("#" + this.options.resultIdPrefix + metadata.id.replace(":", "\\:"));
+				this.resultObjects[metadata.id] = parentEl.resultObject({"metadata" : metadata, "resultObjectList" : this});
 			}
 		},
 		
@@ -27,7 +29,22 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 			if (id in this.resultObjects) {
 				delete this.resultObjects[id];
 			}
+		},
+		
+		refreshObject: function(id) {
+			var self = this;
+			var resultObject = this.getResultObject(id);
+			$.ajax({
+				url : this.options.refreshEntryUrl + resultObject.resultObject('getPid').getPath(),
+				dataType : 'json',
+				success : function(data, textStatus, jqXHR) {
+					var newContent = $(data.content);
+					resultObject.replaceWith(newContent);
+					self.resultObjects[id] = newContent.resultObject({"metadata" : data.data.metadata, "resultObjectList" : self});
+				}
+			});
 		}
+		
 	});
 	
 	return ResultObjectList;

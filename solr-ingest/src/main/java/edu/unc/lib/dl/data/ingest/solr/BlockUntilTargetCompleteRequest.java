@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.data.ingest.solr;
 
+import edu.unc.lib.dl.util.IndexingActionType;
+
 /**
  * Message which blocks until its parent message has finished
  * @author bbpennel
@@ -24,7 +26,7 @@ public class BlockUntilTargetCompleteRequest extends SolrUpdateRequest {
 	private static final long serialVersionUID = 1L;
 	private UpdateNodeRequest targetRequest;
 	
-	public BlockUntilTargetCompleteRequest(String pid, SolrUpdateAction action, String messageID,
+	public BlockUntilTargetCompleteRequest(String pid, IndexingActionType action, String messageID,
 			UpdateNodeRequest parent, UpdateNodeRequest target) {
 		super(pid, action, messageID, parent);
 		this.targetRequest = target;

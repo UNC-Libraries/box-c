@@ -24,19 +24,30 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.abdera.Abdera;
+import org.apache.abdera.model.Document;
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.parser.Parser;
+import org.jdom.Element;
 import org.junit.Assert;
 import org.junit.Test;
 
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.ClientUtils;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.DigitalObjectManager;
+import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class FedoraObjectUIPProcessorTest extends Assert {
 
@@ -83,5 +94,63 @@ public class FedoraObjectUIPProcessorTest extends Assert {
 		when(uip.getModifiedFiles()).thenReturn(null);
 		uipProcessor.process(uip);
 		verify(digitalObjectManager, times(2)).addOrReplaceDatastream(any(PID.class), any(Datastream.class), any(File.class), anyString(), any(Agent.class), anyString());
+	}
+	
+	@Test
+	public void test() throws Exception {
+		FedoraObjectUIPProcessor processor = new FedoraObjectUIPProcessor();
+		
+		InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataUnpublish.xml"));
+		Abdera abdera = new Abdera();
+		Parser parser = abdera.getParser();
+		Document<Entry> entryDoc = parser.parse(entryPart);
+		Entry entry = entryDoc.getRoot();
+		Map<String, org.jdom.Element> originalMap = new HashMap<String, org.jdom.Element>();
+		org.jdom.Element rdfElement = new org.jdom.Element("RDF", JDOMNamespaceUtil.RDF_NS);
+		org.jdom.Element descElement = new org.jdom.Element("Description", JDOMNamespaceUtil.RDF_NS);
+		rdfElement.addContent(descElement);
+		org.jdom.Element relElement = new org.jdom.Element(ContentModelHelper.CDRProperty.isPublished.getPredicate(),
+				JDOMNamespaceUtil.CDR_NS);
+		relElement.setText("yes");
+		descElement.addContent(relElement);
+		relElement = new org.jdom.Element(ContentModelHelper.CDRProperty.embargoUntil.getPredicate(),
+				JDOMNamespaceUtil.CDR_ACL_NS);
+		relElement.setText("2013-02-01");
+		descElement.addContent(relElement);
+		relElement = new org.jdom.Element(ContentModelHelper.FedoraProperty.hasModel.name(),
+				JDOMNamespaceUtil.FEDORA_MODEL_NS);
+		relElement.setText(ContentModelHelper.Model.SIMPLE.name());
+		descElement.addContent(relElement);
+
+		originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), rdfElement);
+		Map<String, org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+
+		MetadataUIP uip = mock(MetadataUIP.class);
+		when(uip.getPID()).thenReturn(new PID("uuid:test/ACL"));
+		when(uip.getOperation()).thenReturn(UpdateOperation.REPLACE);
+		when(uip.getOriginalData()).thenReturn(originalMap);
+		when(uip.getModifiedData()).thenReturn(originalMap);
+		when(uip.getIncomingData()).thenReturn(datastreamMap);
+		when(uip.getModifiedFiles()).thenReturn(getModifiedFiles(originalMap));
+		
+		UIPUpdatePipeline pipeline = mock(UIPUpdatePipeline.class);
+		when(pipeline.processUIP(any(UpdateInformationPackage.class))).thenReturn(uip);
+		processor.setPipeline(pipeline);
+		
+		processor.process(uip);
+	}
+	
+	public Map<String, File> getModifiedFiles(Map<String, org.jdom.Element> modifiedData) {
+		Map<String, File> modifiedFiles = new HashMap<String, File>();
+		for (java.util.Map.Entry<String, ?> modified : modifiedData.entrySet()) {
+			Element modifiedElement = (Element)modified.getValue();
+			try {
+				File temp = ClientUtils.writeXMLToTempFile(modifiedElement);
+				modifiedFiles.put(modified.getKey(), temp);
+			} catch (IOException e) {
+				System.err.println("Failed to create temp file" + e);
+			}
+		}
+		return modifiedFiles;
 	}
 }

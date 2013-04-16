@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  * Enhancement issues solr update messages for items that have been modified by the service stack.
@@ -40,7 +40,7 @@ public class SolrUpdateEnhancement extends Enhancement<Element> {
 		LOG.debug("Called Solr update service for " + pid.getPid());
 		
 		//Perform a single item update
-		service.getMessageDirector().direct(new SolrUpdateRequest(pid.getPid(), SolrUpdateAction.ADD));
+		service.getMessageDirector().direct(new SolrUpdateRequest(pid.getPid(), IndexingActionType.ADD));
 		
 		return result;
 	}

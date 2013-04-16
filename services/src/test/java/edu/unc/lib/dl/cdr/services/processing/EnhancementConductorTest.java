@@ -30,7 +30,7 @@ import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedEnhancementMap;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 
 public class EnhancementConductorTest extends Assert {
 	protected static final Logger LOG = LoggerFactory.getLogger(EnhancementConductorTest.class);

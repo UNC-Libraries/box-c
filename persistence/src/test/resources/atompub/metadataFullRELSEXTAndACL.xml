@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cdr="http://cdr.lib.unc.edu/"
+	xmlns:acl="http://cdr.unc.edu/definitions/acl#">
+	<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
+	<updated>2012-03-07T17:17:08Z</updated>
+	<summary type="text">RELS-EXT</summary>
+
+	<acl:accessControl acl:published="true" />
+
+	<cdr:datastream id="RELS-EXT">
+		<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+			<rdf:Description
+				rdf:about="info:fedora/uuid:7ebdfec4-b87f-4291-86ff-65e960813ad6">
+				<defaultWebData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+					rdf:resource="info:fedora/uuid:7ebdfec4-b87f-4291-86ff-65e960813ad6/DATA_FILE"></defaultWebData>
+				<originalDeposit
+					xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+					rdf:resource="info:fedora/uuid:bdc90343-91ff-4487-b611-8ea21731d140"></originalDeposit>
+				<owner xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+					rdf:resource="info:fedora/uuid:50285ede-83a2-4f1f-89b6-741fa4b141c6"></owner>
+				<slug xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">Very small mp3</slug>
+				<sourceData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+					rdf:resource="info:fedora/uuid:7ebdfec4-b87f-4291-86ff-65e960813ad6/DATA_FILE"></sourceData>
+				<hasModel xmlns="info:fedora/fedora-system:def/model#"
+					rdf:resource="info:fedora/cdr-model:PreservedObject"></hasModel>
+				<hasModel xmlns="info:fedora/fedora-system:def/model#"
+					rdf:resource="info:fedora/cdr-model:Simple"></hasModel>
+				<hasSourceMimeType
+					xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">audio/mpeg</hasSourceMimeType>
+				<hasSourceFileSize
+					xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+					rdf:datatype="http://www.w3.org/2001/XMLSchema#long">5014</hasSourceFileSize>
+				<techData xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+					rdf:resource="info:fedora/uuid:7ebdfec4-b87f-4291-86ff-65e960813ad6/MD_TECHNICAL"></techData>
+				<isPublished xmlns="http://cdr.unc.edu/definitions/1.0/base-model.xml#">no</isPublished>
+			</rdf:Description>
+		</rdf:RDF>
+	</cdr:datastream>
+</entry>

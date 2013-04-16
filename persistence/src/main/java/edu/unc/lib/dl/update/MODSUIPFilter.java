@@ -68,7 +68,7 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 			return uip;
 
 		// Do not apply filter unless the mods ds is being targeted.
-		if (!(uip.getIncomingData().containsKey(datastreamName) || uip.getModifiedData().containsKey(datastreamName)))
+		if (!uip.getIncomingData().containsKey(datastreamName) && !uip.getModifiedData().containsKey(datastreamName))
 			return uip;
 
 		MetadataUIP metadataUIP = (MetadataUIP) uip;

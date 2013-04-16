@@ -18,10 +18,10 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 import java.util.List;
 
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.IndexingActionType;
 
 public class UpdateStatusAction extends AbstractIndexingAction {
 	@Override
@@ -38,7 +38,7 @@ public class UpdateStatusAction extends AbstractIndexingAction {
 			List<PID> children = dip.getChildren();
 			if (children != null) {
 				for (PID child : children) {
-					SolrUpdateRequest childRequest = new SolrUpdateRequest(child, SolrUpdateAction.UPDATE_STATUS,
+					SolrUpdateRequest childRequest = new SolrUpdateRequest(child, IndexingActionType.UPDATE_STATUS,
 							solrUpdateService.nextMessageID(), updateRequest);
 					solrUpdateService.offer(childRequest);
 				}

@@ -3,7 +3,10 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], func
 		options : {
 			resultObjectList : undefined,
 			followupPath: "services/rest/item/solrRecord/version",
-			childCallbackButtonSelector : undefined
+			childWorkLinkName : undefined,
+			workFunction : undefined,
+			followupFunction : undefined,
+			completeFunction : undefined 
 		},
 
 		_create : function() {
@@ -13,6 +16,12 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], func
 			this.options.followup = this.followup;
 			this.options.completeTarget = this;
 		},
+		
+		_init : function() {
+			$.cdr.ajaxCallbackButton.prototype._init.apply(this, arguments);
+			
+			this.followupMonitor.options.checkStatusAjax.type = 'POST';
+		},
 
 		doWork : function() {
 			this.disable();
@@ -21,10 +30,11 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], func
 			for (var index in this.targetIds) {
 				var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
 				resultObject.resultObject("disable");
-				if (this.options.childCallbackButtonSelector) {
-					var childButton = resultObject.find(this.options.childCallbackButtonSelector);
-					childButton[childButton.data("callbackButtonClass")].call(childButton, "workState");
-				}
+				if (this.options.workFunction)
+					if ($.isFunction(this.options.workFunction))
+						this.options.workFunction.call(resultObject);
+					else
+						resultObject.resultObject(this.options.workFunction);
 			}
 			
 			var self = this;
@@ -32,6 +42,8 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], func
 				this.performWork($.post, {
 					'ids' : self.targetIds.join('\n')
 				});
+			} else {
+				this.enable();
 			}
 		},
 
@@ -41,23 +53,21 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], func
 				for (var index in data) {
 					var id = data[index].pid;
 					this.followupObjects.push(id);
-					
-					if (this.options.childCallbackButtonSelector) {
+					if (this.options.workFunction) {
 						var resultObject = this.options.resultObjectList.resultObjects[id];
-						var childButton = resultObject.find(this.options.childCallbackButtonSelector);
-						childButton[childButton.data("callbackButtonClass")].call(childButton, "followupState");
+						if ($.isFunction(this.options.followupFunction))
+							this.options.followupFunction.call(resultObject);
+						else
+							resultObject.resultObject(this.options.followupFunction);
 					}
 				}
+				this.followupMonitor.pingData = {
+						'ids' : this.followupObjects.join('\n')
+				}; 
 				return true;
 			} else
 				alert("Error while attempting to perform action: " + data);
 			return false;
-		},
-
-		followupPing : function() {
-			this.performFollowupPing($.post, {
-				'ids' : this.followupObjects.join('\n')
-			});
 		},
 
 		followup : function(data) {
@@ -70,14 +80,18 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], func
 						var resultObject = this.options.resultObjectList.resultObjects[id];
 						resultObject.resultObject("setState", "idle");
 						
-						// Trigger the complete function on targeted child callback buttons
-						if (this.options.childCallbackButtonSelector) {
-							var childButton = resultObject.find(this.options.childCallbackButtonSelector);
-							childButton[childButton.data("callbackButtonClass")].call(childButton, "completeState");
+						if (this.options.completeFunction) {
+							if ($.isFunction(this.options.completeFunction))
+								this.options.completeFunction.call(resultObject);
+							else
+								resultObject.resultObject(this.options.completeFunction);
 						}
 					}
 				}
 			}
+			this.followupMonitor.pingData = {
+					'ids' : this.followupObjects.join('\n')
+			}; 
 			return this.followupObjects.length == 0;
 		},
 		

@@ -27,6 +27,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.Group;
 import org.apache.solr.client.solrj.response.GroupCommand;
 import org.apache.solr.client.solrj.response.GroupResponse;
@@ -701,6 +702,41 @@ public class SolrSearchService {
 			return queryResponse.getResults().get(0).getFirstValue(field);
 		}
 		return null;
+	}
+	
+	/**
+	 * Returns a combined set of distinct field values for one or more fields, limited by the set of access groups provided 
+	 * 
+	 * @param fields Solr field names to retrieve distinct values for
+	 * @param maxValuesPerField Max number of distinct values to retrieve for each field
+	 * @param accessGroups
+	 * @return
+	 * @throws AccessRestrictionException
+	 * @throws SolrServerException
+	 */
+	public java.util.Collection<String> getDistinctFieldValues(String[] fields, int maxValuesPerField, AccessGroupSet accessGroups) throws AccessRestrictionException, SolrServerException {
+		SolrQuery solrQuery = new SolrQuery();
+		StringBuilder query = new StringBuilder("*:*");
+		addAccessRestrictions(query, accessGroups);
+		solrQuery.setQuery(query.toString());
+		solrQuery.setFacet(true);
+		for (String facetField : fields)
+			solrQuery.addFacetField(facetField);
+		solrQuery.setFacetLimit(maxValuesPerField);
+		solrQuery.setFacetSort("index");
+		
+		QueryResponse queryResponse = server.query(solrQuery);
+		// Determine initial capacity for the result list
+		int numberValues = 0;
+		for (FacetField facet: queryResponse.getFacetFields())
+			numberValues += facet.getValueCount();
+		
+		java.util.Collection<String> fieldValues = new java.util.HashSet<String>(numberValues);
+		for (FacetField facet: queryResponse.getFacetFields())
+			for (Count count : facet.getValues())
+				fieldValues.add(count.getName());
+		
+		return fieldValues;
 	}
 
 	public SolrSettings getSolrSettings() {

@@ -20,17 +20,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.util.IndexingActionType;
+
 public class CountDownUpdateRequest extends SolrUpdateRequest {
 	private static final Logger LOG = LoggerFactory.getLogger(CountDownUpdateRequest.class);
 	private static final long serialVersionUID = 1L;
 	AtomicInteger blockCount;
 	
-	public CountDownUpdateRequest(String pid, SolrUpdateAction action, String messageID, UpdateNodeRequest parent){
+	public CountDownUpdateRequest(String pid, IndexingActionType action, String messageID, UpdateNodeRequest parent){
 		super(pid, action, messageID, parent);
 		this.blockCount = new AtomicInteger(0);
 	}
 	
-	public CountDownUpdateRequest(String pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
+	public CountDownUpdateRequest(String pid, IndexingActionType action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
 		super(pid, action, linkedRequest, messageID, parent);
 		this.blockCount = new AtomicInteger(0);
 	}

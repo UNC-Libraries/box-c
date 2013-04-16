@@ -196,7 +196,7 @@
 		<property name="filters" ref="messageFilterList"/>
 	</bean>
 	
-	<bean id="jmsMessageUtil" class="edu.unc.lib.dl.cdr.services.util.JMSMessageUtil">
+	<bean id="jmsMessageUtil" class="edu.unc.lib.dl.util.JMSMessageUtil">
 	</bean>
 	
 	<bean id="cdrServicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">

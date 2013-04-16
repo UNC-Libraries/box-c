@@ -29,6 +29,7 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.DatastreamPID;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -85,7 +86,7 @@ public abstract class AbstractFedoraManager {
 		if (pidString.trim().length() == 0) {
 			targetPID = collectionsPidObject;
 		} else {
-			targetPID = new PID(pidString);
+			targetPID = new DatastreamPID(pidString);
 		}
 		return targetPID;
 	}

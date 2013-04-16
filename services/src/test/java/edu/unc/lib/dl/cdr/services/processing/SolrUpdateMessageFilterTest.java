@@ -30,9 +30,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
+import edu.unc.lib.dl.util.IndexingActionType;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context-unit.xml" })
@@ -58,19 +58,19 @@ public class SolrUpdateMessageFilterTest extends Assert {
 	@Test
 	public void solrMessages() throws Exception{
 		//All should pass
-		SolrUpdateRequest message = new SolrUpdateRequest("cdr:test", SolrUpdateAction.ADD);
+		SolrUpdateRequest message = new SolrUpdateRequest("cdr:test", IndexingActionType.ADD);
 		assertTrue(solrUpdateMessageFilter.filter(message));
 		
-		message.setUpdateAction(SolrUpdateAction.DELETE_SOLR_TREE);
+		message.setUpdateAction(IndexingActionType.DELETE_SOLR_TREE);
 		assertTrue(solrUpdateMessageFilter.filter(message));
 		
-		message.setUpdateAction(SolrUpdateAction.CLEAN_REINDEX);
+		message.setUpdateAction(IndexingActionType.CLEAN_REINDEX);
 		assertTrue(solrUpdateMessageFilter.filter(message));
 		
-		message.setUpdateAction(SolrUpdateAction.RECURSIVE_REINDEX);
+		message.setUpdateAction(IndexingActionType.RECURSIVE_REINDEX);
 		assertTrue(solrUpdateMessageFilter.filter(message));
 		
-		message.setUpdateAction(SolrUpdateAction.RECURSIVE_ADD);
+		message.setUpdateAction(IndexingActionType.RECURSIVE_ADD);
 		assertTrue(solrUpdateMessageFilter.filter(message));
 	}
 	

@@ -23,12 +23,12 @@ import java.util.concurrent.TimeUnit;
 
 import edu.unc.lib.dl.cdr.services.model.CDREventMessage;
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnable;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.message.ActionMessage;
+import edu.unc.lib.dl.util.IndexingActionType;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 
 public class SolrUpdateConductor extends SolrUpdateService implements MessageConductor, ServiceConductor {
 	private long beforeExecuteDelay = 50;
@@ -48,17 +48,19 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 
 	@Override
 	public void add(ActionMessage message) {
+		LOG.debug("Adding " + message.getTargetID() + " " + message.getClass().getName() + ": " + message.getQualifiedAction());
 		if (message instanceof SolrUpdateRequest) {
 			this.offer((SolrUpdateRequest) message);
 			return;
 		}
 		String action = message.getQualifiedAction();
+		
 		if (action == null)
 			return;
 
 		if (message instanceof FedoraEventMessage) {
 			if (JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)) {
-				this.offer(message.getTargetID(), SolrUpdateAction.DELETE_SOLR_TREE);
+				this.offer(message.getTargetID(), IndexingActionType.DELETE_SOLR_TREE);
 			} else {
 				this.offer(message.getTargetID());
 			}
@@ -70,25 +72,32 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 					// Move and add are both recursive adds of all subjects, plus a nonrecursive update for reordered
 					// children.
 					for (String pidString : cdrMessage.getSubjects()) {
-						this.offer(pidString, SolrUpdateAction.RECURSIVE_ADD);
+						this.offer(pidString, IndexingActionType.RECURSIVE_ADD);
 					}
 				}
 				if (!JMSMessageUtil.CDRActions.ADD.equals(action)) {
 					// Reorder is a non-recursive add.
 					for (String pidString : cdrMessage.getReordered()) {
-						this.offer(pidString, SolrUpdateAction.ADD);
+						this.offer(pidString, IndexingActionType.ADD);
+					}
+				}
+			} else if (JMSMessageUtil.CDRActions.INDEX.equals(action)) {
+				IndexingActionType indexingAction = IndexingActionType.getAction(IndexingActionType.namespace + cdrMessage.getOperation());
+				if (indexingAction != null) {
+					for (String pidString : cdrMessage.getSubjects()) {
+						this.offer(pidString, indexingAction);
 					}
 				}
 			} else if (JMSMessageUtil.CDRActions.REINDEX.equals(action)) {
 				// Determine which kind of reindex to perform based on the mode
 				if (cdrMessage.getMode().equals("inplace")) {
-					this.offer(cdrMessage.getParent(), SolrUpdateAction.RECURSIVE_REINDEX);
+					this.offer(cdrMessage.getParent(), IndexingActionType.RECURSIVE_REINDEX);
 				} else {
-					this.offer(cdrMessage.getParent(), SolrUpdateAction.CLEAN_REINDEX);
+					this.offer(cdrMessage.getParent(), IndexingActionType.CLEAN_REINDEX);
 				}
 			} else if (JMSMessageUtil.CDRActions.PUBLISH.equals(action)) {
 				for (String pidString : cdrMessage.getSubjects()) {
-					this.offer(pidString, SolrUpdateAction.RECURSIVE_ADD);
+					this.offer(pidString, IndexingActionType.RECURSIVE_ADD);
 					// TODO Atomic updates are busted for multivalued fields for the moment, switch back when fixed
 					// this.offer(pidString, SolrUpdateAction.UPDATE_STATUS);
 				}

@@ -30,9 +30,9 @@ import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  * Service which determines items that have exited their embargo period within the last window period.
@@ -54,7 +54,7 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 		List<PID> candidates = this.findCandidateObjects(-1, 0);
 		if (candidates != null) {
 			for (PID candidate : candidates) {
-				getMessageDirector().direct(new SolrUpdateRequest(candidate.getPid(), SolrUpdateAction.RECURSIVE_ADD));
+				getMessageDirector().direct(new SolrUpdateRequest(candidate.getPid(), IndexingActionType.RECURSIVE_ADD));
 			}
 		}
 	}

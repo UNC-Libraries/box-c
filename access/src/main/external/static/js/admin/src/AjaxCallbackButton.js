@@ -18,8 +18,8 @@
 /*
  * @author Ben Pennell
  */
-define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, MetadataObject) {
-	var test = new PID("test");
+define([ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoadingOverlay', 'ConfirmationDialog'], function(
+		$, ui, PID, RemoteStateChangeMonitor) {
 	$.widget("cdr.ajaxCallbackButton", {
 		options : {
 			pid : null,
@@ -37,7 +37,8 @@ define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, Me
 			parentElement : undefined,
 			animateSpeed : 80,
 			confirm : false,
-			confirmMessage : undefined
+			confirmMessage : "Are you sure?",
+			alertHandler : "#alertHandler"
 		},
 
 		_create : function() {
@@ -51,10 +52,13 @@ define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, Me
 				this.options.completeTarget = this;
 			if (this.options.followupTarget == undefined)
 				this.options.followupTarget = this;
-			
+			if (this.options.setText == undefined)
+				this.options.setText = this.setText;
+
 			this.element.addClass("ajaxCallbackButton");
 
-			this.followupId = null;
+			this.alertHandler = $(this.options.alertHandler);
+			
 			if (this.options.pid !== undefined && this.options.pid != null) {
 				if (this.options.pid instanceof PID)
 					this.pid = this.options.pid;
@@ -62,87 +66,105 @@ define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, Me
 					this.pid = new PID(this.options.pid);
 			}
 			this.setWorkURL(this.options.workPath);
-			this.setFollowupURL(this.options.followupPath);
-
+			
+			this.followupId = null;
+		},
+		
+		_init : function() {
 			var op = this;
+			
+			if (this.options.followup) {
+				this.setFollowupURL(this.options.followupPath);
 
+				this.followupMonitor = new RemoteStateChangeMonitor({
+					'checkStatus' : this.options.followup,
+					'checkStatusTarget' : this.options.followupTarget,
+					'statusChanged' : this.completeState,
+					'statusChangedTarget' : this.options.completeTarget, 
+					'checkStatusAjax' : {
+						url : this.followupURL,
+						dataType : 'json'
+					}
+				});
+			}
+			
 			if (this.options.confirm) {
-				this.confirmDialog = $("<div class='confirm_dialogue'></div>");
-				if (this.options.confirmMessage === undefined) {
-					this.confirmDialog.append("<p>Are you sure?</p>");
-				} else {
-					this.confirmDialog.append("<p>" + this.options.confirmMessage + "</p>");
-				}
-				$("body").append(this.confirmDialog);
-				this.confirmDialog.dialog({
-					dialogClass : "no_titlebar",
-					position : {
-						my : "right top",
-						at : "right bottom",
-						of : op.element
-					},
-					resizable : false,
-					minHeight : 60,
-					width : 180,
-					modal : false,
-					autoOpen : false,
-					buttons : {
-						"Yes" : function() {
-							if (!op.options.disabled)
-								op.doWork();
-							$(this).dialog("close");
-						},
-						"Cancel" : function() {
-							$(this).dialog("close");
-						}
+				this.element.confirmationDialog({
+					'promptText' : this.options.confirmMessage,
+					'confirmFunction' : this.doWork,
+					'confirmTarget' : this,
+					'dialogOptions' : {
+						width : 200
 					}
 				});
 			}
 
 			this.element.text(this.options.defaultLabel);
 			this.element.click(function() {
-				if (op.options.disabled)
-					return false;
-				if (op.options.confirm) {
-					op.confirmDialog.dialog("open");
-				} else {
-					op.doWork();
-				}
-
+				op.activate.call(op);
 				return false;
 			});
+			
+			if (this.options.disabled){
+				this.disable();
+			} else {
+				this.enable();
+			}
+		},
+		
+		activate : function() {
+			if (this.options.disabled)
+				return;
+			if (this.options.confirm) {
+				this.element.confirmationDialog("open");
+			} else {
+				this.doWork();
+			}
 		},
 
 		doWork : function(workMethod, workData) {
-			this.performWork($.getJSON, null);
+			if (this.options.disabled)
+				return;
+			this.performWork($.get, null);
 		},
-		
+
 		workState : function() {
-			this.element.text(this.options.workLabel);
 			this.disable();
-			if (this.options.parentObject)
+			if (this.options.parentObject) {
 				this.options.parentObject.setState("working");
+				this.options.parentObject.setStatusText(this.options.workLabel);
+			} else {
+				this.element.text(this.options.workLabel);
+			}
 		},
 
 		performWork : function(workMethod, workData) {
 			this.workState();
 			var op = this;
-			workMethod(this.workURL, workData, function(data) {
+			workMethod(this.workURL, workData, function(data, textStatus, jqXHR) {
 				if (op.options.followup) {
 					if (op.options.workDone) {
-						var workSuccessful = op.options.workDone.call(op.options.workDoneTarget, data);
-						if (!workSuccessful)
-							return;
+						try {
+							var workSuccessful = op.options.workDone.call(op.options.workDoneTarget, data);
+							if (!workSuccessful)
+								throw "Operation was unsuccessful";
+						} catch (e) {
+							op.alertHandler.alertHandler('error', e);
+							if (op.options.parentObject)
+								op.options.parentObject.setState("failed");
+						}
 					}
 					if (op.options.parentObject)
 						op.options.parentObject.setState("followup");
-					op.followupPing();
+					op.followupMonitor.performPing();
 				} else {
 					if (op.options.parentObject)
 						op.options.parentObject.setState("idle");
 					op.options.complete.call(op.options.completeTarget, data);
 					op.enable();
 				}
+			}).fail(function(jqxhr, textStatus, error) {
+				op.alertHandler.alertHandler('error', textStatus + ", " + error);
 			});
 		},
 
@@ -179,41 +201,22 @@ define(['jquery', 'jquery-ui', 'PID', 'MetadataObject'], function($, ui, PID, Me
 		destroy : function() {
 			this.element.unbind("click");
 		},
-		
-		followupPing : function() {
-			this.performFollowupPing($.getJSON, null);
-		},
-		
-		followupState : function () {
+
+		followupState : function() {
 			if (this.options.followupLabel != null) {
-				this.element.text(this.options.followupLabel);
+				if (this.options.parentObject)
+					this.options.parentObject.setStatusText(this.options.followupLabel);
+				else 
+					this.element.text(this.options.followupLabel);
+
 			}
 		},
 
-		performFollowupPing : function(followupMethod, followupData) {
-			var op = this;
-			
-			this.followupState();
-			
-			followupMethod(this.followupURL, followupData, function(data) {
-				var isDone = op.options.followup.call(op.options.followupTarget, data);
-				if (isDone) {
-					if (op.followupId != null) {
-						clearInterval(op.followupId);
-						op.followupId = null;
-					}
-					if (op.options.parentObject) {
-						op.options.parentObject.setState("idle");
-					}
-					op.enable();
-					op.completeState.call(op.options.completeTarget, data);
-				} else if (op.followupId == null) {
-					op.followupId = setInterval($.proxy(op.followupPing, op), op.options.followupFrequency);
-				}
-			});
-		},
-
 		completeState : function(data) {
+			if (this.options.parentObject) {
+				this.options.parentObject.setState("idle");
+			}
+			this.enable();
 			this.element.text(this.options.defaultLabel);
 		}
 	});

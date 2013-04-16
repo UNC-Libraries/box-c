@@ -38,7 +38,7 @@ public class AtomPubMetadataUIP extends MetadataUIP {
 	public AtomPubMetadataUIP(PID pid, PersonAgent user, UpdateOperation operation, Entry entry) throws UIPException {
 		super(pid, user, operation);
 		try { 
-			incomingData = (HashMap<String, ?>) AtomPubMetadataParserUtil.extractDatastreams(entry);
+			incomingData = (HashMap<String, ?>) AtomPubMetadataParserUtil.extractDatastreams(entry, pid);
 		} catch (IOException e) {
 			throw new UIPException("Unable to extract datastreams from submitted metadata for " + pid.getPid(), e);
 		} catch (JDOMException e) {

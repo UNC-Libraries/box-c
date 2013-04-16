@@ -17,6 +17,7 @@ package edu.unc.lib.dl.search.solr.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	protected Map<String, Long> countMap;
 	protected ObjectAccessControlsBean accessControlBean;
 	protected Map<String, List<String>> relationsMap;
+	private List<Tag> tags;
 
 	public BriefObjectMetadataBean() {
 		countMap = new HashMap<String, Long>(2);
@@ -264,5 +266,19 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
 	public void setCountMap(Map<String, Long> countMap) {
 		this.countMap = countMap;
+	}
+
+	@Override
+	public List<Tag> getTags() {
+		if (this.tags == null)
+			return null;
+		return Collections.unmodifiableList(this.tags);
+	}
+
+	@Override
+	public void addTag(Tag t) {
+		if (this.tags == null)
+			this.tags = new ArrayList<Tag>();
+		this.tags.add(t);
 	}
 }

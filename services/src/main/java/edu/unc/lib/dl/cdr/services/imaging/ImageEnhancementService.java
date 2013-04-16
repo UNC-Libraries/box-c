@@ -26,7 +26,7 @@ import edu.unc.lib.dl.cdr.services.AbstractDatastreamEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 
 /**
  * Enhancement service used for construction of jp2 derived images.

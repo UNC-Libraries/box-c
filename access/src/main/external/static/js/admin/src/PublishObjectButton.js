@@ -30,12 +30,11 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObject'], function(
 		
 		completeState : function() {
 			if (this.options.parentObject) {
-				if (this.published)
-					this.options.parentObject.unpublish();
-				else this.options.parentObject.publish();
+				this.options.parentObject.refresh(true);
 			} else {
 				this.toggleState();
 			}
+			this.enable();
 		},
 		
 		toggleState : function() {
@@ -63,11 +62,19 @@ define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObject'], function(
 		},
 
 		publishWorkDone : function(data) {
-			if (data == null) {
-				alert("Failed to change publication status for " + this.pid.pid);
-				return false;
+			var jsonData;
+			if ($.type(data) === "string") {
+				try {
+					jsonData = $.parseJSON(data);
+				} catch (e) {
+					throw "Failed to change publication status for " + this.pid.pid;
+				}
+			} else {
+				jsonData = data;
 			}
-			this.completeTimestamp = data.timestamp;
+			
+			
+			this.completeTimestamp = jsonData.timestamp;
 			return true;
 		}
 	});

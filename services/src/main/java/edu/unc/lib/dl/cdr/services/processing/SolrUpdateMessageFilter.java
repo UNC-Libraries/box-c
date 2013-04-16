@@ -17,10 +17,10 @@
 package edu.unc.lib.dl.cdr.services.processing;
 
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.message.ActionMessage;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 
 public class SolrUpdateMessageFilter implements MessageFilter {
 	
@@ -43,7 +43,7 @@ public class SolrUpdateMessageFilter implements MessageFilter {
 		String action = message.getQualifiedAction();
 		if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)
 				|| JMSMessageUtil.CDRActions.REORDER.equals(action) || JMSMessageUtil.CDRActions.REINDEX.equals(action)
-				|| JMSMessageUtil.CDRActions.PUBLISH.equals(action)) {
+				|| JMSMessageUtil.CDRActions.PUBLISH.equals(action) || JMSMessageUtil.CDRActions.INDEX.equals(action)) {
 			return true;
 		}
 		if (!(message instanceof FedoraEventMessage))

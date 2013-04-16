@@ -70,6 +70,23 @@ public class SetRelationsFilterTest extends Assert {
 	}
 	
 	@Test
+	public void embargoedRelation() throws Exception {
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(new FileInputStream(new File(
+				"src/test/resources/foxml/embargoed.xml")));
+		dip.setFoxml(foxml);
+		
+		IndexDocumentBean idb = dip.getDocument();
+		SetRelationsFilter filter = new SetRelationsFilter();
+		filter.filter(dip);
+		
+		assertTrue(idb.getRelations().contains("embargo-until|2074-02-03T00:00:00"));
+		assertTrue(idb.getRelations().size() > 1);
+	}
+	
+	
+	@Test
 	public void orderedContainerRelations() throws Exception {
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:aggregate");
 		SAXBuilder builder = new SAXBuilder();

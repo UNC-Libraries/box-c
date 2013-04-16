@@ -130,19 +130,9 @@ public class ObjectAccessControlsBean {
 	 */
 	private Map<UserRole, Set<String>> mergeRoleGroupsAndEmbargoes() {
 		// Check to see if there are active embargoes, and if there are that their window has not passed
-		boolean hasActiveEmbargo = false;
-		if (this.activeEmbargoes != null) {
-			Date dateNow = new Date();
-
-			for (Date embargoDate : this.activeEmbargoes) {
-				if (embargoDate.after(dateNow)) {
-					hasActiveEmbargo = true;
-					break;
-				}
-			}
-		}
+		Date lastActiveEmbargo = getLastActiveEmbargoUntilDate();
 		Map<UserRole, Set<String>> activeRoleGroups = null;
-		if (hasActiveEmbargo) {
+		if (lastActiveEmbargo != null) {
 			activeRoleGroups = new HashMap<UserRole, Set<String>>();
 			for (Map.Entry<UserRole, Set<String>> roleGroups : this.baseRoleGroups.entrySet()) {
 				if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI)) {
@@ -153,6 +143,25 @@ public class ObjectAccessControlsBean {
 			activeRoleGroups = this.baseRoleGroups;
 		}
 		return activeRoleGroups;
+	}
+
+	/**
+	 * Find the last active embargo date, if applicable
+	 * @return the embargo date or null
+	 */
+	public Date getLastActiveEmbargoUntilDate() {
+		Date result = null;
+		if (this.activeEmbargoes != null) {
+			Date dateNow = new Date();
+			for (Date embargoDate : this.activeEmbargoes) {
+				if (embargoDate.after(dateNow)) {
+					if(result == null || embargoDate.after(result)) {
+						result = embargoDate;
+					}
+				}
+			}
+		}
+		return result;
 	}
 
 	public String toString() {

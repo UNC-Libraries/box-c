@@ -322,15 +322,6 @@
                             name="datatype" namespace="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
                             >http://www.w3.org/2001/XMLSchema#dateTime</xsl:attribute><xsl:value-of
                             select="$acl/@acl:embargo-until"/>T00:00:00</xsl:element>
-                    <xsl:element name="embargo" namespace="http://cdr.unc.edu/definitions/acl#">
-                        <xsl:value-of select="$acl/@acl:embargo-until"/>
-                        <xsl:for-each select="$acl/acl:grant">
-                            <xsl:if test="@acl:role eq 'curator'">
-                                <xsl:text> </xsl:text>
-                                <xsl:value-of select="@acl:group"/>
-                            </xsl:if>
-                        </xsl:for-each>
-                    </xsl:element>
                 </xsl:if>
                 <xsl:if test="$acl/@acl:inherit and ($acl/@acl:inherit eq 'false')">
                     <xsl:element name="inheritPermissions"

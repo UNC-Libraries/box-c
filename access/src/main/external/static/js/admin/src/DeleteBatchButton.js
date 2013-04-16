@@ -3,7 +3,7 @@ define([ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], function($) {
 		options : {
 			resultObjectList : undefined,
 			workPath: "delete",
-			childCallbackButtonSelector : ":cdr-deleteObjectButton",
+			childWorkLinkName : "delete",
 			confirm: true,
 			confirmMessage: "Delete selected object(s)?",
 			animateSpeed: 'fast'
@@ -48,9 +48,11 @@ define([ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], function($) {
 					
 					var resultObject = this.options.resultObjectList.resultObjects[id];
 					// Trigger the complete function on targeted child callback buttons
-					if (this.options.childCallbackButtonSelector) {
-						var childButton = resultObject.find(this.options.childCallbackButtonSelector);
-						childButton[childButton.data("callbackButtonClass")].call(childButton, "completeState");
+					if (this.options.completeFunction) {
+						if ($.isFunction(this.options.completeFunction))
+							this.options.completeFunction.call(resultObject);
+						else
+							resultObject.resultObject(this.options.completeFunction);
 					} else {
 						resultObject.resultObject("setState", "idle");
 					}

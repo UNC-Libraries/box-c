@@ -38,8 +38,8 @@ import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedEnhancementMap;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.message.ActionMessage;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 
 /**
  * Central service conductor class which stores and processes a queue of messages indicating updates to Fedora objects.

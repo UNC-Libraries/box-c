@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<entry xmlns="http://www.w3.org/2005/Atom" 
+	xmlns:acl="http://cdr.unc.edu/definitions/acl#">
+	<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
+	<updated>2012-03-07T17:17:08Z</updated>
+	<summary type="text">Full range acl changes</summary>
+	
+	<acl:accessControl acl:discoverable="false" acl:published="false" acl:embargo-until="2016-03-27" acl:inherit="false">
+		<acl:grant acl:group="public" acl:role="patron" />
+	</acl:accessControl>
+</entry>

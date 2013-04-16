@@ -1,0 +1,111 @@
+.edit_acls {
+	float: none;
+	font-size: 13px;
+	background-color: fff;
+	font-family: Verdana,Arial,sans-serif;
+}
+
+.edit_acls .form_field {
+	padding-left: 5px;
+	text-align: left;
+	margin-bottom: 10px;
+}
+
+.edit_acls h3 {
+	font-size: 85%;
+	font-weight: bold;
+	color: #555;
+	text-align: left;
+	padding-top: 5px;
+}
+
+.edit_acls label {
+	text-align: right;
+	width: 160px;
+	display: inline-block;
+	margin-right: 20px;
+}
+
+.edit_acls input, .edit_acls textarea, .edit_acls select {
+	background-color: #FFFFFF;
+	border: 1px solid #C8D8E0;
+	color: #666666;
+	padding: 2px;
+}
+
+.edit_acls .update_button {
+	background-color: #165D7F;
+	color: #fff;
+	padding: 4px 8px;
+	background-image: linear-gradient(to bottom, #72AAC3, #3E8DB0);
+	border: #3E8DB0;
+	margin: 10px 0px 0px 0px;
+}
+
+.edit_acls .update_button:active {
+	background-image: linear-gradient(to bottom, #3E8DB0, #72AAC3);
+	box-shadow: 2px 2px 2px #555555 inset;
+	color: #ddd;
+	border: #245266;
+}
+
+.update_field {
+	text-align: right;
+}
+
+.edit_acls a {
+	text-decoration: none;
+	color: #0A5274;
+	border-bottom: 1px dashed #0A5274;
+}
+
+.edit_acls .roles_granted {
+	margin: 5px 0px 0px 5px;
+	font-size: 85%;
+	border-top: 1px dashed #EFEFEF;
+}
+
+.roles_granted tr:first-child td {
+	padding-top: 5px;
+}
+
+.roles_granted td {
+	vertical-align: top;
+	text-align: left;
+	padding-bottom: 5px;
+	line-height: 1.4em;
+}
+
+.roles_granted td a {
+	border-bottom: 0px;
+}
+
+.roles_granted td span {
+	padding-right: 10px;
+}
+
+.roles_granted .role {
+	width: 160px;
+	text-align: right;
+	padding-right: 20px;
+}
+
+.roles_granted .inherited {
+	color: #9f9f9f;
+}
+
+.roles_granted.inheritance_disabled .inherited {
+	text-decoration: line-through;
+}
+
+.roles_granted select {
+	text-align: right;
+}
+
+.edit_role_granted td {
+	text-align: right;
+}
+
+.add_role_granted {
+	display: none;
+}

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.util;
+package edu.unc.lib.dl.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -102,7 +102,8 @@ public class JMSMessageUtil {
 		ADD ("add"),
 		REORDER ("reorder"),
 		PUBLISH ("publish"),
-		REINDEX ("reindex");
+		REINDEX ("reindex"),
+		INDEX ("index");
 
 		private String name;
 		private final URI uri;

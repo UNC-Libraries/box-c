@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.DeleteChildrenPriorToTimestampRequest;
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -31,6 +30,7 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.dl.util.IndexingActionType;
 
 public class DeleteChildrenPriorToTimestamp extends AbstractIndexingAction {
 	private static final Logger LOG = LoggerFactory.getLogger(DeleteChildrenPriorToTimestamp.class);
@@ -84,7 +84,7 @@ public class DeleteChildrenPriorToTimestamp extends AbstractIndexingAction {
 			// Queue up the children for processing, with a delete tree command for containers and a regular delete
 			// otherwise
 			for (BriefObjectMetadata child : orphanedChildResults.getResultList()) {
-				solrUpdateService.offer(child.getId(), SolrUpdateAction.DELETE);
+				solrUpdateService.offer(child.getId(), IndexingActionType.DELETE);
 			}
 		} catch (Exception e) {
 			throw new IndexingException("Error encountered in deleteChildrenPriorToTimestampRequest for "

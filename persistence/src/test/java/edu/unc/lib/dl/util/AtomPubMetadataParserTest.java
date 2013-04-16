@@ -17,6 +17,7 @@ package edu.unc.lib.dl.util;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -27,6 +28,8 @@ import org.apache.abdera.parser.Parser;
 import org.jdom.output.XMLOutputter;
 import org.junit.Assert;
 import org.junit.Test;
+
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class AtomPubMetadataParserTest extends Assert {
 
@@ -51,14 +54,7 @@ public class AtomPubMetadataParserTest extends Assert {
 		assertTrue(dcDS.getName().equals("dc"));
 		assertTrue(relsExtDS.getName().equals("RDF"));
 		
-		XMLOutputter outputter = new XMLOutputter();
-		java.util.Iterator<java.util.Map.Entry<String,org.jdom.Element>> it = datastreamMap.entrySet().iterator();
-		
-		while (it.hasNext()){
-			java.util.Map.Entry<String,org.jdom.Element> element = it.next();
-			System.out.println(element.getKey() + ":\n");
-			outputter.output(element.getValue(), System.out);
-		}
+		//this.outputDatastreams(datastreamMap);
 	}
 	
 	@Test
@@ -82,5 +78,51 @@ public class AtomPubMetadataParserTest extends Assert {
 		
 		//Make sure everything has been unwrapped
 		assertTrue(dcDS.getName().equals("dc"));
+	}
+	
+	private void outputDatastreams(Map<String,org.jdom.Element> datastreamMap) throws IOException {
+		XMLOutputter outputter = new XMLOutputter();
+		java.util.Iterator<java.util.Map.Entry<String,org.jdom.Element>> it = datastreamMap.entrySet().iterator();
+		
+		while (it.hasNext()){
+			java.util.Map.Entry<String,org.jdom.Element> element = it.next();
+			System.out.println(element.getKey() + ":\n");
+			outputter.output(element.getValue(), System.out);
+		}
+	}
+	
+	@Test
+	public void aclAndRELSExt() throws Exception {
+		InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataRELSEXTAndACL.xml"));
+		Abdera abdera = new Abdera();
+		Parser parser = abdera.getParser();
+		Document<Entry> entryDoc = parser.parse(entryPart);
+		Entry entry = entryDoc.getRoot();
+		Map<String,org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		
+		org.jdom.Element relsExtDS = datastreamMap.get(ContentModelHelper.Datastream.RELS_EXT.getName());
+		org.jdom.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+		
+		assertEquals(4, description.getChildren().size());
+		assertEquals(4, description.getChildren(ContentModelHelper.FedoraProperty.hasModel.name(), JDOMNamespaceUtil.FEDORA_MODEL_NS).size());
+		
+		assertTrue(datastreamMap.containsKey("ACL"));
+		assertNotNull(datastreamMap.get("ACL"));
+	}
+	
+	@Test
+	public void aclNoRELSEXT() throws Exception {
+		InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataUnpublish.xml"));
+		Abdera abdera = new Abdera();
+		Parser parser = abdera.getParser();
+		Document<Entry> entryDoc = parser.parse(entryPart);
+		Entry entry = entryDoc.getRoot();
+		Map<String,org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		
+		assertTrue(datastreamMap.containsKey(ContentModelHelper.Datastream.RELS_EXT.getName()));
+		assertNull(datastreamMap.get(ContentModelHelper.Datastream.RELS_EXT.getName()));
+		
+		assertTrue(datastreamMap.containsKey("ACL"));
+		assertNotNull(datastreamMap.get("ACL"));
 	}
 }

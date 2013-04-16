@@ -93,6 +93,11 @@
 		<property name="facetFieldUtil" ref="facetFieldUtil" />
 	</bean>
 	
+	<util:list id="tagProviders" value-type="edu.unc.lib.dl.search.solr.tags.TagProvider">
+		<bean class="edu.unc.lib.dl.search.solr.tags.AccessRestrictionsTagProvider"/>
+		<bean class="edu.unc.lib.dl.search.solr.tags.DescriptiveTagProvider"/>
+	</util:list>
+	
 	<!-- Validators -->
 	<bean id="searchStateValidator"
 		class="edu.unc.lib.dl.search.solr.validator.SearchStateValidator">

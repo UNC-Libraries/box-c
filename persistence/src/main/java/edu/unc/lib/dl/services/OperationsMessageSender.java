@@ -38,14 +38,14 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.IndexingActionType;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 
 /**
  * @author Gregory Jansen
  * 
  */
 public class OperationsMessageSender {
-
-	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(OperationsMessageSender.class);
 
 	private JmsTemplate jmsTemplate = null;
@@ -75,18 +75,7 @@ public class OperationsMessageSender {
 			reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
 		}
 
-		// send
-		XMLOutputter out = new XMLOutputter();
-		final String msgStr = out.outputString(msg);
-
-		this.jmsTemplate.send(new MessageCreator() {
-
-			@Override
-			public Message createMessage(Session session) throws JMSException {
-				return session.createTextMessage(msgStr);
-			}
-
-		});
+		sendMessage(msg);
 		LOG.debug("sent add operation JMS message using JMS template:" + this.getJmsTemplate().toString());
 	}
 
@@ -110,18 +99,7 @@ public class OperationsMessageSender {
 			reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
 		}
 
-		// send
-		XMLOutputter out = new XMLOutputter();
-		final String msgStr = out.outputString(msg);
-
-		this.jmsTemplate.send(new MessageCreator() {
-
-			@Override
-			public Message createMessage(Session session) throws JMSException {
-				return session.createTextMessage(msgStr);
-			}
-
-		});
+		sendMessage(msg);
 	}
 
 	public void sendMoveOperation(String userid, Collection<PID> sources, PID destination, Collection<PID> moved,
@@ -151,17 +129,7 @@ public class OperationsMessageSender {
 			reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
 		}
 
-		// send
-		XMLOutputter out = new XMLOutputter();
-		final String msgStr = out.outputString(msg);
-
-		this.jmsTemplate.send(new MessageCreator() {
-			@Override
-			public Message createMessage(Session session) throws JMSException {
-				return session.createTextMessage(msgStr);
-			}
-
-		});
+		sendMessage(msg);
 	}
 
 	public void sendReorderOperation(String userid, String timestamp, PID destination, Collection<PID> reordered) {
@@ -178,18 +146,7 @@ public class OperationsMessageSender {
 			reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
 		}
 
-		// send
-		XMLOutputter out = new XMLOutputter();
-		final String msgStr = out.outputString(msg);
-
-		this.jmsTemplate.send(new MessageCreator() {
-
-			@Override
-			public Message createMessage(Session session) throws JMSException {
-				return session.createTextMessage(msgStr);
-			}
-
-		});
+		sendMessage(msg);
 	}
 
 	/**
@@ -222,7 +179,31 @@ public class OperationsMessageSender {
 			subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
 		}
 
-		// send
+		sendMessage(msg);
+		
+		return messageId;
+	}
+	
+	public String sendIndexingOperation(String userid, Collection<PID> pids, IndexingActionType type) {
+		String messageId = "urn:uuid:" + UUID.randomUUID().toString();
+		Document msg = new Document();
+		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), JMSMessageUtil.CDRActions.INDEX.getName(), messageId);
+		
+		Element indexEl = new Element(type.getName(), CDR_MESSAGE_NS);
+		contentEl.addContent(indexEl);
+
+		Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+		indexEl.addContent(subjects);
+		for (PID sub : pids) {
+			subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+		}
+		
+		sendMessage(msg);
+		
+		return messageId;
+	}
+	
+	private void sendMessage(Document msg) {
 		XMLOutputter out = new XMLOutputter();
 		final String msgStr = out.outputString(msg);
 
@@ -234,8 +215,6 @@ public class OperationsMessageSender {
 			}
 
 		});
-		
-		return messageId;
 	}
 
 	private Element createAtomEntry(Document msg, String userid, PID contextpid, String operation) {

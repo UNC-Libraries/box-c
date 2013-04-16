@@ -23,11 +23,11 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.BlockUntilTargetCompleteRequest;
 import edu.unc.lib.dl.data.ingest.solr.DeleteChildrenPriorToTimestampRequest;
 import edu.unc.lib.dl.data.ingest.solr.IndexingException;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.UpdateNodeRequest;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.IndexingActionType;
 
 public class RecursiveReindexAction extends AbstractIndexingAction {
 	private static final Logger LOG = LoggerFactory.getLogger(RecursiveReindexAction.class);
@@ -75,13 +75,13 @@ public class RecursiveReindexAction extends AbstractIndexingAction {
 					BlockUntilTargetCompleteRequest commitRequest = null;
 
 					if (cleanupOutdated) {
-						commitRequest = new BlockUntilTargetCompleteRequest(updateRequest.getTargetID(), SolrUpdateAction.COMMIT,
+						commitRequest = new BlockUntilTargetCompleteRequest(updateRequest.getTargetID(), IndexingActionType.COMMIT,
 								solrUpdateService.nextMessageID(), null, updateRequest);
 						
 						// Generate cleanup request before offering children to be
 						// processed. Set start time to minus one so that the search is less than (instead of <=)
 						cleanupRequest = new DeleteChildrenPriorToTimestampRequest(updateRequest.getTargetID(),
-								SolrUpdateAction.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP, solrUpdateService.nextMessageID(),
+								IndexingActionType.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP, solrUpdateService.nextMessageID(),
 								commitRequest, updateRequest, startTime - 1);
 
 						LOG.debug("CleanupRequest: " + cleanupRequest.toString());
@@ -89,7 +89,7 @@ public class RecursiveReindexAction extends AbstractIndexingAction {
 
 					// Get all children, set to block the cleanup request
 					for (PID child : children) {
-						SolrUpdateRequest childRequest = new SolrUpdateRequest(child, SolrUpdateAction.RECURSIVE_ADD,
+						SolrUpdateRequest childRequest = new SolrUpdateRequest(child, IndexingActionType.RECURSIVE_ADD,
 								solrUpdateService.nextMessageID(), updateRequest);
 						LOG.debug("Queueing for recursive reindex: " + child.getPid() + "|" + childRequest.getTargetID());
 						solrUpdateService.offer(childRequest);

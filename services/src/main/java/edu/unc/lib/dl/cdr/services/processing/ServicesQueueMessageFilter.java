@@ -27,8 +27,8 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.message.ActionMessage;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 
 /**
  * Determines which services in the Services stack apply to the current message.  If none do, then return false.

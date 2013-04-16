@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.data.ingest.solr;
+package edu.unc.lib.dl.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
-public enum SolrUpdateAction {
+public enum IndexingActionType {
 	ADD("Add/Update", "Adds or updates the entry for the specified object"),
 	DELETE("Remove from Index", "Removes the index entry for the specified object"),
 	COMMIT("Commit", "Causes an immediate upload and commit of pending updates"), 
@@ -43,9 +43,9 @@ public enum SolrUpdateAction {
 	private final String label;
 	private final String description;
 	private URI uri;
-	public static final String namespace = JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/solr";
+	public static final String namespace = JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/solr/";
 	
-	SolrUpdateAction(String label, String description){
+	IndexingActionType(String label, String description){
 		this.label = label;
 		this.description = description;
 		try {
@@ -86,10 +86,10 @@ public enum SolrUpdateAction {
 	 * @param value
 	 * @return
 	 */
-	public static SolrUpdateAction getAction(String value){
+	public static IndexingActionType getAction(String value){
 		if (value == null)
 			return null;
-		for (SolrUpdateAction action: values()){
+		for (IndexingActionType action: values()){
 			if (action.equals(value))
 				return action;
 		}

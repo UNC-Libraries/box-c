@@ -29,10 +29,10 @@ import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedEnhancementMap;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.message.ActionMessage;
+import edu.unc.lib.dl.util.IndexingActionType;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -112,7 +112,7 @@ public class MessageDirectorTest extends Assert {
 	
 	@Test
 	public void solrAddMessage(){
-		ActionMessage message = new SolrUpdateRequest("cdr:test", SolrUpdateAction.ADD, null);
+		ActionMessage message = new SolrUpdateRequest("cdr:test", IndexingActionType.ADD, null);
 		messageDirector.direct(message);
 		verify(solrConductor).add(any(ActionMessage.class));
 		verify(enhancementConductor, never()).add(any(ActionMessage.class));

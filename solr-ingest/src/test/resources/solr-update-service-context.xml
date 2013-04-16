@@ -60,7 +60,7 @@
 	</bean>
 
 	<util:map id="solrIndexingActionMap"
-		key-type="edu.unc.lib.dl.data.ingest.solr.SolrUpdateAction"
+		key-type="edu.unc.lib.dl.util.IndexingActionType"
 		value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
 		<entry key="ADD" value-ref="updateObjectAction" />
 	</util:map>

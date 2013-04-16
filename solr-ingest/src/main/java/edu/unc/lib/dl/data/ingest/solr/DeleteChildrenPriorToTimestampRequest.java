@@ -17,11 +17,13 @@ package edu.unc.lib.dl.data.ingest.solr;
 
 import java.util.Date;
 
+import edu.unc.lib.dl.util.IndexingActionType;
+
 public class DeleteChildrenPriorToTimestampRequest extends BlockUntilTargetCompleteRequest {
 	private static final long serialVersionUID = 1L;
 	protected Date timestampDate;
 
-	public DeleteChildrenPriorToTimestampRequest(String pid, SolrUpdateAction action, String messageID,
+	public DeleteChildrenPriorToTimestampRequest(String pid, IndexingActionType action, String messageID,
 			UpdateNodeRequest parent, UpdateNodeRequest target, long timestamp) {
 		super(pid, action, messageID, parent, target);
 		this.timestampDate = new Date(timestamp);

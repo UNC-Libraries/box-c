@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.data.ingest.solr;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  * Represents a request to update an object identified by pid.
@@ -25,18 +26,18 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
 	private static final long serialVersionUID = 1L;
 	protected PID pid;
 	protected String targetLabel;
-	protected SolrUpdateAction action; 
+	protected IndexingActionType action; 
 	protected SolrUpdateRequest linkedRequest;
 	
-	public SolrUpdateRequest(String pid, SolrUpdateAction action) {
+	public SolrUpdateRequest(String pid, IndexingActionType action) {
 		this(pid, action, null, null);
 	}
 	
-	public SolrUpdateRequest(String pid, SolrUpdateAction action, String messageID) {
+	public SolrUpdateRequest(String pid, IndexingActionType action, String messageID) {
 		this(pid, action, messageID, null);
 	}
 	
-	public SolrUpdateRequest(PID pid, SolrUpdateAction action, String messageID, UpdateNodeRequest parent){
+	public SolrUpdateRequest(PID pid, IndexingActionType action, String messageID, UpdateNodeRequest parent){
 		super(messageID, parent);
 		if (pid == null || action == null)
 			throw new IllegalArgumentException("Both a target pid and an action are required.");
@@ -45,15 +46,15 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
 		linkedRequest = null;
 	}
 	
-	public SolrUpdateRequest(String pid, SolrUpdateAction action, String messageID, UpdateNodeRequest parent){
+	public SolrUpdateRequest(String pid, IndexingActionType action, String messageID, UpdateNodeRequest parent){
 		this(new PID(pid), action, messageID, parent);
 	}
 	
-	public SolrUpdateRequest(String pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
+	public SolrUpdateRequest(String pid, IndexingActionType action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
 		this(new PID(pid), action, linkedRequest, messageID, parent);
 	}
 	
-	public SolrUpdateRequest(PID pid, SolrUpdateAction action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
+	public SolrUpdateRequest(PID pid, IndexingActionType action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
 		this(pid, action, messageID, parent);
 		this.setLinkedRequest(linkedRequest);
 	}
@@ -66,11 +67,11 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
 		this.pid = new PID(pid);
 	}
 	
-	public SolrUpdateAction getUpdateAction() {
+	public IndexingActionType getUpdateAction() {
 		return action;
 	}
 
-	public void setUpdateAction(SolrUpdateAction action) {
+	public void setUpdateAction(IndexingActionType action) {
 		this.action = action;
 	}
 	
@@ -127,7 +128,7 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
 
 	@Override
 	public String getNamespace() {
-		return SolrUpdateAction.namespace;
+		return IndexingActionType.namespace;
 	}
 
 	@Override

@@ -60,11 +60,13 @@ public class ContentModelHelper {
 				"isPublished");
 		private URI uri;
 		private String predicate;
+		private String namespace;
 
 		CDRProperty(String predicate) {
 			try {
 				this.predicate = predicate;
 				this.uri = new URI(JDOMNamespaceUtil.CDR_NS.getURI() + predicate);
+				this.namespace = JDOMNamespaceUtil.CDR_NS.getURI();
 			} catch (URISyntaxException e) {
 				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
 				x.initCause(e);
@@ -76,6 +78,7 @@ public class ContentModelHelper {
 			try {
 				this.predicate = predicate;
 				this.uri = new URI(namespace + predicate);
+				this.namespace = namespace;
 			} catch (URISyntaxException e) {
 				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
 				x.initCause(e);
@@ -89,6 +92,10 @@ public class ContentModelHelper {
 
 		public String getPredicate() {
 			return predicate;
+		}
+		
+		public String getNamespace() {
+			return namespace;
 		}
 
 		public boolean equals(String value) {

@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
+import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  * Thread which executes solr ingest requests, retrieving data from Fedora and uploading it to Solr in batches. Intended
@@ -34,7 +35,7 @@ public class SolrUpdateRunnable implements Runnable {
 
 	// Context
 	private SolrUpdateService solrUpdateService;
-	private Map<SolrUpdateAction, IndexingAction> solrIndexingActionMap;
+	private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
 	private long idleWaitTime = 1000L;
 	private long nextMessageWaitTime = 0L;
 	private long blockedWaitTime = 200L;
@@ -54,7 +55,7 @@ public class SolrUpdateRunnable implements Runnable {
 		this.solrUpdateService = solrUpdateService;
 	}
 
-	public void setSolrIndexingActionMap(Map<SolrUpdateAction, IndexingAction> solrIndexingActionMap) {
+	public void setSolrIndexingActionMap(Map<IndexingActionType, IndexingAction> solrIndexingActionMap) {
 		this.solrIndexingActionMap = solrIndexingActionMap;
 	}
 

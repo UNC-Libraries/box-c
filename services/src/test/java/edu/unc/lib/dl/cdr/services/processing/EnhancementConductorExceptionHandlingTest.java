@@ -34,7 +34,7 @@ import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancement;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;

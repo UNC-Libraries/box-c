@@ -15,8 +15,8 @@
     limitations under the License.
 
  */
-define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'DeleteObjectButton',
-		'PublishObjectButton' ], function($, ui, PID, MetadataObject) {
+define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
+		'PublishObjectButton', 'EditAccessControlForm', 'ModalLoadingOverlay'], function($, ui, PID, MetadataObject, RemoteStateChangeMonitor) {
 	$.widget("cdr.resultObject", {
 		options : {
 			animateSpeed : 100,
@@ -33,34 +33,101 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'DeleteObjectButton',
 				this.metadata = new MetadataObject(this.options.metadata);
 			}
 
+			this.links = [];
 			this.pid = this.metadata.pid;
+			this.overlayInitialized = false;
 
 			if (this.options.selected)
 				this.select();
 
-			var obj = this;
+			var self = this;
 			if (this.options.selectable) {
 				this.checkbox = this.element.find("input[type='checkbox']");
 				if (this.checkbox) {
 					this.checkbox = $(this.checkbox[0]).click(function(event) {
-						obj.toggleSelect.apply(obj);
+						self.toggleSelect.apply(self);
 						event.stopPropagation();
-					}).prop("checked", obj.options.selectCheckboxInitialState);
+					}).prop("checked", self.options.selectCheckboxInitialState);
 				}
-				this.element.click($.proxy(obj.toggleSelect, obj)).find('a').click(function(event) {
+				this.element.click($.proxy(self.toggleSelect, self)).find('a').click(function(event) {
 					event.stopPropagation();
 				});
 			}
-
-			this.initializePublishLinks();
-			this.initializeDeleteLinks();
+			this.initializeActionMenu();
+		},
+		
+		initializeActionMenu : function() {
+			var self = this;
+			
+			this.actionMenu = $(".menu_box ul", this.element);
+			var menuIcon = $(".menu_box img", this.element);
+			
+			// Set up the dropdown menu
+			menuIcon.qtip({
+				content: self.actionMenu,
+				position: {
+					at: "bottom right",
+					my: "top right"
+				},
+				style: {
+					classes: 'qtip-light',
+					tip: false
+				},
+				show: {
+					event: 'click',
+					delay: 0
+				},
+				hide: {
+					delay: 2000,
+					event: 'unfocus mouseleave click',
+					fixed: true, // Make sure we can interact with the qTip by setting it as fixed
+					effect: function(offset) {
+						menuIcon.parent().css("background-color", "transparent");
+						$(this).fadeOut(100);
+					}
+				},
+				events: {
+					render: function(event, api) {
+						self.initializePublishLinks($(this));
+						self.initializeDeleteLinks($(this));
+					}
+				}
+			}).click(function(e){
+				menuIcon.parent().css("background-color", "#7BAABF");
+				e.stopPropagation();
+			});
+			
+			this.actionMenu.children(".edit_access").click(function(){
+				var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading-large.gif'/></div>");
+				dialog.dialog({
+					autoOpen: true,
+					width: 500,
+					height: 'auto',
+					maxHeight: 800,
+					minWidth: 500,
+					modal: true,
+					title: 'Access Control Settings',
+					close: function() {
+						dialog.remove();
+					}
+				});
+				dialog.load("acl/" + self.pid.getPath(), function(responseText, textStatus, xmlHttpRequest){
+					dialog.dialog('option', 'position', 'center');
+				});
+			});
+		},
+		
+		_destroy : function () {
+			if (this.overlayInitialized) {
+				this.element.modalLoadingOverlay('close');
+			}
 		},
 
-		initializePublishLinks : function() {
-			var links = this.element.find(".publish_link");
+		initializePublishLinks : function(baseElement) {
+			var links = baseElement.find(".publish_link");
 			if (!links)
 				return;
-
+			this.links['publish'] = links;
 			var obj = this;
 			$(links).publishObjectButton({
 				pid : obj.pid,
@@ -69,10 +136,11 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'DeleteObjectButton',
 			});
 		},
 
-		initializeDeleteLinks : function() {
-			var links = this.element.find(".delete_link");
+		initializeDeleteLinks : function(baseElement) {
+			var links = baseElement.find(".delete_link");
 			if (!links)
 				return;
+			this.links['delete'] = links;
 			var obj = this;
 			$(links).deleteObjectButton({
 				pid : obj.pid,
@@ -135,11 +203,13 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'DeleteObjectButton',
 		},
 
 		setState : function(state) {
-			if ("idle" == state) {
+			if ("idle" == state || "failed" == state) {
 				this.enable();
 				this.element.removeClass("followup working").addClass("idle");
+				this.updateOverlay('hide');
 				// this.element.switchClass("followup working", "idle", this.options.animateSpeed);
 			} else if ("working" == state) {
+				this.updateOverlay('show');
 				this.disable();
 				this.element.switchClass("idle followup", "working", this.options.animateSpeed);
 			} else if ("followup" == state) {
@@ -147,32 +217,30 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'DeleteObjectButton',
 			}
 		},
 
+		getActionLinks : function(linkNames) {
+			return this.links[linkNames];
+		},
+		
 		publish : function() {
-			var obj = this;
-			obj.metadata.publish();
-			if ($.inArray("Parent Unpublished", obj.metadata.data.status) == -1) {
-				obj.element.switchClass("unpublished", "published", obj.options.animateSpeed);
-			}
-			this.element.find(":cdr-publishObjectButton").publishObjectButton("publishedState");
+			var links = this.links['publish'];
+			if (links.length == 0)
+				return;
+			$(links[0]).publishObjectButton('activate');
+		},
+		
+		'delete' : function() {
+			var links = this.links['delete'];
+			if (links.length == 0)
+				return;
+			$(links[0]).deleteObjectButton('activate');
 		},
 
-		unpublish : function() {
-			var obj = this;
-			obj.metadata.unpublish();
-			if ($.inArray("Parent Unpublished", obj.metadata.data.status) == -1) {
-				obj.element.switchClass("published", "unpublished", obj.options.animateSpeed);
-			}
-			this.element.find(":cdr-publishObjectButton").publishObjectButton("unpublishedState");
-		},
-
-		deleteObject : function() {
+		deleteElement : function() {
 			var obj = this;
 			obj.element.hide(obj.options.animateSpeed, function() {
 				obj.element.remove();
 				if (obj.options.resultObjectList) {
-					for (var index in obj.options.resultObjectList) {
-						obj.options.resultObjectList[index].removeResultObject(obj.pid.getPid());
-					}
+					obj.options.resultObjectList.removeResultObject(obj.pid.getPid());
 				}
 			});
 		},
@@ -183,6 +251,46 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'DeleteObjectButton',
 				return true;
 			}
 			return false;
+		},
+		
+		setStatusText : function(text) {
+			this.updateOverlay('setText', [text]);
+		},
+		
+		updateOverlay : function(fnName, fnArgs) {
+			// Check to see if overlay is initialized
+			if (!this.overlayInitialized) {
+				this.overlayInitialized = true;
+				this.element.modalLoadingOverlay({'text' : 'Working...', 'autoOpen' : false});
+			}
+			var overlay = this.element.data("modalLoadingOverlay");
+			overlay[fnName].apply(overlay, fnArgs);
+		},
+		
+		refresh : function(immediately) {
+			this.updateOverlay('show');
+			this.setStatusText('Refreshing...');
+			if (immediately) {
+				this.options.resultObjectList.refreshObject(this.pid.getPid());
+				return;
+			}
+			var self = this;
+			var followupMonitor = new RemoteStateChangeMonitor({
+				'checkStatus' : function(data) {
+					return (data != self.metadata.data._version_);
+				},
+				'checkStatusTarget' : this,
+				'statusChanged' : function(data) {
+					self.options.resultObjectList.refreshObject(self.pid.getPid());
+				},
+				'statusChangedTarget' : this, 
+				'checkStatusAjax' : {
+					url : "services/rest/item/" + self.pid.getPath() + "/solrRecord/version",
+					dataType : 'json'
+				}
+			});
+			
+			followupMonitor.performPing();
 		}
 	});
 });

@@ -35,6 +35,8 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.IndexingActionType;
+
 import org.jdom.Document;
 
 /**
@@ -90,7 +92,7 @@ public class SolrUpdateServiceTest extends Assert {
 		int documentCount = 5000;
 		
 		for (int i=0; i < documentCount; i++){
-			solrUpdateService.offer("uuid:test"+i, SolrUpdateAction.ADD);
+			solrUpdateService.offer("uuid:test"+i, IndexingActionType.ADD);
 			if (i % 50 == 0)
 				LOG.debug("Walk count: " + walkCount(solrUpdateService.getRoot(), 0));
 			if (i % 100 == 0) {

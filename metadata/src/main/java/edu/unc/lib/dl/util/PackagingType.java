@@ -20,6 +20,7 @@ import java.net.URISyntaxException;
 
 public enum PackagingType {
 	METS_CDR("http://cdr.unc.edu/METS/profiles/Simple"),
+	ACL_CDR("http://cdr.unc.edu/ACL/profiles/AccessControl"),
 	METS_DSPACE_SIP_2("http://purl.org/net/sword/terms/METSDSpaceSIP"),
 	METS_DSPACE_SIP_1("http://purl.org/net/sword-types/METSDSpaceSIP"),
 	SIMPLE_ZIP("http://purl.org/net/sword/terms/SimpleZip");

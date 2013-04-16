@@ -27,8 +27,8 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 
 /**
  * Performs services on candidate items after the fact. Processing takes place in pages of results so that the service

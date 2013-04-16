@@ -170,7 +170,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		
 		Iterator<String> pidIt = failedList.getPidToService().keySet().iterator();
 		int cnt = 0;
-		LOG.debug("Failed PIDS: " + failedList.getPidToService().keySet());
+		//LOG.debug("Failed PIDS: " + failedList.getPidToService().keySet());
 		LOG.debug("Returning results " + begin + " to " + end);
 		while (pidIt.hasNext()) {
 			String pid = pidIt.next();
@@ -178,7 +178,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 				break;
 			if (cnt++ < begin)
 				continue;
-			LOG.debug("Picking up " + pid);
+			//LOG.debug("Picking up " + pid);
 			
 			Map<String, Object> failedEntry = new HashMap<String, Object>();
 			jobs.add(failedEntry);

@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.search.solr.model;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +26,10 @@ import edu.unc.lib.dl.fedora.PID;
 
 public class GroupedMetadataBean implements BriefObjectMetadata {
 	private List<BriefObjectMetadataBean> items;
-	private BriefObjectMetadataBean representative;
+	private BriefObjectMetadataBean representative; 
 	private Long itemCount;
 	private String groupId;
+	private List<Tag> tags;
 
 	public GroupedMetadataBean(String groupId, List<BriefObjectMetadataBean> items, Long itemCount) {
 		this.items = items;
@@ -320,5 +322,15 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	@Override
 	public String getFullText() {
 		return this.representative.getFullText();
+	}
+	
+	@Override
+	public List<Tag> getTags() {
+		return Collections.unmodifiableList(this.tags);
+	}
+
+	@Override
+	public void addTag(Tag t) {
+		this.tags.add(t);
 	}
 }

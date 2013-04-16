@@ -17,8 +17,8 @@ package edu.unc.lib.dl.cdr.services.model;
 
 import org.jdom.Document;
 
-import edu.unc.lib.dl.cdr.services.util.JMSMessageUtil;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public abstract class AbstractXMLEventMessage extends EnhancementMessage {

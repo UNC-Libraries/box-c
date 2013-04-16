@@ -17,23 +17,29 @@ package edu.unc.lib.dl.update;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdom.Element;
 
 public abstract class MetadataUIPFilter implements UIPUpdateFilter {
-
-	protected Element getNewModifiedElement(MetadataUIP uip, String datastreamName){
+	private static Logger log = Logger.getLogger(MetadataUIPFilter.class);
+	
+	protected Element getNewModifiedElement(MetadataUIP uip, String datastreamName) {
 		Element incoming = uip.getIncomingData().get(datastreamName);
 		return getNewModifiedElement(uip, datastreamName, incoming);
 	}
-	
-	protected Element getNewModifiedElement(MetadataUIP uip, String datastreamName, Element incoming){
+
+	protected Element getNewModifiedElement(MetadataUIP uip, String datastreamName, Element incoming) {
+		log.debug("Getting new modified element using base " + datastreamName + " and " + incoming);
 		if (incoming == null)
 			return null;
-		
-		//If this is a replace operation, then the new modified element is simply the incoming element.
-		if (uip.operation.equals(UpdateOperation.REPLACE))
-			return (Element)incoming.clone();
+		// If this is a replace operation, then the new modified element is simply the incoming element.
+		if (uip.getOperation().equals(UpdateOperation.REPLACE))
+			return (Element) incoming.clone();
 
+		return this.getBaseElement(uip, datastreamName, incoming);
+	}
+
+	protected Element getBaseElement(MetadataUIP uip, String datastreamName, Element incoming) {
 		Element modified = uip.getModifiedData().get(datastreamName);
 		Element original = uip.getOriginalData().get(datastreamName);
 
@@ -51,12 +57,13 @@ public abstract class MetadataUIPFilter implements UIPUpdateFilter {
 			// Use the previous modified data
 			newModified = (Element) modified.clone();
 		}
-		
+
 		return newModified;
 	}
-	
+
 	/**
 	 * Performs an add operation assuming there are no uniqueness restrictions
+	 * 
 	 * @param uip
 	 * @return
 	 * @throws UIPException
@@ -65,7 +72,7 @@ public abstract class MetadataUIPFilter implements UIPUpdateFilter {
 		Element incoming = uip.getIncomingData().get(datastreamName);
 		return performAdd(uip, datastreamName, incoming);
 	}
-		
+
 	protected Element performAdd(MetadataUIP uip, String datastreamName, Element incoming) throws UIPException {
 		Element newModified = getNewModifiedElement(uip, datastreamName, incoming);
 		if (newModified == null)
@@ -81,11 +88,16 @@ public abstract class MetadataUIPFilter implements UIPUpdateFilter {
 
 		return newModified;
 	}
-	
+
 	protected Element performReplace(MetadataUIP uip, String datastreamName) throws UIPException {
 		return getNewModifiedElement(uip, datastreamName);
 	}
-	
+
+	protected Element performReplace(MetadataUIP uip, String baseDatastream, String incomingDatastream)
+			throws UIPException {
+		return getNewModifiedElement(uip, baseDatastream, uip.getIncomingData().get(incomingDatastream));
+	}
+
 	protected Element performReplace(MetadataUIP uip, String datastreamName, Element incoming) throws UIPException {
 		return getNewModifiedElement(uip, datastreamName, incoming);
 	}

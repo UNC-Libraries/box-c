@@ -234,14 +234,22 @@
 					<property name="schematronValidator" ref="schematronValidator" />
 				</bean>
 				<bean class="edu.unc.lib.dl.update.RELSEXTUIPFilter"/>
+				<bean class="edu.unc.lib.dl.update.AccessControlUIPFilter"/>
 			</list>
 		</property>
 	</bean>
+	
+	
+	<util:map id="virtualDatastreamMap" key-type="java.lang.String" value-type="edu.unc.lib.dl.util.ContentModelHelper.Datastream">
+		<entry key="ACL" value="RELS_EXT"/>
+	</util:map>
 	
 	<bean id="uipProcessor" class="edu.unc.lib.dl.update.FedoraObjectUIPProcessor">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="accessClient" ref="accessClient"/>
 		<property name="pipeline" ref="uipPipeline"/>
+		<property name="virtualDatastreamMap" ref="virtualDatastreamMap" />
+		<property name="operationsMessageSender" ref="operationsMessageSender" />
 	</bean>
 	
 	<!-- SWORD config -->
@@ -297,6 +305,7 @@
 	<bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl"
 		init-method="init">
 		<property name="fedoraPath" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}"/>
+		<property name="virtualDatastreamMap" ref="virtualDatastreamMap" />
 	</bean>
 	
 	<bean id="statementManager" class="edu.unc.lib.dl.cdr.sword.server.managers.StatementManagerImpl"
