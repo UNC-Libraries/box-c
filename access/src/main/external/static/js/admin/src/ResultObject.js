@@ -97,7 +97,13 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'RemoteStateChangeMonit
 				e.stopPropagation();
 			});
 			
+			self.actionMenu.children().click(function(){
+				menuIcon.qtip('hide');
+			});
+			
 			this.actionMenu.children(".edit_access").click(function(){
+				menuIcon.qtip('hide');
+				self.highlight();
 				var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading-large.gif'/></div>");
 				dialog.dialog({
 					autoOpen: true,
@@ -109,6 +115,7 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'RemoteStateChangeMonit
 					title: 'Access Control Settings',
 					close: function() {
 						dialog.remove();
+						self.unhighlight();
 					}
 				});
 				dialog.load("acl/" + self.pid.getPath(), function(responseText, textStatus, xmlHttpRequest){
@@ -196,6 +203,14 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'RemoteStateChangeMonit
 			if (this.checkbox) {
 				this.checkbox.prop("checked", false);
 			}
+		},
+		
+		highlight : function() {
+			this.element.addClass("highlighted");
+		},
+		
+		unhighlight : function() {
+			this.element.removeClass("highlighted");
 		},
 
 		isSelected : function() {
