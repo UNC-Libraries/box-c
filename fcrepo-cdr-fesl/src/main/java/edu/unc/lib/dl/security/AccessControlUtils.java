@@ -45,6 +45,15 @@ public class AccessControlUtils {
 	private GroupRolesFactory groupRolesFactory = null;
 	private EmbargoFactory embargoFactory = null;
 	private String adminGroup;
+	private String curatorGroup;
+
+	public String getCuratorGroup() {
+		return curatorGroup;
+	}
+
+	public void setCuratorGroup(String curatorGroup) {
+		this.curatorGroup = curatorGroup;
+	}
 
 	public EmbargoFactory getEmbargoFactory() {
 		return embargoFactory;
@@ -249,13 +258,24 @@ public class AccessControlUtils {
 			}
 
 			// Add the admin group into the results
-			if (this.adminGroup != null) {
+			if (this.getAdminGroup() != null) {
 				Set<String> adminGroups = summary.get(UserRole.administrator
 						.getURI().toString());
 				if (adminGroups == null) {
 					adminGroups = new HashSet<String>();
+					summary.put(UserRole.administrator.getURI().toString(), adminGroups);
 				}
-				adminGroups.add(this.adminGroup);
+				adminGroups.add(getAdminGroup());
+			}
+			// Add the admin group into the results
+			if (this.getCuratorGroup() != null) {
+				Set<String> curatorGroups = summary.get(UserRole.curator
+						.getURI().toString());
+				if (curatorGroups == null) {
+					curatorGroups = new HashSet<String>();
+					summary.put(UserRole.curator.getURI().toString(), curatorGroups);
+				}
+				curatorGroups.add(this.getCuratorGroup());
 			}
 		} catch (ObjectNotFoundException e) {
 			LOG.error("Cannot find object in question", e);
@@ -270,6 +290,10 @@ public class AccessControlUtils {
 		try {
 			if(groups.contains(this.getAdminGroup())) {
 				result.add(UserRole.administrator.getURI().toString());
+			}
+			
+			if(groups.contains(this.getCuratorGroup())) {
+				result.add(UserRole.curator.getURI().toString());
 			}
 			
 			Map<String, Set<String>> roles2Groups = groupRolesFactory
