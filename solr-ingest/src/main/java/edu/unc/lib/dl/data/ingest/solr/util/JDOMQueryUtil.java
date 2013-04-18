@@ -26,11 +26,16 @@ import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class JDOMQueryUtil {
+	
 	public static Element getElementByAttribute(List<?> elements, String attribute, String value) {
+		return getElementByAttribute(elements, attribute, null, value);
+	}
+	
+	public static Element getElementByAttribute(List<?> elements, String attribute, Namespace attributeNS, String value) {
 		for (Object elementObj : elements) {
 			Element element = (Element) elementObj;
-			String attrValue = element.getAttributeValue(attribute);
-			if (attrValue == value || (value != null && value.equals(element.getAttributeValue(attribute)))) {
+			String attrValue = attributeNS == null ? element.getAttributeValue(attribute) : element.getAttributeValue(attribute, attributeNS);
+			if (attrValue == value || (value != null && value.equals(attrValue))) {
 				return element;
 			}
 		}

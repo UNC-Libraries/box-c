@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
-import edu.unc.lib.dl.data.ingest.solr.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 public class ClearIndexAction extends AbstractIndexingAction {

@@ -27,7 +27,7 @@ import org.mockito.ArgumentMatcher;
 
 import static org.mockito.Mockito.*;
 
-import edu.unc.lib.dl.data.ingest.solr.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.fedora.PID;

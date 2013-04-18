@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.data.ingest.solr;
 
 public enum ProcessingStatus {
-	ACTIVE("active"), INPROGRESS("inprogress"), BLOCKED("blocked"), QUEUED("queued"), FINISHED("finished"), FAILED("failed");
+	ACTIVE("active"), INPROGRESS("inprogress"), BLOCKED("blocked"), QUEUED("queued"), FINISHED("finished"), FAILED("failed"), IGNORED("ignored");
 	
 	String name;
 	

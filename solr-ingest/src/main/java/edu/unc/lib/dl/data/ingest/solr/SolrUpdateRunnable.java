@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
+import edu.unc.lib.dl.data.ingest.solr.exception.OrphanedObjectException;
+import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelException;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -148,6 +150,14 @@ public class SolrUpdateRunnable implements Runnable {
 			if (indexingAction != null) {
 				indexingAction.performAction(updateRequest);
 			}
+		} catch (UnsupportedContentModelException e) {
+			updateRequest.setStatus(ProcessingStatus.IGNORED);
+			LOG.debug("Did not perform action " + updateRequest.getAction() + " on object " + updateRequest.getTargetID(),
+					e);
+		} catch (OrphanedObjectException e) {
+			updateRequest.setStatus(ProcessingStatus.FAILED);
+			LOG.warn("Could not perform action " + updateRequest.getAction() + " on object " + updateRequest.getTargetID()
+					+ " because it is orphaned.");
 		} catch (Exception e) {
 			updateRequest.setStatus(ProcessingStatus.FAILED);
 			LOG.error("An error occurred while attempting perform action " + updateRequest.getAction() + " on object "
@@ -164,7 +174,7 @@ public class SolrUpdateRunnable implements Runnable {
 				while (this.solrUpdateService.isPaused() && !Thread.currentThread().isInterrupted()) {
 					Thread.sleep(this.idleWaitTime);
 				}
-				
+
 				String pid = null;
 				// Get the next pid and lock it
 				updateRequest = nextRequest();
@@ -185,11 +195,10 @@ public class SolrUpdateRunnable implements Runnable {
 						updateRequest.requestCompleted();
 						solrUpdateService.getActiveMessages().remove(updateRequest);
 						solrUpdateService.getLockedPids().remove(pid);
-						if (ProcessingStatus.FAILED.equals(updateRequest.getStatus())) {
+						if (ProcessingStatus.FAILED.equals(updateRequest.getStatus()))
 							solrUpdateService.getFailedMessages().add(updateRequest);
-						} else {
+						else if (!ProcessingStatus.IGNORED.equals(updateRequest.getStatus()))
 							solrUpdateService.getFinishedMessages().add(updateRequest);
-						}
 						LOG.debug("Processed pid " + pid);
 					}
 				}

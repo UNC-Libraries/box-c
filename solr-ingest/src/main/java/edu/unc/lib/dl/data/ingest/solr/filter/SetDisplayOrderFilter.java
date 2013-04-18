@@ -19,7 +19,7 @@ import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.data.ingest.solr.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -41,8 +41,6 @@ public class SetDisplayOrderFilter extends AbstractIndexDocumentFilter {
 		DocumentIndexingPackage parentDIP = dip.getParentDocument();
 		if (parentDIP == null || parentDIP.getFoxml() == null) {
 			parentDIP = this.retrieveParentDIP(dip);
-			if (parentDIP == null)
-				throw new IndexingException("Could be retrieve parent for " + dip.getPid().getPid());
 		}
 		
 		Element parentMdContents = parentDIP.getMdContents();

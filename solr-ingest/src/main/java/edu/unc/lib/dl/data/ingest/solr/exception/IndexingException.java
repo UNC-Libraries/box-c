@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.data.ingest.solr;
+package edu.unc.lib.dl.data.ingest.solr.exception;
 
 public class IndexingException extends RuntimeException {
 	private static final long serialVersionUID = 1L;

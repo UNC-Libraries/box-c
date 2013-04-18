@@ -27,7 +27,7 @@ public class FedoraFaultMessageResolver {
 		if (e.getFaultStringOrReason() != null) {
 			String r = e.getFaultStringOrReason();
 			if (r.contains("ObjectNotFoundException") || r.contains("ObjectNotInLowlevelStorageException")
-					|| r.contains("DatastreamNotFoundException")) {
+					|| r.contains("DatastreamNotFoundException") || r.contains("no path in db registry")) {
 				throw new NotFoundException(e);
 			} else if (r.contains("ObjectExistsException")) {
 				throw new ObjectExistsException(e);

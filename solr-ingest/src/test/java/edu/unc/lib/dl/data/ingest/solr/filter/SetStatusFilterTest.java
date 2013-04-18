@@ -26,7 +26,7 @@ import org.jdom.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.unc.lib.dl.data.ingest.solr.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.TripleStoreQueryService;

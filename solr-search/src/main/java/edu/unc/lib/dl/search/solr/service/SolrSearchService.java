@@ -403,26 +403,30 @@ public class SolrSearchService {
 	protected SolrQuery generateSearch(SearchRequest searchRequest, boolean isRetrieveFacetsRequest) {
 		SearchState searchState = searchRequest.getSearchState();
 		SolrQuery solrQuery = new SolrQuery();
-		StringBuilder query = new StringBuilder();
+		StringBuilder termQuery = new StringBuilder();
+		
 		// Generate search term query string
 		String searchType = null;
 		Map<String, String> searchFields = searchState.getSearchFields();
 		if (searchFields != null) {
-			boolean firstTerm = true;
 			Iterator<String> searchTypeIt = searchFields.keySet().iterator();
 			while (searchTypeIt.hasNext()) {
 				searchType = searchTypeIt.next();
-				List<String> searchFragments = searchState.getSearchTermFragments(searchType);
+				List<String> searchFragments = SolrSettings.getSearchTermFragments(searchState.getSearchFields().get(searchType));
 				if (searchFragments != null) {
+					if (termQuery.length() > 0)
+						termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
 					LOG.debug(searchType + ": " + searchFragments);
+					termQuery.append(solrSettings.getFieldName(searchType)).append(':').append('(');
+					boolean firstTerm = true;
 					for (String searchFragment : searchFragments) {
-						searchFragment = SolrSettings.sanitize(searchFragment);
 						if (firstTerm)
 							firstTerm = false;
 						else
-							query.append(' ').append(searchState.getSearchTermOperator()).append(' ');
-						query.append(solrSettings.getFieldName(searchType)).append(':').append(searchFragment).append(' ');
+							termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
+						termQuery.append(searchFragment);
 					}
+					termQuery.append(')');
 				}
 			}
 		}
@@ -435,52 +439,55 @@ public class SolrSearchService {
 				Map.Entry<String, SearchState.RangePair> rangeTerm = rangeTermIt.next();
 				if (rangeTerm != null
 						&& !(rangeTerm.getValue().getLeftHand() == null && rangeTerm.getValue().getRightHand() == null)) {
-					query.append(solrSettings.getFieldName(rangeTerm.getKey())).append(":[");
+					
+					if (termQuery.length() > 0)
+						termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
+					
+					termQuery.append(solrSettings.getFieldName(rangeTerm.getKey())).append(":[");
 
 					if (rangeTerm.getValue().getLeftHand() == null || rangeTerm.getValue().getLeftHand().length() == 0) {
-						query.append('*');
+						termQuery.append('*');
 					} else {
 						if (searchSettings.dateSearchableFields.contains(rangeTerm.getKey())) {
 							try {
-								query.append(DateFormatUtil.getFormattedDate(rangeTerm.getValue().getLeftHand(), true, false));
+								termQuery.append(DateFormatUtil.getFormattedDate(rangeTerm.getValue().getLeftHand(), true, false));
 							} catch (NumberFormatException e) {
-								query.append('*');
+								termQuery.append('*');
 							}
 						} else {
-							query.append(SolrSettings.sanitize(rangeTerm.getValue().getLeftHand()));
+							termQuery.append(SolrSettings.sanitize(rangeTerm.getValue().getLeftHand()));
 						}
 					}
-					query.append(" TO ");
+					termQuery.append(" TO ");
 					if (rangeTerm.getValue().getRightHand() == null || rangeTerm.getValue().getRightHand().length() == 0) {
-						query.append('*');
+						termQuery.append('*');
 					} else {
 						if (searchSettings.dateSearchableFields.contains(rangeTerm.getKey())) {
 							try {
-								query.append(DateFormatUtil.getFormattedDate(rangeTerm.getValue().getRightHand(), true, true));
+								termQuery.append(DateFormatUtil.getFormattedDate(rangeTerm.getValue().getRightHand(), true, true));
 							} catch (NumberFormatException e) {
-								query.append('*');
+								termQuery.append('*');
 							}
 						} else {
-							query.append(SolrSettings.sanitize(rangeTerm.getValue().getRightHand()));
+							termQuery.append(SolrSettings.sanitize(rangeTerm.getValue().getRightHand()));
 						}
 					}
-					query.append("] ");
+					termQuery.append("] ");
 				}
 			}
 		}
 
+		StringBuilder query = new StringBuilder();
 		// Blank query, make it an everything query
-		if (query.length() == 0) {
+		if (termQuery.length() == 0) {
 			query.append("*:* ");
+		} else {
+			query.append('(').append(termQuery).append(')');
 		}
 
 		try {
 			// Add access restrictions to query
 			addAccessRestrictions(query, searchRequest.getAccessGroups());
-			/*
-			 * if (searchState.getAccessTypeFilter() != null) { addAccessRestrictions(query,
-			 * searchRequest.getAccessGroups(), searchState.getAccessTypeFilter()); }
-			 */
 		} catch (AccessRestrictionException e) {
 			// If the user doesn't have any access groups, they don't have access to anything, return null.
 			LOG.error(e.getMessage());

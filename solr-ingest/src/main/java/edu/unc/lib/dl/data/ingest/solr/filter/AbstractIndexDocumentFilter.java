@@ -21,7 +21,8 @@ import java.io.InputStreamReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.data.ingest.solr.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.exception.OrphanedObjectException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.fedora.PID;
@@ -70,7 +71,7 @@ public abstract class AbstractIndexDocumentFilter implements IndexDocumentFilter
 				log.debug("Retrieving parent pid for " + dip.getPid().getPid());
 				parentPID = tsqs.fetchByPredicateAndLiteral(ContentModelHelper.Relationship.contains.toString(), dip.getPid()).get(0);
 			} catch (IndexOutOfBoundsException e) {
-				throw new IndexingException("Could not retrieve parent pid for " + dip.getPid().getPid(), e);
+				throw new OrphanedObjectException("Could not retrieve parent pid for " + dip.getPid().getPid());
 			}
 		}
 		log.debug("Retrieving parent DIP " + parentPID.getPid() + " for " + dip.getPid().getPid());

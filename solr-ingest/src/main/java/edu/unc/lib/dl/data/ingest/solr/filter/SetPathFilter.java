@@ -23,7 +23,8 @@ import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.data.ingest.solr.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.exception.OrphanedObjectException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -97,7 +98,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 			}
 		}
 		if (orphaned && !collectionsPid.getPid().equals(dip.getPid()))
-			throw new IndexingException("Object " + dip.getPid() + " is orphaned");
+			throw new OrphanedObjectException("Object " + dip.getPid() + " is orphaned");
 		
 		// Sort the path nodes since they aren't guaranteed to be in order
 		this.sortPathNodes(dip.getPid().getPid(), pathNodes);

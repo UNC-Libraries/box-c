@@ -15,12 +15,16 @@
  */
 package edu.unc.lib.dl.search.solr.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,12 +97,37 @@ public class SolrSettings extends AbstractSettings  {
 		return server;
 	}
 	
-	private static Pattern escapeReservedCharacters = Pattern.compile("([/\\+\\-!\\(\\)\\{\\}\\[\\]\\^\"~\\*\\?:\\\\])");
 	private static Pattern escapeReservedWords = Pattern.compile("\\b(AND|OR|NOT)\\b");
 	public static String sanitize(String value){
 		if (value == null)
 			return value;
-		return escapeReservedWords.matcher(escapeReservedCharacters.matcher(value).replaceAll("\\\\$1")).replaceAll("'$1'");
+		return escapeReservedWords.matcher(ClientUtils.escapeQueryChars(value)).replaceAll("'$1'");
+	}
+	
+	private static Pattern splitTermFragmentsRegex = Pattern.compile("(\"([^\"]*)\"|([^\" ,]+))");
+	/**
+	 * Retrieves all the search term fragments contained in the selected field. Fragments are either single words
+	 * separated by non-alphanumeric characters, or phrases encapsulated by quotes.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static List<String> getSearchTermFragments(String value) {
+		if (value == null)
+			return null;
+		Matcher matcher = splitTermFragmentsRegex.matcher(value);
+		List<String> fragments = new ArrayList<String>();
+		while (matcher.find()) {
+			if (matcher.groupCount() == 3) {
+				boolean quoted = matcher.group(2) != null;
+				String fragment = quoted? matcher.group(2) : matcher.group(3);
+				fragment = sanitize(fragment);
+				if (quoted || fragment.indexOf('\\') > -1)
+						fragment = '"' + fragment + '"';
+				fragments.add(fragment);
+			}
+		}
+		return fragments;
 	}
 	
 	public String getPath() {
