@@ -288,11 +288,11 @@ public class AccessControlUtils {
 		LOG.debug("getRolesForGroups: " + pid + " " + groups);
 
 		try {
-			if(groups.contains(this.getAdminGroup())) {
+			if(this.getAdminGroup() != null && groups.contains(this.getAdminGroup())) {
 				result.add(UserRole.administrator.getURI().toString());
 			}
 			
-			if(groups.contains(this.getCuratorGroup())) {
+			if(this.getCuratorGroup() != null && groups.contains(this.getCuratorGroup())) {
 				result.add(UserRole.curator.getURI().toString());
 			}
 			

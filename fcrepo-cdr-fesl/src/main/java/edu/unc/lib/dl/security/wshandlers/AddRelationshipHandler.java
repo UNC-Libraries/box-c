@@ -113,6 +113,8 @@ public class AddRelationshipHandler
         	relationship = (String) callGetter("getRelationship",oMap);
             if (relationship != null && !"".equals(relationship)) {
             	resAttr.put(new URI(RESOURCE_RELATIONSHIP_PREDICATE), new AnyURIAttribute(new URI(relationship)));
+            } else {
+            	logger.error("Could not determine predicate for relationship being added.");
             }
         } catch (Exception e) {
             logger.error("Error obtaining parameters", e);

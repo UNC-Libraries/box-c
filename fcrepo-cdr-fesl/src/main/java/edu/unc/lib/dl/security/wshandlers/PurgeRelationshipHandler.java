@@ -102,13 +102,13 @@ public class PurgeRelationshipHandler
                         Constants.ACTION.APIM
                                 .getStringAttribute());
 
+            addPredicate(context, resAttr);
+            
             req =
                     getContextHandler().buildRequest(getSubjects(context),
                                                      actions,
                                                      resAttr,
                                                      getEnvironment(context));
-            
-            addPredicate(context, resAttr);
 
             LogUtil.statLog(getUser(context),
                             Constants.ACTION.PURGE_RELATIONSHIP.getURI()
@@ -138,6 +138,8 @@ public class PurgeRelationshipHandler
         	relationship = (String) callGetter("getRelationship",oMap);
             if (relationship != null && !"".equals(relationship)) {
             	resAttr.put(new URI(RESOURCE_RELATIONSHIP_PREDICATE), new AnyURIAttribute(new URI(relationship)));
+            } else {
+            	logger.error("Could not determine predicate for relationship being purged.");
             }
         } catch (Exception e) {
             logger.error("Error obtaining parameters", e);

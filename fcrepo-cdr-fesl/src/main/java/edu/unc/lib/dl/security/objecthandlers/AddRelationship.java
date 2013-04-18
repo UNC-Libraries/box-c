@@ -87,6 +87,8 @@ public class AddRelationship
             String predicate = request.getParameter("predicate");
             if (predicate != null && !"".equals(predicate)) {
             	resAttr.put(new URI(RESOURCE_RELATIONSHIP_PREDICATE), new AnyURIAttribute(new URI(predicate)));
+            } else {
+            	logger.error("Could not determine predicate for relationship being added.");
             }
 
             req =
