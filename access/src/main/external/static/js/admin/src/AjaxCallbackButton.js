@@ -38,6 +38,7 @@ define([ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoading
 			animateSpeed : 80,
 			confirm : false,
 			confirmMessage : "Are you sure?",
+			confirmPositionElement : undefined,
 			alertHandler : "#alertHandler"
 		},
 
@@ -89,13 +90,24 @@ define([ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoading
 			}
 			
 			if (this.options.confirm) {
+				var dialogOptions = {
+						width : 200,
+						modal : true
+					};
+				if (this.options.parentObject)
+					dialogOptions['close'] = function() {
+						op.options.parentObject.unhighlight();
+					};
+				if (this.options.confirmAnchor) {
+					dialogOptions['position'] = {};
+					dialogOptions['position']['of'] = this.options.confirmAnchor; 
+				}
+				
 				this.element.confirmationDialog({
 					'promptText' : this.options.confirmMessage,
 					'confirmFunction' : this.doWork,
 					'confirmTarget' : this,
-					'dialogOptions' : {
-						width : 200
-					}
+					'dialogOptions' : dialogOptions
 				});
 			}
 
@@ -116,6 +128,8 @@ define([ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoading
 			if (this.options.disabled)
 				return;
 			if (this.options.confirm) {
+				if (this.options.parentObject)
+					this.options.parentObject.highlight();
 				this.element.confirmationDialog("open");
 			} else {
 				this.doWork();
