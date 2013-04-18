@@ -32,13 +32,20 @@ define([ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoading
 				minHeight : 60,
 				autoOpen : false,
 				resizable : false,
-				dialogClass : "no_titlebar confirm_dialog"
+				dialogClass : "no_titlebar confirm_dialog",
+				position : {
+					my : "right top",
+					at : "right bottom"
+				},
 			},
 			'solo' : true
 		},
 		
 		_create : function() {
 			var self = this;
+			
+			if (this.options.dialogOptions.position.of == undefined)
+				this.options.dialogOptions.position.of = this.element;
 			
 			this.confirmDialog = $("<div class='confirm_dialogue'></div>");
 			if (this.options.promptText === undefined) {
@@ -62,11 +69,6 @@ define([ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoading
 			};
 			
 			var dialogOptions = $.extend({}, this.options.dialogOptions, {
-				position : {
-					my : "right top",
-					at : "right bottom",
-					of : self.element
-				},
 				open : function() {
 					if (self.options.solo) {
 						$.each($('div.ui-dialog-content'), function (i, e) {

@@ -237,6 +237,10 @@ ul#mainmenu li a {
 	background-color: #f0f0fC;
 }
 
+.result_table tr.highlighted {
+	background-color: #FFFFC5;
+}
+
 .facetcol {
 	margin-right: 20px;
 }
