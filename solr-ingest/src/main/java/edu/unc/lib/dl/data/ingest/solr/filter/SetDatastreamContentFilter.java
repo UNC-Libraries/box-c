@@ -272,14 +272,18 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	}
 
 	private ContentCategory getContentCategory(String mimetype, String extension) {
+		if (mimetype == null)
+			return ContentCategory.unknown;
 		int index = mimetype.indexOf('/');
-		String mimetypeType = mimetype.substring(0, index);
-		if (mimetypeType.equals("image"))
-			return ContentCategory.image;
-		if (mimetypeType.equals("video"))
-			return ContentCategory.video;
-		if (mimetypeType.equals("audio"))
-			return ContentCategory.audio;
+		if (index != -1) {
+			String mimetypeType = mimetype.substring(0, index);
+			if (mimetypeType.equals("image"))
+				return ContentCategory.image;
+			if (mimetypeType.equals("video"))
+				return ContentCategory.video;
+			if (mimetypeType.equals("audio"))
+				return ContentCategory.audio;
+		}
 		
 		String contentCategory = (String)this.contentTypeProperties.get("mime." + mimetype);
 		if (contentCategory == null)

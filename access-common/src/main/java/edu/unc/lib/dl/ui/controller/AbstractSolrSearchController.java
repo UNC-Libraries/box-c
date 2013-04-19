@@ -102,12 +102,9 @@ public abstract class AbstractSolrSearchController {
 				LOG.debug("Performing actions on users search state:" + actionsParam);
 				searchActionService.executeActions(searchState, actionsParam);
 			} catch (InvalidHierarchicalFacetException e){
-				LOG.warn("An invalid facet was provided: " + request.getQueryString(), e);
+				LOG.debug("An invalid facet was provided: " + request.getQueryString(), e);
 			}
 		}
-		
-		//Validate the search state to make sure that it contains appropriate values and field names
-		//briefSearchRequestValidator.validate(searchState);
 		
 		//Store the search state into the search request
 		searchRequest.setSearchState(searchState);

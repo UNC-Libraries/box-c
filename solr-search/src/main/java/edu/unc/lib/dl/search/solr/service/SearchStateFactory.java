@@ -38,7 +38,7 @@ import edu.unc.lib.dl.search.solr.util.SearchSettings;
  * @author bbpennel
  */
 public class SearchStateFactory {
-	private static final Logger log = LoggerFactory.getLogger(SolrSearchService.class);
+	private static final Logger log = LoggerFactory.getLogger(SearchStateFactory.class);
 	private SearchSettings searchSettings;
 	@Autowired
 	private FacetFieldFactory facetFieldFactory;
@@ -306,7 +306,7 @@ public class SearchStateFactory {
 						if (key != null)
 							facets.put(key, this.facetFieldFactory.createFacet(key, parameterPairArray[1]));
 					} catch (InvalidHierarchicalFacetException e) {
-						log.warn("Invalid hierarchical facet for " + parameterPair);
+						log.debug("Invalid hierarchical facet for " + parameterPair);
 						log.debug("Root cause", e);
 					}
 					

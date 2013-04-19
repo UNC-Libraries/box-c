@@ -83,6 +83,8 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 		ListIterator<BriefObjectMetadata> resultIt = this.getResultList().listIterator(this.getResultList().size());
 		while (resultIt.hasPrevious()) {
 			BriefObjectMetadata briefObject = resultIt.previous();
+			if (briefObject == null || briefObject.getContentModel() == null)
+				continue;
 			if ((!briefObject.getCountMap().containsKey("child") || briefObject.getCountMap().get("child") == 0)
 					&& briefObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString())) {
 				if (this.matchingContainerPids != null && this.matchingContainerPids.contains(briefObject.getId())) {
