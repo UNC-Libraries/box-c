@@ -462,3 +462,12 @@ td.menu_box {
 	margin: 0.1em 0 0.1em 0.3em;
 	background : #DDF0FA;
 }
+
+
+/* Edit panels */
+.ui-dialog .ui-dialog-titlebar {
+	background-image : linear-gradient(to bottom, #FAFAFA, #EBF5FA);
+	margin: -0.2em -0.2em 0.2em;
+	padding: 0.4em 0.4em 0;
+	border-bottom: 1px solid #DFEBF1;
+}
