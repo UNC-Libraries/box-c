@@ -82,24 +82,34 @@
 	<td class="menu_box">
 		<img src="/static/images/admin/gear.png"/>
 		<ul class='action_menu'>
-			<li class="publish_link">
-				<c:choose>
-					<c:when test="${metadata.status.contains('Unpublished')}">Publish</c:when>
-					<c:otherwise>Unpublish</c:otherwise>
-				</c:choose>
-			</li>
-			<li class="edit_access">Edit Access Control</li>
-			<li class='edit_description'><a href="describe/${metadata.pid.path}">
-				<c:choose>
-					<c:when test="${metadata.datastreamObjects.contains('MD_DESCRIPTIVE')}">
-						Edit Description
-					</c:when>
-					<c:otherwise>
-						Add Description
-					</c:otherwise>
-				</c:choose>
-			</a></li>
-			<li class="delete_link">Delete</li>
+			<c:if test="${cdr:hasAccess(accessGroupSet, metadata, 'publish')}">
+				<li class="publish_link">
+					<c:choose>
+						<c:when test="${metadata.status.contains('Unpublished')}">Publish</c:when>
+						<c:otherwise>Unpublish</c:otherwise>
+					</c:choose>
+				</li>
+			</c:if>
+			<%-- Temporarily preventing anyone but admins from seeing this until the update pipeline is updated --%>
+			<%-- Will want a "view access control" action eventually --%>
+			<c:if test="${cdr:hasAccess(accessGroupSet, metadata, 'editAccessControl') && cdr:contains(requestScope.accessGroupSet, accessGroupConstants.ADMIN_GROUP)}">
+				<li class="edit_access">Edit Access Control</li>
+			</c:if>
+			<c:if test="${cdr:hasAccess(accessGroupSet, metadata, 'editDescription')}">
+				<li class='edit_description'><a href="describe/${metadata.pid.path}">
+					<c:choose>
+						<c:when test="${metadata.datastreamObjects.contains('MD_DESCRIPTIVE')}">
+							Edit Description
+						</c:when>
+						<c:otherwise>
+							Add Description
+						</c:otherwise>
+					</c:choose>
+				</a></li>
+			</c:if>
+			<c:if test="${cdr:hasAccess(accessGroupSet, metadata, 'purgeForever')}">
+				<li class="delete_link">Delete</li>
+			</c:if>
 		</ul>
 	</td>
 </tr>

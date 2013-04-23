@@ -52,6 +52,19 @@ public class AccessUtil {
 		return metadata.getAccessControlBean().hasPermission(groups,
 				Permission.getPermissionByDatastreamCategory(datastream.getCategory()));
 	}
+	
+	public static boolean hasAccess(AccessGroupSet groups, BriefObjectMetadata metadata, String permissionName) {
+		if (metadata == null)
+			return false;
+		Permission permission = Permission.getPermission(permissionName);
+		if (permission == null)
+			return false;
+		return hasAccess(groups, metadata, permission);
+	}
+	
+	public static boolean hasAccess(AccessGroupSet groups, BriefObjectMetadata metadata, Permission permission) {
+		return metadata.getAccessControlBean().hasPermission(groups, permission);
+	}
 
 	/**
 	 * Returns true if the user has list and no higher permissions for the given object

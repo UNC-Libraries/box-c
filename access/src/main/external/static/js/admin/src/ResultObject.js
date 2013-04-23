@@ -60,6 +60,9 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'RemoteStateChangeMonit
 			var self = this;
 			
 			this.actionMenu = $(".menu_box ul", this.element);
+			if (this.actionMenu.children().length == 0)
+				return;
+			
 			var menuIcon = $(".menu_box img", this.element);
 			
 			// Set up the dropdown menu

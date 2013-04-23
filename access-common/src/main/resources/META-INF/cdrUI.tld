@@ -150,4 +150,11 @@
 			boolean hasListAccessOnly(edu.unc.lib.dl.acl.util.AccessGroupSet, edu.unc.lib.dl.search.solr.model.BriefObjectMetadata)
 		</function-signature>
 	</function>
+	<function>
+		<name>hasAccess</name>
+		<function-class>edu.unc.lib.dl.ui.util.AccessUtil</function-class>
+		<function-signature>
+			boolean hasAccess(edu.unc.lib.dl.acl.util.AccessGroupSet, edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, java.lang.String)
+		</function-signature>
+	</function>
 </taglib>

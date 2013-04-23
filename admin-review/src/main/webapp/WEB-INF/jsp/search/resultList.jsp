@@ -37,12 +37,14 @@
 			</c:import>
 		</div>
 	</div>
-	
 	<table class="result_table">
 		<tr id="results_list_actions">
 			<td colspan="7">
 				<div class="left"><p><a id="select_all">Select All</a></p> <p><a id="deselect_all">Deselect All</a></p></div>
-				<div class="right"><input type="Button" value="Delete" id="delete_selected" class="ajaxCallbackButton"></input>&nbsp;&nbsp;<input type="Button" value="Publish Selected" id="publish_selected" class="ajaxCallbackButton"></input><input type="Button" value="Unpublish Selected" id="unpublish_selected" class="ajaxCallbackButton"></input></div>
+				<div class="right">
+					<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'purgeForever')}"><input type="Button" value="Delete" id="delete_selected" class="ajaxCallbackButton"></input>&nbsp;&nbsp;</c:if>
+					<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'publish')}"><input type="Button" value="Publish Selected" id="publish_selected" class="ajaxCallbackButton"></input><input type="Button" value="Unpublish Selected" id="unpublish_selected" class="ajaxCallbackButton"></input></c:if>
+				</div>
 			</td>
 		</tr>
 		<tr>
