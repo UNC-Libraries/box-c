@@ -33,7 +33,7 @@ public class UpdateNodeRequest implements ActionMessage {
 	protected long timeFinished;
 
 	protected DocumentIndexingPackage documentIndexingPackage;
-	
+
 	protected UpdateNodeRequest parent;
 	protected WeakReference<UpdateNodeRequest> weakParent;
 	protected List<WeakReference<UpdateNodeRequest>> children;
@@ -41,12 +41,12 @@ public class UpdateNodeRequest implements ActionMessage {
 	protected ProcessingStatus status;
 	protected AtomicInteger childrenPending;
 	protected AtomicInteger childrenProcessed;
-	
+
 	public UpdateNodeRequest(String messageID, UpdateNodeRequest parent) {
 		this.messageID = messageID;
 		this.setParent(parent);
 		this.children = null;
-		
+
 		childrenPending = new AtomicInteger(0);
 		childrenProcessed = new AtomicInteger(0);
 	}
@@ -61,57 +61,60 @@ public class UpdateNodeRequest implements ActionMessage {
 			return;
 		if (children == null)
 			children = new ArrayList<WeakReference<UpdateNodeRequest>>();
-		
+
 		this.childAdded();
 		children.add(new WeakReference<UpdateNodeRequest>(node));
 	}
-	
+
 	public void removeChild(UpdateNodeRequest node) {
 		if (node == null || children == null)
 			return;
-		
+
 		this.childRemoved();
 		children.remove(node);
 	}
-	
+
 	public void remove() {
 		if (getParent() == null)
 			return;
 		getParent().removeChild(this);
 	}
-	
+
 	private void childRemoved() {
 		childrenPending.decrementAndGet();
 		if (getParent() != null)
 			getParent().childRemoved();
 	}
-	
+
 	protected void childAdded() {
 		childrenPending.incrementAndGet();
 		if (getParent() != null)
 			getParent().childAdded();
 	}
-	
+
 	protected void childCompleted() {
 		int value = childrenProcessed.incrementAndGet();
 		if (value == childrenPending.get() && ProcessingStatus.INPROGRESS.equals(status)) {
 			status = ProcessingStatus.FINISHED;
-			if (this.parent != null)
-				this.weakParent = new WeakReference<UpdateNodeRequest>(this.parent);
+			this.cleanupExternalReferences();
 		}
 		if (getParent() != null)
 			getParent().childCompleted();
 	}
-	
+
 	public void requestCompleted() {
-		if (ProcessingStatus.FINISHED.equals(status))
+		if (ProcessingStatus.FINISHED.equals(status)){
+			this.cleanupExternalReferences();
 			return;
-		
+		}
+
 		if (ProcessingStatus.FAILED.equals(status)) {
+			this.cleanupExternalReferences();
 			timeFinished = System.currentTimeMillis();
 		} else {
 			if (children == null || childrenProcessed.get() == childrenPending.get()) {
 				status = ProcessingStatus.FINISHED;
+				this.cleanupExternalReferences();
 				timeFinished = System.currentTimeMillis();
 			} else {
 				status = ProcessingStatus.INPROGRESS;
@@ -119,6 +122,17 @@ public class UpdateNodeRequest implements ActionMessage {
 		}
 		if (getParent() != null)
 			getParent().childCompleted();
+	}
+
+	/**
+	 * Cleans up or allows for cleanup of references to external resources that are no longer needed after
+	 * this message has finished being processed, but is still being retained.
+	 */
+	protected void cleanupExternalReferences() {
+		// Weaken/Dereference the parent and documentIndexingPackage
+		this.documentIndexingPackage = null;
+		if (this.parent != null)
+			this.weakParent = new WeakReference<UpdateNodeRequest>(this.parent);
 	}
 
 	/**
@@ -178,7 +192,7 @@ public class UpdateNodeRequest implements ActionMessage {
 	public int countChildren() {
 		return countChildren(-1);
 	}
-	
+
 	public int countChildren(int depth) {
 		if (children == null)
 			return 0;
@@ -190,23 +204,23 @@ public class UpdateNodeRequest implements ActionMessage {
 		}
 		return count;
 	}
-	
+
 	public Map<ProcessingStatus, Integer> countChildrenByStatus() {
 		return countChildrenByStatus(-1);
 	}
-	
+
 	public Map<ProcessingStatus, Integer> countChildrenByStatus(int depth) {
 		Map<ProcessingStatus, Integer> counts = new HashMap<ProcessingStatus, Integer>(ProcessingStatus.values().length);
-		for (ProcessingStatus statusValue: ProcessingStatus.values()) {
+		for (ProcessingStatus statusValue : ProcessingStatus.values()) {
 			counts.put(statusValue, 0);
 		}
 		return countChildrenByStatus(depth, counts);
 	}
-	
+
 	public Map<ProcessingStatus, Integer> countChildrenByStatus(int depth, Map<ProcessingStatus, Integer> counts) {
 		if (children == null)
 			return counts;
-		
+
 		for (WeakReference<UpdateNodeRequest> child : children) {
 			// Increment the status count
 			counts.put(child.get().getStatus(), counts.get(child.get().getStatus()) + 1);
@@ -214,7 +228,7 @@ public class UpdateNodeRequest implements ActionMessage {
 				child.get().countChildrenByStatus(depth - 1, counts);
 			}
 		}
-		
+
 		return counts;
 	}
 
@@ -292,7 +306,7 @@ public class UpdateNodeRequest implements ActionMessage {
 		// Remove from previous parent
 		if (currentParent != null)
 			this.getParent().removeChild(this);
-		
+
 		if (this.status != null && this.status.equals(ProcessingStatus.FINISHED)) {
 			this.parent = null;
 			this.weakParent = new WeakReference<UpdateNodeRequest>(parent);
