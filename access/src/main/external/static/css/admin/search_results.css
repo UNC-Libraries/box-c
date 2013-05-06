@@ -1,0 +1,270 @@
+/** Search Menu */
+#search_menu {
+	width: 300px;
+	float : left;
+	margin-right: 15px;
+	visibility: hidden;
+}
+
+#search_menu form {
+	font-size: 11px;
+}
+
+.ui-accordion .ui-accordion-content {
+	background-color: #FBFBFE;
+	padding: 0.5em;
+}
+
+.ui-accordion .ui-accordion-header.ui-accordion-header-active {
+	background-color: #DDF0FA;
+	background-image: linear-gradient(to bottom, #DDF0FA, #FBFBFE);
+	color: #0A5274;
+}
+
+.ui-accordion .ui-accordion-header {
+	border: 0;
+	background-color: #DDF0FA;
+	background-image: none;
+	font-size: 14px;
+	color: #0C7889
+}
+
+.ui-accordion .ui-accordion-content {
+	border: 0;
+	background-color: #FBFBFE;
+	background-image: none;
+}
+
+.ui-resizable-e {
+	border-right: 2px solid #DDF0FA;
+}
+
+/** Query panel */
+
+#search_menu form {
+	font-size: 11px;
+}
+
+.search_within {
+	clear: both;
+	margin-top: 5px;
+}
+
+.search_within input {
+	margin-left: 0px;
+	margin-right: 4px;
+}
+	
+ul.crumblist {
+	clear: both;
+}
+
+/** Result area */
+
+.result_area {
+	margin-left: 315px;
+}
+
+/** Container header */
+.container_header {
+	margin-bottom: 5px;
+}
+
+.container_header h2 {
+	display: inline-block;
+}
+
+.container_header h2 img {
+	vertical-align: bottom;
+}
+
+.container_header span {
+	display: inline-block;
+	background-color: #EFEFFF;
+	border: 1px solid #DDDDEE;
+	border-radius: 4px;
+	margin: 0 0 0 8px;
+	padding: 5px;
+	cursor: pointer;
+	font-size: 15px;
+	color: #666666;
+}
+
+.container_header span.disabled {
+	color: #AAA;
+}
+
+.container_header .container_menu {
+	float: right;
+}
+
+.container_header ul {
+	display: none;
+}
+
+.arrange_placeholder {
+	height: 0px;
+}
+
+.arrange_mode .arrange_placeholder + tr td {
+	box-shadow : 0px 3px 0px 0px #0F80B3 inset;
+	-webkit-box-shadow: 0px 3px 0px 0px #0F80B3 inset;
+}
+
+.container_header span.active {
+	background-color: #59AACE;
+	border: 1px solid #0F80B3;
+	box-shadow: 0 0 8px 0 #55ABE0;
+	color: white;
+}
+
+/** Result table */
+.result_table {
+	font-size: 14px;
+	line-height: 18px;
+	margin-top: 10px;
+}
+
+.result_table tr {
+	border-bottom: 1px solid #EEEEEE;
+}
+
+.result_table tr.entry:hover {
+	background-color: #f8f8ff;
+}
+
+.result_table tr.selected {
+	background-color: #F4F4FD;
+	border-bottom: 1px solid #DDDDDD;
+}
+
+.result_table tr.selected:hover {
+	background-color: #f0f0fC;
+}
+
+.result_table tr.highlighted {
+	background-color: #FFFFC5;
+}
+
+.result_table th {
+	text-align: left;
+	font-color: #889;
+	font-size: 85%;
+	padding: 4px 0px 0px;
+	white-space: nowrap;
+}
+
+.result_table td {
+	padding: 4px 8px 4px 0px;
+}
+
+.result_table td.check_box {
+	width: 20px;
+	padding-right: 4px;
+}
+
+.result_table td.type {
+	width: 20px;
+	padding-right: 4px;
+}
+
+.result_table td.itemdetails {
+	width: 100%;
+}
+
+.result_table td.check_box * {
+	vertical-align: text-bottom;
+}
+
+.result_table td.creator {
+	min-width: 90px;
+	max-width: 150px;
+	font-size: 70%;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.result_table td.date_added {
+	width: 70px;
+	font-size: 70%;
+}
+
+.result_table td.type img {
+	vertical-align: text-bottom;
+}
+
+.result_table td.menu_box {
+	width: 20px;
+	padding: 3px;
+}
+
+.result_table .batch_actions {
+	border-bottom: 0px solid #EEEEEE;
+	margin-top: -5px;
+}
+
+.result_table .batch_actions td {
+	margin-right: 0px;
+	padding-right: 0px;
+}
+
+/** Action menus */
+.action_menu {
+	margin-bottom: 0px;
+}
+
+.action_menu li {
+	list-style: none;
+	margin-left: 0px;
+	margin-bottom: 0px;
+	text-indent: 0px;
+	padding: 5px;
+}
+
+.action_menu li:hover {
+	background-color: #eeeeff;
+	color: #E98D60;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.menu_box ul {
+	display: none;
+}
+
+/** Drag( acti)ons */
+.drop_active.item_title {
+	border: 1px dashed #59AACE;
+	background-color: #FBFBFE;
+}
+
+.drop_hover.item_title {
+	background-color: #DDF0FA;
+	border: 1px solid #59AACE;
+	color: #555555;
+	text-decoration: none;
+}
+
+/** Sorting columns */
+.sorting {
+	background-image: none;
+}
+
+.sort_col span, .index_col span {
+	padding-right: 19px;
+}
+
+.sorting span { background: url('../images/sort_both.png') no-repeat center right; }
+.sorting.asc span { background: url('../images/sort_asc.png') no-repeat center right; }
+.sorting.desc span { background: url('../images/sort_desc.png') no-repeat center right; }
+
+.sort_col:hover {
+	cursor: pointer;
+}
+
+/** Other */
+
+.item_title.ui-state-disabled {
+	opacity: 1;
+}

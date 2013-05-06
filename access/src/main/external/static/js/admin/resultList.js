@@ -23,6 +23,7 @@ require.config({
 		'RemoteStateChangeMonitor' : 'admin/src/RemoteStateChangeMonitor',
 		'ConfirmationDialog' : 'admin/src/ConfirmationDialog',
 		'AlertHandler' : 'admin/src/AlertHandler',
+		'ResizableAcccordionMenu' : 'admin/src/ResizableAccordionMenu',
 		'editable' : 'jqueryui-editable.min',
 		'moment' : 'moment.min'
 	},
@@ -40,7 +41,6 @@ define('resultList', ['module', 'jquery', 'ResultObjectList', 'AlertHandler', 'P
                       'DeleteBatchButton', 'EditAccessControlForm'], function(module, $, ResultObjectList) {
 	var alertHandler = $("<div id='alertHandler'></div>");
 	alertHandler.alertHandler().appendTo(document.body).hide();
-	//alertHandler.alertHandler('addMessage', "hello world");
 	
 	$("#select_all").click(function(){
 		$(".result_table .entry").resultObject('select');
@@ -51,6 +51,10 @@ define('resultList', ['module', 'jquery', 'ResultObjectList', 'AlertHandler', 'P
 	});
 	
 	var resultObjectList = new ResultObjectList({'metadataObjects' : module.config().metadataObjects});
+	
+	$("#search_menu").resizableAccordionMenu({
+		alsoResize : '#facet_field_path_structure'
+	});
 	
 	
 	$("#publish_selected").publishBatchButton({

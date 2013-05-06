@@ -1,0 +1,150 @@
+.structure {
+	overflow: auto;
+	overflow-y: hidden;
+	padding-bottom: 10px;
+	font-size: 12px;
+	line-height: 17px;
+}
+
+.structure .container img {
+	width: 10px;
+	display: inline-block;
+}
+
+.structure .entry {
+	height: 23px;
+	display: block;
+	white-space: nowrap;
+	*width: 125%;
+}
+
+.structure .entry  img {
+	display: inline-block;
+	padding: 0px 0px 0px 0px;
+}
+
+.structure .entry img {
+	*display: inline;
+}
+
+.structure .entry .description {
+	display: inline;
+	vertical-align: 5%;
+}
+
+.structure .entry .description img {
+	float: none;
+	margin: 0px;
+	margin-top: 0px !important;
+	padding: 0px;
+}
+
+.structure .entry .description a:hover {
+	color: #1D7594;
+}
+
+.structure .entry .description .secondary_actions {
+	/*visibility: hidden;*/
+	font-size: 80%;
+	display: inline;
+}
+
+.structure .entry .description:hover .secondary_actions {
+	visibility: visible;
+}
+
+/** Aggregate record structure */
+
+.structure.aggregate {
+	margin: -15px 20px 0px 40px;
+	width: 900px;
+	float: left;
+}
+
+.structure.aggregate .entry .primary_action {
+	color: #0A5274;
+	font-size: 13px;
+}
+
+.structure.aggregate .entry .secondary_actions {
+	padding-left: 3px;
+}
+
+.structure.aggregate .entry .secondary_actions a {
+	background-color: #5AABCF;
+	border: 1px solid #6A8693;
+	color: #ffffff; 
+	display : inline-block;
+	font-size: 10px;
+	font-weight: bold;
+	line-height: 16px;
+	padding: 0 4px;
+	margin-right: 3px;
+}
+
+.structure.aggregate .entry .secondary_actions a {
+	*display: inline;
+}
+
+/** Facet */
+.structure.facet {
+	overflow: hidden;
+	background-color: #ededed;
+	font-size: 12px;
+	line-height: 16px;
+	padding: 0px 5px 10px 5px;
+	margin: -5px 0px 10px 0px;
+	max-height: 500px;
+}
+
+.structure.facet img {
+	margin-top: 1px;
+}
+
+.structure.facet .entry {
+	height: 18px;
+}
+
+/** Pop-out facet */
+.structure.facet.popout {
+	position: relative;
+	overflow-x: visible !important;
+	overflow-y: auto;
+	display: inline-block;
+	max-width: 600px;
+	min-width: 190px;
+	z-index: 999;
+	-webkit-box-shadow: 4px 4px 3px #cdcdcd;
+	-moz-box-shadow: 4px 4px 3px #cdcdcd;
+	box-shadow: 4px 4px 3px #cdcdcd;
+	-ms-filter:
+		"progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#cdcdcd')";
+	filter: progid : DXImageTransform.Microsoft.Shadow ( Strength = 4,
+		Direction = 135, Color = '#cdcdcd' );
+	*background-image: none;
+}
+
+.structure.facet.popout:hover {
+	*display: inline;
+}
+
+.structure.facet.popout .entry .primary_action {
+	overflow: hidden;
+	display: inline-block;
+	vertical-align: text-bottom;
+	text-overflow: ellipsis;
+	max-width: 130px;
+}
+
+.structure.facet.popout .entry .primary_action {
+	*display: inline-block;
+}
+
+.structure.facet.popout:hover .entry .primary_action {
+	max-width: inherit;
+}
+
+/** Full record page */
+.structure.full_record img
+	margin-top: 6px;
+}
