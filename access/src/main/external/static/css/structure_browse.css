@@ -44,13 +44,50 @@
 }
 
 .structure .entry .description .secondary_actions {
-	/*visibility: hidden;*/
 	font-size: 80%;
 	display: inline;
 }
 
 .structure .entry .description:hover .secondary_actions {
 	visibility: visible;
+}
+
+.structure .indent_unit, .structure .cont_toggle {
+	background-image: url('/static/images/structure.png');
+}
+
+.structure .indent_unit {
+	background-position: -27px -32px;
+	width: 21px;
+	height: 23px;
+	float: left;
+	display: block;
+}
+
+.structure .indent_unit.siblings {
+	background-position: -27px -16px;
+}
+
+.structure .indent_unit.last_sib {
+	background-position: -27px -78px;
+}
+
+.structure .indent_unit.empty {
+	background-image: none;
+}
+
+.structure .cont_toggle {
+	background-position: 0px -128px;
+	width: 10px;
+	height: 10px;
+}
+
+.structure .expand.cont_toggle {
+	background-position: 10px -128px;
+}
+
+.structure .collapse.cont_toggle {
+	background-position: 20px -128px;
 }
 
 /** Aggregate record structure */

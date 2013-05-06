@@ -21,7 +21,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page trimDirectiveWhitespaces="true" %>
 <div class="result_page contentarea">
-	<c:import url="searchMenu.jsp"/>
+	<c:import url="search/searchMenu.jsp"/>
 
 	<div class="result_area">
 		<div>
@@ -78,12 +78,12 @@
 						</td>
 					</tr>
 					<tr>
-						<th></th>
-						<th></th>
-						<th>Title</th>
-						<th>Creator</th>
-						<th>Added</th>
-						<th>Modified</th>
+						<th class="sort_col" data-type="index"></th>
+						<th class="sort_col"></th>
+						<th class="sort_col">Title</th>
+						<th class="sort_col">Creator</th>
+						<th class="sort_col">Added</th>
+						<th class="sort_col">Modified</th>
 						<th></th>
 					</tr>
 					<c:forEach items="${resultResponse.resultList}" var="metadata" varStatus="status">
@@ -96,6 +96,7 @@
 	</div>
 </div>
 
+<link rel="stylesheet" type="text/css" href="/static/css/admin/search_results.css" />
 <script>
 	var require = {
 		config: {

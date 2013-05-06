@@ -24,6 +24,8 @@ require.config({
 		'ConfirmationDialog' : 'admin/src/ConfirmationDialog',
 		'AlertHandler' : 'admin/src/AlertHandler',
 		'ResizableAcccordionMenu' : 'admin/src/ResizableAccordionMenu',
+		'sortElements' : 'admin/lib/jquery.sortElements',
+		'ResultTableView' : 'admin/src/ResultTableView',
 		'editable' : 'jqueryui-editable.min',
 		'moment' : 'moment.min'
 	},
@@ -37,8 +39,7 @@ require.config({
 	}
 });
 
-define('resultList', ['module', 'jquery', 'ResultObjectList', 'AlertHandler', 'PublishBatchButton', 'UnpublishBatchButton', 
-                      'DeleteBatchButton', 'EditAccessControlForm'], function(module, $, ResultObjectList) {
+define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView'], function(module, $) {
 	var alertHandler = $("<div id='alertHandler'></div>");
 	alertHandler.alertHandler().appendTo(document.body).hide();
 	
@@ -50,48 +51,11 @@ define('resultList', ['module', 'jquery', 'ResultObjectList', 'AlertHandler', 'P
 		$(".result_table .entry").resultObject('unselect');
 	});
 	
-	var resultObjectList = new ResultObjectList({'metadataObjects' : module.config().metadataObjects});
-	
-	$("#search_menu").resizableAccordionMenu({
+	/*$("#search_menu").resizableAccordionMenu({
 		alsoResize : '#facet_field_path_structure'
-	});
+	});*/
 	
-	
-	$("#publish_selected").publishBatchButton({
-		'resultObjectList' : resultObjectList, 
-		'workFunction' : function() {
-				this.resultObject('setStatusText', 'Publishing...');
-				this.resultObject('updateOverlay', 'show');
-			}, 
-		'followupFunction' : function() {
-			this.resultObject('setStatusText', 'Publishing....');
-		}, 
-		'completeFunction' : function(){
-			this.resultObject('refresh', true);
-		}
-	});
-	$("#unpublish_selected").unpublishBatchButton({
-		'resultObjectList' : resultObjectList, 
-		'workFunction' : function() {
-			this.resultObject('setStatusText', 'Unpublishing...');
-			this.resultObject('updateOverlay', 'show');
-			}, 
-		'followupFunction' : function() {
-			this.resultObject('setStatusText', 'Unpublishing....');
-		}, 
-		'completeFunction' : function(){
-			this.resultObject('refresh', true);
-		}
-	});
-	$("#delete_selected").deleteBatchButton({
-		'resultObjectList' : resultObjectList, 
-		'workFunction' : function() {
-			this.resultObject('setStatusText', 'Deleting...');
-			this.resultObject('updateOverlay', 'show');
-			}, 
-		'followupFunction' : function() {
-			this.resultObject('setStatusText', 'Cleaning up...');
-		}, 
-		'completeFunction' : 'deleteElement'
+	$(".result_table").resultTableView({
+		'metadataObjects' : module.config().metadataObjects
 	});
 });

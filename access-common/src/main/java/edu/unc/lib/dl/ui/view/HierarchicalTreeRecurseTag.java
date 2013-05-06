@@ -78,9 +78,11 @@ public class HierarchicalTreeRecurseTag extends SimpleTagSupport {
 			nextGenerationCode = indentCode + ((lastSibling)? '0' : '1');
 		}
 		
+		out.println("<div class='entry_wrap' data-pid='" + metadata.getId() + "'>");
+		
 		if (!(this.hideRoot && firstEntry) && !isStub) {
 			// Render the main entry, containing the contents from the jsp tag
-			out.println("<div class='hier_entry'>");
+			out.println("<div class='entry'>");
 			out.println(currentIndent);
 
 			pageContext.setAttribute("isRootNode", firstEntry);
@@ -98,7 +100,7 @@ public class HierarchicalTreeRecurseTag extends SimpleTagSupport {
 		if ((currentNode.getChildren() != null && currentNode.getChildren().size() > 0)
 				|| (metadata.getContentModel() != null && metadata.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString()))) {
 			if (!isStub)
-				out.println("<div id='hier_container_children_" + metadata.getId().replace(':', '-') + "'>");
+				out.println("<div id='children' " + metadata.getId().replace(':', '-') + "'>");
 
 			if (currentNode.getChildren() != null) {
 				for (int i = 0; i < currentNode.getChildren().size(); i++) {

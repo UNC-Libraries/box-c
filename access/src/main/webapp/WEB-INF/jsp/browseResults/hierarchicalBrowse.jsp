@@ -140,32 +140,36 @@
 		<%-- Determine whether to display a collapse or expand icon --%>
 		<c:choose>
 			<c:when test="${(empty childCount || childCount == 0) && retainedAsDirectMatch}">
-				<img src="/static/images/no_action.png"/>
+				<div class="cont_toggle" title="Matched your query" /></div>
+				<img src="/static/images/clear.gif" class="cont_toggle" />
 			</c:when>
 			<c:when test="${fn:length(currentNode.children) > 0 && (isRootNode ||
 					hierarchicalViewResults.searchState.rowsPerPage == 0)}">
-				<a href="#" class="hier_action collapse" title="Collapse ${containerNode.title}" id="container_toggle_${fn:replace(containerNode.id, ':', '-')}"><img src="/static/images/collapse.png"/></a>
+				<div class="cont_toggle collapse" title="Collapse contents" /></div>
 			</c:when>
 			<c:when test="${childCount == 0}">
-				<a class="hier_action" title="${containerNode.title} is empty"><img src="/static/images/no_action.png"/></a>
-			</c:when>
-			<c:when test="${fn:length(currentNode.children) > 0}">
-				<%-- Subcontainer children present means that expanding should just get non-container children --%>
-				<c:url var="expandUrl" value="#browseChildren?${searchStateUrl}&indentCode=${indentCode}">
-					<c:param name="tier" value="${containerNode.path.searchValue}"/>
-					<c:param name="disableSecondaryDetailsLink" value='${param.disableSecondaryDetailsLink}'/>
-					<c:param name="hideTypeIcon" value='${param.hideTypeIcon}'/>
-				</c:url>
-				<a href="<c:out value='${expandUrl}' />" title="Expand ${containerNode.title}" class="hier_action expand hier_container_not_loaded" id="container_toggle_${fn:replace(containerNode.id, ':', '-')}"><img src="/static/images/expand.png"/></a>
+				<div class="cont_toggle" title="No contents returned" /></div>
 			</c:when>
 			<c:otherwise>
-				<c:set var="actions" scope="page" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${containerNode.path.searchValue}"'/>
-				<c:url var="expandUrl" value="#browse?${searchStateUrl}&depth=1&indentCode=${indentCode}&ajax=true">
-					<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${actions}'/>
-					<c:param name="disableSecondaryDetailsLink" value='${param.disableSecondaryDetailsLink}'/>
-					<c:param name="hideTypeIcon" value='${param.hideTypeIcon}'/>
-				</c:url>
-				<a href="<c:out value='${expandUrl}' />" title="Expand ${containerNode.title}" class="hier_action expand hier_container_not_loaded" id="container_toggle_${fn:replace(containerNode.id, ':', '-')}"><img src="/static/images/expand.png"/></a>
+				<c:choose>
+					<c:when test="${fn:length(currentNode.children) > 0}">
+						<%-- Subcontainer children present means that expanding should just get non-container children --%>
+						<c:url var="expandUrl" value="browseChildren?${searchStateUrl}&indentCode=${indentCode}">
+							<c:param name="tier" value="${containerNode.path.searchValue}"/>
+							<c:param name="disableSecondaryDetailsLink" value='${param.disableSecondaryDetailsLink}'/>
+							<c:param name="hideTypeIcon" value='${param.hideTypeIcon}'/>
+						</c:url>
+					</c:when>
+					<c:otherwise>
+						<c:set var="actions" scope="page" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${containerNode.path.searchValue}"'/>
+						<c:url var="expandUrl" value="browse?${searchStateUrl}&depth=1&indentCode=${indentCode}&ajax=true">
+							<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${actions}'/>
+							<c:param name="disableSecondaryDetailsLink" value='${param.disableSecondaryDetailsLink}'/>
+							<c:param name="hideTypeIcon" value='${param.hideTypeIcon}'/>
+						</c:url>
+					</c:otherwise>
+				</c:choose>
+				<div class="cont_toggle expand" title="Expand contents" data-url="<c:out value='${expandUrl}' />"/></div>
 			</c:otherwise>
 		</c:choose>
 	</c:if>
