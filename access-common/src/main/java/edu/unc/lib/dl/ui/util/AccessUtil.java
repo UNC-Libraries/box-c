@@ -63,7 +63,12 @@ public class AccessUtil {
 	}
 	
 	public static boolean hasAccess(AccessGroupSet groups, BriefObjectMetadata metadata, Permission permission) {
-		return metadata.getAccessControlBean().hasPermission(groups, permission);
+		if (metadata == null)
+			return false;
+		ObjectAccessControlsBean accessControlBean = metadata.getAccessControlBean();
+		if (metadata.getAccessControlBean() == null)
+			return false;
+		return accessControlBean.hasPermission(groups, permission);
 	}
 
 	/**

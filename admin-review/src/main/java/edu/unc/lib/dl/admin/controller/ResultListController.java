@@ -39,6 +39,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
+import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -65,17 +66,28 @@ public class ResultListController extends AbstractSolrSearchController {
 
 	@RequestMapping(value = "list", method = RequestMethod.GET)
 	public String listRootContents(Model model, HttpServletRequest request) {
-		return this.listContainerContents(this.collectionsPid.getPid(), model, request);
+		return this.listContainerContents(this.collectionsPid.getPid(), model, request, false);
 	}
 
 	@RequestMapping(value = "list/{prefix}/{id}", method = RequestMethod.GET)
 	public String listContainerContents(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
 			Model model, HttpServletRequest request) {
 		String pid = idPrefix + ":" + id;
-		return this.listContainerContents(pid, model, request);
+		return this.listContainerContents(pid, model, request, false);
+	}
+	
+	@RequestMapping(value = "review", method = RequestMethod.GET)
+	public String getReviewList(Model model, HttpServletRequest request) {
+		return this.listContainerContents(collectionsPid.getPid(), model, request, true);
 	}
 
-	public String listContainerContents(String pid, Model model, HttpServletRequest request) {
+	@RequestMapping(value = "review/{prefix}/{id}", method = RequestMethod.GET)
+	public String getReviewList(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
+			HttpServletRequest request) {
+		return this.listContainerContents(idPrefix + ":" + id, model, request, true);
+	}
+
+	public String listContainerContents(String pid, Model model, HttpServletRequest request, boolean reviewing) {
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
 		CutoffFacet path;
@@ -88,10 +100,12 @@ public class ResultListController extends AbstractSolrSearchController {
 				throw new ResourceNotFoundException("The requested record either does not exist or is not accessible");
 			}
 			path = containerBean.getPath();
-			path.setCutoff(path.getHighestTier() + 1);
+			if (!reviewing)
+				path.setCutoff(path.getHighestTier() + 1);
 			model.addAttribute("containerBean", containerBean);
 		} else {
 			path = new CutoffFacet("ANCESTOR_PATH", "1,*");
+			if (!reviewing)
 			path.setCutoff(2);
 		}
 
@@ -99,6 +113,10 @@ public class ResultListController extends AbstractSolrSearchController {
 
 		// Limit to the current tier
 		resultListState.getFacets().put("ANCESTOR_PATH", path);
+		if (reviewing) {
+			GenericFacet facet = new GenericFacet("STATUS", "Unpublished");
+			resultListState.getFacets().put("STATUS", facet);
+		}
 
 		resultListState.setRowsPerPage(500);
 		resultListState.setResultFields(resultsFieldList);
@@ -121,7 +139,9 @@ public class ResultListController extends AbstractSolrSearchController {
 
 		model.addAttribute("resultResponse", resultResponse);
 
-		request.getSession().setAttribute("resultOperation", "list");
+		if (reviewing)
+			request.getSession().setAttribute("resultOperation", "review");
+		else request.getSession().setAttribute("resultOperation", "list");
 
 		return "search/resultList";
 	}
