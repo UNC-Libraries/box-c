@@ -48,6 +48,7 @@
 .search_within {
 	clear: both;
 	margin-top: 5px;
+	font-size: 11px;
 }
 
 .search_within input {
@@ -207,6 +208,13 @@ ul.crumblist {
 .result_table .batch_actions td {
 	margin-right: 0px;
 	padding-right: 0px;
+}
+
+/** Batch operations */
+.batch_actions p {
+	display: inline;
+	padding-right: 10px;
+	vertical-align: bottom;
 }
 
 /** Action menus */
