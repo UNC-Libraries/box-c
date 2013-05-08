@@ -14,10 +14,6 @@
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>
-			<name>baseIndentCode</name>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
 			<name>hideRoot</name>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>

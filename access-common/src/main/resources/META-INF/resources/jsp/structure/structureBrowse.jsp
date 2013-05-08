@@ -70,7 +70,7 @@
 	</c:otherwise>
 </c:choose>
 
-<cdr:hierarchicalTree items="${hierarchicalViewResults}" var="currentNode" baseIndentCode="${param.indentCode}" hideRoot="${param.excludeParent}" excludeIds="${excludeIds}">
+<cdr:hierarchicalTree items="${hierarchicalViewResults}" var="currentNode" hideRoot="${param.excludeParent}" excludeIds="${excludeIds}">
 	<c:set var="containerNode" value="${currentNode.metadata}"/>
 	
 	<c:set var="isAContainer" value="${containerNode.resourceType != searchSettings.resourceTypeFile}" />
@@ -115,6 +115,10 @@
 	</c:choose>
 	
 	<c:choose>
+		<c:when test="${queryPath == 'structure'}">
+			<c:url var="primaryUrl" scope="page" value='structure/${containerBean.pid.path}'>
+			</c:url>
+		</c:when>
 		<c:when test="${queryPath == 'search' && retainedAsDirectMatch}">
 			<c:url var="primaryUrl" scope="page" value='search'>
 				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${containerFacetAction}|${searchSettings.actions['RESET_NAVIGATION']}:search"/>
@@ -140,35 +144,33 @@
 		<%-- Determine whether to display a collapse or expand icon --%>
 		<c:choose>
 			<c:when test="${(empty childCount || childCount == 0) && retainedAsDirectMatch}">
-				<div class="cont_toggle" title="Matched your query" /></div>
+				<div class="cont_toggle" title="Matched your query"></div>
 			</c:when>
 			<c:when test="${fn:length(currentNode.children) > 0 && (isRootNode ||
 					hierarchicalViewResults.searchState.rowsPerPage == 0)}">
-				<div class="cont_toggle collapse" title="Collapse contents" /></div>
+				<div class="cont_toggle collapse" title="Collapse contents"></div>
 			</c:when>
 			<c:when test="${childCount == 0}">
-				<div class="cont_toggle" title="No contents returned" /></div>
+				<div class="cont_toggle" title="No contents returned"></div>
 			</c:when>
 			<c:otherwise>
 				<c:choose>
 					<c:when test="${fn:length(currentNode.children) > 0}">
 						<%-- Subcontainer children present means that expanding should just get non-container children --%>
-						<c:url var="expandUrl" value="browseChildren?${searchStateUrl}&indentCode=${indentCode}">
+						<c:url var="expandUrl" value="structure/children?${searchStateUrl}">
 							<c:param name="tier" value="${containerNode.path.searchValue}"/>
 							<c:param name="disableSecondaryDetailsLink" value='${param.disableSecondaryDetailsLink}'/>
 							<c:param name="hideTypeIcon" value='${param.hideTypeIcon}'/>
 						</c:url>
 					</c:when>
 					<c:otherwise>
-						<c:set var="actions" scope="page" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${containerNode.path.searchValue}"'/>
-						<c:url var="expandUrl" value="browse?${searchStateUrl}&depth=1&indentCode=${indentCode}&ajax=true">
-							<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${actions}'/>
-							<c:param name="disableSecondaryDetailsLink" value='${param.disableSecondaryDetailsLink}'/>
-							<c:param name="hideTypeIcon" value='${param.hideTypeIcon}'/>
+						<c:url var="expandUrl" value="structure/${containerNode.pid.path}">
+							<c:param name="depth" value='1'/>
+							<c:param name="ajax" value='true'/>
 						</c:url>
 					</c:otherwise>
 				</c:choose>
-				<div class="cont_toggle expand" title="Expand contents" data-url="<c:out value='${expandUrl}' />"/></div>
+				<div class="cont_toggle expand" title="Expand contents" data-url="<c:out value='${expandUrl}' />"></div>
 			</c:otherwise>
 		</c:choose>
 	</c:if>
@@ -177,6 +179,7 @@
 	<c:if test="${param.hideTypeIcon == false }">
 		<c:choose>
 			<c:when test="${containerNode.resourceType == searchSettings.resourceTypeCollection}">
+				<div class="resource_type collection" title="Collection"></div>
 				<img src="/static/images/hier_collection.png" alt="Collection" title="Collection" class="resource_type"/>
 			</c:when>
 			<c:when test="${containerNode.resourceType == searchSettings.resourceTypeFile || containerNode.resourceType == searchSettings.resourceTypeAggregate}">
@@ -189,34 +192,34 @@
 	</c:if>
 	
 	<%-- Display the main entry description --%>
-	<div class="hier_entry_description">
+	<div class="description">
 		<c:choose>
 			<c:when test="${firstEntryBrowseSelected}">
-				<a class="hier_entry_primary_action" title="Currently browsing ${containerNode.title}">${containerNode.title}</a>
+				<a class="primary_action" title="Currently browsing ${containerNode.title}">${containerNode.title}</a>
 			</c:when>
 			<c:when test="${containerNode.resourceType == searchSettings.resourceTypeFile || containerNode.resourceType == searchSettings.resourceTypeAggregate}">
 				<c:choose>
 					<c:when test="${filePrimaryDownload}">
 						<c:url var="filePrimaryUrl" scope="page" value="${cdr:getDatastreamUrl(containerNode, 'DATA_FILE', fedoraUtil)}&dl=true"/>
-						<a href="<c:out value='${filePrimaryUrl}' />" class="hier_entry_primary_action" title="Download this item.">${containerNode.title}</a>
+						<a href="<c:out value='${filePrimaryUrl}' />" class="primary_action" title="Download this item.">${containerNode.title}</a>
 					</c:when>
 					<c:otherwise>
 						<c:url var="filePrimaryUrl" value="record">
 							<c:param name="id" value="${containerNode.id}"/>
 						</c:url>
-						<a href="<c:out value='${filePrimaryUrl}' />" class="hier_entry_primary_action" title="View details for this item.">${containerNode.title}</a>
+						<a href="<c:out value='${filePrimaryUrl}' />" class="primary_action" title="View details for this item.">${containerNode.title}</a>
 					</c:otherwise>
 				</c:choose>
 			</c:when>
 			<c:otherwise>
-				<a href="<c:out value='${primaryUrl}' />" class="hier_entry_primary_action" title="${primaryTooltip}">${containerNode.title}</a>
+				<a href="<c:out value='${primaryUrl}' />" class="primary_action" title="${primaryTooltip}">${containerNode.title}</a>
 			</c:otherwise>
 		</c:choose>
 		
 		<c:choose>
 			<c:when test="${!isAContainer}">
 				<c:if test="${param.displaySecondaryActions}">
-					<p class="hier_secondary_actions">
+					<p class="secondary_actions">
 						<c:if test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', containerNode)}">
 							<c:if test="${!filePrimaryDownload}">
 								<a href="${cdr:getDatastreamUrl(containerNode, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
@@ -231,7 +234,7 @@
 			</c:when>
 			<c:otherwise>
 				<c:if test="${param.displayCounts && !(retainedAsDirectMatch && childCount == 0)}">
-					<span class="hier_count">(${childCount})</span>
+					<span class="count">(${childCount})</span>
 				</c:if>
 				
 				<c:if test="${param.displaySecondaryActions}">
@@ -247,9 +250,9 @@
 						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${containerNode.path.searchValue},${containerNode.path.highestTier + 1}"'/>
 					</c:url>
 			
-					<p class="hier_secondary_actions">
+					<p class="secondary_actions">
 						<c:if test="${!param.disableSecondaryBrowseLink && !firstEntryBrowseSelected}">
-							<a href="<c:out value="${secondaryBrowseUrl}" />" class="hier_entry_secondary_action" title="Browse structure starting from ${fn:toLowerCase(containerNode.resourceType)} <i>${containerNode.title}</i>">Structure</a>&nbsp;
+							<a href="<c:out value="${secondaryBrowseUrl}" />" class="secondary_action" title="Browse structure starting from ${fn:toLowerCase(containerNode.resourceType)} <i>${containerNode.title}</i>">Structure</a>&nbsp;
 						</c:if>
 						<c:if test="${!param.disableSecondarySearchWithStateLink}">
 							<c:choose>
@@ -265,7 +268,7 @@
 							(<a href="<c:out value="${secondarySearchPathUrl}" />">View all contents</a>)&nbsp;
 						</c:if>
 						<c:if test="${!param.disableSecondaryDetailsLink}">
-							<a href="record?id=${containerNode.id}" class="hier_entry_secondary_action" title="View ${fn:toLowerCase(containerNode.resourceType)} information for ${containerNode.title}">Details</a>
+							<a href="record?id=${containerNode.id}" class="secondary_action" title="View ${fn:toLowerCase(containerNode.resourceType)} information for ${containerNode.title}">Details</a>
 						</c:if>
 					</p>
 				</c:if>
@@ -274,6 +277,6 @@
 	</div>
 	<%-- Render the "see all" link after the last non-container result --%>
 	<c:if test="${lastSibling && !isAContainer}">
-		${"</div>"}${"<div class='hier_entry'>"}${leadupIndent}<a href="${containerUrl}">(see all)</a>
+		${"</div></div>"}${"<div class='entry_wrap'><div class='entry'>"}<a href="${containerUrl}">(see all)</a>
 	</c:if>
 </cdr:hierarchicalTree>

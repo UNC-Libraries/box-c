@@ -52,42 +52,46 @@
 	visibility: visible;
 }
 
-.structure .indent_unit, .structure .cont_toggle {
+.structure .indent, .structure .cont_toggle {
 	background-image: url('/static/images/structure.png');
 }
 
-.structure .indent_unit {
-	background-position: -27px -32px;
+.structure .indent {
+	background-position: -27px -36px;
 	width: 21px;
 	height: 23px;
 	float: left;
 	display: block;
 }
 
-.structure .indent_unit.siblings {
+.structure .indent.with_sib {
 	background-position: -27px -16px;
 }
 
-.structure .indent_unit.last_sib {
-	background-position: -27px -78px;
+.structure .indent.last_sib {
+	background-position: -27px -80px;
 }
 
-.structure .indent_unit.empty {
+.structure .indent.empty {
 	background-image: none;
 }
 
 .structure .cont_toggle {
-	background-position: 0px -128px;
+	background-position: 0px -129px;
 	width: 10px;
 	height: 10px;
+	margin-top: 12px;
+	display: inline-block;
 }
 
 .structure .expand.cont_toggle {
-	background-position: 10px -128px;
+	background-position: -10px -129px;
+	cursor: pointer;
 }
 
 .structure .collapse.cont_toggle {
-	background-position: 20px -128px;
+	background-position: -20px -129px;
+	cursor: pointer;
 }
 
 /** Aggregate record structure */
@@ -142,6 +146,11 @@
 	height: 18px;
 }
 
+.structure .indent {
+	width: 13px;
+	height: 18px;
+}
+
 /** Pop-out facet */
 .structure.facet.popout {
 	position: relative;
@@ -179,6 +188,14 @@
 
 .structure.facet.popout:hover .entry .primary_action {
 	max-width: inherit;
+}
+
+/** Inset facet */
+.structure.facet.inset {
+	background-color: #ffffff;
+	max-width: none;
+	box-shadow: -9px -5px 10px -6px #DDF0FA inset;
+	overflow-x: auto;
 }
 
 /** Full record page */

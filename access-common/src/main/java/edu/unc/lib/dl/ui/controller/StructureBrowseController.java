@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,7 +32,7 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-import edu.unc.lib.dl.ui.model.RecordNavigationState;
+//import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 
@@ -44,10 +45,10 @@ import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
  * @author bbpennel
  */
 @Controller
-public class HierarchicalBrowseController extends AbstractSolrSearchController {
+public class StructureBrowseController extends AbstractSolrSearchController {
 	private static final Logger LOG = LoggerFactory.getLogger(StructureBrowseController.class);
 	
-	@RequestMapping("/browseChildren")
+	@RequestMapping("/structure/children")
 	public String getItemChildren(Model model, HttpServletRequest request, @RequestParam("tier") String tier) {
 		LOG.debug("In browse children controller for " + tier);
 		SearchRequest browseRequest = new SearchRequest();
@@ -63,11 +64,21 @@ public class HierarchicalBrowseController extends AbstractSolrSearchController {
 		model.addAttribute("searchStateUrl", searchStateUrl);
 		
 		model.addAttribute("template", "ajax");
-		return "browseResults/singleTierBrowse";
+		return "structure/singleTierBrowse";
 	}
 	
-	@RequestMapping(value = "/browse", method = RequestMethod.GET)
-	public String handleGet(Model model, HttpServletRequest request){
+	@RequestMapping(value = "/structure", method = RequestMethod.GET)
+	public String getStructure(Model model, HttpServletRequest request){
+		return getStructure(null, model, request);
+	}
+	
+	@RequestMapping(value = "/structure/{prefix}/{id}", method = RequestMethod.GET)
+	public String getStructure(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model, HttpServletRequest request){
+		return getStructure(idPrefix + ':' + id, model, request);
+	}
+	
+	public String getStructure(String pid, Model model, HttpServletRequest request){
+		
 		LOG.debug("In Hierarchical Browse controller");
 		
 		boolean ajaxRequest = request.getParameter("ajax") != null && request.getParameter("ajax").equals("true");
@@ -84,9 +95,12 @@ public class HierarchicalBrowseController extends AbstractSolrSearchController {
 		//Request object for the search
 		HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(depth);
 		generateSearchRequest(request, null, browseRequest);
+		if (pid != null)
+			browseRequest.setRootPid(pid);
+		
 		SearchState searchState = browseRequest.getSearchState();
 		
-		if (!searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())){
+		if (pid == null && !searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())){
 			browseRequest.setRetrievalDepth(1);
 		}
 		
@@ -116,17 +130,17 @@ public class HierarchicalBrowseController extends AbstractSolrSearchController {
 		
 		if (!ajaxRequest){
 			//Setup parameters for full record navigation
-			RecordNavigationState recordNavigationState = new RecordNavigationState();
+			/*RecordNavigationState recordNavigationState = new RecordNavigationState();
 			recordNavigationState.setSearchState(searchState);
 			recordNavigationState.setSearchStateUrl(searchStateUrl);
 
 			recordNavigationState.setRecordIdList(resultResponse.getIdList());
 			recordNavigationState.setTotalResults(resultResponse.getResultCount());
 			
-			request.getSession().setAttribute("recordNavigationState", recordNavigationState);
+			request.getSession().setAttribute("recordNavigationState", recordNavigationState);*/
 		} else {
 			model.addAttribute("template", "ajax");
-			return "browseResults/singleTierBrowse";
+			return "../../jsp/structure/structureFacet";
 		}
 		
 		return "browseResults";

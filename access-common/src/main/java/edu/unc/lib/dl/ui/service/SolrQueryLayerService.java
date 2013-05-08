@@ -716,14 +716,33 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public HierarchicalBrowseResultResponse getHierarchicalBrowseResults(HierarchicalBrowseRequest browseRequest) {
 		AccessGroupSet accessGroups = browseRequest.getAccessGroups();
 		SearchState browseState = (SearchState) browseRequest.getSearchState().clone();
-
-		// Default the ancestor path to the collections object so we always have a root
-		CutoffFacet rootPath = (CutoffFacet) browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
-		if (rootPath == null) {
-			rootPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + this.collectionsPid.getPid());
+		
+		CutoffFacet rootPath;
+		BriefObjectMetadataBean rootNode;
+		if (browseRequest.getRootPid() != null) {
+			rootNode = getObjectById(new SimpleIdRequest(browseRequest.getRootPid(),
+					browseRequest.getAccessGroups()));
+			rootPath = rootNode.getPath();
 			browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
+		} else {
+			// Default the ancestor path to the collections object so we always have a root
+			rootPath = (CutoffFacet) browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
+			if (rootPath == null) {
+				rootPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + this.collectionsPid.getPid());
+				browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
+			}
+			
+			rootNode = getObjectById(new SimpleIdRequest(rootPath.getSearchKey(),
+					browseRequest.getAccessGroups()));
 		}
-
+		boolean rootIsAStub = rootNode == null;
+		if (rootIsAStub) {
+			// Parent is not found, but children are, so make a stub for the parent.
+			rootNode = new BriefObjectMetadataBean();
+			rootNode.setId(rootPath.getSearchKey());
+			rootNode.setAncestorPathFacet(rootPath);
+		}
+		
 		HierarchicalBrowseResultResponse browseResults = new HierarchicalBrowseResultResponse();
 		SearchState hierarchyState = searchStateFactory.createHierarchyListSearchState();
 		// Use the ancestor path facet from the state where we will have set a default value
@@ -753,16 +772,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			LOG.error("Error while getting container results for hierarchical browse results", e);
 			return null;
 		}
-		// Get the root node for this search so that it can be displayed as the top tier
-		BriefObjectMetadataBean rootNode = getObjectById(new SimpleIdRequest(rootPath.getSearchKey(),
-				browseRequest.getAccessGroups()));
-		boolean rootIsAStub = rootNode == null;
-		if (rootIsAStub) {
-			// Parent is not found, but children are, so make a stub for the parent.
-			rootNode = new BriefObjectMetadataBean();
-			rootNode.setId(rootPath.getSearchKey());
-			rootNode.setAncestorPathFacet(rootPath);
-		}
+		// Add the root node into the result set
 		browseResults.getResultList().add(0, rootNode);
 
 		// Don't need to manipulate the container list any further unless either the root is a real record or there are subcontainers 

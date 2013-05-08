@@ -23,8 +23,10 @@ require.config({
 		'RemoteStateChangeMonitor' : 'admin/src/RemoteStateChangeMonitor',
 		'ConfirmationDialog' : 'admin/src/ConfirmationDialog',
 		'AlertHandler' : 'admin/src/AlertHandler',
-		'ResizableAccordionMenu' : 'admin/src/ResizableAccordionMenu',
 		'sortElements' : 'admin/lib/jquery.sortElements',
+		'SearchMenu' : 'admin/src/SearchMenu',
+		'StructureEntry' : 'src/StructureEntry',
+		'StructureView' : 'src/StructureView',
 		'ResultTableView' : 'admin/src/ResultTableView',
 		'editable' : 'jqueryui-editable.min',
 		'moment' : 'moment.min'
@@ -39,7 +41,7 @@ require.config({
 	}
 });
 
-define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'ResizableAccordionMenu'], function(module, $) {
+define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'SearchMenu'], function(module, $) {
 	var alertHandler = $("<div id='alertHandler'></div>");
 	alertHandler.alertHandler().appendTo(document.body).hide();
 	
@@ -51,9 +53,7 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Re
 		$(".result_table .entry").resultObject('unselect');
 	});
 	
-	$("#search_menu").resizableAccordionMenu({
-		alsoResize : '#facet_field_path_structure'
-	});
+	$("#search_menu").searchMenu();
 	
 	$(".result_table").resultTableView({
 		'metadataObjects' : module.config().metadataObjects

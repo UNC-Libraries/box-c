@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <div id="search_menu">
 	<div class="query_menu">
 		<div>
@@ -26,7 +27,8 @@
 	<div class="filter_menu">
 		<div>
 			<h3>Structure</h3>
-			<div data-href="structure_browse.html" class="structure_browse">
+			<c:set var="structureDataUrl">structure/<c:if test="${not empty containerBean}">${containerBean.pid.path}</c:if>?ajax=true</c:set>
+			<div data-href="${structureDataUrl}" id="structure_facet">
 				<div class="center"><img src="/static/images/admin/loading-small.gif"/></div>
 			</div>
 		</div>

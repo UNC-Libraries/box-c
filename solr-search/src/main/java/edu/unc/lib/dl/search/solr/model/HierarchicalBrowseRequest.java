@@ -22,6 +22,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 public class HierarchicalBrowseRequest extends SearchRequest {
 	private static final long serialVersionUID = 1L;
 	private int retrievalDepth;
+	private String rootPid;
 	
 	public HierarchicalBrowseRequest(int retrievalDepth){
 		this.retrievalDepth = retrievalDepth;
@@ -38,5 +39,13 @@ public class HierarchicalBrowseRequest extends SearchRequest {
 
 	public void setRetrievalDepth(int retrievalDepth) {
 		this.retrievalDepth = retrievalDepth;
+	}
+
+	public String getRootPid() {
+		return rootPid;
+	}
+
+	public void setRootPid(String rootPid) {
+		this.rootPid = rootPid;
 	}
 }

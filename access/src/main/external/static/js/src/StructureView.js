@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui', 'PID'], function(
+define([ 'jquery', 'jquery-ui', 'StructureEntry'], function(
 		$, ui, PID) {
 	$.widget("cdr.structureView", {
 		_create : function() {
@@ -6,7 +6,7 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 			this.element.addClass('structure');
 			
 			// Instantiate entries recursively
-			this.element.children(".entry_wrap");
+			this.element.find(".entry_wrap").structureEntry();
 			
 		}
 	});
