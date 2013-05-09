@@ -78,25 +78,49 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 	}
 	
 	public String getStructure(String pid, Model model, HttpServletRequest request){
+		LOG.debug("In Structure Browse controller for " + pid);
 		
-		LOG.debug("In Hierarchical Browse controller");
-		
-		boolean ajaxRequest = request.getParameter("ajax") != null && request.getParameter("ajax").equals("true");
-		
-		int depth = searchSettings.structuredDepthDefault;
+		String viewParam = request.getParameter("view");
+		String view;
+		boolean ajaxRequest;
+		if ("facet".equals(viewParam)) {
+			view = "../../jsp/structure/structureFacet";
+			ajaxRequest = true;
+		} else if ("ajax".equals(viewParam)) {
+			view = "../../jsp/structure/structureBrowse";
+			model.addAttribute("template", "ajax");
+			ajaxRequest = true;
+		} else {
+			// full view
+			view = null;
+			ajaxRequest = false;
+		}
+		int depth;
 		try {
 			depth = Integer.parseInt(request.getParameter("depth"));
 			if (depth > searchSettings.structuredDepthMax)
 				depth = searchSettings.structuredDepthMax;
 		} catch (Exception e){
-			//Ignore and use the default depth.
+			depth = searchSettings.structuredDepthDefault;
 		}
+		
+		String includeFiles = request.getParameter("files");
 		
 		//Request object for the search
 		HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(depth);
-		generateSearchRequest(request, null, browseRequest);
+		if (view == null) {
+			browseRequest.setSearchState(this.searchStateFactory.createHierarchicalBrowseSearchState(request.getParameterMap()));
+		} else {
+			browseRequest.setSearchState(this.searchStateFactory.createStructureBrowseSearchState(request.getParameterMap()));
+		}
 		if (pid != null)
 			browseRequest.setRootPid(pid);
+		if ("true".equals(includeFiles) || "only".equals(includeFiles)) {
+			browseRequest.getSearchState().setRowsPerPage(searchSettings.defaultPerPage);
+		} else {
+			browseRequest.getSearchState().setRowsPerPage(0);
+		}
+		
 		
 		SearchState searchState = browseRequest.getSearchState();
 		
@@ -120,16 +144,14 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 			resultResponse.setSearchState(searchState);
 		}
 		
-		model.addAttribute("resultType", "hierarchicalBrowse");
-		model.addAttribute("pageSubtitle", "Browse Results");
+		String searchParams = SearchStateUtil.generateSearchParameterString(searchState);
+		model.addAttribute("searchParams", searchParams);
 		
-		String searchStateUrl = SearchStateUtil.generateStateParameterString(searchState);
-		model.addAttribute("searchStateUrl", searchStateUrl);
-		model.addAttribute("resultResponse", resultResponse);
-		model.addAttribute("hierarchicalViewResults", resultResponse);
-		
-		if (!ajaxRequest){
-			//Setup parameters for full record navigation
+		if (ajaxRequest) {
+			model.addAttribute("template", "ajax");
+		} else {
+			model.addAttribute("resultType", "structure");
+			model.addAttribute("pageSubtitle", "Browse Results");
 			/*RecordNavigationState recordNavigationState = new RecordNavigationState();
 			recordNavigationState.setSearchState(searchState);
 			recordNavigationState.setSearchStateUrl(searchStateUrl);
@@ -138,11 +160,11 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 			recordNavigationState.setTotalResults(resultResponse.getResultCount());
 			
 			request.getSession().setAttribute("recordNavigationState", recordNavigationState);*/
-		} else {
-			model.addAttribute("template", "ajax");
-			return "../../jsp/structure/structureFacet";
 		}
 		
-		return "browseResults";
+		model.addAttribute("resultResponse", resultResponse);
+		model.addAttribute("structureResults", resultResponse);
+		
+		return view;
 	}
 }

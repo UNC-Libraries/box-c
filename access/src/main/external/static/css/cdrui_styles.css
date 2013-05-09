@@ -1418,3 +1418,25 @@ ul.crumblist li a {
 .full_screen .ol_fullscreenItemActive {
 	background-image: url('/static/images/full_screen_off.png');
 }
+
+.resource_icon {
+	background-image: url('/static/images/resource_types.png');
+	height: 18px;
+	width: 18px;
+	display: inline-block;
+}
+
+.resource_icon.Collection {
+}
+
+.resource_icon.Folder {
+	background-position: -18px 3px;
+}
+
+.resource_icon.Aggregate {
+	background-position: -37px 0px;
+}
+
+.resource_icon.File {
+	background-position: -54px 0px;
+}

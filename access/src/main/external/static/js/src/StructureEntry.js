@@ -3,15 +3,17 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 	$.widget("cdr.structureEntry", {
 		_create : function() {
 			var pid = this.element.attr("data-pid");
-			if (!pid)
-				return;
-			this.pid = new PID(pid);
+			if (pid)
+				this.pid = new PID(pid);
 			
 			this.contentLoaded = false;
-			this.contentUrl = this.element.children(".cont_toggle").attr("data-url");
 			
 			this.$entry = this.element.children(".entry");
 			this.$childrenContainer = this.element.children(".children");
+			if (this.$childrenContainer.children().length > 0)
+				this.$childrenContainer.addClass("expanded");
+			
+			this.contentUrl = this.$entry.children(".cont_toggle").attr("data-url");
 			
 			this._initToggleContents();
 			
@@ -34,14 +36,17 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 								if (data) {
 									// Adjust existing indents if the child container already has contents
 									var $existingLastSibling = self.$childrenContainer.children('.last_sib');
-									if ($existingLastSibling)
+									if ($existingLastSibling.length > 0)
 										$existingLastSibling.removeClass('last_sib').addClass('with_sib');
 									
-									var $newEntries = $(data);
-									$newEntries.structureEntry();
-									// Add in the new items
-									self.$childrenContainer.append($newEntries);
-									self.$childrenContainer.show();
+									var $newEntries = $(data).children('.children').find('.entry_wrap');
+									if ($newEntries.length > 0) {
+										self.$childrenContainer.addClass("expanded");
+										self.$childrenContainer.append($newEntries);
+										$newEntries.structureEntry();
+										// Add in the new items
+										self.$childrenContainer.show('fast');
+									}
 								}
 								self.contentLoaded = true;
 								loadingImage.remove();
@@ -57,6 +62,7 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 				} else {
 					self.$childrenContainer.hide('fast');
 					$toggleButton.removeClass('collapse').addClass('expand');
+					self.$childrenContainer.removeClass("expanded");
 				}
 				return false;
 			});

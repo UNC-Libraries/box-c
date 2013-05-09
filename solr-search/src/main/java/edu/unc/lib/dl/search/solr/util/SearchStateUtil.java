@@ -37,16 +37,8 @@ public class SearchStateUtil {
 		
 	}
 
-	/**
-	 * Returns the search state as a URL query string.
-	 * @param searchState
-	 * @return
-	 */
-	public static HashMap<String,String> generateStateParameters(SearchState searchState){
+	public static HashMap<String,String> generateSearchParameters(SearchState searchState) {
 		HashMap<String,String> params = new HashMap<String,String>();
-		
-		params.put(searchSettings.searchStateParam("ROWS_PER_PAGE"), ""+searchState.getRowsPerPage());
-		
 		if (searchState.getSearchFields() != null && searchState.getSearchFields().size() > 0){
 			params.put(searchSettings.searchStateParam("SEARCH_FIELDS"), joinFields(searchState.getSearchFields()));
 		}
@@ -58,6 +50,18 @@ public class SearchStateUtil {
 		if (searchState.getFacets() != null && searchState.getFacets().size() > 0){
 			params.put(searchSettings.searchStateParam("FACET_FIELDS"), SearchStateUtil.joinFacets(searchState.getFacets(), '|', ':'));
 		}
+		return params;
+	}
+	
+	/**
+	 * Returns the search state as a URL query string.
+	 * @param searchState
+	 * @return
+	 */
+	public static HashMap<String,String> generateStateParameters(SearchState searchState){
+		HashMap<String,String> params = generateSearchParameters(searchState);
+		
+		params.put(searchSettings.searchStateParam("ROWS_PER_PAGE"), ""+searchState.getRowsPerPage());
 		
 		if (searchState.getFacetsToRetrieve() != null && searchState.getFacetsToRetrieve().size() > 0 && !searchState.getFacetsToRetrieve().containsAll(searchSettings.facetNames)){
 			params.put(searchSettings.searchStateParam("FACET_FIELDS_TO_RETRIEVE"), joinFields(searchState.getFacetsToRetrieve(), ",", true));
@@ -93,11 +97,11 @@ public class SearchStateUtil {
 			params.put(searchSettings.searchStateParam("RESOURCE_TYPES"), joinFields(searchState.getResourceTypes(), ",", false));
 		}
 		
-		if (searchState.getAccessTypeFilter() != null){
-			params.put(searchSettings.searchStateParam("ACCESS_FILTER_TYPE"), searchSettings.searchFieldParam(searchState.getAccessTypeFilter()));
-		}
-		
 		return params;
+	}
+	
+	public static String generateSearchParameterString(SearchState searchState) {
+		return generateStateParameterString(generateSearchParameters(searchState));
 	}
 	
 	public static String generateStateParameterString(SearchState searchState){

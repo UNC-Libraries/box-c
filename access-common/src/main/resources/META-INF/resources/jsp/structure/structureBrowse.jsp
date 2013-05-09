@@ -24,7 +24,6 @@
 	Renders a hierarchical browse view of all the children containers starting at a given root node.
 
 	hierarchicalViewResults - HierarchicalBrowseResultResponse object which contains the result set.  Required.
-	rootNode - The base container, all other items will be indented relative to it.  From request scope.
 	queryPath - override the servlet that facet links will send the user to.  Default "search"
 	displayCounts - Boolean, indicates if child counts should be displayed next to contain names.  From param scope.
 	ignoreSearchState - If true, then preexisting search state parameters will not be included in container urls. 
@@ -42,11 +41,6 @@
 </c:choose>
 
 <c:choose>
-	<c:when test="${not empty param.applyCountLinkCutoffs}"><c:set var="applyCountLinkCutoffs" value="${param.applyCountLinkCutoffs}"/></c:when>
-	<c:otherwise><c:set var="applyCountLinkCutoffs" value="true"/></c:otherwise>
-</c:choose>
-
-<c:choose>
 	<c:when test="${not empty param.filePrimaryDownload}"><c:set var="filePrimaryDownload" value="${param.filePrimaryDownload}"/></c:when>
 	<c:otherwise><c:set var="filePrimaryDownload" value="false"/></c:otherwise>
 </c:choose>
@@ -55,6 +49,13 @@
 	<c:when test="${not empty param.showSeeAllLinks}"><c:set var="showSeeAllLinks" value="${param.showSeeAllLinks}"/></c:when>
 	<c:otherwise><c:set var="showSeeAllLinks" value="true"/></c:otherwise>
 </c:choose>
+
+<c:choose>
+	<c:when test="${not empty param.root}"><c:set var="hideRoot" value="${!param.root}"/></c:when>
+	<c:otherwise><c:set var="hideRoot" value="false"/></c:otherwise>
+</c:choose>
+
+<c:set var="displaySecondaryActions" value="${param.secondary == 'true'}"/>
 
 <c:choose>
 	<c:when test="${not empty param.excludeIDs}"><c:set var="excludeIDs" value="${param.excludeIDs}"/></c:when>
@@ -70,7 +71,7 @@
 	</c:otherwise>
 </c:choose>
 
-<cdr:hierarchicalTree items="${hierarchicalViewResults}" var="currentNode" hideRoot="${param.excludeParent}" excludeIds="${excludeIds}">
+<cdr:hierarchicalTree items="${structureResults}" var="currentNode" hideRoot="${hideRoot}" excludeIds="${excludeIds}">
 	<c:set var="containerNode" value="${currentNode.metadata}"/>
 	
 	<c:set var="isAContainer" value="${containerNode.resourceType != searchSettings.resourceTypeFile}" />
@@ -157,16 +158,17 @@
 				<c:choose>
 					<c:when test="${fn:length(currentNode.children) > 0}">
 						<%-- Subcontainer children present means that expanding should just get non-container children --%>
-						<c:url var="expandUrl" value="structure/children?${searchStateUrl}">
+						<c:url var="expandUrl" value="structure/${containerNode.pid.path}?${searchParams}">
 							<c:param name="tier" value="${containerNode.path.searchValue}"/>
+							<c:param name="files" value="only"/>
 							<c:param name="disableSecondaryDetailsLink" value='${param.disableSecondaryDetailsLink}'/>
-							<c:param name="hideTypeIcon" value='${param.hideTypeIcon}'/>
 						</c:url>
 					</c:when>
 					<c:otherwise>
-						<c:url var="expandUrl" value="structure/${containerNode.pid.path}">
+						<c:url var="expandUrl" value="structure/${containerNode.pid.path}?${searchParams}">
 							<c:param name="depth" value='1'/>
-							<c:param name="ajax" value='true'/>
+							<c:param name="view" value='ajax'/>
+							<c:param name="root" value='false'/>
 						</c:url>
 					</c:otherwise>
 				</c:choose>
@@ -176,20 +178,7 @@
 	</c:if>
 	
 	<%-- Display the resource type icon --%>
-	<c:if test="${param.hideTypeIcon == false }">
-		<c:choose>
-			<c:when test="${containerNode.resourceType == searchSettings.resourceTypeCollection}">
-				<div class="resource_type collection" title="Collection"></div>
-				<img src="/static/images/hier_collection.png" alt="Collection" title="Collection" class="resource_type"/>
-			</c:when>
-			<c:when test="${containerNode.resourceType == searchSettings.resourceTypeFile || containerNode.resourceType == searchSettings.resourceTypeAggregate}">
-				<img src="/static/images/hier_file.png" alt="File" title="File" class="resource_type"/>
-			</c:when>
-			<c:otherwise>
-				<img src="/static/images/hier_folder.png" alt="Folder" title="Folder" class="resource_type"/>
-			</c:otherwise>
-		</c:choose>
-	</c:if>
+	<div class="resource_icon ${containerNode.resourceType}" title="${containerNode.resourceType}"></div>
 	
 	<%-- Display the main entry description --%>
 	<div class="description">
@@ -218,7 +207,7 @@
 		
 		<c:choose>
 			<c:when test="${!isAContainer}">
-				<c:if test="${param.displaySecondaryActions}">
+				<c:if test="${displaySecondaryActions}">
 					<p class="secondary_actions">
 						<c:if test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', containerNode)}">
 							<c:if test="${!filePrimaryDownload}">
@@ -237,39 +226,9 @@
 					<span class="count">(${childCount})</span>
 				</c:if>
 				
-				<c:if test="${param.displaySecondaryActions}">
-					<c:url var="secondaryBrowseUrl" scope="page" value='browse${containerUrlBase}'>
-						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${containerNode.path.searchValue}"'/>
-					</c:url>
-					
-					<c:url var="secondarySearchWithStateUrl" scope="page" value='search?${sessionScope.recordNavigationState.searchStateUrl}'>
-						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${containerNode.path.searchValue},${containerNode.path.highestTier + 1}"'/>
-					</c:url>
-					
-					<c:url var="secondarySearchPathUrl" scope="page" value='search'>
-						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${containerNode.path.searchValue},${containerNode.path.highestTier + 1}"'/>
-					</c:url>
-			
+				<c:if test="${displaySecondaryActions}">
 					<p class="secondary_actions">
-						<c:if test="${!param.disableSecondaryBrowseLink && !firstEntryBrowseSelected}">
-							<a href="<c:out value="${secondaryBrowseUrl}" />" class="secondary_action" title="Browse structure starting from ${fn:toLowerCase(containerNode.resourceType)} <i>${containerNode.title}</i>">Structure</a>&nbsp;
-						</c:if>
-						<c:if test="${!param.disableSecondarySearchWithStateLink}">
-							<c:choose>
-								<c:when test="${retainedAsDirectMatch}">
-									(<a href="<c:out value="${secondarySearchPathUrl}" />">View contents</a>)&nbsp;
-								</c:when>
-								<c:otherwise>
-									(<a href="<c:out value="${secondarySearchWithStateUrl}" />">View contents</a>)&nbsp;
-								</c:otherwise>
-							</c:choose>
-						</c:if>
-						<c:if test="${!param.disableSecondarySearchPathLink}">
-							(<a href="<c:out value="${secondarySearchPathUrl}" />">View all contents</a>)&nbsp;
-						</c:if>
-						<c:if test="${!param.disableSecondaryDetailsLink}">
-							<a href="record?id=${containerNode.id}" class="secondary_action" title="View ${fn:toLowerCase(containerNode.resourceType)} information for ${containerNode.title}">Details</a>
-						</c:if>
+						<a href="record?id=${containerNode.id}" class="secondary_action" title="View ${fn:toLowerCase(containerNode.resourceType)} information for ${containerNode.title}">Details</a>
 					</p>
 				</c:if>
 			</c:otherwise>

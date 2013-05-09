@@ -29,7 +29,6 @@
 
 .structure .entry .description {
 	display: inline;
-	vertical-align: 5%;
 }
 
 .structure .entry .description img {
@@ -80,7 +79,6 @@
 	background-position: 0px -129px;
 	width: 10px;
 	height: 10px;
-	margin-top: 12px;
 	display: inline-block;
 }
 
@@ -92,6 +90,11 @@
 .structure .collapse.cont_toggle {
 	background-position: -20px -129px;
 	cursor: pointer;
+}
+
+/** No resource icons */
+.structure.no_resource_icons .resource_icon {
+	display: none;
 }
 
 /** Aggregate record structure */
@@ -196,6 +199,30 @@
 	max-width: none;
 	box-shadow: -9px -5px 10px -6px #DDF0FA inset;
 	overflow-x: auto;
+}
+
+.structure.facet.inset .resource_icon {
+	vertical-align: -20%;
+}
+
+.structure.facet.inset .cont_toggle.collapse {
+	margin-bottom: -2px;
+}
+
+.structure.facet.inset .entry {
+	height: 20px;
+}
+
+.structure.facet.inset .indent {
+	height: 20px;
+}
+
+.structure.facet.inset .indent.with_sib {
+	background-position: -27px -22px;
+}
+
+.structure.facet.inset .indent.last_sib {
+	background-position: -27px -87px;
 }
 
 /** Full record page */

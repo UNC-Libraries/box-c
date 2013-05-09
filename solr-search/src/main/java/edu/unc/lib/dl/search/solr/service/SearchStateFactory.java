@@ -168,6 +168,26 @@ public class SearchStateFactory {
 		return searchState;
 	}
 	
+	public SearchState createStructureBrowseSearchState(){
+		SearchState searchState = new SearchState();
+		
+		searchState.setResourceTypes(searchSettings.defaultResourceTypes);
+		searchState.setSearchTermOperator(searchSettings.defaultOperator);
+		searchState.setRowsPerPage(0);
+		searchState.setStartRow(0);
+		
+		searchState.setSortType("collection");
+		searchState.setSortOrder(searchSettings.sortNormal);
+		
+		return searchState;
+	}
+	
+	public SearchState createStructureBrowseSearchState(Map<String,String[]> request){
+		SearchState searchState = createStructureBrowseSearchState();
+		populateSearchState(searchState, request);
+		return searchState;
+	}
+	
 	/**
 	 * Returns a search state representing the default navigation search state for a hierarchical
 	 * structure browse request.

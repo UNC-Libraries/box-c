@@ -42,6 +42,7 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
@@ -262,7 +263,9 @@ public class SolrSearchService {
 	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups, boolean allowPatronAccess)
 			throws AccessRestrictionException {
 		if (accessGroups == null || accessGroups.size() == 0) {
-			throw new AccessRestrictionException("No access groups were provided.");
+			accessGroups = GroupsThreadStore.getGroups();
+			if (accessGroups == null || accessGroups.size() == 0)
+				throw new AccessRestrictionException("No access groups were provided.");
 		}
 		if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)) {
 			String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);

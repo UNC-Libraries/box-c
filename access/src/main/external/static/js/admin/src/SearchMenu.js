@@ -19,7 +19,9 @@ define([ 'jquery', 'jquery-ui', 'StructureView'], function(
 							success : function(data) {
 								if (ui.newPanel.attr('id') == "structure_facet") {
 									var $structureView = $(data);
-									$structureView.structureView();
+									$structureView.structureView({
+										showResourceIcons : false
+									});
 									$structureView.addClass('inset facet');
 									data = $structureView;
 								}

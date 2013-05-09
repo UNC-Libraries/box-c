@@ -21,10 +21,8 @@
 <div class="structure">
 	<c:import url="/jsp/structure/structureBrowse.jsp">
 		<c:param name="queryPath" value="list"/>
-		<c:param name="applyCutoffs" value="true"/>
 		<c:param name="displayCounts" value="true"/>
 		<c:param name="displaySecondaryActions" value="false"/>
-		<c:param name="excludeParent" value="false"/>
-		<c:param name="hideTypeIcon" value="false"/>
+		<c:param name="root" value="true"/>
 	</c:import>
 </div>
