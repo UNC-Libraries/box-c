@@ -11,7 +11,7 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 			this.$entry = this.element.children(".entry");
 			this.$childrenContainer = this.element.children(".children");
 			if (this.$childrenContainer.children().length > 0)
-				this.$childrenContainer.addClass("expanded");
+				this.element.addClass("expanded");
 			
 			this.contentUrl = this.$entry.children(".cont_toggle").attr("data-url");
 			
@@ -33,6 +33,7 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 						$.ajax({
 							url: self.contentUrl,
 							success: function(data){
+								loadingImage.remove();
 								if (data) {
 									// Adjust existing indents if the child container already has contents
 									var $existingLastSibling = self.$childrenContainer.children('.last_sib');
@@ -41,28 +42,33 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 									
 									var $newEntries = $(data).children('.children').find('.entry_wrap');
 									if ($newEntries.length > 0) {
-										self.$childrenContainer.addClass("expanded");
 										self.$childrenContainer.append($newEntries);
 										$newEntries.structureEntry();
 										// Add in the new items
-										self.$childrenContainer.show('fast');
+										self.$childrenContainer.find(".indent").show();
+										self.$childrenContainer.show(100, function() {
+											self.element.addClass("expanded");
+										});
 									}
 								}
 								self.contentLoaded = true;
-								loadingImage.remove();
 							},
 							error: function(xhr, ajaxOptions, thrownError){
 								loadingImage.remove();
 							}
 						});
 					} else {
-						self.$childrenContainer.show('fast');
+						self.$childrenContainer.find(".indent").show();
+						self.$childrenContainer.show(100, function() {
+							self.element.addClass("expanded");
+						});
 					}
 					$toggleButton.removeClass('expand').addClass('collapse');
 				} else {
-					self.$childrenContainer.hide('fast');
+					self.$childrenContainer.hide(100, function() {
+						self.element.removeClass("expanded");
+					});
 					$toggleButton.removeClass('collapse').addClass('expand');
-					self.$childrenContainer.removeClass("expanded");
 				}
 				return false;
 			});

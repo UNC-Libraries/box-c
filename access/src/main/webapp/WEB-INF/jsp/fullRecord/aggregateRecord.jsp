@@ -110,7 +110,7 @@
 							}
 						});
 					  </script>
-					  <div id="jp2_imageviewer_window" class="djatokalayers_window not_loaded">&nbsp;</div>
+					  <div id="jp2_imageviewer_window" data-pid="${cdr:getPreferredDatastream(briefObject, 'IMAGE_JP2000').owner}" class="djatokalayers_window not_loaded">&nbsp;</div>
 					
 				</c:when>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">

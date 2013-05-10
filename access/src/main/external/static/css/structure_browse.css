@@ -11,20 +11,36 @@
 	display: inline-block;
 }
 
-.structure .entry {
-	height: 23px;
-	display: block;
+.structure .entry_wrap {
 	white-space: nowrap;
+	margin-bottom: -4px;
+}
+
+.structure .entry_wrap > .children {
+	display: none;
+	margin-top: -4px;
+}
+
+.structure .entry_wrap.expanded > .children {
+	display: block;
+}
+
+.structure .expanded > .entry {
+	background-image: url("/static/images/structure.png");
+	background-position: -27px 11px;
+	background-repeat: no-repeat;
+}
+
+.structure .entry {
+	height: 30px;
+	display: inline-block;
+	white-space: nowrap;
+	vertical-align: bottom;
 	*width: 125%;
 }
 
-.structure .entry  img {
-	display: inline-block;
-	padding: 0px 0px 0px 0px;
-}
-
-.structure .entry img {
-	*display: inline;
+.structure .resource_icon {
+	vertical-align: -20%;
 }
 
 .structure .entry .description {
@@ -58,17 +74,16 @@
 .structure .indent {
 	background-position: -27px -36px;
 	width: 21px;
-	height: 23px;
-	float: left;
-	display: block;
+	height: 30px;
+	display: inline-block;
 }
 
 .structure .indent.with_sib {
-	background-position: -27px -16px;
+	background-position: -27px -23px;
 }
 
 .structure .indent.last_sib {
-	background-position: -27px -80px;
+	background-position: -27px -87px;
 }
 
 .structure .indent.empty {
@@ -136,26 +151,22 @@
 	background-color: #ededed;
 	font-size: 12px;
 	line-height: 16px;
-	padding: 0px 5px 10px 5px;
-	margin: -5px 0px 10px 0px;
+	padding: 5px 5px 8px 5px;
+	margin-bottom: 10px;
 	max-height: 500px;
 }
 
-.structure.facet img {
-	margin-top: 1px;
-}
-
 .structure.facet .entry {
-	height: 18px;
+	height: 23px;
 }
 
-.structure .indent {
+.structure.facet .indent {
 	width: 13px;
-	height: 18px;
+	height: 23px;
 }
 
 /** Pop-out facet */
-.structure.facet.popout {
+.structure.facet.popout:hover {
 	position: relative;
 	overflow-x: visible !important;
 	overflow-y: auto;
@@ -201,20 +212,16 @@
 	overflow-x: auto;
 }
 
-.structure.facet.inset .resource_icon {
-	vertical-align: -20%;
-}
-
-.structure.facet.inset .cont_toggle.collapse {
-	margin-bottom: -2px;
+.structure.facet.inset:hover {
+	overflow-y: auto;
 }
 
 .structure.facet.inset .entry {
-	height: 20px;
+	height: 26px;
 }
 
 .structure.facet.inset .indent {
-	height: 20px;
+	height: 24px;
 }
 
 .structure.facet.inset .indent.with_sib {
@@ -223,6 +230,10 @@
 
 .structure.facet.inset .indent.last_sib {
 	background-position: -27px -87px;
+}
+
+.structure.facet.inset .expanded > .entry {
+	background-position: -27px 11px;
 }
 
 /** Full record page */

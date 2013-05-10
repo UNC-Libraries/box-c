@@ -27,7 +27,7 @@
 	<div class="filter_menu">
 		<div>
 			<h3>Structure</h3>
-			<c:set var="structureDataUrl">structure/<c:if test="${not empty containerBean}">${containerBean.pid.path}</c:if>?view=facet</c:set>
+			<c:set var="structureDataUrl">structure/<c:if test="${not empty containerBean}">${containerBean.pid.path}</c:if>?view=facet&depth=1&queryp=list</c:set>
 			<div data-href="${structureDataUrl}" id="structure_facet">
 				<div class="center"><img src="/static/images/admin/loading-small.gif"/></div>
 			</div>

@@ -30,14 +30,16 @@
 	applyCutoffs - Determines if hierarchical facet cutoffs are appended added facets when selecting containers
 	displaySecondaryActions - whether or not ot show the secondary actions for each container
 --%>
-<c:choose>
-	<c:when test="${not empty param.queryPath}"><c:set var="queryPath" value="${param.queryPath}"/></c:when>
-	<c:otherwise><c:set var="queryPath" value="search"/></c:otherwise>
-</c:choose>
+<c:set var="queryPath" value="${param.queryp}"/>
 
 <c:choose>
 	<c:when test="${not empty param.applyCutoffs}"><c:set var="applyCutoffs" value="${param.applyCutoffs}"/></c:when>
 	<c:otherwise><c:set var="applyCutoffs" value="true"/></c:otherwise>
+</c:choose>
+
+<c:choose>
+	<c:when test="${not empty param.counts}"><c:set var="displayCounts" value="${param.counts}"/></c:when>
+	<c:otherwise><c:set var="displayCounts" value="true"/></c:otherwise>
 </c:choose>
 
 <c:choose>
@@ -117,7 +119,11 @@
 	
 	<c:choose>
 		<c:when test="${queryPath == 'structure'}">
-			<c:url var="primaryUrl" scope="page" value='structure/${containerBean.pid.path}'>
+			<c:url var="primaryUrl" scope="page" value='structure/${containerNode.pid.path}'>
+			</c:url>
+		</c:when>
+		<c:when test="${queryPath == 'list'}">
+			<c:url var="primaryUrl" scope="page" value='list/${containerNode.pid.path}'>
 			</c:url>
 		</c:when>
 		<c:when test="${queryPath == 'search' && retainedAsDirectMatch}">
@@ -133,6 +139,8 @@
 			<c:set var="primaryTooltip">View ${childCount} matching item(s) contained within ${fn:toLowerCase(containerNode.resourceType)}&nbsp;${containerNode.title}</c:set>
 		</c:when>
 		<c:otherwise>
+			<%-- Clear the value of query path since it was not valid --%>
+			<c:set var="queryPath" value=""/>
 			<c:url var="primaryUrl" scope="page" value='browse${containerUrlBase}'>
 				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${containerFacetAction}"/>
 			</c:url>
@@ -169,6 +177,9 @@
 							<c:param name="depth" value='1'/>
 							<c:param name="view" value='ajax'/>
 							<c:param name="root" value='false'/>
+							<c:if test="${not empty queryPath}">
+								<c:param name="queryp" value='${queryPath}'/>
+							</c:if>
 						</c:url>
 					</c:otherwise>
 				</c:choose>
@@ -222,7 +233,7 @@
 				</c:if>
 			</c:when>
 			<c:otherwise>
-				<c:if test="${param.displayCounts && !(retainedAsDirectMatch && childCount == 0)}">
+				<c:if test="${displayCounts && !(retainedAsDirectMatch && childCount == 0)}">
 					<span class="count">(${childCount})</span>
 				</c:if>
 				

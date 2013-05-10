@@ -1077,232 +1077,6 @@ ul.crumblist li a {
 	margin-bottom: 3px;
 }
 
-#hierarchical_view_full_record,#hierarchical_view_browse,#facet_field_path_structure
-	{
-	overflow: auto;
-	overflow-y: hidden;
-	padding-bottom: 10px;
-	font-size: 12px;
-	line-height: 17px;
-}
-
-#hierarchical_view_full_record.aggregate {
-	margin: -15px 20px 0px 40px;
-	width: 900px;
-	float: left;
-}
-
-#hierarchical_view_full_record.aggregate .hier_entry_primary_action {
-	color: #0A5274;
-	font-size: 13px;
-}
-
-#hierarchical_view_full_record.aggregate .hier_secondary_actions {
-	/*vertical-align: 5%;*/
-	padding-left: 3px;
-}
-
-#hierarchical_view_full_record.aggregate .hier_secondary_actions a {
-	background-color: #5AABCF;
-	border: 1px solid #6A8693;
-	color: #ffffff; 
-	display : inline-block;
-	font-size: 10px;
-	font-weight: bold;
-	line-height: 16px;
-	padding: 0 4px;
-	margin-right: 3px;
-}
-
-#hierarchical_view_full_record.aggregate .hier_secondary_actions a {
-	*display: inline;
-}
-
-#facet_field_path_structure {
-	overflow: hidden;
-	background-color: #ededed;
-	font-size: 12px;
-	line-height: 16px;
-	padding: 0px 5px 10px 5px;
-	margin: -5px 0px 10px 0px;
-	max-height: 500px;
-}
-
-#facet_field_path_structure:hover,#facet_field_path:hover #facet_field_path_structure {
-	position: relative;
-	overflow-x: visible !important;
-	overflow-y: auto;
-	display: inline-block;
-	max-width: 600px;
-	min-width: 190px;
-	z-index: 999;
-	-webkit-box-shadow: 4px 4px 3px #cdcdcd;
-	-moz-box-shadow: 4px 4px 3px #cdcdcd;
-	box-shadow: 4px 4px 3px #cdcdcd;
-	-ms-filter:
-		"progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#cdcdcd')";
-	filter: progid : DXImageTransform.Microsoft.Shadow ( Strength = 4,
-		Direction = 135, Color = '#cdcdcd' );
-	*background-image: none;
-}
-
-#facet_field_path_structure:hover,#facet_field_path:hover #facet_field_path_structure
-	{
-	*display: inline;
-}
-
-#hierarchical_view_full_record img,#hierarchical_view_browse img {
-	margin-top: 6px;
-}
-
-#facet_field_path_structure img {
-	margin-top: 1px;
-}
-
-#facet_field_path_structure .hier_entry_primary_action {
-	overflow: hidden;
-	display: inline-block;
-	vertical-align: text-bottom;
-	text-overflow: ellipsis;
-	max-width: 130px;
-}
-
-#facet_field_path_structure .hier_entry_primary_action {
-	*display: inline-block;
-}
-
-#facet_field_path_structure:hover .hier_entry_primary_action {
-	max-width: inherit;
-}
-
-#facet_field_path_structure .hier_segment {
-	display: none;
-}
-
-#facet_field_path_structure:hover .hier_segment,#facet_field_path:hover #facet_field_path_structure .hier_segment
-	{
-	display: inline;
-}
-
-.hier_container img {
-	width: 10px;
-	display: inline-block;
-}
-
-.hier_entry {
-	height: 23px;
-	display: block;
-	white-space: nowrap;
-	*width: 125%;
-}
-
-#facet_field_path_structure .hier_entry {
-	height: 18px;
-}
-
-.hier_entry img {
-	display: inline-block;
-	padding: 0px 0px 0px 0px;
-}
-
-.hier_entry img {
-	*display: inline;
-}
-
-#facet_field_path_structure .hier_entry img {
-	
-}
-
-.hier_entry img.resource_type {
-	
-}
-
-.hier_entry_description img {
-	float: none;
-	margin: 0px;
-	margin-top: 0px !important;
-	padding: 0px;
-}
-
-.hier_entry_description .hier_secondary_actions {
-	/*visibility: hidden;*/
-	font-size: 80%;
-	display: inline;
-}
-
-.hier_entry_description:hover .hier_secondary_actions {
-	visibility: visible;
-}
-
-.hier_entry_description {
-	display: inline;
-	vertical-align: 5%;
-}
-
-#facet_field_path_structure .hier_entry_description {
-	padding-top: 4px;
-}
-
-.hier_entry_description a:hover {
-	color: #1D7594;
-}
-
-//////////////////MADE IT HERE
-
-#hierarchical_view_full_record .indent_unit,#hierarchical_view_browse .indent_unit
-	{
-	width: 21px;
-	height: 23px;
-	float: left;
-	display: block;
-}
-
-#facet_field_path_structure .indent_unit {
-	width: 13px;
-	height: 18px;
-	display: inline-block;
-}
-
-#facet_field_path_structure .indent_unit {
-	*display: inline;
-}
-
-#facet_field_path_structure .indent_unit.hier_with_siblings {
-	background-position: -27px 0;
-}
-
-.indent_unit.hier_with_siblings {
-	background-image: url('/static/images/hier_vertical_line.png');
-	background-position: -27px 0;
-}
-
-.indent_unit.hier_container {
-	background-image: url('/static/images/hier_container.png');
-	background-position: -27px -16px;
-}
-
-#facet_field_path_structure .indent_unit.hier_container {
-	background-position: -27px -21px;
-}
-
-.indent_unit.hier_container.hier_with_siblings {
-	background-image: url('/static/images/hier_container_with_siblings.png');
-	background-position: -27px -16px;
-}
-
-#facet_field_path_structure .indent_unit.hier_container.hier_with_siblings
-	{
-	background-position: -27px -21px;
-}
-
-.results_header_hierarchy_path {
-	font-size: 85%;
-}
-
-.hier_entry_secondary_action:hover {
-	background-color: #eeeeff;
-}
-
 /* Tooltip styles */
 .qtip-content {
 	font-size: 11px;
@@ -1353,7 +1127,7 @@ ul.crumblist li a {
 	padding: 12px;
 }
 
-#jp2_imageviewer_window {
+.jp2_imageviewer_window {
 	background-color: #F6FBFD;
 	border: 1px solid #C8D8E0;
 	width: 600px;
@@ -1362,19 +1136,19 @@ ul.crumblist li a {
 	box-shadow: 0 0 20px #C8D8E0 inset;
 }
 
-#jp2_imageviewer_window.not_loaded {
+.jp2_imageviewer_window.not_loaded {
 	background-image: url('/static/images/ajax_loader_jp2.gif');
 	background-repeat: no-repeat;
 	background-position: center;
 }
 
-#jp2_imageviewer_window .error {
+.jp2_imageviewer_window .error {
 	color: #aa5555;
 	margin: 8px;
 	font-size: 13px;
 }
 
-#jp2_imageviewer_window.full_screen {
+.jp2_imageviewer_window.full_screen {
 	z-index: 1;
 	border-width: 0;
 	position: absolute;
@@ -1430,7 +1204,7 @@ ul.crumblist li a {
 }
 
 .resource_icon.Folder {
-	background-position: -18px 3px;
+	background-position: -18px 0px;
 }
 
 .resource_icon.Aggregate {

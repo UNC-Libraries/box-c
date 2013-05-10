@@ -2,7 +2,7 @@ define([ 'jquery', 'jquery-ui', 'StructureEntry'], function(
 		$, ui, PID) {
 	$.widget("cdr.structureView", {
 		options : {
-			showResourceIcons : false
+			showResourceIcons : true
 		},
 		_create : function() {
 			

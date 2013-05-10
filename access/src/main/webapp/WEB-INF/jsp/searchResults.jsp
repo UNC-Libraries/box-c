@@ -21,9 +21,6 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
 
-<script type="text/javascript" src="/static/js/searchResults.js"></script>
-<script type="text/javascript" src="/static/js/browseResults.js"></script>
-
 <div class="contentarea">
 	<h2>${pageSubtitle}</h2>
 	<div class="results_header_hierarchy_path">
@@ -129,3 +126,5 @@
 		</div>
 	</div>
 </div>
+<link rel="stylesheet" type="text/css" href="/static/css/structure_browse.css" />
+<script type="text/javascript" src="/static/js/require.js" data-main="/static/js/public/searchResults"></script>

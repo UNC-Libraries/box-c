@@ -76,17 +76,12 @@
 			</c:choose>
 			<c:if test="${not empty facetField.values}">
 				<c:if test="${facetField.name == 'ANCESTOR_PATH'}">
-					<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}_structure" class="hidden facet_field_structure hier_truncate">
-						<c:url var="structureUrl" scope="page" value='browse?${searchStateUrl}'>
+					<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}_structure" class="hidden">
+						<c:url var="structureUrl" scope="page" value='structure?${searchStateUrl}'>
 							<c:param name="${searchSettings.searchStateParams['ROWS_PER_PAGE']}" value="0"/>
 							<c:param name="${searchSettings.searchStateParams['RESOURCE_TYPES']}" value=""/>
-							<c:param name="ajax" value="true"/>
-							<c:param name="depth" value="1"/>
-							<c:param name="hideTypeIcon" value="true"/>
-							<c:param name="excludeParent" value="false"/>
-							<c:param name="applyCutoffs" value="true"/>
-							<c:param name="hideTypeIcon" value="true"/>
-							<c:param name="disableSecondaryDetailsLink" value="true"/>
+							<c:param name="view" value="facet"/>
+							<c:param name="queryp" value="search"/>
 						</c:url>
 						<a href="<c:out value="${structureUrl}" />"><img src="/static/images/ajax_loader.gif"/></a>
 					</div>

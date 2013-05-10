@@ -84,15 +84,15 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		String view;
 		boolean ajaxRequest;
 		if ("facet".equals(viewParam)) {
-			view = "../../jsp/structure/structureFacet";
+			view = "../../jsp/structure/facet";
 			ajaxRequest = true;
 		} else if ("ajax".equals(viewParam)) {
-			view = "../../jsp/structure/structureBrowse";
+			view = "../../jsp/structure/structureTree";
 			model.addAttribute("template", "ajax");
 			ajaxRequest = true;
 		} else {
 			// full view
-			view = null;
+			view = "../../jsp/structure/search";
 			ajaxRequest = false;
 		}
 		int depth;
@@ -108,10 +108,10 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		
 		//Request object for the search
 		HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(depth);
-		if (view == null) {
-			browseRequest.setSearchState(this.searchStateFactory.createHierarchicalBrowseSearchState(request.getParameterMap()));
-		} else {
+		if (ajaxRequest) {
 			browseRequest.setSearchState(this.searchStateFactory.createStructureBrowseSearchState(request.getParameterMap()));
+		} else {
+			browseRequest.setSearchState(this.searchStateFactory.createHierarchicalBrowseSearchState(request.getParameterMap()));
 		}
 		if (pid != null)
 			browseRequest.setRootPid(pid);

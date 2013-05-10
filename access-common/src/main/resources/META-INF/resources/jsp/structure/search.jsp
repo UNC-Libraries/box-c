@@ -21,8 +21,6 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
 
-<script type="text/javascript" src="/static/js/browseResults.js"></script>
-
 <div class="contentarea">
 	<h2>Structure browse</h2>
 	<div class="results_header_hierarchy_path">
@@ -52,7 +50,7 @@
 		<div class="fourcol gray">
 			<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
 			<c:import url="common/facetList.jsp">
-				<c:param name="queryPath" value="browse"/>
+				<c:param name="queryPath" value="structure"/>
 				<c:param name="title" value="Refine your results"/>
 			</c:import>
 		</div>
@@ -70,20 +68,18 @@
 				<c:param name="containerResourceType">${containerResourceType}</c:param>
 			</c:import>
 		</div>
-		<div id="hierarchical_view_browse" class="threecol white">
-			<div class="contentarea">
-				<c:set var="hierarchicalViewResults" scope="request" value="${resultResponse}"/>
-				<c:import url="browseResults/hierarchicalBrowse.jsp">
-					<c:param name="queryPath" value="search"/>
+		<div class="threecol white">
+			<div class="structure search contentarea">
+				<c:set var="structureResults" scope="request" value="${resultResponse}"/>
+				<c:import url="/jsp/structure/structureTree.jsp">
+					<c:param name="queryp" value="search"/>
 					<c:param name="applyCutoffs" value="true"/>
-					<c:param name="displayCounts" value="true"/>
-					<c:param name="displaySecondaryActions" value="true"/>
-					<c:param name="disableSecondarySearchPathLink" value="true"/>
-					<c:param name="disableSecondaryBrowseLink" value="true"/>
-					<c:param name="disableSecondarySearchWithStateLink" value="true"/>
-					<c:param name="hideTypeIcon">false</c:param>
+					<c:param name="counts" value="true"/>
+					<c:param name="secondary" value="true"/>
 				</c:import>
-			</div>						
+			</div>
 		</div>
 	</div>
 </div>
+<link rel="stylesheet" type="text/css" href="/static/css/structure_browse.css" />
+<script type="text/javascript" src="/static/js/require.js" data-main="/static/js/public/structureBrowse"></script>

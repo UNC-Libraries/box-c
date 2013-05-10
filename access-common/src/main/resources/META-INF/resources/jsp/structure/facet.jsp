@@ -19,9 +19,9 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <div class="structure">
-	<c:import url="/jsp/structure/structureBrowse.jsp">
+	<c:import url="/jsp/structure/structureTree.jsp">
 		<c:param name="queryPath" value="list"/>
-		<c:param name="displayCounts" value="true"/>
+		<c:param name="counts" value="true"/>
 		<c:param name="displaySecondaryActions" value="false"/>
 		<c:param name="root" value="true"/>
 	</c:import>
