@@ -1214,3 +1214,7 @@ ul.crumblist li a {
 .resource_icon.File {
 	background-position: -54px 0px;
 }
+
+.inline_viewer {
+	display: none;
+}

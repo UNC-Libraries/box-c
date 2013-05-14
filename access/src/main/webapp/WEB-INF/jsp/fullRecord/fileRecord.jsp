@@ -21,7 +21,6 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<script src="/static/js/fullRecord.js"></script>
 <div class="onecol">
 	<div class="contentarea">
 		<c:set var="thumbUrl">
@@ -89,19 +88,7 @@
 						<a href="" class="inline_viewer_link jp2_viewer_link">View</a>
 					</div>
 					<div class="clear_space"></div>
-					<script src="/static/plugins/OpenLayers/OpenLayers.js"></script>
-					
-					<script type="text/javascript">
-						$(function() {
-							$(".inline_viewer_link").bind("click", {id: '${briefObject.id}', viewerId:'jp2_imageviewer_window',
-								viewerContext: "${pageContext.request.contextPath}"}, displayJP2Viewer);
-							if (window.location.hash.replace("#", "") == "showJP2"){
-								$(".inline_viewer_link").trigger("click");
-							}
-						});
-					  </script>
-					  <div id="jp2_imageviewer_window" class="djatokalayers_window not_loaded">&nbsp;</div>
-					
+					<div id="jp2_viewer" class="jp2_imageviewer_window djatokalayers_window" data-url='${briefObject.id}'></div>
 				</c:when>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<c:choose>
@@ -111,40 +98,24 @@
 							</div>
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
-							<script src="/static/plugins/flowplayer/flowplayer-3.2.6.min.js"></script>
 							<div class="actionlink left">
 								<a href="" class="inline_viewer_link audio_player_link">Listen</a>
 							</div>
 							<div class="clear_space"></div>
-							<div id="audio_player"></div>
-							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentTypeFacet[0].searchKey}</c:set>
-							<script language="JavaScript">
-								$(function() {
-									$(".inline_viewer_link").bind("click", {viewerId:'audio_player',
-										url: "${dataFileUrl}"}, displayAudioPlayer);
-									if (window.location.hash.replace("#", "") == "showAudio"){
-										$(".inline_viewer_link").trigger("click");
-									}
-								});
-							</script>
+							<audio class="audio_player inline_viewer" src="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentTypeFacet[0].searchKey}">
+							</audio>
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
 							<div class="actionlink left">
-								<a href="" class="inline_viewer_link video_viewer_link">View</a>
+								<a href="" class="inline_viewer_link video_player_link">View</a>
 							</div>
 							<div class="clear_space"></div>
-							<script src="/static/plugins/flowplayer/flowplayer-3.2.6.min.js"></script>
-							<div id="video_player"></div>
-							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentTypeFacet[0].searchKey}</c:set>
-							<script language="JavaScript">
-								$(function() {
-									$(".inline_viewer_link").bind("click", {viewerId:'video_player',
-										url: "${dataFileUrl}"}, displayVideoViewer);
-									if (window.location.hash.replace("#", "") == "showVideo"){
-										$(".inline_viewer_link").trigger("click");
-									}
-								});
-							</script>
+							<link rel="stylesheet" type="text/css" href="/static/plugins/flowplayer/skin/minimalist.css">
+							<div class="video_player inline_viewer">
+								<video>
+									<source type="video/mp4" src="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}"></source>
+								</video>
+							</div>
 							<div class="clear"></div>
 						</c:when>
 					</c:choose>

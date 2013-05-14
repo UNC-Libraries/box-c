@@ -21,8 +21,6 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<script src="/static/js/fullRecord.js"></script>
-
 <c:set var="defaultWebData" value="${briefObject.defaultWebData}"/>
 
 <div class="onecol">

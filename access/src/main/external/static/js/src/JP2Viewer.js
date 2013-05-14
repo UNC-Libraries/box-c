@@ -1,28 +1,46 @@
-define([ 'jquery', 'jquery-ui', 'openLayers'], function($, ui) {
+define([ 'jquery', 'jquery-ui'], function($, ui) {
 	$.widget("cdr.jp2Viewer", {
 		options : {
 			context : "",
-			show : false
+			show : false,
+			url : undefined
 		},
 		
 		_create : function() {
 			this.initialized = false;
-			this.pid = this.element.attr("data-pid");
-			if (show) {
+			if (this.options.show) {
 				this.show();
 			}
 		},
 		
 		show : function() {
-			if (!this.initialized)
-				this._initDjatokaLayers();
+			if (!this.initialized) {
+				var self = this;
+				require(['openLayers'], function(){
+					self.element.show();
+					self._initDjatokaLayers();
+				});
+			} else {
+				this.element.show();
+			}
+		},
+		
+		hide : function() {
+			this.element.hide();
+		},
+		
+		isVisible : function() {
+			return this.element.is(":visible");
 		},
 		
 		_initDjatokaLayers : function() {
-			var metadataUrl = 'jp2Metadata/' + this.options.pid.replace(':', '/') + '/IMAGE_JP2000',
+			var metadataUrl = 'jp2Metadata/' + this.options.url.replace(':', '/') + '/IMAGE_JP2000',
 				self = this;
 			
-			OpenLayers.Layer.OpenURL.djatokaURL = this.options.context + '/jp2Region/' + this.pid.replace(':', '/') + '/IMAGE_JP2000';
+			this.initialized = true;
+			this.element.addClass('not_loaded');
+			
+			OpenLayers.Layer.OpenURL.djatokaURL = this.options.context + '/jp2Region/' + this.options.url.replace(':', '/') + '/IMAGE_JP2000';
 			OpenLayers.Layer.OpenURL.viewerWidth = this.element.width(); // Use viewer width
 			OpenLayers.Layer.OpenURL.viewerHeight = this.element.height(); // Use viewer height
 			
@@ -43,6 +61,7 @@ define([ 'jquery', 'jquery-ui', 'openLayers'], function($, ui) {
 				$('#viewer_bar').hide();
 				return;
 			};
+			console.log(metadata);
 			var resolutions = OUlayer.getResolutions();
 			var maxExtent = new OpenLayers.Bounds(0, 0, metadata.width, metadata.height);
 			var tileSize = OUlayer.getTileSize();
@@ -58,16 +77,16 @@ define([ 'jquery', 'jquery-ui', 'openLayers'], function($, ui) {
 			};
 			
 			OUlayer.events.register("loadend", OUlayer, function() {
-				this.element.removeClass("not_loaded");
-		    });
+				self.element.removeClass("not_loaded");
+			});
 			
 			OpenLayers.Util.onImageLoadError = function(){
-				this.element.removeClass("not_loaded").height("30px")
+				self.element.removeClass("not_loaded").height("30px")
 					.html("<div class='error'>Sorry, an error occurred while loading the image.</div>");
 			};
 
 			// Create the image_viewer
-			var map = new OpenLayers.Map(viewer_id, options);
+			var map = new OpenLayers.Map(this.element.attr('id'), options);
 			map.addLayer(OUlayer);
 			var lon = metadata.width / 2;
 			var lat = metadata.height / 2;
