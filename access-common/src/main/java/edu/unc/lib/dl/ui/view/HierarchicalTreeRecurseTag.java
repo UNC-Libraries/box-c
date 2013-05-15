@@ -80,8 +80,7 @@ public class HierarchicalTreeRecurseTag extends SimpleTagSupport {
 
 		if ((currentNode.getChildren() != null && currentNode.getChildren().size() > 0)
 				|| (metadata.getContentModel() != null && metadata.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString()))) {
-			if (!isStub)
-				out.println("<div class='children'>");
+			out.println("<div class='children'>");
 
 			if (currentNode.getChildren() != null) {
 				for (int i = 0; i < currentNode.getChildren().size(); i++) {
@@ -90,8 +89,7 @@ public class HierarchicalTreeRecurseTag extends SimpleTagSupport {
 				}
 			}
 
-			if (!isStub)
-				out.println("</div>");
+			out.println("</div>");
 		}
 		// Close entry_wrap
 		out.println("</div>");

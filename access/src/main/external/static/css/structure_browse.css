@@ -32,7 +32,7 @@
 }
 
 .structure .entry {
-	height: 30px;
+	height: 27px;
 	display: inline-block;
 	white-space: nowrap;
 	vertical-align: bottom;
@@ -74,7 +74,7 @@
 .structure .indent {
 	background-position: -27px -36px;
 	width: 21px;
-	height: 30px;
+	height: 24px;
 	display: inline-block;
 }
 
@@ -123,13 +123,8 @@
 	max-height: 500px;
 }
 
-.structure.facet .entry {
-	height: 23px;
-}
-
 .structure.facet .indent {
 	width: 13px;
-	height: 23px;
 }
 
 /** Pop-out facet */
@@ -171,6 +166,10 @@
 	max-width: inherit;
 }
 
+.structure.facet .entry, .structure.facet .indent {
+	height: 23px;
+}
+
 /** Inset facet */
 .structure.facet.inset {
 	background-color: #ffffff;
@@ -181,14 +180,6 @@
 
 .structure.facet.inset:hover {
 	overflow-y: auto;
-}
-
-.structure.facet.inset .entry {
-	height: 26px;
-}
-
-.structure.facet.inset .indent {
-	height: 24px;
 }
 
 .structure.facet.inset .indent.with_sib {

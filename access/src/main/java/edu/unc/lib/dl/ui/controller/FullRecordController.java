@@ -52,7 +52,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Controller which retrieves extended metadata and returns a transformed view of it
+ * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
+ * according to the specifics of the object being retrieved.
  * 
  * @author bbpennel
  */
@@ -149,7 +150,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 				SearchState searchState = searchStateFactory.createHierarchicalBrowseSearchState();
 				searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), briefObject.getPath());
 				searchState.setResourceTypes(null);
-				HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(searchState, 4, accessGroups);
+				HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(searchState, 1, accessGroups);
 
 				HierarchicalBrowseResultResponse hierarchicalResultResponse = null;
 

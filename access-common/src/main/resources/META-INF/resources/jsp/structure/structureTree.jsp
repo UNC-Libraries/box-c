@@ -57,6 +57,11 @@
 	<c:otherwise><c:set var="hideRoot" value="false"/></c:otherwise>
 </c:choose>
 
+<c:choose>
+	<c:when test="${not empty param.files}"><c:set var="includeFiles" value="${param.files}"/></c:when>
+	<c:otherwise><c:set var="includeFiles" value="false"/></c:otherwise>
+</c:choose>
+
 <c:set var="displaySecondaryActions" value="${param.secondary == 'true'}"/>
 
 <c:choose>
@@ -167,9 +172,10 @@
 					<c:when test="${fn:length(currentNode.children) > 0}">
 						<%-- Subcontainer children present means that expanding should just get non-container children --%>
 						<c:url var="expandUrl" value="structure/${containerNode.pid.path}?${searchParams}">
-							<c:param name="tier" value="${containerNode.path.searchValue}"/>
 							<c:param name="files" value="only"/>
-							<c:param name="disableSecondaryDetailsLink" value='${param.disableSecondaryDetailsLink}'/>
+							<c:if test="${not empty queryPath}"><c:param name="queryp" value='${queryPath}'/></c:if>
+							<c:if test="${includeFiles}"><c:param name="files" value='true'/></c:if>
+							<c:if test="${displaySecondaryActions}"><c:param name="secondary" value='true'/></c:if>
 						</c:url>
 					</c:when>
 					<c:otherwise>
@@ -177,9 +183,9 @@
 							<c:param name="depth" value='1'/>
 							<c:param name="view" value='ajax'/>
 							<c:param name="root" value='false'/>
-							<c:if test="${not empty queryPath}">
-								<c:param name="queryp" value='${queryPath}'/>
-							</c:if>
+							<c:if test="${not empty queryPath}"><c:param name="queryp" value='${queryPath}'/></c:if>
+							<c:if test="${includeFiles}"><c:param name="files" value='true'/></c:if>
+							<c:if test="${displaySecondaryActions}"><c:param name="secondary" value='true'/></c:if>
 						</c:url>
 					</c:otherwise>
 				</c:choose>

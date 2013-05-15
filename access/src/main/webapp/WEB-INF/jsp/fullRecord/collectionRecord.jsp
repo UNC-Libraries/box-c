@@ -20,7 +20,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<script type="text/javascript" src="/static/js/browseResults.js"></script>
 
 <c:choose>
 	<c:when test="${not empty briefObject.countMap}">
@@ -97,13 +96,14 @@
 		<div class="contentarea">
 			<c:import url="fullRecord/metadataBody.jsp" />
 			
-			<c:if test="${hierarchicalViewResults.resultCount > 0}">
+			<c:if test="${structureResults.resultCount > 0}">
 				<div id="hierarchical_view_full_record">
 					<h2>Folder Browse View (or <a href="<c:out value="${browseUrl}" />">switch to structure browse</a>)</h2>
-					<c:import url="browseResults/hierarchicalBrowse.jsp">
-						<c:param name="displayCounts" value="true"/>
-						<c:param name="hideTypeIcon">false</c:param>
-					</c:import>
+					<div class="structure">
+						<c:import url="/jsp/structure/structureTree.jsp">
+							<c:param name="files">true</c:param>
+						</c:import>
+					</div>
 				</div>
 				<br/>
 			</c:if>
