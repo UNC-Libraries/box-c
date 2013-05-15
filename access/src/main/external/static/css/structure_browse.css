@@ -107,6 +107,15 @@
 	cursor: pointer;
 }
 
+.structure .view_all {
+	margin-top: -8px;
+}
+
+.structure .view_all .entry {
+	margin-left: 6px;
+	font-size: 11px;
+} 
+
 /** No resource icons */
 .structure.no_resource_icons .resource_icon {
 	display: none;

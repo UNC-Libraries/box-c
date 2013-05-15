@@ -253,6 +253,6 @@
 	</div>
 	<%-- Render the "see all" link after the last non-container result --%>
 	<c:if test="${lastSibling && !isAContainer}">
-		${"</div></div>"}${"<div class='entry_wrap'><div class='entry'>"}<a href="${containerUrl}">(see all)</a>
+		${"</div></div>"}${"<div class='entry_wrap view_all'><div class='entry'>"}<a href="${containerUrl}">view all</a>
 	</c:if>
 </cdr:hierarchicalTree>

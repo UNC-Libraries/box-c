@@ -19,6 +19,8 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 			if (this.$childrenContainer.children().length > 0)
 				this.element.addClass("expanded");
 			
+			this.skipLastIndent = this.element.hasClass('view_all');
+			
 			this.contentUrl = this.$entry.children(".cont_toggle").attr("data-url");
 			
 			this._initToggleContents();
@@ -89,12 +91,13 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 			if (lastTier == 0)
 				return;
 			$ancestors = $($ancestors.get().reverse());
-			$ancestors.push(this.element);
+			if (!this.skipLastIndent)
+				$ancestors.push(this.element);
 			
 			$ancestors.each(function(i){
 				if (i == 0)
 					return;
-				var hasSiblings = $(this).next(".entry_wrap").length > 0;
+				var hasSiblings = $(this).next(".entry_wrap:not(.view_all)").length > 0;
 				if (i == lastTier) {
 					if (hasSiblings) {
 						$entry.before("<div class='indent with_sib'></div>");
