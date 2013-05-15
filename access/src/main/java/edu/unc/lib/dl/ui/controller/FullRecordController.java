@@ -165,7 +165,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 				if (LOG.isDebugEnabled() && hierarchicalResultResponse != null)
 					LOG.debug(id + " returned " + hierarchicalResultResponse.getResultCount() + " hierarchical results.");
 
-				model.addAttribute("hierarchicalViewResults", hierarchicalResultResponse);
+				model.addAttribute("structureResults", hierarchicalResultResponse);
 			}
 
 			model.addAttribute("fullObjectView", fullObjectView);

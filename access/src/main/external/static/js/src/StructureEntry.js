@@ -1,6 +1,10 @@
 define([ 'jquery', 'jquery-ui', 'PID'], function(
 		$, ui, PID) {
 	$.widget("cdr.structureEntry", {
+		options : {
+			indentSuppressed : false
+		},
+		
 		_create : function() {
 			var pid = this.element.attr("data-pid");
 			if (pid)
@@ -9,6 +13,8 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 			this.contentLoaded = false;
 			
 			this.$entry = this.element.children(".entry");
+			if (!this.options.indentSuppressed && this.$entry.length == 0)
+				this.element.addClass('suppressed');
 			this.$childrenContainer = this.element.children(".children");
 			if (this.$childrenContainer.children().length > 0)
 				this.element.addClass("expanded");
@@ -43,7 +49,7 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 									var $newEntries = $(data).children('.children').find('.entry_wrap');
 									if ($newEntries.length > 0) {
 										self.$childrenContainer.append($newEntries);
-										$newEntries.structureEntry();
+										$newEntries.structureEntry(this.options);
 										// Add in the new items
 										self.$childrenContainer.find(".indent").show();
 										self.$childrenContainer.show(100, function() {
@@ -78,7 +84,7 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 		// Wrap tree
 		_renderIndent : function () {
 			var $entry = this.element.children('.entry'),
-				$ancestors = this.element.parents(".entry_wrap"),
+				$ancestors = this.element.parents(".entry_wrap:not(.suppressed)"),
 				lastTier = $ancestors.length;
 			if (lastTier == 0)
 				return;

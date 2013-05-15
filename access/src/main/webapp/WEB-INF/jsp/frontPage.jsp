@@ -21,6 +21,7 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <jsp:useBean id="externalContent" class="edu.unc.lib.dl.ui.util.ExternalContentSettings" scope="page"/>
 
+<link rel="stylesheet" type="text/css" href="/static/css/slideshow.css" />
 <div class="contentarea">
 	<h2>About</h2>
 	<p>
@@ -63,20 +64,6 @@
 	</div>
 </div>
 <div class="gray">
-	<script type="text/javascript" src="/static/js/featuredContent.js"></script>
-	<script type="text/javascript">
-		$(document).ready(function(){	
-			$("#slideshow").easySlider({
-				prevId: 'prev_button',
-				prevText: "<div></div><img src='/static/images/left_slideshow_arrow.png'/>",
-				nextId: 'next_button',
-				nextText: "<div></div><img src='/static/images/right_slideshow_arrow.png'/>",
-				controlsShow: true,
-				fade: true,
-				speed: 500
-			});
-		});	
-	</script>
 	<div id="slideshow_container">
 		<div id="slideshow">
 			<ul id="slideshow_ul">
@@ -101,3 +88,4 @@
 		</div>
 	</div>
 </div>
+<script type="text/javascript" src="/static/js/require.js" data-main="/static/js/public/frontPage"></script>

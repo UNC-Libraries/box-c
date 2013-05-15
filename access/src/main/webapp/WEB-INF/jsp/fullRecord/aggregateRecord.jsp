@@ -159,9 +159,8 @@
 	<div class="structure aggregate">
 		<c:import url="/jsp/structure/structureTree.jsp">
 			<c:param name="queryp" value="search"/>
-			<c:param name="displaySecondaryActions" value="true"/>
+			<c:param name="secondary" value="true"/>
 			<c:param name="root" value="false"/>
-			<c:param name="filePrimaryDownload" value="false"/>
 			<c:param name="excludeIDs" value="${defaultWebObjectID}"/>
 			<c:param name="showSeeAllLinks" value="false"/>
 		</c:import>

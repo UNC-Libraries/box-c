@@ -25,8 +25,6 @@
 	<link rel="stylesheet" type="text/css" href="/static/css/cdrui_styles_ie8.css" />
 <![endif]-->
 
-<link rel="stylesheet" type="text/css" href="/static/css/slideshow.css" />
-
 <meta name="description" content="Carolina Digital Repository" />
 <meta name="keywords" content="Carolina Digital Repository" />
 <meta name="robots" content="index, follow" />

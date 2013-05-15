@@ -2,7 +2,8 @@ define([ 'jquery', 'jquery-ui', 'StructureEntry'], function(
 		$, ui, PID) {
 	$.widget("cdr.structureView", {
 		options : {
-			showResourceIcons : true
+			showResourceIcons : true,
+			indentSuppressed : false
 		},
 		_create : function() {
 			
@@ -11,7 +12,9 @@ define([ 'jquery', 'jquery-ui', 'StructureEntry'], function(
 				this.element.addClass('no_resource_icons');
 			
 			// Instantiate entries recursively
-			this.element.find(".entry_wrap").structureEntry();
+			this.element.find(".entry_wrap").structureEntry({
+				indentSuppressed : this.options.indentSuppressed
+			});
 			
 		}
 	});

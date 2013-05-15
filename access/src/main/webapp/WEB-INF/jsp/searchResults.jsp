@@ -121,8 +121,7 @@
 						<c:import url="error/noResults.jsp"/>
 					</c:otherwise>
 				</c:choose>
-				
-			</div>						
+			</div>
 		</div>
 	</div>
 </div>

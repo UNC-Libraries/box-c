@@ -30,7 +30,7 @@ define('fullRecord', ['module', 'jquery', 'cdrCommon', 'JP2Viewer', 'StructureVi
 	var $jp2Window = $(".jp2_imageviewer_window"),
 		$audioPlayer = $(".audio_player"),
 		$videoPlayer = $(".video_player"),
-		$structureView = $(".structure");
+		$structureView = $(".structure.aggregate");
 	
 	function toggleViewer($viewer, widgetName, $toggleLink, hashValue, showLabel) {
 		var showOnLoad = window.location.hash.replace("#", "") == hashValue;
@@ -72,7 +72,8 @@ define('fullRecord', ['module', 'jquery', 'cdrCommon', 'JP2Viewer', 'StructureVi
 	
 	if ($structureView.length > 0) {
 		$structureView.structureView({
-			showResourceIcons : true
+			showResourceIcons : true,
+			indentSuppressed : true
 		});
 	}
 });
