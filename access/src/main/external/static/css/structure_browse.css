@@ -134,6 +134,11 @@
 
 .structure.facet .indent {
 	width: 13px;
+	height: 23px;
+}
+
+.structure.facet .entry {
+	height: 23px;
 }
 
 /** Pop-out facet */
@@ -175,8 +180,8 @@
 	max-width: inherit;
 }
 
-.structure.facet .entry, .structure.facet .indent {
-	height: 23px;
+.structure.facet.popout .entry, .structure.facet.popout .indent {
+	height: 21px;
 }
 
 /** Inset facet */
@@ -192,11 +197,11 @@
 }
 
 .structure.facet.inset .indent.with_sib {
-	background-position: -27px -22px;
+	background-position: -27px -20px;
 }
 
 .structure.facet.inset .indent.last_sib {
-	background-position: -27px -87px;
+	background-position: -27px -85px;
 }
 
 .structure.facet.inset .expanded > .entry {

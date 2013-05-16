@@ -3,19 +3,15 @@ require.config({
 	paths: {
 		'jquery' : 'jquery.min',
 		'jquery-ui' : 'jquery-ui.min',
-		'qtip' : 'jquery.qtip.min',
-		'cdrCommon' : 'cdrCommon',
 		'featuredContent' : 'featuredContent'
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
-		'qtip' : ['jquery'],
 		'thumbnail' : ['jquery'],
-		'cdrCommon' : ['jquery', 'qtip'],
 		'featuredContent' : ['jquery']
 	}
 });
-define('frontPage', ['module', 'jquery', 'cdrCommon', 'featuredContent'], function(module, $) {
+define('frontPage', ['module', 'jquery', 'featuredContent'], function(module, $) {
 	$("#slideshow").easySlider({
 		prevId: 'prev_button',
 		prevText: "<div></div><img src='/static/images/left_slideshow_arrow.png'/>",

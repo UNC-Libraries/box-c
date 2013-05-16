@@ -102,6 +102,7 @@
 					<div class="structure">
 						<c:import url="/jsp/structure/structureTree.jsp">
 							<c:param name="files">true</c:param>
+							<c:param name="queryp">search</c:param>
 						</c:import>
 					</div>
 				</div>

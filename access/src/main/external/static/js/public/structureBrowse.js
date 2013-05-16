@@ -3,9 +3,7 @@ require.config({
 	paths: {
 		'jquery' : 'jquery.min',
 		'jquery-ui' : 'jquery-ui.min',
-		'qtip' : 'jquery.qtip.min',
 		'thumbnail' : 'thumbnail',
-		'PID' : 'admin/src/PID',
 		'StructureEntry' : 'src/StructureEntry',
 		'StructureView' : 'src/StructureView'
 	},

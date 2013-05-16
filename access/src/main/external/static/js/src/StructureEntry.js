@@ -1,14 +1,11 @@
-define([ 'jquery', 'jquery-ui', 'PID'], function(
-		$, ui, PID) {
+define([ 'jquery', 'jquery-ui'], function($, ui) {
 	$.widget("cdr.structureEntry", {
 		options : {
 			indentSuppressed : false
 		},
 		
 		_create : function() {
-			var pid = this.element.attr("data-pid");
-			if (pid)
-				this.pid = new PID(pid);
+			this.pid = this.element.attr("data-pid");
 			
 			this.contentLoaded = false;
 			
@@ -25,7 +22,6 @@ define([ 'jquery', 'jquery-ui', 'PID'], function(
 			
 			this._initToggleContents();
 			
-			// Render indent
 			this._renderIndent();
 		},
 		

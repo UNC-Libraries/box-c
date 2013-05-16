@@ -3,22 +3,17 @@ require.config({
 	paths: {
 		'jquery' : 'jquery.min',
 		'jquery-ui' : 'jquery-ui.min',
-		'qtip' : 'jquery.qtip.min',
-		'cdrCommon' : 'cdrCommon',
 		'thumbnail' : 'thumbnail',
-		'PID' : 'admin/src/PID',
 		'StructureEntry' : 'src/StructureEntry',
 		'StructureView' : 'src/StructureView'
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
-		'qtip' : ['jquery'],
-		'thumbnail' : ['jquery'],
-		'cdrCommon' : ['jquery', 'qtip']
+		'thumbnail' : ['jquery']
 	}
 });
 
-define('searchResults', ['module', 'jquery', 'StructureView', 'cdrCommon'], function(module, $) {
+define('searchResults', ['module', 'jquery', 'StructureView'], function(module, $) {
 	$("#sort_select").change(function(){
 		$("#result_sort_form").submit();
 	});

@@ -41,7 +41,7 @@
 									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_${neighbor.contentTypeFacet[0].searchKey}" 
 											src="${cdr:getDatastreamUrl(neighbor, 'THUMB_SMALL', fedoraUtil)}"/>
 								</c:when>
-								<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentTypeFacet[0].searchKey}">
+								<c:when test="${neighbor.resourceType == searchSettings.resourceTypeAggregate && empty neighbor.contentTypeFacet[0].searchKey}">
 									<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
 								</c:when>
 								<c:otherwise>

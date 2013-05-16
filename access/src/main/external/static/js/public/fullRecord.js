@@ -3,10 +3,7 @@ require.config({
 	paths: {
 		'jquery' : 'jquery.min',
 		'jquery-ui' : 'jquery-ui.min',
-		'qtip' : 'jquery.qtip.min',
-		'cdrCommon' : 'cdrCommon',
 		'thumbnail' : 'thumbnail',
-		'PID' : 'admin/src/PID',
 		'StructureEntry' : 'src/StructureEntry',
 		'StructureView' : 'src/StructureView',
 		'JP2Viewer' : 'src/JP2Viewer',
@@ -18,15 +15,13 @@ require.config({
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
-		'qtip' : ['jquery'],
 		'thumbnail' : ['jquery'],
-		'cdrCommon' : ['jquery', 'qtip'],
 		'audiojs' : {
 			exports : 'audiojs'
 		}
 	}
 });
-define('fullRecord', ['module', 'jquery', 'cdrCommon', 'JP2Viewer', 'StructureView', 'VideoPlayer', 'AudioPlayer'], function(module, $) {
+define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'VideoPlayer', 'AudioPlayer'], function(module, $) {
 	var $jp2Window = $(".jp2_imageviewer_window"),
 		$audioPlayer = $(".audio_player"),
 		$videoPlayer = $(".video_player"),
