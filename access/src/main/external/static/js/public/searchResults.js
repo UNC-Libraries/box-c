@@ -29,7 +29,8 @@ define('searchResults', ['module', 'jquery', 'StructureView'], function(module, 
 			success: function(data){
 				var $structure = $(data);
 				$structure.addClass("facet popout").structureView({
-					showResourceIcons : false
+					showResourceIcons : false,
+					showParentLink : true
 				});
 				$("#facet_field_path_structure").html($structure);
 			},

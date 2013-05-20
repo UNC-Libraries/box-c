@@ -28,6 +28,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -39,6 +40,7 @@ import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 //import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
+import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 
 /**
  * Handles requests for the heirarchical structure view browse view. The request may either be for an entire stand alone
@@ -52,29 +54,27 @@ import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 public class StructureBrowseController extends AbstractSolrSearchController {
 	private static final Logger LOG = LoggerFactory.getLogger(StructureBrowseController.class);
 
-	@RequestMapping(value = "/structure", method = RequestMethod.GET)
-	public String getStructure(Model model, HttpServletRequest request, HttpServletResponse response) {
-		return getStructure(null, model, request, response);
+	private List<String> tierResultFieldsList = Arrays.asList(SearchFieldKeys.ID.name(),
+			SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name());
+
+	/**
+	 * Retrieves the contents of the pid specified in a structural view
+	 */
+	@RequestMapping("/structure")
+	public String getStructure(@RequestParam(value = "files", required = false) String includeFiles,
+			@RequestParam(value = "view", required = false) String view, Model model, HttpServletRequest request) {
+		return getStructureTree(null, "true".equals(includeFiles), view, model, request);
 	}
 
-	@RequestMapping(value = "/structure/{prefix}/{id}", method = RequestMethod.GET)
-	public String getStructure(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
-			HttpServletRequest request, HttpServletResponse response) {
-		return getStructure(idPrefix + ':' + id, model, request, response);
+	@RequestMapping("/structure/{prefix}/{id}")
+	public String getStructure(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
+			@RequestParam(value = "files", required = false) String includeFiles,
+			@RequestParam(value = "view", required = false) String view, Model model, HttpServletRequest request) {
+		return getStructureTree(idPrefix + ':' + id, "true".equals(includeFiles), view, model, request);
 	}
 
-	public String getStructure(String pid, Model model, HttpServletRequest request, HttpServletResponse response) {
-		if (LOG.isDebugEnabled())
-			LOG.debug("In Structure Browse controller for " + pid);
-		String includeFiles = request.getParameter("files");
-
-		if ("only".equals(includeFiles))
-			return getItemChildren(pid, model, request, response);
-		return getStructureTree(pid, "true".equals(includeFiles), model, request);
-	}
-
-	private String getStructureTree(String pid, boolean includeFiles, Model model, HttpServletRequest request) {
-		String viewParam = request.getParameter("view");
+	private String getStructureTree(String pid, boolean includeFiles, String viewParam, Model model,
+			HttpServletRequest request) {
 		String view;
 		boolean ajaxRequest;
 		if ("ajax".equals(viewParam)) {
@@ -128,6 +128,7 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		if (resultResponse != null) {
 			// Get the display values for hierarchical facets from the search results.
 			if (!ajaxRequest) {
+				LOG.debug("Getting facets and display values");
 				queryLayer.lookupHierarchicalDisplayValues(searchState, browseRequest.getAccessGroups());
 
 				// Retrieve the facet result set
@@ -164,22 +165,52 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		return view;
 	}
 
-	private List<String> tierResultFieldsList = Arrays.asList(SearchFieldKeys.ID.name(),
-			SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name());
-
-	private String getItemChildren(String pid, Model model, HttpServletRequest request, HttpServletResponse response) {
+	/**
+	 * Retrieves the structure of the contents of the parent of the specified pid.
+	 */
+	@RequestMapping("/structure/{prefix}/{id}/parent")
+	public String getParentChildren(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
+			@RequestParam(value = "files", required = false) String includeFiles, Model model, HttpServletRequest request) {
+		String pid = idPrefix + ':' + id;
+		// Get the parent pid for the selected object and get its structure view
 		BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(pid,
 				tierResultFieldsList));
-		if (selectedContainer == null) {
-			response.setStatus(404);
-			return null;
-		}
+		if (selectedContainer == null)
+			throw new ResourceNotFoundException("Object " + pid + " was not found.");
+
+		return getStructureTree(selectedContainer.getAncestorPathFacet().getSearchKey(), "true".equals(includeFiles), "ajax",
+				model, request);
+	}
+
+	/**
+	 * Retrieves the direct children of the pid specified. If no pid is specified, then the root is used
+	 */
+	@RequestMapping("/structure/{prefix}/{id}/tier")
+	public String getSingleTier(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
+			@RequestParam(value = "files", required = false) String includeFiles, Model model, HttpServletRequest request,
+			HttpServletResponse response) {
+		return getSingleTier(idPrefix + ':' + id, includeFiles, model, request, response);
+	}
+
+	private String getSingleTier(String pid, String includeFiles, Model model, HttpServletRequest request,
+			HttpServletResponse response) {
+		BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(pid,
+				tierResultFieldsList));
+		if (selectedContainer == null)
+			throw new ResourceNotFoundException("Object " + pid + " was not found.");
 
 		SearchRequest browseRequest = new SearchRequest();
 		generateSearchRequest(request, null, browseRequest);
-		browseRequest.getSearchState().getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedContainer.getPath());
+		SearchState searchState = browseRequest.getSearchState();
+		searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedContainer.getPath());
+		if ("only".equals(includeFiles))
+			searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeFile));
+		else if ("true".equals(includeFiles))
+			searchState.setResourceTypes(null);
+		else
+			searchState.setResourceTypes(Arrays.asList("!" + searchSettings.resourceTypeFile));
 
-		HierarchicalBrowseResultResponse resultResponse = queryLayer.getHierarchicalBrowseItemResult(browseRequest);
+		HierarchicalBrowseResultResponse resultResponse = queryLayer.getStructureTier(browseRequest);
 		model.addAttribute("structureResults", resultResponse);
 
 		String searchStateUrl = SearchStateUtil.generateStateParameterString(browseRequest.getSearchState());

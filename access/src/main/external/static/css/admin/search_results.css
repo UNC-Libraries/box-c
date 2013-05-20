@@ -17,7 +17,7 @@
 
 .ui-accordion .ui-accordion-header.ui-accordion-header-active {
 	background-color: #DDF0FA;
-	background-image: linear-gradient(to bottom, #DDF0FA, #FBFBFE);
+	background-image: linear-gradient(to bottom, #DDF0FA, #F5F9FE);
 	color: #0A5274;
 }
 
@@ -31,7 +31,7 @@
 
 .ui-accordion .ui-accordion-content {
 	border: 0;
-	background-color: #FBFBFE;
+	background-color: #F5F9FE;
 	background-image: none;
 }
 
@@ -91,12 +91,25 @@ ul.crumblist {
 	color: #666666;
 }
 
+.container_header span.active {
+	background-color: #59AACE;
+	border: 1px solid #0F80B3;
+	box-shadow: 0 0 8px 0 #55ABE0;
+	color: white;
+}
+
 .container_header span.disabled {
 	color: #AAA;
 }
 
 .container_header .container_menu {
 	float: right;
+}
+
+.container_header span.path_trail {
+	border: none;
+	font-size: 0.8em;
+	background: none;
 }
 
 .container_header ul {
@@ -110,13 +123,6 @@ ul.crumblist {
 .arrange_mode .arrange_placeholder + tr td {
 	box-shadow : 0px 3px 0px 0px #0F80B3 inset;
 	-webkit-box-shadow: 0px 3px 0px 0px #0F80B3 inset;
-}
-
-.container_header span.active {
-	background-color: #59AACE;
-	border: 1px solid #0F80B3;
-	box-shadow: 0 0 8px 0 #55ABE0;
-	color: white;
 }
 
 /** Result table */
@@ -264,14 +270,16 @@ ul.crumblist {
 }
 
 .sorting span {
-	background: url('/static/images/admin/sort_both.png') no-repeat center right; 
+	background-image: url('/static/images/admin/sort.png');
+	background-repeat: no-repeat;
+	background-position: right -2px; 
 }
 .sorting.asc span {
-	background: url('/static/images/admin/sort_asc.png') no-repeat center right;
+	background-position: right -103px;
 }
 
 .sorting.desc span {
-	background: url('/static/images/admin/sort_desc.png') no-repeat center right;
+	background-position: right -78px;
 }
 
 .sort_col:hover {

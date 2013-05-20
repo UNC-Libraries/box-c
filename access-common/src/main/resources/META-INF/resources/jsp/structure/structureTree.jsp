@@ -146,7 +146,7 @@
 		<c:otherwise>
 			<%-- Clear the value of query path since it was not valid --%>
 			<c:set var="queryPath" value=""/>
-			<c:url var="primaryUrl" scope="page" value='browse${containerUrlBase}'>
+			<c:url var="primaryUrl" scope="page" value='structure${containerUrlBase}'>
 				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${containerFacetAction}"/>
 			</c:url>
 			<c:set var="primaryTooltip">Browse structure starting from ${fn:toLowerCase(containerNode.resourceType)}&nbsp;${containerNode.title}</c:set>
@@ -155,6 +155,14 @@
 	
 	<%-- Render the expand/collapse icon --%>
 	<c:if test="${isAContainer}">
+		<c:url var="expandUrl" value="structure/${containerNode.pid.path}?${searchParams}">
+			<c:param name="depth" value='1'/>
+			<c:param name="view" value='ajax'/>
+			<c:param name="root" value='false'/>
+			<c:if test="${not empty queryPath}"><c:param name="queryp" value='${queryPath}'/></c:if>
+			<c:if test="${includeFiles}"><c:param name="files" value='true'/></c:if>
+			<c:if test="${displaySecondaryActions}"><c:param name="secondary" value='true'/></c:if>
+		</c:url>
 		<%-- Determine whether to display a collapse or expand icon --%>
 		<c:choose>
 			<c:when test="${(empty childCount || childCount == 0) && retainedAsDirectMatch}">
@@ -162,33 +170,20 @@
 			</c:when>
 			<c:when test="${fn:length(currentNode.children) > 0 && (isRootNode ||
 					hierarchicalViewResults.searchState.rowsPerPage == 0)}">
-				<div class="cont_toggle collapse" title="Collapse contents"></div>
+				<div class="cont_toggle collapse" title="Collapse contents" data-url="<c:out value='${expandUrl}' />"></div>
 			</c:when>
 			<c:when test="${childCount == 0}">
-				<div class="cont_toggle" title="No contents returned"></div>
+				<div class="cont_toggle" title="No contents returned" data-url="<c:out value='${expandUrl}' />"></div>
 			</c:when>
 			<c:otherwise>
-				<c:choose>
-					<c:when test="${fn:length(currentNode.children) > 0}">
-						<%-- Subcontainer children present means that expanding should just get non-container children --%>
-						<c:url var="expandUrl" value="structure/${containerNode.pid.path}?${searchParams}">
-							<c:param name="files" value="only"/>
-							<c:if test="${not empty queryPath}"><c:param name="queryp" value='${queryPath}'/></c:if>
-							<c:if test="${includeFiles}"><c:param name="files" value='true'/></c:if>
-							<c:if test="${displaySecondaryActions}"><c:param name="secondary" value='true'/></c:if>
-						</c:url>
-					</c:when>
-					<c:otherwise>
-						<c:url var="expandUrl" value="structure/${containerNode.pid.path}?${searchParams}">
-							<c:param name="depth" value='1'/>
-							<c:param name="view" value='ajax'/>
-							<c:param name="root" value='false'/>
-							<c:if test="${not empty queryPath}"><c:param name="queryp" value='${queryPath}'/></c:if>
-							<c:if test="${includeFiles}"><c:param name="files" value='true'/></c:if>
-							<c:if test="${displaySecondaryActions}"><c:param name="secondary" value='true'/></c:if>
-						</c:url>
-					</c:otherwise>
-				</c:choose>
+				<c:if test="${fn:length(currentNode.children) > 0}">
+					<%-- Subcontainer children present means that expanding should just get non-container children --%>
+					<c:url var="expandUrl" value="structure/${containerNode.pid.path}/tier?${searchParams}">
+						<c:param name="files" value="only"/>
+						<c:if test="${not empty queryPath}"><c:param name="queryp" value='${queryPath}'/></c:if>
+						<c:if test="${displaySecondaryActions}"><c:param name="secondary" value='true'/></c:if>
+					</c:url>
+				</c:if>
 				<div class="cont_toggle expand" title="Expand contents" data-url="<c:out value='${expandUrl}' />"></div>
 			</c:otherwise>
 		</c:choose>

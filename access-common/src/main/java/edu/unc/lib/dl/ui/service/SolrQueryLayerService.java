@@ -845,17 +845,14 @@ public class SolrQueryLayerService extends SolrSearchService {
 		return directMatchIds;
 	}
 
-	public HierarchicalBrowseResultResponse getHierarchicalBrowseItemResult(SearchRequest browseRequest) {
+	public HierarchicalBrowseResultResponse getStructureTier(SearchRequest browseRequest) {
 		SearchState fileSearchState = new SearchState(browseRequest.getSearchState());
-		List<String> resourceTypes = new ArrayList<String>();
-		resourceTypes.add(searchSettings.resourceTypeFile);
-		// resourceTypes.add(searchSettings.resourceTypeAggregate);
-		fileSearchState.setResourceTypes(resourceTypes);
+		
 		CutoffFacet ancestorPath = (CutoffFacet) fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
 		if (ancestorPath != null) {
 			((CutoffFacet) ancestorPath).setCutoff(((CutoffFacet) ancestorPath).getHighestTier() + 1);
 		} else {
-			ancestorPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + this.collectionsPid.getPid());
+			ancestorPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
 			fileSearchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPath);
 		}
 

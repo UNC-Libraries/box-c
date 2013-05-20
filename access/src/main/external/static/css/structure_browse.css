@@ -67,7 +67,19 @@
 	visibility: visible;
 }
 
-.structure .indent, .structure .cont_toggle {
+.structure .parent_link {
+	background-position: -54px -125px;
+	background-repeat: no-repeat;
+	display: block;
+	font-size: 0.9em;
+	height: 20px;
+	margin-left: 4px;
+	padding-left: 15px;
+	cursor: pointer;
+}
+
+
+.structure .indent, .structure .cont_toggle, .structure .parent_link {
 	background-image: url('/static/images/structure.png');
 }
 
@@ -122,7 +134,7 @@
 }
 
 /** Facet */
-.structure.facet {
+.structure.facet .structure_content {
 	overflow: hidden;
 	background-color: #ededed;
 	font-size: 12px;
@@ -142,7 +154,7 @@
 }
 
 /** Pop-out facet */
-.structure.facet.popout:hover, *:hover > .structure.facet.popout {
+.structure.facet.popout .structure_content:hover, .structure.facet.popout:hover .structure_content {
 	position: relative;
 	overflow-x: visible !important;
 	overflow-y: auto;
@@ -185,11 +197,12 @@
 }
 
 /** Inset facet */
-.structure.facet.inset {
+.structure.facet.inset .structure_content {
 	background-color: #ffffff;
 	max-width: none;
 	box-shadow: -9px -5px 10px -6px #DDF0FA inset;
 	overflow-x: auto;
+	border-top: 1px solid #E8F4FB;
 }
 
 .structure.facet.inset:hover {
@@ -215,7 +228,7 @@
 
 /** Aggregate record structure */
 
-.structure.aggregate {
+.structure.aggregate .structure_content {
 	margin: -15px 20px 0px 40px;
 	width: 900px;
 	float: left;

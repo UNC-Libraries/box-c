@@ -62,6 +62,7 @@
 					<div class="results_header_hierarchy_path">
 						<c:import url="/jsp/util/pathTrail.jsp">
 							<c:param name="displayHome">false</c:param>
+							<c:param name="skipLast">true</c:param>
 							<c:param name="resultOperation">${sessionScope.resultOperation}</c:param>
 						</c:import>
 					</div>

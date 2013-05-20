@@ -535,10 +535,12 @@ public class SolrSearchService {
 		}
 
 		// Turn on faceting
-		solrQuery.setFacet(true);
-		solrQuery.setFacetMinCount(1);
-		solrQuery.setFacetLimit(searchState.getBaseFacetLimit());
-
+		if (isRetrieveFacetsRequest) {
+			solrQuery.setFacet(true);
+			solrQuery.setFacetMinCount(1);
+			solrQuery.setFacetLimit(searchState.getBaseFacetLimit());
+		}
+		
 		// Override the base facet limit if overrides are given.
 		if (searchState.getFacetLimits() != null) {
 			for (Entry<String, Integer> facetLimit : searchState.getFacetLimits().entrySet()) {

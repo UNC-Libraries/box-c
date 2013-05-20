@@ -10,15 +10,15 @@ define([ 'jquery', 'jquery-ui'], function($, ui) {
 			this.contentLoaded = false;
 			
 			this.$entry = this.element.children(".entry");
-			if (!this.options.indentSuppressed && this.$entry.length == 0)
+			if (this.$entry.length > 0) {
+				this.contentUrl = this.$entry.children(".cont_toggle").attr("data-url");
+			} else if (!this.options.indentSuppressed)
 				this.element.addClass('suppressed');
 			this.$childrenContainer = this.element.children(".children");
 			if (this.$childrenContainer.children().length > 0)
 				this.element.addClass("expanded");
 			
 			this.skipLastIndent = this.element.hasClass('view_all');
-			
-			this.contentUrl = this.$entry.children(".cont_toggle").attr("data-url");
 			
 			this._initToggleContents();
 			
@@ -77,9 +77,12 @@ define([ 'jquery', 'jquery-ui'], function($, ui) {
 				return false;
 			});
 		},
-	
-		// Get contents, populate
-		// Wrap tree
+		
+		refreshIndent : function() {
+			this.element.children(".indent").remove();
+			this._renderIndent();
+		},
+		
 		_renderIndent : function () {
 			var $entry = this.element.children('.entry'),
 				$ancestors = this.element.parents(".entry_wrap:not(.suppressed)"),
@@ -108,6 +111,35 @@ define([ 'jquery', 'jquery-ui'], function($, ui) {
 					}
 				}
 			});
+		},
+		
+		getParentURL : function() {
+			var urlParts = this.contentUrl.replace(/&?root=false/, '').split(/\?(.+)/);
+			urlParts[0] += "/parent";
+			return urlParts[0] + ((urlParts.length > 1)? '?' + urlParts[1] : '');
+		},
+		
+		insertTree : function($oldRoot) {
+			var rootPid = $oldRoot.attr("data-pid");
+			
+			// Find the old root in the new results and remove it, while retaining an insertion point for the old root.
+			var $oldRootDuplicate = this.element.find('[data-pid="' + rootPid + '"]');
+			var $placeholder = $oldRootDuplicate.prev('.entry_wrap');
+			$oldRootDuplicate.remove();
+			
+			// Insert the old root into the new results
+			$oldRoot.detach();
+			// Insertion point depends on if it is the first sibling
+			var $refreshSet = $oldRoot.find(".entry_wrap").add($oldRoot);
+			
+			if ($placeholder.length == 0)
+				this.element.children(".children").prepend($oldRoot);
+			else {
+				$placeholder.after($oldRoot);
+				$refreshSet.add($placeholder);
+			}
+			this.element.addClass("expanded").children(".children").show();
+			$refreshSet.structureEntry('refreshIndent');
 		}
 	});
 });
