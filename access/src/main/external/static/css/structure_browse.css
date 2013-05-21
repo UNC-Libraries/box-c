@@ -1,9 +1,12 @@
 .structure {
-	overflow: auto;
-	overflow-y: hidden;
 	padding-bottom: 10px;
 	font-size: 12px;
 	line-height: 17px;
+}
+
+.structure .structure_content {
+	overflow: auto;
+	overflow-y: hidden;
 }
 
 .structure .container img {
@@ -68,16 +71,23 @@
 }
 
 .structure .parent_link {
-	background-position: -54px -125px;
+	background-position: -54px -122px;
 	background-repeat: no-repeat;
 	display: block;
 	font-size: 0.9em;
-	height: 20px;
+	height: 16px;
 	margin-left: 4px;
+	margin-bottom: 4px;
 	padding-left: 15px;
 	cursor: pointer;
 }
 
+.structure .parent_link.disabled, .structure .parent_link.disabled:hover {
+	background-position: -54px -139px;
+	color: #7D6666;
+	cursor: default;
+	text-decoration: none;
+}
 
 .structure .indent, .structure .cont_toggle, .structure .parent_link {
 	background-image: url('/static/images/structure.png');
@@ -205,7 +215,7 @@
 	border-top: 1px solid #E8F4FB;
 }
 
-.structure.facet.inset:hover {
+.structure.facet.inset:hover .structure_content, .structure.facet.inset .structure_content:hover{
 	overflow-y: auto;
 }
 

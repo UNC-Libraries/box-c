@@ -77,7 +77,7 @@
 			<c:if test="${not empty facetField.values}">
 				<c:if test="${facetField.name == 'ANCESTOR_PATH'}">
 					<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}_structure" class="hidden">
-						<c:url var="structureUrl" scope="page" value='structure?${searchStateUrl}'>
+						<c:url var="structureUrl" scope="page" value='structure/collection?${searchStateUrl}'>
 							<c:param name="${searchSettings.searchStateParams['ROWS_PER_PAGE']}" value="0"/>
 							<c:param name="${searchSettings.searchStateParams['RESOURCE_TYPES']}" value=""/>
 							<c:param name="view" value="facet"/>

@@ -27,7 +27,7 @@ define('searchResults', ['module', 'jquery', 'StructureView'], function(module, 
 		$.ajax({
 			url: structureUrl,
 			success: function(data){
-				var $structure = $(data);
+				var $structure = $('<div/>').html(data);
 				$structure.addClass("facet popout").structureView({
 					showResourceIcons : false,
 					showParentLink : true

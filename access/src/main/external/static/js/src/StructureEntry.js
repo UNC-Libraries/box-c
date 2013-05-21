@@ -39,13 +39,13 @@ define([ 'jquery', 'jquery-ui'], function($, ui) {
 							success: function(data){
 								loadingImage.remove();
 								if (data) {
-									// Adjust existing indents if the child container already has contents
-									var $existingLastSibling = self.$childrenContainer.children('.entry_wrap').last();
-									if ($existingLastSibling.length > 0)
-										$existingLastSibling.children('.last_sib').removeClass('last_sib').addClass('with_sib');
-									
 									var $newEntries = $("> .children > .entry_wrap", $(data));
 									if ($newEntries.length > 0) {
+										// Adjust existing indents if the child container already has contents
+										var $existingLastSibling = self.$childrenContainer.children('.entry_wrap').last();
+										if ($existingLastSibling.length > 0)
+											$existingLastSibling.children('.last_sib').removeClass('last_sib').addClass('with_sib');
+										
 										self.$childrenContainer.append($newEntries);
 										$newEntries.structureEntry(this.options);
 										// Add in the new items

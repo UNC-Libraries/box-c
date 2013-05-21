@@ -31,7 +31,7 @@
 </c:choose>
 
 <div class="onecol container_record" id="full_record">
-	<c:url var="browseUrl" scope="page" value='browse'>
+	<c:url var="structureUrl" scope="page" value='structure'>
 		<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.searchValue}"/>
 	</c:url>
 
@@ -78,7 +78,7 @@
 					<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.limitToValue}"/>
 				</c:url>
 				<a href="<c:out value='${collectionResultsUrl}' />">Browse&nbsp;(<c:out value="${childCount}"/> items)</a> or
-				<a href="<c:out value='${browseUrl}' />">
+				<a href="<c:out value='${structureUrl}' />">
 					View ${fn:toLowerCase(briefObject.resourceType)} structure
 				</a>
 			</p>
@@ -98,7 +98,7 @@
 			
 			<c:if test="${structureResults.resultCount > 0}">
 				<div id="hierarchical_view_full_record">
-					<h2>Folder Browse View (or <a href="<c:out value="${browseUrl}" />">switch to structure browse</a>)</h2>
+					<h2>Folder Browse View (or <a href="<c:out value="${structureUrl}" />">switch to structure browse</a>)</h2>
 					<div class="structure">
 						<c:import url="/jsp/structure/structureTree.jsp">
 							<c:param name="files">true</c:param>

@@ -159,6 +159,36 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 			nodeMap.put(metadata.getId(), currentNode);
 		}
 	}
+	
+	public int getChildNodeIndex(String pid) {
+		if (pid == null)
+			return -1;
+		for (int i = 0; i < rootNode.getChildren().size(); i++) {
+			ResultNode childNode = rootNode.getChildren().get(i);
+			if (childNode.getMetadata().getPid().getPid().equals(pid))
+				return i;
+		}
+		return -1;
+	}
+	
+	public ResultNode findNode(String pid) {
+		return findNode(pid, this.rootNode);
+	}
+	
+	private ResultNode findNode(String pid, ResultNode node) {
+		if (node.getMetadata().getPid().getPid().equals(pid))
+			return node;
+		for (ResultNode childNode: node.getChildren()) {
+			ResultNode found = findNode(pid, childNode);
+			if (found != null)
+				return found;
+		}
+		return null;
+	}
+	
+	public void addNodes(List<BriefObjectMetadata> nodes) {
+		
+	}
 
 	public Long getRootCount() {
 		return rootCount;
@@ -217,5 +247,10 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 			this.children = children;
 		}
 
+		public ResultNode addChild(BriefObjectMetadata metadata) {
+			ResultNode newNode = new ResultNode(metadata);
+			this.children.add(newNode);
+			return newNode;
+		}
 	}
 }

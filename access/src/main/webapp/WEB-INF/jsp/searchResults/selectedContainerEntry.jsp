@@ -94,7 +94,7 @@
 			</c:if>
 		</div>
 		<div class="containerinfo">
-			<c:url var="browseUrl" scope="page" value='browse?${searchStateUrl}'>
+			<c:url var="structureUrl" scope="page" value='structure?${searchStateUrl}'>
 				<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.searchValue}"/>
 				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${searchSettings.actions['RESET_NAVIGATION']}:structure"/>
 			</c:url>
@@ -102,7 +102,7 @@
 			<c:choose>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
 					<ul>
-						<li><a href="<c:out value='${browseUrl}'/>">Browse structure</a></li>
+						<li><a href="<c:out value='${structureUrl}'/>">Browse structure</a></li>
 					</ul>
 				</c:when>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate}">
@@ -135,7 +135,7 @@
 				<c:otherwise>
 					<ul>
 						<li><a href="<c:out value='${fullRecordUrl}'/>">View ${fn:toLowerCase(metadata.resourceType)} details</a></li>
-						<li><a href="<c:out value='${browseUrl}'/>">Browse structure</a></li>
+						<li><a href="<c:out value='${structureUrl}'/>">Browse structure</a></li>
 					</ul>
 				</c:otherwise>
 			</c:choose>

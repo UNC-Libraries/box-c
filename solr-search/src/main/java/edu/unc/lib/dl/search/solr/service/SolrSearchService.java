@@ -139,7 +139,8 @@ public class SolrSearchService {
 		return null;
 	}
 
-	public List<BriefObjectMetadataBean> getObjectsById(IdListRequest listRequest) {
+	@SuppressWarnings("unchecked")
+	public List<BriefObjectMetadata> getObjectsById(IdListRequest listRequest) {
 		QueryResponse queryResponse = null;
 		SolrQuery solrQuery = new SolrQuery();
 		StringBuilder query = new StringBuilder("*:* ");
@@ -184,8 +185,9 @@ public class SolrSearchService {
 			LOG.error("Error retrieving Solr object request: " + e);
 			return null;
 		}
-
-		return queryResponse.getBeans(BriefObjectMetadataBean.class);
+		
+		List<?> results = queryResponse.getBeans(BriefObjectMetadataBean.class);
+		return (List<BriefObjectMetadata>)results;
 	}
 
 	/**

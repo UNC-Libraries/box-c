@@ -18,7 +18,7 @@ define([ 'jquery', 'jquery-ui', 'StructureEntry'], function($, ui) {
 			}
 			
 			// Instantiate entries recursively
-			this.element.find(".entry_wrap").structureEntry({
+			this.$content.find(".entry_wrap").structureEntry({
 				indentSuppressed : this.options.indentSuppressed
 			});
 		},
@@ -26,9 +26,13 @@ define([ 'jquery', 'jquery-ui', 'StructureEntry'], function($, ui) {
 		_generateParentLink : function() {
 			var self = this;
 			var $parentLink = $("<a class='parent_link'>parent</a>");
+			if (self.$content.children(".entry_wrap").hasClass('root'))
+				$parentLink.addClass('disabled');
+				
 			$parentLink.click(function(){
+				if ($parentLink.hasClass('disabled'))
+					return false;
 				var $oldRoot = self.$content.children(".entry_wrap");
-				var rootPid = $oldRoot.attr("data-pid");
 				var parentURL = $oldRoot.structureEntry('getParentURL');
 				$.ajax({
 					url : parentURL,
@@ -40,6 +44,8 @@ define([ 'jquery', 'jquery-ui', 'StructureEntry'], function($, ui) {
 						});
 						$newRoot.structureEntry('insertTree', $oldRoot);
 						self.$content.append($newRoot);
+						if (self.$content.children(".entry_wrap").hasClass('root'))
+							$parentLink.addClass('disabled');
 					}
 				});
 				return false;

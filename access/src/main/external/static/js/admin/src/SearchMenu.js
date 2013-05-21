@@ -18,7 +18,7 @@ define([ 'jquery', 'jquery-ui', 'StructureView'], function(
 							url : ui.newPanel.attr('data-href'),
 							success : function(data) {
 								if (ui.newPanel.attr('id') == "structure_facet") {
-									var $structureView = $(data);
+									var $structureView = $('<div/>').html(data);
 									$structureView.structureView({
 										showResourceIcons : true,
 										showParentLink : true

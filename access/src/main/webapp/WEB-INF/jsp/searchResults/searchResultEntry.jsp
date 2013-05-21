@@ -232,25 +232,25 @@
 			</c:when>
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
 				<div class="containerinfo">
-					<c:url var="browseUrl" scope="page" value='browse?${searchStateUrl}'>
+					<c:url var="structureUrl" scope="page" value='structure?${searchStateUrl}'>
 						<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.searchValue}"/>
 						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${searchSettings.actions['RESET_NAVIGATION']}:structure"/>
 					</c:url>
 					<ul>
 						<li><a href="<c:out value='${fullRecordUrl}'/>" title="View folder information for ${metadata.title}" class="has_tooltip">View ${fn:toLowerCase(metadata.resourceType)} details</a></li>
-						<li><a href="<c:out value='${browseUrl}'/>" title="View the structure of this folder in a file browser view." class="has_tooltip">Browse structure</a></li>
+						<li><a href="<c:out value='${structureUrl}'/>" title="View the structure of this folder in a file browser view." class="has_tooltip">Browse structure</a></li>
 					</ul>
 				</div>
 			</c:when>
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
 				<div class="containerinfo">
-					<c:url var="browseUrl" scope="page" value='browse?${searchStateUrl}'>
+					<c:url var="structureUrl" scope="page" value='structure?${searchStateUrl}'>
 						<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.searchValue}"/>
 						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${searchSettings.actions['RESET_NAVIGATION']}:structure"/>
 					</c:url>
 					<ul>
 						<li><a href="<c:out value='${containerResultsUrl}'/>" title="View the contents of this collection" class="has_tooltip">View ${childCount} items</a></li>
-						<li><a href="<c:out value='${browseUrl}'/>" title="View the structure of this collection in a file browser view." class="has_tooltip">Browse structure</a></li>
+						<li><a href="<c:out value='${structureUrl}'/>" title="View the structure of this collection in a file browser view." class="has_tooltip">Browse structure</a></li>
 						<li>${metadata.resourceType}</li>
 					</ul>
 				</div>

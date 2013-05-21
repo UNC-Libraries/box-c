@@ -57,6 +57,7 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnable;
 import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.message.ActionMessage;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.IdListRequest;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -224,10 +225,10 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		List<String> resultFields = Arrays.asList("_version_");
 		
 		IdListRequest listRequest = new IdListRequest(ids, resultFields, groupSet);
-		List<BriefObjectMetadataBean> listResults = solrSearchService.getObjectsById(listRequest);
+		List<BriefObjectMetadata> listResults = solrSearchService.getObjectsById(listRequest);
 		Map<String, String> results = new HashMap<String,String>(listResults.size());
 		
-		for (BriefObjectMetadataBean result: listResults) {
+		for (BriefObjectMetadata result: listResults) {
 			results.put(result.getId(), Long.toString(result.get_version_()));
 		}
 		
