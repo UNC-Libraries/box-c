@@ -129,6 +129,10 @@
 	cursor: pointer;
 }
 
+.structure .leaf.cont_toggle {
+	background-position: 0px -129px;
+}
+
 .structure .view_all {
 	margin-top: -8px;
 }

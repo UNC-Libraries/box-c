@@ -54,6 +54,10 @@ define([ 'jquery', 'jquery-ui'], function($, ui) {
 											self.element.addClass("expanded");
 										});
 									}
+									if (self.$childrenContainer.children().length > 0)
+										$toggleButton.removeClass('expand').addClass('collapse');
+									else
+										$toggleButton.removeClass('expand').addClass('leaf');
 								}
 								self.contentLoaded = true;
 							},
@@ -62,16 +66,20 @@ define([ 'jquery', 'jquery-ui'], function($, ui) {
 							}
 						});
 					} else {
-						self.$childrenContainer.find(".indent").show();
-						self.$childrenContainer.show(100, function() {
-							self.element.addClass("expanded");
+						if (self.$childrenContainer.children().length > 0) {
+							self.$childrenContainer.find(".indent").show();
+							self.$childrenContainer.show(100, function() {
+								self.element.addClass("expanded");
+							});
+							$toggleButton.removeClass('expand').addClass('collapse');
+						}
+					}
+				} else {
+					if (self.$childrenContainer.children().length > 0) {
+						self.$childrenContainer.hide(100, function() {
+							self.element.removeClass("expanded");
 						});
 					}
-					$toggleButton.removeClass('expand').addClass('collapse');
-				} else {
-					self.$childrenContainer.hide(100, function() {
-						self.element.removeClass("expanded");
-					});
 					$toggleButton.removeClass('collapse').addClass('expand');
 				}
 				return false;
