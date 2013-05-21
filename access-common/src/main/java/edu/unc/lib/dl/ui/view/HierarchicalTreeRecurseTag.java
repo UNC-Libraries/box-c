@@ -45,25 +45,32 @@ public class HierarchicalTreeRecurseTag extends SimpleTagSupport {
 		this.pageContext = (PageContext) getJspContext();
 		this.out = pageContext.getOut();
 		this.body = getJspBody();
-		
+
 		if (items == null || items.getRootNode() == null)
 			return;
 
 		renderNode(items.getRootNode(), true, true);
 	}
 
-	private void renderNode(ResultNode currentNode, boolean firstEntry, boolean lastSibling) throws JspException, IOException {
+	private void renderNode(ResultNode currentNode, boolean firstEntry, boolean lastSibling) throws JspException,
+			IOException {
 		BriefObjectMetadata metadata = currentNode.getMetadata();
 		// If this item is excluded, then skip it and its children.
 		if (excludeIds != null && excludeIds.contains(metadata.getId())) {
 			return;
 		}
-		
+
 		// If this entry is a stub, then skip over it but render the children
 		boolean isStub = metadata.getTitle() == null;
-		
-		out.println("<div class='entry_wrap' data-pid='" + metadata.getId() + "'>");
-		
+
+		if (firstEntry
+				&& currentNode != null
+				&& (currentNode.getMetadata().getAncestorPath() == null || currentNode.getMetadata().getAncestorPath()
+						.size() == 0))
+			out.println("<div class='entry_wrap root' data-pid='" + metadata.getId() + "'>");
+		else
+			out.println("<div class='entry_wrap' data-pid='" + metadata.getId() + "'>");
+
 		if (!(this.hideRoot && firstEntry) && !isStub) {
 			// Render the main entry, containing the contents from the jsp tag
 			out.println("<div class='entry'>");
@@ -71,7 +78,7 @@ public class HierarchicalTreeRecurseTag extends SimpleTagSupport {
 			pageContext.setAttribute("isRootNode", firstEntry);
 			pageContext.setAttribute(this.currentNodeVariableName, currentNode);
 			pageContext.setAttribute("lastSibling", lastSibling);
-			
+
 			body.invoke(out);
 
 			// Ending the entry tag
@@ -79,7 +86,8 @@ public class HierarchicalTreeRecurseTag extends SimpleTagSupport {
 		}
 
 		if ((currentNode.getChildren() != null && currentNode.getChildren().size() > 0)
-				|| (metadata.getContentModel() != null && metadata.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString()))) {
+				|| (metadata.getContentModel() != null && metadata.getContentModel().contains(
+						ContentModelHelper.Model.CONTAINER.toString()))) {
 			out.println("<div class='children'>");
 
 			if (currentNode.getChildren() != null) {
@@ -106,16 +114,16 @@ public class HierarchicalTreeRecurseTag extends SimpleTagSupport {
 	public void setExcludeIds(Set<String> excludeIds) {
 		this.excludeIds = excludeIds;
 	}
-	
+
 	public void setVar(String var) {
 		this.currentNodeVariableName = var;
 	}
-	
+
 	public void setExcludeIds(String excludeIds) {
 		String[] excludeArray = excludeIds.split(" ");
 		this.excludeIds = new HashSet<String>();
-		
-		for (String excludeId: excludeArray) {
+
+		for (String excludeId : excludeArray) {
 			this.excludeIds.add(excludeId);
 		}
 	}

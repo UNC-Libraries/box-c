@@ -27,7 +27,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -37,7 +36,6 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-//import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
@@ -63,18 +61,18 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 	@RequestMapping("/structure")
 	public String getStructure(@RequestParam(value = "files", required = false) String includeFiles,
 			@RequestParam(value = "view", required = false) String view, Model model, HttpServletRequest request) {
-		return getStructureTree(null, "true".equals(includeFiles), view, model, request);
+		return getStructureTree(null, "true".equals(includeFiles), view, false, model, request);
 	}
 
 	@RequestMapping("/structure/{prefix}/{id}")
 	public String getStructure(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
 			@RequestParam(value = "files", required = false) String includeFiles,
 			@RequestParam(value = "view", required = false) String view, Model model, HttpServletRequest request) {
-		return getStructureTree(idPrefix + ':' + id, "true".equals(includeFiles), view, model, request);
+		return getStructureTree(idPrefix + ':' + id, "true".equals(includeFiles), view, false, model, request);
 	}
 
-	private String getStructureTree(String pid, boolean includeFiles, String viewParam, Model model,
-			HttpServletRequest request) {
+	private String getStructureTree(String pid, boolean includeFiles, String viewParam, boolean collectionMode,
+			Model model, HttpServletRequest request) {
 		String view;
 		boolean ajaxRequest;
 		if ("ajax".equals(viewParam)) {
@@ -123,7 +121,10 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		}
 
 		HierarchicalBrowseResultResponse resultResponse = null;
-		resultResponse = queryLayer.getHierarchicalBrowseResults(browseRequest);
+		if (collectionMode)
+			resultResponse = queryLayer.getStructureToParentCollection(browseRequest);
+		else
+			resultResponse = queryLayer.getHierarchicalBrowseResults(browseRequest);
 
 		if (resultResponse != null) {
 			// Get the display values for hierarchical facets from the search results.
@@ -166,6 +167,24 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 	}
 
 	/**
+	 * Retrieves a composite strucuture, containing the normal structure results starting at the specified pid, merged into
+	 * a list of all resources in the first tier under the parent collection, linked by any intermediary folders.
+	 */
+	@RequestMapping("/structure/collection")
+	public String getStructureFromParentCollection(@RequestParam(value = "files", required = false) String includeFiles,
+			Model model, HttpServletRequest request) {
+		return getStructureTree(null, "true".equals(includeFiles), "ajax", true, model, request);
+	}
+	
+	@RequestMapping("/structure/{prefix}/{id}/collection")
+	public String getStructureFromParentCollection(@PathVariable("prefix") String idPrefix,
+			@PathVariable("id") String id, @RequestParam(value = "files", required = false) String includeFiles,
+			Model model, HttpServletRequest request) {
+		String pid = idPrefix + ':' + id;
+		return getStructureTree(pid, "true".equals(includeFiles), "ajax", true, model, request);
+	}
+
+	/**
 	 * Retrieves the structure of the contents of the parent of the specified pid.
 	 */
 	@RequestMapping("/structure/{prefix}/{id}/parent")
@@ -178,8 +197,8 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		if (selectedContainer == null)
 			throw new ResourceNotFoundException("Object " + pid + " was not found.");
 
-		return getStructureTree(selectedContainer.getAncestorPathFacet().getSearchKey(), "true".equals(includeFiles), "ajax",
-				model, request);
+		return getStructureTree(selectedContainer.getAncestorPathFacet().getSearchKey(), "true".equals(includeFiles),
+				"ajax", false, model, request);
 	}
 
 	/**

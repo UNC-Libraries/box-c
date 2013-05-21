@@ -41,6 +41,7 @@ import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacetNode;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
+import edu.unc.lib.dl.search.solr.model.IdListRequest;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -705,6 +706,67 @@ public class SolrQueryLayerService extends SolrSearchService {
 		}
 	}
 
+	public HierarchicalBrowseResultResponse getStructureToParentCollection(HierarchicalBrowseRequest browseRequest) {
+		HierarchicalBrowseResultResponse requestResponse = getHierarchicalBrowseResults(browseRequest);
+		BriefObjectMetadata requestRoot = requestResponse.getRootNode().getMetadata();
+		
+		// Tree does not need to be expanded further if the root is a collection, it has no parent collection, or it is just below the collection root
+		if (requestRoot.getAncestorPath() == null || requestRoot.getAncestorPath().size() <= 1 || requestRoot.getParentCollection() == null || searchSettings.resourceTypeCollection.equals(requestRoot.getResourceType()))
+			return requestResponse;
+		
+		// Retrieve on tier of structure for the parent collection.
+		HierarchicalBrowseRequest collectionRequest = new HierarchicalBrowseRequest(browseRequest.getSearchState(), 1, browseRequest.getAccessGroups());
+		collectionRequest.setRootPid(requestRoot.getParentCollection());
+		HierarchicalBrowseResultResponse collectionResponse = getHierarchicalBrowseResults(collectionRequest);
+		
+		int parentCollectionTier = requestRoot.getParentCollectionObject().getTier();
+		int collectionToRequestDistance = requestRoot.getAncestorPath().size() - parentCollectionTier;
+		// The requested root is a child of the collection root, so insert the request tree as a child
+		if (collectionToRequestDistance == 0) {
+			int childNodeIndex = collectionResponse.getChildNodeIndex(requestRoot.getPid().getPid());
+			collectionResponse.getRootNode().getChildren().set(childNodeIndex, requestResponse.getRootNode());
+			return collectionResponse;
+		}
+		
+		//MERGE THESE?  Make sure that distance of 0, 1 and greater all work
+		if (collectionToRequestDistance == 1) {
+			int childNodeIndex = collectionResponse.getChildNodeIndex(requestRoot.getAncestorPathFacet().getSearchKey());
+			collectionResponse.getRootNode().getChildren().set(childNodeIndex, requestResponse.getRootNode());
+			return collectionResponse;
+		}
+		
+		List<String> idList = new ArrayList<String>();
+		// If the distance between the collection root and request root is bigger than 1, then fill in records for all the intermediaries
+		for (int i = parentCollectionTier + 1; i < requestRoot.getAncestorPath().size(); i++) {
+			idList.add(requestRoot.getAncestorPathFacet().getFacetNodes().get(i).getSearchKey());
+		}
+		List<BriefObjectMetadata> bridgeMetadata = this.getObjectsById(new IdListRequest(idList, null, browseRequest.getAccessGroups()));
+		this.getChildrenCounts(bridgeMetadata, browseRequest.getAccessGroups());
+		
+		// Guarantee sort order of the bridge items by structure depth
+		Collections.sort(bridgeMetadata, new Comparator<BriefObjectMetadata>() {
+			@Override
+			public int compare(BriefObjectMetadata arg0, BriefObjectMetadata arg1) {
+				return arg0.getAncestorPath().size() - arg1.getAncestorPath().size();
+			}
+		});
+		
+		// Build tree-line containing all the bridge folders
+		HierarchicalBrowseResultResponse.ResultNode bridgeRoot = new HierarchicalBrowseResultResponse.ResultNode(bridgeMetadata.get(0));
+		HierarchicalBrowseResultResponse.ResultNode currentNode = bridgeRoot;
+		for (int i = 1; i < bridgeMetadata.size(); i++)
+			currentNode = currentNode.addChild(bridgeMetadata.get(i));
+		
+		// Join the bridge to the original request tree
+		currentNode.getChildren().add(requestResponse.getRootNode());
+		
+		// Insert the bridge into the collection tree
+		int bridgeRootParentIndex = collectionResponse.getChildNodeIndex(bridgeRoot.getMetadata().getAncestorPathFacet().getSearchKey());
+		collectionResponse.getRootNode().getChildren().get(bridgeRootParentIndex).getChildren().add(bridgeRoot);
+		
+		return collectionResponse;
+	}
+
 	/**
 	 * Retrieves results for populating a hierarchical browse view. Supports all the regular navigation available to
 	 * searches. Results contain child counts for each item (all items returned are containers), and a map containing the
@@ -716,12 +778,11 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public HierarchicalBrowseResultResponse getHierarchicalBrowseResults(HierarchicalBrowseRequest browseRequest) {
 		AccessGroupSet accessGroups = browseRequest.getAccessGroups();
 		SearchState browseState = (SearchState) browseRequest.getSearchState().clone();
-		
+
 		CutoffFacet rootPath;
 		BriefObjectMetadataBean rootNode;
 		if (browseRequest.getRootPid() != null) {
-			rootNode = getObjectById(new SimpleIdRequest(browseRequest.getRootPid(),
-					browseRequest.getAccessGroups()));
+			rootNode = getObjectById(new SimpleIdRequest(browseRequest.getRootPid(), browseRequest.getAccessGroups()));
 			rootPath = rootNode.getPath();
 			browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
 		} else {
@@ -731,9 +792,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 				rootPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + this.collectionsPid.getPid());
 				browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
 			}
-			
-			rootNode = getObjectById(new SimpleIdRequest(rootPath.getSearchKey(),
-					browseRequest.getAccessGroups()));
+
+			rootNode = getObjectById(new SimpleIdRequest(rootPath.getSearchKey(), browseRequest.getAccessGroups()));
 		}
 		boolean rootIsAStub = rootNode == null;
 		if (rootIsAStub) {
@@ -742,7 +802,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			rootNode.setId(rootPath.getSearchKey());
 			rootNode.setAncestorPathFacet(rootPath);
 		}
-		
+
 		HierarchicalBrowseResultResponse browseResults = new HierarchicalBrowseResultResponse();
 		SearchState hierarchyState = searchStateFactory.createHierarchyListSearchState();
 		// Use the ancestor path facet from the state where we will have set a default value
@@ -775,7 +835,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 		// Add the root node into the result set
 		browseResults.getResultList().add(0, rootNode);
 
-		// Don't need to manipulate the container list any further unless either the root is a real record or there are subcontainers 
+		// Don't need to manipulate the container list any further unless either the root is a real record or there are
+		// subcontainers
 		if (!rootIsAStub || results.getResultCount() > 0) {
 			// Get the children counts per container
 			SearchRequest filteredChildrenRequest = new SearchRequest(browseState, browseRequest.getAccessGroups());
@@ -847,7 +908,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	public HierarchicalBrowseResultResponse getStructureTier(SearchRequest browseRequest) {
 		SearchState fileSearchState = new SearchState(browseRequest.getSearchState());
-		
+
 		CutoffFacet ancestorPath = (CutoffFacet) fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
 		if (ancestorPath != null) {
 			((CutoffFacet) ancestorPath).setCutoff(((CutoffFacet) ancestorPath).getHighestTier() + 1);
@@ -959,9 +1020,10 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		return false;
 	}
-	
+
 	/**
 	 * Determines if the user has adminRole permissions on any items
+	 * 
 	 * @param accessGroups
 	 * @return
 	 */
@@ -972,11 +1034,11 @@ public class SolrQueryLayerService extends SolrSearchService {
 		StringBuilder query = new StringBuilder();
 		String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
 		query.append("adminGroup:(").append(joinedGroups).append(')');
-		
+
 		SolrQuery solrQuery = new SolrQuery();
 		solrQuery.setQuery(query.toString());
 		solrQuery.setRows(0);
-		
+
 		try {
 			QueryResponse queryResponse = this.executeQuery(solrQuery);
 			return queryResponse.getResults().getNumFound() > 0;
