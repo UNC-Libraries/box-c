@@ -22,7 +22,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 public class HierarchicalBrowseRequest extends SearchRequest {
 	private static final long serialVersionUID = 1L;
 	private int retrievalDepth;
-	private String rootPid;
+	private boolean includeFiles;
 	
 	public HierarchicalBrowseRequest(int retrievalDepth){
 		this.retrievalDepth = retrievalDepth;
@@ -41,11 +41,11 @@ public class HierarchicalBrowseRequest extends SearchRequest {
 		this.retrievalDepth = retrievalDepth;
 	}
 
-	public String getRootPid() {
-		return rootPid;
+	public boolean isIncludeFiles() {
+		return includeFiles;
 	}
 
-	public void setRootPid(String rootPid) {
-		this.rootPid = rootPid;
+	public void setIncludeFiles(boolean includeFiles) {
+		this.includeFiles = includeFiles;
 	}
 }

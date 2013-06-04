@@ -27,30 +27,46 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 public class SearchRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private SearchState searchState;
-	private boolean applyFacetCutoffs;
-	private boolean applyFacetPrefixes;
-	private AccessGroupSet accessGroups;
+	protected SearchState searchState;
+	private boolean retrieveFacets;
+	private boolean applyCutoffs;
+	protected AccessGroupSet accessGroups;
+	protected String rootPid;
 
 	public SearchRequest() {
 		searchState = null;
 		accessGroups = null;
-		applyFacetCutoffs = true;
-		applyFacetPrefixes = true;
+		applyCutoffs = true;
+		retrieveFacets = false;
+		rootPid = null;
 	}
 
 	public SearchRequest(SearchState searchState, AccessGroupSet accessGroups) {
 		setSearchState(searchState);
 		setAccessGroups(accessGroups);
-		applyFacetCutoffs = true;
-		applyFacetPrefixes = true;
+		applyCutoffs = true;
+		retrieveFacets = false;
 	}
 
-	public SearchRequest(SearchState searchState, AccessGroupSet accessGroups, boolean applyFacetCutoffs) {
+	public SearchRequest(String rootPid, SearchState searchState, AccessGroupSet accessGroups) {
 		setSearchState(searchState);
 		setAccessGroups(accessGroups);
-		this.applyFacetCutoffs = applyFacetCutoffs;
-		applyFacetPrefixes = true;
+		applyCutoffs = true;
+		retrieveFacets = false;
+		this.rootPid = rootPid;
+	}
+
+	public SearchRequest(SearchState searchState, boolean retrieveFacets) {
+		this();
+		setSearchState(searchState);
+		this.retrieveFacets = retrieveFacets;
+	}
+
+	public SearchRequest(SearchState searchState, AccessGroupSet accessGroups, boolean retrieveFacets) {
+		setSearchState(searchState);
+		setAccessGroups(accessGroups);
+		applyCutoffs = true;
+		this.retrieveFacets = retrieveFacets;
 	}
 
 	public SearchState getSearchState() {
@@ -69,19 +85,27 @@ public class SearchRequest implements Serializable {
 		this.accessGroups = accessGroups;
 	}
 
-	public boolean isApplyFacetCutoffs() {
-		return applyFacetCutoffs;
+	public boolean isApplyCutoffs() {
+		return applyCutoffs;
 	}
 
-	public void setApplyFacetCutoffs(boolean applyFacetCutoffs) {
-		this.applyFacetCutoffs = applyFacetCutoffs;
+	public void setApplyCutoffs(boolean applyCutoffs) {
+		this.applyCutoffs = applyCutoffs;
 	}
 
-	public boolean isApplyFacetPrefixes() {
-		return applyFacetPrefixes;
+	public String getRootPid() {
+		return rootPid;
 	}
 
-	public void setApplyFacetPrefixes(boolean applyFacetPrefixes) {
-		this.applyFacetPrefixes = applyFacetPrefixes;
+	public void setRootPid(String rootPid) {
+		this.rootPid = rootPid;
+	}
+
+	public boolean isRetrieveFacets() {
+		return retrieveFacets;
+	}
+
+	public void setRetrieveFacets(boolean retrieveFacets) {
+		this.retrieveFacets = retrieveFacets;
 	}
 }

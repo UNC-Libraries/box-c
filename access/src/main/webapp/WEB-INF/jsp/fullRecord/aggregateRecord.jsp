@@ -158,7 +158,7 @@
 
 	<div class="structure aggregate">
 		<c:import url="/jsp/structure/structureTree.jsp">
-			<c:param name="queryp" value="search"/>
+			<c:param name="queryp" value="list"/>
 			<c:param name="secondary" value="true"/>
 			<c:param name="root" value="false"/>
 			<c:param name="excludeIDs" value="${defaultWebObjectID}"/>
@@ -181,9 +181,7 @@
 				<tr>
 					<th>Contains:</th>
 					<td>
-						<c:url var="contentsResultsUrl" scope="page" value='search'>
-							<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
-						</c:url>
+						<c:url var="contentsResultsUrl" scope="page" value='list/${briefObject.id}'></c:url>
 						<a href="<c:out value='${contentsResultsUrl}' />">${childCount} item<c:if test="${childCount != 1}">s</c:if></a>
 					</td>
 				</tr>

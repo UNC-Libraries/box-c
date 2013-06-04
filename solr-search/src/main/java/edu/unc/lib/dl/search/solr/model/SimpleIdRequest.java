@@ -29,6 +29,10 @@ public class SimpleIdRequest {
 	protected AccessGroupSet accessGroups;
 	protected String accessTypeFilter;
 	
+	public SimpleIdRequest(String id) {
+		this.id = id;
+	}
+	
 	public SimpleIdRequest(List<String> resultFields, AccessGroupSet accessGroups) {
 		this.accessGroups = accessGroups;
 		this.resultFields = resultFields;

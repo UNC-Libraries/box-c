@@ -46,9 +46,7 @@
 		<c:url var="fullRecordUrl" scope="page" value="record">
 			<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.id}"/>
 		</c:url>
-		<c:url var="containerResultsUrl" scope="page" value='search'>
-			<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.limitToValue}"/>
-		</c:url>
+		<c:url var="containerResultsUrl" scope="page" value='list/${metadata.id}'></c:url>
 		<%-- Set primary action URL based on content model and container results URL as appropriate --%>
 		<c:choose>
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">

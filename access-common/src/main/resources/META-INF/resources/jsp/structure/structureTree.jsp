@@ -19,7 +19,7 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%--
 	Renders a hierarchical browse view of all the children containers starting at a given root node.
 
@@ -74,7 +74,7 @@
 		<c:set var="containerUrlBase" value=""/>
 	</c:when>
 	<c:otherwise>
-		<c:set var="containerUrlBase" value="?${sessionScope.recordNavigationState.searchStateUrl}"/>
+		<c:set var="containerUrlBase" value="?${searchStateUrl}"/>
 	</c:otherwise>
 </c:choose>
 
@@ -92,63 +92,42 @@
 		</c:otherwise>
 	</c:choose>
 	
-	<c:set var="containerFacetAction">
-		<c:choose>
-			<c:when test="${!isAContainer}">
-				${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams['ANCESTOR_PATH']},"${containerNode.ancestorPathFacet.searchValue},${containerNode.ancestorPathFacet.highestTier + 1}"
-			</c:when>
-			<c:when test="${applyCutoffs}">
-				${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams['ANCESTOR_PATH']},"${containerNode.path.limitToValue}"
-			</c:when>
-			<c:otherwise>
-				${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams['ANCESTOR_PATH']},"${containerNode.path.searchValue}"
-			</c:otherwise>
-		</c:choose>
-	</c:set>
-	
 	<c:set var="retainedAsDirectMatch" value="${fn:length(hierarchicalViewResults.matchingContainerPids) > 0 && childCount == 0}" />
 	
 	<c:choose>
 		<c:when test="${retainedAsDirectMatch && queryPath == 'search'}">
 			<%-- If the item has no children but was returned as a search result,  --%>
-			<c:url var="containerUrl" scope="page" value='${queryPath}'>
-				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${containerFacetAction}"/>
-			</c:url>
+			<c:url var="containerUrl" scope="page" value='${queryPath}/${containerNode.id}'></c:url>
 		</c:when>
 		<c:otherwise>
-			<c:url var="containerUrl" scope="page" value='${queryPath}${containerUrlBase}'>
-				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${containerFacetAction}"/>
-			</c:url>			
+			<c:url var="containerUrl" scope="page" value='${queryPath}/${containerNode.id}${containerUrlBase}'></c:url>
 		</c:otherwise>
 	</c:choose>
 	
 	<c:choose>
 		<c:when test="${queryPath == 'structure'}">
-			<c:url var="primaryUrl" scope="page" value='structure/${containerNode.pid.path}'>
+			<c:url var="primaryUrl" scope="page" value='structure/${containerNode.id}${containerUrlBase}'>
 			</c:url>
 		</c:when>
 		<c:when test="${queryPath == 'list'}">
-			<c:url var="primaryUrl" scope="page" value='list/${containerNode.pid.path}'>
+			<c:url var="primaryUrl" scope="page" value='list/${containerNode.id}${containerUrlBase}'>
 			</c:url>
 		</c:when>
-		<c:when test="${queryPath == 'search' && retainedAsDirectMatch}">
-			<c:url var="primaryUrl" scope="page" value='search'>
-				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${containerFacetAction}|${searchSettings.actions['RESET_NAVIGATION']}:search"/>
-			</c:url>
-			<c:set var="primaryTooltip">View all items contained within ${fn:toLowerCase(containerNode.resourceType)}&nbsp;${containerNode.title}</c:set>
-		</c:when>
-		<c:when test="${queryPath == 'search' && !retainedAsDirectMatch}">
-			<c:url var="primaryUrl" scope="page" value='search${containerUrlBase}'>
-				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${containerFacetAction}|${searchSettings.actions['RESET_NAVIGATION']}:search"/>
-			</c:url>
-			<c:set var="primaryTooltip">View ${childCount} matching item(s) contained within ${fn:toLowerCase(containerNode.resourceType)}&nbsp;${containerNode.title}</c:set>
+		<c:when test="${queryPath == 'search'}">
+			<c:url var="primaryUrl" scope="page" value='search/${containerNode.id}${containerUrlBase}'></c:url>
+			<c:choose>
+				<c:when test="retainedAsDirectMatch">
+					<c:set var="primaryTooltip">View all items contained within ${fn:toLowerCase(containerNode.resourceType)}&nbsp;${containerNode.title}</c:set>
+				</c:when>
+				<c:otherwise>
+					<c:set var="primaryTooltip">View ${childCount} matching item(s) contained within ${fn:toLowerCase(containerNode.resourceType)}&nbsp;${containerNode.title}</c:set>
+				</c:otherwise>
+			</c:choose>
 		</c:when>
 		<c:otherwise>
 			<%-- Clear the value of query path since it was not valid --%>
 			<c:set var="queryPath" value=""/>
-			<c:url var="primaryUrl" scope="page" value='structure${containerUrlBase}'>
-				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${containerFacetAction}"/>
-			</c:url>
+			<c:url var="primaryUrl" scope="page" value='structure/${containerNode.id}${containerUrlBase}'></c:url>
 			<c:set var="primaryTooltip">Browse structure starting from ${fn:toLowerCase(containerNode.resourceType)}&nbsp;${containerNode.title}</c:set>
 		</c:otherwise>
 	</c:choose>

@@ -61,7 +61,9 @@ public class SearchStateUtil {
 	public static HashMap<String,String> generateStateParameters(SearchState searchState){
 		HashMap<String,String> params = generateSearchParameters(searchState);
 		
-		params.put(searchSettings.searchStateParam("ROWS_PER_PAGE"), ""+searchState.getRowsPerPage());
+		if (searchState.getRowsPerPage() != null && searchState.getRowsPerPage() >= 0) {
+			params.put(searchSettings.searchStateParam("ROWS_PER_PAGE"), ""+searchState.getRowsPerPage());
+		}
 		
 		if (searchState.getFacetsToRetrieve() != null && searchState.getFacetsToRetrieve().size() > 0 && !searchState.getFacetsToRetrieve().containsAll(searchSettings.facetNames)){
 			params.put(searchSettings.searchStateParam("FACET_FIELDS_TO_RETRIEVE"), joinFields(searchState.getFacetsToRetrieve(), ",", true));
@@ -81,7 +83,8 @@ public class SearchStateUtil {
 		}
 		
 		if (searchState.getSortType() != null && searchState.getSortType().length() != 0){
-			params.put(searchSettings.searchStateParam("SORT_TYPE"), searchState.getSortType());
+			if (!"default".equals(searchState.getSortType()))
+				params.put(searchSettings.searchStateParam("SORT_TYPE"), searchState.getSortType());
 			if (searchState.getSortOrder() != null){
 				params.put(searchSettings.searchStateParam("SORT_ORDER"), searchState.getSortOrder());
 			}

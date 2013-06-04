@@ -210,17 +210,13 @@ public class SolrSearchService {
 	 */
 	public SearchResultResponse getSearchResults(SearchRequest searchRequest, boolean returnQuery) {
 		LOG.debug("In getSearchResults: " + searchRequest.getSearchState());
-
-		boolean isRetrieveFacetsRequest = searchRequest.getSearchState().getFacetsToRetrieve() != null
-				&& searchRequest.getSearchState().getFacetsToRetrieve().size() > 0;
-
-		SolrQuery solrQuery = this.generateSearch(searchRequest, isRetrieveFacetsRequest);
-
+		
+		SolrQuery solrQuery = this.generateSearch(searchRequest);
+		
 		LOG.debug("getSearchResults query: " + solrQuery);
 		try {
 			SearchResultResponse resultResponse = executeSearch(solrQuery, searchRequest.getSearchState(),
-					isRetrieveFacetsRequest, returnQuery);
-
+					searchRequest.isRetrieveFacets(), returnQuery);
 			// Add in the correct rollup representatives when they are missing.
 			if (searchRequest.getSearchState().getRollup() != null && searchRequest.getSearchState().getRollup()) {
 				for (BriefObjectMetadata item : resultResponse.getResultList()) {
@@ -256,11 +252,14 @@ public class SolrSearchService {
 	 * @throws AccessRestrictionException
 	 *            thrown if no groups are provided.
 	 */
+	protected StringBuilder addAccessRestrictions(StringBuilder query) throws AccessRestrictionException {
+		return this.addAccessRestrictions(query, null);
+	}
+	
 	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups)
 			throws AccessRestrictionException {
 		return this.addAccessRestrictions(query, accessGroups, searchSettings.getAllowPatronAccess());
 	}
-		
 	
 	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups, boolean allowPatronAccess)
 			throws AccessRestrictionException {
@@ -385,6 +384,17 @@ public class SolrSearchService {
 			return null;
 		return (Date) queryResponse.getResults().get(0).getFieldValue("timestamp");
 	}
+	
+	public BriefObjectMetadata addSelectedContainer(String containerPid, SearchState searchState, boolean applyCutoffs) {
+		BriefObjectMetadata selectedContainer = getObjectById(new SimpleIdRequest(containerPid));
+		if (selectedContainer == null)
+			return null;
+		CutoffFacet selectedPath = selectedContainer.getPath();
+		if (applyCutoffs)
+			selectedPath.setCutoff(selectedPath.getHighestTier() + 1);
+		searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedPath);
+		return selectedContainer;
+	}
 
 	/**
 	 * Wrapper method for executing a solr query.
@@ -405,8 +415,8 @@ public class SolrSearchService {
 	 * @param isRetrieveFacetsRequest
 	 * @return
 	 */
-	protected SolrQuery generateSearch(SearchRequest searchRequest, boolean isRetrieveFacetsRequest) {
-		SearchState searchState = searchRequest.getSearchState();
+	protected SolrQuery generateSearch(SearchRequest searchRequest) {
+		SearchState searchState = (SearchState) searchRequest.getSearchState();
 		SolrQuery solrQuery = new SolrQuery();
 		StringBuilder termQuery = new StringBuilder();
 		
@@ -537,10 +547,19 @@ public class SolrSearchService {
 		}
 
 		// Turn on faceting
-		if (isRetrieveFacetsRequest) {
+		if (searchRequest.isRetrieveFacets()) {
 			solrQuery.setFacet(true);
 			solrQuery.setFacetMinCount(1);
 			solrQuery.setFacetLimit(searchState.getBaseFacetLimit());
+			
+			if (searchState.getFacetsToRetrieve() != null) {
+				// Add facet fields
+				for (String facetName : searchState.getFacetsToRetrieve()) {
+					String facetField = solrSettings.getFieldName(facetName);
+					if (facetField != null)
+						solrQuery.addFacetField(solrSettings.getFieldName(facetName));
+				}
+			}
 		}
 		
 		// Override the base facet limit if overrides are given.
@@ -550,16 +569,7 @@ public class SolrSearchService {
 						.toString());
 			}
 		}
-
-		if (isRetrieveFacetsRequest && searchState.getFacetsToRetrieve() != null) {
-			// Add facet fields
-			for (String facetName : searchState.getFacetsToRetrieve()) {
-				String facetField = solrSettings.getFieldName(facetName);
-				if (facetField != null)
-					solrQuery.addFacetField(solrSettings.getFieldName(facetName));
-			}
-		}
-
+		
 		// Add facet limits
 		Map<String, Object> facets = searchState.getFacets();
 		if (facets != null) {
@@ -580,7 +590,7 @@ public class SolrSearchService {
 		}
 
 		// Scope hierarchical facet results to the highest tier selected within the facet tree
-		if (isRetrieveFacetsRequest && searchRequest.isApplyFacetPrefixes() && searchState.getFacetsToRetrieve() != null) {
+		if (searchRequest.isRetrieveFacets() && searchRequest.isApplyCutoffs() && searchState.getFacetsToRetrieve() != null) {
 			Set<String> facetsQueried = searchState.getFacets().keySet();
 			// Apply closing cutoff to all cutoff facets that are being retrieved but not being queried for
 			for (String fieldKey : searchState.getFacetsToRetrieve()) {

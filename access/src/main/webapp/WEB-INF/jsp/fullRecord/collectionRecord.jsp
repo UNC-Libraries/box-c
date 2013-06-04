@@ -31,9 +31,7 @@
 </c:choose>
 
 <div class="onecol container_record" id="full_record">
-	<c:url var="structureUrl" scope="page" value='structure'>
-		<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.searchValue}"/>
-	</c:url>
+	<c:url var="structureUrl" scope="page" value='structure/${briefObject.id}'></c:url>
 
 	<div class="contentarea">
 		<div class="large thumb_container">
@@ -69,14 +67,12 @@
 					<input type="text" name="query" id="csearch_text" placeholder="Search the ${fn:toLowerCase(briefObject.resourceType)}"><input type="submit" value="Go" id="csearch_submit">
 				</div>
 				<input type="hidden" name="queryType" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}"/>
-				<input type="hidden" name="${searchSettings.searchStateParams['ACTIONS']}" 
-					value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${briefObject.path.searchValue}",${briefObject.path.highestTier + 1}'/>
+				<input type="hidden" name="container" 
+					value='${briefObject.id}'/>
 			</form>
 			<div class="clear"></div>
 			<p class="full_record_browse">
-				<c:url var="collectionResultsUrl" scope="page" value='search'>
-					<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.limitToValue}"/>
-				</c:url>
+				<c:url var="collectionResultsUrl" scope="page" value='list/${briefObject.id}'></c:url>
 				<a href="<c:out value='${collectionResultsUrl}' />">Browse&nbsp;(<c:out value="${childCount}"/> items)</a> or
 				<a href="<c:out value='${structureUrl}' />">
 					View ${fn:toLowerCase(briefObject.resourceType)} structure
@@ -102,7 +98,7 @@
 					<div class="structure">
 						<c:import url="/jsp/structure/structureTree.jsp">
 							<c:param name="files">true</c:param>
-							<c:param name="queryp">search</c:param>
+							<c:param name="queryp">list</c:param>
 						</c:import>
 					</div>
 				</div>

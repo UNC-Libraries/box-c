@@ -46,6 +46,9 @@
 	<noscript>
 		<input type="submit" value="Go"/>
 	</noscript>
+	<c:if test="${not empty resultResponse.selectedContainer}">
+		<input type="hidden" name="container" value="${resultResponse.selectedContainer.id}" />
+	</c:if>
 	<c:set var="searchStateParameters" value='${fn:replace(searchStateUrl, "\\\"", "%22")}'/>
-	<input type="hidden" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" value="${searchStateParameters}">
+	<input type="hidden" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" value="${searchStateParameters}" />
 </form>

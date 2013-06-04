@@ -60,7 +60,7 @@
 							<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${searchState.facets['ANCESTOR_PATH'].searchValue}"/>
 						</c:url>
 						<input type="radio" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" 
-							value="${searchSettings.searchStateParams['FACET_FIELDS']}=<c:out value='${searchSettings.searchFieldParams["ANCESTOR_PATH"]}:${searchState.facets["ANCESTOR_PATH"].searchValue}' />" checked="checked" /> In current <c:out value="${containerResourceType}"/>
+							value="container=<c:out value='${searchState.facets["ANCESTOR_PATH"].searchKey}' />" checked="checked" /> In 	 <c:out value="${containerResourceType}"/>
 					</c:when>
 					<c:otherwise>
 						<input type="radio" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" value="" checked="checked" /> Everything
@@ -71,6 +71,9 @@
 						|| not empty searchState.rangeFields 
 						|| not empty searchState.searchFields || not empty searchState.accessTypeFilter}">
 					<c:set var="searchStateParameters" value='${fn:replace(searchStateUrl, "\\\"", "%22")}'/>
+					<c:if test="${not empty searchState.facets['ANCESTOR_PATH']}">
+						<c:set var="searchStateParameters" value="container=${searchState.facets['ANCESTOR_PATH'].searchKey}&${searchStateParameters}" />
+					</c:if>
 					<input type="radio" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" value="${searchStateParameters}"/> Within results
 				</c:if>
 			</p>
@@ -80,7 +83,7 @@
 	<c:if test="${param.showBrowse == 'true'}">
 		<h2 class="fpsearch_browse_separator italics">or</h2>
 		<div class="fpsearch_browse_links">
-			<a href="search?types=Collection">Browse the Collections</a><br/>
+			<a href="collections">Browse the Collections</a><br/>
 			<a href="browseDepartments">Browse Departments</a>
 		</div>
 	</c:if>

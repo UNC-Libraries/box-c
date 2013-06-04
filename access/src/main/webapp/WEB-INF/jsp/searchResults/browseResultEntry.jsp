@@ -45,9 +45,7 @@
 			<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.id}"/>
 		</c:url>
 		<%-- Set primary action URL based on content model and container results URL as appropriate --%>
-		<c:url var="containerResultsUrl" scope="page" value='search'>
-			<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.searchValue},${metadata.path.highestTier + 1}"/>
-		</c:url>
+		<c:url var="containerResultsUrl" scope="page" value='list/${metadata.id}'></c:url>
 		<c:set var="primaryActionUrl" scope="page" value="${fullRecordUrl}"/>
 		
 		<%-- Display thumbnail or placeholder --%>

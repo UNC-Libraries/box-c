@@ -64,11 +64,11 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		return getStructureTree(null, "true".equals(includeFiles), view, false, model, request);
 	}
 
-	@RequestMapping("/structure/{prefix}/{id}")
-	public String getStructure(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
+	@RequestMapping("/structure/{pid}")
+	public String getStructure(@PathVariable("pid") String pid,
 			@RequestParam(value = "files", required = false) String includeFiles,
 			@RequestParam(value = "view", required = false) String view, Model model, HttpServletRequest request) {
-		return getStructureTree(idPrefix + ':' + id, "true".equals(includeFiles), view, false, model, request);
+		return getStructureTree(pid, "true".equals(includeFiles), view, false, model, request);
 	}
 
 	private String getStructureTree(String pid, boolean includeFiles, String viewParam, boolean collectionMode,
@@ -96,7 +96,7 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		} catch (Exception e) {
 			depth = searchSettings.structuredDepthDefault;
 		}
-
+		
 		// Request object for the search
 		HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(depth);
 		if (ajaxRequest) {
@@ -108,11 +108,7 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		}
 		if (pid != null)
 			browseRequest.setRootPid(pid);
-		if (includeFiles) {
-			browseRequest.getSearchState().setRowsPerPage(searchSettings.defaultPerPage);
-		} else {
-			browseRequest.getSearchState().setRowsPerPage(0);
-		}
+		browseRequest.setIncludeFiles(includeFiles);
 
 		SearchState searchState = browseRequest.getSearchState();
 
@@ -133,8 +129,7 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 				queryLayer.lookupHierarchicalDisplayValues(searchState, browseRequest.getAccessGroups());
 
 				// Retrieve the facet result set
-				SearchResultResponse resultResponseFacets = queryLayer.getFacetList(searchState,
-						browseRequest.getAccessGroups(), searchState.getFacetsToRetrieve(), false);
+				SearchResultResponse resultResponseFacets = queryLayer.getFacetList(new SearchRequest(searchState, true));
 				resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
 			}
 			// Add the search state to the response.
@@ -159,7 +154,11 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 			 * request.getSession().setAttribute("recordNavigationState", recordNavigationState);
 			 */
 		}
-
+		
+		// Recycle the submitted search state as the state url
+		SearchState baseSearchState = searchStateFactory.createSearchState(request.getParameterMap());
+		String searchStateUrl = SearchStateUtil.generateStateParameterString(baseSearchState);
+		model.addAttribute("searchStateUrl", searchStateUrl);
 		model.addAttribute("resultResponse", resultResponse);
 		model.addAttribute("structureResults", resultResponse);
 
@@ -167,30 +166,27 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 	}
 
 	/**
-	 * Retrieves a composite strucuture, containing the normal structure results starting at the specified pid, merged into
-	 * a list of all resources in the first tier under the parent collection, linked by any intermediary folders.
+	 * Retrieves a composite strucuture, containing the normal structure results starting at the specified pid, merged
+	 * into a list of all resources in the first tier under the parent collection, linked by any intermediary folders.
 	 */
 	@RequestMapping("/structure/collection")
 	public String getStructureFromParentCollection(@RequestParam(value = "files", required = false) String includeFiles,
 			Model model, HttpServletRequest request) {
 		return getStructureTree(null, "true".equals(includeFiles), "ajax", true, model, request);
 	}
-	
-	@RequestMapping("/structure/{prefix}/{id}/collection")
-	public String getStructureFromParentCollection(@PathVariable("prefix") String idPrefix,
-			@PathVariable("id") String id, @RequestParam(value = "files", required = false) String includeFiles,
-			Model model, HttpServletRequest request) {
-		String pid = idPrefix + ':' + id;
+
+	@RequestMapping("/structure/{pid}/collection")
+	public String getStructureFromParentCollection(@PathVariable("pid") String pid,
+			@RequestParam(value = "files", required = false) String includeFiles, Model model, HttpServletRequest request) {
 		return getStructureTree(pid, "true".equals(includeFiles), "ajax", true, model, request);
 	}
 
 	/**
 	 * Retrieves the structure of the contents of the parent of the specified pid.
 	 */
-	@RequestMapping("/structure/{prefix}/{id}/parent")
-	public String getParentChildren(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
+	@RequestMapping("/structure/{pid}/parent")
+	public String getParentChildren(@PathVariable("pid") String pid,
 			@RequestParam(value = "files", required = false) String includeFiles, Model model, HttpServletRequest request) {
-		String pid = idPrefix + ':' + id;
 		// Get the parent pid for the selected object and get its structure view
 		BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(pid,
 				tierResultFieldsList));
@@ -204,14 +200,9 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 	/**
 	 * Retrieves the direct children of the pid specified. If no pid is specified, then the root is used
 	 */
-	@RequestMapping("/structure/{prefix}/{id}/tier")
-	public String getSingleTier(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
+	@RequestMapping("/structure/{pid}/tier")
+	public String getSingleTier(@PathVariable("pid") String pid,
 			@RequestParam(value = "files", required = false) String includeFiles, Model model, HttpServletRequest request,
-			HttpServletResponse response) {
-		return getSingleTier(idPrefix + ':' + id, includeFiles, model, request, response);
-	}
-
-	private String getSingleTier(String pid, String includeFiles, Model model, HttpServletRequest request,
 			HttpServletResponse response) {
 		BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(pid,
 				tierResultFieldsList));

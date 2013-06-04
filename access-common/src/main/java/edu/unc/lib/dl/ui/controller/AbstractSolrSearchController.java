@@ -83,12 +83,7 @@ public abstract class AbstractSolrSearchController {
 				if (searchRequest != null && searchRequest instanceof HierarchicalBrowseRequest){
 					searchState = searchStateFactory.createHierarchicalBrowseSearchState(request.getParameterMap());
 				} else {
-					String resourceTypes = request.getParameter(searchSettings.searchStateParam("RESOURCE_TYPES"));
-					if (resourceTypes == null || resourceTypes.contains(searchSettings.resourceTypeFile)){
-						searchState = searchStateFactory.createSearchState(request.getParameterMap());
-					} else {
-						searchState = searchStateFactory.createCollectionBrowseSearchState(request.getParameterMap());
-					}
+					searchState = searchStateFactory.createSearchState(request.getParameterMap());
 				}
 			} else {
 				session.removeAttribute("searchState");

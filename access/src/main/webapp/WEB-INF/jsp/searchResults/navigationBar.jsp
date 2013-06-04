@@ -58,6 +58,10 @@
 }
 %>
 
+<c:if test="${not empty resultResponse.selectedContainer}">
+	<c:set var="containerPath" value="/${resultResponse.selectedContainer.id}"/>
+</c:if>
+
 <c:if test="${pageEndCount > searchState.rowsPerPage + searchState.startRow}">
 	<c:set var="pageEndCount" value="${searchState.rowsPerPage + searchState.startRow}"/>
 </c:if>
@@ -73,7 +77,7 @@
 			&lt; previous
 		</c:when>
 		<c:otherwise>
-			<c:url var="previousPageUrl" scope="page" value='search?${searchStateUrl}'>
+			<c:url var="previousPageUrl" scope="page" value='${param.queryPath}${containerPath}?${searchStateUrl}'>
 				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["PREVIOUS_PAGE"]}'/>
 			</c:url>
 			<a href="<c:out value="${previousPageUrl}"/>">&lt; previous</a>
@@ -88,7 +92,7 @@
 				<span class="bold">${pageNumber}</span>
 			</c:when>
 			<c:otherwise>
-				<c:url var="pageJumpUrl" scope="page" value='search?${searchStateUrl}'>
+				<c:url var="pageJumpUrl" scope="page" value='${param.queryPath}${containerPath}?${searchStateUrl}'>
 					<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_START_ROW"]}:${(pageNumber - 1) * searchState.rowsPerPage}'/>
 				</c:url>
 				<a href="<c:out value="${pageJumpUrl}"/>"><c:out value="${pageNumber}" /></a>
@@ -103,7 +107,7 @@
 			next &gt;
 		</c:when>
 		<c:otherwise>
-			<c:url var="nextPageUrl" scope="page" value='search?${searchStateUrl}'>
+			<c:url var="nextPageUrl" scope="page" value='${param.queryPath}${containerPath}?${searchStateUrl}'>
 				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["NEXT_PAGE"]}'/>
 			</c:url>
 			<a href="<c:out value="${nextPageUrl}"/>">next &gt;</a>

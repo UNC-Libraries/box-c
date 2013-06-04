@@ -20,9 +20,14 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <c:choose>
-	<c:when test="${not empty param.queryPath}"><c:set var="queryPath" value="${param.queryPath}"/></c:when>
-	<c:otherwise><c:set var="queryPath" value="search"/></c:otherwise>
+	<c:when test="${not empty param.queryMethod}"><c:set var="queryMethod" value="${param.queryMethod}"/></c:when>
+	<c:otherwise><c:set var="queryMethod" value="search"/></c:otherwise>
 </c:choose>
+
+<c:set var="queryPath" value="${queryMethod}"/>
+<c:if test="${not empty resultResponse.selectedContainer}">
+	<c:set var="queryPath" value="${queryPath}/${resultResponse.selectedContainer.id}"/>
+</c:if>
 
 <div class="contentarea">
 	<c:if test="${not empty searchState.searchFields || not empty searchState.facets || not empty searchState.rangeFields || not empty searchState.accessTypeFilter}">
@@ -44,9 +49,17 @@
 		</c:if>
 		<c:if test="${not empty searchState.facets}">
 			<c:forEach items="${searchState.facets}" var="field">
-				<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-					<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_FACET"]}:${searchSettings.searchFieldParams[field.key]}'/>
-				</c:url>
+				<c:choose>
+					<c:when test="${field.key == 'ANCESTOR_PATH'}">
+						<c:url var="removeUrl" scope="page" value='${queryMethod}?${searchStateUrl}'></c:url>
+					</c:when>
+					<c:otherwise>
+						<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+							<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_FACET"]}:${searchSettings.searchFieldParams[field.key]}'/>
+						</c:url>
+					</c:otherwise>
+				</c:choose>
+				
 				<c:if test="${field.value.getClass().name == 'java.lang.String' || not empty field.value.displayValue}">
 					<li>
 						(<a href="<c:out value="${removeUrl}"/>">x</a>)
@@ -58,7 +71,7 @@
 								<c:import url="common/hierarchyTrail.jsp">
 									<c:param name="fieldKey"><c:out value="${field.key}"/></c:param>
 									<c:param name="linkLast">false</c:param>
-									<c:param name="queryPath" value="${queryPath}"/>
+									<c:param name="queryPath" value="${queryMethod}"/>
 									<c:param name="limitToContainer">true</c:param>
 								</c:import>
 							</c:when>

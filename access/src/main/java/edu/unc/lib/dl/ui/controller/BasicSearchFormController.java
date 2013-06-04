@@ -18,11 +18,9 @@ package edu.unc.lib.dl.ui.controller;
 import javax.servlet.http.HttpServletRequest;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.SearchActionService;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 
@@ -66,6 +64,7 @@ public class BasicSearchFormController {
 		}
 		
 		String searchWithin = request.getParameter(searchSettings.searchStateParam("SEARCH_WITHIN"));
+		String container = request.getParameter("container");
 		
 		LOG.debug("Search Within:" + searchWithin);
 		if (searchWithin != null && searchWithin.length() > 0){
@@ -77,14 +76,18 @@ public class BasicSearchFormController {
 			HashMap<String,String[]> parameters = SearchStateUtil.getParametersAsHashMap(searchWithin);
 			searchState = searchStateFactory.createSearchState(parameters);
 			
-			if (searchState.getFacets() != null && searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH)){
-				Object ancestorPathObject = searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH);
-				if (ancestorPathObject != null && ancestorPathObject instanceof CutoffFacet){
-					CutoffFacet ancestorPath  = (CutoffFacet)searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH);
-					ancestorPath.setCutoff(null);
+			if (parameters.containsKey("container")) {
+				try {
+					container = parameters.get("container")[0];
+				} catch (IndexOutOfBoundsException e){
+					// ignore empty container parameter
 				}
 			}
 		}
+		
+		if (container != null && container.length() > 0)
+			container = '/' + container;
+		else container = "";
 		
 		StringBuffer actions = new StringBuffer();
 		String query = request.getParameter("query");
@@ -118,9 +121,9 @@ public class BasicSearchFormController {
 		
 		model.addAllAttributes(SearchStateUtil.generateStateParameters(searchState));
 
-		if (request.getParameter("queryPath") != null && request.getParameter("queryPath").equals("browse"))
-			return "redirect:/browse";
-		return "redirect:/search";
+		if (request.getParameter("queryPath") != null && request.getParameter("queryPath").equals("structure"))
+			return "redirect:/structure" + container;
+		return "redirect:/search" + container;
 	}
 	
 	public SearchActionService getSearchActionService() {

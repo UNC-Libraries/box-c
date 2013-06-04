@@ -43,7 +43,7 @@ public class SearchState implements Serializable, Cloneable {
 	private Map<String, Object> facets;
 	private Map<String, Integer> facetLimits;
 	private Map<String, String> facetSorts;
-	private List<String> facetsToRetrieve;
+	private Collection<String> facetsToRetrieve;
 	private int baseFacetLimit;
 	private String accessTypeFilter;
 	private int startRow;
@@ -301,11 +301,11 @@ public class SearchState implements Serializable, Cloneable {
 		this.resultFields = resultFields;
 	}
 
-	public List<String> getFacetsToRetrieve() {
+	public Collection<String> getFacetsToRetrieve() {
 		return facetsToRetrieve;
 	}
 
-	public void setFacetsToRetrieve(List<String> facetsToRetrieve) {
+	public void setFacetsToRetrieve(Collection<String> facetsToRetrieve) {
 		this.facetsToRetrieve = facetsToRetrieve;
 	}
 

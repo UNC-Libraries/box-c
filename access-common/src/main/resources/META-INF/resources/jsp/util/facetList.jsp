@@ -18,24 +18,31 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <%--
 	Renders a navigable facet list for refining a result set.
 
 	facetFields - Object of type edu.unc.lib.dl.search.solr.model.FacetFieldList which contains the
 		list of facets to render.  Required.
+	currentContainer
 	queryPath - override the servlet that facet links will send the user to.  Default "search"
 	additionalLimitActions - additional actions which will be appended to any add facet actions.
 --%>
 
 <c:choose>
-	<c:when test="${not empty param.queryPath}">
-		<c:set var="queryPath" value="${param.queryPath}"/>
+	<c:when test="${not empty param.queryMethod}">
+		<c:set var="queryMethod" value="${param.queryMethod}"/>
 	</c:when>
 	<c:otherwise>
-		<c:set var="queryPath" value="search"/>
+		<c:set var="queryMethod" value="search"/>
 	</c:otherwise>
 </c:choose>
+
+<c:set var="queryPath" value="${queryMethod}"/>
+<c:if test="${not empty param.currentContainer}">
+	<c:set var="queryPath" value="${queryPath}/${param.currentContainer}"/>
+</c:if>
 
 <c:choose>
 	<c:when test="${not empty param.title}">
@@ -48,10 +55,6 @@
 
 <c:if test="${not empty param.additionalLimitActions}">
 	<c:set var="additionalLimitActions" value="${param.additionalLimitActions}|"/>
-</c:if>
-
-<c:if test="${not empty searchState.facets['ANCESTOR_PATH'].cutoff}">
-	<c:set var="additionalLimitActions" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${searchState.facets["ANCESTOR_PATH"].searchValue}"|'/>
 </c:if>
 
 <div id="facetList" class="contentarea">
@@ -77,11 +80,11 @@
 			<c:if test="${not empty facetField.values}">
 				<c:if test="${facetField.name == 'ANCESTOR_PATH'}">
 					<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}_structure" class="hidden">
-						<c:url var="structureUrl" scope="page" value='structure/collection?${searchStateUrl}'>
-							<c:param name="${searchSettings.searchStateParams['ROWS_PER_PAGE']}" value="0"/>
-							<c:param name="${searchSettings.searchStateParams['RESOURCE_TYPES']}" value=""/>
+						<c:if test="${not empty currentContainer}"><c:set var="containerPath" value="/${currentContainer}"/></c:if>
+						<c:url var="structureUrl" scope="page" value='structure${containerPath}/collection?${searchStateUrl}'>
 							<c:param name="view" value="facet"/>
-							<c:param name="queryp" value="search"/>
+							<c:param name="queryp" value="list"/>
+							<c:param name="files" value="false"/>
 						</c:url>
 						<a href="<c:out value="${structureUrl}" />"><img src="/static/images/ajax_loader.gif"/></a>
 					</div>
@@ -98,9 +101,20 @@
 							<c:otherwise>
 								<c:if test="${not empty facetValue.displayValue && not empty facetValue.searchValue}">
 									<li>
-										<c:url var="facetActionUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-											<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[facetValue.fieldName]},"${facetValue.limitToValue}"'/>
-										</c:url>
+										<c:choose>
+											<c:when test="${facetField.name == 'PARENT_COLLECTION'}">
+												<c:url var="facetActionUrl" scope="page" value='${queryMethod}/${fn:substringAfter(facetValue.searchValue, ",")}?${searchStateUrl}'>
+													<c:if test='${not empty additionalLimitActions}'>
+														<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}'/>
+													</c:if>
+												</c:url>
+											</c:when>
+											<c:otherwise>
+												<c:url var="facetActionUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+													<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[facetValue.fieldName]},"${facetValue.limitToValue}"'/>
+												</c:url>
+											</c:otherwise>
+										</c:choose>
 										<a href="<c:out value="${facetActionUrl}"/>"><c:out value="${facetValue.displayValue}" /></a> (<c:out value="${facetValue.count}" />)
 									</li>
 								</c:if>

@@ -27,10 +27,10 @@
 
 <c:choose>
 	<c:when test="${empty searchStateUrl || param.ignoreSearchState == true}">
-		<c:set var="shiftFacetUrlBase" value="${queryPath}"/>
+		<c:set var="shiftFacetUrlBase" value=""/>
 	</c:when>
 	<c:otherwise>
-		<c:set var="shiftFacetUrlBase" value="${queryPath}?${searchStateUrl}"/>
+		<c:set var="shiftFacetUrlBase" value="?${searchStateUrl}"/>
 	</c:otherwise>
 </c:choose>
 
@@ -50,17 +50,14 @@
 				<c:out value="${facetNode.displayValue}" />
 			</c:when>
 			<c:otherwise>
-				<c:url var="shiftFacetUrl" scope="page" value='${shiftFacetUrlBase}'>
-					<c:choose>
-						<c:when test="${param.limitToContainer == true}">
-							<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${fieldName},"${facetNode.limitToValue}"'/>
-						</c:when>
-						<c:otherwise>
-							<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET"]}:${fieldName},"${facetNode.searchValue}"'/>
-						</c:otherwise>
-					</c:choose>
-					
-				</c:url>
+				<c:choose>
+					<c:when test="${param.limitToContainer == true}">
+						<c:url var="shiftFacetUrl" scope="page" value="list/${facetNode.searchKey}${shiftFacetUrlBase}"></c:url>
+					</c:when>
+					<c:otherwise>
+						<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${facetNode.searchKey}${shiftFacetUrlBase}"></c:url>
+					</c:otherwise>
+				</c:choose>
 				<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${facetNode.displayValue}" /></a>
 			</c:otherwise>
 		</c:choose>
