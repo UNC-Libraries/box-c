@@ -40,96 +40,80 @@
 </c:choose>
 
 <c:set var="queryPath" value="${queryMethod}"/>
-<c:if test="${not empty param.currentContainer}">
-	<c:set var="queryPath" value="${queryPath}/${param.currentContainer}"/>
+<c:if test="${not empty selectedContainer}">
+	<c:set var="queryPath" value="${queryPath}/${selectedContainer.id}"/>
 </c:if>
-
-<c:choose>
-	<c:when test="${not empty param.title}">
-		<c:set var="title" value="${param.title}" />
-	</c:when>
-	<c:otherwise>
-		<c:set var="title" value="Refinements" />
-	</c:otherwise>
-</c:choose>
 
 <c:if test="${not empty param.additionalLimitActions}">
 	<c:set var="additionalLimitActions" value="${param.additionalLimitActions}|"/>
 </c:if>
-
-<div id="facetList" class="contentarea">
-	<h2><c:out value="${title}"/></h2>
-	
-	<c:forEach items="${facetFields}" var="facetField">
-		
-		<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}">
-			<c:choose>
-				<c:when test="${empty facetField.values && not empty searchState.facetLimits[facetField.name] && searchState.facetLimits[facetField.name] == 0}">
-					<c:url var="facetOpenUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_FACET_LIMIT"]}:${searchSettings.searchFieldParams[facetField.name]}'/>
+<c:forEach items="${facetFields}" var="facetField">
+	<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}">
+		<c:choose>
+			<c:when test="${empty facetField.values && not empty searchState.facetLimits[facetField.name] && searchState.facetLimits[facetField.name] == 0}">
+				<c:url var="facetOpenUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+					<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_FACET_LIMIT"]}:${searchSettings.searchFieldParams[facetField.name]}'/>
+				</c:url>
+				<h3 class="facet_name"><a href="<c:out value="${facetOpenUrl}"/>">&#9654; <c:out value="${searchSettings.searchFieldLabels[facetField.name]}" /></a></h3>
+			</c:when>
+			<c:when test="${not empty facetField.values}">
+				<c:url var="facetCollapseUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+					<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET_LIMIT"]}:${searchSettings.searchFieldParams[facetField.name]},0'/>
+				</c:url>
+				<h3 class="facet_name"><a href="<c:out value="${facetCollapseUrl}"/>">&#9660; <c:out value="${searchSettings.searchFieldLabels[facetField.name]}" /></a></h3>
+			</c:when>
+		</c:choose>
+		<c:if test="${not empty facetField.values}">
+			<c:if test="${facetField.name == 'ANCESTOR_PATH'}">
+				<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}_structure" class="hidden">
+					<c:if test="${not empty currentContainer}"><c:set var="containerPath" value="/${currentContainer}"/></c:if>
+					<c:url var="structureUrl" scope="page" value='structure${containerPath}/collection?${searchStateUrl}'>
+						<c:param name="view" value="facet"/>
+						<c:param name="queryp" value="list"/>
+						<c:param name="files" value="false"/>
 					</c:url>
-					<h3 class="facet_name"><a href="<c:out value="${facetOpenUrl}"/>">&#9654; <c:out value="${searchSettings.searchFieldLabels[facetField.name]}" /></a></h3>
-				</c:when>
-				<c:when test="${not empty facetField.values}">
-					<c:url var="facetCollapseUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET_LIMIT"]}:${searchSettings.searchFieldParams[facetField.name]},0'/>
-					</c:url>
-					<h3 class="facet_name"><a href="<c:out value="${facetCollapseUrl}"/>">&#9660; <c:out value="${searchSettings.searchFieldLabels[facetField.name]}" /></a></h3>
-				</c:when>
-			</c:choose>
-			<c:if test="${not empty facetField.values}">
-				<c:if test="${facetField.name == 'ANCESTOR_PATH'}">
-					<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}_structure" class="hidden">
-						<c:if test="${not empty currentContainer}"><c:set var="containerPath" value="/${currentContainer}"/></c:if>
-						<c:url var="structureUrl" scope="page" value='structure${containerPath}/collection?${searchStateUrl}'>
-							<c:param name="view" value="facet"/>
-							<c:param name="queryp" value="list"/>
-							<c:param name="files" value="false"/>
-						</c:url>
-						<a href="<c:out value="${structureUrl}" />"><img src="/static/images/ajax_loader.gif"/></a>
-					</div>
-				</c:if>
-				<ul id="facet_field_<c:out value="${searchSettings.searchFieldParams[facetField.name]}_list" />" class="facets">
-					<c:forEach items="${facetField.values}" var="facetValue" varStatus="status">
-						<c:choose>
-							<c:when test="${status.count == searchSettings.facetsPerGroup && (empty searchState.facetLimits[facetField.name] || status.count == searchState.facetLimits[facetField.name])}">
-								<c:url var="facetExpandUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-									<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET_LIMIT"]}:${searchSettings.searchFieldParams[facetField.name]},${searchSettings.expandedFacetsPerGroup}'/>
-								</c:url>
-								<li class="facet_view_expand_toggle"><a href="<c:out value="${facetExpandUrl}"/>">Show more...</a></li>
-							</c:when>
-							<c:otherwise>
-								<c:if test="${not empty facetValue.displayValue && not empty facetValue.searchValue}">
-									<li>
-										<c:choose>
-											<c:when test="${facetField.name == 'PARENT_COLLECTION'}">
-												<c:url var="facetActionUrl" scope="page" value='${queryMethod}/${fn:substringAfter(facetValue.searchValue, ",")}?${searchStateUrl}'>
-													<c:if test='${not empty additionalLimitActions}'>
-														<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}'/>
-													</c:if>
-												</c:url>
-											</c:when>
-											<c:otherwise>
-												<c:url var="facetActionUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-													<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[facetValue.fieldName]},"${facetValue.limitToValue}"'/>
-												</c:url>
-											</c:otherwise>
-										</c:choose>
-										<a href="<c:out value="${facetActionUrl}"/>"><c:out value="${facetValue.displayValue}" /></a> (<c:out value="${facetValue.count}" />)
-									</li>
-								</c:if>
-								<c:if test="${status.last && status.count >= searchSettings.facetsPerGroup && not empty searchState.facetLimits[facetValue.fieldName]}">
-									<c:url var="facetReduceUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-										<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_FACET_LIMIT"]}:${searchSettings.searchFieldParams[facetValue.fieldName]}'/>
-									</c:url>
-									<li class="facet_view_expand_toggle"><a href="<c:out value="${facetReduceUrl}"/>">...Show less</a></li>
-								</c:if>
-							</c:otherwise>
-						</c:choose>
-					</c:forEach>
-				</ul>
+					<a href="<c:out value="${structureUrl}" />"><img src="/static/images/ajax_loader.gif"/></a>
+				</div>
 			</c:if>
-		</div>
-		
-	</c:forEach>
-</div>
+			<ul id="facet_field_<c:out value="${searchSettings.searchFieldParams[facetField.name]}_list" />" class="facets">
+				<c:forEach items="${facetField.values}" var="facetValue" varStatus="status">
+					<c:choose>
+						<c:when test="${status.count == searchSettings.facetsPerGroup && (empty searchState.facetLimits[facetField.name] || status.count == searchState.facetLimits[facetField.name])}">
+							<c:url var="facetExpandUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+								<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_FACET_LIMIT"]}:${searchSettings.searchFieldParams[facetField.name]},${searchSettings.expandedFacetsPerGroup}'/>
+							</c:url>
+							<li class="facet_view_expand_toggle"><a href="<c:out value="${facetExpandUrl}"/>">Show more...</a></li>
+						</c:when>
+						<c:otherwise>
+							<c:if test="${not empty facetValue.displayValue && not empty facetValue.searchValue}">
+								<li>
+									<c:choose>
+										<c:when test="${facetField.name == 'PARENT_COLLECTION'}">
+											<c:url var="facetActionUrl" scope="page" value='${queryMethod}/${fn:substringAfter(facetValue.searchValue, ",")}?${searchStateUrl}'>
+												<c:if test='${not empty additionalLimitActions}'>
+													<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}'/>
+												</c:if>
+											</c:url>
+										</c:when>
+										<c:otherwise>
+											<c:url var="facetActionUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+												<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[facetValue.fieldName]},"${facetValue.limitToValue}"'/>
+											</c:url>
+										</c:otherwise>
+									</c:choose>
+									<a href="<c:out value="${facetActionUrl}"/>"><c:out value="${facetValue.displayValue}" /></a> (<c:out value="${facetValue.count}" />)
+								</li>
+							</c:if>
+							<c:if test="${status.last && status.count >= searchSettings.facetsPerGroup && not empty searchState.facetLimits[facetValue.fieldName]}">
+								<c:url var="facetReduceUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+									<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_FACET_LIMIT"]}:${searchSettings.searchFieldParams[facetValue.fieldName]}'/>
+								</c:url>
+								<li class="facet_view_expand_toggle"><a href="<c:out value="${facetReduceUrl}"/>">...Show less</a></li>
+							</c:if>
+						</c:otherwise>
+					</c:choose>
+				</c:forEach>
+			</ul>
+		</c:if>
+	</div>
+</c:forEach>

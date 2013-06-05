@@ -33,7 +33,7 @@
 					<c:set var="unpublishedCount" value="${metadata.countMap.unpublished}"/>
 					<c:choose>
 						<c:when test="${not empty unpublishedCount}">
-							<a href="review/${metadata.pid.path}">Review ${unpublishedCount} unpublished item<c:if test="${unpublishedCount != 1}">s</c:if></a>
+							<a href="review/${metadata.id}">Review ${unpublishedCount} unpublished item<c:if test="${unpublishedCount != 1}">s</c:if></a>
 						</c:when>
 						<c:otherwise>No unpublished items</c:otherwise>
 					</c:choose>
@@ -42,7 +42,7 @@
 
 			<div class="itemdetails">
 				<h2>
-					<a href="list/${metadata.pid.path}"
+					<a href="list/${metadata.id}"
 						class="has_tooltip" title="View details for <c:out value='${metadata.title}'/>."><c:out value='${metadata.title}'/></a>
 					<c:set var="childCount" value="${metadata.countMap.child}"/>
 					<span class="searchitem_container_count">

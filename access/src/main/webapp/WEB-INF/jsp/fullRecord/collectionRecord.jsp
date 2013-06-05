@@ -83,10 +83,12 @@
 </div>
 <div class="lightest">
 	<div class="fourcol lightest shadowtop">
-		<c:set var="searchStateUrl" value="${collectionSearchStateUrl}" scope="request"/>
-		<c:import url="common/facetList.jsp">
-			<c:param name="title" value="Contents"/>
-		</c:import>
+		<div id="facetList" class="contentarea">
+			<c:set var="selectedContainer" scope="request" value="${briefObject}"/>
+			<h2>Contents</h2>
+			<c:import url="/jsp/util/facetList.jsp">
+			</c:import>
+		</div>
 	</div>
 	<div class="threecol white shadowtop">
 		<div class="contentarea">

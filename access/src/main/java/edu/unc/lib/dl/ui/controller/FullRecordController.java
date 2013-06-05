@@ -136,11 +136,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 						accessGroups, facetsToRetrieve);
 
 				briefObject.getCountMap().put("child", resultResponse.getResultCount());
-				String collectionSearchStateUrl = searchSettings.searchStateParams.get("FACET_FIELDS") + "="
-						+ searchSettings.searchFieldParams.get(SearchFieldKeys.ANCESTOR_PATH.name()) + ":"
-						+ briefObject.getPath().getSearchValue();
 				model.addAttribute("facetFields", resultResponse.getFacetFields());
-				model.addAttribute("collectionSearchStateUrl", collectionSearchStateUrl);
 			}
 
 			if (retrieveHierarchicalStructure) {

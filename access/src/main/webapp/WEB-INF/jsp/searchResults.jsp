@@ -47,22 +47,24 @@
 			</div>
 		</c:if>
 		<div class="fourcol gray">
-			<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
-			<c:choose>
-				<c:when test="${resultType == 'collectionBrowse'}">
-					<c:import url="/jsp/util/facetList.jsp">
-						<c:param name="title" value="Refine your results"/>
-						<c:param name="additionalLimitActions">${searchSettings.actions["SET_RESOURCE_TYPE"]}:${cdr:join(searchSettings.defaultResourceTypes, ",")}|${searchSettings.actions["SET_FACET_SELECT"]}:${cdr:join(searchSettings.facetNames, ",")}|${searchSettings.actions["SET_ROWS_PER_PAGE"]}:${searchSettings.defaultPerPage}</c:param>
-					</c:import>
-				</c:when>
-				<c:otherwise>
-					<c:import url="/jsp/util/facetList.jsp">
-						<c:param name="title" value="Refine your search"/>
-						<c:param name="queryMethod">search</c:param>
-						<c:param name="currentContainer"><c:if test="${not empty resultResponse.selectedContainer}">${resultResponse.selectedContainer.id}</c:if></c:param>
-					</c:import>
-				</c:otherwise>
-			</c:choose>
+			<div id="facetList" class="contentarea">
+				<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
+				<c:choose>
+					<c:when test="${resultType == 'collectionBrowse'}">
+						<h2>Refine your results</h2>
+						<c:import url="/jsp/util/facetList.jsp">
+							<c:param name="queryMethod">collections</c:param>
+						</c:import>
+					</c:when>
+					<c:otherwise>
+						<c:set var="selectedContainer" scope="request" value="${resultResponse.selectedContainer}"/>
+						<h2>Refine your search</h2>
+						<c:import url="/jsp/util/facetList.jsp">
+							<c:param name="queryMethod">search</c:param>
+						</c:import>
+					</c:otherwise>
+				</c:choose>
+			</div>
 		</div>
 	</div>
 	

@@ -22,6 +22,9 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <div class="result_page contentarea">
 	<c:import url="search/searchMenu.jsp"/>
+	<c:if test="${not empty resultResponse.selectedContainer}">
+		<c:set var="containerBean" value="${resultResponse.selectedContainer}"/>
+	</c:if>
 
 	<div class="result_area">
 		<div>

@@ -29,7 +29,7 @@
 						title="View details for <c:out value='${metadata.title}'/>."><c:out value='${metadata.title}'/></a>
 			</c:when>
 			<c:otherwise>
-				<a href="list/${metadata.pid.path}" class="has_tooltip"
+				<a href="list/${metadata.id}" class="has_tooltip"
 						title="View contents of <c:out value='${metadata.title}'/>.">
 					<c:out value='${metadata.title}'/>
 				</a>
@@ -96,7 +96,7 @@
 				<li class="edit_access">Edit Access Control</li>
 			</c:if>
 			<c:if test="${cdr:hasAccess(accessGroupSet, metadata, 'editDescription')}">
-				<li class='edit_description'><a href="describe/${metadata.pid.path}">
+				<li class='edit_description'><a href="describe/${metadata.id}">
 					<c:choose>
 						<c:when test="${metadata.datastreamObjects.contains('MD_DESCRIPTIVE')}">
 							Edit Description

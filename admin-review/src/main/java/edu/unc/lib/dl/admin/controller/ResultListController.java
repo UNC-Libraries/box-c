@@ -63,28 +63,34 @@ public class ResultListController extends AbstractSolrSearchController {
 			SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(),
 			SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.VERSION.name(), SearchFieldKeys.ROLE_GROUP.name(),
 			SearchFieldKeys.RELATIONS.name());
-
-	@RequestMapping(value = "list", method = RequestMethod.GET)
-	public String listRootContents(Model model, HttpServletRequest request) {
-		return this.listContainerContents(this.collectionsPid.getPid(), model, request, false);
-	}
-
-	@RequestMapping(value = "list/{prefix}/{id}", method = RequestMethod.GET)
-	public String listContainerContents(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
-			Model model, HttpServletRequest request) {
-		String pid = idPrefix + ":" + id;
-		return this.listContainerContents(pid, model, request, false);
-	}
 	
-	@RequestMapping(value = "review", method = RequestMethod.GET)
+	//@RequestMapping(value = "review", method = RequestMethod.GET)
 	public String getReviewList(Model model, HttpServletRequest request) {
 		return this.listContainerContents(collectionsPid.getPid(), model, request, true);
 	}
 
-	@RequestMapping(value = "review/{prefix}/{id}", method = RequestMethod.GET)
+	//@RequestMapping(value = "review/{pid}", method = RequestMethod.GET)
 	public String getReviewList(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
 			HttpServletRequest request) {
+		//model.addAttribute("resultResponse", resultResponse);
 		return this.listContainerContents(idPrefix + ":" + id, model, request, true);
+	}
+	
+	public SearchResultResponse getSearchResults(SearchRequest searchRequest) {
+		SearchState searchState = searchRequest.getSearchState();
+		searchState.setResultFields(resultsFieldList);
+		
+		SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+		
+		// Add tags
+		for (BriefObjectMetadata record : resultResponse.getResultList()) {
+			for (TagProvider provider : this.tagProviders) {
+				provider.addTags(record, accessGroups);
+			}
+		}
+		
+		return resultResponse;
 	}
 
 	public String listContainerContents(String pid, Model model, HttpServletRequest request, boolean reviewing) {
@@ -146,11 +152,10 @@ public class ResultListController extends AbstractSolrSearchController {
 		return "search/resultList";
 	}
 
-	@RequestMapping(value = "entry/{prefix}/{id}", method = RequestMethod.GET)
-	public String getResultEntry(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
+	@RequestMapping(value = "entry/{pid}", method = RequestMethod.GET)
+	public String getResultEntry(@PathVariable("pid") String pid, Model model,
 			HttpServletResponse response) {
 
-		String pid = idPrefix + ":" + id;
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
 		SimpleIdRequest entryRequest = new SimpleIdRequest(pid, resultsFieldList, accessGroups);
