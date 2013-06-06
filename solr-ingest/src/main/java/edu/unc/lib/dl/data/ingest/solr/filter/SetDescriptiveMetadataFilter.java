@@ -126,7 +126,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			Element titleInfoEl = (Element) titleInfoObj;
 			for (Object titleObj : titleInfoEl.getChildren()) {
 				Element titleEl = (Element) titleObj;
-				if (mainTitle == null && "title".equals(titleEl.getName())) {
+				if (mainTitle == null && "title".equalsIgnoreCase(titleEl.getName())) {
 					mainTitle = titleEl.getValue();
 				}
 				otherTitles.add(titleEl.getValue());
@@ -191,7 +191,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 					for (Object role: roles) {
 						List<?> roleTerms = ((Element)role).getChildren("roleTerm", JDOMNamespaceUtil.MODS_V3_NS);
 						for (Object roleTerm: roleTerms) {
-							if ("creator".equals(((Element)roleTerm).getValue())){
+							if ("creator".equalsIgnoreCase(((Element)roleTerm).getValue())){
 								isCreator = true;
 								break;
 							}
@@ -303,7 +303,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			Element identifierEl = (Element) identifierObj;
 			String idType = identifierEl.getAttributeValue("type");
 			if (idType != null) {
-				if (idType.equals("uri")) {
+				if (idType.equalsIgnoreCase("uri")) {
 					continue;
 				}
 				identifierBuilder.append(idType);
