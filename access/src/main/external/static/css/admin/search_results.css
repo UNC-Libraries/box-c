@@ -179,6 +179,10 @@ ul.crumblist {
 	width: 100%;
 }
 
+.result_table td.itemdetails .status {
+	font-size: 0.7em;
+}
+
 .result_table td.check_box * {
 	vertical-align: text-bottom;
 }
