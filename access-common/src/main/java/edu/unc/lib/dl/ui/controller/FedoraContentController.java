@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +41,8 @@ import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.ui.service.FedoraContentService;
+import edu.unc.lib.dl.ui.util.AccessUtil;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
@@ -65,12 +68,16 @@ public class FedoraContentController extends AbstractSolrSearchController {
 		handleRequest(datastream, download, model, request, response);
 	}
 
+	private static List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name(),
+			SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.RELATIONS.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
+			SearchFieldKeys.ROLE_GROUP.name());
+
 	@RequestMapping("/content")
 	public void handleRequest(@RequestParam("ds") String datastream,
 			@RequestParam(value = "dl", defaultValue = "false") boolean download, Model model, HttpServletRequest request,
 			HttpServletResponse response) {
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-		
+
 		// Default datastream is DATA_FILE
 		if (datastream == null) {
 			datastream = Datastream.DATA_FILE.toString();
@@ -78,13 +85,6 @@ public class FedoraContentController extends AbstractSolrSearchController {
 
 		// Use solr to check if the user is allowed to view this item.
 		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID.name()));
-
-		// Get the content type of the object if its accessible
-		List<String> resultFields = new ArrayList<String>();
-		resultFields.add(SearchFieldKeys.RELATIONS.name());
-		resultFields.add(SearchFieldKeys.ID.name());
-		resultFields.add(SearchFieldKeys.DATASTREAM.name());
-
 		SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, accessGroups);
 
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
@@ -92,6 +92,11 @@ public class FedoraContentController extends AbstractSolrSearchController {
 		if (briefObject == null) {
 			throw new InvalidRecordRequestException();
 		}
+		// Block access to thumbnails for non-containers
+		if (AccessUtil.hasListAccessOnly(accessGroups, briefObject)
+				&& (searchSettings.resourceTypeFile.equals(briefObject.getResourceType())
+				|| searchSettings.resourceTypeAggregate.equals(briefObject.getResourceType())))
+			throw new InvalidRecordRequestException();
 		// Grab out the slug if its available, to be used as the filename.
 		List<String> slugRelations = briefObject.getRelation("slug");
 		String slug = null;
@@ -113,7 +118,7 @@ public class FedoraContentController extends AbstractSolrSearchController {
 			throw new ResourceNotFoundException();
 		}
 	}
-	
+
 	@ResponseStatus(value = HttpStatus.NOT_FOUND)
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public String handleResourceNotFound(HttpServletRequest request) {

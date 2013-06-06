@@ -36,7 +36,8 @@
 					<a href="<c:out value='${fullRecordUrl}' />">
 						<div class="small thumb_container">
 							<c:choose>
-								<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', neighbor)}">
+								<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', neighbor)
+										&& (!hasListAccessOnly || (hasListAccessOnly && (neighbor.resourceType == searchSettings.resourceTypeFolder || neighbor.resourceType == searchSettings.resourceTypeCollection)))}">
 									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_${neighbor.contentTypeFacet[0].searchKey}" 
 											src="${cdr:getDatastreamUrl(neighbor, 'THUMB_SMALL', fedoraUtil)}"/>
 								</c:when>

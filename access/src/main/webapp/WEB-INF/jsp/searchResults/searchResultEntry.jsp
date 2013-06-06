@@ -63,7 +63,8 @@
 		<%-- Display thumbnail or placeholder graphic --%>
 		<c:set var="iconContent">
 			<c:choose>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', metadata)}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', metadata) 
+						&& (!hasListAccessOnly || (hasListAccessOnly && (metadata.resourceType == searchSettings.resourceTypeFolder || metadata.resourceType == searchSettings.resourceTypeCollection)))}">
 					<div class="small thumb_container">
 						<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_${metadata.contentTypeFacet[0].searchKey}" 
 								src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>

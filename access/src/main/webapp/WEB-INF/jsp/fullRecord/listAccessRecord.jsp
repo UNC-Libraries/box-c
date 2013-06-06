@@ -29,7 +29,8 @@
 	<div class="contentarea">
 		<c:set var="thumbUrl">
 			<c:choose>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject)}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject) && 
+						(briefObject.resourceType == searchSettings.resourceTypeFolder || briefObject.resourceType == searchSettings.resourceTypeCollection)}">
 					${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}
 				</c:when>
 				<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFolder}">
