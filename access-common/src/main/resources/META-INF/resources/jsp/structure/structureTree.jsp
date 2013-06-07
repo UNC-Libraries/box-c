@@ -134,7 +134,7 @@
 	
 	<%-- Render the expand/collapse icon --%>
 	<c:if test="${isAContainer}">
-		<c:url var="expandUrl" value="structure/${containerNode.pid.path}?${searchParams}">
+		<c:url var="expandUrl" value="structure/${containerNode.id}?${searchParams}">
 			<c:param name="depth" value='1'/>
 			<c:param name="view" value='ajax'/>
 			<c:param name="root" value='false'/>
@@ -157,7 +157,7 @@
 			<c:otherwise>
 				<c:if test="${fn:length(currentNode.children) > 0}">
 					<%-- Subcontainer children present means that expanding should just get non-container children --%>
-					<c:url var="expandUrl" value="structure/${containerNode.pid.path}/tier?${searchParams}">
+					<c:url var="expandUrl" value="structure/${containerNode.id}/tier?${searchParams}">
 						<c:param name="files" value="only"/>
 						<c:if test="${not empty queryPath}"><c:param name="queryp" value='${queryPath}'/></c:if>
 						<c:if test="${displaySecondaryActions}"><c:param name="secondary" value='true'/></c:if>

@@ -33,9 +33,10 @@ public class ListController extends AbstractSearchController {
 	}
 
 	private void doList(SearchRequest searchRequest, Model model, HttpServletRequest request) {
+		searchRequest.getSearchState().setRowsPerPage(searchSettings.maxPerPage);
 		SearchResultResponse resultResponse = getSearchResults(searchRequest);
 
-		String searchStateUrl = SearchStateUtil.generateStateParameterString(searchRequest.getSearchState());
+		String searchStateUrl = SearchStateUtil.generateSearchParameterString(searchRequest.getSearchState());
 		model.addAttribute("searchStateUrl", searchStateUrl);
 		model.addAttribute("resultResponse", resultResponse);
 		model.addAttribute("queryMethod", "list");

@@ -30,6 +30,14 @@
 		<div>
 			<div>
 				<div class="container_header">
+					<c:set var="facetNodes" scope="request" value="${containerBean.path.facetNodes}"/>
+					<div class="results_header_hierarchy_path">
+						<c:import url="/jsp/util/pathTrail.jsp">
+							<c:param name="displayHome">false</c:param>
+							<c:param name="skipLast">true</c:param>
+							<c:param name="resultOperation">${sessionScope.resultOperation}</c:param>
+						</c:import>
+					</div>
 					<h2>
 						<c:choose>
 							<c:when test="${not empty containerBean}">
@@ -60,17 +68,10 @@
 						<li><a>New Folder</a></li>
 						<li><a>Ingest Package</a></li>
 					</ul>
-					
-					<c:set var="facetNodes" scope="request" value="${containerBean.path.facetNodes}"/>
-					<div class="results_header_hierarchy_path">
-						<c:import url="/jsp/util/pathTrail.jsp">
-							<c:param name="displayHome">false</c:param>
-							<c:param name="skipLast">true</c:param>
-							<c:param name="resultOperation">${sessionScope.resultOperation}</c:param>
-						</c:import>
-					</div>
 				</div>
-				
+				<c:import url="search/navigationBar.jsp" >
+					<c:param name="queryMethod" value="${queryMethod}"/>
+				</c:import>
 				<table class="result_table">
 					<tr class="batch_actions">
 						<td colspan="7">

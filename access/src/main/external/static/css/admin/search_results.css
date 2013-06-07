@@ -125,6 +125,10 @@ ul.crumblist {
 	-webkit-box-shadow: 0px 3px 0px 0px #0F80B3 inset;
 }
 
+.navigation_bar {
+	text-align: right;
+}
+
 /** Result table */
 .result_table {
 	font-size: 14px;

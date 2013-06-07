@@ -19,15 +19,18 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page import="edu.unc.lib.dl.search.solr.model.SearchState" %>
+<%@ page import="edu.unc.lib.dl.search.solr.model.SearchResultResponse" %>
 <%@ page import="edu.unc.lib.dl.search.solr.util.SearchSettings" %>
-
-<c:set var="pageEndCount" value="${resultCount}"/>
+<% System.out.println("Test"); %>
+Test
+<c:set var="pageEndCount" value="${resultResponse.resultCount}"/>
 
 <%
 {
 	//Calculating total number of pages and current page since jstl handles casting division to ints very poorly
 	SearchSettings searchSettings = (SearchSettings)request.getAttribute("searchSettings");
-	Long resultCount = (Long)request.getAttribute("resultCount");
+	SearchResultResponse resultResponse = (SearchResultResponse) request.getAttribute("resultResponse");
+	Long resultCount = resultResponse.getResultCount()
 	SearchState searchState = (SearchState)request.getAttribute("searchState");
 	if (resultCount == null || searchState == null)
 		return;
