@@ -1,8 +1,9 @@
+<%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<tr class="entry" data-pid="${metadata.id}">
+<tr class="entry" id="${metadata.id}" data-pid="${metadata.id}">
 	<td class="check_box">
 		<input type="checkbox">
 	</td>

@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui'], function($, ui) {
+define('StructureEntry', [ 'jquery', 'jquery-ui'], function($, ui) {
 	$.widget("cdr.structureEntry", {
 		options : {
 			indentSuppressed : false

@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui', 'editable', 'moment', 'qtip'], function($) {
+define('ModalLoadingOverlay', [ 'jquery', 'jquery-ui', 'editable', 'moment', 'qtip'], function($) {
 	$.widget("cdr.modalLoadingOverlay", {
 		options : {
 			'text' : null,

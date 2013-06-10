@@ -23,10 +23,31 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+
 public class SerializationUtil {
 	private static final Logger log = LoggerFactory.getLogger(SerializationUtil.class);
 
 	private static ObjectMapper jsonMapper = new ObjectMapper();
+	
+	public static String resultsToJSON(SearchResultResponse resultResponse) {
+		StringBuilder result = new StringBuilder();
+		result.append('[');
+		boolean firstEntry = true;
+		for (BriefObjectMetadata metadata: resultResponse.getResultList()) {
+			if (firstEntry)
+				firstEntry = false;
+			else result.append(',');
+			result.append('{');
+			result.append("'id':'").append(metadata.getId()).append("'");
+			result.append(',');
+			result.append("'version':'").append(metadata.get_version_()).append("'");;
+			result.append('}');
+		}
+		result.append(']');
+		return result.toString();
+	}
 	
 	public static String objectToJSON(Object object) {
 		try {

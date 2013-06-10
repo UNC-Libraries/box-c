@@ -104,12 +104,15 @@
 <link rel="stylesheet" type="text/css" href="/static/css/admin/search_results.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/structure_browse.css" />
 <script>
+	console.log("Starting " + (new Date()).getTime());
+	var startTimer = (new Date()).getTime();
 	var require = {
 		config: {
 			'resultList' : {
-				'metadataObjects': ${cdr:objectToJSON(resultResponse.resultList)}
+				'metadataObjects': ${cdr:resultsToJSON(resultResponse)}
 			}
 		}
 	};
+	console.log("Loaded in " + ((new Date()).getTime() - startTimer));
 </script>
 <script type="text/javascript" src="/static/js/require.js" data-main="/static/js/admin/resultList"></script>

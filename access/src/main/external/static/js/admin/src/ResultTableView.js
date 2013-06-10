@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'sortElements'], 
+define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'sortElements'], 
 		function($, ui, ResultObjectList) {
 	$.widget("cdr.resultTableView", {
 		options : {
@@ -16,6 +16,7 @@ define([ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishBatchButton', 'Unpub
 				this._initSort();
 			this._assignOriginalIndex();
 			this._initBatchOperations();
+			this._initEventHandlers();
 		},
 		
 		_assignOriginalIndex : function() {
@@ -105,6 +106,20 @@ define([ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishBatchButton', 'Unpub
 					this.resultObject('setStatusText', 'Cleaning up...');
 				}, 
 				'completeFunction' : 'deleteElement'
+			});
+		},
+		
+		_initEventHandlers : function() {
+			this.element.on('click', ".menu_box img", function(e){
+				$(this).parents(".entry").resultObject('activateActionMenu');
+				e.stopPropagation();
+			});
+			this.element.on('click', ".selectable", function(e){
+				$(this).resultObject('toggleSelect');
+				e.stopPropagation();
+			});
+			this.element.on('click', ".selectable a", function(e){
+				e.stopPropagation();
 			});
 		},
 		

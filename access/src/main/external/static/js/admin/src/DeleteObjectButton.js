@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton'], function($) {
+define('DeleteObjectButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton'], function($) {
 	$.widget("cdr.deleteObjectButton", $.cdr.ajaxCallbackButton, {
 		options : {
 			workLabel: "Deleting...",

@@ -17,7 +17,9 @@
 
 .ui-accordion .ui-accordion-header.ui-accordion-header-active {
 	background-color: #DDF0FA;
-	background-image: linear-gradient(to bottom, #DDF0FA, #F5F9FE);
+	background: -webkit-linear-gradient(top, #DDF0FA, #F5F9FE);
+	background: -webkit-gradient(linear, left top, left bottom, #DDF0FA, #F5F9FE); /* Chrome,Safari4+ */
+	background: linear-gradient(to bottom, #DDF0FA, #F5F9FE);
 	color: #0A5274;
 }
 

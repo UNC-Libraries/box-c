@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObject'], function($) {
+define('PublishObjectButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObject'], function($) {
 	$.widget("cdr.publishObjectButton", $.cdr.ajaxCallbackButton, {
 		options : {
 			defaultPublish: false,

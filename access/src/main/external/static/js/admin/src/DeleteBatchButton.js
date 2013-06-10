@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], function($) {
+define('DeleteBatchButton', [ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], function($) {
 	$.widget("cdr.deleteBatchButton", $.cdr.batchCallbackButton, {
 		options : {
 			resultObjectList : undefined,

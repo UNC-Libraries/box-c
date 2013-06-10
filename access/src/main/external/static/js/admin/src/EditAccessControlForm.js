@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'AlertHandler', 'PID', 
+define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'AlertHandler', 'PID', 
          'editable', 'moment', 'qtip', 'ConfirmationDialog'], function($, PID) {
 	$.widget("cdr.editAccessControlForm", {
 		_create : function() {

@@ -4,32 +4,53 @@ require.config({
 		'jquery' : 'jquery.min',
 		'jquery-ui' : 'jquery-ui.min',
 		'qtip' : 'jquery.qtip.min',
-		'jquery.preload': 'jquery.preload-1.0.8-unc',
-		'thumbnail' : 'thumbnail',
-		'adminCommon' : 'admin/adminCommon',
-		'PID' : 'admin/src/PID',
-		'MetadataObject' : 'admin/src/MetadataObject',
-		'AjaxCallbackButton' : 'admin/src/AjaxCallbackButton',
-		'PublishObjectButton' : 'admin/src/PublishObjectButton',
-		'DeleteObjectButton' : 'admin/src/DeleteObjectButton',
-		'ResultObject' : 'admin/src/ResultObject',
-		'ResultObjectList' : 'admin/src/ResultObjectList',
-		'BatchCallbackButton' : 'admin/src/BatchCallbackButton',
-		'UnpublishBatchButton' : 'admin/src/UnpublishBatchButton',
-		'PublishBatchButton' : 'admin/src/PublishBatchButton',
-		'DeleteBatchButton' : 'admin/src/DeleteBatchButton',
-		'ModalLoadingOverlay' : 'admin/src/ModalLoadingOverlay',
-		'EditAccessControlForm' : 'admin/src/EditAccessControlForm',
-		'RemoteStateChangeMonitor' : 'admin/src/RemoteStateChangeMonitor',
-		'ConfirmationDialog' : 'admin/src/ConfirmationDialog',
-		'AlertHandler' : 'admin/src/AlertHandler',
+		'PID' : 'squish',
+		'MetadataObject' : 'squish',
+		'AjaxCallbackButton' : 'squish',
+		'PublishObjectButton' : 'squish',
+		'DeleteObjectButton' : 'squish',
+		'ResultObject' : 'squish',
+		'ResultObjectList' : 'squish',
+		'BatchCallbackButton' : 'squish',
+		'UnpublishBatchButton' : 'squish',
+		'PublishBatchButton' : 'squish',
+		'DeleteBatchButton' : 'squish',
+		'ModalLoadingOverlay' : 'squish',
+		'EditAccessControlForm' : 'squish',
+		'RemoteStateChangeMonitor' : 'squish',
+		'ConfirmationDialog' : 'squish',
+		'AlertHandler' : 'squish',
+		'SearchMenu' : 'squish',
+		'ResultTableView' : 'squish',
 		'sortElements' : 'admin/lib/jquery.sortElements',
-		'SearchMenu' : 'admin/src/SearchMenu',
-		'StructureEntry' : 'src/StructureEntry',
-		'StructureView' : 'src/StructureView',
-		'ResultTableView' : 'admin/src/ResultTableView',
+		
+		'StructureEntry' : 'squish',
+		'StructureView' : 'squish',
+		
 		'editable' : 'jqueryui-editable.min',
 		'moment' : 'moment.min'
+			
+			/*
+			 * 
+			 * 'PID' : 'squish',
+		'MetadataObject' : 'squish',
+		'AjaxCallbackButton' : 'squish',
+		'PublishObjectButton' : 'squish',
+		'DeleteObjectButton' : 'squish',
+		'ResultObject' : 'squish',
+		'ResultObjectList' : 'squish',
+		'BatchCallbackButton' : 'squish',
+		'UnpublishBatchButton' : 'squish',
+		'PublishBatchButton' : 'squish',
+		'DeleteBatchButton' : 'squish',
+		'ModalLoadingOverlay' : 'squish',
+		'EditAccessControlForm' : 'squish',
+		'RemoteStateChangeMonitor' : 'squish',
+		'ConfirmationDialog' : 'squish',
+		'AlertHandler' : 'squish',
+		'SearchMenu' : 'squish',
+		'ResultTableView' : 'squish',
+			 */
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
@@ -42,6 +63,7 @@ require.config({
 });
 
 define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'SearchMenu'], function(module, $) {
+	console.profile();
 	var alertHandler = $("<div id='alertHandler'></div>");
 	alertHandler.alertHandler().appendTo(document.body).hide();
 	
@@ -53,9 +75,16 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 		$(".result_table .entry").resultObject('unselect');
 	});
 	
+	
 	$("#search_menu").searchMenu();
+	
+	//var startTime = new Date();
+	
+	//console.log("Result table start: " + (new Date()).getTime());
 	
 	$(".result_table").resultTableView({
 		'metadataObjects' : module.config().metadataObjects
 	});
+	console.profileEnd();
+	//console.log("Result table finish " + (new Date() - startTime));
 });

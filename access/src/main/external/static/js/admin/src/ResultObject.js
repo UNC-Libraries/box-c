@@ -15,7 +15,7 @@
     limitations under the License.
 
  */
-define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
+define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
 		'PublishObjectButton', 'EditAccessControlForm', 'ModalLoadingOverlay'], function($, ui, PID, MetadataObject, RemoteStateChangeMonitor) {
 	$.widget("cdr.resultObject", {
 		options : {
@@ -40,20 +40,23 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'RemoteStateChangeMonit
 			if (this.options.selected)
 				this.select();
 
-			var self = this;
 			if (this.options.selectable) {
+				this.element.addClass("selectable");
 				this.checkbox = this.element.find("input[type='checkbox']");
-				if (this.checkbox) {
-					this.checkbox = $(this.checkbox[0]).click(function(event) {
-						self.toggleSelect.apply(self);
-						event.stopPropagation();
-					}).prop("checked", self.options.selectCheckboxInitialState);
-				}
-				this.element.click($.proxy(self.toggleSelect, self)).find('a').click(function(event) {
-					event.stopPropagation();
-				});
 			}
-			this.initializeActionMenu();
+		},
+		
+		activateActionMenu : function() {
+			var $menuIcon = $(".menu_box img", this.element);
+			if (!this.actionMenuInitialized) {
+				this.initializeActionMenu();
+				$menuIcon.click();
+				return;
+			}
+			if (this.actionMenu.length == 0)
+				return;
+			$menuIcon.parent().css("background-color", "#7BAABF");
+			return;
 		},
 		
 		initializeActionMenu : function() {
@@ -63,6 +66,7 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'RemoteStateChangeMonit
 			if (this.actionMenu.children().length == 0)
 				return;
 			
+			this.actionMenuInitialized = true;
 			var menuIcon = $(".menu_box img", this.element);
 			
 			// Set up the dropdown menu
@@ -95,9 +99,6 @@ define([ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'RemoteStateChangeMonit
 						self.initializeDeleteLinks($(this));
 					}
 				}
-			}).click(function(e){
-				menuIcon.parent().css("background-color", "#7BAABF");
-				e.stopPropagation();
 			});
 			
 			self.actionMenu.children().click(function(){

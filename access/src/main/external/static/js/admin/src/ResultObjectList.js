@@ -13,9 +13,12 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 		
 		init: function(options) {
 			this.options = $.extend({}, this.options, options);
+			//var entries = $(".entry");
 			for (var i = 0; i < this.options.metadataObjects.length; i++) {
 				var metadata = this.options.metadataObjects[i];
-				var parentEl = $(".entry[data-pid='" + metadata.id + "']");
+				//var parentEl = $(".entry[data-pid='" + metadata.id + "']");
+				//var parentEl = entries.eq(i);//$("#" + metadata.id);
+				var parentEl = $("#" + metadata.id);
 				//var parentEl = $("#" + this.options.resultIdPrefix + metadata.id.replace(":", "\\:"));
 				this.resultObjects[metadata.id] = parentEl.resultObject({"metadata" : metadata, "resultObjectList" : this});
 			}

@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], function($) {
+define('PublishBatchButton', [ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], function($) {
 	$.widget("cdr.publishBatchButton", $.cdr.batchCallbackButton, {
 		options : {
 			resultObjectList : undefined,

@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui', 'StructureEntry'], function($, ui) {
+define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, ui) {
 	$.widget("cdr.structureView", {
 		options : {
 			showResourceIcons : true,

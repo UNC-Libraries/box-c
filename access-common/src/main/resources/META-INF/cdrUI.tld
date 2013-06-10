@@ -133,6 +133,13 @@
 		</function-signature>
 	</function>
 	<function>
+		<name>resultsToJSON</name>
+		<function-class>edu.unc.lib.dl.ui.util.SerializationUtil</function-class>
+		<function-signature>
+			java.lang.String resultsToJSON(edu.unc.lib.dl.search.solr.model.SearchResultResponse)
+		</function-signature>
+	</function>
+	<function>
 		<name>permitDatastreamAccess</name>
 		<function-class>edu.unc.lib.dl.ui.util.AccessUtil</function-class>
 		<function-signature>

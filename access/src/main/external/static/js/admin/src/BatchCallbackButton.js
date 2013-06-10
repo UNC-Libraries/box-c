@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], function($, ui, ResultObjectList) {
+define('BatchCallbackButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], function($, ui, ResultObjectList) {
 	$.widget("cdr.batchCallbackButton", $.cdr.ajaxCallbackButton, {
 		options : {
 			resultObjectList : undefined,

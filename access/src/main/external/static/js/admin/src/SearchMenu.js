@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui', 'StructureView'], function(
+define('SearchMenu', [ 'jquery', 'jquery-ui', 'StructureView'], function(
 		$, ui) {
 	$.widget("cdr.searchMenu", {
 		_create : function() {
