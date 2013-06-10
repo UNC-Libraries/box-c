@@ -59,9 +59,9 @@
 							</c:otherwise>
 						</c:choose>
 					</h2>
-					<span id="add_menu">+ Add</span>
+					<span id="add_menu" class="container_action">+ Add</span>
 					<c:if test="${not empty containerBean}">
-						<span id="arrange_button">Arrange</span>
+						<span id="arrange_button" class="container_action">Arrange</span>
 						<img class="container_menu" src="/static/images/admin/gear.png"/>
 					</c:if>
 					<ul id="add_menu_content" class="action_menu">
@@ -82,7 +82,7 @@
 							</div>
 						</td>
 					</tr>
-					<tr>
+					<tr class="column_headers">
 						<th class="sort_col" data-type="index"></th>
 						<th class="sort_col"></th>
 						<th class="sort_col">Title</th>

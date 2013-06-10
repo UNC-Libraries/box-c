@@ -28,8 +28,6 @@
 	</div>
 	<div class="threecol dark shadowbottom">
 		<div class="contentarea">
-			<h1>Carolina Digital Repository</h1>
-			
 			<a href="${pageContext.request.contextPath}/" id="titlelink"><img src="/static/images/carolinadigitalrepository-trans.png"></a>
 			
 			<ul id="mainmenu">

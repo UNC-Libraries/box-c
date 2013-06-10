@@ -90,8 +90,8 @@
 				<c:choose>
 					<c:when test="${resultCount > 0}">
 						<div class="bottomline paddedline">
-							<c:import var="navigationBar" url="searchResults/navigationBar.jsp">
-								<c:param name="queryPath">${queryMethod}</c:param>
+							<c:import var="navigationBar" url="/jsp/util/navigationBar.jsp">
+								<c:param name="queryMethod">${queryMethod}</c:param>
 							</c:import>
 							${navigationBar}
 							<c:import url="searchResults/sortForm.jsp">

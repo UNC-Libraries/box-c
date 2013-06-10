@@ -6,10 +6,6 @@
 	visibility: hidden;
 }
 
-#search_menu form {
-	font-size: 11px;
-}
-
 .ui-accordion .ui-accordion-content {
 	background-color: #FBFBFE;
 	padding: 0.5em;
@@ -43,7 +39,7 @@
 
 /** Query panel */
 
-#search_menu form {
+#search_menu_form {
 	font-size: 11px;
 }
 
@@ -53,12 +49,12 @@
 	font-size: 11px;
 }
 
-.search_within input {
+.search_within > input {
 	margin-left: 0px;
 	margin-right: 4px;
 }
 	
-ul.crumblist {
+.crumblist {
 	clear: both;
 }
 
@@ -73,15 +69,15 @@ ul.crumblist {
 	margin-bottom: 5px;
 }
 
-.container_header h2 {
+.container_header > h2 {
 	display: inline-block;
 }
 
-.container_header h2 img {
+.container_header > h2 > img {
 	vertical-align: bottom;
 }
 
-.container_header span {
+.container_action {
 	display: inline-block;
 	background-color: #EFEFFF;
 	border: 1px solid #DDDDEE;
@@ -93,28 +89,26 @@ ul.crumblist {
 	color: #666666;
 }
 
-.container_header span.active {
+.container_action.active {
 	background-color: #59AACE;
 	border: 1px solid #0F80B3;
 	box-shadow: 0 0 8px 0 #55ABE0;
 	color: white;
 }
 
-.container_header span.disabled {
+.container_action.disabled {
 	color: #AAA;
 }
 
-.container_header .container_menu {
+.container_menu {
 	float: right;
 }
 
-.container_header span.path_trail {
-	border: none;
+.container_header > .path_trail {
 	font-size: 0.8em;
-	background: none;
 }
 
-.container_header ul {
+.container_header > ul {
 	display: none;
 }
 
@@ -122,7 +116,7 @@ ul.crumblist {
 	height: 0px;
 }
 
-.arrange_mode .arrange_placeholder + tr td {
+.arrange_mode > .arrange_placeholder + tr > td {
 	box-shadow : 0px 3px 0px 0px #0F80B3 inset;
 	-webkit-box-shadow: 0px 3px 0px 0px #0F80B3 inset;
 }
@@ -138,28 +132,28 @@ ul.crumblist {
 	margin-top: 10px;
 }
 
-.result_table tr {
+.res_entry, .column_headers {
 	border-bottom: 1px solid #EEEEEE;
 }
 
-.result_table tr.entry:hover {
+.res_entry:hover {
 	background-color: #f8f8ff;
 }
 
-.result_table tr.selected {
+.res_entry.selected {
 	background-color: #F4F4FD;
 	border-bottom: 1px solid #DDDDDD;
 }
 
-.result_table tr.selected:hover {
+.res_entry.selected:hover {
 	background-color: #f0f0fC;
 }
 
-.result_table tr.highlighted {
+.res_entry.highlighted {
 	background-color: #FFFFC5;
 }
 
-.result_table th {
+.column_headers > th {
 	text-align: left;
 	font-color: #889;
 	font-size: 85%;
@@ -167,33 +161,33 @@ ul.crumblist {
 	white-space: nowrap;
 }
 
-.result_table td {
+.res_entry > td {
 	padding: 4px 8px 4px 0px;
 }
 
-.result_table td.check_box {
+.res_entry > .check_box {
 	width: 20px;
 	padding-right: 4px;
 }
 
-.result_table td.type {
+.res_entry > .type {
 	width: 20px;
 	padding-right: 4px;
 }
 
-.result_table td.itemdetails {
+.res_entry > .itemdetails {
 	width: 100%;
 }
 
-.result_table td.itemdetails .status {
+.res_entry > .itemdetails > .status {
 	font-size: 0.7em;
 }
 
-.result_table td.check_box * {
+.res_entry > .check_box > input {
 	vertical-align: text-bottom;
 }
 
-.result_table td.creator {
+.res_entry > .creator {
 	min-width: 90px;
 	max-width: 150px;
 	font-size: 70%;
@@ -202,26 +196,26 @@ ul.crumblist {
 	white-space: nowrap;
 }
 
-.result_table td.date_added {
+.res_entry > .date_added {
 	width: 70px;
 	font-size: 70%;
 }
 
-.result_table td.type img {
+.res_entry > .type > img {
 	vertical-align: text-bottom;
 }
 
-.result_table td.menu_box {
+.res_entry > .menu_box {
 	width: 20px;
 	padding: 3px;
 }
 
-.result_table .batch_actions {
+.batch_actions {
 	border-bottom: 0px solid #EEEEEE;
 	margin-top: -5px;
 }
 
-.result_table .batch_actions td {
+.batch_actions > td {
 	margin-right: 0px;
 	padding-right: 0px;
 }
@@ -238,7 +232,7 @@ ul.crumblist {
 	margin-bottom: 0px;
 }
 
-.action_menu li {
+.action_menu > li {
 	list-style: none;
 	margin-left: 0px;
 	margin-bottom: 0px;
@@ -246,14 +240,14 @@ ul.crumblist {
 	padding: 5px;
 }
 
-.action_menu li:hover {
+.action_menu > li:hover {
 	background-color: #eeeeff;
 	color: #E98D60;
 	text-decoration: underline;
 	cursor: pointer;
 }
 
-.menu_box ul {
+.menu_box > ul {
 	display: none;
 }
 
@@ -275,20 +269,20 @@ ul.crumblist {
 	background-image: none;
 }
 
-.sort_col span, .index_col span {
+.sort_col > span, .index_col > span {
 	padding-right: 19px;
 }
 
-.sorting span {
+.sorting > span {
 	background-image: url('/static/images/admin/sort.png');
 	background-repeat: no-repeat;
 	background-position: right -2px; 
 }
-.sorting.asc span {
+.sorting.asc > span {
 	background-position: right -103px;
 }
 
-.sorting.desc span {
+.sorting.desc > span {
 	background-position: right -78px;
 }
 

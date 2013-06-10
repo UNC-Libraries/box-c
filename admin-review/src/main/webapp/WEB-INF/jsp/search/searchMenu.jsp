@@ -5,7 +5,7 @@
 		<div>
 			<h3>Search</h3>
 			<div>
-				<form method="get" action="doSearch${containerPath}">
+				<form id="search_menu_form" method="get" action="doSearch${containerPath}">
 					<div class="search_inputwrap">
 						<input name="query" class="search_text" type="text" placeholder="Search"/>
 						<select name="queryType" class="index_select">
