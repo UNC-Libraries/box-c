@@ -22,6 +22,7 @@ require.config({
 		'mods-schema' : {
 			exports : 'Mods'
 		},
+		'ace' : ['jquery'],
 		'xmleditor' : ['jquery', 'jquery-xmlns', 'text', 'expanding', 'json2', 'cycle', 'ace', 'vkbeautify', 'mods-schema']
 	}
 });
