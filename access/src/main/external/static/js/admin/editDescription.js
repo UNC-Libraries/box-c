@@ -3,18 +3,16 @@ require.config({
 	paths: {
 		'jquery' : 'jquery.min',
 		'jquery-ui' : 'jquery-ui.min',
-		'qtip' : 'jquery.qtip.min',
-		'adminCommon' : 'admin/adminCommon',
 		'PID' : 'admin/src/PID',
-		'text' : 'modseditor/lib/text',
-		'jquery-xmlns' : 'modseditor/lib/jquery.xmlns',
+		'text' : 'xmleditor/lib/text',
+		'jquery-xmlns' : 'xmleditor/lib/jquery.xmlns',
 		'expanding' : 'expanding',
-		'json2' : 'modseditor/lib/json2',
-		'cycle' : 'modseditor/lib/cycle',
-		'ace' : 'modseditor/lib/ace/src-min/ace',
-		'vkbeautify' : 'modseditor/lib/vkbeautify.0.98.01.beta',
+		'json2' : 'xmleditor/lib/json2',
+		'cycle' : 'xmleditor/lib/cycle',
+		'ace' : 'xmleditor/lib/ace/src-min/ace',
+		'vkbeautify' : 'xmleditor/lib/vkbeautify',
 		'mods-schema' : '/static/schemas/mods-3-4/mods-3-4',
-		'modseditor' : 'modseditor/jquery.modseditor'
+		'xmleditor' : 'xmleditor/jquery.xmleditor'
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
@@ -24,11 +22,11 @@ require.config({
 		'mods-schema' : {
 			exports : 'Mods'
 		},
-		'modseditor' : ['jquery', 'jquery-xmlns', 'text', 'expanding', 'json2', 'cycle', 'ace', 'vkbeautify', 'mods-schema']
+		'xmleditor' : ['jquery', 'jquery-xmlns', 'text', 'expanding', 'json2', 'cycle', 'ace', 'vkbeautify', 'mods-schema']
 	}
 });
 
-define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'PID', 'mods-schema', 'modseditor'], function(module, $, ui, ace, PID, Mods) {
+define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'PID', 'mods-schema', 'xmleditor'], function(module, $, ui, ace, PID, Mods) {
 	var resultObject = module.config().resultObject;
 	var originalUrl = module.config().originalUrl;
 	
@@ -47,12 +45,12 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'PID', 'mods-
 		action : originalUrl
 	}]: null;
 	
-	$("#mods_editor").modsEditor({
+	$("#xml_editor").xmlEditor({
 		schemaObject : Mods,
 		ajaxOptions : {
-			modsRetrievalPath : "/admin/" + pid.getPath() + "/mods",
-			modsRetrievalParams : {'pid' : pid.getPid()},
-			modsUploadPath : "/admin/describe/" + pid.getPath()
+			xmlRetrievalPath : "/admin/" + pid.getPath() + "/mods",
+			xmlRetrievalParams : {'pid' : pid.getPid()},
+			xmlUploadPath : "/admin/describe/" + pid.getPath()
 		},
 		'menuEntries': menuEntries
 	});

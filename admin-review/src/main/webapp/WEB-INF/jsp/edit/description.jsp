@@ -19,7 +19,7 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 
 
-<link rel="stylesheet" type="text/css" href="/static/css/jquery.modseditor.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/admin/jquery.xmleditor.css" />
 
 <script>
 	var require = {
@@ -45,6 +45,6 @@
 	</div>
 
 	<div class="contentarea">
-		<div id="mods_editor"></div>
+		<div id="xml_editor"></div>
 	</div>
 </div>
