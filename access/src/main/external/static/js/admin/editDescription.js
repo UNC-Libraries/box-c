@@ -30,9 +30,6 @@ require.config({
 define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'PID', 'mods-schema', 'xmleditor'], function(module, $, ui, ace, PID, Mods) {
 	var resultObject = module.config().resultObject;
 	var originalUrl = module.config().originalUrl;
-	
-	var pid = new PID(resultObject.id);
-	
 	var menuEntries = (originalUrl)? [{
 		insertPath : ["View"],
 		label : 'View original document',
@@ -49,9 +46,9 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'PID', 'mods-
 	$("#xml_editor").xmlEditor({
 		schemaObject : Mods,
 		ajaxOptions : {
-			xmlRetrievalPath : "/admin/" + pid.getPath() + "/mods",
-			xmlRetrievalParams : {'pid' : pid.getPid()},
-			xmlUploadPath : "/admin/describe/" + pid.getPath()
+			xmlRetrievalPath : "/admin/" + resultObject.id + "/mods",
+			xmlRetrievalParams : {'pid' : resultObject.id},
+			xmlUploadPath : "/admin/describe/" + resultObject.id
 		},
 		'menuEntries': menuEntries
 	});

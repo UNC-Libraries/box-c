@@ -226,7 +226,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 				this.enable();
 				this.element.removeClass("followup working").addClass("idle");
 				this.updateOverlay('hide');
-				// this.element.switchClass("followup working", "idle", this.options.animateSpeed);
 			} else if ("working" == state) {
 				this.updateOverlay('show');
 				this.disable();

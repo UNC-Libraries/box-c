@@ -70,7 +70,16 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishB
 		},
 		
 		_initBatchOperations : function() {
-			$("#publish_selected").publishBatchButton({
+			var self = this;
+			$(".select_all", self.element).click(function(){
+				$(".selectable", self.element).resultObject('select');
+			});
+			
+			$(".deselect_all", self.element).click(function(){
+				$(".selectable", self.element).resultObject('unselect');
+			});
+			
+			$(".publish_selected", self.element).publishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 						this.resultObject('setStatusText', 'Publishing...');
@@ -83,7 +92,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishB
 					this.resultObject('refresh', true);
 				}
 			});
-			$("#unpublish_selected").unpublishBatchButton({
+			$(".unpublish_selected", self.element).unpublishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 					this.resultObject('setStatusText', 'Unpublishing...');
@@ -96,7 +105,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishB
 					this.resultObject('refresh', true);
 				}
 			});
-			$("#delete_selected").deleteBatchButton({
+			$(".delete_selected", self.element).deleteBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 					this.resultObject('setStatusText', 'Deleting...');

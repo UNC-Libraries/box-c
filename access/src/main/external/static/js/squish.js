@@ -1772,13 +1772,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 		
 		init: function(options) {
 			this.options = $.extend({}, this.options, options);
-			//var entries = $(".entry");
 			for (var i = 0; i < this.options.metadataObjects.length; i++) {
 				var metadata = this.options.metadataObjects[i];
-				//var parentEl = $(".entry[data-pid='" + metadata.id + "']");
-				//var parentEl = entries.eq(i);//$("#" + metadata.id);
-				var parentEl = $("#" + metadata.id);
-				//var parentEl = $("#" + this.options.resultIdPrefix + metadata.id.replace(":", "\\:"));
+				var parentEl = $("#res_" + metadata.id.substring(metadata.id.indexOf(':') + 1));
 				this.resultObjects[metadata.id] = parentEl.resultObject({"metadata" : metadata, "resultObjectList" : this});
 			}
 		},
@@ -1882,7 +1878,16 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 		},
 		
 		_initBatchOperations : function() {
-			$("#publish_selected").publishBatchButton({
+			var self = this;
+			$(".select_all", self.element).click(function(){
+				$(".selectable", self.element).resultObject('select');
+			});
+			
+			$(".deselect_all", self.element).click(function(){
+				$(".selectable", self.element).resultObject('unselect');
+			});
+			
+			$(".publish_selected", self.element).publishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 						this.resultObject('setStatusText', 'Publishing...');
@@ -1895,7 +1900,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 					this.resultObject('refresh', true);
 				}
 			});
-			$("#unpublish_selected").unpublishBatchButton({
+			$(".unpublish_selected", self.element).unpublishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 					this.resultObject('setStatusText', 'Unpublishing...');
@@ -1908,7 +1913,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 					this.resultObject('refresh', true);
 				}
 			});
-			$("#delete_selected").deleteBatchButton({
+			$(".delete_selected", self.element).deleteBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 					this.resultObject('setStatusText', 'Deleting...');

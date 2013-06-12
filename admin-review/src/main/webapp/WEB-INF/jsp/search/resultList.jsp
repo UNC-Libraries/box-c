@@ -75,10 +75,10 @@
 				<table class="result_table">
 					<tr class="batch_actions">
 						<td colspan="7">
-							<div class="left"><p><a id="select_all">Select All</a></p> <p><a id="deselect_all">Deselect All</a></p></div>
+							<div class="left"><p><a class="select_all">Select All</a></p> <p><a class="deselect_all">Deselect All</a></p></div>
 							<div class="right">
-								<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'purgeForever')}"><input type="Button" value="Delete" id="delete_selected" class="ajaxCallbackButton"></input>&nbsp;&nbsp;</c:if>
-								<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'publish')}"><input type="Button" value="Publish Selected" id="publish_selected" class="ajaxCallbackButton"></input><input type="Button" value="Unpublish Selected" id="unpublish_selected" class="ajaxCallbackButton"></input></c:if>
+								<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'purgeForever')}"><input type="Button" value="Delete" class="delete_selected ajaxCallbackButton"></input>&nbsp;&nbsp;</c:if>
+								<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'publish')}"><input type="Button" value="Publish Selected" class="publish_selected ajaxCallbackButton"></input><input type="Button" value="Unpublish Selected" id="unpublish_selected" class="ajaxCallbackButton"></input></c:if>
 							</div>
 						</td>
 					</tr>

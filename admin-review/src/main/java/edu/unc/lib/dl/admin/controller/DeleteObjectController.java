@@ -49,10 +49,9 @@ public class DeleteObjectController {
 	private String swordPassword;
 
 	// TODO This controller should be replaced by a direct call to SWORD once group forwarding is fully up and running
-	@RequestMapping(value = "delete/{prefix}/{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "delete/{pid}", method = RequestMethod.GET)
 	public @ResponseBody
-	Map<String, ? extends Object> deleteObject(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id) {
-		String pid = idPrefix + ":" + id;
+	Map<String, ? extends Object> deleteObjectController(@PathVariable("pid") String pid) {
 		return this.deleteObject(pid);
 	}
 

@@ -67,15 +67,6 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 	var alertHandler = $("<div id='alertHandler'></div>");
 	alertHandler.alertHandler().appendTo(document.body).hide();
 	
-	$("#select_all").click(function(){
-		$(".result_table .entry").resultObject('select');
-	});
-	
-	$("#deselect_all").click(function(){
-		$(".result_table .entry").resultObject('unselect');
-	});
-	
-	
 	$("#search_menu").searchMenu();
 	
 	//var startTime = new Date();
