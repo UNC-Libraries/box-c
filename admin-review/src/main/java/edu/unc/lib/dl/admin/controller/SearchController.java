@@ -85,6 +85,10 @@ public class SearchController extends AbstractSearchController {
 		searchRequest.setApplyCutoffs(false);
 
 		SearchResultResponse resultResponse = getSearchResults(searchRequest);
+		
+		if (resultResponse != null) {
+			queryLayer.populateBreadcrumbs(searchRequest, resultResponse);
+		}
 
 		String searchStateUrl = SearchStateUtil.generateStateParameterString(searchRequest.getSearchState());
 		model.addAttribute("searchStateUrl", searchStateUrl);
@@ -92,21 +96,5 @@ public class SearchController extends AbstractSearchController {
 		model.addAttribute("queryMethod", "search");
 		request.getSession().setAttribute("resultOperation", "search");
 		return resultResponse;
-	}
-
-	protected void doSearch(SearchRequest searchRequest, Model model) {
-		LOG.debug("Performing search");
-
-		// Request object for the search
-		SearchState responseState = (SearchState) searchRequest.getSearchState().clone();
-		SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-
-		if (resultResponse != null) {
-			queryLayer.populateBreadcrumbs(searchRequest, resultResponse);
-		}
-
-		String searchStateUrl = SearchStateUtil.generateStateParameterString(responseState);
-		model.addAttribute("searchStateUrl", searchStateUrl);
-		model.addAttribute("resultResponse", resultResponse);
 	}
 }
