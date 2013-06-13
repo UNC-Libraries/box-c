@@ -48,6 +48,7 @@ import edu.unc.lib.dl.search.solr.tags.TagProvider;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
+import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 @Controller
 public class ResultListController extends AbstractSolrSearchController {
@@ -171,7 +172,7 @@ public class ResultListController extends AbstractSolrSearchController {
 
 		// For serializing the BriefMetadataObject into the json results
 		Map<String, Object> additionalData = new HashMap<String, Object>(1);
-		additionalData.put("metadata", entryBean);
+		additionalData.put("metadata", SerializationUtil.metadataToJSON(entryBean));
 		model.addAttribute("additionalData", additionalData);
 
 		model.addAttribute("metadata", entryBean);

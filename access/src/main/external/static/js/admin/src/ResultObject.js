@@ -15,8 +15,8 @@
     limitations under the License.
 
  */
-define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
-		'PublishObjectButton', 'EditAccessControlForm', 'ModalLoadingOverlay'], function($, ui, PID, MetadataObject, RemoteStateChangeMonitor) {
+define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
+		'PublishObjectButton', 'EditAccessControlForm', 'ModalLoadingOverlay'], function($, ui, PID, RemoteStateChangeMonitor) {
 	$.widget("cdr.resultObject", {
 		options : {
 			animateSpeed : 100,
@@ -27,23 +27,13 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 		},
 
 		_create : function() {
-			if (this.options.metadata instanceof MetadataObject) {
-				this.metadata = this.options.metadata;
-			} else {
-				this.metadata = new MetadataObject(this.options.metadata);
-			}
-
+			this.metadata = this.options.metadata;
 			this.links = [];
-			this.pid = this.metadata.pid;
+			this.pid = this.options.id;
 			this.overlayInitialized = false;
 
 			if (this.options.selected)
 				this.select();
-
-			if (this.options.selectable) {
-				this.element.addClass("selectable");
-				this.checkbox = this.element.find("input[type='checkbox']");
-			}
 		},
 		
 		activateActionMenu : function() {
@@ -122,7 +112,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 						self.unhighlight();
 					}
 				});
-				dialog.load("acl/" + self.pid.getPath(), function(responseText, textStatus, xmlHttpRequest){
+				dialog.load("acl/" + self.pid, function(responseText, textStatus, xmlHttpRequest){
 					dialog.dialog('option', 'position', 'center');
 				});
 			});
@@ -143,7 +133,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 			$(links).publishObjectButton({
 				pid : obj.pid,
 				parentObject : obj,
-				defaultPublish : $.inArray("Unpublished", this.metadata.data.status) == -1
+				defaultPublish : $.inArray("Unpublished", this.metadata.status) == -1
 			});
 		},
 
@@ -196,17 +186,21 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 		},
 
 		select : function() {
+			if (!this.options.selectable)
+				return;
 			this.element.addClass("selected");
-			if (this.checkbox) {
-				this.checkbox.prop("checked", true);
-			}
+			if (!this.checkbox)
+				this.checkbox = this.element.find("input[type='checkbox']");
+			this.checkbox.prop("checked", true);
 		},
 
 		unselect : function() {
+			if (!this.options.selectable)
+				return;
 			this.element.removeClass("selected");
-			if (this.checkbox) {
-				this.checkbox.prop("checked", false);
-			}
+			if (!this.checkbox)
+				this.checkbox = this.element.find("input[type='checkbox']");
+			this.checkbox.prop("checked", false);
 		},
 		
 		highlight : function() {
@@ -264,8 +258,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 		},
 		
 		updateVersion : function(newVersion) {
-			if (newVersion != this.metadata.data._version_) {
-				this.metadata.data._version_ = newVersion;
+			if (newVersion != this.metadata._version_) {
+				this.metadata._version_ = newVersion;
 				return true;
 			}
 			return false;
@@ -295,7 +289,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 			var self = this;
 			var followupMonitor = new RemoteStateChangeMonitor({
 				'checkStatus' : function(data) {
-					return (data != self.metadata.data._version_);
+					return (data != self.metadata._version_);
 				},
 				'checkStatusTarget' : this,
 				'statusChanged' : function(data) {

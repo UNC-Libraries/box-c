@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.util;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -33,17 +34,36 @@ public class SerializationUtil {
 	
 	public static String resultsToJSON(SearchResultResponse resultResponse) {
 		StringBuilder result = new StringBuilder();
-		result.append('[');
+		result.append('{');
 		boolean firstEntry = true;
 		for (BriefObjectMetadata metadata: resultResponse.getResultList()) {
 			if (firstEntry)
 				firstEntry = false;
 			else result.append(',');
-			result.append('{');
-			result.append("'id':'").append(metadata.getId()).append("'");
-			result.append(',');
-			result.append("'version':'").append(metadata.get_version_()).append("'");;
-			result.append('}');
+			result.append(metadataToJSON(metadata));
+		}
+		result.append('}');
+		return result.toString();
+	}
+	
+	public static String metadataToJSON(BriefObjectMetadata metadata) {
+		StringBuilder result = new StringBuilder();
+		result.append("'").append(metadata.getId()).append("':");
+		result.append('{');
+		result.append("'_version_':'").append(metadata.get_version_()).append("'");
+		result.append(',');
+		result.append("'status':").append(joinArray(metadata.getStatus()));
+		result.append('}');
+		return result.toString();
+	}
+	
+	private static String joinArray(Collection<String> collection) {
+		StringBuilder result = new StringBuilder();
+		result.append('[');
+		for (String value : collection) {
+			if (result.length() > 1)
+				result.append(',');
+			result.append("'").append(value).append("'");
 		}
 		result.append(']');
 		return result.toString();

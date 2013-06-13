@@ -31,9 +31,7 @@
 			</c:when>
 			<c:otherwise>
 				<a href="list/${metadata.id}" class="has_tooltip"
-						title="View contents of <c:out value='${metadata.title}'/>.">
-					<c:out value='${metadata.title}'/>
-				</a>
+						title="View contents of <c:out value='${metadata.title}'/>."><c:out value='${metadata.title}'/></a>
 				<c:set var="childCount" value="${metadata.countMap.child}"/>
 				<span class="searchitem_container_count">
 					<c:choose>
@@ -67,7 +65,7 @@
 	<td class="date_added">
 		<c:choose>
 			<c:when test="${not empty metadata.dateAdded}">
-				<fmt:formatDate value="${metadata.dateAdded}" pattern="MM/dd/yyyy"/>
+				<fmt:formatDate value="${metadata.dateAdded}" pattern="yyyy-MM-dd"/>
 			</c:when>
 			<c:otherwise>-</c:otherwise>
 		</c:choose>
@@ -75,7 +73,7 @@
 	<td class="date_added">
 		<c:choose>
 			<c:when test="${not empty metadata.dateUpdated}">
-				<fmt:formatDate value="${metadata.dateUpdated}" pattern="MM/dd/yyyy"/>
+				<fmt:formatDate value="${metadata.dateUpdated}" pattern="yyyy-MM-dd"/>
 			</c:when>
 			<c:otherwise>-</c:otherwise>
 		</c:choose>

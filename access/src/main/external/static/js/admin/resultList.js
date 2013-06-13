@@ -22,7 +22,7 @@ require.config({
 		'AlertHandler' : 'squish',
 		'SearchMenu' : 'squish',
 		'ResultTableView' : 'squish',
-		'sortElements' : 'admin/lib/jquery.sortElements',
+		'detachplus' : 'admin/lib/jquery.detachplus',
 		
 		'StructureEntry' : 'squish',
 		'StructureView' : 'squish',
@@ -63,7 +63,7 @@ require.config({
 });
 
 define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'SearchMenu'], function(module, $) {
-	console.profile();
+	//console.profile();
 	var alertHandler = $("<div id='alertHandler'></div>");
 	alertHandler.alertHandler().appendTo(document.body).hide();
 	
@@ -76,6 +76,6 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 	$(".result_table").resultTableView({
 		'metadataObjects' : module.config().metadataObjects
 	});
-	console.profileEnd();
+	//console.profileEnd();
 	//console.log("Result table finish " + (new Date() - startTime));
 });

@@ -85,7 +85,7 @@
 					<tr class="column_headers">
 						<th class="sort_col" data-type="index"></th>
 						<th class="sort_col"></th>
-						<th class="sort_col">Title</th>
+						<th class="sort_col" data-type="title">Title</th>
 						<th class="sort_col">Creator</th>
 						<th class="sort_col">Added</th>
 						<th class="sort_col">Modified</th>

@@ -1175,7 +1175,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			if (this.data === undefined || this.data == null) {
 				this.data = {};
 			}
-			this.setPID(this.data.id);
+			//this.setPID(this.data.id);
 		},
 		
 		setPID: function(pid) {
@@ -1460,8 +1460,8 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
     limitations under the License.
 
  */
-define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
-		'PublishObjectButton', 'EditAccessControlForm', 'ModalLoadingOverlay'], function($, ui, PID, MetadataObject, RemoteStateChangeMonitor) {
+define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
+		'PublishObjectButton', 'EditAccessControlForm', 'ModalLoadingOverlay'], function($, ui, PID, RemoteStateChangeMonitor) {
 	$.widget("cdr.resultObject", {
 		options : {
 			animateSpeed : 100,
@@ -1472,23 +1472,13 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 		},
 
 		_create : function() {
-			if (this.options.metadata instanceof MetadataObject) {
-				this.metadata = this.options.metadata;
-			} else {
-				this.metadata = new MetadataObject(this.options.metadata);
-			}
-
+			this.metadata = this.options.metadata;
 			this.links = [];
-			this.pid = this.metadata.pid;
+			this.pid = this.options.id;
 			this.overlayInitialized = false;
 
 			if (this.options.selected)
 				this.select();
-
-			if (this.options.selectable) {
-				this.element.addClass("selectable");
-				this.checkbox = this.element.find("input[type='checkbox']");
-			}
 		},
 		
 		activateActionMenu : function() {
@@ -1567,7 +1557,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 						self.unhighlight();
 					}
 				});
-				dialog.load("acl/" + self.pid.getPath(), function(responseText, textStatus, xmlHttpRequest){
+				dialog.load("acl/" + self.pid, function(responseText, textStatus, xmlHttpRequest){
 					dialog.dialog('option', 'position', 'center');
 				});
 			});
@@ -1588,7 +1578,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 			$(links).publishObjectButton({
 				pid : obj.pid,
 				parentObject : obj,
-				defaultPublish : $.inArray("Unpublished", this.metadata.data.status) == -1
+				defaultPublish : $.inArray("Unpublished", this.metadata.status) == -1
 			});
 		},
 
@@ -1641,17 +1631,21 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 		},
 
 		select : function() {
+			if (!this.options.selectable)
+				return;
 			this.element.addClass("selected");
-			if (this.checkbox) {
-				this.checkbox.prop("checked", true);
-			}
+			if (!this.checkbox)
+				this.checkbox = this.element.find("input[type='checkbox']");
+			this.checkbox.prop("checked", true);
 		},
 
 		unselect : function() {
+			if (!this.options.selectable)
+				return;
 			this.element.removeClass("selected");
-			if (this.checkbox) {
-				this.checkbox.prop("checked", false);
-			}
+			if (!this.checkbox)
+				this.checkbox = this.element.find("input[type='checkbox']");
+			this.checkbox.prop("checked", false);
 		},
 		
 		highlight : function() {
@@ -1671,7 +1665,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 				this.enable();
 				this.element.removeClass("followup working").addClass("idle");
 				this.updateOverlay('hide');
-				// this.element.switchClass("followup working", "idle", this.options.animateSpeed);
 			} else if ("working" == state) {
 				this.updateOverlay('show');
 				this.disable();
@@ -1710,8 +1703,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 		},
 		
 		updateVersion : function(newVersion) {
-			if (newVersion != this.metadata.data._version_) {
-				this.metadata.data._version_ = newVersion;
+			if (newVersion != this.metadata._version_) {
+				this.metadata._version_ = newVersion;
 				return true;
 			}
 			return false;
@@ -1741,7 +1734,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 			var self = this;
 			var followupMonitor = new RemoteStateChangeMonitor({
 				'checkStatus' : function(data) {
-					return (data != self.metadata.data._version_);
+					return (data != self.metadata._version_);
 				},
 				'checkStatusTarget' : this,
 				'statusChanged' : function(data) {
@@ -1772,11 +1765,38 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 		
 		init: function(options) {
 			this.options = $.extend({}, this.options, options);
-			for (var i = 0; i < this.options.metadataObjects.length; i++) {
+			var self = this;
+			console.time("Initialize entries");
+			
+			console.time("Get entries");
+			var $entries = $(".res_entry", this.element);
+			var test = $entries.eq(0);
+			test = $entries.eq(1);
+			test = $entries.eq(200);
+			test = $entries.eq(500);
+			console.timeEnd("Get entries");
+			//console.profile();
+			for (var i = 0; i < $entries.length; i++) {
+				var $this = $entries.eq(i);
+				var id = $this.attr('id');
+				id = 'uuid' + id.substring(id.indexOf(':') + 1);
+				var metadata = self.options.metadataObjects[id];
+				self.resultObjects[id] = $this.resultObject({'id' : id, "metadata" : metadata, "resultObjectList" : self});
+			}
+			//console.profileEnd();
+			/*$(".res_entry").each(function(){
+				var $this = $(this);
+				var id = $this.attr('id');
+				id = 'uuid' + id.substring(id.indexOf(':') + 1);
+				var metadata = self.options.metadataObjects[id];
+				self.resultObjects[id] = $this.resultObject({'id' : id, "metadata" : metadata, "resultObjectList" : self});
+			});*/
+			/*for (var i = 0; i < this.options.metadataObjects.length; i++) {
 				var metadata = this.options.metadataObjects[i];
 				var parentEl = $("#res_" + metadata.id.substring(metadata.id.indexOf(':') + 1));
 				this.resultObjects[metadata.id] = parentEl.resultObject({"metadata" : metadata, "resultObjectList" : this});
-			}
+			}*/
+			console.timeEnd("Initialize entries");
 		},
 		
 		getResultObject: function(id) {
@@ -1793,12 +1813,12 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 			var self = this;
 			var resultObject = this.getResultObject(id);
 			$.ajax({
-				url : this.options.refreshEntryUrl + resultObject.resultObject('getPid').getPath(),
+				url : this.options.refreshEntryUrl + resultObject.resultObject('getPid'),
 				dataType : 'json',
 				success : function(data, textStatus, jqXHR) {
 					var newContent = $(data.content);
 					resultObject.replaceWith(newContent);
-					self.resultObjects[id] = newContent.resultObject({"metadata" : data.data.metadata, "resultObjectList" : self});
+					self.resultObjects[id] = newContent.resultObject({'id' : id, "metadata" : data.data.metadata, "resultObjectList" : self});
 				}
 			});
 		}
@@ -1806,7 +1826,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 	});
 	
 	return ResultObjectList;
-});define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'sortElements'], 
+});define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'detachplus'], 
 		function($, ui, ResultObjectList) {
 	$.widget("cdr.resultTableView", {
 		options : {
@@ -1828,13 +1848,16 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 		},
 		
 		_assignOriginalIndex : function() {
-			$('tbody tr', this.element).each(function(i){
+			console.time("Indexes");
+			$('.res_entry', this.element).each(function(i){
 				$(this).data('original_index', i);
 			});
+			console.timeEnd("Indexes");
 		},
 
 		_initSort : function() {
 			var $resultTable = this.element;
+			var self = this;
 			$("th.sort_col", $resultTable).wrapInner('<span/>').each(function(){
 				var $th = $(this),
 				thIndex = $th.index(),
@@ -1843,6 +1866,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 				
 				$th.click(function(){
 					if (!$th.hasClass('sorting')) return;
+					console.time("Sorting");
 					var inverse = $th.hasClass('desc');
 					$('.sorting', $resultTable).removeClass('asc desc');
 					if (inverse)
@@ -1852,39 +1876,129 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 					
 					// Apply sort function based on data-type
 					if (dataType == 'index') {
-						$resultTable.find('tbody tr.entry').sortElements(function(a, b){
-							return ($(a).data('original_index') > $(b).data('original_index')) ?
-									inverse ? -1 : 1
-									: inverse ? 1 : -1;
-						});
+						self._originalOrderSort(inverse);
+					} else if (dataType == 'title') {
+						self._titleSort(inverse);
 					} else {
-						$resultTable.find('td').filter(function(){
-							return $(this).index() === thIndex;
-						}).sortElements(function(a, b){
-							if( $.text([a]).toUpperCase() == $.text([b]).toUpperCase() )
-								return 0;
-							return $.text([a]).toUpperCase() > $.text([b]).toUpperCase() ?
-									inverse ? -1 : 1
-									: inverse ? 1 : -1;
-						}, function(){
-							// parentNode is the element we want to move
-							return this.parentNode; 
-						});
+						self._alphabeticSort(thIndex, inverse);
 					}
 					inverse = !inverse;
+					console.timeEnd("Sorting");
 				});
-				
 			});
+		},
+		
+		_sortEntries : function($entries, matchMap, getSortable) {
+			var $resultTable = this.element;
+			$resultTable.detach(true, function(reattach){
+				var resultRows = $resultTable[0].children[0];
+				if ($.isFunction(getSortable)) {
+					for (var i = 0, length = matchMap.length; i < length; i++) {
+						resultRows.insertBefore(getSortable.call($entries[matchMap[i].index]), null);
+					}
+				} else {
+					for (var i = 0, length = matchMap.length; i < length; i++) {
+						resultRows.insertBefore($entries[matchMap[i].index].parentNode, null);
+					}
+				}
+				reattach();
+			});
+		},
+		
+		_alphabeticSort : function(thIndex, inverse) {
+			var $resultTable = this.element;
+			var matchMap = [];
+			var $entries = $resultTable.find('td').filter(function(){
+				return $(this).index() === thIndex;
+			});
+			for (var i = 0, length = $entries.length; i < length; i++) {
+				matchMap.push({
+					index : i,
+					value : $entries[i].innerHTML.toUpperCase()
+				});
+			}
+			matchMap.sort(function(a, b){
+				if(a.value == b.value)
+					return 0;
+				return a.value > b.value ?
+						inverse ? -1 : 1
+						: inverse ? 1 : -1;
+			});
+			this._sortEntries($entries, matchMap);
+		},
+		
+		_originalOrderSort : function(inverse) {
+			var $resultTable = this.element;
+			var matchMap = [];
+			var $entries = $resultTable.find('tr.res_entry');
+			for (var i = 0, length = $entries.length; i < length; i++) {
+				matchMap.push({
+					index : i,
+					value : $entries.eq(i).data('original_index')
+				});
+			}
+			matchMap.sort(function(a, b){
+				return (a.value > b.value) ?
+						inverse ? -1 : 1
+						: inverse ? 1 : -1;
+			});
+			this._sortEntries($entries, matchMap, function(){
+				return this;
+			});
+		},
+		
+		_titleSort : function(inverse) {
+			var $resultTable = this.element;
+			var titleRegex = new RegExp('(\\d+|[^\\d]+)', 'g');
+			var matchMap = [];
+			var $entries = $resultTable.find('.itemdetails');
+			for (var i = 0, length = $entries.length; i < length; i++) {
+				var text = $entries[i].children[0].innerHTML.toUpperCase();
+				matchMap.push({
+					index : i,
+					text : text,
+					value : text.match(titleRegex)
+				});
+			}
+			
+			matchMap.sort(function(a, b) {
+				if (a.text == b.text)
+					return 0;
+				var i = 0;
+				for (; i < a.value.length && i < b.value.length && a.value[i] == b.value[i]; i++);
+				
+				// Whoever ran out of entries first, loses
+				if (i == a.value.length)
+					if (i == b.value.length)
+						return 0;
+					else return inverse ? 1 : -1;
+				if (i == b.value.length)
+					return inverse ? -1 : 1;
+				
+				// Do int comparison of unmatched elements
+				var aInt = parseInt(a.value[i]);
+				if (!isNaN(aInt)) {
+						var bInt = parseInt(b.value[i]);
+						if (!isNaN(bInt))
+							return aInt > bInt ?
+									inverse ? -1 : 1
+									: inverse ? 1 : -1;
+				}
+				return a.text > b.text ?
+						inverse ? -1 : 1
+						: inverse ? 1 : -1;
+			});
+			this._sortEntries($entries, matchMap);
 		},
 		
 		_initBatchOperations : function() {
 			var self = this;
 			$(".select_all", self.element).click(function(){
-				$(".selectable", self.element).resultObject('select');
+				$(".res_entry", self.element).resultObject('select');
 			});
 			
 			$(".deselect_all", self.element).click(function(){
-				$(".selectable", self.element).resultObject('unselect');
+				$(".res_entry", self.element).resultObject('unselect');
 			});
 			
 			$(".publish_selected", self.element).publishBatchButton({
@@ -1931,11 +2045,11 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'MetadataObject', 'Remote
 				$(this).parents(".entry").resultObject('activateActionMenu');
 				e.stopPropagation();
 			});
-			this.element.on('click', ".selectable", function(e){
+			this.element.on('click', ".res_entry", function(e){
 				$(this).resultObject('toggleSelect');
 				e.stopPropagation();
 			});
-			this.element.on('click', ".selectable a", function(e){
+			this.element.on('click', ".res_entry a", function(e){
 				e.stopPropagation();
 			});
 		},
