@@ -1,4 +1,4 @@
-define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], function($, MetadataObject) {
+define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], function($, MetadataObject, ResultObject) {
 	function ResultObjectList(options) {
 		this.init(options);
 	};
@@ -18,32 +18,15 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 			
 			console.time("Get entries");
 			var $entries = $(".res_entry", this.element);
-			var test = $entries.eq(0);
-			test = $entries.eq(1);
-			test = $entries.eq(200);
-			test = $entries.eq(500);
+
 			console.timeEnd("Get entries");
-			//console.profile();
+			var metadataObjects = self.options.metadataObjects;
 			for (var i = 0; i < $entries.length; i++) {
-				var $this = $entries.eq(i);
-				var id = $this.attr('id');
+				var id = $entries[i].id;
 				id = 'uuid' + id.substring(id.indexOf(':') + 1);
-				var metadata = self.options.metadataObjects[id];
-				self.resultObjects[id] = $this.resultObject({'id' : id, "metadata" : metadata, "resultObjectList" : self});
+				self.resultObjects[id] = new ResultObject($entries.eq(i), {id : id, metadata : metadataObjects[id], 
+					resultObjectList : self});
 			}
-			//console.profileEnd();
-			/*$(".res_entry").each(function(){
-				var $this = $(this);
-				var id = $this.attr('id');
-				id = 'uuid' + id.substring(id.indexOf(':') + 1);
-				var metadata = self.options.metadataObjects[id];
-				self.resultObjects[id] = $this.resultObject({'id' : id, "metadata" : metadata, "resultObjectList" : self});
-			});*/
-			/*for (var i = 0; i < this.options.metadataObjects.length; i++) {
-				var metadata = this.options.metadataObjects[i];
-				var parentEl = $("#res_" + metadata.id.substring(metadata.id.indexOf(':') + 1));
-				this.resultObjects[metadata.id] = parentEl.resultObject({"metadata" : metadata, "resultObjectList" : this});
-			}*/
 			console.timeEnd("Initialize entries");
 		},
 		
@@ -61,7 +44,7 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 			var self = this;
 			var resultObject = this.getResultObject(id);
 			$.ajax({
-				url : this.options.refreshEntryUrl + resultObject.resultObject('getPid'),
+				url : this.options.refreshEntryUrl + resultObject.getPid(),
 				dataType : 'json',
 				success : function(data, textStatus, jqXHR) {
 					var newContent = $(data.content);

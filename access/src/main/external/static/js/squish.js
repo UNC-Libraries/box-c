@@ -594,12 +594,12 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			
 			for (var index in this.targetIds) {
 				var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
-				resultObject.resultObject("disable");
+				resultObject.disable();
 				if (this.options.workFunction)
 					if ($.isFunction(this.options.workFunction))
 						this.options.workFunction.call(resultObject);
 					else
-						resultObject.resultObject(this.options.workFunction);
+						resultObject[this.options.workFunction]();
 			}
 			
 			var self = this;
@@ -623,7 +623,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 						if ($.isFunction(this.options.followupFunction))
 							this.options.followupFunction.call(resultObject);
 						else
-							resultObject.resultObject(this.options.followupFunction);
+							resultObject[this.options.followupFunction]();
 					}
 				}
 				this.followupMonitor.pingData = {
@@ -637,13 +637,13 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 
 		followup : function(data) {
 			for (var id in data) {
-				if (this.options.resultObjectList.resultObjects[id].resultObject("updateVersion", data[id])) {
+				if (this.options.resultObjectList.resultObjects[id].updateVersion(data[id])) {
 					var index = $.inArray(id, this.followupObjects);
 					if (index != -1) {
 						this.followupObjects.splice(index, 1);
 						
 						var resultObject = this.options.resultObjectList.resultObjects[id];
-						resultObject.resultObject("setState", "idle");
+						resultObject.setState("idle");
 						
 						if (this.options.completeFunction) {
 							if ($.isFunction(this.options.completeFunction))
@@ -671,7 +671,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			$.each(this.options.resultObjects, function() {
 				var resultObject = this;
 				if (this.isSelected()) {
-					targetIds.push(resultObject.resultObject("getPid").getPid());
+					targetIds.push(resultObject.getPid());
 				}
 			});
 
@@ -786,8 +786,8 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			var targetIds = [];
 			for (var id in this.options.resultObjectList.resultObjects) {
 				var resultObject = this.options.resultObjectList.resultObjects[id];
-				if (resultObject.resultObject("isSelected") && resultObject.resultObject("isEnabled")) {
-					targetIds.push(resultObject.resultObject("getPid").getPid());
+				if (resultObject.isSelected() && resultObject.isEnabled()) {
+					targetIds.push(resultObject.getPid());
 				}
 			}
 			return targetIds;
@@ -825,9 +825,9 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 						if ($.isFunction(this.options.completeFunction))
 							this.options.completeFunction.call(resultObject);
 						else
-							resultObject.resultObject(this.options.completeFunction);
+							resultObject[this.options.completeFunction]();
 					} else {
-						resultObject.resultObject("setState", "idle");
+						resultObject.setState("idle");
 					}
 				}
 			}
@@ -1014,7 +1014,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 							self.options.containingDialog.dialog('close');
 						}
 						self.alertHandler.alertHandler('success', 'Access control changes saved');
-						$(".entry[data-pid='" + self.options.pid + "']").resultObject('refresh');
+						$(".entry[data-pid='" + self.options.pid + "']").data('resultObject').refresh();
 					},
 					error : function(data) {
 						container.modalLoadingOverlay('close');
@@ -1311,9 +1311,9 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			var targetIds = [];
 			for (var id in this.options.resultObjectList.resultObjects) {
 				var resultObject = this.options.resultObjectList.resultObjects[id];
-				if (resultObject.resultObject("isSelected") && !resultObject.resultObject("getMetadata").isPublished()
-						&& resultObject.resultObject("isEnabled")) {
-					targetIds.push(resultObject.resultObject("getPid").getPid());
+				if (resultObject.isSelected() && !resultObject.getMetadata().isPublished()
+						&& resultObject.isEnabled()) {
+					targetIds.push(resultObject.getPid().getPid());
 				}
 			}
 			return targetIds;
@@ -1443,6 +1443,389 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 	});
 	
 	return RemoteStateChangeMonitor;
+});/*
+
+    Copyright 2008 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+ */
+define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
+		'PublishObjectButton', 'EditAccessControlForm', 'ModalLoadingOverlay'], function($, ui, RemoteStateChangeMonitor) {
+	var defaultOptions = {
+			animateSpeed : 100,
+			metadata : null,
+			selected : false,
+			selectable : true,
+			selectCheckboxInitialState : false
+		};
+	
+	function ResultObject(element, options) {
+		this.init(element, options);
+	};
+	
+	ResultObject.prototype.init = function(element, options) {
+		this.element = element;
+		this.element.data('resultObject', this);
+		this.options = $.extend({}, defaultOptions, options);
+		this.metadata = this.options.metadata;
+		this.links = [];
+		this.pid = this.options.id;
+		this.overlayInitialized = false;
+		if (this.options.selected)
+			this.select();
+	};
+	
+	ResultObject.prototype.activateActionMenu = function() {
+		var $menuIcon = $(".menu_box img", this.element);
+		if (!this.actionMenuInitialized) {
+			this.initializeActionMenu();
+			$menuIcon.click();
+			return;
+		}
+		if (this.actionMenu.length == 0)
+			return;
+		$menuIcon.parent().css("background-color", "#7BAABF");
+		return;
+	};
+	
+	ResultObject.prototype.initializeActionMenu = function() {
+		var self = this;
+		
+		this.actionMenu = $(".menu_box ul", this.element);
+		if (this.actionMenu.children().length == 0)
+			return;
+		
+		this.actionMenuInitialized = true;
+		var menuIcon = $(".menu_box img", this.element);
+		
+		// Set up the dropdown menu
+		menuIcon.qtip({
+			content: self.actionMenu,
+			position: {
+				at: "bottom right",
+				my: "top right"
+			},
+			style: {
+				classes: 'qtip-light',
+				tip: false
+			},
+			show: {
+				event: 'click',
+				delay: 0
+			},
+			hide: {
+				delay: 2000,
+				event: 'unfocus mouseleave click',
+				fixed: true, // Make sure we can interact with the qTip by setting it as fixed
+				effect: function(offset) {
+					menuIcon.parent().css("background-color", "transparent");
+					$(this).fadeOut(100);
+				}
+			},
+			events: {
+				render: function(event, api) {
+					self.initializePublishLinks($(this));
+					self.initializeDeleteLinks($(this));
+				}
+			}
+		});
+		
+		self.actionMenu.children().click(function(){
+			menuIcon.qtip('hide');
+		});
+		
+		this.actionMenu.children(".edit_access").click(function(){
+			menuIcon.qtip('hide');
+			self.highlight();
+			var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading-large.gif'/></div>");
+			dialog.dialog({
+				autoOpen: true,
+				width: 500,
+				height: 'auto',
+				maxHeight: 800,
+				minWidth: 500,
+				modal: true,
+				title: 'Access Control Settings',
+				close: function() {
+					dialog.remove();
+					self.unhighlight();
+				}
+			});
+			dialog.load("acl/" + self.pid, function(responseText, textStatus, xmlHttpRequest){
+				dialog.dialog('option', 'position', 'center');
+			});
+		});
+	};
+	
+	ResultObject.prototype._destroy = function () {
+		if (this.overlayInitialized) {
+			this.element.modalLoadingOverlay('close');
+		}
+	};
+
+	ResultObject.prototype.initializePublishLinks = function(baseElement) {
+		var links = baseElement.find(".publish_link");
+		if (!links)
+			return;
+		this.links['publish'] = links;
+		var obj = this;
+		$(links).publishObjectButton({
+			pid : obj.pid,
+			parentObject : obj,
+			defaultPublish : $.inArray("Unpublished", this.metadata.status) == -1
+		});
+	};
+
+	ResultObject.prototype.initializeDeleteLinks = function(baseElement) {
+		var links = baseElement.find(".delete_link");
+		if (!links)
+			return;
+		this.links['delete'] = links;
+		var obj = this;
+		$(links).deleteObjectButton({
+			pid : obj.pid,
+			parentObject : obj
+		});
+	};
+
+	ResultObject.prototype.disable = function() {
+		this.options.disabled = true;
+		this.element.css("cursor", "default");
+		this.element.find(".ajaxCallbackButton").each(function(){
+			$(this)[$(this).data("callbackButtonClass")].call($(this), "disable");
+		});
+	};
+
+	ResultObject.prototype.enable = function() {
+		this.options.disabled = false;
+		this.element.css("cursor", "pointer");
+		this.element.find(".ajaxCallbackButton").each(function(){
+			$(this)[$(this).data("callbackButtonClass")].call($(this), "enable");
+		});
+	};
+	
+	ResultObject.prototype.isEnabled = function() {
+		return !this.options.disabled;
+	};
+
+	ResultObject.prototype.toggleSelect = function() {
+		if (this.element.hasClass("selected")) {
+			this.unselect();
+		} else {
+			this.select();
+		}
+	};
+	
+	ResultObject.prototype.getElement = function () {
+		return this.element;
+	};
+	
+	ResultObject.prototype.getPid = function () {
+		return this.pid;
+	};
+	
+	ResultObject.prototype.getMetadata = function () {
+		return this.metadata;
+	};
+
+	ResultObject.prototype.select = function() {
+		if (!this.options.selectable)
+			return;
+		this.element.addClass("selected");
+		if (!this.checkbox)
+			this.checkbox = this.element.find("input[type='checkbox']");
+		this.checkbox.prop("checked", true);
+	};
+
+	ResultObject.prototype.unselect = function() {
+		if (!this.options.selectable)
+			return;
+		this.element.removeClass("selected");
+		if (!this.checkbox)
+			this.checkbox = this.element.find("input[type='checkbox']");
+		this.checkbox.prop("checked", false);
+	};
+	
+	ResultObject.prototype.highlight = function() {
+		this.element.addClass("highlighted");
+	};
+	
+	ResultObject.prototype.unhighlight = function() {
+		this.element.removeClass("highlighted");
+	};
+
+	ResultObject.prototype.isSelected = function() {
+		return this.element.hasClass("selected");
+	};
+
+	ResultObject.prototype.setState = function(state) {
+		if ("idle" == state || "failed" == state) {
+			this.enable();
+			this.element.removeClass("followup working").addClass("idle");
+			this.updateOverlay('hide');
+		} else if ("working" == state) {
+			this.updateOverlay('show');
+			this.disable();
+			this.element.switchClass("idle followup", "working", this.options.animateSpeed);
+		} else if ("followup" == state) {
+			this.element.removeClass("idle").addClass("followup", this.options.animateSpeed);
+		}
+	};
+
+	ResultObject.prototype.getActionLinks = function(linkNames) {
+		return this.links[linkNames];
+	};
+	
+	ResultObject.prototype.isPublished = function() {
+		if (!$.isArray(this.metadata.status)){
+			return true;
+		}
+		return $.inArray("Unpublished", this.metadata.status) == -1;
+	};
+	
+	ResultObject.prototype.publish = function() {
+		var links = this.links['publish'];
+		if (links.length == 0)
+			return;
+		$(links[0]).publishObjectButton('activate');
+	};
+	
+	ResultObject.prototype['delete'] = function() {
+		var links = this.links['delete'];
+		if (links.length == 0)
+			return;
+		$(links[0]).deleteObjectButton('activate');
+	};
+
+	ResultObject.prototype.deleteElement = function() {
+		var obj = this;
+		obj.element.hide(obj.options.animateSpeed, function() {
+			obj.element.remove();
+			if (obj.options.resultObjectList) {
+				obj.options.resultObjectList.removeResultObject(obj.pid.getPid());
+			}
+		});
+	};
+	
+	ResultObject.prototype.updateVersion = function(newVersion) {
+		if (newVersion != this.metadata._version_) {
+			this.metadata._version_ = newVersion;
+			return true;
+		}
+		return false;
+	};
+	
+	ResultObject.prototype.setStatusText = function(text) {
+		this.updateOverlay('setText', [text]);
+	};
+	
+	ResultObject.prototype.updateOverlay = function(fnName, fnArgs) {
+		// Check to see if overlay is initialized
+		if (!this.overlayInitialized) {
+			this.overlayInitialized = true;
+			this.element.modalLoadingOverlay({'text' : 'Working...', 'autoOpen' : false});
+		}
+		var overlay = this.element.data("modalLoadingOverlay");
+		overlay[fnName].apply(overlay, fnArgs);
+	};
+	
+	ResultObject.prototype.refresh = function(immediately) {
+		this.updateOverlay('show');
+		this.setStatusText('Refreshing...');
+		if (immediately) {
+			this.options.resultObjectList.refreshObject(this.pid.getPid());
+			return;
+		}
+		var self = this;
+		var followupMonitor = new RemoteStateChangeMonitor({
+			'checkStatus' : function(data) {
+				return (data != self.metadata._version_);
+			},
+			'checkStatusTarget' : this,
+			'statusChanged' : function(data) {
+				self.options.resultObjectList.refreshObject(self.pid.getPid());
+			},
+			'statusChangedTarget' : this, 
+			'checkStatusAjax' : {
+				url : "services/rest/item/" + self.pid.getPath() + "/solrRecord/version",
+				dataType : 'json'
+			}
+		});
+		
+		followupMonitor.performPing();
+	};
+	
+	return ResultObject;
+});define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], function($, MetadataObject, ResultObject) {
+	function ResultObjectList(options) {
+		this.init(options);
+	};
+	
+	$.extend(ResultObjectList.prototype, {
+		options: {
+			resultIdPrefix : "entry_",
+			metadataObjects : undefined,
+			refreshEntryUrl : "entry/"
+		},
+		resultObjects: {},
+		
+		init: function(options) {
+			this.options = $.extend({}, this.options, options);
+			var self = this;
+			console.time("Initialize entries");
+			
+			console.time("Get entries");
+			var $entries = $(".res_entry", this.element);
+
+			console.timeEnd("Get entries");
+			var metadataObjects = self.options.metadataObjects;
+			for (var i = 0; i < $entries.length; i++) {
+				var id = $entries[i].id;
+				id = 'uuid' + id.substring(id.indexOf(':') + 1);
+				self.resultObjects[id] = new ResultObject($entries.eq(i), {id : id, metadata : metadataObjects[id], 
+					resultObjectList : self});
+			}
+			console.timeEnd("Initialize entries");
+		},
+		
+		getResultObject: function(id) {
+			return this.resultObjects[id];
+		},
+		
+		removeResultObject: function(id) {
+			if (id in this.resultObjects) {
+				delete this.resultObjects[id];
+			}
+		},
+		
+		refreshObject: function(id) {
+			var self = this;
+			var resultObject = this.getResultObject(id);
+			$.ajax({
+				url : this.options.refreshEntryUrl + resultObject.getPid(),
+				dataType : 'json',
+				success : function(data, textStatus, jqXHR) {
+					var newContent = $(data.content);
+					resultObject.replaceWith(newContent);
+					self.resultObjects[id] = newContent.resultObject({'id' : id, "metadata" : data.data.metadata, "resultObjectList" : self});
+				}
+			});
+		}
+		
+	});
+	
+	return ResultObjectList;
 });/*
 
     Copyright 2008 The University of North Carolina at Chapel Hill
@@ -1750,82 +2133,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			followupMonitor.performPing();
 		}
 	});
-});define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], function($, MetadataObject) {
-	function ResultObjectList(options) {
-		this.init(options);
-	};
-	
-	$.extend(ResultObjectList.prototype, {
-		options: {
-			resultIdPrefix : "entry_",
-			metadataObjects : undefined,
-			refreshEntryUrl : "entry/"
-		},
-		resultObjects: {},
-		
-		init: function(options) {
-			this.options = $.extend({}, this.options, options);
-			var self = this;
-			console.time("Initialize entries");
-			
-			console.time("Get entries");
-			var $entries = $(".res_entry", this.element);
-			var test = $entries.eq(0);
-			test = $entries.eq(1);
-			test = $entries.eq(200);
-			test = $entries.eq(500);
-			console.timeEnd("Get entries");
-			//console.profile();
-			for (var i = 0; i < $entries.length; i++) {
-				var $this = $entries.eq(i);
-				var id = $this.attr('id');
-				id = 'uuid' + id.substring(id.indexOf(':') + 1);
-				var metadata = self.options.metadataObjects[id];
-				self.resultObjects[id] = $this.resultObject({'id' : id, "metadata" : metadata, "resultObjectList" : self});
-			}
-			//console.profileEnd();
-			/*$(".res_entry").each(function(){
-				var $this = $(this);
-				var id = $this.attr('id');
-				id = 'uuid' + id.substring(id.indexOf(':') + 1);
-				var metadata = self.options.metadataObjects[id];
-				self.resultObjects[id] = $this.resultObject({'id' : id, "metadata" : metadata, "resultObjectList" : self});
-			});*/
-			/*for (var i = 0; i < this.options.metadataObjects.length; i++) {
-				var metadata = this.options.metadataObjects[i];
-				var parentEl = $("#res_" + metadata.id.substring(metadata.id.indexOf(':') + 1));
-				this.resultObjects[metadata.id] = parentEl.resultObject({"metadata" : metadata, "resultObjectList" : this});
-			}*/
-			console.timeEnd("Initialize entries");
-		},
-		
-		getResultObject: function(id) {
-			return this.resultObjects[id];
-		},
-		
-		removeResultObject: function(id) {
-			if (id in this.resultObjects) {
-				delete this.resultObjects[id];
-			}
-		},
-		
-		refreshObject: function(id) {
-			var self = this;
-			var resultObject = this.getResultObject(id);
-			$.ajax({
-				url : this.options.refreshEntryUrl + resultObject.resultObject('getPid'),
-				dataType : 'json',
-				success : function(data, textStatus, jqXHR) {
-					var newContent = $(data.content);
-					resultObject.replaceWith(newContent);
-					self.resultObjects[id] = newContent.resultObject({'id' : id, "metadata" : data.data.metadata, "resultObjectList" : self});
-				}
-			});
-		}
-		
-	});
-	
-	return ResultObjectList;
 });define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'detachplus'], 
 		function($, ui, ResultObjectList) {
 	$.widget("cdr.resultTableView", {
@@ -1842,17 +2149,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			
 			if (this.options.enableSort)
 				this._initSort();
-			this._assignOriginalIndex();
 			this._initBatchOperations();
 			this._initEventHandlers();
-		},
-		
-		_assignOriginalIndex : function() {
-			console.time("Indexes");
-			$('.res_entry', this.element).each(function(i){
-				$(this).data('original_index', i);
-			});
-			console.timeEnd("Indexes");
 		},
 
 		_initSort : function() {
@@ -1891,19 +2189,34 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 		_sortEntries : function($entries, matchMap, getSortable) {
 			console.time("Reordering elements");
 			var $resultTable = this.element;
-			var fragment = document.createDocumentFragment();
-			if ($.isFunction(getSortable)) {
-				for (var i = 0, length = matchMap.length; i < length; i++) {
-					fragment.appendChild(getSortable.call($entries[matchMap[i].index]));
-				}
-			} else {
-				for (var i = 0, length = matchMap.length; i < length; i++) {
-					fragment.appendChild($entries[matchMap[i].index].parentNode);
-				}
-			}
 			
-			var resultTable = $resultTable[0];
-			resultTable.appendChild(fragment);
+			$resultTable.detach(function(){
+				var fragment = document.createDocumentFragment();
+				if (matchMap) {
+					if ($.isFunction(getSortable)) {
+						for (var i = 0, length = matchMap.length; i < length; i++) {
+							fragment.appendChild(getSortable.call($entries[matchMap[i].index]));
+						}
+					} else {
+						for (var i = 0, length = matchMap.length; i < length; i++) {
+							fragment.appendChild($entries[matchMap[i].index].parentNode);
+						}
+					}
+				} else {
+					if ($.isFunction(getSortable)) {
+						for (var i = 0, length = $entries.length; i < length; i++) {
+							fragment.appendChild(getSortable.call($entries[i]));
+						}
+					} else {
+						for (var i = 0, length = $entries.length; i < length; i++) {
+							fragment.appendChild($entries[i].parentNode);
+						}
+					}
+				}
+				var resultTable = $resultTable[0];
+				resultTable.appendChild(fragment);
+			});
+			
 			console.timeEnd("Reordering elements");
 		},
 		
@@ -1934,27 +2247,41 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 		},
 		
 		_originalOrderSort : function(inverse) {
-			var $resultTable = this.element;
-			var matchMap = [];
 			console.time("Finding elements");
-			var $entries = $resultTable.find('tr.res_entry');
-			console.timeEnd("Finding elements");
-			for (var i = 0, length = $entries.length; i < length; i++) {
-				matchMap.push({
-					index : i,
-					value : $entries.eq(i).data('original_index')
-				});
+			var $entries = [];
+			for (var index in this.resultObjectList.resultObjects) {
+				var resultObject = this.resultObjectList.resultObjects[index];
+				$entries.push(resultObject.getElement()[0]);
 			}
-			console.time("Sorting");
-			matchMap.sort(function(a, b){
-				return (a.value > b.value) ?
-						inverse ? -1 : 1
-						: inverse ? 1 : -1;
-			});
-			console.timeEnd("Sorting");
-			this._sortEntries($entries, matchMap, function(){
+			if (inverse)
+				$entries = $entries.reverse();
+			
+			console.timeEnd("Finding elements");
+
+			this._sortEntries($entries, null, function(){
 				return this;
 			});
+			
+//			
+//			var $entries = $resultTable.find('tr.res_entry');
+//			
+//			console.timeEnd("Finding elements");
+//			for (var i = 0, length = $entries.length; i < length; i++) {
+//				matchMap.push({
+//					index : i,
+//					value : $entries.eq(i).data('original_index')
+//				});
+//			}
+//			console.time("Sorting");
+//			matchMap.sort(function(a, b){
+//				return (a.value > b.value) ?
+//						inverse ? -1 : 1
+//						: inverse ? 1 : -1;
+//			});
+//			console.timeEnd("Sorting");
+//			this._sortEntries($entries, matchMap, function(){
+//				return this;
+//			});
 		},
 		
 		_titleSort : function(inverse) {
@@ -2006,60 +2333,71 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 		
 		_initBatchOperations : function() {
 			var self = this;
+			
 			$(".select_all", self.element).click(function(){
-				$(".res_entry", self.element).resultObject('select');
+				var resultObjects = self.resultObjectList.resultObjects;
+				for (var index in resultObjects) {
+					resultObjects[index].select();
+				}
 			});
 			
+			
 			$(".deselect_all", self.element).click(function(){
-				$(".res_entry", self.element).resultObject('unselect');
+				var resultObjects = self.resultObjectList.resultObjects;
+				for (var index in resultObjects) {
+					resultObjects[index].unselect();
+				}
 			});
 			
 			$(".publish_selected", self.element).publishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
-						this.resultObject('setStatusText', 'Publishing...');
-						this.resultObject('updateOverlay', 'show');
+						var resultObject = this.data('resultObject');
+						resultObject.setStatusText('Publishing...');
+						resultObject.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
-					this.resultObject('setStatusText', 'Publishing....');
+					this.data('resultObject').setStatusText('Publishing....');
 				}, 
 				'completeFunction' : function(){
-					this.resultObject('refresh', true);
+					this.data('resultObject').refresh(true);
 				}
 			});
 			$(".unpublish_selected", self.element).unpublishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
-					this.resultObject('setStatusText', 'Unpublishing...');
-					this.resultObject('updateOverlay', 'show');
+						var resultObject = this.data('resultObject');
+						resultObject.setStatusText('Unpublishing...');
+						resultObject.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
-					this.resultObject('setStatusText', 'Unpublishing....');
+					this.data('resultObject').setStatusText('Unpublishing....');
 				}, 
 				'completeFunction' : function(){
-					this.resultObject('refresh', true);
+					this.data('resultObject').refresh(true);
 				}
 			});
 			$(".delete_selected", self.element).deleteBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
-					this.resultObject('setStatusText', 'Deleting...');
-					this.resultObject('updateOverlay', 'show');
+						var resultObject = this.data('resultObject');
+						resultObject.setStatusText('Deleting...');
+						resultObject.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
-					this.resultObject('setStatusText', 'Cleaning up...');
-				}, 
+						this.data('resultObject').setStatusText('Cleaning up...');
+					}, 
 				'completeFunction' : 'deleteElement'
 			});
 		},
 		
 		_initEventHandlers : function() {
 			this.element.on('click', ".menu_box img", function(e){
-				$(this).parents(".entry").resultObject('activateActionMenu');
+				$(this).parents(".entry").activateActionMenu();
 				e.stopPropagation();
 			});
 			this.element.on('click', ".res_entry", function(e){
-				$(this).resultObject('toggleSelect');
+				$(this).data('resultObject').toggleSelect();
 				e.stopPropagation();
 			});
 			this.element.on('click', ".res_entry a", function(e){
@@ -2134,9 +2472,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			var targetIds = [];
 			for (var id in this.options.resultObjectList.resultObjects) {
 				var resultObject = this.options.resultObjectList.resultObjects[id];
-				if (resultObject.resultObject("isSelected") && resultObject.resultObject("getMetadata").isPublished()
-						&& resultObject.resultObject("isEnabled")) {
-					targetIds.push(resultObject.resultObject("getPid").getPid());
+				if (resultObject.isSelected() && resultObject.isPublished()
+						&& resultObject.isEnabled()) {
+					targetIds.push(resultObject.getPid());
 				}
 			}
 			return targetIds;

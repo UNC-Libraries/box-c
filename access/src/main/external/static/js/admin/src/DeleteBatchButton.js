@@ -13,8 +13,8 @@ define('DeleteBatchButton', [ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], fu
 			var targetIds = [];
 			for (var id in this.options.resultObjectList.resultObjects) {
 				var resultObject = this.options.resultObjectList.resultObjects[id];
-				if (resultObject.resultObject("isSelected") && resultObject.resultObject("isEnabled")) {
-					targetIds.push(resultObject.resultObject("getPid").getPid());
+				if (resultObject.isSelected() && resultObject.isEnabled()) {
+					targetIds.push(resultObject.getPid());
 				}
 			}
 			return targetIds;
@@ -52,9 +52,9 @@ define('DeleteBatchButton', [ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], fu
 						if ($.isFunction(this.options.completeFunction))
 							this.options.completeFunction.call(resultObject);
 						else
-							resultObject.resultObject(this.options.completeFunction);
+							resultObject[this.options.completeFunction]();
 					} else {
-						resultObject.resultObject("setState", "idle");
+						resultObject.setState("idle");
 					}
 				}
 			}

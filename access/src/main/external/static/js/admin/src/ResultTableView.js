@@ -14,17 +14,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishB
 			
 			if (this.options.enableSort)
 				this._initSort();
-			this._assignOriginalIndex();
 			this._initBatchOperations();
 			this._initEventHandlers();
-		},
-		
-		_assignOriginalIndex : function() {
-			console.time("Indexes");
-			$('.res_entry', this.element).each(function(i){
-				$(this).data('original_index', i);
-			});
-			console.timeEnd("Indexes");
 		},
 
 		_initSort : function() {
@@ -63,19 +54,34 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishB
 		_sortEntries : function($entries, matchMap, getSortable) {
 			console.time("Reordering elements");
 			var $resultTable = this.element;
-			var fragment = document.createDocumentFragment();
-			if ($.isFunction(getSortable)) {
-				for (var i = 0, length = matchMap.length; i < length; i++) {
-					fragment.appendChild(getSortable.call($entries[matchMap[i].index]));
-				}
-			} else {
-				for (var i = 0, length = matchMap.length; i < length; i++) {
-					fragment.appendChild($entries[matchMap[i].index].parentNode);
-				}
-			}
 			
-			var resultTable = $resultTable[0];
-			resultTable.appendChild(fragment);
+			$resultTable.detach(function(){
+				var fragment = document.createDocumentFragment();
+				if (matchMap) {
+					if ($.isFunction(getSortable)) {
+						for (var i = 0, length = matchMap.length; i < length; i++) {
+							fragment.appendChild(getSortable.call($entries[matchMap[i].index]));
+						}
+					} else {
+						for (var i = 0, length = matchMap.length; i < length; i++) {
+							fragment.appendChild($entries[matchMap[i].index].parentNode);
+						}
+					}
+				} else {
+					if ($.isFunction(getSortable)) {
+						for (var i = 0, length = $entries.length; i < length; i++) {
+							fragment.appendChild(getSortable.call($entries[i]));
+						}
+					} else {
+						for (var i = 0, length = $entries.length; i < length; i++) {
+							fragment.appendChild($entries[i].parentNode);
+						}
+					}
+				}
+				var resultTable = $resultTable[0];
+				resultTable.appendChild(fragment);
+			});
+			
 			console.timeEnd("Reordering elements");
 		},
 		
@@ -106,27 +112,41 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishB
 		},
 		
 		_originalOrderSort : function(inverse) {
-			var $resultTable = this.element;
-			var matchMap = [];
 			console.time("Finding elements");
-			var $entries = $resultTable.find('tr.res_entry');
-			console.timeEnd("Finding elements");
-			for (var i = 0, length = $entries.length; i < length; i++) {
-				matchMap.push({
-					index : i,
-					value : $entries.eq(i).data('original_index')
-				});
+			var $entries = [];
+			for (var index in this.resultObjectList.resultObjects) {
+				var resultObject = this.resultObjectList.resultObjects[index];
+				$entries.push(resultObject.getElement()[0]);
 			}
-			console.time("Sorting");
-			matchMap.sort(function(a, b){
-				return (a.value > b.value) ?
-						inverse ? -1 : 1
-						: inverse ? 1 : -1;
-			});
-			console.timeEnd("Sorting");
-			this._sortEntries($entries, matchMap, function(){
+			if (inverse)
+				$entries = $entries.reverse();
+			
+			console.timeEnd("Finding elements");
+
+			this._sortEntries($entries, null, function(){
 				return this;
 			});
+			
+//			
+//			var $entries = $resultTable.find('tr.res_entry');
+//			
+//			console.timeEnd("Finding elements");
+//			for (var i = 0, length = $entries.length; i < length; i++) {
+//				matchMap.push({
+//					index : i,
+//					value : $entries.eq(i).data('original_index')
+//				});
+//			}
+//			console.time("Sorting");
+//			matchMap.sort(function(a, b){
+//				return (a.value > b.value) ?
+//						inverse ? -1 : 1
+//						: inverse ? 1 : -1;
+//			});
+//			console.timeEnd("Sorting");
+//			this._sortEntries($entries, matchMap, function(){
+//				return this;
+//			});
 		},
 		
 		_titleSort : function(inverse) {
@@ -178,60 +198,71 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishB
 		
 		_initBatchOperations : function() {
 			var self = this;
+			
 			$(".select_all", self.element).click(function(){
-				$(".res_entry", self.element).resultObject('select');
+				var resultObjects = self.resultObjectList.resultObjects;
+				for (var index in resultObjects) {
+					resultObjects[index].select();
+				}
 			});
 			
+			
 			$(".deselect_all", self.element).click(function(){
-				$(".res_entry", self.element).resultObject('unselect');
+				var resultObjects = self.resultObjectList.resultObjects;
+				for (var index in resultObjects) {
+					resultObjects[index].unselect();
+				}
 			});
 			
 			$(".publish_selected", self.element).publishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
-						this.resultObject('setStatusText', 'Publishing...');
-						this.resultObject('updateOverlay', 'show');
+						var resultObject = this.data('resultObject');
+						resultObject.setStatusText('Publishing...');
+						resultObject.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
-					this.resultObject('setStatusText', 'Publishing....');
+					this.data('resultObject').setStatusText('Publishing....');
 				}, 
 				'completeFunction' : function(){
-					this.resultObject('refresh', true);
+					this.data('resultObject').refresh(true);
 				}
 			});
 			$(".unpublish_selected", self.element).unpublishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
-					this.resultObject('setStatusText', 'Unpublishing...');
-					this.resultObject('updateOverlay', 'show');
+						var resultObject = this.data('resultObject');
+						resultObject.setStatusText('Unpublishing...');
+						resultObject.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
-					this.resultObject('setStatusText', 'Unpublishing....');
+					this.data('resultObject').setStatusText('Unpublishing....');
 				}, 
 				'completeFunction' : function(){
-					this.resultObject('refresh', true);
+					this.data('resultObject').refresh(true);
 				}
 			});
 			$(".delete_selected", self.element).deleteBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
-					this.resultObject('setStatusText', 'Deleting...');
-					this.resultObject('updateOverlay', 'show');
+						var resultObject = this.data('resultObject');
+						resultObject.setStatusText('Deleting...');
+						resultObject.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
-					this.resultObject('setStatusText', 'Cleaning up...');
-				}, 
+						this.data('resultObject').setStatusText('Cleaning up...');
+					}, 
 				'completeFunction' : 'deleteElement'
 			});
 		},
 		
 		_initEventHandlers : function() {
 			this.element.on('click', ".menu_box img", function(e){
-				$(this).parents(".entry").resultObject('activateActionMenu');
+				$(this).parents(".entry").activateActionMenu();
 				e.stopPropagation();
 			});
 			this.element.on('click', ".res_entry", function(e){
-				$(this).resultObject('toggleSelect');
+				$(this).data('resultObject').toggleSelect();
 				e.stopPropagation();
 			});
 			this.element.on('click', ".res_entry a", function(e){

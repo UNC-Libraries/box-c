@@ -29,12 +29,12 @@ define('BatchCallbackButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'Re
 			
 			for (var index in this.targetIds) {
 				var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
-				resultObject.resultObject("disable");
+				resultObject.disable();
 				if (this.options.workFunction)
 					if ($.isFunction(this.options.workFunction))
 						this.options.workFunction.call(resultObject);
 					else
-						resultObject.resultObject(this.options.workFunction);
+						resultObject[this.options.workFunction]();
 			}
 			
 			var self = this;
@@ -58,7 +58,7 @@ define('BatchCallbackButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'Re
 						if ($.isFunction(this.options.followupFunction))
 							this.options.followupFunction.call(resultObject);
 						else
-							resultObject.resultObject(this.options.followupFunction);
+							resultObject[this.options.followupFunction]();
 					}
 				}
 				this.followupMonitor.pingData = {
@@ -72,13 +72,13 @@ define('BatchCallbackButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'Re
 
 		followup : function(data) {
 			for (var id in data) {
-				if (this.options.resultObjectList.resultObjects[id].resultObject("updateVersion", data[id])) {
+				if (this.options.resultObjectList.resultObjects[id].updateVersion(data[id])) {
 					var index = $.inArray(id, this.followupObjects);
 					if (index != -1) {
 						this.followupObjects.splice(index, 1);
 						
 						var resultObject = this.options.resultObjectList.resultObjects[id];
-						resultObject.resultObject("setState", "idle");
+						resultObject.setState("idle");
 						
 						if (this.options.completeFunction) {
 							if ($.isFunction(this.options.completeFunction))
@@ -106,7 +106,7 @@ define('BatchCallbackButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'Re
 			$.each(this.options.resultObjects, function() {
 				var resultObject = this;
 				if (this.isSelected()) {
-					targetIds.push(resultObject.resultObject("getPid").getPid());
+					targetIds.push(resultObject.getPid());
 				}
 			});
 

@@ -127,7 +127,7 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 							self.options.containingDialog.dialog('close');
 						}
 						self.alertHandler.alertHandler('success', 'Access control changes saved');
-						$(".entry[data-pid='" + self.options.pid + "']").resultObject('refresh');
+						$(".entry[data-pid='" + self.options.pid + "']").data('resultObject').refresh();
 					},
 					error : function(data) {
 						container.modalLoadingOverlay('close');
