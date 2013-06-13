@@ -1866,7 +1866,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 				
 				$th.click(function(){
 					if (!$th.hasClass('sorting')) return;
-					console.time("Sorting");
+					console.time("Sort total");
 					var inverse = $th.hasClass('desc');
 					$('.sorting', $resultTable).removeClass('asc desc');
 					if (inverse)
@@ -1883,40 +1883,45 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 						self._alphabeticSort(thIndex, inverse);
 					}
 					inverse = !inverse;
-					console.timeEnd("Sorting");
+					console.timeEnd("Sort total");
 				});
 			});
 		},
 		
 		_sortEntries : function($entries, matchMap, getSortable) {
+			console.time("Reordering elements");
 			var $resultTable = this.element;
-			$resultTable.detach(true, function(reattach){
-				var resultRows = $resultTable[0].children[0];
-				if ($.isFunction(getSortable)) {
-					for (var i = 0, length = matchMap.length; i < length; i++) {
-						resultRows.insertBefore(getSortable.call($entries[matchMap[i].index]), null);
-					}
-				} else {
-					for (var i = 0, length = matchMap.length; i < length; i++) {
-						resultRows.insertBefore($entries[matchMap[i].index].parentNode, null);
-					}
+			var fragment = document.createDocumentFragment();
+			if ($.isFunction(getSortable)) {
+				for (var i = 0, length = matchMap.length; i < length; i++) {
+					fragment.appendChild(getSortable.call($entries[matchMap[i].index]));
 				}
-				reattach();
-			});
+			} else {
+				for (var i = 0, length = matchMap.length; i < length; i++) {
+					fragment.appendChild($entries[matchMap[i].index].parentNode);
+				}
+			}
+			
+			var resultTable = $resultTable[0];
+			resultTable.appendChild(fragment);
+			console.timeEnd("Reordering elements");
 		},
 		
 		_alphabeticSort : function(thIndex, inverse) {
 			var $resultTable = this.element;
 			var matchMap = [];
-			var $entries = $resultTable.find('td').filter(function(){
-				return $(this).index() === thIndex;
+			console.time("Finding elements");
+			var $entries = $resultTable.find('tr.res_entry').map(function() {
+				return this.children[thIndex];
 			});
+			console.timeEnd("Finding elements");
 			for (var i = 0, length = $entries.length; i < length; i++) {
 				matchMap.push({
 					index : i,
 					value : $entries[i].innerHTML.toUpperCase()
 				});
 			}
+			console.time("Sorting");
 			matchMap.sort(function(a, b){
 				if(a.value == b.value)
 					return 0;
@@ -1924,24 +1929,29 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 						inverse ? -1 : 1
 						: inverse ? 1 : -1;
 			});
+			console.timeEnd("Sorting");
 			this._sortEntries($entries, matchMap);
 		},
 		
 		_originalOrderSort : function(inverse) {
 			var $resultTable = this.element;
 			var matchMap = [];
+			console.time("Finding elements");
 			var $entries = $resultTable.find('tr.res_entry');
+			console.timeEnd("Finding elements");
 			for (var i = 0, length = $entries.length; i < length; i++) {
 				matchMap.push({
 					index : i,
 					value : $entries.eq(i).data('original_index')
 				});
 			}
+			console.time("Sorting");
 			matchMap.sort(function(a, b){
 				return (a.value > b.value) ?
 						inverse ? -1 : 1
 						: inverse ? 1 : -1;
 			});
+			console.timeEnd("Sorting");
 			this._sortEntries($entries, matchMap, function(){
 				return this;
 			});
@@ -1951,7 +1961,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			var $resultTable = this.element;
 			var titleRegex = new RegExp('(\\d+|[^\\d]+)', 'g');
 			var matchMap = [];
+			console.time("Finding elements");
 			var $entries = $resultTable.find('.itemdetails');
+			console.timeEnd("Finding elements");
 			for (var i = 0, length = $entries.length; i < length; i++) {
 				var text = $entries[i].children[0].innerHTML.toUpperCase();
 				matchMap.push({
@@ -1960,7 +1972,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 					value : text.match(titleRegex)
 				});
 			}
-			
+			console.time("Sorting");
 			matchMap.sort(function(a, b) {
 				if (a.text == b.text)
 					return 0;
@@ -1988,6 +2000,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 						inverse ? -1 : 1
 						: inverse ? 1 : -1;
 			});
+			console.timeEnd("Sorting");
 			this._sortEntries($entries, matchMap);
 		},
 		
