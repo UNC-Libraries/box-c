@@ -258,7 +258,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishB
 		
 		_initEventHandlers : function() {
 			this.element.on('click', ".menu_box img", function(e){
-				$(this).parents(".entry").activateActionMenu();
+				$(this).parents(".res_entry").data('resultObject').activateActionMenu();
 				e.stopPropagation();
 			});
 			this.element.on('click', ".res_entry", function(e){

@@ -274,6 +274,12 @@ li {
 }
 
 /** Faceting */
+.facets {
+    line-height: 14px;
+    margin-bottom: 15px;
+    margin-left: 15px;
+}
+
 .crumblist {
 	font-size: 11px;
 	line-height: 15px;

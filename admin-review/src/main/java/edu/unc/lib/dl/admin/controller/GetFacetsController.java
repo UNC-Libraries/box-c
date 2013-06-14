@@ -35,6 +35,7 @@ public class GetFacetsController extends AbstractSearchController {
 		if (searchRequest.getSearchState().getFacetsToRetrieve() == null)
 			searchRequest.getSearchState().setFacetsToRetrieve(searchSettings.getFacetNames());
 		
+		searchRequest.setApplyCutoffs(false);
 		searchRequest.setRetrieveFacets(true);
 		LOG.debug("Retrieving facet list");
 		// Retrieve the facet result set

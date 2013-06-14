@@ -151,22 +151,27 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public SearchResultResponse getFacetList(SearchRequest searchRequest) {
 		SearchState searchState = (SearchState) searchRequest.getSearchState().clone();
 
-		CutoffFacet ancestorPath;
+		
 		LOG.debug("Retrieving facet list");
-		if (!searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
-			ancestorPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "2,*");
-			ancestorPath.setFacetCutoff(3);
-			searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPath);
+		BriefObjectMetadata selectedContainer = null;
+		if (searchRequest.getRootPid() != null) {
+			selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState, searchRequest.isApplyCutoffs());
 		} else {
-			ancestorPath = (CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
-			if (ancestorPath.getFacetCutoff() == null)
-				ancestorPath.setFacetCutoff(ancestorPath.getHighestTier() + 1);
+			CutoffFacet ancestorPath;
+			if (!searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
+				ancestorPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "2,*");
+				ancestorPath.setFacetCutoff(3);
+				searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPath);
+			} else {
+				ancestorPath = (CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
+				if (ancestorPath.getFacetCutoff() == null)
+					ancestorPath.setFacetCutoff(ancestorPath.getHighestTier() + 1);
+			}
+			if (!searchRequest.isApplyCutoffs()) {
+				ancestorPath.setCutoff(null);
+			}
 		}
-
-		if (!searchRequest.isApplyCutoffs()) {
-			ancestorPath.setCutoff(null);
-		}
-
+		
 		// Turning off rollup because it is really slow
 		searchState.setRollup(false);
 
@@ -176,6 +181,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		searchState.setResourceTypes(null);
 
 		SearchResultResponse resultResponse = getSearchResults(facetRequest);
+		resultResponse.setSelectedContainer(selectedContainer);
 
 		// If this facet list contains parent collections, then get further metadata about them
 		if (resultResponse.getFacetFields() != null

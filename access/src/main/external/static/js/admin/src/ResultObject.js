@@ -48,7 +48,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			$menuIcon.click();
 			return;
 		}
-		if (this.actionMenu.length == 0)
+		if (this.actionMenu.children().length == 0)
 			return;
 		$menuIcon.parent().css("background-color", "#7BAABF");
 		return;
@@ -57,11 +57,12 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 	ResultObject.prototype.initializeActionMenu = function() {
 		var self = this;
 		
+		this.actionMenuInitialized = true;
+		
 		this.actionMenu = $(".menu_box ul", this.element);
 		if (this.actionMenu.children().length == 0)
 			return;
 		
-		this.actionMenuInitialized = true;
 		var menuIcon = $(".menu_box img", this.element);
 		
 		// Set up the dropdown menu

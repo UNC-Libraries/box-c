@@ -42,21 +42,23 @@
 			</div>
 		</div>
 		<div>
-			<h3>Refine your search</h3>
-			<c:set var="basicFacetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=collection,format,dept,language,subject<c:if test="${not empty searchStateUrl}">&${searchStateUrl}</c:if></c:set>
-			<div data-href="${basicFacetsDataUrl}">
+			<h3>Descriptive</h3>
+			<c:set var="facetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=collection,dept,language,subject<c:if test="${not empty searchStateUrl}">&${searchStateUrl}</c:if></c:set>
+			<div data-href="${facetsDataUrl}">
 				<div class="center"><img src="/static/images/admin/loading-small.gif"/></div>
 			</div>
 		</div>
 		<div>
 			<h3>Access Control</h3>
-			<div>
+			<c:set var="facetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=role<c:if test="${not empty searchStateUrl}">&${searchStateUrl}</c:if></c:set>
+			<div data-href="${facetsDataUrl}">
 				<div class="center"><img src="/static/images/admin/loading-small.gif"/></div>
 			</div>
 		</div>
 		<div>
 			<h3>Content</h3>
-			<div>
+			<c:set var="facetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=format,type,model<c:if test="${not empty searchStateUrl}">&${searchStateUrl}</c:if></c:set>
+			<div data-href="${facetsDataUrl}">
 				<div class="center"><img src="/static/images/admin/loading-small.gif"/></div>
 			</div>
 		</div>
