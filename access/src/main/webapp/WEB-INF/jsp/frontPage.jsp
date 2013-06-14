@@ -29,6 +29,19 @@
 		collected by faculty, students and staff at the University of North Carolina at Chapel Hill. 
 		<a href="external?page=about.about">Read More</a>
 	</p>
+	<p>
+		<a href="search?types=Collection"><c:out value="${collectionsCount}"/> collections</a>, including
+			<a href="search?facets=format%3A%5Etext"><c:out value="${formatCounts.text}"/> texts</a>,
+			<a href="search?facets=format%3A%5Eimage"><c:out value="${formatCounts.image}"/> images</a>,
+			<a href="search?facets=format%3A%5Edataset"><c:out value="${formatCounts.dataset}"/> datasets</a>,
+			<a href="search?facets=format%3A%5Eaudio"><c:out value="${formatCounts.audio}"/> audio files</a>, and
+			<a href="search?facets=format%3A%5Evideo"><c:out value="${formatCounts.video}"/> videos</a>.
+	</p>
+	<p>
+		Material from <a href="browseDepartments"><c:out value="${departmentsCount}"/> UNC Chapel Hill departments</a>,
+		from <a href="search?action=setFacet%3adept%2c%22anthropology%22">Anthropology</a>
+		to <a href="search?action=setFacet%3adept%2c%22toxicology%22">Toxicology</a>.
+	</p>
 </div>
 <div class="lightest">
 <div class="threecol lightest shadowtop">
