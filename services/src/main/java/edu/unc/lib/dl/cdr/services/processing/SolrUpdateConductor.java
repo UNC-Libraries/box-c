@@ -97,9 +97,7 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 				}
 			} else if (JMSMessageUtil.CDRActions.PUBLISH.equals(action)) {
 				for (String pidString : cdrMessage.getSubjects()) {
-					this.offer(pidString, IndexingActionType.RECURSIVE_ADD);
-					// TODO Atomic updates are busted for multivalued fields for the moment, switch back when fixed
-					// this.offer(pidString, SolrUpdateAction.UPDATE_STATUS);
+					this.offer(pidString, IndexingActionType.UPDATE_STATUS);
 				}
 			}
 		} else {

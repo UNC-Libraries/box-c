@@ -29,8 +29,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
- * Sets the publication status, taking into account the publication status of its parents Published, Unpublished,
- * Parent Unpublished
+ * Sets the publication status
  * 
  * @author bbpennel
  * 
@@ -52,74 +51,86 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		Element relsExt = dip.getRelsExt();
 		
-		List<String> status = new ArrayList<String>();
+		List<String> status = dip.getDocument().getStatus();
+		if (status == null)
+			status = new ArrayList<String>();
+		setPublicationStatus(dip, relsExt, status);
 		
-		// Published by default unless overridden by this item or its parents.
-		boolean isPublished = true;
-		boolean parentIsPublished = true;
-		// Determine the publication status of this item from its nearest cached parent and its own RELS-EXT, if both are available
-		if (relsExt != null && dip.getParentDocument() != null && dip.getParentDocument().getIsPublished() != null) {
-			// No data requests to mulgara or fedora this route.
-			Boolean parentIsPublishedObj = dip.getParentDocument().getIsPublished();
-			//isPublished = (parentIsPublished == null || !parentIsPublished);
-			parentIsPublished = (parentIsPublishedObj == null || parentIsPublishedObj);
-			// Check to see if the item itself is published or not.
-			String thisIsPublished = relsExt.getChildText(ContentModelHelper.CDRProperty.isPublished.name(), JDOMNamespaceUtil.CDR_NS);
-			isPublished = !("no".equals(thisIsPublished));
-		} else {
-			log.debug("Retrieving publication status for " + dip.getPid().getPid() + " from triple store.");
-			// Triple store route, query for the publication status of this item and all its parents
-			String query = String.format(isPublishedQuery, tsqs.getResourceIndexModelUri(), dip.getPid().getURI());
-			List<List<String>> results = tsqs.queryResourceIndex(query);
-			// Abandon ship if we couldn't get a path for this object.
-			if (results.size() == 0) {
-				throw new IndexingException("Object " + dip.getPid() + " could not be found");
-			}
-			
-			if (log.isDebugEnabled()) {
-				log.debug("Publication query results: " + results);
-			}
-			
-			String pidString = dip.getPid().getURI().toString();
-			// Scan the results for any nodes that are not published
-			for (List<String> row : results) {
-				if (pidString.equals(row.get(0))) {
-					if ("no".equals(row.get(1))) {
-						isPublished = false;
-					}
+		dip.getDocument().setStatus(status);
+	}
+	
+	
+	
+	private void setPublicationStatus(DocumentIndexingPackage dip, Element relsExt, List<String> status) {
+	// Published by default unless overridden by this item or its parents.
+			boolean isPublished = true;
+			boolean parentIsPublished = true;
+			// Determine the publication status of this item from its nearest cached parent and its own RELS-EXT, if both are available
+			if (dip.getParentDocument() != null && dip.getParentDocument().getIsPublished() != null) {
+				// No data requests to mulgara or fedora this route.
+				Boolean parentIsPublishedObj = dip.getParentDocument().getIsPublished();
+				//isPublished = (parentIsPublished == null || !parentIsPublished);
+				parentIsPublished = (parentIsPublishedObj == null || parentIsPublishedObj);
+				if (relsExt != null) {
+					// Check to see if the item itself is published or not.
+					String thisIsPublished = relsExt.getChildText(ContentModelHelper.CDRProperty.isPublished.name(), JDOMNamespaceUtil.CDR_NS);
+					isPublished = !("no".equals(thisIsPublished));					
 				} else {
-					if ("no".equals(row.get(1))) {
-						parentIsPublished = false;
+					isPublished = !"no".equals(tsqs.fetchFirstBySubjectAndPredicate(dip.getPid(), ContentModelHelper.CDRProperty.isPublished.toString()));
+				}
+			} else {
+				log.debug("Retrieving publication status for " + dip.getPid().getPid() + " from triple store.");
+				// Triple store route, query for the publication status of this item and all its parents
+				String query = String.format(isPublishedQuery, tsqs.getResourceIndexModelUri(), dip.getPid().getURI());
+				List<List<String>> results = tsqs.queryResourceIndex(query);
+				// Abandon ship if we couldn't get a path for this object.
+				if (results.size() == 0) {
+					throw new IndexingException("Object " + dip.getPid() + " could not be found");
+				}
+				
+				if (log.isDebugEnabled()) {
+					log.debug("Publication query results: " + results);
+				}
+				
+				String pidString = dip.getPid().getURI().toString();
+				// Scan the results for any nodes that are not published
+				for (List<String> row : results) {
+					if (pidString.equals(row.get(0))) {
+						if ("no".equals(row.get(1))) {
+							isPublished = false;
+						}
+					} else {
+						if ("no".equals(row.get(1))) {
+							parentIsPublished = false;
+						}
 					}
 				}
 			}
-		}
-		
-		// Set the publication status based on this items status and that of its parents.
-		if (parentIsPublished) {
-			// If the parent is publish, publication status is completely up to the item being processed.
-			if (isPublished) {
-				status.add("Published");
+			
+			// Set the publication status based on this items status and that of its parents.
+			if (parentIsPublished) {
+				// If the parent is publish, publication status is completely up to the item being processed.
+				if (isPublished) {
+					status.add("Published");
+				} else {
+					status.add("Unpublished");
+				}
 			} else {
-				status.add("Unpublished");
+				// If the parent is unpublished, then this item is unpublished. 
+				status.add("Parent Unpublished");
+				// Store that this item specifically is unpublished if it is explicitly unpublished
+				if (!isPublished) {
+					status.add("Unpublished");
+				}
 			}
-		} else {
-			// If the parent is unpublished, then this item is unpublished. 
-			status.add("Parent Unpublished");
-			// Store that this item specifically is unpublished if it is explicitly unpublished
-			if (!isPublished) {
-				status.add("Unpublished");
+			
+			if (log.isDebugEnabled()) {
+				log.debug("Parent is published: " + parentIsPublished);
+				log.debug("Item is published: " + isPublished);
+				log.debug("Final Status: " + status);
 			}
-		}
-		
-		if (log.isDebugEnabled()) {
-			log.debug("Parent is published: " + parentIsPublished);
-			log.debug("Item is published: " + isPublished);
-			log.debug("Final Status: " + status);
-		}
-		
-		
-		dip.setIsPublished(parentIsPublished && isPublished);
-		dip.getDocument().setStatus(status);
+			
+			
+			dip.setIsPublished(parentIsPublished && isPublished);
 	}
 }

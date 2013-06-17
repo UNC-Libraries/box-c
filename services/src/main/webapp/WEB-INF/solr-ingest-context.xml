@@ -189,6 +189,7 @@
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateStatusAction">
 		<property name="pipeline" ref="solrStatusUpdatePipeline" />
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="solrSearchService" ref="solrSearchService" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="solrUpdateService" ref="solrUpdateConductor" />
 	</bean>

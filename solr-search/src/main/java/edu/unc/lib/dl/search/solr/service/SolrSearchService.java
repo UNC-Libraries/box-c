@@ -723,7 +723,7 @@ public class SolrSearchService {
 
 		queryResponse = server.query(solrQuery);
 		if (queryResponse.getResults().getNumFound() > 0) {
-			return queryResponse.getResults().get(0).getFirstValue(field);
+			return queryResponse.getResults().get(0).getFieldValue(field);
 		}
 		return null;
 	}

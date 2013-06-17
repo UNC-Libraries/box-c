@@ -72,6 +72,15 @@ public interface TripleStoreQueryService {
 	 * @return the list of contained objects
 	 */
 	public abstract List<PID> fetchAllContents(PID key);
+	
+	/**
+	 * Retrieves a list of PID for the children of the supplied container PID.
+	 *
+	 * @param parent
+	 *           the PID of the parent Container
+	 * @return a list of PIDs
+	 */
+	public List<PID> fetchChildren(PID key);
 
 	/**
 	 * Retrieves a list of slugs for the children of the supplied container PID.

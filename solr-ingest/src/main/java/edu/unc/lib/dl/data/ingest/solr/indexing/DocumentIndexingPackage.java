@@ -50,6 +50,7 @@ public class DocumentIndexingPackage {
 	private String label;
 	private ResourceType resourceType;
 	private Map<String, Element> datastreams;
+	private List<PID> children;
 	
 	public DocumentIndexingPackage() {
 		document = new IndexDocumentBean();
@@ -137,7 +138,7 @@ public class DocumentIndexingPackage {
 		if (relsExt == null && foxml != null) {
 			try {
 				Element rdf = extractDatastream(ContentModelHelper.Datastream.RELS_EXT);
-				setRelsExt((Element) rdf.getChildren().get(0));
+				setRelsExt(rdf);
 			} catch (NullPointerException e) {
 				return null;
 			}
@@ -147,6 +148,9 @@ public class DocumentIndexingPackage {
 
 	public void setRelsExt(Element relsExt) {
 		this.relsExt = relsExt;
+		if ("RDF".equals(relsExt.getName()) && JDOMNamespaceUtil.RDF_NS.equals(relsExt.getNamespace())) {
+			this.relsExt = (Element) relsExt.getChildren().get(0);
+		}
 	}
 
 	public Element getMods() {
@@ -242,10 +246,12 @@ public class DocumentIndexingPackage {
 	}
 
 	public List<PID> getChildren() {
+		if (children != null)
+			return children;
 		Element relsExt = getRelsExt();
 		if (relsExt == null)
 			return null;
-
+		
 		List<?> containsEls = relsExt.getChildren("contains", JDOMNamespaceUtil.CDR_NS);
 		if (containsEls.size() > 0) {
 			List<PID> children = new ArrayList<PID>(containsEls.size());
@@ -253,9 +259,14 @@ public class DocumentIndexingPackage {
 				PID child = new PID(((Element) containsObj).getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
 				children.add(child);
 			}
+			this.children = children;
 			return children;
 		}
 		return null;
+	}
+	
+	public void setChildren(List<PID> children) {
+		this.children = children;
 	}
 
 	public void setLabel(String label) {

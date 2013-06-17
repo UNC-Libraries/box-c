@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
-//import org.apache.solr.common.SolrInputDocument;
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 import org.junit.Assert;
@@ -92,11 +90,6 @@ public class SetAccessControlFilterTest extends Assert {
 		assertTrue(dip.getDocument().getReadGroup().contains("public"));
 		
 		assertNull(dip.getDocument().getAdminGroup());
-		
-//		DocumentObjectBinder binder = new DocumentObjectBinder();
-//		SolrInputDocument solrDoc = binder.toSolrInputDocument(dip.getDocument());
-//		
-//		System.out.println(solrDoc);
 	}
 	
 	@Test
@@ -127,5 +120,60 @@ public class SetAccessControlFilterTest extends Assert {
 		
 		assertEquals(1, dip.getDocument().getAdminGroup().size());
 		assertTrue(dip.getDocument().getAdminGroup().contains("curator"));
+		
+		assertTrue(dip.getDocument().getStatus().contains("Not Discoverable"));
+		assertFalse(dip.getDocument().getStatus().contains("Not Inheriting Roles"));
+		System.out.println(dip.getDocument().getStatus());
+	}
+	
+	@Test
+	public void extractEmbargoed() throws Exception {
+		Map<String,Collection<String>> roles = new HashMap<String,Collection<String>>();
+		roles.put("http://cdr.unc.edu/definitions/roles#patron", Arrays.asList("public"));
+		
+		List<String> embargoes = new ArrayList<String>();
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, embargoes);
+		
+		AccessControlService accessControlService = mock(AccessControlService.class);
+		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
+		
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(new FileInputStream(new File(
+				"src/test/resources/foxml/embargoed.xml")));
+		dip.setFoxml(foxml);
+		
+		SetAccessControlFilter filter = new SetAccessControlFilter();
+		filter.setAccessControlService(accessControlService);
+		
+		filter.filter(dip);
+		
+		assertTrue(dip.getDocument().getStatus().contains("Embargoed"));
+	}
+	
+	@Test
+	public void extractRolesAssigned() throws Exception {
+		Map<String,Collection<String>> roles = new HashMap<String,Collection<String>>();
+		roles.put("http://cdr.unc.edu/definitions/roles#patron", Arrays.asList("public"));
+		
+		List<String> embargoes = new ArrayList<String>();
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, embargoes);
+		
+		AccessControlService accessControlService = mock(AccessControlService.class);
+		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
+		
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(new FileInputStream(new File(
+				"src/test/resources/foxml/rolesAssigned.xml")));
+		dip.setFoxml(foxml);
+		
+		SetAccessControlFilter filter = new SetAccessControlFilter();
+		filter.setAccessControlService(accessControlService);
+		
+		filter.filter(dip);
+		
+		assertTrue(dip.getDocument().getStatus().contains("Roles Assigned"));
+		assertTrue(dip.getDocument().getStatus().contains("Not Inheriting Roles"));
 	}
 }

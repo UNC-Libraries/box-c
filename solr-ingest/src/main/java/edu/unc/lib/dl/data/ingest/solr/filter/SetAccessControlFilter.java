@@ -15,7 +15,10 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.jdom.Element;
@@ -29,10 +32,11 @@ import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
- * Filter which sets access control related fields for a document based off 
+ * Filter which sets access control related fields for a document
  * @author bbpennel
  *
  */
@@ -50,7 +54,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 		
 		Element relsExt = dip.getRelsExt();
 		
-		Element allowIndexingEl = relsExt.getChild(ContentModelHelper.CDRProperty.allowIndexing.name(), JDOMNamespaceUtil.CDR_NS);
+		Element allowIndexingEl = relsExt.getChild(ContentModelHelper.CDRProperty.allowIndexing.getPredicate(), JDOMNamespaceUtil.CDR_NS);
 		boolean allowIndexing = (allowIndexingEl == null) ? true : !allowIndexingEl.getText().equals("no");
 		
 		// If indexing is disallowed then block all patron groups
@@ -74,6 +78,45 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 		
 		// Add in flattened role group mappings
 		dip.getDocument().setRoleGroup(aclBean.roleGroupsToList());
+		
+		// Add access related statuses 
+		setAccessStatus(relsExt, dip);
+	}
+	
+	private void setAccessStatus(Element relsExt, DocumentIndexingPackage dip) {
+		List<String> status = dip.getDocument().getStatus();
+		if (status == null)
+			status = new ArrayList<String>();
+		String inheritPermissions = relsExt.getChildText(ContentModelHelper.CDRProperty.inheritPermissions.getPredicate(), JDOMNamespaceUtil.CDR_ACL_NS);
+		if ("false".equals(inheritPermissions)) {
+			status.add("Not Inheriting Roles");
+		}
+		
+		String embargo = relsExt.getChildText(ContentModelHelper.CDRProperty.embargoUntil.getPredicate(), JDOMNamespaceUtil.CDR_ACL_NS);
+		if (embargo != null) {
+			try {
+				Date embargoDate = DateTimeUtil.parsePartialUTCToDate(embargo);
+				Date currentDate = new Date();
+				if (currentDate.before(embargoDate))
+					status.add("Embargoed");
+			} catch (ParseException e) {
+				log.warn("Failed to parse embargo date " + embargo, e);
+			}
+		}
+		
+		String discoverable = relsExt.getChildText(ContentModelHelper.CDRProperty.allowIndexing.getPredicate(), JDOMNamespaceUtil.CDR_NS);
+		if (!"yes".equals(discoverable)) {
+			status.add("Not Discoverable");
+		}
+		
+		for (Object childObject : relsExt.getChildren()) {
+			if (childObject instanceof Element && JDOMNamespaceUtil.CDR_ROLE_NS.getURI().equals(((Element)childObject).getNamespaceURI())) {
+				status.add("Roles Assigned");
+				break;
+			}
+		}
+		
+		dip.getDocument().setStatus(status);
 	}
 
 	public void setAccessControlService(AccessControlService accessControlService) {
