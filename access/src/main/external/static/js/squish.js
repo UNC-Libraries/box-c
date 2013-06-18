@@ -1845,6 +1845,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 				this._initSort();
 			this._initBatchOperations();
 			this._initEventHandlers();
+			this._initReordering();
 		},
 
 		_initSort : function() {
@@ -1955,27 +1956,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			this._sortEntries($entries, null, function(){
 				return this;
 			});
-			
-//			
-//			var $entries = $resultTable.find('tr.res_entry');
-//			
-//			console.timeEnd("Finding elements");
-//			for (var i = 0, length = $entries.length; i < length; i++) {
-//				matchMap.push({
-//					index : i,
-//					value : $entries.eq(i).data('original_index')
-//				});
-//			}
-//			console.time("Sorting");
-//			matchMap.sort(function(a, b){
-//				return (a.value > b.value) ?
-//						inverse ? -1 : 1
-//						: inverse ? 1 : -1;
-//			});
-//			console.timeEnd("Sorting");
-//			this._sortEntries($entries, matchMap, function(){
-//				return this;
-//			});
 		},
 		
 		_titleSort : function(inverse) {
@@ -2096,6 +2076,64 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			});
 			this.element.on('click', ".res_entry a", function(e){
 				e.stopPropagation();
+			});
+		},
+		
+		_initReordering : function() {
+			var arrangeMode = true;
+			var $resultTable = this.element;
+			$resultTable.sortable({
+				delay : 200,
+				items: '.res_entry',
+				cursorAt : { top: -2, left: -5 },
+				forceHelperSize : false,
+				scrollSpeed: 100,
+				/*connectWith: '.hier_entry, .entry.container',*/
+				placeholder : 'arrange_placeholder',
+				helper: function(e, element){
+					var title = $($('.itemdetails a', element)[0]).html();
+					if ($(element).hasClass('selected')) {
+						this.selected = element.parent().children(".selected");
+						if (this.selected.length > 1) {
+							return $("<div class='move_helper'><img src='/static/images/admin/type_folder.png'/><span>" + title + "</span> (and " + (this.selected.length - 1) + " others)</div>");
+						}
+					}
+					return $("<div class='move_helper'><span><img src='/static/images/admin/type_folder.png'/>" + title + "</span></div>");
+				},
+				appendTo: document.body,
+				start: function(e, ui) {
+					moving = false;
+					ui.item.show();
+					var self = this;
+					if (this.selected) {
+						$.each(this.selected, function(index){
+							if (self.selected[index] === ui.item[0]) {
+								self.itemSelectedIndex = index;
+								return false;
+							}
+						});
+					}
+				},
+				stop: function(e, ui) {
+					if (!moving && !arrangeMode)
+						return false;
+					var self = this;
+					if (this.selected) {
+						$.each(this.selected, function(index){
+							if (index < self.itemSelectedIndex)
+								ui.item.before(self.selected[index]);
+							else if (index > self.itemSelectedIndex)
+								$(self.selected[index - 1]).after(self.selected[index]);
+						});
+					}
+				},
+				update: function (e, ui) {
+					if (!moving && !arrangeMode)
+						return false;
+					if (ui.item.hasClass('selected') && this.selected.length > 0)
+						this.selected.hide().show(300);
+					else ui.item.hide().show(300);
+				}
 			});
 		},
 		

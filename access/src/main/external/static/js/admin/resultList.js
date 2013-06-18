@@ -2,7 +2,7 @@ require.config({
 	baseUrl: '/static/js/',
 	paths: {
 		'jquery' : 'jquery.min',
-		'jquery-ui' : 'jquery-ui.min',
+		'jquery-ui' : 'jquery-ui',
 		'qtip' : 'jquery.qtip.min',
 		'PID' : 'squish',
 		'MetadataObject' : 'squish',

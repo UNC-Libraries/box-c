@@ -291,6 +291,16 @@
 	cursor: pointer;
 }
 
+/** Move */
+.move_helper {
+	width: 120px;
+	background-color: #F5F9FE;
+	border-radius: 6px;
+	text-overflow: ellipsis;
+	overflow-x: hidden;
+	padding: 4px;
+}
+
 /** Other */
 
 .item_title.ui-state-disabled {
