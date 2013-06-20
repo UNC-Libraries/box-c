@@ -28,7 +28,7 @@
 
 	<div class="result_area">
 		<div>
-			<div>
+			<div id="result_view">
 				<div class="container_header">
 					<c:set var="facetNodes" scope="request" value="${containerBean.path.facetNodes}"/>
 					<div class="results_header_hierarchy_path">
@@ -91,12 +91,12 @@
 						</td>
 					</tr>
 					<tr class="column_headers">
-						<th class="sort_col checkbox" data-type="index" data-field="collection"></th>
-						<th class="sort_col type" data-field="resourceType"></th>
-						<th class="sort_col itemdetails" data-type="title" data-field="title">Title</th>
-						<th class="sort_col creator" data-field="creator">Creator</th>
-						<th class="sort_col date_added" data-field="dateAdded">Added</th>
-						<th class="sort_col date_added" data-field="dateUpdated">Modified</th>
+						<th class="sort_col" data-type="index" data-field="collection"></th>
+						<th class="sort_col" data-field="resourceType"></th>
+						<th class="sort_col" data-type="title" data-field="title">Title</th>
+						<th class="sort_col" data-field="creator">Creator</th>
+						<th class="sort_col" data-field="dateAdded">Added</th>
+						<th class="sort_col" data-field="dateUpdated">Modified</th>
 						<th></th>
 					</tr>
 					<c:forEach items="${resultResponse.resultList}" var="metadata" varStatus="status">

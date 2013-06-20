@@ -95,15 +95,11 @@ body {
 }
 
 .shadowtop {
-	background-image: url('/static/images/cdrui_contentshadow.png');
-	background-repeat: repeat-x;
-	background-position: top left;
+	box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.15) inset
 }
 
 .shadowbottom {
-	background-image: url('/static/images/cdrui_contentshadowbottom.png');
-	background-repeat: repeat-x;
-	background-position: bottom left;
+	box-shadow: 0 -8px 8px -8px rgba(0, 0, 0, 0.15) inset;
 }
 
 .shadowright {
@@ -123,6 +119,10 @@ body {
 
 .left {
 	float: left;
+}
+
+.clear {
+	clear: both;
 }
 
 /** Typography */

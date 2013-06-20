@@ -9,7 +9,7 @@
 
 .threecol {
 	min-width: 720px;
-	width: 75%;
+	width: calc(100% - 250px);
 }
 
 /** Search form */
@@ -114,29 +114,27 @@ ul#mainmenu li a {
 
 .browseitem {
 	border-top: 1px solid #eee;
+	padding: 20px 0px;
 }
 
-.collection_list .browseitem > .contentarea {
-	margin: 20px 0px;
-}
 
-.collection_list .browseitem h2 {
+.browseitem > h2 {
 	margin-bottom: 15px;
 }
 
-.collection_list .browseitem > .contentarea > a {
+.browseitem > a {
 	float: left;
 	padding: 0px 20px 20px 0px;
 	width: 128px;
 	min-height: 128px;
 }
 
-.browseitem .itemdetails {
+.browseitem > .itemdetails {
 	margin-left: 155px;
 	margin-right: 190px;
 }
 
-.browseitem .itemnavigation {
+.browseitem > .itemnavigation {
 	float: right;
 	width: 180px;
 	padding-left: 10px;

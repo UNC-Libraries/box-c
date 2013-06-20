@@ -74,7 +74,7 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 	
 	//console.log("Result table start: " + (new Date()).getTime());
 	
-	$(".result_table").resultTableView({
+	$("#result_view").resultTableView({
 		'metadataObjects' : module.config().metadataObjects,
 		'resultUrl' : module.config().resultUrl,
 		'pagingActive' : module.config().pagingActive,

@@ -12,6 +12,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		
 		_create : function() {
 			this.resultObjectList = new ResultObjectList({'metadataObjects' : this.options.metadataObjects});
+			this.$resultTable = this.element.children('.result_table');
 			
 			if (this.options.enableSort)
 				this._initSort();
@@ -21,7 +22,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		},
 		
 		_initSort : function() {
-			var $resultTable = this.element;
+			var $resultTable = this.$resultTable;
 			var self = this;
 			if (this.options.pagingActive) {
 				var sortParam = URLUtilities.getParameter('sort');
@@ -75,7 +76,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		
 		_sortEntries : function($entries, matchMap, getSortable) {
 			console.time("Reordering elements");
-			var $resultTable = this.element;
+			var $resultTable = this.$resultTable;
 			
 			$resultTable.detach(function(){
 				var fragment = document.createDocumentFragment();
@@ -108,7 +109,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		},
 		
 		_alphabeticSort : function(thIndex, inverse) {
-			var $resultTable = this.element;
+			var $resultTable = this.$resultTable;
 			var matchMap = [];
 			console.time("Finding elements");
 			var $entries = $resultTable.find('tr.res_entry').map(function() {
@@ -151,7 +152,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		},
 		
 		_titleSort : function(inverse) {
-			var $resultTable = this.element;
+			var $resultTable = this.$resultTable;
 			var titleRegex = new RegExp('(\\d+|[^\\d]+)', 'g');
 			var matchMap = [];
 			console.time("Finding elements");
@@ -218,9 +219,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			$(".publish_selected", self.element).publishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
-						var resultObject = this.data('resultObject');
-						resultObject.setStatusText('Publishing...');
-						resultObject.updateOverlay('show');
+						this.setStatusText('Publishing...');
+						this.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
 					this.data('resultObject').setStatusText('Publishing....');
@@ -232,9 +232,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			$(".unpublish_selected", self.element).unpublishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
-						var resultObject = this.data('resultObject');
-						resultObject.setStatusText('Unpublishing...');
-						resultObject.updateOverlay('show');
+						this.setStatusText('Unpublishing...');
+						this.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
 					this.data('resultObject').setStatusText('Unpublishing....');
@@ -246,9 +245,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			$(".delete_selected", self.element).deleteBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
-						var resultObject = this.data('resultObject');
-						resultObject.setStatusText('Deleting...');
-						resultObject.updateOverlay('show');
+						this.setStatusText('Deleting...');
+						this.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
 						this.data('resultObject').setStatusText('Cleaning up...');
@@ -258,22 +256,22 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		},
 		
 		_initEventHandlers : function() {
-			this.element.on('click', ".menu_box img", function(e){
+			this.$resultTable.on('click', ".menu_box img", function(e){
 				$(this).parents(".res_entry").data('resultObject').activateActionMenu();
 				e.stopPropagation();
 			});
-			this.element.on('click', ".res_entry", function(e){
+			this.$resultTable.on('click', ".res_entry", function(e){
 				$(this).data('resultObject').toggleSelect();
 				e.stopPropagation();
 			});
-			this.element.on('click', ".res_entry a", function(e){
+			this.$resultTable.on('click', ".res_entry a", function(e){
 				e.stopPropagation();
 			});
 		},
 		
 		_initReordering : function() {
 			var arrangeMode = true;
-			var $resultTable = this.element;
+			var $resultTable = this.$resultTable;
 			$resultTable.sortable({
 				delay : 200,
 				items: '.res_entry',

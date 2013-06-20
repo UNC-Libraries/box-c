@@ -10,9 +10,9 @@ define('PublishBatchButton', [ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], f
 			var targetIds = [];
 			for (var id in this.options.resultObjectList.resultObjects) {
 				var resultObject = this.options.resultObjectList.resultObjects[id];
-				if (resultObject.isSelected() && !resultObject.getMetadata().isPublished()
+				if (resultObject.isSelected() && $.inArray("Unpublished", resultObject.getMetadata().status)
 						&& resultObject.isEnabled()) {
-					targetIds.push(resultObject.getPid().getPid());
+					targetIds.push(resultObject.getPid());
 				}
 			}
 			return targetIds;

@@ -37,7 +37,7 @@
 				</c:when>
 				<c:otherwise>
 					<c:set var="shiftPathUrl">
-						${resultOperation}/${facetNode.searchKey.replace(':', '/')}<c:if test="${not empty searchStateUrl && param.ignoreSearchState == false}">?${searchStateUrl}</c:if>
+						${resultOperation}/${facetNode.searchKey}<c:if test="${not empty searchStateUrl && param.ignoreSearchState == false}">?${searchStateUrl}</c:if>
 					</c:set>
 					<a href="<c:out value="${shiftPathUrl}"/>"><c:out value="${facetNode.displayValue}" /></a>
 				</c:otherwise>
