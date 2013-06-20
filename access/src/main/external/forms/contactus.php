@@ -90,7 +90,7 @@ $refer = strip_tags(isset($_REQUEST['refer']) ? $_REQUEST['refer'] : '(refer mis
 <div class="contentarea">
 	<h2>Contact Us</h2>
 	
-	<p>Please, describe any problem(s) you are having with website and/or suggestions for improvement.</p>
+	<p>Please describe any problem(s) you are having with website and/or suggestions for improvement.</p>
 	<br/>
 	<form class="user_form" action="" method="post" accept-charset="utf-8">
 		<div class="form_section">
