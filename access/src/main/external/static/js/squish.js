@@ -1793,7 +1793,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			var metadataObjects = self.options.metadataObjects;
 			for (var i = 0; i < $entries.length; i++) {
 				var id = $entries[i].id;
-				id = 'uuid' + id.substring(id.indexOf(':') + 1);
+				id = 'uuid:' + id.substring(id.indexOf('_') + 1);
 				self.resultObjects[id] = new ResultObject($entries.eq(i), {id : id, metadata : metadataObjects[id], 
 					resultObjectList : self});
 			}
@@ -1827,15 +1827,16 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 	});
 	
 	return ResultObjectList;
-});define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'detachplus'], 
-		function($, ui, ResultObjectList) {
+});define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'detachplus'], 
+		function($, ui, ResultObjectList, URLUtilities) {
 	$.widget("cdr.resultTableView", {
 		options : {
 			enableSort : true,
 			ajaxSort : false,
 			metadataObjects : undefined,
 			enableArrange : false,
-			enableMove : false
+			enableMove : false,
+			pagingActive : false
 		},
 		
 		_create : function() {
@@ -1845,40 +1846,60 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 				this._initSort();
 			this._initBatchOperations();
 			this._initEventHandlers();
-			this._initReordering();
+			//this._initReordering();
 		},
-
+		
 		_initSort : function() {
 			var $resultTable = this.element;
 			var self = this;
-			$("th.sort_col", $resultTable).wrapInner('<span/>').each(function(){
-				var $th = $(this),
-				thIndex = $th.index(),
-				dataType = $th.attr("data-type");
-				$th.addClass('sorting');
-				
-				$th.click(function(){
-					if (!$th.hasClass('sorting')) return;
-					console.time("Sort total");
-					var inverse = $th.hasClass('desc');
-					$('.sorting', $resultTable).removeClass('asc desc');
-					if (inverse)
-						$th.addClass('asc');
-					else 
-						$th.addClass('desc');
-					
-					// Apply sort function based on data-type
-					if (dataType == 'index') {
-						self._originalOrderSort(inverse);
-					} else if (dataType == 'title') {
-						self._titleSort(inverse);
-					} else {
-						self._alphabeticSort(thIndex, inverse);
+			if (this.options.pagingActive) {
+				var sortParam = URLUtilities.getParameter('sort');
+				var sortOrder = URLUtilities.getParameter('sortOrder');
+				$("th.sort_col", $resultTable).wrapInner('<a/>').each(function(){
+					var $this = $(this);
+					$this.addClass('sorting');
+					var sortField = $this.attr('data-field');
+					if (sortField) {
+						var order = '';
+						console.log(sortParam + "|" + sortField + "|" + sortOrder + "|" + (!sortOrder));
+						if (sortParam == sortField && !sortOrder)
+							order = 'reverse';
+						var sortUrl = URLUtilities.setParameter(self.options.resultUrl, 'sort', sortField);
+						sortUrl = URLUtilities.setParameter(sortUrl, 'sortOrder', order);
+						this.children[0].href = sortUrl;
+						console.log(sortUrl);
 					}
-					inverse = !inverse;
-					console.timeEnd("Sort total");
 				});
-			});
+			} else {
+				$("th.sort_col", $resultTable).wrapInner('<span/>').each(function(){
+					var $th = $(this),
+					thIndex = $th.index(),
+					dataType = $th.attr("data-type");
+					$th.addClass('sorting');
+					
+					$th.click(function(){
+						if (!$th.hasClass('sorting')) return;
+						console.time("Sort total");
+						var inverse = $th.hasClass('desc');
+						$('.sorting', $resultTable).removeClass('asc desc');
+						if (inverse)
+							$th.addClass('asc');
+						else 
+							$th.addClass('desc');
+						
+						// Apply sort function based on data-type
+						if (dataType == 'index') {
+							self._originalOrderSort(inverse);
+						} else if (dataType == 'title') {
+							self._titleSort(inverse);
+						} else {
+							self._alphabeticSort(thIndex, inverse);
+						}
+						inverse = !inverse;
+						console.timeEnd("Sort total");
+					});
+				});
+			}
 		},
 		
 		_sortEntries : function($entries, matchMap, getSortable) {
@@ -2192,6 +2213,40 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			}).css('visibility', 'visible');
 		}
 	});
+});define('URLUtilities', ['jquery'], function($) {
+	return {
+		getParameter : function (name) {
+			return decodeURI(
+					(RegExp(name + '=' + '([^&]*?)(&|$)').exec(location.search)||[,null])[1]
+			);
+		},
+		
+		setParameter : function(url, key, paramVal){
+			var baseURL = this.removeParameter(url, key);
+			if (baseURL.indexOf('?') == -1)
+				baseURL += '?';
+			else baseURL += '&';
+			return baseURL + key + "=" + paramVal;
+		},
+		
+		removeParameter : function (url, key) {
+			var newParameterString = "", tempArray = url.split("?");
+			var baseURL = tempArray[0], parameterString = tempArray[1];
+			if (parameterString) {
+				tempArray = parameterString.split("&");
+				for (var i=0; i<tempArray.length; i++){
+					if(tempArray[i].split('=')[0] != key){
+						if (newParameterString.length > 0)
+							newParameterString += '&';
+						newParameterString += tempArray[i];
+					}
+				}
+			}
+			if (newParameterString)
+				return baseURL + "?" + newParameterString;
+			return baseURL;
+		}
+	};
 });define('UnpublishBatchButton', [ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], function($) {
 	$.widget("cdr.unpublishBatchButton", $.cdr.batchCallbackButton, {
 		options : {

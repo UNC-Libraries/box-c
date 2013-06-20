@@ -23,7 +23,7 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 			var metadataObjects = self.options.metadataObjects;
 			for (var i = 0; i < $entries.length; i++) {
 				var id = $entries[i].id;
-				id = 'uuid' + id.substring(id.indexOf(':') + 1);
+				id = 'uuid:' + id.substring(id.indexOf('_') + 1);
 				self.resultObjects[id] = new ResultObject($entries.eq(i), {id : id, metadata : metadataObjects[id], 
 					resultObjectList : self});
 			}

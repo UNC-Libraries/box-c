@@ -117,6 +117,14 @@ body {
 	display: none !important;
 }
 
+.right {
+	float: right;
+}
+
+.left {
+	float: left;
+}
+
 /** Typography */
 
 a {

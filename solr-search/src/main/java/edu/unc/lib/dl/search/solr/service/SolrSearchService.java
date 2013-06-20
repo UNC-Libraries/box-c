@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -536,7 +537,7 @@ public class SolrSearchService {
 				if (searchState.getSortOrder() != null && searchState.getSortOrder().equals(searchSettings.sortReverse)) {
 					sortOrder = sortOrder.reverse();
 				}
-				solrQuery.addSortField(solrSettings.getFieldName(sortField.getFieldName()), sortOrder);
+				solrQuery.addSort(solrSettings.getFieldName(sortField.getFieldName()), sortOrder);
 			}
 		}
 

@@ -59,36 +59,44 @@
 							</c:otherwise>
 						</c:choose>
 					</h2>
+					<c:if test="${not empty containerBean}">
+						<img class="container_menu" src="/static/images/admin/gear.png"/>
+					</c:if>
 					<span id="add_menu" class="container_action">+ Add</span>
 					<c:if test="${not empty containerBean}">
 						<span id="arrange_button" class="container_action">Arrange</span>
-						<img class="container_menu" src="/static/images/admin/gear.png"/>
 					</c:if>
+					<div class="right">
+						<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'purgeForever')}">
+							<span class="delete_selected ajaxCallbackButton container_action">Delete</span>&nbsp;&nbsp;
+						</c:if>
+						<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'publish')}">
+							<span class="publish_selected ajaxCallbackButton container_action">Publish</span><span class="unpublish_selected ajaxCallbackButton container_action">Unpublish</span>
+						</c:if>
+					</div>
 					<ul id="add_menu_content" class="action_menu">
 						<li><a>New Folder</a></li>
 						<li><a>Ingest Package</a></li>
 					</ul>
 				</div>
-				<c:import url="search/navigationBar.jsp" >
-					<c:param name="queryMethod" value="${queryMethod}"/>
-				</c:import>
 				<table class="result_table">
 					<tr class="batch_actions">
 						<td colspan="7">
 							<div class="left"><p><a class="select_all">Select All</a></p> <p><a class="deselect_all">Deselect All</a></p></div>
 							<div class="right">
-								<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'purgeForever')}"><input type="Button" value="Delete" class="delete_selected ajaxCallbackButton"></input>&nbsp;&nbsp;</c:if>
-								<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'publish')}"><input type="Button" value="Publish Selected" class="publish_selected ajaxCallbackButton"></input><input type="Button" value="Unpublish Selected" id="unpublish_selected" class="ajaxCallbackButton"></input></c:if>
+								<c:import url="search/navigationBar.jsp" >
+									<c:param name="queryMethod" value="${queryMethod}"/>
+								</c:import>
 							</div>
 						</td>
 					</tr>
 					<tr class="column_headers">
-						<th class="sort_col" data-type="index"></th>
-						<th class="sort_col"></th>
-						<th class="sort_col" data-type="title">Title</th>
-						<th class="sort_col">Creator</th>
-						<th class="sort_col">Added</th>
-						<th class="sort_col">Modified</th>
+						<th class="sort_col checkbox" data-type="index" data-field="collection"></th>
+						<th class="sort_col type" data-field="resourceType"></th>
+						<th class="sort_col itemdetails" data-type="title" data-field="title">Title</th>
+						<th class="sort_col creator" data-field="creator">Creator</th>
+						<th class="sort_col date_added" data-field="dateAdded">Added</th>
+						<th class="sort_col date_added" data-field="dateUpdated">Modified</th>
 						<th></th>
 					</tr>
 					<c:forEach items="${resultResponse.resultList}" var="metadata" varStatus="status">
@@ -109,8 +117,10 @@
 	var require = {
 		config: {
 			'resultList' : {
-				'metadataObjects': ${cdr:resultsToJSON(resultResponse)}
-			}
+				'metadataObjects': ${cdr:resultsToJSON(resultResponse)},
+				'pagingActive' : ${resultResponse.resultCount > fn:length(resultResponse.resultList)},
+				'resultUrl' : '${currentRelativeUrl}'
+			},
 		}
 	};
 	console.log("Loaded in " + ((new Date()).getTime() - startTimer));

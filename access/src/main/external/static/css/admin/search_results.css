@@ -101,7 +101,8 @@
 }
 
 .container_menu {
-	float: right;
+	padding-left: 5px;
+	vertical-align: text-bottom;
 }
 
 .container_header > .path_trail {
@@ -130,9 +131,10 @@
 	font-size: 14px;
 	line-height: 18px;
 	margin-top: 10px;
+	width: 100%;
 }
 
-.res_entry, .column_headers {
+.res_entry {
 	border-bottom: 1px solid #EEEEEE;
 }
 
@@ -153,16 +155,28 @@
 	background-color: #FFFFC5;
 }
 
+.column_headers + .res_entry > td{
+	padding-top: 8px;
+}
+
+.column_headers {
+	border-bottom: 1px solid #C8D8E0;
+	border-top: 1px solid #EEEEEE;
+	box-shadow: 0 4px 6px -6px #AAAAFF;
+	background-color: #FBFBFE;
+}
+
 .column_headers > th {
 	text-align: left;
 	font-color: #889;
 	font-size: 85%;
-	padding: 4px 0px 0px;
+	padding: 5px 0;
 	white-space: nowrap;
 }
 
 .res_entry > td {
-	padding: 4px 8px 4px 0px;
+	padding: 6px 8px 5px 0;
+	vertical-align: middle;
 }
 
 .res_entry > .check_box {
@@ -212,13 +226,11 @@
 }
 
 .batch_actions {
-	border-bottom: 0px solid #EEEEEE;
-	margin-top: -5px;
+	border-bottom-width: 0;
 }
 
 .batch_actions > td {
-	margin-right: 0px;
-	padding-right: 0px;
+	padding: 0px 0 6px;
 }
 
 /** Batch operations */
@@ -270,20 +282,20 @@
 	background-image: none;
 }
 
-.sort_col > span, .index_col > span {
+.sort_col > span, .index_col > span, .sorting > a {
 	padding-right: 19px;
 }
 
-.sorting > span {
+.sorting > span, .sorting > a {
 	background-image: url('/static/images/admin/sort.png');
 	background-repeat: no-repeat;
 	background-position: right -2px; 
 }
-.sorting.asc > span {
+.sorting.asc > span, .sorting.asc > a {
 	background-position: right -103px;
 }
 
-.sorting.desc > span {
+.sorting.desc > span, .sorting.desc > a {
 	background-position: right -78px;
 }
 

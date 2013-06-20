@@ -26,6 +26,7 @@ require.config({
 		
 		'StructureEntry' : 'squish',
 		'StructureView' : 'squish',
+		'URLUtilities' : 'squish',
 		
 		'editable' : 'jqueryui-editable.min',
 		'moment' : 'moment.min'
@@ -74,7 +75,9 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 	//console.log("Result table start: " + (new Date()).getTime());
 	
 	$(".result_table").resultTableView({
-		'metadataObjects' : module.config().metadataObjects
+		'metadataObjects' : module.config().metadataObjects,
+		'resultUrl' : module.config().resultUrl,
+		'pagingActive' : module.config().pagingActive,
 	});
 	//console.profileEnd();
 	//console.log("Result table finish " + (new Date() - startTime));
