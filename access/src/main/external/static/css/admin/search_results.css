@@ -262,7 +262,7 @@ colgroup > .date_added, .column_headers > .date_added > a {
 	width: 20px;
 }
 
-.res_entry > .itemdetails > .status {
+.itemdetails > div > .status {
 	font-size: 0.7em;
 }
 
