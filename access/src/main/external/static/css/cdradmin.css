@@ -61,6 +61,10 @@
 
 /** Header */
 
+#header_banner {
+	padding: 5px 20px 0px;
+}
+
 .header_right {
 	margin-left: 75%;
 	width: 24%;
@@ -82,15 +86,19 @@
   vertical-align: bottom;
 }
 
-ul#mainmenu li a {
+#mainmenu li a {
 	margin-right: 6px;
 }
 
-div#username_wrap {
+#username_wrap {
 	color: #165D7F;
 }
 
-ul.secondarymenu li a {
+#mainmenu > li, .secondarymenu > li {
+	margin: 0;
+}
+
+.secondarymenu li a {
 	margin-right: 1px;
 	background-color: #FFFFFF;
 	border-right: 0px;
@@ -100,7 +108,7 @@ ul.secondarymenu li a {
 	background-image: none;
 }
 
-ul#mainmenu li a {
+#mainmenu li a {
 	margin-right: 6px;
 	border-right: 0px;
 	background-color: #FFFFFF;

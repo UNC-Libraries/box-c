@@ -1841,7 +1841,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 		
 		_create : function() {
 			this.resultObjectList = new ResultObjectList({'metadataObjects' : this.options.metadataObjects});
-			this.$resultTable = this.element.children('.result_table');
+			this.$resultTable = this.element.find('.result_table').eq(0);
 			
 			if (this.options.enableSort)
 				this._initSort();
@@ -1856,15 +1856,21 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			if (this.options.pagingActive) {
 				var sortParam = URLUtilities.getParameter('sort');
 				var sortOrder = URLUtilities.getParameter('sortOrder');
-				$("th.sort_col", $resultTable).wrapInner('<a/>').each(function(){
+				$("th.sort_col", $resultTable).each(function(){
 					var $this = $(this);
 					$this.addClass('sorting');
 					var sortField = $this.attr('data-field');
 					if (sortField) {
 						var order = '';
 						console.log(sortParam + "|" + sortField + "|" + sortOrder + "|" + (!sortOrder));
-						if (sortParam == sortField && !sortOrder)
-							order = 'reverse';
+						if (sortParam == sortField) {
+							if (sortOrder) {
+								$this.addClass('asc');
+							} else {
+								$this.addClass('desc');
+								order = 'reverse';
+							}
+						}
 						var sortUrl = URLUtilities.setParameter(self.options.resultUrl, 'sort', sortField);
 						sortUrl = URLUtilities.setParameter(sortUrl, 'sortOrder', order);
 						this.children[0].href = sortUrl;
@@ -1872,7 +1878,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 					}
 				});
 			} else {
-				$("th.sort_col", $resultTable).wrapInner('<span/>').each(function(){
+				$("th.sort_col", $resultTable).each(function(){
 					var $th = $(this),
 					thIndex = $th.index(),
 					dataType = $th.attr("data-type");
@@ -1948,7 +1954,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			for (var i = 0, length = $entries.length; i < length; i++) {
 				matchMap.push({
 					index : i,
-					value : $entries[i].innerHTML.toUpperCase()
+					value : $entries[i].children[0].innerHTML.toUpperCase()
 				});
 			}
 			console.time("Sorting");
@@ -1985,14 +1991,15 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			var titleRegex = new RegExp('(\\d+|[^\\d]+)', 'g');
 			var matchMap = [];
 			console.time("Finding elements");
-			var $entries = $resultTable.find('.itemdetails');
+			var $entries = $resultTable.find('.res_entry > .itemdetails');
 			console.timeEnd("Finding elements");
 			for (var i = 0, length = $entries.length; i < length; i++) {
-				var text = $entries[i].children[0].innerHTML.toUpperCase();
+				var text = $entries[i].children[0].children[0].innerHTML.toUpperCase();
+				var textParts = text.match(titleRegex);
 				matchMap.push({
 					index : i,
 					text : text,
-					value : text.match(titleRegex)
+					value : (textParts == null) ? [] : textParts
 				});
 			}
 			console.time("Sorting");

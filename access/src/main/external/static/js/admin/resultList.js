@@ -79,6 +79,23 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 		'resultUrl' : module.config().resultUrl,
 		'pagingActive' : module.config().pagingActive,
 	});
+	
+	var $resultPage = $('.result_page');
+	var $resultView = $('#result_view');
+	var $columnHeaders = $('.column_headers');
+	var $resultHeader = $('.result_header');
+	var $resultTable = $('.result_table');
+	var $window = $(window);
+	var resizeResults = function () {
+		var wHeight = $window.height(), wWidth = $window.width();
+		$resultPage.height(wHeight - 105);
+		$resultView.height(wHeight - 105);
+		$resultHeader.width(wWidth - 350);
+		$resultTable.width(wWidth - 350);
+		$columnHeaders.width(wWidth - 350);
+	};
+	resizeResults.call();
+	$window.resize(resizeResults);
 	//console.profileEnd();
 	//console.log("Result table finish " + (new Date() - startTime));
 });

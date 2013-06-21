@@ -28,9 +28,7 @@
 	</c:if>
 	<c:forEach items="${facetNodes}" var="facetNode" varStatus="status">
 		<c:if test="${!(status.last && param.skipLast)}">
-			<c:if test="${!status.first || param.displayHome}">
-				&gt; 
-			</c:if>
+			<c:if test="${!status.first || param.displayHome}"> &gt; </c:if>
 			<c:choose>
 				<c:when test="${status.last && param.linkLast != true}">
 					<c:out value="${facetNode.displayValue}" />
@@ -44,4 +42,5 @@
 			</c:choose>
 		</c:if>
 	</c:forEach>
+	<c:if test="${param.trailingSeparator}"> &gt;</c:if>
 </span>

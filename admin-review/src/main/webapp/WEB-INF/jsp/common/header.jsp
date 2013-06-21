@@ -20,7 +20,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <div class="darkest shadowbottom" id="header">
 	<div class="threecol dark shadowbottom">
-		<div class="contentarea">
+		<div id="header_banner">
 			<a href="${pageContext.request.contextPath}/" id="titlelink"><img src="/static/images/carolinadigitalrepository-trans.png"></a>
 			
 			<ul id="mainmenu">

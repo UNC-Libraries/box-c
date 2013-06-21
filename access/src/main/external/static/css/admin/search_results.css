@@ -33,7 +33,7 @@
 	background-image: none;
 }
 
-.ui-resizable-e {
+#search_menu:hover .ui-resizable-e, .ui-resizable-e:hover {
 	border-right: 2px solid #DDF0FA;
 }
 
@@ -60,13 +60,42 @@
 
 /** Result area */
 
+.result_page {
+	margin: 12px 0 0 20px;
+	/*height: calc(100vh - 105px);
+	height: -webkit-calc(100vh - 105px);*/
+	overflow-y: hidden;
+}
+
 .result_area {
 	margin-left: 315px;
+	position: relative;
+}
+
+.result_header {
+	background-color: white;
+	position: absolute;
+	/*width: calc(100vw - 375px);*/
+	top: 0;
+}
+
+#result_view {
+	/*height: calc(100vh - 105px);
+	height: -webkit-calc(100vh - 105px);*/
+	overflow-y: auto;
+}
+
+.result_table_wrap {
+	padding-top: 80px;
+}
+
+.result_table_wrap.with_path {
+	padding-top: 96px;
 }
 
 /** Container header */
 .container_header {
-	margin-bottom: 5px;
+	margin-bottom: 3px;
 }
 
 .container_header > h2 {
@@ -85,7 +114,8 @@
 	margin: 0 0 0 8px;
 	padding: 5px;
 	cursor: pointer;
-	font-size: 15px;
+	font-size: 14px;
+	line-height: 14px;
 	color: #666666;
 }
 
@@ -131,7 +161,8 @@
 	font-size: 14px;
 	line-height: 18px;
 	margin-top: 10px;
-	width: 100%;
+	/*width: calc(100vw - 375px);*/
+	table-layout: fixed;
 }
 
 .res_entry {
@@ -164,65 +195,98 @@
 	border-top: 1px solid #EEEEEE;
 	box-shadow: 0 4px 6px -6px #AAAAFF;
 	background-color: #FBFBFE;
+	/*width: calc(100vw - 375px);*/
+	position: absolute;
+	top: 58px;
+}
+
+.with_path .column_headers {
+	top: 74px;
 }
 
 .column_headers > th {
 	text-align: left;
 	font-color: #889;
 	font-size: 85%;
-	padding: 5px 0;
 	white-space: nowrap;
-}
-
-.res_entry > td {
-	padding: 6px 8px 5px 0;
 	vertical-align: middle;
 }
 
-.res_entry > .check_box {
-	width: 20px;
-	padding-right: 4px;
+.column_headers > th > a {
+	display: block;
+	height: 16px;
+	padding: 5px 0;
 }
 
-.res_entry > .type {
-	width: 20px;
-	padding-right: 4px;
+colgroup > .narrow {
+	width: 24px;
 }
 
-.res_entry > .itemdetails {
+.column_headers > .narrow > a {
+	padding-right: 24px;
+}
+
+colgroup > .itemdetails, .column_headers > .itemdetails {
 	width: 100%;
 }
 
-.res_entry > .itemdetails > .status {
-	font-size: 0.7em;
+colgroup > .creator, .column_headers > .creator > a {
+	width: 120px;
+}
+
+colgroup > .date_added, .column_headers > .date_added > a {
+	width: 75px;
+}
+
+.res_entry > td {
+	vertical-align: top;
+}
+
+.res_entry > td > div {
+	padding: 6px 8px 5px 0;
+	vertical-align: top;
+}
+
+.res_entry > .check_box > div {
+	padding-right: 4px;
+	width: 20px;
 }
 
 .res_entry > .check_box > input {
 	vertical-align: text-bottom;
 }
 
-.res_entry > .creator {
-	min-width: 90px;
-	max-width: 150px;
+.res_entry > .type > div {
+	padding-right: 4px;
+	padding-top: 7px;
+	width: 20px;
+}
+
+.res_entry > .itemdetails > .status {
+	font-size: 0.7em;
+}
+
+.res_entry > .creator > div {
 	font-size: 70%;
 	text-overflow: ellipsis;
 	overflow: hidden;
 	white-space: nowrap;
+	width: 114px;
 }
 
-.res_entry > .date_added {
-	width: 75px;
+.res_entry > .date_added > div {
 	font-size: 70%;
 	white-space : nowrap;
+	width: 69px;
 }
 
 .res_entry > .type > img {
 	vertical-align: text-bottom;
 }
 
-.res_entry > .menu_box {
-	width: 20px;
-	padding: 3px;
+.res_entry > .menu_box > div {
+	padding: 5px 3px 3px 3px;
+	width: 16px;
 }
 
 .batch_actions {
@@ -260,7 +324,7 @@
 	cursor: pointer;
 }
 
-.menu_box > ul {
+.menu_box > div > ul {
 	display: none;
 }
 
@@ -282,21 +346,21 @@
 	background-image: none;
 }
 
-.sort_col > span, .index_col > span, .sorting > a {
-	padding-right: 19px;
+.sorting.narrow > a {
+	background-position: left 3px;
 }
 
-.sorting > span, .sorting > a {
+.sorting > a {
 	background-image: url('/static/images/admin/sort.png');
 	background-repeat: no-repeat;
-	background-position: right -2px; 
+	background-position: right 3px; 
 }
-.sorting.asc > span, .sorting.asc > a {
-	background-position: right -103px;
+.sorting.asc > a {
+	background-position: right -98px;
 }
 
-.sorting.desc > span, .sorting.desc > a {
-	background-position: right -78px;
+.sorting.desc > a {
+	background-position: right -73px;
 }
 
 .sort_col:hover {
