@@ -318,7 +318,7 @@ public class SearchStateFactory {
 		if (parameter != null){
 			String parameterArray[] = parameter.split("\\|");
 			for (String parameterPair: parameterArray){
-				String parameterPairArray[] = parameterPair.split(":", 2);
+				String parameterPairArray[] = parameterPair.replace("%7C", "|").split(":", 2);
 				//if a field label is specified, store the facet under it.
 				if (parameterPairArray.length > 1){
 					try {

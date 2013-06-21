@@ -97,7 +97,7 @@
 										</c:when>
 										<c:otherwise>
 											<c:url var="facetActionUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-												<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[facetValue.fieldName]},"${facetValue.limitToValue}"'/>
+												<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[facetValue.fieldName]},"${fn:replace(facetValue.limitToValue, "|", "%7C")}"'/>
 											</c:url>
 										</c:otherwise>
 									</c:choose>

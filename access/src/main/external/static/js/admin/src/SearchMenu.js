@@ -1,5 +1,5 @@
-define('SearchMenu', [ 'jquery', 'jquery-ui', 'StructureView'], function(
-		$, ui) {
+define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], function(
+		$, ui, URLUtilities) {
 	$.widget("cdr.searchMenu", {
 		_create : function() {
 			this.element.children('.query_menu').accordion({
@@ -15,7 +15,7 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'StructureView'], function(
 				activate: function(event, ui) {
 					if (ui.newPanel.attr('data-href') != null && !ui.newPanel.data('contentLoaded')) {
 						$.ajax({
-							url : ui.newPanel.attr('data-href'),
+							url : URLUtilities.uriEncodeParameters(ui.newPanel.attr('data-href')),
 							success : function(data) {
 								if (ui.newPanel.attr('id') == "structure_facet") {
 									var $structureView = $('<div/>').html(data);

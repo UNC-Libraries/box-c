@@ -2173,8 +2173,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 		}
 	});
 });
-	define('SearchMenu', [ 'jquery', 'jquery-ui', 'StructureView'], function(
-		$, ui) {
+	define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], function(
+		$, ui, URLUtilities) {
 	$.widget("cdr.searchMenu", {
 		_create : function() {
 			this.element.children('.query_menu').accordion({
@@ -2190,7 +2190,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 				activate: function(event, ui) {
 					if (ui.newPanel.attr('data-href') != null && !ui.newPanel.data('contentLoaded')) {
 						$.ajax({
-							url : ui.newPanel.attr('data-href'),
+							url : URLUtilities.uriEncodeParameters(ui.newPanel.attr('data-href')),
 							success : function(data) {
 								if (ui.newPanel.attr('id') == "structure_facet") {
 									var $structureView = $('<div/>').html(data);
@@ -2220,6 +2220,23 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 	});
 });define('URLUtilities', ['jquery'], function($) {
 	return {
+		uriEncodeParameters : function(url) {
+			var newParameterString = "", tempArray = url.split("?");
+			if (tempArray.length < 2)
+				return url;
+			var baseURL = tempArray[0], parameterString = tempArray[1];
+			if (parameterString) {
+				tempArray = parameterString.split("&");
+				for (var i=0; i<tempArray.length; i++){
+					if (newParameterString.length > 0)
+						newParameterString += '&';
+					var paramPair = tempArray[i].split('=');
+					newParameterString += paramPair[0] + "=" + encodeURIComponent(paramPair[1]);
+				}
+			}
+			return baseURL + "?" + newParameterString;
+		},
+		
 		getParameter : function (name) {
 			return decodeURI(
 					(RegExp(name + '=' + '([^&]*?)(&|$)').exec(location.search)||[,null])[1]

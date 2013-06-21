@@ -1,5 +1,22 @@
 define('URLUtilities', ['jquery'], function($) {
 	return {
+		uriEncodeParameters : function(url) {
+			var newParameterString = "", tempArray = url.split("?");
+			if (tempArray.length < 2)
+				return url;
+			var baseURL = tempArray[0], parameterString = tempArray[1];
+			if (parameterString) {
+				tempArray = parameterString.split("&");
+				for (var i=0; i<tempArray.length; i++){
+					if (newParameterString.length > 0)
+						newParameterString += '&';
+					var paramPair = tempArray[i].split('=');
+					newParameterString += paramPair[0] + "=" + encodeURIComponent(paramPair[1]);
+				}
+			}
+			return baseURL + "?" + newParameterString;
+		},
+		
 		getParameter : function (name) {
 			return decodeURI(
 					(RegExp(name + '=' + '([^&]*?)(&|$)').exec(location.search)||[,null])[1]

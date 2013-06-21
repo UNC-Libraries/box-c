@@ -172,9 +172,9 @@ public class SearchStateUtil {
 			Object fieldValue = fields.get(fieldName);
 			if (fieldValue != null){
 				if (fieldValue instanceof SearchFacet){
-					sb.append(((SearchFacet) fieldValue).getLimitToValue());
+					sb.append(((SearchFacet) fieldValue).getLimitToValue().replace("|", "%7C"));
 				} else {
-					sb.append(fieldValue);
+					sb.append(fieldValue.toString().replace("|", "%7C"));
 				}
 			}
 		}
