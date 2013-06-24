@@ -43,7 +43,10 @@
 		<c:set var="searchState" scope="request" value="${searchState}"/>
 		<c:if test="${resultType != 'collectionBrowse'}">
 			<div class="fourcol light shadowtop breadcrumbs">
-				<c:import url="searchResults/breadCrumbs.jsp"></c:import>
+				<div class="contentarea">
+					<h2>Breadcrumbs</h2>
+					<c:import url="/jsp/util/breadCrumbs.jsp"></c:import>
+				</div>
 			</div>
 		</c:if>
 		<div class="fourcol gray">

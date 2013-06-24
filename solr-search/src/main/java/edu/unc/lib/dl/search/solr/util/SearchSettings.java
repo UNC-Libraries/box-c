@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -62,6 +63,8 @@ public class SearchSettings extends AbstractSettings {
 	public int structuredDepthDefault;
 	// Search field parameter names as they appear in GET requests to controllers
 	public Map<String, String> searchFieldParams;
+	// Inverted field parameter names for easily getting keys by parameter name
+	public Map<String, String> searchFieldKeys;
 	// Search field display labels
 	public Map<String, String> searchFieldLabels;
 	// Fields which are allowed to be directly queried via keyword searches
@@ -140,6 +143,7 @@ public class SearchSettings extends AbstractSettings {
 		searchableFields = new HashSet<String>();
 		rangeSearchableFields = new HashSet<String>();
 		searchFieldParams = new HashMap<String, String>();
+		searchFieldKeys = new HashMap<String,String>();
 		searchFieldLabels = new HashMap<String, String>();
 		dateSearchableFields = new HashSet<String>();
 
@@ -198,6 +202,7 @@ public class SearchSettings extends AbstractSettings {
 		populateCollectionFromProperty("search.field.rangeSearchable", rangeSearchableFields, properties, ",");
 		populateCollectionFromProperty("search.field.dateSearchable", dateSearchableFields, properties, ",");
 		populateMapFromProperty("search.field.paramName.", searchFieldParams, properties);
+		searchFieldKeys = getInvertedHashMap(searchFieldParams);
 		populateMapFromProperty("search.field.display.", searchFieldLabels, properties);
 		populateMapFromProperty("search.actions.", actions, properties);
 		populateMapFromProperty("search.url.param.", searchStateParams, properties);
@@ -519,11 +524,7 @@ public class SearchSettings extends AbstractSettings {
 	}
 
 	public String searchFieldKey(String name) {
-		return getKey(searchFieldParams, name);
-	}
-
-	public String getSearchFieldKey(String name) {
-		return searchFieldKey(name);
+		return searchFieldKeys.get(name);
 	}
 
 	public Map<String, String> getSearchFieldParams() {

@@ -551,7 +551,8 @@ public class SolrSearchService {
 		if (searchRequest.isRetrieveFacets()) {
 			solrQuery.setFacet(true);
 			solrQuery.setFacetMinCount(1);
-			solrQuery.setFacetLimit(searchState.getBaseFacetLimit());
+			if (searchState.getBaseFacetLimit() != null)
+				solrQuery.setFacetLimit(searchState.getBaseFacetLimit());
 			
 			if (searchState.getFacetsToRetrieve() != null) {
 				// Add facet fields
@@ -610,7 +611,8 @@ public class SolrSearchService {
 		}
 
 		// Set Navigation options
-		solrQuery.setStart(searchState.getStartRow());
+		if (searchState.getStartRow() != null)
+			solrQuery.setStart(searchState.getStartRow());
 		if (searchState.getRowsPerPage() != null)
 			solrQuery.setRows(searchState.getRowsPerPage());
 

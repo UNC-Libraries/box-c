@@ -83,7 +83,7 @@
 				</c:when>
 				<c:otherwise>
 					<c:url var="previousPageUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
-						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["PREVIOUS_PAGE"]}'/>
+						<c:param name='a.${searchSettings.actions["PREVIOUS_PAGE"]}' value=''/>
 					</c:url>
 					<a href="<c:out value="${previousPageUrl}"/>">&lt; previous</a>
 				</c:otherwise>
@@ -98,7 +98,7 @@
 					</c:when>
 					<c:otherwise>
 						<c:url var="pageJumpUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
-							<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["SET_START_ROW"]}:${(pageNumber - 1) * resultResponse.searchState.rowsPerPage}'/>
+							<c:param name='a.${searchSettings.actions["SET_START_ROW"]}' value='${(pageNumber - 1) * resultResponse.searchState.rowsPerPage}'/>
 						</c:url>
 						<a href="<c:out value="${pageJumpUrl}"/>"><c:out value="${pageNumber}" /></a>
 					</c:otherwise>
@@ -113,7 +113,7 @@
 				</c:when>
 				<c:otherwise>
 					<c:url var="nextPageUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
-						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["NEXT_PAGE"]}'/>
+						<c:param name='a.${searchSettings.actions["NEXT_PAGE"]}' value=''/>
 					</c:url>
 					<a href="<c:out value="${nextPageUrl}"/>">next &gt;</a>
 				</c:otherwise>

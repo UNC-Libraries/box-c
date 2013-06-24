@@ -52,29 +52,21 @@
 		</div>
 	
 		<c:if test="${param.showSearchWithin == 'true'}">
+			<c:set var="searchStateParameters" value='${fn:replace(searchStateUrl, "\\\"", "%22")}'/>
+			<c:if test="${not empty resultResponse.selectedContainer}">
+				<input type="hidden" name="container" value="${resultResponse.selectedContainer.id}"/>
+			</c:if>
+			<input type="hidden" name="within" value="${searchStateParameters}"/>
 			<p class="fpsearch_search_within">
-				<c:choose>
-					<c:when test="${not empty searchState.facets['ANCESTOR_PATH']}">
-						<input type="radio" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" value="" /> Everything
-						<c:url var="containerQuery" scope="page" value='${queryPath}'>
-							<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${searchState.facets['ANCESTOR_PATH'].searchValue}"/>
-						</c:url>
-						<input type="radio" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" 
-							value="container=<c:out value='${searchState.facets["ANCESTOR_PATH"].searchKey}' />" checked="checked" /> In 	 <c:out value="${containerResourceType}"/>
-					</c:when>
-					<c:otherwise>
-						<input type="radio" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" value="" checked="checked" /> Everything
-					</c:otherwise>
-				</c:choose>
+			
+				<input type="radio" name="searchType" value="" />Everything
+				<c:if test="${not empty resultResponse.selectedContainer}">
+					<input type="radio" checked="checked" name="searchType" value="container"/>In <c:out value="${containerResourceType}"/>
+				</c:if>
 				<c:if test="${(not empty searchState.facets && ((not empty searchState.facets['ANCESTOR_PATH'] && fn:length(searchState.facets) > 1)
 						|| empty searchState.facets['ANCESTOR_PATH']))
-						|| not empty searchState.rangeFields 
-						|| not empty searchState.searchFields || not empty searchState.accessTypeFilter}">
-					<c:set var="searchStateParameters" value='${fn:replace(searchStateUrl, "\\\"", "%22")}'/>
-					<c:if test="${not empty searchState.facets['ANCESTOR_PATH']}">
-						<c:set var="searchStateParameters" value="container=${searchState.facets['ANCESTOR_PATH'].searchKey}&${searchStateParameters}" />
-					</c:if>
-					<input type="radio" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" value="${searchStateParameters}"/> Within results
+						|| not empty searchState.rangeFields || not empty searchState.searchFields}">
+					<input type="radio" name="searchType" value="within"/> Within results
 				</c:if>
 			</p>
 		</c:if>

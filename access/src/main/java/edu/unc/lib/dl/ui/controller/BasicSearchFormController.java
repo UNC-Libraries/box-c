@@ -32,6 +32,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.UnsupportedEncodingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,75 +56,47 @@ public class BasicSearchFormController {
 	protected SearchStateFactory searchStateFactory;
 	
 	@RequestMapping(method = RequestMethod.GET)
-	public String handleRequest(Model model, HttpServletRequest request){
-		SearchState searchState = null;
-		try {
-			request.setCharacterEncoding("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
+	public String searchForm(@RequestParam(value = "query", required = false) String query,
+			@RequestParam(value = "queryType", required = false) String queryType,
+			@RequestParam(value = "container", required = false) String container,
+			@RequestParam(value = "within", required = false) String searchWithin,
+			@RequestParam(value = "searchType", required = false) String searchType, Model model,
+			HttpServletRequest request) {
+		StringBuilder destination = new StringBuilder();
+		if (request.getParameter("queryPath") != null && request.getParameter("queryPath").equals("structure"))
+			destination.append("redirect:/structure");
+		else destination.append("redirect:/search");
 		
-		String searchWithin = request.getParameter(searchSettings.searchStateParam("SEARCH_WITHIN"));
-		String container = request.getParameter("container");
-		
-		LOG.debug("Search Within:" + searchWithin);
-		if (searchWithin != null && searchWithin.length() > 0){
+		if (!"".equals(searchType) && container != null && container.length() > 0)
+			destination.append('/').append(container);
+
+		if ("within".equals(searchType) && searchWithin != null) {
 			try {
 				searchWithin = URLDecoder.decode(searchWithin, "UTF-8");
-			} catch (Exception e){
+				HashMap<String, String[]> parameters = SearchStateUtil.getParametersAsHashMap(searchWithin);
+				SearchState withinState = searchStateFactory.createSearchState(parameters);
+				if (withinState.getSearchFields().size() > 0) {
+					String queryKey = searchSettings.searchFieldKey(queryType);
+					String typeValue = withinState.getSearchFields().get(queryKey);
+					if (queryKey != null) {
+						if (typeValue == null)
+							withinState.getSearchFields().put(queryKey, query);
+						else
+							withinState.getSearchFields().put(queryKey, typeValue + " " + query);
+						String searchStateUrl = SearchStateUtil.generateStateParameterString(withinState);
+						destination.append('?').append(searchStateUrl);
+					}
+				} else {
+					destination.append('?').append(queryType).append('=').append(query);
+					destination.append('&').append(searchWithin);
+				}
+			} catch (Exception e) {
 				LOG.error("Failed to decode searchWithin " + searchWithin, e);
 			}
-			HashMap<String,String[]> parameters = SearchStateUtil.getParametersAsHashMap(searchWithin);
-			searchState = searchStateFactory.createSearchState(parameters);
-			
-			if (parameters.containsKey("container")) {
-				try {
-					container = parameters.get("container")[0];
-				} catch (IndexOutOfBoundsException e){
-					// ignore empty container parameter
-				}
-			}
+		} else {
+			destination.append('?').append(queryType).append('=').append(query);
 		}
-		
-		if (container != null && container.length() > 0)
-			container = '/' + container;
-		else container = "";
-		
-		StringBuffer actions = new StringBuffer();
-		String query = request.getParameter("query");
-		LOG.debug("Query:" + query);
-		if (query != null){
-			query = query.replaceAll(",", "%2C");
-			String queryType = request.getParameter("queryType");
-			if (queryType != null){
-				actions.append(searchSettings.actionName("ADD_SEARCH_FIELD")).append(':')
-					.append(queryType).append(',').append(query);
-			}
-		}
-
-		String otherActions = request.getParameter(searchSettings.searchStateParam("ACTIONS"));
-		if (otherActions != null){
-			if (actions.length() > 0)
-				actions.append('|');
-			actions.append(otherActions);
-		}
-		
-		if (searchState == null)
-			searchState = searchStateFactory.createSearchState();
-		
-		LOG.debug("Actions:" + actions.toString());
-		try {
-			searchActionService.executeActions(searchState, actions.toString());
-		} catch (InvalidHierarchicalFacetException e){
-			LOG.warn("An invalid facet was provided: " + request.getQueryString(), e);
-		}
-		request.getSession().setAttribute("searchState", searchState);
-		
-		model.addAllAttributes(SearchStateUtil.generateStateParameters(searchState));
-
-		if (request.getParameter("queryPath") != null && request.getParameter("queryPath").equals("structure"))
-			return "redirect:/structure" + container;
-		return "redirect:/search" + container;
+		return destination.toString();
 	}
 	
 	public SearchActionService getSearchActionService() {

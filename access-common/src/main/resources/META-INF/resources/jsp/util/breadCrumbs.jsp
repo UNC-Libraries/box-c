@@ -36,7 +36,7 @@
 		<c:forEach items="${searchState.searchFields}" var="field">
 			<c:if test="${not empty field.value}">
 				<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-					<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_SEARCH_FIELD"]}:${searchSettings.searchFieldParams[field.key]}'/>
+					<c:param name='a.${searchSettings.actions["REMOVE_SEARCH_FIELD"]}' value='${searchSettings.searchFieldParams[field.key]}'/>
 				</c:url>
 				<li>
 					(<a href="<c:out value="${removeUrl}"/>">x</a>)
@@ -53,7 +53,7 @@
 				</c:when>
 				<c:otherwise>
 					<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_FACET"]}:${searchSettings.searchFieldParams[field.key]}'/>
+						<c:param name='a.${searchSettings.actions["REMOVE_FACET"]}' value='${searchSettings.searchFieldParams[field.key]}'/>
 					</c:url>
 				</c:otherwise>
 			</c:choose>
@@ -87,7 +87,7 @@
 	<c:if test="${not empty searchState.rangeFields}">
 		<c:forEach items="${searchState.rangeFields}" var="field">
 			<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-				<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_RANGE_FIELD"]}:${searchSettings.searchFieldParams[field.key]}'/>
+				<c:param name='a.${searchSettings.actions["REMOVE_RANGE_FIELD"]}' value='${searchSettings.searchFieldParams[field.key]}'/>
 			</c:url>
 			<li>
 				(<a href="<c:out value="${removeUrl}"/>">x</a>)

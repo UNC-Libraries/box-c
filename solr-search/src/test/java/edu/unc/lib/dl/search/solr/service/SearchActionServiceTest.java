@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,10 +54,10 @@ public class SearchActionServiceTest extends Assert {
 		SearchState searchState = new SearchState();
 		
 		//Action on null search state
-		searchActionService.executeActions(null, searchSettings.actionName("SET_SEARCH_FIELD") + ":anywhere");
+		searchActionService.executeActions(null, new LinkedHashMap<String,String[]>());
 		
 		//No actions
-		searchActionService.executeActions(searchState, "nothing");
+		searchActionService.executeActions(searchState, new LinkedHashMap<String,String[]>());
 		assertTrue(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
 		searchActionService.executeActions(searchState, null);
 		assertTrue(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
@@ -64,283 +67,329 @@ public class SearchActionServiceTest extends Assert {
 	public void searchFieldActions(){
 		SearchState searchState = new SearchState();
 		
+		Map<String,String[]> params = new LinkedHashMap<String,String[]>();
 		//Missing parameter
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SEARCH_FIELD") + ":anywhere");
+		params.put("a." + searchSettings.actionName("SET_SEARCH_FIELD"), new String[]{"anywhere"});
+		searchActionService.executeActions(searchState, params);
 		assertTrue(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
 		//Removing field that wasn't added
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_SEARCH_FIELD") + ":anywhere");
+		params.clear();
+		params.put("a." + searchSettings.actionName("REMOVE_SEARCH_FIELD"), new String[]{"anywhere"});
+		searchActionService.executeActions(searchState, params);
 		assertTrue(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
 		//Adding correctly
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SEARCH_FIELD") + ":anywhere,hello");
-		assertFalse(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
+		params.clear();
+		params.put("a." + searchSettings.actionName("SET_SEARCH_FIELD"), new String[]{"anywhere:hello"});
+		searchActionService.executeActions(searchState, params);
+		assertFalse("".equals(SearchStateUtil.generateStateParameterString(searchState)));
 		//Removing
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_SEARCH_FIELD") + ":anywhere");
-		assertTrue(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
+		params.clear();
+		params.put("a." + searchSettings.actionName("REMOVE_SEARCH_FIELD"), new String[]{"anywhere"});
+		searchActionService.executeActions(searchState, params);
+		assertEquals("", SearchStateUtil.generateStateParameterString(searchState));
 		
 		//Adding multiple, with duplicate
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SEARCH_FIELD") + ":anywhere,hello");
+		params.clear();
+		params.put("a." + searchSettings.actionName("SET_SEARCH_FIELD"), new String[]{"anywhere:hello"});
+		searchActionService.executeActions(searchState, params);
 		assertFalse(searchState.getSearchFields().containsKey("anywhere"));
 		//Verify that it remapped the index name to the internal name
 		assertTrue(searchState.getSearchFields().containsKey("DEFAULT_INDEX"));
 		assertTrue(searchState.getSearchFields().get("DEFAULT_INDEX").equals("hello"));
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SEARCH_FIELD") + ":titleIndex,hello");
+		params.clear();
+		params.put("a." + searchSettings.actionName("SET_SEARCH_FIELD"), new String[]{"titleIndex:hello"});
+		searchActionService.executeActions(searchState, params);
 		//Non-existent search field
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SEARCH_FIELD") + ":author,hello");
+		params.clear();
+		params.put("a." + searchSettings.actionName("SET_SEARCH_FIELD"), new String[]{"author:hello"});
+		searchActionService.executeActions(searchState, params);
 		assertFalse(searchState.getSearchFields().containsKey("author"));
 		assertFalse(searchState.getSearchFields().containsKey(null));
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SEARCH_FIELD") + ":contributorIndex,hello");
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SEARCH_FIELD") + ":subjectIndex,hello");
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SEARCH_FIELD") + ":anywhere,hello");
+		params.clear();
+		params.put("a." + searchSettings.actionName("SET_SEARCH_FIELD"), new String[]{"contributorIndex:hello", "subjectIndex:hello", "anywhere:hello"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getSearchFields().size(), 4);
 		
 		//Remove nothing
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_SEARCH_FIELD"));
+		params.clear();
+		params.put("a." + searchSettings.actionName("REMOVE_SEARCH_FIELD"), new String[]{});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getSearchFields().size(), 4);
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_SEARCH_FIELD") + ":title");
+		params.clear();
+		params.put("a." + searchSettings.actionName("REMOVE_SEARCH_FIELD"), new String[]{"title"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getSearchFields().size(), 4);
 		//Remove
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_SEARCH_FIELD") + ":titleIndex");
+		params.clear();
+		params.put("a." + searchSettings.actionName("REMOVE_SEARCH_FIELD"), new String[]{"titleIndex"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getSearchFields().size(), 3);
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_SEARCH_FIELD") + ":anywhere");
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_SEARCH_FIELD") + ":contributorIndex");
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_SEARCH_FIELD") + ":subjectIndex");
+		params.clear();
+		params.put("a." + searchSettings.actionName("REMOVE_SEARCH_FIELD"), new String[]{"anywhere", "contributorIndex", "subjectIndex"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getSearchFields().size(), 0);
 		
 		//Test add field
-		searchActionService.executeActions(searchState, searchSettings.actionName("ADD_SEARCH_FIELD") + ":anywhere,hello");
+		params.clear();
+		params.put("a." + searchSettings.actionName("ADD_SEARCH_FIELD"), new String[]{"anywhere:hello"});
+		searchActionService.executeActions(searchState, params);
 		assertTrue("hello".equals(searchState.getSearchFields().get("DEFAULT_INDEX")));
-		searchActionService.executeActions(searchState, searchSettings.actionName("ADD_SEARCH_FIELD") + ":anywhere,world");
+		params.put("a." + searchSettings.actionName("ADD_SEARCH_FIELD"), new String[]{"anywhere:world"});
+		searchActionService.executeActions(searchState, params);
 		assertTrue("hello world".equals(searchState.getSearchFields().get("DEFAULT_INDEX")));
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SEARCH_FIELD") + ":anywhere,!");
-		assertTrue("!".equals(searchState.getSearchFields().get("DEFAULT_INDEX")));
-		//Too many parameters
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SEARCH_FIELD") + ":anywhere,hello,world");
-		assertTrue("!".equals(searchState.getSearchFields().get("DEFAULT_INDEX")));
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_SEARCH_FIELD") + ":anywhere");
-		
-		searchState = new SearchState();
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SEARCH_FIELD") + ":format,hello \"1,audio\" world woo \"doit\"");
-		assertEquals(searchState.getSearchFields().size(), 1);
 	}
 	
 	@Test
 	public void pagingActions(){
+		Map<String,String[]> params = new LinkedHashMap<String,String[]>();
 		SearchState searchState = new SearchState();
 		
 		//Rows per page not set, no change
-		searchActionService.executeActions(searchState, searchSettings.actionName("NEXT_PAGE"));
-		assertEquals(searchState.getStartRow(), 0);
+		params.put("a." + searchSettings.actionName("NEXT_PAGE"), new String[]{});
+		searchActionService.executeActions(searchState, params);
+		assertNull(searchState.getStartRow());
 		
 		//Can't have negative rows per page
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_ROWS_PER_PAGE") + ":-1");
+		params.clear();
+		params.put("a." + searchSettings.actionName("SET_ROWS_PER_PAGE"), new String[]{"-1"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getRowsPerPage().intValue(), 0);
 		
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_ROWS_PER_PAGE") + ":" + searchSettings.getDefaultPerPage());
+		params.put("a." + searchSettings.actionName("SET_ROWS_PER_PAGE"), new String[]{Integer.toString(searchSettings.getDefaultPerPage())});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getRowsPerPage().intValue(), searchSettings.getDefaultPerPage());
-		searchActionService.executeActions(searchState, searchSettings.actionName("NEXT_PAGE"));
-		assertEquals(searchState.getStartRow(), searchSettings.getDefaultPerPage());
+		params.clear();
+		params.put("a." + searchSettings.actionName("NEXT_PAGE"), new String[]{});
+		searchActionService.executeActions(searchState, params);
+		assertEquals(searchState.getStartRow().intValue(), searchSettings.getDefaultPerPage());
 		
 		//Action that should have a parameter
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_START_ROW"));
-		assertEquals(searchState.getStartRow(), searchSettings.getDefaultPerPage());
+		params.clear();
+		params.put("a." + searchSettings.actionName("SET_START_ROW"), new String[]{Integer.toString(searchSettings.getDefaultPerPage())});
+		searchActionService.executeActions(searchState, params);
+		assertEquals(searchState.getStartRow().intValue(), searchSettings.getDefaultPerPage());
 		
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_START_ROW") + ":0");
-		assertEquals(searchState.getStartRow(), 0);
+		params.put("a." + searchSettings.actionName("SET_START_ROW"), new String[]{Integer.toString(0)});
+		searchActionService.executeActions(searchState, params);
+		assertEquals(searchState.getStartRow().intValue(), 0);
 		
 		//Test action that takes no parameters, with a param
-		searchActionService.executeActions(searchState, searchSettings.actionName("NEXT_PAGE") + ":anywhere");
-		assertEquals(searchState.getStartRow(), searchSettings.getDefaultPerPage());
+		params.clear();
+		params.put("a." + searchSettings.actionName("NEXT_PAGE"), new String[]{"anywere"});
+		searchActionService.executeActions(searchState, params);
+		assertEquals(searchState.getStartRow().intValue(), searchSettings.getDefaultPerPage());
 		
-		searchActionService.executeActions(searchState, searchSettings.actionName("PREVIOUS_PAGE"));
-		assertEquals(searchState.getStartRow(), 0);
+		params.clear();
+		params.put("a." + searchSettings.actionName("PREVIOUS_PAGE"), new String[]{});
+		searchActionService.executeActions(searchState, params);
+		assertEquals(searchState.getStartRow().intValue(), 0);
 		//Verify that can't go to a negative page
-		searchActionService.executeActions(searchState, searchSettings.actionName("PREVIOUS_PAGE"));
-		assertEquals(searchState.getStartRow(), 0);
+		searchActionService.executeActions(searchState, params);
+		assertEquals(searchState.getStartRow().intValue(), 0);
 	}
 	
 	@Test
 	public void rangeActions(){
+		Map<String,String[]> params = new LinkedHashMap<String,String[]>();
 		SearchState searchState = new SearchState();
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RANGE_FIELD") + ":" 
-				+ searchSettings.getSearchFieldParam("DATE_ADDED"));
+		params.put("a." + searchSettings.actionName("SET_RANGE_FIELD"), new String[]{"added"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getRangeFields().size(), 0);
 		
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RANGE_FIELD") + ":" +
-				searchSettings.getSearchFieldParam("DATE_ADDED") + ",2011");
+		params.put("a." + searchSettings.actionName("SET_RANGE_FIELD"), new String[]{"added:2011"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getRangeFields().size(), 0);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RANGE_FIELD") + ":" +
-				searchSettings.getSearchFieldParam("DATE_ADDED") + ",2010,2011");
+		params.put("a." + searchSettings.actionName("SET_RANGE_FIELD"), new String[]{"added:2010,2011"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getRangeFields().size(), 1);
 		assertTrue(searchState.getRangeFields().get("DATE_ADDED").getLeftHand().equals("2010") && 
 				searchState.getRangeFields().get("DATE_ADDED").getRightHand().equals("2011"));
 		
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_RANGE_FIELD") + ":" 
-				+ searchSettings.getSearchFieldParam("DATE_ADDED"));
+		params.clear();
+		params.put("a." + searchSettings.actionName("REMOVE_RANGE_FIELD"), new String[]{"added"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getRangeFields().size(), 0);
 		
 		//Test empty range boundries
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RANGE_FIELD") + ":" +
-				searchSettings.getSearchFieldParam("DATE_ADDED") + ",2010,");
+		params.clear();
+		params.put("a." + searchSettings.actionName("SET_RANGE_FIELD"), new String[]{"added:2010,"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getRangeFields().size(), 1);
 		assertTrue(searchState.getRangeFields().get("DATE_ADDED").getLeftHand().equals("2010") && 
 				searchState.getRangeFields().get("DATE_ADDED").getRightHand() == null);
 		
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RANGE_FIELD") + ":" +
-				searchSettings.getSearchFieldParam("DATE_ADDED") + ",,2011");
+		params.put("a." + searchSettings.actionName("SET_RANGE_FIELD"), new String[]{"added:,2011"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getRangeFields().size(), 1);
 		assertTrue(searchState.getRangeFields().get("DATE_ADDED").getLeftHand() == null && 
 				searchState.getRangeFields().get("DATE_ADDED").getRightHand().equals("2011"));
 		
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RANGE_FIELD") + ":" +
-				searchSettings.getSearchFieldParam("DATE_ADDED") + ",,");
+		params.put("a." + searchSettings.actionName("SET_RANGE_FIELD"), new String[]{"added:,"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getRangeFields().size(), 1);
 		assertTrue(searchState.getRangeFields().get("DATE_ADDED").getLeftHand() == null && 
 				searchState.getRangeFields().get("DATE_ADDED").getRightHand() == null);
 		
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_RANGE_FIELD") + ":" 
-				+ searchSettings.getSearchFieldParam("DATE_ADDED"));
+		params.clear();
+		params.put("a." + searchSettings.actionName("REMOVE_RANGE_FIELD"), new String[]{"added"});
+		searchActionService.executeActions(searchState, params);
 		
 		//Empty boundry with too few parameters
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RANGE_FIELD") + ":" +
-				searchSettings.getSearchFieldParam("DATE_ADDED") + ",");
+		params.clear();
+		params.put("a." + searchSettings.actionName("SET_RANGE_FIELD"), new String[]{"added:"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getRangeFields().size(), 0);
 		
 		//Multiple
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RANGE_FIELD") + ":" +
-				searchSettings.getSearchFieldParam("DATE_ADDED") + ",2010,2011");
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RANGE_FIELD") + ":" +
-				searchSettings.getSearchFieldParam("DATE_CREATED") + ",2010-06,2011");
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RANGE_FIELD") + ":invalidfield,2010-06,2011");
+		params.put("a." + searchSettings.actionName("SET_RANGE_FIELD"), new String[]{"added:2010,2011", "created:2010-06,2011", "invalidField:2010-06,2011"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getRangeFields().size(), 2);
 	}
-	
-	@Test
-	public void sortActions(){
-		SearchState searchState = new SearchState();
-		
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SORT"));
-		assertTrue(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SORT") + ":title");
-		assertTrue(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_SORT") + ":title,desc");
-		assertTrue(searchState.getSortType().equals("title") && searchState.getSortOrder().equals("desc"));
-	}
-	
-	@Test
-	public void accessFilterActions(){
-		SearchState searchState = new SearchState();
-		
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_ACCESS_FILTER"));
-		assertTrue(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_ACCESS_FILTER") + ":invalidField");
-		assertTrue(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_ACCESS_FILTER") + ":" +
-				searchSettings.getSearchFieldParam("FILE_ACCESS"));
-		assertTrue(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_ACCESS_FILTER"));
-		assertTrue(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_ACCESS_FILTER") + ":" +
-				searchSettings.getSearchFieldParam("FILE_ACCESS"));
-		assertTrue(searchState.getAccessTypeFilter().equals("FILE_ACCESS"));
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_ACCESS_FILTER") + ":" +
-				searchSettings.getSearchFieldParam("RECORD_ACCESS"));
-		assertTrue(searchState.getAccessTypeFilter().equals("RECORD_ACCESS"));
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_ACCESS_FILTER"));
-		assertNull(searchState.getAccessTypeFilter());
-	}
-	
+
 	@Test
 	public void resourceTypeActions(){
+		Map<String,String[]> params = new LinkedHashMap<String,String[]>();
 		SearchState searchState = new SearchState();
 		
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RESOURCE_TYPE"));
+		params.put("a." + searchSettings.actionName("SET_RESOURCE_TYPE"), new String[]{});
+		searchActionService.executeActions(searchState, params);
 		assertTrue(emptyStateString.equals(SearchStateUtil.generateStateParameterString(searchState)));
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RESOURCE_TYPE") + ":");
+		params.put("a." + searchSettings.actionName("SET_RESOURCE_TYPE"), new String[]{",,,,,"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getResourceTypes().size(), 0);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RESOURCE_TYPE") + ":,,,,,,,,");
-		assertEquals(searchState.getResourceTypes().size(), 0);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RESOURCE_TYPE") + ":file");
+		params.put("a." + searchSettings.actionName("SET_RESOURCE_TYPE"), new String[]{"file"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getResourceTypes().size(), 1);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RESOURCE_TYPE") + ":folder");
+		params.put("a." + searchSettings.actionName("SET_RESOURCE_TYPE"), new String[]{"folder"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getResourceTypes().size(), 1);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_RESOURCE_TYPE") + ":file,folder,collection");
+		params.put("a." + searchSettings.actionName("SET_RESOURCE_TYPE"), new String[]{"file,folder,collection"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getResourceTypes().size(), 3);
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_RESOURCE_TYPE"));
+		params.put("a." + searchSettings.actionName("REMOVE_RESOURCE_TYPE"), new String[]{});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getResourceTypes().size(), 3);
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_RESOURCE_TYPE") + ":,,,,,,,,,,");
+		params.put("a." + searchSettings.actionName("REMOVE_RESOURCE_TYPE"), new String[]{"invalid,resource,types,go,here"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getResourceTypes().size(), 3);
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_RESOURCE_TYPE") + ":invalid,resource,types,go,here,thank,you");
-		assertEquals(searchState.getResourceTypes().size(), 3);
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_RESOURCE_TYPE") + ":file,folder");
+		params.put("a." + searchSettings.actionName("REMOVE_RESOURCE_TYPE"), new String[]{"file,folder"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getResourceTypes().size(), 1);
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_RESOURCE_TYPE") + ":file,folder,collection");
+		params.put("a." + searchSettings.actionName("REMOVE_RESOURCE_TYPE"), new String[]{"file,folder,collection"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getResourceTypes().size(), 0);
 	}
 	
 	@Test
 	public void facetActions(){
+		Map<String,String[]> params = new LinkedHashMap<String,String[]>();
 		SearchState searchState = new SearchState();
 		
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET"));
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 0);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":invalid");
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"invalid"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 0);
-		//https://cdr.lib.unc.edu/search?action=setFacet%3aformat%2c%221%2ctext%22&sort=default&sortOrder=&rows=20
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format");
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"format"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 0);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":language,");
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"language:"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 0);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":language,English");
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"language:English"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 1);
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_FACET"));
+		params.clear();
+		params.put("a." + searchSettings.actionName("REMOVE_FACET"), new String[]{});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 1);
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_FACET") + ":language");
+		params.put("a." + searchSettings.actionName("REMOVE_FACET"), new String[]{"language"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 0);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":language,\"English\"");
+		params.clear();
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"language:English"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 1);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":language,French");
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"language:French"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 1);
 		assertEquals("French", ((GenericFacet)searchState.getFacets().get("LANGUAGE")).getDisplayValue());
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":subject,France");
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"subject:France"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 2);
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_FACET") + ":language");
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_FACET") + ":subject");
+		params.clear();
+		params.put("a." + searchSettings.actionName("REMOVE_FACET"), new String[]{"language", "subject"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 0);
+		params.clear();
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"language:English", "subject:France"});
+		searchActionService.executeActions(searchState, params);
+		assertEquals(searchState.getFacets().size(), 2);
+	}
+	
+	@Test
+	public void hierarchicalFacetTest() {
+		Map<String,String[]> params = new LinkedHashMap<String,String[]>();
+		SearchState searchState = new SearchState();
+		
 		//Invalid hier
 		try {
-			searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"audio\"");
+			params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"format:audio"});
+			searchActionService.executeActions(searchState, params);
 			fail();
 		} catch (InvalidHierarchicalFacetException e){
 			//Expected
 		}
 		assertEquals(0, searchState.getFacets().size());
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"^audio\"");
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"format:^audio"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 1);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"%5Eaudio\"");
-		assertEquals(searchState.getFacets().size(), 1);
+//		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"format:%5Eaudio"});
+//		searchActionService.executeActions(searchState, params);
+//		assertEquals(searchState.getFacets().size(), 1);
 		assertTrue(searchState.getFacets().get("CONTENT_TYPE").getClass().equals(MultivaluedHierarchicalFacet.class));
-		searchActionService.executeActions(searchState, searchSettings.actionName("REMOVE_FACET") + ":format");
+		params.clear();
+		params.put("a." + searchSettings.actionName("REMOVE_FACET"), new String[]{"format"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 0);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET") + ":format,\"/audio^wav\"");
+		params.clear();
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"format:/audio^wav"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 1);
 		
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET_SELECT"));
+		
+	}
+	
+	@Test
+	public void facetSelectTest() {
+		Map<String,String[]> params = new LinkedHashMap<String,String[]>();
+		SearchState searchState = new SearchState();
+		
+		params.put("a." + searchSettings.actionName("SET_FACET_SELECT"), new String[]{});
+		searchActionService.executeActions(searchState, params);
 		assertNull(searchState.getFacetsToRetrieve());
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET_SELECT") + ":");
+		params.put("a." + searchSettings.actionName("SET_FACET_SELECT"), new String[]{""});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacetsToRetrieve().size(),1);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET_SELECT") + ":format,");
-		assertEquals(searchState.getFacetsToRetrieve().size(), 2);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET_SELECT") + ":format");
+		params.put("a." + searchSettings.actionName("SET_FACET_SELECT"), new String[]{"format,"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacetsToRetrieve().size(), 1);
-		searchActionService.executeActions(searchState, searchSettings.actionName("SET_FACET_SELECT") + ":format,contributor,subject");
+		params.put("a." + searchSettings.actionName("SET_FACET_SELECT"), new String[]{"format"});
+		searchActionService.executeActions(searchState, params);
+		assertEquals(searchState.getFacetsToRetrieve().size(), 1);
+		params.put("a." + searchSettings.actionName("SET_FACET_SELECT"), new String[]{"format,contributor,subject"});
+		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacetsToRetrieve().size(), 3);
 	}
 	
 	@Test
 	public void cutoffFacet() {
+		Map<String,String[]> params = new LinkedHashMap<String,String[]>();
 		SearchState searchState = new SearchState();
 		
-		searchActionService.executeActions(searchState, "setFacet:path,\"2,uuid:test!3\"");
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"path:2,uuid:test!3"});
+		searchActionService.executeActions(searchState, params);
 		
 		CutoffFacet facet = (CutoffFacet)searchState.getFacets().get("ANCESTOR_PATH");
 		
@@ -350,9 +399,12 @@ public class SearchActionServiceTest extends Assert {
 	
 	@Test
 	public void cutoffAndReset() {
+		Map<String,String[]> params = new LinkedHashMap<String,String[]>();
 		SearchState searchState = new SearchState();
 		
-		searchActionService.executeActions(searchState, "setFacet:path,\"2,uuid:test!3\"|resetNav:search");
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"path:2,uuid:test!3"});
+		params.put("a." + searchSettings.actionName("RESET_NAV"), new String[]{"search"});
+		searchActionService.executeActions(searchState, params);
 		
 		CutoffFacet facet = (CutoffFacet)searchState.getFacets().get("ANCESTOR_PATH");
 		

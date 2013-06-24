@@ -51,14 +51,14 @@ public class SearchController extends AbstractSearchController {
 						destination.append('?').append(searchStateUrl);
 					}
 				} else {
-					destination.append("?terms=").append(queryType).append(':').append(query.replaceAll(",", "%2C"));
+					destination.append('?').append(queryType).append('=').append(query);
 					destination.append('&').append(searchWithin);
 				}
 			} catch (Exception e) {
 				LOG.error("Failed to decode searchWithin " + searchWithin, e);
 			}
 		} else {
-			destination.append("?terms=").append(queryType).append(':').append(query.replaceAll(",", "%2C"));
+			destination.append('?').append(queryType).append('=').append(query);
 		}
 		return destination.toString();
 	}

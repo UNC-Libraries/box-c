@@ -44,9 +44,9 @@ public class SearchState implements Serializable, Cloneable {
 	private Map<String, Integer> facetLimits;
 	private Map<String, String> facetSorts;
 	private Collection<String> facetsToRetrieve;
-	private int baseFacetLimit;
+	private Integer baseFacetLimit;
 	private String accessTypeFilter;
-	private int startRow;
+	private Integer startRow;
 	private Integer rowsPerPage;
 	private String sortType;
 	private String sortOrder;
@@ -65,6 +65,8 @@ public class SearchState implements Serializable, Cloneable {
 		resultFields = null;
 		facetsToRetrieve = null;
 		this.rollup = null;
+		baseFacetLimit = null;
+		startRow = null;
 	}
 
 	public SearchState(SearchState searchState) {
@@ -129,11 +131,11 @@ public class SearchState implements Serializable, Cloneable {
 		this.facets = facets;
 	}
 
-	public int getStartRow() {
+	public Integer getStartRow() {
 		return startRow;
 	}
 
-	public void setStartRow(int startRow) {
+	public void setStartRow(Integer startRow) {
 		if (startRow < 0) {
 			this.startRow = 0;
 			return;
@@ -211,6 +213,16 @@ public class SearchState implements Serializable, Cloneable {
 
 		}
 
+		public RangePair(String pairString) {
+			String[] pairParts = pairString.split(",", 2);
+			if (pairParts[0].length() > 0)
+				this.leftHand = pairParts[0];
+			else this.leftHand = null;
+			if (pairParts[1].length() > 0)
+				this.rightHand = pairParts[1];
+			else this.rightHand = null;
+		}
+		
 		public RangePair(String leftHand, String rightHand) {
 			this.leftHand = leftHand;
 			this.rightHand = rightHand;
@@ -285,11 +297,11 @@ public class SearchState implements Serializable, Cloneable {
 		this.facetLimits = facetLimits;
 	}
 
-	public int getBaseFacetLimit() {
+	public Integer getBaseFacetLimit() {
 		return baseFacetLimit;
 	}
 
-	public void setBaseFacetLimit(int baseFacetLimit) {
+	public void setBaseFacetLimit(Integer baseFacetLimit) {
 		this.baseFacetLimit = baseFacetLimit;
 	}
 

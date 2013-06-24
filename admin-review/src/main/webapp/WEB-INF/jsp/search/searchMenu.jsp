@@ -29,7 +29,7 @@
 						<input type="radio" name="searchType" value="within"/>Within results
 					</p>
 				</form>
-				<c:import url="search/breadCrumbs.jsp"></c:import>
+				<c:import url="/jsp/util/breadCrumbs.jsp"></c:import>
 			</div>
 		</div>
 	</div>

@@ -16,15 +16,18 @@
 package edu.unc.lib.dl.search.solr.util;
 
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.model.SearchState.RangePair;
 
 /**
  * Utility class which transforms search states to other formats.
@@ -36,22 +39,49 @@ public class SearchStateUtil {
 	public SearchStateUtil(){
 		
 	}
+	
+	private static String urlEncodeParameter(String value) {
+		char[] chars = value.toCharArray();
+		StringBuilder sb = new StringBuilder();
+		for (char character: chars) {
+			if (character == '&')
+				sb.append("%26");
+			else if (character == '=')
+				sb.append("%3D");
+			else if (character == '#')
+				sb.append("%23");
+			else sb.append(character);
+		}
+		return sb.toString();
+	}
 
 	public static HashMap<String,String> generateSearchParameters(SearchState searchState) {
 		HashMap<String,String> params = new HashMap<String,String>();
 		if (searchState.getSearchFields() != null && searchState.getSearchFields().size() > 0){
-			params.put(searchSettings.searchStateParam("SEARCH_FIELDS"), joinFields(searchState.getSearchFields()));
+			for (Entry<String,String> field: searchState.getSearchFields().entrySet()) {
+				String fieldName = searchSettings.searchFieldParam(field.getKey());
+				params.put(fieldName, urlEncodeParameter(field.getValue()));
+			}
 		}
 		
 		if (searchState.getRangeFields() != null && searchState.getRangeFields().size() > 0){
-			params.put(searchSettings.searchStateParam("RANGE_FIELDS"), joinFields(searchState.getRangeFields()));
+			for (Entry<String, RangePair> field: searchState.getRangeFields().entrySet()) {
+				String fieldName = searchSettings.searchFieldParam(field.getKey());
+				params.put(fieldName, urlEncodeParameter(field.getValue().toString()));
+			}
 		}
 		
 		if (searchState.getFacets() != null && searchState.getFacets().size() > 0){
-			params.put(searchSettings.searchStateParam("FACET_FIELDS"), SearchStateUtil.joinFacets(searchState.getFacets(), '|', ':'));
+			for (Entry<String,Object> field: searchState.getFacets().entrySet()) {
+				String fieldName = searchSettings.searchFieldParam(field.getKey());
+				if (field.getValue() instanceof SearchFacet)
+					params.put(fieldName, urlEncodeParameter(((SearchFacet) field.getValue()).getLimitToValue()));
+				else params.put(fieldName, urlEncodeParameter(field.getValue().toString()));
+			}
 		}
 		return params;
 	}
+
 	
 	/**
 	 * Returns the search state as a URL query string.
@@ -73,12 +103,12 @@ public class SearchStateUtil {
 			params.put(searchSettings.searchStateParam("FACET_LIMIT_FIELDS"), joinFields(searchState.getFacetLimits()));
 		}
 		
-		if (searchState.getStartRow() != 0){
+		if (searchState.getStartRow() != null && searchState.getStartRow() != 0){
 			params.put(searchSettings.searchStateParam("START_ROW"), ""+searchState.getStartRow());
 		}
 		
 		//Add base facet limit if it isn't the default
-		if (searchState.getBaseFacetLimit() != searchSettings.facetsPerGroup){
+		if (searchState.getBaseFacetLimit() != null && searchState.getBaseFacetLimit() != searchSettings.facetsPerGroup){
 			params.put(searchSettings.searchStateParam("BASE_FACET_LIMIT"), ""+searchState.getBaseFacetLimit());
 		}
 		

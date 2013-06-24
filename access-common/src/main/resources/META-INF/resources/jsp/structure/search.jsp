@@ -42,17 +42,23 @@
 <div class="gray">
 	<div class="fourcol">
 		<div class="fourcol light shadowtop breadcrumbs">
-			<c:set var="searchState" scope="request" value="${searchState}"/>
-			<c:import url="searchResults/breadCrumbs.jsp">
-				<c:param name="queryPath" value="browse"/>
-			</c:import>
+			<div class="contentarea">
+				<h2>Breadcrumbs</h2>
+				<c:set var="searchState" scope="request" value="${searchState}"/>
+				<c:import url="/jsp/util/breadCrumbs.jsp">
+					<c:param name="queryPath" value="browse"/>
+				</c:import>
+			</div>
 		</div>
 		<div class="fourcol gray">
-			<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
-			<c:import url="common/facetList.jsp">
-				<c:param name="queryPath" value="structure"/>
-				<c:param name="title" value="Refine your results"/>
-			</c:import>
+			<div id="facetList" class="contentarea">
+				<h2>Refine your results</h2>
+				<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
+				<c:import url="/jsp/util/facetList.jsp">
+					<c:param name="queryPath" value="structure"/>
+					<c:param name="title" value="Refine your results"/>
+				</c:import>
+			</div>
 		</div>
 	</div>
 	
