@@ -50,14 +50,14 @@
 		</div>
 		<div>
 			<h3>Access Control</h3>
-			<c:set var="facetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=role<c:if test="${not empty searchStateUrl}">&${searchStateUrl}</c:if></c:set>
+			<c:set var="facetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=role,status<c:if test="${not empty searchStateUrl}">&${searchStateUrl}</c:if></c:set>
 			<div data-href="${facetsDataUrl}">
 				<div class="center"><img src="/static/images/admin/loading-small.gif"/></div>
 			</div>
 		</div>
 		<div>
 			<h3>Content</h3>
-			<c:set var="facetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=format,type,model<c:if test="${not empty searchStateUrl}">&${searchStateUrl}</c:if></c:set>
+			<c:set var="facetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=format,type,model,contentStatus<c:if test="${not empty searchStateUrl}">&${searchStateUrl}</c:if></c:set>
 			<div data-href="${facetsDataUrl}">
 				<div class="center"><img src="/static/images/admin/loading-small.gif"/></div>
 			</div>

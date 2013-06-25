@@ -51,6 +51,7 @@ public class DocumentIndexingPackage {
 	private ResourceType resourceType;
 	private Map<String, Element> datastreams;
 	private List<PID> children;
+	private Map<String, List<String>> triples;
 	
 	public DocumentIndexingPackage() {
 		document = new IndexDocumentBean();
@@ -267,6 +268,60 @@ public class DocumentIndexingPackage {
 	
 	public void setChildren(List<PID> children) {
 		this.children = children;
+	}
+	
+	private void extractTriples() {
+		Element objectProperties = getObjectProperties();
+		Element relsExt = getRelsExt();
+		Map<String, Element> datastreams = getMostRecentDatastreamMap();
+		
+		Map<String, List<String>> triples = new HashMap<String, List<String>>();
+		if (relsExt != null) {
+			List<?> tripleEls = relsExt.getChildren();
+			for (Object tripleObject : tripleEls) {
+				Element tripleEl = (Element) tripleObject;
+				String predicate = tripleEl.getNamespaceURI() + tripleEl.getName();
+				String value = tripleEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS);
+				if (value == null)
+					value = tripleEl.getText();
+				List<String> predicateTriples = triples.get(predicate);
+				if (predicateTriples == null) {
+					predicateTriples = new ArrayList<String>();
+					triples.put(predicate, predicateTriples);
+				}
+				predicateTriples.add(value);
+			}
+		}
+		
+		if (objectProperties != null) {
+			List<?> tripleEls = objectProperties.getChildren();
+			for (Object tripleObject : tripleEls) {
+				Element tripleEl = (Element) tripleObject;
+				String predicate = tripleEl.getAttributeValue("NAME");
+				String value = tripleEl.getAttributeValue("VALUE");
+				List<String> predicateTriples = triples.get(predicate);
+				if (predicateTriples == null) {
+					predicateTriples = new ArrayList<String>();
+					triples.put(predicate, predicateTriples);
+				}
+				predicateTriples.add(value);
+			}
+		}
+		
+		if (datastreams.size() > 0){
+			List<String> predicateTriples = new ArrayList<String>();
+			triples.put(ContentModelHelper.FedoraProperty.disseminates.toString(), predicateTriples);
+			for (String datastream: datastreams.keySet()) {
+				predicateTriples.add(pid.getURI() + "/" + datastream);
+			}
+		}
+		this.triples = triples;
+	}
+	
+	public Map<String, List<String>> getTriples() {
+		if (triples == null && foxml != null)
+			this.extractTriples();
+		return triples;
 	}
 
 	public void setLabel(String label) {

@@ -58,6 +58,7 @@ public class IndexDocumentBean {
 	protected List<String> readGroup;
 	protected List<String> adminGroup;
 	protected List<String> status;
+	protected List<String> contentStatus;
 	
 	protected List<String> identifier;
 	
@@ -299,6 +300,15 @@ public class IndexDocumentBean {
 	@Field
 	public void setStatus(List<String> status) {
 		this.status = status;
+	}
+
+	public List<String> getContentStatus() {
+		return contentStatus;
+	}
+
+	@Field
+	public void setContentStatus(List<String> contentStatus) {
+		this.contentStatus = contentStatus;
 	}
 
 	public List<String> getIdentifier() {

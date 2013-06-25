@@ -429,7 +429,7 @@ public class SolrSearchService {
 			while (searchTypeIt.hasNext()) {
 				searchType = searchTypeIt.next();
 				List<String> searchFragments = SolrSettings.getSearchTermFragments(searchState.getSearchFields().get(searchType));
-				if (searchFragments != null) {
+				if (searchFragments != null && searchFragments.size() > 0) {
 					if (termQuery.length() > 0)
 						termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
 					LOG.debug(searchType + ": " + searchFragments);
