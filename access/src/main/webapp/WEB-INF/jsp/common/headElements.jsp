@@ -22,6 +22,7 @@
 <link rel="stylesheet" type="text/css" href="/static/css/reset.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/cdrui_styles.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/fluid_cap.css" />
+<link rel="stylesheet" type="text/css" href="/static/front/front.css" />
 <!--[if IE 8]>
 	<link rel="stylesheet" type="text/css" href="/static/css/cdrui_styles_ie8.css" />
 <![endif]-->

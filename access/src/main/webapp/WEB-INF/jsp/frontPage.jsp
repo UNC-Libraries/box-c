@@ -21,98 +21,97 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <jsp:useBean id="externalContent" class="edu.unc.lib.dl.ui.util.ExternalContentSettings" scope="page"/>
 
-<div class="content-wrap">
-<div class="contentarea">
-	<h2>About</h2>
-	<p>
-		The Carolina Digital Repository (CDR) safeguards and provides access to the scholarly work and research files produced or 
-		collected by faculty, students and staff at the University of North Carolina at Chapel Hill. 
-		<a href="external?page=about.about">Read More</a>
-	</p>
-	<p>
-		<a href="search?types=Collection"><c:out value="${collectionsCount}"/> collections</a>, including
-			<a href="search?facets=format%3A%5Etext"><c:out value="${formatCounts.text}"/> texts</a>,
-			<a href="search?facets=format%3A%5Eimage"><c:out value="${formatCounts.image}"/> images</a>,
-			<a href="search?facets=format%3A%5Edataset"><c:out value="${formatCounts.dataset}"/> datasets</a>,
-			<a href="search?facets=format%3A%5Eaudio"><c:out value="${formatCounts.audio}"/> audio files</a>, and
-			<a href="search?facets=format%3A%5Evideo"><c:out value="${formatCounts.video}"/> videos</a>.
-	</p>
-	<p>
-		Material from <a href="browseDepartments"><c:out value="${departmentsCount}"/> UNC Chapel Hill departments</a>,
-		from <a href="search?action=setFacet%3adept%2c%22anthropology%22">Anthropology</a>
-		to <a href="search?action=setFacet%3adept%2c%22toxicology%22">Toxicology</a>.
-	</p>
+<div id="peek">
 </div>
-<div class="lightest">
-<div class="threecol lightest shadowtop">
-	<c:import url="common/searchBox.jsp">
-		<c:param name="title">Search the Carolina Digital Repository</c:param>
-		<c:param name="showSearchWithin">false</c:param>
-		<c:param name="showBrowse">true</c:param>
-	</c:import>
-</div>
-<div class="fourcol light shadowtop">
-	<div class="contentarea">
-		<h2>News</h2>
-		<ul class="fpfeed_list">
-			<c:forEach items="${newsRssFeed.items}" var="newsItem">
-				<li><a href="${newsItem.link}"><c:out value="${cdr:truncateText(newsItem.title, 65)}"/></a></li>
-			</c:forEach>
-		</ul>
-		<p class="smaller"><a href="http://www.lib.unc.edu/blogs/cdr/">Read More</a></p>
+
+<div id="front">
+	
+	<div id="front-headline">
+		<h1>Preserve, share, and promote your scholarly&nbsp;and&nbsp;creative&nbsp;work.</h1>
 	</div>
-</div>
-</div>
-<div id="fpnewly_added" class="fourcol">
-	<div class="contentarea">
-		<h2>Newly Added</h2>
-		<ul class="fpfeed_list">
-			<c:forEach items="${newlyAddedList}" var="entry">
-				<c:url var="entryUrl" value="record">
-					<c:param name="${searchSettings.searchStateParams['ID']}" value="${entry.id}" />
-				</c:url>
-				<li><a href="<c:out value='${entryUrl}'/>"><c:out value="${cdr:truncateText(entry.title, 65)}"/></a></li>
-			</c:forEach>
-		</ul>
-	</div>
-</div>
-<div class="gray">
-	<script type="text/javascript" src="/static/js/featuredContent.js"></script>
-	<script type="text/javascript">
-		$(document).ready(function(){	
-			$("#slideshow").easySlider({
-				prevId: 'prev_button',
-				prevText: "<div></div><img src='/static/images/left_slideshow_arrow.png'/>",
-				nextId: 'next_button',
-				nextText: "<div></div><img src='/static/images/right_slideshow_arrow.png'/>",
-				controlsShow: true,
-				fade: true,
-				speed: 500
-			});
-		});	
-	</script>
-	<div id="slideshow_container">
-		<div id="slideshow">
-			<ul id="slideshow_ul">
-				<c:forEach items="${featuredContentFeed.items}" var="entry">
-					<li>
-						<div class="twocol">
-							<div class="slide_image_panel">
-								<a href="<c:out value='${entry.link}'/>">
-									<img src="${entry.enclosure.url}"/>
-								</a>
-							</div>
-						</div>
-						<div class="fourcol gray">
-							<div class="contentarea">
-								<h2><a href="<c:out value='${entry.link}'/>"><c:out value="${entry.title}"/></a></h2>
-								<p><c:out value="${entry.description}"/></p>
-							</div>
-						</div>
-					</li>
-				</c:forEach>
-			</ul>
+
+	<div class="row">
+		<div class="half" id="front-points">
+			<table>
+				<tr>
+					<td class="illustration"><img src="/static/front/tube.png"></td>
+					<td>We provide long-term access and safekeeping for scholarly works, datasets, research materials, records, and audiovisual materials produced by the UNC-Chapel Hill community.</td>
+				</tr>
+				<tr>
+					<td class="illustration"><img src="/static/front/frame.png"></td>
+					<td>We ensure your work is accessible and searchable on our website and indexed in search engines.</td>
+				</tr>
+				<tr>
+					<td class="illustration"><img src="/static/front/lock.png"></td>
+					<td>You decide who gets access: we offer a range of access controls including embargoes and granting access to specific groups on campus.</td>
+				</tr>
+			</table>
+		</div>
+		
+		<div class="half" id="front-how">
+			<h2>How to start preserving your work</h2>
+		
+			<p>To get started, just tell us about the work you’d like to preserve. We'll meet with you to discuss how to transfer it, describe it, and make it available on the web. After you deposit your work, we take care of the rest, ensuring it’s kept safe and accessible for the future.</p>
+		
+			<p class="button"><a href="external?refer=http%3a%2f%2flocalhost%2f&page=contact">Contact us to get started</a></p>
 		</div>
 	</div>
-</div>
+
+	<hr>
+
+	<div class="row">
+		<div class="half">
+			<h2>What’s in the repository?</h2>
+
+			<p><a href="#">17 collections</a>, including <a href="#">9959 texts</a>, <a href="#">3074 images</a>, <a href="#">182 datasets</a>, <a href="#">67 audio files</a>, and <a href="#">27 videos</a>.</p>
+			<p>Material from <a href="#">253 UNC Chapel Hill departments</a>, from <a href="#">Anthropology</a> to <a href="#">Toxicology</a>.</p>
+		</div>
+
+		<div class="half">
+			<h2>Some of Our Collections</h2>
+
+			<p><img src="/static/front/grid.png"></p>
+		</div>
+	</div>
+
+	<hr>
+
+	<div id="front-case-study" class="row">
+		<div class="half">
+	
+			<figure>
+				<a href="https://cdr.lib.unc.edu/record?id=uuid:c394b981-3c10-4faf-a9b2-c506f795840b">
+					<img src="/static/front/rla-deer.jpg">
+					<figcaption>
+						<b>Ceramic Animal Effigy (Deer?)</b>
+						Warren Wilson Site (1995)
+					</figcaption>
+				</a>
+			</figure>
+	
+			<figure>
+				<a href="https://cdr.lib.unc.edu/record?id=uuid:9ffd4af0-4f9d-4eae-a84a-0812997303dc">
+					<img src="/static/front/rla-site.jpg">
+					<figcaption>
+						<b>General View of Site</b>
+						Mecklenburg County, Virginia (1962)
+					</figcaption>
+				</a>
+			</figure>
+		</div>
+		
+		<div class="half">
+			<h2><i>Case Study:</i> CDR and RLA staff work to preserve and provide access to digital research collections</h2>
+
+			<p>Founded in 1939, the <a href="http://rla.unc.edu">Research Laboratories of Archaeology</a> (RLA) was the first center for the study of North Carolina archaeology. Serving the interests of students, scholars, and the general public, it is currently one of the leading institutes for archaeological teaching and research in the South. Located within the University of North Carolina at Chapel Hill’s College of Arts and Sciences, it provides support for faculty and students working not only in North Carolina, but also throughout the Americas and overseas.</p>
+
+			<p>With one of the nation’s finest collections of archaeological materials from the South, the RLA curates more than seven million artifacts along with more than 60,000 photographic negatives, photographs, and slides. Over the past 70 years, virtually all of the major discoveries in the understanding of North Carolina's ancient past can be attributed to the RLA or to researchers trained there.</p>
+
+			<p>The Carolina Digital Repository is working with RLA staff to to preserve their large collection of photographs, slides, and publications, and to provide access to those collections online.</p>
+
+			<p class="button"><a href="record?id=uuid:8ae56bbc-400e-496d-af4b-3c585e20dba1">Browse the RLA Collection</a></p>
+		</div>
+
+	</div>
+
 </div>
