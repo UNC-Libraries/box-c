@@ -1,0 +1,56 @@
+#peek {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  margin: 0 auto;
+  background: #ccc;
+  overflow: hidden;
+}
+
+#peek .item {
+  position: relative;
+}
+
+#peek .item a {
+  display: block;
+  padding: 5px;
+}
+
+#peek .item img {
+  display: block;
+  background: #000;
+}
+
+#peek .description {
+  position: absolute;
+  bottom: 5px;
+  width: 185px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #000;
+  font-family: helvetica, verdana, sans-serif;
+  font-size: 12px;
+  line-height: 14px;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
+
+#peek .description .title {
+  font-weight: bold;
+  margin: 5px;
+}
+
+#peek .description .other {
+  margin: 5px;
+}
+
+#peek .description {
+  opacity: 0;
+}
+
+#peek .item:hover .description {
+  opacity: 1.0;
+}
+
+#peek .item:hover .image {
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
