@@ -1,0 +1,36 @@
+#pagewrap {
+  width: 100%;
+}
+
+.fluid-cap-container {
+  width: 100%; float: left; min-width: 960px;
+}
+
+.fluid-cap-highlight {
+  float: left; width: 50%; position: relative; left: 0;
+}
+
+.fluid-cap-contents {
+  width: 960px; float: left; left: 100%; margin-left: -480px; position: relative;
+}
+
+.fluid-cap-right-wrap {
+  width: 100%; float: left; position: relative;
+}
+
+.fluid-cap-left-wrap {
+  width: 100%; float: left; position: relative; right: 240px;
+}
+
+.fluid-cap-left {
+  width: 720px; float: left; position: relative; left: 240px;
+}
+
+.fluid-cap-right {
+  width: 240px; float: left; position: relative; left: 240px;
+}
+
+.content-wrap {
+	width: 960px;
+	margin: 0 auto;
+}

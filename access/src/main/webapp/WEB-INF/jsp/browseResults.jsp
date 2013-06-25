@@ -23,6 +23,7 @@
 
 <script type="text/javascript" src="/static/js/browseResults.js"></script>
 
+<div class="content-wrap">
 <div class="contentarea">
 	<h2>Structure browse</h2>
 	<div class="results_header_hierarchy_path">
@@ -86,4 +87,5 @@
 			</div>						
 		</div>
 	</div>
+</div>
 </div>

@@ -20,6 +20,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 
+<div class="content-wrap">
 <div class="onecol">
 	<div class="contentarea">
 		<h2>Request Access
@@ -91,4 +92,5 @@
 			</c:otherwise>
 		</c:choose>
 	</div>
+</div>
 </div>

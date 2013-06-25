@@ -21,6 +21,7 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <jsp:useBean id="externalContent" class="edu.unc.lib.dl.ui.util.ExternalContentSettings" scope="page"/>
 
+<div class="content-wrap">
 <div class="contentarea">
 	<h2>About</h2>
 	<p>
@@ -100,4 +101,5 @@
 			</ul>
 		</div>
 	</div>
+</div>
 </div>

@@ -23,6 +23,7 @@
 <link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.css"/>
 <script type="text/javascript" src="/static/js/advancedSearch.js"></script>
 
+<div class="content-wrap">
 <div class="contentarea">
 	<h2>Advanced Search</h2>
 </div>
@@ -89,3 +90,4 @@
 	
 	</div>
 </form>
+</div>

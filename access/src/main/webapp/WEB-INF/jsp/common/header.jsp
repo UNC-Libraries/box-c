@@ -19,8 +19,14 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
-<div class="darkest shadowbottom" id="header">
-	<div class="threecol dark shadowbottom">
+
+<div class="darkest fluid-cap-container" id="header">
+	<div class="dark fluid-cap-highlight">
+		<div class="fluid-cap-contents">
+			<div class ="fluid-cap-right-wrap darkest">
+				<div class="fluid-cap-left-wrap dark">
+					<div class="threecol fluid-cap-left">
+					
 		<div class="contentarea">
 			<h1>Carolina Digital Repository</h1>
 			
@@ -110,26 +116,29 @@
 				
 			</ul>
 		</div>
-	</div>
-	<div class="fourcol darkest">
+            </div>
+
+            <div class="fourcol fluid-cap-right">
 		<div class="contentarea">
 			<c:if test="${not empty pageContext.request.remoteUser}">
 				<div id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></div>
 			</c:if>
-			<c:if test="${contentPage != 'frontPage.jsp'}">
-				<form class="right clear_on_submit_without_focus" method="get" action="basicSearch" id="hsearch_form">
-					<input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}"/>
-					<div id="hsearch_inputwrap">
-						<input name="query" type="text" id="hsearch_text" class="clear_on_first_focus" value="Search all collections">
-						<input type="submit" value="Go" id="hsearch_submit">
-					</div>
-				</form>
-				<ul class="secondarymenu">
-					<li>
-						<a href="advancedSearch" class="searchlink" id="advsearch">Advanced Search</a>
-					</li>
-				</ul>
-			</c:if>
+			<form class="right clear_on_submit_without_focus" method="get" action="basicSearch" id="hsearch_form">
+				<input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}"/>
+				<div id="hsearch_inputwrap">
+					<input name="query" type="text" id="hsearch_text" class="clear_on_first_focus" value="Search all collections">
+					<input type="submit" value="Go" id="hsearch_submit">
+				</div>
+			</form>
+			<ul class="secondarymenu">
+				<li>
+					<a href="advancedSearch" class="searchlink" id="advsearch">Advanced Search</a>
+				</li>
+			</ul>
 		</div>
 	</div>
+</div>
+</div>
+</div>
+</div>
 </div>
