@@ -168,11 +168,18 @@
 }
 
 /** Pop-out facet */
+.structure.facet.popout .structure_content {
+	-webkit-transition: box-shadow .1s ease-in;
+	transition: box-shadow .1s ease-in;
+	display: inline-block;
+	min-width: 190px;
+	max-width: 190px;
+}
+
 .structure.facet.popout .structure_content:hover, .structure.facet.popout:hover .structure_content {
 	position: relative;
 	overflow-x: visible !important;
 	overflow-y: auto;
-	display: inline-block;
 	max-width: 600px;
 	min-width: 190px;
 	z-index: 999;
