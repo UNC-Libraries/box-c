@@ -22,6 +22,7 @@
 <jsp:useBean id="externalContent" class="edu.unc.lib.dl.ui.util.ExternalContentSettings" scope="page"/>
 
 <div id="peek">
+	<div id="peek-enter"></div>
 </div>
 
 <script type="text/template" id="item-template">
