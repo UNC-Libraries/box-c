@@ -76,8 +76,20 @@
 		<div class="half">
 			<h2>What’s in the repository?</h2>
 
-			<p><a href="#">17 collections</a>, including <a href="#">9959 texts</a>, <a href="#">3074 images</a>, <a href="#">182 datasets</a>, <a href="#">67 audio files</a>, and <a href="#">27 videos</a>.</p>
-			<p>Material from <a href="#">253 UNC Chapel Hill departments</a>, from <a href="#">Anthropology</a> to <a href="#">Toxicology</a>.</p>
+			<p>
+				<a href="search?types=Collection"><c:out value="${collectionsCount}"/> collections</a>, including
+				<a href="search?facets=format%3A%5Etext"><c:out value="${formatCounts.text}"/> texts</a>,
+				<a href="search?facets=format%3A%5Eimage"><c:out value="${formatCounts.image}"/> images</a>,
+				<a href="search?facets=format%3A%5Edataset"><c:out value="${formatCounts.dataset}"/> datasets</a>,
+				<a href="search?facets=format%3A%5Eaudio"><c:out value="${formatCounts.audio}"/> audio files</a>, and
+				<a href="search?facets=format%3A%5Evideo"><c:out value="${formatCounts.video}"/> videos</a>.
+			</p>
+			
+			<p>
+				Material from <a href="browseDepartments"><c:out value="${departmentsCount}"/> UNC-Chapel Hill departments</a>,
+				from <a href="search?action=setFacet%3adept%2c%22anthropology%22">Anthropology</a>
+				to <a href="search?action=setFacet%3adept%2c%22toxicology%22">Toxicology</a>.
+			</p>
 		</div>
 
 		<div class="half">
