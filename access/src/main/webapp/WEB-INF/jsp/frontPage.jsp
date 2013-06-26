@@ -112,26 +112,25 @@
 
 	<div id="front-case-study" class="row">
 		<div class="half">
-	
-			<figure>
+			<div class="figure">
 				<a href="https://cdr.lib.unc.edu/record?id=uuid:c394b981-3c10-4faf-a9b2-c506f795840b">
 					<img src="/static/front/rla-deer.jpg">
-					<figcaption>
+					<span class="caption">
 						<b>Ceramic Animal Effigy (Deer?)</b>
 						Warren Wilson Site (1995)
-					</figcaption>
+					</span>
 				</a>
-			</figure>
+			</div>
 	
-			<figure>
+			<div class="figure">
 				<a href="https://cdr.lib.unc.edu/record?id=uuid:9ffd4af0-4f9d-4eae-a84a-0812997303dc">
 					<img src="/static/front/rla-site.jpg">
-					<figcaption>
+					<span class="caption">
 						<b>General View of Site</b>
 						Mecklenburg County, Virginia (1962)
-					</figcaption>
+					</span>
 				</a>
-			</figure>
+			</div>
 		</div>
 		
 		<div class="half">

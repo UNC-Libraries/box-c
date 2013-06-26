@@ -113,7 +113,7 @@ Peek.prototype.layout = function() {
 
 Peek.prototype.loadItem = function(spec) {
   
-  var $element = $(this.template(spec).trim());
+  var $element = $(this.template(spec).replace(new RegExp("^\\s*"), ""));
   var image = $element.find("img").eq(0);
   
   if (image) {
@@ -495,6 +495,8 @@ Column.prototype.offset = function(amt) {
   
 }
 
+$("#peek").addClass("active");
+
 $(function() {
   
   var source = "<div class=\"item\"> \
@@ -515,36 +517,38 @@ $(function() {
   var peek = new Peek("#peek", template, 195);
 
   $.getJSON("/static/peek/peek.json", function(items) {
+
+    $("#peek-enter").on("click", function() {
+      window.location.hash = "p";
+    });
+
+    $("#peek-exit").on("click", function() {
+      window.location.hash = "";
+    });
+
+    $(window).on("hashchange", function() {
+      $(document.body).toggleClass("peek", window.location.hash == "#p");
+    });
+
+    $(document).on("keydown", function(e) {
+      if (e.keyCode == 27) {
+        window.location.hash = "";
+      }
+    });
+
+    $(document.body).toggleClass("peek", window.location.hash == "#p");
+
+    $(window).scroll(function() {
+      if (!$(document.body).hasClass("peek")) {
+        $("#peek .peek-columns").css({
+          marginTop: ($(window).scrollTop() * 0.1) + "px"
+        });
+      }
+    });
+    
     peek.add(_.shuffle(items));
     peek.start();
-  });
-
-  $("#peek-enter").on("click", function() {
-    window.location.hash = "p";
-  });
-
-  $("#peek-exit").on("click", function() {
-    window.location.hash = "";
-  });
-
-  $(window).on("hashchange", function() {
-    $(document.body).toggleClass("peek", window.location.hash == "#p");
-  });
-
-  $(document).on("keydown", function(e) {
-    if (e.keyCode == 27) {
-      window.location.hash = "";
-    }
-  });
-
-  $(document.body).toggleClass("peek", window.location.hash == "#p");
-
-  $(window).scroll(function() {
-    if (!$(document.body).hasClass("peek")) {
-      $("#peek .peek-columns").css({
-        marginTop: ($(window).scrollTop() * 0.1) + "px"
-      });
-    }
+    
   });
 
 });

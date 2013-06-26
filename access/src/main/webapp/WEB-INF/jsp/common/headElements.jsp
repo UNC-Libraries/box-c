@@ -27,6 +27,9 @@
 <!--[if IE 8]>
 	<link rel="stylesheet" type="text/css" href="/static/css/cdrui_styles_ie8.css" />
 <![endif]-->
+<!--[if IE 8]>
+	<link rel="stylesheet" type="text/css" href="/static/front/peek-ie8.css" />
+<![endif]-->
 
 <script type="text/javascript" src="/static/js/jquery.min.js"></script>
 
