@@ -233,30 +233,36 @@
 
 /* collections */
 
+#front-collections table img {
+  width: 50px;
+  height: 50px;
+}
+
 #front-collections table {
   border-collapse: collapse;
   border: hidden;
-  margin-top: 5px;
+  width: 430px;
+  margin-top: 10px;
 }
 
-#front-collections table td {
-  font-size: 70%;
-  font-weight: bold;
-  vertical-align: top;
+#front-collections table a {
+  display: block;
+  font-size: 80%;
+  margin: 0;
 }
 
 #front-collections table img {
-  margin-bottom: 5px;
-  width: 75px;
-  height: 75px;
-}
-
-#front-collections table td a {
   display: block;
-  padding: 5px;
-  line-height: 1.2;
+  margin: 0;
 }
 
-#front-collections table td a:hover {
-  background: #eee;
+#front-collections table td {
+  border: 5px solid #fff;
+  padding: 0;
+  vertical-align: middle;
+}
+
+#front-collections table td.title {
+  width: 50%;
+  border-left-width: 8px;
 }
