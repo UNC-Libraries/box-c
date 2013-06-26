@@ -22,40 +22,23 @@
 <jsp:useBean id="externalContent" class="edu.unc.lib.dl.ui.util.ExternalContentSettings" scope="page"/>
 
 <div id="peek">
-	<div id="peek-enter"></div>
+	<div id="peek-enter">
+		<div class="button">
+			<a href="#p">A peek inside the repository</a>
+		</div>
+	</div>
+	<div id="peek-exit">
+		<div class="button">
+			<a href="#">Back to the homepage</a>
+		</div>
+	</div>
 </div>
-
-<script type="text/template" id="item-template">
-<div class="item">
-  <a href="https://cdr.lib.unc.edu/record?id=<?= data.pid ?>">
-    <div class="image">
-      <img src="/static/peek/thumbnails/<?= data.path ?>">
-    </div>
-    <div class="description">
-      <div class="title"><?= data.title ?></div>
-      <? if (data.creators.length > 0) { ?><div class="other"><?= data.creators.join("; ") ?></div><? } ?>
-      <? if (data.collection) { ?><div class="other"><?= data.collection ?></div><? } ?>
-    </div>
-  </a>
-</div>
-</script>
 
 <link rel="stylesheet" type="text/css" href="/static/peek/stylesheets/peek.css" />
 <script src="/static/peek/javascripts/underscore.js"></script>
 <script src="/static/peek/javascripts/peek.js"></script>
 <script src="/static/peek/javascripts/column.js"></script>
-<script>
-
-var template = _.template($("#item-template")[0].textContent, null, { variable: "data", evaluate: /<\?([\s\S]+?)\?>/g, interpolate: /<\?=([\s\S]+?)\?>/g, escape: /<\?-([\s\S]+?)\?>/g });
-
-var peek = new Peek("#peek", template, 195);
-
-$.getJSON("/static/peek/peek.json", function(items) {
-  peek.add(_.shuffle(items));
-  peek.start();
-});
-
-</script>
+<script src="/static/front/peek.js"></script>
 
 <div id="front">
 	
