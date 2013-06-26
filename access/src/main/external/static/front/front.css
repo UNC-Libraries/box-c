@@ -88,6 +88,12 @@
   margin-left: 30px;
 }
 
+#front .row .full {
+  float: left;
+  width: 900px;
+  margin-left: 30px;
+}
+
 /* buttons */
 
 #front .button {
@@ -140,7 +146,8 @@
 
 #front #front-points {
   font-size: 110%;
-  width: 490px;
+  width: 520px;
+  margin-left: 0;
 }
 
 #front-points table {
@@ -218,4 +225,34 @@
   text-transform: uppercase;
   font-size: 85%;
   font-style: normal;
+}
+
+/* collections */
+
+#front-collections table {
+  border-collapse: collapse;
+  border: hidden;
+  margin-top: 5px;
+}
+
+#front-collections table td {
+  font-size: 70%;
+  font-weight: bold;
+  vertical-align: top;
+}
+
+#front-collections table img {
+  margin-bottom: 5px;
+  width: 75px;
+  height: 75px;
+}
+
+#front-collections table td a {
+  display: block;
+  padding: 5px;
+  line-height: 1.2;
+}
+
+#front-collections table td a:hover {
+  background: #eee;
 }
