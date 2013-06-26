@@ -39,3 +39,11 @@ $(document).on("keydown", function(e) {
 });
 
 $(document.body).toggleClass("peek", window.location.hash == "#p");
+
+$(window).scroll(function() {
+  if (!$(document.body).hasClass("peek")) {
+    $("#peek .peek-columns").css({
+      marginTop: ($(window).scrollTop() * 0.1) + "px"
+    });
+  }
+});
