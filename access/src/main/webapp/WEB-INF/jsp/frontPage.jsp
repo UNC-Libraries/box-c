@@ -35,8 +35,6 @@
 </div>
 
 <script src="/static/js/underscore.js"></script>
-<script src="/static/peek/javascripts/peek.js"></script>
-<script src="/static/peek/javascripts/column.js"></script>
 <script src="/static/front/peek.js"></script>
 
 <div id="front">
