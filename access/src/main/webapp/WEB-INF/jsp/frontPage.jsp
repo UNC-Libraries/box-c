@@ -34,8 +34,7 @@
 	</div>
 </div>
 
-<link rel="stylesheet" type="text/css" href="/static/peek/stylesheets/peek.css" />
-<script src="/static/peek/javascripts/underscore.js"></script>
+<script src="/static/js/underscore.js"></script>
 <script src="/static/peek/javascripts/peek.js"></script>
 <script src="/static/peek/javascripts/column.js"></script>
 <script src="/static/front/peek.js"></script>
@@ -84,19 +83,18 @@
 		</div>
 
 		<div class="half">
-			<h2>Some of Our Collections</h2>
+			<h2>A Few of Our Collections</h2>
 
 			<p>
-			   <a href="record?id=uuid%3abded4944-f033-4015-af0f-3d39595f4d30" title="African American Performance Art Archive"><img src="/static/front/aapaa.jpg"></a>
-			   <a href="record?id=uuid%3a1add9fbc-f5c4-49a8-848e-96a52e3ade9c" title="Azoria Project Archive"><img src="/static/front/azoria.jpg"></a>
-			   <a href="record?id=uuid%3adfebbdf7-3361-4097-9fa4-7001ab6fcc11" title="BioMed Central"><img src="/static/front/bmc.png"></a>
-			   <a href="record?id=uuid%3acbbc2cc1-c538-4e28-b567-55db61b7942e" title="Carolina Planning Journal"><img src="/static/front/cpj.png"></a>
-			   <a href="record?id=uuid%3aa012aad2-1ab1-43b2-b5ab-0e14740e5e07" title="Electronic Theses and Dissertations"><img src="/static/front/etds.png"></a>
-			   <a href="record?id=uuid%3a9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9" title="Program on Public Life"><img src="/static/front/popl.png"></a>
-			   <a href="record?id=uuid%3a8ae56bbc-400e-496d-af4b-3c585e20dba1" title="Research Laboratories of Archaeology"><img src="/static/front/rla.png"></a>
-			   <a href="record?id=uuid%3a5e4b2719-bb71-45ec-be63-5d018b6f5aab" title="Southern Folklife Collection Digital Files"><img src="/static/front/sfc.png"></a>
-			 </p>
-			
+				<a href="record?id=uuid%3abded4944-f033-4015-af0f-3d39595f4d30" title="African American Performance Art Archive"><img src="/static/front/aapaa.jpg"></a>
+				<a href="record?id=uuid%3a1add9fbc-f5c4-49a8-848e-96a52e3ade9c" title="Azoria Project Archive"><img src="/static/front/azoria.jpg"></a>
+				<a href="record?id=uuid%3adfebbdf7-3361-4097-9fa4-7001ab6fcc11" title="BioMed Central"><img src="/static/front/bmc.png"></a>
+				<a href="record?id=uuid%3acbbc2cc1-c538-4e28-b567-55db61b7942e" title="Carolina Planning Journal"><img src="/static/front/cpj.png"></a>
+				<a href="record?id=uuid%3aa012aad2-1ab1-43b2-b5ab-0e14740e5e07" title="Electronic Theses and Dissertations"><img src="/static/front/etds.png"></a>
+				<a href="record?id=uuid%3a9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9" title="Program on Public Life"><img src="/static/front/popl.png"></a>
+				<a href="record?id=uuid%3a8ae56bbc-400e-496d-af4b-3c585e20dba1" title="Research Laboratories of Archaeology"><img src="/static/front/rla.png"></a>
+				<a href="record?id=uuid%3a5e4b2719-bb71-45ec-be63-5d018b6f5aab" title="Southern Folklife Collection Digital Files"><img src="/static/front/sfc.png"></a>
+			</p>
 		</div>
 	</div>
 
