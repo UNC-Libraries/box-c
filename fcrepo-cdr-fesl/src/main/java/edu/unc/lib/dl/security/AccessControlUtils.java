@@ -44,6 +44,7 @@ public class AccessControlUtils {
 	private AncestorFactory ancestorFactory = null;
 	private GroupRolesFactory groupRolesFactory = null;
 	private EmbargoFactory embargoFactory = null;
+	private Map<String, Set<String>> globalRoles;
 	private String adminGroup;
 	private String curatorGroup;
 
@@ -141,6 +142,7 @@ public class AccessControlUtils {
 	public Map<String, Object> getAllCdrAccessControls(PID pid) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("roles", this.getRoles(pid));
+		result.put("globals", this.getGlobalRoles());
 		result.put("embargoes", this.getEmbargoes(pid));
 		return result;
 	}
@@ -187,6 +189,7 @@ public class AccessControlUtils {
 	}
 
 	public List<String> getAllEmbargoes(PID pid) {
+		@SuppressWarnings("unchecked")
 		List<String> result = Collections.EMPTY_LIST;
 		try {
 			Set<PID> embargoPIDs = new HashSet<PID>();
@@ -215,7 +218,7 @@ public class AccessControlUtils {
 			Map<String, Set<String>> local = groupRolesFactory
 					.getAllRolesAndGroups(pid);
 			summary.putAll(local);
-
+			
 			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
 			for (PID ancestor : ancestors) {
 				Map<String, Set<String>> inherited = groupRolesFactory
@@ -257,30 +260,38 @@ public class AccessControlUtils {
 				}
 			}
 
+			
+		} catch (ObjectNotFoundException e) {
+			LOG.error("Cannot find object in question", e);
+		}
+		return summary;
+	}
+	
+	public Map<String, Set<String>> getGlobalRoles() {
+		if (globalRoles == null) {
+			globalRoles = new HashMap<String, Set<String>>();
 			// Add the admin group into the results
 			if (this.getAdminGroup() != null) {
-				Set<String> adminGroups = summary.get(UserRole.administrator
+				Set<String> adminGroups = globalRoles.get(UserRole.administrator
 						.getURI().toString());
 				if (adminGroups == null) {
 					adminGroups = new HashSet<String>();
-					summary.put(UserRole.administrator.getURI().toString(), adminGroups);
+					globalRoles.put(UserRole.administrator.getURI().toString(), adminGroups);
 				}
 				adminGroups.add(getAdminGroup());
 			}
 			// Add the admin group into the results
 			if (this.getCuratorGroup() != null) {
-				Set<String> curatorGroups = summary.get(UserRole.curator
+				Set<String> curatorGroups = globalRoles.get(UserRole.curator
 						.getURI().toString());
 				if (curatorGroups == null) {
 					curatorGroups = new HashSet<String>();
-					summary.put(UserRole.curator.getURI().toString(), curatorGroups);
+					globalRoles.put(UserRole.curator.getURI().toString(), curatorGroups);
 				}
 				curatorGroups.add(this.getCuratorGroup());
 			}
-		} catch (ObjectNotFoundException e) {
-			LOG.error("Cannot find object in question", e);
 		}
-		return summary;
+		return globalRoles;
 	}
 
 	public Set<String> getRolesForGroups(Collection<String> groups, PID pid) {

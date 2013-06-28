@@ -82,21 +82,23 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 						modifiedFiles.get(targetedDatastream.getName()), uip.getMimetype(targetedDatastream.getName()),
 						(Agent) uip.getUser(), uip.getMessage());
 			}
-			
+
 			// Issue indexing operations based on the data updated
 			Collection<IndexingActionType> indexingActions = getIndexingActions(fuip);
-			if (indexingActions != null)
-				for (IndexingActionType actionType: indexingActions)
-					this.operationsMessageSender.sendIndexingOperation(uip.getUser().getOnyen(), Arrays.asList(uip.getPID()), actionType);
+			if (indexingActions != null) {
+				for (IndexingActionType actionType : indexingActions)
+					operationsMessageSender.sendIndexingOperation(uip.getUser().getOnyen(),
+							Arrays.asList(uip.getPID()), actionType);
+			}
 		}
 	}
-	
+
 	private Collection<IndexingActionType> getIndexingActions(FedoraObjectUIP fuip) {
 		if (fuip.getModifiedData().size() == 0)
 			return null;
 		Collection<IndexingActionType> actionTypes = new HashSet<IndexingActionType>(fuip.getModifiedData().size());
 		if (fuip.incomingData.containsKey("ACL") && fuip.modifiedData.containsKey(Datastream.RELS_EXT.getName())) {
-			actionTypes.add(IndexingActionType.RECURSIVE_ADD);
+			actionTypes.add(IndexingActionType.UPDATE_ACCESS);
 		} else {
 			actionTypes.add(IndexingActionType.ADD);
 		}

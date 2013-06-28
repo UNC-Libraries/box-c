@@ -53,12 +53,7 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		Map<String, List<String>> triples;
-		if (dip.getFoxml() == null) {
-			triples = tsqs.fetchAllTriples(dip.getPid());
-		} else {
-			triples = dip.getTriples();
-		}
+		Map<String, List<String>> triples = retrieveTriples(dip);
 		List<String> status = new ArrayList<String>();
 		setAccessStatus(triples, status);
 		setPublicationStatus(dip, triples, status);
@@ -93,12 +88,12 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 	}
 
 	private void setAccessStatus(Map<String, List<String>> triples, List<String> status) {
-		String inheritPermissions = getFirstValue(triples, ContentModelHelper.CDRProperty.inheritPermissions.toString());
+		String inheritPermissions = getFirstTripleValue(triples, ContentModelHelper.CDRProperty.inheritPermissions.toString());
 		if ("false".equals(inheritPermissions)) {
 			status.add("Not Inheriting Roles");
 		}
 
-		String embargo = getFirstValue(triples, ContentModelHelper.CDRProperty.embargoUntil.toString());
+		String embargo = getFirstTripleValue(triples, ContentModelHelper.CDRProperty.embargoUntil.toString());
 		if (embargo != null) {
 			try {
 				Date embargoDate = DateTimeUtil.parsePartialUTCToDate(embargo);
@@ -110,7 +105,7 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 			}
 		}
 
-		String discoverable = getFirstValue(triples, ContentModelHelper.CDRProperty.allowIndexing.toString());
+		String discoverable = getFirstTripleValue(triples, ContentModelHelper.CDRProperty.allowIndexing.toString());
 		if (!"yes".equals(discoverable)) {
 			status.add("Not Discoverable");
 		}
@@ -137,7 +132,7 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 			// No data requests to mulgara or fedora this route.
 			Boolean parentIsPublishedObj = dip.getParentDocument().getIsPublished();
 			parentIsPublished = (parentIsPublishedObj == null || parentIsPublishedObj);
-			String isPublishedString = getFirstValue(triples, ContentModelHelper.CDRProperty.isPublished.toString());
+			String isPublishedString = getFirstTripleValue(triples, ContentModelHelper.CDRProperty.isPublished.toString());
 			isPublished = !("no".equals(isPublishedString));
 		} else {
 			log.debug("Retrieving publication status for " + dip.getPid().getPid() + " from triple store.");
@@ -192,12 +187,5 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 		}
 
 		dip.setIsPublished(parentIsPublished && isPublished);
-	}
-	
-	private String getFirstValue(Map<String, List<String>> triples, String property) { 
-		List<String> values = triples.get(property);
-		if (values == null || values.size() == 0)
-			return null;
-		return values.get(0);
 	}
 }

@@ -119,6 +119,16 @@
 			</list>
 		</property>
 	</bean>
+	
+	<bean id="solrAccessControlUpdatePipeline"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+		<property name="filters">
+			<list>
+				<ref bean="setAccessControlFilter" />
+				<ref bean="setStatusFilter" />
+			</list>
+		</property>
+	</bean>
 
 	<!-- Ingest Actions -->
 	<bean id="updateObjectAction"
@@ -193,6 +203,15 @@
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="solrUpdateService" ref="solrUpdateConductor" />
 	</bean>
+	
+	<bean id="updateAccessControlAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateStatusAction">
+		<property name="pipeline" ref="solrAccessControlUpdatePipeline" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="solrSearchService" ref="solrSearchService" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="solrUpdateService" ref="solrUpdateConductor" />
+	</bean>
 
 	<util:map id="solrIndexingActionMap"
 		key-type="edu.unc.lib.dl.util.IndexingActionType"
@@ -207,6 +226,7 @@
 		<entry key="DELETE_CHILDREN_PRIOR_TO_TIMESTAMP" value-ref="deleteChildrenPriorToTimestamp" />
 		<entry key="COMMIT" value-ref="commitAction" />
 		<entry key="UPDATE_STATUS" value-ref="updateStatusAction" />
+		<entry key="UPDATE_ACCESS" value-ref="updateAccessControlAction" />
 	</util:map>
 	
 	<bean id="solrUpdateRunnableFactory" class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnableFactory">

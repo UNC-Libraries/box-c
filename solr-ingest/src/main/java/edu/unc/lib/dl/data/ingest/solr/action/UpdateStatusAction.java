@@ -32,21 +32,16 @@ public class UpdateStatusAction extends AbstractIndexingAction {
 	private static final Logger log = LoggerFactory.getLogger(UpdateStatusAction.class);
 	@Autowired
 	private TripleStoreQueryService tripleStoreQueryService;
-	
+
 	@Override
 	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
+		log.debug("UpdateStatusAction for " + updateRequest.getPid());
 		boolean isFirstInChain = updateRequest.getParent().getDocumentIndexingPackage() == null;
-		DocumentIndexingPackage dip;
-		if (isFirstInChain) {
-			dip = dipFactory.createDocumentIndexingPackageWithRelsExt(
-					updateRequest.getPid());
-			dip.setParentDocument(updateRequest.getParent().getDocumentIndexingPackage());
-		} else {
-			dip = new DocumentIndexingPackage();
-			dip.getDocument().setId(updateRequest.getPid().getPid());
-			dip.setPid(updateRequest.getPid());
-			dip.setChildren(tripleStoreQueryService.fetchChildren(updateRequest.getPid()));
-		}
+		
+		DocumentIndexingPackage dip = new DocumentIndexingPackage();
+		dip.getDocument().setId(updateRequest.getPid().getPid());
+		dip.setPid(updateRequest.getPid());
+		dip.setTriples(tripleStoreQueryService.fetchAllTriples(updateRequest.getPid()));
 
 		updateRequest.setDocumentIndexingPackage(dip);
 		if (updateRequest.getParent() != null)
@@ -54,14 +49,16 @@ public class UpdateStatusAction extends AbstractIndexingAction {
 		// This needs to be the publication status pipeline
 		pipeline.process(dip);
 		solrUpdateDriver.updateDocument("set", dip.getDocument());
-		
-		// If this is the first item in this indexing chain, determine if publication status is blocked by its parent
-		if (!isFirstInChain || (isFirstInChain && !dip.getDocument().getStatus().contains("Parent Unpublished"))) {
+
+		// Reindex children
+		if (!updateRequest.getUpdateAction().equals(IndexingActionType.UPDATE_STATUS) ||
+		// For status updates, no need to reindex children if the parent was already not published
+				!isFirstInChain || (isFirstInChain && !dip.getDocument().getStatus().contains("Parent Unpublished"))) {
 			List<PID> children = dip.getChildren();
 			if (children != null) {
 				log.debug("Queueing up " + children.size() + " children for reindexing");
 				for (PID child : children) {
-					SolrUpdateRequest childRequest = new SolrUpdateRequest(child, IndexingActionType.UPDATE_STATUS,
+					SolrUpdateRequest childRequest = new SolrUpdateRequest(child, updateRequest.getUpdateAction(),
 							solrUpdateService.nextMessageID(), updateRequest);
 					solrUpdateService.offer(childRequest);
 				}

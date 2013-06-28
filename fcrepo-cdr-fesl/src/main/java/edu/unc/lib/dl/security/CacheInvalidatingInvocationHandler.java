@@ -18,9 +18,6 @@ package edu.unc.lib.dl.security;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.fcrepo.server.messaging.FedoraMethod;
 import org.fcrepo.server.proxy.AbstractInvocationHandler;
@@ -35,7 +32,6 @@ public class CacheInvalidatingInvocationHandler extends
 		AbstractInvocationHandler {
 	Logger log = LoggerFactory
 			.getLogger(CacheInvalidatingInvocationHandler.class);
-	private final ExecutorService exec = Executors.newCachedThreadPool();
 
 	EmbargoFactory embargoFactory = null;
 	GroupRolesFactory groupRolesFactory = null;
@@ -89,6 +85,8 @@ public class CacheInvalidatingInvocationHandler extends
 	 */
 	public Object invoke(Object proxy, Method method, Object[] args)
 			throws Throwable {
+		long start = System.currentTimeMillis();
+		
 		Object returnValue = null;
 
 		try {
@@ -96,23 +94,14 @@ public class CacheInvalidatingInvocationHandler extends
 		} catch (InvocationTargetException ite) {
 			throw ite.getTargetException();
 		}
-
-		if (!exec.isShutdown()) {
-			try {
-				exec.submit(new CacheInvalidator(method, args, returnValue)).get();
-			} catch(RuntimeException e) {
-				log.error("Error while clearing FRACAS caches", e);
-			} catch(Exception e) {
-				log.error("Error while clearing FRACAS caches", e);				
-			}
-		}
-
+		
+		new CacheInvalidator(method, args, returnValue).call();
+		log.debug("CacheInvalidateInvocationHandler finished in " + (System.currentTimeMillis() - start));
 		return returnValue;
 	}
 
 	@Override
 	public void close() {
-		exec.shutdown();
 	}
 
 	class CacheInvalidator implements Callable<String> {
@@ -138,7 +127,7 @@ public class CacheInvalidatingInvocationHandler extends
 			} catch(NullPointerException e) {
 				return e.getMessage();
 			}
-			PID pid = new PID(fm.getPID().getObjectId());
+			PID pid = new PID(fm.getPID().toURI());
 			
 			if("purgeObject".equals(methodName)) {
 				// does not invalidate active embargoes

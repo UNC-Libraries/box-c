@@ -25,6 +25,7 @@ import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -52,7 +53,8 @@ public class DocumentIndexingPackage {
 	private Map<String, Element> datastreams;
 	private List<PID> children;
 	private Map<String, List<String>> triples;
-	
+	private ObjectAccessControlsBean aclBean;
+
 	public DocumentIndexingPackage() {
 		document = new IndexDocumentBean();
 		this.attemptedToRetrieveDefaultWebObject = false;
@@ -249,32 +251,41 @@ public class DocumentIndexingPackage {
 	public List<PID> getChildren() {
 		if (children != null)
 			return children;
-		Element relsExt = getRelsExt();
-		if (relsExt == null)
-			return null;
-		
-		List<?> containsEls = relsExt.getChildren("contains", JDOMNamespaceUtil.CDR_NS);
-		if (containsEls.size() > 0) {
+		if (triples != null) {
+			List<String> childrenRelations = triples.get(ContentModelHelper.Relationship.contains.toString());
+			if (childrenRelations == null)
+				this.children = new ArrayList<PID>(0);
+			else {
+				this.children = new ArrayList<PID>(childrenRelations.size());
+				for (String childRelation: childrenRelations)
+					this.children.add(new PID(childRelation));
+			}
+		} else {
+			Element relsExt = getRelsExt();
+			if (relsExt == null)
+				return null;
+			List<?> containsEls = relsExt.getChildren("contains", JDOMNamespaceUtil.CDR_NS);
 			List<PID> children = new ArrayList<PID>(containsEls.size());
-			for (Object containsObj : containsEls) {
-				PID child = new PID(((Element) containsObj).getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
-				children.add(child);
+			if (containsEls.size() > 0) {
+				for (Object containsObj : containsEls) {
+					PID child = new PID(((Element) containsObj).getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
+					children.add(child);
+				}
 			}
 			this.children = children;
-			return children;
 		}
-		return null;
+		return children;
 	}
-	
+
 	public void setChildren(List<PID> children) {
 		this.children = children;
 	}
-	
+
 	private void extractTriples() {
 		Element objectProperties = getObjectProperties();
 		Element relsExt = getRelsExt();
 		Map<String, Element> datastreams = getMostRecentDatastreamMap();
-		
+
 		Map<String, List<String>> triples = new HashMap<String, List<String>>();
 		if (relsExt != null) {
 			List<?> tripleEls = relsExt.getChildren();
@@ -292,7 +303,7 @@ public class DocumentIndexingPackage {
 				predicateTriples.add(value);
 			}
 		}
-		
+
 		if (objectProperties != null) {
 			List<?> tripleEls = objectProperties.getChildren();
 			for (Object tripleObject : tripleEls) {
@@ -307,21 +318,25 @@ public class DocumentIndexingPackage {
 				predicateTriples.add(value);
 			}
 		}
-		
-		if (datastreams.size() > 0){
+
+		if (datastreams.size() > 0) {
 			List<String> predicateTriples = new ArrayList<String>();
 			triples.put(ContentModelHelper.FedoraProperty.disseminates.toString(), predicateTriples);
-			for (String datastream: datastreams.keySet()) {
+			for (String datastream : datastreams.keySet()) {
 				predicateTriples.add(pid.getURI() + "/" + datastream);
 			}
 		}
 		this.triples = triples;
 	}
-	
+
 	public Map<String, List<String>> getTriples() {
 		if (triples == null && foxml != null)
 			this.extractTriples();
 		return triples;
+	}
+
+	public void setTriples(Map<String, List<String>> triples) {
+		this.triples = triples;
 	}
 
 	public void setLabel(String label) {
@@ -342,5 +357,13 @@ public class DocumentIndexingPackage {
 
 	public void setIsPublished(Boolean isPublished) {
 		this.isPublished = isPublished;
+	}
+
+	public ObjectAccessControlsBean getAclBean() {
+		return aclBean;
+	}
+
+	public void setAclBean(ObjectAccessControlsBean aclBean) {
+		this.aclBean = aclBean;
 	}
 }

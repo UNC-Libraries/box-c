@@ -70,7 +70,7 @@ public class SetAccessControlFilterTest extends Assert {
 		roles.put("http://cdr.unc.edu/definitions/acl#inheritPermissions", Arrays.asList("false"));
 		
 		List<String> embargoes = new ArrayList<String>();
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, embargoes);
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, null, embargoes);
 		
 		AccessControlService accessControlService = mock(AccessControlService.class);
 		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
@@ -100,7 +100,7 @@ public class SetAccessControlFilterTest extends Assert {
 		roles.put("http://cdr.unc.edu/definitions/acl#inheritPermissions", Arrays.asList("false"));
 		
 		List<String> embargoes = new ArrayList<String>();
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, embargoes);
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, null, embargoes);
 		
 		AccessControlService accessControlService = mock(AccessControlService.class);
 		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
@@ -116,64 +116,9 @@ public class SetAccessControlFilterTest extends Assert {
 		
 		filter.filter(dip);
 		
-		assertNull(dip.getDocument().getReadGroup());
+		assertEquals(0, dip.getDocument().getReadGroup().size());
 		
 		assertEquals(1, dip.getDocument().getAdminGroup().size());
 		assertTrue(dip.getDocument().getAdminGroup().contains("curator"));
-		
-		assertTrue(dip.getDocument().getStatus().contains("Not Discoverable"));
-		assertFalse(dip.getDocument().getStatus().contains("Not Inheriting Roles"));
-		System.out.println(dip.getDocument().getStatus());
-	}
-	
-	@Test
-	public void extractEmbargoed() throws Exception {
-		Map<String,Collection<String>> roles = new HashMap<String,Collection<String>>();
-		roles.put("http://cdr.unc.edu/definitions/roles#patron", Arrays.asList("public"));
-		
-		List<String> embargoes = new ArrayList<String>();
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, embargoes);
-		
-		AccessControlService accessControlService = mock(AccessControlService.class);
-		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
-		
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/embargoed.xml")));
-		dip.setFoxml(foxml);
-		
-		SetAccessControlFilter filter = new SetAccessControlFilter();
-		filter.setAccessControlService(accessControlService);
-		
-		filter.filter(dip);
-		
-		assertTrue(dip.getDocument().getStatus().contains("Embargoed"));
-	}
-	
-	@Test
-	public void extractRolesAssigned() throws Exception {
-		Map<String,Collection<String>> roles = new HashMap<String,Collection<String>>();
-		roles.put("http://cdr.unc.edu/definitions/roles#patron", Arrays.asList("public"));
-		
-		List<String> embargoes = new ArrayList<String>();
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, embargoes);
-		
-		AccessControlService accessControlService = mock(AccessControlService.class);
-		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
-		
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/rolesAssigned.xml")));
-		dip.setFoxml(foxml);
-		
-		SetAccessControlFilter filter = new SetAccessControlFilter();
-		filter.setAccessControlService(accessControlService);
-		
-		filter.filter(dip);
-		
-		assertTrue(dip.getDocument().getStatus().contains("Roles Assigned"));
-		assertTrue(dip.getDocument().getStatus().contains("Not Inheriting Roles"));
 	}
 }
