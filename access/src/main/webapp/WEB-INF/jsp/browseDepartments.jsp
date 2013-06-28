@@ -19,6 +19,8 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>  
+
+<div class="content-wrap">
 <div class="contentarea">
 	<h2>Browse Departments</h2>
 </div>
@@ -40,4 +42,5 @@
 			</c:if>
 		</c:forEach>
 	</ul>
+</div>
 </div>

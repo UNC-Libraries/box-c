@@ -23,6 +23,11 @@ body {
 #header,#content,#footer {
 	width: 100%;
 	float: left;
+	position: relative;
+}
+
+#header {
+	z-index: 2;
 }
 
 #footer {
@@ -31,7 +36,7 @@ body {
 
 #footer_uncwell {
 	float: right;
-	margin: -7px 0pt 0pt;
+	margin: -7px 0 0;
 }
 
 .fourcol,.twocol,.threecol {

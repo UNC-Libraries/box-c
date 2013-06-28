@@ -19,6 +19,7 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+<div class="content-wrap">
 <c:import url="fullRecord/navigationBar.jsp" />
 <c:choose>
 	<c:when test="${requestScope.listAccess == true}">
@@ -39,3 +40,4 @@
 		<script type="text/javascript" src="/static/js/require.js" data-main="/static/js/public/fullRecord"></script>
 	</c:when>
 </c:choose>
+</div>

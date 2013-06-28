@@ -21,6 +21,7 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
 
+<div class="content-wrap">
 <div class="contentarea">
 	<h2>Structure browse</h2>
 	<div class="results_header_hierarchy_path">
@@ -89,3 +90,4 @@
 </div>
 <link rel="stylesheet" type="text/css" href="/static/css/structure_browse.css" />
 <script type="text/javascript" src="/static/js/require.js" data-main="/static/js/public/structureBrowse"></script>
+</div>

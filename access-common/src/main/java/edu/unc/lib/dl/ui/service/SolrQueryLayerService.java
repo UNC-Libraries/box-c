@@ -20,12 +20,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -1130,4 +1133,103 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public void setCollectionsPid(PID collectionsPid) {
 		this.collectionsPid = collectionsPid;
 	}
+	
+	/**
+	 * Get the number of departments represented in the collection
+	 * @return the count, or -1 if there was an error retrieving the count
+	 */
+	
+	public int getDepartmentsCount() {
+		
+		SolrQuery query;
+		QueryResponse response;
+		
+		query = new SolrQuery();
+		query.setQuery("*:*");
+		query.setRows(0);
+		query.addFacetField("department");
+		query.setFacetLimit(-1);
+
+		try {
+			response = this.executeQuery(query);
+			return response.getFacetField("department").getValueCount();
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+		}
+		
+		return -1;
+
+	}
+	
+	/**
+	 * Get the total number of collections
+	 * @return the count, or -1 if there was an error retrieving the count
+	 */
+
+	public long getCollectionsCount() {
+		
+		SolrQuery query;
+		QueryResponse response;
+		
+		query = new SolrQuery();
+		query.setQuery("resourceType:Collection");
+		query.setRows(0);
+		query.setFacetLimit(-1);
+
+		try {
+			response = this.executeQuery(query);
+			return response.getResults().getNumFound();
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+		}
+		
+		return -1;
+
+	}
+	
+	/**
+	 * Get the number of objects present in the collection for various formats
+	 * @return a map from format name to count
+	 */
+
+	public Map<String,Long> getFormatCounts() {
+		
+		SolrQuery query;
+		QueryResponse response;
+		
+		query = new SolrQuery();
+		query.setQuery("*:*");
+		query.setRows(0);
+		query.addFacetField("contentType");
+		query.setFacetLimit(-1);
+		
+		HashMap<String,Long> counts = new HashMap<String,Long>();
+
+		try {
+			response = this.executeQuery(query);
+			FacetField facetField = response.getFacetField("contentType");
+
+			for (Count count : facetField.getValues()) {
+
+				if (count.getName().startsWith("^text"))
+					counts.put("text", count.getCount());
+				else if (count.getName().startsWith("^image"))
+					counts.put("image", count.getCount());
+				else if (count.getName().startsWith("^dataset"))
+					counts.put("dataset", count.getCount());
+				else if (count.getName().startsWith("^audio"))
+					counts.put("audio", count.getCount());
+				else if (count.getName().startsWith("^video"))
+					counts.put("video", count.getCount());
+
+			}
+
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+		}
+		
+		return counts;
+
+	}
+	
 }

@@ -45,6 +45,11 @@ public class FrontPageController extends AbstractSolrSearchController {
 	public String handleRequest(Model model, HttpServletRequest request){
 		LOG.debug("In front page controller");
 		
+		// Retrieve collection stats
+		model.addAttribute("departmentsCount", this.queryLayer.getDepartmentsCount());
+		model.addAttribute("collectionsCount", this.queryLayer.getCollectionsCount());
+		model.addAttribute("formatCounts", this.queryLayer.getFormatCounts());
+		
 		//Retrieve the list of newly added items
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 		SearchResultResponse resultResponse = queryLayer.getNewlyAdded(accessGroups);
