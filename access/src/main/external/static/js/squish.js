@@ -1014,7 +1014,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 							self.options.containingDialog.dialog('close');
 						}
 						self.alertHandler.alertHandler('success', 'Access control changes saved');
-						$(".entry[data-pid='" + self.options.pid + "']").data('resultObject').refresh();
+						$("#res_" + self.options.pid.substring(self.options.pid.indexOf(':') + 1)).data('resultObject').refresh();
 					},
 					error : function(data) {
 						container.modalLoadingOverlay('close');
@@ -1460,7 +1460,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
     limitations under the License.
 
  */
-define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
+define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
 		'PublishObjectButton', 'EditAccessControlForm', 'ModalLoadingOverlay'], function($, ui, RemoteStateChangeMonitor) {
 	var defaultOptions = {
 			animateSpeed : 100,
@@ -1714,7 +1714,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 		obj.element.hide(obj.options.animateSpeed, function() {
 			obj.element.remove();
 			if (obj.options.resultObjectList) {
-				obj.options.resultObjectList.removeResultObject(obj.pid.getPid());
+				obj.options.resultObjectList.removeResultObject(obj.pid);
 			}
 		});
 	};
@@ -1745,7 +1745,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 		this.updateOverlay('show');
 		this.setStatusText('Refreshing...');
 		if (immediately) {
-			this.options.resultObjectList.refreshObject(this.pid.getPid());
+			this.options.resultObjectList.refreshObject(this.pid);
 			return;
 		}
 		var self = this;
@@ -1755,11 +1755,11 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			},
 			'checkStatusTarget' : this,
 			'statusChanged' : function(data) {
-				self.options.resultObjectList.refreshObject(self.pid.getPid());
+				self.options.resultObjectList.refreshObject(self.pid);
 			},
 			'statusChangedTarget' : this, 
 			'checkStatusAjax' : {
-				url : "services/rest/item/" + self.pid.getPath() + "/solrRecord/version",
+				url : "services/rest/item/" + self.pid + "/solrRecord/version",
 				dataType : 'json'
 			}
 		});
@@ -1818,8 +1818,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 				dataType : 'json',
 				success : function(data, textStatus, jqXHR) {
 					var newContent = $(data.content);
-					resultObject.replaceWith(newContent);
-					self.resultObjects[id] = newContent.resultObject({'id' : id, "metadata" : data.data.metadata, "resultObjectList" : self});
+					resultObject.getElement().replaceWith(newContent);
+					self.resultObjects[id] = new ResultObject(newContent, {id : id, metadata : data.data.metadata, resultObjectList : self});
 				}
 			});
 		}
@@ -2059,10 +2059,10 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 						this.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
-					this.data('resultObject').setStatusText('Publishing....');
+					this.setStatusText('Publishing....');
 				}, 
 				'completeFunction' : function(){
-					this.data('resultObject').refresh(true);
+					this.refresh(true);
 				}
 			});
 			$(".unpublish_selected", self.element).unpublishBatchButton({
@@ -2072,10 +2072,10 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 						this.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
-					this.data('resultObject').setStatusText('Unpublishing....');
+					this.setStatusText('Unpublishing....');
 				}, 
 				'completeFunction' : function(){
-					this.data('resultObject').refresh(true);
+					this.refresh(true);
 				}
 			});
 			$(".delete_selected", self.element).deleteBatchButton({
@@ -2085,7 +2085,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 						this.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
-						this.data('resultObject').setStatusText('Cleaning up...');
+						this.setStatusText('Cleaning up...');
 					}, 
 				'completeFunction' : 'deleteElement'
 			});

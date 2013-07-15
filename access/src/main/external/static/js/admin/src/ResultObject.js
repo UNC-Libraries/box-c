@@ -15,7 +15,7 @@
     limitations under the License.
 
  */
-define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
+define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
 		'PublishObjectButton', 'EditAccessControlForm', 'ModalLoadingOverlay'], function($, ui, RemoteStateChangeMonitor) {
 	var defaultOptions = {
 			animateSpeed : 100,
@@ -269,7 +269,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 		obj.element.hide(obj.options.animateSpeed, function() {
 			obj.element.remove();
 			if (obj.options.resultObjectList) {
-				obj.options.resultObjectList.removeResultObject(obj.pid.getPid());
+				obj.options.resultObjectList.removeResultObject(obj.pid);
 			}
 		});
 	};
@@ -300,7 +300,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 		this.updateOverlay('show');
 		this.setStatusText('Refreshing...');
 		if (immediately) {
-			this.options.resultObjectList.refreshObject(this.pid.getPid());
+			this.options.resultObjectList.refreshObject(this.pid);
 			return;
 		}
 		var self = this;
@@ -310,11 +310,11 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor
 			},
 			'checkStatusTarget' : this,
 			'statusChanged' : function(data) {
-				self.options.resultObjectList.refreshObject(self.pid.getPid());
+				self.options.resultObjectList.refreshObject(self.pid);
 			},
 			'statusChangedTarget' : this, 
 			'checkStatusAjax' : {
-				url : "services/rest/item/" + self.pid.getPath() + "/solrRecord/version",
+				url : "services/rest/item/" + self.pid + "/solrRecord/version",
 				dataType : 'json'
 			}
 		});

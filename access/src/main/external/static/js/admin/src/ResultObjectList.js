@@ -48,8 +48,8 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 				dataType : 'json',
 				success : function(data, textStatus, jqXHR) {
 					var newContent = $(data.content);
-					resultObject.replaceWith(newContent);
-					self.resultObjects[id] = newContent.resultObject({'id' : id, "metadata" : data.data.metadata, "resultObjectList" : self});
+					resultObject.getElement().replaceWith(newContent);
+					self.resultObjects[id] = new ResultObject(newContent, {id : id, metadata : data.data.metadata, resultObjectList : self});
 				}
 			});
 		}

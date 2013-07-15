@@ -230,10 +230,10 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						this.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
-					this.data('resultObject').setStatusText('Publishing....');
+					this.setStatusText('Publishing....');
 				}, 
 				'completeFunction' : function(){
-					this.data('resultObject').refresh(true);
+					this.refresh(true);
 				}
 			});
 			$(".unpublish_selected", self.element).unpublishBatchButton({
@@ -243,10 +243,10 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						this.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
-					this.data('resultObject').setStatusText('Unpublishing....');
+					this.setStatusText('Unpublishing....');
 				}, 
 				'completeFunction' : function(){
-					this.data('resultObject').refresh(true);
+					this.refresh(true);
 				}
 			});
 			$(".delete_selected", self.element).deleteBatchButton({
@@ -256,7 +256,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						this.updateOverlay('show');
 					}, 
 				'followupFunction' : function() {
-						this.data('resultObject').setStatusText('Cleaning up...');
+						this.setStatusText('Cleaning up...');
 					}, 
 				'completeFunction' : 'deleteElement'
 			});

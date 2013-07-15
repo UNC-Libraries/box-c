@@ -48,7 +48,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		Map<String, List<String>> triples = this.retrieveTriples(dip);
 		ObjectAccessControlsBean aclBean;
-		if (dip.getParentDocument() == null) {
+		if (dip.getParentDocument() == null || dip.getParentDocument().getAclBean() == null) {
 			aclBean = accessControlService.getObjectAccessControls(dip.getPid());
 		} else {
 			aclBean = new ObjectAccessControlsBean(dip.getParentDocument().getAclBean(), dip.getPid(), triples);
