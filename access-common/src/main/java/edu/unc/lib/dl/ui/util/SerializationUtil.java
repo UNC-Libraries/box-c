@@ -18,6 +18,8 @@ package edu.unc.lib.dl.ui.util;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -56,6 +58,8 @@ public class SerializationUtil {
 		result.append("\"id\":\"").append(metadata.getId()).append('"');
 		result.append(',');
 		result.append("\"_version_\":\"").append(metadata.get_version_()).append('"');
+		result.append(',');
+		result.append("\"title\":\"").append(metadata.getTitle().replace("\"", "\\\"")).append('"');
 		if (metadata.getStatus() != null) {
 			result.append(',');
 			result.append("\"status\":").append(joinArray(metadata.getStatus()));
@@ -64,8 +68,6 @@ public class SerializationUtil {
 			result.append(',');
 			result.append("\"type\":\"").append(metadata.getResourceType()).append('"');
 		}
-		result.append(',');
-		result.append("\"title\":\"").append(metadata.getTitle().replace("\"", "\\\"")).append('"');
 		if (metadata.getCreator() != null) {
 			result.append(',');
 			result.append("\"creators\":").append(joinArray(metadata.getCreator()));
@@ -77,6 +79,10 @@ public class SerializationUtil {
 		if (metadata.getTags() != null) {
 			result.append(',');
 			result.append("\"tags\":").append(joinTags(metadata.getTags()));
+		}
+		if (metadata.getCountMap() != null && metadata.getCountMap().size() > 0) {
+			result.append(',');
+			result.append("\"counts\":").append(joinMap(metadata.getCountMap()));
 		}
 		try {
 			String dateAdded = DateTimeUtil.formatDateToUTC(metadata.getDateAdded());
@@ -118,6 +124,19 @@ public class SerializationUtil {
 			result.append(",\"text\":\"").append(value.getText()).append('"').append('}');
 		}
 		result.append(']');
+		return result.toString();
+	}
+	
+	private static String joinMap(Map<?, ?> map) {
+		StringBuilder result = new StringBuilder();
+		result.append('{');
+		for (Entry<?, ?> entry : map.entrySet()) {
+			if (result.length() > 1)
+				result.append(',');
+			result.append('"').append(entry.getKey().toString()).append('"').append(':');
+			result.append('"').append(entry.getValue().toString()).append('"');
+		}
+		result.append('}');
 		return result.toString();
 	}
 	
