@@ -11,8 +11,10 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		},
 		
 		_create : function() {
-			this.resultObjectList = new ResultObjectList({'metadataObjects' : this.options.metadataObjects});
 			this.$resultTable = this.element.find('.result_table').eq(0);
+			var fragment = $(document.createDocumentFragment());
+			this.resultObjectList = new ResultObjectList({'metadataObjects' : this.options.metadataObjects, parent : this.$resultTable.children('tbody')});
+			//this.$resultTable.children('tbody').append(fragment);
 			
 			if (this.options.enableSort)
 				this._initSort();
@@ -33,7 +35,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					var sortField = $this.attr('data-field');
 					if (sortField) {
 						var order = '';
-						console.log(sortParam + "|" + sortField + "|" + sortOrder + "|" + (!sortOrder));
+						//console.log(sortParam + "|" + sortField + "|" + sortOrder + "|" + (!sortOrder));
 						if (sortParam == sortField) {
 							if (sortOrder) {
 								$this.addClass('asc');
@@ -45,7 +47,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						var sortUrl = URLUtilities.setParameter(self.options.resultUrl, 'sort', sortField);
 						sortUrl = URLUtilities.setParameter(sortUrl, 'sortOrder', order);
 						this.children[0].href = sortUrl;
-						console.log(sortUrl);
+						//console.log(sortUrl);
 					}
 				});
 			} else {
@@ -208,20 +210,14 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		_initBatchOperations : function() {
 			var self = this;
 			
-			$(".select_all", self.element).click(function(){
+			$(".select_all").click(function(){
+				var checkbox = $(this).children("input");
+				var toggleFn = checkbox.prop("checked") ? "select" : "unselect";
 				var resultObjects = self.resultObjectList.resultObjects;
 				for (var index in resultObjects) {
-					resultObjects[index].select();
+					resultObjects[index][toggleFn]();
 				}
-			});
-			
-			
-			$(".deselect_all", self.element).click(function(){
-				var resultObjects = self.resultObjectList.resultObjects;
-				for (var index in resultObjects) {
-					resultObjects[index].unselect();
-				}
-			});
+			}).children("input").prop("checked", false);
 			
 			$(".publish_selected", self.element).publishBatchButton({
 				'resultObjectList' : this.resultObjectList, 

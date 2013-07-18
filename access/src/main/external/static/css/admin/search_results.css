@@ -75,7 +75,7 @@
 .result_header {
 	background-color: white;
 	position: absolute;
-	/*width: calc(100vw - 375px);*/
+	width: calc(100vw - 360px);
 	top: 0;
 }
 
@@ -161,8 +161,20 @@
 	font-size: 14px;
 	line-height: 18px;
 	margin-top: 10px;
-	/*width: calc(100vw - 375px);*/
+	width: calc(100vw - 360px);
 	table-layout: fixed;
+}
+
+@media (max-width: 1200px) {
+	.result_table {
+		font-size: 13px;
+	}
+}
+
+@media (max-width: 1000px) {
+	.result_table {
+		font-size: 12px;
+	}
 }
 
 .res_entry {
@@ -195,7 +207,7 @@
 	border-top: 1px solid #EEEEEE;
 	box-shadow: 0 4px 6px -6px #AAAAFF;
 	background-color: #FBFBFE;
-	/*width: calc(100vw - 375px);*/
+	width: calc(100vw - 360px);
 	position: absolute;
 	top: 58px;
 }
@@ -262,6 +274,17 @@ colgroup > .date_added, .column_headers > .date_added > a {
 	width: 20px;
 }
 
+@media (min-width: 1600px) {
+	.itemdetails > div > .title {
+		display: inline-block;
+		max-width: calc(100% - 200px);
+		overflow-x: hidden;
+		text-overflow: ellipsis;
+		vertical-align: inherit;
+		white-space: nowrap;
+	}
+}
+
 .itemdetails > div > .status {
 	font-size: 0.7em;
 }
@@ -289,19 +312,12 @@ colgroup > .date_added, .column_headers > .date_added > a {
 	width: 16px;
 }
 
-.batch_actions {
-	border-bottom-width: 0;
-}
-
-.batch_actions > td {
-	padding: 0px 0 6px;
-}
-
 /** Batch operations */
 .batch_actions p {
 	display: inline;
 	padding-right: 10px;
 	vertical-align: bottom;
+	cursor: pointer;
 }
 
 /** Action menus */

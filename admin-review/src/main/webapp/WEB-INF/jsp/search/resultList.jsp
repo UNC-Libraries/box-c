@@ -84,7 +84,7 @@
 							<li><a>Ingest Package</a></li>
 						</ul>
 					</div>
-					<div class="left batch_actions"><p><a class="select_all">Select All</a></p> <p><a class="deselect_all">Deselect All</a></p></div>
+					<div class="left batch_actions"><p class="select_all"><input type="checkbox"/></p></div>
 					<div class="right">
 						<c:import url="search/navigationBar.jsp" >
 							<c:param name="queryMethod" value="${queryMethod}"/>
@@ -115,10 +115,6 @@
 								</tr>
 							</thead>
 							<tbody>
-								<c:forEach items="${resultResponse.resultList}" var="metadata" varStatus="status">
-									<c:set var="metadata" scope="request" value="${metadata}"/>
-									<c:import url="search/resultEntry.jsp"/>
-								</c:forEach>
 							</tbody>
 						</table>
 					</div>
@@ -136,7 +132,7 @@
 	var require = {
 		config: {
 			'resultList' : {
-				'metadataObjects': ${cdr:resultsToJSON(resultResponse)},
+				'metadataObjects': ${cdr:resultsToJSON(resultResponse, accessGroupSet)},
 				'pagingActive' : ${resultResponse.resultCount > fn:length(resultResponse.resultList)},
 				'resultUrl' : '${currentRelativeUrl}'
 			},

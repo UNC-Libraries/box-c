@@ -1,5 +1,5 @@
-define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'AlertHandler', 'PID', 
-         'editable', 'moment', 'qtip', 'ConfirmationDialog'], function($, PID) {
+define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'AlertHandler', 
+         'editable', 'moment', 'qtip', 'ConfirmationDialog'], function($, ui, ModalLoadingOverlay) {
 	$.widget("cdr.editAccessControlForm", {
 		_create : function() {
 			var self = this;
@@ -115,14 +115,14 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 			var containing = this.options.containingDialog;
 			$('.update_button').click(function(){
 				var container = ((self.options.containingDialog)? self.options.containingDialog : $(body));
-				container.modalLoadingOverlay();
+				var overlay = new ModalLoadingOverlay(container);
 				$.ajax({
 					url : self.options.updateUrl,
 					type : 'PUT',
 					data : self.xml2Str(self.accessControlModel),
 					success : function(data) {
 						containing.data('can-close', true);
-						container.modalLoadingOverlay('close');
+						overlay.close();
 						if (self.options.containingDialog != null) {
 							self.options.containingDialog.dialog('close');
 						}
@@ -130,7 +130,7 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 						$("#res_" + self.options.pid.substring(self.options.pid.indexOf(':') + 1)).data('resultObject').refresh();
 					},
 					error : function(data) {
-						container.modalLoadingOverlay('close');
+						overlay.close();
 						self.alertHandler.alertHandler('error', 'Failed to save changes: ' + data);
 					}
 				});

@@ -106,14 +106,17 @@ public class ObjectAccessControlsBean {
 		extractEmbargoes(embargoes);
 		this.activeRoleGroups = this.mergeRoleGroupsAndEmbargoes();
 	}
-	
+
 	/**
 	 * Construct a new access control bean by applying triples from an item on top of an existing access control bean as
 	 * if it were the parent for the new object
 	 * 
-	 * @param baseAcls parent objects access control information
-	 * @param pid pid of the new object
-	 * @param triples map of triples containing the access control of the new object
+	 * @param baseAcls
+	 *           parent objects access control information
+	 * @param pid
+	 *           pid of the new object
+	 * @param triples
+	 *           map of triples containing the access control of the new object
 	 */
 	public ObjectAccessControlsBean(ObjectAccessControlsBean baseAcls, PID pid, Map<String, List<String>> triples) {
 		this.object = pid;
@@ -126,14 +129,14 @@ public class ObjectAccessControlsBean {
 			if (baseAcls.activeEmbargoes != null)
 				this.activeEmbargoes = new ArrayList<Date>(baseAcls.activeEmbargoes);
 			// Remove non-inheritable roles (list)
-			if (this.baseRoleGroups.containsKey(UserRole.list)) 
+			if (this.baseRoleGroups.containsKey(UserRole.list))
 				this.baseRoleGroups.remove(UserRole.list);
 		} else {
 			this.baseRoleGroups = new HashMap<UserRole, Set<String>>();
 		}
 		if (baseAcls.globalRoleGroups != null)
 			this.globalRoleGroups = new HashMap<UserRole, Set<String>>(baseAcls.globalRoleGroups);
-		
+
 		List<String> embargoes = triples.get(ContentModelHelper.CDRProperty.embargoUntil.toString());
 		this.extractEmbargoes(embargoes);
 
@@ -148,7 +151,8 @@ public class ObjectAccessControlsBean {
 						if (groups == null) {
 							groups = new HashSet<String>(tripleEntry.getValue());
 							this.baseRoleGroups.put(userRole, groups);
-						} else groups.addAll(tripleEntry.getValue());
+						} else
+							groups.addAll(tripleEntry.getValue());
 					} else {
 						Set<String> groups = new HashSet<String>(tripleEntry.getValue());
 						this.baseRoleGroups.put(userRole, groups);
@@ -377,6 +381,23 @@ public class ObjectAccessControlsBean {
 				return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Retrieves the set of all permissions granted to a set of access groups
+	 * 
+	 * @param groups
+	 * @return
+	 */
+	public Set<String> getPermissionsByGroups(AccessGroupSet groups) {
+		Set<String> permissions = new HashSet<String>();
+		Set<UserRole> roles = this.getRoles(groups);
+		for (UserRole r : roles) {
+			for (Permission permission : r.getPermissions())
+				if (!permissions.contains(permission.name()))
+					permissions.add(permission.name());
+		}
+		return permissions;
 	}
 
 	/**

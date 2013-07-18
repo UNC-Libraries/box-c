@@ -226,8 +226,8 @@ define('StructureEntry', [ 'jquery', 'jquery-ui'], function($, ui) {
 /*
  * @author Ben Pennell
  */
-define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoadingOverlay', 'ConfirmationDialog'], function(
-		$, ui, PID, RemoteStateChangeMonitor) {
+define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'ConfirmationDialog'], function(
+		$, ui, RemoteStateChangeMonitor) {
 	$.widget("cdr.ajaxCallbackButton", {
 		options : {
 			pid : null,
@@ -268,11 +268,8 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 
 			this.alertHandler = $(this.options.alertHandler);
 			
-			if (this.options.pid !== undefined && this.options.pid != null) {
-				if (this.options.pid instanceof PID)
-					this.pid = this.options.pid;
-				else
-					this.pid = new PID(this.options.pid);
+			if (this.options.pid) {
+				this.pid = this.options.pid;
 			}
 			this.setWorkURL(this.options.workPath);
 			
@@ -417,7 +414,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		resolveParameters : function(url) {
 			if (!url || !this.pid)
 				return url;
-			return url.replace("{idPath}", this.pid.getPath());
+			return url.replace("{idPath}", this.pid);
 		},
 
 		destroy : function() {
@@ -699,7 +696,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 /*
  * @author Ben Pennell
  */
-define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoadingOverlay'], function(
+define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor'], function(
 		$, ui, PID, RemoteStateChangeMonitor) {
 	$.widget("cdr.confirmationDialog", {
 		options : {
@@ -885,8 +882,8 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			return true;
 		}
 	});
-});define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'AlertHandler', 'PID', 
-         'editable', 'moment', 'qtip', 'ConfirmationDialog'], function($, PID) {
+});define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'AlertHandler', 
+         'editable', 'moment', 'qtip', 'ConfirmationDialog'], function($, ui, ModalLoadingOverlay) {
 	$.widget("cdr.editAccessControlForm", {
 		_create : function() {
 			var self = this;
@@ -1002,14 +999,14 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			var containing = this.options.containingDialog;
 			$('.update_button').click(function(){
 				var container = ((self.options.containingDialog)? self.options.containingDialog : $(body));
-				container.modalLoadingOverlay();
+				var overlay = new ModalLoadingOverlay(container);
 				$.ajax({
 					url : self.options.updateUrl,
 					type : 'PUT',
 					data : self.xml2Str(self.accessControlModel),
 					success : function(data) {
 						containing.data('can-close', true);
-						container.modalLoadingOverlay('close');
+						overlay.close();
 						if (self.options.containingDialog != null) {
 							self.options.containingDialog.dialog('close');
 						}
@@ -1017,7 +1014,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 						$("#res_" + self.options.pid.substring(self.options.pid.indexOf(':') + 1)).data('resultObject').refresh();
 					},
 					error : function(data) {
-						container.modalLoadingOverlay('close');
+						overlay.close();
 						self.alertHandler.alertHandler('error', 'Failed to save changes: ' + data);
 					}
 				});
@@ -1210,64 +1207,70 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 	
 	return MetadataObject;
 });define('ModalLoadingOverlay', [ 'jquery', 'jquery-ui', 'editable', 'moment', 'qtip'], function($) {
-	$.widget("cdr.modalLoadingOverlay", {
-		options : {
-			'text' : null,
-			'iconSize' : 'large',
-			'iconPath' : '/static/images/admin/loading-small.gif',
-			'autoOpen' : true
-		},
-		
-		_create : function() {
-			if (this.options.text == null)
-				this.overlay = $('<div class="load_modal icon_' + (this.options.iconSize) + '"></div>');
-			else {
-				this.overlay = $('<div class="load_modal"></div>');
-				this.textSpan = $('<span>' + this.options.text + '</span>');
-				this.overlay.append(this.textSpan);
-				if (this.options.iconPath)
-					this.textIcon = $('<img src="' + this.options.iconPath + '" />').appendTo(this.overlay);
-			}
-			
-			this.overlay.appendTo(document.body);
-			
-			$(window).resize($.proxy(this.resize, this));
-			
-			if (this.options.autoOpen)
-				this.show();
-			else this.hide();
-		},
-		
-		close : function() {
-			this.overlay.remove();
-		},
-		
-		show : function() {
-			this.overlay.css({'visibility': 'hidden', 'display' : 'block'});
-			if (this.element != $(document)) {
-				this.resize();
-				if (this.textSpan) {
-					var topOffset = (this.element.innerHeight() - this.textSpan.outerHeight()) / 2;
-					this.textSpan.css('top', topOffset);
-					this.textIcon.css('top', topOffset);
-				}
-			}
-			this.overlay.css('visibility', 'visible');
-		},
-		
-		resize : function() {
-			this.overlay.css({'width' : this.element.innerWidth(), 'height' : this.element.innerHeight(),
-				'top' : this.element.offset().top, 'left' : this.element.offset().left});
-		},
-		
-		hide : function() {
-			this.overlay.hide();
-		},
-		
-		setText : function(text) {
-			this.textSpan.html(text);
+	var defaultOptions = {
+		'text' : null,
+		'iconSize' : 'large',
+		'iconPath' : '/static/images/admin/loading-small.gif',
+		'autoOpen' : true
+	};
+	
+	function ModalLoadingOverlay(element, options) {
+		this.options = $.extend({}, defaultOptions, options);
+		this.element = element;
+		this.init();
+	}
+	
+	ModalLoadingOverlay.prototype.init = function() {
+		if (this.options.text == null)
+			this.overlay = $('<div class="load_modal icon_' + (this.options.iconSize) + '"></div>');
+		else {
+			this.overlay = $('<div class="load_modal"></div>');
+			this.textSpan = $('<span>' + this.options.text + '</span>');
+			this.overlay.append(this.textSpan);
+			if (this.options.iconPath)
+				this.textIcon = $('<img src="' + this.options.iconPath + '" />').appendTo(this.overlay);
 		}
-	});
+		
+		this.overlay.appendTo(document.body);
+		
+		$(window).resize($.proxy(this.resize, this));
+		
+		if (this.options.autoOpen)
+			this.show();
+		else this.hide();
+	};
+	
+	ModalLoadingOverlay.prototype.close = function() {
+		this.overlay.remove();
+	};
+	
+	ModalLoadingOverlay.prototype.show = function() {
+		this.overlay.css({'visibility': 'hidden', 'display' : 'block'});
+		if (this.element != $(document)) {
+			this.resize();
+			if (this.textSpan) {
+				var topOffset = (this.element.innerHeight() - this.textSpan.outerHeight()) / 2;
+				this.textSpan.css('top', topOffset);
+				this.textIcon.css('top', topOffset);
+			}
+		}
+		this.overlay.css('visibility', 'visible');
+	};
+	
+	ModalLoadingOverlay.prototype.hide = function() {
+		this.overlay.hide();
+	};
+	
+	ModalLoadingOverlay.prototype.resize = function() {
+		this.overlay.css({'width' : this.element.innerWidth(), 'height' : this.element.innerHeight(),
+			'top' : this.element.offset().top, 'left' : this.element.offset().left});
+	};
+	
+	ModalLoadingOverlay.prototype.setText = function(text) {
+		this.textSpan.html(text);
+	};
+	
+	return ModalLoadingOverlay;
 });define('PID', ['jquery'], function($) {
 	function PID(pidString) {
 		this.init(pidString);
@@ -1311,7 +1314,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			var targetIds = [];
 			for (var id in this.options.resultObjectList.resultObjects) {
 				var resultObject = this.options.resultObjectList.resultObjects[id];
-				if (resultObject.isSelected() && $.inArray("Unpublished", resultObject.getMetadata().status)
+				if (resultObject.isSelected() && $.inArray("Unpublished", resultObject.getMetadata().status) != -1
 						&& resultObject.isEnabled()) {
 					targetIds.push(resultObject.getPid());
 				}
@@ -1460,8 +1463,9 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
     limitations under the License.
 
  */
-define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
-		'PublishObjectButton', 'EditAccessControlForm', 'ModalLoadingOverlay'], function($, ui, RemoteStateChangeMonitor) {
+define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/resultEntry', 
+		'ModalLoadingOverlay', 'DeleteObjectButton',	'PublishObjectButton', 'EditAccessControlForm'], 
+		function($, ui, _, RemoteStateChangeMonitor, resultEntryTemplate, ModalLoadingOverlay) {
 	var defaultOptions = {
 			animateSpeed : 100,
 			metadata : null,
@@ -1470,19 +1474,27 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 			selectCheckboxInitialState : false
 		};
 	
-	function ResultObject(element, options) {
-		this.init(element, options);
+	function ResultObject(options) {
+		this.options = $.extend({}, defaultOptions, options);
+		this.selected = false;
+		this.init(this.options.metadata);
 	};
 	
-	ResultObject.prototype.init = function(element, options) {
-		this.element = element;
+	ResultObject.prototype.init = function(metadata) {
+		this.metadata = metadata;
+		this.pid = metadata.id;
+		this.actionMenuInitialized = false;
+		var newElement = $(resultEntryTemplate({metadata : metadata}));
+		this.checkbox = null;
+		if (this.element) {
+			if (this.actionMenu)
+				this.actionMenu.remove();
+			this.element.replaceWith(newElement);
+		}
+		this.element = newElement;
 		this.element.data('resultObject', this);
-		this.options = $.extend({}, defaultOptions, options);
-		this.metadata = this.options.metadata;
 		this.links = [];
-		this.pid = this.options.id;
-		this.overlayInitialized = false;
-		if (this.options.selected)
+		if (this.options.selected || this.selected)
 			this.select();
 	};
 	
@@ -1570,8 +1582,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 	};
 	
 	ResultObject.prototype._destroy = function () {
-		if (this.overlayInitialized) {
-			this.element.modalLoadingOverlay('close');
+		if (this.overlay) {
+			this.overlay.close();
 		}
 	};
 
@@ -1621,7 +1633,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 	};
 
 	ResultObject.prototype.toggleSelect = function() {
-		if (this.element.hasClass("selected")) {
+		if (this.selected) {
 			this.unselect();
 		} else {
 			this.select();
@@ -1643,6 +1655,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 	ResultObject.prototype.select = function() {
 		if (!this.options.selectable)
 			return;
+		this.selected = true;
 		this.element.addClass("selected");
 		if (!this.checkbox)
 			this.checkbox = this.element.find("input[type='checkbox']");
@@ -1652,6 +1665,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 	ResultObject.prototype.unselect = function() {
 		if (!this.options.selectable)
 			return;
+		this.selected = false;
 		this.element.removeClass("selected");
 		if (!this.checkbox)
 			this.checkbox = this.element.find("input[type='checkbox']");
@@ -1733,19 +1747,17 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 	
 	ResultObject.prototype.updateOverlay = function(fnName, fnArgs) {
 		// Check to see if overlay is initialized
-		if (!this.overlayInitialized) {
-			this.overlayInitialized = true;
-			this.element.modalLoadingOverlay({'text' : 'Working...', 'autoOpen' : false});
+		if (!this.overlay) {
+			this.overlay = new ModalLoadingOverlay(this.element, {'text' : 'Working...', 'autoOpen' : false});
 		}
-		var overlay = this.element.data("modalLoadingOverlay");
-		overlay[fnName].apply(overlay, fnArgs);
+		this.overlay[fnName].apply(this.overlay, fnArgs);
 	};
 	
 	ResultObject.prototype.refresh = function(immediately) {
 		this.updateOverlay('show');
 		this.setStatusText('Refreshing...');
 		if (immediately) {
-			this.options.resultObjectList.refreshObject(this.pid);
+			this.refreshData(true);
 			return;
 		}
 		var self = this;
@@ -1755,7 +1767,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 			},
 			'checkStatusTarget' : this,
 			'statusChanged' : function(data) {
-				self.options.resultObjectList.refreshObject(self.pid);
+				self.refreshData(true);
 			},
 			'statusChangedTarget' : this, 
 			'checkStatusAjax' : {
@@ -1767,6 +1779,26 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 		followupMonitor.performPing();
 	};
 	
+	ResultObject.prototype.refreshData = function(clearOverlay) {
+		var self = this;
+		$.ajax({
+			url : self.options.resultObjectList.options.refreshEntryUrl + self.pid,
+			dataType : 'json',
+			success : function(data, textStatus, jqXHR) {
+				self.init(data);
+				if (self.overlay)
+					self.overlay.element = self.element;
+				if (clearOverlay)
+					self.updateOverlay("hide");
+			},
+			error : function(a, b, c) {
+				if (clearOverlay)
+					self.updateOverlay("hide");
+				console.log(c);
+			}
+		});
+	};
+	
 	return ResultObject;
 });define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], function($, MetadataObject, ResultObject) {
 	function ResultObjectList(options) {
@@ -1774,28 +1806,38 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 	};
 	
 	$.extend(ResultObjectList.prototype, {
-		options: {
+		defaultOptions: {
 			resultIdPrefix : "entry_",
 			metadataObjects : undefined,
-			refreshEntryUrl : "entry/"
+			refreshEntryUrl : "entry/",
+			parent : null,
+			splitLoadLimit : 70
 		},
 		resultObjects: {},
 		
 		init: function(options) {
-			this.options = $.extend({}, this.options, options);
+			this.options = $.extend({}, this.defaultOptions, options);
 			var self = this;
 			console.time("Initialize entries");
-			
-			console.time("Get entries");
-			var $entries = $(".res_entry", this.element);
-
-			console.timeEnd("Get entries");
+			//console.profile();
 			var metadataObjects = self.options.metadataObjects;
-			for (var i = 0; i < $entries.length; i++) {
-				var id = $entries[i].id;
-				id = 'uuid:' + id.substring(id.indexOf('_') + 1);
-				self.resultObjects[id] = new ResultObject($entries.eq(i), {id : id, metadata : metadataObjects[id], 
-					resultObjectList : self});
+			for (var i = 0; i < metadataObjects.length && i < self.options.splitLoadLimit; i++) {
+				var metadata = metadataObjects[i];
+				self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self});
+				if (self.options.parent)
+					self.options.parent.append(self.resultObjects[metadata.id].element);
+			}
+			if (metadataObjects.length > self.options.splitLoadLimit) {
+				setTimeout(function(){
+					console.time("Second batch");
+					for (var i = self.options.splitLoadLimit; i < metadataObjects.length; i++) {
+						var metadata = metadataObjects[i];
+						self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self});
+						if (self.options.parent)
+							self.options.parent.append(self.resultObjects[metadata.id].element);
+					}
+					console.timeEnd("Second batch");
+				}, 100);
 			}
 			console.timeEnd("Initialize entries");
 		},
@@ -1811,15 +1853,15 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 		},
 		
 		refreshObject: function(id) {
-			var self = this;
 			var resultObject = this.getResultObject(id);
 			$.ajax({
 				url : this.options.refreshEntryUrl + resultObject.getPid(),
 				dataType : 'json',
 				success : function(data, textStatus, jqXHR) {
-					var newContent = $(data.content);
-					resultObject.getElement().replaceWith(newContent);
-					self.resultObjects[id] = new ResultObject(newContent, {id : id, metadata : data.data.metadata, resultObjectList : self});
+					resultObject.init(data);
+				},
+				error : function(A, B, C) {
+					console.log(B);
 				}
 			});
 		}
@@ -1840,8 +1882,10 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 		},
 		
 		_create : function() {
-			this.resultObjectList = new ResultObjectList({'metadataObjects' : this.options.metadataObjects});
 			this.$resultTable = this.element.find('.result_table').eq(0);
+			var fragment = $(document.createDocumentFragment());
+			this.resultObjectList = new ResultObjectList({'metadataObjects' : this.options.metadataObjects, parent : this.$resultTable.children('tbody')});
+			//this.$resultTable.children('tbody').append(fragment);
 			
 			if (this.options.enableSort)
 				this._initSort();
@@ -1862,7 +1906,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 					var sortField = $this.attr('data-field');
 					if (sortField) {
 						var order = '';
-						console.log(sortParam + "|" + sortField + "|" + sortOrder + "|" + (!sortOrder));
+						//console.log(sortParam + "|" + sortField + "|" + sortOrder + "|" + (!sortOrder));
 						if (sortParam == sortField) {
 							if (sortOrder) {
 								$this.addClass('asc');
@@ -1874,7 +1918,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 						var sortUrl = URLUtilities.setParameter(self.options.resultUrl, 'sort', sortField);
 						sortUrl = URLUtilities.setParameter(sortUrl, 'sortOrder', order);
 						this.children[0].href = sortUrl;
-						console.log(sortUrl);
+						//console.log(sortUrl);
 					}
 				});
 			} else {
@@ -2037,20 +2081,14 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 		_initBatchOperations : function() {
 			var self = this;
 			
-			$(".select_all", self.element).click(function(){
+			$(".select_all").click(function(){
+				var checkbox = $(this).children("input");
+				var toggleFn = checkbox.prop("checked") ? "select" : "unselect";
 				var resultObjects = self.resultObjectList.resultObjects;
 				for (var index in resultObjects) {
-					resultObjects[index].select();
+					resultObjects[index][toggleFn]();
 				}
-			});
-			
-			
-			$(".deselect_all", self.element).click(function(){
-				var resultObjects = self.resultObjectList.resultObjects;
-				for (var index in resultObjects) {
-					resultObjects[index].unselect();
-				}
-			});
+			}).children("input").prop("checked", false);
 			
 			$(".publish_selected", self.element).publishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
@@ -2281,7 +2319,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 			var targetIds = [];
 			for (var id in this.options.resultObjectList.resultObjects) {
 				var resultObject = this.options.resultObjectList.resultObjects[id];
-				if (resultObject.isSelected() && $.inArray("Published", resultObject.getMetadata().status)
+				if (resultObject.isSelected() && $.inArray("Unpublished", resultObject.getMetadata().status) == -1
 						&& resultObject.isEnabled()) {
 					targetIds.push(resultObject.getPid());
 				}

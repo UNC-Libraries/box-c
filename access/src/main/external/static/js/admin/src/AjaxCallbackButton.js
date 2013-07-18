@@ -18,8 +18,8 @@
 /*
  * @author Ben Pennell
  */
-define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoadingOverlay', 'ConfirmationDialog'], function(
-		$, ui, PID, RemoteStateChangeMonitor) {
+define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'ConfirmationDialog'], function(
+		$, ui, RemoteStateChangeMonitor) {
 	$.widget("cdr.ajaxCallbackButton", {
 		options : {
 			pid : null,
@@ -60,11 +60,8 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 
 			this.alertHandler = $(this.options.alertHandler);
 			
-			if (this.options.pid !== undefined && this.options.pid != null) {
-				if (this.options.pid instanceof PID)
-					this.pid = this.options.pid;
-				else
-					this.pid = new PID(this.options.pid);
+			if (this.options.pid) {
+				this.pid = this.options.pid;
 			}
 			this.setWorkURL(this.options.workPath);
 			
@@ -209,7 +206,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		resolveParameters : function(url) {
 			if (!url || !this.pid)
 				return url;
-			return url.replace("{idPath}", this.pid.getPath());
+			return url.replace("{idPath}", this.pid);
 		},
 
 		destroy : function() {

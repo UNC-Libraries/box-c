@@ -18,7 +18,7 @@
 /*
  * @author Ben Pennell
  */
-define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoadingOverlay'], function(
+define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor'], function(
 		$, ui, PID, RemoteStateChangeMonitor) {
 	$.widget("cdr.confirmationDialog", {
 		options : {

@@ -3,6 +3,9 @@ require.config({
 	paths: {
 		'jquery' : 'jquery.min',
 		'jquery-ui' : 'jquery-ui',
+		'text' : 'text',
+		'underscore' : 'underscore',
+		'tpl' : 'tpl',
 		'qtip' : 'jquery.qtip.min',
 		'PID' : 'squish',
 		'MetadataObject' : 'squish',
@@ -59,7 +62,10 @@ require.config({
 		'thumbnail' : ['jquery'],
 		'qtip' : ['jquery'],
 		'adminCommon' : ['jquery'],
-		'editable' : ['jquery']
+		'editable' : ['jquery'],
+		'underscore': {
+			exports: '_'
+		}
 	}
 });
 
@@ -68,17 +74,9 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 	var alertHandler = $("<div id='alertHandler'></div>");
 	alertHandler.alertHandler().appendTo(document.body).hide();
 	
-	$("#search_menu").searchMenu();
-	
 	//var startTime = new Date();
 	
 	//console.log("Result table start: " + (new Date()).getTime());
-	
-	$("#result_view").resultTableView({
-		'metadataObjects' : module.config().metadataObjects,
-		'resultUrl' : module.config().resultUrl,
-		'pagingActive' : module.config().pagingActive,
-	});
 	
 	var $resultPage = $('.result_page');
 	var $resultView = $('#result_view');
@@ -90,12 +88,22 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 		var wHeight = $window.height(), wWidth = $window.width();
 		$resultPage.height(wHeight - 105);
 		$resultView.height(wHeight - 105);
-		$resultHeader.width(wWidth - 350);
-		$resultTable.width(wWidth - 350);
-		$columnHeaders.width(wWidth - 350);
+		$resultHeader.width(wWidth - 360);
+		$resultTable.width(wWidth - 360);
+		$columnHeaders.width(wWidth - 360);
 	};
 	resizeResults.call();
 	$window.resize(resizeResults);
+	
+	$("#search_menu").searchMenu();
+	
+	$("#result_view").resultTableView({
+		'metadataObjects' : module.config().metadataObjects,
+		'resultUrl' : module.config().resultUrl,
+		'pagingActive' : module.config().pagingActive,
+	});
+	
+	
 	//console.profileEnd();
 	//console.log("Result table finish " + (new Date() - startTime));
 });

@@ -15,8 +15,9 @@
     limitations under the License.
 
  */
-define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'DeleteObjectButton',
-		'PublishObjectButton', 'EditAccessControlForm', 'ModalLoadingOverlay'], function($, ui, RemoteStateChangeMonitor) {
+define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/resultEntry', 
+		'ModalLoadingOverlay', 'DeleteObjectButton',	'PublishObjectButton', 'EditAccessControlForm'], 
+		function($, ui, _, RemoteStateChangeMonitor, resultEntryTemplate, ModalLoadingOverlay) {
 	var defaultOptions = {
 			animateSpeed : 100,
 			metadata : null,
@@ -25,19 +26,27 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 			selectCheckboxInitialState : false
 		};
 	
-	function ResultObject(element, options) {
-		this.init(element, options);
+	function ResultObject(options) {
+		this.options = $.extend({}, defaultOptions, options);
+		this.selected = false;
+		this.init(this.options.metadata);
 	};
 	
-	ResultObject.prototype.init = function(element, options) {
-		this.element = element;
+	ResultObject.prototype.init = function(metadata) {
+		this.metadata = metadata;
+		this.pid = metadata.id;
+		this.actionMenuInitialized = false;
+		var newElement = $(resultEntryTemplate({metadata : metadata}));
+		this.checkbox = null;
+		if (this.element) {
+			if (this.actionMenu)
+				this.actionMenu.remove();
+			this.element.replaceWith(newElement);
+		}
+		this.element = newElement;
 		this.element.data('resultObject', this);
-		this.options = $.extend({}, defaultOptions, options);
-		this.metadata = this.options.metadata;
 		this.links = [];
-		this.pid = this.options.id;
-		this.overlayInitialized = false;
-		if (this.options.selected)
+		if (this.options.selected || this.selected)
 			this.select();
 	};
 	
@@ -125,8 +134,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 	};
 	
 	ResultObject.prototype._destroy = function () {
-		if (this.overlayInitialized) {
-			this.element.modalLoadingOverlay('close');
+		if (this.overlay) {
+			this.overlay.close();
 		}
 	};
 
@@ -176,7 +185,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 	};
 
 	ResultObject.prototype.toggleSelect = function() {
-		if (this.element.hasClass("selected")) {
+		if (this.selected) {
 			this.unselect();
 		} else {
 			this.select();
@@ -198,6 +207,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 	ResultObject.prototype.select = function() {
 		if (!this.options.selectable)
 			return;
+		this.selected = true;
 		this.element.addClass("selected");
 		if (!this.checkbox)
 			this.checkbox = this.element.find("input[type='checkbox']");
@@ -207,6 +217,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 	ResultObject.prototype.unselect = function() {
 		if (!this.options.selectable)
 			return;
+		this.selected = false;
 		this.element.removeClass("selected");
 		if (!this.checkbox)
 			this.checkbox = this.element.find("input[type='checkbox']");
@@ -288,19 +299,17 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 	
 	ResultObject.prototype.updateOverlay = function(fnName, fnArgs) {
 		// Check to see if overlay is initialized
-		if (!this.overlayInitialized) {
-			this.overlayInitialized = true;
-			this.element.modalLoadingOverlay({'text' : 'Working...', 'autoOpen' : false});
+		if (!this.overlay) {
+			this.overlay = new ModalLoadingOverlay(this.element, {'text' : 'Working...', 'autoOpen' : false});
 		}
-		var overlay = this.element.data("modalLoadingOverlay");
-		overlay[fnName].apply(overlay, fnArgs);
+		this.overlay[fnName].apply(this.overlay, fnArgs);
 	};
 	
 	ResultObject.prototype.refresh = function(immediately) {
 		this.updateOverlay('show');
 		this.setStatusText('Refreshing...');
 		if (immediately) {
-			this.options.resultObjectList.refreshObject(this.pid);
+			this.refreshData(true);
 			return;
 		}
 		var self = this;
@@ -310,7 +319,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 			},
 			'checkStatusTarget' : this,
 			'statusChanged' : function(data) {
-				self.options.resultObjectList.refreshObject(self.pid);
+				self.refreshData(true);
 			},
 			'statusChangedTarget' : this, 
 			'checkStatusAjax' : {
@@ -320,6 +329,26 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'Del
 		});
 		
 		followupMonitor.performPing();
+	};
+	
+	ResultObject.prototype.refreshData = function(clearOverlay) {
+		var self = this;
+		$.ajax({
+			url : self.options.resultObjectList.options.refreshEntryUrl + self.pid,
+			dataType : 'json',
+			success : function(data, textStatus, jqXHR) {
+				self.init(data);
+				if (self.overlay)
+					self.overlay.element = self.element;
+				if (clearOverlay)
+					self.updateOverlay("hide");
+			},
+			error : function(a, b, c) {
+				if (clearOverlay)
+					self.updateOverlay("hide");
+				console.log(c);
+			}
+		});
 	};
 	
 	return ResultObject;

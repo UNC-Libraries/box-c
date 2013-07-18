@@ -60,6 +60,11 @@ public class AccessRestrictionsTagProvider implements TagProvider {
 						"You are an observer of this object."));
 			}
 		}
+		
+		if (record.getStatus().contains("Roles Assigned")) {
+			record.addTag(new Tag("roles",
+					"This object has roles directly assigned."));
+		}
 
 		// embargo
 		for (String rel : record.getRelations()) {

@@ -1,0 +1,79 @@
+<tr class="res_entry" id="res_<%= metadata.id.substring(metadata.id.indexOf(':') + 1) %>">
+	<td class="check_box">
+		<div>
+			<input type="checkbox">
+		</div>
+	</td>
+	<td class="type">
+		<div>
+			<%
+				var typeName;
+				if (metadata.type == "File")
+					typeName = 'file';
+				else if (metadata.type == "Folder")
+					typeName = 'folder';
+				else if (metadata.type == "Collection")
+					typeName = 'coll';
+				else if (metadata.type == "Aggregate")
+					typeName = 'aggr';
+			%>
+			<img src="/static/images/admin/type_<%= typeName %>.png" />
+		</div>
+	</td>
+	<td class="itemdetails">
+		<div>
+			<% if (metadata.type == "File") { %>
+				<a href="/record?id=<%= metadata.id %>" target="_new" class="title has_tooltip"
+							title="View details for <%= _.escape(metadata.title) %>'/>."><%= _.escape(metadata.title) %></a>
+			<% } else { %>
+				<a href="list/<%= metadata.id %>" class="title has_tooltip"
+							title="View contents of <%= _.escape(metadata.title) %>."><%= _.escape(metadata.title) %></a>
+					<span class="searchitem_container_count">
+						(<%= metadata.childCount? metadata.childCount: 0 %> item<%= metadata.childCount == 1? '' : 's' %>)
+					</span>
+			<% } %>
+			<% if ("DATA_FILE" in metadata.datastreams) { %>
+				&nbsp;<a target="_preview" href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}" class="preview">(preview ${metadata.getDatastreamObject("DATA_FILE").extension})</a>
+			<% } %>	
+			<% for (var i in metadata.tags) { 
+				var tag = metadata.tags[i];
+				%>
+				<a class="status" title="<%= tag.text %>" ><%= _.escape(tag.label) %></a>
+			<% } %>
+		</div>
+	</td>
+	<td class="creator">
+		<div>
+			<%= metadata.creators? metadata.creators[0] : '-' %><%= metadata.creators && metadata.creators.length > 1? '&nbsp;et al' : '' %> 
+		</div>
+	</td>
+	<td class="date_added">
+		<div>
+			<%= metadata.dateAdded? metadata.dateAdded.substring(0, metadata.dateAdded.indexOf('T')) : '-' %>
+		</div>
+	</td>
+	<td class="date_added">
+		<div>
+			<%= metadata.dateUpdated? metadata.dateUpdated.substring(0, metadata.dateUpdated.indexOf('T')) : '-' %>
+		</div>
+	</td>
+	<td class="menu_box">
+		<div>
+			<img src="/static/images/admin/gear.png"/>
+			<ul class='action_menu'>
+				<% if ($.inArray('publish', metadata.permissions) != -1) { %>
+					<li class="publish_link"><%= $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish' %></li> 
+				<% } %>
+				<% if ($.inArray('editAccessControl', metadata.permissions) != -1) { %>
+					<li class="edit_access">Edit Access</li>
+				<% } %>
+				<% if ($.inArray('editDescription', metadata.permissions) != -1) { %>
+					<li class='edit_description'><%= $.inArray('MD_DESCRIPTIVE', metadata.datastreams) ? 'Edit' : 'Add'%> Description</li>
+				<% } %>
+				<% if ($.inArray('purgeForever', metadata.permissions) != -1) { %>
+					<li class="delete_link">Delete</li>
+				<% } %>
+			</ul>
+		</div>
+	</td>
+</tr>
