@@ -78,24 +78,30 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 	
 	//console.log("Result table start: " + (new Date()).getTime());
 	
+	// Keep the result area locked to the size of the view port
 	var $resultPage = $('.result_page');
 	var $resultView = $('#result_view');
 	var $columnHeaders = $('.column_headers');
 	var $resultHeader = $('.result_header');
 	var $resultTable = $('.result_table');
 	var $window = $(window);
+	var menuOffset = 360;
 	var resizeResults = function () {
 		var wHeight = $window.height(), wWidth = $window.width();
 		$resultPage.height(wHeight - 105);
 		$resultView.height(wHeight - 105);
-		$resultHeader.width(wWidth - 360);
-		$resultTable.width(wWidth - 360);
-		$columnHeaders.width(wWidth - 360);
+		$resultHeader.width(wWidth - menuOffset);
+		$resultTable.width(wWidth - menuOffset);
+		$columnHeaders.width(wWidth - menuOffset);
 	};
 	resizeResults.call();
 	$window.resize(resizeResults);
 	
-	$("#search_menu").searchMenu();
+	// Keep result area the right size when the menu is resized
+	var searchMenu = $("#search_menu").searchMenu().on("resize", function(){
+		menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
+		resizeResults.call();
+	});
 	
 	$("#result_view").resultTableView({
 		'metadataObjects' : module.config().metadataObjects,
