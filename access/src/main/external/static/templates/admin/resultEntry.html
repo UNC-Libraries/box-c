@@ -68,7 +68,7 @@
 					<li class="edit_access">Edit Access</li>
 				<% } %>
 				<% if ($.inArray('editDescription', metadata.permissions) != -1) { %>
-					<li class='edit_description'><%= $.inArray('MD_DESCRIPTIVE', metadata.datastreams) ? 'Edit' : 'Add'%> Description</li>
+					<li class='edit_description'><a href="describe/<%= metadata.id %>"><%= $.inArray('MD_DESCRIPTIVE', metadata.datastreams) ? 'Edit' : 'Add'%> Description</a></li>
 				<% } %>
 				<% if ($.inArray('purgeForever', metadata.permissions) != -1) { %>
 					<li class="delete_link">Delete</li>

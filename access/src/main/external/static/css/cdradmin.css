@@ -313,3 +313,10 @@
 	padding: 0.4em 0.4em 0;
 	border-bottom: 1px solid #DFEBF1;
 }
+
+/* Description editor */
+#xml_editor {
+	font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
+	font-size: 14px;
+	background-color: #fff;
+}
