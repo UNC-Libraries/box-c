@@ -26,9 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.fcrepo.common.Constants;
-import org.fcrepo.server.Context;
 import org.fcrepo.server.Module;
-import org.fcrepo.server.ReadOnlyContext;
 import org.fcrepo.server.Server;
 import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.servletExceptionExtensions.InternalError500Exception;
@@ -57,7 +55,6 @@ public class IrodsStorageLocationServlet extends HttpServlet implements Constant
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	request.setCharacterEncoding("UTF-8");
 	try {
-	    Context context = ReadOnlyContext.getContext(Constants.HTTP_REQUEST.REST.uri, request);
 	    String pid = request.getParameter("pid");
 	    LOG.info("got PID of " + pid);
 	    String path = null;

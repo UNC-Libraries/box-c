@@ -20,9 +20,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,12 +30,8 @@ import org.jdom.JDOMException;
 import org.jdom.Namespace;
 import org.jdom.xpath.XPath;
 
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.util.Checksum;
-import edu.unc.lib.dl.util.PremisEventLogger;
-import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -75,10 +69,10 @@ public class METSPackageFileValidator {
 	 * @param aip
 	 * @throws IngestException
 	 */
+	@SuppressWarnings("unchecked")
 	public void validateFiles(Document mets, METSPackageSIP metsPack)
 			throws IngestException {
 		StringBuffer errors = new StringBuffer();
-		int fileCount = 0;
 		List<File> manifestFiles = new ArrayList<File>();
 		List<String> missingFiles = new ArrayList<String>();
 		List<String> badChecksumFiles = new ArrayList<String>();
@@ -101,8 +95,6 @@ public class METSPackageFileValidator {
 					errors.append("A file location is missing for file ID: " + fileEl.getAttributeValue("ID"));
 					continue;					
 				}
-
-				fileCount++;
 				File file = null;
 				// locate the file and check that it exists
 				try {
@@ -132,7 +124,7 @@ public class METSPackageFileValidator {
 									+ ")");
 							badChecksumFiles.add(href);
 						}
-						String msg = "METS manifest checksum was verified for file: " + href;
+						log.debug("METS manifest checksum was verified for file: " + href);
 					} catch (IOException e) {
 						throw new IngestException("Checksum failed to find file: " + href);
 					}

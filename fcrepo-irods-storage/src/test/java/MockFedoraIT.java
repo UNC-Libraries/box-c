@@ -38,189 +38,199 @@ import org.xml.sax.helpers.DefaultHandler;
 import fedorax.server.module.storage.lowlevel.irods.IrodsIFileSystem;
 
 public class MockFedoraIT extends Assert {
-    private static Log LOG = LogFactory.getLog(MockFedoraIT.class);
+	private static Log LOG = LogFactory.getLog(MockFedoraIT.class);
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-    }
-
-    private File getJunkFile(int kbytes) {
-	File junk = null;
-	try {
-	    junk = File.createTempFile("test", "junk");
-	    OutputStream out = new FileOutputStream(junk);
-	    byte[] buffer = new byte[4096];
-	    for (int i = 0; i < buffer.length; i++) {
-		buffer[i] = 'C';
-	    }
-	    for (int i = 0; i * 4 < kbytes; i++) {
-		out.write(buffer);
-	    }
-	    out.close();
-	} catch (IOException e) {
-	    e.printStackTrace();
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
 	}
-	System.out.println("junk file created");
-	return junk;
-    }
 
-    private IrodsIFileSystem getModule() {
-	IrodsIFileSystem result = null;
-	try {
-	    IRODSAccount account = new IRODSAccount("ono-sendai", 1247, "fedora", "inst1repo", "/count0Zone/home/fedora",
-			    "count0Zone", "count0Resc");
-	    IRODSFileSystem irodsFileSystem = IRODSFileSystem.instance();
-	    result = new IrodsIFileSystem(32768, irodsFileSystem, account);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	    fail("got an exception:" + e.getLocalizedMessage());
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
 	}
-	System.out.println("module loaded");
-	return result;
-    }
 
-    // @Test
-    // public void rewriteAndReadTest() {
-    // boolean buffering = true;
-    // int loops = 100;
-    // String irodsFilePath = "/cdrZone/home/fedora/test.txt";
-    // File testFile = this.getJunkFile(1024);
-    // try {
-    // IrodsIFileSystem module = this.getModule();
-    // FileInputStream fis1 = new FileInputStream(testFile);
-    // module.write(new File(irodsFilePath), fis1);
-    // System.out.println("test file written to irods");
-    // for (int count = 0; count < loops; count++) {
-    // FileInputStream fis = new FileInputStream(testFile);
-    // module.rewrite(new File(irodsFilePath), fis);
-    // System.out.println("rewrite " + count + " done");
-    //
-    // InputStream is = null;
-    // if (buffering) {
-    // is = new BufferedInputStream(module.read(new File(irodsFilePath)), 4096);
-    // } else {
-    // is = module.read(new File(irodsFilePath));
-    // }
-    // while (is.read() != -1) {
-    // }
-    // System.out.println("read done");
-    // }
-    // } catch (Exception e) {
-    // e.printStackTrace();
-    // }
-    // }
-
-    // @Test
-    // public void readTest() {
-    // String irodsFilePath = "/cdrZone/home/fedora/test.txt";
-    // File testFile = this.getJunkFile(10240);
-    // int count = 0;
-    // try {
-    // IrodsIFileSystem module = this.getModule();
-    // FileInputStream fis1 = new FileInputStream(testFile);
-    // module.write(new File(irodsFilePath), fis1);
-    // System.out.println("test file written to irods");
-    // InputStream is = module.read(new File(irodsFilePath));
-    // while (is.read() != -1) {
-    // count++;
-    // }
-    // System.out.println(is.available());
-    // System.out.println("done with reads: " + count);
-    // } catch (Exception e) {
-    // e.printStackTrace();
-    // }
-    // }
-
-    @Test
-    public void multithreadedTest() {
-	IrodsIFileSystem module = this.getModule();
-	String testPath = "/count0Zone/home/fedora/BigFOXML.xml";
-	try {
-	    InputStream content = this.getClass().getResourceAsStream("BigFOXML.xml");
-	    module.write(new File(testPath), content);
-	    System.err.println("copied big FOXML into test location");
-
-//	    Thread t2 = new Thread(new Runnable() {
-//
-//		public void run() {
-//		    try {
-//			echoIrodsFile(getModule(), "/count0Zone/home/fedora/BigFOXML.xml", "/tmp/t2.output");
-//			parseIrodsFile(getModule(), "/count0Zone/home/fedora/BigFOXML.xml");
-//		    } catch (LowlevelStorageException e) {
-//			System.err.println("second thread threw exception");
-//			e.printStackTrace();
-//		    }
-//		}
-//
-//	    });
-//	    t2.run();
-	    try {
-		echoIrodsFile(getModule(), "/count0Zone/home/fedora/BigFOXML.xml", "/tmp/t1.output");
-		parseIrodsFile(getModule(), "/count0Zone/home/fedora/BigFOXML.xml");
-	    } catch (LowlevelStorageException e) {
-		System.err.println("main thread threw exception");
-		e.printStackTrace();
-		assertNull("Reading tests threw an exception, see stack trace", e);
-	    }
-
-	    System.err.println("parsed");
-	} catch (RuntimeException e) {
-	    e.printStackTrace();
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-    }
-
-    private void parseIrodsFile(IrodsIFileSystem module, String testPath) throws LowlevelStorageException {
-	InputStream is = module.read(new File(testPath));
-	// initialize sax for this parse
-	try {
-	    SAXParserFactory spf = SAXParserFactory.newInstance();
-	    // spf.setValidating(false);
-	    // spf.setNamespaceAware(true);
-	    SAXParser parser = spf.newSAXParser();
-	    parser.parse(is, new DefaultHandler());
-	} catch (Exception e) {
-	    throw new RuntimeException("Error with SAX parser", e);
-	}
-    }
-
-    private void echoIrodsFile(IrodsIFileSystem module, String testPath, String outputPath)
-		    throws LowlevelStorageException {
-	InputStream is = module.read(new File(testPath));
-	// initialize sax for this parse
-	FileOutputStream fos = null;
-	try {
-	    fos = new FileOutputStream(new File(outputPath));
-	    // byte[] buffer = new byte[10];
-	    for (int num = is.read(); num != -1; num = is.read()) {
-		fos.write(num);
-	    }
-	} catch (Exception e) {
-	    e.printStackTrace();
-	    throw new RuntimeException("Error", e);
-	} finally {
-	    if (fos != null) {
+	@SuppressWarnings("unused")
+	private File getJunkFile(int kbytes) {
+		File junk = null;
 		try {
-		    fos.close();
+			junk = File.createTempFile("test", "junk");
+			OutputStream out = new FileOutputStream(junk);
+			byte[] buffer = new byte[4096];
+			for (int i = 0; i < buffer.length; i++) {
+				buffer[i] = 'C';
+			}
+			for (int i = 0; i * 4 < kbytes; i++) {
+				out.write(buffer);
+			}
+			out.close();
 		} catch (IOException e) {
+			e.printStackTrace();
 		}
-	    }
+		LOG.debug("junk file created");
+		return junk;
+	}
+
+	private IrodsIFileSystem getModule() {
+		IrodsIFileSystem result = null;
+		try {
+			IRODSAccount account = new IRODSAccount("ono-sendai", 1247,
+					"fedora", "inst1repo", "/count0Zone/home/fedora",
+					"count0Zone", "count0Resc");
+			IRODSFileSystem irodsFileSystem = IRODSFileSystem.instance();
+			result = new IrodsIFileSystem(32768, irodsFileSystem, account);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("got an exception:" + e.getLocalizedMessage());
+		}
+		System.out.println("module loaded");
+		return result;
+	}
+
+	// @Test
+	// public void rewriteAndReadTest() {
+	// boolean buffering = true;
+	// int loops = 100;
+	// String irodsFilePath = "/cdrZone/home/fedora/test.txt";
+	// File testFile = this.getJunkFile(1024);
+	// try {
+	// IrodsIFileSystem module = this.getModule();
+	// FileInputStream fis1 = new FileInputStream(testFile);
+	// module.write(new File(irodsFilePath), fis1);
+	// System.out.println("test file written to irods");
+	// for (int count = 0; count < loops; count++) {
+	// FileInputStream fis = new FileInputStream(testFile);
+	// module.rewrite(new File(irodsFilePath), fis);
+	// System.out.println("rewrite " + count + " done");
+	//
+	// InputStream is = null;
+	// if (buffering) {
+	// is = new BufferedInputStream(module.read(new File(irodsFilePath)), 4096);
+	// } else {
+	// is = module.read(new File(irodsFilePath));
+	// }
+	// while (is.read() != -1) {
+	// }
+	// System.out.println("read done");
+	// }
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	// }
+
+	// @Test
+	// public void readTest() {
+	// String irodsFilePath = "/cdrZone/home/fedora/test.txt";
+	// File testFile = this.getJunkFile(10240);
+	// int count = 0;
+	// try {
+	// IrodsIFileSystem module = this.getModule();
+	// FileInputStream fis1 = new FileInputStream(testFile);
+	// module.write(new File(irodsFilePath), fis1);
+	// System.out.println("test file written to irods");
+	// InputStream is = module.read(new File(irodsFilePath));
+	// while (is.read() != -1) {
+	// count++;
+	// }
+	// System.out.println(is.available());
+	// System.out.println("done with reads: " + count);
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	// }
+
+	@Test
+	public void multithreadedTest() {
+		IrodsIFileSystem module = this.getModule();
+		String testPath = "/count0Zone/home/fedora/BigFOXML.xml";
+		try {
+			InputStream content = this.getClass().getResourceAsStream(
+					"BigFOXML.xml");
+			module.write(new File(testPath), content);
+			System.err.println("copied big FOXML into test location");
+
+			// Thread t2 = new Thread(new Runnable() {
+			//
+			// public void run() {
+			// try {
+			// echoIrodsFile(getModule(),
+			// "/count0Zone/home/fedora/BigFOXML.xml", "/tmp/t2.output");
+			// parseIrodsFile(getModule(),
+			// "/count0Zone/home/fedora/BigFOXML.xml");
+			// } catch (LowlevelStorageException e) {
+			// System.err.println("second thread threw exception");
+			// e.printStackTrace();
+			// }
+			// }
+			//
+			// });
+			// t2.run();
+			try {
+				echoIrodsFile(getModule(),
+						"/count0Zone/home/fedora/BigFOXML.xml",
+						"/tmp/t1.output");
+				parseIrodsFile(getModule(),
+						"/count0Zone/home/fedora/BigFOXML.xml");
+			} catch (LowlevelStorageException e) {
+				System.err.println("main thread threw exception");
+				e.printStackTrace();
+				assertNull("Reading tests threw an exception, see stack trace",
+						e);
+			}
+
+			System.err.println("parsed");
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void parseIrodsFile(IrodsIFileSystem module, String testPath)
+			throws LowlevelStorageException {
+		InputStream is = module.read(new File(testPath));
+		// initialize sax for this parse
+		try {
+			SAXParserFactory spf = SAXParserFactory.newInstance();
+			// spf.setValidating(false);
+			// spf.setNamespaceAware(true);
+			SAXParser parser = spf.newSAXParser();
+			parser.parse(is, new DefaultHandler());
+		} catch (Exception e) {
+			throw new RuntimeException("Error with SAX parser", e);
+		}
+	}
+
+	private void echoIrodsFile(IrodsIFileSystem module, String testPath,
+			String outputPath) throws LowlevelStorageException {
+		InputStream is = module.read(new File(testPath));
+		// initialize sax for this parse
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream(new File(outputPath));
+			// byte[] buffer = new byte[10];
+			for (int num = is.read(); num != -1; num = is.read()) {
+				fos.write(num);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Error", e);
+		} finally {
+			if (fos != null) {
+				try {
+					fos.close();
+				} catch (IOException e) {
+				}
+			}
+
+		}
 
 	}
 
-    }
+	@Before
+	public void setUp() throws Exception {
+	}
 
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
+	@After
+	public void tearDown() throws Exception {
+	}
 
 }

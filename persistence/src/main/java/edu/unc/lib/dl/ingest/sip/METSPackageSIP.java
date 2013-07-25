@@ -31,7 +31,6 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 	private static final Log log = LogFactory.getLog(METSPackageSIP.class);
 	public static final String metsLocation = "METS.xml";
 	public static final String metsLocation2 = "mets.xml";
-	private boolean discardDataFilesOnDestroy = true;
 	private File metsFile = null;
 	private File batchPrepDir = null;
 	private File sipDataSubDir = null;
@@ -110,10 +109,6 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 		} else {
 			throw new IOException("There are no zipped files associated with this METS");
 		}
-	}
-
-	public void setDiscardDataFilesOnDestroy(boolean discard) {
-		this.discardDataFilesOnDestroy = discard;
 	}
 
 	@Override
