@@ -57,6 +57,7 @@
 	text-decoration: none;
 	color: #0A5274;
 	border-bottom: 1px dashed #0A5274;
+	cursor: pointer;
 }
 
 .edit_acls .roles_granted {
