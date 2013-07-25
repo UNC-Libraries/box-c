@@ -25,7 +25,6 @@
 
 	facetFields - Object of type edu.unc.lib.dl.search.solr.model.FacetFieldList which contains the
 		list of facets to render.  Required.
-	currentContainer
 	queryPath - override the servlet that facet links will send the user to.  Default "search"
 	additionalLimitActions - additional actions which will be appended to any add facet actions.
 --%>
@@ -66,7 +65,7 @@
 		<c:if test="${not empty facetField.values}">
 			<c:if test="${facetField.name == 'ANCESTOR_PATH'}">
 				<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}_structure" class="hidden">
-					<c:if test="${not empty currentContainer}"><c:set var="containerPath" value="/${currentContainer}"/></c:if>
+					<c:if test="${not empty selectedContainer}"><c:set var="containerPath" value="/${selectedContainer.id}"/></c:if>
 					<c:url var="structureUrl" scope="page" value='structure${containerPath}/collection?${searchStateUrl}'>
 						<c:param name="view" value="facet"/>
 						<c:param name="queryp" value="list"/>
