@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.Tag;
 import edu.unc.lib.dl.util.DateTimeUtil;
@@ -37,6 +38,31 @@ public class SerializationUtil {
 	private static final Logger log = LoggerFactory.getLogger(SerializationUtil.class);
 
 	private static ObjectMapper jsonMapper = new ObjectMapper();
+	
+	public static String structureToJSON(HierarchicalBrowseResultResponse response, AccessGroupSet groups) {
+		StringBuilder result = new StringBuilder();
+		
+		result.append('{');
+		result.append("\"root\":");
+		structureStep(response.getRootNode(), groups, result);
+		result.append('}');
+		
+		return result.toString();
+	}
+	
+	private static void structureStep(HierarchicalBrowseResultResponse.ResultNode node, AccessGroupSet groups, StringBuilder result) {
+		result.append('{');
+		result.append("\"entry\":");
+		result.append(metadataToJSON(node.getMetadata(), groups));
+		if (node.getChildren().size() > 0){
+			result.append("\"children\":[");
+			for (HierarchicalBrowseResultResponse.ResultNode child: node.getChildren()){
+				structureStep(child, groups, result);
+			}
+			result.append(']');
+		}
+		result.append('}');
+	}
 	
 	public static String resultsToJSON(SearchResultResponse resultResponse, AccessGroupSet groups) {
 		StringBuilder result = new StringBuilder();
@@ -56,10 +82,14 @@ public class SerializationUtil {
 		StringBuilder result = new StringBuilder();
 		result.append('{');
 		result.append("\"id\":\"").append(metadata.getId()).append('"');
-		result.append(',');
-		result.append("\"_version_\":\"").append(metadata.get_version_()).append('"');
-		result.append(',');
-		result.append("\"title\":\"").append(metadata.getTitle().replace("\"", "\\\"")).append('"');
+		if (metadata.getTitle() != null) {
+			result.append(',');
+			result.append("\"title\":\"").append(metadata.getTitle().replace("\"", "\\\"")).append('"');
+		}
+		if (metadata.get_version_() != null) {
+			result.append(',');
+			result.append("\"_version_\":\"").append(metadata.get_version_()).append('"');
+		}
 		if (metadata.getStatus() != null) {
 			result.append(',');
 			result.append("\"status\":").append(joinArray(metadata.getStatus()));
@@ -67,6 +97,10 @@ public class SerializationUtil {
 		if (metadata.getResourceType() != null) {
 			result.append(',');
 			result.append("\"type\":\"").append(metadata.getResourceType()).append('"');
+		}
+		if (metadata.getContentModel() != null && metadata.getContentModel().size() > 0) {
+			result.append(',');
+			result.append("\"counts\":").append(joinArray(metadata.getContentModel()));
 		}
 		if (metadata.getCreator() != null) {
 			result.append(',');
@@ -85,12 +119,16 @@ public class SerializationUtil {
 			result.append("\"counts\":").append(joinMap(metadata.getCountMap()));
 		}
 		try {
-			String dateAdded = DateTimeUtil.formatDateToUTC(metadata.getDateAdded());
-			result.append(',');
-			result.append("\"dateAdded\":\"").append(dateAdded).append('"');
-			String dateUpdated = DateTimeUtil.formatDateToUTC(metadata.getDateUpdated());
-			result.append(',');
-			result.append("\"dateUpdated\":\"").append(dateUpdated).append('"');
+			if (metadata.getDateAdded() != null) {
+				String dateAdded = DateTimeUtil.formatDateToUTC(metadata.getDateAdded());
+				result.append(',');
+				result.append("\"dateAdded\":\"").append(dateAdded).append('"');
+			}
+			if (metadata.getDateUpdated() != null) {
+				String dateUpdated = DateTimeUtil.formatDateToUTC(metadata.getDateUpdated());
+				result.append(',');
+				result.append("\"dateUpdated\":\"").append(dateUpdated).append('"');
+			}
 		} catch (ParseException e) {
 			log.debug("Failed to parse date field for " + metadata.getId(), e);
 		}
@@ -134,7 +172,9 @@ public class SerializationUtil {
 			if (result.length() > 1)
 				result.append(',');
 			result.append('"').append(entry.getKey().toString()).append('"').append(':');
-			result.append('"').append(entry.getValue().toString()).append('"');
+			if (entry.getValue() instanceof Number)
+				result.append(entry.getValue().toString());
+			else result.append('"').append(entry.getValue().toString()).append('"');
 		}
 		result.append('}');
 		return result.toString();

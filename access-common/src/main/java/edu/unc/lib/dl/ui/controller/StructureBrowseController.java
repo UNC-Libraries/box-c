@@ -28,7 +28,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -39,6 +41,7 @@ import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
+import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 /**
  * Handles requests for the heirarchical structure view browse view. The request may either be for an entire stand alone
@@ -54,6 +57,18 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 
 	private List<String> tierResultFieldsList = Arrays.asList(SearchFieldKeys.ID.name(),
 			SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name());
+
+	@RequestMapping("/structure/{pid}/json")
+	public @ResponseBody
+	String getStructureJSON(@PathVariable("pid") String pid,
+			@RequestParam(value = "files", required = false) String includeFiles,
+			@RequestParam(value = "view", required = false) String view, Model model, HttpServletRequest request,
+			HttpServletResponse response) {
+		response.setContentType("application/json");
+		HierarchicalBrowseResultResponse result = getStructureResult(pid, "true".equals(includeFiles), view, false,
+				false, request);
+		return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
+	}
 
 	/**
 	 * Retrieves the contents of the pid specified in a structural view
@@ -71,23 +86,8 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		return getStructureTree(pid, "true".equals(includeFiles), view, false, model, request);
 	}
 
-	private String getStructureTree(String pid, boolean includeFiles, String viewParam, boolean collectionMode,
-			Model model, HttpServletRequest request) {
-		String view;
-		boolean ajaxRequest;
-		if ("ajax".equals(viewParam)) {
-			view = "/jsp/structure/structureTree";
-			model.addAttribute("template", "ajax");
-			ajaxRequest = true;
-		} else if ("facet".equals(viewParam)) {
-			view = "/jsp/structure/facet";
-			ajaxRequest = true;
-		} else {
-			// full view
-			view = "/jsp/structure/search";
-			ajaxRequest = false;
-		}
-
+	private HierarchicalBrowseResultResponse getStructureResult(String pid, boolean includeFiles, String viewParam,
+			boolean collectionMode, boolean retrieveFacets, HttpServletRequest request) {
 		int depth;
 		try {
 			depth = Integer.parseInt(request.getParameter("depth"));
@@ -96,10 +96,10 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		} catch (Exception e) {
 			depth = searchSettings.structuredDepthDefault;
 		}
-		
+
 		// Request object for the search
 		HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(depth);
-		if (ajaxRequest) {
+		if (retrieveFacets) {
 			browseRequest.setSearchState(this.searchStateFactory.createStructureBrowseSearchState(request
 					.getParameterMap()));
 		} else {
@@ -122,20 +122,32 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		else
 			resultResponse = queryLayer.getHierarchicalBrowseResults(browseRequest);
 
-		if (resultResponse != null) {
-			// Get the display values for hierarchical facets from the search results.
-			if (!ajaxRequest) {
-				LOG.debug("Getting facets and display values");
-				queryLayer.lookupHierarchicalDisplayValues(searchState, browseRequest.getAccessGroups());
+		resultResponse.setSearchState(searchState);
 
-				// Retrieve the facet result set
-				SearchResultResponse resultResponseFacets = queryLayer.getFacetList(new SearchRequest(searchState, true));
-				resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
-			}
-			// Add the search state to the response.
-			resultResponse.setSearchState(searchState);
+		return resultResponse;
+	}
+
+	private String getStructureTree(String pid, boolean includeFiles, String viewParam, boolean collectionMode,
+			Model model, HttpServletRequest request) {
+		String view;
+		boolean ajaxRequest;
+		if ("ajax".equals(viewParam)) {
+			view = "/jsp/structure/structureTree";
+			model.addAttribute("template", "ajax");
+			ajaxRequest = true;
+		} else if ("facet".equals(viewParam)) {
+			view = "/jsp/structure/facet";
+			ajaxRequest = true;
+		} else {
+			// full view
+			view = "/jsp/structure/search";
+			ajaxRequest = false;
 		}
 
+		HierarchicalBrowseResultResponse resultResponse = getStructureResult(pid, includeFiles, viewParam,
+				collectionMode, !ajaxRequest, request);
+
+		SearchState searchState = resultResponse.getSearchState();
 		String searchParams = SearchStateUtil.generateSearchParameterString(searchState);
 		model.addAttribute("searchParams", searchParams);
 
@@ -144,17 +156,8 @@ public class StructureBrowseController extends AbstractSolrSearchController {
 		} else {
 			model.addAttribute("resultType", "structure");
 			model.addAttribute("pageSubtitle", "Browse Results");
-			/*
-			 * RecordNavigationState recordNavigationState = new RecordNavigationState();
-			 * recordNavigationState.setSearchState(searchState); recordNavigationState.setSearchStateUrl(searchStateUrl);
-			 * 
-			 * recordNavigationState.setRecordIdList(resultResponse.getIdList());
-			 * recordNavigationState.setTotalResults(resultResponse.getResultCount());
-			 * 
-			 * request.getSession().setAttribute("recordNavigationState", recordNavigationState);
-			 */
 		}
-		
+
 		// Recycle the submitted search state as the state url
 		SearchState baseSearchState = searchStateFactory.createSearchState(request.getParameterMap());
 		String searchStateUrl = SearchStateUtil.generateStateParameterString(baseSearchState);

@@ -859,6 +859,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 			SearchRequest filteredChildrenRequest = new SearchRequest(browseState, browseRequest.getAccessGroups(), true);
 			this.getChildrenCounts(results.getResultList(), accessGroups, "child", null,
 					this.generateSearch(filteredChildrenRequest));
+			
+			this.getChildrenCounts(results.getResultList(), accessGroups, "containers", "contentModel:" + SolrSettings.sanitize(ContentModelHelper.Model.CONTAINER.toString()),
+					this.generateSearch(filteredChildrenRequest));
 
 			try {
 				// If anything that constituted a search is in the request then trim out possible empty folders
