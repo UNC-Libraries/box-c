@@ -1,0 +1,25 @@
+<div id="<%= entryId %>" class="entry_wrap<%= isRoot? ' root': '' %><%= (childEntries && childEntries.length > 0)? ' expanded': '' %>">
+	<% if (!hideEntry) { %>
+		<div class="entry">
+			<% if (isAContainer) { %>
+				<div class="cont_toggle <%= toggleClass %>"></div>
+			<% } %>
+			<div class="resource_icon <%= metadata.type %>" title="<%= metadata.type %>"></div>
+			<a href="<%= primaryAction %>" class="primary_action" title="${primaryTooltip}"><%= metadata.title %></a>
+			
+			<% if (downloadUrl && secondaryActions) { %>
+				<p class="secondary_actions"><a href="<%= downloadUrl %>">Download</a></p>
+			<% } %>
+			<% if (childCount != null) { %>
+				<span class="count">(<%= childCount %>)</span>
+			<% } %>
+		</div>
+	<% } %>
+	<% if (isAContainer || childEntries) { %>
+		<div class="children">
+			<% for (var i in childEntries) { %> 
+				<%= childEntries[i].getTemplate() %>
+			<% } %>
+		</div>
+	<% } %>
+</div>

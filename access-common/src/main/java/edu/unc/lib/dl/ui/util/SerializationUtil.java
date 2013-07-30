@@ -44,20 +44,22 @@ public class SerializationUtil {
 		
 		result.append('{');
 		result.append("\"root\":");
-		structureStep(response.getRootNode(), groups, result);
+		structureStep(response.getRootNode(), groups, result, true);
 		result.append('}');
 		
 		return result.toString();
 	}
 	
-	private static void structureStep(HierarchicalBrowseResultResponse.ResultNode node, AccessGroupSet groups, StringBuilder result) {
+	private static void structureStep(HierarchicalBrowseResultResponse.ResultNode node, AccessGroupSet groups, StringBuilder result, boolean firstInTier) {
+		if (!firstInTier)
+			result.append(',');
 		result.append('{');
 		result.append("\"entry\":");
 		result.append(metadataToJSON(node.getMetadata(), groups));
 		if (node.getChildren().size() > 0){
-			result.append("\"children\":[");
-			for (HierarchicalBrowseResultResponse.ResultNode child: node.getChildren()){
-				structureStep(child, groups, result);
+			result.append(", \"children\":[");
+			for (int i = 0; i < node.getChildren().size(); i++) {
+				structureStep(node.getChildren().get(i), groups, result, i == 0);
 			}
 			result.append(']');
 		}
@@ -100,7 +102,7 @@ public class SerializationUtil {
 		}
 		if (metadata.getContentModel() != null && metadata.getContentModel().size() > 0) {
 			result.append(',');
-			result.append("\"counts\":").append(joinArray(metadata.getContentModel()));
+			result.append("\"models\":").append(joinArray(metadata.getContentModel()));
 		}
 		if (metadata.getCreator() != null) {
 			result.append(',');

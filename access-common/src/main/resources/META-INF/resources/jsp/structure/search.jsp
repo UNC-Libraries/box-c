@@ -33,21 +33,21 @@
 				<c:param name="displayHome">true</c:param>
 				<c:param name="limitToContainer">false</c:param>
 				<c:param name="ignoreSearchState">true</c:param>
-				<c:param name="queryPath">browse</c:param>
+				<c:param name="queryMethod">structure</c:param>
 			</c:import>
 		</c:if>
 	</div>
 </div>
 <c:set var="searchState" value="${resultResponse.searchState}"/>
 
-<div class="gray">
+<div>
 	<div class="fourcol">
 		<div class="fourcol light shadowtop breadcrumbs">
 			<div class="contentarea">
 				<h2>Breadcrumbs</h2>
 				<c:set var="searchState" scope="request" value="${searchState}"/>
 				<c:import url="/jsp/util/breadCrumbs.jsp">
-					<c:param name="queryPath" value="browse"/>
+					<c:param name="queryMethod" value="structure"/>
 				</c:import>
 			</div>
 		</div>
@@ -56,7 +56,7 @@
 				<h2>Refine your results</h2>
 				<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
 				<c:import url="/jsp/util/facetList.jsp">
-					<c:param name="queryPath" value="structure"/>
+					<c:param name="queryMethod" value="structure"/>
 					<c:param name="title" value="Refine your results"/>
 				</c:import>
 			</div>
@@ -71,23 +71,25 @@
 			<c:import url="common/searchBox.jsp">
 				<c:param name="title">Search in structure view</c:param>
 				<c:param name="showSearchWithin">true</c:param>
-				<c:param name="queryPath" value="browse"/>
+				<c:param name="queryMethod" value="structure"/>
 				<c:param name="containerResourceType">${containerResourceType}</c:param>
 			</c:import>
 		</div>
 		<div class="threecol white">
 			<div class="structure search contentarea">
-				<c:set var="structureResults" scope="request" value="${resultResponse}"/>
-				<c:import url="/jsp/structure/structureTree.jsp">
-					<c:param name="queryp" value="search"/>
-					<c:param name="applyCutoffs" value="true"/>
-					<c:param name="counts" value="true"/>
-					<c:param name="secondary" value="true"/>
-				</c:import>
 			</div>
 		</div>
 	</div>
 </div>
 <link rel="stylesheet" type="text/css" href="/static/css/structure_browse.css" />
+<script>
+	var require = {
+		config: {
+			'structureBrowse' : {
+				'results': ${resultJSON}
+			},
+		}
+	};
+</script>
 <script type="text/javascript" src="/static/js/require.js" data-main="/static/js/public/structureBrowse"></script>
 </div>

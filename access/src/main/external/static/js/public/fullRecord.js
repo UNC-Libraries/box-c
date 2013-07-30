@@ -4,6 +4,8 @@ require.config({
 		'jquery' : 'jquery.min',
 		'jquery-ui' : 'jquery-ui.min',
 		'thumbnail' : 'thumbnail',
+		'text' : 'text',
+		'underscore' : 'underscore',
 		'StructureEntry' : 'src/StructureEntry',
 		'StructureView' : 'src/StructureView',
 		'JP2Viewer' : 'src/JP2Viewer',
@@ -18,6 +20,9 @@ require.config({
 		'thumbnail' : ['jquery'],
 		'audiojs' : {
 			exports : 'audiojs'
+		},
+		'underscore': {
+			exports: '_'
 		}
 	}
 });
@@ -66,9 +71,24 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'VideoPl
 	}
 	
 	if ($structureView.length > 0) {
-		$structureView.structureView({
-			showResourceIcons : true,
-			indentSuppressed : true
+		$.ajax({
+			url: "/structure/" + $structureView.attr('data-pid') + "/json?files=true",
+			dataType : 'json',
+			success: function(data){
+				$structureView.structureView({
+					hideRoot : true,
+					showResourceIcons : true,
+					showParentLink : false,
+					rootNode : data.root,
+					queryPath : 'list',
+					secondaryActions : true,
+					seeAllLinks : false,
+					excludeIds : $structureView.attr('data-exclude')
+				});
+			},
+			error: function(e){
+				console.log("Failed to load", e);
+			}
 		});
 	}
 });

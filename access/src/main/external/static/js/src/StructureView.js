@@ -1,9 +1,15 @@
-define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, ui) {
+define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, ui, StructureEntry) {
 	$.widget("cdr.structureView", {
 		options : {
 			showResourceIcons : true,
 			indentSuppressed : false,
-			showParentLink : false
+			showParentLink : false,
+			secondaryActions : false,
+			hideRoot : false,
+			rootNode : null,
+			queryPath : 'structure',
+			filterParams : '',
+			excludeIds : null
 		},
 		_create : function() {
 			
@@ -17,9 +23,27 @@ define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, 
 				this._generateParentLink();
 			}
 			
-			// Instantiate entries recursively
-			this.$content.find(".entry_wrap").structureEntry({
-				indentSuppressed : this.options.indentSuppressed
+			if (this.options.excludeIds) {
+				this.excludeIds = this.options.excludeIds.split(" ");
+			}
+			
+			this.rootEntry = new StructureEntry({
+				node : this.options.rootNode,
+				structureView : this,
+				isRoot : true
+			});
+			
+			this.rootEntry.render();
+			this.$content.append(this.rootEntry.element);
+			
+			this._initHandlers();
+		},
+		
+		_initHandlers : function() {
+			this.element.on("click", ".cont_toggle", function(){
+				var structureEntry = $(this).parents(".entry_wrap").first().data('structureEntry');
+				structureEntry.toggleChildren();
+				return false;
 			});
 		},
 		
@@ -33,17 +57,24 @@ define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, 
 				if ($parentLink.hasClass('disabled'))
 					return false;
 				var $oldRoot = self.$content.children(".entry_wrap");
-				var parentURL = $oldRoot.structureEntry('getParentURL');
+				var parentURL = $oldRoot.data("structureEntry").getParentURL();
 				$.ajax({
 					url : parentURL,
+					dataType : 'json',
 					success : function(data) {
-						var $newRoot = $(data);
-						// Initialize the new results
-						$newRoot.find(".entry_wrap").add($newRoot).structureEntry({
-							indentSuppressed : self.options.indentSuppressed
+						var newRoot = new StructureEntry({
+							node : data.root,
+							structureView : self,
+							isRoot : true
 						});
-						$newRoot.structureEntry('insertTree', $oldRoot);
-						self.$content.append($newRoot);
+						newRoot.render();
+						// Initialize the new results
+						//$newRoot.find(".entry_wrap").add($newRoot).structureEntry({
+						//	indentSuppressed : self.options.indentSuppressed
+						//});
+						newRoot.insertTree($oldRoot.data('structureEntry'));
+						//$newRoot.structureEntry('insertTree', $oldRoot);
+						self.$content.append(newRoot.element);
 						if (self.$content.children(".entry_wrap").hasClass('root'))
 							$parentLink.addClass('disabled');
 					}

@@ -795,13 +795,15 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public HierarchicalBrowseResultResponse getHierarchicalBrowseResults(HierarchicalBrowseRequest browseRequest) {
 		AccessGroupSet accessGroups = browseRequest.getAccessGroups();
 		SearchState browseState = (SearchState) browseRequest.getSearchState().clone();
-
+		HierarchicalBrowseResultResponse browseResults = new HierarchicalBrowseResultResponse();
+		
 		CutoffFacet rootPath;
 		BriefObjectMetadataBean rootNode;
 		if (browseRequest.getRootPid() != null) {
 			rootNode = getObjectById(new SimpleIdRequest(browseRequest.getRootPid(), browseRequest.getAccessGroups()));
 			rootPath = rootNode.getPath();
 			browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
+			browseResults.setSelectedContainer(rootNode);
 		} else {
 			// Default the ancestor path to the collections object so we always have a root
 			rootPath = (CutoffFacet) browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
@@ -820,11 +822,10 @@ public class SolrQueryLayerService extends SolrSearchService {
 			rootNode.setAncestorPathFacet(rootPath);
 		}
 
-		HierarchicalBrowseResultResponse browseResults = new HierarchicalBrowseResultResponse();
+		
 		SearchState hierarchyState = searchStateFactory.createHierarchyListSearchState();
 		// Use the ancestor path facet from the state where we will have set a default value
 		hierarchyState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
-
 		hierarchyState.setRowsPerPage(0);
 
 		SearchRequest hierarchyRequest = new SearchRequest(hierarchyState, accessGroups, false);
@@ -851,6 +852,19 @@ public class SolrQueryLayerService extends SolrSearchService {
 		}
 		// Add the root node into the result set
 		browseResults.getResultList().add(0, rootNode);
+		
+		if (browseRequest.isRetrieveFacets() && browseRequest.getSearchState().getFacetsToRetrieve() != null) {
+			SearchState facetState = (SearchState) browseState.clone();
+			facetState.setRowsPerPage(0);
+			SearchRequest facetRequest = new SearchRequest(facetState, browseRequest.getAccessGroups(), true);
+			SolrQuery facetQuery = this.generateSearch(facetRequest);
+			try {
+				SearchResultResponse facetResponse = this.executeSearch(facetQuery, facetState, true, false);
+				browseResults.setFacetFields(facetResponse.getFacetFields());
+			} catch (SolrServerException e) {
+				LOG.warn("Failed to retrieve facet results for " + facetQuery.toString(), e);
+			}
+		}
 
 		// Don't need to manipulate the container list any further unless either the root is a real record or there are
 		// subcontainers
@@ -1112,7 +1126,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public void populateBreadcrumbs(SearchRequest searchRequest, SearchResultResponse resultResponse) {
 		SearchState searchState = (SearchState) searchRequest.getSearchState();
 		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE.name())) {
-			if (resultResponse.getResultCount() == 0) {
+			if (resultResponse.getResultCount() == 0 || searchState.getResultFields() == null 
+					|| !searchState.getResultFields().contains(SearchFieldKeys.CONTENT_TYPE.name())) {
 				SearchState contentTypeSearchState = new SearchState();
 				contentTypeSearchState.setRowsPerPage(1);
 				contentTypeSearchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(),

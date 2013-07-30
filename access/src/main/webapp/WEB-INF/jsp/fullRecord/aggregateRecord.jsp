@@ -147,7 +147,8 @@
 		</div>
 	</div>
 </div>
-<c:if test="${structureResults.resultCount > 0}">
+
+<c:if test="${childCount > 0}">
 	<c:set var="defaultWebObjectID">
 		<c:forEach items="${briefObject.datastreamObjects}" var="datastream">
 			<c:if test="${datastream.name == 'DATA_FILE'}">
@@ -155,15 +156,7 @@
 			</c:if>
 		</c:forEach>
 	</c:set>
-
-	<div class="structure aggregate">
-		<c:import url="/jsp/structure/structureTree.jsp">
-			<c:param name="queryp" value="list"/>
-			<c:param name="secondary" value="true"/>
-			<c:param name="root" value="false"/>
-			<c:param name="excludeIDs" value="${defaultWebObjectID}"/>
-			<c:param name="showSeeAllLinks" value="false"/>
-		</c:import>
+	<div class="structure aggregate" data-pid="${briefObject.id}" data-exclude="${defaultWebObjectID}">
 	</div>
 </c:if>
 

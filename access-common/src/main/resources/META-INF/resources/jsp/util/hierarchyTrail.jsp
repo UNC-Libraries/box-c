@@ -33,8 +33,12 @@
 		<c:set var="shiftFacetUrlBase" value="?${searchStateUrl}"/>
 	</c:otherwise>
 </c:choose>
+<c:set var="isPath"><c:choose>
+		<c:when test="${not empty param.isPath}">${param.isPath}</c:when>
+		<c:otherwise>true</c:otherwise>
+	</c:choose></c:set>
 
-<span class="hierarchicalTrail">  
+<span class="hierarchicalTrail">
 	<c:if test="${param.displayHome == true }">
 		<c:url var="shiftFacetUrl" scope="page" value='${shiftFacetUrlBase}'>
 			<c:param name='a.${searchSettings.actions["REMOVE_FACET"]}' value='${searchSettings.searchFieldParams["ANCESTOR_PATH"]}'/>
@@ -51,11 +55,20 @@
 			</c:when>
 			<c:otherwise>
 				<c:choose>
-					<c:when test="${param.limitToContainer == true}">
-						<c:url var="shiftFacetUrl" scope="page" value="list/${facetNode.searchKey}${shiftFacetUrlBase}"></c:url>
+					<c:when test="${isPath}">
+						<c:choose>
+							<c:when test="${param.limitToContainer == true}">
+								<c:url var="shiftFacetUrl" scope="page" value="list/${facetNode.searchKey}${shiftFacetUrlBase}"></c:url>
+							</c:when>
+							<c:otherwise>
+								<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${facetNode.searchKey}${shiftFacetUrlBase}"></c:url>
+							</c:otherwise>
+						</c:choose>
 					</c:when>
 					<c:otherwise>
-						<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${facetNode.searchKey}${shiftFacetUrlBase}"></c:url>
+						<c:url var="shiftFacetUrl" scope="page" value='${queryPath}/${param.selectedContainer? param.selectedContainer + "/": ""}${shiftFacetUrlBase}'>
+							<c:param name='a.${searchSettings.actions["SET_FACET"]}' value='${fieldName}:${facetNode.limitToValue}'/>
+						</c:url>
 					</c:otherwise>
 				</c:choose>
 				<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${facetNode.displayValue}" /></a>

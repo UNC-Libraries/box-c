@@ -1,153 +1,227 @@
-define('StructureEntry', [ 'jquery', 'jquery-ui'], function($, ui) {
-	$.widget("cdr.structureEntry", {
-		options : {
-			indentSuppressed : false
-		},
+define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../templates/structureEntry'], function($, ui, _, structureEntryTemplate) {
+	var defaultOptions = {
+			indentSuppressed : false,
+			isRoot : false,
+			structureView : null,
+			node : null
+	};
+	
+	function StructureEntry(options) {
+		this.options = $.extend({}, defaultOptions, options);
+		this.create();
+	};
+	
+	StructureEntry.prototype.create = function() {
+		this.node = this.options.node;
+		this.metadata = this.node.entry;
+		this.entryId = "str_" + this.metadata.id.substring(this.metadata.id.indexOf(':') + 1)
+		this.isAContainer = this.metadata.type == "Collection" || this.metadata.type == "Folder" 
+				|| this.metadata.type == "Aggregate";
 		
-		_create : function() {
-			this.pid = this.element.attr("data-pid");
-			
-			this.contentLoaded = false;
-			
-			this.$entry = this.element.children(".entry");
-			if (this.$entry.length > 0) {
-				this.contentUrl = this.$entry.children(".cont_toggle").attr("data-url");
-			} else if (!this.options.indentSuppressed)
-				this.element.addClass('suppressed');
-			this.$childrenContainer = this.element.children(".children");
-			if (this.$childrenContainer.children().length > 0)
-				this.element.addClass("expanded");
-			
-			this.skipLastIndent = this.element.hasClass('view_all');
-			
-			this._initToggleContents();
-			
-			this._renderIndent();
-		},
-		
-		_initToggleContents : function() {
-			var self = this;
-			// Setup expand/collapse based on class
-			this.$entry.children(".cont_toggle").click(function() {
-				var $toggleButton = $(this);
-				if ($toggleButton.hasClass('expand')) {
-					if (!self.contentLoaded && self.contentUrl) {
-						var loadingImage = $("<img src=\"/static/images/ajax_loader.gif\"/>");
-						$(this).after(loadingImage);
-						$.ajax({
-							url: self.contentUrl,
-							success: function(data){
-								loadingImage.remove();
-								if (data) {
-									var $newEntries = $("> .children > .entry_wrap", $(data));
-									if ($newEntries.length > 0) {
-										// Adjust existing indents if the child container already has contents
-										var $existingLastSibling = self.$childrenContainer.children('.entry_wrap').last();
-										if ($existingLastSibling.length > 0)
-											$existingLastSibling.children('.last_sib').removeClass('last_sib').addClass('with_sib');
-										
-										self.$childrenContainer.append($newEntries);
-										$newEntries.structureEntry(this.options);
-										// Add in the new items
-										self.$childrenContainer.find(".indent").show();
-										self.$childrenContainer.show(100, function() {
-											self.element.addClass("expanded");
-										});
-									}
-									if (self.$childrenContainer.children().length > 0)
-										$toggleButton.removeClass('expand').addClass('collapse');
-									else
-										$toggleButton.removeClass('expand').addClass('leaf');
-								}
-								self.contentLoaded = true;
-							},
-							error: function(xhr, ajaxOptions, thrownError){
-								loadingImage.remove();
-							}
-						});
-					} else {
-						if (self.$childrenContainer.children().length > 0) {
-							self.$childrenContainer.find(".indent").show();
-							self.$childrenContainer.show(100, function() {
-								self.element.addClass("expanded");
-							});
-							$toggleButton.removeClass('expand').addClass('collapse');
-						}
-					}
-				} else {
-					if (self.$childrenContainer.children().length > 0) {
-						self.$childrenContainer.hide(100, function() {
-							self.element.removeClass("expanded");
-						});
-					}
-					$toggleButton.removeClass('collapse').addClass('expand');
-				}
-				return false;
-			});
-		},
-		
-		refreshIndent : function() {
-			this.element.children(".indent").remove();
-			this._renderIndent();
-		},
-		
-		_renderIndent : function () {
-			var $entry = this.element.children('.entry'),
-				$ancestors = this.element.parents(".entry_wrap:not(.suppressed)"),
-				lastTier = $ancestors.length;
-			if (lastTier == 0)
-				return;
-			$ancestors = $($ancestors.get().reverse());
-			if (!this.skipLastIndent)
-				$ancestors.push(this.element);
-			
-			$ancestors.each(function(i){
-				if (i == 0)
-					return;
-				var hasSiblings = $(this).next(".entry_wrap:not(.view_all)").length > 0;
-				if (i == lastTier) {
-					if (hasSiblings) {
-						$entry.before("<div class='indent with_sib'></div>");
-					} else {
-						$entry.before("<div class='indent last_sib'></div>");
-					}
-				} else {
-					if (hasSiblings) {
-						$entry.before("<div class='indent'></div>");
-					} else {
-						$entry.before("<div class='indent empty'></div>");
-					}
-				}
-			});
-		},
-		
-		getParentURL : function() {
-			var urlParts = this.contentUrl.replace(/&?root=false/, '').split(/\?(.+)/);
-			urlParts[0] += "/parent";
-			return urlParts[0] + ((urlParts.length > 1)? '?' + urlParts[1] : '');
-		},
-		
-		insertTree : function($oldRoot) {
-			var rootPid = $oldRoot.attr("data-pid");
-			
-			// Find the old root in the new results and remove it, while retaining an insertion point for the old root.
-			var $oldRootDuplicate = this.element.find('[data-pid="' + rootPid + '"]');
-			var $placeholder = $oldRootDuplicate.prev('.entry_wrap');
-			$oldRootDuplicate.remove();
-			
-			// Insert the old root into the new results
-			$oldRoot.detach();
-			// Insertion point depends on if it is the first sibling
-			var $refreshSet = $oldRoot.find(".entry_wrap").add($oldRoot);
-			
-			if ($placeholder.length == 0)
-				this.element.children(".children").prepend($oldRoot);
-			else {
-				$placeholder.after($oldRoot);
-				$refreshSet.add($placeholder);
+		if (this.node.children) {
+			this.childEntries = [];
+			var childNodes = this.node.children;
+			for (var i in childNodes) {
+				this.childEntries.push(new StructureEntry({
+					node : childNodes[i],
+					structureView : this.options.structureView
+				}));
 			}
-			this.element.addClass("expanded").children(".children").show();
-			$refreshSet.structureEntry('refreshIndent');
 		}
-	});
+		
+		this.contentLoaded = (this.childEntries && this.childEntries.length > 0) 
+				|| (this.metadata.counts && this.metadata.counts.containers !== undefined && this.metadata.counts.containers <= 1);
+	};
+	
+	StructureEntry.prototype.render = function($parentElement) {
+		var $content = $(this.getTemplate());
+		if ($parentElement)
+			$parentElement.append($content);
+		this.initializeElement($content);
+	};
+	
+	StructureEntry.prototype.initializeElement = function(rootElement) {
+		this.element = $("#" + this.entryId, rootElement);
+		if (this.element.length == 0)
+			this.element = rootElement;
+		this.element.data('structureEntry', this);
+		this.$entry = this.element.children(".entry");
+		if (this.options.structureView.options.indentSuppressed)
+			this.element.addClass('suppressed');
+		this.skipLastIndent = this.element.hasClass('view_all');
+		
+		this._renderIndent();
+		
+		for (var i in this.childEntries) {
+			this.childEntries[i].initializeElement(rootElement);
+		}
+	};
+		
+	StructureEntry.prototype.getTemplate = function() {
+		var toggleClass = '';
+		if (this.childEntries && this.childEntries.length > 0) {
+			if (this.options.isRoot || !this.options.showingItems)
+				toggleClass = 'collapse';
+			else toggleClass = 'expand';
+		} else if (this.metadata.counts && this.metadata.counts.containers) {
+			toggleClass = 'expand';
+		}
+		
+		var childCount = this.metadata.counts && this.metadata.counts.child? this.metadata.counts.child : null;
+		
+		var primaryAction = this.options.structureView.options.queryPath + "/" + this.metadata.id + this.options.structureView.options.filterParams;
+		if (!this.isAContainer)
+			primaryAction = "record/" + this.metadata.id;
+		
+		var downloadUrl = null;
+		if ($.inArray('viewOriginal', this.metadata.permissions) != -1 && $.inArray('DATA_FILE', this.metadata.datastreams) != -1){
+			downloadUrl = "data/" + this.metadata.id + "/DATA_FILE?dl=true"; 
+		}
+		
+		var hideEntry = (this.options.structureView.options.hideRoot && this.options.isRoot) || 
+				(this.options.structureView.excludeIds && $.inArray(this.metadata.id, this.options.structureView.excludeIds) != -1);
+		
+		return structureEntryTemplate({
+			entryId : this.entryId,
+			metadata : this.metadata,
+			childEntries : this.childEntries,
+			isAContainer : this.isAContainer,
+			hideEntry : hideEntry,
+			toggleClass : toggleClass,
+			childCount : childCount,
+			primaryAction : primaryAction,
+			secondaryActions : this.options.structureView.options.secondaryActions,
+			downloadUrl : downloadUrl,
+			isRoot : this.options.isRoot
+		});
+	};
+	
+	StructureEntry.prototype.toggleChildren = function() {
+		var self = this;
+		var $toggleButton = this.$entry.find('.cont_toggle');
+		var $childrenContainer = this.element.children(".children");
+		if ($toggleButton.hasClass('expand')) {
+			if (!self.contentLoaded) {
+				var loadingImage = $("<img src=\"/static/images/ajax_loader.gif\"/>");
+				$toggleButton.after(loadingImage);
+				$.ajax({
+					url: "structure/" + this.metadata.id + "/json" + this.options.structureView.options.filterParams,
+					dataType : 'json',
+					success: function(data){
+						loadingImage.remove();
+						if (data) {
+							this.childEntries = [];
+							if (data.root && data.root.children && data.root.children.length > 0) {
+								for (var i in data.root.children) {
+									var childEntry = new StructureEntry({
+										node : data.root.children[i],
+										structureView : self.options.structureView
+									});
+									this.childEntries.push(childEntry);
+									$childrenContainer.append(childEntry.getTemplate());
+								}
+								
+								for (var i in this.childEntries) {
+									this.childEntries[i].initializeElement(self.element);
+								}
+								
+								$childrenContainer.find(".indent").show();
+								$childrenContainer.show(100, function() {
+									self.element.addClass("expanded");
+								});
+							}
+							
+							if ($childrenContainer.children().length > 0)
+								$toggleButton.removeClass('expand').addClass('collapse');
+							else
+								$toggleButton.removeClass('expand').addClass('leaf');
+						}
+						self.contentLoaded = true;
+					},
+					error: function(xhr, ajaxOptions, thrownError){
+						loadingImage.remove();
+					}
+				});
+			} else {
+				if ($childrenContainer.children().length > 0) {
+					$childrenContainer.find(".indent").show();
+					$childrenContainer.show(100, function() {
+						self.element.addClass("expanded");
+					});
+					$toggleButton.removeClass('expand').addClass('collapse');
+				}
+			}
+		} else {
+			if ($childrenContainer.children().length > 0) {
+				$childrenContainer.hide(100, function() {
+					self.element.removeClass("expanded");
+				});
+			}
+			$toggleButton.removeClass('collapse').addClass('expand');
+		}
+	};
+	
+	StructureEntry.prototype.refreshIndent = function() {
+		this.element.children(".indent").remove();
+		this._renderIndent();
+	};
+	
+	StructureEntry.prototype._renderIndent = function () {
+		var $entry = this.element.children('.entry'),
+			$ancestors = this.element.parents(".entry_wrap:not(.suppressed)"),
+			lastTier = $ancestors.length;
+		if (lastTier == 0)
+			return;
+		$ancestors = $($ancestors.get().reverse());
+		if (!this.skipLastIndent)
+			$ancestors.push(this.element);
+		
+		$ancestors.each(function(i){
+			if (i == 0)
+				return;
+			var hasSiblings = $(this).next(".entry_wrap:not(.view_all)").length > 0;
+			if (i == lastTier) {
+				if (hasSiblings) {
+					$entry.before("<div class='indent with_sib'></div>");
+				} else {
+					$entry.before("<div class='indent last_sib'></div>");
+				}
+			} else {
+				if (hasSiblings) {
+					$entry.before("<div class='indent'></div>");
+				} else {
+					$entry.before("<div class='indent empty'></div>");
+				}
+			}
+		});
+	};
+	
+	StructureEntry.prototype.getParentURL = function() {
+		return "structure/" + this.metadata.id + "/parent";
+	};
+	
+	StructureEntry.prototype.insertTree = function(oldRoot) {
+	// Find the old root in the new results and remove it, while retaining an insertion point for the old root.
+		var $oldRootDuplicate = this.element.find('#' + oldRoot.entryId);
+		var $placeholder = $oldRootDuplicate.prev('.entry_wrap');
+		$oldRootDuplicate.remove();
+		
+		// Insert the old root into the new results
+		oldRoot.element.detach();
+		// Insertion point depends on if it is the first sibling
+		var $refreshSet = oldRoot.element.find(".entry_wrap").add(oldRoot.element);
+		
+		if ($placeholder.length == 0)
+			this.element.children(".children").prepend(oldRoot.element);
+		else {
+			$placeholder.after(oldRoot.element);
+			$refreshSet.add($placeholder);
+		}
+		this.element.addClass("expanded").children(".children").show();
+		$refreshSet.each(function(){
+			$(this).data('structureEntry').refreshIndent();
+		});
+	};
+	
+	return StructureEntry;
 });

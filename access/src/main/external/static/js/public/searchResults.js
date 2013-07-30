@@ -4,12 +4,17 @@ require.config({
 		'jquery' : 'jquery.min',
 		'jquery-ui' : 'jquery-ui.min',
 		'thumbnail' : 'thumbnail',
+		'text' : 'text',
+		'underscore' : 'underscore',
 		'StructureEntry' : 'src/StructureEntry',
 		'StructureView' : 'src/StructureView'
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
-		'thumbnail' : ['jquery']
+		'thumbnail' : ['jquery'],
+		'underscore': {
+			exports: '_'
+		}
 	}
 });
 
@@ -26,11 +31,14 @@ define('searchResults', ['module', 'jquery', 'StructureView'], function(module, 
 	if (structureUrl !== undefined){
 		$.ajax({
 			url: structureUrl,
+			dataType : 'json',
 			success: function(data){
 				var $structure = $('<div/>').html(data);
 				$structure.addClass("facet popout").structureView({
 					showResourceIcons : false,
-					showParentLink : true
+					showParentLink : true,
+					rootNode : data.root,
+					queryPath : 'list'
 				});
 				$("#facet_field_path_structure").html($structure);
 			},

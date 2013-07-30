@@ -29,9 +29,6 @@ import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -113,10 +110,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 		if (fullObjectView != null) {
 			boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
 			boolean retrieveFacets = briefObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString());
-			boolean retrieveHierarchicalStructure = briefObject.getResourceType().equals(
-					searchSettings.resourceTypeCollection)
-					|| briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)
-					|| briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
 
 			if (retrieveChildrenCount) {
 				briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
@@ -137,32 +130,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 
 				briefObject.getCountMap().put("child", resultResponse.getResultCount());
 				model.addAttribute("facetFields", resultResponse.getFacetFields());
-			}
-
-			if (retrieveHierarchicalStructure) {
-				LOG.debug("Retrieving hierarchical structure for " + briefObject.getResourceType() + " " + id);
-
-				// Retrieve hierarchical browse results
-				SearchState searchState = searchStateFactory.createHierarchicalBrowseSearchState();
-				searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), briefObject.getPath());
-				searchState.setResourceTypes(null);
-				HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(searchState, 1, accessGroups);
-
-				HierarchicalBrowseResultResponse hierarchicalResultResponse = null;
-
-				if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-					searchState.setRowsPerPage(100);
-				} else {
-					searchState.setRowsPerPage(20);
-				}
-				hierarchicalResultResponse = queryLayer.getHierarchicalBrowseResults(browseRequest);
-
-				hierarchicalResultResponse.setResultCount(hierarchicalResultResponse.getResultList().size());
-
-				if (LOG.isDebugEnabled() && hierarchicalResultResponse != null)
-					LOG.debug(id + " returned " + hierarchicalResultResponse.getResultCount() + " hierarchical results.");
-
-				model.addAttribute("structureResults", hierarchicalResultResponse);
 			}
 
 			model.addAttribute("fullObjectView", fullObjectView);

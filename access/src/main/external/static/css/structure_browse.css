@@ -61,12 +61,12 @@
 	color: #1D7594;
 }
 
-.structure .entry .description .secondary_actions {
+.structure .entry .secondary_actions {
 	font-size: 80%;
 	display: inline;
 }
 
-.structure .entry .description:hover .secondary_actions {
+.structure .entry:hover .secondary_actions {
 	visibility: visible;
 }
 
@@ -256,12 +256,20 @@
 }
 
 .structure.aggregate .entry {
-	height: 26px;
+	height: 28px;
 }
 
 .structure.aggregate .entry .primary_action {
 	color: #0A5274;
 	font-size: 13px;
+	max-width: 500px;
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	display: inline-block;
+}
+
+.structure.aggregate .entry .primary_action {
+	*display: inline;
 }
 
 .structure.aggregate .entry .secondary_actions {
@@ -285,9 +293,17 @@
 }
 
 .structure.aggregate .indent {
-	height: 23px;
+	height: 30px;
 }
 
 .structure.aggregate .entry_wrap > .children {
 	margin-top: 0px;
+}
+
+.structure.aggregate .indent.with_sib {
+	background-position: -27px -19px;
+}
+
+.structure.aggregate .indent.last_sib {
+	background-position: -27px -83px;
 }

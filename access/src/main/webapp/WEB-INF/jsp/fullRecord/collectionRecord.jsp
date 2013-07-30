@@ -94,19 +94,12 @@
 		<div class="contentarea">
 			<c:import url="fullRecord/metadataBody.jsp" />
 			
-			<c:if test="${structureResults.resultCount > 0}">
-				<div id="hierarchical_view_full_record">
-					<h2>Folder Browse View (or <a href="<c:out value="${structureUrl}" />">switch to structure browse</a>)</h2>
-					<div class="structure">
-						<c:import url="/jsp/structure/structureTree.jsp">
-							<c:param name="files">true</c:param>
-							<c:param name="queryp">list</c:param>
-						</c:import>
-					</div>
+			<div id="hierarchical_view_full_record">
+				<h2>Folder Browse View (or <a href="<c:out value="${structureUrl}" />">switch to structure browse</a>)</h2>
+				<div class="structure" data-pid="${briefObject.id}">
 				</div>
-				<br/>
-			</c:if>
-			
+			</div>
+			<br/>
 			<c:import url="fullRecord/exports.jsp" />
 		</div>
 	</div>
