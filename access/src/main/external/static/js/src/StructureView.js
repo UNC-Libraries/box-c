@@ -9,7 +9,8 @@ define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, 
 			rootNode : null,
 			queryPath : 'structure',
 			filterParams : '',
-			excludeIds : null
+			excludeIds : null,
+			retrieveFiles : false
 		},
 		_create : function() {
 			

@@ -22,14 +22,15 @@ define('containerRecord', ['module', 'jquery', 'StructureView'], function(module
 	
 	if ($structureView.length > 0) {
 		$.ajax({
-			url: "/structure/" + $structureView.attr('data-pid') + "/json",
+			url: "/structure/" + $structureView.attr('data-pid') + "/json?files=true",
 			dataType : 'json',
 			success: function(data){
 				$structureView.structureView({
 					showResourceIcons : true,
 					showParentLink : false,
 					rootNode : data.root,
-					queryPath : 'list'
+					queryPath : 'list',
+					retrieveFiles : true
 				});
 			},
 			error: function(e){

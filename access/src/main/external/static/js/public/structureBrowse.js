@@ -23,6 +23,7 @@ define('structureBrowse', ['module', 'jquery', 'StructureView'], function(module
 		showResourceIcons : true,
 		queryPath : "search",
 		secondaryActions : true,
-		rootNode : module.config().results.root
+		rootNode : module.config().results.root,
+		retrieveFiles : true
 	});
 });

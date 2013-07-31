@@ -30,7 +30,7 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 		}
 		
 		this.contentLoaded = (this.childEntries && this.childEntries.length > 0) 
-				|| (this.metadata.counts && this.metadata.counts.containers !== undefined && this.metadata.counts.containers <= 1);
+				|| (this.metadata.counts && this.metadata.counts.containers !== undefined && this.metadata.counts.containers == 0);
 	};
 	
 	StructureEntry.prototype.render = function($parentElement) {
@@ -79,7 +79,8 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 		}
 		
 		var hideEntry = (this.options.structureView.options.hideRoot && this.options.isRoot) || 
-				(this.options.structureView.excludeIds && $.inArray(this.metadata.id, this.options.structureView.excludeIds) != -1);
+				(this.options.structureView.excludeIds && $.inArray(this.metadata.id, this.options.structureView.excludeIds) != -1)
+				|| !this.metadata.title;
 		
 		return structureEntryTemplate({
 			entryId : this.entryId,
@@ -104,8 +105,19 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 			if (!self.contentLoaded) {
 				var loadingImage = $("<img src=\"/static/images/ajax_loader.gif\"/>");
 				$toggleButton.after(loadingImage);
+				var childrenUrl = "structure/" + this.metadata.id + "/json";
+				var childrenParams = "";
+				if (this.options.structureView.options.retrieveFiles)
+					childrenParams += "files=true";
+				if (this.options.structureView.options.filterParams) {
+					if (childrenParams)
+						childrenParams += "&";
+					childrenParams += this.options.structureView.options.filterParams;
+				}
+				if (childrenParams)
+					childrenUrl += "?" + childrenParams;
 				$.ajax({
-					url: "structure/" + this.metadata.id + "/json" + this.options.structureView.options.filterParams,
+					url: childrenUrl,
 					dataType : 'json',
 					success: function(data){
 						loadingImage.remove();
@@ -151,7 +163,7 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 					$toggleButton.removeClass('expand').addClass('collapse');
 				}
 			}
-		} else {
+		} else if ($toggleButton.hasClass('collapse')) {
 			if ($childrenContainer.children().length > 0) {
 				$childrenContainer.hide(100, function() {
 					self.element.removeClass("expanded");

@@ -42,6 +42,8 @@ public class StructureBrowseController extends AbstractStructureResultsControlle
 	@RequestMapping("/structure")
 	public String getStructure(@RequestParam(value = "files", required = false) String includeFiles,
 			@RequestParam(value = "view", required = false) String view, Model model, HttpServletRequest request) {
+		if (includeFiles == null)
+			includeFiles = "true";
 		return getStructureTree(null, "true".equals(includeFiles), view, false, model, request);
 	}
 	
@@ -50,6 +52,8 @@ public class StructureBrowseController extends AbstractStructureResultsControlle
 			@RequestParam(value = "files", required = false) String includeFiles,
 			@RequestParam(value = "view", required = false) String view, Model model, HttpServletRequest request,
 			HttpServletResponse response) {
+		if (includeFiles == null)
+			includeFiles = "true";
 		return getStructureTree(pid, "true".equals(includeFiles), view, false, model, request);
 	}
 	
@@ -88,34 +92,15 @@ public class StructureBrowseController extends AbstractStructureResultsControlle
 	
 	private String getStructureTree(String pid, boolean includeFiles, String viewParam, boolean collectionMode,
 			Model model, HttpServletRequest request) {
-		String view;
-		boolean ajaxRequest;
-		if ("ajax".equals(viewParam)) {
-			view = "/jsp/structure/structureTree";
-			model.addAttribute("template", "ajax");
-			ajaxRequest = true;
-		} else if ("facet".equals(viewParam)) {
-			view = "/jsp/structure/facet";
-			ajaxRequest = true;
-		} else {
-			// full view
-			view = "/jsp/structure/search";
-			ajaxRequest = false;
-		}
-
 		HierarchicalBrowseResultResponse resultResponse = getStructureResult(pid, includeFiles, collectionMode,
-				!ajaxRequest, request);
+				true, request);
 
 		SearchState searchState = resultResponse.getSearchState();
 		String searchParams = SearchStateUtil.generateSearchParameterString(searchState);
 		model.addAttribute("searchParams", searchParams);
 
-		if (ajaxRequest) {
-			model.addAttribute("template", "ajax");
-		} else {
-			model.addAttribute("resultType", "structure");
-			model.addAttribute("pageSubtitle", "Browse Results");
-		}
+		model.addAttribute("resultType", "structure");
+		model.addAttribute("pageSubtitle", "Browse Results");
 
 		String searchStateUrl = SearchStateUtil.generateStateParameterString(resultResponse.getSearchState());
 		model.addAttribute("searchStateUrl", searchStateUrl);
@@ -125,6 +110,6 @@ public class StructureBrowseController extends AbstractStructureResultsControlle
 		
 		model.addAttribute("resultJSON", SerializationUtil.structureToJSON(resultResponse, GroupsThreadStore.getGroups()));
 
-		return view;
+		return "structureBrowse";
 	}
 }
