@@ -63,6 +63,10 @@ public class SerializationUtil {
 			}
 			result.append(']');
 		}
+		if (node.getMetadata().getAncestorNames() != null && (node.getMetadata().getAncestorPath() == null || node.getMetadata().getAncestorPath().size() == 0)) {
+			result.append(',');
+			result.append("\"isTopLevel\":true");
+		}
 		result.append('}');
 	}
 	

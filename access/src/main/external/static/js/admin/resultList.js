@@ -98,7 +98,9 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 	$window.resize(resizeResults);
 	
 	// Keep result area the right size when the menu is resized
-	var searchMenu = $("#search_menu").searchMenu().on("resize", function(){
+	var searchMenu = $("#search_menu").searchMenu({
+		filterParams : module.config().filterParams
+	}).on("resize", function(){
 		menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
 		resizeResults.call();
 	});

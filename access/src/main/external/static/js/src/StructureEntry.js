@@ -63,15 +63,18 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 			if (this.options.isRoot || !this.options.showingItems)
 				toggleClass = 'collapse';
 			else toggleClass = 'expand';
-		} else if (this.metadata.counts && this.metadata.counts.containers) {
+		} else if ((this.metadata.counts && this.metadata.counts.containers) ||
+				(this.options.structureView.options.retrieveFiles && this.metadata.counts && this.metadata.counts.child)) {
 			toggleClass = 'expand';
 		}
 		
 		var childCount = this.metadata.counts && this.metadata.counts.child? this.metadata.counts.child : null;
 		
-		var primaryAction = this.options.structureView.options.queryPath + "/" + this.metadata.id + this.options.structureView.options.filterParams;
+		var primaryAction = this.options.structureView.options.queryPath + "/" + this.metadata.id;
 		if (!this.isAContainer)
 			primaryAction = "record/" + this.metadata.id;
+		else if (this.options.structureView.options.filterParams)
+			primaryAction += "?" + this.options.structureView.options.filterParams;
 		
 		var downloadUrl = null;
 		if ($.inArray('viewOriginal', this.metadata.permissions) != -1 && $.inArray('DATA_FILE', this.metadata.datastreams) != -1){

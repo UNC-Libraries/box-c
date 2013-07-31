@@ -28,6 +28,7 @@ define('searchResults', ['module', 'jquery', 'StructureView'], function(module, 
 	
 	var structureUrl = $("#facet_field_path_structure > a").attr("href");
 	
+	var filterParams = module.config().filterParams;
 	if (structureUrl !== undefined){
 		$.ajax({
 			url: structureUrl,
@@ -38,7 +39,8 @@ define('searchResults', ['module', 'jquery', 'StructureView'], function(module, 
 					showResourceIcons : false,
 					showParentLink : true,
 					rootNode : data.root,
-					queryPath : 'list'
+					queryPath : 'list',
+					filterParams : filterParams
 				});
 				$("#facet_field_path_structure").html($structure);
 			},

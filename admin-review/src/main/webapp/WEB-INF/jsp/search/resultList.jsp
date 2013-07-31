@@ -134,7 +134,8 @@
 			'resultList' : {
 				'metadataObjects': ${cdr:resultsToJSON(resultResponse, accessGroupSet)},
 				'pagingActive' : ${resultResponse.resultCount > fn:length(resultResponse.resultList)},
-				'resultUrl' : '${currentRelativeUrl}'
+				'resultUrl' : '${currentRelativeUrl}',
+				'filterParams' : '${searchStateUrl}'
 			},
 		}
 	};

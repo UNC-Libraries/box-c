@@ -1,7 +1,12 @@
 define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], function(
 		$, ui, URLUtilities) {
 	$.widget("cdr.searchMenu", {
+		options : {
+			filterParams : ''
+		},
+		
 		_create : function() {
+			var self = this;
 			this.element.children('.query_menu').accordion({
 				header: "> div > h3",
 				heightStyle: "content",
@@ -14,14 +19,19 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 				active: false,
 				activate: function(event, ui) {
 					if (ui.newPanel.attr('data-href') != null && !ui.newPanel.data('contentLoaded')) {
+						var isStructureBrowse = (ui.newPanel.attr('id') == "structure_facet");
 						$.ajax({
 							url : URLUtilities.uriEncodeParameters(ui.newPanel.attr('data-href')),
+							dataType : isStructureBrowse? 'json' : null,
 							success : function(data) {
-								if (ui.newPanel.attr('id') == "structure_facet") {
+								if (isStructureBrowse) {
 									var $structureView = $('<div/>').html(data);
 									$structureView.structureView({
+										rootNode : data.root,
 										showResourceIcons : true,
-										showParentLink : true
+										showParentLink : true,
+										queryPath : 'list',
+										filterParams : self.options.filterParams
 									});
 									$structureView.addClass('inset facet');
 									data = $structureView;

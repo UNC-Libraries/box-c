@@ -136,5 +136,14 @@
 	</div>
 </div>
 <link rel="stylesheet" type="text/css" href="/static/css/structure_browse.css" />
+<script>
+	var require = {
+		config: {
+			'searchResults' : {
+				'filterParams' : '${searchStateUrl}'
+			},
+		}
+	};
+</script>
 <script type="text/javascript" src="/static/js/require.js" data-main="/static/js/public/searchResults"></script>
 </div>

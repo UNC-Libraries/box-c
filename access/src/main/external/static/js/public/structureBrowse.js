@@ -24,6 +24,7 @@ define('structureBrowse', ['module', 'jquery', 'StructureView'], function(module
 		queryPath : "search",
 		secondaryActions : true,
 		rootNode : module.config().results.root,
-		retrieveFiles : true
+		retrieveFiles : true,
+		filterParams : module.config().filterParams
 	});
 });

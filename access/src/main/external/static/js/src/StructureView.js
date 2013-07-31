@@ -51,7 +51,7 @@ define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, 
 		_generateParentLink : function() {
 			var self = this;
 			var $parentLink = $("<a class='parent_link'>parent</a>");
-			if (self.$content.children(".entry_wrap").hasClass('root'))
+			if (this.options.rootNode.isTopLevel)
 				$parentLink.addClass('disabled');
 				
 			$parentLink.click(function(){
@@ -76,7 +76,7 @@ define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, 
 						newRoot.insertTree($oldRoot.data('structureEntry'));
 						//$newRoot.structureEntry('insertTree', $oldRoot);
 						self.$content.append(newRoot.element);
-						if (self.$content.children(".entry_wrap").hasClass('root'))
+						if (data.root.isTopLevel)
 							$parentLink.addClass('disabled');
 					}
 				});

@@ -86,7 +86,8 @@
 	var require = {
 		config: {
 			'structureBrowse' : {
-				'results': ${resultJSON}
+				'results': ${resultJSON},
+				'filterParams' : '${searchParams}'
 			},
 		}
 	};
