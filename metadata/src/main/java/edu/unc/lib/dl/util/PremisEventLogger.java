@@ -246,6 +246,48 @@ public class PremisEventLogger {
 		event.addContent(lai);
 		return event;
 	}
+	
+	public static Element addType(Element event, Type type) {
+		event.addContent(new Element("eventType", NS).setText(type.id()));
+		return event;
+	}
+	
+	public static Element addDateTime(Element event, Date dateTime) {
+		event.addContent(new Element("eventDateTime", NS).setText(dateFormat.format(dateTime)));
+		return event;
+	}
+	
+	public static Element addLinkingAgentIdentifier(Element event, String type, String value, String role) {
+		Element lai = new Element("linkingAgentIdentifier", NS);
+		
+		if (type != null)
+			lai.addContent(new Element("linkingAgentIdentifierType", NS).setText(type));
+		
+		if (value != null)
+			lai.addContent(new Element("linkingAgentIdentifierValue", NS).setText(value));
+		
+		if (role != null)
+			lai.addContent(new Element("linkingAgentRole", NS).setText(role));
+		
+		event.addContent(lai);
+		return event;
+	}
+	
+	public static Element addLinkingObjectIdentifier(Element event, String type, String value, String role) {
+		Element loi = new Element("linkingObjectIdentifier", NS);
+		
+		if (type != null)
+			loi.addContent(new Element("linkingObjectIdentifierType", NS).setText(type));
+		
+		if (value != null)
+			loi.addContent(new Element("linkingObjectIdentifierValue", NS).setText(value));
+		
+		if (role != null)
+			loi.addContent(new Element("linkingObjectRole", NS).setText(role));
+		
+		event.addContent(loi);
+		return event;
+	}
 
 	public void addEvent(PID pid, Element event) {
 		Element events = pid2EventList.get(pid);
@@ -256,6 +298,19 @@ public class PremisEventLogger {
 			this.pid2EventList.put(pid, events);
 		}
 		events.addContent(event);
+	}
+	
+	public Element logEvent(PID pid) {
+		Element event = new Element("event", NS);
+
+		// add event identifier UUID
+		String uuid = String.format("urn:uuid:%1$s", java.util.UUID.randomUUID());
+		event.addContent(new Element("eventIdentifier", NS).addContent(
+				new Element("eventIdentifierType", NS).setText("URN")).addContent(
+				new Element("eventIdentifierValue", NS).setText(uuid)));
+
+		addEvent(pid, event);
+		return event;
 	}
 
 	public Element logEvent(Type type, String message, PID pid) {

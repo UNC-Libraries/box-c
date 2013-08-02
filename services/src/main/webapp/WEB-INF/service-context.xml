@@ -457,4 +457,22 @@
 		<property name="password" value="${fedora.appUser.password}" />
 	</bean>
 	
+	<!-- Fixity Log Service -->
+	
+	<bean id="fixityLogService" class="edu.unc.lib.dl.cdr.services.FixityLogService" init-method="init" destroy-method="destroy">
+		<property name="fixityLogTaskFactory" ref="fixityLogTaskFactory"/>
+	</bean>
+
+	<bean id="fixityLogTaskFactory" class="edu.unc.lib.dl.services.FixityLogTaskFactory">
+		<lookup-method name="createTask" bean="fixityLogTask"/>
+	</bean>
+
+	<bean id="fixityLogTask" class="edu.unc.lib.dl.services.FixityLogTask" scope="prototype">
+		<property name="irodsAccount" ref="irodsAccount"/>
+		<property name="irodsFileSystem" ref="irodsFileSystem"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="fixityLogCollection" value="${fixity.log.collection}"/>
+	</bean>
+	
+	
 </beans>
