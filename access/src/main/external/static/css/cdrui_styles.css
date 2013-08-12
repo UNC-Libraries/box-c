@@ -1072,6 +1072,10 @@ ul.crumblist li a {
 	top: 2px;
 }
 
+.recaptcha_only_if_privacy {
+	font-size: 10pt;
+}
+
 .browse_departments {
 	padding: 20px;
 	width: 440px;
