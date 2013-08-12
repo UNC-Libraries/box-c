@@ -88,7 +88,7 @@ public class RequestAccessController extends AbstractSolrSearchController {
 		
 		model.addAttribute("menuId", "contact");
 
-		return "requestAccessForm";
+		return "forms/requestAccessForm";
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
@@ -117,7 +117,7 @@ public class RequestAccessController extends AbstractSolrSearchController {
 
 		if (results.hasErrors()) {
 			model.addAttribute("reCaptcha", this.reCaptcha.createRecaptchaHtml("", "clean", null));
-			return "requestAccessForm";
+			return "forms/requestAccessForm";
 		}
 
 		// Send email
@@ -126,12 +126,12 @@ public class RequestAccessController extends AbstractSolrSearchController {
 		emailProperties.put("serverName", request.getServerName());
 		this.emailService.sendContactEmail(null, requestAccessForm.getEmailAddress(), null, null, emailProperties);
 		
-		// Send user confirmation emil
+		// Send user confirmation email
 		this.userResponseEmailService.sendContactEmail(null, null, null, Arrays.asList(requestAccessForm.getEmailAddress()), emailProperties);
 
 		model.addAttribute("success", true);
 		
-		return "requestAccessForm";
+		return "forms/requestAccessForm";
 	}
 
 	public void setValidator(RequestAccessFormValidator validator) {

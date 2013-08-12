@@ -76,15 +76,18 @@
 	<!-- Request form -->
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource">
-		<property name="basename" value="RequestAccessForm" />
+		<property name="basename" value="formValidationMessages" />
 	</bean>
 	
 	<bean class="edu.unc.lib.dl.ui.validator.RequestAccessFormValidator"/>
+	<bean class="edu.unc.lib.dl.ui.validator.ContactFormValidator"/>
 	
-	<bean id="reCaptcha" class="net.tanesha.recaptcha.ReCaptchaImpl">  
-		<property name="privateKey" value="${recaptcha.private.key}" />  
-		<property name="publicKey" value="${recaptcha.public.key}" />  
-		<property name="includeNoscript" value="false" />  
+	<bean id="reCaptcha" class="net.tanesha.recaptcha.ReCaptchaImpl">
+		<property name="privateKey" value="${recaptcha.private.key}" />
+		<property name="publicKey" value="${recaptcha.public.key}" />
+		<property name="includeNoscript" value="false" />
+		<property name="recaptchaServer" value="#{T(net.tanesha.recaptcha.ReCaptchaImpl).HTTPS_SERVER}" />
+		
 	</bean>
 	
 	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
@@ -114,6 +117,20 @@
 		<property name="freemarkerConfiguration" ref="freemarkerConfiguration" />
 		<property name="htmlTemplatePath" value="requestAccessUserResponseHtml.ftl"/>
 		<property name="textTemplatePath" value="requestAccessUserResponseText.ftl"/>
+		<property name="mailSender" ref="mailSender"/>
+	</bean>
+	
+	<bean id="contactEmailService" class="edu.unc.lib.dl.ui.service.ContactEmailService">
+	<property name="emailRecipients">
+			<list>
+				<value>${administrator.email}</value>
+			</list>
+		</property>
+		<property name="fromAddress" value="${repository.reply.email}"/>
+		<property name="fromName" value="CDR Feedback Form"/>
+		<property name="defaultSubjectLine" value="CDR Feedback"/>
+		<property name="freemarkerConfiguration" ref="freemarkerConfiguration" />
+		<property name="htmlTemplatePath" value="contactFormHtml.ftl"/>
 		<property name="mailSender" ref="mailSender"/>
 	</bean>
 	
