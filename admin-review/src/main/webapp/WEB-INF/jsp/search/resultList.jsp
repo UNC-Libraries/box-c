@@ -42,31 +42,31 @@
 									<c:param name="resultOperation">${sessionScope.resultOperation}</c:param>
 								</c:import>
 							</div>
-						</c:if>	
-						<h2>
-							<c:choose>
-								<c:when test="${not empty containerBean}">
-									<c:choose>
-										<c:when test="${containerBean.resourceType == searchSettings.resourceTypeFolder}">
-											<img src="/static/images/admin/type_folder.png" />
-										</c:when>
-										<c:when test="${containerBean.resourceType == searchSettings.resourceTypeCollection}">
-											<img src="/static/images/admin/type_coll.png" />
-										</c:when>
-										<c:when test="${containerBean.resourceType == searchSettings.resourceTypeAggregate}">
-											<img src="/static/images/admin/type_aggr.png" />
-										</c:when>
-									</c:choose>
-									&nbsp;<c:out value="${containerBean.title}" />
-								</c:when>
-								<c:otherwise>
-									Searching
-								</c:otherwise>
-							</c:choose>
-						</h2>
-						<c:if test="${not empty containerBean}">
-							<img class="container_menu" src="/static/images/admin/gear.png"/>
 						</c:if>
+						<c:choose>
+							<c:when test="${not empty containerBean}">
+								<span class="container_entry">
+									<h2>
+										<c:choose>
+											<c:when test="${containerBean.resourceType == searchSettings.resourceTypeFolder}">
+												<img src="/static/images/admin/type_folder.png" />
+											</c:when>
+											<c:when test="${containerBean.resourceType == searchSettings.resourceTypeCollection}">
+												<img src="/static/images/admin/type_coll.png" />
+											</c:when>
+											<c:when test="${containerBean.resourceType == searchSettings.resourceTypeAggregate}">
+												<img src="/static/images/admin/type_aggr.png" />
+											</c:when>
+										</c:choose>
+										&nbsp;<c:out value="${containerBean.title}" />
+									</h2>
+									<span><img class="action_gear container_menu" src="/static/images/admin/gear.png"/></span>
+								</span>
+							</c:when>
+							<c:otherwise>
+								<h2>Searching</h2>
+							</c:otherwise>
+						</c:choose>
 						<span id="add_menu" class="container_action">+ Add</span>
 						<c:if test="${not empty containerBean}">
 							<span id="arrange_button" class="container_action">Arrange</span>
@@ -136,6 +136,9 @@
 				'pagingActive' : ${resultResponse.resultCount > fn:length(resultResponse.resultList)},
 				'resultUrl' : '${currentRelativeUrl}',
 				'filterParams' : '${searchStateUrl}'
+				<c:if test="${not empty containerBean}">
+					, 'container' : ${cdr:metadataToJSON(containerBean, accessGroupSet)}
+				</c:if>
 			},
 		}
 	};

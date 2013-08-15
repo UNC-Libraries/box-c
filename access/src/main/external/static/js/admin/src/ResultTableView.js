@@ -1,5 +1,5 @@
-define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'detachplus'], 
-		function($, ui, ResultObjectList, URLUtilities) {
+define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'ParentResultObject', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'detachplus'], 
+		function($, ui, ResultObjectList, URLUtilities, ParentResultObject) {
 	$.widget("cdr.resultTableView", {
 		options : {
 			enableSort : true,
@@ -7,13 +7,21 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			metadataObjects : undefined,
 			enableArrange : false,
 			enableMove : false,
-			pagingActive : false
+			pagingActive : false,
+			container : undefined
 		},
 		
 		_create : function() {
 			this.$resultTable = this.element.find('.result_table').eq(0);
 			var fragment = $(document.createDocumentFragment());
-			this.resultObjectList = new ResultObjectList({'metadataObjects' : this.options.metadataObjects, parent : this.$resultTable.children('tbody')});
+			this.resultObjectList = new ResultObjectList({
+				'metadataObjects' : this.options.metadataObjects, 
+				parent : this.$resultTable.children('tbody')
+			});
+			if (this.options.container) {
+				this.containerObject = new ParentResultObject({metadata : this.options.container, 
+						resultObjectList : this.resultObjectList, element : $(".container_entry")});
+			}
 			//this.$resultTable.children('tbody').append(fragment);
 			
 			if (this.options.enableSort)
@@ -259,10 +267,16 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		},
 		
 		_initEventHandlers : function() {
-			this.$resultTable.on('click', ".menu_box img", function(e){
+			var self = this;
+			this.$resultTable.on('click', ".action_gear", function(e){
 				$(this).parents(".res_entry").data('resultObject').activateActionMenu();
 				e.stopPropagation();
 			});
+			if (this.containerObject)
+				this.containerObject.element.on('click', ".action_gear", function(e){
+					self.containerObject.activateActionMenu();
+					e.stopPropagation();
+				});
 			this.$resultTable.on('click', ".res_entry", function(e){
 				$(this).data('resultObject').toggleSelect();
 				e.stopPropagation();

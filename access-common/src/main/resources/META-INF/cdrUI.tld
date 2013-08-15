@@ -112,6 +112,13 @@
 		</function-signature>
 	</function>
 	<function>
+		<name>metadataToJSON</name>
+		<function-class>edu.unc.lib.dl.ui.util.SerializationUtil</function-class>
+		<function-signature>
+			java.lang.String metadataToJSON(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, edu.unc.lib.dl.acl.util.AccessGroupSet)
+		</function-signature>
+	</function>
+	<function>
 		<name>resultsToJSON</name>
 		<function-class>edu.unc.lib.dl.ui.util.SerializationUtil</function-class>
 		<function-signature>

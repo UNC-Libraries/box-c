@@ -1,0 +1,14 @@
+<ul class='action_menu'>
+	<% if ($.inArray('publish', metadata.permissions) != -1) { %>
+		<li class="publish_link"><%= $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish' %></li> 
+	<% } %>
+	<% if ($.inArray('editAccessControl', metadata.permissions) != -1) { %>
+		<li class="edit_access">Edit Access</li>
+	<% } %>
+	<% if ($.inArray('editDescription', metadata.permissions) != -1) { %>
+		<li class='edit_description'><a href="describe/<%= metadata.id %>"><%= $.inArray('MD_DESCRIPTIVE', metadata.datastreams) ? 'Edit' : 'Add'%> Description</a></li>
+	<% } %>
+	<% if ($.inArray('purgeForever', metadata.permissions) != -1) { %>
+		<li class="delete_link">Delete</li>
+	<% } %>
+</ul>

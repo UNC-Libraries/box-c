@@ -78,7 +78,7 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 		
 		var downloadUrl = null;
 		if ($.inArray('viewOriginal', this.metadata.permissions) != -1 && $.inArray('DATA_FILE', this.metadata.datastreams) != -1){
-			downloadUrl = "data/" + this.metadata.id + "/DATA_FILE?dl=true"; 
+			downloadUrl = "files/" + this.metadata.id + "/DATA_FILE?dl=true"; 
 		}
 		
 		var hideEntry = (this.options.structureView.options.hideRoot && this.options.isRoot) || 

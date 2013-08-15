@@ -78,7 +78,7 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 		
 		var downloadUrl = null;
 		if ($.inArray('viewOriginal', this.metadata.permissions) != -1 && $.inArray('DATA_FILE', this.metadata.datastreams) != -1){
-			downloadUrl = "data/" + this.metadata.id + "/DATA_FILE?dl=true"; 
+			downloadUrl = "files/" + this.metadata.id + "/DATA_FILE?dl=true"; 
 		}
 		
 		var hideEntry = (this.options.structureView.options.hideRoot && this.options.isRoot) || 
@@ -1423,6 +1423,44 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 	});
 	
 	return PID;
+});/*
+
+    Copyright 2008 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+ */
+define('ParentResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/actionMenu', 
+		'ModalLoadingOverlay', 'ResultObject', 'DeleteObjectButton',	'PublishObjectButton', 'EditAccessControlForm'], 
+		function($, ui, _, RemoteStateChangeMonitor, actionMenuTemplate, ModalLoadingOverlay, ResultObject) {
+	
+	function ParentResultObject(options) {
+		ResultObject.call(this, options);
+	};
+	
+	ParentResultObject.prototype.constructor = ParentResultObject;
+	ParentResultObject.prototype = Object.create( ResultObject.prototype );
+	
+	ParentResultObject.prototype.init = function(metadata) {
+		this.metadata = metadata;
+		this.pid = metadata.id;
+		this.actionMenuInitialized = false;
+		this.element = this.options.element;
+		this.element.data('resultObject', this);
+		this.links = [];
+	};
+	
+	return ParentResultObject;
 });define('PublishBatchButton', [ 'jquery', 'jquery-ui', 'BatchCallbackButton' ], function($) {
 	$.widget("cdr.publishBatchButton", $.cdr.batchCallbackButton, {
 		options : {
@@ -1584,9 +1622,9 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
     limitations under the License.
 
  */
-define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/resultEntry', 
+define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/resultEntry', 'tpl!../templates/admin/actionMenu', 
 		'ModalLoadingOverlay', 'DeleteObjectButton',	'PublishObjectButton', 'EditAccessControlForm'], 
-		function($, ui, _, RemoteStateChangeMonitor, resultEntryTemplate, ModalLoadingOverlay) {
+		function($, ui, _, RemoteStateChangeMonitor, resultEntryTemplate, actionMenuTemplate, ModalLoadingOverlay) {
 	var defaultOptions = {
 			animateSpeed : 100,
 			metadata : null,
@@ -1620,7 +1658,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	};
 	
 	ResultObject.prototype.activateActionMenu = function() {
-		var $menuIcon = $(".menu_box img", this.element);
+		var $menuIcon = $(".action_gear", this.element);
 		if (!this.actionMenuInitialized) {
 			this.initializeActionMenu();
 			$menuIcon.click();
@@ -1628,20 +1666,23 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		}
 		if (this.actionMenu.children().length == 0)
 			return;
-		$menuIcon.parent().css("background-color", "#7BAABF");
+		$menuIcon.attr("src", "/static/images/admin/gear_dark.png");
 		return;
 	};
 	
 	ResultObject.prototype.initializeActionMenu = function() {
 		var self = this;
 		
+		// Generate the action menu contents
 		this.actionMenuInitialized = true;
+		this.actionMenu = $(actionMenuTemplate({
+			metadata : this.metadata
+		}));
 		
-		this.actionMenu = $(".menu_box ul", this.element);
 		if (this.actionMenu.children().length == 0)
 			return;
 		
-		var menuIcon = $(".menu_box img", this.element);
+		var menuIcon = $(".action_gear", this.element);
 		
 		// Set up the dropdown menu
 		menuIcon.qtip({
@@ -1663,7 +1704,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				event: 'unfocus mouseleave click',
 				fixed: true, // Make sure we can interact with the qTip by setting it as fixed
 				effect: function(offset) {
-					menuIcon.parent().css("background-color", "transparent");
+					menuIcon.attr("src", "/static/images/admin/gear.png");
 					$(this).fadeOut(100);
 				}
 			},
@@ -1675,7 +1716,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			}
 		});
 		
-		self.actionMenu.children().click(function(){
+		this.actionMenu.children().click(function(){
 			menuIcon.qtip('hide');
 		});
 		
@@ -1990,8 +2031,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	});
 	
 	return ResultObjectList;
-});define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'detachplus'], 
-		function($, ui, ResultObjectList, URLUtilities) {
+});define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'ParentResultObject', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'detachplus'], 
+		function($, ui, ResultObjectList, URLUtilities, ParentResultObject) {
 	$.widget("cdr.resultTableView", {
 		options : {
 			enableSort : true,
@@ -1999,13 +2040,21 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			metadataObjects : undefined,
 			enableArrange : false,
 			enableMove : false,
-			pagingActive : false
+			pagingActive : false,
+			container : undefined
 		},
 		
 		_create : function() {
 			this.$resultTable = this.element.find('.result_table').eq(0);
 			var fragment = $(document.createDocumentFragment());
-			this.resultObjectList = new ResultObjectList({'metadataObjects' : this.options.metadataObjects, parent : this.$resultTable.children('tbody')});
+			this.resultObjectList = new ResultObjectList({
+				'metadataObjects' : this.options.metadataObjects, 
+				parent : this.$resultTable.children('tbody')
+			});
+			if (this.options.container) {
+				this.containerObject = new ParentResultObject({metadata : this.options.container, 
+						resultObjectList : this.resultObjectList, element : $(".container_entry")});
+			}
 			//this.$resultTable.children('tbody').append(fragment);
 			
 			if (this.options.enableSort)
@@ -2251,10 +2300,16 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		},
 		
 		_initEventHandlers : function() {
-			this.$resultTable.on('click', ".menu_box img", function(e){
+			var self = this;
+			this.$resultTable.on('click', ".action_gear", function(e){
 				$(this).parents(".res_entry").data('resultObject').activateActionMenu();
 				e.stopPropagation();
 			});
+			if (this.containerObject)
+				this.containerObject.element.on('click', ".action_gear", function(e){
+					self.containerObject.activateActionMenu();
+					e.stopPropagation();
+				});
 			this.$resultTable.on('click', ".res_entry", function(e){
 				$(this).data('resultObject').toggleSelect();
 				e.stopPropagation();

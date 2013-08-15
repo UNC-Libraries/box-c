@@ -98,7 +98,7 @@
 	margin-bottom: 3px;
 }
 
-.container_header > h2 {
+.container_header > span > h2 {
 	display: inline-block;
 }
 

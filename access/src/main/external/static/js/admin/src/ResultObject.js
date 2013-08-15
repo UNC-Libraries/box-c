@@ -15,9 +15,9 @@
     limitations under the License.
 
  */
-define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/resultEntry', 
+define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/resultEntry', 'tpl!../templates/admin/actionMenu', 
 		'ModalLoadingOverlay', 'DeleteObjectButton',	'PublishObjectButton', 'EditAccessControlForm'], 
-		function($, ui, _, RemoteStateChangeMonitor, resultEntryTemplate, ModalLoadingOverlay) {
+		function($, ui, _, RemoteStateChangeMonitor, resultEntryTemplate, actionMenuTemplate, ModalLoadingOverlay) {
 	var defaultOptions = {
 			animateSpeed : 100,
 			metadata : null,
@@ -51,7 +51,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	};
 	
 	ResultObject.prototype.activateActionMenu = function() {
-		var $menuIcon = $(".menu_box img", this.element);
+		var $menuIcon = $(".action_gear", this.element);
 		if (!this.actionMenuInitialized) {
 			this.initializeActionMenu();
 			$menuIcon.click();
@@ -59,20 +59,23 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		}
 		if (this.actionMenu.children().length == 0)
 			return;
-		$menuIcon.parent().css("background-color", "#7BAABF");
+		$menuIcon.attr("src", "/static/images/admin/gear_dark.png");
 		return;
 	};
 	
 	ResultObject.prototype.initializeActionMenu = function() {
 		var self = this;
 		
+		// Generate the action menu contents
 		this.actionMenuInitialized = true;
+		this.actionMenu = $(actionMenuTemplate({
+			metadata : this.metadata
+		}));
 		
-		this.actionMenu = $(".menu_box ul", this.element);
 		if (this.actionMenu.children().length == 0)
 			return;
 		
-		var menuIcon = $(".menu_box img", this.element);
+		var menuIcon = $(".action_gear", this.element);
 		
 		// Set up the dropdown menu
 		menuIcon.qtip({
@@ -94,7 +97,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				event: 'unfocus mouseleave click',
 				fixed: true, // Make sure we can interact with the qTip by setting it as fixed
 				effect: function(offset) {
-					menuIcon.parent().css("background-color", "transparent");
+					menuIcon.attr("src", "/static/images/admin/gear.png");
 					$(this).fadeOut(100);
 				}
 			},
@@ -106,7 +109,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			}
 		});
 		
-		self.actionMenu.children().click(function(){
+		this.actionMenu.children().click(function(){
 			menuIcon.qtip('hide');
 		});
 		
