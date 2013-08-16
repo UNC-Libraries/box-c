@@ -38,6 +38,11 @@
 	</bean>
 
 	<context:annotation-config />
+	
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="300000"/>
+	</bean>
 
 	<!-- Import controllers -->
 	<context:component-scan base-package="edu.unc.lib.dl.admin.controller" />

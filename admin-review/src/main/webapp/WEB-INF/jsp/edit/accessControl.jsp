@@ -12,7 +12,7 @@
 	pageContext.setAttribute("aclNS", edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_ACL_NS);
 %>
 
-<div class="edit_acls">
+<div class="edit_acls edit_form">
 	<h3>Access Settings</h3>
 	<div class="form_field">
 		<label>Published</label>

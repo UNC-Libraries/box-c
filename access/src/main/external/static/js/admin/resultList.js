@@ -25,6 +25,7 @@ require.config({
 		'AlertHandler' : 'squish',
 		'SearchMenu' : 'squish',
 		'ResultTableView' : 'squish',
+		'CreateContainerForm' : 'squish',
 		'detachplus' : 'admin/lib/jquery.detachplus',
 		
 		'StructureEntry' : 'squish',
@@ -32,6 +33,7 @@ require.config({
 		'URLUtilities' : 'squish',
 		
 		'editable' : 'jqueryui-editable.min',
+		'fileupload' : 'jquery.fileupload',
 		'moment' : 'moment.min'
 			
 			/*
@@ -63,13 +65,14 @@ require.config({
 		'qtip' : ['jquery'],
 		'adminCommon' : ['jquery'],
 		'editable' : ['jquery'],
+		'fileupload' : ['jquery'],
 		'underscore': {
 			exports: '_'
 		}
 	}
 });
 
-define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'SearchMenu'], function(module, $) {
+define('resultList', ['module', 'jquery', 'CreateContainerForm', 'AlertHandler', 'ResultTableView', 'SearchMenu'], function(module, $, CreateContainerForm) {
 	//console.profile();
 	var alertHandler = $("<div id='alertHandler'></div>");
 	alertHandler.alertHandler().appendTo(document.body).hide();
@@ -110,6 +113,13 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 		'resultUrl' : module.config().resultUrl,
 		'pagingActive' : module.config().pagingActive,
 		'container' : module.config().container
+	});
+	
+	var createContainerForm = new CreateContainerForm({
+		alertHandler : alertHandler
+	});
+	$("#add_menu").click(function(){
+		createContainerForm.open(module.config().container.id);
 	});
 	
 	

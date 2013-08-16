@@ -1,7 +1,8 @@
-<form name="create_container_form">
-	<h3>Create Container</h3>
+<link rel="stylesheet" type="text/css" href="/static/css/admin/admin_forms.css" />
+<iframe id="upload_create_container" name="upload_create_container" height="0" width="0" style="display: none;"></iframe>
+<form id="create_container_form" method="post" action="/services/rest/edit/create_container/<%= pid %>" enctype="multipart/form-data" class="edit_form" target="upload_create_container">
 	<div class="form_field">
-		<label>Name</label>
+		<label>Container Name</label>
 		<input name="name" size="40"></input>
 	</div>
 	<div class="form_field">
@@ -11,10 +12,12 @@
 			<option value="collection">Collection</option>
 		</select>
 	</div>
-	<p>Optional</p>
+	<h3>Optional</h3>
 	<div class="form_field">
-		<label>Description</label>
-		<input type="file" name="description"/>
+		<label>Description (MODS)</label>
+		<input type="file" name="description" accept="text/xml,application/xml"/>
 	</div>
-	<button type="button">Create</button>
+	<div class="update_field">
+		<input type="submit" id="create_container_button" class="update_button" value="Create" />
+	</div>
 </form>

@@ -273,9 +273,10 @@ public class BatchIngestTask implements Runnable {
 			if (this.sendEmailMessages && this.mailNotifier != null) {
 				this.mailNotifier.sendIngestFailureNotice(e, ingestProperties);
 				w.println("\nEMAIL NOTICE SENT TO ADMINS AND THESE OTHERS:");
-				for(String addy : this.ingestProperties.getEmailRecipients()) {
-					w.println(addy);
-				}
+				if (this.ingestProperties != null && this.ingestProperties.getEmailRecipients() != null) 
+					for(String addy : this.ingestProperties.getEmailRecipients()) {
+						w.println(addy);
+					}
 			}
 		} catch (IOException e1) {
 			throw new Error("Unexpected error", e1);

@@ -24,8 +24,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-public class IpRestrictingInterceptor extends HandlerInterceptorAdapter {
-	private static final Logger LOG = LoggerFactory.getLogger(IpRestrictingInterceptor.class);
+/**
+ * Restricts access to the API.
+ * 
+ * Currently based on either IP address or the user being logged in
+ *
+ */
+public class APIRestrictingInterceptor extends HandlerInterceptorAdapter {
+	private static final Logger LOG = LoggerFactory.getLogger(APIRestrictingInterceptor.class);
 	private Pattern allowRegEx = null;
 
 	public String getAllowRegEx() {
@@ -45,7 +51,8 @@ public class IpRestrictingInterceptor extends HandlerInterceptorAdapter {
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-		if (allowRegEx != null && allowRegEx.matcher(request.getRemoteAddr()).matches()) {
+		if (allowRegEx != null && allowRegEx.matcher(request.getRemoteAddr()).matches()
+				|| (request.getRemoteUser() != null && !"".equals(request.getRemoteUser().trim()))) {
 			return super.preHandle(request, response, handler);
 		} else {
 			LOG.warn("Access denied to " + request.getRequestURL().toString() + " from " + request.getRemoteAddr());
