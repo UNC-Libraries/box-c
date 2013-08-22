@@ -33,7 +33,6 @@ require.config({
 		'URLUtilities' : 'squish',
 		
 		'editable' : 'jqueryui-editable.min',
-		'fileupload' : 'jquery.fileupload',
 		'moment' : 'moment.min'
 			
 			/*

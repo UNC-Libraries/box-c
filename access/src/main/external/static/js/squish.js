@@ -890,7 +890,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		}
 	});
 });define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/createContainerForm', 
-		'ModalLoadingOverlay', 'fileupload'], 
+		'ModalLoadingOverlay'], 
 		function($, ui, _, RemoteStateChangeMonitor, createFormTemplate, ModalLoadingOverlay) {
 	
 	var defaultOptions = {};
