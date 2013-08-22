@@ -31,6 +31,12 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		$form.submit(function(){
 			if (submitted)
 				return false;
+			errors = self.validationErrors($form);
+			if (errors && errors.length > 0) {
+				self.options.alertHandler.alertHandler("error", errors);
+				return false;
+			}
+			
 			submitted = true;
 			overlay.show();
 		});
@@ -41,15 +47,15 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			try {
 				overlay.hide();
 				var response = JSON.parse(this.contentDocument.body.innerHTML);
+				var containerName = $("input[name='name']", $form).val();
 				if (response.error) {
 					if (self.options.alertHandler)
 						self.options.alertHandler.alertHandler("error", "An error occurred while creating container");
 					submitted = false;
 				} else if (response.pid) {
 					if (self.options.alertHandler) {
-						var name = $("#create_container_form input[name='name']").val();
 						var type = $("#create_container_form select").val();
-						self.options.alertHandler.alertHandler("success", "Created " + type + " " + name + ", refresh the page to view");
+						self.options.alertHandler.alertHandler("success", "Created " + type + " " + containerName + ", refresh the page to view");
 					}
 					overlay.close();
 					dialog.dialog("close");
@@ -82,6 +88,19 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			
 			//data.submit();
 		});*/
+	};
+	
+	CreateContainerForm.prototype.validationErrors = function($form) {
+		var errors = [];
+		var containerName = $("input[name='name']", $form).val(),
+		containerType = $("select", $form).val(),
+		description = $("input[type='file']", $form).val();
+		// Validate input
+		if (!containerName)
+			errors.push("You must specify a name for the folder");
+		if (containerType == "collection" && !description)
+			errors.push("A MODS description file must be provided when creating a collection");
+		return errors;
 	};
 	
 	return CreateContainerForm;

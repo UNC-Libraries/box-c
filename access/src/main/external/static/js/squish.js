@@ -563,8 +563,8 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 });define('AlertHandler', ['jquery', 'jquery-ui', 'qtip'], function($) {
 	$.widget("cdr.alertHandler", {
 		_create: function() {
-		    // Utilise delegate so we don't have to rebind for every qTip!
-		    $(document).delegate('.qtip.jgrowl', 'mouseover mouseout', this.timer);
+			// Utilise delegate so we don't have to rebind for every qTip!
+			$(document).delegate('.qtip.jgrowl', 'mouseover mouseout', this.timer);
 		},
 		
 		error: function(message) {
@@ -579,107 +579,117 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 			this.showAlert(message, "success");
 		},
 		
-		showAlert: function(message, type) {
+		showAlert: function(messages, type) {
+			if (!messages)
+				return;
+			if (messages instanceof Array) {
+				for (var index in messages)
+					this._renderAlert(messages[index], type);
+			} else {
+				this._renderAlert(messages, type);
+			}
+		},
+		
+		_renderAlert: function(message, type) {
 			var target = $('.qtip.jgrowl:visible:last');
 			var self = this;
 			
 			$(document.body).qtip({
-	            content: {
-	                text: message,
-	                title: {
-	                    text: "",
-	                    button: true
-	                }
-	            },
-	            position: {
-	                my: 'top right',
-	                at: (target.length ? 'bottom' : 'top') + ' right',
-	                target: target.length ? target : $(window),
-	                adjust: { 'y': 10, 'x' : target.length ? 0 : -5 },
-	                effect: function(api, newPos) {
-	                    $(this).animate(newPos, {
-	                        duration: 200,
-	                        queue: false
-	                    });
-	                    api.cache.finalPos = newPos; 
-	                }
-	            },
-	            show: {
-	                event: false,
-	                // Don't show it on a regular event
-	                ready: true,
-	                // Show it when ready (rendered)
-	                effect: function() {
-	                    $(this).stop(0, 1).fadeIn(400);
-	                },
-	                // Matches the hide effect
-	                delay: 0,
-	                persistent: false
-	            },
-	            hide: {
-	                event: false,
-	                // Don't hide it on a regular event
-	                effect: function(api) {
-	                    // Do a regular fadeOut, but add some spice!
-	                    $(this).stop(0, 1).fadeOut(400).queue(function() {
-	                        // Destroy this tooltip after fading out
-	                        api.destroy();
-	 
-	                        // Update positions
-	                        self.updateGrowls();
-	                    });
-	                }
-	            },
-	            style: {
-	                classes: 'jgrowl qtip-admin qtip-rounded alert-' + type,
-	                tip: false
-	            },
-	            events: {
-	                render: function(event, api) {
-	                    // Trigger the timer (below) on render
-	                    self.timer.call(api.elements.tooltip, event);
-	                }
-	            }
+					content: {
+						text: message,
+						title: {
+							text: "",
+							button: true
+						}
+					},
+					position: {
+						my: 'top right',
+						at: (target.length ? 'bottom' : 'top') + ' right',
+						target: target.length ? target : $(window),
+						adjust: { 'y': 10, 'x' : target.length ? 0 : -5 },
+						effect: function(api, newPos) {
+							$(this).animate(newPos, {
+									duration: 200,
+									queue: false
+							});
+							api.cache.finalPos = newPos; 
+						}
+					},
+					show: {
+						event: false,
+						// Don't show it on a regular event
+						ready: true,
+						// Show it when ready (rendered)
+						effect: function() {
+							$(this).stop(0, 1).fadeIn(400);
+						},
+						// Matches the hide effect
+						delay: 0,
+						persistent: false
+					},
+					hide: {
+						event: false,
+						// Don't hide it on a regular event
+						effect: function(api) {
+							// Do a regular fadeOut, but add some spice!
+							$(this).stop(0, 1).fadeOut(400).queue(function() {
+							// Destroy this tooltip after fading out
+							api.destroy();
+							// Update positions
+							self.updateGrowls();
+						});
+					}
+				},
+				style: {
+					classes: 'jgrowl qtip-admin qtip-rounded alert-' + type,
+					tip: false
+				},
+				events: {
+					render: function(event, api) {
+						// Trigger the timer (below) on render
+						self.timer.call(api.elements.tooltip, event);
+					}
+				}
 			}).removeData('qtip');
 		},
 		
 		updateGrowls : function() {
-	        // Loop over each jGrowl qTip
-	        var each = $('.qtip.jgrowl'),
-	            width = each.outerWidth(),
-	            height = each.outerHeight(),
-	            gap = each.eq(0).qtip('option', 'position.adjust.y'),
-	            pos;
+			// Loop over each jGrowl qTip
+			var each = $('.qtip.jgrowl'),
+				width = each.outerWidth(),
+				height = each.outerHeight(),
+				gap = each.eq(0).qtip('option', 'position.adjust.y'),
+				pos;
 	 
-	        each.each(function(i) {
-	            var api = $(this).data('qtip');
+			each.each(function(i) {
+				var api = $(this).data('qtip');
 	 
-	            // Set target to window for first or calculate manually for subsequent growls
-	            api.options.position.target = !i ? $(window) : [
-	                pos.left + width, pos.top + (height * i) + Math.abs(gap * (i-1))
-	            ];
-	            api.set('position.at', 'top right');
-	            
-	            // If this is the first element, store its finak animation position
-	            // so we can calculate the position of subsequent growls above
-	            if(!i) { pos = api.cache.finalPos; }
-	        });
-	    },
+				// Set target to window for first or calculate manually for subsequent growls
+				api.options.position.target = !i ? $(window) : [
+					pos.left + width, pos.top + (height * i) + Math.abs(gap * (i-1))
+				];
+				api.set('position.at', 'top right');
+				
+				// If this is the first element, store its finak animation position
+				// so we can calculate the position of subsequent growls above
+				if(!i) { pos = api.cache.finalPos; }
+			});
+		},
 		
 		// Setup our timer function
-	    timer : function(event) {
-	        var api = $(this).data('qtip'),
-	            lifespan = 5000;
-	        
-	        // If persistent is set to true, don't do anything.
-	        if (api.get('show.persistent') === true) { return; }
+		timer : function(event) {
+			var api = $(this).data('qtip'),
+				lifespan = 5000;
+			
+			// If persistent is set to true, don't do anything.
+			if (api.get('show.persistent') === true) { return; }
 	 
-	        // Otherwise, start/clear the timer depending on event type
-	        clearTimeout(api.timer);
-	        if (event.type !== 'mouseover') {
-	            api.timer = setTimeout(api.hide, lifespan);
-	        }
-	    }
+			// Otherwise, start/clear the timer depending on event type
+			clearTimeout(api.timer);
+			if (event.type !== 'mouseover') {
+				api.timer = setTimeout(api.hide, lifespan);
+			}
+		}
 	});
 });define('BatchCallbackButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], function($, ui, ResultObjectList) {
 	$.widget("cdr.batchCallbackButton", $.cdr.ajaxCallbackButton, {
@@ -902,8 +912,6 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 	CreateContainerForm.prototype.open = function(pid) {
 		var self = this, formContents = createFormTemplate({pid : pid});
 		
-		
-		
 		var dialog = $("<div class='containingDialog'>" + formContents + "</div>");
 		dialog.dialog({
 			autoOpen: true,
@@ -924,6 +932,12 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		$form.submit(function(){
 			if (submitted)
 				return false;
+			errors = self.validationErrors($form);
+			if (errors && errors.length > 0) {
+				self.options.alertHandler.alertHandler("error", errors);
+				return false;
+			}
+			
 			submitted = true;
 			overlay.show();
 		});
@@ -934,15 +948,15 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			try {
 				overlay.hide();
 				var response = JSON.parse(this.contentDocument.body.innerHTML);
+				var containerName = $("input[name='name']", $form).val();
 				if (response.error) {
 					if (self.options.alertHandler)
 						self.options.alertHandler.alertHandler("error", "An error occurred while creating container");
 					submitted = false;
 				} else if (response.pid) {
 					if (self.options.alertHandler) {
-						var name = $("#create_container_form input[name='name']").val();
 						var type = $("#create_container_form select").val();
-						self.options.alertHandler.alertHandler("success", "Created " + type + " " + name + ", refresh the page to view");
+						self.options.alertHandler.alertHandler("success", "Created " + type + " " + containerName + ", refresh the page to view");
 					}
 					overlay.close();
 					dialog.dialog("close");
@@ -975,6 +989,19 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			
 			//data.submit();
 		});*/
+	};
+	
+	CreateContainerForm.prototype.validationErrors = function($form) {
+		var errors = [];
+		var containerName = $("input[name='name']", $form).val(),
+		containerType = $("select", $form).val(),
+		description = $("input[type='file']", $form).val();
+		// Validate input
+		if (!containerName)
+			errors.push("You must specify a name for the folder");
+		if (containerType == "collection" && !description)
+			errors.push("A MODS description file must be provided when creating a collection");
+		return errors;
 	};
 	
 	return CreateContainerForm;
