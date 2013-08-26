@@ -17,7 +17,7 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 				heightStyle: "content",
 				collapsible: true,
 				active: false,
-				activate: function(event, ui) {
+				beforeActivate: function(event, ui) {
 					if (ui.newPanel.attr('data-href') != null && !ui.newPanel.data('contentLoaded')) {
 						var isStructureBrowse = (ui.newPanel.attr('id') == "structure_facet");
 						$.ajax({
@@ -40,10 +40,9 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 								ui.newPanel.data('contentLoaded', true);
 							}
 						});
-						
 					}
 				}
-			}).accordion('activate', 0);
+			}).accordion('option', 'active', 0);
 			
 			this.element.resizable({
 				handles: 'e',

@@ -1,116 +1,117 @@
-define('BatchCallbackButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObjectList' ], function($, ui, ResultObjectList) {
-	$.widget("cdr.batchCallbackButton", $.cdr.ajaxCallbackButton, {
-		options : {
+define('BatchCallbackButton', [ 'jquery', 'AjaxCallbackButton', 'ResultObjectList' ], function($, AjaxCallbackButton, ResultObjectList) {
+	function BatchCallbackButton(options, element) {
+		this._create(options, element);
+	};
+	
+	BatchCallbackButton.prototype.constructor = BatchCallbackButton;
+	BatchCallbackButton.prototype = Object.create( AjaxCallbackButton.prototype );
+	
+	var defaultOptions = {
 			resultObjectList : undefined,
 			followupPath: "services/rest/item/solrRecord/version",
 			childWorkLinkName : undefined,
 			workFunction : undefined,
 			followupFunction : undefined,
 			completeFunction : undefined 
-		},
+		};
 
-		_create : function() {
-			$.cdr.ajaxCallbackButton.prototype._create.apply(this, arguments);
+	BatchCallbackButton.prototype._create = function(options, element) {
+		var merged = $.extend({}, defaultOptions, options);
+		merged.workDone = this.workDone;
+		merged.followup = this.followup;
+		merged.completeTarget = this;
+		AjaxCallbackButton.prototype._create.call(this, merged, element);
+		this.followupMonitor.options.checkStatusAjax.type = 'POST';
+	};
 
-			this.options.workDone = this.workDone;
-			this.options.followup = this.followup;
-			this.options.completeTarget = this;
-		},
+	BatchCallbackButton.prototype.doWork = function() {
+		this.disable();
+		this.targetIds = this.getTargetIds();
 		
-		_init : function() {
-			$.cdr.ajaxCallbackButton.prototype._init.apply(this, arguments);
-			
-			this.followupMonitor.options.checkStatusAjax.type = 'POST';
-		},
+		for (var index in this.targetIds) {
+			var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
+			resultObject.disable();
+			if (this.options.workFunction)
+				if ($.isFunction(this.options.workFunction))
+					this.options.workFunction.call(resultObject);
+				else
+					resultObject[this.options.workFunction]();
+		}
+		
+		var self = this;
+		if (this.targetIds.length > 0) {
+			this.performWork($.post, {
+				'ids' : self.targetIds.join('\n')
+			});
+		} else {
+			this.enable();
+		}
+	};
 
-		doWork : function() {
-			this.disable();
-			this.targetIds = this.getTargetIds();
-			
-			for (var index in this.targetIds) {
-				var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
-				resultObject.disable();
-				if (this.options.workFunction)
-					if ($.isFunction(this.options.workFunction))
-						this.options.workFunction.call(resultObject);
+	BatchCallbackButton.prototype.workDone = function(data) {
+		if ($.isArray(data)) {
+			this.followupObjects = [];
+			for (var index in data) {
+				var id = data[index].pid;
+				this.followupObjects.push(id);
+				if (this.options.workFunction) {
+					var resultObject = this.options.resultObjectList.resultObjects[id];
+					if ($.isFunction(this.options.followupFunction))
+						this.options.followupFunction.call(resultObject);
 					else
-						resultObject[this.options.workFunction]();
-			}
-			
-			var self = this;
-			if (this.targetIds.length > 0) {
-				this.performWork($.post, {
-					'ids' : self.targetIds.join('\n')
-				});
-			} else {
-				this.enable();
-			}
-		},
-
-		workDone : function(data) {
-			if ($.isArray(data)) {
-				this.followupObjects = [];
-				for (var index in data) {
-					var id = data[index].pid;
-					this.followupObjects.push(id);
-					if (this.options.workFunction) {
-						var resultObject = this.options.resultObjectList.resultObjects[id];
-						if ($.isFunction(this.options.followupFunction))
-							this.options.followupFunction.call(resultObject);
-						else
-							resultObject[this.options.followupFunction]();
-					}
-				}
-				this.followupMonitor.pingData = {
-						'ids' : this.followupObjects.join('\n')
-				}; 
-				return true;
-			} else
-				alert("Error while attempting to perform action: " + data);
-			return false;
-		},
-
-		followup : function(data) {
-			for (var id in data) {
-				if (this.options.resultObjectList.resultObjects[id].updateVersion(data[id])) {
-					var index = $.inArray(id, this.followupObjects);
-					if (index != -1) {
-						this.followupObjects.splice(index, 1);
-						
-						var resultObject = this.options.resultObjectList.resultObjects[id];
-						resultObject.setState("idle");
-						
-						if (this.options.completeFunction) {
-							if ($.isFunction(this.options.completeFunction))
-								this.options.completeFunction.call(resultObject);
-							else
-								resultObject.resultObject(this.options.completeFunction);
-						}
-					}
+						resultObject[this.options.followupFunction]();
 				}
 			}
 			this.followupMonitor.pingData = {
 					'ids' : this.followupObjects.join('\n')
 			}; 
-			return this.followupObjects.length == 0;
-		},
-		
-		completeState : function(id) {
-			this.targetIds = null;
-			this.enable();
-		},
+			return true;
+		} else
+			alert("Error while attempting to perform action: " + data);
+		return false;
+	};
 
-		getTargetIds : function() {
-			var targetIds = [];
-
-			$.each(this.options.resultObjects, function() {
-				var resultObject = this;
-				if (this.isSelected()) {
-					targetIds.push(resultObject.getPid());
+	BatchCallbackButton.prototype.followup = function(data) {
+		for (var id in data) {
+			if (this.options.resultObjectList.resultObjects[id].updateVersion(data[id])) {
+				var index = $.inArray(id, this.followupObjects);
+				if (index != -1) {
+					this.followupObjects.splice(index, 1);
+					
+					var resultObject = this.options.resultObjectList.resultObjects[id];
+					resultObject.setState("idle");
+					
+					if (this.options.completeFunction) {
+						if ($.isFunction(this.options.completeFunction))
+							this.options.completeFunction.call(resultObject);
+						else
+							resultObject.resultObject(this.options.completeFunction);
+					}
 				}
-			});
-
-			return targetIds;
+			}
 		}
-	});
+		this.followupMonitor.pingData = {
+				'ids' : this.followupObjects.join('\n')
+		}; 
+		return this.followupObjects.length == 0;
+	};
+	
+	BatchCallbackButton.prototype.completeState = function(id) {
+		this.targetIds = null;
+		this.enable();
+	};
+
+	BatchCallbackButton.prototype.getTargetIds = function() {
+		var targetIds = [];
+
+		$.each(this.options.resultObjects, function() {
+			var resultObject = this;
+			if (this.isSelected()) {
+				targetIds.push(resultObject.getPid());
+			}
+		});
+
+		return targetIds;
+	};
+	return BatchCallbackButton;
 });

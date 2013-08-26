@@ -1,5 +1,5 @@
-define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'AlertHandler', 
-         'editable', 'moment', 'qtip', 'ConfirmationDialog'], function($, ui, ModalLoadingOverlay) {
+define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'ConfirmationDialog', 'AlertHandler', 
+         'editable', 'moment', 'qtip'], function($, ui, ModalLoadingOverlay, ConfirmationDialog) {
 	$.widget("cdr.editAccessControlForm", {
 		_create : function() {
 			var self = this;
@@ -137,10 +137,8 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 			});
 			
 			if (this.options.containingDialog) {
-				
 				containing.data('can-close', false);
-				var closeButton = $(containing.prev().find(".ui-dialog-titlebar-close")[0]);
-				closeButton.confirmationDialog({
+				var confirmationDialog = new ConfirmationDialog({
 					'promptText' : 'There are unsaved access control changes, close without saving?',
 					'confirmFunction' : function() {
 						containing.data('can-close', true);
@@ -150,13 +148,16 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 					'dialogOptions' : {
 						modal : true,
 						minWidth : 200,
-						maxWidth : 400
+						maxWidth : 400,
+						position : {
+							at : "center center"
+						}
 					}
 				});
 				
 				containing.on('dialogbeforeclose', function(){
 					if (!containing.data('can-close') && self.isDocumentChanged()) {
-						closeButton.confirmationDialog('open');
+						confirmationDialog.open();
 						return false;
 					} else {
 						return true;

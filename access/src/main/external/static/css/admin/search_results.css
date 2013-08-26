@@ -323,6 +323,7 @@ colgroup > .date_added, .column_headers > .date_added > a {
 /** Action menus */
 .action_menu {
 	margin-bottom: 0px;
+	position: absolute!important;
 }
 
 .action_menu > li {
@@ -331,6 +332,7 @@ colgroup > .date_added, .column_headers > .date_added > a {
 	margin-bottom: 0px;
 	text-indent: 0px;
 	padding: 5px;
+	height: 17px;
 }
 
 .action_menu > li:hover {

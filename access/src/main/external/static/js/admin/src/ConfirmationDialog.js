@@ -20,32 +20,37 @@
  */
 define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor'], function(
 		$, ui, PID, RemoteStateChangeMonitor) {
-	$.widget("cdr.confirmationDialog", {
+	function ConfirmationDialog(options) {
+		this._create(options);
+	};
+	
+	$.extend(ConfirmationDialog.prototype, {
 		options : {
 			'promptText' : 'Are you sure?',
 			'confirmFunction' : undefined,
 			'confirmTarget' : undefined,
 			'confirmText' : 'Yes',
 			'cancelText' : 'Cancel',
-			'dialogOptions' : {
-				modal : false,
-				minHeight : 60,
-				autoOpen : false,
-				resizable : false,
-				dialogClass : "no_titlebar confirm_dialog",
-				position : {
-					my : "right top",
-					at : "right bottom"
-				},
-			},
 			'solo' : true
 		},
 		
-		_create : function() {
+		dialogOptions : {
+			modal : false,
+			minHeight : 60,
+			autoOpen : false,
+			resizable : false,
+			dialogClass : "no_titlebar confirm_dialog",
+			position : {
+				my : "right top",
+				at : "right bottom"
+			}
+		},
+		
+		_create : function(options) {
+			$.extend(this.options, options);
+			if ('dialogOptions' in this.options)
+				$.extend(this.dialogOptions, this.options.dialogOptions);
 			var self = this;
-			
-			if (this.options.dialogOptions.position.of == undefined)
-				this.options.dialogOptions.position.of = this.element;
 			
 			this.confirmDialog = $("<div class='confirm_dialogue'></div>");
 			if (this.options.promptText === undefined) {
@@ -68,7 +73,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 				$(this).dialog("close");
 			};
 			
-			var dialogOptions = $.extend({}, this.options.dialogOptions, {
+			$.extend(this.dialogOptions, {
 				open : function() {
 					if (self.options.solo) {
 						$.each($('div.ui-dialog-content'), function (i, e) {
@@ -79,7 +84,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 				},
 				buttons : buttonsObject
 			});
-			this.confirmDialog.dialog(dialogOptions);
+			this.confirmDialog.dialog(this.dialogOptions);
 		},
 		
 		open : function () {
@@ -90,4 +95,5 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			this.confirmDialog.dialog('close');
 		}
 	});
+	return ConfirmationDialog;
 });

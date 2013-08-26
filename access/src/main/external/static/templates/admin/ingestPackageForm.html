@@ -1,0 +1,20 @@
+<link rel="stylesheet" type="text/css" href="/static/css/admin/admin_forms.css" />
+<iframe id="upload_package_deposit" name="upload_package_deposit" height="0" width="0" style="display: none;"></iframe>
+<form id="ingest_package_form" method="post" action="/services/sword/collection/<%= pid %>" enctype="multipart/form-data" class="edit_form" target="upload_package_deposit">
+	<div class="form_field">
+		<label>Ingest Package</label>
+		<input type="file" id="ingest_package_file" name="package"/>
+	</div>
+	<div class="form_field">
+		<label>Package Type</label>
+		<select name="type">
+			<option value="cdr_mets">CDR METS file</option>
+			<option value="bag">Bagit File</option>
+		</select>
+	</div>
+	<div class="update_field">
+		<input type="submit" id="ingest_package_button" class="update_button" value="Ingest" />
+	</div>
+	<div class="errors">
+	</div>
+</form>

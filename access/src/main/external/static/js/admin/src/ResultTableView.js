@@ -1,5 +1,7 @@
-define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'ParentResultObject', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'detachplus'], 
-		function($, ui, ResultObjectList, URLUtilities, ParentResultObject) {
+define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'ParentResultObject', 'AddMenu', 
+		'ResultObjectActionMenu', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'detachplus'], 
+		function($, ui, ResultObjectList, URLUtilities, ParentResultObject, AddMenu, ResultObjectActionMenu,
+				PublishBatchButton, UnpublishBatchButton, DeleteBatchButton) {
 	$.widget("cdr.resultTableView", {
 		options : {
 			enableSort : true,
@@ -21,13 +23,19 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			if (this.options.container) {
 				this.containerObject = new ParentResultObject({metadata : this.options.container, 
 						resultObjectList : this.resultObjectList, element : $(".container_entry")});
+				this._initializeAddMenu();
 			}
 			//this.$resultTable.children('tbody').append(fragment);
+			
 			
 			if (this.options.enableSort)
 				this._initSort();
 			this._initBatchOperations();
 			this._initEventHandlers();
+			this.actionMenu = new ResultObjectActionMenu({
+				selector : ".action_gear",
+				containerSelector : ".res_entry,.container_entry"
+			});
 			//this._initReordering();
 		},
 		
@@ -227,7 +235,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				}
 			}).children("input").prop("checked", false);
 			
-			$(".publish_selected", self.element).publishBatchButton({
+			var publishButton = $(".publish_selected", self.element);
+			var publishBatch = new PublishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 						this.setStatusText('Publishing...');
@@ -239,8 +248,12 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				'completeFunction' : function(){
 					this.refresh(true);
 				}
+			}, publishButton);
+			publishButton.click(function(){
+				publishBatch.activate();
 			});
-			$(".unpublish_selected", self.element).unpublishBatchButton({
+			var unpublishButton = $(".unpublish_selected", self.element);
+			var unpublishBatch = new UnpublishBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 						this.setStatusText('Unpublishing...');
@@ -252,8 +265,12 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				'completeFunction' : function(){
 					this.refresh(true);
 				}
+			}, unpublishButton);
+			unpublishButton.click(function(){
+				unpublishBatch.activate();
 			});
-			$(".delete_selected", self.element).deleteBatchButton({
+			var deleteButton = $(".delete_selected", self.element);
+			var deleteBatch = new DeleteBatchButton({
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 						this.setStatusText('Deleting...');
@@ -263,23 +280,27 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						this.setStatusText('Cleaning up...');
 					}, 
 				'completeFunction' : 'deleteElement'
+			}, deleteButton);
+			deleteButton.click(function(){
+				deleteBatch.activate();
 			});
 		},
 		
 		_initEventHandlers : function() {
 			var self = this;
-			this.$resultTable.on('click', ".action_gear", function(e){
-				$(this).parents(".res_entry").data('resultObject').activateActionMenu();
+			/*this.$resultTable.on('click', ".action_gear", function(e){
+				var $menuIcon = $(this);
+				self.actionMenu.show($(this).parents(".res_entry").data('resultObject'), $menuIcon);
 				e.stopPropagation();
 			});
 			if (this.containerObject)
 				this.containerObject.element.on('click', ".action_gear", function(e){
 					self.containerObject.activateActionMenu();
 					e.stopPropagation();
-				});
-			this.$resultTable.on('click', ".res_entry", function(e){
+				});*/
+			$(document).on('click', ".res_entry", function(e){
 				$(this).data('resultObject').toggleSelect();
-				e.stopPropagation();
+				//e.stopPropagation();
 			});
 			this.$resultTable.on('click', ".res_entry a", function(e){
 				e.stopPropagation();
@@ -351,6 +372,13 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			} else {
 				$("th.sort_col").addClass("sorting");
 			}
+		},
+		
+		_initializeAddMenu : function() {
+			var $addMenuButton = $("#add_menu", this.element);
+			this.addMenu = new AddMenu($addMenuButton, {
+				container : this.options.container
+			});
 		}
 	});
 });
