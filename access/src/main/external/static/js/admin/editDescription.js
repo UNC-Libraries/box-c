@@ -1,38 +1,27 @@
 require.config({
-	baseUrl: '/static/js/',
+	baseUrl: '../../static/js/',
 	paths: {
 		'jquery' : 'jquery.min',
 		'jquery-ui' : 'jquery-ui.min',
-		'PID' : 'admin/src/PID',
 		'text' : 'xmleditor/lib/text',
-		'jquery-xmlns' : 'xmleditor/lib/jquery.xmlns',
-		'expanding' : 'expanding',
+		'autosize' : 'xmleditor/lib/jquery.autosize-min',
 		'json2' : 'xmleditor/lib/json2',
 		'cycle' : 'xmleditor/lib/cycle',
 		'ace' : 'xmleditor/lib/ace/src-min/ace',
 		'vkbeautify' : 'xmleditor/lib/vkbeautify',
-		'mods-schema' : '/static/schemas/mods-3-4/mods-3-4',
 		'xmleditor' : 'xmleditor/jquery.xmleditor'
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
-		'qtip' : ['jquery'],
-		'adminCommon' : ['jquery'],
-		'jquery-xmlns' : ['jquery'],
-		'mods-schema' : {
-			exports : 'Mods'
-		},
 		'ace' : ['jquery'],
-		'xmleditor' : ['jquery', 'jquery-xmlns', 'text', 'expanding', 'json2', 'cycle', 'ace', 'vkbeautify', 'mods-schema']
+		'autosize' : ['jquery'],
+		'xmleditor' : ['jquery', 'jquery-ui', 'text', 'autosize', 'json2', 'cycle', 'ace', 'vkbeautify']
 	}
 });
 
-define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'PID', 'mods-schema', 'xmleditor'], function(module, $, ui, ace, PID, Mods) {
+define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'], function(module, $, ui, ace) {
 	var resultObject = module.config().resultObject;
 	var originalUrl = module.config().originalUrl;
-	
-	var pid = new PID(resultObject.id);
-	
 	var menuEntries = (originalUrl)? [{
 		insertPath : ["View"],
 		label : 'View original document',
@@ -47,13 +36,13 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'PID', 'mods-
 	}]: null;
 	
 	$("#xml_editor").xmlEditor({
-		schemaObject : Mods,
+		schema : "../../../static/schemas/mods-3-4/mods.json",
 		ajaxOptions : {
-			xmlRetrievalPath : "/admin/" + pid.getPath() + "/mods",
-			xmlRetrievalParams : {'pid' : pid.getPid()},
-			xmlUploadPath : "/admin/describe/" + pid.getPath()
+			xmlRetrievalPath : "/admin/" + resultObject.id.replace(':', '/') + "/mods",
+			xmlUploadPath : "/admin/describe/" + resultObject.id.replace(':', '/')
 		},
-		'menuEntries': menuEntries
+		libPath : "../../../static/js/xmleditor/lib/",
+		menuEntries: menuEntries
 	});
 	$(window).resize();
 });
