@@ -280,6 +280,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 
 	ResultObject.prototype.deleteElement = function() {
 		var obj = this;
+		if (this.overlay)
+			this.overlay.close();
 		obj.element.hide(obj.options.animateSpeed, function() {
 			obj.element.remove();
 			if (obj.options.resultObjectList) {

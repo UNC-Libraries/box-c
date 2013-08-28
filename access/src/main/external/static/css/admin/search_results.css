@@ -346,6 +346,16 @@ colgroup > .date_added, .column_headers > .date_added > a {
 	display: none;
 }
 
+/** Ingest to container menu */
+.add_to_container_menu {
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.add_to_container_menu li {
+	padding: 6px;
+}
+
 /** Drag( acti)ons */
 .drop_active.item_title {
 	border: 1px dashed #59AACE;

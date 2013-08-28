@@ -360,6 +360,7 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 		$.contextMenu({
 			selector: this.options.selector,
 			trigger: 'left',
+			className: 'add_to_container_menu', 
 			events : {
 				show: function() {
 					this.addClass("active");
@@ -2286,6 +2287,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 
 	ResultObject.prototype.deleteElement = function() {
 		var obj = this;
+		if (this.overlay)
+			this.overlay.close();
 		obj.element.hide(obj.options.animateSpeed, function() {
 			obj.element.remove();
 			if (obj.options.resultObjectList) {

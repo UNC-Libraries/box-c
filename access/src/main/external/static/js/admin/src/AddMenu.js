@@ -31,6 +31,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		$.contextMenu({
 			selector: this.options.selector,
 			trigger: 'left',
+			className: 'add_to_container_menu', 
 			events : {
 				show: function() {
 					this.addClass("active");
