@@ -11,6 +11,11 @@
 	margin-bottom: 10px;
 }
 
+.edit_form .file_info {
+	margin-left: 190px;
+	color: #777799;
+}
+
 .edit_form h3 {
 	font-size: 85%;
 	font-weight: bold;
@@ -62,6 +67,15 @@
 	color: #0A5274;
 	border-bottom: 1px dashed #0A5274;
 	cursor: pointer;
+}
+
+.edit_form .errors {
+	display: none;
+}
+
+.edit_form .error_stack {
+	white-space: pre;
+	text-align: left;
 }
 
 /** Edit ACL */

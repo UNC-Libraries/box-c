@@ -93,8 +93,8 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	CreateContainerForm.prototype.validationErrors = function($form) {
 		var errors = [];
 		var containerName = $("input[name='name']", $form).val(),
-		containerType = $("select", $form).val(),
-		description = $("input[type='file']", $form).val();
+			containerType = $("select", $form).val(),
+			description = $("input[type='file']", $form).val();
 		// Validate input
 		if (!containerName)
 			errors.push("You must specify a name for the folder");

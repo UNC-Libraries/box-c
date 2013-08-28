@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../templates/admin/actionMenu', 'DeleteObjectButton', 'PublishObjectButton', 'contextMenu'],
-		function($, ui, _, actionMenuTemplate, DeleteObjectButton, PublishObjectButton) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 'PublishObjectButton', 'contextMenu'],
+		function($, ui, DeleteObjectButton, PublishObjectButton) {
 	
 	function ResultObjectActionMenu(options) {
 		this.create(options);
@@ -18,6 +18,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../
 				hide: function() {
 					this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear.png");
 				}
+			},
+			position : function(options, x, y) {
+				options.$menu.position({
+					my : "right top",
+					at : "right bottom",
+					of : options.$trigger
+				});
 			},
 			build: function($trigger, e) {
 				var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');

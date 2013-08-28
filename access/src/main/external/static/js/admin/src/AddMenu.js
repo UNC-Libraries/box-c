@@ -1,58 +1,62 @@
-define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../templates/admin/addMenu', 'CreateContainerForm', 'IngestPackageForm', 'qtip'],
-		function($, ui, _, addMenuTemplate, CreateContainerForm, IngestPackageForm) {
+define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 'IngestPackageForm', 'qtip'],
+		function($, ui, _, CreateContainerForm, IngestPackageForm) {
 	
-	function AddMenu($menuButton, options) {
-		this.$menuButton = $menuButton;
+	function AddMenu(options) {
 		this.options = $.extend({}, options);
 		this.init();
 	};
 	
+	AddMenu.prototype.getMenuItems = function() {
+		var items = {};
+		if ($.inArray('addRemoveContents', this.options.container.permissions) == -1)
+			return items;
+		items["addContainer"] = {name : "Add container"};
+		items["ingestPackage"] = {name : "Ingest Package"};
+		return items;
+	};
+	
 	AddMenu.prototype.init = function() {
-		//var $addMenuButton = $("#add_menu", this.element);
-		this.$addMenu = $(addMenuTemplate());
 		var self = this;
 		
-		// Set up the dropdown menu
-		this.$menuButton.qtip({
-			content: self.$addMenu,
-			position: {
-				at: "bottom right",
-				my: "top right"
-			},
-			style: {
-				classes: 'qtip-light',
-				tip: false
-			},
-			show: {
-				event: 'click',
-				delay: 0
-			},
-			hide: {
-				delay: 2000,
-				event: 'unfocus mouseleave click',
-				fixed: true, // Make sure we can interact with the qTip by setting it as fixed
-				effect: function(offset) {
-					$(this).fadeOut(100);
-				}
-			}
-		});
-		
-		this.$addMenu.children().click(function(){
-			this.$menuButton.qtip('hide');
-		});
-		
+		var items = self.getMenuItems();
+		if (items.length == 0)
+			return;
 		var createContainerForm = new CreateContainerForm({
-			alertHandler : self.options.alertHandler
+			alertHandler : this.options.alertHandler
 		});
 		var ingestPackageForm = new IngestPackageForm({
-			alertHandler : self.options.alertHandler
-		});
-		this.$addMenu.children(".add_container_link").click(function(){
-			createContainerForm.open(self.options.container.id);
+			alertHandler : this.options.alertHandler
 		});
 		
-		this.$addMenu.children(".ingest_package_link").click(function(){
-			ingestPackageForm.open(self.options.container.id);
+		$.contextMenu({
+			selector: this.options.selector,
+			trigger: 'left',
+			events : {
+				show: function() {
+					this.addClass("active");
+				},
+				hide: function() {
+					this.removeClass("active");
+				}
+			},
+			items: items,
+			callback : function(key, options) {
+				switch (key) {
+					case "addContainer" :
+						createContainerForm.open(self.options.container.id);
+						break;
+					case "ingestPackage" :
+						ingestPackageForm.open(self.options.container.id);
+						break;
+				}
+			},
+			position : function(options, x, y) {
+				options.$menu.position({
+					my : "right top",
+					at : "right bottom",
+					of : options.$trigger
+				});
+			}
 		});
 	};
 	

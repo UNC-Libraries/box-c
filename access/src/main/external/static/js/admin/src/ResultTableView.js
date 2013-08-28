@@ -375,9 +375,10 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		},
 		
 		_initializeAddMenu : function() {
-			var $addMenuButton = $("#add_menu", this.element);
-			this.addMenu = new AddMenu($addMenuButton, {
-				container : this.options.container
+			this.addMenu = new AddMenu({
+				container : this.options.container,
+				selector : "#add_menu",
+				alertHandler : this.options.alertHandler
 			});
 		}
 	});

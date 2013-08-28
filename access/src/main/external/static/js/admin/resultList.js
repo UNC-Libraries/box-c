@@ -117,7 +117,8 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 		'metadataObjects' : module.config().metadataObjects,
 		'resultUrl' : module.config().resultUrl,
 		'pagingActive' : module.config().pagingActive,
-		'container' : module.config().container
+		'container' : module.config().container,
+		alertHandler : alertHandler
 	});
 	
 	//console.profileEnd();

@@ -15,9 +15,8 @@
     limitations under the License.
 
  */
-define('ParentResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/actionMenu', 
-		'ModalLoadingOverlay', 'ResultObject', 'DeleteObjectButton',	'PublishObjectButton', 'EditAccessControlForm'], 
-		function($, ui, _, RemoteStateChangeMonitor, actionMenuTemplate, ModalLoadingOverlay, ResultObject) {
+define('ParentResultObject', [ 'jquery', 'ResultObject'], 
+		function($, ResultObject) {
 	
 	function ParentResultObject(options) {
 		ResultObject.call(this, options);
