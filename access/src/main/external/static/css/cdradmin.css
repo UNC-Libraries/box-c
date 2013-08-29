@@ -312,6 +312,7 @@
 
 .confirm_dialog {
 	font-size: 12px;
+	z-index: 10001;
 }
 
 .confirm_dialog .ui-dialog-content {

@@ -243,9 +243,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		if ("idle" == state || "failed" == state) {
 			this.enable();
 			this.element.removeClass("followup working").addClass("idle");
-			this.updateOverlay('hide');
+			this.updateOverlay('close');
 		} else if ("working" == state) {
-			this.updateOverlay('show');
+			this.updateOverlay('open');
 			this.disable();
 			this.element.switchClass("idle followup", "working", this.options.animateSpeed);
 		} else if ("followup" == state) {
@@ -281,7 +281,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	ResultObject.prototype.deleteElement = function() {
 		var obj = this;
 		if (this.overlay)
-			this.overlay.close();
+			this.overlay.remove();
 		obj.element.hide(obj.options.animateSpeed, function() {
 			obj.element.remove();
 			if (obj.options.resultObjectList) {
@@ -316,7 +316,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	};
 	
 	ResultObject.prototype.refresh = function(immediately) {
-		this.updateOverlay('show');
+		this.updateOverlay('open');
 		this.setStatusText('Refreshing...');
 		if (immediately) {
 			this.refreshData(true);
@@ -351,11 +351,11 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				if (self.overlay)
 					self.overlay.element = self.element;
 				if (clearOverlay)
-					self.updateOverlay("hide");
+					self.updateOverlay("close");
 			},
 			error : function(a, b, c) {
 				if (clearOverlay)
-					self.updateOverlay("hide");
+					self.updateOverlay("close");
 				console.log(c);
 			}
 		});

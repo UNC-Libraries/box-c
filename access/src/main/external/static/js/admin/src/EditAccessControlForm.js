@@ -122,7 +122,7 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 					data : self.xml2Str(self.accessControlModel),
 					success : function(data) {
 						containing.data('can-close', true);
-						overlay.close();
+						overlay.remove();
 						if (self.options.containingDialog != null) {
 							self.options.containingDialog.dialog('close');
 						}
@@ -130,7 +130,7 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 						$("#res_" + self.options.pid.substring(self.options.pid.indexOf(':') + 1)).data('resultObject').refresh();
 					},
 					error : function(data) {
-						overlay.close();
+						overlay.remove();
 						self.alertHandler.alertHandler('error', 'Failed to save changes: ' + data);
 					}
 				});

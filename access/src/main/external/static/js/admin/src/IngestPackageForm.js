@@ -23,7 +23,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 			height: 'auto',
 			modal: true,
 			title: 'Ingest package',
-			close: $.proxy(self.close, self)
+			beforeClose: $.proxy(self.close, self)
 		});
 		
 		$("input[type='file']", this.$form).change(function(){
@@ -57,7 +57,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 			}
 			
 			self.submitted = true;
-			self.overlay.show();
+			self.overlay.open();
 			self.submitAjax();
 			return false;
 		});
@@ -65,25 +65,43 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	
 	IngestPackageForm.prototype.close = function() {
 		var self = this;
+		if (this.closed) return;
 		if (self.uploadInProgress) {
 			this.closeConfirm = new ConfirmationDialog({
-				promptText : 'Your submission currently uploading, do you wish to close this window and abort the upload?',
+				promptText : 'Your submission is currently uploading, do you wish to close this window and abort the upload?',
 				confirmText : 'Close and continue',
 				cancelText : 'Stay on page',
+				'solo' : false,
+				'dialogOptions' : {
+					autoOpen : true,
+					modal : true,
+					width : 400,
+					height: 'auto',
+					position : {
+						at : "right top",
+						my : "right bottom",
+						of : self.dialog
+					}
+				},
 				confirmFunction : function() {
+					self.unloadFunction = function(e) {
+						return "There is an ongoing upload which will be interrupted if you leave this page, do you wish to continue?";
+					};
+					$(window).bind('beforeunload', self.unloadFunction);
 					self.remove();
-					delete self.closeConfirm;
+					this.closeConfirm = null;
+					return false;
 				},
 				additionalButtons : {
 					'Close and abort' : function() {
 						$(this).dialog("close");
-						self.xhr.abort();
+						if (self.xhr)
+							self.xhr.abort();
 						self.remove();
-						delete self.closeConfirm;
+						this.closeConfirm = null;
 					}
 				}
 			});
-			return false;
 		} else {
 			this.remove();
 		}
@@ -94,7 +112,9 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		this.closed = true;
 		this.dialog.remove();
 		if (this.overlay)
-			this.overlay.close();
+			this.overlay.remove();
+		if (this.closeConfirm)
+			this.closeConfirm.remove();
 	};
 	
 	IngestPackageForm.prototype.readableFileSize = function(size) {
@@ -116,6 +136,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		this.xhr = new XMLHttpRequest();
 		// Update the progress bar
 		this.xhr.upload.addEventListener("progress", function(event) {
+			if (self.closed) return;
 			if (event.total > 0) {
 				var percent = event.loaded / event.total * 100;
 				self.overlay.setProgress(percent);
@@ -128,9 +149,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		
 		// Finished sending to queue without any network errors
 		this.xhr.addEventListener("load", function(event) {
-			self.hideOverlay();
-			self.submitted = false;
-			self.uploadInProgress = false;
+			self.uploadCompleted();
 			var data = null;
 			try {
 				data = JSON.parse(this.responseText);
@@ -155,20 +174,26 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		// Failed due to network problems
 		this.xhr.addEventListener("error", function(event) {
 			self.options.alertHandler.alertHandler("error", "Failed to ingest package " + self.ingestFile.name + ", see the errors below.");
-			self.hideOverlay();
-			self.submitted = false;
-			self.uploadInProgress = false;
+			self.uploadCompleted();
 		}, false);
 		
 		// Upload aborted by the user
 		this.xhr.addEventListener("abort", function(event) {
-			self.options.alertHandler.alertHandler("info", "Cancelled ingest of package " + self.ingestFile.name);
-			self.overlay.close();
-			self.submitted = false;
-			self.uploadInProgress = false;
+			self.options.alertHandler.alertHandler("message", "Cancelled ingest of package " + self.ingestFile.name);
+			self.uploadCompleted();
 		}, false);
 		this.xhr.open("POST", this.$form.find("form")[0].action);
 		this.xhr.send(formData);
+	};
+	
+	IngestPackageForm.prototype.uploadCompleted = function() {
+		this.hideOverlay();
+		this.submitted = false;
+		this.uploadInProgress = false;
+		if (this.unloadFunction) {
+			$(window).unbind('beforeunload', this.unloadFunction);
+			this.unloadFunction = null;
+		}
 	};
 	
 	IngestPackageForm.prototype.setError = function(errorText) {
@@ -188,7 +213,9 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	
 	IngestPackageForm.prototype.hideOverlay = function() {
 		if (this.closed) return;
-		this.overlay.hide();
+		if (this.closeConfirm)
+			this.closeConfirm.close();
+		this.overlay.close();
 		this.overlay.setProgress(0);
 		this.overlay.setText("uploading...");
 	};

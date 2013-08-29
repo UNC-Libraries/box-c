@@ -984,7 +984,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		},
 		
 		_generateButtons : function() {
-			var buttonsObject = {};
+			var buttonsObject = {}, self = this;
 			
 			buttonsObject[this.options.cancelText] = function() {
 				$(this).dialog("close");
@@ -992,7 +992,9 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			
 			buttonsObject[this.options.confirmText] = function() {
 				if (self.options.confirmFunction) {
-					self.options.confirmFunction.call(self.options.confirmTarget);
+					var result = self.options.confirmFunction.call(self.options.confirmTarget);
+					if (result !== undefined && !result)
+						return;
 				}
 				$(this).dialog("close");
 			};
@@ -1002,6 +1004,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 				for (var index in this.options.additionalButtons)
 					buttonsObject[index] = this.options.additionalButtons[index];
 			}
+			return buttonsObject;
 		},
 		
 		open : function () {
@@ -1010,6 +1013,11 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		
 		close : function () {
 			this.confirmDialog.dialog('close');
+		},
+		
+		remove : function() {
+			this.confirmDialog.dialog('close');
+			this.confirmDialog.remove();
 		}
 	});
 	return ConfirmationDialog;
@@ -1053,14 +1061,14 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			}
 			
 			submitted = true;
-			overlay.show();
+			overlay.open();
 		});
 		
 		$("#upload_create_container").load(function(){
 			if (!this.contentDocument.body.innerHTML)
 				return;
 			try {
-				overlay.hide();
+				overlay.close();
 				var response = JSON.parse(this.contentDocument.body.innerHTML);
 				var containerName = $("input[name='name']", $form).val();
 				if (response.error) {
@@ -1072,7 +1080,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 						var type = $("#create_container_form select").val();
 						self.options.alertHandler.alertHandler("success", "Created " + type + " " + containerName + ", refresh the page to view");
 					}
-					overlay.close();
+					overlay.remove();
 					dialog.dialog("close");
 				}
 				$(this).empty();
@@ -1384,7 +1392,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 					data : self.xml2Str(self.accessControlModel),
 					success : function(data) {
 						containing.data('can-close', true);
-						overlay.close();
+						overlay.remove();
 						if (self.options.containingDialog != null) {
 							self.options.containingDialog.dialog('close');
 						}
@@ -1392,7 +1400,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 						$("#res_" + self.options.pid.substring(self.options.pid.indexOf(':') + 1)).data('resultObject').refresh();
 					},
 					error : function(data) {
-						overlay.close();
+						overlay.remove();
 						self.alertHandler.alertHandler('error', 'Failed to save changes: ' + data);
 					}
 				});
@@ -1563,7 +1571,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 			height: 'auto',
 			modal: true,
 			title: 'Ingest package',
-			close: $.proxy(self.close, self)
+			beforeClose: $.proxy(self.close, self)
 		});
 		
 		$("input[type='file']", this.$form).change(function(){
@@ -1597,7 +1605,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 			}
 			
 			self.submitted = true;
-			self.overlay.show();
+			self.overlay.open();
 			self.submitAjax();
 			return false;
 		});
@@ -1605,25 +1613,43 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	
 	IngestPackageForm.prototype.close = function() {
 		var self = this;
+		if (this.closed) return;
 		if (self.uploadInProgress) {
 			this.closeConfirm = new ConfirmationDialog({
-				promptText : 'Your submission currently uploading, do you wish to close this window and abort the upload?',
+				promptText : 'Your submission is currently uploading, do you wish to close this window and abort the upload?',
 				confirmText : 'Close and continue',
 				cancelText : 'Stay on page',
+				'solo' : false,
+				'dialogOptions' : {
+					autoOpen : true,
+					modal : true,
+					width : 400,
+					height: 'auto',
+					position : {
+						at : "right top",
+						my : "right bottom",
+						of : self.dialog
+					}
+				},
 				confirmFunction : function() {
+					self.unloadFunction = function(e) {
+						return "There is an ongoing upload which will be interrupted if you leave this page, do you wish to continue?";
+					};
+					$(window).bind('beforeunload', self.unloadFunction);
 					self.remove();
-					delete self.closeConfirm;
+					this.closeConfirm = null;
+					return false;
 				},
 				additionalButtons : {
 					'Close and abort' : function() {
 						$(this).dialog("close");
-						self.xhr.abort();
+						if (self.xhr)
+							self.xhr.abort();
 						self.remove();
-						delete self.closeConfirm;
+						this.closeConfirm = null;
 					}
 				}
 			});
-			return false;
 		} else {
 			this.remove();
 		}
@@ -1634,7 +1660,9 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		this.closed = true;
 		this.dialog.remove();
 		if (this.overlay)
-			this.overlay.close();
+			this.overlay.remove();
+		if (this.closeConfirm)
+			this.closeConfirm.remove();
 	};
 	
 	IngestPackageForm.prototype.readableFileSize = function(size) {
@@ -1656,6 +1684,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		this.xhr = new XMLHttpRequest();
 		// Update the progress bar
 		this.xhr.upload.addEventListener("progress", function(event) {
+			if (self.closed) return;
 			if (event.total > 0) {
 				var percent = event.loaded / event.total * 100;
 				self.overlay.setProgress(percent);
@@ -1668,9 +1697,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		
 		// Finished sending to queue without any network errors
 		this.xhr.addEventListener("load", function(event) {
-			self.hideOverlay();
-			self.submitted = false;
-			self.uploadInProgress = false;
+			self.uploadCompleted();
 			var data = null;
 			try {
 				data = JSON.parse(this.responseText);
@@ -1695,20 +1722,26 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		// Failed due to network problems
 		this.xhr.addEventListener("error", function(event) {
 			self.options.alertHandler.alertHandler("error", "Failed to ingest package " + self.ingestFile.name + ", see the errors below.");
-			self.hideOverlay();
-			self.submitted = false;
-			self.uploadInProgress = false;
+			self.uploadCompleted();
 		}, false);
 		
 		// Upload aborted by the user
 		this.xhr.addEventListener("abort", function(event) {
-			self.options.alertHandler.alertHandler("info", "Cancelled ingest of package " + self.ingestFile.name);
-			self.overlay.close();
-			self.submitted = false;
-			self.uploadInProgress = false;
+			self.options.alertHandler.alertHandler("message", "Cancelled ingest of package " + self.ingestFile.name);
+			self.uploadCompleted();
 		}, false);
 		this.xhr.open("POST", this.$form.find("form")[0].action);
 		this.xhr.send(formData);
+	};
+	
+	IngestPackageForm.prototype.uploadCompleted = function() {
+		this.hideOverlay();
+		this.submitted = false;
+		this.uploadInProgress = false;
+		if (this.unloadFunction) {
+			$(window).unbind('beforeunload', this.unloadFunction);
+			this.unloadFunction = null;
+		}
 	};
 	
 	IngestPackageForm.prototype.setError = function(errorText) {
@@ -1728,7 +1761,9 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	
 	IngestPackageForm.prototype.hideOverlay = function() {
 		if (this.closed) return;
-		this.overlay.hide();
+		if (this.closeConfirm)
+			this.closeConfirm.close();
+		this.overlay.close();
 		this.overlay.setProgress(0);
 		this.overlay.setText("uploading...");
 	};
@@ -1807,7 +1842,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		else if (this.options.type == "text")
 			this.textIcon = $('<div class="text_icon icon_' + this.options.iconSize + '"></div>').appendTo(this.overlay);
 		
-		if (this.options.text == null)
+		if (this.options.text)
 			this.setText(this.options.text);
 		
 		this.overlay.appendTo(document.body);
@@ -1815,23 +1850,23 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		$(window).resize($.proxy(this.resize, this));
 		
 		if (this.options.autoOpen)
-			this.show();
-		else this.hide();
+			this.open();
+		else this.close();
 	};
 	
 	ModalLoadingOverlay.prototype.close = function() {
+		this.overlay.hide();
+	};
+	
+	ModalLoadingOverlay.prototype.remove = function() {
 		this.overlay.remove();
 	};
 	
-	ModalLoadingOverlay.prototype.show = function() {
+	ModalLoadingOverlay.prototype.open = function() {
 		this.overlay.css({'visibility': 'hidden', 'display' : 'block'});
 		if (this.element != $(document))
 			this.resize();
 		this.overlay.css('visibility', 'visible');
-	};
-	
-	ModalLoadingOverlay.prototype.hide = function() {
-		this.overlay.hide();
 	};
 	
 	ModalLoadingOverlay.prototype.resize = function() {
@@ -2355,9 +2390,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		if ("idle" == state || "failed" == state) {
 			this.enable();
 			this.element.removeClass("followup working").addClass("idle");
-			this.updateOverlay('hide');
+			this.updateOverlay('close');
 		} else if ("working" == state) {
-			this.updateOverlay('show');
+			this.updateOverlay('open');
 			this.disable();
 			this.element.switchClass("idle followup", "working", this.options.animateSpeed);
 		} else if ("followup" == state) {
@@ -2393,7 +2428,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	ResultObject.prototype.deleteElement = function() {
 		var obj = this;
 		if (this.overlay)
-			this.overlay.close();
+			this.overlay.remove();
 		obj.element.hide(obj.options.animateSpeed, function() {
 			obj.element.remove();
 			if (obj.options.resultObjectList) {
@@ -2428,7 +2463,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	};
 	
 	ResultObject.prototype.refresh = function(immediately) {
-		this.updateOverlay('show');
+		this.updateOverlay('open');
 		this.setStatusText('Refreshing...');
 		if (immediately) {
 			this.refreshData(true);
@@ -2463,11 +2498,11 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				if (self.overlay)
 					self.overlay.element = self.element;
 				if (clearOverlay)
-					self.updateOverlay("hide");
+					self.updateOverlay("close");
 			},
 			error : function(a, b, c) {
 				if (clearOverlay)
-					self.updateOverlay("hide");
+					self.updateOverlay("close");
 				console.log(c);
 			}
 		});

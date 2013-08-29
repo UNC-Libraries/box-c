@@ -78,7 +78,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		},
 		
 		_generateButtons : function() {
-			var buttonsObject = {};
+			var buttonsObject = {}, self = this;
 			
 			buttonsObject[this.options.cancelText] = function() {
 				$(this).dialog("close");
@@ -86,7 +86,9 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			
 			buttonsObject[this.options.confirmText] = function() {
 				if (self.options.confirmFunction) {
-					self.options.confirmFunction.call(self.options.confirmTarget);
+					var result = self.options.confirmFunction.call(self.options.confirmTarget);
+					if (result !== undefined && !result)
+						return;
 				}
 				$(this).dialog("close");
 			};
@@ -96,6 +98,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 				for (var index in this.options.additionalButtons)
 					buttonsObject[index] = this.options.additionalButtons[index];
 			}
+			return buttonsObject;
 		},
 		
 		open : function () {
@@ -104,6 +107,11 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		
 		close : function () {
 			this.confirmDialog.dialog('close');
+		},
+		
+		remove : function() {
+			this.confirmDialog.dialog('close');
+			this.confirmDialog.remove();
 		}
 	});
 	return ConfirmationDialog;

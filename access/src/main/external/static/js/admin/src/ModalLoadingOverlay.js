@@ -24,7 +24,7 @@ define('ModalLoadingOverlay', [ 'jquery', 'jquery-ui', 'editable', 'moment', 'qt
 		else if (this.options.type == "text")
 			this.textIcon = $('<div class="text_icon icon_' + this.options.iconSize + '"></div>').appendTo(this.overlay);
 		
-		if (this.options.text == null)
+		if (this.options.text)
 			this.setText(this.options.text);
 		
 		this.overlay.appendTo(document.body);
@@ -32,23 +32,23 @@ define('ModalLoadingOverlay', [ 'jquery', 'jquery-ui', 'editable', 'moment', 'qt
 		$(window).resize($.proxy(this.resize, this));
 		
 		if (this.options.autoOpen)
-			this.show();
-		else this.hide();
+			this.open();
+		else this.close();
 	};
 	
 	ModalLoadingOverlay.prototype.close = function() {
+		this.overlay.hide();
+	};
+	
+	ModalLoadingOverlay.prototype.remove = function() {
 		this.overlay.remove();
 	};
 	
-	ModalLoadingOverlay.prototype.show = function() {
+	ModalLoadingOverlay.prototype.open = function() {
 		this.overlay.css({'visibility': 'hidden', 'display' : 'block'});
 		if (this.element != $(document))
 			this.resize();
 		this.overlay.css('visibility', 'visible');
-	};
-	
-	ModalLoadingOverlay.prototype.hide = function() {
-		this.overlay.hide();
 	};
 	
 	ModalLoadingOverlay.prototype.resize = function() {
