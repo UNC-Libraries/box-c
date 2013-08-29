@@ -305,7 +305,12 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	ResultObject.prototype.updateOverlay = function(fnName, fnArgs) {
 		// Check to see if overlay is initialized
 		if (!this.overlay) {
-			this.overlay = new ModalLoadingOverlay(this.element, {'text' : 'Working...', 'autoOpen' : false});
+			this.overlay = new ModalLoadingOverlay(this.element, {
+				text : 'Working...',
+				type : 'determinate',
+				iconSize : 'small',
+				autoOpen : false
+			});
 		}
 		this.overlay[fnName].apply(this.overlay, fnArgs);
 	};

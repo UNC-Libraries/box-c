@@ -535,6 +535,12 @@ button.ui-button::-moz-focus-inner {
 .ui-progressbar .ui-progressbar-value {
 	margin: -1px;
 	height: 100%;
+	border: 1px solid #DDDDEE;
+	background-color: #DDDDEE;
+	-webkit-transition: width 1s ease-in-out;
+	-moz-transition: width 1s ease-in-out;
+	-o-transition: width 1s ease-in-out;
+	transition: width 1s ease-in-out;
 }
 .ui-progressbar .ui-progressbar-overlay {
 	background: url("images/animated-overlay.gif");

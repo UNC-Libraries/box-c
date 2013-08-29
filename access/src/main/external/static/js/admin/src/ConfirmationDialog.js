@@ -31,7 +31,8 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			'confirmTarget' : undefined,
 			'confirmText' : 'Yes',
 			'cancelText' : 'Cancel',
-			'solo' : true
+			'solo' : true,
+			'additionalButtons' : undefined
 		},
 		
 		dialogOptions : {
@@ -60,18 +61,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			}
 			$("body").append(this.confirmDialog);
 			
-			var buttonsObject = {};
-			
-			buttonsObject[self.options.cancelText] = function() {
-				$(this).dialog("close");
-			};
-			
-			buttonsObject[self.options.confirmText] = function() {
-				if (self.options.confirmFunction) {
-					self.options.confirmFunction.call(self.options.confirmTarget);
-				}
-				$(this).dialog("close");
-			};
+			var buttonsObject = this._generateButtons();
 			
 			$.extend(this.dialogOptions, {
 				open : function() {
@@ -85,6 +75,27 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 				buttons : buttonsObject
 			});
 			this.confirmDialog.dialog(this.dialogOptions);
+		},
+		
+		_generateButtons : function() {
+			var buttonsObject = {};
+			
+			buttonsObject[this.options.cancelText] = function() {
+				$(this).dialog("close");
+			};
+			
+			buttonsObject[this.options.confirmText] = function() {
+				if (self.options.confirmFunction) {
+					self.options.confirmFunction.call(self.options.confirmTarget);
+				}
+				$(this).dialog("close");
+			};
+			
+			// Add any additional buttons in
+			if (this.options.additionalButtons) {
+				for (var index in this.options.additionalButtons)
+					buttonsObject[index] = this.options.additionalButtons[index];
+			}
 		},
 		
 		open : function () {

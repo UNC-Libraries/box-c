@@ -937,7 +937,8 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			'confirmTarget' : undefined,
 			'confirmText' : 'Yes',
 			'cancelText' : 'Cancel',
-			'solo' : true
+			'solo' : true,
+			'additionalButtons' : undefined
 		},
 		
 		dialogOptions : {
@@ -966,18 +967,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			}
 			$("body").append(this.confirmDialog);
 			
-			var buttonsObject = {};
-			
-			buttonsObject[self.options.cancelText] = function() {
-				$(this).dialog("close");
-			};
-			
-			buttonsObject[self.options.confirmText] = function() {
-				if (self.options.confirmFunction) {
-					self.options.confirmFunction.call(self.options.confirmTarget);
-				}
-				$(this).dialog("close");
-			};
+			var buttonsObject = this._generateButtons();
 			
 			$.extend(this.dialogOptions, {
 				open : function() {
@@ -991,6 +981,27 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 				buttons : buttonsObject
 			});
 			this.confirmDialog.dialog(this.dialogOptions);
+		},
+		
+		_generateButtons : function() {
+			var buttonsObject = {};
+			
+			buttonsObject[this.options.cancelText] = function() {
+				$(this).dialog("close");
+			};
+			
+			buttonsObject[this.options.confirmText] = function() {
+				if (self.options.confirmFunction) {
+					self.options.confirmFunction.call(self.options.confirmTarget);
+				}
+				$(this).dialog("close");
+			};
+			
+			// Add any additional buttons in
+			if (this.options.additionalButtons) {
+				for (var index in this.options.additionalButtons)
+					buttonsObject[index] = this.options.additionalButtons[index];
+			}
 		},
 		
 		open : function () {
@@ -1527,9 +1538,12 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			return xmlStr;
 		}
 	});
-});define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/ingestPackageForm', 
-		'ModalLoadingOverlay'], 
-		function($, ui, _, RemoteStateChangeMonitor, createFormTemplate, ModalLoadingOverlay) {
+});/**
+ * Implements functionality and UI for the generic Ingest Package form
+ */
+define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/ingestPackageForm', 
+		'ModalLoadingOverlay', 'ConfirmationDialog'], 
+		function($, ui, _, RemoteStateChangeMonitor, createFormTemplate, ModalLoadingOverlay, ConfirmationDialog) {
 	
 	function IngestPackageForm(options) {
 		this.options = $.extend({}, options);
@@ -1538,6 +1552,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 	IngestPackageForm.prototype.open = function(pid) {
 		var self = this;
 		var formContents = createFormTemplate({pid : pid});
+		this.closed = false;
 		
 		this.dialog = $("<div class='containingDialog'>" + formContents + "</div>");
 		this.$form = this.dialog.first();
@@ -1548,22 +1563,30 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			height: 'auto',
 			modal: true,
 			title: 'Ingest package',
-			close: function() {
-				self.dialog.remove();
-			}
+			close: $.proxy(self.close, self)
 		});
 		
 		$("input[type='file']", this.$form).change(function(){
 			self.ingestFile = this.files[0];
-			if (self.ingestFile)
-				$(".file_info", self.$form).html(self.ingestFile.type + ", " + self.readableFileSize(self.ingestFile.size));
-			else
+			if (self.ingestFile) {
+				var fileInfo = "";
+				if (self.ingestFile.type)
+					fileInfo += self.ingestFile.type + ", ";
+				fileInfo += self.readableFileSize(self.ingestFile.size);
+				$(".file_info", self.$form).html(fileInfo);
+			} else
 				$(".file_info", self.$form).html("");
 		});
 		
-		this.overlay = new ModalLoadingOverlay(this.$form, {autoOpen : false});
+		this.overlay = new ModalLoadingOverlay(this.$form, {
+			autoOpen : false,
+			type : 'determinate',
+			text : 'uploading...'
+		});
+		// Flag to track when the form has been submitted and needs to be locked
 		this.submitted = false;
-		
+		// Flag to track when a file upload is in progress
+		this.uploadInProgress = false;
 		this.$form.submit(function(){
 			if (self.submitted)
 				return false;
@@ -1580,6 +1603,40 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		});
 	};
 	
+	IngestPackageForm.prototype.close = function() {
+		var self = this;
+		if (self.uploadInProgress) {
+			this.closeConfirm = new ConfirmationDialog({
+				promptText : 'Your submission currently uploading, do you wish to close this window and abort the upload?',
+				confirmText : 'Close and continue',
+				cancelText : 'Stay on page',
+				confirmFunction : function() {
+					self.remove();
+					delete self.closeConfirm;
+				},
+				additionalButtons : {
+					'Close and abort' : function() {
+						$(this).dialog("close");
+						self.xhr.abort();
+						self.remove();
+						delete self.closeConfirm;
+					}
+				}
+			});
+			return false;
+		} else {
+			this.remove();
+		}
+	};
+	
+	IngestPackageForm.prototype.remove = function() {
+		if (this.closed) return;
+		this.closed = true;
+		this.dialog.remove();
+		if (this.overlay)
+			this.overlay.close();
+	};
+	
 	IngestPackageForm.prototype.readableFileSize = function(size) {
 		var fileSize = 0;
 		if (size > 1024 * 1024 * 1024)
@@ -1589,57 +1646,69 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		else
 			fileSize = (Math.round(size * 100 / 1024) / 100).toString() + 'kb';
 		return fileSize;
-	}
+	};
 	
 	IngestPackageForm.prototype.submitAjax = function() {
-		//var file = document.getElementById('ingest_package_file').files[0];
 		var self = this, $form = this.$form.find("form"), formData = new FormData($form[0]);
+		this.uploadInProgress = true;
 		
-		var xhr = new XMLHttpRequest();
-		xhr.upload.addEventListener("progress", this.uploadProgress, false);
-		xhr.addEventListener("load", function(event) {
-			self.overlay.close();
+		// Set up the request for XHR2 clients, register events
+		this.xhr = new XMLHttpRequest();
+		// Update the progress bar
+		this.xhr.upload.addEventListener("progress", function(event) {
+			if (event.total > 0) {
+				var percent = event.loaded / event.total * 100;
+				self.overlay.setProgress(percent);
+			}
+			if (event.loaded == event.total) {
+				self.uploadInProgress = false;
+				self.overlay.setText("upload complete, processing...");
+			}
+		}, false);
+		
+		// Finished sending to queue without any network errors
+		this.xhr.addEventListener("load", function(event) {
+			self.hideOverlay();
 			self.submitted = false;
+			self.uploadInProgress = false;
 			var data = null;
 			try {
 				data = JSON.parse(this.responseText);
 			} catch (e) {
 				if (typeof console != "undefined") console.log("Failed to parse ingest response", e);
 			}
+			// Check for upload errors
 			if (this.status >= 400) {
 				var message = "Failed to submit package " + self.ingestFile.name + " for ingest.";
-				if (data && data.errorStack) {
+				if (data && data.errorStack && !self.closed) {
 					message += "  See errors below.";
 					self.setError(data.errorStack);
 				}
 				self.options.alertHandler.alertHandler("error", message);
 			} else {
+				// Ingest queueing was successful, let the user know and close the form
 				self.options.alertHandler.alertHandler("success", "Package " + self.ingestFile.name + " has been successfully uploaded for ingest.  You will receive an email when it completes.");
-				self.dialog.dialog("close");
+				self.remove();
 			}
 		}, false);
-		xhr.addEventListener("error", function(event) {
-			this.options.alertHandler.alertHandler("error", "Failed to ingest package " + this.filename + ", see the errors below.");
-			this.overlay.close();
-			this.submitted = false;
+		
+		// Failed due to network problems
+		this.xhr.addEventListener("error", function(event) {
+			self.options.alertHandler.alertHandler("error", "Failed to ingest package " + self.ingestFile.name + ", see the errors below.");
+			self.hideOverlay();
+			self.submitted = false;
+			self.uploadInProgress = false;
 		}, false);
-		xhr.addEventListener("abort", function(event) {
+		
+		// Upload aborted by the user
+		this.xhr.addEventListener("abort", function(event) {
 			self.options.alertHandler.alertHandler("info", "Cancelled ingest of package " + self.ingestFile.name);
 			self.overlay.close();
 			self.submitted = false;
+			self.uploadInProgress = false;
 		}, false);
-		xhr.open("POST", this.$form.find("form")[0].action);
-		xhr.send(formData);
-	};
-	
-	IngestPackageForm.prototype.uploadProgress = function(event) {
-		// Update progress bar
-	};
-	
-	IngestPackageForm.prototype.uploadCancelled = function(event) {
-		this.options.alertHandler.alertHandler("info", "Cancelled ingest of package " + this.filename);
-		this.overlay.close();
-		this.submitted = false;
+		this.xhr.open("POST", this.$form.find("form")[0].action);
+		this.xhr.send(formData);
 	};
 	
 	IngestPackageForm.prototype.setError = function(errorText) {
@@ -1648,12 +1717,20 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		this.dialog.dialog("option", "position", "center");
 	};
 	
+	// Validate the form and retrieve any errors
 	IngestPackageForm.prototype.validationErrors = function() {
 		var errors = [];
 		var packageFile = $("input[type='file']", this.$form).val();
 		if (!packageFile)
 			errors.push("You must select a file to ingest");
 		return errors;
+	};
+	
+	IngestPackageForm.prototype.hideOverlay = function() {
+		if (this.closed) return;
+		this.overlay.hide();
+		this.overlay.setProgress(0);
+		this.overlay.setText("uploading...");
 	};
 	
 	return IngestPackageForm;
@@ -1707,8 +1784,8 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 });define('ModalLoadingOverlay', [ 'jquery', 'jquery-ui', 'editable', 'moment', 'qtip'], function($) {
 	var defaultOptions = {
 		'text' : null,
+		'type' : "icon", // text, icon, determinate
 		'iconSize' : 'large',
-		'iconPath' : '/static/images/admin/loading-small.gif',
 		'autoOpen' : true
 	};
 	
@@ -1719,15 +1796,19 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 	}
 	
 	ModalLoadingOverlay.prototype.init = function() {
+		this.overlay = $('<div class="load_modal"></div>');
+		if (this.options.type == "determinate") {
+			this.loadingBar = $("<div></div>").progressbar({
+				value : 0
+			});
+			this.overlay.append(this.loadingBar);
+		} else if (this.options.type == "icon")
+			this.overlay.addClass('icon_' + this.options.iconSize);
+		else if (this.options.type == "text")
+			this.textIcon = $('<div class="text_icon icon_' + this.options.iconSize + '"></div>').appendTo(this.overlay);
+		
 		if (this.options.text == null)
-			this.overlay = $('<div class="load_modal icon_' + (this.options.iconSize) + '"></div>');
-		else {
-			this.overlay = $('<div class="load_modal"></div>');
-			this.textSpan = $('<span>' + this.options.text + '</span>');
-			this.overlay.append(this.textSpan);
-			if (this.options.iconPath)
-				this.textIcon = $('<img src="' + this.options.iconPath + '" />').appendTo(this.overlay);
-		}
+			this.setText(this.options.text);
 		
 		this.overlay.appendTo(document.body);
 		
@@ -1744,14 +1825,8 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 	
 	ModalLoadingOverlay.prototype.show = function() {
 		this.overlay.css({'visibility': 'hidden', 'display' : 'block'});
-		if (this.element != $(document)) {
+		if (this.element != $(document))
 			this.resize();
-			if (this.textSpan) {
-				var topOffset = (this.element.innerHeight() - this.textSpan.outerHeight()) / 2;
-				this.textSpan.css('top', topOffset);
-				this.textIcon.css('top', topOffset);
-			}
-		}
 		this.overlay.css('visibility', 'visible');
 	};
 	
@@ -1762,10 +1837,40 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 	ModalLoadingOverlay.prototype.resize = function() {
 		this.overlay.css({'width' : this.element.innerWidth(), 'height' : this.element.innerHeight(),
 			'top' : this.element.offset().top, 'left' : this.element.offset().left});
+		this.adjustContentPosition();
+	};
+	
+	ModalLoadingOverlay.prototype.adjustContentPosition = function() {
+		if (this.options.type == "determinate") {
+			var topOffset = (this.element.innerHeight() - this.loadingBar.outerHeight()) / 2,
+				leftOffset = (this.element.innerWidth() - this.loadingBar.width()) / 2;
+			this.loadingBar.css({top : topOffset, left : leftOffset});
+		} else {
+			var topOffset = (this.element.innerHeight() - this.textSpan.outerHeight()) / 2;
+			this.textSpan.css('top', topOffset);
+			if (this.textIcon)
+				this.textIcon.css('top', topOffset);
+		}
 	};
 	
 	ModalLoadingOverlay.prototype.setText = function(text) {
-		this.textSpan.html(text);
+		if (!this.textSpan) {
+			this.textSpan = $('<span>' + text + '</span>');
+			if (this.options.type == "text")
+				this.overlay.prepend(this.textSpan);
+			else if (this.options.type == "determinate")
+				this.loadingBar.append(this.textSpan);
+			else
+				this.overlay.append(this.textSpan);
+		} else {
+			this.textSpan.html(text);
+		}
+		this.adjustContentPosition();
+	};
+	
+	// Updates the progress bar to a percentage of completion.  Only applies to determinate overlays
+	ModalLoadingOverlay.prototype.setProgress = function(value) {
+		this.loadingBar.progressbar("value", value);
 	};
 	
 	return ModalLoadingOverlay;
@@ -2312,7 +2417,12 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	ResultObject.prototype.updateOverlay = function(fnName, fnArgs) {
 		// Check to see if overlay is initialized
 		if (!this.overlay) {
-			this.overlay = new ModalLoadingOverlay(this.element, {'text' : 'Working...', 'autoOpen' : false});
+			this.overlay = new ModalLoadingOverlay(this.element, {
+				text : 'Working...',
+				type : 'determinate',
+				iconSize : 'small',
+				autoOpen : false
+			});
 		}
 		this.overlay[fnName].apply(this.overlay, fnArgs);
 	};
