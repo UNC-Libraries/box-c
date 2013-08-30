@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
-import org.apache.abdera.Abdera;
-import org.apache.abdera.writer.Writer;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.jdom.JDOMException;
 import org.swordapp.server.AuthCredentials;
@@ -32,20 +32,15 @@ import org.swordapp.server.UriRegistry;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
-import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
+import edu.unc.lib.dl.cdr.sword.server.deposit.DepositHandler;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.DepositRecord;
-import edu.unc.lib.dl.ingest.sip.AtomPubEntrySIP;
 import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
-import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
-import edu.unc.lib.dl.services.DigitalObjectManager;
-import edu.unc.lib.dl.services.IngestResult;
-import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
 import edu.unc.lib.dl.util.PackagingType;
 
 /**
+ * Manager responsible for performing ingest of new objects or packages
  * 
  * @author bbpennel
  * 
@@ -53,8 +48,7 @@ import edu.unc.lib.dl.util.PackagingType;
 public class CollectionDepositManagerImpl extends AbstractFedoraManager implements CollectionDepositManager {
 	private static Logger log = Logger.getLogger(CollectionDepositManagerImpl.class);
 
-	private DigitalObjectManager digitalObjectManager;
-	private DepositReportingUtil depositReportingUtil;
+	private Map<PackagingType, DepositHandler> packageHandlers;
 
 	@Override
 	public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
@@ -81,139 +75,33 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 					"Insufficient privileges to deposit to container " + containerPID.getPid());
 		}
 
-		if (deposit.getPackaging() == null || deposit.getPackaging().trim().length() == 0) {
-			// Ingest of non-packaged objects
-			if (deposit.getSwordEntry() == null) {
-				// Single file, no metadata ingest, which isn't supported at the moment
-				throw new SwordError(ErrorURIRegistry.INVALID_INGEST_PACKAGE, 415,
-						"Could not ingest AtomPub submission, no metadata was provided.");
-			} else {
-				try {
-					log.debug("Performing Atom Pub Entry deposit to " + containerPID.getPid());
-					return doAtomPubEntryDeposit(containerPID, deposit, auth, configImpl, depositor, owner);
-				} catch (JDOMException e) {
-					log.warn("Failed to deposit", e);
-					throw new SwordError(UriRegistry.ERROR_CONTENT, 415,
-							"A problem occurred while attempting to perform your deposit: " + e.getMessage());
-				} catch (Exception e) {
-					throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
-							"Unexpected exception while attempting to perform an Atom Pub entry deposit", e);
-				}
-			}
-		} else {
-			if (deposit.getFile() == null) {
-				// Invalid to have a package but no file
-				throw new SwordError(UriRegistry.ERROR_CONTENT, 415,
-						"Could not ingest, a package type was provided but no content.");
-			} else {
-				PackagingType recognizedType = null;
-				for (PackagingType t : PackagingType.values()) {
-					if (t.equals(deposit.getPackaging())) {
-						recognizedType = t;
-						break;
-					}
-				}
-
-				if (recognizedType != null) {
-					try {
-						// METS subclasses are the only supported packaging types at the moment
-						return doMETSDeposit(containerPID, deposit, auth, configImpl, depositor, recognizedType, owner);
-					} catch (FilesDoNotMatchManifestException e) {
-						log.warn("Files in the package " + deposit.getFilename()
-								+ " did not match the provided METS manifest of package type " + deposit.getPackaging(), e);
-						throw new SwordError(UriRegistry.ERROR_CONTENT, 415, "Files in the package "
-								+ deposit.getFilename() + " did not match the provided METS manifest.", e);
-					} catch (IngestException e) {
-						log.warn("An exception occurred while attempting to ingest package " + deposit.getFilename()
-								+ " of type " + deposit.getPackaging(), e);
-						throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
-								"An exception occurred while attempting to ingest package " + deposit.getFilename()
-										+ " of type " + deposit.getPackaging(), e);
-					} catch (Exception e) {
-						throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
-								"Unexpected exception occurred while attempting to perform a METS deposit", e);
-					}
-				} else {
-					throw new SwordError(UriRegistry.ERROR_CONTENT, 415, "No package type was supplied");
-				}
-			}
-		}
-	}
-
-	private DepositReceipt doAtomPubEntryDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
-			SwordConfigurationImpl config, Agent agent, Agent owner) throws Exception {
-
-		log.debug("Preparing to perform an Atom Pub entry metadata only deposit to " + containerPID.getPid());
-
-		if (deposit.getSwordEntry() == null || deposit.getSwordEntry().getEntry() == null)
+		// Get the enum for the provided packaging type. Null can be a legitimate type
+		PackagingType type = PackagingType.getPackagingType(deposit.getPackaging());
+		try {
+			DepositHandler depositHandler = packageHandlers.get(type);
+			return depositHandler.doDeposit(containerPID, deposit, type, config, depositor, owner);
+		} catch (FilesDoNotMatchManifestException e) {
+			log.warn("Files in the package " + deposit.getFilename()
+					+ " did not match the provided METS manifest of package type " + deposit.getPackaging(), e);
+			throw new SwordError(UriRegistry.ERROR_CONTENT, 415, "Files in the package " + deposit.getFilename()
+					+ " did not match the provided METS manifest.", e);
+		} catch (JDOMException e) {
+			log.warn("Failed to deposit", e);
 			throw new SwordError(UriRegistry.ERROR_CONTENT, 415,
-					"No AtomPub entry was included in the submission");
-
-		AtomPubEntrySIP sip = new AtomPubEntrySIP(containerPID, deposit.getSwordEntry().getEntry());
-		if (log.isDebugEnabled()) {
-			Abdera abdera = new Abdera();
-			Writer writer = abdera.getWriterFactory().getWriter("prettyxml");
-			writer.writeTo(deposit.getSwordEntry().getEntry(), System.out);
+					"A problem occurred while attempting to parse your deposit: " + e.getMessage());
+		} catch (IngestException e) {
+			log.warn("An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type "
+					+ deposit.getPackaging(), e);
+			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
+					"An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type "
+							+ deposit.getPackaging(), e);
+		} catch (Exception e) {
+			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
+					"Unexpected exception occurred while attempting to perform a METS deposit", e);
 		}
-
-		if (deposit.getFile() == null) {
-			sip = new AtomPubEntrySIP(containerPID, deposit.getSwordEntry().getEntry());
-		} else {
-			sip = new AtomPubEntrySIP(containerPID, deposit.getSwordEntry().getEntry(), deposit.getFile(),
-					deposit.getMimeType(), deposit.getFilename(), deposit.getMd5());
-		}
-		sip.setInProgress(deposit.isInProgress());
-		sip.setSuggestedSlug(deposit.getSlug());
-
-		DepositRecord record = new DepositRecord(agent, owner, DepositMethod.SWORD13);
-		record.setMessage("Added through SWORD");
-		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
-
-		return buildReceipt(ingestResult, config);
 	}
 
-	private DepositReceipt doMETSDeposit(PID containerPID, Deposit deposit, AuthCredentials auth,
-			SwordConfigurationImpl config, Agent agent, PackagingType type, Agent owner) throws Exception {
-
-		log.debug("Preparing to perform a CDR METS deposit to " + containerPID.getPid());
-
-		String name = deposit.getFilename();
-		boolean isZip = name.endsWith(".zip");
-
-		if (log.isDebugEnabled()) {
-			log.debug("Working with temporary file: " + deposit.getFile().getAbsolutePath());
-		}
-
-		METSPackageSIP sip = new METSPackageSIP(containerPID, deposit.getFile(), isZip);
-		// PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
-
-		DepositRecord record = new DepositRecord(agent, owner, DepositMethod.SWORD13);
-		record.setMessage("Added through SWORD");
-		record.setPackagingType(type);
-		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
-
-		return buildReceipt(ingestResult, config);
-	}
-
-	private DepositReceipt buildReceipt(IngestResult ingestResult, SwordConfigurationImpl config) throws SwordError {
-		if (ingestResult == null || ingestResult.derivedPIDs == null || ingestResult.derivedPIDs.size() == 0) {
-			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400, "Add batch request "
-					+ ingestResult.originalDepositID.getPid() + " did not return any derived results.");
-		}
-
-		DepositReceipt receipt = depositReportingUtil.retrieveDepositReceipt(ingestResult, config);
-		return receipt;
-	}
-
-	public DigitalObjectManager getDigitalObjectManager() {
-		return digitalObjectManager;
-	}
-
-	public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
-		this.digitalObjectManager = digitalObjectManager;
-	}
-
-	public void setDepositReportingUtil(DepositReportingUtil depositReportingUtil) {
-		this.depositReportingUtil = depositReportingUtil;
+	public void setPackageHandlers(Map<PackagingType, DepositHandler> packageHandlers) {
+		this.packageHandlers = packageHandlers;
 	}
 }

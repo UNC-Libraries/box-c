@@ -1,4 +1,4 @@
-<form id="create_simple_object_form" method="post" action="ingestFile/<%= pid %>" enctype="multipart/form-data" class="edit_form create_simple_object_form">
+<form id="create_simple_object_form" method="post" action="ingest/<%= pid %>" enctype="multipart/form-data" class="edit_form create_simple_object_form">
 	<p>Add a single file as a new object.  If no label is provided, the filename will be used.</p>
 	<h3>Simple Object</h3>
 	<div class="form_field">
@@ -7,12 +7,13 @@
 	</div>
 	<div class="form_field">
 		<label>File*</label>
-		<input type="file" id="data_file" name="package"/>
+		<input type="file" id="data_file" name="file"/>
 		<div class="file_info">&nbsp;</div>
 	</div>
 	<div class="update_field">
 		<input type="submit" id="object_submit_button" class="update_button" value="Ingest" />
 	</div>
+	<input type="hidden" name="type" value="http://cdr.unc.edu/model/Simple" />
 	<div class="errors">
 		<h3>Errors</h3>
 		<div class="error_stack">

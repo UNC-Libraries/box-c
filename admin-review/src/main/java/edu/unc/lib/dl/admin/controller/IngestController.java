@@ -49,10 +49,10 @@ public class IngestController {
 	private String swordPassword;
 	private static QName SWORD_VERBOSE_DESCRIPTION = new QName("http://purl.org/net/sword/terms/", "verboseDescription");
 
-	@RequestMapping(value = "ingestPackage/{pid}", method = RequestMethod.POST)
+	@RequestMapping(value = "ingest/{pid}", method = RequestMethod.POST)
 	public @ResponseBody
 	Map<String, ? extends Object> ingestPackageController(@PathVariable("pid") String pid,
-			@RequestParam("type") String type, @RequestParam("package") MultipartFile packageFile, HttpServletResponse response) {
+			@RequestParam("type") String type, @RequestParam(value="name", required=false) String name, @RequestParam("file") MultipartFile ingestFile, HttpServletResponse response) {
 		String destinationUrl = swordUrl + "collection/" + pid;
 		HttpClient client = HttpClientUtil.getAuthenticatedClient(destinationUrl, swordUsername, swordPassword);
 		client.getParams().setAuthenticationPreemptive(true);
@@ -62,16 +62,18 @@ public class IngestController {
 		method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
 		method.addRequestHeader("Packaging", type);
 		method.addRequestHeader("On-Behalf-Of", GroupsThreadStore.getUsername());
-		method.addRequestHeader("Content-Type", packageFile.getContentType());
-		method.addRequestHeader("Content-Length", Long.toString(packageFile.getSize()));
-		method.addRequestHeader("Content-Disposition", "attachment; filename=" + packageFile.getOriginalFilename());
+		method.addRequestHeader("Content-Type", ingestFile.getContentType());
+		method.addRequestHeader("Content-Length", Long.toString(ingestFile.getSize()));
+		method.addRequestHeader("Content-Disposition", "attachment; filename=" + ingestFile.getOriginalFilename());
+		if (name != null && name.trim().length() > 0)
+			method.addRequestHeader("Slug", name);
 		
 		// Setup the json response
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("action", "ingest");
 		result.put("destination", pid);
 		try {
-			method.setRequestEntity(new InputStreamRequestEntity(packageFile.getInputStream(), packageFile.getSize()));
+			method.setRequestEntity(new InputStreamRequestEntity(ingestFile.getInputStream(), ingestFile.getSize()));
 			client.executeMethod(method);
 			response.setStatus(method.getStatusCode());
 
@@ -86,7 +88,7 @@ public class IngestController {
 				result.put("error", "Not authorized to ingest to container " + pid);
 			} else if (method.getStatusCode() >= 500) {
 				// Server error, report it to the client
-				result.put("error", "A server error occurred while attempting to ingest \"" + packageFile.getName() + "\" to " + pid);
+				result.put("error", "A server error occurred while attempting to ingest \"" + ingestFile.getName() + "\" to " + pid);
 				
 				// Inspect the SWORD response, extracting the stacktrace
 				InputStream entryPart = method.getResponseBodyAsStream();
@@ -102,19 +104,19 @@ public class IngestController {
 					stackTrace = ((Entry) rootEntry).getExtension(SWORD_VERBOSE_DESCRIPTION).getText();
 					result.put("errorStack", stackTrace);
 				}
-				log.warn("Failed to upload ingest package file " + packageFile.getName() + " from user "
+				log.warn("Failed to upload ingest package file " + ingestFile.getName() + " from user "
 						+ GroupsThreadStore.getUsername(), stackTrace);
 			}
 			return result;
 		} catch (Exception e) {
-			log.warn("Encountered an unexpected error while ingesting package " + packageFile.getName() + " from user "
+			log.warn("Encountered an unexpected error while ingesting package " + ingestFile.getName() + " from user "
 					+ GroupsThreadStore.getUsername(), e);
-			result.put("error", "A server error occurred while attempting to ingest \"" + packageFile.getName() + "\" to " + pid);
+			result.put("error", "A server error occurred while attempting to ingest \"" + ingestFile.getName() + "\" to " + pid);
 			return result;
 		} finally {
 			method.releaseConnection();
 			try {
-				packageFile.getInputStream().close();
+				ingestFile.getInputStream().close();
 			} catch (IOException e) {
 				log.warn("Failed to close ingest package file", e);
 			}

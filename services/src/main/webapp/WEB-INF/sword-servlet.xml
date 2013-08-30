@@ -279,20 +279,29 @@
 	
 	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl"
 		init-method="init">
-		<property name="digitalObjectManager" ref="digitalObjectManager"/>
-		<property name="depositReportingUtil" ref="depositReportingUtil"/>
+		<property name="packageHandlers" ref="packageHandlers" />
 	</bean>
 	
 	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ServiceDocumentManagerImpl" 
 		init-method="init">
-		<property name="acceptedPackaging">
-			<list>
-				<value>#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_1.uri}</value>
-				<value>#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_2.uri}</value>
-				<value>#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR.uri}</value>
-			</list>
-		</property>
+		<property name="acceptedPackaging" ref="packageHandlers" />
 	</bean>
+	
+	<!-- Deposit Handlers -->
+	<bean id="metsDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.METSDepositHandler" />
+	<bean id="simpleObjectDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.SimpleObjectDepositHandler" />
+	<bean id="atomPubEntryDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.AtomPubEntryDepositHandler" />
+	
+	<util:map id="packageHandlers">
+		<entry>
+			<key><null/></key>
+			<ref bean="atomPubEntryDepositHandler"/>
+		</entry>
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_1}" value-ref="metsDepositHandler" />
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_2}" value-ref="metsDepositHandler" />
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="metsDepositHandler" />
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
+	</util:map>
 	
 	<bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl"
 		init-method="init">

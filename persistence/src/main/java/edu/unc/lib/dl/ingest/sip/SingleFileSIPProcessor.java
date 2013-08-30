@@ -47,10 +47,10 @@ public class SingleFileSIPProcessor extends FileSIPProcessor {
 			throw new IngestException("Please specify a container path");
 		} else if (sip.getData() == null || !sip.getData().exists() || sip.getData().length() == 0) {
 			throw new IngestException("Data file not found");
-		} else if (sip.getModsXML() == null || !sip.getModsXML().exists() || sip.getModsXML().length() == 0) {
-			throw new IngestException("MODS metadata file not found");
 		}
-
+		
+		boolean hasMods = sip.getModsXML() != null && sip.getModsXML().exists() && sip.getModsXML().length() > 0;
+		
 		AIPImpl aip = prepareIngestDirectory(sip, record);
 
 		PID pid = this.getPidGenerator().getNextPID();
@@ -60,22 +60,24 @@ public class SingleFileSIPProcessor extends FileSIPProcessor {
 
 		// parse the MODS and insert into FOXML
 		String label = null;
-		try {
-			Document mods = new SAXBuilder().build(sip.getModsXML());
-			if (log.isDebugEnabled()) {
-				XMLOutputter out = new XMLOutputter();
-				String output = out.outputString(mods.getRootElement());
-				log.info("HERE:\n" + output);
+		if (hasMods) {
+			try {
+				Document mods = new SAXBuilder().build(sip.getModsXML());
+				if (log.isDebugEnabled()) {
+					XMLOutputter out = new XMLOutputter();
+					String output = out.outputString(mods.getRootElement());
+					log.info("HERE:\n" + output);
+				}
+				label = ModsXmlHelper.getFormattedLabelText(mods.getRootElement());
+				Element root = mods.getRootElement();
+				root.detach();
+				FOXMLJDOMUtil
+						.setInlineXMLDatastreamContent(foxml, "MD_DESCRIPTIVE", "Descriptive Metadata (MODS)", root, true);
+			} catch (JDOMException e) {
+				throw new IngestException("Error parsing MODS xml.", e);
+			} catch (IOException e) {
+				throw new IngestException("Error reading MODS xml file.", e);
 			}
-			label = ModsXmlHelper.getFormattedLabelText(mods.getRootElement());
-			Element root = mods.getRootElement();
-			root.detach();
-			FOXMLJDOMUtil
-					.setInlineXMLDatastreamContent(foxml, "MD_DESCRIPTIVE", "Descriptive Metadata (MODS)", root, true);
-		} catch (JDOMException e) {
-			throw new IngestException("Error parsing MODS xml.", e);
-		} catch (IOException e) {
-			throw new IngestException("Error reading MODS xml file.", e);
 		}
 		
 		if(label == null) {
