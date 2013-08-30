@@ -78,6 +78,11 @@
 	text-align: left;
 }
 
+.edit_form p {
+	padding-top: 7px;
+	text-align: left;
+}
+
 /** Edit ACL */
 
 .edit_acls .roles_granted {
@@ -137,5 +142,10 @@
 }
 
 #create_container_form label {
-	width: 130px;
+	width: 135px;
+}
+
+/** Create simple object */
+.create_simple_object_form label {
+	width: 70px;
 }

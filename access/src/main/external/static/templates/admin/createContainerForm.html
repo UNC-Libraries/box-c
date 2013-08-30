@@ -1,18 +1,18 @@
-<link rel="stylesheet" type="text/css" href="/static/css/admin/admin_forms.css" />
 <iframe id="upload_create_container" name="upload_create_container" height="0" width="0" style="display: none;"></iframe>
 <form id="create_container_form" method="post" action="/services/rest/edit/create_container/<%= pid %>" enctype="multipart/form-data" class="edit_form" target="upload_create_container">
 	<div class="form_field">
-		<label>Container Name</label>
-		<input name="name" size="40"></input>
+		<label>Container Name*</label>
+		<input name="name" size="38"></input>
 	</div>
 	<div class="form_field">
-		<label>Type</label>
+		<label>Type*</label>
 		<select name="type">
 			<option value="folder">Folder</option>
 			<option value="collection">Collection</option>
 		</select>
 	</div>
-	<h3>Optional</h3>
+	<h3>Description</h3>
+	<p>A description is required if you are creating a Collection.</p>
 	<div class="form_field">
 		<label>Description (MODS)</label>
 		<input type="file" name="description" accept="text/xml,application/xml"/>

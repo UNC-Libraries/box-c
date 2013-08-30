@@ -125,6 +125,7 @@
 </div>
 
 <link rel="stylesheet" type="text/css" href="/static/css/admin/search_results.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/admin/admin_forms.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/structure_browse.css" />
 <script>
 	console.log("Starting " + (new Date()).getTime());

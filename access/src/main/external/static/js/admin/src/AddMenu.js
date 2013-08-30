@@ -1,5 +1,5 @@
-define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 'IngestPackageForm', 'qtip'],
-		function($, ui, _, CreateContainerForm, IngestPackageForm) {
+define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 'IngestPackageForm', 'CreateSimpleObjectForm', 'qtip'],
+		function($, ui, _, CreateContainerForm, IngestPackageForm, CreateSimpleObjectForm) {
 	
 	function AddMenu(options) {
 		this.options = $.extend({}, options);
@@ -10,8 +10,9 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		var items = {};
 		if ($.inArray('addRemoveContents', this.options.container.permissions) == -1)
 			return items;
-		items["addContainer"] = {name : "Add container"};
-		items["ingestPackage"] = {name : "Ingest Package"};
+		items["addContainer"] = {name : "Add Container"};
+		items["ingestPackage"] = {name : "Add Ingest Package"};
+		items["simpleObject"] = {name : "Add Simple Object"};
 		return items;
 	};
 	
@@ -25,6 +26,9 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			alertHandler : this.options.alertHandler
 		});
 		var ingestPackageForm = new IngestPackageForm({
+			alertHandler : this.options.alertHandler
+		});
+		var simpleObjectForm = new CreateSimpleObjectForm({
 			alertHandler : this.options.alertHandler
 		});
 		
@@ -48,6 +52,9 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 						break;
 					case "ingestPackage" :
 						ingestPackageForm.open(self.options.container.id);
+						break;
+					case "simpleObject" :
+						simpleObjectForm.open(self.options.container.id);
 						break;
 				}
 			},

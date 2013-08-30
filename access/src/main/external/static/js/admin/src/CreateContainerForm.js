@@ -67,27 +67,6 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 				console.log(e);
 			}
 		});
-		
-		/*var fileUpload = dialog.find("input[type='file']").fileupload({
-			autoUpload: false,
-			submit: function (e, data) {
-				/*$("#create_container_button").on('click', function () {
-					data.submit();
-				});* /
-				return false;
-			}
-		});
-		
-		$("#create_container_button").on('click', function () {
-			fileUpload.fileupload("submit");
-			fileUpload.fileupload("send");
-		});*/
-		
-		/*$("#create_container_button").on('click', function () {
-			$("form[name='create_container_form']").submit();
-			
-			//data.submit();
-		});*/
 	};
 	
 	CreateContainerForm.prototype.validationErrors = function($form) {
