@@ -36,7 +36,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		this.metadata = metadata;
 		this.pid = metadata.id;
 		this.actionMenuInitialized = false;
-		var newElement = $(resultEntryTemplate({metadata : metadata}));
+		this.isContainer = this.metadata.type != "File";
+		var newElement = $(resultEntryTemplate({metadata : metadata, isContainer : this.isContainer}));
 		this.checkbox = null;
 		if (this.element) {
 			if (this.actionMenu)
@@ -48,92 +49,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		this.links = [];
 		if (this.options.selected || this.selected)
 			this.select();
-	};
-	
-	ResultObject.prototype.activateActionMenu = function() {
-		var $menuIcon = $(".action_gear", this.element);
-		if (!this.actionMenuInitialized) {
-			this.initializeActionMenu();
-			$menuIcon.click();
-			return;
-		}
-		if (this.actionMenu.children().length == 0)
-			return;
-		$menuIcon.attr("src", "/static/images/admin/gear_dark.png");
-		return;
-	};
-	
-	ResultObject.prototype.initializeActionMenu = function() {
-		var self = this;
-		
-		// Generate the action menu contents
-		this.actionMenuInitialized = true;
-		this.actionMenu = $(actionMenuTemplate({
-			metadata : this.metadata
-		}));
-		
-		if (this.actionMenu.children().length == 0)
-			return;
-		
-		var menuIcon = $(".action_gear", this.element);
-		
-		// Set up the dropdown menu
-		menuIcon.qtip({
-			content: self.actionMenu,
-			position: {
-				at: "bottom right",
-				my: "top right"
-			},
-			style: {
-				classes: 'qtip-light',
-				tip: false
-			},
-			show: {
-				event: 'click',
-				delay: 0
-			},
-			hide: {
-				delay: 2000,
-				event: 'unfocus mouseleave click',
-				fixed: true, // Make sure we can interact with the qTip by setting it as fixed
-				effect: function(offset) {
-					menuIcon.attr("src", "/static/images/admin/gear.png");
-					$(this).fadeOut(100);
-				}
-			},
-			events: {
-				render: function(event, api) {
-					self.initializePublishLinks($(this));
-					self.initializeDeleteLinks($(this));
-				}
-			}
-		});
-		
-		this.actionMenu.children().click(function(){
-			menuIcon.qtip('hide');
-		});
-		
-		this.actionMenu.children(".edit_access").click(function(){
-			menuIcon.qtip('hide');
-			self.highlight();
-			var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading-large.gif'/></div>");
-			dialog.dialog({
-				autoOpen: true,
-				width: 500,
-				height: 'auto',
-				maxHeight: 800,
-				minWidth: 500,
-				modal: true,
-				title: 'Access Control Settings',
-				close: function() {
-					dialog.remove();
-					self.unhighlight();
-				}
-			});
-			dialog.load("acl/" + self.pid, function(responseText, textStatus, xmlHttpRequest){
-				dialog.dialog('option', 'position', 'center');
-			});
-		});
 	};
 	
 	ResultObject.prototype._destroy = function () {

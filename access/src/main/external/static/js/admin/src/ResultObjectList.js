@@ -62,8 +62,16 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 					console.log(B);
 				}
 			});
-		}
+		},
 		
+		getSelected: function() {
+			var selected = [];
+			for (var index in this.resultObjects) {
+				if (this.resultObjects[index].selected)
+					selected.push(this.resultObjects[index]);
+			}
+			return selected;
+		}
 	});
 	
 	return ResultObjectList;

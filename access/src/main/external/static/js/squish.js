@@ -730,7 +730,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 		
 		if (this.options.confirm) {
 			var dialogOptions = {
-					width : 200,
+					width : 'auto',
 					modal : true
 				};
 			if (this.options.parentObject)
@@ -1166,13 +1166,17 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 	
 	$.extend(ConfirmationDialog.prototype, {
 		options : {
-			'promptText' : 'Are you sure?',
-			'confirmFunction' : undefined,
-			'confirmTarget' : undefined,
-			'confirmText' : 'Yes',
-			'cancelText' : 'Cancel',
-			'solo' : true,
-			'additionalButtons' : undefined
+			promptText : 'Are you sure?',
+			confirmFunction : undefined,
+			confirmTarget : undefined,
+			confirmText : 'Yes',
+			cancelTarget : undefined,
+			cancelFunction : undefined,
+			cancelText : 'Cancel',
+			solo : true,
+			additionalButtons : undefined,
+			autoOpen : false,
+			addClass : undefined
 		},
 		
 		dialogOptions : {
@@ -1215,12 +1219,21 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 				buttons : buttonsObject
 			});
 			this.confirmDialog.dialog(this.dialogOptions);
+			if (this.options.addClass)
+				this.confirmDialog.addClass(this.options.addClass);
+			if (this.options.autoOpen)
+				this.open();
 		},
 		
 		_generateButtons : function() {
 			var buttonsObject = {}, self = this;
 			
 			buttonsObject[this.options.cancelText] = function() {
+				if (self.options.cancelFunction) {
+					var result = self.options.cancelFunction.call(self.options.cancelTarget);
+					if (result !== undefined && !result)
+						return;
+				}
 				$(this).dialog("close");
 			};
 			
@@ -2238,7 +2251,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		this.metadata = metadata;
 		this.pid = metadata.id;
 		this.actionMenuInitialized = false;
-		var newElement = $(resultEntryTemplate({metadata : metadata}));
+		this.isContainer = this.metadata.type != "File";
+		var newElement = $(resultEntryTemplate({metadata : metadata, isContainer : this.isContainer}));
 		this.checkbox = null;
 		if (this.element) {
 			if (this.actionMenu)
@@ -2250,92 +2264,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		this.links = [];
 		if (this.options.selected || this.selected)
 			this.select();
-	};
-	
-	ResultObject.prototype.activateActionMenu = function() {
-		var $menuIcon = $(".action_gear", this.element);
-		if (!this.actionMenuInitialized) {
-			this.initializeActionMenu();
-			$menuIcon.click();
-			return;
-		}
-		if (this.actionMenu.children().length == 0)
-			return;
-		$menuIcon.attr("src", "/static/images/admin/gear_dark.png");
-		return;
-	};
-	
-	ResultObject.prototype.initializeActionMenu = function() {
-		var self = this;
-		
-		// Generate the action menu contents
-		this.actionMenuInitialized = true;
-		this.actionMenu = $(actionMenuTemplate({
-			metadata : this.metadata
-		}));
-		
-		if (this.actionMenu.children().length == 0)
-			return;
-		
-		var menuIcon = $(".action_gear", this.element);
-		
-		// Set up the dropdown menu
-		menuIcon.qtip({
-			content: self.actionMenu,
-			position: {
-				at: "bottom right",
-				my: "top right"
-			},
-			style: {
-				classes: 'qtip-light',
-				tip: false
-			},
-			show: {
-				event: 'click',
-				delay: 0
-			},
-			hide: {
-				delay: 2000,
-				event: 'unfocus mouseleave click',
-				fixed: true, // Make sure we can interact with the qTip by setting it as fixed
-				effect: function(offset) {
-					menuIcon.attr("src", "/static/images/admin/gear.png");
-					$(this).fadeOut(100);
-				}
-			},
-			events: {
-				render: function(event, api) {
-					self.initializePublishLinks($(this));
-					self.initializeDeleteLinks($(this));
-				}
-			}
-		});
-		
-		this.actionMenu.children().click(function(){
-			menuIcon.qtip('hide');
-		});
-		
-		this.actionMenu.children(".edit_access").click(function(){
-			menuIcon.qtip('hide');
-			self.highlight();
-			var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading-large.gif'/></div>");
-			dialog.dialog({
-				autoOpen: true,
-				width: 500,
-				height: 'auto',
-				maxHeight: 800,
-				minWidth: 500,
-				modal: true,
-				title: 'Access Control Settings',
-				close: function() {
-					dialog.remove();
-					self.unhighlight();
-				}
-			});
-			dialog.load("acl/" + self.pid, function(responseText, textStatus, xmlHttpRequest){
-				dialog.dialog('option', 'position', 'center');
-			});
-		});
 	};
 	
 	ResultObject.prototype._destroy = function () {
@@ -2725,15 +2653,23 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 					console.log(B);
 				}
 			});
-		}
+		},
 		
+		getSelected: function() {
+			var selected = [];
+			for (var index in this.resultObjects) {
+				if (this.resultObjects[index].selected)
+					selected.push(this.resultObjects[index]);
+			}
+			return selected;
+		}
 	});
 	
 	return ResultObjectList;
 });define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'ParentResultObject', 'AddMenu', 
-		'ResultObjectActionMenu', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'detachplus'], 
+		'ResultObjectActionMenu', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'ConfirmationDialog', 'detachplus'], 
 		function($, ui, ResultObjectList, URLUtilities, ParentResultObject, AddMenu, ResultObjectActionMenu,
-				PublishBatchButton, UnpublishBatchButton, DeleteBatchButton) {
+				PublishBatchButton, UnpublishBatchButton, DeleteBatchButton, ConfirmationDialog) {
 	$.widget("cdr.resultTableView", {
 		options : {
 			enableSort : true,
@@ -2757,8 +2693,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 						resultObjectList : this.resultObjectList, element : $(".container_entry")});
 				this._initializeAddMenu();
 			}
-			//this.$resultTable.children('tbody').append(fragment);
-			
 			
 			if (this.options.enableSort)
 				this._initSort();
@@ -2768,13 +2702,16 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				selector : ".action_gear",
 				containerSelector : ".res_entry,.container_entry"
 			});
-			//this._initReordering();
+			this._initMoveLocations();
+			this._initReordering();
 		},
 		
+		// Initialize sorting headers according to whether or not paging is active
 		_initSort : function() {
 			var $resultTable = this.$resultTable;
 			var self = this;
 			if (this.options.pagingActive) {
+				// Paging active, so need to make server callback to perform sort
 				var sortParam = URLUtilities.getParameter('sort');
 				var sortOrder = URLUtilities.getParameter('sortOrder');
 				$("th.sort_col", $resultTable).each(function(){
@@ -2783,7 +2720,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 					var sortField = $this.attr('data-field');
 					if (sortField) {
 						var order = '';
-						//console.log(sortParam + "|" + sortField + "|" + sortOrder + "|" + (!sortOrder));
 						if (sortParam == sortField) {
 							if (sortOrder) {
 								$this.addClass('asc');
@@ -2795,10 +2731,10 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 						var sortUrl = URLUtilities.setParameter(self.options.resultUrl, 'sort', sortField);
 						sortUrl = URLUtilities.setParameter(sortUrl, 'sortOrder', order);
 						this.children[0].href = sortUrl;
-						//console.log(sortUrl);
 					}
 				});
 			} else {
+				// Paging off, perform sorting locally
 				$("th.sort_col", $resultTable).each(function(){
 					var $th = $(this),
 					thIndex = $th.index(),
@@ -2830,6 +2766,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			}
 		},
 		
+		// Base row sorting function
 		_sortEntries : function($entries, matchMap, getSortable) {
 			console.time("Reordering elements");
 			var $resultTable = this.$resultTable;
@@ -2864,6 +2801,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			console.timeEnd("Reordering elements");
 		},
 		
+		// Simple alphanumeric result entry sorting
 		_alphabeticSort : function(thIndex, inverse) {
 			var $resultTable = this.$resultTable;
 			var matchMap = [];
@@ -2890,6 +2828,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			this._sortEntries($entries, matchMap);
 		},
 		
+		// Sort by the order the items appeared at page load
 		_originalOrderSort : function(inverse) {
 			console.time("Finding elements");
 			var $entries = [];
@@ -2907,6 +2846,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			});
 		},
 		
+		// Sort with a combination of alphabetic and number detection
 		_titleSort : function(inverse) {
 			var $resultTable = this.$resultTable;
 			var titleRegex = new RegExp('(\\d+|[^\\d]+)', 'g');
@@ -3020,62 +2960,183 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		
 		_initEventHandlers : function() {
 			var self = this;
-			/*this.$resultTable.on('click', ".action_gear", function(e){
-				var $menuIcon = $(this);
-				self.actionMenu.show($(this).parents(".res_entry").data('resultObject'), $menuIcon);
-				e.stopPropagation();
-			});
-			if (this.containerObject)
-				this.containerObject.element.on('click', ".action_gear", function(e){
-					self.containerObject.activateActionMenu();
-					e.stopPropagation();
-				});*/
 			$(document).on('click', ".res_entry", function(e){
 				$(this).data('resultObject').toggleSelect();
-				//e.stopPropagation();
 			});
 			this.$resultTable.on('click', ".res_entry a", function(e){
 				e.stopPropagation();
 			});
 		},
 		
+		//Initializes the droppable elements used in move operations
+		_initMoveLocations : function() {
+			var self = this;
+			this.$resultTable.droppable({
+				drop : function(event, ui) {
+					// Locate which element is being dropped on
+					var $dropTarget = $(document.elementFromPoint(event.pageX - $(window).scrollLeft(), event.pageY - $(window).scrollTop()));
+					var dropObject = $dropTarget.closest(".res_entry").data("resultObject");
+					// Needs to be a valid container with sufficient perms
+					if (!dropObject || !dropObject.isContainer || $.inArray("addRemoveContents", dropObject.permissions) != -1) return false;
+					// Activate move drop mode
+					self.dropActive = true;
+					
+					// Confirm the move operation before performing it
+					var representative = ui.draggable.data("resultObject");
+					var repTitle = representative.metadata.title;
+					if (repTitle.length > 50) repTitle = repTitle.substring(0, 50) + "...";
+					var destTitle = dropObject.metadata.title;
+					if (destTitle.length > 50) destTitle = destTitle.substring(0, 50) + "...";
+					var promptText = "Move \"<a class='result_object_link' data-id='" + representative.pid + "'>" + repTitle + "</a>\"";
+					if (self.dragTargets.length > 1)
+						promptText += " and " + (self.dragTargets.length - 1) + " other object" + (self.dragTargets.length - 1 > 1? "s" :"");
+					promptText += " into \"<a class='result_object_link' data-id='" + dropObject.pid + "'>" + destTitle + "</a>\"?";
+					var confirm = new ConfirmationDialog({
+						promptText : promptText,
+						modal : true,
+						autoOpen : true,
+						addClass : "move",
+						dialogOptions : {
+							width : 'auto',
+							maxWidth : 400,
+							position : "center center"
+						},
+						confirmFunction : function() {
+							// Perform the move operation and clean up the result entries
+							if (self.dragTargets) {
+								var moveData = {
+										newParent : dropObject.pid,
+										ids : []
+									};
+								$.each(self.dragTargets, function() {
+									moveData.ids.push(this.pid);
+									this.element.hide();
+								});
+								// Store a reference to the targeted item list since moving happens asynchronously
+								var moveObjects = self.dragTargets;
+								$.ajax({
+									url : "NOWHERE",
+									type : "POST",
+									data : JSON.stringify(moveData),
+									contentType: "application/json; charset=utf-8",
+									dataType: "json",
+									success : function(data) {
+										$.each(moveObjects, function() {
+											this.deleteElement();
+										});
+										self.options.alertHandler.alertHandler("success", "Moved " + moveObjects.length + " object" + (moveObjects.length > 1? "s" : "") 
+												+ " to " + destTitle);
+									},
+									error : function() {
+										$.each(moveObjects, function() {
+											this.element.show();
+										});
+										self.options.alertHandler.alertHandler("error", "Failed to move " + moveObjects.length + " object" + (moveObjects.length > 1? "s" : "") 
+												+ " to " + destTitle);
+										
+									}
+								});
+							}
+							self.dragTargets = null;
+							self.$resultTable.removeClass("moving");
+							self.dropActive = false;
+						},
+						cancelFunction : function() {
+							// Cancel and revert the page state
+							if (self.dragTargets) {
+								$.each(self.dragTargets, function() {
+									this.element.show();
+								});
+								self.dragTargets = null;
+							}
+							self.$resultTable.removeClass("moving");
+							self.dropActive = false;
+						}
+					});
+				},
+				tolerance: 'pointer',
+				over: function(event, ui) {
+					$(".ui-sortable-placeholder").hide();
+				},
+				out: function(event, ui) {
+					$(".ui-sortable-placeholder").show();
+				}
+			});
+		},
+		
+		// Initializes draggable elements used in move and reorder operations
 		_initReordering : function() {
-			var arrangeMode = true;
+			var self = this;
+			var arrangeMode = false;
 			var $resultTable = this.$resultTable;
+			
+			function setSelected(element) {
+				var resultObject = element.closest(".res_entry").data("resultObject");
+				if (resultObject.selected) {
+					var selecteResults = self.resultObjectList.getSelected();
+					self.dragTargets = selecteResults;
+				} else {
+					self.dragTargets = [resultObject];
+				}
+			}
+			
 			$resultTable.sortable({
 				delay : 200,
 				items: '.res_entry',
 				cursorAt : { top: -2, left: -5 },
 				forceHelperSize : false,
 				scrollSpeed: 100,
-				/*connectWith: '.hier_entry, .entry.container',*/
+				connectWith: '.result_table, #structure_facet',
 				placeholder : 'arrange_placeholder',
 				helper: function(e, element){
-					var title = $($('.itemdetails a', element)[0]).html();
-					if ($(element).hasClass('selected')) {
-						this.selected = element.parent().children(".selected");
-						if (this.selected.length > 1) {
-							return $("<div class='move_helper'><img src='/static/images/admin/type_folder.png'/><span>" + title + "</span> (and " + (this.selected.length - 1) + " others)</div>");
-						}
-					}
-					return $("<div class='move_helper'><span><img src='/static/images/admin/type_folder.png'/>" + title + "</span></div>");
+					if (!self.dragTargets)
+						setSelected(element);
+					var representative = element.closest(".res_entry").data("resultObject");
+					var metadata = representative.metadata;
+					// Indicate how many extra items are being moved
+					var additionalItemsText = "";
+					if (self.dragTargets.length > 1)
+						additionalItemsText = " (and " + (self.dragTargets.length - 1) + " others)";
+					// Return helper for representative entry
+					var helper = $("<div class='move_helper'><span><img src='/static/images/admin/type_" + metadata.type.toLowerCase() + ".png'/>" + metadata.title + "</span>" + additionalItemsText + "</div>");
+					//helper.width(300);
+					return helper;
 				},
 				appendTo: document.body,
 				start: function(e, ui) {
-					moving = false;
-					ui.item.show();
-					var self = this;
-					if (this.selected) {
-						$.each(this.selected, function(index){
-							if (self.selected[index] === ui.item[0]) {
-								self.itemSelectedIndex = index;
-								return false;
-							}
+					// Hide the original items for a reorder operation
+					if (self.dragTargets && false) {
+						$.each(self.dragTargets, function() {
+							this.element.hide();
 						});
+					} else {
+						ui.item.show();
 					}
+					// Set the table to move mode and enable drop zone hover highlighting
+					$resultTable.addClass("moving")
+						.on("mouseenter", ".res_entry.container.move_into .title", function() {
+							console.log("Hovering");
+							$(this).addClass("drop_hover");
+						}).on("mouseleave", ".res_entry.container.move_into .title", function() {
+							console.log("Blur");
+							$(this).removeClass("drop_hover");
+						});
 				},
 				stop: function(e, ui) {
-					if (!moving && !arrangeMode)
+					// Move drop mode overrides reorder
+					if (self.dropActive) {
+						return false;
+					}
+					if (self.dragTargets) {
+						$.each(self.dragTargets, function() {
+							this.element.show();
+						});
+						self.dragTargets = null;
+					}
+					$resultTable.removeClass("moving");
+					return false;
+					
+					/*if (!moving && !arrangeMode)
 						return false;
 					var self = this;
 					if (this.selected) {
@@ -3085,14 +3146,14 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 							else if (index > self.itemSelectedIndex)
 								$(self.selected[index - 1]).after(self.selected[index]);
 						});
-					}
+					}*/
 				},
 				update: function (e, ui) {
-					if (!moving && !arrangeMode)
+					/*if (!moving && !arrangeMode)
 						return false;
 					if (ui.item.hasClass('selected') && this.selected.length > 0)
 						this.selected.hide().show(300);
-					else ui.item.hide().show(300);
+					else ui.item.hide().show(300);*/
 				}
 			});
 		},
@@ -3106,6 +3167,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			}
 		},
 		
+		// Initialize the menu for adding new items
 		_initializeAddMenu : function() {
 			this.addMenu = new AddMenu({
 				container : this.options.container,

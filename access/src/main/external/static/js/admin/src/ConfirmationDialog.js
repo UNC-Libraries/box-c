@@ -26,13 +26,17 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 	
 	$.extend(ConfirmationDialog.prototype, {
 		options : {
-			'promptText' : 'Are you sure?',
-			'confirmFunction' : undefined,
-			'confirmTarget' : undefined,
-			'confirmText' : 'Yes',
-			'cancelText' : 'Cancel',
-			'solo' : true,
-			'additionalButtons' : undefined
+			promptText : 'Are you sure?',
+			confirmFunction : undefined,
+			confirmTarget : undefined,
+			confirmText : 'Yes',
+			cancelTarget : undefined,
+			cancelFunction : undefined,
+			cancelText : 'Cancel',
+			solo : true,
+			additionalButtons : undefined,
+			autoOpen : false,
+			addClass : undefined
 		},
 		
 		dialogOptions : {
@@ -75,12 +79,21 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 				buttons : buttonsObject
 			});
 			this.confirmDialog.dialog(this.dialogOptions);
+			if (this.options.addClass)
+				this.confirmDialog.addClass(this.options.addClass);
+			if (this.options.autoOpen)
+				this.open();
 		},
 		
 		_generateButtons : function() {
 			var buttonsObject = {}, self = this;
 			
 			buttonsObject[this.options.cancelText] = function() {
+				if (self.options.cancelFunction) {
+					var result = self.options.cancelFunction.call(self.options.cancelTarget);
+					if (result !== undefined && !result)
+						return;
+				}
 				$(this).dialog("close");
 			};
 			

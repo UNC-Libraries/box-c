@@ -103,7 +103,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 		
 		if (this.options.confirm) {
 			var dialogOptions = {
-					width : 200,
+					width : 'auto',
 					modal : true
 				};
 			if (this.options.parentObject)
