@@ -18,6 +18,7 @@ public class FixityLogEntry {
 	private Result result;
 	private Integer code;
 	private String version;
+	private Integer elapsed;
 
 	/**
 	 * The time at which the fixity log entry was recorded.
@@ -133,6 +134,18 @@ public class FixityLogEntry {
 
 	public void setVersion(String version) {
 		this.version = version;
+	}
+	
+	/**
+	 * Elapsed time for fixity verification in seconds (if performed).
+	 */
+	
+	public Integer getElapsed() {
+		return elapsed;
+	}
+	
+	public void setElapsed(Integer elapsed) {
+		this.elapsed = elapsed;
 	}
 
 	/**
