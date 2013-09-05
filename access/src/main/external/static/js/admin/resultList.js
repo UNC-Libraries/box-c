@@ -109,17 +109,19 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 	
 	// Keep result area the right size when the menu is resized
 	var searchMenu = $("#search_menu").searchMenu({
-		filterParams : module.config().filterParams
+		filterParams : module.config().filterParams,
+		resultTableView : $("#result_view"),
+		selectedId : /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? module.config().container.id : false,
 	}).on("resize", function(){
 		menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
 		resizeResults.call();
 	});
 	
 	$("#result_view").resultTableView({
-		'metadataObjects' : module.config().metadataObjects,
-		'resultUrl' : module.config().resultUrl,
-		'pagingActive' : module.config().pagingActive,
-		'container' : module.config().container,
+		metadataObjects : module.config().metadataObjects,
+		resultUrl : module.config().resultUrl,
+		pagingActive : module.config().pagingActive,
+		container : module.config().container,
 		alertHandler : alertHandler
 	});
 	

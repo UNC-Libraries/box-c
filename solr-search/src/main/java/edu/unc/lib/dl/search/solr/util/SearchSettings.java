@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -121,6 +120,7 @@ public class SearchSettings extends AbstractSettings {
 	// Sort direction constants
 	public String sortReverse;
 	public String sortNormal;
+	public Map<String, List<String>> resultFields;
 
 	public SearchSettings() {
 	}
@@ -160,6 +160,8 @@ public class SearchSettings extends AbstractSettings {
 
 		accessFields = new HashSet<String>();
 		accessFilterableFields = new HashSet<String>();
+		
+		resultFields = new HashMap<String, List<String>>();
 
 		// Query validation properties
 		setQueryMaxLength(Integer.parseInt(properties.getProperty("search.query.maxLength", "255")));
@@ -206,6 +208,7 @@ public class SearchSettings extends AbstractSettings {
 		populateMapFromProperty("search.field.display.", searchFieldLabels, properties);
 		populateMapFromProperty("search.actions.", actions, properties);
 		populateMapFromProperty("search.url.param.", searchStateParams, properties);
+		populateListMapFromProperty("search.results.fields", resultFields, properties);
 
 		// Populate sort types
 		setSortReverse(properties.getProperty("search.sort.order.reverse", ""));

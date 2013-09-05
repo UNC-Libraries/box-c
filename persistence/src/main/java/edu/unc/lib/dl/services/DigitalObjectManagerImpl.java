@@ -274,7 +274,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		List<PID> reordered = new ArrayList<PID>();
 		try {
 			// update container
-			this.removeFromContainer(pid, user, reordered);
+			this.removeFromContainer(pid, reordered);
 			Element event = logger.logEvent(PremisEventLogger.Type.DELETION, "Deleted " + deleted.size()
 					+ "contained object(s).", container);
 			logger.addDetailedOutcome(event, "success", "Message: " + message, null);
@@ -425,7 +425,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @return the PID of the old container
 	 * @throws FedoraException
 	 */
-	private PID removeFromContainer(PID pid, Agent user, Collection<PID> reordered) throws FedoraException {
+	private PID removeFromContainer(PID pid, Collection<PID> reordered) throws FedoraException {
 		boolean relsextDone = false;
 		PID parent = this.getTripleStoreQueryService().fetchContainer(pid);
 		if (parent == null) {
@@ -448,15 +448,19 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			List<URI> cmtypes = this.getTripleStoreQueryService().lookupContentModels(parent);
 			if (cmtypes.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
 				// edit Contents XML of parent container to append/insert
-				Document newXML;
-				Document oldXML;
-				MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(parent, "MD_CONTENTS", null);
-				ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
-				oldXML = new SAXBuilder().build(bais);
-				bais.close();
-				newXML = ContainerContentsHelper.remove(oldXML, pid);
-				this.getManagementClient().modifyInlineXMLDatastream(parent, "MD_CONTENTS", false,
-						"removing child object from this container", new ArrayList<String>(), "List of Contents", newXML);
+				try {
+					Document newXML;
+					Document oldXML;
+					MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(parent, "MD_CONTENTS", null);
+					ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
+					oldXML = new SAXBuilder().build(bais);
+					bais.close();
+					newXML = ContainerContentsHelper.remove(oldXML, pid);
+					this.getManagementClient().modifyInlineXMLDatastream(parent, "MD_CONTENTS", false,
+							"removing child object from this container", new ArrayList<String>(), "List of Contents", newXML);
+				} catch (NotFoundException e) {
+					// MD_CONTENTS was not found, so we will assume this is an unordered container
+				}
 			}
 		} catch (JDOMException e) {
 			IllegalRepositoryStateException irs = new IllegalRepositoryStateException(
@@ -703,49 +707,30 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 		return null;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see edu.unc.lib.dl.services.DigitalObjectManager#move(edu.unc.lib.dl.fedora .PID, java.lang.String)
-	 */
+	
 	@Override
-	public void move(List<PID> moving, String destinationPath, Agent user, String message) throws IngestException {
+	public void move(List<PID> moving, PID destination, String user, String message) throws IngestException {
 		availableCheck();
 		PremisEventLogger logger;
-		if (user instanceof PersonAgent){
-			logger = new PremisEventLogger(((PersonAgent)user).getOnyen());
-		} else {
-			logger = new PremisEventLogger(user.getName());
-		}
-
-		// destination exists
-		PID destination = this.getTripleStoreQueryService().fetchByRepositoryPath(destinationPath);
-		if (destination == null) {
+		logger = new PremisEventLogger(user);
+		
+		List<PID> destinationPath = this.getTripleStoreQueryService().lookupRepositoryAncestorPids(destination);
+		if (destinationPath == null || destinationPath.size() == 0)
 			throw new IngestException("Cannot find the destination folder: " + destinationPath);
-		}
-
-		// TODO TEST destination is not the same as a moving object
-		if (moving.contains(destination)) {
-			throw new IngestException("Cannot move an object into itself: " + destinationPath);
-		}
-
+		
 		// destination is container
 		List<URI> cmtypes = this.getTripleStoreQueryService().lookupContentModels(destination);
 		if (!cmtypes.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
 			throw new IngestException("The destination is not a folder: " + destinationPath + " " + destination.getPid());
 		}
-
-		// TODO TEST destination is not below a moving object, repo path must be
-		// acyclic
-		String myDestinationPath = this.getTripleStoreQueryService().lookupRepositoryPath(destination);
-		for (PID p : moving) {
-			String movingPath = this.getTripleStoreQueryService().lookupRepositoryPath(p);
-			if (myDestinationPath.contains(movingPath)) {
-				throw new IngestException("The destination folder is below one of the moving objects: " + myDestinationPath);
+		
+		for (PID pid : moving) {
+			for (PID destPid : destinationPath) {
+				if (pid.equals(destPid))
+					throw new IngestException("The destination folder is below one of the moving objects: " + destination);
 			}
 		}
-
+		
 		// check for duplicate PIDs in incoming list
 		Set<PID> noDups = new HashSet<PID>(moving.size());
 		noDups.addAll(moving);
@@ -754,24 +739,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		} else {
 			noDups = null;
 		}
-
-		// check for slug conflicts
-		// build a hash of the slugs for existing children
-		Map<String, PID> existingSlug2PID = this.getTripleStoreQueryService().fetchChildSlugs(destination);
-		StringBuilder conflicts = new StringBuilder();
-		for (PID pid : moving) {
-			String slug = this.getTripleStoreQueryService().lookupSlug(pid);
-			if (existingSlug2PID.containsKey(slug)) {
-				conflicts.append("slug: ").append(slug).append("; existing child: ")
-						.append(existingSlug2PID.get(slug).getPid()).append("; moving child: ").append(pid.getPid());
-			}
-		}
-		if (conflicts.length() > 0) {
-			conflicts.insert(0,
-					"Some of the specified objects have slugs that conflict with existing children of the Container:\n");
-			throw new IngestException(conflicts.toString());
-		}
-
+		
 		// this is the beginning of the transaction
 		DateTime knownGoodTime = new DateTime();
 		Throwable thrown = null;
@@ -784,7 +752,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		try {
 			// remove pids from old containers, add to new, log
 			for (PID pid : moving) {
-				PID oldParent = this.removeFromContainer(pid, user, reordered);
+				PID oldParent = this.removeFromContainer(pid, reordered);
 				oldParents.add(oldParent);
 				this.getManagementClient().addObjectRelationship(destination,
 						ContentModelHelper.Relationship.contains.getURI().toString(), pid);
@@ -832,7 +800,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 			// send message for the operation
 			if (this.getOperationsMessageSender() != null) {
-				this.getOperationsMessageSender().sendMoveOperation(user.getName(), oldParents, destination, moving,
+				this.getOperationsMessageSender().sendMoveOperation(user, oldParents, destination, moving,
 						reordered);
 			}
 		} catch (FedoraException e) {

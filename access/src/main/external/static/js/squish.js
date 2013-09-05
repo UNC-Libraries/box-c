@@ -2,6 +2,7 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 	var defaultOptions = {
 			indentSuppressed : false,
 			isRoot : false,
+			isSelected : false,
 			structureView : null,
 			node : null
 	};
@@ -96,7 +97,8 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 			primaryAction : primaryAction,
 			secondaryActions : this.options.structureView.options.secondaryActions,
 			downloadUrl : downloadUrl,
-			isRoot : this.options.isRoot
+			isRoot : this.options.isRoot,
+			isSelected : this.options.isSelected
 		});
 	};
 	
@@ -238,6 +240,22 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 		});
 	};
 	
+	StructureEntry.prototype.select = function() {
+		this.element.addClass("selected");
+		this.options.isSelected = true;
+	};
+	
+	StructureEntry.prototype.findEntryById = function(id) {
+		if (this.metadata.id == id)
+			return this;
+		for (var index in this.childEntries) {
+			var result = this.childEntries[index].findEntryById(id);
+			if (result)
+				return result;
+		}
+		return null;
+	};
+	
 	return StructureEntry;
 });define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, ui, StructureEntry) {
 	$.widget("cdr.structureView", {
@@ -251,7 +269,8 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 			queryPath : 'structure',
 			filterParams : '',
 			excludeIds : null,
-			retrieveFiles : false
+			retrieveFiles : false,
+			selectedId : false
 		},
 		_create : function() {
 			
@@ -269,13 +288,23 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 				this.excludeIds = this.options.excludeIds.split(" ");
 			}
 			
+			// Generate the tree of entries starting from the root node
 			this.rootEntry = new StructureEntry({
 				node : this.options.rootNode,
 				structureView : this,
-				isRoot : true
+				isRoot : true,
+				isSelected : this.options.rootSelected
 			});
 			
+			// Render the tree
 			this.rootEntry.render();
+			
+			// If specified, select the selecte entry
+			if (this.options.selectedId) {
+				var selectedEntry = this.rootEntry.findEntryById(this.options.selectedId);
+				if (selectedEntry)
+					selectedEntry.select();
+			}
 			this.$content.append(this.rootEntry.element);
 			
 			this._initHandlers();
@@ -2970,14 +2999,33 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		
 		//Initializes the droppable elements used in move operations
 		_initMoveLocations : function() {
+			// Jquery result containing all elements to use as move drop zones
+			this.$dropLocations = $();
+			this.addMoveDropLocation(this.$resultTable, ".res_entry.container.move_into .title", function($dropTarget){
+				var dropObject = $dropTarget.closest(".res_entry").data("resultObject");
+				// Needs to be a valid container with sufficient perms
+				if (!dropObject || !dropObject.isContainer || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1) return false;
+				return dropObject.metadata;
+			});
+		},
+		
+		addMoveDropLocation : function($dropLocation, dropTargetSelector, dropTargetGetDataFunction) {
 			var self = this;
-			this.$resultTable.droppable({
+			this.$dropLocations = this.$dropLocations.add($dropLocation);
+			$dropLocation.on("mouseenter", dropTargetSelector, function() {
+				console.log("Hovering", this);
+				$(this).addClass("drop_hover");
+			}).on("mouseleave", dropTargetSelector, function() {
+				console.log("Blur", this);
+				$(this).removeClass("drop_hover");
+			});
+			$dropLocation.droppable({
 				drop : function(event, ui) {
 					// Locate which element is being dropped on
 					var $dropTarget = $(document.elementFromPoint(event.pageX - $(window).scrollLeft(), event.pageY - $(window).scrollTop()));
-					var dropObject = $dropTarget.closest(".res_entry").data("resultObject");
-					// Needs to be a valid container with sufficient perms
-					if (!dropObject || !dropObject.isContainer || $.inArray("addRemoveContents", dropObject.permissions) != -1) return false;
+					// Verify that it is the correct type of element and retrieve metadata
+					var metadata = dropTargetGetDataFunction($dropTarget);
+					if (!metadata) return false;
 					// Activate move drop mode
 					self.dropActive = true;
 					
@@ -2985,12 +3033,12 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 					var representative = ui.draggable.data("resultObject");
 					var repTitle = representative.metadata.title;
 					if (repTitle.length > 50) repTitle = repTitle.substring(0, 50) + "...";
-					var destTitle = dropObject.metadata.title;
+					var destTitle = metadata.title;
 					if (destTitle.length > 50) destTitle = destTitle.substring(0, 50) + "...";
 					var promptText = "Move \"<a class='result_object_link' data-id='" + representative.pid + "'>" + repTitle + "</a>\"";
 					if (self.dragTargets.length > 1)
 						promptText += " and " + (self.dragTargets.length - 1) + " other object" + (self.dragTargets.length - 1 > 1? "s" :"");
-					promptText += " into \"<a class='result_object_link' data-id='" + dropObject.pid + "'>" + destTitle + "</a>\"?";
+					promptText += " into \"<a class='result_object_link' data-id='" + metadata.id + "'>" + destTitle + "</a>\"?";
 					var confirm = new ConfirmationDialog({
 						promptText : promptText,
 						modal : true,
@@ -3005,7 +3053,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 							// Perform the move operation and clean up the result entries
 							if (self.dragTargets) {
 								var moveData = {
-										newParent : dropObject.pid,
+										newParent : metadata.id,
 										ids : []
 									};
 								$.each(self.dragTargets, function() {
@@ -3015,7 +3063,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 								// Store a reference to the targeted item list since moving happens asynchronously
 								var moveObjects = self.dragTargets;
 								$.ajax({
-									url : "NOWHERE",
+									url : "/services/rest/edit/move",
 									type : "POST",
 									data : JSON.stringify(moveData),
 									contentType: "application/json; charset=utf-8",
@@ -3038,7 +3086,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 								});
 							}
 							self.dragTargets = null;
-							self.$resultTable.removeClass("moving");
+							self.$dropLocations.removeClass("moving");
 							self.dropActive = false;
 						},
 						cancelFunction : function() {
@@ -3049,13 +3097,14 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 								});
 								self.dragTargets = null;
 							}
-							self.$resultTable.removeClass("moving");
+							self.$dropLocations.removeClass("moving");
 							self.dropActive = false;
 						}
 					});
 				},
 				tolerance: 'pointer',
 				over: function(event, ui) {
+					console.log("Over " + this);
 					$(".ui-sortable-placeholder").hide();
 				},
 				out: function(event, ui) {
@@ -3086,7 +3135,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				cursorAt : { top: -2, left: -5 },
 				forceHelperSize : false,
 				scrollSpeed: 100,
-				connectWith: '.result_table, #structure_facet',
+				connectWith: '.result_table, .structure_content',
 				placeholder : 'arrange_placeholder',
 				helper: function(e, element){
 					if (!self.dragTargets)
@@ -3113,7 +3162,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 						ui.item.show();
 					}
 					// Set the table to move mode and enable drop zone hover highlighting
-					$resultTable.addClass("moving")
+					self.$dropLocations.addClass("moving")
 						.on("mouseenter", ".res_entry.container.move_into .title", function() {
 							console.log("Hovering");
 							$(this).addClass("drop_hover");
@@ -3133,7 +3182,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 						});
 						self.dragTargets = null;
 					}
-					$resultTable.removeClass("moving");
+					self.$dropLocations.removeClass("moving");
 					return false;
 					
 					/*if (!moving && !arrangeMode)
@@ -3181,7 +3230,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		$, ui, URLUtilities) {
 	$.widget("cdr.searchMenu", {
 		options : {
-			filterParams : ''
+			filterParams : '',
+			selectedId : false
 		},
 		
 		_create : function() {
@@ -3210,9 +3260,22 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 										showResourceIcons : true,
 										showParentLink : true,
 										queryPath : 'list',
-										filterParams : self.options.filterParams
+										filterParams : self.options.filterParams,
+										selectedId : self.options.selectedId
 									});
 									$structureView.addClass('inset facet');
+									// Inform the result view that the structure browse is ready for move purposes
+									if (self.options.resultTableView)
+										self.options.resultTableView.resultTableView('addMoveDropLocation', 
+											$structureView.find(".structure_content"),
+											'.entry > .primary_action', 
+											function($dropTarget){
+												var dropObject = $dropTarget.closest(".entry_wrap").data("structureEntry");
+												// Needs to be a valid container with sufficient perms
+												if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
+													return false;
+												return dropObject.metadata;
+											});
 									data = $structureView;
 								}
 								ui.newPanel.html(data);

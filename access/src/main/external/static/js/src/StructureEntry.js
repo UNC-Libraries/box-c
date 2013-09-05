@@ -2,6 +2,7 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 	var defaultOptions = {
 			indentSuppressed : false,
 			isRoot : false,
+			isSelected : false,
 			structureView : null,
 			node : null
 	};
@@ -96,7 +97,8 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 			primaryAction : primaryAction,
 			secondaryActions : this.options.structureView.options.secondaryActions,
 			downloadUrl : downloadUrl,
-			isRoot : this.options.isRoot
+			isRoot : this.options.isRoot,
+			isSelected : this.options.isSelected
 		});
 	};
 	
@@ -236,6 +238,22 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 		$refreshSet.each(function(){
 			$(this).data('structureEntry').refreshIndent();
 		});
+	};
+	
+	StructureEntry.prototype.select = function() {
+		this.element.addClass("selected");
+		this.options.isSelected = true;
+	};
+	
+	StructureEntry.prototype.findEntryById = function(id) {
+		if (this.metadata.id == id)
+			return this;
+		for (var index in this.childEntries) {
+			var result = this.childEntries[index].findEntryById(id);
+			if (result)
+				return result;
+		}
+		return null;
 	};
 	
 	return StructureEntry;

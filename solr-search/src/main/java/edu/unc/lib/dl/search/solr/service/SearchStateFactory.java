@@ -154,11 +154,7 @@ public class SearchStateFactory {
 	 */
 	public SearchState createHierarchyListSearchState(){
 		SearchState searchState = createIDSearchState();
-		searchState.getResultFields().add(SearchFieldKeys.TITLE.name());
-		searchState.getResultFields().add(SearchFieldKeys.ANCESTOR_PATH.name());
-		searchState.getResultFields().add(SearchFieldKeys.ANCESTOR_NAMES.name());
-		searchState.getResultFields().add(SearchFieldKeys.RESOURCE_TYPE.name());
-		searchState.getResultFields().add(SearchFieldKeys.CONTENT_MODEL.name());
+		searchState.setResultFields(new ArrayList<String>(searchSettings.resultFields.get("structure")));
 		
 		List<String> containerTypes = new ArrayList<String>();
 		containerTypes.add(searchSettings.resourceTypeCollection);
@@ -174,7 +170,7 @@ public class SearchStateFactory {
 	
 	public SearchState createStructureBrowseSearchState(){
 		SearchState searchState = new SearchState();
-		
+		searchState.setResultFields(new ArrayList<String>(searchSettings.resultFields.get("structure")));
 		searchState.setResourceTypes(searchSettings.defaultResourceTypes);
 		searchState.setSearchTermOperator(searchSettings.defaultOperator);
 		searchState.setRowsPerPage(0);
@@ -199,7 +195,7 @@ public class SearchStateFactory {
 	 */
 	public SearchState createHierarchicalBrowseSearchState(){
 		SearchState searchState = new SearchState();
-		
+		searchState.setResultFields(new ArrayList<String>(searchSettings.resultFields.get("structure")));
 		searchState.setBaseFacetLimit(searchSettings.facetsPerGroup);
 		searchState.setResourceTypes(searchSettings.defaultResourceTypes);
 		searchState.setSearchTermOperator(searchSettings.defaultOperator);

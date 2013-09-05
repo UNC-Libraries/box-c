@@ -10,7 +10,8 @@ define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, 
 			queryPath : 'structure',
 			filterParams : '',
 			excludeIds : null,
-			retrieveFiles : false
+			retrieveFiles : false,
+			selectedId : false
 		},
 		_create : function() {
 			
@@ -28,13 +29,23 @@ define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, 
 				this.excludeIds = this.options.excludeIds.split(" ");
 			}
 			
+			// Generate the tree of entries starting from the root node
 			this.rootEntry = new StructureEntry({
 				node : this.options.rootNode,
 				structureView : this,
-				isRoot : true
+				isRoot : true,
+				isSelected : this.options.rootSelected
 			});
 			
+			// Render the tree
 			this.rootEntry.render();
+			
+			// If specified, select the selecte entry
+			if (this.options.selectedId) {
+				var selectedEntry = this.rootEntry.findEntryById(this.options.selectedId);
+				if (selectedEntry)
+					selectedEntry.select();
+			}
 			this.$content.append(this.rootEntry.element);
 			
 			this._initHandlers();

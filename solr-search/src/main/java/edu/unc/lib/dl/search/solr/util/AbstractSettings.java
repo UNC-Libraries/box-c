@@ -15,10 +15,12 @@
  */
 package edu.unc.lib.dl.search.solr.util;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -67,6 +69,21 @@ public abstract class AbstractSettings {
 			// Field name mappings
 			if (propertyKey.indexOf(propertyPrefix) == 0) {
 				map.put(propertyKey.substring(propertyKey.lastIndexOf(".") + 1), (String) propEntry.getValue());
+			}
+		}
+	}
+	
+	protected void populateListMapFromProperty(String propertyPrefix, Map<String, List<String>> map, Properties properties) {
+		Iterator<Map.Entry<Object, Object>> propIt = properties.entrySet().iterator();
+		while (propIt.hasNext()) {
+			Map.Entry<Object, Object> propEntry = propIt.next();
+			String propertyKey = (String) propEntry.getKey();
+
+			// Field name mappings
+			if (propertyKey.indexOf(propertyPrefix) == 0) {
+				String key = propertyKey.substring(propertyKey.lastIndexOf(".") + 1);
+				List<String> values = Arrays.asList(((String)propEntry.getValue()).split(","));
+				map.put(key, values);
 			}
 		}
 	}

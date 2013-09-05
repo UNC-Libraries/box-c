@@ -302,14 +302,33 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		
 		//Initializes the droppable elements used in move operations
 		_initMoveLocations : function() {
+			// Jquery result containing all elements to use as move drop zones
+			this.$dropLocations = $();
+			this.addMoveDropLocation(this.$resultTable, ".res_entry.container.move_into .title", function($dropTarget){
+				var dropObject = $dropTarget.closest(".res_entry").data("resultObject");
+				// Needs to be a valid container with sufficient perms
+				if (!dropObject || !dropObject.isContainer || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1) return false;
+				return dropObject.metadata;
+			});
+		},
+		
+		addMoveDropLocation : function($dropLocation, dropTargetSelector, dropTargetGetDataFunction) {
 			var self = this;
-			this.$resultTable.droppable({
+			this.$dropLocations = this.$dropLocations.add($dropLocation);
+			$dropLocation.on("mouseenter", dropTargetSelector, function() {
+				console.log("Hovering", this);
+				$(this).addClass("drop_hover");
+			}).on("mouseleave", dropTargetSelector, function() {
+				console.log("Blur", this);
+				$(this).removeClass("drop_hover");
+			});
+			$dropLocation.droppable({
 				drop : function(event, ui) {
 					// Locate which element is being dropped on
 					var $dropTarget = $(document.elementFromPoint(event.pageX - $(window).scrollLeft(), event.pageY - $(window).scrollTop()));
-					var dropObject = $dropTarget.closest(".res_entry").data("resultObject");
-					// Needs to be a valid container with sufficient perms
-					if (!dropObject || !dropObject.isContainer || $.inArray("addRemoveContents", dropObject.permissions) != -1) return false;
+					// Verify that it is the correct type of element and retrieve metadata
+					var metadata = dropTargetGetDataFunction($dropTarget);
+					if (!metadata) return false;
 					// Activate move drop mode
 					self.dropActive = true;
 					
@@ -317,12 +336,12 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					var representative = ui.draggable.data("resultObject");
 					var repTitle = representative.metadata.title;
 					if (repTitle.length > 50) repTitle = repTitle.substring(0, 50) + "...";
-					var destTitle = dropObject.metadata.title;
+					var destTitle = metadata.title;
 					if (destTitle.length > 50) destTitle = destTitle.substring(0, 50) + "...";
 					var promptText = "Move \"<a class='result_object_link' data-id='" + representative.pid + "'>" + repTitle + "</a>\"";
 					if (self.dragTargets.length > 1)
 						promptText += " and " + (self.dragTargets.length - 1) + " other object" + (self.dragTargets.length - 1 > 1? "s" :"");
-					promptText += " into \"<a class='result_object_link' data-id='" + dropObject.pid + "'>" + destTitle + "</a>\"?";
+					promptText += " into \"<a class='result_object_link' data-id='" + metadata.id + "'>" + destTitle + "</a>\"?";
 					var confirm = new ConfirmationDialog({
 						promptText : promptText,
 						modal : true,
@@ -337,7 +356,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 							// Perform the move operation and clean up the result entries
 							if (self.dragTargets) {
 								var moveData = {
-										newParent : dropObject.pid,
+										newParent : metadata.id,
 										ids : []
 									};
 								$.each(self.dragTargets, function() {
@@ -347,7 +366,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 								// Store a reference to the targeted item list since moving happens asynchronously
 								var moveObjects = self.dragTargets;
 								$.ajax({
-									url : "NOWHERE",
+									url : "/services/rest/edit/move",
 									type : "POST",
 									data : JSON.stringify(moveData),
 									contentType: "application/json; charset=utf-8",
@@ -370,7 +389,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 								});
 							}
 							self.dragTargets = null;
-							self.$resultTable.removeClass("moving");
+							self.$dropLocations.removeClass("moving");
 							self.dropActive = false;
 						},
 						cancelFunction : function() {
@@ -381,13 +400,14 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 								});
 								self.dragTargets = null;
 							}
-							self.$resultTable.removeClass("moving");
+							self.$dropLocations.removeClass("moving");
 							self.dropActive = false;
 						}
 					});
 				},
 				tolerance: 'pointer',
 				over: function(event, ui) {
+					console.log("Over " + this);
 					$(".ui-sortable-placeholder").hide();
 				},
 				out: function(event, ui) {
@@ -418,7 +438,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				cursorAt : { top: -2, left: -5 },
 				forceHelperSize : false,
 				scrollSpeed: 100,
-				connectWith: '.result_table, #structure_facet',
+				connectWith: '.result_table, .structure_content',
 				placeholder : 'arrange_placeholder',
 				helper: function(e, element){
 					if (!self.dragTargets)
@@ -445,7 +465,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						ui.item.show();
 					}
 					// Set the table to move mode and enable drop zone hover highlighting
-					$resultTable.addClass("moving")
+					self.$dropLocations.addClass("moving")
 						.on("mouseenter", ".res_entry.container.move_into .title", function() {
 							console.log("Hovering");
 							$(this).addClass("drop_hover");
@@ -465,7 +485,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						});
 						self.dragTargets = null;
 					}
-					$resultTable.removeClass("moving");
+					self.$dropLocations.removeClass("moving");
 					return false;
 					
 					/*if (!moving && !arrangeMode)

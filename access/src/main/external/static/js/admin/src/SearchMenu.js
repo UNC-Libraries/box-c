@@ -2,7 +2,8 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 		$, ui, URLUtilities) {
 	$.widget("cdr.searchMenu", {
 		options : {
-			filterParams : ''
+			filterParams : '',
+			selectedId : false
 		},
 		
 		_create : function() {
@@ -31,9 +32,22 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 										showResourceIcons : true,
 										showParentLink : true,
 										queryPath : 'list',
-										filterParams : self.options.filterParams
+										filterParams : self.options.filterParams,
+										selectedId : self.options.selectedId
 									});
 									$structureView.addClass('inset facet');
+									// Inform the result view that the structure browse is ready for move purposes
+									if (self.options.resultTableView)
+										self.options.resultTableView.resultTableView('addMoveDropLocation', 
+											$structureView.find(".structure_content"),
+											'.entry > .primary_action', 
+											function($dropTarget){
+												var dropObject = $dropTarget.closest(".entry_wrap").data("structureEntry");
+												// Needs to be a valid container with sufficient perms
+												if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
+													return false;
+												return dropObject.metadata;
+											});
 									data = $structureView;
 								}
 								ui.newPanel.html(data);

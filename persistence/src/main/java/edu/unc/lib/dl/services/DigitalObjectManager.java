@@ -160,15 +160,15 @@ public interface DigitalObjectManager {
 	 *
 	 * @param movingPids
 	 *           a List of PIDs to move, in order for insert
-	 * @param destinationPath
-	 *           the repository path of the new parent container
+	 * @param destination
+	 *           the PID of the destination for this action
 	 * @param user
 	 *           agent performing this action
 	 * @param message
 	 *           log message explaining this action
 	 * @throws IngestException
 	 */
-	public abstract void move(List<PID> movingPids, String destinationPath, Agent user, String message)
+	public abstract void move(List<PID> moving, PID destination, String user, String message)
 			throws IngestException;
 
 	public abstract boolean isAvailable();

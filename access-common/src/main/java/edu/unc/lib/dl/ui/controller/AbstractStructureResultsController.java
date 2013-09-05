@@ -1,8 +1,8 @@
 package edu.unc.lib.dl.ui.controller;
 
-import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -14,14 +14,23 @@ import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
+/**
+ * Base structure browse controller.  
+ * This is separate from StructureResultsController to allow for other controllers to use the same base functionality,
+ * since controllers cannot inherit from each other. 
+ * @author bbpennel
+ *
+ */
 public class AbstractStructureResultsController extends AbstractSolrSearchController {
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractStructureResultsController.class);
 
-	protected List<String> tierResultFieldsList = Arrays.asList(SearchFieldKeys.ID.name(),
-			SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_PATH.name(),
-			SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.ROLE_GROUP.name(),
-			SearchFieldKeys.PARENT_COLLECTION.name());
+	protected List<String> tierResultFieldsList;
 
+	@PostConstruct
+	public void init() {
+		tierResultFieldsList = searchSettings.resultFields.get("structure");
+	}
+	
 	protected HierarchicalBrowseResultResponse getStructureResult(String pid, boolean includeFiles,
 			boolean collectionMode, boolean retrieveFacets, HttpServletRequest request) {
 		int depth;

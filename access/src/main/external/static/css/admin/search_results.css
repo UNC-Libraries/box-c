@@ -177,6 +177,10 @@
 	}
 }
 
+.res_entry .title {
+	border: 1px solid transparent;
+}
+
 .res_entry {
 	border-bottom: 1px solid #EEEEEE;
 }
@@ -433,6 +437,34 @@ colgroup > .date_added, .column_headers > .date_added > a {
 
 .result_table.moving .arrange_placeholder {
 	display: none;
+}
+
+.structure .entry .primary_action {
+	border: 1px solid transparent;
+}
+
+.structure .selected > .entry > .primary_action::before {
+	content : '\25B8';
+	margin-right: 3px;
+	margin-left: -3px;
+	color : #0C7889;
+}
+
+.structure .moving .entry > .primary_action {
+	border: 1px dashed #59AACE;
+	background-color: #FBFBFE;
+}
+
+.structure .moving .entry > .primary_action:hover, .structure .moving .entry > .primary_action.drop_hover {
+	background-color: #DDF0FA;
+	border: 1px solid #59AACE;
+	color: #555555;
+	text-decoration: none;
+}
+
+.structure .moving .selected > .entry > .primary_action {
+	border: 1px dashed transparent;
+	background-color: none;
 }
 
 .confirm_dialog .move {

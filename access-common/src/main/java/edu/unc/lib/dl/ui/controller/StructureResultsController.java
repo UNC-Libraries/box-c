@@ -42,7 +42,7 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
 @Controller
 public class StructureResultsController extends AbstractStructureResultsController {
 	private static final Logger LOG = LoggerFactory.getLogger(StructureResultsController.class);
-
+	
 	@RequestMapping("/structure/json")
 	public @ResponseBody
 	String getStructureJSON(@RequestParam(value = "files", required = false) String includeFiles, Model model,

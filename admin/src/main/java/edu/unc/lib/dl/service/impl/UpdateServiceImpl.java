@@ -185,9 +185,6 @@ public class UpdateServiceImpl implements UpdateService {
 
 				PID parent = new PID(moveObjectRequest.getParent());
 
-				String parentPath = tripleStoreQueryService
-						.lookupRepositoryPath(parent);
-
 				List<PID> pids = new ArrayList<PID>(moveObjectRequest
 						.getChildren().size());
 
@@ -196,7 +193,7 @@ public class UpdateServiceImpl implements UpdateService {
 					pids.add(childPid);
 				}
 
-				digitalObjectManager.move(pids, parentPath, agent,
+				digitalObjectManager.move(pids, parent, agent.getName(),
 						"Moved through UI");
 
 			} catch (Exception e) {
