@@ -87,7 +87,7 @@
 		config: {
 			'structureBrowse' : {
 				'results': ${resultJSON},
-				'filterParams' : '${searchParams}'
+				'filterParams' : '${cdr:urlEncode(searchParams)}'
 			},
 		}
 	};

@@ -140,7 +140,7 @@
 	var require = {
 		config: {
 			'searchResults' : {
-				'filterParams' : '${searchStateUrl}'
+				'filterParams' : '${cdr:urlEncode(searchStateUrl)}'
 			},
 		}
 	};

@@ -136,7 +136,7 @@
 				'metadataObjects': ${cdr:resultsToJSON(resultResponse, accessGroupSet)},
 				'pagingActive' : ${resultResponse.resultCount > fn:length(resultResponse.resultList)},
 				'resultUrl' : '${currentRelativeUrl}',
-				'filterParams' : '${searchStateUrl}'
+				'filterParams' : '${cdr:urlEncode(searchStateUrl}'
 				<c:if test="${not empty containerBean}">
 					, 'container' : ${cdr:metadataToJSON(containerBean, accessGroupSet)}
 				</c:if>
