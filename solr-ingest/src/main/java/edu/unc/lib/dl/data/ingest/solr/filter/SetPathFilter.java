@@ -170,14 +170,21 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 	 * @param pathNodes
 	 */
 	private void sortPathNodes(String endPID, List<PathNode> pathNodes) {
-		for (int i = pathNodes.size() - 1; i >= 0; i--) {
-			int j = 0;
-			for (; j < i && !pathNodes.get(j).pid.getPid().equals(endPID); j++);
-			if (j < i) {
-				PathNode swap = pathNodes.get(j);
-				pathNodes.set(j, pathNodes.get(i));
-				pathNodes.set(i, swap);
-				endPID = swap.parentPID.getPid();
+		// i is the index of the next swap destination, starting from the end and working backwards
+		for (int i = pathNodes.size() - 1; i > 0; i--) {
+			// Seek the node containing the next end id (either the previous parent or the starting id)
+			for (int j = i; j >= 0; j--) {
+				if (pathNodes.get(j).pid.getPid().equals(endPID)) {
+					PathNode swap = pathNodes.get(j);
+					// If the node isn't already where it belongs, swap it into place
+					if (j != i) {
+						pathNodes.set(j, pathNodes.get(i));
+						pathNodes.set(i, swap);
+					}
+					// Get the next end node id
+					endPID = swap.parentPID.getPid();
+					break;
+				}
 			}
 		}
 	}
