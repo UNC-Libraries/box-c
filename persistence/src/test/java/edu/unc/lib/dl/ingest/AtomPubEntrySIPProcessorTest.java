@@ -36,7 +36,6 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
@@ -44,7 +43,6 @@ import edu.unc.lib.dl.ingest.aip.RDFAwareAIPImpl;
 import edu.unc.lib.dl.ingest.sip.AtomPubEntrySIP;
 import edu.unc.lib.dl.ingest.sip.AtomPubEntrySIPProcessor;
 import edu.unc.lib.dl.schematron.SchematronValidator;
-import edu.unc.lib.dl.services.AgentManager;
 import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositMethod;
@@ -71,8 +69,8 @@ public class AtomPubEntrySIPProcessorTest extends Assert {
 		
 		File testFile = tempCopy(new File("src/test/resources/atompub/metadataUpdateMODS.xml"));
 		
-		Agent user = AgentManager.getAdministrativeGroupAgentStub();
-		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
+		String adminGroup = ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI();
+		DepositRecord record = new DepositRecord(adminGroup, adminGroup, DepositMethod.Unspecified);
 		
 		InputStream entryPart = new FileInputStream(testFile);
 		Abdera abdera = new Abdera();
@@ -110,8 +108,8 @@ public class AtomPubEntrySIPProcessorTest extends Assert {
 		
 		File testFile = tempCopy(new File("src/test/resources/atompub/metadataDC.xml"));
 		
-		Agent user = AgentManager.getAdministrativeGroupAgentStub();
-		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
+		String adminGroup = ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI();
+		DepositRecord record = new DepositRecord(adminGroup, adminGroup, DepositMethod.Unspecified);
 		
 		InputStream entryPart = new FileInputStream(testFile);
 		Abdera abdera = new Abdera();
@@ -146,8 +144,8 @@ public class AtomPubEntrySIPProcessorTest extends Assert {
 		
 		File testFile = tempCopy(new File("src/test/resources/atompub/metadataUpdateMultipleDS.xml"));
 		
-		Agent user = AgentManager.getAdministrativeGroupAgentStub();
-		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
+		String adminGroup = ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI();
+		DepositRecord record = new DepositRecord(adminGroup, adminGroup, DepositMethod.Unspecified);
 		
 		InputStream entryPart = new FileInputStream(testFile);
 		Abdera abdera = new Abdera();
@@ -188,8 +186,8 @@ public class AtomPubEntrySIPProcessorTest extends Assert {
 		
 		File testFile = tempCopy(new File("src/test/resources/atompub/metadataUpdateMODS.xml"));
 		
-		Agent user = AgentManager.getAdministrativeGroupAgentStub();
-		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
+		String adminGroup = ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI();
+		DepositRecord record = new DepositRecord(adminGroup, adminGroup, DepositMethod.Unspecified);
 		
 		InputStream entryPart = new FileInputStream(testFile);
 		Abdera abdera = new Abdera();

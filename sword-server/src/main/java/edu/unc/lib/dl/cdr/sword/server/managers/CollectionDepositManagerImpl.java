@@ -30,7 +30,6 @@ import org.swordapp.server.SwordServerException;
 import org.swordapp.server.UriRegistry;
 
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.deposit.DepositHandler;
 import edu.unc.lib.dl.fedora.PID;
@@ -58,13 +57,8 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		if (collectionURI == null)
 			throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404, "No collection URI was provided");
 
-		Agent depositor = agentFactory.findPersonByOnyen(auth.getUsername(), false);
-		Agent owner = null;
-		if (auth.getOnBehalfOf() != null) {
-			owner = agentFactory.findPersonByOnyen(auth.getOnBehalfOf(), false);
-		} else {
-			owner = depositor;
-		}
+		String depositor = auth.getUsername();
+		String owner = (auth.getOnBehalfOf() != null)? auth.getOnBehalfOf() : depositor;
 
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 

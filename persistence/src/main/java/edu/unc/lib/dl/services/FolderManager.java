@@ -25,7 +25,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
@@ -48,7 +47,7 @@ public class FolderManager {
 	 * @throws IngestException
 	 *            if the path cannot be created
 	 */
-	public PID createPath(String path, Agent owner, Agent user) throws IngestException {
+	public PID createPath(String path, String owner, String user) throws IngestException {
 		log.debug("attempting to create path: " + path);
 		if (path.endsWith("/")) {
 			path = path.substring(0, path.length() - 1);

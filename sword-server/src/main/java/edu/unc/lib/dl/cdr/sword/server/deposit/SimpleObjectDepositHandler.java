@@ -20,7 +20,7 @@ import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordConfiguration;
 
-import edu.unc.lib.dl.agents.Agent;
+import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.sip.SingleFileSIP;
@@ -33,7 +33,7 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 
 	@Override
 	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, SwordConfiguration config,
-			Agent agent, Agent owner) throws Exception {
+			String depositor, String owner) throws Exception {
 		log.debug("Preparing to perform a Simple Object deposit to " + destination.getPid());
 		String label = deposit.getSlug();
 		if (label == null || label.trim().length() == 0)
@@ -41,12 +41,12 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 		SingleFileSIP sip = new SingleFileSIP(destination, deposit.getFile(), deposit.getMimeType(), label,
 				deposit.getMd5());
 
-		DepositRecord record = new DepositRecord(agent, owner, DepositMethod.SWORD13);
+		DepositRecord record = new DepositRecord(depositor, owner, DepositMethod.SWORD13);
 		record.setMessage("Added through SWORD");
 		record.setPackagingType(type);
+		record.setDepositorEmail(SwordConfigurationImpl.getUserEmailAddress());
 		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
 
 		return buildReceipt(ingestResult, config);
 	}
-
 }

@@ -15,12 +15,10 @@
  */
 package edu.unc.lib.dl.ui.util;
 
-import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.services.FolderManager;
 
 public class UiUtilityMethods {
 	private FolderManager folderManager;
-	private AgentFactory agentManager;
 
 	
 	public boolean notNull(String value) {
@@ -37,13 +35,5 @@ public class UiUtilityMethods {
 
 	public void setFolderManager(FolderManager folderManager) {
 		this.folderManager = folderManager;
-	}
-
-	public AgentFactory getAgentManager() {
-		return agentManager;
-	}
-
-	public void setAgentManager(AgentFactory agentManager) {
-		this.agentManager = agentManager;
 	}
 }

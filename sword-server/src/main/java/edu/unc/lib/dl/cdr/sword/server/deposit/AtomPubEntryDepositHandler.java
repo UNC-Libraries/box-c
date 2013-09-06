@@ -24,7 +24,7 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.UriRegistry;
 
-import edu.unc.lib.dl.agents.Agent;
+import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.sip.AtomPubEntrySIP;
@@ -37,7 +37,7 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 
 	@Override
 	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, SwordConfiguration config,
-			Agent agent, Agent owner) throws Exception {
+			String depositor, String owner) throws Exception {
 		log.debug("Preparing to perform an Atom Pub entry metadata only deposit to " + destination.getPid());
 
 		if (deposit.getSwordEntry() == null || deposit.getSwordEntry().getEntry() == null)
@@ -59,7 +59,8 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 		sip.setInProgress(deposit.isInProgress());
 		sip.setSuggestedSlug(deposit.getSlug());
 
-		DepositRecord record = new DepositRecord(agent, owner, DepositMethod.SWORD13);
+		DepositRecord record = new DepositRecord(depositor, owner, DepositMethod.SWORD13);
+		record.setDepositorEmail(SwordConfigurationImpl.getUserEmailAddress());
 		record.setMessage("Added through SWORD");
 		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
 

@@ -27,22 +27,21 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.ClientUtils;
-import edu.unc.lib.dl.fedora.DatastreamPID;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
+import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 public class MetadataUIP extends FedoraObjectUIP {
 	private static Logger log = Logger.getLogger(MetadataUIP.class);
 
-	public MetadataUIP(PID pid, PersonAgent user, UpdateOperation operation) {
+	public MetadataUIP(PID pid, String user, UpdateOperation operation) {
 		super(pid, user, operation);
 		incomingData = new HashMap<String,Element>();
 		originalData = new HashMap<String,Element>();
@@ -81,7 +80,7 @@ public class MetadataUIP extends FedoraObjectUIP {
 		for (String datastream: incomingData.keySet()){
 			log.debug("Retrieving original document for " + datastream);
 			// Only attempt to retrieve known datastreams
-			if (Datastream.getDatastream(datastream) == null) {
+			if (Datastream.getDatastream(datastream) == null && !AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM.equals(datastream)) {
 				log.debug("Datastream " + datastream + " was not a known datastream, skipping");
 				continue;
 			}

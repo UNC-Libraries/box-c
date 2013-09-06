@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.DataResponse;
 import edu.unc.lib.dl.schema.DatastreamDef;

@@ -81,9 +81,7 @@
 				<bean class="edu.unc.lib.dl.ingest.aip.FixPathConflictFilter">
 					<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 				</bean>
-				<bean class="edu.unc.lib.dl.ingest.aip.BiomedCentralAIPFilter" init-method="init">
-					<property name="agentFactory" ref="agentFactory"/>
-				</bean>
+				<bean class="edu.unc.lib.dl.ingest.aip.BiomedCentralAIPFilter" init-method="init" />
 				<bean class="edu.unc.lib.dl.ingest.aip.MODSValidationFilter">
 					<property name="schematronValidator" ref="schematronValidator" />
 				</bean>
@@ -130,6 +128,7 @@
 		<property name="batchIngestQueue" ref="batchIngestQueue"/>
 		<property name="batchIngestTaskFactory" ref="batchIngestTaskFactory"/>	
 		<property name="available" value="true"/>
+		<property name="collectionsPid" ref="collectionsPid"/>
 	</bean>
 	
 	<bean id="batchIngestQueue" class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">
@@ -145,14 +144,8 @@
 		<property name="accessClient" ref="accessClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
-		<property name="agentFactory" ref="agentFactory"/>
 		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
-	</bean>
-	
-
-	<bean name="agentFactory" class="edu.unc.lib.dl.agents.AgentFactory">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"

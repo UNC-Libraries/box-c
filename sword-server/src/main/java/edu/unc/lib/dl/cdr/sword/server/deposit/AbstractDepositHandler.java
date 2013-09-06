@@ -32,14 +32,15 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 	public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
 		this.digitalObjectManager = digitalObjectManager;
 	}
-	
+
 	protected DepositReceipt buildReceipt(IngestResult ingestResult, SwordConfiguration config) throws SwordError {
 		if (ingestResult == null || ingestResult.derivedPIDs == null || ingestResult.derivedPIDs.size() == 0) {
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400, "Add batch request "
 					+ ingestResult.originalDepositID.getPid() + " did not return any derived results.");
 		}
 
-		DepositReceipt receipt = depositReportingUtil.retrieveDepositReceipt(ingestResult, (SwordConfigurationImpl) config);
+		DepositReceipt receipt = depositReportingUtil.retrieveDepositReceipt(ingestResult,
+				(SwordConfigurationImpl) config);
 		return receipt;
 	}
 }

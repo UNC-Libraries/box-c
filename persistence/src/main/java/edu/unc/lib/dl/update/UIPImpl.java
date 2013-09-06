@@ -19,15 +19,14 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.services.AgentManager;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 public class UIPImpl implements UpdateInformationPackage {
 
 	protected PID pid;
-	protected PersonAgent user;
+	protected String user;
 	protected UpdateOperation operation;
 
 	protected HashMap<String, ?> incomingData;
@@ -36,9 +35,9 @@ public class UIPImpl implements UpdateInformationPackage {
 
 	protected String message;
 	
-	protected PremisEventLogger eventLogger = new PremisEventLogger(AgentManager.getRepositorySoftwareAgentStub().getName());
+	protected PremisEventLogger eventLogger = new PremisEventLogger(ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI());
 
-	public UIPImpl(PID pid, PersonAgent user, UpdateOperation operation) {
+	public UIPImpl(PID pid, String user, UpdateOperation operation) {
 		this.pid = pid;
 		this.user = user;
 		this.operation = operation;
@@ -51,7 +50,7 @@ public class UIPImpl implements UpdateInformationPackage {
 	}
 
 	@Override
-	public PersonAgent getUser() {
+	public String getUser() {
 		return user;
 	}
 

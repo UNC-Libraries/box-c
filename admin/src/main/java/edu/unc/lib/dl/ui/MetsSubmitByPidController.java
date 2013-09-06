@@ -28,7 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.support.RequestContext;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.MetsSubmitIngestObject;
 import edu.unc.lib.dl.schema.UserGroupDAO;
@@ -108,14 +107,8 @@ public class MetsSubmitByPidController extends CommonAdminObjectNavigationContro
 					buffer.append(filePath);
 					pidPath = buffer.toString();
 
-					PID ownerPid = new PID(dao.getOwnerPid());
 					try {
-						Agent mediator = agentManager.findPersonByOnyen(request.getRemoteUser(), false);
-
-						Agent ownerAgent = agentManager.getAgent(ownerPid, false);
-
-						folderManager.createPath(pidPath, ownerAgent, mediator);
-
+						folderManager.createPath(pidPath, dao.getOwnerPid(), request.getRemoteUser());
 					} catch (Exception e) {
 						if(e.getLocalizedMessage() != null) {
 							dao.setMessage(e.getLocalizedMessage().replace("\n", "<br />\n"));

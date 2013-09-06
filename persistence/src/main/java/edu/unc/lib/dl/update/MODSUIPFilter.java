@@ -31,6 +31,7 @@ import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -104,11 +105,11 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 		String message = "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)";
 		Element event = uip.getEventLogger().logEvent(Type.VALIDATION, message, uip.getPID(), "MD_DESCRIPTIVE");
 		if (!schematronValidator.hasFailedAssertions(svrl)) {
-			uip.getEventLogger().addDetailedOutcome(event, "MODS is valid",
+			PremisEventLogger.addDetailedOutcome(event, "MODS is valid",
 					"The supplied MODS metadata meets CDR vocabulary requirements.", null);
 		} else {
 			Element detailExtension = svrl.detachRootElement();
-			uip.getEventLogger().addDetailedOutcome(event, "MODS is not valid",
+			PremisEventLogger.addDetailedOutcome(event, "MODS is not valid",
 					"The supplied MODS metadata does not meet CDR vocabulary requirements.", detailExtension);
 			StringBuilder validationOutput = new StringBuilder();
 			List<?> failedList = detailExtension.getChildren("failed-assert", JDOMNamespaceUtil.SCHEMATRON_VALIDATION_REPORT_NS);

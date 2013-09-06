@@ -80,7 +80,7 @@ public class EnhancementConductorInterruptTest extends Assert {
 		DelayEnhancement.init();
 	}
 	
-	@Test
+	//@Test
 	public void abortPause() throws InterruptedException {
 		assertTrue(enhancementConductor.isReady());
 		

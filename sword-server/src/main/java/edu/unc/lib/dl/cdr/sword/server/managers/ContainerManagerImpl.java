@@ -28,8 +28,6 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
 import edu.unc.lib.dl.fedora.AuthorizationException;
@@ -61,8 +59,6 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 			SwordAuthException {
 		PID targetPID = extractPID(editIRI, SwordConfigurationImpl.EDIT_PATH + "/");
 
-		PersonAgent depositor = agentFactory.findPersonByOnyen(auth.getUsername(), false);
-
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 
 		if (!hasAccess(auth, targetPID, Permission.editDescription, configImpl)) {
@@ -72,7 +68,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		AtomPubMetadataUIP uip;
 		try {
-			uip = new AtomPubMetadataUIP(targetPID, depositor, operation, deposit.getSwordEntry().getEntry());
+			uip = new AtomPubMetadataUIP(targetPID, auth.getUsername(), operation, deposit.getSwordEntry().getEntry());
 		} catch (UIPException e) {
 			log.warn("An exception occurred while attempting to create metadata UIP for " + targetPID.getPid(), e);
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
@@ -143,15 +139,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 	@Override
 	public void deleteContainer(String editIRI, AuthCredentials auth, SwordConfiguration config) throws SwordError,
 			SwordServerException, SwordAuthException {
-
-		Agent user = agentFactory.findPersonByOnyen(auth.getUsername(), false);
-		if (user == null) {
-			log.debug("Unable to find a user matching the submitted username credentials, " + auth.getUsername());
-			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Unable to find a user matching the submitted username credentials, " + auth.getUsername());
-		}
 		// Ignoring on-behalf-of for the moment
-
 		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 
 		PID targetPID = extractPID(editIRI, SwordConfigurationImpl.EDIT_PATH + "/");
@@ -163,7 +151,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		}
 
 		try {
-			this.digitalObjectManager.delete(targetPID, user, "Deleted by " + user.getName());
+			this.digitalObjectManager.delete(targetPID, auth.getUsername(), "Deleted by " + auth.getUsername());
 		} catch (NotFoundException e) {
 			throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404, "Unable to delete the object " + targetPID.getPid()
 					+ ".  The object was not found in the repository.");

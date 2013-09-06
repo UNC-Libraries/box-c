@@ -63,7 +63,7 @@ public class CheckAIPRequirementsFilter implements AIPIngestFilter {
 			if (types == null || types.size() == 0) {
 				throw new AIPException(pid.getPid() + " missing content model type.");
 			}
-			List<URI> owners = JRDFGraphUtil.getRelationshipObjectURIs(g, pid,
+			List<String> owners = JRDFGraphUtil.getRelationshipLiteralObjects(g, pid,
 					ContentModelHelper.Relationship.owner.getURI());
 			if (owners == null || owners.size() == 0) {
 				throw new AIPException(pid.getPid() + " missing owner.");

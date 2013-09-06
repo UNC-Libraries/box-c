@@ -259,8 +259,6 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 			boolean allowIndexing, DepositRecord record) throws IngestException {
 
 		AIPImpl aip = new AIPImpl(metsPack.getBatchPrepDir(), record);
-		
-		// TODO Ben, this is where you might set the packaging type and subtype on the record object.
 
 		// count the object divs in METS
 		int num = 0;
@@ -303,7 +301,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		}
 		t.setParameter("allowAnyIndexing", allowIndexingParam);
 
-		t.setParameter("ownerURI", record.getOwner().getPID().getURI());
+		t.setParameter("ownerURI", record.getOwner());
 		
 		File tempFOXDir = aip.getTempFOXDir();
 

@@ -82,7 +82,6 @@
 		<property name="accessClient" ref="accessClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
-		<property name="agentFactory" ref="agentManager"/>
 		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
 	</bean>
@@ -117,7 +116,6 @@
 			<map>
 				<entry key="edu.unc.lib.dl.ingest.sip.METSPackageSIP"
 					value-ref="metsPackageSIPProcessor"/>
-				<entry key="edu.unc.lib.dl.ingest.sip.AgentSIP" value-ref="personAgentSIPProcessor"/>
 				<entry key="edu.unc.lib.dl.ingest.sip.SingleFileSIP"
 					value-ref="singleFileSIPProcessor"/>
 				<entry key="edu.unc.lib.dl.ingest.sip.SingleFolderSIP"
@@ -128,11 +126,6 @@
 
 	<bean class="edu.unc.lib.dl.pidgen.UUIDPIDGenerator" id="pidGenerator" init-method="init">
 		<property name="verifyUnique" value="false"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-	</bean>
-
-	<bean id="personAgentSIPProcessor" class="edu.unc.lib.dl.ingest.sip.AgentSIPProcessor">
-		<property name="pidGenerator" ref="pidGenerator"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 	</bean>
 
@@ -193,11 +186,6 @@
 		</property>
 		<property name="autoinitialize" value="${auto.initialize.repo}"/>
 		<property name="initialBatchIngestDir" value="${initial.batch.ingest.dir}"/>
-	</bean>
-
-	<bean name="agentManager" class="edu.unc.lib.dl.services.AgentManager">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 	</bean>
 
 	<bean name="folderManager" class="edu.unc.lib.dl.services.FolderManager">

@@ -31,7 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.support.RequestContext;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.MetsSubmitIngestObject;
 import edu.unc.lib.dl.schema.UserGroupDAO;
@@ -97,15 +96,9 @@ public class MetsSubmitController extends AbstractFileUploadController {
 					}
 				}
 
-				PID ownerPid = new PID(dao.getOwnerPid());
 				try {
-					Agent mediator = agentManager.findPersonByOnyen(request.getRemoteUser(), false);
-
-					Agent ownerAgent = agentManager.getAgent(ownerPid, false);
-
 					PID writings = folderManager.createPath(filePath,
-							ownerAgent, mediator);
-
+							dao.getOwnerPid(), request.getRemoteUser());
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

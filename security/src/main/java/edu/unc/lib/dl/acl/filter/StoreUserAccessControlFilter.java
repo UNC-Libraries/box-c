@@ -52,8 +52,12 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 		if (!req.getServletPath().startsWith("/static/")) {
 			storeUserGroupData(req);
 		}
-		chain.doFilter(req, res);
-		GroupsThreadStore.clearStore();
+		try {
+			chain.doFilter(req, res);
+		} finally {
+			// Clear out group store no matter what happens
+			GroupsThreadStore.clearStore();
+		}
 	}
 
 	protected void storeUserGroupData(HttpServletRequest request) {

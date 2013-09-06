@@ -19,13 +19,18 @@ import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordConfiguration;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PackagingType;
 
+/**
+ * Interface for deposit handlers
+ * 
+ * @author bbpennel
+ * 
+ */
 public interface DepositHandler {
 	/**
-	 * Performs actions required to deposit the provided
+	 * Ingests the provided Deposit object into the container destination
 	 * 
 	 * @param destination
 	 *           PID of the container which will become the parent of the deposit
@@ -33,11 +38,13 @@ public interface DepositHandler {
 	 * @param type
 	 *           packaging type of the deposit
 	 * @param config
-	 * @param agent
+	 * @param depositor
+	 *           username of the depositor
 	 * @param owner
+	 *           username of the owner to assign to the deposit
 	 * @return
 	 * @throws Exception
 	 */
 	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, SwordConfiguration config,
-			Agent agent, Agent owner) throws Exception;
+			String depositor, String owner) throws Exception;
 }

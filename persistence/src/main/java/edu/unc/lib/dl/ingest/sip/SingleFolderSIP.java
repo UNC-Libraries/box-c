@@ -17,7 +17,6 @@ package edu.unc.lib.dl.ingest.sip;
 
 import java.io.File;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 
 public class SingleFolderSIP implements SubmissionInformationPackage {

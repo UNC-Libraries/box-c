@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.services;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -24,14 +23,9 @@ import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 
-import edu.unc.lib.dl.agents.AgentFactory;
-import edu.unc.lib.dl.agents.GroupAgent;
-import edu.unc.lib.dl.agents.PersonAgent;
-import edu.unc.lib.dl.agents.SoftwareAgent;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
-import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.ingest.IngestException;
@@ -45,7 +39,6 @@ import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
 public class RepositoryInitializer implements Runnable {
 
 	private static final Log log = LogFactory.getLog(RepositoryInitializer.class);
-	private AgentManager agentManager = null;
 	private String autoinitialize = null;
 	DigitalObjectManagerImpl digitalObjectManager = null;
 
@@ -66,10 +59,6 @@ public class RepositoryInitializer implements Runnable {
 	private ManagementClient managementClient = null;
 
 	private TripleStoreQueryService tripleStoreQueryService = null;
-
-	public AgentManager getAgentManager() {
-		return agentManager;
-	}
 
 	public String getAutoinitialize() {
 		return autoinitialize;
@@ -107,9 +96,9 @@ public class RepositoryInitializer implements Runnable {
 	@Override
 	public void run() {
 		try {
-			if (this.agentManager == null || this.digitalObjectManager == null || this.folderManager == null
-					|| this.initialBatchIngestDir == null || this.initialAdministrators == null
-					|| this.managementClient == null || this.tripleStoreQueryService == null) {
+			if (this.digitalObjectManager == null || this.folderManager == null || this.initialBatchIngestDir == null
+					|| this.initialAdministrators == null || this.managementClient == null
+					|| this.tripleStoreQueryService == null) {
 				throw new Error("RepositoryInitializer is missing dependencies and cannot run as configured.");
 			}
 
@@ -124,7 +113,7 @@ public class RepositoryInitializer implements Runnable {
 				this.managementClient.getObjectXML(ContentModelHelper.Administrative_PID.REPOSITORY.getPID());
 				log.warn("Found an existing repository root, auto-initialization aborted.");
 				return;
-			} catch(Exception e) {
+			} catch (Exception e) {
 				log.warn("No existing repository root found, auto-initializing.");
 			}
 
@@ -139,15 +128,13 @@ public class RepositoryInitializer implements Runnable {
 
 			ingestAdminFolders();
 
-			ingestGroupsUsersAgents();
-
 			this.digitalObjectManager.setAvailable(true);
 			log.info("Repository was initialized");
 		} catch (ServiceException e) {
 			log.fatal("Fedora service misconfigured or unavailable during initialization", e);
 		} catch (RuntimeException e) {
 			log.fatal("Could not initialize repository, unexpected exception", e);
-		} catch(Error e) {
+		} catch (Error e) {
 			log.fatal("Could not initialize repository, unexpected exception", e);
 		}
 	}
@@ -157,42 +144,18 @@ public class RepositoryInitializer implements Runnable {
 	 */
 	private void ingestRepositoryManagementSoftwareAgent() {
 		log.info("Ingesting repository software agent..");
-		SoftwareAgent repo = AgentFactory.getRepositorySoftwareAgentStub();
+		ContentModelHelper.Administrative_PID repo = ContentModelHelper.Administrative_PID.REPOSITORY_MANAGEMENT_SOFTWARE;
 		PID pid = repo.getPID();
-		Document doc = FOXMLJDOMUtil.makeFOXMLDocument(pid.getPid());
-		FOXMLJDOMUtil.setProperty(doc, ObjectProperty.label, repo.getName());
+		Document doc = FOXMLJDOMUtil.makeFOXMLDocument(pid.getURI());
+		FOXMLJDOMUtil.setProperty(doc, ObjectProperty.label, repo.name());
 		try {
 			this.managementClient.ingest(doc, Format.FOXML_1_1, "initial ingest of repository software agent record");
-			this.managementClient.addLiteralStatement(pid, ContentModelHelper.CDRProperty.slug.getURI().toString(), "reposoftware", null);
-			this.managementClient.addObjectRelationship(pid, ContentModelHelper.FedoraProperty.hasModel.getURI().toString(),
-			ContentModelHelper.Model.SOFTWAREAGENT.getPID());
+			this.managementClient.addLiteralStatement(pid, ContentModelHelper.CDRProperty.slug.getURI().toString(),
+					"reposoftware", null);
+			this.managementClient.addObjectRelationship(pid, ContentModelHelper.FedoraProperty.hasModel.getURI()
+					.toString(), ContentModelHelper.Model.SOFTWAREAGENT.getPID());
 		} catch (FedoraException e) {
 			throw new Error("Cannot create repository software agent", e);
-		}
-	}
-
-	/**
-	 *
-	 */
-	private void ingestGroupsUsersAgents() {
-		log.info("Ingesting groups, users and agents...");
-		GroupAgent adminGroup = AgentManager.getAdministrativeGroupAgentStub();
-		SoftwareAgent repoAgent = AgentManager.getRepositorySoftwareAgentStub();
-		// Now create the administrative users
-		try {
-			adminGroup = this.getAgentManager().addGroupAgent(adminGroup, repoAgent, "creating admin group");
-		} catch (IngestException e) {
-			throw new Error("Could not create administrator group.", e);
-		}
-
-		try {
-			for (Map.Entry<String, String> admin : this.initialAdministrators.entrySet()) {
-				PersonAgent a = new PersonAgent(admin.getValue(), admin.getKey());
-				a = this.getAgentManager().addPersonAgent(a, repoAgent, "initializing administrators");
-				this.getAgentManager().addMembership(adminGroup, a, adminGroup);
-			}
-		} catch (Exception e) {
-			log.error("Cannot initialize administrators, see log", e);
 		}
 	}
 
@@ -202,13 +165,9 @@ public class RepositoryInitializer implements Runnable {
 	private void ingestAdminFolders() {
 		log.info("Adding Admin Containers...");
 		try {
-			GroupAgent adminGroup = AgentManager.getAdministrativeGroupAgentStub();
-			SoftwareAgent repoAgent = AgentManager.getRepositorySoftwareAgentStub();
-			this.getFolderManager().createPath("/admin", adminGroup, repoAgent);
-			this.getFolderManager().createPath("/admin/people", adminGroup, repoAgent);
-			this.getFolderManager().createPath("/admin/groups", adminGroup, repoAgent);
-			this.getFolderManager().createPath("/admin/software", adminGroup, repoAgent);
-			this.getFolderManager().createPath("/Collections", adminGroup, repoAgent);
+			this.getFolderManager().createPath("/Collections",
+					ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI(),
+					ContentModelHelper.Administrative_PID.REPOSITORY_MANAGEMENT_SOFTWARE.getPID().getURI());
 		} catch (IngestException e) {
 			log.error("Cannot create administrative folders", e);
 		}
@@ -233,7 +192,8 @@ public class RepositoryInitializer implements Runnable {
 		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(pid.getPid());
 		FOXMLJDOMUtil.setProperty(foxml, FOXMLJDOMUtil.ObjectProperty.label, "Repository Folder");
 
-		PremisEventLogger logger = new PremisEventLogger(AgentManager.getRepositorySoftwareAgentStub().getName());
+		PremisEventLogger logger = new PremisEventLogger(
+				ContentModelHelper.Administrative_PID.REPOSITORY_MANAGEMENT_SOFTWARE.getPID().getURI());
 		logger.logEvent(PremisEventLogger.Type.CREATION, "Created repository root container.", pid);
 
 		// upload the MD_EVENTS datastream
@@ -258,7 +218,7 @@ public class RepositoryInitializer implements Runnable {
 
 	/**
 	 * loads every XML file in foxml-objects, purges their pids and ingests them.
-	 *
+	 * 
 	 * @throws FedoraException
 	 */
 	private void ingestContentModelsServices() {
@@ -272,10 +232,6 @@ public class RepositoryInitializer implements Runnable {
 		} catch (Exception e) {
 			log.error("Cannot copy initial content models and services ingest batch.", e);
 		}
-	}
-
-	public void setAgentManager(AgentManager agentManager) {
-		this.agentManager = agentManager;
 	}
 
 	public void setAutoinitialize(String autoinitialize) {

@@ -23,11 +23,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.xml.transform.Source;
@@ -42,12 +40,8 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.joda.time.DateTime;
 
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
-import edu.unc.lib.dl.fedora.ClientUtils;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
@@ -68,7 +62,6 @@ import edu.unc.lib.dl.util.Checksum;
 import edu.unc.lib.dl.util.ContainerContentsHelper;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
@@ -78,9 +71,9 @@ import edu.unc.lib.dl.xml.ModsXmlHelper;
 
 /**
  * This class orchestrates the transactions that modify repository objects and update ancillary services.
- *
+ * 
  * @author count0
- *
+ * 
  */
 public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private static final Log log = LogFactory.getLog(DigitalObjectManagerImpl.class);
@@ -97,6 +90,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private BatchIngestTaskFactory batchIngestTaskFactory = null;
 	private MailNotifier mailNotifier;
 	private String submitterGroupsOverride = null;
+	private PID collectionsPid = null;
 
 	public String getSubmitterGroupsOverride() {
 		return submitterGroupsOverride;
@@ -141,7 +135,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			if (record.getDepositedBy() == null) {
 				throw new IngestException("A user must be supplied for every ingest");
 			}
-			Agent user = record.getDepositedBy();
 			// lookup the processor for this SIP
 			SIPProcessor processor = this.getSipProcessorFactory().getSIPProcessor(sip);
 
@@ -151,20 +144,22 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			// run routine AIP processing steps
 			aip = this.getAipIngestPipeline().processAIP(aip);
 
-			// persist the AIP to disk
-			String submitter = null;
-			if(PersonAgent.class.isInstance(user)) {
-				submitter = ((PersonAgent)user).getOnyen();
-				try {
-					URI email = new URI(submitter+"@email.unc.edu");
-					aip.setEmailRecipients(Collections.singletonList(email));
-				} catch (URISyntaxException e) {
-					log.error("Invalid onyen, cannot create email URI", e);
+			// Add depositor as an email notification recipient if provided
+			try {
+				URI email;
+				if (record.getDepositorEmail() != null) {
+					email = new URI(record.getDepositorEmail());
+				} else {
+					// Attempt to email the user by onyen since no email was provided
+					email = new URI(record.getDepositedBy() + "@email.unc.edu");
 				}
-			} else {
-				submitter = user.getName();
+				aip.setEmailRecipients(Collections.singletonList(email));
+			} catch (URISyntaxException e) {
+				log.error("Invalid onyen, cannot create email URI", e);
 			}
-			if(this.getSubmitterGroupsOverride() != null) {
+			
+			// Add ingestor groups to the AIP for group forwarding
+			if (this.getSubmitterGroupsOverride() != null) {
 				aip.setSubmitterGroups(this.getSubmitterGroupsOverride());
 			} else {
 				aip.setSubmitterGroups(GroupsThreadStore.getGroupString());
@@ -180,7 +175,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		} catch (IngestException e) {
 			// exception on AIP preparation, no transaction started
 			log.error("Exception during submission or enqueuing", e);
-			if(aip != null) {
+			if (aip != null) {
 				aip.delete();
 			}
 			throw e;
@@ -225,7 +220,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	/**
 	 * This method destroys a set of objects in Fedora, leaving no preservation data. It will update any ancillary
 	 * services and log delete events.
-	 *
+	 * 
 	 * @param pids
 	 *           the PIDs of the objects to purge
 	 * @param message
@@ -233,17 +228,24 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @return a list of PIDs that were purged
 	 * @see edu.unc.lib.dl.services.DigitalObjectManager.purge()
 	 */
-	public List<PID> delete(PID pid, Agent user, String message) throws IngestException, NotFoundException {
+	public List<PID> delete(PID pid, String user, String message) throws IngestException, NotFoundException {
 		availableCheck();
+
+		// Prevent deletion of the repository object and the collections object
+		if (pid.equals(ContentModelHelper.Administrative_PID.REPOSITORY.getPID()) || pid.equals(collectionsPid))
+			throw new IllegalRepositoryStateException("Cannot delete administrative object: " + pid);
+
 		List<PID> deleted = new ArrayList<PID>();
 
-		// FIXME disallow delete of "/Collections" and "/admin" folders
+		// FIXME disallow delete of "/admin" folder
 		// TODO add protected delete method for force initializing
 
+		// Get all children and store for deletion
 		List<PID> toDelete = this.getTripleStoreQueryService().fetchAllContents(pid);
 		toDelete.add(pid);
 
 		// gathering delete set, checking for object relationships
+		// Find all relationships which refer to the pid being deleted
 		List<PID> refs = this.getReferencesToContents(pid);
 		refs.removeAll(toDelete);
 		if (refs.size() > 0) {
@@ -255,32 +257,27 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			throw new IngestException(s.toString());
 		}
 		PID container = this.getTripleStoreQueryService().fetchContainer(pid);
-		if (container == null & !pid.equals(ContentModelHelper.Administrative_PID.REPOSITORY.getPID())) {
+		if (container == null) {
 			throw new IllegalRepositoryStateException("Cannot find a container for the specified object: " + pid);
 		}
 
 		// begin transaction, must delete all content and modify parent or dump
 		// rollback info
-		PremisEventLogger logger;
-		if (user instanceof PersonAgent){
-			logger = new PremisEventLogger(((PersonAgent)user).getOnyen());
-		} else {
-			logger = new PremisEventLogger(user.getName());
-		}
+		PremisEventLogger logger = new PremisEventLogger(user);
+
 		DateTime transactionStart = new DateTime();
 		Throwable thrown = null;
 		List<PID> removed = new ArrayList<PID>();
 		removed.add(pid);
-		List<PID> reordered = new ArrayList<PID>();
 		try {
 			// update container
-			this.removeFromContainer(pid, reordered);
+			this.removeFromContainer(pid);
 			Element event = logger.logEvent(PremisEventLogger.Type.DELETION, "Deleted " + deleted.size()
 					+ "contained object(s).", container);
-			logger.addDetailedOutcome(event, "success", "Message: " + message, null);
-			String logTimestamp = this.managementClient.writePremisEventsToFedoraObject(logger, container);
+			PremisEventLogger.addDetailedOutcome(event, "success", "Message: " + message, null);
+			this.managementClient.writePremisEventsToFedoraObject(logger, container);
 
-			// delete set of objects
+			// delete object and all of its children
 			for (PID obj : toDelete) {
 				try {
 					this.getManagementClient().purgeObject(obj, message, false);
@@ -289,8 +286,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					log.error("Delete set referenced an object that didn't exist: " + pid.getPid(), e);
 				}
 			}
+			// Send message to message queue informing it of the deletion(s)
 			if (this.getOperationsMessageSender() != null) {
-				this.getOperationsMessageSender().sendRemoveOperation(user.getName(), container, removed, reordered);
+				this.getOperationsMessageSender().sendRemoveOperation(user, container, removed, null);
 			}
 		} catch (FedoraException fault) {
 			log.error("Fedora threw an unexpected fault while deleting " + pid.getPid(), fault);
@@ -330,7 +328,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	/**
 	 * Generates a list of referring object PIDs. Dependent objects are currently defined as those objects that refer to
 	 * the specified pid in RELS-EXT other than it's container.
-	 *
+	 * 
 	 * @param pid
 	 *           the object depended upon
 	 * @return a list of dependent object PIDs
@@ -352,45 +350,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	public TripleStoreQueryService getTripleStoreQueryService() {
 		return tripleStoreQueryService;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see edu.unc.lib.dl.services.DigitalObjectManager#inactivate(edu.unc.lib.dl .fedora.PID, java.lang.String)
-	 */
-	// @Deprecated
-	// public void inactivate(PID pid, Agent user, String message) throws
-	// IngestException {
-	// pid = this.tripleStoreQueryService.verify(pid);
-	// List<PID> set = this.tripleStoreQueryService.fetchAllContents(pid);
-	// set.add(pid);
-	// List<PID> refs = this.getReferencesToContents(pid);
-	// refs.removeAll(set); // remove internal refs
-	// if (refs.size() > 0) {
-	// StringBuffer s = new StringBuffer();
-	// s.append("Cannot delete ").append(pid).append(" because it will break object references from these PIDs: ");
-	// for (PID b : refs) {
-	// s.append("\t").append(b);
-	// }
-	// throw new IngestException(s.toString());
-	// }
-	// PremisEventLogger logger = new PremisEventLogger(user);
-	// for (PID p : set) {
-	// // set inactive bit
-	// logger.logEvent(PremisEventLogger.Type.DEACCESSION,
-	// "Object state set to inactive", p);
-	// try {
-	// this.getManagementClient().modifyObject(p, null, null,
-	// ManagementClient.State.INACTIVE, message);
-	// this.writePremisEventsToFedoraObject(logger, p);
-	// } catch (NotFoundException e) {
-	// log.error("Tried to inactivate an object that was not found.", e);
-	// }
-	// }
-	// if (this.getSolrIndexService() != null) {
-	// this.getSolrIndexService().remove(set);
-	// }
-	// }
 
 	/**
 	 * This must be called after properties are set. It checks for basic repository objects and throws a runtime
@@ -417,24 +376,20 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	/**
 	 * Just removes object from container, does not log this event. MUST finish operation or dump rollback info and
 	 * rethrow exception.
-	 *
+	 * 
 	 * @param pid
 	 *           the PID of the object to remove
-	 * @param user
-	 *           user removing the object
 	 * @return the PID of the old container
 	 * @throws FedoraException
 	 */
-	private PID removeFromContainer(PID pid, Collection<PID> reordered) throws FedoraException {
+	private PID removeFromContainer(PID pid) throws FedoraException {
 		boolean relsextDone = false;
 		PID parent = this.getTripleStoreQueryService().fetchContainer(pid);
 		if (parent == null) {
-			PID repoPID = this.getTripleStoreQueryService().fetchByRepositoryPath("/");
-			if (pid.equals(repoPID)) {
+			// Block removal of repo object
+			if (ContentModelHelper.Administrative_PID.REPOSITORY.getPID().equals(pid))
 				return null;
-			} else {
-				throw new NotFoundException("Found an object without a parent that is not the REPOSITORY");
-			}
+			throw new NotFoundException("Found an object without a parent that is not the REPOSITORY");
 		}
 		log.debug("removeFromContainer called on PID: " + parent.getPid());
 		try {
@@ -495,15 +450,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 	@Override
 	public String updateSourceData(PID pid, String dsid, File newDataFile, String checksum, String label,
-			String mimetype, Agent user, String message) throws IngestException {
+			String mimetype, String user, String message) throws IngestException {
 		availableCheck();
 		String result = null;
-		PremisEventLogger logger;
-		if (user instanceof PersonAgent){
-			logger = new PremisEventLogger(((PersonAgent)user).getOnyen());
-		} else {
-			logger = new PremisEventLogger(user.getName());
-		}
+		PremisEventLogger logger = new PremisEventLogger(user);
 
 		// make sure the datastream is source data
 		if (!this.getTripleStoreQueryService().isSourceData(pid, dsid)) {
@@ -531,15 +481,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 		String newref = null;
 		try {
+			// Upload the new file and then update the datastream
 			newref = this.getManagementClient().upload(newDataFile);
 			result = this.getManagementClient().modifyDatastreamByReference(pid, dsid, false, message, null, label,
 					mimetype, checksum, ChecksumType.MD5, newref);
-
-			// TODO set cdr:indexText based on mime-type
-			if (mimetype != null && mimetype.startsWith("text/")) {
-				// triple: pid, ContentModelHelper.CDRProperty.indexText, dsURI
-			}
-
 			// update PREMIS log
 			logger.logEvent(PremisEventLogger.Type.INGESTION, message, pid, dsid);
 			this.managementClient.writePremisEventsToFedoraObject(logger, pid);
@@ -550,16 +495,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	}
 
 	@Override
-	public String updateDescription(PID pid, File newMODSFile, String checksum, Agent user, String message)
+	public String updateDescription(PID pid, File newMODSFile, String checksum, String user, String message)
 			throws IngestException {
 		availableCheck();
 		String result = null;
-		PremisEventLogger logger;
-		if (user instanceof PersonAgent){
-			logger = new PremisEventLogger(((PersonAgent)user).getOnyen());
-		} else {
-			logger = new PremisEventLogger(user.getName());
-		}
+		PremisEventLogger logger = new PremisEventLogger(user);
 
 		// compare checksum if one is supplied
 		if (checksum != null) {
@@ -590,10 +530,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 		Document svrl = this.getSchematronValidator().validate(source, "vocabularies-mods");
 		if (!this.getSchematronValidator().hasFailedAssertions(svrl)) {
-			logger.addDetailedOutcome(event, "MODS is valid",
+			PremisEventLogger.addDetailedOutcome(event, "MODS is valid",
 					"The supplied MODS metadata meets all CDR vocabulary requirements.", null);
 		} else {
-			logger.addDetailedOutcome(event, "MODS is not valid",
+			PremisEventLogger.addDetailedOutcome(event, "MODS is not valid",
 					"The supplied MODS metadata does not meet CDR vocabulary requirements.", svrl.detachRootElement());
 			IngestException e = new IngestException(
 					"The supplied descriptive metadata (MODS) does not meet CDR vocabulary requirements.");
@@ -601,7 +541,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			throw e;
 		}
 
-		// handle case where MODS datastream not yet present
+		// Detect if MODS is present by retrieving it.
 		boolean modsExists = false;
 		try {
 			this.getAccessClient().getDatastreamDissemination(pid, "MD_DESCRIPTIVE", null);
@@ -666,12 +606,16 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 		return result;
 	}
-	
-	public String addOrReplaceDatastream(PID pid, Datastream datastream, File content, String mimetype, Agent user, String message) throws UpdateException {
+
+	@Override
+	public String addOrReplaceDatastream(PID pid, Datastream datastream, File content, String mimetype, String user,
+			String message) throws UpdateException {
 		return addOrReplaceDatastream(pid, datastream, null, content, mimetype, user, message);
 	}
-	
-	public String addOrReplaceDatastream(PID pid, Datastream datastream, String label, File content, String mimetype, Agent user, String message) throws UpdateException {
+
+	@Override
+	public String addOrReplaceDatastream(PID pid, Datastream datastream, String label, File content, String mimetype,
+			String user, String message) throws UpdateException {
 		String dsLabel = datastream.getLabel();
 		if (label != null)
 			dsLabel = label;
@@ -680,26 +624,28 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		String datastreamName = pid.getURI() + "/" + datastream.getName();
 		log.debug("Adding or replacing datastream: " + datastreamName);
 		try {
-			if (datastream.getControlGroup().equals(ContentModelHelper.ControlGroup.INTERNAL)){
-				//Handle inline datastreams
-				if (datastreamNames.contains(datastreamName)){
+			if (datastream.getControlGroup().equals(ContentModelHelper.ControlGroup.INTERNAL)) {
+				// Handle inline datastreams
+				if (datastreamNames.contains(datastreamName)) {
 					log.debug("Replacing preexisting internal datastream " + datastreamName);
-					return this.managementClient.modifyDatastreamByValue(pid, datastream.getName(), false, message, new ArrayList<String>(),
-							datastream.getLabel(), mimetype, null, null, content);
+					return this.managementClient.modifyDatastreamByValue(pid, datastream.getName(), false, message,
+							new ArrayList<String>(), datastream.getLabel(), mimetype, null, null, content);
 				} else {
 					log.debug("Adding internal datastream " + datastreamName);
-					return this.managementClient.addInlineXMLDatastream(pid, datastream.getName(), false, message, new ArrayList<String>(),
-							datastream.getLabel(), datastream.isVersionable(), content);
+					return this.managementClient.addInlineXMLDatastream(pid, datastream.getName(), false, message,
+							new ArrayList<String>(), datastream.getLabel(), datastream.isVersionable(), content);
 				}
-			} else if (datastream.getControlGroup().equals(ContentModelHelper.ControlGroup.MANAGED)){
-				//Handle managed datastreams
+			} else if (datastream.getControlGroup().equals(ContentModelHelper.ControlGroup.MANAGED)) {
+				// Handle managed datastreams
 				String dsLocation = managementClient.upload(content);
-				if (datastreamNames.contains(datastreamName)){
+				if (datastreamNames.contains(datastreamName)) {
 					log.debug("Replacing preexisting managed datastream " + datastreamName);
-					return managementClient.modifyDatastreamByReference(pid, datastream.getName(), false, message, Collections.<String>emptyList(), dsLabel, mimetype, null, null, dsLocation);
+					return managementClient.modifyDatastreamByReference(pid, datastream.getName(), false, message,
+							Collections.<String> emptyList(), dsLabel, mimetype, null, null, dsLocation);
 				} else {
 					log.debug("Adding managed datastream " + datastreamName);
-					return managementClient.addManagedDatastream(pid, datastream.getName(), false, message, Collections.<String>emptyList(), dsLabel, datastream.isVersionable(), mimetype, dsLocation);
+					return managementClient.addManagedDatastream(pid, datastream.getName(), false, message,
+							Collections.<String> emptyList(), dsLabel, datastream.isVersionable(), mimetype, dsLocation);
 				}
 			}
 		} catch (FedoraException e) {
@@ -707,30 +653,29 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public void move(List<PID> moving, PID destination, String user, String message) throws IngestException {
 		availableCheck();
-		PremisEventLogger logger;
-		logger = new PremisEventLogger(user);
-		
+		PremisEventLogger logger = new PremisEventLogger(user);
+
 		List<PID> destinationPath = this.getTripleStoreQueryService().lookupRepositoryAncestorPids(destination);
 		if (destinationPath == null || destinationPath.size() == 0)
 			throw new IngestException("Cannot find the destination folder: " + destinationPath);
-		
+
 		// destination is container
 		List<URI> cmtypes = this.getTripleStoreQueryService().lookupContentModels(destination);
 		if (!cmtypes.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
 			throw new IngestException("The destination is not a folder: " + destinationPath + " " + destination.getPid());
 		}
-		
+
 		for (PID pid : moving) {
 			for (PID destPid : destinationPath) {
 				if (pid.equals(destPid))
 					throw new IngestException("The destination folder is below one of the moving objects: " + destination);
 			}
 		}
-		
+
 		// check for duplicate PIDs in incoming list
 		Set<PID> noDups = new HashSet<PID>(moving.size());
 		noDups.addAll(moving);
@@ -739,20 +684,19 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		} else {
 			noDups = null;
 		}
-		
+
 		// this is the beginning of the transaction
 		DateTime knownGoodTime = new DateTime();
 		Throwable thrown = null;
 		boolean relationshipsUpdated = false;
 		boolean destContentInventoryUpdated = false;
 		boolean eventsLoggedOkay = false;
-		String msgTimestamp = null;
 		List<PID> oldParents = new ArrayList<PID>();
 		List<PID> reordered = new ArrayList<PID>();
 		try {
 			// remove pids from old containers, add to new, log
 			for (PID pid : moving) {
-				PID oldParent = this.removeFromContainer(pid, reordered);
+				PID oldParent = this.removeFromContainer(pid);
 				oldParents.add(oldParent);
 				this.getManagementClient().addObjectRelationship(destination,
 						ContentModelHelper.Relationship.contains.getURI().toString(), pid);
@@ -784,11 +728,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			}
 			newXML = ContainerContentsHelper.addChildContentListInCustomOrder(oldXML, destination, moving, reordered);
 			if (exists) {
-				msgTimestamp = this.getManagementClient().modifyInlineXMLDatastream(destination, "MD_CONTENTS", false,
+				this.getManagementClient().modifyInlineXMLDatastream(destination, "MD_CONTENTS", false,
 						"adding " + moving.size() + " child resources to container", new ArrayList<String>(),
 						"List of Contents", newXML);
 			} else {
-				msgTimestamp = this.getManagementClient().addInlineXMLDatastream(destination, "MD_CONTENTS", false,
+				this.getManagementClient().addInlineXMLDatastream(destination, "MD_CONTENTS", false,
 						"added " + moving.size() + " child resources to container", new ArrayList<String>(),
 						"List of Contents", false, newXML);
 			}
@@ -800,8 +744,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 			// send message for the operation
 			if (this.getOperationsMessageSender() != null) {
-				this.getOperationsMessageSender().sendMoveOperation(user, oldParents, destination, moving,
-						reordered);
+				this.getOperationsMessageSender().sendMoveOperation(user, oldParents, destination, moving, reordered);
 			}
 		} catch (FedoraException e) {
 			thrown = e;
@@ -823,7 +766,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.services.DigitalObjectManager#isAvailable()
 	 */
 	@Override
@@ -846,27 +789,24 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		ArchivalInformationPackage aip = null;
 		try {
 			availableCheck();
-			if (record.getDepositedBy() == null) {
-				throw new IngestException("A user must be supplied for every ingest");
-			}
-			Agent user = record.getDepositedBy();
 			// lookup the processor for this SIP
 			SIPProcessor processor = this.getSipProcessorFactory().getSIPProcessor(sip);
 
 			// process the SIP into a standard AIP
 			aip = processor.createAIP(sip, record);
-			
+
 			// run routine AIP processing steps
 			aip = this.getAipIngestPipeline().processAIP(aip);
 
-			aip.setEmailRecipients(null); // no emails for blocking ingests
+			// no emails for blocking ingests
+			aip.setEmailRecipients(null); 
 
-			if(this.getSubmitterGroupsOverride() != null) {
+			if (this.getSubmitterGroupsOverride() != null) {
 				aip.setSubmitterGroups(this.getSubmitterGroupsOverride());
 			} else {
 				aip.setSubmitterGroups(GroupsThreadStore.getGroupString());
 			}
-			
+
 			// persist the AIP to disk
 			aip.prepareIngest();
 
@@ -888,7 +828,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.services.BatchIngestServiceInterface#ingestBatchNow(java.io.File)
 	 */
 	public void ingestBatchNow(File prepDir) throws IngestException {
@@ -899,7 +839,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		task.setBaseDir(prepDir);
 		try {
 			task.init();
-		} catch(BatchFailedException e) {
+		} catch (BatchFailedException e) {
 			throw new IngestException("Batch ingest task failed", e);
 		}
 		task.run();
@@ -920,5 +860,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 	public void setBatchIngestTaskFactory(BatchIngestTaskFactory batchIngestTaskFactory) {
 		this.batchIngestTaskFactory = batchIngestTaskFactory;
+	}
+
+	public void setCollectionsPid(PID collectionsPid) {
+		this.collectionsPid = collectionsPid;
 	}
 }
