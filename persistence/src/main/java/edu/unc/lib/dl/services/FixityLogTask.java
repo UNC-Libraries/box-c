@@ -101,6 +101,8 @@ public class FixityLogTask implements Runnable {
 	}
 
 	public void run() {
+		
+		LOG.info("Starting fixity verification");
 
 		// Check that all resources are available
 
@@ -122,12 +124,16 @@ public class FixityLogTask implements Runnable {
 		List<String> objectPaths = getStaleObjectPaths(getCurrentIcatTime() - staleInterval, objectLimit);
 
 		for (String path : objectPaths) {
+			
+			LOG.info("Validating path: " + path);
 
 			if (!shouldVerifyPath(path)) {
 				continue;
 			}
 
 			for (String name : resourceNames) {
+				LOG.info("Verifying fixity for path: " + path + " on resource: " + name);
+				
 				FixityVerificationResult fixityVerificationResult = verifyFixityForObjectOnResource(path, name);
 
 				appendFixityLogEntry(fixityVerificationResult);
