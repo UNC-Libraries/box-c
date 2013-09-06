@@ -103,45 +103,53 @@ public class FixityLogTask implements Runnable {
 	public void run() {
 		
 		LOG.info("Starting fixity verification");
+		
+		try {
 
-		// Check that all resources are available
-
-		List<String> unavailableResourceNames = new ArrayList<String>();
-
-		for (String name : resourceNames) {
-			if (!isResourceAvailable(name)) {
-				unavailableResourceNames.add(name);
-			}
-		}
-
-		if (unavailableResourceNames.size() > 0) {
-			LOG.error("One or more resources are unavailable: " + unavailableResourceNames);
-			return;
-		}
-
-		// Verify stale objects, write output, and touch timestamp
-
-		List<String> objectPaths = getStaleObjectPaths(getCurrentIcatTime() - staleInterval, objectLimit);
-
-		for (String path : objectPaths) {
-			
-			LOG.info("Validating path: " + path);
-
-			if (!shouldVerifyPath(path)) {
-				continue;
-			}
-
+			// Check that all resources are available
+	
+			List<String> unavailableResourceNames = new ArrayList<String>();
+	
 			for (String name : resourceNames) {
-				LOG.info("Verifying fixity for path: " + path + " on resource: " + name);
-				
-				FixityVerificationResult fixityVerificationResult = verifyFixityForObjectOnResource(path, name);
-
-				appendFixityLogEntry(fixityVerificationResult);
-				appendPremisEvent(fixityVerificationResult);
+				if (!isResourceAvailable(name)) {
+					unavailableResourceNames.add(name);
+				}
 			}
-
-			touchObjectFixityTimestamp(path);
-
+	
+			if (unavailableResourceNames.size() > 0) {
+				LOG.error("One or more resources are unavailable: " + unavailableResourceNames);
+				return;
+			}
+	
+			// Verify stale objects, write output, and touch timestamp
+	
+			List<String> objectPaths = getStaleObjectPaths(getCurrentIcatTime() - staleInterval, objectLimit);
+	
+			for (String path : objectPaths) {
+				
+				LOG.info("Validating path: " + path);
+	
+				if (!shouldVerifyPath(path)) {
+					continue;
+				}
+	
+				for (String name : resourceNames) {
+					LOG.info("Verifying fixity for path: " + path + " on resource: " + name);
+					
+					FixityVerificationResult fixityVerificationResult = verifyFixityForObjectOnResource(path, name);
+	
+					appendFixityLogEntry(fixityVerificationResult);
+					appendPremisEvent(fixityVerificationResult);
+				}
+	
+				touchObjectFixityTimestamp(path);
+	
+			}
+			
+		} finally {
+			
+			irodsFileSystem.closeAndEatExceptions();
+			
 		}
 
 	}
@@ -336,6 +344,8 @@ public class FixityLogTask implements Runnable {
 			IRODSGenQueryFromBuilder query = builder.exportIRODSQueryFromBuilder(1);
 			IRODSQueryResultSet queryResultSet = genQueryExecutor.executeIRODSQueryAndCloseResult(query, 0);
 			IRODSQueryResultRow row = queryResultSet.getFirstResult();
+			
+			genQueryExecutor.closeResults(queryResultSet);
 
 			Map<String, String> info = new HashMap<String, String>();
 			info.put("DATA_REPL_NUM", row.getColumn("DATA_REPL_NUM"));
@@ -417,6 +427,8 @@ public class FixityLogTask implements Runnable {
 			IRODSGenQueryFromBuilder query = builder.exportIRODSQueryFromBuilder(1);
 			IRODSQueryResultSet queryResultSet = genQueryExecutor.executeIRODSQueryAndCloseResult(query, 0);
 			IRODSQueryResultRow row = queryResultSet.getFirstResult();
+			
+			genQueryExecutor.closeResults(queryResultSet);
 
 			String host = row.getColumn(RodsGenQueryEnum.COL_R_LOC.getName());
 			boolean available = false;
@@ -484,6 +496,8 @@ public class FixityLogTask implements Runnable {
 			IRODSGenQueryFromBuilder query = builder.exportIRODSQueryFromBuilder(objectLimit);
 			IRODSQueryResultSet queryResultSet = genQueryExecutor.executeIRODSQueryAndCloseResult(query, 0);
 			List<IRODSQueryResultRow> results = queryResultSet.getResults();
+			
+			genQueryExecutor.closeResults(queryResultSet);
 
 			List<String> paths = new ArrayList<String>();
 
