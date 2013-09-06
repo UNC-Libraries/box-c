@@ -1,5 +1,8 @@
 package edu.unc.lib.dl.services;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -8,6 +11,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.connection.IRODSServerProperties;
 import org.irods.jargon.core.exception.DataNotFoundException;
@@ -42,7 +47,6 @@ import edu.unc.lib.dl.util.PremisEventLogger;
 public class FixityLogTask implements Runnable {
 
 	private static final Log LOG = LogFactory.getLog(FixityLogTask.class);
-	private static final Log FIXITY_LOG = LogFactory.getLog("edu.unc.lib.dl.fixity-log");
 
 	private IRODSAccount irodsAccount = null;
 	private IRODSFileSystem irodsFileSystem = null;
@@ -51,6 +55,7 @@ public class FixityLogTask implements Runnable {
 	private List<String> resourceNames = null;
 	private int staleInterval = 0;
 	private int objectLimit = 0;
+	private String fixityLogPath = null;
 
 	public IRODSAccount getIrodsAccount() {
 		return irodsAccount;
@@ -99,12 +104,22 @@ public class FixityLogTask implements Runnable {
 	public void setObjectLimit(int objectLimit) {
 		this.objectLimit = objectLimit;
 	}
+	
+	public String getFixityLogPath() {
+		return fixityLogPath;
+	}
+	
+	public void setFixityLogPath(String fixityLogPath) {
+		this.fixityLogPath = fixityLogPath;
+	}
 
 	public void run() {
 		
-		LOG.info("Starting fixity verification");
+		FileOutputStream fixityLogOutput = null;
 		
 		try {
+			
+			fixityLogOutput = new FileOutputStream(fixityLogPath, true);
 
 			// Check that all resources are available
 	
@@ -124,21 +139,16 @@ public class FixityLogTask implements Runnable {
 			// Verify stale objects, write output, and touch timestamp
 	
 			List<String> objectPaths = getStaleObjectPaths(getCurrentIcatTime() - staleInterval, objectLimit);
-	
+			
 			for (String path : objectPaths) {
-				
-				LOG.info("Validating path: " + path);
 	
-				if (!shouldVerifyPath(path)) {
+				if (!shouldVerifyPath(path))
 					continue;
-				}
 	
 				for (String name : resourceNames) {
-					LOG.info("Verifying fixity for path: " + path + " on resource: " + name);
-					
 					FixityVerificationResult fixityVerificationResult = verifyFixityForObjectOnResource(path, name);
 	
-					appendFixityLogEntry(fixityVerificationResult);
+					appendFixityLogEntry(fixityLogOutput, fixityVerificationResult);
 					appendPremisEvent(fixityVerificationResult);
 				}
 	
@@ -146,7 +156,20 @@ public class FixityLogTask implements Runnable {
 	
 			}
 			
+		} catch (IOException e) {
+			
+			LOG.error(e);
+			throw new Error(e);
+			
 		} finally {
+			
+			if (fixityLogOutput != null) {
+				try {
+					fixityLogOutput.close();
+				} catch (IOException e) {
+					throw new Error(e);
+				}
+			}
 			
 			irodsFileSystem.closeAndEatExceptions();
 			
@@ -154,10 +177,15 @@ public class FixityLogTask implements Runnable {
 
 	}
 
-	private void appendFixityLogEntry(FixityVerificationResult fixityVerificationResult) {
+	private void appendFixityLogEntry(OutputStream output, FixityVerificationResult fixityVerificationResult) throws IOException {
 
-		FIXITY_LOG.trace(fixityVerificationResult);
-
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+		
+		mapper.writeValue(output, fixityVerificationResult);
+		output.write(new byte[] { 0x0D, 0x0A }); // \r\n
+		output.flush();
+		
 	}
 
 	private void appendPremisEvent(FixityVerificationResult fixityVerificationResult) {
@@ -317,6 +345,7 @@ public class FixityLogTask implements Runnable {
 			return environmentalInfo.getIRODSServerPropertiesFromIRODSServer();
 
 		} catch (JargonException e) {
+			LOG.error(e);
 			throw new Error(e);
 		}
 
@@ -357,10 +386,13 @@ public class FixityLogTask implements Runnable {
 		} catch (DataNotFoundException e) {
 			return null;
 		} catch (JargonException e) {
+			LOG.error(e);
 			throw new Error(e);
 		} catch (GenQueryBuilderException e) {
+			LOG.error(e);
 			throw new Error(e);
 		} catch (JargonQueryException e) {
+			LOG.error(e);
 			throw new Error(e);
 		}
 
@@ -407,6 +439,7 @@ public class FixityLogTask implements Runnable {
 			}
 
 		} catch (JargonException e) {
+			LOG.error(e);
 			throw new Error(e);
 		}
 
@@ -442,10 +475,13 @@ public class FixityLogTask implements Runnable {
 			return available;
 
 		} catch (GenQueryBuilderException e) {
+			LOG.error(e);
 			throw new Error(e);
 		} catch (JargonQueryException e) {
+			LOG.error(e);
 			throw new Error(e);
 		} catch (JargonException e) {
+			LOG.error(e);
 			throw new Error(e);
 		}
 
@@ -472,6 +508,7 @@ public class FixityLogTask implements Runnable {
 			return Integer.parseInt((String) resultOutputParam.getResultObject());
 
 		} catch (JargonException e) {
+			LOG.error(e);
 			throw new Error(e);
 		}
 
@@ -511,10 +548,13 @@ public class FixityLogTask implements Runnable {
 			return paths;
 
 		} catch (GenQueryBuilderException e) {
+			LOG.error(e);
 			throw new Error(e);
 		} catch (JargonException e) {
+			LOG.error(e);
 			throw new Error(e);
 		} catch (JargonQueryException e) {
+			LOG.error(e);
 			throw new Error(e);
 		}
 
@@ -537,6 +577,7 @@ public class FixityLogTask implements Runnable {
 			ruleProcessingAO.executeRule(sb.toString(), inputOverrides, RuleProcessingAO.RuleProcessingType.EXTERNAL);
 
 		} catch (JargonException e) {
+			LOG.error(e);
 			throw new Error(e);
 		}
 
@@ -566,6 +607,7 @@ public class FixityLogTask implements Runnable {
 			return resultOutputParam.getResultObject().equals("true");
 
 		} catch (JargonException e) {
+			LOG.error(e);
 			throw new Error(e);
 		}
 

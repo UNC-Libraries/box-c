@@ -484,6 +484,7 @@
 		<property name="resourceNames" value="${fixity.resourceNames}"/>
 		<property name="staleInterval" value="${fixity.staleInterval}"/>
 		<property name="objectLimit" value="${fixity.objectLimit}"/>
+		<property name="fixityLogPath" value="${log.dir}/fixity.log"/>
 	</bean>
 	
 	
