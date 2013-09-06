@@ -471,7 +471,9 @@
 		<property name="irodsAccount" ref="irodsAccount"/>
 		<property name="irodsFileSystem" ref="irodsFileSystem"/>
 		<property name="managementClient" ref="managementClient"/>
-		<property name="fixityLogCollection" value="${fixity.log.collection}"/>
+		<property name="resourceNames" value="${fixity.resourceNames}"/>
+		<property name="staleInterval" value="${fixity.staleInterval}"/>
+		<property name="objectLimit" value="${fixity.objectLimit}"/>
 	</bean>
 	
 	
