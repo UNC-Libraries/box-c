@@ -151,9 +151,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					email = new URI(record.getDepositorEmail());
 				} else {
 					// Attempt to email the user by onyen since no email was provided
-					email = new URI(record.getDepositedBy() + "@email.unc.edu");
+					email = new URI(record.getOwner() + "@email.unc.edu");
 				}
-				aip.setEmailRecipients(Collections.singletonList(email));
+				if (email != null)
+					aip.setEmailRecipients(Collections.singletonList(email));
 			} catch (URISyntaxException e) {
 				log.error("Invalid onyen, cannot create email URI", e);
 			}

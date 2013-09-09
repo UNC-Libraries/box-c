@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
@@ -53,7 +54,7 @@ public class IngestController {
 	public @ResponseBody
 	Map<String, ? extends Object> ingestPackageController(@PathVariable("pid") String pid,
 			@RequestParam("type") String type, @RequestParam(value = "name", required = false) String name,
-			@RequestParam("file") MultipartFile ingestFile, HttpServletResponse response) {
+			@RequestParam("file") MultipartFile ingestFile, HttpServletRequest request, HttpServletResponse response) {
 		String destinationUrl = swordUrl + "collection/" + pid;
 		HttpClient client = HttpClientUtil.getAuthenticatedClient(destinationUrl, swordUsername, swordPassword);
 		client.getParams().setAuthenticationPreemptive(true);
@@ -65,6 +66,7 @@ public class IngestController {
 		method.addRequestHeader("On-Behalf-Of", GroupsThreadStore.getUsername());
 		method.addRequestHeader("Content-Type", ingestFile.getContentType());
 		method.addRequestHeader("Content-Length", Long.toString(ingestFile.getSize()));
+		method.addRequestHeader("mail", request.getHeader("mail"));
 		method.addRequestHeader("Content-Disposition", "attachment; filename=" + ingestFile.getOriginalFilename());
 		if (name != null && name.trim().length() > 0)
 			method.addRequestHeader("Slug", name);

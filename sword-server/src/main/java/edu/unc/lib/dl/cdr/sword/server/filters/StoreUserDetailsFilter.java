@@ -30,10 +30,12 @@ public class StoreUserDetailsFilter extends OncePerRequestFilter implements Serv
 			ServletException {
 		log.debug("Performing StoreUserDetailsFilter");
 		// Capture the users email address if its available
-		if (request.getHeader(EMAIL_HEADER) != null) {
-			String emailAddress = request.getHeader(EMAIL_HEADER);
+		String emailAddress = request.getHeader(EMAIL_HEADER);
+		if (emailAddress != null && emailAddress.trim().length() > 0) {
 			if (emailAddress.endsWith("_UNC"))
 				SwordConfigurationImpl.storeUserEmailAddress(emailAddress.substring(0, emailAddress.length() - 4));
+			else
+				SwordConfigurationImpl.storeUserEmailAddress(emailAddress);
 		}
 		try {
 			chain.doFilter(request, response);
