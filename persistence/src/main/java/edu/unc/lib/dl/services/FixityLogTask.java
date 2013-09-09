@@ -3,9 +3,11 @@ package edu.unc.lib.dl.services;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +47,8 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 public class FixityLogTask implements Runnable {
+	
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss");
 
 	private static final Log LOG = LogFactory.getLog(FixityLogTask.class);
 
@@ -178,11 +182,48 @@ public class FixityLogTask implements Runnable {
 	}
 
 	private void appendFixityLogEntry(OutputStream output, FixityVerificationResult fixityVerificationResult) throws IOException {
+		
+		Map<String, Object> entry = new LinkedHashMap<String, Object>();
+
+		// The members "time", "result", "objectPath", "resourceName", "irodsReleaseVersion", and "jargonVersion" are always present.
+
+		entry.put("time", dateFormat.format(fixityVerificationResult.getTime()));
+		entry.put("result", fixityVerificationResult.getResult());
+		entry.put("objectPath", fixityVerificationResult.getObjectPath());
+		entry.put("resourceName", fixityVerificationResult.getResourceName());
+		entry.put("irodsReleaseVersion", fixityVerificationResult.getIrodsReleaseVersion());
+		entry.put("jargonVersion", fixityVerificationResult.getJargonVersion());
+		
+		// The members "expectedChecksum", "elapsed", "filePath", "irodsErrorCode", and "jargonException" are present only if non-null.
+
+		if (fixityVerificationResult.getExpectedChecksum() != null)
+			entry.put("expectedChecksum", fixityVerificationResult.getExpectedChecksum());
+		
+		if (fixityVerificationResult.getElapsed() != null)
+			entry.put("elapsed", fixityVerificationResult.getElapsed());
+		
+		if (fixityVerificationResult.getFilePath() != null)
+			entry.put("filePath", fixityVerificationResult.getFilePath());
+		
+		if (fixityVerificationResult.getIrodsErrorCode() != null)
+			entry.put("irodsErrorCode", fixityVerificationResult.getIrodsErrorCode());
+		
+		// The "jargonException" member is serialized as an object with "className" and "message" members.
+		
+		if (fixityVerificationResult.getJargonException() != null) {
+			JargonException exception = fixityVerificationResult.getJargonException();
+			Map<String, Object> map = new LinkedHashMap<String, Object>();
+			map.put("className", exception.getClass().getName());
+			map.put("message", exception.getMessage());
+		    entry.put("jargonException", map);   
+		}
+		
+		// Write the log entry to the output, followed by "\r\n".
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 		
-		mapper.writeValue(output, fixityVerificationResult);
+		mapper.writeValue(output, entry);
 		output.write(new byte[] { 0x0D, 0x0A }); // \r\n
 		output.flush();
 		
@@ -300,17 +341,23 @@ public class FixityLogTask implements Runnable {
 			start = (double) System.currentTimeMillis();
 			result = verifyChecksumForObjectAndReplica(objectPath, info.get("DATA_REPL_NUM"));
 			elapsed = ((double) System.currentTimeMillis() - start) / 1000.0;
+			
+			// If the result is an integer, record it if it is non-zero (an error code).
+			// If the result is an exception, record it.
 
 			if (result instanceof Integer) {
 				code = (Integer) result;
-				verificationResult.setCode(code);
+				if (code.intValue() != 0)
+					verificationResult.setIrodsErrorCode(code);
 			} else if (result instanceof JargonException) {
 				verificationResult.setJargonException((JargonException) result);
 			} else {
 				throw new Error("Unexpected result from verifyChecksumForObjectAndReplica: " + result);
 			}
+			
+			// Record elapsed time for checksum verification
 
-			verificationResult.setElapsed(elapsed);
+			verificationResult.setElapsed(new Double(elapsed));
 			
 			// Interpret code as a result value.
 

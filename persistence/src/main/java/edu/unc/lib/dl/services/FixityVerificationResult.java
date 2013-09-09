@@ -19,7 +19,7 @@ public class FixityVerificationResult {
 	private String expectedChecksum;
 	private String filePath;
 	private Double elapsed;
-	private Integer code;
+	private Integer irodsErrorCode;
 	private JargonException jargonException;
 	private Result result;
 
@@ -123,12 +123,12 @@ public class FixityVerificationResult {
 	 * The iRODS error code, if any was recorded. Otherwise, null.
 	 */
 
-	public Integer getCode() {
-		return code;
+	public Integer getIrodsErrorCode() {
+		return irodsErrorCode;
 	}
 
-	public void setCode(Integer code) {
-		this.code = code;
+	public void setIrodsErrorCode(Integer irodsErrorCode) {
+		this.irodsErrorCode = irodsErrorCode;
 	}
 
 	/**
@@ -165,11 +165,11 @@ public class FixityVerificationResult {
 	 */
 
 	public ErrorEnum getError() {
-		if (code == null)
+		if (irodsErrorCode == null)
 			return null;
 
 		try {
-			return ErrorEnum.valueOf(code.intValue());
+			return ErrorEnum.valueOf(irodsErrorCode.intValue());
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
@@ -231,7 +231,7 @@ public class FixityVerificationResult {
 				"expectedChecksum=" + expectedChecksum + ", " +
 				"filePath=" + filePath + ", " +
 				"elapsed=" + elapsed + ", " +
-				"code=" + code + ", " +
+				"irodsErrorCode=" + irodsErrorCode + ", " +
 				"jargonException=" + jargonException + ", " +
 				"result=" + result +
 				"]";
