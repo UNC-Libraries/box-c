@@ -481,7 +481,12 @@
 		<property name="irodsAccount" ref="fedoraIrodsAccount"/>
 		<property name="irodsFileSystem" ref="irodsFileSystem"/>
 		<property name="managementClient" ref="managementClient"/>
-		<property name="resourceNames" value="${fixity.resourceNames}"/>
+		<property name="resourceNames">
+			<bean class="org.springframework.util.StringUtils" factory-method="commaDelimitedListToStringArray">
+        		<constructor-arg type="java.lang.String" value="${fixity.resourceNames}"/>
+   			</bean>
+		</property>
+		
 		<property name="staleInterval" value="${fixity.staleInterval}"/>
 		<property name="objectLimit" value="${fixity.objectLimit}"/>
 		<property name="fixityLogPath" value="${log.dir}/fixity.log"/>
