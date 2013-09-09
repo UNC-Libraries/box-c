@@ -420,8 +420,6 @@ public class FixityLogTask implements Runnable {
 			IRODSGenQueryFromBuilder query = builder.exportIRODSQueryFromBuilder(1);
 			IRODSQueryResultSet queryResultSet = genQueryExecutor.executeIRODSQueryAndCloseResult(query, 0);
 			IRODSQueryResultRow row = queryResultSet.getFirstResult();
-			
-			genQueryExecutor.closeResults(queryResultSet);
 
 			Map<String, String> info = new HashMap<String, String>();
 			info.put("DATA_REPL_NUM", row.getColumn("DATA_REPL_NUM"));
@@ -507,8 +505,6 @@ public class FixityLogTask implements Runnable {
 			IRODSGenQueryFromBuilder query = builder.exportIRODSQueryFromBuilder(1);
 			IRODSQueryResultSet queryResultSet = genQueryExecutor.executeIRODSQueryAndCloseResult(query, 0);
 			IRODSQueryResultRow row = queryResultSet.getFirstResult();
-			
-			genQueryExecutor.closeResults(queryResultSet);
 
 			String host = row.getColumn(RodsGenQueryEnum.COL_R_LOC.getName());
 			boolean available = false;
@@ -580,8 +576,6 @@ public class FixityLogTask implements Runnable {
 			IRODSGenQueryFromBuilder query = builder.exportIRODSQueryFromBuilder(objectLimit);
 			IRODSQueryResultSet queryResultSet = genQueryExecutor.executeIRODSQueryAndCloseResult(query, 0);
 			List<IRODSQueryResultRow> results = queryResultSet.getResults();
-			
-			genQueryExecutor.closeResults(queryResultSet);
 
 			List<String> paths = new ArrayList<String>();
 
