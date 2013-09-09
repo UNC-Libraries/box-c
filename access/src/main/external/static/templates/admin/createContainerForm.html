@@ -1,5 +1,5 @@
-<iframe id="upload_create_container" name="upload_create_container" height="0" width="0" style="display: none;"></iframe>
-<form id="create_container_form" method="post" action="/services/rest/edit/create_container/<%= pid %>" enctype="multipart/form-data" class="edit_form" target="upload_create_container">
+<iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
+<form id="create_container_form" method="post" action="/services/rest/edit/create_container/<%= pid %>" enctype="multipart/form-data" class="edit_form" target="upload_file_frame">
 	<div class="form_field">
 		<label>Container Name*</label>
 		<input name="name" size="38"></input>
@@ -12,7 +12,6 @@
 		</select>
 	</div>
 	<h3>Description</h3>
-	<p>A description is required if you are creating a Collection.</p>
 	<div class="form_field">
 		<label>Description (MODS)</label>
 		<input type="file" name="description" accept="text/xml,application/xml"/>

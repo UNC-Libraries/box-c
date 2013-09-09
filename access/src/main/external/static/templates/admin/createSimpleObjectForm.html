@@ -1,4 +1,5 @@
-<form id="create_simple_object_form" method="post" action="ingest/<%= pid %>" enctype="multipart/form-data" class="edit_form create_simple_object_form">
+<iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
+<form id="create_simple_object_form" method="post" action="ingest/<%= pid %>" enctype="multipart/form-data" target="upload_file_container" class="edit_form create_simple_object_form">
 	<p>Add a single file as a new object.  If no label is provided, the filename will be used.</p>
 	<h3>Simple Object</h3>
 	<div class="form_field">

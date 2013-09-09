@@ -16,7 +16,7 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 		init: function(options) {
 			this.options = $.extend({}, this.defaultOptions, options);
 			var self = this;
-			console.time("Initialize entries");
+			//console.time("Initialize entries");
 			//console.profile();
 			var metadataObjects = self.options.metadataObjects;
 			for (var i = 0; i < metadataObjects.length && i < self.options.splitLoadLimit; i++) {
@@ -27,17 +27,17 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 			}
 			if (metadataObjects.length > self.options.splitLoadLimit) {
 				setTimeout(function(){
-					console.time("Second batch");
+					//console.time("Second batch");
 					for (var i = self.options.splitLoadLimit; i < metadataObjects.length; i++) {
 						var metadata = metadataObjects[i];
 						self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self});
 						if (self.options.parent)
 							self.options.parent.append(self.resultObjects[metadata.id].element);
 					}
-					console.timeEnd("Second batch");
+					//console.timeEnd("Second batch");
 				}, 100);
 			}
-			console.timeEnd("Initialize entries");
+			//console.timeEnd("Initialize entries");
 		},
 		
 		getResultObject: function(id) {

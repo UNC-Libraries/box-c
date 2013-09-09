@@ -222,7 +222,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		if (!this.overlay) {
 			this.overlay = new ModalLoadingOverlay(this.element, {
 				text : 'Working...',
-				type : 'determinate',
+				type : 'text',
 				iconSize : 'small',
 				autoOpen : false
 			});

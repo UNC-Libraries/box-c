@@ -363,8 +363,17 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		'ModalLoadingOverlay', 'ConfirmationDialog'], 
 		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay, ConfirmationDialog) {
 	
+	var defaultOptions = {
+		iframeSelector : "#upload_file_frame",
+		showUploadProgress : true
+	};
+	
 	function AbstractFileUploadForm(options) {
-		this.options = $.extend({}, options);
+		this.options = $.extend({}, defaultOptions, options);
+	};
+	
+	AbstractFileUploadForm.prototype.getDefaultOptions = function () {
+		return defaultOptions;
 	};
 	
 	AbstractFileUploadForm.prototype.open = function(pid) {
@@ -398,8 +407,9 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		
 		this.overlay = new ModalLoadingOverlay(this.$form, {
 			autoOpen : false,
-			type : 'determinate',
-			text : 'uploading...'
+			type : this.options.showUploadProgress? 'determinate' : 'icon',
+			text : this.options.showUploadProgress? 'uploading...' : null,
+			dialog : this.dialog
 		});
 		// Flag to track when the form has been submitted and needs to be locked
 		this.submitted = false;
@@ -417,7 +427,13 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			
 			self.submitted = true;
 			self.overlay.open();
-			self.submitAjax();
+			if (self.supportsAjaxUpload()) {
+				self.submitAjax();
+			} else {
+				// Older browser or IE that doesn't support ajax file uploads, use iframe submit approach
+				self.submitIFrame();
+				return true;
+			}
 			return false;
 		});
 	};
@@ -425,7 +441,7 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	AbstractFileUploadForm.prototype.close = function() {
 		var self = this;
 		if (this.closed) return;
-		if (self.uploadInProgress) {
+		if (this.uploadInProgress && this.options.showUploadProgress) {
 			this.closeConfirm = new ConfirmationDialog({
 				promptText : 'Your submission is currently uploading, do you wish to close this window and abort the upload?',
 				confirmText : 'Close and continue',
@@ -461,6 +477,7 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 					}
 				}
 			});
+			return false;
 		} else {
 			this.remove();
 		}
@@ -487,25 +504,16 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		return fileSize;
 	};
 	
+	AbstractFileUploadForm.prototype.supportsAjaxUpload = function() {
+		return new XMLHttpRequest().upload;
+	};
+	
 	AbstractFileUploadForm.prototype.submitAjax = function() {
 		var self = this, $form = this.$form.find("form"), formData = new FormData($form[0]);
 		this.uploadInProgress = true;
 		
 		// Set up the request for XHR2 clients, register events
 		this.xhr = new XMLHttpRequest();
-		// Update the progress bar
-		this.xhr.upload.addEventListener("progress", function(event) {
-			if (self.closed) return;
-			if (event.total > 0) {
-				var percent = event.loaded / event.total * 100;
-				self.overlay.setProgress(percent);
-			}
-			if (event.loaded == event.total) {
-				self.uploadInProgress = false;
-				self.overlay.setText("upload complete, processing...");
-			}
-		}, false);
-		
 		// Finished sending to queue without any network errors
 		this.xhr.addEventListener("load", function(event) {
 			self.uploadCompleted();
@@ -517,30 +525,41 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			}
 			// Check for upload errors
 			if (this.status >= 400) {
-				var message = "Failed to submit package " + self.ingestFile.name + " for ingest.";
-				if (data && data.errorStack && !self.closed) {
-					message += "  See errors below.";
-					self.setError(data.errorStack);
-				}
-				self.options.alertHandler.alertHandler("error", message);
+				self.options.alertHandler.alertHandler("error", self.getErrorMessage(data));
 			} else {
 				// Ingest queueing was successful, let the user know and close the form
-				self.options.alertHandler.alertHandler("success", "Package " + self.ingestFile.name + " has been successfully uploaded for ingest.  You will receive an email when it completes.");
+				self.options.alertHandler.alertHandler("success", self.getSuccessMessage(data));
 				self.remove();
 			}
 		}, false);
 		
 		// Failed due to network problems
 		this.xhr.addEventListener("error", function(event) {
-			self.options.alertHandler.alertHandler("error", "Failed to ingest package " + self.ingestFile.name + ", see the errors below.");
+			self.options.alertHandler.alertHandler("error", self.getErrorMessage());
 			self.uploadCompleted();
 		}, false);
 		
-		// Upload aborted by the user
-		this.xhr.addEventListener("abort", function(event) {
-			self.options.alertHandler.alertHandler("message", "Cancelled ingest of package " + self.ingestFile.name);
-			self.uploadCompleted();
-		}, false);
+		if (this.options.showUploadProgress) {
+			// Upload aborted by the user
+			this.xhr.addEventListener("abort", function(event) {
+				self.options.alertHandler.alertHandler("message", "Cancelled upload of " + self.ingestFile.name);
+				self.uploadCompleted();
+			}, false);
+			
+			// Update the progress bar
+			this.xhr.upload.addEventListener("progress", function(event) {
+				if (self.closed) return;
+				if (event.total > 0) {
+					var percent = event.loaded / event.total * 100;
+					self.overlay.setProgress(percent);
+				}
+				if (event.loaded == event.total) {
+					self.uploadInProgress = false;
+					self.overlay.setText("upload complete, processing...");
+				}
+			}, false);
+		}
+		
 		this.xhr.open("POST", this.$form.find("form")[0].action);
 		this.xhr.send(formData);
 	};
@@ -553,6 +572,29 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			$(window).unbind('beforeunload', this.unloadFunction);
 			this.unloadFunction = null;
 		}
+	};
+	
+	// Traditional iframe file upload approach, monitor an iframe for changes to know when the submit completes
+	AbstractFileUploadForm.prototype.submitIFrame = function() {
+		var self = this;
+		$(this.options.iframeSelector).load(function(){
+			if (!this.contentDocument.body.innerHTML)
+				return;
+			self.uploadCompleted();
+			var data = null;
+			try {
+				if (this.contentDocument.body.innerHTML)
+					data = JSON.parse(this.contentDocument.body.innerHTML);
+			} catch (e) {
+				if (typeof console != "undefined") console.log("Failed to parse ingest response", e);
+			}
+			if (data.error) {
+				self.options.alertHandler.alertHandler("error", self.getErrorMessage(data));
+			} else {
+				self.options.alertHandler.alertHandler("success", self.getSuccessMessage(data));
+				self.remove();
+			}
+		});
 	};
 	
 	AbstractFileUploadForm.prototype.setError = function(errorText) {
@@ -578,8 +620,10 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		if (this.closeConfirm)
 			this.closeConfirm.close();
 		this.overlay.close();
-		this.overlay.setProgress(0);
-		this.overlay.setText("uploading...");
+		if (this.options.showUploadProgress) {
+			this.overlay.setProgress(0);
+			this.overlay.setText("uploading...");
+		}
 	};
 	
 	return AbstractFileUploadForm;
@@ -1298,87 +1342,42 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 	});
 	return ConfirmationDialog;
 });define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/createContainerForm', 
-		'ModalLoadingOverlay'], 
-		function($, ui, _, RemoteStateChangeMonitor, createFormTemplate, ModalLoadingOverlay) {
+		'ModalLoadingOverlay', 'AbstractFileUploadForm'], 
+		function($, ui, _, RemoteStateChangeMonitor, createContainerForm, ModalLoadingOverlay, AbstractFileUploadForm) {
 	
-	var defaultOptions = {};
+	var defaultOptions = {
+			title : 'Create container',
+			createFormTemplate : createContainerForm,
+			showUploadProgress : false
+	};
 	
 	function CreateContainerForm(options) {
-		this.options = $.extend({}, defaultOptions, options);
+		this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
 	};
 	
-	CreateContainerForm.prototype.open = function(pid) {
-		var self = this, formContents = createFormTemplate({pid : pid});
-		
-		var dialog = $("<div class='containingDialog'>" + formContents + "</div>");
-		dialog.dialog({
-			autoOpen: true,
-			width: 500,
-			height: 'auto',
-			maxHeight: 300,
-			minWidth: 500,
-			modal: true,
-			title: 'Create container',
-			close: function() {
-				dialog.remove();
-			}
-		});
-		
-		var $form = dialog.first();
-		var overlay = new ModalLoadingOverlay($form, {autoOpen : false});
-		var submitted = false;
-		$form.submit(function(){
-			if (submitted)
-				return false;
-			errors = self.validationErrors($form);
-			if (errors && errors.length > 0) {
-				self.options.alertHandler.alertHandler("error", errors);
-				return false;
-			}
-			
-			submitted = true;
-			overlay.open();
-		});
-		
-		$("#upload_create_container").load(function(){
-			if (!this.contentDocument.body.innerHTML)
-				return;
-			try {
-				overlay.close();
-				var response = JSON.parse(this.contentDocument.body.innerHTML);
-				var containerName = $("input[name='name']", $form).val();
-				if (response.error) {
-					if (self.options.alertHandler)
-						self.options.alertHandler.alertHandler("error", "An error occurred while creating container");
-					submitted = false;
-				} else if (response.pid) {
-					if (self.options.alertHandler) {
-						var type = $("#create_container_form select").val();
-						self.options.alertHandler.alertHandler("success", "Created " + type + " " + containerName + ", refresh the page to view");
-					}
-					overlay.remove();
-					dialog.dialog("close");
-				}
-				$(this).empty();
-			} catch (e) {
-				submitted = false;
-				self.options.alertHandler.alertHandler("error", "An error occurred while creating container");
-				console.log(e);
-			}
-		});
-	};
+	CreateContainerForm.prototype.constructor = CreateContainerForm;
+	CreateContainerForm.prototype = Object.create( AbstractFileUploadForm.prototype );
 	
-	CreateContainerForm.prototype.validationErrors = function($form) {
+	CreateContainerForm.prototype.validationErrors = function() {
 		var errors = [];
-		var containerName = $("input[name='name']", $form).val(),
-			containerType = $("select", $form).val(),
-			description = $("input[type='file']", $form).val();
+		var description = $("input[type='file']", this.$form).val();
 		// Validate input
-		if (!containerName)
-			errors.push("You must specify a name for the folder");
-		if (containerType == "collection" && !description)
-			errors.push("A MODS description file must be provided when creating a collection");
+		if (!this.containerName)
+			errors.push("You must specify a name for the " + this.containerType);
 		return errors;
+	};
+	
+	CreateContainerForm.prototype.preprocessForm = function() {
+		this.containerName = $("input[name='name']", this.$form).val();
+		this.containerType = $("select", this.$form).val();
+	};
+	
+	CreateContainerForm.prototype.getSuccessMessage = function(data) {
+		return this.containerType + " " + this.containerName + " has been successfully created.";
+	};
+	
+	CreateContainerForm.prototype.getErrorMessage = function(data) {
+		return "An error occurred while creating " + this.containerType + " " + this.containerName;
 	};
 	
 	return CreateContainerForm;
@@ -1395,7 +1394,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	};
 	
 	function CreateSimpleObjectForm(options) {
-		this.options = $.extend({}, defaultOptions, options);
+		this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
 	};
 	
 	CreateSimpleObjectForm.prototype.constructor = CreateSimpleObjectForm;
@@ -1415,6 +1414,19 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		if (!dataFile)
 			errors.push("You must select a file to ingest");
 		return errors;
+	};
+	
+	CreateSimpleObjectForm.prototype.getSuccessMessage = function(data) {
+		return this.ingestFile.name + " has been successfully uploaded for ingest.  You will receive an email when it completes.";
+	};
+	
+	CreateSimpleObjectForm.prototype.getErrorMessage = function(data) {
+		var message = "Failed to ingest file " + this.ingestFile.name + ".";
+		if (data && data.errorStack && !this.closed) {
+			message += "  See errors below.";
+			this.setError(data.errorStack);
+		}
+		return message;
 	};
 	
 	return CreateSimpleObjectForm;
@@ -1850,7 +1862,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	};
 	
 	function IngestPackageForm(options) {
-		this.options = $.extend({}, defaultOptions, options);
+		this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
 	};
 	
 	IngestPackageForm.prototype.constructor = IngestPackageForm;
@@ -1863,6 +1875,19 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		if (!packageFile)
 			errors.push("You must select a package file to ingest");
 		return errors;
+	};
+	
+	IngestPackageForm.prototype.getSuccessMessage = function(data) {
+		return "Package " + this.ingestFile.name + " has been successfully uploaded for ingest.  You will receive an email when it completes.";
+	};
+	
+	IngestPackageForm.prototype.getErrorMessage = function(data) {
+		var message = "Failed to submit package " + this.ingestFile.name + " for ingest.";
+		if (data && data.errorStack && !this.closed) {
+			message += "  See errors below.";
+			this.setError(data.errorStack);
+		}
+		return message;
 	};
 	
 	return IngestPackageForm;
@@ -1915,10 +1940,11 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	return MetadataObject;
 });define('ModalLoadingOverlay', [ 'jquery', 'jquery-ui', 'editable', 'moment', 'qtip'], function($) {
 	var defaultOptions = {
-		'text' : null,
-		'type' : "icon", // text, icon, determinate
-		'iconSize' : 'large',
-		'autoOpen' : true
+		text : null,
+		type : "icon", // text, icon, determinate
+		iconSize : 'large',
+		autoOpen : true,
+		dialog : false
 	};
 	
 	function ModalLoadingOverlay(element, options) {
@@ -1945,6 +1971,12 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		this.overlay.appendTo(document.body);
 		
 		$(window).resize($.proxy(this.resize, this));
+		var self = this;
+		if (this.options.dialog) {
+			this.options.dialog.on("dialogdrag", function(event, ui){
+				self.resize();
+			});
+		}
 		
 		if (this.options.autoOpen)
 			this.open();
@@ -1978,10 +2010,12 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 				leftOffset = (this.element.innerWidth() - this.loadingBar.width()) / 2;
 			this.loadingBar.css({top : topOffset, left : leftOffset});
 		} else {
-			var topOffset = (this.element.innerHeight() - this.textSpan.outerHeight()) / 2;
-			this.textSpan.css('top', topOffset);
-			if (this.textIcon)
-				this.textIcon.css('top', topOffset);
+			if (this.textSpan) {
+				var topOffset = (this.element.innerHeight() - this.textSpan.outerHeight()) / 2;
+				this.textSpan.css('top', topOffset);
+				if (this.textIcon)
+					this.textIcon.css('top', topOffset);
+			}
 		}
 	};
 	
@@ -2466,7 +2500,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		if (!this.overlay) {
 			this.overlay = new ModalLoadingOverlay(this.element, {
 				text : 'Working...',
-				type : 'determinate',
+				type : 'text',
 				iconSize : 'small',
 				autoOpen : false
 			});
@@ -2636,7 +2670,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		init: function(options) {
 			this.options = $.extend({}, this.defaultOptions, options);
 			var self = this;
-			console.time("Initialize entries");
+			//console.time("Initialize entries");
 			//console.profile();
 			var metadataObjects = self.options.metadataObjects;
 			for (var i = 0; i < metadataObjects.length && i < self.options.splitLoadLimit; i++) {
@@ -2647,17 +2681,17 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			}
 			if (metadataObjects.length > self.options.splitLoadLimit) {
 				setTimeout(function(){
-					console.time("Second batch");
+					//console.time("Second batch");
 					for (var i = self.options.splitLoadLimit; i < metadataObjects.length; i++) {
 						var metadata = metadataObjects[i];
 						self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self});
 						if (self.options.parent)
 							self.options.parent.append(self.resultObjects[metadata.id].element);
 					}
-					console.timeEnd("Second batch");
+					//console.timeEnd("Second batch");
 				}, 100);
 			}
-			console.timeEnd("Initialize entries");
+			//console.timeEnd("Initialize entries");
 		},
 		
 		getResultObject: function(id) {
@@ -2772,7 +2806,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 					
 					$th.click(function(){
 						if (!$th.hasClass('sorting')) return;
-						console.time("Sort total");
+						//console.time("Sort total");
 						var inverse = $th.hasClass('desc');
 						$('.sorting', $resultTable).removeClass('asc desc');
 						if (inverse)
@@ -2789,7 +2823,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 							self._alphabeticSort(thIndex, inverse);
 						}
 						inverse = !inverse;
-						console.timeEnd("Sort total");
+						//console.timeEnd("Sort total");
 					});
 				});
 			}
@@ -2797,7 +2831,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		
 		// Base row sorting function
 		_sortEntries : function($entries, matchMap, getSortable) {
-			console.time("Reordering elements");
+			//console.time("Reordering elements");
 			var $resultTable = this.$resultTable;
 			
 			$resultTable.detach(function(){
@@ -2827,25 +2861,25 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				resultTable.appendChild(fragment);
 			});
 			
-			console.timeEnd("Reordering elements");
+			//console.timeEnd("Reordering elements");
 		},
 		
 		// Simple alphanumeric result entry sorting
 		_alphabeticSort : function(thIndex, inverse) {
 			var $resultTable = this.$resultTable;
 			var matchMap = [];
-			console.time("Finding elements");
+			//console.time("Finding elements");
 			var $entries = $resultTable.find('tr.res_entry').map(function() {
 				return this.children[thIndex];
 			});
-			console.timeEnd("Finding elements");
+			//console.timeEnd("Finding elements");
 			for (var i = 0, length = $entries.length; i < length; i++) {
 				matchMap.push({
 					index : i,
 					value : $entries[i].children[0].innerHTML.toUpperCase()
 				});
 			}
-			console.time("Sorting");
+			//console.time("Sorting");
 			matchMap.sort(function(a, b){
 				if(a.value == b.value)
 					return 0;
@@ -2853,13 +2887,13 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 						inverse ? -1 : 1
 						: inverse ? 1 : -1;
 			});
-			console.timeEnd("Sorting");
+			//console.timeEnd("Sorting");
 			this._sortEntries($entries, matchMap);
 		},
 		
 		// Sort by the order the items appeared at page load
 		_originalOrderSort : function(inverse) {
-			console.time("Finding elements");
+			//console.time("Finding elements");
 			var $entries = [];
 			for (var index in this.resultObjectList.resultObjects) {
 				var resultObject = this.resultObjectList.resultObjects[index];
@@ -2868,7 +2902,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			if (inverse)
 				$entries = $entries.reverse();
 			
-			console.timeEnd("Finding elements");
+			//console.timeEnd("Finding elements");
 
 			this._sortEntries($entries, null, function(){
 				return this;
@@ -2880,9 +2914,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			var $resultTable = this.$resultTable;
 			var titleRegex = new RegExp('(\\d+|[^\\d]+)', 'g');
 			var matchMap = [];
-			console.time("Finding elements");
+			//console.time("Finding elements");
 			var $entries = $resultTable.find('.res_entry > .itemdetails');
-			console.timeEnd("Finding elements");
+			//console.timeEnd("Finding elements");
 			for (var i = 0, length = $entries.length; i < length; i++) {
 				var text = $entries[i].children[0].children[0].innerHTML.toUpperCase();
 				var textParts = text.match(titleRegex);
@@ -2892,7 +2926,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 					value : (textParts == null) ? [] : textParts
 				});
 			}
-			console.time("Sorting");
+			//console.time("Sorting");
 			matchMap.sort(function(a, b) {
 				if (a.text == b.text)
 					return 0;
@@ -2920,7 +2954,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 						inverse ? -1 : 1
 						: inverse ? 1 : -1;
 			});
-			console.timeEnd("Sorting");
+			//console.timeEnd("Sorting");
 			this._sortEntries($entries, matchMap);
 		},
 		
@@ -2941,7 +2975,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 						this.setStatusText('Publishing...');
-						this.updateOverlay('show');
+						this.updateOverlay('open');
 					}, 
 				'followupFunction' : function() {
 					this.setStatusText('Publishing....');
@@ -2958,7 +2992,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 						this.setStatusText('Unpublishing...');
-						this.updateOverlay('show');
+						this.updateOverlay('open');
 					}, 
 				'followupFunction' : function() {
 					this.setStatusText('Unpublishing....');
@@ -2975,12 +3009,13 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 						this.setStatusText('Deleting...');
-						this.updateOverlay('show');
+						this.updateOverlay('open');
 					}, 
 				'followupFunction' : function() {
 						this.setStatusText('Cleaning up...');
 					}, 
-				'completeFunction' : 'deleteElement'
+				'completeFunction' : 'deleteElement',
+				confirmAnchor : deleteButton
 			}, deleteButton);
 			deleteButton.click(function(){
 				deleteBatch.activate();
@@ -3013,10 +3048,10 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			var self = this;
 			this.$dropLocations = this.$dropLocations.add($dropLocation);
 			$dropLocation.on("mouseenter", dropTargetSelector, function() {
-				console.log("Hovering", this);
+				//console.log("Hovering", this);
 				$(this).addClass("drop_hover");
 			}).on("mouseleave", dropTargetSelector, function() {
-				console.log("Blur", this);
+				//console.log("Blur", this);
 				$(this).removeClass("drop_hover");
 			});
 			$dropLocation.droppable({
@@ -3164,10 +3199,10 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 					// Set the table to move mode and enable drop zone hover highlighting
 					self.$dropLocations.addClass("moving")
 						.on("mouseenter", ".res_entry.container.move_into .title", function() {
-							console.log("Hovering");
+							//console.log("Hovering");
 							$(this).addClass("drop_hover");
 						}).on("mouseleave", ".res_entry.container.move_into .title", function() {
-							console.log("Blur");
+							//console.log("Blur");
 							$(this).removeClass("drop_hover");
 						});
 				},

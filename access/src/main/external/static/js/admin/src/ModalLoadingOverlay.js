@@ -1,9 +1,10 @@
 define('ModalLoadingOverlay', [ 'jquery', 'jquery-ui', 'editable', 'moment', 'qtip'], function($) {
 	var defaultOptions = {
-		'text' : null,
-		'type' : "icon", // text, icon, determinate
-		'iconSize' : 'large',
-		'autoOpen' : true
+		text : null,
+		type : "icon", // text, icon, determinate
+		iconSize : 'large',
+		autoOpen : true,
+		dialog : false
 	};
 	
 	function ModalLoadingOverlay(element, options) {
@@ -30,6 +31,12 @@ define('ModalLoadingOverlay', [ 'jquery', 'jquery-ui', 'editable', 'moment', 'qt
 		this.overlay.appendTo(document.body);
 		
 		$(window).resize($.proxy(this.resize, this));
+		var self = this;
+		if (this.options.dialog) {
+			this.options.dialog.on("dialogdrag", function(event, ui){
+				self.resize();
+			});
+		}
 		
 		if (this.options.autoOpen)
 			this.open();
@@ -63,10 +70,12 @@ define('ModalLoadingOverlay', [ 'jquery', 'jquery-ui', 'editable', 'moment', 'qt
 				leftOffset = (this.element.innerWidth() - this.loadingBar.width()) / 2;
 			this.loadingBar.css({top : topOffset, left : leftOffset});
 		} else {
-			var topOffset = (this.element.innerHeight() - this.textSpan.outerHeight()) / 2;
-			this.textSpan.css('top', topOffset);
-			if (this.textIcon)
-				this.textIcon.css('top', topOffset);
+			if (this.textSpan) {
+				var topOffset = (this.element.innerHeight() - this.textSpan.outerHeight()) / 2;
+				this.textSpan.css('top', topOffset);
+				if (this.textIcon)
+					this.textIcon.css('top', topOffset);
+			}
 		}
 	};
 	

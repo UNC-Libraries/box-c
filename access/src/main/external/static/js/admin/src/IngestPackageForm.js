@@ -11,7 +11,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	};
 	
 	function IngestPackageForm(options) {
-		this.options = $.extend({}, defaultOptions, options);
+		this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
 	};
 	
 	IngestPackageForm.prototype.constructor = IngestPackageForm;
@@ -24,6 +24,19 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		if (!packageFile)
 			errors.push("You must select a package file to ingest");
 		return errors;
+	};
+	
+	IngestPackageForm.prototype.getSuccessMessage = function(data) {
+		return "Package " + this.ingestFile.name + " has been successfully uploaded for ingest.  You will receive an email when it completes.";
+	};
+	
+	IngestPackageForm.prototype.getErrorMessage = function(data) {
+		var message = "Failed to submit package " + this.ingestFile.name + " for ingest.";
+		if (data && data.errorStack && !this.closed) {
+			message += "  See errors below.";
+			this.setError(data.errorStack);
+		}
+		return message;
 	};
 	
 	return IngestPackageForm;

@@ -1,85 +1,40 @@
 define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/createContainerForm', 
-		'ModalLoadingOverlay'], 
-		function($, ui, _, RemoteStateChangeMonitor, createFormTemplate, ModalLoadingOverlay) {
+		'ModalLoadingOverlay', 'AbstractFileUploadForm'], 
+		function($, ui, _, RemoteStateChangeMonitor, createContainerForm, ModalLoadingOverlay, AbstractFileUploadForm) {
 	
-	var defaultOptions = {};
+	var defaultOptions = {
+			title : 'Create container',
+			createFormTemplate : createContainerForm,
+			showUploadProgress : false
+	};
 	
 	function CreateContainerForm(options) {
-		this.options = $.extend({}, defaultOptions, options);
+		this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
 	};
 	
-	CreateContainerForm.prototype.open = function(pid) {
-		var self = this, formContents = createFormTemplate({pid : pid});
-		
-		var dialog = $("<div class='containingDialog'>" + formContents + "</div>");
-		dialog.dialog({
-			autoOpen: true,
-			width: 500,
-			height: 'auto',
-			maxHeight: 300,
-			minWidth: 500,
-			modal: true,
-			title: 'Create container',
-			close: function() {
-				dialog.remove();
-			}
-		});
-		
-		var $form = dialog.first();
-		var overlay = new ModalLoadingOverlay($form, {autoOpen : false});
-		var submitted = false;
-		$form.submit(function(){
-			if (submitted)
-				return false;
-			errors = self.validationErrors($form);
-			if (errors && errors.length > 0) {
-				self.options.alertHandler.alertHandler("error", errors);
-				return false;
-			}
-			
-			submitted = true;
-			overlay.open();
-		});
-		
-		$("#upload_create_container").load(function(){
-			if (!this.contentDocument.body.innerHTML)
-				return;
-			try {
-				overlay.close();
-				var response = JSON.parse(this.contentDocument.body.innerHTML);
-				var containerName = $("input[name='name']", $form).val();
-				if (response.error) {
-					if (self.options.alertHandler)
-						self.options.alertHandler.alertHandler("error", "An error occurred while creating container");
-					submitted = false;
-				} else if (response.pid) {
-					if (self.options.alertHandler) {
-						var type = $("#create_container_form select").val();
-						self.options.alertHandler.alertHandler("success", "Created " + type + " " + containerName + ", refresh the page to view");
-					}
-					overlay.remove();
-					dialog.dialog("close");
-				}
-				$(this).empty();
-			} catch (e) {
-				submitted = false;
-				self.options.alertHandler.alertHandler("error", "An error occurred while creating container");
-				console.log(e);
-			}
-		});
-	};
+	CreateContainerForm.prototype.constructor = CreateContainerForm;
+	CreateContainerForm.prototype = Object.create( AbstractFileUploadForm.prototype );
 	
-	CreateContainerForm.prototype.validationErrors = function($form) {
+	CreateContainerForm.prototype.validationErrors = function() {
 		var errors = [];
-		var containerName = $("input[name='name']", $form).val(),
-			containerType = $("select", $form).val(),
-			description = $("input[type='file']", $form).val();
+		var description = $("input[type='file']", this.$form).val();
 		// Validate input
-		if (!containerName)
-			errors.push("You must specify a name for the folder");
-		if (containerType == "collection" && !description)
-			errors.push("A MODS description file must be provided when creating a collection");
+		if (!this.containerName)
+			errors.push("You must specify a name for the " + this.containerType);
 		return errors;
+	};
+	
+	CreateContainerForm.prototype.preprocessForm = function() {
+		this.containerName = $("input[name='name']", this.$form).val();
+		this.containerType = $("select", this.$form).val();
+	};
+	
+	CreateContainerForm.prototype.getSuccessMessage = function(data) {
+		return this.containerType + " " + this.containerName + " has been successfully created.";
+	};
+	
+	CreateContainerForm.prototype.getErrorMessage = function(data) {
+		return "An error occurred while creating " + this.containerType + " " + this.containerName;
 	};
 	
 	return CreateContainerForm;

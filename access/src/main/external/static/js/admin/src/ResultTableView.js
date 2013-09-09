@@ -75,7 +75,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					
 					$th.click(function(){
 						if (!$th.hasClass('sorting')) return;
-						console.time("Sort total");
+						//console.time("Sort total");
 						var inverse = $th.hasClass('desc');
 						$('.sorting', $resultTable).removeClass('asc desc');
 						if (inverse)
@@ -92,7 +92,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 							self._alphabeticSort(thIndex, inverse);
 						}
 						inverse = !inverse;
-						console.timeEnd("Sort total");
+						//console.timeEnd("Sort total");
 					});
 				});
 			}
@@ -100,7 +100,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		
 		// Base row sorting function
 		_sortEntries : function($entries, matchMap, getSortable) {
-			console.time("Reordering elements");
+			//console.time("Reordering elements");
 			var $resultTable = this.$resultTable;
 			
 			$resultTable.detach(function(){
@@ -130,25 +130,25 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				resultTable.appendChild(fragment);
 			});
 			
-			console.timeEnd("Reordering elements");
+			//console.timeEnd("Reordering elements");
 		},
 		
 		// Simple alphanumeric result entry sorting
 		_alphabeticSort : function(thIndex, inverse) {
 			var $resultTable = this.$resultTable;
 			var matchMap = [];
-			console.time("Finding elements");
+			//console.time("Finding elements");
 			var $entries = $resultTable.find('tr.res_entry').map(function() {
 				return this.children[thIndex];
 			});
-			console.timeEnd("Finding elements");
+			//console.timeEnd("Finding elements");
 			for (var i = 0, length = $entries.length; i < length; i++) {
 				matchMap.push({
 					index : i,
 					value : $entries[i].children[0].innerHTML.toUpperCase()
 				});
 			}
-			console.time("Sorting");
+			//console.time("Sorting");
 			matchMap.sort(function(a, b){
 				if(a.value == b.value)
 					return 0;
@@ -156,13 +156,13 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						inverse ? -1 : 1
 						: inverse ? 1 : -1;
 			});
-			console.timeEnd("Sorting");
+			//console.timeEnd("Sorting");
 			this._sortEntries($entries, matchMap);
 		},
 		
 		// Sort by the order the items appeared at page load
 		_originalOrderSort : function(inverse) {
-			console.time("Finding elements");
+			//console.time("Finding elements");
 			var $entries = [];
 			for (var index in this.resultObjectList.resultObjects) {
 				var resultObject = this.resultObjectList.resultObjects[index];
@@ -171,7 +171,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			if (inverse)
 				$entries = $entries.reverse();
 			
-			console.timeEnd("Finding elements");
+			//console.timeEnd("Finding elements");
 
 			this._sortEntries($entries, null, function(){
 				return this;
@@ -183,9 +183,9 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			var $resultTable = this.$resultTable;
 			var titleRegex = new RegExp('(\\d+|[^\\d]+)', 'g');
 			var matchMap = [];
-			console.time("Finding elements");
+			//console.time("Finding elements");
 			var $entries = $resultTable.find('.res_entry > .itemdetails');
-			console.timeEnd("Finding elements");
+			//console.timeEnd("Finding elements");
 			for (var i = 0, length = $entries.length; i < length; i++) {
 				var text = $entries[i].children[0].children[0].innerHTML.toUpperCase();
 				var textParts = text.match(titleRegex);
@@ -195,7 +195,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					value : (textParts == null) ? [] : textParts
 				});
 			}
-			console.time("Sorting");
+			//console.time("Sorting");
 			matchMap.sort(function(a, b) {
 				if (a.text == b.text)
 					return 0;
@@ -223,7 +223,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						inverse ? -1 : 1
 						: inverse ? 1 : -1;
 			});
-			console.timeEnd("Sorting");
+			//console.timeEnd("Sorting");
 			this._sortEntries($entries, matchMap);
 		},
 		
@@ -244,7 +244,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 						this.setStatusText('Publishing...');
-						this.updateOverlay('show');
+						this.updateOverlay('open');
 					}, 
 				'followupFunction' : function() {
 					this.setStatusText('Publishing....');
@@ -261,7 +261,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 						this.setStatusText('Unpublishing...');
-						this.updateOverlay('show');
+						this.updateOverlay('open');
 					}, 
 				'followupFunction' : function() {
 					this.setStatusText('Unpublishing....');
@@ -278,12 +278,13 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				'resultObjectList' : this.resultObjectList, 
 				'workFunction' : function() {
 						this.setStatusText('Deleting...');
-						this.updateOverlay('show');
+						this.updateOverlay('open');
 					}, 
 				'followupFunction' : function() {
 						this.setStatusText('Cleaning up...');
 					}, 
-				'completeFunction' : 'deleteElement'
+				'completeFunction' : 'deleteElement',
+				confirmAnchor : deleteButton
 			}, deleteButton);
 			deleteButton.click(function(){
 				deleteBatch.activate();
@@ -316,10 +317,10 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			var self = this;
 			this.$dropLocations = this.$dropLocations.add($dropLocation);
 			$dropLocation.on("mouseenter", dropTargetSelector, function() {
-				console.log("Hovering", this);
+				//console.log("Hovering", this);
 				$(this).addClass("drop_hover");
 			}).on("mouseleave", dropTargetSelector, function() {
-				console.log("Blur", this);
+				//console.log("Blur", this);
 				$(this).removeClass("drop_hover");
 			});
 			$dropLocation.droppable({
@@ -467,10 +468,10 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					// Set the table to move mode and enable drop zone hover highlighting
 					self.$dropLocations.addClass("moving")
 						.on("mouseenter", ".res_entry.container.move_into .title", function() {
-							console.log("Hovering");
+							//console.log("Hovering");
 							$(this).addClass("drop_hover");
 						}).on("mouseleave", ".res_entry.container.move_into .title", function() {
-							console.log("Blur");
+							//console.log("Blur");
 							$(this).removeClass("drop_hover");
 						});
 				},

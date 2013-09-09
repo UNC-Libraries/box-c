@@ -11,7 +11,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	};
 	
 	function CreateSimpleObjectForm(options) {
-		this.options = $.extend({}, defaultOptions, options);
+		this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
 	};
 	
 	CreateSimpleObjectForm.prototype.constructor = CreateSimpleObjectForm;
@@ -31,6 +31,19 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		if (!dataFile)
 			errors.push("You must select a file to ingest");
 		return errors;
+	};
+	
+	CreateSimpleObjectForm.prototype.getSuccessMessage = function(data) {
+		return this.ingestFile.name + " has been successfully uploaded for ingest.  You will receive an email when it completes.";
+	};
+	
+	CreateSimpleObjectForm.prototype.getErrorMessage = function(data) {
+		var message = "Failed to ingest file " + this.ingestFile.name + ".";
+		if (data && data.errorStack && !this.closed) {
+			message += "  See errors below.";
+			this.setError(data.errorStack);
+		}
+		return message;
 	};
 	
 	return CreateSimpleObjectForm;
