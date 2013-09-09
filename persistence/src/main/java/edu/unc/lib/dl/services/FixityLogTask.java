@@ -504,6 +504,11 @@ public class FixityLogTask implements Runnable {
 
 			IRODSGenQueryFromBuilder query = builder.exportIRODSQueryFromBuilder(1);
 			IRODSQueryResultSet queryResultSet = genQueryExecutor.executeIRODSQueryAndCloseResult(query, 0);
+
+			if (queryResultSet.getResults().size() < 1) {
+				return false;
+			}
+			
 			IRODSQueryResultRow row = queryResultSet.getFirstResult();
 
 			String host = row.getColumn(RodsGenQueryEnum.COL_R_LOC.getName());
