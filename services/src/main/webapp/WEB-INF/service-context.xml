@@ -471,6 +471,7 @@
 	
 	<bean id="fixityLogService" class="edu.unc.lib.dl.cdr.services.FixityLogService" init-method="init" destroy-method="destroy">
 		<property name="fixityLogTaskFactory" ref="fixityLogTaskFactory"/>
+		<property name="pollingIntervalSeconds" value="${fixity.pollingInterval.seconds}"/>
 	</bean>
 
 	<bean id="fixityLogTaskFactory" class="edu.unc.lib.dl.services.FixityLogTaskFactory">
@@ -487,7 +488,7 @@
    			</bean>
 		</property>
 		
-		<property name="staleInterval" value="${fixity.staleInterval}"/>
+		<property name="staleIntervalSeconds" value="${fixity.staleInterval.seconds}"/>
 		<property name="objectLimit" value="${fixity.objectLimit}"/>
 		<property name="fixityLogPath" value="${log.dir}/fixity.log"/>
 	</bean>

@@ -20,12 +20,13 @@ public class FixityLogService implements ServiceConductor {
 	protected ServicesThreadPoolExecutor<FixityLogTask> executor = null;
 	private FixityLogTaskFactory fixityLogTaskFactory = null;
 	private Timer pollingTimer = null;
+	private long pollingIntervalSeconds = 60;
 
 	public void init() {
 		initializeExecutor();
 		
 		pollingTimer = new Timer();
-		pollingTimer.schedule(new ExecuteTask(), 0, 1000 * 60);
+		pollingTimer.schedule(new ExecuteTask(), 0, pollingIntervalSeconds * 1000);
 	}
 	
 	private void initializeExecutor() {
@@ -62,6 +63,14 @@ public class FixityLogService implements ServiceConductor {
 
 	public void setFixityLogTaskFactory(FixityLogTaskFactory fixityLogTaskFactory) {
 		this.fixityLogTaskFactory = fixityLogTaskFactory;
+	}
+	
+	public long getPollingIntervalSeconds() {
+		return pollingIntervalSeconds;
+	}
+
+	public void setPollingIntervalSeconds(long pollingIntervalSeconds) {
+		this.pollingIntervalSeconds = pollingIntervalSeconds;
 	}
 	
 	

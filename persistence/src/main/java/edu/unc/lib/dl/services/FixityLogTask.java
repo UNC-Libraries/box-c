@@ -57,7 +57,7 @@ public class FixityLogTask implements Runnable {
 	private ManagementClient managementClient = null;
 
 	private List<String> resourceNames = null;
-	private int staleInterval = 0;
+	private int staleIntervalSeconds = 0;
 	private int objectLimit = 0;
 	private String fixityLogPath = null;
 
@@ -93,12 +93,12 @@ public class FixityLogTask implements Runnable {
 		this.resourceNames = resourceNames;
 	}
 
-	public int getStaleInterval() {
-		return staleInterval;
+	public int getStaleIntervalSeconds() {
+		return staleIntervalSeconds;
 	}
 
-	public void setStaleInterval(int staleInterval) {
-		this.staleInterval = staleInterval;
+	public void setStaleIntervalSeconds(int staleIntervalSeconds) {
+		this.staleIntervalSeconds = staleIntervalSeconds;
 	}
 
 	public int getObjectLimit() {
@@ -142,7 +142,7 @@ public class FixityLogTask implements Runnable {
 	
 			// Verify stale objects, write output, and touch timestamp
 	
-			List<String> objectPaths = getStaleObjectPaths(getCurrentIcatTime() - staleInterval, objectLimit);
+			List<String> objectPaths = getStaleObjectPaths(getCurrentIcatTime() - staleIntervalSeconds, objectLimit);
 			
 			for (String path : objectPaths) {
 	
