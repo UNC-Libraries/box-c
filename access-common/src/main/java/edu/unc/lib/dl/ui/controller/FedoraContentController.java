@@ -118,6 +118,13 @@ public class FedoraContentController extends AbstractSolrSearchController {
 			throw new ResourceNotFoundException();
 		}
 	}
+	
+	@ResponseStatus(value = HttpStatus.NOT_FOUND)
+	@ExceptionHandler(ResourceNotFoundException.class)
+	public String handleResourceNotFound(HttpServletRequest request) {
+		request.setAttribute("pageSubtitle", "Invalid content");
+		return "error/invalidRecord";
+	}
 
 	@ResponseStatus(value = HttpStatus.NOT_FOUND)
 	@ExceptionHandler(ResourceNotFoundException.class)

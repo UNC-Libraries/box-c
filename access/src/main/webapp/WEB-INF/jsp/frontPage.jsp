@@ -67,7 +67,7 @@
 		
 			<p>To get started, just tell us about the work you’d like to preserve. We’ll meet with you to discuss how to transfer it, describe it, and make it available on the web. After you deposit your work, we take care of the rest, ensuring it’s kept safe and accessible for the future.</p>
 		
-			<p class="button"><a href="external?refer=http%3a%2f%2flocalhost%2f&page=contact">Contact us to get started</a></p>
+			<p class="button"><a href="/contact?refer=frontcontact">Contact us to get started</a></p>
 		</div>
 	</div>
 
