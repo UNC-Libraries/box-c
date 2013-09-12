@@ -231,7 +231,9 @@ public class FixityLogTask implements Runnable {
 
 	private void appendPremisEvent(FixityVerificationResult fixityVerificationResult) {
 
-		if (fixityVerificationResult.getResult() == FixityVerificationResult.Result.OK) {
+		FixityVerificationResult.Result result = fixityVerificationResult.getResult();
+
+		if (result == FixityVerificationResult.Result.OK) {
 			return;
 		}
 
@@ -242,46 +244,83 @@ public class FixityLogTask implements Runnable {
 			PremisEventLogger premisEventLogger = new PremisEventLogger(null);
 
 			Element event = premisEventLogger.logEvent(pid);
+			
+			// eventType
 
-			// The eventType is a fixity check
+			if (fixityVerificationResult.getResult() == FixityVerificationResult.Result.MISSING)
+				PremisEventLogger.addType(event, PremisEventLogger.Type.REPLICATION);
+			else
+				PremisEventLogger.addType(event, PremisEventLogger.Type.FIXITY_CHECK);
 
-			PremisEventLogger.addType(event, PremisEventLogger.Type.FIXITY_CHECK);
-
-			// The eventDateTime is the value from the log, not the current time
-
+			// eventDateTime
+			
 			PremisEventLogger.addDateTime(event, fixityVerificationResult.getTime());
 
-			// Add eventDetailedOutcome, possibly with an eventDetailNote
-
+			// eventDetailedOutcome
+			
 			String detailNote = null;
+			
+			{
+			
+				String resourceName = fixityVerificationResult.getResourceName();
+				String expectedChecksum = fixityVerificationResult.getExpectedChecksum();
+	
+				if (result == FixityVerificationResult.Result.ERROR)
+					detailNote = "An error occurred while attempting to verify the object's checksum on the resource " + resourceName + ".";
+				else if (result == FixityVerificationResult.Result.FAILED)
+					detailNote = "The checksum of the object on the resource " + resourceName + " didn't match the expected value of " + expectedChecksum + ".";
+				else if (result == FixityVerificationResult.Result.MISSING)
+					detailNote = "The object was not found on the resource " + resourceName + ".";
+			
+			}
+			
+			String errorNote = null;
+			
+			{
+				
+				ErrorEnum error = fixityVerificationResult.getError();
+				Integer code = fixityVerificationResult.getIrodsErrorCode();
+				JargonException exception = fixityVerificationResult.getJargonException();
+			
+				if (error != null && code != null)
+					errorNote = "iRODS error: " + error + " " + code;
+				else if (code != null)
+					errorNote = "iRODS error: " + code;
+				else if (exception != null)
+					errorNote = "Jargon exception: " + exception.getMessage() + " (" + exception.getClass().getName() + ")";
+				
+			}
+			
+			// Combine detailNote and errorNote if we have both.
+			// If we have only an errorNote, use that for the detailNote.
 
-			if (fixityVerificationResult.getResult() == FixityVerificationResult.Result.FAILED)
-				detailNote = "The checksum of the replica on " + fixityVerificationResult.getResourceName() + " didn't match the value recorded in the iCAT.";
-			else if (fixityVerificationResult.getResult() == FixityVerificationResult.Result.ERROR)
-				detailNote = "An error occurred while attempting to calculate the checksum for the object on " + fixityVerificationResult.getResourceName() + ".";
-			else if (fixityVerificationResult.getResult() == FixityVerificationResult.Result.MISSING)
-				detailNote = "The replica on " + fixityVerificationResult.getResourceName() + " was not found in the iCAT.";
+			if (detailNote != null && errorNote != null)
+				detailNote = detailNote + " " + errorNote;
+			else if (detailNote == null && errorNote != null)
+				detailNote = errorNote;
 
 			PremisEventLogger.addDetailedOutcome(event, fixityVerificationResult.getResult().toString(), detailNote, null);
 
-			// Add a linkingAgentIdentifier element for the software involved (this class, iRODS, and Jargon)
+			// linkingAgentIdentifier
 
 			PremisEventLogger.addLinkingAgentIdentifier(event, "Class", this.getClass().getName(), "Software");
 			PremisEventLogger.addLinkingAgentIdentifier(event, "iRODS release version", fixityVerificationResult.getIrodsReleaseVersion(), "Software");
 			PremisEventLogger.addLinkingAgentIdentifier(event, "Jargon version", fixityVerificationResult.getJargonVersion(), "Software");
 
-			// Add a linkingObjectIdentifier for the iRODS object path
+			// linkingObjectIdentifier (iRODS object path)
 
 			PremisEventLogger.addLinkingObjectIdentifier(event, "iRODS object path", fixityVerificationResult.getObjectPath(), null);
 
-			// Add a linkingObjectIdentifier for the datastream (if there was one)
+			// linkingObjectIdentifier (datastream)
+			
+			{
+			
+				String datastream = fixityVerificationResult.getDatastream();
 
-			String datastream = fixityVerificationResult.getDatastream();
-
-			if (datastream != null)
-				PremisEventLogger.addLinkingObjectIdentifier(event, "PID", pid + "/" + datastream, null);
-
-			// Write the event
+				if (datastream != null)
+					PremisEventLogger.addLinkingObjectIdentifier(event, "PID", pid + "/" + datastream, null);
+				
+			}
 
 			try {
 				this.managementClient.writePremisEventsToFedoraObject(premisEventLogger, pid);
