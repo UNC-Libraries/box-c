@@ -1,0 +1,40 @@
+<div>
+	<p><span>Ingest ID:</span> <%= data.id %></p>
+	<p><span>Last refreshed:</span> <%= moment().format('YYYY-MM-DD h:mm:ssa') %></p>
+	<p><span>Status:</span> <%= data.status %></p>
+	<p><span>Submitter:</span> <%= data.submitter %></p>
+	<% if (data.containerPlacements && data.containerPlacements.length > 0) { %>
+		<p><span>First Object:</span> <%= data.containerPlacements[0].submittedLabel %></p>
+		<% if (data.containerPlacements[0].submittedPID) { %>
+			<p><span>PID:</span> <%= data.containerPlacements[0].submittedPID %></p>
+		<% } %>
+		<p><span>Destination PID:</span> <%= data.containerPlacements[0].containerPID %></p>
+	<% } %>
+	<p><span>Ingested:</span> <%= data.worked %>/<%= data.size %></p>
+	<% if (data.startTime) { %>
+		<p><span>Started:</span> <%= dateFormat(new Date(data.startTime)) %></p>
+	<% } 
+	if (data.failedTime) { %>
+		<p><span>Failed:</span> <%= dateFormat(new Date(data.failedTime)) %></p>
+	<% } 
+	if (data.finishedTime) { %>
+		<p><span>Finished:</span> %= dateFormat(new Date(data.finishedTime)) %></p>
+	<% }
+	if (data.startTime) {
+		if (data.finishedTime) { %>
+			<p><span>Elapsed:</span> <%= (data.finishedTime-data.startTime)/1000 %> seconds</p>
+		<% } else if (data.failedTime != null) { %>
+			<p><span>Elapsed:</span> <%= (data.failedTime-data.startTime)/1000 %> seconds</p>
+		<% } else { %>
+			<p><span>Elapsed:</span> <%= (Date.now()-data.startTime)/1000 %> seconds</p>";
+		<% }
+	}
+	%>
+	
+	<% if (data.depositId) { %>
+		<p><span>Deposit ID:</span> <%= data.depositId %></p>
+	<% }
+	if (data.error) { %>
+		<h3>Error Log</h3><pre class='stacktrace'> <%= data.error %></pre>
+	<% } %>
+</div>

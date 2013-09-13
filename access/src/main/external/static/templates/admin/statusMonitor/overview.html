@@ -1,0 +1,29 @@
+<table class="status_monitor_overview">
+	<tbody>
+		<tr class="column_headers">
+			<th>Active</th>
+			<th>Idle</th>
+			<th>Queued</th>
+			<th>Active</th>
+			<th>Failed</th>
+			<th>Finished</th>
+			<th>Refreshed</th>
+		</tr>
+		<tr>
+			<td><span id="monitorActive"><%= data.active %></span>
+			</td>
+			<td><span id="monitorIdle"><%= data.idle %></span>
+			</td>
+			<td><span id="monitorQueuedJobs"><%= data.queuedJobs %></span>
+			</td>
+			<td><span id="monitorActiveJobs"><%= data.activeJobs %></span>
+			</td>
+			<td><span id="monitorFailedJobs"><%= data.failedJobs %></span>
+			</td>
+			<td><span id="monitorFinishedJobs"><%= data.finishedJobs %></span>
+			</td>
+			<td><span id="monitorRefreshed"><%= moment().format('YYYY-MM-DD h:mm:ssa') %></span>
+			</td>
+		</tr>
+	</tbody>
+</table>
