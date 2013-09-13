@@ -47,9 +47,30 @@ define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 	};
 	
 	AbstractStatusMonitor.prototype.createDetailsView = function() {
-		this.detailsView = $(detailsTemplate(this.options)).appendTo(this.element);
+		this.detailsWrapper = $(detailsTemplate(this.options)).appendTo(this.element);
+		this.detailsView = this.detailsWrapper.find(".status_details");
 		this.detailsContent = this.detailsView.find(".status_details_content");
 		this.detailsView.find(".hide_status_details").click($.proxy(this.deactivateDetails, this));
+		$(window).scroll($.proxy(this.positionDetailsView, this));
+	};
+	
+	AbstractStatusMonitor.prototype.positionDetailsView = function() {
+		if (!this.detailsView)
+			return;
+		var self = this, $window = $(window);
+		var detailsTop = this.detailsWrapper.offset().top;
+		if ($window.scrollTop() >= detailsTop) {
+			self.detailsView.css({
+				position : 'fixed',
+				top : 0
+			});
+		} else {
+			self.detailsView.css({
+				position : 'absolute',
+				top : 0
+			});
+		}
+		// TODO prevent the details panel from being taller than the viewport when in fixed view
 	};
 	
 	AbstractStatusMonitor.prototype.deactivateDetails = function() {
@@ -66,6 +87,9 @@ define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 			var jobType = this.jobConfig[index];
 			clearTimeout(jobType.repeatId);
 		}
+		if (this.detailsType)
+			clearTimeout(this.detailsType.repeatId);
+		clearTimeout(this.overviewConfig.repeatId);
 		return this;
 	};
 	
@@ -79,6 +103,9 @@ define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 			var jobType = this.jobConfig.jobTypes[index];
 			this.refreshType(jobType, true);
 		}
+		// Restart details refreshing if a job is selected
+		if (this.detailsType)
+			this.refreshType(this.detailsType, true);
 		return this;
 	};
 	
@@ -125,6 +152,7 @@ define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 			detailsType.render = self.renderJobDetails;
 			self.refreshType(detailsType, true);
 			self.element.addClass("show_details");
+			self.positionDetailsView();
 		});
 		// Add job type to config
 		this.jobConfig.jobTypes.push(jobType);

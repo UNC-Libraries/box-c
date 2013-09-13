@@ -96,6 +96,7 @@
 	display: none;
 	border: 1px solid #C8D8E0;
 	border-radius: 6px 6px 0 0;
+	background-color: #ffffff;
 }
 
 
@@ -106,6 +107,10 @@
 	width: calc(50% - 20px);
 	width: -webkit-calc(50% - 20px);
 	vertical-align: top;
+}
+
+.status_details_wrapper {
+	position: relative;
 }
 
 .status_details_header {
@@ -164,7 +169,7 @@
 .status_monitor_job_container {
 	overflow-x: hidden;
 	position: relative;
-	box-shadow: 3px 2px 10px 0px #f0f0FF;
+	box-shadow: 3px 7px 10px 0px #f0f0FF;
 	border-radius: 6px;
 	margin-bottom: 10px;
 }

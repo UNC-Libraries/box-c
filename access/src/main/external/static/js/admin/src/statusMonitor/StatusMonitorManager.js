@@ -14,6 +14,9 @@ define('StatusMonitorManager', [ 'jquery', 'jquery-ui', 'underscore', 'IngestMon
 				// Activate the selected monitor
 				var index = ui.newTab.index();
 				self.activate(index);
+			},
+			activate : function() {
+				self.monitors[self.activeMonitorIndex].positionDetailsView();
 			}
 		});
 		this.activeMonitorIndex = 0;
@@ -26,6 +29,7 @@ define('StatusMonitorManager', [ 'jquery', 'jquery-ui', 'underscore', 'IngestMon
 	
 	StatusMonitorManager.prototype.activate = function(index) {
 		index = arguments.length > 0? index : this.activeMonitorIndex;
+		this.activeMonitorIndex = index;
 		this.monitors[index].activate();
 	};
 	

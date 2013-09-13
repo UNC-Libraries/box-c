@@ -3486,9 +3486,29 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	};
 	
 	AbstractStatusMonitor.prototype.createDetailsView = function() {
-		this.detailsView = $(detailsTemplate(this.options)).appendTo(this.element);
+		this.detailsWrapper = $(detailsTemplate(this.options)).appendTo(this.element);
+		this.detailsView = this.detailsWrapper.find(".status_details");
 		this.detailsContent = this.detailsView.find(".status_details_content");
 		this.detailsView.find(".hide_status_details").click($.proxy(this.deactivateDetails, this));
+		$(window).scroll($.proxy(this.positionDetailsView, this));
+	};
+	
+	AbstractStatusMonitor.prototype.positionDetailsView = function() {
+		if (!this.detailsView)
+			return;
+		var self = this, $window = $(window);
+		var detailsTop = this.detailsWrapper.offset().top;
+		if ($window.scrollTop() >= detailsTop) {
+			self.detailsView.css({
+				position : 'fixed',
+				top : 0
+			});
+		} else {
+			self.detailsView.css({
+				position : 'absolute',
+				top : 0
+			});
+		}
 	};
 	
 	AbstractStatusMonitor.prototype.deactivateDetails = function() {
@@ -3505,6 +3525,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			var jobType = this.jobConfig[index];
 			clearTimeout(jobType.repeatId);
 		}
+		if (this.detailsType)
+			clearTimeout(this.detailsType.repeatId);
+		clearTimeout(this.overviewConfig.repeatId);
 		return this;
 	};
 	
@@ -3518,6 +3541,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			var jobType = this.jobConfig.jobTypes[index];
 			this.refreshType(jobType, true);
 		}
+		// Restart details refreshing if a job is selected
+		if (this.detailsType)
+			this.refreshType(this.detailsType, true);
 		return this;
 	};
 	
@@ -3564,6 +3590,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			detailsType.render = self.renderJobDetails;
 			self.refreshType(detailsType, true);
 			self.element.addClass("show_details");
+			self.positionDetailsView();
 		});
 		// Add job type to config
 		this.jobConfig.jobTypes.push(jobType);
@@ -3718,6 +3745,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				// Activate the selected monitor
 				var index = ui.newTab.index();
 				self.activate(index);
+			},
+			activate : function() {
+				self.monitors[self.activeMonitorIndex].positionDetailsView();
 			}
 		});
 		this.activeMonitorIndex = 0;
@@ -3730,6 +3760,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	
 	StatusMonitorManager.prototype.activate = function(index) {
 		index = arguments.length > 0? index : this.activeMonitorIndex;
+		this.activeMonitorIndex = index;
 		this.monitors[index].activate();
 	};
 	
