@@ -1,0 +1,14 @@
+<tr class="parent monitor_job <%= type.name %> <%= data.status.toLowerCase() %><%= selected? " selected" : "" %>" data-id="<%= data.id %>">
+	<td>
+		<%= data.status.toLowerCase() %>
+	</td>
+	<td>
+		<%= data.targetLabel %>
+	</td>
+	<td>
+		<%= data.action.label %>
+	</td>
+	<td>
+		<%= data.childrenPending > 0? data.childrenProcessed + "/" + data.childrenPending : "" %>
+	</td>
+</tr>

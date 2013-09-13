@@ -11,6 +11,8 @@ require.config({
 		'StatusMonitorManager' : 'squish',
 		'AbstractStatusMonitor' : 'squish',
 		'IngestMonitor' : 'squish',
+		'IndexingMonitor' : 'squish',
+		'EnhancementMonitor' : 'squish',
 		'URLUtilities' : 'squish',
 		'moment' : 'moment.min'
 	},

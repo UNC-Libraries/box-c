@@ -1,8 +1,45 @@
+/** Status manager */
+
 #status_monitor {
 	padding: 10px;
 	white-space: nowrap;
 	border: none;
 }
+
+#status_monitor .ui-tabs-panel {
+	padding: 10px 0;
+}
+
+#status_monitor .ui-tabs-nav .ui-state-default {
+	border: 1px solid #C8D8E0;
+	border-radius: 12px;
+	background: #ffffff;
+	font-size: 17px;
+	text-indent: 0;
+	margin-right: 12px;
+}
+
+#status_monitor .ui-tabs-nav .ui-state-default.ui-tabs-active {
+	background: #59AACE;
+	border: 1px solid #0F80B3;
+	box-shadow: 0 0 8px 0 #55ABE0;
+}
+
+#status_monitor .ui-tabs-nav .ui-tabs-active a {
+	color: #ffffff;
+}
+
+#status_monitor .ui-tabs-nav li a:focus {
+	outline: none;
+}
+
+#status_monitor .ui-tabs-nav li a {
+	float: none;
+	padding: 6px 10px;
+	display: inline-block;
+}
+
+/** Default table settings */
 
 #status_monitor table {
 	width: 100%;
@@ -27,7 +64,6 @@
 }
 
 #status_monitor table tr.column_headers {
-	/*box-shadow: 0 4px 6px -6px #AAAAFF;*/
 	background-color: #FBFBFE;
 	color: #000000;
 	cursor: default;
@@ -54,16 +90,14 @@
 	text-overflow: ellipsis;
 }
 
-#ingest_monitor_jobs {
-	
-	
-}
-
-
+/** Job details view */
 
 .status_details {
 	display: none;
+	border: 1px solid #C8D8E0;
+	border-radius: 6px 6px 0 0;
 }
+
 
 .show_details .status_details {
 	display: inline-block;
@@ -72,40 +106,6 @@
 	width: calc(50% - 20px);
 	width: -webkit-calc(50% - 20px);
 	vertical-align: top;
-}
-
-/** Ingest monitor */
-
-#ingest_monitor_jobs .col_Status {
-	width: 7em;
-}
-
-#ingest_monitor_jobs .col_Submitter {
-	width: 8em;
-}
-
-#ingest_monitor_jobs .col_Submit_time {
-	width: 14em;
-}
-
-#ingest_monitor_jobs .col_Ingested {
-	width: 8em;
-}
-
-.show_details #ingest_monitor_jobs .col_Note {
-	width: 0;
-}
-
-.show_details #ingest_monitor_jobs td:last-child, .show_details #ingest_monitor_jobs th:last-child {
-	width: 0;
-	visibility: hidden;
-}
-
-/** Job details view */
-
-.status_details {
-	border: 1px solid #C8D8E0;
-	border-radius: 6px 6px 0 0;
 }
 
 .status_details_header {
@@ -142,6 +142,11 @@
 .status_details p > span {
 	font-weight: bold;
 	color: #666666;
+	padding-right: 8px;
+}
+
+.status_details a {
+	text-decoration: underline;
 }
 
 /** Jobs table */
@@ -194,6 +199,10 @@
 	color: #DD0000;
 }
 
+.status_monitor_jobs .col_Status {
+	width: 7em;
+}
+
 /** Overview panel */
 
 .status_monitor_overview tr:first-child th {
@@ -229,4 +238,36 @@
 
 #status_monitor table tr:last-child td:last-child {
     border-bottom-right-radius: 6px;
+}
+
+/** Ingest monitor */
+
+#ingest_monitor_jobs .col_Submitter {
+	width: 8em;
+}
+
+#ingest_monitor_jobs .col_Submit_time {
+	width: 14em;
+}
+
+#ingest_monitor_jobs .col_Ingested {
+	width: 8em;
+}
+
+.show_details #ingest_monitor_jobs .col_Note {
+	width: 0;
+}
+
+.show_details #ingest_monitor_jobs td:last-child, .show_details #ingest_monitor_jobs th:last-child {
+	width: 0;
+	visibility: hidden;
+}
+
+/** Enhancement monitor */
+#enhancement_monitor_jobs .col_Triggered_by {
+	width: 8em;
+}
+
+#enhancement_monitor_jobs td {
+	border-bottom: 1px solid #f5f5ff;
 }

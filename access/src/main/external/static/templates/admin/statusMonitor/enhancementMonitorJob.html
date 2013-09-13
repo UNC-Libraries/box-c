@@ -1,0 +1,34 @@
+<tr class="parent monitor_job <%= type.name %><%= selected? " selected" : "" %>" data-id="<%= data.id? data.id : data.targetPID %>">
+	<td>
+		<%= type.name %>
+	</td>
+	<td>
+		<%= data.targetLabel? data.targetLabel : data.targetPID %>
+	</td>
+	<td>
+		<ul>
+		<%
+		if (type.name == "failed") {
+			var out = "";
+			for (failedService in data.failedServices){
+				className = data.failedServices[failedService];
+				lastIndex = className.lastIndexOf(".");
+				if (lastIndex != -1)
+					className = className.substring(lastIndex+1);
+				out += "<li>" + className + "</li>";
+			}
+			%><%= out %><%
+		} else {
+			for (var key in data.filteredServices) {
+				if (data.filteredServices.hasOwnProperty(key)) { %>
+					<li><%= data.filteredServices[key] %></li>
+				<% }
+			}
+		}
+		%>
+		</ul>
+	</td>
+	<td>
+		<%= data.action? data.action.substring(data.action.lastIndexOf("/") + 1) : "" %>
+	</td>
+</tr>

@@ -3611,6 +3611,66 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	};
 	
 	return AbstractStatusMonitor;
+});define('EnhancementMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'tpl!../templates/admin/statusMonitor/enhancementMonitorJob', 'tpl!../templates/admin/statusMonitor/enhancementMonitorJobDetails'],
+		function($, ui, _, AbstractStatusMonitor, enhancementMonitorJobTemplate, enhancementMonitorDetailsTemplate) {
+			
+	var defaultOptions = {
+		name : "enhancement",
+		jobConfig : {
+			url : "services/rest/enhancement/{name}?begin=0&end=20",
+			template : enhancementMonitorJobTemplate,
+			detailsUrl : "/services/rest/enhancement/job/{id}?type={name}",
+			detailsTemplate : enhancementMonitorDetailsTemplate,
+			fields : ["Status", "Label", "Enhancements", "Triggered by"],
+			jobTypes : [
+				{name : "active", refresh : 10000},
+				{name : "queued", refresh : 10000},
+				{name : "blocked", refresh : 10000},
+				{name : "finished", refresh : 10000},
+				{name : "failed", refresh : 10000}
+			]
+		},
+		overviewConfig : {
+			url : "/services/rest/enhancement"
+		}
+	};
+			
+	function EnhancementMonitor(options) {
+		this.options = $.extend(true, {}, AbstractStatusMonitor.prototype.getDefaultOptions(), defaultOptions, options);
+	}
+	
+	EnhancementMonitor.prototype.constructor = EnhancementMonitor;
+	EnhancementMonitor.prototype = Object.create( AbstractStatusMonitor.prototype );
+	
+	return EnhancementMonitor;
+});define('IndexingMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'tpl!../templates/admin/statusMonitor/indexingMonitorJob', 'tpl!../templates/admin/statusMonitor/indexingMonitorJobDetails'],
+		function($, ui, _, AbstractStatusMonitor, indexingMonitorJobTemplate, indexingMonitorDetailsTemplate) {
+			
+	var defaultOptions = {
+		name : "indexing",
+		jobConfig : {
+			url : "/services/rest/indexing/jobs?begin=0&end=20",
+			template : indexingMonitorJobTemplate,
+			detailsUrl : "/services/rest/indexing/jobs/job/{id}",
+			detailsTemplate : indexingMonitorDetailsTemplate,
+			fields : ["Status", "Label", "Action", "Progress"],
+			jobTypes : [
+				{name : "all", refresh : 10000}
+			]
+		},
+		overviewConfig : {
+			url : "/services/rest/indexing"
+		}
+	};
+			
+	function IndexingMonitor(options) {
+		this.options = $.extend(true, {}, AbstractStatusMonitor.prototype.getDefaultOptions(), defaultOptions, options);
+	}
+	
+	IndexingMonitor.prototype.constructor = IndexingMonitor;
+	IndexingMonitor.prototype = Object.create( AbstractStatusMonitor.prototype );
+	
+	return IndexingMonitor;
 });define('IngestMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'tpl!../templates/admin/statusMonitor/ingestMonitorJob', 'tpl!../templates/admin/statusMonitor/ingestMonitorJobDetails'],
 		function($, ui, _, AbstractStatusMonitor, ingestMonitorJobTemplate, ingestMonitorDetailsTemplate) {
 			
@@ -3642,32 +3702,48 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	IngestMonitor.prototype = Object.create( AbstractStatusMonitor.prototype );
 	
 	return IngestMonitor;
-});define('StatusMonitorManager', [ 'jquery', 'jquery-ui', 'underscore', 'IngestMonitor'], 
-		function($, ui, _, IngestMonitor) {
+});define('StatusMonitorManager', [ 'jquery', 'jquery-ui', 'underscore', 'IngestMonitor', 'IndexingMonitor', 'EnhancementMonitor'],
+		function($, ui, _, IngestMonitor, IndexingMonitor, EnhancementMonitor) {
 			
 	function StatusMonitorManager(element, options) {
 		this.element = element;
 		this.tabList = $("<ul/>").attr("id", "status_monitor_tabs").appendTo(this.element);
 		this.monitors = [];
-		this.element.tabs();
 		this.addMonitors();
-		this.element.tabs("refresh");
+		var self = this;
+		this.element.tabs({
+			beforeActivate : function(event, ui) {
+				// Deactivate the currently active monitor
+				self.deactivate();
+				// Activate the selected monitor
+				var index = ui.newTab.index();
+				self.activate(index);
+			}
+		});
 		this.activeMonitorIndex = 0;
 	};
 	
-	StatusMonitorManager.prototype.activate = function() {
-		this.monitors[this.activeMonitorIndex].activate();
+	StatusMonitorManager.prototype.deactivate = function(index) {
+		index = arguments.length > 0? index : this.activeMonitorIndex;
+		this.monitors[index].deactivate();
+	};
+	
+	StatusMonitorManager.prototype.activate = function(index) {
+		index = arguments.length > 0? index : this.activeMonitorIndex;
+		this.monitors[index].activate();
 	};
 	
 	StatusMonitorManager.prototype.addMonitors = function() {
 		this.addMonitor(new IngestMonitor());
+		this.addMonitor(new IndexingMonitor());
+		this.addMonitor(new EnhancementMonitor());
 	};
 	
 	StatusMonitorManager.prototype.addMonitor = function(monitor) {
 		this.monitors.push(monitor);
 		monitor.init();
 		monitor.element.appendTo(this.element);
-		this.tabList.append("<li><a href='#" + monitor.monitorId + "'>" + monitor.options.name + "</a></li>");
+		this.tabList.append("<li><a href='" + document.URL + "#" + monitor.monitorId + "'>" + monitor.options.name + "</a></li>");
 	};
 	
 	return StatusMonitorManager;
