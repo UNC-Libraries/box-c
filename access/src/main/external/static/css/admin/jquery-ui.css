@@ -89,7 +89,6 @@
 	display: block;
 	cursor: pointer;
 	position: relative;
-	margin-top: 2px;
 	padding: .5em .5em .5em .7em;
 	min-height: 0; /* support: IE7 */
 }

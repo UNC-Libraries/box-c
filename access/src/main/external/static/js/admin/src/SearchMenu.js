@@ -55,7 +55,8 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 							}
 						});
 					}
-				}
+				},
+				activate : $.proxy(self._adjustHeight, self)
 			}).accordion('option', 'active', 0);
 			
 			this.element.resizable({
@@ -64,6 +65,31 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 				minWidth: 300,
 				maxWidth: 600
 			}).css('visibility', 'visible');
+			
+			$(window).resize($.proxy(self._adjustHeight, self));
+		},
+		
+		_adjustHeight : function () {
+			console.log("called");
+			var activeMenu = this.element.find(".filter_menu .ui-accordion-content-active");
+			if (activeMenu.length == 0) {
+				return;
+			}
+			console.log("height");
+			var top = activeMenu.offset().top;
+			var innerHeight = activeMenu.innerHeight();
+			var height = activeMenu.height();
+			var verticalPadding = innerHeight - height;
+			var windowHeight = $(window).height();
+			var siblingHeight = 0;
+			activeMenu.parent().nextAll().each(function(){
+				siblingHeight += $(this).outerHeight() + 4;
+			});
+			if ((top + innerHeight + siblingHeight) > windowHeight) {
+				activeMenu.height(windowHeight - top - siblingHeight - verticalPadding);
+			} else {
+				activeMenu.height('auto');
+			}
 		}
 	});
 });
