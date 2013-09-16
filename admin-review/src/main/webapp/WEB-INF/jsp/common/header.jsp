@@ -31,6 +31,9 @@
 					</c:if>
 					<a href="${pageContext.request.contextPath}/" class="${homeTabClass}" id="home">Home</a>
 				</li>
+				<li>
+					<a href="statusMonitor" id="menu_status_monitor">Status Monitor</a>
+				</li>
 			</ul>
 			<ul class="secondarymenu">
 				<li>

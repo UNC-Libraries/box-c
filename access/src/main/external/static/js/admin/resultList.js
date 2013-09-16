@@ -111,7 +111,7 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'ResultTableView', 'Se
 	var searchMenu = $("#search_menu").searchMenu({
 		filterParams : module.config().filterParams,
 		resultTableView : $("#result_view"),
-		selectedId : /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? module.config().container.id : false,
+		selectedId : module.config().container && /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? module.config().container.id : false,
 	}).on("resize", function(){
 		menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
 		resizeResults.call();

@@ -188,6 +188,10 @@
 	cursor: default;
 }
 
+.status_monitor_jobs .monitor_job.active {
+	background-color: #ddffdd;
+}
+
 .status_monitor_jobs .monitor_job.active td:first-child {
 	color: #000000;
 }

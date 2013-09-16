@@ -116,21 +116,24 @@
 	background-position: 0px -129px;
 	width: 10px;
 	height: 10px;
-	display: inline-block;
+	display: none;
 }
 
 .structure .expand.cont_toggle {
 	background-position: -10px -129px;
 	cursor: pointer;
+	display: inline-block;
 }
 
 .structure .collapse.cont_toggle {
 	background-position: -20px -129px;
 	cursor: pointer;
+	display: inline-block;
 }
 
 .structure .leaf.cont_toggle {
 	background-position: 0px -129px;
+	display: inline-block;
 }
 
 .structure .view_all {
