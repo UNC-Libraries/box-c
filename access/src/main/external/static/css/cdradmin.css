@@ -2,6 +2,10 @@ html {
 	background-color: #ffffff;
 }
 
+a {
+	text-decoration: underline;
+}
+
 #pagewrap {
 	min-width: 960px;
 	width: inherit;
@@ -61,6 +65,26 @@ html {
   height: 28px;
   margin: 0 0 0 4px;
   padding: 0px 4px;
+}
+
+/** Dashboard */
+
+#front_search_form {
+	margin-bottom: 1em;
+}
+
+#front_search_form .search_text {
+	width: 300px;
+}
+
+#front_search_form .index_select {
+	width: auto;
+}
+
+.descriptivearea h1 {
+	font-size: 145%;
+	font-weight: bold;
+	padding: .5em 0 .5em 0;
 }
 
 /** Header */
