@@ -116,7 +116,7 @@
 	background-position: 0px -129px;
 	width: 10px;
 	height: 10px;
-	display: none;
+	display: inline-block;
 }
 
 .structure .expand.cont_toggle {

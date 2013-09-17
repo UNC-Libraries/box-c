@@ -28,6 +28,7 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -137,6 +138,34 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 		}
 	}
 
+	private void addBatchIngestTaskDetails(Map<String, Object> job, BatchIngestTask b) {
+		addBatchIngestTaskInfo(job, b);
+		try {
+			// Extract the list of files ingested so far
+			job.put("ingestedFiles", this.getIngestedFiles(b.getIngestLog()));
+		} catch (Exception e) {
+			job.put("error", e.getMessage());
+		}
+	}
+
+	private List<Map<String, String>> getIngestedFiles(File ingestLogFile) throws IOException {
+		String ingestedLog = FileUtils.readFileToString(ingestLogFile);
+		String[] ingestLines = ingestedLog.split("\\n");
+		List<Map<String, String>> ingestedFiles = new ArrayList<Map<String, String>>(ingestLines.length);
+		for (String ingestedLine : ingestLines) {
+			String[] ingestProperties = ingestedLine.split("\\t");
+			Map<String, String> ingestedFile = new HashMap<String, String>();
+			ingestedFile.put("pid", ingestProperties[0]);
+			ingestedFile.put("file", ingestProperties[1]);
+			if (ingestProperties.length > 2)
+				ingestedFile.put("label", ingestProperties[2]);
+			if (ingestProperties.length > 3)
+				ingestedFile.put("time", ingestProperties[3]);
+			ingestedFiles.add(ingestedFile);
+		}
+		return ingestedFiles;
+	}
+
 	/**
 	 * @param ingestProperties
 	 * @return
@@ -179,7 +208,7 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 		}
 		return result;
 	}
-	
+
 	private Map<String, Object> getFailedJob(File f) {
 		IngestProperties props;
 		Map<String, Object> job = new HashMap<String, Object>();
@@ -190,17 +219,10 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 			job.put("submissionTime", props.getSubmissionTime() > 0 ? props.getSubmissionTime() : null);
 			job.put("depositPID", props.getOriginalDepositId());
 			job.put("message", props.getMessage());
-			int c = 0;
-			try {
-				c = f.list(new FilenameFilter() {
-					@Override
-					public boolean accept(File arg0, String arg1) {
-						return arg1.endsWith(".foxml");
-					}
-				}).length;
-				job.put("size", c);
-			} catch (NullPointerException ignored) {
-			}
+			// Determine the total number of files that are being ingested
+			int c = getFOXMLCount(f);
+			job.put("size", c);
+			// Scan the ingest log file to count the number of entries
 			BufferedReader r = null;
 			String lastLine = null;
 			int countLines = 0;
@@ -218,6 +240,8 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 					}
 				}
 			}
+			// Adjust the count of completed files depending on if the last file actually completed or is a container
+			// update
 			if (lastLine != null) {
 				String[] lastarray = lastLine.split("\\t");
 				if (lastarray.length > 1 && BatchIngestTask.CONTAINER_UPDATED_CODE.equals(lastarray[1])) {
@@ -239,6 +263,52 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 			LOG.error("Unexpected error building ingest properties", e1);
 			throw new Error("Unexpected error building ingest properties", e1);
 		}
+
+		return job;
+	}
+
+	/**
+	 * Expanded job information for failed jobs, adds in details about which files were processed and a description of
+	 * the error which triggered the failure
+	 * 
+	 * @param f
+	 * @return
+	 */
+	private Map<String, Object> getFailedJobDetails(File f) {
+		IngestProperties props;
+		Map<String, Object> job = new HashMap<String, Object>();
+		job.put("id", f.getName());
+		try {
+			props = new IngestProperties(f);
+			job.put("submitter", props.getSubmitter());
+			job.put("submissionTime", props.getSubmissionTime() > 0 ? props.getSubmissionTime() : null);
+			job.put("depositPID", props.getOriginalDepositId());
+			job.put("message", props.getMessage());
+			// Determine the total number of files that are being ingested
+			job.put("size", getFOXMLCount(f));
+
+			// Get the list of files that ingested and the count of files that succeeded.
+			List<Map<String, String>> ingestedFiles = getIngestedFiles(new File(f, BatchIngestTask.INGEST_LOG));
+			job.put("ingestedFiles", ingestedFiles);
+			if (ingestedFiles.size() > 0) {
+				Map<String, String> lastFile = ingestedFiles.get(ingestedFiles.size() - 1);
+				// Last file didn't completely ingest, or last file is a container update message
+				if (lastFile.size() == 3 || BatchIngestTask.CONTAINER_UPDATED_CODE.equals(lastFile.get("file"))) {
+					job.put("worked", ingestedFiles.size() - 1);
+				} else {
+					// The rare case where the last file did completely ingest, but then the ingest failed
+					job.put("worked", ingestedFiles.size());
+				}
+			}
+
+			job.put("startTime", props.getStartTime());
+			job.put("running", false);
+			job.put("containerPlacements", getContainerList(props));
+		} catch (Exception e1) {
+			LOG.error("Unexpected error building ingest properties", e1);
+			throw new Error("Unexpected error building ingest properties", e1);
+		}
+		// Get the error that caused this ingest to fail
 		String error = null;
 		File faillog = new File(f, BatchIngestTask.FAIL_LOG);
 		job.put("failedTime", faillog.lastModified());
@@ -291,7 +361,35 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 		}
 		return result;
 	}
-	
+
+	private Map<String, Object> getFinishedJobDetails(File f) {
+		IngestProperties props;
+		Map<String, Object> job = new HashMap<String, Object>();
+		job.put("id", f.getName());
+		try {
+			props = new IngestProperties(f);
+			job.put("submitter", props.getSubmitter());
+			job.put("submissionTime", props.getSubmissionTime() > 0 ? props.getSubmissionTime() : null);
+			job.put("startTime", props.getStartTime() > 0 ? props.getStartTime() : null);
+			job.put("finishedTime", props.getFinishedTime() > 0 ? props.getFinishedTime() : null);
+			job.put("depositId", props.getOriginalDepositId());
+			job.put("message", props.getMessage());
+			// Get the list of files which were ingested
+			List<Map<String, String>> ingestedFiles = getIngestedFiles(new File(f, BatchIngestTask.INGEST_LOG));
+			// Ingested counts exclude the container update line
+			job.put("size", ingestedFiles.size() - 1);
+			job.put("worked", ingestedFiles.size() - 1);
+			job.put("ingestedFiles", ingestedFiles);
+
+			job.put("running", false);
+			job.put("containerPlacements", getContainerList(props));
+		} catch (Exception e1) {
+			LOG.error("Unexpected error building ingest properties", e1);
+			throw new Error("Unexpected error building ingest properties", e1);
+		}
+		return job;
+	}
+
 	private Map<String, Object> getFinishedJob(File f) {
 		IngestProperties props;
 		Map<String, Object> job = new HashMap<String, Object>();
@@ -304,17 +402,10 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 			job.put("finishedTime", props.getFinishedTime() > 0 ? props.getFinishedTime() : null);
 			job.put("depositId", props.getOriginalDepositId());
 			job.put("message", props.getMessage());
-			try {
-				int c = f.list(new FilenameFilter() {
-					@Override
-					public boolean accept(File arg0, String arg1) {
-						return arg1.endsWith(".foxml");
-					}
-				}).length;
-				job.put("size", c);
-				job.put("worked", c);
-			} catch (NullPointerException ignored) {
-			}
+			// Get count of the files which were ingested
+			int c = getFOXMLCount(f);
+			job.put("size", c);
+			job.put("worked", c);
 			job.put("running", false);
 			job.put("containerPlacements", getContainerList(props));
 		} catch (Exception e1) {
@@ -338,7 +429,7 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 		for (BatchIngestTask task : queued) {
 			if (task.getBaseDir().getName().equals(id)) {
 				Map<String, Object> job = new HashMap<String, Object>();
-				this.addBatchIngestTaskInfo(job, task);
+				this.addBatchIngestTaskDetails(job, task);
 				job.put("status", "queued");
 				return job;
 			}
@@ -348,7 +439,7 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 		for (BatchIngestTask task : active) {
 			if (task.getBaseDir().getName().equals(id)) {
 				Map<String, Object> job = new HashMap<String, Object>();
-				this.addBatchIngestTaskInfo(job, task);
+				this.addBatchIngestTaskDetails(job, task);
 				job.put("status", "active");
 				return job;
 			}
@@ -357,7 +448,7 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 		File[] failedDirs = this.batchIngestService.getBatchIngestQueue().getFailedDirectories();
 		for (File dir : failedDirs) {
 			if (dir.getName().equals(id)) {
-				Map<String, Object> job = this.getFailedJob(dir);
+				Map<String, Object> job = this.getFailedJobDetails(dir);
 				job.put("status", "failed");
 				return job;
 			}
@@ -366,11 +457,25 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 		File[] finishedDirs = this.batchIngestService.getBatchIngestQueue().getFinishedDirectories();
 		for (File dir : finishedDirs) {
 			if (dir.getName().equals(id)) {
-				Map<String, Object> job = this.getFailedJob(dir);
+				Map<String, Object> job = this.getFinishedJobDetails(dir);
 				job.put("status", "finished");
 				return job;
 			}
 		}
 		return null;
+	}
+
+	private int getFOXMLCount(File foxmlPath) {
+		try {
+			int c = foxmlPath.list(new FilenameFilter() {
+				@Override
+				public boolean accept(File arg0, String arg1) {
+					return arg1.endsWith(".foxml");
+				}
+			}).length;
+			return c;
+		} catch (NullPointerException ignored) {
+		}
+		return 0;
 	}
 }

@@ -166,6 +166,7 @@ public class BatchIngestTask implements Runnable {
 
 	private String submitterAgent = null;
 
+	private File ingestLog;
 	private BufferedWriter ingestLogWriter = null;
 
 	// injected dependencies
@@ -405,9 +406,16 @@ public class BatchIngestTask implements Runnable {
 
 		// FEDORA INGEST CALL
 		try {
+			String lastLabel = null;
+			List<?> objectProperties = doc.getRootElement().getChild("objectProperties", JDOMNamespaceUtil.FOXML_NS).getChildren("property", JDOMNamespaceUtil.FOXML_NS);
+			for (Object objectProperty: objectProperties) {
+				String propertyType = ((Element) objectProperty).getAttributeValue("NAME");
+				if ("info:fedora/fedora-system:def/model#label".equals(propertyType))
+					lastLabel = ((Element) objectProperty).getAttributeValue("VALUE");
+			}
 			this.lastIngestFilename = foxmlFiles[next].getName();
 			this.lastIngestPID = pid;
-			logIngestAttempt(pid, this.lastIngestFilename);
+			logIngestAttempt(pid, this.lastIngestFilename, lastLabel);
 			this.getManagementClient().ingest(doc, Format.FOXML_1_1, ingestProperties.getOriginalDepositId());
 			this.state = STATE.INGEST_VERIFY_CHECKSUMS;
 		} catch (FedoraTimeoutException e) { // on timeout poll for the ingested object
@@ -424,7 +432,7 @@ public class BatchIngestTask implements Runnable {
 		try {
 			dataDir = new File(this.getBaseDir(), "data");
 			premisDir = new File(this.getBaseDir(), "premisEvents");
-			File ingestLog = new File(this.getBaseDir(), INGEST_LOG);
+			ingestLog = new File(this.getBaseDir(), INGEST_LOG);
 			ingestProperties = new IngestProperties(this.getBaseDir());
 			foxmlFiles = this.getBaseDir().listFiles(new FilenameFilter() {
 				@Override
@@ -458,7 +466,7 @@ public class BatchIngestTask implements Runnable {
 				}
 				r.close();
 				if (lastLine != null) {
-					// format is tab separated: <pid>\tpath
+					// format is tab separated: <pid>\t<filename>\t<label>
 					String[] l = lastLine.split("\\t");
 					if (CONTAINER_UPDATED_CODE.equals(l[1])) {
 						this.state = STATE.CONTAINER_UPDATES;
@@ -481,9 +489,9 @@ public class BatchIngestTask implements Runnable {
 		return failed;
 	}
 
-	private void logIngestAttempt(PID pid, String filename) {
+	private void logIngestAttempt(PID pid, String filename, String label) {
 		try {
-			this.ingestLogWriter.write(pid.getPid() + "\t" + filename);
+			this.ingestLogWriter.write(pid.getPid() + "\t" + filename + "\t" + (label != null? label.replace('\t', ' ') : ""));
 			this.ingestLogWriter.flush();
 		} catch (IOException e) {
 			throw new Error(e);
@@ -713,7 +721,7 @@ public class BatchIngestTask implements Runnable {
 		PrintWriter reorderedWriter = null;
 		try {
 			reorderedWriter = new PrintWriter(new FileWriter(new File(this.getBaseDir(), REORDERED_LOG), true));
-			logIngestAttempt(containers[next], CONTAINER_UPDATED_CODE);
+			logIngestAttempt(containers[next], CONTAINER_UPDATED_CODE, null);
 			this.lastIngestPID = containers[next];
 			// add RELS-EXT triples
 			// update MD_CONTENTS
@@ -839,6 +847,10 @@ public class BatchIngestTask implements Runnable {
 
 	public boolean isSendJmsMessages() {
 		return sendJmsMessages;
+	}
+
+	public File getIngestLog() {
+		return ingestLog;
 	}
 
 	public void setSendJmsMessages(boolean sendJmsMessages) {

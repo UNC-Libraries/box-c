@@ -67,10 +67,14 @@
 								<h2>Searching</h2>
 							</c:otherwise>
 						</c:choose>
-						<span id="add_menu" class="container_action">+ Add</span>
+						<c:if test="${not empty containerBean}">
+							<span id="add_menu" class="container_action">+ Add</span>
+						</c:if>
+						<%--
 						<c:if test="${not empty containerBean}">
 							<span id="arrange_button" class="container_action">Arrange</span>
 						</c:if>
+						--%>
 						<div class="right">
 							<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'purgeForever')}">
 								<span class="delete_selected ajaxCallbackButton container_action">Delete</span>&nbsp;&nbsp;

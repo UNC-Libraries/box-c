@@ -1,5 +1,8 @@
-<div>
+<div class="<%= data.status %>">
 	<p><span>Ingest ID:</span> <%= data.id %></p>
+	<% if (data.depositId) { %>
+		<p><span>Deposit ID:</span> <%= data.depositId %></p>
+	<% } %>
 	<p><span>Last refreshed:</span> <%= moment().format('YYYY-MM-DD h:mm:ssa') %></p>
 	<p><span>Status:</span> <%= data.status %></p>
 	<p><span>Submitter:</span> <%= data.submitter %></p>
@@ -18,7 +21,7 @@
 		<p><span>Failed:</span> <%= dateFormat(new Date(data.failedTime)) %></p>
 	<% } 
 	if (data.finishedTime) { %>
-		<p><span>Finished:</span> %= dateFormat(new Date(data.finishedTime)) %></p>
+		<p><span>Finished:</span> <%= dateFormat(new Date(data.finishedTime)) %></p>
 	<% }
 	if (data.startTime) {
 		if (data.finishedTime) { %>
@@ -29,11 +32,23 @@
 			<p><span>Elapsed:</span> <%= (Date.now()-data.startTime)/1000 %> seconds</p>
 		<% }
 	}
-	%>
 	
-	<% if (data.depositId) { %>
-		<p><span>Deposit ID:</span> <%= data.depositId %></p>
-	<% }
+	if (data.ingestedFiles) { %>
+		<p><span>Ingested Files</span>
+			<ul class="ingested_files">
+		<% for (var i = data.ingestedFiles.length - 1; i >= 0; i--) {
+			var ingestedFile = data.ingestedFiles[i];
+			if ("CONTAINER UPDATED" != ingestedFile.file) {
+				if ("time" in ingestedFile) { %>
+					<li><span title="<%- ingestedFile.file %>"><%= ingestedFile.label %></span> ingested in <%= ingestedFile.time %>ms</li>
+				<% } else { %>
+					<li><span title="<%- ingestedFile.file %>"><%= ingestedFile.label %></span> <%= data.status %></li>
+				<% }
+			}
+		} %>
+			</ul>
+		</p><%
+	}
 	if (data.error) { %>
 		<h3>Error Log</h3><pre class='stacktrace'> <%= data.error %></pre>
 	<% } %>

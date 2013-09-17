@@ -58,19 +58,28 @@ define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 		if (!this.detailsView)
 			return;
 		var self = this, $window = $(window);
+		// Prevent details from scrolling off top of the page
 		var detailsTop = this.detailsWrapper.offset().top;
 		if ($window.scrollTop() >= detailsTop) {
 			self.detailsView.css({
 				position : 'fixed',
 				top : 0
 			});
+			
 		} else {
 			self.detailsView.css({
 				position : 'absolute',
 				top : 0
 			});
 		}
-		// TODO prevent the details panel from being taller than the viewport when in fixed view
+		// Adjust details height to make sure it will if on the screen
+		var heightPadding = self.detailsContent.position().top + self.detailsContent.innerHeight() - self.detailsContent.height() + 5;
+		if (self.detailsView.height() > $window.height()) {
+			self.detailsContent.height($window.height() - heightPadding);
+		} else {
+			if ($window.height() - heightPadding > self.detailsContent.height())
+				self.detailsContent.height("auto");
+		}
 	};
 	
 	AbstractStatusMonitor.prototype.deactivateDetails = function() {
@@ -150,6 +159,8 @@ define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 			detailsType.id = jobId;
 			detailsType.template = jobType.detailsTemplate;
 			detailsType.render = self.renderJobDetails;
+			if (detailsType.detailsRefresh)
+				detailsType.refresh = detailsType.detailsRefresh;
 			self.refreshType(detailsType, true);
 			self.element.addClass("show_details");
 			self.positionDetailsView();

@@ -10,7 +10,7 @@ define('IngestMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMo
 			detailsTemplate : ingestMonitorDetailsTemplate,
 			fields : ["Status", "Submitter", "Submit time", "Ingested", "First object", "Note"],
 			jobTypes : [
-				{name : "active", refresh : 5000},
+				{name : "active", refresh : 5000, detailsRefresh : 1000},
 				{name : "queued", refresh : 10000},
 				{name : "finished", refresh : 10000},
 				{name : "failed", refresh : 10000}

@@ -2,10 +2,6 @@ html {
 	background-color: #ffffff;
 }
 
-a {
-	text-decoration: underline;
-}
-
 #pagewrap {
 	min-width: 960px;
 	width: inherit;
@@ -68,6 +64,10 @@ a {
 }
 
 /** Dashboard */
+
+.description_text a {
+	text-decoration: underline;
+}
 
 #front_search_form {
 	margin-bottom: 1em;

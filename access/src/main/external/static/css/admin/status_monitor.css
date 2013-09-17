@@ -272,6 +272,34 @@
 	visibility: hidden;
 }
 
+.status_details .ingested_files {
+	padding-left: 1.5em;
+}
+
+.status_details .ingested_files > li {
+	font-style: italic;
+	color: #777;
+}
+
+.status_details .ingested_files > li  > span {
+	font-style: normal;
+	color: #000;
+	padding-right: 1em;
+}
+
+.status_details .active .ingested_files > li:first-child span {
+	color: #00AA00;
+}
+
+.status_details .failed .ingested_files > li:first-child span {
+	color: #D00;
+}
+
+.status_details .active .ingested_files > li:first-child::before, .status_details .failed .ingested_files > li:first-child::before {
+	font-style: normal;
+	content: "\25B8  ";
+}
+
 /** Enhancement monitor */
 #enhancement_monitor_jobs .col_Triggered_by {
 	width: 8em;
