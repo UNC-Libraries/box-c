@@ -2751,6 +2751,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				'metadataObjects' : this.options.metadataObjects, 
 				parent : this.$resultTable.children('tbody')
 			});
+			if (this.options.metadataObjects.length == 0) {
+				this.$resultTable.after("<div class='no_results'>No matching results</div>");
+			}
 			if (this.options.container) {
 				this.containerObject = new ParentResultObject({metadata : this.options.container, 
 						resultObjectList : this.resultObjectList, element : $(".container_entry")});
@@ -3315,6 +3318,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 								}
 								ui.newPanel.html(data);
 								ui.newPanel.data('contentLoaded', true);
+							},
+							error : function() {
+								ui.newPanel.html("");
 							}
 						});
 					}

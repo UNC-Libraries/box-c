@@ -295,7 +295,8 @@ html {
 
 	.qtip-admin .qtip-content {
 		border: 0px;
-		padding: 12px;
+		padding: 8px;
+		margin-right: 17px;
 		font-size: 13px;
 	}
 

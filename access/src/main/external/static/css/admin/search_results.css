@@ -324,6 +324,11 @@ colgroup > .date_added, .column_headers > .date_added > a {
 	width: 16px;
 }
 
+.no_results {
+	font-style: italic;
+	padding: .5em;
+}
+
 /** Batch operations */
 .batch_actions p {
 	display: inline;

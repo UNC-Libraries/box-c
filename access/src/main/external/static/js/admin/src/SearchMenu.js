@@ -52,6 +52,9 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 								}
 								ui.newPanel.html(data);
 								ui.newPanel.data('contentLoaded', true);
+							},
+							error : function() {
+								ui.newPanel.html("");
 							}
 						});
 					}
