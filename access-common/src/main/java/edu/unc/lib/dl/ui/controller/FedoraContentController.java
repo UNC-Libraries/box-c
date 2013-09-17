@@ -126,13 +126,6 @@ public class FedoraContentController extends AbstractSolrSearchController {
 		return "error/invalidRecord";
 	}
 
-	@ResponseStatus(value = HttpStatus.NOT_FOUND)
-	@ExceptionHandler(ResourceNotFoundException.class)
-	public String handleResourceNotFound(HttpServletRequest request) {
-		request.setAttribute("pageSubtitle", "Invalid content");
-		return "error/invalidRecord";
-	}
-
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)
 	@ExceptionHandler(InvalidRecordRequestException.class)
 	public String handleInvalidRecordRequest(HttpServletRequest request) {
