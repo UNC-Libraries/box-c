@@ -41,6 +41,10 @@
 	border-right: 2px solid #DDF0FA;
 }
 
+#search_menu .structure.facet .structure_content {
+	max-height: none;
+}
+
 /** Query panel */
 
 #search_menu_form {

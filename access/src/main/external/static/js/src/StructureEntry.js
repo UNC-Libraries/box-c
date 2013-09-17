@@ -75,7 +75,7 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 		if (!this.isAContainer)
 			primaryAction = "record/" + this.metadata.id;
 		else if (this.options.structureView.options.filterParams)
-			primaryAction += "?" + this.options.structureView.options.filterParams;
+			primaryAction += "?" + decodeURIComponent(this.options.structureView.options.filterParams).replace('"', '%22');
 		
 		var downloadUrl = null;
 		if ($.inArray('viewOriginal', this.metadata.permissions) != -1 && $.inArray('DATA_FILE', this.metadata.datastreams) != -1){
