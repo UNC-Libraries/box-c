@@ -59,7 +59,10 @@ public class SearchActionController extends AbstractSolrSearchController {
 	@RequestMapping("/search")
 	public String search(Model model, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setApplyCutoffs(false);
+		// Backwards compability with the previous search url
+		if (!extractOldPathSyntax(request, searchRequest)) {
+			searchRequest.setApplyCutoffs(false);
+		}
 		model.addAttribute("queryMethod", "search");
 		return search(searchRequest, model, request);
 	}
