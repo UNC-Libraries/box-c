@@ -88,8 +88,8 @@
 			
 			<p>
 				Material from <a href="browseDepartments"><c:out value="${departmentsCount}"/> UNC-Chapel Hill departments</a>,
-				from <a href="search?dept=%22anthropology%22">Anthropology</a>
-				to <a href="search?dept=%22toxicology%22">Toxicology</a>.
+				from <a href="search?dept=anthropology">Anthropology</a>
+				to <a href="search?dept=toxicology">Toxicology</a>.
 			</p>
 		</div>
 
@@ -134,7 +134,7 @@
 	<div id="front-case-study" class="row">
 		<div class="half">
 			<div class="figure">
-				<a href="https://cdr.lib.unc.edu/record?id=uuid:c394b981-3c10-4faf-a9b2-c506f795840b">
+				<a href="https://cdr.lib.unc.edu/record/uuid:c394b981-3c10-4faf-a9b2-c506f795840b">
 					<img src="/static/front/rla-deer.jpg">
 					<span class="caption">
 						<b>Ceramic Animal Effigy (Deer?)</b>
@@ -144,7 +144,7 @@
 			</div>
 	
 			<div class="figure">
-				<a href="https://cdr.lib.unc.edu/record?id=uuid:9ffd4af0-4f9d-4eae-a84a-0812997303dc">
+				<a href="https://cdr.lib.unc.edu/record/uuid:9ffd4af0-4f9d-4eae-a84a-0812997303dc">
 					<img src="/static/front/rla-site.jpg">
 					<span class="caption">
 						<b>General View of Site</b>
@@ -163,7 +163,7 @@
 
 			<p>The Carolina Digital Repository is working with RLA staff to to preserve their large collection of photographs, slides, and publications, and to provide access to those collections online.</p>
 
-			<p class="button"><a href="record?id=uuid:8ae56bbc-400e-496d-af4b-3c585e20dba1">Browse the RLA Collection</a></p>
+			<p class="button"><a href="record/uuid:8ae56bbc-400e-496d-af4b-3c585e20dba1">Browse the RLA Collection</a></p>
 		</div>
 
 	</div>

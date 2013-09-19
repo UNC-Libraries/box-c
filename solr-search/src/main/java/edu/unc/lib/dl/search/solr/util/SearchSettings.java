@@ -74,6 +74,8 @@ public class SearchSettings extends AbstractSettings {
 	public Set<String> dateSearchableFields;
 	// Fields which are filterable as facets
 	public Set<String> facetNames;
+	// Facets shown by default in normal search results
+	public Set<String> searchFacetNames;
 	// Fields which are filterable as facets in a collection browse
 	public Set<String> collectionBrowseFacetNames;
 	// Fields which are filterable as facets in a structure browse
@@ -135,6 +137,7 @@ public class SearchSettings extends AbstractSettings {
 		this.properties = properties;
 
 		facetNames = new LinkedHashSet<String>();
+		searchFacetNames = new LinkedHashSet<String>();
 		collectionBrowseFacetNames = new LinkedHashSet<String>();
 		facetNamesStructureBrowse = new LinkedHashSet<String>();
 		this.facetClasses = new HashMap<String, Class<?>>();
@@ -187,6 +190,7 @@ public class SearchSettings extends AbstractSettings {
 		setExpandedFacetsPerGroup(Integer.parseInt(properties.getProperty("search.facet.expandedFacetsPerGroup", "0")));
 		setMaxFacetsPerGroup(Integer.parseInt(properties.getProperty("search.facet.maxFacetsPerGroup", "0")));
 		populateCollectionFromProperty("search.facet.fields", facetNames, properties, ",");
+		populateCollectionFromProperty("search.facet.defaultSearch", searchFacetNames, properties, ",");
 		populateCollectionFromProperty("search.facet.defaultCollectionBrowse", collectionBrowseFacetNames, properties,
 				",");
 		populateCollectionFromProperty("search.facet.defaultStructureBrowse", facetNamesStructureBrowse, properties, ",");

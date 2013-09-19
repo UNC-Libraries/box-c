@@ -63,7 +63,7 @@ public class SearchStateFactory {
 		searchState.setResourceTypes(searchSettings.defaultResourceTypes);
 		searchState.setSearchTermOperator(searchSettings.defaultOperator);
 		searchState.setRowsPerPage(searchSettings.defaultPerPage);
-		searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.facetNames));
+		searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.searchFacetNames));
 		searchState.setStartRow(0);
 		searchState.setSortType("default");
 		searchState.setSortOrder(searchSettings.sortNormal);

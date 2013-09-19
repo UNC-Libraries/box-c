@@ -43,18 +43,12 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 	
 	private void populateFacetNodes(String facetString) {
 		String[] tiers = MultivaluedHierarchicalFacetNode.extractFacetParts.split(facetString);
-		if (tiers.length == 0 || !"".equals(tiers[0]))
-			throw new InvalidHierarchicalFacetException("Facet string does not begin with either ^ or /: " + facetString);
+		if (tiers.length == 0)
+			throw new InvalidHierarchicalFacetException("Empty facet string");
 		
-		for (int i = 1; i < tiers.length; i++) {
-			StringBuilder nodeFacet = new StringBuilder();
-			for (int j = 1; j <= i; j++) {
-				if (j == i)
-					nodeFacet.append('^');
-				else nodeFacet.append('/');
-				nodeFacet.append(tiers[j]);
-			}
-			this.facetNodes.add(new MultivaluedHierarchicalFacetNode(nodeFacet.toString()));
+		// Create facet nodes for each tier in the facet string, skipping a leading blank node if present
+		for (int i = "".equals(tiers[0])? 1 : 0; i < tiers.length; i++) {
+			this.facetNodes.add(new MultivaluedHierarchicalFacetNode(tiers, i));
 		}
 	}
 	

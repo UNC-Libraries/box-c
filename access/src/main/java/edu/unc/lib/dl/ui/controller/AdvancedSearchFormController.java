@@ -66,6 +66,6 @@ public class AdvancedSearchFormController extends AbstractSolrSearchController {
 		
 		model.addAllAttributes(SearchStateUtil.generateStateParameters(searchState));
 
-		return "redirect:/search" + ((container != null)? '/' + container : "");
+		return "redirect:/search" + ((container != null && container.length() > 0)? '/' + container : "");
 	}
 }
