@@ -116,6 +116,16 @@
 		<constructor-arg value="${irods.zone}"/>
 		<constructor-arg value="${irods.default.resc}"/>
 	</bean> 
+
+	<bean id="fedoraIrodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">
+		<constructor-arg value="${fedora.irods.host}"/>
+		<constructor-arg value="${fedora.irods.port}" type="int"/>
+		<constructor-arg value="${fedora.irods.username}"/>
+		<constructor-arg value="${fedora.irods.password}"/>
+		<constructor-arg value="/${fedora.irods.zone}/home/${fedora.irods.username}"/>
+		<constructor-arg value="${fedora.irods.zone}"/>
+		<constructor-arg value="${fedora.irods.default.resc}"/>
+	</bean> 
 	
 	<bean id="irodsFileSystem" class="org.irods.jargon.core.pub.IRODSFileSystem" factory-method="instance"/>
 	
@@ -456,5 +466,32 @@
 		<property name="username" value="${fedora.appUser.username}" />
 		<property name="password" value="${fedora.appUser.password}" />
 	</bean>
+	
+	<!-- Fixity Log Service -->
+	
+	<bean id="fixityLogService" class="edu.unc.lib.dl.cdr.services.FixityLogService" init-method="init" destroy-method="destroy">
+		<property name="fixityLogTaskFactory" ref="fixityLogTaskFactory"/>
+		<property name="pollingIntervalSeconds" value="${fixity.pollingInterval.seconds}"/>
+	</bean>
+
+	<bean id="fixityLogTaskFactory" class="edu.unc.lib.dl.services.FixityLogTaskFactory">
+		<lookup-method name="createTask" bean="fixityLogTask"/>
+	</bean>
+
+	<bean id="fixityLogTask" class="edu.unc.lib.dl.services.FixityLogTask" scope="prototype">
+		<property name="irodsAccount" ref="fedoraIrodsAccount"/>
+		<property name="irodsFileSystem" ref="irodsFileSystem"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="resourceNames">
+			<bean class="org.springframework.util.StringUtils" factory-method="commaDelimitedListToStringArray">
+        		<constructor-arg type="java.lang.String" value="${fixity.resourceNames}"/>
+   			</bean>
+		</property>
+		
+		<property name="staleIntervalSeconds" value="${fixity.staleInterval.seconds}"/>
+		<property name="objectLimit" value="${fixity.objectLimit}"/>
+		<property name="fixityLogPath" value="${log.dir}/fixity.log"/>
+	</bean>
+	
 	
 </beans>
