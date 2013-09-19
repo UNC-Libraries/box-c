@@ -20,7 +20,7 @@
 <c:forEach items="${resultResponse.resultList}" var="metadata" varStatus="status">
 	<div id="entry${metadata.id}" class="browseitem">
 		<c:set var="thumbnailUrl" value="${cdr:getDatastreamUrl(metadata, 'THUMB_LARGE', fedoraUtil)}"/>
-		<a href="/record?id=${metadata.id}" target="_blank">
+		<a href="/record/${metadata.id}" target="_blank">
 			<c:choose>
 				<c:when test="${metadata.datastreamObjects.contains('THUMB_LARGE')}"><img class="largethumb" src="${thumbnailUrl}" /></c:when>
 				<c:otherwise><img class="largethumb" src="/static/images/placeholder/large/oldwell.jpg" /></c:otherwise>

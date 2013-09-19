@@ -60,8 +60,7 @@
 				</c:otherwise>
 			</c:choose>
 		</div>
-		<c:url var="fullRecordUrl" scope="page" value="record">
-			<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.id}"/>
+		<c:url var="fullRecordUrl" scope="page" value="record/${metadata.id}">
 		</c:url>
 		<div class="iteminfo">
 			<h2>

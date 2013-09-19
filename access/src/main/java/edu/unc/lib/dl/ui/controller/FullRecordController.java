@@ -44,6 +44,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -66,13 +67,23 @@ public class FullRecordController extends AbstractSolrSearchController {
 	
 	private static final int MAX_FOXML_TRIES = 2;
 
+	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
+	public String handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
+		return getFullRecord(pid, model, request);
+	}
+	
 	@RequestMapping(method = RequestMethod.GET)
 	public String handleRequest(Model model, HttpServletRequest request) {
 		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID.name()));
+		return getFullRecord(id, model, request);
+	}
+	
+	public String getFullRecord(String pid, Model model, HttpServletRequest request) {
+		
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 		
 		// Retrieve the objects record from Solr
-		SimpleIdRequest idRequest = new SimpleIdRequest(id, accessGroups);
+		SimpleIdRequest idRequest = new SimpleIdRequest(pid, accessGroups);
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
 		if (briefObject == null) {
 			throw new InvalidRecordRequestException();
@@ -146,9 +157,9 @@ public class FullRecordController extends AbstractSolrSearchController {
 		RecordNavigationState recordNavigationState = (RecordNavigationState) request.getSession().getAttribute(
 				"recordNavigationState");
 		if (recordNavigationState != null) {
-			int index = recordNavigationState.indexOf(id);
+			int index = recordNavigationState.indexOf(pid);
 			if (index > -1) {
-				recordNavigationState.setCurrentRecordId(id);
+				recordNavigationState.setCurrentRecordId(pid);
 				recordNavigationState.setCurrentRecordIndex(index);
 				request.getSession().setAttribute("recordNavigationState", recordNavigationState);
 			}

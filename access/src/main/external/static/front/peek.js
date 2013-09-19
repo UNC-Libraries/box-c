@@ -500,7 +500,7 @@ $("#peek").addClass("active");
 $(function() {
   
   var source = "<div class=\"item\"> \
-    <a href=\"https://cdr.lib.unc.edu/record?id=<%= data.pid %>\"> \
+    <a href=\"https://cdr.lib.unc.edu/record/<%= data.pid %>\"> \
       <div class=\"image\"> \
         <img src=\"/static/peek/thumbnails/<%= data.path %>\"> \
       </div> \

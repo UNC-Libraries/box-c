@@ -35,7 +35,7 @@
 						&lt; Previous
 					</c:when>
 					<c:otherwise>
-						<a href="record?id=${previousId}">&lt; Previous</a>
+						<a href="record/${previousId}">&lt; Previous</a>
 					</c:otherwise>
 				</c:choose>
 				&nbsp;
@@ -50,7 +50,7 @@
 						Next &gt;
 					</c:when>
 					<c:otherwise>
-						<a href="record?id=${nextId}">Next &gt;</a>
+						<a href="record/${nextId}">Next &gt;</a>
 					</c:otherwise>
 				</c:choose>
 			</p>

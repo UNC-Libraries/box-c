@@ -43,8 +43,7 @@
 <div id="entry${metadata.id}" class="searchitem ${resultEntryClass}">
 	<div class="contentarea">
 		<%-- Link to full record of the current item --%>
-		<c:url var="fullRecordUrl" scope="page" value="record">
-			<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.id}"/>
+		<c:url var="fullRecordUrl" scope="page" value="record/${metadata.id}">
 		</c:url>
 		<c:url var="containerResultsUrl" scope="page" value='list/${metadata.id}'></c:url>
 		<%-- Set primary action URL based on content model and container results URL as appropriate --%>
@@ -184,8 +183,7 @@
 							</p>
 						</c:if>
 						<p>
-							<c:url var="parentUrl" scope="page" value="record">
-								<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.parentCollection}"/>
+							<c:url var="parentUrl" scope="page" value="record/${metadata.parentCollection}">
 							</c:url>
 							${searchSettings.searchFieldLabels['PARENT_COLLECTION']}: <a href="<c:out value='${parentUrl}' />"><c:out value="${metadata.parentCollectionObject.displayValue}"/></a>
 						</p>

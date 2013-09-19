@@ -24,8 +24,7 @@
 	<div class="contentarea">
 		<h2>Related Items (neighbors in this collection/folder)</h2>
 		<c:forEach items="${neighborList}" var="neighbor" varStatus="status">
-			<c:url var="fullRecordUrl" scope="page" value="record">
-				<c:param name="${searchSettings.searchStateParams['ID']}" value="${neighbor.id}"/>
+			<c:url var="fullRecordUrl" scope="page" value="record/${neighbor.id}">
 			</c:url>
 			<c:set var="currentItemClass" scope="page">
 				<c:if test="${briefObject.id == neighbor.id}"> current_item</c:if>
