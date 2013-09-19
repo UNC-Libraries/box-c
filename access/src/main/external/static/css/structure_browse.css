@@ -28,6 +28,10 @@
 	display: block;
 }
 
+.structure .entry_wrap.suppressed.root {
+	margin-top: 7px;
+}
+
 .structure .expanded > .entry {
 	background-image: url("/static/images/structure.png");
 	background-position: -27px 11px;
@@ -101,11 +105,11 @@
 }
 
 .structure .indent.with_sib {
-	background-position: -27px -23px;
+	background-position: -27px -25px;
 }
 
 .structure .indent.last_sib {
-	background-position: -27px -87px;
+	background-position: -27px -89px;
 }
 
 .structure .indent.empty {
@@ -163,11 +167,12 @@
 
 .structure.facet .indent {
 	width: 13px;
-	height: 23px;
+	height: 29px;
+	vertical-align: bottom;
 }
 
 .structure.facet .entry {
-	height: 23px;
+	height: 29px;
 }
 
 /** Pop-out facet */
@@ -217,7 +222,7 @@
 }
 
 .structure.facet.popout .entry, .structure.facet.popout .indent {
-	height: 21px;
+	height: 25px;
 }
 
 /** Inset facet */
@@ -234,11 +239,11 @@
 }
 
 .structure.facet.inset .indent.with_sib {
-	background-position: -27px -20px;
+	background-position: -27px -24px;
 }
 
 .structure.facet.inset .indent.last_sib {
-	background-position: -27px -85px;
+	background-position: -27px -89px;
 }
 
 .structure.facet.inset .expanded > .entry {

@@ -47,7 +47,7 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../template
 			this.element = rootElement;
 		this.element.data('structureEntry', this);
 		this.$entry = this.element.children(".entry");
-		if (this.options.structureView.options.indentSuppressed)
+		if (this.options.structureView.options.indentSuppressed || !this.metadata.title)
 			this.element.addClass('suppressed');
 		this.skipLastIndent = this.element.hasClass('view_all');
 		
