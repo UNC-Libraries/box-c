@@ -289,7 +289,23 @@
 					<resume>false</resume>
 				</configuration>
 			</plugin>
-
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<configuration>
+							<executable>make</executable>
+						</configuration>
+						<id>static-build</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+				<inherited>false</inherited>
+			</plugin>
 		</plugins>
 	</build>
 

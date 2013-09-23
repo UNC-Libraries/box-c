@@ -1554,7 +1554,7 @@ $.ui.plugin.add("draggable", "connectToSortable", {
 	start: function(event, ui) {
 
 		var inst = $(this).data("ui-draggable"), o = inst.options,
-			uiSortable = $.extend({}, ui, { item: inst.element });
+			uiSortable = $.extend({}, { item: inst.element });
 		inst.sortables = [];
 		$(o.connectToSortable).each(function() {
 			var sortable = $.data(this, "ui-sortable");
@@ -1573,7 +1573,7 @@ $.ui.plugin.add("draggable", "connectToSortable", {
 
 		//If we are still over the sortable, we fake the stop event of the sortable, but also remove helper
 		var inst = $(this).data("ui-draggable"),
-			uiSortable = $.extend({}, ui, { item: inst.element });
+			uiSortable = $.extend({}, { item: inst.element });
 
 		$.each(inst.sortables, function() {
 			if(this.instance.isOver) {

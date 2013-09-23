@@ -92,5 +92,5 @@
 		}
 	};
 </script>
-<script type="text/javascript" src="/static/js/require.js" data-main="/static/js/public/structureBrowse"></script>
+<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/structureBrowse"></script>
 </div>

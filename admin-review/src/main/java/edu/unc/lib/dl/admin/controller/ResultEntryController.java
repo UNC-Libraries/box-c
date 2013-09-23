@@ -25,13 +25,13 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
 public class ResultEntryController extends AbstractSearchController {
 	private List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
 			SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.DATE_ADDED.name(),
-			SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(),
-			SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.VERSION.name(), SearchFieldKeys.ROLE_GROUP.name(),
-			SearchFieldKeys.RELATIONS.name());
-	
+			SearchFieldKeys.DATE_UPDATED.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
+			SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.ANCESTOR_PATH.name(),
+			SearchFieldKeys.VERSION.name(), SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name());
+
 	@RequestMapping(value = "entry/{pid}", method = RequestMethod.GET)
-	public @ResponseBody String getResultEntry(@PathVariable("pid") String pid, Model model,
-			HttpServletResponse response) {
+	public @ResponseBody
+	String getResultEntry(@PathVariable("pid") String pid, Model model, HttpServletResponse response) {
 		response.setContentType("application/json");
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 

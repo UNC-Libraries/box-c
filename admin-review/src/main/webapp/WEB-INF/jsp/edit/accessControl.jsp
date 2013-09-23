@@ -4,7 +4,6 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %> 
 <%@page trimDirectiveWhitespaces="true" %>
 
-<link rel="stylesheet" type="text/css" href="/static/css/admin/admin_forms.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/admin/jqueryui-editable.css" />
 
 <%

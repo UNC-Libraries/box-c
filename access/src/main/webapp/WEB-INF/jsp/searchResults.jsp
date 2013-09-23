@@ -145,5 +145,5 @@
 		}
 	};
 </script>
-<script type="text/javascript" src="/static/js/require.js" data-main="/static/js/public/searchResults"></script>
+<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/searchResults"></script>
 </div>

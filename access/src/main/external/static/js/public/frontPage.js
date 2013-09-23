@@ -2,11 +2,11 @@ require.config({
 	baseUrl: '/static/js/',
 	paths: {
 		'jquery' : 'jquery.min',
-		'jquery-ui' : 'jquery-ui.min',
+		 : 'jquery-ui.min',
 		'featuredContent' : 'featuredContent'
 	},
 	shim: {
-		'jquery-ui' : ['jquery'],
+		 : ['jquery'],
 		'thumbnail' : ['jquery'],
 		'featuredContent' : ['jquery']
 	}

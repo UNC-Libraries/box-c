@@ -2,7 +2,7 @@ require.config({
 	baseUrl: '/static/js/',
 	paths: {
 		'jquery' : 'jquery.min',
-		'jquery-ui' : 'jquery-ui.min',
+		 : 'jquery-ui.min',
 		'thumbnail' : 'thumbnail',
 		'text' : 'text',
 		'underscore' : 'underscore',
@@ -10,7 +10,7 @@ require.config({
 		'StructureView' : 'src/StructureView'
 	},
 	shim: {
-		'jquery-ui' : ['jquery'],
+		 : ['jquery'],
 		'thumbnail' : ['jquery'],
 		'underscore': {
 			exports: '_'

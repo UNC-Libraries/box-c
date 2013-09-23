@@ -1,23 +1,23 @@
 require.config({
 	baseUrl: '/static/js/',
 	paths: {
-		'jquery' : 'jquery.min',
-		'jquery-ui' : 'jquery-ui',
+		'jquery' : 'cdr-admin',
+		 : 
 		'text' : 'text',
 		'underscore' : 'underscore',
 		'tpl' : 'tpl',
 		'qtip' : 'jquery.qtip.min',
 		
-		'StatusMonitorManager' : 'squish',
-		'AbstractStatusMonitor' : 'squish',
-		'IngestMonitor' : 'squish',
-		'IndexingMonitor' : 'squish',
-		'EnhancementMonitor' : 'squish',
-		'URLUtilities' : 'squish',
-		'moment' : 'moment.min'
+		'StatusMonitorManager' : 'cdr-admin',
+		'AbstractStatusMonitor' : 'cdr-admin',
+		'IngestMonitor' : 'cdr-admin',
+		'IndexingMonitor' : 'cdr-admin',
+		'EnhancementMonitor' : 'cdr-admin',
+		'URLUtilities' : 'cdr-admin',
+		'moment' : 'cdr-admin'
 	},
 	shim: {
-		'jquery-ui' : ['jquery'],
+		 : ['jquery'],
 		'qtip' : ['jquery'],
 		'underscore': {
 			exports: '_'

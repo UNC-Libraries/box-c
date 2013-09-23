@@ -1,8 +1,8 @@
 require.config({
 	baseUrl: '/static/js/',
 	paths: {
-		'jquery' : 'jquery.min',
-		'jquery-ui' : 'jquery-ui.min',
+		'jquery' : 'cdr-admin',
+		'jquery-ui' : 'cdr-admin',
 		'text' : 'xmleditor/lib/text',
 		'autosize' : 'xmleditor/lib/jquery.autosize-min',
 		'json2' : 'xmleditor/lib/json2',
@@ -12,10 +12,9 @@ require.config({
 		'xmleditor' : 'xmleditor/jquery.xmleditor'
 	},
 	shim: {
-		'jquery-ui' : ['jquery'],
 		'ace' : ['jquery'],
 		'autosize' : ['jquery'],
-		'xmleditor' : ['jquery', 'jquery-ui', 'text', 'autosize', 'json2', 'cycle', 'ace', 'vkbeautify']
+		'xmleditor' : ['jquery-ui', 'text', 'autosize', 'json2', 'cycle', 'ace', 'vkbeautify']
 	}
 });
 
