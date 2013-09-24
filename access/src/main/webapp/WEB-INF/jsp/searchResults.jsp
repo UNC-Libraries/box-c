@@ -135,7 +135,6 @@
 		</div>
 	</div>
 </div>
-<link rel="stylesheet" type="text/css" href="/static/css/structure_browse.css" />
 <script>
 	var require = {
 		config: {

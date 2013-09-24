@@ -2670,7 +2670,10 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 								self.editAccess(resultObject);
 								break;
 							case "editDescription" :
-								document.location.href = "describe/" + metadata.id;
+								// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
+								var url = document.location.href;
+								url = url.substring(0, url.indexOf("/admin/") + 7);
+								document.location.href = url + "describe/" + metadata.id;
 								break;
 							case "purgeForever" :
 								var deleteButton = new DeleteObjectButton({
@@ -3376,6 +3379,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 								}
 								ui.newPanel.html(data);
 								ui.newPanel.data('contentLoaded', true);
+								self._adjustHeight();
 							},
 							error : function() {
 								ui.newPanel.html("");

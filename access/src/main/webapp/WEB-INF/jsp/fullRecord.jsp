@@ -26,12 +26,10 @@
 		<c:import url="fullRecord/listAccessRecord.jsp" />
 	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection || briefObject.resourceType == searchSettings.resourceTypeFolder}">
-		<link rel="stylesheet" type="text/css" href="/static/css/structure_browse.css" />
 		<c:import url="fullRecord/collectionRecord.jsp" />
 		<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/containerRecord"></script>
 	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeAggregate}">
-		<link rel="stylesheet" type="text/css" href="/static/css/structure_browse.css" />
 		<c:import url="fullRecord/aggregateRecord.jsp" />
 		<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/fullRecord"></script>
 	</c:when>

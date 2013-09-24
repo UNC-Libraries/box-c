@@ -55,7 +55,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 								self.editAccess(resultObject);
 								break;
 							case "editDescription" :
-								document.location.href = "describe/" + metadata.id;
+								// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
+								var url = document.location.href;
+								url = url.substring(0, url.indexOf("/admin/") + 7);
+								document.location.href = url + "describe/" + metadata.id;
 								break;
 							case "purgeForever" :
 								var deleteButton = new DeleteObjectButton({
