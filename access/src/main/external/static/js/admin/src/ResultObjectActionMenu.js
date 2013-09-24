@@ -1,16 +1,23 @@
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 'PublishObjectButton', 'contextMenu'],
 		function($, ui, DeleteObjectButton, PublishObjectButton) {
 	
-	function ResultObjectActionMenu(options) {
-		this.create(options);
+	var defaultOptions = {
+		selector : undefined,
+		containerSelector : undefined,
+		trigger : 'left',
+		positionAtTrigger : true
 	};
 	
-	ResultObjectActionMenu.prototype.create = function(options) {
-		this.options = options;
+	function ResultObjectActionMenu(options) {
+		this.options = $.extend({}, defaultOptions, options);
+		this.create();
+	};
+	
+	ResultObjectActionMenu.prototype.create = function() {
 		var self = this;
-		$.contextMenu({
+		var menuOptions = {
 			selector: this.options.selector,
-			trigger: 'left',
+			trigger: this.options.trigger,
 			events : {
 				show: function() {
 					this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear_dark.png");
@@ -18,13 +25,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 				hide: function() {
 					this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear.png");
 				}
-			},
-			position : function(options, x, y) {
-				options.$menu.position({
-					my : "right top",
-					at : "right bottom",
-					of : options.$trigger
-				});
 			},
 			build: function($trigger, e) {
 				var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
@@ -74,7 +74,16 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 					items: items
 				};
 			}
-		});
+		};
+		if (self.options.positionAtTrigger)
+			menuOptions.position = function(options, x, y) {
+				options.$menu.position({
+					my : "right top",
+					at : "right bottom",
+					of : options.$trigger
+				});
+			};
+		$.contextMenu(menuOptions);
 	};
 	
 	ResultObjectActionMenu.prototype.editAccess = function(resultObject) {

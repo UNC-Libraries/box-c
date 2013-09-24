@@ -946,6 +946,16 @@ body .ui-tooltip {
 	width: 16px;
 	height: 16px;
 }
+.ui-icon,
+.ui-widget-content .ui-icon {
+	background-image: url(images/ui-icons_053a53_256x240.png)/*{iconsContent}*/;
+}
+.ui-state-active .ui-icon {
+	background-image: url(images/ui-icons_222222_256x240.png)/*{iconsActive}*/;
+}
+
+.ui-icon-close { background-position: -80px -128px; }
+.ui-icon-closethick { background-position: -96px -128px; }
 
 /* Misc visuals
 ----------------------------------*/

@@ -33,10 +33,23 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				this._initSort();
 			this._initBatchOperations();
 			this._initEventHandlers();
-			this.actionMenu = new ResultObjectActionMenu({
+			this.actionMenu = [new ResultObjectActionMenu({
 				selector : ".action_gear",
 				containerSelector : ".res_entry,.container_entry"
+			}), new ResultObjectActionMenu({
+				trigger : 'right',
+				positionAtTrigger : false,
+				selector : ".res_entry td",
+				containerSelector : ".res_entry,.container_entry"
+			})];
+			$(".res_entry .title", this.$resultTable).mousedown(function(event){
+				event.stopPropagation();
+				event.stopImmediatePropagation();
+			}).mouseup(function(event){
+				event.stopPropagation();
+				event.stopImmediatePropagation();
 			});
+			
 			this._initMoveLocations();
 			this._initReordering();
 		},
@@ -317,6 +330,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		},
 		
 		addMoveDropLocation : function($dropLocation, dropTargetSelector, dropTargetGetDataFunction) {
+			if (!this.$dropLocations)
+				return;
 			var self = this;
 			this.$dropLocations = this.$dropLocations.add($dropLocation);
 			$dropLocation.on("mouseenter", dropTargetSelector, function() {

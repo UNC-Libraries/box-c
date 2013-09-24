@@ -2616,16 +2616,23 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 });define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 'PublishObjectButton', 'contextMenu'],
 		function($, ui, DeleteObjectButton, PublishObjectButton) {
 	
-	function ResultObjectActionMenu(options) {
-		this.create(options);
+	var defaultOptions = {
+		selector : undefined,
+		containerSelector : undefined,
+		trigger : 'left',
+		positionAtTrigger : true
 	};
 	
-	ResultObjectActionMenu.prototype.create = function(options) {
-		this.options = options;
+	function ResultObjectActionMenu(options) {
+		this.options = $.extend({}, defaultOptions, options);
+		this.create();
+	};
+	
+	ResultObjectActionMenu.prototype.create = function() {
 		var self = this;
-		$.contextMenu({
+		var menuOptions = {
 			selector: this.options.selector,
-			trigger: 'left',
+			trigger: this.options.trigger,
 			events : {
 				show: function() {
 					this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear_dark.png");
@@ -2633,13 +2640,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				hide: function() {
 					this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear.png");
 				}
-			},
-			position : function(options, x, y) {
-				options.$menu.position({
-					my : "right top",
-					at : "right bottom",
-					of : options.$trigger
-				});
 			},
 			build: function($trigger, e) {
 				var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
@@ -2689,7 +2689,16 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 					items: items
 				};
 			}
-		});
+		};
+		if (self.options.positionAtTrigger)
+			menuOptions.position = function(options, x, y) {
+				options.$menu.position({
+					my : "right top",
+					at : "right bottom",
+					of : options.$trigger
+				});
+			};
+		$.contextMenu(menuOptions);
 	};
 	
 	ResultObjectActionMenu.prototype.editAccess = function(resultObject) {
@@ -2825,10 +2834,23 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				this._initSort();
 			this._initBatchOperations();
 			this._initEventHandlers();
-			this.actionMenu = new ResultObjectActionMenu({
+			this.actionMenu = [new ResultObjectActionMenu({
 				selector : ".action_gear",
 				containerSelector : ".res_entry,.container_entry"
+			}), new ResultObjectActionMenu({
+				trigger : 'right',
+				positionAtTrigger : false,
+				selector : ".res_entry td",
+				containerSelector : ".res_entry,.container_entry"
+			})];
+			$(".res_entry .title", this.$resultTable).mousedown(function(event){
+				event.stopPropagation();
+				event.stopImmediatePropagation();
+			}).mouseup(function(event){
+				event.stopPropagation();
+				event.stopImmediatePropagation();
 			});
+			
 			this._initMoveLocations();
 			this._initReordering();
 		},
@@ -3109,6 +3131,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		},
 		
 		addMoveDropLocation : function($dropLocation, dropTargetSelector, dropTargetGetDataFunction) {
+			if (!this.$dropLocations)
+				return;
 			var self = this;
 			this.$dropLocations = this.$dropLocations.add($dropLocation);
 			$dropLocation.on("mouseenter", dropTargetSelector, function() {
