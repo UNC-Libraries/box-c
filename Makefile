@@ -28,8 +28,8 @@ build-access:
 	cat access/src/main/external/static/js/lib/jquery-ui-access.min.js >> access/src/main/external/static/js/cdr-access.js
 	echo "});" >> access/src/main/external/static/js/cdr-access.js
 	cat \
-		access/src/main/external/static/js/public/thumbnails.js \
 		access/src/main/external/static/js/lib/jquery.preload-1.0.8-unc.js \
+		access/src/main/external/static/js/public/thumbnails.js \
 		access/src/main/external/static/js/src/*.js \
 		>> access/src/main/external/static/js/cdr-access.js
 		

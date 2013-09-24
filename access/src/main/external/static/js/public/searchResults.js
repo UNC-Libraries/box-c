@@ -3,13 +3,13 @@ require.config({
 	paths: {
 		'jquery' : 'cdr-access',
 		'jquery-ui' : 'cdr-access',
-		'thumbnails' : 'cdr-access',
 		'text' : 'lib/text',
 		'tpl' : 'lib/tpl',
 		'underscore' : 'lib/underscore',
 		'StructureEntry' : 'cdr-access',
 		'StructureView' : 'cdr-access',
-		'preload' : 'cdr-access'
+		'preload' : 'cdr-access',
+		'thumbnails' : 'cdr-access'
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],

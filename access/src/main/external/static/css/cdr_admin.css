@@ -2730,11 +2730,11 @@ body .ui-tooltip {
 	background-color: #FFFFC5;
 }
 
-.column_headers + .res_entry > td{
+.result_table .column_headers + .res_entry > td{
 	padding-top: 8px;
 }
 
-.column_headers {
+.result_table .column_headers {
 	border-bottom: 1px solid #C8D8E0;
 	border-top: 1px solid #EEEEEE;
 	box-shadow: 0 4px 6px -6px #AAAAFF;
@@ -2744,11 +2744,11 @@ body .ui-tooltip {
 	top: 58px;
 }
 
-.with_path .column_headers {
+.with_path .result_table .column_headers {
 	top: 74px;
 }
 
-.column_headers > th {
+.result_table .column_headers > th {
 	text-align: left;
 	font-color: #889;
 	font-size: 85%;
@@ -2756,29 +2756,29 @@ body .ui-tooltip {
 	vertical-align: middle;
 }
 
-.column_headers > th > a {
+.result_table .column_headers > th > a {
 	display: block;
 	height: 16px;
 	padding: 5px 0;
 }
 
-colgroup > .narrow {
+.result_table colgroup > .narrow {
 	width: 24px;
 }
 
-.column_headers > .narrow > a {
+.result_table .column_headers > .narrow > a {
 	padding-right: 24px;
 }
 
-colgroup > .itemdetails, .column_headers > .itemdetails {
+.result_table colgroup > .itemdetails, .result_table .column_headers > .itemdetails {
 	width: 100%;
 }
 
-colgroup > .creator, .column_headers > .creator > a {
+.result_table colgroup > .creator, .result_table .column_headers > .creator > a {
 	width: 120px;
 }
 
-colgroup > .date_added, .column_headers > .date_added > a {
+.result_table colgroup > .date_added, .result_table .column_headers > .date_added > a {
 	width: 75px;
 }
 
@@ -2950,6 +2950,7 @@ colgroup > .date_added, .column_headers > .date_added > a {
 	overflow-x: hidden;
 	display: inline-block;
 	white-space: nowrap;
+	overflow-y: hidden;
 }
 
 .move_helper img {

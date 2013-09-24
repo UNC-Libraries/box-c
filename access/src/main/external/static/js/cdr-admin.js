@@ -3397,12 +3397,10 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		},
 		
 		_adjustHeight : function () {
-			console.log("called");
 			var activeMenu = this.element.find(".filter_menu .ui-accordion-content-active");
 			if (activeMenu.length == 0) {
 				return;
 			}
-			console.log("height");
 			var top = activeMenu.offset().top;
 			var innerHeight = activeMenu.innerHeight();
 			var height = activeMenu.height();

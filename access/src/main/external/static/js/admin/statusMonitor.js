@@ -2,11 +2,11 @@ require.config({
 	baseUrl: '/static/js/',
 	paths: {
 		'jquery' : 'cdr-admin',
-		 : 
-		'text' : 'text',
-		'underscore' : 'underscore',
-		'tpl' : 'tpl',
-		'qtip' : 'jquery.qtip.min',
+		'jquery-ui' : 'cdr-admin',
+		'text' : 'lib/text',
+		'underscore' : 'lib/underscore',
+		'tpl' : 'lib/tpl',
+		'qtip' : 'lib/jquery.qtip.min',
 		
 		'StatusMonitorManager' : 'cdr-admin',
 		'AbstractStatusMonitor' : 'cdr-admin',
@@ -17,7 +17,6 @@ require.config({
 		'moment' : 'cdr-admin'
 	},
 	shim: {
-		 : ['jquery'],
 		'qtip' : ['jquery'],
 		'underscore': {
 			exports: '_'
