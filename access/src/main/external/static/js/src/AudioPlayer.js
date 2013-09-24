@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui'], function($, ui) {
+define("AudioPlayer", [ 'jquery', 'jquery-ui'], function($, ui) {
 	$.widget("cdr.audioPlayer", {
 		options : {
 			show : false,

@@ -44,8 +44,7 @@
  *		replace:'_high.$1'
  *	});
  */
-;(function( $ ){
-
+;define('preload', ['jquery'], function($) {
 	var $preload = $.preload = function( original, settings ){
 		if( original.split ) // selector
 			original = $(original);
@@ -165,4 +164,4 @@
 		return this;
 	};
 
-})( jQuery );
+});

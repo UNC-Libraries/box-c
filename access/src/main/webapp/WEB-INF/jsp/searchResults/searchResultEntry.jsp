@@ -63,7 +63,8 @@
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', metadata) 
 						&& (!hasListAccessOnly || (hasListAccessOnly && (metadata.resourceType == searchSettings.resourceTypeFolder || metadata.resourceType == searchSettings.resourceTypeCollection)))}">
 					<div class="small thumb_container">
-						<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_${metadata.contentTypeFacet[0].searchKey}" 
+						<c:set var="thumbClass"><c:if test="${fn:length(metadata.contentTypeFacet) > 0 && metadata.contentTypeFacet[0].searchKey != null}"> ph_small_${metadata.contentTypeFacet[0].searchKey}</c:if></c:set>
+						<img id="thumb_${param.resultNumber}" class="smallthumb${thumbClass}" 
 								src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
 					</div>
 				</c:when>
@@ -80,7 +81,7 @@
 							</c:choose>
 						</c:when>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
-							<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_clear" 
+							<img id="thumb_${param.resultNumber}" class="smallthumb" 
 									src="/static/images/placeholder/small/collection.png"/>
 						</c:when>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentTypeFacet[0].searchKey}">

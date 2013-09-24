@@ -34,8 +34,8 @@
 	</div>
 </div>
 
-<script src="/static/js/jquery.min.js"></script>
-<script src="/static/js/underscore.js"></script>
+<script src="/static/js/lib/jquery.min.js"></script>
+<script src="/static/js/lib/underscore.js"></script>
 <script src="/static/front/peek.js"></script>
 
 <div id="front">

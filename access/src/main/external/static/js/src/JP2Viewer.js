@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui'], function($, ui) {
+define("JP2Viewer", [ 'jquery', 'jquery-ui'], function($, ui) {
 	$.widget("cdr.jp2Viewer", {
 		options : {
 			context : "",

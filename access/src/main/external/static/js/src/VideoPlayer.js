@@ -1,4 +1,4 @@
-define([ 'jquery', 'jquery-ui'], function($, ui) {
+define("VideoPlayer", [ 'jquery', 'jquery-ui'], function($, ui) {
 	$.widget("cdr.videoPlayer", {
 		options : {
 			show : false,

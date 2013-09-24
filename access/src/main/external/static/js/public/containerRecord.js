@@ -1,17 +1,16 @@
 require.config({
 	baseUrl: '/static/js/',
 	paths: {
-		'jquery' : 'jquery.min',
-		 : 'jquery-ui.min',
-		'thumbnail' : 'thumbnail',
-		'text' : 'text',
-		'underscore' : 'underscore',
-		'StructureEntry' : 'src/StructureEntry',
-		'StructureView' : 'src/StructureView'
+		'jquery' : 'cdr-access',
+		'jquery-ui' : 'cdr-access',
+		'text' : 'lib/text',
+		'tpl' : 'lib/tpl',
+		'underscore' : 'lib/underscore',
+		'StructureEntry' : 'cdr-access',
+		'StructureView' : 'cdr-access'
 	},
 	shim: {
-		 : ['jquery'],
-		'thumbnail' : ['jquery'],
+		'jquery-ui' : ['jquery'],
 		'underscore': {
 			exports: '_'
 		}

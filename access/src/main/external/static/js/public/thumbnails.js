@@ -1,4 +1,4 @@
-$(function() {
+define('thumbnails', ['jquery'], function($) {
 	var placeholderUrls = {};
 	
 	$(".smallthumb, .largethumb").each(function(){
@@ -25,6 +25,4 @@ $(function() {
 			}
 		});
 	}
-	
-	
 });

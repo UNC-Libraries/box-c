@@ -1,23 +1,25 @@
 require.config({
 	baseUrl: '/static/js/',
 	paths: {
-		'jquery' : 'jquery.min',
-		 : 'jquery-ui.min',
-		'thumbnail' : 'thumbnail',
-		'text' : 'text',
-		'underscore' : 'underscore',
-		'StructureEntry' : 'src/StructureEntry',
-		'StructureView' : 'src/StructureView',
-		'JP2Viewer' : 'src/JP2Viewer',
-		'VideoPlayer' : 'src/VideoPlayer',
-		'AudioPlayer' : 'src/AudioPlayer',
+		'jquery' : 'cdr-access',
+		'jquery-ui' : 'cdr-access',
+		'thumbnails' : 'cdr-access',
+		'text' : 'lib/text',
+		'tpl' : 'lib/tpl',
+		'underscore' : 'lib/underscore',
+		'preload' : 'cdr-access'
+		'StructureEntry' : 'cdr-access',
+		'StructureView' : 'cdr-access',
+		'JP2Viewer' : 'cdr-access',
+		'VideoPlayer' : 'cdr-access',
+		'AudioPlayer' : 'cdr-access',
 		'openLayers' : '/static/plugins/OpenLayers/OpenLayers',
 		'flowPlayer' : '/static/plugins/flowplayer/flowplayer.min',
 		'audiojs' : '/static/plugins/audiojs/audio'
 	},
 	shim: {
-		 : ['jquery'],
-		'thumbnail' : ['jquery'],
+		'jquery-ui' : ['jquery'],
+		'thumbnails' : ['jquery', 'preload'],
 		'audiojs' : {
 			exports : 'audiojs'
 		},
@@ -26,7 +28,7 @@ require.config({
 		}
 	}
 });
-define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'VideoPlayer', 'AudioPlayer'], function(module, $) {
+define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'VideoPlayer', 'AudioPlayer', 'thumbnails'], function(module, $) {
 	var $jp2Window = $(".jp2_imageviewer_window"),
 		$audioPlayer = $(".audio_player"),
 		$videoPlayer = $(".video_player"),
