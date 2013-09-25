@@ -1,6 +1,8 @@
 package edu.unc.lib.dl.admin.controller;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +32,11 @@ public class SearchController extends AbstractSearchController {
 			@RequestParam(value = "within", required = false) String searchWithin,
 			@RequestParam(value = "searchType", required = false) String searchType, Model model,
 			HttpServletRequest request) {
+		// Query needs to be encoded before being added into the new url
+		try {
+			query = URLEncoder.encode(query, "UTF-8");
+		} catch (UnsupportedEncodingException e1) {
+		}
 		StringBuilder destination = new StringBuilder("redirect:/search");
 		if (!"".equals(searchType) && container != null && container.length() > 0)
 			destination.append('/').append(container);
@@ -90,8 +97,8 @@ public class SearchController extends AbstractSearchController {
 			queryLayer.populateBreadcrumbs(searchRequest, resultResponse);
 		}
 
-		String searchStateUrl = SearchStateUtil.generateStateParameterString(searchRequest.getSearchState());
-		model.addAttribute("searchStateUrl", searchStateUrl);
+		model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(searchRequest.getSearchState()));
+		model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(searchRequest.getSearchState()));
 		model.addAttribute("resultResponse", resultResponse);
 		model.addAttribute("queryMethod", "search");
 		request.getSession().setAttribute("resultOperation", "search");

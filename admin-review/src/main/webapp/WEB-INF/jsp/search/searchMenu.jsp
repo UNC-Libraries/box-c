@@ -18,7 +18,7 @@
 					<c:if test="${not empty resultResponse.selectedContainer}">
 						<input type="hidden" name="container" value="${resultResponse.selectedContainer.id}"/>
 					</c:if>
-					<c:set var="searchStateParameters" value='${fn:replace(searchStateUrl, "\\\"", "%22")}'/>
+					<c:set var="searchStateParameters" value='${fn:replace(searchQueryUrl, "\\\"", "%22")}'/>
 					<input type="hidden" name="within" value="${searchStateParameters}"/>
 					<input type="submit" value="Go" class="search_submit"/>
 					<p class="search_within">
@@ -29,7 +29,9 @@
 						<input type="radio" name="searchType" value="within"/>Within results
 					</p>
 				</form>
-				<c:import url="/jsp/util/breadCrumbs.jsp"></c:import>
+				<c:import url="/jsp/util/breadCrumbs.jsp">
+					<c:param name="searchStateParameters">${searchQueryUrl}</c:param>
+				</c:import>
 			</div>
 		</div>
 	</div>

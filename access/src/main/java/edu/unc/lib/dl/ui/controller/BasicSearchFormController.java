@@ -25,6 +25,7 @@ import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,12 @@ public class BasicSearchFormController {
 			@RequestParam(value = "within", required = false) String searchWithin,
 			@RequestParam(value = "searchType", required = false) String searchType, Model model,
 			HttpServletRequest request) {
+		// Query needs to be encoded before being added into the new url
+		try {
+			query = URLEncoder.encode(query, "UTF-8");
+		} catch (UnsupportedEncodingException e1) {
+		}
+		
 		StringBuilder destination = new StringBuilder();
 		if (request.getParameter("queryPath") != null && request.getParameter("queryPath").equals("structure"))
 			destination.append("redirect:/structure");

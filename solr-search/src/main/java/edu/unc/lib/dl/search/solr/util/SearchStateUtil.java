@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.search.solr.util;
 
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -70,13 +69,15 @@ public class SearchStateUtil {
 				params.put(fieldName, urlEncodeParameter(field.getValue().toString()));
 			}
 		}
-		
+		String ancestorPath = SearchFieldKeys.ANCESTOR_PATH.toString();
 		if (searchState.getFacets() != null && searchState.getFacets().size() > 0){
 			for (Entry<String,Object> field: searchState.getFacets().entrySet()) {
-				String fieldName = searchSettings.searchFieldParam(field.getKey());
-				if (field.getValue() instanceof SearchFacet)
-					params.put(fieldName, urlEncodeParameter(((SearchFacet) field.getValue()).getLimitToValue()));
-				else params.put(fieldName, urlEncodeParameter(field.getValue().toString()));
+				if (!ancestorPath.equals(field.getKey())) {
+					String fieldName = searchSettings.searchFieldParam(field.getKey());
+					if (field.getValue() instanceof SearchFacet)
+						params.put(fieldName, urlEncodeParameter(((SearchFacet) field.getValue()).getLimitToValue()));
+					else params.put(fieldName, urlEncodeParameter(field.getValue().toString()));
+				}
 			}
 		}
 		return params;

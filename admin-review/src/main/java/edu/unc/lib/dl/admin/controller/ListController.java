@@ -36,8 +36,8 @@ public class ListController extends AbstractSearchController {
 		searchRequest.getSearchState().setRowsPerPage(searchSettings.maxPerPage);
 		SearchResultResponse resultResponse = getSearchResults(searchRequest);
 
-		String searchStateUrl = SearchStateUtil.generateSearchParameterString(searchRequest.getSearchState());
-		model.addAttribute("searchStateUrl", searchStateUrl);
+		model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(searchRequest.getSearchState()));
+		model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(searchRequest.getSearchState()));
 		model.addAttribute("resultResponse", resultResponse);
 		model.addAttribute("queryMethod", "list");
 		request.getSession().setAttribute("resultOperation", "list");

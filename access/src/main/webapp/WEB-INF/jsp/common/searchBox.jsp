@@ -52,7 +52,7 @@
 		</div>
 	
 		<c:if test="${param.showSearchWithin == 'true'}">
-			<c:set var="searchStateParameters" value='${fn:replace(searchStateUrl, "\\\"", "%22")}'/>
+			<c:set var="searchStateParameters" value='${fn:replace(searchQueryUrl, "\\\"", "%22")}'/>
 			<c:if test="${not empty resultResponse.selectedContainer}">
 				<input type="hidden" name="container" value="${resultResponse.selectedContainer.id}"/>
 			</c:if>

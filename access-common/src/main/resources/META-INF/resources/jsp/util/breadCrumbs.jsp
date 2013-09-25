@@ -18,6 +18,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 
 <c:set var="searchState" scope="page" value="${resultResponse.searchState}"/>
 
@@ -31,12 +32,24 @@
 	<c:set var="queryPath" value="${queryPath}/${resultResponse.selectedContainer.id}"/>
 </c:if>
 
+<c:choose>
+	<c:when test="${param.searchStateParameters != null}">
+		<c:set var="searchStateParameters" value="${param.searchStateParameters}"/>
+	</c:when>
+	<c:otherwise>
+		<c:set var="searchStateParameters" value="${searchStateUrl}"/>
+	</c:otherwise>
+</c:choose>
+<c:if test="${not empty searchStateParameters}">
+	<c:set var="searchStateParameters" value="?${searchStateParameters}"/>
+</c:if>
+
 <ul class="crumblist">
 	<c:if test="${not empty searchState.searchFields}">
 		<c:forEach items="${searchState.searchFields}" var="field">
+			<c:set var="fieldName" value="${searchSettings.searchFieldParams[field.key]}" />
 			<c:if test="${not empty field.value}">
-				<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-					<c:param name='a.${searchSettings.actions["REMOVE_SEARCH_FIELD"]}' value='${searchSettings.searchFieldParams[field.key]}'/>
+				<c:url var="removeUrl" scope="page" value='${queryPath}${cdr:removeParameter(searchStateParameters, fieldName)}'>
 				</c:url>
 				<li>
 					(<a href="<c:out value="${removeUrl}"/>">x</a>)
@@ -47,13 +60,13 @@
 	</c:if>
 	<c:if test="${not empty searchState.facets}">
 		<c:forEach items="${searchState.facets}" var="field">
+			<c:set var="fieldName" value="${searchSettings.searchFieldParams[field.key]}" />
 			<c:choose>
 				<c:when test="${field.key == 'ANCESTOR_PATH'}">
-					<c:url var="removeUrl" scope="page" value='${queryMethod}?${searchStateUrl}'></c:url>
+					<c:url var="removeUrl" scope="page" value='${queryMethod}${searchStateParameters}'></c:url>
 				</c:when>
 				<c:otherwise>
-					<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-						<c:param name='a.${searchSettings.actions["REMOVE_FACET"]}' value='${searchSettings.searchFieldParams[field.key]}'/>
+					<c:url var="removeUrl" scope="page" value='${queryPath}${cdr:removeParameter(searchStateParameters, fieldName)}'>
 					</c:url>
 				</c:otherwise>
 			</c:choose>
@@ -88,8 +101,8 @@
 	</c:if>
 	<c:if test="${not empty searchState.rangeFields}">
 		<c:forEach items="${searchState.rangeFields}" var="field">
-			<c:url var="removeUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-				<c:param name='a.${searchSettings.actions["REMOVE_RANGE_FIELD"]}' value='${searchSettings.searchFieldParams[field.key]}'/>
+			<c:set var="fieldName" value="${searchSettings.searchFieldParams[field.key]}" />
+			<c:url var="removeUrl" scope="page" value='${queryPath}${cdr:removeParameter(searchStateParameters, fieldName)}'>
 			</c:url>
 			<li>
 				(<a href="<c:out value="${removeUrl}"/>">x</a>)

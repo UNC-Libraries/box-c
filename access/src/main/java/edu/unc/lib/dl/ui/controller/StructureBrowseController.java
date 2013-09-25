@@ -102,8 +102,8 @@ public class StructureBrowseController extends AbstractStructureResultsControlle
 		model.addAttribute("resultType", "structure");
 		model.addAttribute("pageSubtitle", "Browse Results");
 
-		String searchStateUrl = SearchStateUtil.generateStateParameterString(resultResponse.getSearchState());
-		model.addAttribute("searchStateUrl", searchStateUrl);
+		model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(resultResponse.getSearchState()));
+		model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(resultResponse.getSearchState()));
 		model.addAttribute("selectedContainer", resultResponse.getSelectedContainer());
 		model.addAttribute("resultResponse", resultResponse);
 		model.addAttribute("structureResults", resultResponse);

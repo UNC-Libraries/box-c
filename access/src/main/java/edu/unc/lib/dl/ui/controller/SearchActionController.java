@@ -68,7 +68,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 	}
 	
 	private String search(SearchRequest searchRequest, Model model, HttpServletRequest request) {
-		SearchResultResponse resultResponse = doSearch(searchRequest, model);
+		SearchResultResponse resultResponse = doSearch(searchRequest, model, request);
 		// Setup parameters for full record navigation
 		RecordNavigationState recordNavigationState = new RecordNavigationState();
 		recordNavigationState.setSearchState(resultResponse.getSearchState());
@@ -109,7 +109,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 		searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeCollection));
 		searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
 		
-		SearchResultResponse result = doSearch(searchRequest, model);
+		SearchResultResponse result = doSearch(searchRequest, model, request);
 		result.setSelectedContainer(null);
 		
 		model.addAttribute("queryMethod", "collections");
@@ -119,7 +119,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 		return "searchResults";
 	}
 	
-	protected SearchResultResponse doSearch(SearchRequest searchRequest, Model model) {
+	protected SearchResultResponse doSearch(SearchRequest searchRequest, Model model, HttpServletRequest request) {
 		LOG.debug("In handle search actions");
 		searchRequest.setRetrieveFacets(true);
 
@@ -146,8 +146,8 @@ public class SearchActionController extends AbstractSolrSearchController {
 			queryLayer.populateBreadcrumbs(searchRequest, resultResponse);
 		}
 		
-		String searchStateUrl = SearchStateUtil.generateStateParameterString(searchState);
-		model.addAttribute("searchStateUrl", searchStateUrl);
+		model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(searchState));
+		model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(searchState));
 		model.addAttribute("userAccessGroups", searchRequest.getAccessGroups());
 		model.addAttribute("resultResponse", resultResponse);
 		

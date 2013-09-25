@@ -45,8 +45,12 @@
 		<c:if test="${resultType != 'collectionBrowse'}">
 			<div class="fourcol light shadowtop breadcrumbs">
 				<div class="contentarea">
+					<c:if test="${not empty searchQueryUrl}">
 					<h2>Breadcrumbs</h2>
-					<c:import url="/jsp/util/breadCrumbs.jsp"></c:import>
+					<c:import url="/jsp/util/breadCrumbs.jsp">
+						<c:param name="searchStateParameters">${searchQueryUrl}</c:param>
+					</c:import>
+					</c:if>
 				</div>
 			</div>
 		</c:if>
@@ -55,9 +59,11 @@
 				<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
 				<c:choose>
 					<c:when test="${resultType == 'collectionBrowse'}">
+						
 						<h2>Refine your results</h2>
 						<c:import url="/jsp/util/facetList.jsp">
-							<c:param name="queryMethod">collections</c:param>
+							<c:param name="queryMethod">search</c:param>
+							<c:param name="searchStateParameters">${searchQueryUrl}</c:param>
 						</c:import>
 					</c:when>
 					<c:otherwise>
@@ -65,6 +71,7 @@
 						<h2>Refine your search</h2>
 						<c:import url="/jsp/util/facetList.jsp">
 							<c:param name="queryMethod">search</c:param>
+							<c:param name="searchStateParameters">${searchQueryUrl}</c:param>
 						</c:import>
 					</c:otherwise>
 				</c:choose>
@@ -139,7 +146,7 @@
 	var require = {
 		config: {
 			'searchResults' : {
-				'filterParams' : '${cdr:urlEncode(searchStateUrl)}'
+				'filterParams' : '${cdr:urlEncode(searchQueryUrl)}'
 			},
 		}
 	};

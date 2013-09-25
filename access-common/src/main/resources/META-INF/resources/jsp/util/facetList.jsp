@@ -43,6 +43,18 @@
 	<c:set var="queryPath" value="${queryPath}/${selectedContainer.id}"/>
 </c:if>
 
+<c:choose>
+	<c:when test="${param.searchStateParameters != null}">
+		<c:set var="searchStateParameters" value="${param.searchStateParameters}"/>
+	</c:when>
+	<c:otherwise>
+		<c:set var="searchStateParameters" value="${searchStateUrl}"/>
+	</c:otherwise>
+</c:choose>
+<c:if test="${not empty searchStateParameters}">
+	<c:set var="searchStateParameters" value="?${searchStateParameters}"/>
+</c:if>
+
 <c:if test="${not empty param.additionalLimitActions}">
 	<c:set var="additionalLimitActions" value="${param.additionalLimitActions}|"/>
 </c:if>
@@ -50,13 +62,13 @@
 	<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}">
 		<c:choose>
 			<c:when test="${empty facetField.values && not empty searchState.facetLimits[facetField.name] && searchState.facetLimits[facetField.name] == 0}">
-				<c:url var="facetOpenUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+				<c:url var="facetOpenUrl" scope="page" value='${queryPath}${searchStateParameters}'>
 					<c:param name="a.${searchSettings.actions['REMOVE_FACET_LIMIT']}" value='${searchSettings.searchFieldParams[facetField.name]}'/>
 				</c:url>
 				<h3 class="facet_name"><a href="<c:out value="${facetOpenUrl}"/>">&#9654; <c:out value="${searchSettings.searchFieldLabels[facetField.name]}" /></a></h3>
 			</c:when>
 			<c:when test="${not empty facetField.values}">
-				<c:url var="facetCollapseUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+				<c:url var="facetCollapseUrl" scope="page" value='${queryPath}${searchStateParameters}'>
 					<c:param name="a.${searchSettings.actions['SET_FACET_LIMIT']}" value='${searchSettings.searchFieldParams[facetField.name]},0'/>
 				</c:url>
 				<h3 class="facet_name"><a href="<c:out value="${facetCollapseUrl}"/>">&#9660; <c:out value="${searchSettings.searchFieldLabels[facetField.name]}" /></a></h3>
@@ -66,7 +78,7 @@
 			<c:if test="${facetField.name == 'ANCESTOR_PATH'}">
 				<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}_structure" class="hidden">
 					<c:if test="${not empty selectedContainer}"><c:set var="containerPath" value="/${selectedContainer.id}"/></c:if>
-					<c:url var="structureUrl" scope="page" value='structure${containerPath}/collection?${searchStateUrl}'>
+					<c:url var="structureUrl" scope="page" value='structure${containerPath}/collection${searchStateParameters}'>
 						<c:param name="view" value="facet"/>
 						<c:param name="queryp" value="list"/>
 						<c:param name="files" value="false"/>
@@ -78,7 +90,7 @@
 				<c:forEach items="${facetField.values}" var="facetValue" varStatus="status">
 					<c:choose>
 						<c:when test="${status.count == searchSettings.facetsPerGroup && (empty searchState.facetLimits[facetField.name] || status.count == searchState.facetLimits[facetField.name])}">
-							<c:url var="facetExpandUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+							<c:url var="facetExpandUrl" scope="page" value='${queryPath}${searchStateParameters}'>
 								<c:param name="a.${searchSettings.actions['SET_FACET_LIMIT']}" value='${searchSettings.searchFieldParams[facetField.name]}:${searchSettings.expandedFacetsPerGroup}'/>
 							</c:url>
 							<li class="facet_view_expand_toggle"><a href="<c:out value="${facetExpandUrl}"/>">Show more...</a></li>
@@ -88,15 +100,16 @@
 								<li>
 									<c:choose>
 										<c:when test="${facetField.name == 'PARENT_COLLECTION'}">
-											<c:url var="facetActionUrl" scope="page" value='${queryMethod}/${fn:substringAfter(facetValue.searchValue, ",")}?${searchStateUrl}'>
+											<c:url var="facetActionUrl" scope="page" value='${queryMethod}/${fn:substringAfter(facetValue.searchValue, ",")}${searchStateParameters}'>
 												<c:if test='${not empty additionalLimitActions}'>
 													<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}'/>
 												</c:if>
 											</c:url>
 										</c:when>
 										<c:otherwise>
-											<c:url var="facetActionUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
-												<c:param name="a.${searchSettings.actions['SET_FACET']}" value='${searchSettings.searchFieldParams[facetValue.fieldName]}:${facetValue.limitToValue}'/>
+											<c:set var="fieldName" value="${searchSettings.searchFieldParams[facetValue.fieldName]}" />
+											<c:url var="facetActionUrl" scope="page" value='${queryPath}${cdr:removeParameter(searchStateParameters, fieldName)}'>
+												<c:param name="${fieldName}" value='${facetValue.limitToValue}'/>
 											</c:url>
 										</c:otherwise>
 									</c:choose>
@@ -104,7 +117,7 @@
 								</li>
 							</c:if>
 							<c:if test="${status.last && status.count >= searchSettings.facetsPerGroup && not empty searchState.facetLimits[facetValue.fieldName]}">
-								<c:url var="facetReduceUrl" scope="page" value='${queryPath}?${searchStateUrl}'>
+								<c:url var="facetReduceUrl" scope="page" value='${queryPath}${searchStateParameters}'>
 									<c:param name="a.${searchSettings.actions['REMOVE_FACET_LIMIT']}" value='${searchSettings.searchFieldParams[facetValue.fieldName]}'/>
 								</c:url>
 								<li class="facet_view_expand_toggle"><a href="<c:out value="${facetReduceUrl}"/>">...Show less</a></li>
