@@ -2,7 +2,7 @@ require.config({
 	baseUrl: '/static/js/',
 	paths: {
 		'jquery' : 'jquery.min',
-		 : 'jquery-ui.min',
+		'jquery-ui' : 'jquery-ui.min',
 		'qtip' : 'jquery.qtip.min',
 		'jquery.preload': 'jquery.preload-1.0.8-unc',
 		'thumbnail' : 'thumbnail',
@@ -20,9 +20,7 @@ require.config({
 		'DeleteBatchButton' : 'admin/src/DeleteBatchButton'
 	},
 	shim: {
-		 : {
-			deps: ['jquery']
-		},
+		'jquery-ui' : ['jquery'],
 		'jquery.preload' : ['jquery'],
 		'thumbnail' : ['jquery'],
 		'qtip' : ['jquery'],
