@@ -6,7 +6,7 @@
 		<pair key="image/jpg"> -- jpg</pair>
 		<pair key="image/gif"> -- gif</pair>
 		<pair key="dataset">Dataset</pair>
-		<pair key="dataset/^xls"> -- xls</pair>
+		<pair key="dataset/xls"> -- xls</pair>
 		<pair key="dataset/xlsx"> -- xlsx</pair>
 		<pair key="video">Video</pair>
 		<pair key="software">Software</pair>
