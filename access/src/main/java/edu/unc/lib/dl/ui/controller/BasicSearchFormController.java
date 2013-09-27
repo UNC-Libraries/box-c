@@ -65,7 +65,8 @@ public class BasicSearchFormController {
 			HttpServletRequest request) {
 		// Query needs to be encoded before being added into the new url
 		try {
-			query = URLEncoder.encode(query, "UTF-8");
+			if (query != null)
+				query = URLEncoder.encode(query, "UTF-8");
 		} catch (UnsupportedEncodingException e1) {
 		}
 		

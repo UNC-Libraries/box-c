@@ -27,9 +27,16 @@
 		<c:set var="currentSortOrder" value="normal"/>
 	</c:otherwise>
 </c:choose>
+<c:if test="${not empty resultResponse.selectedContainer.id}">
+	<c:set var="actionPath" value="/${resultResponse.selectedContainer.id}"/>
+</c:if>
+<c:if test="${not empty searchQueryUrl}">
+	<c:set var="actionPath" value="${actionPath}?${fn:replace(searchQueryUrl, '\\\"', '%22')}"/>
+</c:if>
+
 <c:set var="currentSortKey" value="${param.currentSort},${currentSortOrder}"/>
-<form action="basicSearch" id="result_sort_form" class="navigation_sort_form right">
-	<select id="sort_select" name="${searchSettings.searchStateParams['ACTIONS']}">
+<form action="${queryMethod}${actionPath}" id="result_sort_form" class="navigation_sort_form right">
+	<select id="sort_select" name="sort">
 		<option>sort by</option>
 		<c:forEach var="sortEntry" items="${searchSettings.sortDisplayOrder}">
 			<c:choose>
@@ -40,7 +47,7 @@
 					<c:set var="selected" value=""/>
 				</c:otherwise>
 			</c:choose>
-			<option value="${searchSettings.actions['SET_SORT']}:${sortEntry}" ${selected}>${searchSettings.sortDisplayNames[sortEntry]}</option>
+			<option value="${sortEntry}" ${selected}>${searchSettings.sortDisplayNames[sortEntry]}</option>
 		</c:forEach>
 	</select>
 	<noscript>
@@ -49,6 +56,4 @@
 	<c:if test="${not empty resultResponse.selectedContainer}">
 		<input type="hidden" name="container" value="${resultResponse.selectedContainer.id}" />
 	</c:if>
-	<c:set var="searchStateParameters" value='${fn:replace(searchStateUrl, "\\\"", "%22")}'/>
-	<input type="hidden" name="${searchSettings.searchStateParams['SEARCH_WITHIN']}" value="${searchStateParameters}" />
 </form>

@@ -395,12 +395,12 @@ public class SearchStateFactory {
 		
 		//Set sort
 		parameter = getParameter(request, searchSettings.searchStateParam("SORT_TYPE"));
-		if (parameter != null){
-			searchState.setSortType(parameter);
-			//Set sort order
-			parameter = getParameter(request, searchSettings.searchStateParam("SORT_ORDER"));
-			if (parameter != null){
-				searchState.setSortOrder(parameter);
+		if (parameter != null) {
+			String[] sortParts = parameter.split(",");
+			if (sortParts.length > 0) {
+				searchState.setSortType(sortParts[0]);
+				if (sortParts.length == 2)
+					searchState.setSortOrder(sortParts[1]);
 			}
 		}
 		
