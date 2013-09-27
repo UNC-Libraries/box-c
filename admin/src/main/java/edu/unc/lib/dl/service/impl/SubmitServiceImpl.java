@@ -27,8 +27,6 @@ import java.text.SimpleDateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
@@ -51,7 +49,6 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  */
 public class SubmitServiceImpl implements SubmitService {
 	protected final Log logger = LogFactory.getLog(getClass());
-	private AgentFactory agentManager;
 	private DigitalObjectManager digitalObjectManager;
 	private TripleStoreQueryService tripleStoreQueryService;
 
@@ -78,8 +75,8 @@ public class SubmitServiceImpl implements SubmitService {
 				zipFlag = true;
 			}
 			File file = new File(name);
-			Agent agent = agentManager.findPersonByOnyen(request.getAdminOnyen(), true);
-			Agent owner = agentManager.getAgent(new PID(request.getOwnerPid()), false);
+			String agent = request.getAdminOnyen();
+			String owner = request.getOwnerPid();
 			PID containerPID = getTripleStoreQueryService().fetchByRepositoryPath(request.getFilePath());
 			METSPackageSIP sip = new METSPackageSIP(containerPID, file, zipFlag);
 			PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
@@ -126,10 +123,8 @@ public class SubmitServiceImpl implements SubmitService {
 
 			File modsFile = new File(mediatedSubmitIngestObject.getMetadataName());
 
-			Agent agent = agentManager.findPersonByOnyen(mediatedSubmitIngestObject.getAdminOnyen(), true);
-
-			PID pid = new PID(mediatedSubmitIngestObject.getOwnerPid());
-			Agent owner = agentManager.getAgent(pid, false);
+			String agent = mediatedSubmitIngestObject.getAdminOnyen();
+			String owner = mediatedSubmitIngestObject.getOwnerPid();
 
 			SingleFileSIP sip = new SingleFileSIP();
 			PreIngestEventLogger eventLogger = sip.getPreIngestEventLogger();
@@ -193,14 +188,6 @@ public class SubmitServiceImpl implements SubmitService {
 		}
 	}
 
-	public AgentFactory getAgentManager() {
-		return agentManager;
-	}
-
-	public void setAgentManager(AgentFactory agentManager) {
-		this.agentManager = agentManager;
-	}
-
 	public DigitalObjectManager getDigitalObjectManager() {
 		return digitalObjectManager;
 	}
@@ -218,10 +205,8 @@ public class SubmitServiceImpl implements SubmitService {
 			fos2.write(request.getMetadata());
 			fos2.close();
 
-			Agent agent = agentManager.findPersonByOnyen(request.getAdminOnyen(), true);
-
-			PID pid = new PID(request.getOwnerPid());
-			Agent owner = agentManager.getAgent(pid, false);
+			String agent = request.getAdminOnyen();
+			String owner = request.getOwnerPid();
 
 			SingleFolderSIP sip = new SingleFolderSIP();
 

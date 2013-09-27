@@ -1,24 +1,43 @@
-define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], function($, MetadataObject) {
+define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], function($, MetadataObject, ResultObject) {
 	function ResultObjectList(options) {
 		this.init(options);
 	};
 	
 	$.extend(ResultObjectList.prototype, {
-		options: {
+		defaultOptions: {
 			resultIdPrefix : "entry_",
 			metadataObjects : undefined,
-			refreshEntryUrl : "entry/"
+			refreshEntryUrl : "entry/",
+			parent : null,
+			splitLoadLimit : 70
 		},
 		resultObjects: {},
 		
 		init: function(options) {
-			this.options = $.extend({}, this.options, options);
-			for (var i = 0; i < this.options.metadataObjects.length; i++) {
-				var metadata = this.options.metadataObjects[i];
-				var parentEl = $(".entry[data-pid='" + metadata.id + "']");
-				//var parentEl = $("#" + this.options.resultIdPrefix + metadata.id.replace(":", "\\:"));
-				this.resultObjects[metadata.id] = parentEl.resultObject({"metadata" : metadata, "resultObjectList" : this});
+			this.options = $.extend({}, this.defaultOptions, options);
+			var self = this;
+			//console.time("Initialize entries");
+			//console.profile();
+			var metadataObjects = self.options.metadataObjects;
+			for (var i = 0; i < metadataObjects.length && i < self.options.splitLoadLimit; i++) {
+				var metadata = metadataObjects[i];
+				self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self});
+				if (self.options.parent)
+					self.options.parent.append(self.resultObjects[metadata.id].element);
 			}
+			if (metadataObjects.length > self.options.splitLoadLimit) {
+				setTimeout(function(){
+					//console.time("Second batch");
+					for (var i = self.options.splitLoadLimit; i < metadataObjects.length; i++) {
+						var metadata = metadataObjects[i];
+						self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self});
+						if (self.options.parent)
+							self.options.parent.append(self.resultObjects[metadata.id].element);
+					}
+					//console.timeEnd("Second batch");
+				}, 100);
+			}
+			//console.timeEnd("Initialize entries");
 		},
 		
 		getResultObject: function(id) {
@@ -32,19 +51,27 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 		},
 		
 		refreshObject: function(id) {
-			var self = this;
 			var resultObject = this.getResultObject(id);
 			$.ajax({
-				url : this.options.refreshEntryUrl + resultObject.resultObject('getPid').getPath(),
+				url : this.options.refreshEntryUrl + resultObject.getPid(),
 				dataType : 'json',
 				success : function(data, textStatus, jqXHR) {
-					var newContent = $(data.content);
-					resultObject.replaceWith(newContent);
-					self.resultObjects[id] = newContent.resultObject({"metadata" : data.data.metadata, "resultObjectList" : self});
+					resultObject.init(data);
+				},
+				error : function(A, B, C) {
+					console.log(B);
 				}
 			});
-		}
+		},
 		
+		getSelected: function() {
+			var selected = [];
+			for (var index in this.resultObjects) {
+				if (this.resultObjects[index].selected)
+					selected.push(this.resultObjects[index]);
+			}
+			return selected;
+		}
 	});
 	
 	return ResultObjectList;

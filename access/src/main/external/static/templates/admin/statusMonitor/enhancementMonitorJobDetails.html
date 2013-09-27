@@ -1,0 +1,58 @@
+<div>
+	<% if (data.id) { %>
+		<p><span>Ingest ID:</span> <%= data.id %></p>
+	<% } %>
+	<p><span>Last refreshed:</span> <%= moment().format('YYYY-MM-DD h:mm:ssa') %></p>
+	<p><span>Status:</span> <%= data.type %></p>
+	<p><span>Label:</span> <%= data.targetLabel %></p>
+	<p><span>Target:</span> <%= data.targetPID %></p>
+	<p><span>Queued:</span><%= dateFormat(data.queuedTimestamp) %>
+
+	<% if ("finishedTimestamp" in data) { %>
+		<p><span>Finished Timestamp:</span><%= dateFormat(data.finishedTimestamp) %></p>
+	<% } %>
+	
+	<p><span>Action:</span> <%= data.action %></p>
+	<% if (data.serviceName){ %>
+		<p><span>Specified service:</span><%= data.serviceName %></p>
+	<% } %>
+	<% if ("activeService" in data && data.activeService){ %>
+		<p><span>Active service:</span><%= data.activeName %></p>
+	<% } %>
+	
+	<%
+	if (data.filteredServices && !jQuery.isEmptyObject(data.filteredServices)) {
+		var details = "<p><span>Filtered service(s):</span><ul>";
+		for (serviceIndex in data.filteredServices) {
+			details += "<li>" + data.filteredServices[serviceIndex] + "</li>";
+		}
+		details += "</ul></p>";
+		%><%= details %><%
+	}
+	
+	if (data.type == "failed") {
+		$.each(data.failedServices, function(serviceName, serviceInfo){ %>
+			<hr/>
+			<p><span>Queued:</span><%= dateFormat(serviceInfo.queuedTimestamp) %></p>
+			<p><span>Failed Timestamp:</span><%= dateFormat(serviceInfo.timeFailed) %></p>
+			<p><span>Action:</span><%= serviceInfo.action %></p>
+			<p><span>Specified service:</span><%= serviceInfo.serviceName %></p>
+		
+			<% if ("stackTrace" in serviceInfo) { %>
+				<p><span>Stack trace:</span>
+					<pre><%=  serviceInfo.stackTrace %></pre>
+				</p>
+			<% }
+			
+			if (serviceInfo.uris && "xml" in serviceInfo.uris) { %>
+				<p><span>Original message:</span><a href="/services<%= serviceInfo.uris.xml %>">Message body</a></p>
+			<% }
+		});
+	}
+	
+	if (data.uris && "xml" in data.uris) {
+		%><p><span>Original message:</span><a href="/services<%= data.uris.xml %>">Message body</a></p><%
+	}
+	
+	%>
+</div>

@@ -33,13 +33,10 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.services.AgentManager;
 import edu.unc.lib.dl.util.ContainerPlacement;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IngestProperties;
 import edu.unc.lib.dl.util.PremisEventLogger;
@@ -49,15 +46,16 @@ import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
  * This is the only implementation of the AIP contract at the moment. Note sure yet if there is a need for more
  * implementations of this one. This implementation stores foxml files in a local temporary folder and uses an in-memory
  * PREMIS logger.
- *
+ * 
  * @author count0
- *
+ * 
  */
 public class AIPImpl implements ArchivalInformationPackage {
 	private static final Log log = LogFactory.getLog(AIPImpl.class);
 	private File prepDir = null;
 
-	private PremisEventLogger eventLogger = new PremisEventLogger(AgentManager.getRepositorySoftwareAgentStub().getName());
+	private PremisEventLogger eventLogger = new PremisEventLogger(
+			ContentModelHelper.Administrative_PID.REPOSITORY_MANAGEMENT_SOFTWARE.getPID().getURI());
 	private HashMap<PID, File> pid2FOXMLFile = new HashMap<PID, File>();
 	private Set<PID> topPID = null;
 	private final Map<PID, ContainerPlacement> topPID2Placement = new HashMap<PID, ContainerPlacement>();
@@ -68,7 +66,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 
 	/**
 	 * Makes an AIP with a pre-populated prep dir.
-	 *
+	 * 
 	 * @param prepDir
 	 *           directory containing FOXML files and the data directory
 	 */
@@ -182,13 +180,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 			props.setContainerPlacements(topPID2Placement);
 			props.setMessage(this.depositRecord.getMessage());
 			// props.setManagedBytes(managedBytes);
-			String submitter = null;
-			Agent user = depositRecord.getDepositedBy();
-			if(PersonAgent.class.isInstance(user)) {
-				submitter = ((PersonAgent)user).getOnyen();
-			} else {
-				submitter = user.getName();
-			}
+			String submitter = depositRecord.getDepositedBy();
 			props.setSubmitter(submitter);
 			props.setSubmitterGroups(this.submitterGroups);
 			props.setSubmissionTime(System.currentTimeMillis());
@@ -251,7 +243,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 
 	/**
 	 * Set the event logger used for this AIP (logger may be used elsewhere also)
-	 *
+	 * 
 	 * @param eventLogger
 	 *           the PREMIS event logger
 	 */
@@ -260,7 +252,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 	// }
 	/**
 	 * Set the foxml for a given object by PID.
-	 *
+	 * 
 	 * @param pid
 	 *           the PID of the object this foxml represents
 	 * @param file
@@ -291,7 +283,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 
 	/**
 	 * Set the PID of the top object within the AIP
-	 *
+	 * 
 	 * @param topPID
 	 *           the top PID
 	 */
@@ -302,7 +294,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getEmailRecipients()
 	 */
 	@Override
@@ -312,7 +304,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getSendEmail()
 	 */
 	@Override
@@ -322,7 +314,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#setEmailRecipients (java.util.List)
 	 */
 	@Override
@@ -332,7 +324,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#setSendEmail(boolean )
 	 */
 	@Override
@@ -342,7 +334,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getTopPIDPlacement (edu.unc.lib.dl.fedora.PID)
 	 */
 	@Override
@@ -352,7 +344,7 @@ public class AIPImpl implements ArchivalInformationPackage {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage#getDepositID()
 	 */
 	@Override

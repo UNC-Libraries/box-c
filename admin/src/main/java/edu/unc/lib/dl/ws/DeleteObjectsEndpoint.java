@@ -20,8 +20,6 @@ import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.DeleteObjectsRequest;
 import edu.unc.lib.dl.schema.DeleteObjectsResponse;
@@ -31,14 +29,12 @@ import edu.unc.lib.dl.util.Constants;
 @Endpoint
 public class DeleteObjectsEndpoint extends WebServiceGatewaySupport {
 	private final Logger logger = Logger.getLogger(getClass());
-	private AgentFactory agentManager;
 	private DigitalObjectManager digitalObjectManager;
 
 	@PayloadRoot(localPart = Constants.DELETE_OBJECTS_REQUEST, namespace = Constants.NAMESPACE)	
 	public DeleteObjectsResponse deleteObjects(DeleteObjectsRequest request) {
 
 		DeleteObjectsThread thread = new DeleteObjectsThread();
-		thread.setAgentManager(agentManager);
 		thread.setDigitalObjectManager(digitalObjectManager);
 		thread.setDeleteObjectsRequest(request);
 		thread.start();
@@ -57,28 +53,19 @@ public class DeleteObjectsEndpoint extends WebServiceGatewaySupport {
 	public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
 		this.digitalObjectManager = digitalObjectManager;
 	}
-
-	public AgentFactory getAgentManager() {
-		return agentManager;
-	}
-
-	public void setAgentManager(AgentFactory agentManager) {
-		this.agentManager = agentManager;
-	}
 	
     class DeleteObjectsThread extends Thread {
     	private final Logger logger = Logger.getLogger(getClass());
-    	private AgentFactory agentManager;
     	private DigitalObjectManager digitalObjectManager;
     	private DeleteObjectsRequest deleteObjectsRequest;
     	
     	public void run() {
     		// move to threaded web service
     		try {
-    			Agent mediator = agentManager.findPersonByOnyen(deleteObjectsRequest
-    					.getAdmin(), false);
+    			String mediator = deleteObjectsRequest
+    					.getAdmin();
 
-    			logger.debug("Delete user: "+mediator.getName());
+    			logger.debug("Delete user: "+mediator);
     			
     			for (int i = 0; i < deleteObjectsRequest.getPid().size(); i++) {
     				PID pid = new PID(deleteObjectsRequest.getPid().get(i));
@@ -97,13 +84,6 @@ public class DeleteObjectsEndpoint extends WebServiceGatewaySupport {
     		this.digitalObjectManager = digitalObjectManager;
     	}
 
-    	public AgentFactory getAgentManager() {
-    		return agentManager;
-    	}
-
-    	public void setAgentManager(AgentFactory agentManager) {
-    		this.agentManager = agentManager;
-    	}
 		public void setDeleteObjectsRequest(DeleteObjectsRequest deleteObjectsRequest) {
 			this.deleteObjectsRequest = deleteObjectsRequest;
 		}

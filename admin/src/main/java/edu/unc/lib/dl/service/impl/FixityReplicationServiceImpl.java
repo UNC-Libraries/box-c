@@ -26,8 +26,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jdom.Element;
 import org.jdom.Namespace;
 
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
@@ -44,7 +42,6 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  */
 public class FixityReplicationServiceImpl implements FixityReplicationService {
 	protected final Log logger = LogFactory.getLog(getClass());
-	private AgentFactory agentManager;
 	private ManagementClient managementClient;
 	public static final Namespace NS = Namespace.getNamespace(JDOMNamespaceUtil.PREMIS_V2_NS.getURI());
 	public static final String PID_TYPE = "PID";
@@ -147,7 +144,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 						addLinkingObjectIdentifier(fullUuid, event);
 						
-						pelogger.addDetailedOutcome(event, "success", "Message: " + strLine, null);
+						PremisEventLogger.addDetailedOutcome(event, "success", "Message: " + strLine, null);
 
 						try {
 							this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
@@ -210,7 +207,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 						addLinkingObjectIdentifier(fullUuid, event);
 						
-						pelogger.addDetailedOutcome(event, "failure", "Message: " + strLine, null);
+						PremisEventLogger.addDetailedOutcome(event, "failure", "Message: " + strLine, null);
 
 						logger.debug("timestamp: " + timestamp + " pid: " + pid.getPid() + " strLine: " + strLine);
 
@@ -272,7 +269,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 						addLinkingObjectIdentifier(fullUuid, event);
 						
-						pelogger.addDetailedOutcome(event, "success", "Message: " + strLine, null);
+						PremisEventLogger.addDetailedOutcome(event, "success", "Message: " + strLine, null);
 
 						try {
 							this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
@@ -339,7 +336,7 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 
 						addLinkingObjectIdentifier(fullUuid, event);
 						
-						pelogger.addDetailedOutcome(event, "failure", "Message: " + strLine, null);
+						PremisEventLogger.addDetailedOutcome(event, "failure", "Message: " + strLine, null);
 
 						try {
 							this.managementClient.writePremisEventsToFedoraObject(pelogger, pid);
@@ -404,14 +401,6 @@ public class FixityReplicationServiceImpl implements FixityReplicationService {
 		result = result.replace("_", ":");
 
 		return result;
-	}
-
-	public AgentFactory getAgentManager() {
-		return agentManager;
-	}
-
-	public void setAgentManager(AgentFactory agentManager) {
-		this.agentManager = agentManager;
 	}
 
 	public ManagementClient getManagementClient() {

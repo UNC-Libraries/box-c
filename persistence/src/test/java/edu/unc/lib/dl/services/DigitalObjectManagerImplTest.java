@@ -55,12 +55,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
-import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
@@ -220,7 +217,6 @@ public class DigitalObjectManagerImplTest {
 	public void testDelete() throws Exception {
 		// verify works with references internal to delete contents
 		// verify works with container reference
-		Agent tron = new PersonAgent(new PID("tes:tron"), "Tester Tron", "tron");
 		// setup mocks
 		when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
 		PID container = new PID("test:container");
@@ -237,7 +233,7 @@ public class DigitalObjectManagerImplTest {
 		when(tripleStoreQueryService.lookupContentModels(any(PID.class))).thenReturn(cms);
 
 		PID test = new PID("test:delete");
-		this.getDigitalObjectManagerImpl().delete(test, tron, "testing delete");
+		this.getDigitalObjectManagerImpl().delete(test, "tron", "testing delete");
 
 		verify(managementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"), eq(false),
 				any(String.class), (ArrayList<String>) any(), any(String.class), any(Document.class));
@@ -256,7 +252,6 @@ public class DigitalObjectManagerImplTest {
 	@Test(expected = IngestException.class)
 	public void testDeleteReferencedPIDException() throws Exception {
 		// setup mocks
-		Agent tron = new PersonAgent(new PID("tes:tron"), "Tester Tron", "tron");
 		when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
 		PID container = new PID("test:container");
 		ArrayList<PID> refs = new ArrayList<PID>();
@@ -265,7 +260,7 @@ public class DigitalObjectManagerImplTest {
 		when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container);
 
-		this.getDigitalObjectManagerImpl().delete(new PID("test:delete"), tron, "testing delete");
+		this.getDigitalObjectManagerImpl().delete(new PID("test:delete"), "tron", "testing delete");
 	}
 
 	/**
@@ -277,7 +272,6 @@ public class DigitalObjectManagerImplTest {
 	public void testDeleteForFedoraFault() throws Exception {
 		// verify works with references internal to delete contents
 		// verify works with container reference
-		Agent tron = new PersonAgent(new PID("tes:tron"), "Tester Tron", "tron");
 		// setup mocks
 		when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
 		PID container = new PID("test:container");
@@ -298,7 +292,7 @@ public class DigitalObjectManagerImplTest {
 		when(managementClient.purgeObject(any(PID.class), any(String.class), eq(false))).thenThrow(fe);
 		Throwable thrown = null;
 		try {
-			this.getDigitalObjectManagerImpl().delete(test, tron, "testing delete");
+			this.getDigitalObjectManagerImpl().delete(test, "tron", "testing delete");
 		} catch (IngestException e) {
 			thrown = e;
 		}
@@ -328,7 +322,6 @@ public class DigitalObjectManagerImplTest {
 	public void testDeleteForFedoraGone() throws Exception {
 		// verify works with references internal to delete contents
 		// verify works with container reference
-		Agent tron = new PersonAgent(new PID("tes:tron"), "Tester Tron", "tron");
 		// setup mocks
 		when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
 		PID container = new PID("test:container");
@@ -349,7 +342,7 @@ public class DigitalObjectManagerImplTest {
 		when(managementClient.purgeObject(any(PID.class), any(String.class), eq(false))).thenThrow(fe);
 		Throwable thrown = null;
 		try {
-			this.getDigitalObjectManagerImpl().delete(test, tron, "testing delete");
+			this.getDigitalObjectManagerImpl().delete(test, "tron", "testing delete");
 		} catch (IngestException e) {
 			thrown = e;
 		}
@@ -440,7 +433,7 @@ public class DigitalObjectManagerImplTest {
 	@Test
 	public void testAdd() throws Exception {
 		File test = tempCopy(new File("src/test/resources/simple.zip"));
-		Agent user = AgentManager.getAdministrativeGroupAgentStub();
+		String user = ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI();
 		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		PID container = new PID("test:container");
 		METSPackageSIP sip = new METSPackageSIP(container, test, true);
@@ -463,8 +456,7 @@ public class DigitalObjectManagerImplTest {
 	public void testSingleIngestNow() {
 		try {
 			reset(this.managementClient);
-			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
-			DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
+			DepositRecord record = new DepositRecord("testonyen", "testonyen", DepositMethod.Unspecified);
 			PID container = new PID("test:container");
 			SingleFolderSIP sip = new SingleFolderSIP();
 			sip.setContainerPID(container);
@@ -472,9 +464,9 @@ public class DigitalObjectManagerImplTest {
 
 			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
 			List<String> personrow = new ArrayList<String>();
-			personrow.add(user.getPID().getURI());
-			personrow.add(user.getName());
-			personrow.add(user.getOnyen());
+			personrow.add("testonyen");
+			personrow.add("testonyen");
+			personrow.add("testonyen");
 			List<List<String>> answer = new ArrayList<List<String>>();
 			answer.add(personrow);
 			when(this.tripleStoreQueryService.queryResourceIndex(any(String.class))).thenReturn(answer);

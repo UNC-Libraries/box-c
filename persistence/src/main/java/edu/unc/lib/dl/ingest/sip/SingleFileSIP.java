@@ -17,6 +17,8 @@ package edu.unc.lib.dl.ingest.sip;
 
 import java.io.File;
 
+import edu.unc.lib.dl.fedora.PID;
+
 /**
  * This submission package is composed of a single data file, plus MODS metadata. These submissions are normally
  * converted into a single Fedora object.
@@ -27,6 +29,14 @@ import java.io.File;
 public class SingleFileSIP extends FileSIP {
 	private File modsXML = null;
 
+	public SingleFileSIP() {
+		super();
+	}
+	
+	public SingleFileSIP(PID containerPID, File data, String mimeType, String fileLabel, String md5checksum) {
+		super(containerPID, data, mimeType, fileLabel, md5checksum);
+	}
+	
 	public File getModsXML() {
 		return modsXML;
 	}

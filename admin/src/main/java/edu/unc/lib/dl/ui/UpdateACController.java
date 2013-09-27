@@ -33,7 +33,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 import org.springframework.web.servlet.support.RequestContext;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.GetBreadcrumbsAndChildrenResponse;
 import edu.unc.lib.dl.schema.MetsSubmitIngestObject;

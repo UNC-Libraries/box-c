@@ -20,9 +20,7 @@ require.config({
 		'DeleteBatchButton' : 'admin/src/DeleteBatchButton'
 	},
 	shim: {
-		'jquery-ui' : {
-			deps: ['jquery']
-		},
+		'jquery-ui' : ['jquery'],
 		'jquery.preload' : ['jquery'],
 		'thumbnail' : ['jquery'],
 		'qtip' : ['jquery'],

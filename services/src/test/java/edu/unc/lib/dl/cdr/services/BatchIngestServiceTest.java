@@ -52,7 +52,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.ws.client.WebServiceTransportException;
 
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -147,7 +146,7 @@ public class BatchIngestServiceTest {
 		try {
 			reset(this.managementClient);
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
-			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
+			String user = "testonyen";
 			DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 			PID container = new PID("test:container");
 			METSPackageSIP sip1 = new METSPackageSIP(container, test, true);
@@ -157,9 +156,9 @@ public class BatchIngestServiceTest {
 
 			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
 			List<String> personrow = new ArrayList<String>();
-			personrow.add(user.getPID().getURI());
-			personrow.add(user.getName());
-			personrow.add(user.getOnyen());
+			personrow.add(user);
+			personrow.add(user);
+			personrow.add(user);
 			List<List<String>> answer = new ArrayList<List<String>>();
 			answer.add(personrow);
 			when(this.tripleStoreQueryService.queryResourceIndex(any(String.class))).thenReturn(answer);
@@ -206,16 +205,16 @@ public class BatchIngestServiceTest {
 			reset(this.jmsTemplate);
 			reset(this.mailSender);
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
-			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
+			String user = "testonyen";
 			DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 			PID container = new PID("test:container");
 			METSPackageSIP sip = new METSPackageSIP(container, test, true);
 
 			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
 			List<String> personrow = new ArrayList<String>();
-			personrow.add(user.getPID().getURI());
-			personrow.add(user.getName());
-			personrow.add(user.getOnyen());
+			personrow.add(user);
+			personrow.add(user);
+			personrow.add(user);
 			List<List<String>> answer = new ArrayList<List<String>>();
 			answer.add(personrow);
 			when(this.tripleStoreQueryService.queryResourceIndex(any(String.class))).thenReturn(answer);
@@ -263,7 +262,7 @@ public class BatchIngestServiceTest {
 
 			});
 			File test = tempCopy(new File("src/test/resources/simple.zip"));
-			PersonAgent user = new PersonAgent(new PID("test:person"), "TestyTess", "testonyen");
+			String user = "testonyen";
 			DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 			PID container = new PID("test:container");
 			METSPackageSIP sip = new METSPackageSIP(container, test, true);
@@ -275,9 +274,9 @@ public class BatchIngestServiceTest {
 				.thenCallRealMethod();
 
 			List<String> personrow = new ArrayList<String>();
-			personrow.add(user.getPID().getURI());
-			personrow.add(user.getName());
-			personrow.add(user.getOnyen());
+			personrow.add(user);
+			personrow.add(user);
+			personrow.add(user);
 			List<List<String>> answer = new ArrayList<List<String>>();
 			answer.add(personrow);
 			when(this.tripleStoreQueryService.queryResourceIndex(any(String.class))).thenReturn(answer);

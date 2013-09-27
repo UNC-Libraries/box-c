@@ -11,7 +11,7 @@ define('MetadataObject', [ 'jquery', 'PID' ], function($, PID) {
 			if (this.data === undefined || this.data == null) {
 				this.data = {};
 			}
-			this.setPID(this.data.id);
+			//this.setPID(this.data.id);
 		},
 		
 		setPID: function(pid) {

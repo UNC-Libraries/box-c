@@ -64,6 +64,7 @@ public class DocumentIndexingPackageFactory {
 			DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
 			
 			byte[] stream = accessClient.getDatastreamDissemination(pid, Datastream.RELS_EXT.getName(), null).getStream();
+			log.debug("Retrieving RELS-EXT for " + pid + " " + stream);
 			Document relsExtDocument = builder.build(new ByteArrayInputStream(stream));
 			dip.setRelsExt(relsExtDocument.getRootElement());
 			

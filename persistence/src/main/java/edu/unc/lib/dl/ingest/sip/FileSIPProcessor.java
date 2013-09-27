@@ -102,7 +102,7 @@ public abstract class FileSIPProcessor implements SIPProcessor {
 		// add the data file
 		foxml.getRootElement().addContent(locator);
 	}
-	
+
 	protected void assignFileTriples(PID pid, FileSIP sip, DepositRecord record, Document foxml, String label,
 			RDFAwareAIPImpl rdfaip) throws IngestException {
 		// set the label
@@ -125,8 +125,8 @@ public abstract class FileSIPProcessor implements SIPProcessor {
 		}
 
 		// set owner
-		JRDFGraphUtil.addFedoraPIDRelationship(rdfaip.getGraph(), pid, ContentModelHelper.Relationship.owner, record
-				.getOwner().getPID());
+		JRDFGraphUtil.addFedoraRelationship(rdfaip.getGraph(), pid, ContentModelHelper.Relationship.owner,
+				record.getOwner());
 
 		// set content model
 		JRDFGraphUtil.addFedoraProperty(rdfaip.getGraph(), pid, ContentModelHelper.FedoraProperty.hasModel,
@@ -151,7 +151,7 @@ public abstract class FileSIPProcessor implements SIPProcessor {
 		} else {
 			FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.state, "Active");
 		}
-		
+
 		// setup the allowIndexing property
 		if (sip.isAllowIndexing()) {
 			JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.allowIndexing, "yes");
@@ -176,7 +176,7 @@ public abstract class FileSIPProcessor implements SIPProcessor {
 			JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.indexText, dsURI);
 		}
 	}
-	
+
 	public PIDGenerator getPidGenerator() {
 		return pidGenerator;
 	}

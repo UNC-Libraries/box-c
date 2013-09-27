@@ -37,8 +37,7 @@
 			<tr>
 				<th>Parent Collection</th>
 				<td>
-					<c:url var="parentUrl" scope="page" value="record">
-						<c:param name="${searchSettings.searchStateParams['ID']}" value="${briefObject.parentCollection}"/>
+					<c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}">
 					</c:url>
 					<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionObject.displayValue}"/></a>
 				</td>

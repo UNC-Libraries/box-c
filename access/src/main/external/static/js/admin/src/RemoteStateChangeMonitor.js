@@ -10,6 +10,7 @@ define('RemoteStateChangeMonitor', ['jquery'], function($) {
 			'statusChangedTarget' : undefined,
 			'checkStatus' : undefined,
 			'checkStatusTarget' : undefined,
+			'checkErrorTarget' : undefined,
 			'checkStatusAjax' : {
 			}
 		},
@@ -19,6 +20,7 @@ define('RemoteStateChangeMonitor', ['jquery'], function($) {
 		init: function(options) {
 			this.options = $.extend({}, this.defaultOptions, options);
 			this.options.checkStatusAjax.success = $.proxy(this.pingSuccessCheck, this);
+			this.options.checkStatusAjax.error = $.proxy(this.pingError, this);
 		},
 		
 		performPing : function() {
@@ -37,6 +39,14 @@ define('RemoteStateChangeMonitor', ['jquery'], function($) {
 				this.options.statusChanged.call(this.options.statusChangedTarget, data);
 			} else if (this.pingId == null) {
 				this.pingId = setInterval($.proxy(this.performPing, this), this.options.pingFrequency);
+			}
+		},
+		
+		pingError : function() {
+			this.options.checkError.apply(this.options.checkErrorTarget, arguments);
+			if (this.pingId != null) {
+				clearInterval(this.pingId);
+				this.pingId = null;
 			}
 		}
 	});

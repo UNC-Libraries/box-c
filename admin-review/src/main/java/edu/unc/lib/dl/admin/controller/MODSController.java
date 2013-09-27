@@ -66,11 +66,9 @@ public class MODSController extends AbstractSwordController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "describe/{prefix}/{id}", method = RequestMethod.GET)
-	public String editDescription(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
+	@RequestMapping(value = "describe/{pid}", method = RequestMethod.GET)
+	public String editDescription(@PathVariable("pid") String pid, Model model,
 			HttpServletRequest request) {
-
-		String pid = idPrefix + ":" + id;
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
 		// Retrieve the record for the container being reviewed
@@ -92,11 +90,9 @@ public class MODSController extends AbstractSwordController {
 	 * @param id
 	 * @return
 	 */
-	@RequestMapping(value = "{prefix}/{id}/mods", method = RequestMethod.GET)
+	@RequestMapping(value = "{pid}/mods", method = RequestMethod.GET)
 	public @ResponseBody
-	String getMods(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id) {
-		String pid = idPrefix + ":" + id;
-
+	String getMods(@PathVariable("pid") String pid) {
 		String mods = null;
 		String dataUrl = swordUrl + "em/" + pid + "/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE;
 
@@ -148,14 +144,11 @@ public class MODSController extends AbstractSwordController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "describe/{prefix}/{id}", method = RequestMethod.POST)
+	@RequestMapping(value = "describe/{pid}", method = RequestMethod.POST)
 	public @ResponseBody
-	String updateDescription(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
+	String updateDescription(@PathVariable("pid") String pid, Model model,
 			HttpServletRequest request, HttpServletResponse response) {
-
-		String pid = idPrefix + ":" + id;
 		String datastream = Datastream.MD_DESCRIPTIVE.getName();
-
 		return this.updateDatastream(pid, datastream, request, response);
 	}
 

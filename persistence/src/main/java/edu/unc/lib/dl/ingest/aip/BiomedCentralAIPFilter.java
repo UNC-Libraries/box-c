@@ -31,8 +31,6 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 import org.jrdf.graph.Graph;
 
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JRDFGraphUtil;
@@ -44,10 +42,7 @@ import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
 public class BiomedCentralAIPFilter implements AIPIngestFilter {
 	private static Logger LOG = Logger.getLogger(BiomedCentralAIPFilter.class);
 	
-	private static final String BIOMED_ONYEN = "biomedcentral";
-	private AgentFactory agentFactory;
-	
-	private Agent biomedAgent;
+	public static final String BIOMED_ONYEN = "biomedcentral";
 	
 	private XPath foxmlArticleXMLXPath;
 	private XPath supplementXPath;
@@ -62,14 +57,6 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 	}
 	
 	public void init(){
-		biomedAgent = agentFactory.findPersonByOnyen(BIOMED_ONYEN, false);
-		if (biomedAgent == null){
-			LOG.error("Unable to find the Biomed Central user with username " + BIOMED_ONYEN
-					+ ", this AIP Filter has disabled until the user exists and the filter is reinitialized.");
-			return;
-		}
-		LOG.debug("Initializing BiomedCentralAIPFilter, retrieved biomed agent " + biomedAgent.getPID().getPid());
-		
 		try {
 			foxmlArticleXMLXPath = XPath.newInstance("//f:datastream[@ID='DATA_FILE']/f:datastreamVersion[1]/f:contentLocation/@REF");
 			supplementXPath = XPath.newInstance("//suppl");
@@ -87,15 +74,9 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 	
 	@Override
 	public ArchivalInformationPackage doFilter(ArchivalInformationPackage aip) throws AIPException {
-		// If the biomed agent isn't set, then quit 
-		if (biomedAgent == null){
-			return aip;
-		}
-		
 		LOG.debug("starting BiomedCentralAIPFilter");
-		if (!biomedAgent.getPID().getPid().equals(aip.getDepositRecord().getDepositedBy().getPID().getPid())){
-			LOG.debug("Deposit agent was " + aip.getDepositRecord().getDepositedBy().getPID().getPid() + ", require "
-					+ biomedAgent.getPID().getPid());
+		if (!BIOMED_ONYEN.equals(aip.getDepositRecord().getDepositedBy())) {
+			LOG.debug("Skipping Biomed filter for non-Biomed user " + aip.getDepositRecord().getDepositedBy());
 			return aip;
 		}
 		if (!(PackagingType.METS_DSPACE_SIP_2.equals(aip.getDepositRecord().getPackagingType()) 
@@ -404,13 +385,5 @@ public class BiomedCentralAIPFilter implements AIPIngestFilter {
 		detailElement.addContent(numberElement);
 		detailElement.addContent(captionElement);
 		parentElement.addContent(detailElement);
-	}
-
-	public AgentFactory getAgentFactory() {
-		return agentFactory;
-	}
-
-	public void setAgentFactory(AgentFactory agentFactory) {
-		this.agentFactory = agentFactory;
 	}
 }

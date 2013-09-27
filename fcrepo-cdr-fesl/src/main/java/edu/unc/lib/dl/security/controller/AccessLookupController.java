@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.fcrepo.server.errors.ObjectNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +57,7 @@ public class AccessLookupController {
 	@RequestMapping(value = "fesl/{id}/getAccess", method = RequestMethod.GET)
 	public @ResponseBody
 	Map<String, ? extends Object> getAccess(@PathVariable("id") String id) {
+		log.debug("Retrieving ACLs for " + id);
 		return accessControlUtils.getAllCdrAccessControls(new PID(id));
 	}
 
@@ -95,7 +95,7 @@ public class AccessLookupController {
 		Map<String, Set<String>> roles = accessControlUtils.getRoles(pid);
 		List<String> activeEmbargoes = accessControlUtils.getEmbargoes(pid);
 
-		return (new ObjectAccessControlsBean(pid, roles, activeEmbargoes))
+		return (new ObjectAccessControlsBean(pid, roles, accessControlUtils.getGlobalRoles(), activeEmbargoes))
 				.hasPermission(accessGroups, permission);
 	}
 

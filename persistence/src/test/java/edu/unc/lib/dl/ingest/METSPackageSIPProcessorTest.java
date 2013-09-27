@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
@@ -45,7 +44,7 @@ import edu.unc.lib.dl.ingest.sip.InvalidMETSException;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
 import edu.unc.lib.dl.schematron.SchematronValidator;
-import edu.unc.lib.dl.services.AgentManager;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
@@ -73,7 +72,7 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 
 	private void exceptionTest(String testFilePath, String testMsg) throws IngestException {
 		File testFile = tempCopy(new File(testFilePath));
-		Agent adminGroup = AgentManager.getAdministrativeGroupAgentStub();
+		String adminGroup = ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI();
 		DepositRecord record = new DepositRecord(adminGroup, adminGroup, DepositMethod.Unspecified);
 		PremisEventLogger logger = new PremisEventLogger("admin");
 		METSPackageSIP sip = null;
@@ -140,7 +139,7 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 	public void testBigSIP() {
 		// testing for successful conversion of Large SIP, 2014 objects
 		File testFile = tempCopy(new File("src/test/resources/METS.xml"));
-		Agent user = AgentManager.getAdministrativeGroupAgentStub();
+		String user = ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI();
 		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
@@ -189,7 +188,7 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 	public void testGoodSIP() {
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/simple.zip"));
-		Agent user = AgentManager.getAdministrativeGroupAgentStub();
+		String user = ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI();
 		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
@@ -279,7 +278,7 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		int numberOfPIDs = 6;
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/dspaceMets.zip"));
-		Agent user = AgentManager.getAdministrativeGroupAgentStub();
+		String user = ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI();
 		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;

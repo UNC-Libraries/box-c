@@ -1,5 +1,5 @@
-define([ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'AlertHandler', 'PID', 
-         'editable', 'moment', 'qtip', 'ConfirmationDialog'], function($, PID) {
+define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'ConfirmationDialog', 'AlertHandler', 
+         'editable', 'moment', 'qtip'], function($, ui, ModalLoadingOverlay, ConfirmationDialog) {
 	$.widget("cdr.editAccessControlForm", {
 		_create : function() {
 			var self = this;
@@ -115,32 +115,30 @@ define([ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'AlertHandler', 'PID',
 			var containing = this.options.containingDialog;
 			$('.update_button').click(function(){
 				var container = ((self.options.containingDialog)? self.options.containingDialog : $(body));
-				container.modalLoadingOverlay();
+				var overlay = new ModalLoadingOverlay(container);
 				$.ajax({
 					url : self.options.updateUrl,
 					type : 'PUT',
 					data : self.xml2Str(self.accessControlModel),
 					success : function(data) {
 						containing.data('can-close', true);
-						container.modalLoadingOverlay('close');
+						overlay.remove();
 						if (self.options.containingDialog != null) {
 							self.options.containingDialog.dialog('close');
 						}
 						self.alertHandler.alertHandler('success', 'Access control changes saved');
-						$(".entry[data-pid='" + self.options.pid + "']").resultObject('refresh');
+						$("#res_" + self.options.pid.substring(self.options.pid.indexOf(':') + 1)).data('resultObject').refresh();
 					},
 					error : function(data) {
-						container.modalLoadingOverlay('close');
+						overlay.remove();
 						self.alertHandler.alertHandler('error', 'Failed to save changes: ' + data);
 					}
 				});
 			});
 			
 			if (this.options.containingDialog) {
-				
 				containing.data('can-close', false);
-				var closeButton = $(containing.prev().find(".ui-dialog-titlebar-close")[0]);
-				closeButton.confirmationDialog({
+				var confirmationDialog = new ConfirmationDialog({
 					'promptText' : 'There are unsaved access control changes, close without saving?',
 					'confirmFunction' : function() {
 						containing.data('can-close', true);
@@ -150,13 +148,16 @@ define([ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'AlertHandler', 'PID',
 					'dialogOptions' : {
 						modal : true,
 						minWidth : 200,
-						maxWidth : 400
+						maxWidth : 400,
+						position : {
+							at : "center center"
+						}
 					}
 				});
 				
 				containing.on('dialogbeforeclose', function(){
 					if (!containing.data('can-close') && self.isDocumentChanged()) {
-						closeButton.confirmationDialog('open');
+						confirmationDialog.open();
 						return false;
 					} else {
 						return true;

@@ -62,6 +62,8 @@ public class SearchSettings extends AbstractSettings {
 	public int structuredDepthDefault;
 	// Search field parameter names as they appear in GET requests to controllers
 	public Map<String, String> searchFieldParams;
+	// Inverted field parameter names for easily getting keys by parameter name
+	public Map<String, String> searchFieldKeys;
 	// Search field display labels
 	public Map<String, String> searchFieldLabels;
 	// Fields which are allowed to be directly queried via keyword searches
@@ -72,6 +74,8 @@ public class SearchSettings extends AbstractSettings {
 	public Set<String> dateSearchableFields;
 	// Fields which are filterable as facets
 	public Set<String> facetNames;
+	// Facets shown by default in normal search results
+	public Set<String> searchFacetNames;
 	// Fields which are filterable as facets in a collection browse
 	public Set<String> collectionBrowseFacetNames;
 	// Fields which are filterable as facets in a structure browse
@@ -118,6 +122,7 @@ public class SearchSettings extends AbstractSettings {
 	// Sort direction constants
 	public String sortReverse;
 	public String sortNormal;
+	public Map<String, List<String>> resultFields;
 
 	public SearchSettings() {
 	}
@@ -132,6 +137,7 @@ public class SearchSettings extends AbstractSettings {
 		this.properties = properties;
 
 		facetNames = new LinkedHashSet<String>();
+		searchFacetNames = new LinkedHashSet<String>();
 		collectionBrowseFacetNames = new LinkedHashSet<String>();
 		facetNamesStructureBrowse = new LinkedHashSet<String>();
 		this.facetClasses = new HashMap<String, Class<?>>();
@@ -140,6 +146,7 @@ public class SearchSettings extends AbstractSettings {
 		searchableFields = new HashSet<String>();
 		rangeSearchableFields = new HashSet<String>();
 		searchFieldParams = new HashMap<String, String>();
+		searchFieldKeys = new HashMap<String,String>();
 		searchFieldLabels = new HashMap<String, String>();
 		dateSearchableFields = new HashSet<String>();
 
@@ -156,6 +163,8 @@ public class SearchSettings extends AbstractSettings {
 
 		accessFields = new HashSet<String>();
 		accessFilterableFields = new HashSet<String>();
+		
+		resultFields = new HashMap<String, List<String>>();
 
 		// Query validation properties
 		setQueryMaxLength(Integer.parseInt(properties.getProperty("search.query.maxLength", "255")));
@@ -181,6 +190,7 @@ public class SearchSettings extends AbstractSettings {
 		setExpandedFacetsPerGroup(Integer.parseInt(properties.getProperty("search.facet.expandedFacetsPerGroup", "0")));
 		setMaxFacetsPerGroup(Integer.parseInt(properties.getProperty("search.facet.maxFacetsPerGroup", "0")));
 		populateCollectionFromProperty("search.facet.fields", facetNames, properties, ",");
+		populateCollectionFromProperty("search.facet.defaultSearch", searchFacetNames, properties, ",");
 		populateCollectionFromProperty("search.facet.defaultCollectionBrowse", collectionBrowseFacetNames, properties,
 				",");
 		populateCollectionFromProperty("search.facet.defaultStructureBrowse", facetNamesStructureBrowse, properties, ",");
@@ -198,9 +208,11 @@ public class SearchSettings extends AbstractSettings {
 		populateCollectionFromProperty("search.field.rangeSearchable", rangeSearchableFields, properties, ",");
 		populateCollectionFromProperty("search.field.dateSearchable", dateSearchableFields, properties, ",");
 		populateMapFromProperty("search.field.paramName.", searchFieldParams, properties);
+		searchFieldKeys = getInvertedHashMap(searchFieldParams);
 		populateMapFromProperty("search.field.display.", searchFieldLabels, properties);
 		populateMapFromProperty("search.actions.", actions, properties);
 		populateMapFromProperty("search.url.param.", searchStateParams, properties);
+		populateListMapFromProperty("search.results.fields", resultFields, properties);
 
 		// Populate sort types
 		setSortReverse(properties.getProperty("search.sort.order.reverse", ""));
@@ -519,11 +531,7 @@ public class SearchSettings extends AbstractSettings {
 	}
 
 	public String searchFieldKey(String name) {
-		return getKey(searchFieldParams, name);
-	}
-
-	public String getSearchFieldKey(String name) {
-		return searchFieldKey(name);
+		return searchFieldKeys.get(name);
 	}
 
 	public Map<String, String> getSearchFieldParams() {

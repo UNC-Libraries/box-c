@@ -43,7 +43,6 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
@@ -82,9 +81,8 @@ public class AtomDCToMODSFilterTest extends Assert {
 		when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString())).thenReturn(null);
 		
 		PID pid = new PID("uuid:test");
-		PersonAgent user = new PersonAgent("testuser", "testuser");
 
-		AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, user, UpdateOperation.ADD, entry);
+		AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, "testuser", UpdateOperation.ADD, entry);
 		
 		assertEquals(0, uip.getOriginalData().size());
 		assertEquals(0, uip.getModifiedData().size());
@@ -155,9 +153,8 @@ public class AtomDCToMODSFilterTest extends Assert {
 						eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()), anyString())).thenReturn(modsStream);
 		
 		PID pid = new PID("uuid:test");
-		PersonAgent user = new PersonAgent("testuser", "testuser");
 
-		AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, user, UpdateOperation.REPLACE, entry);
+		AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, "testuser", UpdateOperation.REPLACE, entry);
 		uip.storeOriginalDatastreams(accessClient);
 		
 		filter.doFilter(uip);
@@ -178,6 +175,7 @@ public class AtomDCToMODSFilterTest extends Assert {
 		assertEquals(1, uip.getOriginalData().size());
 		assertEquals(1, uip.getModifiedData().size());
 		assertEquals(2, uip.getIncomingData().size());
+		raf.close();
 	}
 	
 	@Test

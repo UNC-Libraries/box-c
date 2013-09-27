@@ -18,30 +18,29 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
 <c:choose>
 	<c:when test="${not empty param.resultOperation}"><c:set var="resultOperation" value="${param.resultOperation}"/></c:when>
 	<c:otherwise><c:set var="resultOperation" value="list"/></c:otherwise>
 </c:choose>
-
-<span class="hierarchicalTrail">  
+<span class="path_trail">  
 	<c:if test="${param.displayHome == true }">
 		<a href="<c:out value="${resultOperation}"/><c:if test="${not empty searchStateUrl && param.ignoreSearchState == false}">?${searchStateUrl}</c:if>">Home</a>
 	</c:if>
 	<c:forEach items="${facetNodes}" var="facetNode" varStatus="status">
-		<c:if test="${!status.first || param.displayHome}">
-			&gt; 
+		<c:if test="${!(status.last && param.skipLast)}">
+			<c:if test="${!status.first || param.displayHome}"> &gt; </c:if>
+			<c:choose>
+				<c:when test="${status.last && param.linkLast != true}">
+					<c:out value="${facetNode.displayValue}" />
+				</c:when>
+				<c:otherwise>
+					<c:set var="shiftPathUrl">
+						${resultOperation}/${facetNode.searchKey}<c:if test="${not empty searchStateUrl && param.ignoreSearchState == false}">?${searchStateUrl}</c:if>
+					</c:set>
+					<a href="<c:out value="${shiftPathUrl}"/>"><c:out value="${facetNode.displayValue}" /></a>
+				</c:otherwise>
+			</c:choose>
 		</c:if>
-		<c:choose>
-			<c:when test="${status.last && param.linkLast != true}">
-				<c:out value="${facetNode.displayValue}" />
-			</c:when>
-			<c:otherwise>
-				<c:set var="shiftPathUrl">
-					${resultOperation}/${facetNode.searchKey.replace(':', '/')}<c:if test="${not empty searchStateUrl && param.ignoreSearchState == false}">?${searchStateUrl}</c:if>
-				</c:set>
-				<a href="<c:out value="${shiftPathUrl}"/>"><c:out value="${facetNode.displayValue}" /></a>
-			</c:otherwise>
-		</c:choose>
 	</c:forEach>
+	<c:if test="${param.trailingSeparator}"> &gt;</c:if>
 </span>

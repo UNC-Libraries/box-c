@@ -20,7 +20,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<script type="text/javascript" src="/static/js/browseResults.js"></script>
 
 <c:choose>
 	<c:when test="${not empty briefObject.countMap}">
@@ -32,9 +31,7 @@
 </c:choose>
 
 <div class="onecol container_record" id="full_record">
-	<c:url var="browseUrl" scope="page" value='browse'>
-		<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.searchValue}"/>
-	</c:url>
+	<c:url var="structureUrl" scope="page" value='structure/${briefObject.id}'></c:url>
 
 	<div class="contentarea">
 		<div class="large thumb_container">
@@ -65,21 +62,19 @@
 						<c:out value="${briefObject['abstractText']}" />
 					</p>
 			</c:if>
-			<form id="collectionsearch" class="clear_on_submit_without_focus" action="basicSearch" method="get">
+			<form id="collectionsearch" action="basicSearch" method="get">
 				<div id="csearch_inputwrap">
-					<input type="text" name="query" id="csearch_text" class="clear_on_first_focus" value="Search the ${fn:toLowerCase(briefObject.resourceType)}"><input type="submit" value="Go" id="csearch_submit">
+					<input type="text" name="query" id="csearch_text" placeholder="Search the ${fn:toLowerCase(briefObject.resourceType)}"><input type="submit" value="Go" id="csearch_submit">
 				</div>
 				<input type="hidden" name="queryType" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}"/>
-				<input type="hidden" name="${searchSettings.searchStateParams['ACTIONS']}" 
-					value='${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]},"${briefObject.path.searchValue}",${briefObject.path.highestTier + 1}'/>
+				<input type="hidden" name="container" 
+					value='${briefObject.id}'/>
 			</form>
 			<div class="clear"></div>
 			<p class="full_record_browse">
-				<c:url var="collectionResultsUrl" scope="page" value='search'>
-					<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.limitToValue}"/>
-				</c:url>
+				<c:url var="collectionResultsUrl" scope="page" value='list/${briefObject.id}'></c:url>
 				<a href="<c:out value='${collectionResultsUrl}' />">Browse&nbsp;(<c:out value="${childCount}"/> items)</a> or
-				<a href="<c:out value='${browseUrl}' />">
+				<a href="<c:out value='${structureUrl}' />">
 					View ${fn:toLowerCase(briefObject.resourceType)} structure
 				</a>
 			</p>
@@ -88,26 +83,23 @@
 </div>
 <div class="lightest">
 	<div class="fourcol lightest shadowtop">
-		<c:set var="searchStateUrl" value="${collectionSearchStateUrl}" scope="request"/>
-		<c:import url="common/facetList.jsp">
-			<c:param name="title" value="Contents"/>
-		</c:import>
+		<div id="facetList" class="contentarea">
+			<c:set var="selectedContainer" scope="request" value="${briefObject}"/>
+			<h2>Contents</h2>
+			<c:import url="/jsp/util/facetList.jsp">
+			</c:import>
+		</div>
 	</div>
 	<div class="threecol white shadowtop">
 		<div class="contentarea">
 			<c:import url="fullRecord/metadataBody.jsp" />
 			
-			<c:if test="${hierarchicalViewResults.resultCount > 0}">
-				<div id="hierarchical_view_full_record">
-					<h2>Folder Browse View (or <a href="<c:out value="${browseUrl}" />">switch to structure browse</a>)</h2>
-					<c:import url="browseResults/hierarchicalBrowse.jsp">
-						<c:param name="displayCounts" value="true"/>
-						<c:param name="hideTypeIcon">false</c:param>
-					</c:import>
+			<div id="hierarchical_view_full_record">
+				<h2>Folder Browse View (or <a href="<c:out value="${structureUrl}" />">switch to structure browse</a>)</h2>
+				<div class="structure" data-pid="${briefObject.id}">
 				</div>
-				<br/>
-			</c:if>
-			
+			</div>
+			<br/>
 			<c:import url="fullRecord/exports.jsp" />
 		</div>
 	</div>

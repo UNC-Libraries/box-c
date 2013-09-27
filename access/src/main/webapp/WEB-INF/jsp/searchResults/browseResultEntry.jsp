@@ -38,38 +38,47 @@
 	</c:otherwise>
 </c:choose>
 
+<c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, metadata)}"/>
+
 <div id="entry${metadata.id}" class="browseitem ${resultEntryClass}">
 	<div class="contentarea">
 		<%-- Link to full record of the current item --%>
-		<c:url var="fullRecordUrl" scope="page" value="record">
-			<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.id}"/>
+		<c:url var="fullRecordUrl" scope="page" value="record/${metadata.id}">
 		</c:url>
 		<%-- Set primary action URL based on content model and container results URL as appropriate --%>
-		<c:url var="containerResultsUrl" scope="page" value='search'>
-			<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.searchValue},${metadata.path.highestTier + 1}"/>
-		</c:url>
+		<c:url var="containerResultsUrl" scope="page" value='list/${metadata.id}'></c:url>
 		<c:set var="primaryActionUrl" scope="page" value="${fullRecordUrl}"/>
 		
 		<%-- Display thumbnail or placeholder --%>
-		<a href="<c:out value='${primaryActionUrl}' />">
+		<c:set var="iconContent">
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', metadata)}">
-					<div class="large thumb_container">
-						<img class="largethumb" src="${cdr:getDatastreamUrl(metadata, 'THUMB_LARGE', fedoraUtil)}"/>
-					</div>
+					<img class="largethumb" src="${cdr:getDatastreamUrl(metadata, 'THUMB_LARGE', fedoraUtil)}"/>
 				</c:when>
 				<c:otherwise>
-					<div class="large thumb_container">
-						<img id="thumb_${param.resultNumber}" class="largethumb" 
-								src="/static/images/placeholder/large/collection.png"/>
-					</div>
+					<img id="thumb_${param.resultNumber}" class="largethumb" 
+							src="/static/images/placeholder/large/collection.png"/>
 				</c:otherwise>
 			</c:choose>
+		</c:set>
+		
+		<a class="large thumb_container" href="<c:out value='${primaryActionUrl}' />">
+				${iconContent}
+				<c:if test="${hasListAccessOnly}">
+					<span><img src="/static/images/lockedstate_large.gif"/></span>
+				</c:if>
 		</a>
 		
 		<h2>
-			<a href="<c:out value='${primaryActionUrl}' />" class="has_tooltip" title="View details for ${metadata.title}."><c:out value="${metadata.title}"/></a> 
-			<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
+			<a href="<c:out value='${primaryActionUrl}' />" class="has_tooltip" title="View details for ${metadata.title}."><c:out value="${metadata.title}"/></a>
+			<c:choose>
+				<c:when test="${hasListAccessOnly}">
+					<span class="searchitem_container_count">(<c:if test="${not empty loginUrl}"><a href="${loginUrl}">log in</a> or </c:if><a href="/requestAccess/${metadata.pid.pid}">request access</a>)</span>
+				</c:when>
+				<c:otherwise> 
+					<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
+				</c:otherwise>
+			</c:choose>
 		</h2>
 		<c:if test="${not empty metadata.creator}">
 			<p>${searchSettings.searchFieldLabels['CREATOR']}: 

@@ -84,7 +84,8 @@ public class SingleFolderSIPProcessor implements SIPProcessor {
 				}
 				Element root = mods.getRootElement();
 				root.detach();
-				FOXMLJDOMUtil.setInlineXMLDatastreamContent(foxml, "MD_DESCRIPTIVE", "Descriptive Metadata (MODS)", root, true);
+				FOXMLJDOMUtil.setInlineXMLDatastreamContent(foxml, "MD_DESCRIPTIVE", "Descriptive Metadata (MODS)", root,
+						true);
 			} catch (JDOMException e) {
 				throw new IngestException("Error parsing MODS xml.", e);
 			} catch (IOException e) {
@@ -126,19 +127,15 @@ public class SingleFolderSIPProcessor implements SIPProcessor {
 		}
 
 		// set owner
-		JRDFGraphUtil.addFedoraPIDRelationship(rdfaip.getGraph(), pid, ContentModelHelper.Relationship.owner, record
-				.getOwner().getPID());
+		JRDFGraphUtil.addFedoraRelationship(rdfaip.getGraph(), pid, ContentModelHelper.Relationship.owner,
+				record.getOwner());
 		// set content model
 		JRDFGraphUtil.addFedoraProperty(rdfaip.getGraph(), pid, ContentModelHelper.FedoraProperty.hasModel,
 				ContentModelHelper.Model.CONTAINER.getURI());
 
 		if (sip.isCollection()) {
-			if (sip.getModsXML() == null) {
-				throw new IngestException("Collection creation requires descriptive metadata (MODS).");
-			} else {
-				JRDFGraphUtil.addFedoraProperty(rdfaip.getGraph(), pid, ContentModelHelper.FedoraProperty.hasModel,
-						ContentModelHelper.Model.COLLECTION.getURI());
-			}
+			JRDFGraphUtil.addFedoraProperty(rdfaip.getGraph(), pid, ContentModelHelper.FedoraProperty.hasModel,
+					ContentModelHelper.Model.COLLECTION.getURI());
 		}
 		// set slug
 		JRDFGraphUtil.addCDRProperty(rdfaip.getGraph(), pid, ContentModelHelper.CDRProperty.slug, slug);
@@ -156,7 +153,7 @@ public class SingleFolderSIPProcessor implements SIPProcessor {
 			String output = out.outputString(rdfaip.getFOXMLDocument(pid));
 			log.info("HEREFOXML:\n" + output);
 		}
-		
+
 		return rdfaip;
 	}
 

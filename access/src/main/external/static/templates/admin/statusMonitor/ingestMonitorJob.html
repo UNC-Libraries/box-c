@@ -1,0 +1,20 @@
+<tr class="parent monitor_job <%= type.name %> detailsLink<%= selected? " selected" : "" %>" data-id="<%= data.id %>">
+	<td>
+		<%= type.name %>
+	</td>
+	<td>
+		<%= data.submitter %>
+	</td>
+	<td>
+		<%= dateFormat(data.submissionTime) %>
+	</td>
+	<td>
+		<%= data.worked %>/<%= data.size %>
+	</td>
+	<td>
+		<%= data.containerPlacements[0].submittedLabel %>
+	</td>
+	<td>
+		<%= data.message %>
+	</td>
+</tr>

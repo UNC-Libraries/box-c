@@ -31,10 +31,10 @@
 		}
 	};
 </script>
-<script type="text/javascript" src="/static/js/require.js" data-main="/static/js/admin/editDescription"></script>
+<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/admin/editDescription"></script>
 
 <div class="edit_desc_page contentarea">
-	<div class="contentarea">
+	<div>
 		<h2>Reviewing items</h2>
 		<c:set var="facetNodes" scope="request" value="${resultObject.path.facetNodes}"/>
 		<div class="results_header_hierarchy_path">
@@ -44,7 +44,7 @@
 		</div>
 	</div>
 
-	<div class="contentarea">
+	<div>
 		<div id="xml_editor"></div>
 	</div>
 </div>

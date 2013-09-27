@@ -98,6 +98,44 @@ public class JRDFGraphUtil {
 				tripleIter.close();
 		}
 	}
+	
+	public static List<String> getRelationshipLiteralObjects(Graph graph, PID pid, URI predicate) {
+		List<String> result = new ArrayList<String>();
+		ClosableIterator<Triple> tripleIter = null;
+		try {
+			URIReference subject = graph.getElementFactory().createResource(new URI("info:fedora/" + pid.getPid()));
+			URIReference pred = graph.getElementFactory().createResource(predicate);
+			Triple findTop = graph.getTripleFactory().createTriple(subject, pred, ANY_OBJECT_NODE);
+			tripleIter = graph.find(findTop);
+			
+			while (tripleIter.hasNext()) {
+				Triple t = tripleIter.next();
+				if (t.getObject() instanceof Literal) {
+					Literal n = (Literal) t.getObject();
+					result.add(n.getLexicalForm());
+				} if (t.getObject() instanceof URIReference) {
+					URIReference n = (URIReference) t.getObject();
+					result.add(n.getURI().toString());
+				}
+			}
+		} catch (GraphException e) {
+			log.error("programmer error: ", e);
+			throw new Error(e);
+		} catch (TripleFactoryException e) {
+			log.error("programmer error: ", e);
+			throw new Error(e);
+		} catch (GraphElementFactoryException e) {
+			log.error("programmer error: ", e);
+			throw new Error(e);
+		} catch (URISyntaxException e) {
+			log.error("programmer error: ", e);
+			throw new Error(e);
+		} finally {
+			if (tripleIter != null)
+				tripleIter.close();
+		}
+		return result;
+	}
 
 	public static List<URI> getRelationshipObjectURIs(Graph graph, PID pid, URI predicate) {
 		List<URI> result = new ArrayList<URI>();
@@ -295,6 +333,15 @@ public class JRDFGraphUtil {
 		}
 	}
 
+	public static void addFedoraRelationship(Graph graph, PID subject, ContentModelHelper.Relationship relationship, String literal) {
+		try {
+			addTriple(graph, new URI("info:fedora/" + subject.getPid()), relationship.getURI(), literal);
+		} catch (URISyntaxException e) {
+			log.error("Unexpected exception", e);
+			throw new Error("programmer error: ", e);
+		}
+	}
+	
 	public static void addFedoraProperty(Graph graph, PID subject, ContentModelHelper.FedoraProperty property, String literal) {
 		try {
 			addTriple(graph, new URI("info:fedora/" + subject.getPid()), property.getURI(), literal);

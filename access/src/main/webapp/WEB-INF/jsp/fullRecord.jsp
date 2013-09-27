@@ -27,12 +27,15 @@
 	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection || briefObject.resourceType == searchSettings.resourceTypeFolder}">
 		<c:import url="fullRecord/collectionRecord.jsp" />
+		<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/containerRecord"></script>
 	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeAggregate}">
 		<c:import url="fullRecord/aggregateRecord.jsp" />
+		<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/fullRecord"></script>
 	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile}">
 		<c:import url="fullRecord/fileRecord.jsp" />
+		<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/fullRecord"></script>
 	</c:when>
 </c:choose>
 </div>

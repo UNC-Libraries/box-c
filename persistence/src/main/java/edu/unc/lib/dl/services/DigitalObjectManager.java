@@ -18,7 +18,6 @@ package edu.unc.lib.dl.services;
 import java.io.File;
 import java.util.List;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
@@ -76,7 +75,7 @@ public interface DigitalObjectManager {
 	 *           log message
 	 * @return the list of deleted PIDs, including children
 	 */
-	public abstract List<PID> delete(PID pid, Agent user, String message) throws IngestException, NotFoundException;
+	public abstract List<PID> delete(PID pid, String user, String message) throws IngestException, NotFoundException;
 
 	/**
 	 * Inactivates (remove without purge) the specified object and updates any ancillary services. If a container is
@@ -117,7 +116,7 @@ public interface DigitalObjectManager {
 	 *           log message explaining this update
 	 */
 	public abstract String updateSourceData(PID object, String datastreamName, File newDataFile, String checksum,
-			String label, String mimetype, Agent user, String message) throws IngestException;
+			String label, String mimetype, String user, String message) throws IngestException;
 
 	/**
 	 * Updates the descriptive metadata for an object. The supplied file must be valid MODS XML and conform with
@@ -133,7 +132,7 @@ public interface DigitalObjectManager {
 	 *           log message explaining this action
 	 * @throws IngestException
 	 */
-	public abstract String updateDescription(PID pid, File newMODSFile, String checksum, Agent user, String message)
+	public abstract String updateDescription(PID pid, File newMODSFile, String checksum, String user, String message)
 			throws IngestException;
 
 	/**
@@ -147,10 +146,10 @@ public interface DigitalObjectManager {
 	 * @throws UpdateException
 	 */
 	public abstract String addOrReplaceDatastream(PID pid, Datastream datastream, File content, String mimetype,
-			Agent user, String message) throws UpdateException;
+			String user, String message) throws UpdateException;
 	
 	public abstract String addOrReplaceDatastream(PID pid, Datastream datastream, String label, File content,
-			String mimetype, Agent user, String message) throws UpdateException; 
+			String mimetype, String user, String message) throws UpdateException; 
 	
 	/**
 	 * Moves the specified objects from their current containers to another existing container. The destination path must
@@ -160,15 +159,15 @@ public interface DigitalObjectManager {
 	 *
 	 * @param movingPids
 	 *           a List of PIDs to move, in order for insert
-	 * @param destinationPath
-	 *           the repository path of the new parent container
+	 * @param destination
+	 *           the PID of the destination for this action
 	 * @param user
 	 *           agent performing this action
 	 * @param message
 	 *           log message explaining this action
 	 * @throws IngestException
 	 */
-	public abstract void move(List<PID> movingPids, String destinationPath, Agent user, String message)
+	public abstract void move(List<PID> moving, PID destination, String user, String message)
 			throws IngestException;
 
 	public abstract boolean isAvailable();

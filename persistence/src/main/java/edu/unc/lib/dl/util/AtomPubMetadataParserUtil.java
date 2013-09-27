@@ -136,8 +136,7 @@ public class AtomPubMetadataParserUtil {
 				dcOutStream.write("</dcterms:dc>".getBytes("UTF-8"));
 				ByteArrayInputStream inStream = new ByteArrayInputStream(dcOutStream.toByteArray());
 				org.jdom.Document jdomDocument = saxBuilder.build(inStream);
-				org.jdom.Element rootNode = new org.jdom.Element("dc", dcNamespace);
-				rootNode.addContent(jdomDocument.detachRootElement());
+				org.jdom.Element rootNode = jdomDocument.getRootElement();
 
 				if (defaultDatastream == null)
 					datastreamMap.put(ATOM_DC_DATASTREAM, rootNode);

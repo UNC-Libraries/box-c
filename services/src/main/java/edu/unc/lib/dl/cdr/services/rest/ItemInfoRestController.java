@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
@@ -32,14 +30,10 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -57,12 +51,10 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnable;
 import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.message.ActionMessage;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.IdListRequest;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
@@ -195,15 +187,13 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		return metadata;
 	}
 
-	@RequestMapping(value = "{prefix}/{id}/solrRecord/version", method = RequestMethod.GET)
+	@RequestMapping(value = "{id}/solrRecord/version", method = RequestMethod.GET)
 	public @ResponseBody
-	Long getItemLastIndexed(HttpServletResponse response, @PathVariable("prefix") String idPrefix,
-			@PathVariable("id") String id) {
-
+	Long getItemLastIndexed(@PathVariable("id") String id) {
 		// For when group forwarding is enabled here
 		/* AccessGroupSet groupSet = new AccessGroupSet(GroupsThreadStore.getGroups().split(";")); */
 		AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
-		SimpleIdRequest idRequest = new SimpleIdRequest(idPrefix + ":" + id, Arrays.asList("_version_"), groupSet);
+		SimpleIdRequest idRequest = new SimpleIdRequest(id, Arrays.asList("_version_"), groupSet);
 		BriefObjectMetadataBean md = solrSearchService.getObjectById(idRequest);
 		if (md == null || md.get_version_() == null)
 			return null;
@@ -212,7 +202,7 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 	
 	@RequestMapping(value = "solrRecord/version", method = RequestMethod.POST)
 	public @ResponseBody
-	Map<String, String> getItemLastIndexed(@RequestParam("ids") String idsString) {
+	Map<String, String> getItemsLastIndexed(@RequestParam("ids") String idsString) {
 		if (idsString == null)
 			return null;
 		
@@ -224,10 +214,10 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 		List<String> resultFields = Arrays.asList("_version_");
 		
 		IdListRequest listRequest = new IdListRequest(ids, resultFields, groupSet);
-		List<BriefObjectMetadataBean> listResults = solrSearchService.getObjectsById(listRequest);
+		List<BriefObjectMetadata> listResults = solrSearchService.getObjectsById(listRequest);
 		Map<String, String> results = new HashMap<String,String>(listResults.size());
 		
-		for (BriefObjectMetadataBean result: listResults) {
+		for (BriefObjectMetadata result: listResults) {
 			results.put(result.getId(), Long.toString(result.get_version_()));
 		}
 		

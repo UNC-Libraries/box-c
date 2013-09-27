@@ -254,4 +254,24 @@ public class MultivaluedHierarchicalFacetTest extends Assert {
 		
 		assertFalse(facet1.contains(facet2));
 	}
+	
+	@Test
+	public void parseSearchSyntax() {
+		MultivaluedHierarchicalFacet facet = new MultivaluedHierarchicalFacet("format", "image");
+		
+		MultivaluedHierarchicalFacetNode firstTier = (MultivaluedHierarchicalFacetNode) facet.getFacetNodes().get(0);
+		assertEquals("image", firstTier.getSearchKey());
+		assertEquals("image", facet.getLimitToValue());
+		assertEquals("^image", facet.getSearchValue());
+		assertEquals(1, firstTier.getTiers().size());
+		
+		facet = new MultivaluedHierarchicalFacet("format", "image/jpg");
+		
+		firstTier = (MultivaluedHierarchicalFacetNode) facet.getFacetNodes().get(0);
+		assertEquals("image", firstTier.getSearchKey());
+		MultivaluedHierarchicalFacetNode secondTier = (MultivaluedHierarchicalFacetNode) facet.getFacetNodes().get(1);
+		assertEquals("jpg", secondTier.getSearchKey());
+		assertEquals("image/jpg", facet.getLimitToValue());
+		assertEquals("/image^jpg", facet.getSearchValue());
+	}
 }

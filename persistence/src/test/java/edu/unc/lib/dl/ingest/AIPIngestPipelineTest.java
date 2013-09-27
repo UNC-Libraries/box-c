@@ -45,8 +45,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
 import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
@@ -55,7 +53,6 @@ import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
 import edu.unc.lib.dl.ingest.sip.SingleFolderSIP;
 import edu.unc.lib.dl.ingest.sip.SingleFolderSIPProcessor;
-import edu.unc.lib.dl.services.AgentManager;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -113,8 +110,7 @@ public class AIPIngestPipelineTest {
 	public void testProcessAIP() {
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/simple.zip"));
-		Agent user = new PersonAgent(new PID("cdr-test:142"), "Testy Testerson", "test");
-		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord("test", "test", DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/test/container/path";
@@ -170,8 +166,7 @@ public class AIPIngestPipelineTest {
 	public void testProcessBadAIP(String testfile) {
 		// testing for failed conversion of SIP w/simple content model
 		File testFile = tempCopy(new File(testfile));
-		Agent user = new PersonAgent(new PID("cdr-test:142"), "Testy Testerson", "test");
-		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord("test", "test", DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/test/container/path";
@@ -209,7 +204,7 @@ public class AIPIngestPipelineTest {
 	public void testProcessBigETDAIP() {
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/METS.xml"));
-		Agent user = AgentManager.getAdministrativeGroupAgentStub();
+		String user = ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI();
 		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
@@ -262,8 +257,7 @@ public class AIPIngestPipelineTest {
 	public void testProcessCollectionFolder() {
 		// testing for successful conversion of SIP w/simple content model
 		File testFile = tempCopy(new File("src/test/resources/coll_mods.xml"));
-		Agent user = new PersonAgent(new PID("cdr-test:142"), "Testy Testerson", "test");
-		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
+		DepositRecord record = new DepositRecord("test", "test", DepositMethod.Unspecified);
 		SingleFolderSIP sip = null;
 		ArchivalInformationPackage aip = null;
 		String containerPath = "/test/container/path";

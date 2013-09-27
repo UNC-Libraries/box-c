@@ -25,12 +25,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DateTimeUtil;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Encapsulates the complete set of access controls that apply to a particular object.
@@ -42,7 +45,11 @@ public class ObjectAccessControlsBean {
 	private static final Logger LOG = LoggerFactory.getLogger(ObjectAccessControlsBean.class);
 
 	PID object = null;
+	// Inherited or directly applied groups
 	Map<UserRole, Set<String>> baseRoleGroups = null;
+	// Global roles
+	Map<UserRole, Set<String>> globalRoleGroups = null;
+	// Roles after merging base, global and embargoes
 	Map<UserRole, Set<String>> activeRoleGroups = null;
 	List<Date> activeEmbargoes = null;
 
@@ -89,33 +96,100 @@ public class ObjectAccessControlsBean {
 	 * @param roles
 	 * @param embargoes
 	 */
-	@SuppressWarnings("unchecked")
 	public ObjectAccessControlsBean(PID pid, Map<String, ? extends Collection<String>> roles,
-			Collection<String> embargoes) {
+			Map<String, ? extends Collection<String>> globalRoles, Collection<String> embargoes) {
 		this.object = pid;
 		this.baseRoleGroups = new HashMap<UserRole, Set<String>>();
+		this.globalRoleGroups = new HashMap<UserRole, Set<String>>();
+		copyRoles(roles, this.baseRoleGroups);
+		copyRoles(globalRoles, this.globalRoleGroups);
+		extractEmbargoes(embargoes);
+		this.activeRoleGroups = this.mergeRoleGroupsAndEmbargoes();
+	}
+
+	/**
+	 * Construct a new access control bean by applying triples from an item on top of an existing access control bean as
+	 * if it were the parent for the new object
+	 * 
+	 * @param baseAcls
+	 *           parent objects access control information
+	 * @param pid
+	 *           pid of the new object
+	 * @param triples
+	 *           map of triples containing the access control of the new object
+	 */
+	public ObjectAccessControlsBean(ObjectAccessControlsBean baseAcls, PID pid, Map<String, List<String>> triples) {
+		this.object = pid;
+
+		List<String> inherit = triples.get(ContentModelHelper.CDRProperty.inheritPermissions.toString());
+		boolean inheritPermissions = inherit == null || inherit.size() == 0 || !"false".equals(inherit.get(0));
+
+		if (inheritPermissions) {
+			this.baseRoleGroups = new HashMap<UserRole, Set<String>>(baseAcls.baseRoleGroups);
+			if (baseAcls.activeEmbargoes != null)
+				this.activeEmbargoes = new ArrayList<Date>(baseAcls.activeEmbargoes);
+			// Remove non-inheritable roles (list)
+			if (this.baseRoleGroups.containsKey(UserRole.list))
+				this.baseRoleGroups.remove(UserRole.list);
+		} else {
+			this.baseRoleGroups = new HashMap<UserRole, Set<String>>();
+		}
+		if (baseAcls.globalRoleGroups != null)
+			this.globalRoleGroups = new HashMap<UserRole, Set<String>>(baseAcls.globalRoleGroups);
+
+		List<String> embargoes = triples.get(ContentModelHelper.CDRProperty.embargoUntil.toString());
+		this.extractEmbargoes(embargoes);
+
+		for (Entry<String, List<String>> tripleEntry : triples.entrySet()) {
+			int index = tripleEntry.getKey().indexOf('#');
+			if (index > 0) {
+				String namespace = tripleEntry.getKey().substring(0, index + 1);
+				if (JDOMNamespaceUtil.CDR_ROLE_NS.getURI().equals(namespace)) {
+					UserRole userRole = UserRole.getUserRole(tripleEntry.getKey());
+					if (inheritPermissions) {
+						Set<String> groups = this.baseRoleGroups.get(userRole);
+						if (groups == null) {
+							groups = new HashSet<String>(tripleEntry.getValue());
+							this.baseRoleGroups.put(userRole, groups);
+						} else
+							groups.addAll(tripleEntry.getValue());
+					} else {
+						Set<String> groups = new HashSet<String>(tripleEntry.getValue());
+						this.baseRoleGroups.put(userRole, groups);
+					}
+				}
+			}
+		}
+
+		this.activeRoleGroups = this.mergeRoleGroupsAndEmbargoes();
+	}
+
+	@SuppressWarnings("unchecked")
+	private static void copyRoles(Map<String, ? extends Collection<String>> roles, Map<UserRole, Set<String>> destination) {
+		if (roles == null)
+			return;
 		Iterator<?> roleIt = roles.entrySet().iterator();
 		while (roleIt.hasNext()) {
 			Map.Entry<String, Collection<String>> entry = (Map.Entry<String, Collection<String>>) roleIt.next();
 			UserRole userRole = UserRole.getUserRole(entry.getKey());
 			if (userRole != null) {
 				Set<String> groups = new HashSet<String>((Collection<String>) entry.getValue());
-				baseRoleGroups.put(userRole, groups);
+				destination.put(userRole, groups);
 			}
 		}
+	}
 
+	private void extractEmbargoes(Collection<String> embargoes) {
 		if (embargoes != null) {
 			this.activeEmbargoes = new ArrayList<Date>(embargoes.size());
 			for (String embargo : embargoes) {
 				try {
 					this.activeEmbargoes.add(DateTimeUtil.parsePartialUTCToDate(embargo));
 				} catch (ParseException e) {
-					LOG.warn("Failed to parse embargo " + embargo + " for object " + pid, e);
+					LOG.warn("Failed to parse embargo " + embargo, e);
 				}
 			}
 		}
-
-		this.activeRoleGroups = this.mergeRoleGroupsAndEmbargoes();
 	}
 
 	public Map<UserRole, Set<String>> getActiveRoleGroups() {
@@ -134,19 +208,25 @@ public class ObjectAccessControlsBean {
 		Map<UserRole, Set<String>> activeRoleGroups = null;
 		if (lastActiveEmbargo != null) {
 			activeRoleGroups = new HashMap<UserRole, Set<String>>();
-			for (Map.Entry<UserRole, Set<String>> roleGroups : this.baseRoleGroups.entrySet()) {
-				if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI)) {
-					activeRoleGroups.put(roleGroups.getKey(), roleGroups.getValue());
-				}
-			}
+			if (this.baseRoleGroups != null)
+				for (Map.Entry<UserRole, Set<String>> roleGroups : this.baseRoleGroups.entrySet())
+					if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI))
+						activeRoleGroups.put(roleGroups.getKey(), roleGroups.getValue());
+			if (this.globalRoleGroups != null)
+				for (Map.Entry<UserRole, Set<String>> roleGroups : this.globalRoleGroups.entrySet())
+					if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI))
+						activeRoleGroups.put(roleGroups.getKey(), roleGroups.getValue());
 		} else {
-			activeRoleGroups = this.baseRoleGroups;
+			activeRoleGroups = new HashMap<UserRole, Set<String>>(this.baseRoleGroups);
+			if (this.globalRoleGroups != null)
+				activeRoleGroups.putAll(this.globalRoleGroups);
 		}
 		return activeRoleGroups;
 	}
 
 	/**
 	 * Find the last active embargo date, if applicable
+	 * 
 	 * @return the embargo date or null
 	 */
 	public Date getLastActiveEmbargoUntilDate() {
@@ -155,7 +235,7 @@ public class ObjectAccessControlsBean {
 			Date dateNow = new Date();
 			for (Date embargoDate : this.activeEmbargoes) {
 				if (embargoDate.after(dateNow)) {
-					if(result == null || embargoDate.after(result)) {
+					if (result == null || embargoDate.after(result)) {
 						result = embargoDate;
 					}
 				}
@@ -247,7 +327,8 @@ public class ObjectAccessControlsBean {
 	/**
 	 * Determines if this access object contains roles matching any of the groups in the supplied access group set
 	 * 
-	 * @param groups group membershps
+	 * @param groups
+	 *           group membershps
 	 * @return true if any of the groups are associated with a role for this object
 	 */
 	public boolean containsAny(AccessGroupSet groups) {
@@ -264,15 +345,18 @@ public class ObjectAccessControlsBean {
 
 	/**
 	 * Determines if a user has a specific type of permission on this object, given a set of groups.
-	 * @param groups user memberships
-	 * @param permission the permission requested
+	 * 
+	 * @param groups
+	 *           user memberships
+	 * @param permission
+	 *           the permission requested
 	 * @return if permitted
 	 */
 	public boolean hasPermission(AccessGroupSet groups, Permission permission) {
 		Set<UserRole> roles = this.getRoles(groups);
 		return hasPermission(groups, permission, roles);
 	}
-	
+
 	public static boolean hasPermission(AccessGroupSet groups, Permission permission, Set<UserRole> roles) {
 		for (UserRole r : roles) {
 			if (r.getPermissions().contains(permission))
@@ -281,11 +365,13 @@ public class ObjectAccessControlsBean {
 		return false;
 	}
 
-	
 	/**
 	 * Determines if a user has a specific type of permission on this object, given a set of groups.
-	 * @param groups user memberships
-	 * @param permission the permission requested
+	 * 
+	 * @param groups
+	 *           user memberships
+	 * @param permission
+	 *           the permission requested
 	 * @return if permitted
 	 */
 	public boolean hasPermission(String[] groups, Permission permission) {
@@ -295,6 +381,23 @@ public class ObjectAccessControlsBean {
 				return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Retrieves the set of all permissions granted to a set of access groups
+	 * 
+	 * @param groups
+	 * @return
+	 */
+	public Set<String> getPermissionsByGroups(AccessGroupSet groups) {
+		Set<String> permissions = new HashSet<String>();
+		Set<UserRole> roles = this.getRoles(groups);
+		for (UserRole r : roles) {
+			for (Permission permission : r.getPermissions())
+				if (!permissions.contains(permission.name()))
+					permissions.add(permission.name());
+		}
+		return permissions;
 	}
 
 	/**

@@ -15,16 +15,20 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
+import edu.unc.lib.dl.search.solr.exception.InvalidFacetException;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
@@ -59,7 +63,7 @@ public class SearchStateFactory {
 		searchState.setResourceTypes(searchSettings.defaultResourceTypes);
 		searchState.setSearchTermOperator(searchSettings.defaultOperator);
 		searchState.setRowsPerPage(searchSettings.defaultPerPage);
-		searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.facetNames));
+		searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.searchFacetNames));
 		searchState.setStartRow(0);
 		searchState.setSortType("default");
 		searchState.setSortOrder(searchSettings.sortNormal);
@@ -150,11 +154,7 @@ public class SearchStateFactory {
 	 */
 	public SearchState createHierarchyListSearchState(){
 		SearchState searchState = createIDSearchState();
-		searchState.getResultFields().add(SearchFieldKeys.TITLE.name());
-		searchState.getResultFields().add(SearchFieldKeys.ANCESTOR_PATH.name());
-		searchState.getResultFields().add(SearchFieldKeys.ANCESTOR_NAMES.name());
-		searchState.getResultFields().add(SearchFieldKeys.RESOURCE_TYPE.name());
-		searchState.getResultFields().add(SearchFieldKeys.CONTENT_MODEL.name());
+		searchState.setResultFields(new ArrayList<String>(searchSettings.resultFields.get("structure")));
 		
 		List<String> containerTypes = new ArrayList<String>();
 		containerTypes.add(searchSettings.resourceTypeCollection);
@@ -168,6 +168,26 @@ public class SearchStateFactory {
 		return searchState;
 	}
 	
+	public SearchState createStructureBrowseSearchState(){
+		SearchState searchState = new SearchState();
+		searchState.setResultFields(new ArrayList<String>(searchSettings.resultFields.get("structure")));
+		searchState.setResourceTypes(searchSettings.defaultResourceTypes);
+		searchState.setSearchTermOperator(searchSettings.defaultOperator);
+		searchState.setRowsPerPage(0);
+		searchState.setStartRow(0);
+		
+		searchState.setSortType("collection");
+		searchState.setSortOrder(searchSettings.sortNormal);
+		
+		return searchState;
+	}
+	
+	public SearchState createStructureBrowseSearchState(Map<String,String[]> request){
+		SearchState searchState = createStructureBrowseSearchState();
+		populateSearchState(searchState, request);
+		return searchState;
+	}
+	
 	/**
 	 * Returns a search state representing the default navigation search state for a hierarchical
 	 * structure browse request.
@@ -175,7 +195,7 @@ public class SearchStateFactory {
 	 */
 	public SearchState createHierarchicalBrowseSearchState(){
 		SearchState searchState = new SearchState();
-		
+		searchState.setResultFields(new ArrayList<String>(searchSettings.resultFields.get("structure")));
 		searchState.setBaseFacetLimit(searchSettings.facetsPerGroup);
 		searchState.setResourceTypes(searchSettings.defaultResourceTypes);
 		searchState.setSearchTermOperator(searchSettings.defaultOperator);
@@ -246,6 +266,43 @@ public class SearchStateFactory {
 		return null;
 	}
 	
+	private void populateQueryableFields(SearchState searchState, Map<String,String[]> request){
+		Map<String,String> searchFields = searchState.getSearchFields();
+		Map<String,SearchState.RangePair> rangeFields = searchState.getRangeFields();
+		Map<String,Object> facetFields = searchState.getFacets();
+		
+		Iterator<Entry<String, String[]>> paramIt = request.entrySet().iterator();
+		while (paramIt.hasNext()) {
+			Entry<String, String[]> param = paramIt.next();
+			if (param.getValue().length == 0)
+				continue;
+			String key = searchSettings.searchFieldKey(param.getKey());
+			if (key == null)
+				continue;
+			String value;
+			try {
+				value = URLDecoder.decode(param.getValue()[0], "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				continue;
+			}
+			if (searchSettings.searchableFields.contains(key)) {
+				searchFields.put(key, value);
+			} else if (searchSettings.facetNames.contains(key)) {
+				try {
+					facetFields.put(key, this.facetFieldFactory.createFacet(key, value));
+				} catch (InvalidFacetException e) {
+					log.debug("Invalid facet " + key + " with value " + value, e);
+				}
+			} else if (searchSettings.rangeSearchableFields.contains(key)) {
+				try {
+					rangeFields.put(key, new SearchState.RangePair(value));
+				} catch (ArrayIndexOutOfBoundsException e){
+					//An invalid range was specified, throw away the term pair
+				}
+			}
+		}
+	}
+	
 	
 	/**
 	 * Populates the attributes of the given SearchState object with search state 
@@ -256,67 +313,10 @@ public class SearchStateFactory {
 	 * search state in the request.
 	 */
 	private void populateSearchState(SearchState searchState, Map<String,String[]> request){
-		//Retrieve search fields
-		String parameter = getParameter(request, searchSettings.searchStateParam("SEARCH_FIELDS"));
-		HashMap<String,String> searchFields = new HashMap<String,String>();
-		if (parameter != null){
-			String parameterArray[] = parameter.split("\\|");
-			for (String parameterPair: parameterArray){
-				String parameterPairArray[] = parameterPair.split(":", 2);
-				//if a field label is specified, store the search term under it.
-				if (parameterPairArray.length > 1 && parameterPairArray[1].trim().length() > 0){
-					String key = searchSettings.searchFieldKey(parameterPairArray[0]);
-					if (key != null)
-						searchFields.put(key, parameterPairArray[1]);
-				}
-			}
-			searchState.setSearchFields(searchFields);
-		}
-
-		//retrieve range fields
-		parameter = getParameter(request, searchSettings.searchStateParam("RANGE_FIELDS"));
-		HashMap<String,SearchState.RangePair> rangeFields = new HashMap<String,SearchState.RangePair>();
-		if (parameter != null){
-			String parameterArray[] = parameter.split("\\|");
-			for (String parameterPair: parameterArray){
-				try {
-					String parameterPairArray[] = parameterPair.split(":", 2);
-					String rangeEndpoints[] = parameterPairArray[1].split(",");
-					String key = searchSettings.searchFieldKey(parameterPairArray[0]);
-					if (key != null)
-						rangeFields.put(key, new SearchState.RangePair(rangeEndpoints[0], rangeEndpoints[1]));
-				} catch (ArrayIndexOutOfBoundsException e){
-					//An invalid range was specified, throw away the term pair
-				}
-			}
-			searchState.setRangeFields(rangeFields);
-		}
-		
-		//retrieve facet fields
-		parameter = getParameter(request, searchSettings.searchStateParam("FACET_FIELDS"));
-		HashMap<String,Object> facets = new HashMap<String,Object>();
-		if (parameter != null){
-			String parameterArray[] = parameter.split("\\|");
-			for (String parameterPair: parameterArray){
-				String parameterPairArray[] = parameterPair.split(":", 2);
-				//if a field label is specified, store the facet under it.
-				if (parameterPairArray.length > 1){
-					try {
-						String key = searchSettings.searchFieldKey(parameterPairArray[0]);
-						if (key != null)
-							facets.put(key, this.facetFieldFactory.createFacet(key, parameterPairArray[1]));
-					} catch (InvalidHierarchicalFacetException e) {
-						log.debug("Invalid hierarchical facet for " + parameterPair);
-						log.debug("Root cause", e);
-					}
-					
-				}
-			}
-			searchState.setFacets(facets);
-		}
+		populateQueryableFields(searchState, request);
 		
 		//retrieve facet limits
-		parameter = getParameter(request, searchSettings.searchStateParam("FACET_LIMIT_FIELDS"));
+		String parameter = getParameter(request, searchSettings.searchStateParam("FACET_LIMIT_FIELDS"));
 		if (parameter != null){
 			HashMap<String,Integer> facetLimits = new HashMap<String,Integer>();
 			String parameterArray[] = parameter.split("\\|");
@@ -395,12 +395,12 @@ public class SearchStateFactory {
 		
 		//Set sort
 		parameter = getParameter(request, searchSettings.searchStateParam("SORT_TYPE"));
-		if (parameter != null){
-			searchState.setSortType(parameter);
-			//Set sort order
-			parameter = getParameter(request, searchSettings.searchStateParam("SORT_ORDER"));
-			if (parameter != null){
-				searchState.setSortOrder(parameter);
+		if (parameter != null) {
+			String[] sortParts = parameter.split(",");
+			if (sortParts.length > 0) {
+				searchState.setSortType(sortParts[0]);
+				if (sortParts.length == 2)
+					searchState.setSortOrder(sortParts[1]);
 			}
 		}
 		

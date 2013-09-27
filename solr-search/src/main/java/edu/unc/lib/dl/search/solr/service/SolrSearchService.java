@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -42,6 +43,7 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
@@ -138,7 +140,8 @@ public class SolrSearchService {
 		return null;
 	}
 
-	public List<BriefObjectMetadataBean> getObjectsById(IdListRequest listRequest) {
+	@SuppressWarnings("unchecked")
+	public List<BriefObjectMetadata> getObjectsById(IdListRequest listRequest) {
 		QueryResponse queryResponse = null;
 		SolrQuery solrQuery = new SolrQuery();
 		StringBuilder query = new StringBuilder("*:* ");
@@ -183,8 +186,9 @@ public class SolrSearchService {
 			LOG.error("Error retrieving Solr object request: " + e);
 			return null;
 		}
-
-		return queryResponse.getBeans(BriefObjectMetadataBean.class);
+		
+		List<?> results = queryResponse.getBeans(BriefObjectMetadataBean.class);
+		return (List<BriefObjectMetadata>)results;
 	}
 
 	/**
@@ -207,17 +211,13 @@ public class SolrSearchService {
 	 */
 	public SearchResultResponse getSearchResults(SearchRequest searchRequest, boolean returnQuery) {
 		LOG.debug("In getSearchResults: " + searchRequest.getSearchState());
-
-		boolean isRetrieveFacetsRequest = searchRequest.getSearchState().getFacetsToRetrieve() != null
-				&& searchRequest.getSearchState().getFacetsToRetrieve().size() > 0;
-
-		SolrQuery solrQuery = this.generateSearch(searchRequest, isRetrieveFacetsRequest);
-
+		
+		SolrQuery solrQuery = this.generateSearch(searchRequest);
+		
 		LOG.debug("getSearchResults query: " + solrQuery);
 		try {
 			SearchResultResponse resultResponse = executeSearch(solrQuery, searchRequest.getSearchState(),
-					isRetrieveFacetsRequest, returnQuery);
-
+					searchRequest.isRetrieveFacets(), returnQuery);
 			// Add in the correct rollup representatives when they are missing.
 			if (searchRequest.getSearchState().getRollup() != null && searchRequest.getSearchState().getRollup()) {
 				for (BriefObjectMetadata item : resultResponse.getResultList()) {
@@ -253,16 +253,21 @@ public class SolrSearchService {
 	 * @throws AccessRestrictionException
 	 *            thrown if no groups are provided.
 	 */
+	protected StringBuilder addAccessRestrictions(StringBuilder query) throws AccessRestrictionException {
+		return this.addAccessRestrictions(query, null);
+	}
+	
 	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups)
 			throws AccessRestrictionException {
 		return this.addAccessRestrictions(query, accessGroups, searchSettings.getAllowPatronAccess());
 	}
-		
 	
 	protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups, boolean allowPatronAccess)
 			throws AccessRestrictionException {
 		if (accessGroups == null || accessGroups.size() == 0) {
-			throw new AccessRestrictionException("No access groups were provided.");
+			accessGroups = GroupsThreadStore.getGroups();
+			if (accessGroups == null || accessGroups.size() == 0)
+				throw new AccessRestrictionException("No access groups were provided.");
 		}
 		if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)) {
 			String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
@@ -380,6 +385,17 @@ public class SolrSearchService {
 			return null;
 		return (Date) queryResponse.getResults().get(0).getFieldValue("timestamp");
 	}
+	
+	public BriefObjectMetadata addSelectedContainer(String containerPid, SearchState searchState, boolean applyCutoffs) {
+		BriefObjectMetadata selectedContainer = getObjectById(new SimpleIdRequest(containerPid));
+		if (selectedContainer == null)
+			return null;
+		CutoffFacet selectedPath = selectedContainer.getPath();
+		if (applyCutoffs)
+			selectedPath.setCutoff(selectedPath.getHighestTier() + 1);
+		searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedPath);
+		return selectedContainer;
+	}
 
 	/**
 	 * Wrapper method for executing a solr query.
@@ -400,8 +416,8 @@ public class SolrSearchService {
 	 * @param isRetrieveFacetsRequest
 	 * @return
 	 */
-	protected SolrQuery generateSearch(SearchRequest searchRequest, boolean isRetrieveFacetsRequest) {
-		SearchState searchState = searchRequest.getSearchState();
+	protected SolrQuery generateSearch(SearchRequest searchRequest) {
+		SearchState searchState = (SearchState) searchRequest.getSearchState();
 		SolrQuery solrQuery = new SolrQuery();
 		StringBuilder termQuery = new StringBuilder();
 		
@@ -413,7 +429,7 @@ public class SolrSearchService {
 			while (searchTypeIt.hasNext()) {
 				searchType = searchTypeIt.next();
 				List<String> searchFragments = SolrSettings.getSearchTermFragments(searchState.getSearchFields().get(searchType));
-				if (searchFragments != null) {
+				if (searchFragments != null && searchFragments.size() > 0) {
 					if (termQuery.length() > 0)
 						termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
 					LOG.debug(searchType + ": " + searchFragments);
@@ -521,7 +537,7 @@ public class SolrSearchService {
 				if (searchState.getSortOrder() != null && searchState.getSortOrder().equals(searchSettings.sortReverse)) {
 					sortOrder = sortOrder.reverse();
 				}
-				solrQuery.addSortField(solrSettings.getFieldName(sortField.getFieldName()), sortOrder);
+				solrQuery.addSort(solrSettings.getFieldName(sortField.getFieldName()), sortOrder);
 			}
 		}
 
@@ -532,10 +548,22 @@ public class SolrSearchService {
 		}
 
 		// Turn on faceting
-		solrQuery.setFacet(true);
-		solrQuery.setFacetMinCount(1);
-		solrQuery.setFacetLimit(searchState.getBaseFacetLimit());
-
+		if (searchRequest.isRetrieveFacets()) {
+			solrQuery.setFacet(true);
+			solrQuery.setFacetMinCount(1);
+			if (searchState.getBaseFacetLimit() != null)
+				solrQuery.setFacetLimit(searchState.getBaseFacetLimit());
+			
+			if (searchState.getFacetsToRetrieve() != null) {
+				// Add facet fields
+				for (String facetName : searchState.getFacetsToRetrieve()) {
+					String facetField = solrSettings.getFieldName(facetName);
+					if (facetField != null)
+						solrQuery.addFacetField(solrSettings.getFieldName(facetName));
+				}
+			}
+		}
+		
 		// Override the base facet limit if overrides are given.
 		if (searchState.getFacetLimits() != null) {
 			for (Entry<String, Integer> facetLimit : searchState.getFacetLimits().entrySet()) {
@@ -543,16 +571,7 @@ public class SolrSearchService {
 						.toString());
 			}
 		}
-
-		if (isRetrieveFacetsRequest && searchState.getFacetsToRetrieve() != null) {
-			// Add facet fields
-			for (String facetName : searchState.getFacetsToRetrieve()) {
-				String facetField = solrSettings.getFieldName(facetName);
-				if (facetField != null)
-					solrQuery.addFacetField(solrSettings.getFieldName(facetName));
-			}
-		}
-
+		
 		// Add facet limits
 		Map<String, Object> facets = searchState.getFacets();
 		if (facets != null) {
@@ -573,7 +592,7 @@ public class SolrSearchService {
 		}
 
 		// Scope hierarchical facet results to the highest tier selected within the facet tree
-		if (isRetrieveFacetsRequest && searchRequest.isApplyFacetPrefixes() && searchState.getFacetsToRetrieve() != null) {
+		if (searchRequest.isRetrieveFacets() && searchRequest.isApplyCutoffs() && searchState.getFacetsToRetrieve() != null) {
 			Set<String> facetsQueried = searchState.getFacets().keySet();
 			// Apply closing cutoff to all cutoff facets that are being retrieved but not being queried for
 			for (String fieldKey : searchState.getFacetsToRetrieve()) {
@@ -592,7 +611,8 @@ public class SolrSearchService {
 		}
 
 		// Set Navigation options
-		solrQuery.setStart(searchState.getStartRow());
+		if (searchState.getStartRow() != null)
+			solrQuery.setStart(searchState.getStartRow());
 		if (searchState.getRowsPerPage() != null)
 			solrQuery.setRows(searchState.getRowsPerPage());
 
@@ -706,7 +726,7 @@ public class SolrSearchService {
 
 		queryResponse = server.query(solrQuery);
 		if (queryResponse.getResults().getNumFound() > 0) {
-			return queryResponse.getResults().get(0).getFirstValue(field);
+			return queryResponse.getResults().get(0).getFieldValue(field);
 		}
 		return null;
 	}

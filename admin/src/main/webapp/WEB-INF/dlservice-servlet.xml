@@ -86,25 +86,21 @@
 	</bean>
 
 	<bean id="submitService" class="edu.unc.lib.dl.service.impl.SubmitServiceImpl">
-		<property name="agentManager" ref="agentManager" />
 		<property name="digitalObjectManager" ref="digitalObjectManager" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 
 	<bean id="fixityReplicationService" class="edu.unc.lib.dl.service.impl.FixityReplicationServiceImpl">
-		<property name="agentManager" ref="agentManager" />
 		<property name="managementClient" ref="managementClient" />
 	</bean>
 
 
 	<bean id="updateService" class="edu.unc.lib.dl.service.impl.UpdateServiceImpl">
-		<property name="agentManager" ref="agentManager" />
 		<property name="digitalObjectManager" ref="digitalObjectManager" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 
 	<bean id="userManagementService" class="edu.unc.lib.dl.service.impl.UserManagementServiceImpl">
-		<property name="agentManager" ref="agentManager" />
 	</bean>
 
 	<bean id="itemInfoService" class="edu.unc.lib.dl.service.impl.ItemInfoServiceImpl">
@@ -201,7 +197,6 @@
 	<!-- Add endpoints here -->
 
 	<bean id="deleteObjectsEndpoint" class="edu.unc.lib.dl.ws.DeleteObjectsEndpoint">
-		<property name="agentManager" ref="agentManager" />
 		<property name="digitalObjectManager" ref="digitalObjectManager" />
 	</bean>
 
@@ -426,6 +421,20 @@
 		<property name="jmsTemplate" ref="jmsTemplate" />
 	</bean>
 	<!-- END OF REMOTE BEANS -->
+	
+	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject">
+			<ref local="tripleStoreQueryService" />
+		</property>
+		<property name="targetMethod">
+			<value>fetchByRepositoryPath</value>
+		</property>
+		<property name="arguments">
+			<list>
+				<value>/Collections</value>
+			</list>
+		</property>
+	</bean>
 
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
 		<property name="managementClient" ref="managementClient"/>
@@ -440,6 +449,7 @@
 		<property name="batchIngestTaskFactory" ref="batchIngestTaskFactory"/>
 		<property name="available" value="true"/>
 		<property name="submitterGroupsOverride" value="${admin.access.groups}"/>
+		<property name="collectionsPid" ref="collectionsPid"/>
 	</bean>
 	
 	<bean id="batchIngestQueue" class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">
@@ -455,7 +465,6 @@
 		<property name="accessClient" ref="accessClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
-		<property name="agentFactory" ref="agentManager"/>
 		<property name="saveFinishedBatches" value="false"/>
 		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
@@ -492,7 +501,6 @@
 			<map>
 				<entry key="edu.unc.lib.dl.ingest.sip.METSPackageSIP"
 					value-ref="metsPackageSIPProcessor" />
-				<entry key="edu.unc.lib.dl.ingest.sip.AgentSIP" value-ref="personAgentSIPProcessor" />
 				<entry key="edu.unc.lib.dl.ingest.sip.SingleFileSIP"
 					value-ref="singleFileSIPProcessor" />
 				<entry key="edu.unc.lib.dl.ingest.sip.SingleFolderSIP"
@@ -505,11 +513,6 @@
 		init-method="init">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 		<property name="verifyUnique" value="false" />
-	</bean>
-
-	<bean id="personAgentSIPProcessor" class="edu.unc.lib.dl.ingest.sip.AgentSIPProcessor">
-		<property name="pidGenerator" ref="pidGenerator" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 
 	<bean id="singleFileSIPProcessor" class="edu.unc.lib.dl.ingest.sip.SingleFileSIPProcessor">
@@ -571,7 +574,6 @@
 		<property name="managementClient" ref="managementClient"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="folderManager" ref="folderManager"/>
-		<property name="agentManager" ref="agentManager"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="initialAdministrators">
 			<map>
@@ -580,11 +582,6 @@
 		</property>
 		<property name="autoinitialize" value="${auto.initialize.repo}"/>
 		<property name="initialBatchIngestDir" value="${initial.batch.ingest.dir}"/>
-	</bean>
-
-	<bean name="agentManager" class="edu.unc.lib.dl.services.AgentManager">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-		<property name="digitalObjectManager" ref="digitalObjectManager" />
 	</bean>
 
 	<bean name="folderManager" class="edu.unc.lib.dl.services.FolderManager">

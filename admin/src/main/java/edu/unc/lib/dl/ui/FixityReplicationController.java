@@ -28,7 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.support.RequestContext;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.FixityReplicationObject;
 import edu.unc.lib.dl.schema.UserGroupDAO;
@@ -99,14 +98,6 @@ public class FixityReplicationController extends CommonAdminObjectNavigationCont
 			//	frobject.setBadFixityFile(badFixityFile.getBytes());
 			} else {
 				logger.debug("bad fixity file is NULL");
-			}
-
-			try {
-				Agent mediator = agentManager.findPersonByOnyen(request.getRemoteUser(), false);
-
-			} catch (Exception e) {
-				dao.setMessage(e.getLocalizedMessage().replace("\n", "<br />\n"));
-				noErrors = false;
 			}
 
 			frobject.setAdminOnyen(request.getRemoteUser());

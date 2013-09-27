@@ -415,7 +415,6 @@
 		<property name="accessClient" ref="accessClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
-		<property name="agentFactory" ref="agentFactory"/>
 		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
 	</bean>
@@ -443,10 +442,6 @@
 		<property name="host" value="${smtp.host}"/>
 		<property name="port" value="${smtp.port}"/>
 		<property name="defaultEncoding" value="UTF-8"/>
-	</bean>
-	
-	<bean name="agentFactory" class="edu.unc.lib.dl.agents.AgentFactory">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 
 	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">

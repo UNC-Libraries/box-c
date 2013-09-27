@@ -17,11 +17,12 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.exception.OrphanedObjectException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
@@ -78,6 +79,26 @@ public abstract class AbstractIndexDocumentFilter implements IndexDocumentFilter
 		DocumentIndexingPackage parentDIP = dipFactory.createDocumentIndexingPackage(parentPID);
 		dip.setParentDocument(parentDIP);
 		return parentDIP;
+	}
+	
+	protected Map<String, List<String>> retrieveTriples(DocumentIndexingPackage dip) {
+		Map<String, List<String>> triples;
+		if (dip.getFoxml() == null) {
+			if (dip.getTriples() == null) {
+				triples = tsqs.fetchAllTriples(dip.getPid());
+				dip.setTriples(triples);
+			} else triples = dip.getTriples();
+		} else {
+			triples = dip.getTriples();
+		}
+		return triples;
+	}
+	
+	protected String getFirstTripleValue(Map<String, List<String>> triples, String property) { 
+		List<String> values = triples.get(property);
+		if (values == null || values.size() == 0)
+			return null;
+		return values.get(0);
 	}
 
 	public void setTripleStoreQueryService(TripleStoreQueryService tsqs) {

@@ -20,14 +20,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 
 public class ContentUIP extends FedoraObjectUIP {
 
-	public ContentUIP(PID pid, PersonAgent user, UpdateOperation operation) {
+	public ContentUIP(PID pid, String user, UpdateOperation operation) {
 		super(pid, user, operation);
 	}
 	

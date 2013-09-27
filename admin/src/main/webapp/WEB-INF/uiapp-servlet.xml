@@ -82,7 +82,6 @@
 	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.FixedLocaleResolver"/>
 
 	<bean id="uiUtilityMethods" class="edu.unc.lib.dl.ui.util.UiUtilityMethods" lazy-init="true">
-		<property name="agentManager" ref="agentManager"/>
 		<property name="folderManager" ref="folderManager"/>
     </bean>
 
@@ -127,7 +126,6 @@
 	<bean id="deleteObjectController" class="edu.unc.lib.dl.ui.DeleteObjectController"
 		lazy-init="true">
 		<property name="uiWebService" ref="uiWebService"/>
-		<property name="agentManager" ref="agentManager"/>
 		<property name="folderManager" ref="folderManager"/>
 		<property name="digitalObjectManager" ref="digitalObjectManager" />
 		<property name="commandClass" value="edu.unc.lib.dl.schema.DeleteObjectDAO"/>
@@ -143,7 +141,6 @@
 	<bean id="moveObjectController" class="edu.unc.lib.dl.ui.MoveObjectController"
 		lazy-init="true">
 		<property name="uiWebService" ref="uiWebService"/>
-		<property name="agentManager" ref="agentManager"/>
 		<property name="folderManager" ref="folderManager"/>
 		<property name="digitalObjectManager" ref="digitalObjectManager" />
 		<property name="commandClass" value="edu.unc.lib.dl.schema.MoveObjectDAO"/>
@@ -159,7 +156,6 @@
 	<bean id="updateObjectController" class="edu.unc.lib.dl.ui.UpdateObjectController"
 		lazy-init="true">
 		<property name="uiWebService" ref="uiWebService"/>
-		<property name="agentManager" ref="agentManager"/>
 		<property name="folderManager" ref="folderManager"/>
 		<property name="digitalObjectManager" ref="digitalObjectManager" />
 		<property name="commandClass" value="edu.unc.lib.dl.util.UpdateObjectDAO"/>
@@ -193,7 +189,6 @@
 		<property name="formView" value="fixityreplication"/>
 		<property name="successView" value="fixityreplication"/>
 		<property name="uiWebService" ref="uiWebService"/>
-		<property name="agentManager" ref="agentManager"/>
 		<property name="folderManager" ref="folderManager"/>
 		<property name="uiUtilityMethods" ref="uiUtilityMethods"/>
 		<property name="baseUrl" value="${admin.base.path}"/>		
@@ -206,7 +201,6 @@
 		<property name="formView" value="metsubmitbypid"/>
 		<property name="successView" value="metsubmitbypid"/>
 		<property name="uiWebService" ref="uiWebService"/>
-		<property name="agentManager" ref="agentManager"/>
 		<property name="folderManager" ref="folderManager"/>
 		<property name="uiUtilityMethods" ref="uiUtilityMethods"/>
 		<property name="metsIngestObjectUrl"
@@ -224,7 +218,6 @@
 		<property name="formView" value="mediated"/>
 		<property name="successView" value="mediated"/>
 		<property name="uiWebService" ref="uiWebService"/>
-		<property name="agentManager" ref="agentManager"/>
 		<property name="folderManager" ref="folderManager"/>
 		<property name="validator" ref="mediatedSubmitValidator"/>
 		<property name="uiUtilityMethods" ref="uiUtilityMethods"/>
@@ -256,7 +249,6 @@
 		<property name="formView" value="createcollection"/>
 		<property name="successView" value="createcollection"/>
 		<property name="uiWebService" ref="uiWebService"/>
-		<property name="agentManager" ref="agentManager"/>
 		<property name="folderManager" ref="folderManager"/>
 		<property name="validator" ref="createCollectionValidator"/>
 		<property name="uiUtilityMethods" ref="uiUtilityMethods"/>
@@ -376,11 +368,6 @@
 				<property name="targetNamespace" value="${admin.namespace}"/>
 			</bean>
 		</property>
-	</bean>
-
-	<bean name="agentManager" class="edu.unc.lib.dl.services.AgentManager">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 	</bean>
 
 	<bean name="folderManager" class="edu.unc.lib.dl.services.FolderManager">

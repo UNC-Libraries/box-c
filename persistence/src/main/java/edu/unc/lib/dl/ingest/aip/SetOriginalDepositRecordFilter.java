@@ -15,9 +15,6 @@
  */
 package edu.unc.lib.dl.ingest.aip;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
@@ -80,7 +77,7 @@ public class SetOriginalDepositRecordFilter implements AIPIngestFilter {
 				"Deposit recorded", dr.getPid());
 		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(dr.getPid().getPid());
 		FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.label, "Deposit by "
-				+ dr.getDepositedBy().getName() + " via "
+				+ dr.getDepositedBy() + " via "
 				+ dr.getMethod().getLabel());
 		FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.state, "Active");
 		FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.ownerId, "fedoraAdmin");
@@ -94,8 +91,7 @@ public class SetOriginalDepositRecordFilter implements AIPIngestFilter {
 		rdfaip.saveFOXMLDocument(dr.getPid(), foxml);
 		JRDFGraphUtil.addFedoraProperty(g, dr.getPid(), FedoraProperty.hasModel, Model.DEPOSIT_RECORD.getURI());
 		if (dr.getDepositedBy() != null) {
-			JRDFGraphUtil.addFedoraPIDRelationship(g, dr.getPid(),
-					Relationship.depositedBy, dr.getDepositedBy().getPID());
+			JRDFGraphUtil.addFedoraRelationship(g, dr.getPid(), Relationship.depositedBy, dr.getDepositedBy());
 		}
 		if (dr.getOnBehalfOf() != null) {
 			JRDFGraphUtil.addCDRProperty(g, dr.getPid(),

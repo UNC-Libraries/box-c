@@ -18,6 +18,7 @@ package edu.unc.lib.dl.search.solr.model;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -102,7 +103,7 @@ public class FacetFieldFactory {
 		return new FacetFieldObject(fieldKey, values);
 	}
 
-	public void addMissingFacetFieldObjects(FacetFieldList facetFieldList, List<String> allFacetNames) {
+	public void addMissingFacetFieldObjects(FacetFieldList facetFieldList, Collection<String> allFacetNames) {
 		for (String facetName : allFacetNames) {
 			if (!facetFieldList.contains(facetName))
 				facetFieldList.add(createFacetFieldObject(facetName, null));

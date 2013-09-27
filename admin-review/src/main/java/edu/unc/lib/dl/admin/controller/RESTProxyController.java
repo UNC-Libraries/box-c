@@ -90,6 +90,7 @@ public class RESTProxyController {
 			
 			// Forward the user's groups along with the request
 			method.addRequestHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER, GroupsThreadStore.getGroupString());
+			method.addRequestHeader("On-Behalf-Of", GroupsThreadStore.getUsername());
 
 			// Execute the method
 			client.executeMethod(method);

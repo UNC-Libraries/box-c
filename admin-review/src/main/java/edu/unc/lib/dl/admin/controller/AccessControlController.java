@@ -66,11 +66,9 @@ public class AccessControlController extends AbstractSwordController {
 				solrSettings.getFieldName(SearchFieldKeys.READ_GROUP.name()) };
 	}
 
-	@RequestMapping(value = "acl/{prefix}/{id}", method = RequestMethod.GET)
-	public String getAccessControl(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id, Model model,
+	@RequestMapping(value = "acl/{pid}", method = RequestMethod.GET)
+	public String getAccessControl(@PathVariable("pid") String pid, Model model,
 			HttpServletResponse response) {
-		String pid = idPrefix + ":" + id;
-
 		model.addAttribute("pid", pid);
 
 		// Retrieve ancestor information about the targeted object
@@ -162,12 +160,10 @@ public class AccessControlController extends AbstractSwordController {
 		return "edit/accessControl";
 	}
 
-	@RequestMapping(value = "acl/{prefix}/{id}", method = RequestMethod.PUT)
+	@RequestMapping(value = "acl/{pid}", method = RequestMethod.PUT)
 	public @ResponseBody
-	String saveAccessControl(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
+	String saveAccessControl(@PathVariable("pid") String pid,
 			HttpServletRequest request, HttpServletResponse response) {
-
-		String pid = idPrefix + ":" + id;
 		String datastream = "ACL";
 
 		return this.updateDatastream(pid, datastream, request, response);

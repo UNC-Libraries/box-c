@@ -28,30 +28,30 @@
  * @author Ben Pennell
  */
 ;
-function Xsd2Json(xsd, options) {
+function Xsd2Json(xsd, options, imports) {
 	var defaults = {
-		"schemaURI": "",
-		"rootElement": null,
-		"generateRoot": false
+		schemaURI: "",
+		rootElement: null,
+		generateRoot: false,
+		isImported : false
 	};
 	this.options = $.extend({}, defaults, options);
 	this.xsNS = "http://www.w3.org/2001/XMLSchema";
 	this.xsPrefix = "xs:";
-	$.xmlns['xs'] = this.xsNS;
 	this.xsd = null;
-	this.imports = {};
+	if (imports)
+		this.imports = imports;
+	else this.imports = {};
 	this.rootDefinitions = {};
-	this.elements = {};
 	this.types = {};
-	this.attributes = {};
 	this.namespaces = {
 			"xml": "http://www.w3.org/XML/1998/namespace",
 			"xmlns": "http://www.w3.org/2000/xmlns/",
 			"html": "http://www.w3.org/1999/xhtml/"
 	};
 	this.namespacePrefixes = {};
-	this.defaultNS = null;
 	this.targetNS = null;
+	this.targetPrefix = null;
 	this.root = null;
 	
 	//if (xsd instanceof File){
@@ -73,7 +73,6 @@ function Xsd2Json(xsd, options) {
 };
 
 Xsd2Json.prototype.importAjax = function(url, originalAttempt) {
-	// console.log("importing" + url);
 	var originalURL = url;
 	// Prefer a local copy to the remote since likely can't get the remote copy due to cross domain ajax restrictions
 	if (!originalAttempt)
@@ -84,10 +83,8 @@ Xsd2Json.prototype.importAjax = function(url, originalAttempt) {
 		dataType: "text",
 		async: false,
 		success: function(data){
-			console.time("xsd2json" + self.options.rootElement);
-			self.xsd = $($($.parseXML(data)).children("xs|schema")[0]);
+			self.xsd = $.parseXML(data).documentElement;
 			self.processSchema();
-			console.timeEnd("xsd2json" + self.options.rootElement);
 		}, error: function() {
 			if (!originalAttempt)
 				throw new Error("Unable to import " + url);
@@ -96,73 +93,104 @@ Xsd2Json.prototype.importAjax = function(url, originalAttempt) {
 	});
 };
 
+Xsd2Json.prototype.getChildren = function(node, childName, nameAttribute) {
+	var children = [];
+	if (!node)
+		node = this.xsd;
+	var childNameSpecified = childName !== undefined;
+	var attributeSpecified = nameAttribute !== undefined;
+	var childNodes = node.childNodes;
+	for (var index in childNodes) {
+		var child = childNodes[index];
+		if (child.nodeType == 1 && child.namespaceURI == this.xsNS && 
+				((childNameSpecified && child.localName == childName) || (!childNameSpecified && child.localName != 'annotation')) &&
+				(!attributeSpecified || child.getAttribute('name') == nameAttribute))
+			children.push(child);
+	}
+	return children;
+}
+
 Xsd2Json.prototype.processSchema = function() {
 	var self = this;
 	// Extract all the namespaces in use by this schema
-	$.each(this.xsd[0].attributes, function(){
-		var namespaceIndex = this.nodeName.indexOf("xmlns");
+	for (var i = 0; i < this.xsd.attributes.length; i++) {
+		var attr = this.xsd.attributes[i];
+		if (!attr.specified)
+			continue;
+		var namespaceIndex = attr.nodeName.indexOf("xmlns");
 		if (namespaceIndex == 0){
-			namespacePrefix = this.nodeName.substring(5).replace(":", "");
+			namespacePrefix = attr.nodeName.substring(5).replace(":", "");
 			// Local namespaces
-			self.namespaces[namespacePrefix] = this.nodeValue;
-			if (namespacePrefix == "")
-				self.defaultNS = this.nodeValue;
+			self.namespaces[namespacePrefix] = attr.nodeValue;
 			// Store the namespace prefix for the xs namespace
-			if (this.nodeValue == self.xsNS){
+			if (attr.nodeValue == self.xsNS){
 				self.xsPrefix = namespacePrefix;
 				if (self.xsPrefix != "")
 					self.xsPrefix = self.xsPrefix + ":";
 			}
 		}
-	});
+	}
 	// Store namespaces so the prefixes can be found by uri
 	$.each(this.namespaces, function(prefix, uri){
 		self.namespacePrefixes[uri] = prefix;
 	});
 	// Store the target namespace of this schema.
-	this.targetNS = this.xsd.attr("targetNamespace");
+	this.targetNS = this.xsd.getAttribute("targetNamespace");
+	this.targetPrefix = this.namespacePrefixes[this.targetNS];
+	if (this.targetPrefix.length > 0)
+		this.targetPrefix += ':';
 	// Load all of the imported schemas
-	this.xsd.children("xs|import").each(function(){
-		var importXSD = new Xsd2Json($(this).attr("schemaLocation"), $.extend({}, self.options, {"rootElement": null, "generateRoot": false}));
-		var namespace = $(this).attr("namespace");
-		self.imports[namespace] = importXSD;
-	});
-	// Begin constructing the element tree, either from a root element or from a generated root
-	if (this.options.rootElement != null || this.options.generateRoot) {
-		var selected = null;
-		if (this.options.rootElement != null)
-			selected = this.xsd.children("xs|element[name='" + this.options.rootElement + "']")[0];
-		else selected = this.xsd[0];
-		try {
-			if (this.options.rootElement != null)
-				this.root = this.buildElement(selected);
-			else this.root = this.buildSchema(selected);
-			// Add namespace prefixes to match the scoping of this document
-			this.adjustPrefixes(this.root);
-		} catch (e) {
-			console.log(e);
+	var imports = this.getChildren(this.xsd, 'import');
+	this.imports[this.targetNS] = this;
+	for (var index in imports) {
+		var importNode = imports[index];
+		var importNamespace = importNode.getAttribute('namespace');
+		if (importNamespace in this.imports) {
+			// Circular import or already imported by another schema
+		} else {
+			new Xsd2Json(importNode.getAttribute("schemaLocation"), $.extend({}, self.options, {rootElement: null, isImported : true}), this.imports);
 		}
+	}
+	// Begin constructing the element tree, either from a root element or the schema element
+	var selected = null;
+	if (this.options.rootElement != null)
+		selected = this.getChildren(this.xsd, "element", this.options.rootElement)[0];
+	else selected = this.xsd;
+	try {
+		this.processingStarted = true;
+		if (this.options.rootElement != null)
+			this.root = this.buildElement(selected);
+		else this.root = this.buildSchema(selected);
+		// Add namespace prefixes to match the scoping of this document
+		this.adjustPrefixes(this.root, []);
+		if (!this.options.isImported)
+			this.resolveDefinitions(this.root, []);
+	} catch (e) {
+		console.log(e);
 	}
 };
 
-Xsd2Json.prototype.adjustPrefixes = function(object) {
-	if (object.typeRef == null) {
-		if (object.name.indexOf(":") == -1){
-			// Replace object name's prefix with the relative
-			var prefix = this.namespacePrefixes[object.namespace];
-			if (prefix != null && prefix != "") {
-				object.name = prefix + ":" + object.name;
-			}
-			object.nameEsc = object.name.replace(':', '-');
-		} else {
-			return;
+
+Xsd2Json.prototype.adjustPrefixes = function(object, objectStack) {
+	if (object.name.indexOf(":") == -1){
+		// Replace object name's prefix with the relative
+		var prefix = this.namespacePrefixes[object.namespace];
+		if (prefix != null && prefix != "") {
+			object.name = prefix + ":" + object.name;
 		}
+	}
+	if (object.typeRef == null) {
 		// Adjust all the children
 		if (object.element || object.schema) {
 			var self = this;
-			$.each(object.elements, function(){
-				self.adjustPrefixes(this);
-			});
+			if (object.elements) {
+				objectStack.push(object);
+				$.each(object.elements, function(){
+					if ($.inArray(this, objectStack) == -1)
+						self.adjustPrefixes(this, objectStack);
+				});
+				objectStack.pop();
+			}
 			if (object.attributes != null) {
 				$.each(object.attributes, function(){
 					self.adjustPrefixes(this);
@@ -177,6 +205,34 @@ Xsd2Json.prototype.adjustPrefixes = function(object) {
 	}
 };
 
+Xsd2Json.prototype.resolveDefinition = function(object) {
+	if (object.schemaObject) {
+		var schemas = object.schemaObject;
+		var references = object.reference;
+		delete object.schemaObject;
+		delete object.reference;
+		for (var i = 0; i < schemas.length; i++){
+			this.mergeType(object, this.resolveDefinition(schemas[i].rootDefinitions[references[i]]));
+		}
+	}
+	return object;
+};
+
+Xsd2Json.prototype.resolveDefinitions = function(object, objectStack) {
+	this.resolveDefinition(object);
+	if (object.element || object.schema) {
+		if (object.elements) {
+			objectStack.push(object);
+			for (var i in object.elements) 
+				if ($.inArray(object.elements[i], objectStack) == -1)
+					this.resolveDefinitions(object.elements[i], objectStack);
+			objectStack.pop();
+		}
+		for (var i in object.attributes) 
+			this.resolveDefinitions(object.attributes[i]);
+	}
+};
+
 Xsd2Json.prototype.buildSchema = function(node) {
 	var object = {
 		"name": "",
@@ -185,30 +241,39 @@ Xsd2Json.prototype.buildSchema = function(node) {
 		"schema": true
 	};
 	var self = this;
-	$(node).children().not("xs|annotation").each(function(){
-		if (self.xsEq(this, "element")) {
-			self.buildElement(this, object);
-		}
-	});
+	var children = this.getChildren(node);
+	for (var i in children) {
+		var child = children[i];
+		if (child.localName == 'element')
+			this.buildElement(child, object);
+	}
 	return object;
 };
 
 Xsd2Json.prototype.buildElement = function(node, parentObject) {
 	var definition = null;
-	var name = $(node).attr("name");
+	var name = node.getAttribute("name");
+	if (node.parentNode === this.xsd && name in this.rootDefinitions) {
+		return this.rootDefinitions[name];
+	}
 	
-	var hasSubGroup = $(node).attr("substitutionGroup") != null;
-	var hasRef = $(node).attr("ref") != null;
+	var hasSubGroup = node.getAttribute("substitutionGroup") != null;
+	var hasRef = node.getAttribute("ref") != null;
 	if (hasSubGroup || hasRef){
 		definition = this.execute(node, 'buildElement');
 		if (hasSubGroup) {
-			definition = $.extend({}, definition, {'name' : name, 'localName' : name});
+			definition = $.extend({}, definition, {'name' : name, 'localName' : this.stripPrefix(name)});
+			if (node.parentNode === this.xsd && !hasRef) {
+				if (name == 'namePart')
+					debugger;
+				this.rootDefinitions[name] = definition;
+			}
 		}
 	} else {
 		// Element has a name, means its a new element
 		definition = {
 				"name": name,
-				"localName" : name,
+				"localName" : this.stripPrefix(name),
 				"elements": [],
 				"attributes": [],
 				"values": [],
@@ -217,13 +282,17 @@ Xsd2Json.prototype.buildElement = function(node, parentObject) {
 				"element": true
 		};
 		
-		var type = $(node).attr("type");
+		if (node.parentNode === this.xsd) {
+			this.rootDefinitions[name] = definition;
+		}
+		
+		var type = node.getAttribute("type");
 		if (type == null) {
-			this.buildType($(node).children().not("xs|annotation")[0], definition);
+			this.buildType(this.getChildren(node)[0], definition);
 		} else {
 			definition.type = this.resolveType(type, definition);
 			if (definition.type == null) {
-				var typeDef = this.execute($(node)[0], 'buildType', definition);
+				var typeDef = this.execute(node, 'buildType', definition);
 				// If there was a previously defined type, then store a reference to it
 				if (typeDef !== undefined) {
 					definition.typeRef = typeDef;
@@ -232,40 +301,35 @@ Xsd2Json.prototype.buildElement = function(node, parentObject) {
 		}
 	}
 	
-	if ($(node).parents().length == 1 && !hasRef) {
-		this.rootDefinitions[name] = definition;
-	}
-	
-	if (parentObject != null && $(node).attr("abstract") != "true")
+	if (parentObject != null && node.getAttribute("abstract") != "true")
 		parentObject.elements.push(definition);
 	
 	return definition;
 }
 
 Xsd2Json.prototype.buildAttribute = function(node, parentObject) {
-	
 	var definition = null;
-	var name = $(node).attr("name");
+	var name = node.getAttribute("name");
 	
-	var hasRef = $(node).attr("ref") != null;
+	var hasRef = node.getAttribute("ref") != null;
 	if (hasRef){
 		definition = this.execute(node, 'buildAttribute');
 	} else {
 		definition = {
 				"name": name,
-				"localName" : name,
+				"localName" : this.stripPrefix(name),
 				"values": [],
 				"namespace": this.targetNS,
 				"attribute": true
 			};
 		
-		var type = $(node).attr("type");
+		var type = node.getAttribute("type");
 		if (type == null) {
-			this.buildType($(node).children().not("xs|annotation")[0], definition);
+			this.buildType(this.getChildren(node)[0], definition);
 		} else {
 			definition.type = this.resolveType(type, definition);
 			if (definition.type == null) {
-				var typeDef = this.execute($(node)[0], 'buildType', definition);
+				var typeDef = this.execute(node, 'buildType', definition);
 				// If there was a previously defined type, then store a reference to it
 				if (typeDef !== undefined) {
 					definition.typeRef = typeDef;
@@ -274,7 +338,7 @@ Xsd2Json.prototype.buildAttribute = function(node, parentObject) {
 		}
 	}
 	
-	if ($(node).parents().length == 1 && !hasRef) {
+	if (node.parentNode === this.xsd && !hasRef) {
 		this.rootDefinitions[name] = definition;
 	}
 	
@@ -289,11 +353,10 @@ Xsd2Json.prototype.buildType = function(node, object) {
 		return;
 	var needsMerge = false;
 	var extendingObject = object;
-	var name = $(node).attr("name");
+	var name = node.getAttribute("name");
 	if (name != null){
 		// If this type has already been processed, then apply it
 		if (name in this.rootDefinitions) {
-			// console.log("Reusing type " + name);
 			this.mergeType(object, this.types[name]);
 			return;
 		}
@@ -310,11 +373,11 @@ Xsd2Json.prototype.buildType = function(node, object) {
 		needsMerge = true;
 	}
 	
-	if (this.xsEq(node, "complexType")) {
+	if (node.localName == "complexType") {
 		this.buildComplexType(node, extendingObject);
-	} else if (this.xsEq(node, "simpleType")) {
+	} else if (node.localName == "simpleType") {
 		this.buildSimpleType(node, extendingObject);
-	} else if (this.xsEq(node, "restriction")) {
+	} else if (node.localName == "restriction") {
 		this.buildRestriction(node, extendingObject);
 	}
 	
@@ -325,43 +388,45 @@ Xsd2Json.prototype.buildType = function(node, object) {
 
 Xsd2Json.prototype.buildComplexType = function(node, object) {
 	var self = this;
-	if ($(node).attr("mixed") == "true") {
+	if (node.getAttribute("mixed") == "true") {
 		object.type = "mixed";
 	}
-	$(node).children().not("xs|annotation").each(function(){
-		if (self.xsEq(this, "group")) {
-			self.execute(this, 'buildGroup', object);
-		} else if (self.xsEq(this, "simpleContent")) {
-			self.buildSimpleContent(this, object);
-		} else if (self.xsEq(this, "complexContent")) {
-			self.buildComplexContent(this, object);
-		} else if (self.xsEq(this, "choice")) {
-			self.buildChoice(this, object);
-		} else if (self.xsEq(this, "attribute")) {
-			self.buildAttribute(this, object);
-		} else if (self.xsEq(this, "attributeGroup")) {
-			self.execute(this, 'buildAttributeGroup', object);
-		} else if (self.xsEq(this, "sequence")) {
-			self.buildSequence(this, object);
-		} else if (self.xsEq(this, "all")) {
-			self.buildAll(this, object);
+	var children = this.getChildren(node);
+	for (var i in children) {
+		var child = children[i];
+		if (child.localName == "group") {
+			self.execute(child, 'buildGroup', object);
+		} else if (child.localName == "simpleContent") {
+			self.buildSimpleContent(child, object);
+		} else if (child.localName == "complexContent") {
+			self.buildComplexContent(child, object);
+		} else if (child.localName == "choice") {
+			self.buildChoice(child, object);
+		} else if (child.localName == "attribute") {
+			self.buildAttribute(child, object);
+		} else if (child.localName == "attributeGroup") {
+			self.execute(child, 'buildAttributeGroup', object);
+		} else if (child.localName == "sequence") {
+			self.buildSequence(child, object);
+		} else if (child.localName == "all") {
+			self.buildAll(child, object);
 		}
-	});
+	}
 };
 
 Xsd2Json.prototype.buildSimpleType = function(node, object) {
-	var child = $(node).children().not("xs|annotation").first()[0];
-	if (this.xsEq(child, "restriction")) {
+	var child = this.getChildren(node)[0];
+	if (child.localName == "restriction") {
 		this.buildRestriction(child, object);
-	} else if (this.xsEq(child, "list")) {
+	} else if (child.localName == "list") {
 		this.buildList(child, object);
-	} else if (this.xsEq(child, "union")) {
+	} else if (child.localName == "union") {
 		this.buildUnion(child, object);
 	}
 };
 
 Xsd2Json.prototype.buildList = function(node, object) {
-	var itemType = $(node).attr('itemType');
+	var itemType = node.getAttribute('itemType');
 	object.type = this.resolveType(itemType, object);
 	if (object.type == null) {
 		this.execute(node, 'buildType', object);
@@ -370,99 +435,115 @@ Xsd2Json.prototype.buildList = function(node, object) {
 };
 
 Xsd2Json.prototype.buildUnion = function(node, object) {
-	var memberTypes = $(node).attr('memberTypes').split(" ");
+	var memberTypes = node.getAttribute('memberTypes');
+	if (memberTypes) {
+		memberTypes = memberTypes.split(' ');
+		var self = this;
+		for (var i in memberTypes) {
+			var memberType = memberTypes[i];
+			var xsdObj = self.resolveXSD(memberType);
+			var targetNode = xsdObj.getChildren(null, 'simpleType', memberType)[0];
+			xsdObj.buildType(targetNode, object);
+		}
+	}
 	var self = this;
-	$.each(memberTypes, function(){
-		var xsdObj = self.resolveXSD(this);
-		var targetNode = xsdObj.xsd.children("xs|simpleType[name='" + this + "']")[0];
-		xsdObj.buildType(targetNode, object);
-	});
+	var children = this.getChildren(node, 'simpleType');
+	for (var i in children)
+		self.buildSimpleType(children[i], object);
 };
 
 Xsd2Json.prototype.buildGroup = function(node, object) {
 	var self = this;
-	$(node).children().each(function(){
-		if (self.xsEq(this, "choice")) {
-			self.buildChoice(this, object);
-		} else if (self.xsEq(this, "all")) {
-			self.buildAll(this, object);
-		} else if (self.xsEq(this, "sequence")) {
-			self.buildSequence(this, object);
+	var children = this.getChildren(node);
+	for (var i in children) {
+		var child = children[i];
+		if (child.localName == "choice")  {
+			self.buildChoice(child, object);
+		} else if (child.localName == "all") {
+			self.buildAll(child, object);
+		} else if (child.localName == "sequence") {
+			self.buildSequence(child, object);
 		}
-	});
+	}
 };
 
 Xsd2Json.prototype.buildAll = function(node, object) {
 	var self = this;
-	$(node).children().each(function(){
-		if (self.xsEq(this, "element")) {
-			self.buildElement(this, object);
+	var children = this.getChildren(node);
+	for (var i in children) {
+		var child = children[i];
+		if (child.localName == "element") {
+			self.buildElement(child, object);
 		}
-	});
+	}
 };
 
 Xsd2Json.prototype.buildChoice = function(node, object) {
 	var self = this;
-	$(node).children().each(function(){
-		if (self.xsEq(this, "element")) {
-			self.buildElement(this, object);
-		} else if (self.xsEq(this, "group")) {
-			self.execute(this, 'buildGroup', object);
-		} else if (self.xsEq(this, "choice")) {
-			self.buildChoice(this, object);
-		} else if (self.xsEq(this, "sequence")) {
-			self.buildSequence(this, object);
-		} else if (self.xsEq(this, "any")) {
-			self.buildAny(this, object);
+	var children = this.getChildren(node);
+	for (var i in children) {
+		var child = children[i];
+		if (child.localName == "element") {
+			self.buildElement(child, object);
+		} else if (child.localName == "group") {
+			self.execute(child, 'buildGroup', object);
+		} else if (child.localName == "choice") {
+			self.buildChoice(child, object);
+		} else if (child.localName == "sequence") {
+			self.buildSequence(child, object);
+		} else if (child.localName == "any") {
+			self.buildAny(child, object);
 		}
-	});
+	}
 };
 
 Xsd2Json.prototype.buildSequence = function(node, object) {
 	var self = this;
-	$(node).children().each(function(){
-		if (self.xsEq(this, "element")) {
-			self.buildElement(this, object);
-		} else if (self.xsEq(this, "group")) {
-			self.execute(this, 'buildGroup', object);
-		} else if (self.xsEq(this, "choice")) {
-			self.buildChoice(this, object);
-		} else if (self.xsEq(this, "sequence")) {
-			self.buildSequence(this, object);
-		} else if (self.xsEq(this, "any")) {
-			self.buildAny(this, object);
+	var children = this.getChildren(node);
+	for (var i in children) {
+		var child = children[i];
+		if (child.localName == "element") {
+			self.buildElement(child, object);
+		} else if (child.localName == "group") {
+			self.execute(child, 'buildGroup', object);
+		} else if (child.localName == "choice") {
+			self.buildChoice(child, object);
+		} else if (child.localName == "sequence") {
+			self.buildSequence(child, object);
+		} else if (child.localName == "any") {
+			self.buildAny(child, object);
 		}
-	});
+	}
 };
 
 Xsd2Json.prototype.buildAny = function(node, object) {
-	object.any = !($(node).attr("minOccurs") == "0" && $(node).attr("maxOccurs") == "0");
+	object.any = !(node.getAttribute("minOccurs") == "0" && node.getAttribute("maxOccurs") == "0");
 };
 
 Xsd2Json.prototype.buildComplexContent = function(node, object) {
-	if ($(node).attr("mixed") == "true") {
+	if (node.getAttribute("mixed") == "true") {
 		object.type = "mixed";
 	}
 	
-	var child = $(node).children().not("xs|annotation")[0];
-	if (this.xsEq(child, "extension")) {
+	var child = this.getChildren(node)[0];
+	if (child.localName == "extension") {
 		this.buildExtension(child, object);
-	} else if (this.xsEq(child, "restriction")) {
+	} else if (child.localName == "restriction") {
 		this.buildRestriction(child, object);
 	}
 };
 
 Xsd2Json.prototype.buildSimpleContent = function(node, object) {
-	var child = $(node).children().not("xs|annotation")[0];
-	if (this.xsEq(child, "extension")) {
+	var child = this.getChildren(node)[0];
+	if (child.localName == "extension") {
 		this.buildExtension(child, object);
-	} else if (this.xsEq(child, "restriction")) {
+	} else if (child.localName == "restriction") {
 		this.buildRestriction(child, object);
 	}
 };
 
 Xsd2Json.prototype.buildRestriction = function(node, object) {
-	var base = $(node).attr("base");
+	var base = node.getAttribute("base");
 	
 	object.type = this.resolveType(base, object);
 	if (object.type == null) {
@@ -471,29 +552,31 @@ Xsd2Json.prototype.buildRestriction = function(node, object) {
 			this.mergeType(object, typeDef);
 	}
 	var self = this;
-	$(node).children().each(function(){
-		if (self.xsEq(this, "enumeration")){
-			object.values.push($(this).attr("value"));
-		} else if (self.xsEq(this, "group")) {
-			self.execute(this, 'buildGroup', object);
-		} else if (self.xsEq(this, "choice")) {
-			self.buildChoice(this, object);
-		} else if (self.xsEq(this, "attribute")) {
-			self.buildAttribute(this, object);
-		} else if (self.xsEq(this, "attributeGroup")) {
-			self.execute(this, 'buildAttributeGroup', object);
-		} else if (self.xsEq(this, "sequence")) {
-			self.buildSequence(this, object);
-		} else if (self.xsEq(this, "all")) {
-			self.buildAll(this, object);
-		} else if (self.xsEq(node, "simpleType")) {
-			self.buildSimpleType(this, object);
+	var children = this.getChildren(node);
+	for (var i in children) {
+		var child = children[i];
+		if (child.localName == "enumeration") {
+			object.values.push(child.getAttribute("value"));
+		} else if (child.localName == "group") {
+			self.execute(child, 'buildGroup', object);
+		} else if (child.localName == "choice") {
+			self.buildChoice(child, object);
+		} else if (child.localName == "attribute") {
+			self.buildAttribute(child, object);
+		} else if (child.localName == "attributeGroup") {
+			self.execute(child, 'buildAttributeGroup', object);
+		} else if (child.localName == "sequence") {
+			self.buildSequence(child, object);
+		} else if (child.localName == "all") {
+			self.buildAll(child, object);
+		} else if (child.localName == "simpleType") {
+			self.buildSimpleType(child, object);
 		}
-	});
+	}
 };
 
 Xsd2Json.prototype.buildExtension = function(node, object) {
-	var base = $(node).attr("base");
+	var base = node.getAttribute("base");
 	
 	object.type = this.resolveType(base, object);
 	if (object.type == null) {
@@ -502,37 +585,40 @@ Xsd2Json.prototype.buildExtension = function(node, object) {
 			this.mergeType(object, typeDef);
 	}
 	var self = this;
-	$(node).children().each(function(){
-		if (self.xsEq(this, "attribute")){
-			self.buildAttribute(this, object);
-		} else if (self.xsEq(this, "attributeGroup")){
-			self.execute(this, 'buildAttributeGroup', object);
-		} else if (self.xsEq(this, "sequence")){
-			self.buildSequence(this, object);
-		} else if (self.xsEq(this, "all")) {
-			self.buildAll(this, object);
-		} else if (self.xsEq(this, "choice")) {
-			self.buildChoice(this, object);
-		} else if (self.xsEq(this, "group")) {
-			self.buildGroup(this, object);
+	var children = this.getChildren(node);
+	for (var i in children) {
+		var child = children[i];
+		if (child.localName == "attribute") {
+			self.buildAttribute(child, object);
+		} else if (child.localName == "attributeGroup") {
+			self.execute(child, 'buildAttributeGroup', object);
+		} else if (child.localName == "sequence") {
+			self.buildSequence(child, object);
+		} else if (child.localName == "all") {
+			self.buildAll(child, object);
+		} else if (child.localName == "choice") {
+			self.buildChoice(child, object);
+		} else if (child.localName == "group") {
+			self.buildGroup(child, object);
 		}
-	});
+	}
 };
 
 Xsd2Json.prototype.buildAttributeGroup = function(node, object) {
-	var self = this;
-	$(node).children().each(function(){
-		if (self.xsEq(this, "attribute")){
-			self.buildAttribute(this, object);
-		} else if (self.xsEq(this, "attributeGroup")){
-			self.execute(this, 'buildAttributeGroup', object);
+	var children = this.getChildren(node);
+	for (var i in children) {
+		var child = children[i];
+		if (child.localName == "attribute") {
+			this.buildAttribute(child, object);
+		} else if (child.localName == "attributeGroup") {
+			this.execute(child, 'buildAttributeGroup', object);
 		}
-	});
+	}
 };
 
 Xsd2Json.prototype.execute = function(node, fnName, object) {
-	var resolveName = $(node).attr("ref") || $(node).attr("substitutionGroup") 
-			|| $(node).attr("type") || $(node).attr("base");
+	var resolveName = node.getAttribute("ref") || node.getAttribute("substitutionGroup") 
+			|| node.getAttribute("type") || node.getAttribute("base");
 	var targetNode = node;
 	var xsdObj = this;
 	var name = resolveName;
@@ -540,23 +626,21 @@ Xsd2Json.prototype.execute = function(node, fnName, object) {
 			|| (this.xsPrefix != "" && resolveName.indexOf(this.xsPrefix) == -1)) {
 		xsdObj = this.resolveXSD(resolveName);
 		var unprefixedName = this.stripPrefix(name);
+		var prefixedName = xsdObj.targetPrefix + unprefixedName;
 		//Check for cached version of the definition
 		if (unprefixedName in xsdObj.rootDefinitions){
 			var definition = xsdObj.rootDefinitions[unprefixedName];
 			if (definition != null) {
-				/*if ($(node).attr("type") || $(node).attr("base")){
-					this.mergeType(object, definition);
-					return object;
-				}*/
 				return definition;
 			}
 		}
-		
-		targetNode = xsdObj.xsd.children("*[name='" + this.stripPrefix(name) + "']")[0];
+		// Schema reference is not initialized yet, therefore it is a circular reference
+		if (!xsdObj.processingStarted && xsdObj !== this)
+			return {name: prefixedName, schemaObject : [xsdObj], reference : [prefixedName]};
+		targetNode = xsdObj.getChildren(xsdObj.xsd, undefined, unprefixedName)[0];
 	} 
 	
 	try {
-		// console.log(fnName);
 		return xsdObj[fnName](targetNode, object);
 	} catch (error) {
 		$("body").append("<br/>" + name + ": " + error + " ");
@@ -572,9 +656,9 @@ Xsd2Json.prototype.stripPrefix = function(name) {
 Xsd2Json.prototype.resolveXSD = function(name) {
 	if (name != null){
 		var index = name.indexOf(":");
-		var nameNamespace = index == -1? null: name.substring(0, index);
-		var prefix = this.namespaces[nameNamespace];
-		var xsdObj = this.imports[prefix];
+		var prefix = index == -1? null: name.substring(0, index);
+		var namespace = this.namespaces[prefix];
+		var xsdObj = this.imports[namespace];
 		if (xsdObj == null)
 			xsdObj = this;
 		return xsdObj;
@@ -596,18 +680,17 @@ Xsd2Json.prototype.resolveType = function(type, object) {
 	return null;
 };
 
-Xsd2Json.prototype.xsEq = function(node, name) {
-	return node.localName == name && node.namespaceURI == "http://www.w3.org/2001/XMLSchema";
-};
-
 Xsd2Json.prototype.mergeType = function(base, type) {
-	$.each(type, function(key, value){
-		if (value != null && base[key] == null){
-			base[key] = value;
-		} else if ($.isArray(value) && $.isArray(type[key])){
-			base[key] = base[key].concat(value);
+	for (var key in type) {
+		if (type.hasOwnProperty(key)) {
+			var value = type[key];
+			if (value != null && base[key] == null){
+				base[key] = value;
+			} else if ($.isArray(value) && $.isArray(type[key])){
+				base[key] = base[key].concat(value);
+			}
 		}
-	});
+	}
 };
 
 Xsd2Json.prototype.getSchema = function() {
