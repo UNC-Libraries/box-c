@@ -297,8 +297,13 @@
 	}
 }*/
 
+.searchitem_container_count {
+	color: #444;
+}
+
 .itemdetails > div > .status {
 	font-size: 0.7em;
+	color: #444;
 }
 
 .res_entry > .creator > div {

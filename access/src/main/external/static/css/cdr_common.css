@@ -2,7 +2,7 @@ body {
 	text-align: center;
 	font-family: verdana, sans-serif;
 	background-color: #ececec;
-	color: #666;
+	color: #222;
 	font-size: 12px;
 	line-height: 17px;
 }
@@ -133,12 +133,12 @@ body {
 /** Typography */
 
 a {
-	color: #555;
+	color: #1A698C;
 	text-decoration: none;
 }
 
 a:hover {
-	color: #e98d60;
+	color: #2193AF;
 	text-decoration: underline;
 }
 

@@ -68,16 +68,11 @@ public class RequestAccessController extends AbstractSolrSearchController {
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String initalizeForm(Model model) {
-		return this.initalizeForm(null, null, model);
+		return this.initalizeForm(null, model);
 	}
 
-	@RequestMapping(value = "/{idPrefix}/{id}", method = RequestMethod.GET)
-	public String initalizeForm(@PathVariable("idPrefix") String idPrefix, @PathVariable("id") String idSuffix,
-			Model model) {
-		String id = null;
-		if (idSuffix != null)
-			id = idPrefix + ":" + idSuffix;
-		
+	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
+	public String initalizeForm(@PathVariable("id") String id, Model model) {
 		RequestAccessForm requestAccessForm = new RequestAccessForm();
 		model.addAttribute("requestAccessForm", requestAccessForm);
 
@@ -85,7 +80,7 @@ public class RequestAccessController extends AbstractSolrSearchController {
 		if (id != null)
 			this.setFormAttributes(id, model);
 		model.addAttribute("reCaptcha", this.reCaptcha.createRecaptchaHtml("", "clean", null));
-		
+
 		model.addAttribute("menuId", "contact");
 
 		return "forms/requestAccessForm";
@@ -94,16 +89,13 @@ public class RequestAccessController extends AbstractSolrSearchController {
 	@RequestMapping(method = RequestMethod.POST)
 	public String submitForm(@ModelAttribute("requestAccessForm") RequestAccessForm requestAccessForm,
 			BindingResult results, Model model, SessionStatus status, HttpServletRequest request) {
-		return this.submitForm(requestAccessForm, results, null, null, model, status, request);
+		return this.submitForm(requestAccessForm, results, null, model, status, request);
 	}
 
-	@RequestMapping(value = "/{idPrefix}/{id}", method = RequestMethod.POST)
+	@RequestMapping(value = "/{id}", method = RequestMethod.POST)
 	public String submitForm(@ModelAttribute("requestAccessForm") RequestAccessForm requestAccessForm,
-			BindingResult results, @PathVariable("idPrefix") String idPrefix, @PathVariable("id") String idSuffix,
+			BindingResult results, @PathVariable("id") String id,
 			Model model, SessionStatus status, HttpServletRequest request) {
-		String id = null;
-		if (idSuffix != null)
-			id = idPrefix + ":" + idSuffix;
 
 		requestAccessForm.setRemoteAddr(request.getServerName());
 		model.addAttribute("requestAccessForm", requestAccessForm);
@@ -111,7 +103,7 @@ public class RequestAccessController extends AbstractSolrSearchController {
 
 		// Validate form
 		validator.validate(requestAccessForm, results);
-		
+
 		if (id != null)
 			this.setFormAttributes(id, model);
 
@@ -125,12 +117,13 @@ public class RequestAccessController extends AbstractSolrSearchController {
 		emailProperties.put("form", requestAccessForm);
 		emailProperties.put("serverName", request.getServerName());
 		this.emailService.sendContactEmail(null, requestAccessForm.getEmailAddress(), null, null, emailProperties);
-		
+
 		// Send user confirmation email
-		this.userResponseEmailService.sendContactEmail(null, null, null, Arrays.asList(requestAccessForm.getEmailAddress()), emailProperties);
+		this.userResponseEmailService.sendContactEmail(null, null, null,
+				Arrays.asList(requestAccessForm.getEmailAddress()), emailProperties);
 
 		model.addAttribute("success", true);
-		
+
 		return "forms/requestAccessForm";
 	}
 

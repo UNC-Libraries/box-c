@@ -47,11 +47,9 @@
 			</c:choose>
 		</c:set>
 		
-		<a class="thumb_link">
-			<div class="large thumb_container">
-				<img id="thumb_main" class="largethumb" src="${thumbUrl}"/>
-				<span><img src="/static/images/lockedstate.gif"/></span>
-			</div>
+		<a class="thumb_link large thumb_container">
+			<img id="thumb_main" class="largethumb" src="${thumbUrl}"/>
+			<span><img src="/static/images/lockedstate_large.gif"/></span>
 		</a>
 		<div class="collinfo">
 			<h2><c:out value="${briefObject.title}" /></h2>
@@ -92,7 +90,7 @@
 				</div>
 			</c:if>
 			<div class="actionlink left">
-				<a href="/requestAccess/${briefObject.pid.path}">Request Access</a>
+				<a href="/requestAccess/${briefObject.pid.pid}">Request Access</a>
 			</div>
 			
 			<c:if test="${briefObject['abstractText'] != null}">
@@ -115,9 +113,11 @@
 				</c:url>
 				<a href="<c:out value='${loginUrl}' />">log in</a> or
 			</c:if>
-			<a href="/requestAccess/${briefObject.pid.path}">request access</a>.
+			<a href="/requestAccess/${briefObject.pid.pid}">request access</a>.
 		</p>
 	</div>
 </div>
 
-<c:import url="fullRecord/neighborList.jsp" />
+<c:if test="${briefObject.resourceType == searchSettings.resourceTypeFile || briefObject.resourceType == searchSettings.resourceTypeAggregate}">
+	<c:import url="fullRecord/neighborList.jsp" />
+</c:if>

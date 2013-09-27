@@ -49,7 +49,7 @@ table {
 	text-align: center;
 	font-family: verdana, sans-serif;
 	background-color: #ececec;
-	color: #666;
+	color: #222;
 	font-size: 12px;
 	line-height: 17px;
 }
@@ -180,12 +180,12 @@ table {
 /** Typography */
 
 a {
-	color: #555;
+	color: #1A698C;
 	text-decoration: none;
 }
 
 a:hover {
-	color: #e98d60;
+	color: #2193AF;
 	text-decoration: underline;
 }
 
@@ -423,6 +423,7 @@ div#username_wrap {
 }
 
 .browseitem,.searchitem {
+	color: #555;
 	float: left;
 	width: 100%;
 }
@@ -463,6 +464,10 @@ div#username_wrap {
 }
 
 /** Thumbnail styles **/
+.thumb_container {
+	display: block;
+}
+
 .large.thumb_container {
 	position: relative;
 	width: 128px;
@@ -495,6 +500,11 @@ div#username_wrap {
 	right: -2px;
 }
 
+.large.thumb_container span {
+	bottom: -4px;
+	right: -7px;
+}
+
 .iteminfo {
 	width: 400px;
 	float: left;
@@ -506,12 +516,12 @@ div#username_wrap {
 }
 
 .searchitem_container_count {
-	color: #0A5274;
+	color: #676777;
 	white-space: nowrap;
 	font-size: 11px;
-    line-height: 14px;
-    margin-bottom: 4px;
-    width: 100%;
+	line-height: 14px;
+	margin-bottom: 4px;
+	width: 100%;
 }
 
 .collinfo {
@@ -631,14 +641,6 @@ h1 {
 
 .dark p,.darkest p {
 	color: #dfebf1;
-}
-
-.white a {
-	color: #555;
-}
-
-.white a:hover {
-	color: #e98d60;
 }
 
 .white h2 {
@@ -1204,11 +1206,7 @@ p.navigation_bar a {
 }
 
 .about_page a {
-	color: #0A5274;
-}
-
-.about_page a:hover {
-	color: #1d759f;
+	text-decoration: underline;
 }
 
 .about_page ul li {

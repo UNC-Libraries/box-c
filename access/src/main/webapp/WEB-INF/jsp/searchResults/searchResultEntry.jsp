@@ -213,14 +213,11 @@
 			<c:when test="${hasListAccessOnly}">
 				<div class="containerinfo">
 					<ul>
-						<c:if test="${empty pageContext.request.remoteUser}">
-							<c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
-								<c:param name="target" value="${currentAbsoluteUrl}" />
-							</c:url>
+						<c:if test="${not empty loginUrl}">
 							<li><a href="<c:out value='${loginUrl}' />">Log in</a> or</li>
 						</c:if>
 						<li>
-							<a href="/requestAccess/${metadata.pid.path}" 
+							<a href="/requestAccess/${metadata.pid.pid}" 
 								title="Contact us to request access to this item">Request Access</a>
 						</li>
 						<li>${metadata.resourceType}</li>

@@ -16,6 +16,10 @@ html {
 	width: calc(100% - 250px);
 }
 
+h1 {
+	color: #666677;
+}
+
 /** Search form */
 .search_inputwrap {
   background-color: #FFFFFF;
