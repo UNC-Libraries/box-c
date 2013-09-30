@@ -17,29 +17,23 @@ package edu.unc.lib.dl.ui.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
-import edu.unc.lib.dl.search.solr.model.GroupedMetadataBean;
-import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.ui.Model;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
@@ -48,184 +42,119 @@ import java.util.List;
  * @author bbpennel
  */
 @Controller
-@RequestMapping("/search")
 public class SearchActionController extends AbstractSolrSearchController {
+	@Autowired(required=true)
+	protected PID collectionsPid;
 	private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
 
-	@RequestMapping(method = RequestMethod.GET)
-	public String handleSearchActions(Model model, HttpServletRequest request) {
-		LOG.debug("In handle search actions");
-
-		// Request object for the search
+	@RequestMapping("/search/{pid}")
+	public String search(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
-		SearchState searchState = searchRequest.getSearchState();
-		SearchState responseState = (SearchState) searchState.clone();
-
-		List<String> facetsToRetrieve = searchState.getFacetsToRetrieve();
-		searchState.setFacetsToRetrieve(null);
-
-		// Determine if this is a collection browse request
-		boolean isCollectionBrowseRequest = searchState.getResourceTypes() != null
-				&& searchState.getResourceTypes().size() == 1
-				&& searchState.getResourceTypes().contains(searchSettings.getResourceTypeCollection());
-
-		if (searchState.getRowsPerPage() == null || searchState.getRowsPerPage() == 0) {
-			if (isCollectionBrowseRequest) {
-				searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
-			} else {
-				searchState.setRowsPerPage(searchSettings.defaultPerPage);
-			}
+		searchRequest.setRootPid(pid);
+		searchRequest.setApplyCutoffs(false);
+		model.addAttribute("queryMethod", "search");
+		return search(searchRequest, model, request);
+	}
+	
+	@RequestMapping("/search")
+	public String search(Model model, HttpServletRequest request) {
+		SearchRequest searchRequest = generateSearchRequest(request);
+		// Backwards compability with the previous search url
+		if (!extractOldPathSyntax(request, searchRequest)) {
+			searchRequest.setApplyCutoffs(false);
 		}
-
-		Boolean rollup = searchState.getRollup();
-		LOG.debug("Rollup is specified as " + rollup);
-
-		// Get the record for the currently selected container if one is selected.
-		if (searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
-			CutoffFacet queryAncestorPath = (CutoffFacet) searchState.getFacets()
-					.get(SearchFieldKeys.ANCESTOR_PATH.name());
-
-			BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(queryAncestorPath
-					.getSearchKey(), searchRequest.getAccessGroups()));
-			model.addAttribute("selectedContainer", selectedContainer);
-
-			if (selectedContainer != null) {
-				// Unless its explicitly set in the url, disable rollup if the container is an aggregate or its inside of an
-				// aggregate.
-				if (rollup == null) {
-					rollup = !(!selectedContainer.getRollup().equals(selectedContainer.getId()) || (selectedContainer
-							.getRollup().equals(selectedContainer.getId()) && selectedContainer.getResourceType().equals(
-							"Aggregate")));
-					LOG.debug("Setting the default rollup value to " + rollup);
-					searchState.setRollup(rollup);
-				}
-
-				// Store the path value from the selected container as the path for breadcrumbs, making sure cutoff values
-				// live on
-				CutoffFacet selectedPath = selectedContainer.getPath();
-				selectedPath.setCutoff(queryAncestorPath.getCutoff());
-				selectedPath.setFacetCutoff(queryAncestorPath.getFacetCutoff());
-				searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedPath);
-			}
-		} else if (rollup == null) {
-			LOG.debug("No container and no rollup, defaulting rollup to true");
-			searchState.setRollup(true);
-		}
-
-		// Retrieve search results
-		SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
-
-		if (resultResponse != null) {
-			// Retrieve the facet result set
-			SearchResultResponse resultResponseFacets = queryLayer.getFacetList(searchState,
-					searchRequest.getAccessGroups(), facetsToRetrieve, false);
-
-			// If the users query had no results but the facet query did have results, then if a path is set remove its
-			// cutoff and rerun
-			if (resultResponseFacets.getResultCount() > 0 && resultResponse.getResultCount() == 0
-					&& searchState.getFacets() != null
-					&& searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
-				CutoffFacet ancestorPath = ((CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name()));
-				if (ancestorPath.getCutoff() != null) {
-					ancestorPath.setCutoff(null);
-					resultResponse = queryLayer.getSearchResults(searchRequest);
-				}
-			}
-
-			resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
-
-			// Add the search state to the response.
-			resultResponse.setSearchState(searchState);
-		}
-
-		// Use a representative content type value for the breadcrumb display value if there are any results
-		// Otherwise retrieve a representative record from solr if the user can get one
-		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE.name())) {
-			if (resultResponse.getResultCount() == 0) {
-				SearchState contentTypeSearchState = new SearchState();
-				contentTypeSearchState.setRowsPerPage(1);
-				contentTypeSearchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(),
-						searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name()));
-				contentTypeSearchState.setResultFields(Arrays.asList(SearchFieldKeys.CONTENT_TYPE.name()));
-				
-				SearchRequest contentTypeRequest = new SearchRequest(contentTypeSearchState, GroupsThreadStore.getGroups());
-				SearchResultResponse contentTypeResponse = this.queryLayer.getSearchResults(contentTypeRequest);
-				if (contentTypeResponse.getResultCount() > 0)
-					extractCrumbDisplayValueFromRepresentative(searchState, contentTypeResponse.getResultList().get(0));
-			} else {
-				extractCrumbDisplayValueFromRepresentative(searchState, resultResponse.getResultList().get(0));
-			}
-		}
-
-		// Get the children counts for container entries.
-		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
-
-		// Determine if this is a collection browse or search results page and inform the view.
-		if (isCollectionBrowseRequest) {
-			model.addAttribute("menuId", "browse");
-			model.addAttribute("resultType", "collectionBrowse");
-			model.addAttribute("pageSubtitle", "Browse Collections");
-		} else {
-			model.addAttribute("resultType", "searchResults");
-			model.addAttribute("pageSubtitle", "Search Results");
-		}
-
-		String searchStateUrl = SearchStateUtil.generateStateParameterString(responseState);
-		model.addAttribute("searchStateUrl", searchStateUrl);
-		model.addAttribute("userAccessGroups", searchRequest.getAccessGroups());
-		model.addAttribute("resultResponse", resultResponse);
-
-		LOG.debug("SAC qs: " + request.getQueryString());
-
+		model.addAttribute("queryMethod", "search");
+		return search(searchRequest, model, request);
+	}
+	
+	private String search(SearchRequest searchRequest, Model model, HttpServletRequest request) {
+		SearchResultResponse resultResponse = doSearch(searchRequest, model, request);
 		// Setup parameters for full record navigation
 		RecordNavigationState recordNavigationState = new RecordNavigationState();
-		recordNavigationState.setSearchState(responseState);
-		recordNavigationState.setSearchStateUrl(searchStateUrl);
-
+		recordNavigationState.setSearchState(resultResponse.getSearchState());
+		recordNavigationState.setSearchStateUrl((String) request.getAttribute("searchStateUrl"));
 		recordNavigationState.setRecordIdList(resultResponse.getIdList());
 		recordNavigationState.setTotalResults(resultResponse.getResultCount());
-
 		request.getSession().setAttribute("recordNavigationState", recordNavigationState);
-
-		LOG.debug("SAC state: " + searchStateUrl);
-
+		
+		model.addAttribute("resultType", "searchResults");
+		model.addAttribute("pageSubtitle", "Search Results");
+		
 		return "searchResults";
 	}
+	
+	@RequestMapping("/list/{pid}")
+	public String list(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
+		SearchRequest searchRequest = generateSearchRequest(request);
+		searchRequest.setRootPid(pid);
+		searchRequest.setApplyCutoffs(true);
+		model.addAttribute("queryMethod", "list");
+		return search(searchRequest, model, request);
+	}
+	
+	@RequestMapping("/list")
+	public String list(Model model, HttpServletRequest request) {
+		SearchRequest searchRequest = generateSearchRequest(request);
+		searchRequest.setApplyCutoffs(true);
+		model.addAttribute("queryMethod", "list");
+		return search(searchRequest, model, request);
+	}
+	
+	@RequestMapping("/collections")
+	public String browseCollections(Model model, HttpServletRequest request) {
+		SearchRequest searchRequest = generateSearchRequest(request);
+		searchRequest.setRootPid(this.collectionsPid.getPid());
+		searchRequest.setApplyCutoffs(true);
+		SearchState searchState = searchRequest.getSearchState();
+		searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeCollection));
+		searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
+		
+		SearchResultResponse result = doSearch(searchRequest, model, request);
+		result.setSelectedContainer(null);
+		
+		model.addAttribute("queryMethod", "collections");
+		model.addAttribute("menuId", "browse");
+		model.addAttribute("resultType", "collectionBrowse");
+		model.addAttribute("pageSubtitle", "Browse Collections");
+		return "searchResults";
+	}
+	
+	protected SearchResultResponse doSearch(SearchRequest searchRequest, Model model, HttpServletRequest request) {
+		LOG.debug("In handle search actions");
+		searchRequest.setRetrieveFacets(true);
 
-	private void extractCrumbDisplayValueFromRepresentative(SearchState searchState, BriefObjectMetadata representative) {
-		Object contentTypeValue = searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name());
-		if (contentTypeValue instanceof MultivaluedHierarchicalFacet) {
-			LOG.debug("Replacing content type search value "
-					+ searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name()));
-			MultivaluedHierarchicalFacet repFacet = null;
-			// If we're dealing with a rolled up result then hunt through all its items to find the matching content
-			// type
-			if (representative instanceof GroupedMetadataBean) {
-				GroupedMetadataBean groupRep = (GroupedMetadataBean) representative;
-
-				int i = 0;
-				do {
-					representative = groupRep.getItems().get(i);
-
-					if (representative.getContentTypeFacet() != null) {
-						repFacet = representative.getContentTypeFacet().get(0);
-						LOG.debug("Pulling content type from representative " + representative.getId() + ": " + repFacet);
-						if (repFacet.contains(((MultivaluedHierarchicalFacet) contentTypeValue))) {
-							break;
-						} else {
-							repFacet = null;
-						}
-					}
-				} while (++i < groupRep.getItems().size());
-			} else {
-				// If its not a rolled up result, take it easy
-				repFacet = representative.getContentTypeFacet().get(0);
+		// Request object for the search
+		SearchState searchState = searchRequest.getSearchState();
+		
+		SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+		
+		if (resultResponse != null) {
+			if (searchRequest.isRetrieveFacets()) {
+				SearchRequest facetRequest = new SearchRequest(searchState, true);
+				facetRequest.setApplyCutoffs(false);
+				if (resultResponse.getSelectedContainer() != null) {
+					SearchState facetState = (SearchState) searchState.clone();
+					facetState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), resultResponse.getSelectedContainer().getPath());
+					facetRequest.setSearchState(facetState);
+				}
+				
+				// Retrieve the facet result set
+				SearchResultResponse resultResponseFacets = queryLayer.getFacetList(facetRequest);
+				resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
 			}
-
-			if (repFacet != null) {
-				((MultivaluedHierarchicalFacet) contentTypeValue).setDisplayValues(repFacet);
-				searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(), contentTypeValue);
-			}
+			
+			queryLayer.populateBreadcrumbs(searchRequest, resultResponse);
 		}
+		
+		model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(searchState));
+		model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(searchState));
+		model.addAttribute("userAccessGroups", searchRequest.getAccessGroups());
+		model.addAttribute("resultResponse", resultResponse);
+		
+		return resultResponse;
+	}
+
+	public void setCollectionsPid(PID collectionsPid) {
+		this.collectionsPid = collectionsPid;
 	}
 }

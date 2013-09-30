@@ -34,7 +34,8 @@
 	</div>
 </div>
 
-<script src="/static/js/underscore.js"></script>
+<script src="/static/js/lib/jquery.min.js"></script>
+<script src="/static/js/lib/underscore.js"></script>
 <script src="/static/front/peek.js"></script>
 
 <div id="front">
@@ -78,17 +79,17 @@
 
 			<p>
 				<a href="search?types=Collection"><c:out value="${collectionsCount}"/> collections</a>, including
-				<a href="search?facets=format%3A%5Etext"><c:out value="${formatCounts.text}"/> texts</a>,
-				<a href="search?facets=format%3A%5Eimage"><c:out value="${formatCounts.image}"/> images</a>,
-				<a href="search?facets=format%3A%5Edataset"><c:out value="${formatCounts.dataset}"/> datasets</a>,
-				<a href="search?facets=format%3A%5Eaudio"><c:out value="${formatCounts.audio}"/> audio files</a>, and
-				<a href="search?facets=format%3A%5Evideo"><c:out value="${formatCounts.video}"/> videos</a>.
+				<a href="search?format=text"><c:out value="${formatCounts.text}"/> texts</a>,
+				<a href="search?format=image"><c:out value="${formatCounts.image}"/> images</a>,
+				<a href="search?format=dataset"><c:out value="${formatCounts.dataset}"/> datasets</a>,
+				<a href="search?format=audio"><c:out value="${formatCounts.audio}"/> audio files</a>, and
+				<a href="search?format=video"><c:out value="${formatCounts.video}"/> videos</a>.
 			</p>
 			
 			<p>
 				Material from <a href="browseDepartments"><c:out value="${departmentsCount}"/> UNC-Chapel Hill departments</a>,
-				from <a href="search?action=setFacet%3adept%2c%22anthropology%22">Anthropology</a>
-				to <a href="search?action=setFacet%3adept%2c%22toxicology%22">Toxicology</a>.
+				from <a href="search?dept=anthropology">Anthropology</a>
+				to <a href="search?dept=toxicology">Toxicology</a>.
 			</p>
 		</div>
 
@@ -97,32 +98,32 @@
 
 			<table>
 		      <tr>
-		        <td class="thumbnail"><a href="record?id=uuid%3abded4944-f033-4015-af0f-3d39595f4d30"><img src="/static/front/aapaa.jpg"></a></td>
-		        <td class="title"><a href="record?id=uuid%3abded4944-f033-4015-af0f-3d39595f4d30">African American Performance Art Archive</a></td>
+		        <td class="thumbnail"><a href="record/uuid:bded4944-f033-4015-af0f-3d39595f4d30"><img src="/static/front/aapaa.jpg"></a></td>
+		        <td class="title"><a href="record/uuid:bded4944-f033-4015-af0f-3d39595f4d30">African American Performance Art Archive</a></td>
 		
-		        <td class="thumbnail"><a href="record?id=uuid%3a1add9fbc-f5c4-49a8-848e-96a52e3ade9c"><img src="/static/front/azoria.jpg"></a></td>
-		        <td class="title"><a href="record?id=uuid%3a1add9fbc-f5c4-49a8-848e-96a52e3ade9c">Azoria Project Archive</a></td>
+		        <td class="thumbnail"><a href="record/uuid:1add9fbc-f5c4-49a8-848e-96a52e3ade9c"><img src="/static/front/azoria.jpg"></a></td>
+		        <td class="title"><a href="record/uuid:1add9fbc-f5c4-49a8-848e-96a52e3ade9c">Azoria Project Archive</a></td>
 		      </tr>
 		      <tr>
-		        <td class="thumbnail"><a href="record?id=uuid%3adfebbdf7-3361-4097-9fa4-7001ab6fcc11"><img src="/static/front/bmc.png"></a></td>
-		        <td class="title"><a href="record?id=uuid%3adfebbdf7-3361-4097-9fa4-7001ab6fcc11">BioMed Central</a></td>
+		        <td class="thumbnail"><a href="record/uuid:dfebbdf7-3361-4097-9fa4-7001ab6fcc11"><img src="/static/front/bmc.png"></a></td>
+		        <td class="title"><a href="record/uuid:dfebbdf7-3361-4097-9fa4-7001ab6fcc11">BioMed Central</a></td>
 		
-		        <td class="thumbnail"><a href="record?id=uuid%3acbbc2cc1-c538-4e28-b567-55db61b7942e"><img src="/static/front/cpj.png"></a></td>
-		        <td class="title"><a href="record?id=uuid%3acbbc2cc1-c538-4e28-b567-55db61b7942e">Carolina Planning Journal</a></td>
+		        <td class="thumbnail"><a href="record/uuid:cbbc2cc1-c538-4e28-b567-55db61b7942e"><img src="/static/front/cpj.png"></a></td>
+		        <td class="title"><a href="record/uuid:cbbc2cc1-c538-4e28-b567-55db61b7942e">Carolina Planning Journal</a></td>
 		      </tr>
 		      <tr>
-		        <td class="thumbnail"><a href="record?id=uuid%3aa012aad2-1ab1-43b2-b5ab-0e14740e5e07"><img src="/static/front/etds.png"></a></td>
-		        <td class="title"><a href="record?id=uuid%3aa012aad2-1ab1-43b2-b5ab-0e14740e5e07">Electronic Theses and Dissertations</a></td>
+		        <td class="thumbnail"><a href="record/uuid:a012aad2-1ab1-43b2-b5ab-0e14740e5e07"><img src="/static/front/etds.png"></a></td>
+		        <td class="title"><a href="record/uuid:a012aad2-1ab1-43b2-b5ab-0e14740e5e07">Electronic Theses and Dissertations</a></td>
 		
-		        <td class="thumbnail"><a href="record?id=uuid%3a9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9"><img src="/static/front/popl.png"></a></td>
-		        <td class="title"><a href="record?id=uuid%3a9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9">Program on Public Life</a></td>
+		        <td class="thumbnail"><a href="record/uuid:9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9"><img src="/static/front/popl.png"></a></td>
+		        <td class="title"><a href="record/uuid:9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9">Program on Public Life</a></td>
 		      </tr>
 		      <tr>
-		        <td class="thumbnail"><a href="record?id=uuid%3a8ae56bbc-400e-496d-af4b-3c585e20dba1"><img src="/static/front/rla.png"></a></td>
-		        <td class="title"><a href="record?id=uuid%3a8ae56bbc-400e-496d-af4b-3c585e20dba1">Research Laboratories of Archaeology</a></td>
+		        <td class="thumbnail"><a href="record/uuid:8ae56bbc-400e-496d-af4b-3c585e20dba1"><img src="/static/front/rla.png"></a></td>
+		        <td class="title"><a href="record/uuid:8ae56bbc-400e-496d-af4b-3c585e20dba1">Research Laboratories of Archaeology</a></td>
 		
-		        <td class="thumbnail"><a href="record?id=uuid%3a5e4b2719-bb71-45ec-be63-5d018b6f5aab"><img src="/static/front/sfc.png"></a></td>
-		        <td class="title"><a href="record?id=uuid%3a5e4b2719-bb71-45ec-be63-5d018b6f5aab">Southern Folklife Collection Digital Files</a></td>
+		        <td class="thumbnail"><a href="record/uuid:5e4b2719-bb71-45ec-be63-5d018b6f5aab"><img src="/static/front/sfc.png"></a></td>
+		        <td class="title"><a href="record/uuid:5e4b2719-bb71-45ec-be63-5d018b6f5aab">Southern Folklife Collection Digital Files</a></td>
 		      </tr>
 		    </table>
 		</div>
@@ -133,7 +134,7 @@
 	<div id="front-case-study" class="row">
 		<div class="half">
 			<div class="figure">
-				<a href="https://cdr.lib.unc.edu/record?id=uuid:c394b981-3c10-4faf-a9b2-c506f795840b">
+				<a href="https://cdr.lib.unc.edu/record/uuid:c394b981-3c10-4faf-a9b2-c506f795840b">
 					<img src="/static/front/rla-deer.jpg">
 					<span class="caption">
 						<b>Ceramic Animal Effigy (Deer?)</b>
@@ -143,7 +144,7 @@
 			</div>
 	
 			<div class="figure">
-				<a href="https://cdr.lib.unc.edu/record?id=uuid:9ffd4af0-4f9d-4eae-a84a-0812997303dc">
+				<a href="https://cdr.lib.unc.edu/record/uuid:9ffd4af0-4f9d-4eae-a84a-0812997303dc">
 					<img src="/static/front/rla-site.jpg">
 					<span class="caption">
 						<b>General View of Site</b>
@@ -162,7 +163,7 @@
 
 			<p>The Carolina Digital Repository is working with RLA staff to to preserve their large collection of photographs, slides, and publications, and to provide access to those collections online.</p>
 
-			<p class="button"><a href="record?id=uuid:8ae56bbc-400e-496d-af4b-3c585e20dba1">Browse the RLA Collection</a></p>
+			<p class="button"><a href="record/uuid:8ae56bbc-400e-496d-af4b-3c585e20dba1">Browse the RLA Collection</a></p>
 		</div>
 
 	</div>

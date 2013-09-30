@@ -26,7 +26,6 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.DatastreamPID;
@@ -49,8 +48,6 @@ public abstract class AbstractFedoraManager {
 	@Autowired
 	protected String swordPath;
 	protected PID collectionsPidObject;
-	@Autowired
-	protected AgentFactory agentFactory;
 	@Autowired
 	protected AccessControlService aclService;
 
@@ -130,9 +127,5 @@ public abstract class AbstractFedoraManager {
 
 	public void setAclService(AccessControlService aclService) {
 		this.aclService = aclService;
-	}
-
-	public void setAgentFactory(AgentFactory agentFactory) {
-		this.agentFactory = agentFactory;
 	}
 }

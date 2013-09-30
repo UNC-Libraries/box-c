@@ -32,8 +32,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 import org.springframework.web.servlet.support.RequestContext;
 
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.CreateCollectionObject;
 import edu.unc.lib.dl.schema.UserGroupDAO;
@@ -51,7 +49,6 @@ public class CreateCollectionController extends SimpleFormController {
 
 	private UiWebService uiWebService;
 	private FolderManager folderManager;
-	private AgentFactory agentManager;
 	private UiUtilityMethods uiUtilityMethods;
 
 
@@ -87,17 +84,6 @@ public class CreateCollectionController extends SimpleFormController {
 				ingest.setMetadata(metadata.getBytes());
 
 				if (uiUtilityMethods.notNull(dao.getFilePath())) {
-
-					PID ownerPid = new PID(dao.getOwnerPid());
-					try {
-						Agent mediator = agentManager.findPersonByOnyen(request.getRemoteUser(), false);
-
-						Agent ownerAgent = agentManager.getAgent(ownerPid,
-								false);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-
 					ingest.setFilePath(dao.getFilePath());
 
 					if (uiUtilityMethods.notNull(dao.getOwnerPid())) {
@@ -201,14 +187,6 @@ public class CreateCollectionController extends SimpleFormController {
 
 	public void setFolderManager(FolderManager folderManager) {
 		this.folderManager = folderManager;
-	}
-
-	public AgentFactory getAgentManager() {
-		return agentManager;
-	}
-
-	public void setAgentManager(AgentFactory agentManager) {
-		this.agentManager = agentManager;
 	}
 
 	public UiUtilityMethods getUiUtilityMethods() {

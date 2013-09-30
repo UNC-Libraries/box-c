@@ -1,0 +1,385 @@
+html {
+	background-color: #ffffff;
+}
+
+#pagewrap {
+	min-width: 960px;
+	width: inherit;
+}
+
+.contentarea.nobottom {
+	margin-bottom: 0px;
+}
+
+.threecol {
+	min-width: 720px;
+	width: calc(100% - 250px);
+}
+
+h1 {
+	color: #666677;
+}
+
+/** Search form */
+.search_inputwrap {
+  background-color: #FFFFFF;
+  border: 1px solid #C8D8E0;
+  float: left;
+  height: 23px;
+  line-height: 23px;
+  padding: 2px;
+}
+
+.search_inputwrap .search_text {
+	display: inline-block;
+  border: 0 none;
+  color: #666666;
+  float: left;
+  font-family: verdana,sans-serif;
+  margin-top: 3px;
+  width: 155px;
+}
+
+.search_inputwrap .search_text:focus {
+	outline: none;
+}
+
+.search_inputwrap .index_select {
+  border: 1px solid #ECECEC;
+  color: #666666;
+  float: left;
+  font-family: verdana,sans-serif;
+  margin-top: 2px;
+  margin-left: 3px;
+  padding: 1px;
+  width: 80px;
+}
+
+.search_submit {
+  background-color: #F4F4F4;
+  background-image : linear-gradient(to bottom, #F4F4F4, #DDF0FA);
+  border: 1px solid #CCCCCC;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: verdana,sans-serif;
+  height: 28px;
+  margin: 0 0 0 4px;
+  padding: 0px 4px;
+}
+
+/** Dashboard */
+
+.description_text a {
+	text-decoration: underline;
+}
+
+#front_search_form {
+	margin-bottom: 1em;
+}
+
+#front_search_form .search_text {
+	width: 300px;
+}
+
+#front_search_form .index_select {
+	width: auto;
+}
+
+.descriptivearea h1 {
+	font-size: 145%;
+	font-weight: bold;
+	padding: .5em 0 .5em 0;
+}
+
+/** Header */
+
+#header_banner {
+	padding: 5px 20px 0px;
+}
+
+.header_right {
+	margin-left: 75%;
+	width: 24%;
+}
+
+#hsearch_form .search_inputwrap {
+  float: right;
+  height: 24px;
+  margin-top: 58px;
+}
+
+#hsearch_form .search_inputwrap .search_text {
+	width: 190px;
+	padding-left: 3px;
+}
+
+#hsearch_form .search_submit {
+  height: 22px;
+  vertical-align: bottom;
+}
+
+#mainmenu li a {
+	margin-right: 6px;
+}
+
+#username_wrap {
+	color: #165D7F;
+}
+
+#mainmenu > li, .secondarymenu > li {
+	margin: 0;
+}
+
+.secondarymenu li a {
+	margin-right: 1px;
+	background-color: #FFFFFF;
+	border-right: 0px;
+	border: 1px solid #D8EDf5;
+	border-bottom: 0px;
+	color: #0A5274;
+	background-image: none;
+}
+
+#mainmenu li a {
+	margin-right: 6px;
+	border-right: 0px;
+	background-color: #FFFFFF;
+	border-right: 0px;
+	border: 1px solid #D8EDf5;
+	color: #0A5274;
+	background-image: none;
+}
+
+/** Dashboard */
+
+.browseitem {
+	border-top: 1px solid #eee;
+	padding: 20px 0px;
+}
+
+
+.browseitem > h2 {
+	margin-bottom: 15px;
+}
+
+.browseitem > a {
+	float: left;
+	padding: 0px 20px 20px 0px;
+	width: 128px;
+	min-height: 128px;
+}
+
+.browseitem > .itemdetails {
+	margin-left: 155px;
+	margin-right: 190px;
+}
+
+.browseitem > .itemnavigation {
+	float: right;
+	width: 180px;
+	padding-left: 10px;
+}
+
+.description_text {
+	font-size: 13px;
+	padding-bottom: 10px;
+}
+
+.browseitem .preview {
+	/*color: #0A5274;*/
+	display: inline;
+	white-space: nowrap;
+	font-size: 14px;
+	line-height: 14px;
+}
+
+/** Edit page **/
+.edit_page .preview {
+	display: block;
+	padding-top: 10px;
+}
+
+/** Light color theme **/
+
+.shadowbottom {
+	background-position: left 104%;
+}
+
+.dark {
+	background-color: #FBFBFE;
+}
+
+.darkest {
+	background-color: #DDF0FA;
+	/* background-color: #DDEAF0; */
+}
+
+.dark a, .darkest a {
+	color: #5AABCF;
+}
+
+
+
+/** Light color theme end **/
+
+
+
+/* Loading overlay */
+.load_modal {
+	display: block;
+	position: absolute;
+	z-index: 10000;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	text-align: center;
+	background: rgba( 255, 255, 255, .8) 50% 50%;
+}
+
+.load_modal * {
+	position: relative;
+}
+
+.load_modal.icon_large, .load_modal .icon_large {
+	background-image : url('/static/images/admin/loading_large.gif');
+	background-repeat : no-repeat;
+}
+
+.load_modal.icon_small, .load_modal .icon_small {
+	background-image : url('/static/images/admin/loading_small.gif');
+	background-repeat : no-repeat;
+}
+
+.loading {
+	overflow: hidden;
+}
+
+.load_modal .text_icon {
+	display: inline-block;
+	vertical-align: middle;
+	margin-left: 8px;
+}
+
+.load_modal .text_icon.icon_large {
+	width: 32px;
+	height: 32px;
+}
+
+.load_modal .text_icon.icon_small {
+	width: 16px;
+	height: 11px;
+}
+
+.load_modal .ui-progressbar {
+	width: 90%;
+}
+
+.load_modal .ui-progressbar > span {
+	display: block;
+	position: absolute;
+	top:4px;
+	text-align: center;
+	width: 100%;
+}
+
+/* Alerts */
+
+.qtip-admin {
+	-webkit-box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.4);
+	-moz-box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.4);
+	box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.4);
+	
+	color: #111;
+	border: 1px solid transparent;
+	width: 360px;
+	max-width: 360px;
+	margin-right: 5px;
+}
+
+	.qtip-admin .qtip-content {
+		border: 0px;
+		padding: 8px;
+		margin-right: 17px;
+		font-size: 13px;
+	}
+
+	.qtip-admin .qtip-close {
+		top: 5px;
+		right: 5px;
+	}
+
+	.qtip-admin.alert-error {
+		background-color: #F78B83;
+		border-color: #BE6B65;
+	}
+	
+	.qtip-admin.alert-info {
+		background-color: #FBFBFE;
+		color: #0F80B3;
+		border-color: #84CAE8;
+	}
+	
+	.qtip-admin.alert-success {
+		background-color: #ECF4E1;
+		border-color: #A3BE7F;
+	}
+	
+/* Suggestions */
+.ui-autocomplete .ui-menu-item a {
+  display: block;
+  font-weight: normal;
+  line-height: 1.5;
+  min-height: 0;
+  padding: 2px 0.4em;
+  text-align: left;
+  text-decoration: none;
+  text-indent: 0;
+  font-size: 12px;
+}
+
+/* Confirmation */
+.no_titlebar .ui-dialog-titlebar {
+	display: none;
+}
+
+.confirm_dialog {
+	font-size: 12px;
+	z-index: 10001;
+	text-align: left;
+}
+
+.confirm_dialog .ui-dialog-content {
+	padding: 0.5em 0.2em 0;
+}
+
+.confirm_dialog .ui-dialog-buttonpane {
+	padding: 0.2em 0.2em 0.2em 0;
+	border: 0;
+	margin-top: 0;
+}
+
+.confirm_dialog .ui-button-text-only .ui-button-text {
+	padding: 0.2em 0.7em;
+}
+
+.confirm_dialog .ui-dialog-buttonpane button {
+	margin: 0.1em 0 0.1em 0.3em;
+	background : #DDF0FA;
+}
+
+
+/* Edit panels */
+.ui-dialog .ui-dialog-titlebar {
+	background-image : linear-gradient(to bottom, #FAFAFA, #EBF5FA);
+	margin: -0.2em -0.2em 0.2em;
+	padding: 0.4em 0.4em 0;
+	border-bottom: 1px solid #DFEBF1;
+}
+
+/* Description editor */
+#xml_editor {
+	font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
+	font-size: 14px;
+	background-color: #fff;
+}

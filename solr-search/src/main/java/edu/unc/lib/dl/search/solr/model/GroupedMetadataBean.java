@@ -29,7 +29,6 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	private BriefObjectMetadataBean representative; 
 	private Long itemCount;
 	private String groupId;
-	private List<Tag> tags;
 
 	public GroupedMetadataBean(String groupId, List<BriefObjectMetadataBean> items, Long itemCount) {
 		this.items = items;
@@ -326,11 +325,11 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	
 	@Override
 	public List<Tag> getTags() {
-		return Collections.unmodifiableList(this.tags);
+		return this.representative.getTags();
 	}
 
 	@Override
 	public void addTag(Tag t) {
-		this.tags.add(t);
+		this.representative.addTag(t);
 	}
 }

@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.util;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
@@ -51,5 +52,18 @@ public class StringFormatUtilTest extends Assert {
 		
 		truncated = StringFormatUtil.truncateText(null, 100);
 		assertNull(truncated);
+	}
+	
+	@Test
+	public void regexTest() {
+		Pattern oldFacetPath = Pattern.compile("(setFacet:)?path[,:]\"?\\d+,(uuid:[a-f0-9\\-]+)(!\\d+)?");
+		String facet = "setFacet:path,\"2,uuid:9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9!3\"|resetNav:search";
+		if (facet != null) {
+			Matcher matches = oldFacetPath.matcher(facet);
+			if (matches.find()) {
+				String pid = matches.group(2);
+				boolean isList = matches.group(3) != null;
+			}
+		}
 	}
 }

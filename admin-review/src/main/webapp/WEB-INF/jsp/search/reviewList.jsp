@@ -73,7 +73,7 @@
 						<h2>
 							<c:choose>
 								<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile}">
-									<a href="/record?id=${metadata.id}" target="_new" class="has_tooltip"
+									<a href="/record/${metadata.id}" target="_new" class="has_tooltip"
 										title="View details for <c:out value='${metadata.title}'/>."><c:out value='${metadata.title}'/></a>
 								</c:when>
 								<c:otherwise>
@@ -120,4 +120,4 @@
 		}
 	};
 </script>
-<script type="text/javascript" src="/static/js/require.js" data-main="/static/js/admin/reviewList"></script>
+<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/admin/reviewList"></script>

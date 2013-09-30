@@ -20,11 +20,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.WeakHashMap;
 
 import org.fcrepo.server.errors.ObjectNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap.Builder;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ParentBond;
@@ -38,13 +39,18 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  * 
  */
 public class AncestorFactory {
-
 	private static final Logger LOG = LoggerFactory.getLogger(AncestorFactory.class);
-	private WeakHashMap<PID, ParentBond> child2Parent = new WeakHashMap<PID, ParentBond>(
-			256);
+	private Map<PID, ParentBond> child2Parent;
+	private final ParentBond rootBond = new ParentBond();
 
 	private TripleStoreQueryService tripleStoreQueryService = null;
 
+	public AncestorFactory() {
+		Builder<PID, ParentBond> mapBuilder = new Builder<PID, ParentBond>();
+		mapBuilder.maximumWeightedCapacity(256);
+		this.child2Parent = mapBuilder.build();
+	}
+	
 	public TripleStoreQueryService getTripleStoreQueryService() {
 		return tripleStoreQueryService;
 	}
@@ -68,7 +74,7 @@ public class AncestorFactory {
 			if (!child2Parent.containsKey(pid))
 				updateCache(pid); // not cached
 			ParentBond bond = child2Parent.get(pid);
-			if (bond == null || !bond.inheritsRoles) { 
+			if (bond == null || bond == rootBond || !bond.inheritsRoles) { 
 				// no more parents or not inheriting further
 				break;
 			} else {
@@ -125,10 +131,11 @@ public class AncestorFactory {
 		for(Entry<PID, ParentBond> e : lineage.entrySet()) {
 			if(!lineage.containsKey(e.getValue().parentPid)) {
 				root = e.getValue().parentPid;
+				break;
 			}
 		}
 		if(root != null) {
-			child2Parent.put(root, null);
+			child2Parent.put(root, rootBond);
 		} else {
 			LOG.warn("Cannot find root pid");
 		}

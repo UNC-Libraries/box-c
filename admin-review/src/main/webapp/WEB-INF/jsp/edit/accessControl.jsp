@@ -4,7 +4,6 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %> 
 <%@page trimDirectiveWhitespaces="true" %>
 
-<link rel="stylesheet" type="text/css" href="/static/css/admin/admin_forms.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/admin/jqueryui-editable.css" />
 
 <%
@@ -12,7 +11,7 @@
 	pageContext.setAttribute("aclNS", edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_ACL_NS);
 %>
 
-<div class="edit_acls">
+<div class="edit_acls edit_form">
 	<h3>Access Settings</h3>
 	<div class="form_field">
 		<label>Published</label>
@@ -146,7 +145,7 @@
 	}, ['module', 'jquery', 'EditAccessControlForm'], function(module, $){
 		var accessControlModel = $.parseXML(escaped);
 		$(".edit_acls").editAccessControlForm({'xml': accessControlModel, 'namespace': aclNS, 
-			'containingDialog': $('.containingDialog'), 'updateUrl' : "acl/${pid.replace(':', '/')}", 'pid' : '${pid}',
+			'containingDialog': $('.containingDialog'), 'updateUrl' : "acl/${pid}", 'pid' : '${pid}',
 					'groupSuggestionsURL' : 'acl/getGroups'});
 	});
 </script>

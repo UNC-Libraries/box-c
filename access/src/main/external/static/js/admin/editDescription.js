@@ -1,8 +1,8 @@
 require.config({
-	baseUrl: '../../static/js/',
+	baseUrl: '/static/js/',
 	paths: {
-		'jquery' : 'jquery.min',
-		'jquery-ui' : 'jquery-ui.min',
+		'jquery' : 'cdr-admin',
+		'jquery-ui' : 'cdr-admin',
 		'text' : 'xmleditor/lib/text',
 		'autosize' : 'xmleditor/lib/jquery.autosize-min',
 		'json2' : 'xmleditor/lib/json2',
@@ -12,10 +12,9 @@ require.config({
 		'xmleditor' : 'xmleditor/jquery.xmleditor'
 	},
 	shim: {
-		'jquery-ui' : ['jquery'],
 		'ace' : ['jquery'],
 		'autosize' : ['jquery'],
-		'xmleditor' : ['jquery', 'jquery-ui', 'text', 'autosize', 'json2', 'cycle', 'ace', 'vkbeautify']
+		'xmleditor' : ['jquery-ui', 'text', 'autosize', 'json2', 'cycle', 'ace', 'vkbeautify']
 	}
 });
 
@@ -36,12 +35,12 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'],
 	}]: null;
 	
 	$("#xml_editor").xmlEditor({
-		schema : "../../../static/schemas/mods-3-4/mods.json",
+		schema : "../../static/schemas/mods-3-4/mods.json",
 		ajaxOptions : {
-			xmlRetrievalPath : "/admin/" + resultObject.id.replace(':', '/') + "/mods",
-			xmlUploadPath : "/admin/describe/" + resultObject.id.replace(':', '/')
+			xmlRetrievalPath : "/admin/" + resultObject.id + "/mods",
+			xmlUploadPath : "/admin/describe/" + resultObject.id
 		},
-		libPath : "../../../static/js/xmleditor/lib/",
+		libPath : "../../static/js/xmleditor/lib/",
 		menuEntries: menuEntries
 	});
 	$(window).resize();

@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -83,12 +86,7 @@ public abstract class AbstractSolrSearchController {
 				if (searchRequest != null && searchRequest instanceof HierarchicalBrowseRequest){
 					searchState = searchStateFactory.createHierarchicalBrowseSearchState(request.getParameterMap());
 				} else {
-					String resourceTypes = request.getParameter(searchSettings.searchStateParam("RESOURCE_TYPES"));
-					if (resourceTypes == null || resourceTypes.contains(searchSettings.resourceTypeFile)){
-						searchState = searchStateFactory.createSearchState(request.getParameterMap());
-					} else {
-						searchState = searchStateFactory.createCollectionBrowseSearchState(request.getParameterMap());
-					}
+					searchState = searchStateFactory.createSearchState(request.getParameterMap());
 				}
 			} else {
 				session.removeAttribute("searchState");
@@ -96,20 +94,46 @@ public abstract class AbstractSolrSearchController {
 		}
 		
 		//Perform actions on search state
-		String actionsParam = request.getParameter(searchSettings.searchStateParams.get("ACTIONS"));
-		if (actionsParam != null){
-			try {
-				LOG.debug("Performing actions on users search state:" + actionsParam);
-				searchActionService.executeActions(searchState, actionsParam);
-			} catch (InvalidHierarchicalFacetException e){
-				LOG.debug("An invalid facet was provided: " + request.getQueryString(), e);
-			}
+		try {
+			searchActionService.executeActions(searchState, request.getParameterMap());
+		} catch (InvalidHierarchicalFacetException e){
+			LOG.debug("An invalid facet was provided: " + request.getQueryString(), e);
 		}
 		
 		//Store the search state into the search request
 		searchRequest.setSearchState(searchState);
 		
 		return searchRequest;
+	}
+	
+	
+	private Pattern oldFacetPath = Pattern.compile("(setFacet:)?path[,:]\"?\\d+,(uuid:[a-f0-9\\-]+)(!\\d+)?");
+	/**
+	 * Extracts and sets paths which follow the previous syntax for backwards compatibility.
+	 * Pulls from either the action or facet parameter, in that order 
+	 * 
+	 * @param request
+	 * @param searchRequest
+	 */
+	protected boolean extractOldPathSyntax(HttpServletRequest request, SearchRequest searchRequest) {
+		String action = request.getParameter("action");
+		boolean added = this.getOldPath(action, searchRequest);
+		if (added)
+			return true;
+		String facet = request.getParameter("facet");
+		return this.getOldPath(facet, searchRequest);
+	}
+	
+	protected boolean getOldPath(String parameter, SearchRequest searchRequest) {
+		if (parameter != null) {
+			Matcher matches = oldFacetPath.matcher(parameter);
+			if (matches.find()) {
+				searchRequest.setRootPid(matches.group(2));
+				searchRequest.setApplyCutoffs(matches.group(3) != null);
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	protected SearchResultResponse getSearchResults(SearchRequest searchRequest){

@@ -24,8 +24,7 @@
 	<div class="contentarea">
 		<h2>Related Items (neighbors in this collection/folder)</h2>
 		<c:forEach items="${neighborList}" var="neighbor" varStatus="status">
-			<c:url var="fullRecordUrl" scope="page" value="record">
-				<c:param name="${searchSettings.searchStateParams['ID']}" value="${neighbor.id}"/>
+			<c:url var="fullRecordUrl" scope="page" value="record/${neighbor.id}">
 			</c:url>
 			<c:set var="currentItemClass" scope="page">
 				<c:if test="${briefObject.id == neighbor.id}"> current_item</c:if>
@@ -41,7 +40,7 @@
 									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_${neighbor.contentTypeFacet[0].searchKey}" 
 											src="${cdr:getDatastreamUrl(neighbor, 'THUMB_SMALL', fedoraUtil)}"/>
 								</c:when>
-								<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentTypeFacet[0].searchKey}">
+								<c:when test="${neighbor.resourceType == searchSettings.resourceTypeAggregate && empty neighbor.contentTypeFacet[0].searchKey}">
 									<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
 								</c:when>
 								<c:otherwise>

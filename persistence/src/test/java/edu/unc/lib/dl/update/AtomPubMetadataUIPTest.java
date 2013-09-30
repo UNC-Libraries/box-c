@@ -27,7 +27,6 @@ import org.apache.abdera.parser.Parser;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
@@ -49,13 +48,12 @@ public class AtomPubMetadataUIPTest extends Assert {
 		when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString())).thenReturn(null);
 		
 		PID pid = new PID("uuid:test");
-		PersonAgent user = new PersonAgent("testuser", "testuser");
 		
-		AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, user, UpdateOperation.REPLACE, entry);
+		AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, "testuser", UpdateOperation.REPLACE, entry);
 		uip.storeOriginalDatastreams(accessClient);
 		
 		assertTrue(uip.getPID().getPid().equals(pid.getPid()));
-		assertTrue(uip.getUser().getOnyen().equals(user.getOnyen()));
+		assertTrue(uip.getUser().equals("testuser"));
 		assertTrue(uip.getMessage().equals("Creating collection"));
 		
 		assertEquals(0, uip.getOriginalData().size());
@@ -72,7 +70,6 @@ public class AtomPubMetadataUIPTest extends Assert {
 		Entry entry = entryDoc.getRoot();
 		
 		PID pid = new PID("uuid:test");
-		PersonAgent user = new PersonAgent("testuser", "testuser");
 		
 		AccessClient accessClient = mock(AccessClient.class);
 		MIMETypedStream modsStream = new MIMETypedStream();
@@ -84,16 +81,16 @@ public class AtomPubMetadataUIPTest extends Assert {
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()), anyString())).thenReturn(modsStream);
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq(ContentModelHelper.Datastream.RELS_EXT.getName()), anyString())).thenReturn(null);
 		
-		AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, user, UpdateOperation.ADD, entry);
+		AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, "testuser", UpdateOperation.ADD, entry);
 		assertEquals(0, uip.getOriginalData().size());
 		uip.storeOriginalDatastreams(accessClient);
 		
 		assertTrue(uip.getPID().getPid().equals(pid.getPid()));
-		assertTrue(uip.getUser().getOnyen().equals(user.getOnyen()));
 		assertTrue(uip.getMessage().equals("Creating collection"));
 		
 		assertEquals(1, uip.getOriginalData().size());
 		assertEquals(3, uip.getIncomingData().size());
 		assertEquals(0, uip.getModifiedData().size());
+		raf.close();
 	}
 }

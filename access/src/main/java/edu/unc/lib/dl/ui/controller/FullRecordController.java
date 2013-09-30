@@ -29,9 +29,6 @@ import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -47,12 +44,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Controller which retrieves extended metadata and returns a transformed view of it
+ * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
+ * according to the specifics of the object being retrieved.
  * 
  * @author bbpennel
  */
@@ -68,13 +67,23 @@ public class FullRecordController extends AbstractSolrSearchController {
 	
 	private static final int MAX_FOXML_TRIES = 2;
 
+	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
+	public String handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
+		return getFullRecord(pid, model, request);
+	}
+	
 	@RequestMapping(method = RequestMethod.GET)
 	public String handleRequest(Model model, HttpServletRequest request) {
 		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID.name()));
+		return getFullRecord(id, model, request);
+	}
+	
+	public String getFullRecord(String pid, Model model, HttpServletRequest request) {
+		
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 		
 		// Retrieve the objects record from Solr
-		SimpleIdRequest idRequest = new SimpleIdRequest(id, accessGroups);
+		SimpleIdRequest idRequest = new SimpleIdRequest(pid, accessGroups);
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
 		if (briefObject == null) {
 			throw new InvalidRecordRequestException();
@@ -112,10 +121,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 		if (fullObjectView != null) {
 			boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
 			boolean retrieveFacets = briefObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString());
-			boolean retrieveHierarchicalStructure = briefObject.getResourceType().equals(
-					searchSettings.resourceTypeCollection)
-					|| briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)
-					|| briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate);
 
 			if (retrieveChildrenCount) {
 				briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
@@ -135,37 +140,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 						accessGroups, facetsToRetrieve);
 
 				briefObject.getCountMap().put("child", resultResponse.getResultCount());
-				String collectionSearchStateUrl = searchSettings.searchStateParams.get("FACET_FIELDS") + "="
-						+ searchSettings.searchFieldParams.get(SearchFieldKeys.ANCESTOR_PATH.name()) + ":"
-						+ briefObject.getPath().getSearchValue();
 				model.addAttribute("facetFields", resultResponse.getFacetFields());
-				model.addAttribute("collectionSearchStateUrl", collectionSearchStateUrl);
-			}
-
-			if (retrieveHierarchicalStructure) {
-				LOG.debug("Retrieving hierarchical structure for " + briefObject.getResourceType() + " " + id);
-
-				// Retrieve hierarchical browse results
-				SearchState searchState = searchStateFactory.createHierarchicalBrowseSearchState();
-				searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), briefObject.getPath());
-				searchState.setResourceTypes(null);
-				HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(searchState, 4, accessGroups);
-
-				HierarchicalBrowseResultResponse hierarchicalResultResponse = null;
-
-				if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-					searchState.setRowsPerPage(100);
-				} else {
-					searchState.setRowsPerPage(20);
-				}
-				hierarchicalResultResponse = queryLayer.getHierarchicalBrowseResults(browseRequest);
-
-				hierarchicalResultResponse.setResultCount(hierarchicalResultResponse.getResultList().size());
-
-				if (LOG.isDebugEnabled() && hierarchicalResultResponse != null)
-					LOG.debug(id + " returned " + hierarchicalResultResponse.getResultCount() + " hierarchical results.");
-
-				model.addAttribute("hierarchicalViewResults", hierarchicalResultResponse);
 			}
 
 			model.addAttribute("fullObjectView", fullObjectView);
@@ -182,9 +157,9 @@ public class FullRecordController extends AbstractSolrSearchController {
 		RecordNavigationState recordNavigationState = (RecordNavigationState) request.getSession().getAttribute(
 				"recordNavigationState");
 		if (recordNavigationState != null) {
-			int index = recordNavigationState.indexOf(id);
+			int index = recordNavigationState.indexOf(pid);
 			if (index > -1) {
-				recordNavigationState.setCurrentRecordId(id);
+				recordNavigationState.setCurrentRecordId(pid);
 				recordNavigationState.setCurrentRecordIndex(index);
 				request.getSession().setAttribute("recordNavigationState", recordNavigationState);
 			}

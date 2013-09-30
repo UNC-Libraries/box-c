@@ -29,8 +29,17 @@ public class SimpleIdRequest {
 	protected AccessGroupSet accessGroups;
 	protected String accessTypeFilter;
 	
+	public SimpleIdRequest(String id) {
+		this.id = id;
+	}
+	
 	public SimpleIdRequest(List<String> resultFields, AccessGroupSet accessGroups) {
 		this.accessGroups = accessGroups;
+		this.resultFields = resultFields;
+	}
+	
+	public SimpleIdRequest(String id, List<String> resultFields) {
+		this.id = id;
 		this.resultFields = resultFields;
 	}
 	
@@ -48,8 +57,6 @@ public class SimpleIdRequest {
 	public SimpleIdRequest(String id, List<String> resultFields, AccessGroupSet accessGroups) {
 		this(id, resultFields, accessGroups, null);
 	}
-	
-	
 	
 	public String getId() {
 		return id;

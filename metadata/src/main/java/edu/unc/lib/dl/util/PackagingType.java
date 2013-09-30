@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 public enum PackagingType {
 	METS_CDR("http://cdr.unc.edu/METS/profiles/Simple"),
 	ACL_CDR("http://cdr.unc.edu/ACL/profiles/AccessControl"),
+	SIMPLE_OBJECT("http://cdr.unc.edu/model/Simple"),
 	METS_DSPACE_SIP_2("http://purl.org/net/sword/terms/METSDSpaceSIP"),
 	METS_DSPACE_SIP_1("http://purl.org/net/sword-types/METSDSpaceSIP"),
 	SIMPLE_ZIP("http://purl.org/net/sword/terms/SimpleZip");
@@ -50,5 +51,12 @@ public enum PackagingType {
 	@Override
 	public String toString() {
 		return this.uri;
+	}
+	
+	public static PackagingType getPackagingType(String uri) {
+		for (PackagingType type: values())
+			if (type.getUri().equals(uri))
+				return type;
+		return null;
 	}
 }

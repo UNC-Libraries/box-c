@@ -19,17 +19,8 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <div class="darkest shadowbottom" id="header">
-	<div id="header_search" class="fourcol darkest">
-		<div class="contentarea">
-			<c:if test="${pageContext.request.remoteUser}">
-				<div id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></div>
-			</c:if>
-		</div>
-	</div>
 	<div class="threecol dark shadowbottom">
-		<div class="contentarea">
-			<h1>Carolina Digital Repository</h1>
-			
+		<div id="header_banner">
 			<a href="${pageContext.request.contextPath}/" id="titlelink"><img src="/static/images/carolinadigitalrepository-trans.png"></a>
 			
 			<ul id="mainmenu">
@@ -39,6 +30,9 @@
 						<c:set var="homeTabClass" value="active"/>
 					</c:if>
 					<a href="${pageContext.request.contextPath}/" class="${homeTabClass}" id="home">Home</a>
+				</li>
+				<li>
+					<a href="statusMonitor" id="menu_status_monitor">Status Monitor</a>
 				</li>
 			</ul>
 			<ul class="secondarymenu">
@@ -61,6 +55,13 @@
 				</c:choose>
 				
 			</ul>
+		</div>
+	</div>
+	<div id="header_search" class="fourcol darkest">
+		<div class="contentarea">
+			<c:if test="${pageContext.request.remoteUser}">
+				<div id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></div>
+			</c:if>
 		</div>
 	</div>
 </div>

@@ -18,34 +18,44 @@
 /*
  * @author Ben Pennell
  */
-define([ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoadingOverlay'], function(
+define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor'], function(
 		$, ui, PID, RemoteStateChangeMonitor) {
-	$.widget("cdr.confirmationDialog", {
+	function ConfirmationDialog(options) {
+		this._create(options);
+	};
+	
+	$.extend(ConfirmationDialog.prototype, {
 		options : {
-			'promptText' : 'Are you sure?',
-			'confirmFunction' : undefined,
-			'confirmTarget' : undefined,
-			'confirmText' : 'Yes',
-			'cancelText' : 'Cancel',
-			'dialogOptions' : {
-				modal : false,
-				minHeight : 60,
-				autoOpen : false,
-				resizable : false,
-				dialogClass : "no_titlebar confirm_dialog",
-				position : {
-					my : "right top",
-					at : "right bottom"
-				},
-			},
-			'solo' : true
+			promptText : 'Are you sure?',
+			confirmFunction : undefined,
+			confirmTarget : undefined,
+			confirmText : 'Yes',
+			cancelTarget : undefined,
+			cancelFunction : undefined,
+			cancelText : 'Cancel',
+			solo : true,
+			additionalButtons : undefined,
+			autoOpen : false,
+			addClass : undefined
 		},
 		
-		_create : function() {
+		dialogOptions : {
+			modal : false,
+			minHeight : 60,
+			autoOpen : false,
+			resizable : false,
+			dialogClass : "no_titlebar confirm_dialog",
+			position : {
+				my : "right top",
+				at : "right bottom"
+			}
+		},
+		
+		_create : function(options) {
+			$.extend(this.options, options);
+			if ('dialogOptions' in this.options)
+				$.extend(this.dialogOptions, this.options.dialogOptions);
 			var self = this;
-			
-			if (this.options.dialogOptions.position.of == undefined)
-				this.options.dialogOptions.position.of = this.element;
 			
 			this.confirmDialog = $("<div class='confirm_dialogue'></div>");
 			if (this.options.promptText === undefined) {
@@ -55,20 +65,9 @@ define([ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoading
 			}
 			$("body").append(this.confirmDialog);
 			
-			var buttonsObject = {};
+			var buttonsObject = this._generateButtons();
 			
-			buttonsObject[self.options.cancelText] = function() {
-				$(this).dialog("close");
-			};
-			
-			buttonsObject[self.options.confirmText] = function() {
-				if (self.options.confirmFunction) {
-					self.options.confirmFunction.call(self.options.confirmTarget);
-				}
-				$(this).dialog("close");
-			};
-			
-			var dialogOptions = $.extend({}, this.options.dialogOptions, {
+			$.extend(this.dialogOptions, {
 				open : function() {
 					if (self.options.solo) {
 						$.each($('div.ui-dialog-content'), function (i, e) {
@@ -79,7 +78,40 @@ define([ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoading
 				},
 				buttons : buttonsObject
 			});
-			this.confirmDialog.dialog(dialogOptions);
+			this.confirmDialog.dialog(this.dialogOptions);
+			if (this.options.addClass)
+				this.confirmDialog.addClass(this.options.addClass);
+			if (this.options.autoOpen)
+				this.open();
+		},
+		
+		_generateButtons : function() {
+			var buttonsObject = {}, self = this;
+			
+			buttonsObject[this.options.cancelText] = function() {
+				if (self.options.cancelFunction) {
+					var result = self.options.cancelFunction.call(self.options.cancelTarget);
+					if (result !== undefined && !result)
+						return;
+				}
+				$(this).dialog("close");
+			};
+			
+			buttonsObject[this.options.confirmText] = function() {
+				if (self.options.confirmFunction) {
+					var result = self.options.confirmFunction.call(self.options.confirmTarget);
+					if (result !== undefined && !result)
+						return;
+				}
+				$(this).dialog("close");
+			};
+			
+			// Add any additional buttons in
+			if (this.options.additionalButtons) {
+				for (var index in this.options.additionalButtons)
+					buttonsObject[index] = this.options.additionalButtons[index];
+			}
+			return buttonsObject;
 		},
 		
 		open : function () {
@@ -88,6 +120,12 @@ define([ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeMonitor', 'ModalLoading
 		
 		close : function () {
 			this.confirmDialog.dialog('close');
+		},
+		
+		remove : function() {
+			this.confirmDialog.dialog('close');
+			this.confirmDialog.remove();
 		}
 	});
+	return ConfirmationDialog;
 });

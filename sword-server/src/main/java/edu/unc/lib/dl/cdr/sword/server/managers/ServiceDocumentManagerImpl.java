@@ -17,6 +17,7 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -35,8 +36,10 @@ import org.swordapp.server.SwordWorkspace;
 
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
+import edu.unc.lib.dl.cdr.sword.server.deposit.DepositHandler;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
+import edu.unc.lib.dl.util.PackagingType;
 
 /**
  * Generates service document from all containers which are the immediate children of the starting path, given the users
@@ -47,7 +50,7 @@ import edu.unc.lib.dl.util.ErrorURIRegistry;
 public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements ServiceDocumentManager {
 	private static final Logger LOG = LoggerFactory.getLogger(ServiceDocumentManagerImpl.class);
 
-	private List<String> acceptedPackaging;
+	private Collection<PackagingType> acceptedPackaging;
 
 	public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config)
 			throws SwordError, SwordServerException, SwordAuthException {
@@ -131,8 +134,8 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 				collection.addAccepts("application/zip");
 				collection.addAccepts("text/xml");
 				collection.addAccepts("application/xml");
-				for (String packaging : acceptedPackaging) {
-					collection.addAcceptPackaging(packaging);
+				for (PackagingType packaging : acceptedPackaging) {
+					collection.addAcceptPackaging(packaging.getUri());
 				}
 				collection.setMediation(true);
 				//
@@ -144,13 +147,9 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 		}
 		return result;
 	}
-
-	public List<String> getAcceptedPackaging() {
-		return acceptedPackaging;
-	}
-
-	public void setAcceptedPackaging(List<String> acceptedPackaging) {
-		this.acceptedPackaging = acceptedPackaging;
+	
+	public void setAcceptedPackaging(Map<PackagingType, DepositHandler> packageTypeHandlers) {
+		this.acceptedPackaging = packageTypeHandlers.keySet();
 	}
 
 }

@@ -48,9 +48,6 @@ import org.jdom.output.XMLOutputter;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentFactory;
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
@@ -74,13 +71,13 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public class BatchIngestTask implements Runnable {
 	/**
 	 * States for this task. The ingest states loop until the last object is verified. Container update state repeats
 	 * until all containers are updated.
-	 *
+	 * 
 	 */
 	public enum STATE {
 		INIT, CHECK, INGEST, INGEST_WAIT, INGEST_VERIFY_CHECKSUMS, CONTAINER_UPDATES, SEND_MESSAGES, CLEANUP, FINISHED
@@ -167,8 +164,9 @@ public class BatchIngestTask implements Runnable {
 	 */
 	private long lastIngestTime = -1;
 
-	private PersonAgent submitterAgent = null;
+	private String submitterAgent = null;
 
+	private File ingestLog;
 	private BufferedWriter ingestLogWriter = null;
 
 	// injected dependencies
@@ -176,7 +174,6 @@ public class BatchIngestTask implements Runnable {
 	private AccessClient accessClient = null;
 	private OperationsMessageSender operationsMessageSender = null;
 	private MailNotifier mailNotifier = null;
-	private AgentFactory agentFactory = null;
 	private boolean sendJmsMessages = true;
 	private boolean sendEmailMessages = true;
 
@@ -186,7 +183,7 @@ public class BatchIngestTask implements Runnable {
 	/**
 	 * Updates the RELS-EXT contains relationships and the MD_CONTENTS datastream. Call this method last, after all other
 	 * transactions, it will roll itself back on failure and throw an IngestException.
-	 *
+	 * 
 	 * @param submitter
 	 *           the Agent that submitted this change
 	 * @param placements
@@ -196,7 +193,7 @@ public class BatchIngestTask implements Runnable {
 	 * @return the list of PIDs reordered by this change
 	 * @throws FedoraException
 	 */
-	private List<PID> addContainerContents(Agent submitter, Collection<ContainerPlacement> placements, PID container)
+	private List<PID> addContainerContents(String submitter, Collection<ContainerPlacement> placements, PID container)
 			throws FedoraException {
 		List<PID> reordered = new ArrayList<PID>();
 
@@ -273,9 +270,10 @@ public class BatchIngestTask implements Runnable {
 			if (this.sendEmailMessages && this.mailNotifier != null) {
 				this.mailNotifier.sendIngestFailureNotice(e, ingestProperties);
 				w.println("\nEMAIL NOTICE SENT TO ADMINS AND THESE OTHERS:");
-				for(String addy : this.ingestProperties.getEmailRecipients()) {
-					w.println(addy);
-				}
+				if (this.ingestProperties != null && this.ingestProperties.getEmailRecipients() != null)
+					for (String addy : this.ingestProperties.getEmailRecipients()) {
+						w.println(addy);
+					}
 			}
 		} catch (IOException e1) {
 			throw new Error("Unexpected error", e1);
@@ -306,10 +304,6 @@ public class BatchIngestTask implements Runnable {
 		} else {
 			return new BatchFailedException(message);
 		}
-	}
-
-	public AgentFactory getAgentFactory() {
-		return agentFactory;
 	}
 
 	public Document getFOXMLDocument(File foxmlFile) {
@@ -412,9 +406,16 @@ public class BatchIngestTask implements Runnable {
 
 		// FEDORA INGEST CALL
 		try {
+			String lastLabel = null;
+			List<?> objectProperties = doc.getRootElement().getChild("objectProperties", JDOMNamespaceUtil.FOXML_NS).getChildren("property", JDOMNamespaceUtil.FOXML_NS);
+			for (Object objectProperty: objectProperties) {
+				String propertyType = ((Element) objectProperty).getAttributeValue("NAME");
+				if ("info:fedora/fedora-system:def/model#label".equals(propertyType))
+					lastLabel = ((Element) objectProperty).getAttributeValue("VALUE");
+			}
 			this.lastIngestFilename = foxmlFiles[next].getName();
 			this.lastIngestPID = pid;
-			logIngestAttempt(pid, this.lastIngestFilename);
+			logIngestAttempt(pid, this.lastIngestFilename, lastLabel);
 			this.getManagementClient().ingest(doc, Format.FOXML_1_1, ingestProperties.getOriginalDepositId());
 			this.state = STATE.INGEST_VERIFY_CHECKSUMS;
 		} catch (FedoraTimeoutException e) { // on timeout poll for the ingested object
@@ -431,7 +432,7 @@ public class BatchIngestTask implements Runnable {
 		try {
 			dataDir = new File(this.getBaseDir(), "data");
 			premisDir = new File(this.getBaseDir(), "premisEvents");
-			File ingestLog = new File(this.getBaseDir(), INGEST_LOG);
+			ingestLog = new File(this.getBaseDir(), INGEST_LOG);
 			ingestProperties = new IngestProperties(this.getBaseDir());
 			foxmlFiles = this.getBaseDir().listFiles(new FilenameFilter() {
 				@Override
@@ -453,7 +454,8 @@ public class BatchIngestTask implements Runnable {
 			containers = cSet.toArray(new PID[] {});
 			Arrays.sort(containers);
 
-			this.eventLogger = new PremisEventLogger(AgentFactory.getRepositorySoftwareAgentStub().getName());
+			this.eventLogger = new PremisEventLogger(ContentModelHelper.Administrative_PID.REPOSITORY_MANAGEMENT_SOFTWARE
+					.getPID().getURI());
 
 			this.state = STATE.CHECK;
 			if (ingestLog.exists()) { // this is a resume, find next foxml
@@ -464,7 +466,7 @@ public class BatchIngestTask implements Runnable {
 				}
 				r.close();
 				if (lastLine != null) {
-					// format is tab separated: <pid>\tpath
+					// format is tab separated: <pid>\t<filename>\t<label>
 					String[] l = lastLine.split("\\t");
 					if (CONTAINER_UPDATED_CODE.equals(l[1])) {
 						this.state = STATE.CONTAINER_UPDATES;
@@ -487,9 +489,9 @@ public class BatchIngestTask implements Runnable {
 		return failed;
 	}
 
-	private void logIngestAttempt(PID pid, String filename) {
+	private void logIngestAttempt(PID pid, String filename, String label) {
 		try {
-			this.ingestLogWriter.write(pid.getPid() + "\t" + filename);
+			this.ingestLogWriter.write(pid.getPid() + "\t" + filename + "\t" + (label != null? label.replace('\t', ' ') : ""));
 			this.ingestLogWriter.flush();
 		} catch (IOException e) {
 			throw new Error(e);
@@ -510,7 +512,7 @@ public class BatchIngestTask implements Runnable {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
@@ -564,7 +566,7 @@ public class BatchIngestTask implements Runnable {
 							this.state = STATE.FINISHED;
 							break;
 					}
-				} catch(RuntimeException e) {
+				} catch (RuntimeException e) {
 					throw fail("Unexpected RuntimeException", e);
 				}
 			} catch (BatchFailedException e) {
@@ -575,20 +577,11 @@ public class BatchIngestTask implements Runnable {
 	}
 
 	/**
-	 * @throws BatchFailedException 
-	 *
+	 * @throws BatchFailedException
+	 * 
 	 */
 	private void checkDestination() throws BatchFailedException {
-		Agent submitter = this.getAgentFactory().findPersonByOnyen(ingestProperties.getSubmitter(), false);
-		if (submitter == null) {
-			submitter = this.getAgentFactory().findSoftwareByName(ingestProperties.getSubmitter());
-			if (submitter == null) {
-				throw fail("Cannot look up submitter");
-			} else {
-				log.warn("Ingest submitter is a software agent: " + submitter.getName() + " (" + submitter.getPID() + ")");
-			}
-		}
-		this.eventLogger = new PremisEventLogger(((PersonAgent)submitter).getOnyen());
+		this.eventLogger = new PremisEventLogger(ingestProperties.getSubmitter());
 		try {
 			if (!this.managementClient.pollForObject(ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID(), 30, 600)) {
 				throw fail("Cannot poll a basic expected Fedora object: "
@@ -678,10 +671,6 @@ public class BatchIngestTask implements Runnable {
 		this.state = STATE.CLEANUP;
 	}
 
-	public void setAgentFactory(AgentFactory agentManager) {
-		this.agentFactory = agentManager;
-	}
-
 	public void setIngestPollingDelaySeconds(int ingestPollingDelaySeconds) {
 		this.ingestPollingDelaySeconds = ingestPollingDelaySeconds;
 	}
@@ -711,8 +700,8 @@ public class BatchIngestTask implements Runnable {
 	}
 
 	/**
-	 * @throws BatchFailedException 
-	 *
+	 * @throws BatchFailedException
+	 * 
 	 */
 	private void updateNextContainer() throws BatchFailedException {
 		int next = 0;
@@ -731,11 +720,8 @@ public class BatchIngestTask implements Runnable {
 		}
 		PrintWriter reorderedWriter = null;
 		try {
-			if (submitterAgent == null) {
-				submitterAgent = this.getAgentFactory().findPersonByOnyen(ingestProperties.getSubmitter(), false);
-			}
 			reorderedWriter = new PrintWriter(new FileWriter(new File(this.getBaseDir(), REORDERED_LOG), true));
-			logIngestAttempt(containers[next], CONTAINER_UPDATED_CODE);
+			logIngestAttempt(containers[next], CONTAINER_UPDATED_CODE, null);
 			this.lastIngestPID = containers[next];
 			// add RELS-EXT triples
 			// update MD_CONTENTS
@@ -760,7 +746,7 @@ public class BatchIngestTask implements Runnable {
 	/**
 	 * Same as ingest, but verifies any supplied checksums against available repository metadata. If the checksums do not
 	 * match, returns false.
-	 *
+	 * 
 	 * @param xml
 	 *           FOXML document to ingest (may include MD5 contentDigest elements)
 	 * @param message
@@ -768,7 +754,7 @@ public class BatchIngestTask implements Runnable {
 	 * @param ingested
 	 *           the log of ingested objects
 	 * @return
-	 * @throws BatchFailedException 
+	 * @throws BatchFailedException
 	 */
 	private void verifyLastIngestChecksums() throws BatchFailedException {
 		PID pid = this.lastIngestPID;
@@ -816,7 +802,8 @@ public class BatchIngestTask implements Runnable {
 
 	/**
 	 * Polls Fedora for the last ingested PID
-	 * @throws BatchFailedException 
+	 * 
+	 * @throws BatchFailedException
 	 */
 	private void waitForLastIngest() throws BatchFailedException {
 		try {
@@ -860,6 +847,10 @@ public class BatchIngestTask implements Runnable {
 
 	public boolean isSendJmsMessages() {
 		return sendJmsMessages;
+	}
+
+	public File getIngestLog() {
+		return ingestLog;
 	}
 
 	public void setSendJmsMessages(boolean sendJmsMessages) {
@@ -956,13 +947,12 @@ public class BatchIngestTask implements Runnable {
 	@Override
 	protected void finalize() throws Throwable {
 		super.finalize();
-		if(this.ingestLogWriter != null) {
+		if (this.ingestLogWriter != null) {
 			try {
 				this.ingestLogWriter.close();
-			} catch(IOException ignored) {}
+			} catch (IOException ignored) {
+			}
 		}
 	}
 
-	
-	
 }

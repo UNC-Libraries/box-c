@@ -20,11 +20,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.model.SearchState.RangePair;
 
 /**
  * Utility class which transforms search states to other formats.
@@ -36,27 +38,62 @@ public class SearchStateUtil {
 	public SearchStateUtil(){
 		
 	}
+	
+	private static String urlEncodeParameter(String value) {
+		char[] chars = value.toCharArray();
+		StringBuilder sb = new StringBuilder();
+		for (char character: chars) {
+			if (character == '&')
+				sb.append("%26");
+			else if (character == '=')
+				sb.append("%3D");
+			else if (character == '#')
+				sb.append("%23");
+			else sb.append(character);
+		}
+		return sb.toString();
+	}
 
+	public static HashMap<String,String> generateSearchParameters(SearchState searchState) {
+		HashMap<String,String> params = new HashMap<String,String>();
+		if (searchState.getSearchFields() != null && searchState.getSearchFields().size() > 0){
+			for (Entry<String,String> field: searchState.getSearchFields().entrySet()) {
+				String fieldName = searchSettings.searchFieldParam(field.getKey());
+				params.put(fieldName, urlEncodeParameter(field.getValue()));
+			}
+		}
+		
+		if (searchState.getRangeFields() != null && searchState.getRangeFields().size() > 0){
+			for (Entry<String, RangePair> field: searchState.getRangeFields().entrySet()) {
+				String fieldName = searchSettings.searchFieldParam(field.getKey());
+				params.put(fieldName, urlEncodeParameter(field.getValue().toString()));
+			}
+		}
+		String ancestorPath = SearchFieldKeys.ANCESTOR_PATH.toString();
+		if (searchState.getFacets() != null && searchState.getFacets().size() > 0){
+			for (Entry<String,Object> field: searchState.getFacets().entrySet()) {
+				if (!ancestorPath.equals(field.getKey())) {
+					String fieldName = searchSettings.searchFieldParam(field.getKey());
+					if (field.getValue() instanceof SearchFacet)
+						params.put(fieldName, urlEncodeParameter(((SearchFacet) field.getValue()).getLimitToValue()));
+					else params.put(fieldName, urlEncodeParameter(field.getValue().toString()));
+				}
+			}
+		}
+		return params;
+	}
+
+	
 	/**
 	 * Returns the search state as a URL query string.
 	 * @param searchState
 	 * @return
 	 */
 	public static HashMap<String,String> generateStateParameters(SearchState searchState){
-		HashMap<String,String> params = new HashMap<String,String>();
+		HashMap<String,String> params = generateSearchParameters(searchState);
 		
-		params.put(searchSettings.searchStateParam("ROWS_PER_PAGE"), ""+searchState.getRowsPerPage());
-		
-		if (searchState.getSearchFields() != null && searchState.getSearchFields().size() > 0){
-			params.put(searchSettings.searchStateParam("SEARCH_FIELDS"), joinFields(searchState.getSearchFields()));
-		}
-		
-		if (searchState.getRangeFields() != null && searchState.getRangeFields().size() > 0){
-			params.put(searchSettings.searchStateParam("RANGE_FIELDS"), joinFields(searchState.getRangeFields()));
-		}
-		
-		if (searchState.getFacets() != null && searchState.getFacets().size() > 0){
-			params.put(searchSettings.searchStateParam("FACET_FIELDS"), SearchStateUtil.joinFacets(searchState.getFacets(), '|', ':'));
+		if (searchState.getRowsPerPage() != null && searchState.getRowsPerPage() >= 0) {
+			params.put(searchSettings.searchStateParam("ROWS_PER_PAGE"), ""+searchState.getRowsPerPage());
 		}
 		
 		if (searchState.getFacetsToRetrieve() != null && searchState.getFacetsToRetrieve().size() > 0 && !searchState.getFacetsToRetrieve().containsAll(searchSettings.facetNames)){
@@ -67,17 +104,18 @@ public class SearchStateUtil {
 			params.put(searchSettings.searchStateParam("FACET_LIMIT_FIELDS"), joinFields(searchState.getFacetLimits()));
 		}
 		
-		if (searchState.getStartRow() != 0){
+		if (searchState.getStartRow() != null && searchState.getStartRow() != 0){
 			params.put(searchSettings.searchStateParam("START_ROW"), ""+searchState.getStartRow());
 		}
 		
 		//Add base facet limit if it isn't the default
-		if (searchState.getBaseFacetLimit() != searchSettings.facetsPerGroup){
+		if (searchState.getBaseFacetLimit() != null && searchState.getBaseFacetLimit() != searchSettings.facetsPerGroup){
 			params.put(searchSettings.searchStateParam("BASE_FACET_LIMIT"), ""+searchState.getBaseFacetLimit());
 		}
 		
 		if (searchState.getSortType() != null && searchState.getSortType().length() != 0){
-			params.put(searchSettings.searchStateParam("SORT_TYPE"), searchState.getSortType());
+			if (!"default".equals(searchState.getSortType()))
+				params.put(searchSettings.searchStateParam("SORT_TYPE"), searchState.getSortType());
 			if (searchState.getSortOrder() != null){
 				params.put(searchSettings.searchStateParam("SORT_ORDER"), searchState.getSortOrder());
 			}
@@ -93,11 +131,11 @@ public class SearchStateUtil {
 			params.put(searchSettings.searchStateParam("RESOURCE_TYPES"), joinFields(searchState.getResourceTypes(), ",", false));
 		}
 		
-		if (searchState.getAccessTypeFilter() != null){
-			params.put(searchSettings.searchStateParam("ACCESS_FILTER_TYPE"), searchSettings.searchFieldParam(searchState.getAccessTypeFilter()));
-		}
-		
 		return params;
+	}
+	
+	public static String generateSearchParameterString(SearchState searchState) {
+		return generateStateParameterString(generateSearchParameters(searchState));
 	}
 	
 	public static String generateStateParameterString(SearchState searchState){
@@ -165,9 +203,9 @@ public class SearchStateUtil {
 			Object fieldValue = fields.get(fieldName);
 			if (fieldValue != null){
 				if (fieldValue instanceof SearchFacet){
-					sb.append(((SearchFacet) fieldValue).getLimitToValue());
+					sb.append(((SearchFacet) fieldValue).getLimitToValue().replace("|", "%7C"));
 				} else {
-					sb.append(fieldValue);
+					sb.append(fieldValue.toString().replace("|", "%7C"));
 				}
 			}
 		}

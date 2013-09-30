@@ -16,9 +16,10 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,10 +30,9 @@ import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
- * Filter which sets access control related fields for a document based off 
+ * Filter which sets access control related fields for a document
  * @author bbpennel
  *
  */
@@ -46,12 +46,16 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 	 */
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		ObjectAccessControlsBean aclBean = accessControlService.getObjectAccessControls(dip.getPid());
+		Map<String, List<String>> triples = this.retrieveTriples(dip);
+		ObjectAccessControlsBean aclBean;
+		if (dip.getParentDocument() == null || dip.getParentDocument().getAclBean() == null) {
+			aclBean = accessControlService.getObjectAccessControls(dip.getPid());
+		} else {
+			aclBean = new ObjectAccessControlsBean(dip.getParentDocument().getAclBean(), dip.getPid(), triples);
+		}
 		
-		Element relsExt = dip.getRelsExt();
-		
-		Element allowIndexingEl = relsExt.getChild(ContentModelHelper.CDRProperty.allowIndexing.name(), JDOMNamespaceUtil.CDR_NS);
-		boolean allowIndexing = (allowIndexingEl == null) ? true : !allowIndexingEl.getText().equals("no");
+		String allowIndexingString = getFirstTripleValue(triples, ContentModelHelper.CDRProperty.allowIndexing.toString());
+		boolean allowIndexing = !"no".equals(allowIndexingString);
 		
 		// If indexing is disallowed then block all patron groups
 		if (allowIndexing) {
@@ -62,9 +66,9 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 			if (listGroups != null) {
 				readGroups.addAll(listGroups);
 			}
-			
-			if (readGroups.size() > 0)
-				dip.getDocument().setReadGroup(new ArrayList<String>(readGroups));
+			dip.getDocument().setReadGroup(new ArrayList<String>(readGroups));
+		} else {
+			dip.getDocument().setReadGroup(new ArrayList<String>(0));
 		}
 		
 		// Populate the list of groups that can view administrative aspects of the object
@@ -74,6 +78,9 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 		
 		// Add in flattened role group mappings
 		dip.getDocument().setRoleGroup(aclBean.roleGroupsToList());
+		if (log.isDebugEnabled())
+			log.debug("Role groups: " + dip.getDocument().getRoleGroup());
+		dip.setAclBean(aclBean);
 	}
 
 	public void setAccessControlService(AccessControlService accessControlService) {

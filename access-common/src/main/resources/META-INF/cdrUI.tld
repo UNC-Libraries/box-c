@@ -5,36 +5,11 @@
 	<tlib-version>1.0</tlib-version>
 	<short-name>cdr</short-name>
 	<uri>http://cdr.lib.unc.edu/cdrUI</uri>
-	<tag>
-		<name>hierarchicalTree</name>
-		<tag-class>edu.unc.lib.dl.ui.view.HierarchicalTreeRecurseTag</tag-class>
-		<body-content>scriptless</body-content> 
-		<attribute>
-			<name>items</name>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>baseIndentCode</name>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>hideRoot</name>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>excludeIds</name>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>var</name>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-	</tag>
 	<function>
 		<name>containsAny</name>
-		<function-class>edu.unc.lib.dl.security.access.AccessGroupSet</function-class>
+		<function-class>edu.unc.lib.dl.acl.util.AccessGroupSet</function-class>
 		<function-signature>
-			boolean containsAny(edu.unc.lib.dl.security.access.AccessGroupSet, 
+			boolean containsAny(edu.unc.lib.dl.acl.util.AccessGroupSet, 
 				java.util.Collection)
 		</function-signature>
 	</function>
@@ -137,6 +112,20 @@
 		</function-signature>
 	</function>
 	<function>
+		<name>metadataToJSON</name>
+		<function-class>edu.unc.lib.dl.ui.util.SerializationUtil</function-class>
+		<function-signature>
+			java.lang.String metadataToJSON(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, edu.unc.lib.dl.acl.util.AccessGroupSet)
+		</function-signature>
+	</function>
+	<function>
+		<name>resultsToJSON</name>
+		<function-class>edu.unc.lib.dl.ui.util.SerializationUtil</function-class>
+		<function-signature>
+			java.lang.String resultsToJSON(edu.unc.lib.dl.search.solr.model.SearchResultResponse, edu.unc.lib.dl.acl.util.AccessGroupSet)
+		</function-signature>
+	</function>
+	<function>
 		<name>permitDatastreamAccess</name>
 		<function-class>edu.unc.lib.dl.ui.util.AccessUtil</function-class>
 		<function-signature>
@@ -155,6 +144,27 @@
 		<function-class>edu.unc.lib.dl.ui.util.AccessUtil</function-class>
 		<function-signature>
 			boolean hasAccess(edu.unc.lib.dl.acl.util.AccessGroupSet, edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, java.lang.String)
+		</function-signature>
+	</function>
+	<function>
+		<name>getSearchQueryParameters</name>
+		<function-class>edu.unc.lib.dl.search.solr.util.SearchStateUtil</function-class>
+		<function-signature>
+			java.lang.String generateSearchParameterString(edu.unc.lib.dl.search.solr.model.SearchState)
+		</function-signature>
+	</function>
+	<function>
+		<name>getSearchStateParameters</name>
+		<function-class>edu.unc.lib.dl.search.solr.util.SearchStateUtil</function-class>
+		<function-signature>
+			java.lang.String generateStateParameterString(edu.unc.lib.dl.search.solr.model.SearchState)
+		</function-signature>
+	</function>
+	<function>
+		<name>removeParameter</name>
+		<function-class>edu.unc.lib.dl.ui.util.StringFormatUtil</function-class>
+		<function-signature>
+			java.lang.String removeQueryParameter(java.lang.String, java.lang.String)
 		</function-signature>
 	</function>
 </taglib>

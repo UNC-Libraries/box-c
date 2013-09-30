@@ -24,8 +24,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.schema.MoveObjectRequest;
@@ -39,7 +37,6 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class UpdateServiceImpl implements UpdateService {
 	protected final Log logger = LogFactory.getLog(getClass());
-	private AgentFactory agentManager;
 	private DigitalObjectManager digitalObjectManager;
 	private TripleStoreQueryService tripleStoreQueryService;
 
@@ -48,14 +45,12 @@ public class UpdateServiceImpl implements UpdateService {
 		logger.debug("In UpdateServiceImpl.update");
 
 		try {
-			Agent agent = agentManager.findPersonByOnyen(request
-					.getAdminOnyen(), true);
+			String agent = request.getAdminOnyen();
 
 			PID pid = new PID(request.getPid());
 
 			// see if metadata is populated
-			if ((request.getMetadata() != null)
-					&& (request.getMetadata().length > 0)) {
+			if ((request.getMetadata() != null) && (request.getMetadata().length > 0)) {
 				logger.debug("metadata bytes: " + request.getMetadata().length);
 
 				File file = File.createTempFile("test", "ing");
@@ -63,8 +58,8 @@ public class UpdateServiceImpl implements UpdateService {
 				fos.write(request.getMetadata());
 				fos.close();
 
-				digitalObjectManager.updateDescription(pid, file, request
-						.getMetadataChecksum(), agent, "Updated through UI");
+				digitalObjectManager.updateDescription(pid, file, request.getMetadataChecksum(), agent,
+						"Updated through UI");
 
 				request.setMessage(Constants.SUCCESS);
 			}
@@ -76,23 +71,17 @@ public class UpdateServiceImpl implements UpdateService {
 
 						File file = new File(singleUpdateFile.getFile());
 
-						logger.debug("file name: "
-								+ singleUpdateFile.getFileName());
-						logger.debug("file type: "
-								+ singleUpdateFile.getMimetype());
-						logger.debug("file checksum: '"
-								+ singleUpdateFile.getChecksum() + "'");
+						logger.debug("file name: " + singleUpdateFile.getFileName());
+						logger.debug("file type: " + singleUpdateFile.getMimetype());
+						logger.debug("file checksum: '" + singleUpdateFile.getChecksum() + "'");
 
 						if (!notNull(singleUpdateFile.getChecksum())) {
 							singleUpdateFile.setChecksum(null);
 						}
 
-						digitalObjectManager.updateSourceData(pid,
-								singleUpdateFile.getDsId(), file,
-								singleUpdateFile.getChecksum(),
-								singleUpdateFile.getLabel(), singleUpdateFile
-										.getMimetype(), agent,
-								"Updated through UI");
+						digitalObjectManager.updateSourceData(pid, singleUpdateFile.getDsId(), file,
+								singleUpdateFile.getChecksum(), singleUpdateFile.getLabel(), singleUpdateFile.getMimetype(),
+								agent, "Updated through UI");
 
 						request.setMessage(Constants.SUCCESS);
 					}
@@ -147,20 +136,11 @@ public class UpdateServiceImpl implements UpdateService {
 		return true;
 	}
 
-	public AgentFactory getAgentManager() {
-		return agentManager;
-	}
-
-	public void setAgentManager(AgentFactory agentManager) {
-		this.agentManager = agentManager;
-	}
-
 	public DigitalObjectManager getDigitalObjectManager() {
 		return digitalObjectManager;
 	}
 
-	public void setDigitalObjectManager(
-			DigitalObjectManager digitalObjectManager) {
+	public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
 		this.digitalObjectManager = digitalObjectManager;
 	}
 
@@ -168,8 +148,7 @@ public class UpdateServiceImpl implements UpdateService {
 		return tripleStoreQueryService;
 	}
 
-	public void setTripleStoreQueryService(
-			TripleStoreQueryService tripleStoreQueryService) {
+	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
 		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
 
@@ -180,24 +159,18 @@ public class UpdateServiceImpl implements UpdateService {
 		public void run() {
 			try {
 
-				Agent agent = agentManager.findPersonByOnyen(moveObjectRequest
-						.getAdminOnyen(), true);
+				String agent = moveObjectRequest.getAdminOnyen();
 
 				PID parent = new PID(moveObjectRequest.getParent());
 
-				String parentPath = tripleStoreQueryService
-						.lookupRepositoryPath(parent);
-
-				List<PID> pids = new ArrayList<PID>(moveObjectRequest
-						.getChildren().size());
+				List<PID> pids = new ArrayList<PID>(moveObjectRequest.getChildren().size());
 
 				for (String child : moveObjectRequest.getChildren()) {
 					PID childPid = new PID(child);
 					pids.add(childPid);
 				}
 
-				digitalObjectManager.move(pids, parentPath, agent,
-						"Moved through UI");
+				digitalObjectManager.move(pids, parent, agent, "Moved through UI");
 
 			} catch (Exception e) {
 				e.printStackTrace();

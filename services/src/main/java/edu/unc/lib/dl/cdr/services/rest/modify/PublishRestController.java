@@ -34,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.ws.soap.client.SoapFaultClientException;
 
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -52,20 +51,18 @@ public class PublishRestController {
 	private ManagementClient managementClient;
 	@Autowired(required = true)
 	private OperationsMessageSender messageSender;
-	
-	@RequestMapping(value = "edit/publish/{prefix}/{id}", method = RequestMethod.GET)
+
+	@RequestMapping(value = "edit/publish/{id}", method = RequestMethod.GET)
 	public @ResponseBody
-	Map<String, ? extends Object> publishObject(@PathVariable("prefix") String idPrefix, @PathVariable("id") String id,
-			Model model, HttpServletRequest request) {
-		PID pid = new PID(idPrefix + ":" + id);
+	Map<String, ? extends Object> publishObject(@PathVariable("id") String id, Model model, HttpServletRequest request) {
+		PID pid = new PID(id);
 		return this.publishObject(pid, true, request.getRemoteUser());
 	}
 
-	@RequestMapping(value = "edit/unpublish/{prefix}/{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "edit/unpublish/{id}", method = RequestMethod.GET)
 	public @ResponseBody
-	Map<String, ? extends Object> unpublishObject(@PathVariable("prefix") String idPrefix,
-			@PathVariable("id") String id, Model model, HttpServletRequest request) {
-		PID pid = new PID(idPrefix + ":" + id);
+	Map<String, ? extends Object> unpublishObject(@PathVariable("id") String id, Model model, HttpServletRequest request) {
+		PID pid = new PID(id);
 		return this.publishObject(pid, false, request.getRemoteUser());
 	}
 
@@ -98,13 +95,13 @@ public class PublishRestController {
 	List<? extends Object> publishObjects(@RequestParam("ids") String ids, HttpServletRequest request) {
 		return publishObjects(ids, true, request.getRemoteUser());
 	}
-	
+
 	@RequestMapping(value = "edit/unpublish", method = RequestMethod.POST)
 	public @ResponseBody
 	List<? extends Object> unpublishObjects(@RequestParam("ids") String ids, HttpServletRequest request) {
 		return publishObjects(ids, false, request.getRemoteUser());
 	}
-	
+
 	public List<? extends Object> publishObjects(@RequestParam("ids") String ids, boolean publish, String username) {
 		if (ids == null)
 			return null;

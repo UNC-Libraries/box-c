@@ -1,17 +1,22 @@
-.edit_acls {
+.edit_form {
 	float: none;
 	font-size: 13px;
 	background-color: fff;
 	font-family: Verdana,Arial,sans-serif;
 }
 
-.edit_acls .form_field {
+.edit_form .form_field {
 	padding-left: 5px;
 	text-align: left;
 	margin-bottom: 10px;
 }
 
-.edit_acls h3 {
+.edit_form .file_info {
+	margin-left: 190px;
+	color: #777799;
+}
+
+.edit_form h3 {
 	font-size: 85%;
 	font-weight: bold;
 	color: #555;
@@ -19,21 +24,25 @@
 	padding-top: 5px;
 }
 
-.edit_acls label {
+.edit_form label {
 	text-align: right;
 	width: 160px;
 	display: inline-block;
 	margin-right: 20px;
 }
 
-.edit_acls input, .edit_acls textarea, .edit_acls select {
+.edit_form input, .edit_form textarea, .edit_form select {
 	background-color: #FFFFFF;
 	border: 1px solid #C8D8E0;
 	color: #666666;
 	padding: 2px;
 }
 
-.edit_acls .update_button {
+.edit_form input[type="file"] {
+	border-width: 0;
+}
+
+.edit_form .update_button {
 	background-color: #165D7F;
 	color: #fff;
 	padding: 4px 8px;
@@ -42,7 +51,7 @@
 	margin: 10px 0px 0px 0px;
 }
 
-.edit_acls .update_button:active {
+.edit_form .update_button:active {
 	background-image: linear-gradient(to bottom, #3E8DB0, #72AAC3);
 	box-shadow: 2px 2px 2px #555555 inset;
 	color: #ddd;
@@ -53,11 +62,28 @@
 	text-align: right;
 }
 
-.edit_acls a {
+.edit_form a {
 	text-decoration: none;
 	color: #0A5274;
 	border-bottom: 1px dashed #0A5274;
+	cursor: pointer;
 }
+
+.edit_form .errors {
+	display: none;
+}
+
+.edit_form .error_stack {
+	white-space: pre;
+	text-align: left;
+}
+
+.edit_form p {
+	padding-top: 7px;
+	text-align: left;
+}
+
+/** Edit ACL */
 
 .edit_acls .roles_granted {
 	margin: 5px 0px 0px 5px;
@@ -108,4 +134,18 @@
 
 .add_role_granted {
 	display: none;
+}
+
+/** Create container */
+#create_container_form {
+	margin-top: 10px;
+}
+
+#create_container_form label {
+	width: 135px;
+}
+
+/** Create simple object */
+.create_simple_object_form label {
+	width: 70px;
 }

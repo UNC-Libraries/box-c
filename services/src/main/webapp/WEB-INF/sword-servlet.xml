@@ -81,9 +81,7 @@
 				<bean class="edu.unc.lib.dl.ingest.aip.FixPathConflictFilter">
 					<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 				</bean>
-				<bean class="edu.unc.lib.dl.ingest.aip.BiomedCentralAIPFilter" init-method="init">
-					<property name="agentFactory" ref="agentFactory"/>
-				</bean>
+				<bean class="edu.unc.lib.dl.ingest.aip.BiomedCentralAIPFilter" init-method="init" />
 				<bean class="edu.unc.lib.dl.ingest.aip.MODSValidationFilter">
 					<property name="schematronValidator" ref="schematronValidator" />
 				</bean>
@@ -130,6 +128,7 @@
 		<property name="batchIngestQueue" ref="batchIngestQueue"/>
 		<property name="batchIngestTaskFactory" ref="batchIngestTaskFactory"/>	
 		<property name="available" value="true"/>
+		<property name="collectionsPid" ref="collectionsPid"/>
 	</bean>
 	
 	<bean id="batchIngestQueue" class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">
@@ -145,14 +144,8 @@
 		<property name="accessClient" ref="accessClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
-		<property name="agentFactory" ref="agentFactory"/>
 		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
-	</bean>
-	
-
-	<bean name="agentFactory" class="edu.unc.lib.dl.agents.AgentFactory">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
@@ -279,20 +272,29 @@
 	
 	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl"
 		init-method="init">
-		<property name="digitalObjectManager" ref="digitalObjectManager"/>
-		<property name="depositReportingUtil" ref="depositReportingUtil"/>
+		<property name="packageHandlers" ref="packageHandlers" />
 	</bean>
 	
 	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ServiceDocumentManagerImpl" 
 		init-method="init">
-		<property name="acceptedPackaging">
-			<list>
-				<value>#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_1.uri}</value>
-				<value>#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_2.uri}</value>
-				<value>#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR.uri}</value>
-			</list>
-		</property>
+		<property name="acceptedPackaging" ref="packageHandlers" />
 	</bean>
+	
+	<!-- Deposit Handlers -->
+	<bean id="metsDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.METSDepositHandler" />
+	<bean id="simpleObjectDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.SimpleObjectDepositHandler" />
+	<bean id="atomPubEntryDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.AtomPubEntryDepositHandler" />
+	
+	<util:map id="packageHandlers">
+		<entry>
+			<key><null/></key>
+			<ref bean="atomPubEntryDepositHandler"/>
+		</entry>
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_1}" value-ref="metsDepositHandler" />
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_2}" value-ref="metsDepositHandler" />
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="metsDepositHandler" />
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
+	</util:map>
 	
 	<bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl"
 		init-method="init">

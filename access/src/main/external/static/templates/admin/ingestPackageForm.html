@@ -1,0 +1,26 @@
+<iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
+<form id="ingest_package_form" method="post" action="ingest/<%= pid %>" enctype="multipart/form-data" target="upload_file_frame" class="edit_form">
+	<p>Add objects from an ingest package.  Select the package type from the list of supported types.</p>
+	<h3>Package</h3>
+	<div class="form_field">
+		<label>Ingest Package*</label>
+		<input type="file" id="ingest_package_file" name="file"/>
+		<div class="file_info">&nbsp;</div>
+	</div>
+	<div class="form_field">
+		<label>Package Type*</label>
+		<select name="type">
+			<option value="http://cdr.unc.edu/METS/profiles/Simple">CDR METS file</option>
+			<option value="bagit">Bagit File</option>
+			<option value="http://purl.org/net/sword/terms/METSDSpaceSIP">DSpace METS</option>
+		</select>
+	</div>
+	<div class="update_field">
+		<input type="submit" id="ingest_package_button" class="update_button" value="Ingest" />
+	</div>
+	<div class="errors">
+		<h3>Errors</h3>
+		<div class="error_stack">
+		</div>
+	</div>
+</form>

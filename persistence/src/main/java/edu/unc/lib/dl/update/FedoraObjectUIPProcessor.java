@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -68,7 +67,7 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 					if (datastream != null && modifiedFile.getValue() != null) {
 						log.debug("Adding/replacing datastream " + datastream.getName() + " on " + uip.getPID().getPid());
 						digitalObjectManager.addOrReplaceDatastream(uip.getPID(), datastream, modifiedFile.getValue(),
-								uip.getMimetype(modifiedFile.getKey()), (Agent) uip.getUser(), uip.getMessage());
+								uip.getMimetype(modifiedFile.getKey()), uip.getUser(), uip.getMessage());
 					}
 				}
 			} else {
@@ -80,23 +79,24 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 				// changes
 				digitalObjectManager.addOrReplaceDatastream(uip.getPID(), targetedDatastream,
 						modifiedFiles.get(targetedDatastream.getName()), uip.getMimetype(targetedDatastream.getName()),
-						(Agent) uip.getUser(), uip.getMessage());
+						uip.getUser(), uip.getMessage());
 			}
-			
+
 			// Issue indexing operations based on the data updated
 			Collection<IndexingActionType> indexingActions = getIndexingActions(fuip);
-			if (indexingActions != null)
-				for (IndexingActionType actionType: indexingActions)
-					this.operationsMessageSender.sendIndexingOperation(uip.getUser().getOnyen(), Arrays.asList(uip.getPID()), actionType);
+			if (indexingActions != null) {
+				for (IndexingActionType actionType : indexingActions)
+					operationsMessageSender.sendIndexingOperation(uip.getUser(), Arrays.asList(uip.getPID()), actionType);
+			}
 		}
 	}
-	
+
 	private Collection<IndexingActionType> getIndexingActions(FedoraObjectUIP fuip) {
 		if (fuip.getModifiedData().size() == 0)
 			return null;
 		Collection<IndexingActionType> actionTypes = new HashSet<IndexingActionType>(fuip.getModifiedData().size());
-		if (fuip.incomingData.containsKey("ACL") && fuip.modifiedData.containsKey(Datastream.RELS_EXT.getName())) {
-			actionTypes.add(IndexingActionType.RECURSIVE_ADD);
+		if (fuip.getIncomingData().containsKey("ACL") && fuip.getModifiedData().containsKey(Datastream.RELS_EXT.getName())) {
+			actionTypes.add(IndexingActionType.UPDATE_ACCESS);
 		} else {
 			actionTypes.add(IndexingActionType.ADD);
 		}

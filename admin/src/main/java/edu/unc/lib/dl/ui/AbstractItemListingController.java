@@ -39,8 +39,6 @@ import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
-import edu.unc.lib.dl.agents.Agent;
-import edu.unc.lib.dl.agents.AgentFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.DataResponse;
 import edu.unc.lib.dl.schema.DeleteObjectDAO;
@@ -63,23 +61,18 @@ public class AbstractItemListingController extends SimpleFormController {
 
 	private UiWebService uiWebService;
 	private FolderManager folderManager;
-	private AgentFactory agentManager;
 	private TripleStoreQueryService tripleStoreQueryService;
 	private String deleteObjectUrl;
 	private DigitalObjectManager digitalObjectManager;
 
-	
-	
-	protected ModelAndView onSubmit(HttpServletRequest request,
-			HttpServletResponse response, Object command, BindException errors)
-			throws ServletException, IOException {
-		
+	protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object command,
+			BindException errors) throws ServletException, IOException {
+
 		return onSubmitInternal(request, response, command, errors);
 	}
 
-	protected ModelAndView onSubmitInternal(HttpServletRequest request,
-			HttpServletResponse response, Object command, BindException errors)
-			throws ServletException, IOException {
+	protected ModelAndView onSubmitInternal(HttpServletRequest request, HttpServletResponse response, Object command,
+			BindException errors) throws ServletException, IOException {
 		Map model = errors.getModel();
 
 		// get data transfer object if it exists
@@ -99,15 +92,14 @@ public class AbstractItemListingController extends SimpleFormController {
 			for (int i = 0; i < objects.length; i++) {
 				logger.debug("Item " + i + " pid: " + objects[i]);
 			}
-			
+
 			try {
-				Agent mediator = agentManager.findPersonByOnyen(request.getRemoteUser(), false);
+				String mediator = request.getRemoteUser();
 
 				for (int i = 0; i < objects.length; i++) {
 					PID pid = new PID(objects[i]);
 
-					digitalObjectManager.delete(pid, mediator,
-							"Deleted through delete object UI");
+					digitalObjectManager.delete(pid, mediator, "Deleted through delete object UI");
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -129,8 +121,7 @@ public class AbstractItemListingController extends SimpleFormController {
 		return new ModelAndView("deleteobject", model);
 	}
 
-	protected Object formBackingObject(HttpServletRequest request)
-			throws Exception {
+	protected Object formBackingObject(HttpServletRequest request) throws Exception {
 		DeleteObjectDAO object = new DeleteObjectDAO();
 
 		getBreadcrumbs(request, object);
@@ -150,24 +141,21 @@ public class AbstractItemListingController extends SimpleFormController {
 		PID pathPid = null;
 
 		try {
-			pathPid = tripleStoreQueryService.fetchByRepositoryPath(URLDecoder
-					.decode(irUrlInfo.getFedoraUrl(), Constants.UTF_8));
+			pathPid = tripleStoreQueryService.fetchByRepositoryPath(URLDecoder.decode(irUrlInfo.getFedoraUrl(),
+					Constants.UTF_8));
 			if (pathPid == null) {
 				logger.debug("getBreadcrumbs pathPid is NULL");
 			} else {
-				logger.debug("getBreadcrumbs pathPid is " + pathPid.getPid()
-						+ " " + pathPid.getURI());
+				logger.debug("getBreadcrumbs pathPid is " + pathPid.getPid() + " " + pathPid.getURI());
 			}
 		} catch (UnsupportedEncodingException e) {
 
 			e.printStackTrace();
 		}
 
-		List<PathInfo> pathList = tripleStoreQueryService
-				.lookupRepositoryPathInfo(pathPid);
+		List<PathInfo> pathList = tripleStoreQueryService.lookupRepositoryPathInfo(pathPid);
 
-		PathInfoResponse pathInfoResponse = uiWebService.getBreadcrumbs(pathPid
-				.getPid(), "test");
+		PathInfoResponse pathInfoResponse = uiWebService.getBreadcrumbs(pathPid.getPid(), "test");
 
 		if ((pathInfoResponse.getPaths().size() - 1) > 0) {
 
@@ -176,8 +164,7 @@ public class AbstractItemListingController extends SimpleFormController {
 
 				pidao.setLabel(pathInfoResponse.getPaths().get(i).getLabel());
 				pidao.setPid(pathInfoResponse.getPaths().get(i).getPid());
-				pidao.setPath(deleteObjectUrl
-						+ pathInfoResponse.getPaths().get(i).getPath());
+				pidao.setPath(deleteObjectUrl + pathInfoResponse.getPaths().get(i).getPath());
 
 				dao.getBreadcrumbs().add(pidao);
 			}
@@ -195,19 +182,16 @@ public class AbstractItemListingController extends SimpleFormController {
 		UtilityMethods.populateIrUrlInfo(irUrlInfo, request);
 
 		irUrlInfo.setParameters(Constants.DS_PREFIX + Constants.MD_CONTENTS);
-		DataResponse contents = uiWebService.getDataFromIrUrlInfo(irUrlInfo,
-				"test");
+		DataResponse contents = uiWebService.getDataFromIrUrlInfo(irUrlInfo, "test");
 
 		if (contents != null) {
-			String contentsStr = new String(contents.getDissemination()
-					.getStream());
+			String contentsStr = new String(contents.getDissemination().getStream());
 
 			List<String> childPids = new ArrayList<String>();
 			List<String> childUrls = new ArrayList<String>();
 
 			try {
-				Document d = new SAXBuilder().build(new ByteArrayInputStream(
-						contentsStr.getBytes()));
+				Document d = new SAXBuilder().build(new ByteArrayInputStream(contentsStr.getBytes()));
 
 				Element e = d.getRootElement();
 
@@ -228,11 +212,9 @@ public class AbstractItemListingController extends SimpleFormController {
 			}
 
 			for (String pid : childPids) {
-				PathInfoResponse pathInfo = uiWebService.getBreadcrumbs(pid,
-						"test");
+				PathInfoResponse pathInfo = uiWebService.getBreadcrumbs(pid, "test");
 
-				PathInfoDao childPath = pathInfo.getPaths().get(
-						pathInfo.getPaths().size() - 1);
+				PathInfoDao childPath = pathInfo.getPaths().get(pathInfo.getPaths().size() - 1);
 
 				childPath.setPath(deleteObjectUrl + childPath.getPath());
 
@@ -257,14 +239,6 @@ public class AbstractItemListingController extends SimpleFormController {
 		this.folderManager = folderManager;
 	}
 
-	public AgentFactory getAgentManager() {
-		return agentManager;
-	}
-
-	public void setAgentManager(AgentFactory agentManager) {
-		this.agentManager = agentManager;
-	}
-
 	private boolean notNull(String value) {
 		if ((value == null) || (value.equals(""))) {
 			return false;
@@ -277,8 +251,7 @@ public class AbstractItemListingController extends SimpleFormController {
 		return tripleStoreQueryService;
 	}
 
-	public void setTripleStoreQueryService(
-			TripleStoreQueryService tripleStoreQueryService) {
+	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
 		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
 
@@ -294,8 +267,7 @@ public class AbstractItemListingController extends SimpleFormController {
 		return digitalObjectManager;
 	}
 
-	public void setDigitalObjectManager(
-			DigitalObjectManager digitalObjectManager) {
+	public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
 		this.digitalObjectManager = digitalObjectManager;
 	}
 }

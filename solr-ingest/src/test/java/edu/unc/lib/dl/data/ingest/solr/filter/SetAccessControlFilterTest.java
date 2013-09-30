@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
-//import org.apache.solr.common.SolrInputDocument;
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 import org.junit.Assert;
@@ -72,7 +70,7 @@ public class SetAccessControlFilterTest extends Assert {
 		roles.put("http://cdr.unc.edu/definitions/acl#inheritPermissions", Arrays.asList("false"));
 		
 		List<String> embargoes = new ArrayList<String>();
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, embargoes);
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, null, embargoes);
 		
 		AccessControlService accessControlService = mock(AccessControlService.class);
 		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
@@ -92,11 +90,6 @@ public class SetAccessControlFilterTest extends Assert {
 		assertTrue(dip.getDocument().getReadGroup().contains("public"));
 		
 		assertNull(dip.getDocument().getAdminGroup());
-		
-//		DocumentObjectBinder binder = new DocumentObjectBinder();
-//		SolrInputDocument solrDoc = binder.toSolrInputDocument(dip.getDocument());
-//		
-//		System.out.println(solrDoc);
 	}
 	
 	@Test
@@ -107,7 +100,7 @@ public class SetAccessControlFilterTest extends Assert {
 		roles.put("http://cdr.unc.edu/definitions/acl#inheritPermissions", Arrays.asList("false"));
 		
 		List<String> embargoes = new ArrayList<String>();
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, embargoes);
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, null, embargoes);
 		
 		AccessControlService accessControlService = mock(AccessControlService.class);
 		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
@@ -123,7 +116,7 @@ public class SetAccessControlFilterTest extends Assert {
 		
 		filter.filter(dip);
 		
-		assertNull(dip.getDocument().getReadGroup());
+		assertEquals(0, dip.getDocument().getReadGroup().size());
 		
 		assertEquals(1, dip.getDocument().getAdminGroup().size());
 		assertTrue(dip.getDocument().getAdminGroup().contains("curator"));

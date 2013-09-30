@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.ingest.aip;
 
-import static org.mockito.Mockito.*;
-
 import java.io.File;
 
 import javax.annotation.Resource;
@@ -31,8 +29,6 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.agents.AgentFactory;
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
@@ -50,27 +46,20 @@ public class BiomedCentralAIPFilterTest extends Assert {
 
 	@Resource
 	private METSPackageSIPProcessor metsPackageSIPProcessor = null;
-	private PersonAgent biomedAgent;
 	@Resource
 	private SchematronValidator schematronValidator;
 
-	public BiomedCentralAIPFilterTest() {
-		biomedAgent = new PersonAgent(new PID("uuid:biomed"), "Biomed Central", "biomedcentral");
-	}
-
 	@Test
 	public void xmlParseTest() throws Exception {
-		AgentFactory agentFactory = mock(AgentFactory.class);
-		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(biomedAgent);
 		BiomedCentralAIPFilter filter = new BiomedCentralAIPFilter();
-		filter.setAgentFactory(agentFactory);
 		filter.init();
 
 		File ingestPackage = new File("src/test/resources/biomedWithSupplements.zip");
 		PID containerPID = new PID("uuid:container");
 		METSPackageSIP sip = new METSPackageSIP(containerPID, ingestPackage, true);
 
-		DepositRecord record = new DepositRecord(biomedAgent, biomedAgent, DepositMethod.SWORD13);
+		DepositRecord record = new DepositRecord(BiomedCentralAIPFilter.BIOMED_ONYEN,
+				BiomedCentralAIPFilter.BIOMED_ONYEN, DepositMethod.SWORD13);
 		record.setPackagingType(PackagingType.METS_DSPACE_SIP_2);
 
 		RDFAwareAIPImpl aip = (RDFAwareAIPImpl) metsPackageSIPProcessor.createAIP(sip, record);
@@ -131,17 +120,15 @@ public class BiomedCentralAIPFilterTest extends Assert {
 
 	@Test
 	public void inconsistentFilenameCaseParseTest() throws Exception {
-		AgentFactory agentFactory = mock(AgentFactory.class);
-		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(biomedAgent);
 		BiomedCentralAIPFilter filter = new BiomedCentralAIPFilter();
-		filter.setAgentFactory(agentFactory);
 		filter.init();
 
 		File ingestPackage = new File("src/test/resources/biomedInconsistentFileCase.zip");
 		PID containerPID = new PID("uuid:container");
 		METSPackageSIP sip = new METSPackageSIP(containerPID, ingestPackage, true);
 
-		DepositRecord record = new DepositRecord(biomedAgent, biomedAgent, DepositMethod.SWORD13);
+		DepositRecord record = new DepositRecord(BiomedCentralAIPFilter.BIOMED_ONYEN,
+				BiomedCentralAIPFilter.BIOMED_ONYEN, DepositMethod.SWORD13);
 		record.setPackagingType(PackagingType.METS_DSPACE_SIP_2);
 
 		RDFAwareAIPImpl aip = (RDFAwareAIPImpl) metsPackageSIPProcessor.createAIP(sip, record);
@@ -177,17 +164,13 @@ public class BiomedCentralAIPFilterTest extends Assert {
 
 	@Test
 	public void rejectedAgentTest() throws Exception {
-		AgentFactory agentFactory = mock(AgentFactory.class);
-		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(biomedAgent);
 		BiomedCentralAIPFilter filter = new BiomedCentralAIPFilter();
-		filter.setAgentFactory(agentFactory);
 		filter.init();
 
 		File ingestPackage = new File("src/test/resources/dspaceMets.zip");
 		PID containerPID = new PID("uuid:container");
-		PersonAgent agent = new PersonAgent(new PID("notbiomed"), "notbiomed", "notbiomed");
 		METSPackageSIP sip = new METSPackageSIP(containerPID, ingestPackage, true);
-		DepositRecord record = new DepositRecord(agent, agent, DepositMethod.SWORD13);
+		DepositRecord record = new DepositRecord("nobiomed", "notbiomed", DepositMethod.SWORD13);
 		record.setPackagingType(PackagingType.METS_DSPACE_SIP_2);
 		RDFAwareAIPImpl aip = (RDFAwareAIPImpl) metsPackageSIPProcessor.createAIP(sip, record);
 
@@ -198,16 +181,14 @@ public class BiomedCentralAIPFilterTest extends Assert {
 
 	@Test
 	public void rejectedPackageTypeTest() throws Exception {
-		AgentFactory agentFactory = mock(AgentFactory.class);
-		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(biomedAgent);
 		BiomedCentralAIPFilter filter = new BiomedCentralAIPFilter();
-		filter.setAgentFactory(agentFactory);
 		filter.init();
 
 		File ingestPackage = new File("src/test/resources/simple.zip");
 		PID containerPID = new PID("uuid:container");
 		METSPackageSIP sip = new METSPackageSIP(containerPID, ingestPackage, true);
-		DepositRecord record = new DepositRecord(biomedAgent, biomedAgent, DepositMethod.SWORD13);
+		DepositRecord record = new DepositRecord(BiomedCentralAIPFilter.BIOMED_ONYEN,
+				BiomedCentralAIPFilter.BIOMED_ONYEN, DepositMethod.SWORD13);
 		record.setPackagingType(PackagingType.SIMPLE_ZIP);
 		RDFAwareAIPImpl aip = (RDFAwareAIPImpl) metsPackageSIPProcessor.createAIP(sip, record);
 
@@ -218,16 +199,14 @@ public class BiomedCentralAIPFilterTest extends Assert {
 
 	@Test
 	public void noAggregateTest() throws Exception {
-		AgentFactory agentFactory = mock(AgentFactory.class);
-		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(biomedAgent);
 		BiomedCentralAIPFilter filter = new BiomedCentralAIPFilter();
-		filter.setAgentFactory(agentFactory);
 		filter.init();
 
 		File ingestPackage = new File("src/test/resources/simple.zip");
 		PID containerPID = new PID("uuid:container");
 		METSPackageSIP sip = new METSPackageSIP(containerPID, ingestPackage, true);
-		DepositRecord record = new DepositRecord(biomedAgent, biomedAgent, DepositMethod.SWORD13);
+		DepositRecord record = new DepositRecord(BiomedCentralAIPFilter.BIOMED_ONYEN,
+				BiomedCentralAIPFilter.BIOMED_ONYEN, DepositMethod.SWORD13);
 		record.setPackagingType(PackagingType.METS_DSPACE_SIP_1);
 		RDFAwareAIPImpl aip = (RDFAwareAIPImpl) metsPackageSIPProcessor.createAIP(sip, record);
 
@@ -238,13 +217,11 @@ public class BiomedCentralAIPFilterTest extends Assert {
 
 	@Test
 	public void invalidAIPTest() throws Exception {
-		AgentFactory agentFactory = mock(AgentFactory.class);
-		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(biomedAgent);
 		BiomedCentralAIPFilter filter = new BiomedCentralAIPFilter();
-		filter.setAgentFactory(agentFactory);
 		filter.init();
 
-		DepositRecord record = new DepositRecord(biomedAgent, biomedAgent, DepositMethod.SWORD13);
+		DepositRecord record = new DepositRecord(BiomedCentralAIPFilter.BIOMED_ONYEN,
+				BiomedCentralAIPFilter.BIOMED_ONYEN, DepositMethod.SWORD13);
 		record.setPackagingType(PackagingType.METS_DSPACE_SIP_1);
 		AIPImpl aip = new AIPImpl(record);
 
@@ -260,17 +237,15 @@ public class BiomedCentralAIPFilterTest extends Assert {
 
 	@Test
 	public void missingTitlesTest() throws Exception {
-		AgentFactory agentFactory = mock(AgentFactory.class);
-		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(biomedAgent);
 		BiomedCentralAIPFilter filter = new BiomedCentralAIPFilter();
-		filter.setAgentFactory(agentFactory);
 		filter.init();
 
 		File ingestPackage = new File("src/test/resources/biomedMissingSupplementTitle.zip");
 		PID containerPID = new PID("uuid:container");
 		METSPackageSIP sip = new METSPackageSIP(containerPID, ingestPackage, true);
 
-		DepositRecord record = new DepositRecord(biomedAgent, biomedAgent, DepositMethod.SWORD13);
+		DepositRecord record = new DepositRecord(BiomedCentralAIPFilter.BIOMED_ONYEN,
+				BiomedCentralAIPFilter.BIOMED_ONYEN, DepositMethod.SWORD13);
 		record.setPackagingType(PackagingType.METS_DSPACE_SIP_2);
 
 		RDFAwareAIPImpl aip = (RDFAwareAIPImpl) metsPackageSIPProcessor.createAIP(sip, record);
@@ -318,17 +293,15 @@ public class BiomedCentralAIPFilterTest extends Assert {
 
 	@Test
 	public void missingMainSupplTitle() throws Exception {
-		AgentFactory agentFactory = mock(AgentFactory.class);
-		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(biomedAgent);
 		BiomedCentralAIPFilter filter = new BiomedCentralAIPFilter();
-		filter.setAgentFactory(agentFactory);
 		filter.init();
 
 		File ingestPackage = new File("src/test/resources/biomedMissingSupplementMainTitle.zip");
 		PID containerPID = new PID("uuid:container");
 		METSPackageSIP sip = new METSPackageSIP(containerPID, ingestPackage, true);
 
-		DepositRecord record = new DepositRecord(biomedAgent, biomedAgent, DepositMethod.SWORD13);
+		DepositRecord record = new DepositRecord(BiomedCentralAIPFilter.BIOMED_ONYEN,
+				BiomedCentralAIPFilter.BIOMED_ONYEN, DepositMethod.SWORD13);
 		record.setPackagingType(PackagingType.METS_DSPACE_SIP_2);
 
 		RDFAwareAIPImpl aip = (RDFAwareAIPImpl) metsPackageSIPProcessor.createAIP(sip, record);
@@ -342,26 +315,25 @@ public class BiomedCentralAIPFilterTest extends Assert {
 
 		String supplementTitle = FOXMLJDOMUtil.getLabel(aip.getFOXMLDocument(s1PID));
 		LOG.debug(supplementTitle);
-		assertEquals(("Technical assistance checklist. PDF of list of commonly provided technical assistance subjects for this exceedingly long " + 
-				"title that should be more than the allowable character limit since I am simply adding more and more and more and more.  This title " +
-				"really is much longer than it has any rights to be so we will have to cut it off here.").substring(0,249)
-				, supplementTitle);
+		assertEquals(
+				("Technical assistance checklist. PDF of list of commonly provided technical assistance subjects for this exceedingly long "
+						+ "title that should be more than the allowable character limit since I am simply adding more and more and more and more.  This title "
+						+ "really is much longer than it has any rights to be so we will have to cut it off here.").substring(
+						0, 249), supplementTitle);
 
 	}
 
 	@Test
 	public void tooLongTitleTest() throws Exception {
-		AgentFactory agentFactory = mock(AgentFactory.class);
-		when(agentFactory.findPersonByOnyen(anyString(), anyBoolean())).thenReturn(biomedAgent);
 		BiomedCentralAIPFilter filter = new BiomedCentralAIPFilter();
-		filter.setAgentFactory(agentFactory);
 		filter.init();
 
 		File ingestPackage = new File("src/test/resources/biomedTooLongSupplTitle.zip");
 		PID containerPID = new PID("uuid:container");
 		METSPackageSIP sip = new METSPackageSIP(containerPID, ingestPackage, true);
 
-		DepositRecord record = new DepositRecord(biomedAgent, biomedAgent, DepositMethod.SWORD13);
+		DepositRecord record = new DepositRecord(BiomedCentralAIPFilter.BIOMED_ONYEN,
+				BiomedCentralAIPFilter.BIOMED_ONYEN, DepositMethod.SWORD13);
 		record.setPackagingType(PackagingType.METS_DSPACE_SIP_2);
 
 		RDFAwareAIPImpl aip = (RDFAwareAIPImpl) metsPackageSIPProcessor.createAIP(sip, record);

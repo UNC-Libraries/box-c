@@ -21,8 +21,6 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<script src="/static/js/fullRecord.js"></script>
-<script src="/static/js/browseResults.js"></script>
 
 <c:choose>
 	<c:when test="${not empty briefObject.countMap}">
@@ -99,19 +97,7 @@
 						<a href="" class="inline_viewer_link jp2_viewer_link">View</a>
 					</div>
 					<div class="clear_space"></div>
-					<script src="/static/plugins/OpenLayers/OpenLayers.js"></script>
-					
-					<script type="text/javascript">
-						$(function() {
-							$(".inline_viewer_link").bind("click", {id: '${cdr:getPreferredDatastream(briefObject, "IMAGE_JP2000").owner}', viewerId:'jp2_imageviewer_window',
-								viewerContext: "${pageContext.request.contextPath}"}, displayJP2Viewer);
-							if (window.location.hash.replace("#", "") == "showJP2"){
-								$(".inline_viewer_link").trigger("click");
-							}
-						});
-					  </script>
-					  <div id="jp2_imageviewer_window" class="djatokalayers_window not_loaded">&nbsp;</div>
-					
+					<div id="jp2_viewer" class="jp2_imageviewer_window djatokalayers_window" data-url="${cdr:getPreferredDatastream(briefObject, 'IMAGE_JP2000').owner}"></div>
 				</c:when>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<c:choose>
@@ -121,41 +107,24 @@
 							</div>
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
-							<script src="/static/plugins/flowplayer/flowplayer-3.2.6.min.js"></script>
 							<div class="actionlink left">
 								<a href="" class="inline_viewer_link audio_player_link">Listen</a>
 							</div>
 							<div class="clear_space"></div>
-							<div id="audio_player"></div>
-							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentTypeFacet[0].searchKey}</c:set>
-							<script>
-								$(function() {
-									$(".inline_viewer_link").bind("click", {viewerId:'audio_player',
-										url: "${dataFileUrl}"}, displayAudioPlayer);
-									if (window.location.hash.replace("#", "") == "showAudio"){
-										$(".inline_viewer_link").trigger("click");
-									}
-								});
-							</script>
+							<audio class="audio_player inline_viewer" src="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentTypeFacet[0].searchKey}">
+							</audio>
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
 							<div class="actionlink left">
-								<a href="" class="inline_viewer_link video_viewer_link">View</a>
+								<a href="" class="inline_viewer_link video_player_link">View</a>
 							</div>
 							<div class="clear_space"></div>
-							<script src="/static/plugins/flowplayer/flowplayer-3.2.6.min.js"></script>
-							<div id="video_player"></div>
-							<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentTypeFacet[0].searchKey}</c:set>
-							<script>
-								$(function() {
-									$(".inline_viewer_link").bind("click", {viewerId:'video_player',
-										url: "${dataFileUrl}"}, displayVideoViewer);
-									if (window.location.hash.replace("#", "") == "showVideo"){
-										$(".inline_viewer_link").trigger("click");
-									}
-								});
-							</script>
-							<div class="clear"></div>
+							<link rel="stylesheet" type="text/css" href="/static/plugins/flowplayer/skin/minimalist.css">
+							<div class="video_player inline_viewer">
+								<video>
+									<source type="video/mp4" src="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}"></source>
+								</video>
+							</div>
 						</c:when>
 					</c:choose>
 				</c:when>
@@ -178,7 +147,8 @@
 		</div>
 	</div>
 </div>
-<c:if test="${hierarchicalViewResults.resultCount > 0}">
+
+<c:if test="${childCount > 0}">
 	<c:set var="defaultWebObjectID">
 		<c:forEach items="${briefObject.datastreamObjects}" var="datastream">
 			<c:if test="${datastream.name == 'DATA_FILE'}">
@@ -186,22 +156,7 @@
 			</c:if>
 		</c:forEach>
 	</c:set>
-
-	<div id="hierarchical_view_full_record" class="aggregate">
-		<c:import url="browseResults/hierarchicalBrowse.jsp">
-			<c:param name="queryPath" value="search"/>
-			<c:param name="applyCutoffs" value="true"/>
-			<c:param name="displayCounts" value="true"/>
-			<c:param name="hideTypeIcon">false</c:param>
-			<c:param name="displaySecondaryActions" value="true"/>
-			<c:param name="disableSecondarySearchPathLink" value="true"/>
-			<c:param name="disableSecondaryBrowseLink" value="true"/>
-			<c:param name="disableSecondarySearchWithStateLink" value="true"/>
-			<c:param name="excludeParent" value="true"/>
-			<c:param name="filePrimaryDownload" value="false"/>
-			<c:param name="excludeIDs" value="${defaultWebObjectID}"/>
-			<c:param name="showSeeAllLinks" value="false"/>
-		</c:import>
+	<div class="structure aggregate" data-pid="${briefObject.id}" data-exclude="${defaultWebObjectID}">
 	</div>
 </c:if>
 
@@ -219,9 +174,7 @@
 				<tr>
 					<th>Contains:</th>
 					<td>
-						<c:url var="contentsResultsUrl" scope="page" value='search'>
-							<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
-						</c:url>
+						<c:url var="contentsResultsUrl" scope="page" value='list/${briefObject.id}'></c:url>
 						<a href="<c:out value='${contentsResultsUrl}' />">${childCount} item<c:if test="${childCount != 1}">s</c:if></a>
 					</td>
 				</tr>

@@ -19,57 +19,131 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ page trimDirectiveWhitespaces="true" %>
 <div class="result_page contentarea">
-	<div>
-		<c:choose>
-			<c:when test="${sessionScope.resultOperation == 'review'}">
-				<h2>Reviewing items</h2>
-			</c:when>
-			<c:otherwise>
-				<h2>Listing contents</h2>
-			</c:otherwise>
-		</c:choose>
-		<c:set var="facetNodes" scope="request" value="${containerBean.path.facetNodes}"/>
-		<div class="results_header_hierarchy_path">
-			<c:import url="/jsp/util/pathTrail.jsp">
-				<c:param name="displayHome">false</c:param>
-				<c:param name="resultOperation">${sessionScope.resultOperation}</c:param>
-			</c:import>
+	<c:import url="search/searchMenu.jsp"/>
+	<c:if test="${not empty resultResponse.selectedContainer}">
+		<c:set var="containerBean" value="${resultResponse.selectedContainer}"/>
+	</c:if>
+
+	<div class="result_area">
+		<div>
+			<div id="result_view">
+				<div class="result_header">
+					<div class="container_header">
+						<c:set var="facetNodes" scope="request" value="${containerBean.path.facetNodes}"/>
+						<c:set var="withPath" value="${fn:length(facetNodes) > 1}" />
+						<c:if test="${withPath}">
+							<div class="results_header_hierarchy_path">
+								<c:import url="/jsp/util/pathTrail.jsp">
+									<c:param name="displayHome">false</c:param>
+									<c:param name="skipLast">true</c:param>
+									<c:param name="trailingSeparator">true</c:param>
+									<c:param name="resultOperation">${sessionScope.resultOperation}</c:param>
+								</c:import>
+							</div>
+						</c:if>
+						<c:choose>
+							<c:when test="${not empty containerBean}">
+								<span class="container_entry">
+									<h2>
+										<c:choose>
+											<c:when test="${containerBean.resourceType == searchSettings.resourceTypeFolder}">
+												<img src="/static/images/admin/type_folder.png" />
+											</c:when>
+											<c:when test="${containerBean.resourceType == searchSettings.resourceTypeCollection}">
+												<img src="/static/images/admin/type_coll.png" />
+											</c:when>
+											<c:when test="${containerBean.resourceType == searchSettings.resourceTypeAggregate}">
+												<img src="/static/images/admin/type_aggr.png" />
+											</c:when>
+										</c:choose>
+										&nbsp;<c:out value="${containerBean.title}" />
+									</h2>
+									<span><img class="action_gear container_menu" src="/static/images/admin/gear.png"/></span>
+								</span>
+							</c:when>
+							<c:otherwise>
+								<h2>Searching</h2>
+							</c:otherwise>
+						</c:choose>
+						<c:if test="${not empty containerBean}">
+							<span id="add_menu" class="container_action">+ Add</span>
+						</c:if>
+						<%--
+						<c:if test="${not empty containerBean}">
+							<span id="arrange_button" class="container_action">Arrange</span>
+						</c:if>
+						--%>
+						<div class="right">
+							<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'purgeForever')}">
+								<span class="delete_selected ajaxCallbackButton container_action">Delete</span>&nbsp;&nbsp;
+							</c:if>
+							<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'publish')}">
+								<span class="publish_selected ajaxCallbackButton container_action">Publish</span><span class="unpublish_selected ajaxCallbackButton container_action">Unpublish</span>
+							</c:if>
+						</div>
+						<ul id="add_menu_content" class="action_menu">
+							<li><a>New Folder</a></li>
+							<li><a>Ingest Package</a></li>
+						</ul>
+					</div>
+					<div class="left batch_actions"><p class="select_all"><input type="checkbox"/></p></div>
+					<div class="right">
+						<c:import url="search/navigationBar.jsp" >
+							<c:param name="queryMethod" value="${queryMethod}"/>
+						</c:import>
+					</div>
+				</div>
+				<div class="result_table_scroll">
+					<div class="result_table_wrap${(withPath) ? ' with_path' : ''}">
+						<table class="result_table">
+							<colgroup>
+								<col class="narrow">
+								<col class="narrow">
+								<col class="itemdetails">
+								<col class="creator">
+								<col class="date_added">
+								<col class="date_added">
+								<col class="narrow">
+							</colgroup>
+							<thead>
+								<tr class="column_headers">
+									<th class="sort_col narrow" data-type="index" data-field="collection"><a></a></th>
+									<th class="sort_col narrow" data-field="resourceType"><a></a></th>
+									<th class="sort_col itemdetails" data-type="title" data-field="title"><a>Title</a></th>
+									<th class="sort_col creator" data-field="creator"><a>Creator</a></th>
+									<th class="sort_col date_added" data-field="dateAdded"><a>Added</a></th>
+									<th class="sort_col date_added" data-field="dateUpdated"><a>Modified</a></th>
+									<th class="narrow"><a></a></th>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
-	<table class="result_table">
-		<tr id="results_list_actions">
-			<td colspan="7">
-				<div class="left"><p><a id="select_all">Select All</a></p> <p><a id="deselect_all">Deselect All</a></p></div>
-				<div class="right">
-					<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'purgeForever')}"><input type="Button" value="Delete" id="delete_selected" class="ajaxCallbackButton"></input>&nbsp;&nbsp;</c:if>
-					<c:if test="${containerBean == null || cdr:hasAccess(accessGroupSet, containerBean, 'publish')}"><input type="Button" value="Publish Selected" id="publish_selected" class="ajaxCallbackButton"></input><input type="Button" value="Unpublish Selected" id="unpublish_selected" class="ajaxCallbackButton"></input></c:if>
-				</div>
-			</td>
-		</tr>
-		<tr>
-			<th></th>
-			<th></th>
-			<th>Title</th>
-			<th>Creator</th>
-			<th>Added</th>
-			<th>Modified</th>
-			<th></th>
-		</tr>
-		<c:forEach items="${resultResponse.resultList}" var="metadata" varStatus="status">
-			<c:set var="metadata" scope="request" value="${metadata}"/>
-			<c:import url="search/resultEntry.jsp"/>
-		</c:forEach>
-	</table>
 </div>
 
 <script>
+	//console.log("Starting " + (new Date()).getTime());
+	var startTimer = (new Date()).getTime();
 	var require = {
 		config: {
 			'resultList' : {
-				'metadataObjects': ${cdr:objectToJSON(resultResponse.resultList)}
-			}
+				'metadataObjects': ${cdr:resultsToJSON(resultResponse, accessGroupSet)},
+				'pagingActive' : ${resultResponse.resultCount > fn:length(resultResponse.resultList)},
+				'resultUrl' : '${currentRelativeUrl}',
+				'filterParams' : '${cdr:urlEncode(searchQueryUrl)}'
+				<c:if test="${not empty containerBean}">
+					, 'container' : ${cdr:metadataToJSON(containerBean, accessGroupSet)}
+				</c:if>
+			},
 		}
 	};
+	//console.log("Loaded in " + ((new Date()).getTime() - startTimer));
 </script>
-<script type="text/javascript" src="/static/js/require.js" data-main="/static/js/admin/resultList"></script>
+<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/admin/resultList"></script>

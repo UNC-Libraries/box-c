@@ -116,9 +116,9 @@
 				
 			</ul>
 		</div>
-            </div>
+	</div>
 
-            <div class="fourcol fluid-cap-right">
+	<div class="fourcol fluid-cap-right">
 		<div class="contentarea">
 			<c:if test="${not empty pageContext.request.remoteUser}">
 				<div id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></div>
@@ -126,7 +126,7 @@
 			<form class="right clear_on_submit_without_focus" method="get" action="basicSearch" id="hsearch_form">
 				<input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}"/>
 				<div id="hsearch_inputwrap">
-					<input name="query" type="text" id="hsearch_text" class="clear_on_first_focus" value="Search all collections">
+					<input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
 					<input type="submit" value="Go" id="hsearch_submit">
 				</div>
 			</form>

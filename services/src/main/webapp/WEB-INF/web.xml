@@ -8,8 +8,8 @@
 	KIND, either express or implied. See the License for the specific language 
 	governing permissions and limitations under the License. -->
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	version="2.5" xmlns="http://java.sun.com/xml/ns/javaee">
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	version="3.0" xmlns="http://java.sun.com/xml/ns/javaee">
 	<display-name>CDR Services Web Application</display-name>
 
 	<listener>
@@ -47,8 +47,17 @@
 	</servlet-mapping>
 	
 	<filter>
+		<filter-name>StoreUserAccessControlFilter</filter-name>
+		<filter-class>edu.unc.lib.dl.acl.filter.StoreUserAccessControlFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>StoreUserAccessControlFilter</filter-name>
+		<url-pattern>/rest/*</url-pattern>
+	</filter-mapping>
+	
+	<filter>
 		<filter-name>SwordHeaderRewriteFilter</filter-name>
-		<filter-class>edu.unc.lib.dl.cdr.sword.server.SwordHeaderRewriteFilter</filter-class>
+		<filter-class>edu.unc.lib.dl.cdr.sword.server.filters.SwordHeaderRewriteFilter</filter-class>
 	</filter>
 	<filter-mapping>
 		<filter-name>SwordHeaderRewriteFilter</filter-name>
@@ -56,12 +65,12 @@
 	</filter-mapping>
 	
 	<filter>
-		<filter-name>StoreUserAccessControlFilter</filter-name>
-		<filter-class>edu.unc.lib.dl.acl.filter.StoreUserAccessControlFilter</filter-class>
+		<filter-name>StoreUserDetailsFilter</filter-name>
+		<filter-class>edu.unc.lib.dl.cdr.sword.server.filters.StoreUserDetailsFilter</filter-class>
 	</filter>
 	<filter-mapping>
-		<filter-name>StoreUserAccessControlFilter</filter-name>
-		<url-pattern>/rest/*</url-pattern>
+		<filter-name>StoreUserDetailsFilter</filter-name>
+		<url-pattern>/sword/*</url-pattern>
 	</filter-mapping>
 	
 	<filter>

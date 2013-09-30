@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import javax.annotation.Resource;
 
@@ -17,7 +16,6 @@ import org.mockito.Mockito;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
@@ -144,8 +142,7 @@ public class FixPathConflictFilterTest {
 		PID containerPID = new PID("pid:collection");
 		METSPackageSIP sip = new METSPackageSIP(containerPID, ingestPackage, true);
 
-		PersonAgent agent = new PersonAgent(new PID("test"), "Test", "test");
-		DepositRecord record = new DepositRecord(agent, agent, DepositMethod.SWORD20);
+		DepositRecord record = new DepositRecord("test", "test", DepositMethod.SWORD20);
 		record.setPackagingType(PackagingType.SIMPLE_ZIP);
 
 		RDFAwareAIPImpl aip = (RDFAwareAIPImpl) metsPackageSIPProcessor.createAIP(sip, record);

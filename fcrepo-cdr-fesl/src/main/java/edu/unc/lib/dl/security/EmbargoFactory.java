@@ -16,46 +16,51 @@
 package edu.unc.lib.dl.security;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.fcrepo.server.errors.ObjectNotFoundException;
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap.Builder;
+
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
- * A factory for getting the list of ancestors for a pid. This will be
- * implemented with a small cache.
+ * A factory for getting the list of ancestors for a pid. This will be implemented with a small cache.
  * 
  * @author count0
  * 
  */
 public class EmbargoFactory {
-	private Map<PID, String> pid2Date = new HashMap<PID, String>(256);
-	
+	private Map<PID, String> pid2Date;
 	private boolean cacheValid = false;
 
 	private TripleStoreQueryService tripleStoreQueryService = null;
+
+	public EmbargoFactory() {
+		Builder<PID, String> mapBuilder = new Builder<PID, String>();
+		mapBuilder.maximumWeightedCapacity(256);
+		this.pid2Date = mapBuilder.build();
+	}
 
 	public TripleStoreQueryService getTripleStoreQueryService() {
 		return tripleStoreQueryService;
 	}
 
-	public void setTripleStoreQueryService(
-			TripleStoreQueryService tripleStoreQueryService) {
+	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
 		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
-	
+
 	public List<String> getEmbargoDates(Set<PID> pids) throws ObjectNotFoundException {
-		List<String>  result = new ArrayList<String>();
-		if(!cacheValid) updateCache();
-		for(PID pid : pids) {
-			if(pid2Date.containsKey(pid)) {
-				result.add(pid2Date.get(pid));
-			}
+		List<String> result = new ArrayList<String>();
+		if (!cacheValid)
+			updateCache();
+		for (PID pid : pids) {
+			String date = pid2Date.get(pid);
+			if (date != null)
+				result.add(date);
 		}
 		return result;
 	}
@@ -72,5 +77,6 @@ public class EmbargoFactory {
 	private synchronized void updateCache() throws ObjectNotFoundException {
 		this.pid2Date.clear();
 		this.pid2Date.putAll(this.tripleStoreQueryService.fetchEmbargoes());
+		this.cacheValid = true;
 	}
 }

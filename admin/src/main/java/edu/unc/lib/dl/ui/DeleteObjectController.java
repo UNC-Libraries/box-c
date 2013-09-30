@@ -31,7 +31,6 @@ import org.apache.log4j.Logger;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 
-import edu.unc.lib.dl.agents.Agent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schema.DeleteObjectDAO;
 import edu.unc.lib.dl.schema.DeleteObjectsRequest;

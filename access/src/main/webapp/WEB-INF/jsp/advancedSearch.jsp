@@ -21,7 +21,7 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <script type="text/javascript" src="/static/js/jquery-ui-datepicker.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.css"/>
-<script type="text/javascript" src="/static/js/advancedSearch.js"></script>
+<script type="text/javascript" src="/static/js/public/advancedSearch.js"></script>
 
 <div class="content-wrap">
 <div class="contentarea">
@@ -49,10 +49,10 @@
 		<div class="twocol light shadowtop">
 			<div class="contentarea">
 				<h3>Limit By</h3>
-				<select name="${searchSettings.searchFieldParams['ANCESTOR_PATH']}" class="advsearch_select">
+				<select name="container" class="advsearch_select">
 					<option value="">Collection</option>
 					<c:forEach items="${collectionList}" var="collectionRecord">
-						<option value="<c:out value='${collectionRecord.path.searchValue}' />"><c:out value="${collectionRecord.title}" /></option>
+						<option value="<c:out value='${collectionRecord.id}' />"><c:out value="${collectionRecord.title}" /></option>
 					</c:forEach>
 				</select>
 				<select name="${searchSettings.searchFieldParams['DEPARTMENT']}" class="advsearch_select">

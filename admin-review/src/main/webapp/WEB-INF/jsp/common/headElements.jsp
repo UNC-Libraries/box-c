@@ -19,14 +19,10 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link rel="stylesheet" type="text/css" href="/static/css/reset.css" />
-<link rel="stylesheet" type="text/css" href="/static/css/cdrui_styles.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/cdr_admin.css" />
 <!--[if IE 8]>
 	<link rel="stylesheet" type="text/css" href="/static/css/cdrui_styles_ie8.css" />
 <![endif]-->
-<link rel="stylesheet" type="text/css" href="/static/css/admin/jquery-ui.css" />
-<link rel="stylesheet" type="text/css" href="/static/css/admin/jquery.qtip.css" />
-<link rel="stylesheet" type="text/css" href="/static/css/cdradmin.css" />
 
 <meta name="description" content="Carolina Digital Repository" />
 <meta name="keywords" content="Carolina Digital Repository" />

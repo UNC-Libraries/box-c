@@ -22,7 +22,6 @@ import org.apache.abdera.model.Entry;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 
-import edu.unc.lib.dl.agents.PersonAgent;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -35,7 +34,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  */
 public class AtomPubMetadataUIP extends MetadataUIP {
 
-	public AtomPubMetadataUIP(PID pid, PersonAgent user, UpdateOperation operation, Entry entry) throws UIPException {
+	public AtomPubMetadataUIP(PID pid, String user, UpdateOperation operation, Entry entry) throws UIPException {
 		super(pid, user, operation);
 		try { 
 			incomingData = (HashMap<String, ?>) AtomPubMetadataParserUtil.extractDatastreams(entry, pid);

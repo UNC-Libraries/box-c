@@ -119,6 +119,15 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 						key.getURI());
 		return this.lookupDigitalObjects(query);
 	}
+	
+	public List<PID> fetchChildren(PID key) {
+		String query = String
+				.format("select $child from <%1$s> where <%2$s> <%3$s> $child;",
+						this.getResourceIndexModelUri(),
+						key.getURI(),
+						ContentModelHelper.Relationship.contains.getURI());
+		return this.lookupDigitalObjects(query);
+	}
 
 	/*
 	 * (non-Javadoc)

@@ -220,6 +220,58 @@ public class SetPathFilterTest extends Assert {
 		
 		assertEquals(3, idb.getResourceTypeSort().intValue());
 	}
+	
+	@Test
+	public void fromQueryOutofOrderFileTest() {
+		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
+		List<List<String>> results = new ArrayList<List<String>>();
+
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:Container"));
+		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
+				"info:fedora/cdr-model:Collection"));
+		
+		results.add(Arrays.asList("repo", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("repo", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
+		results.add(Arrays.asList("repo", "info:fedora/uuid:Collections", "Collections",
+				"info:fedora/cdr-model:Container"));
+		
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/cdr-model:Simple"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/cdr-model:JP2DerivedImage"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/cdr-model:PreservedObject"));
+		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
+				"info:fedora/fedora-system:FedoraObject-3.0"));
+
+		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
+
+		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		IndexDocumentBean idb = dip.getDocument();
+
+		SetPathFilter filter = new SetPathFilter();
+		filter.setCollectionsPid(new PID("uuid:Collections"));
+		filter.setTripleStoreQueryService(tsqs);
+		filter.filter(dip);
+
+		assertEquals("/Collections/collection", idb.getAncestorNames());
+		assertEquals(ResourceType.File.name(), idb.getResourceType());
+		assertEquals(idb.getId(), idb.getRollup());
+		assertEquals("uuid:collection", idb.getParentCollection());
+		assertEquals(2, idb.getAncestorPath().size());
+		assertTrue(idb.getAncestorPath().contains("1,uuid:Collections,Collections"));
+		assertTrue(idb.getAncestorPath().contains("2,uuid:collection,collection"));
+		assertFalse(idb.getAncestorPath().contains("3,uuid:File,File.jpg"));
+		assertEquals(4, idb.getContentModel().size());
+		assertEquals(3, idb.getResourceTypeSort().intValue());
+	}
 
 	@Test
 	public void fromQueryContainerTest() {

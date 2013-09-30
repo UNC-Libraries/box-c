@@ -43,12 +43,9 @@
 <div id="entry${metadata.id}" class="searchitem ${resultEntryClass}">
 	<div class="contentarea">
 		<%-- Link to full record of the current item --%>
-		<c:url var="fullRecordUrl" scope="page" value="record">
-			<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.id}"/>
+		<c:url var="fullRecordUrl" scope="page" value="record/${metadata.id}">
 		</c:url>
-		<c:url var="containerResultsUrl" scope="page" value='search'>
-			<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.limitToValue}"/>
-		</c:url>
+		<c:url var="containerResultsUrl" scope="page" value='list/${metadata.id}'></c:url>
 		<%-- Set primary action URL based on content model and container results URL as appropriate --%>
 		<c:choose>
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
@@ -66,7 +63,8 @@
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', metadata) 
 						&& (!hasListAccessOnly || (hasListAccessOnly && (metadata.resourceType == searchSettings.resourceTypeFolder || metadata.resourceType == searchSettings.resourceTypeCollection)))}">
 					<div class="small thumb_container">
-						<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_${metadata.contentTypeFacet[0].searchKey}" 
+						<c:set var="thumbClass"><c:if test="${fn:length(metadata.contentTypeFacet) > 0 && metadata.contentTypeFacet[0].searchKey != null}"> ph_small_${metadata.contentTypeFacet[0].searchKey}</c:if></c:set>
+						<img id="thumb_${param.resultNumber}" class="smallthumb${thumbClass}" 
 								src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
 					</div>
 				</c:when>
@@ -83,7 +81,7 @@
 							</c:choose>
 						</c:when>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
-							<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_clear" 
+							<img id="thumb_${param.resultNumber}" class="smallthumb" 
 									src="/static/images/placeholder/small/collection.png"/>
 						</c:when>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentTypeFacet[0].searchKey}">
@@ -186,8 +184,7 @@
 							</p>
 						</c:if>
 						<p>
-							<c:url var="parentUrl" scope="page" value="record">
-								<c:param name="${searchSettings.searchStateParams['ID']}" value="${metadata.parentCollection}"/>
+							<c:url var="parentUrl" scope="page" value="record/${metadata.parentCollection}">
 							</c:url>
 							${searchSettings.searchFieldLabels['PARENT_COLLECTION']}: <a href="<c:out value='${parentUrl}' />"><c:out value="${metadata.parentCollectionObject.displayValue}"/></a>
 						</p>
@@ -216,14 +213,11 @@
 			<c:when test="${hasListAccessOnly}">
 				<div class="containerinfo">
 					<ul>
-						<c:if test="${empty pageContext.request.remoteUser}">
-							<c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
-								<c:param name="target" value="${currentAbsoluteUrl}" />
-							</c:url>
+						<c:if test="${not empty loginUrl}">
 							<li><a href="<c:out value='${loginUrl}' />">Log in</a> or</li>
 						</c:if>
 						<li>
-							<a href="/requestAccess/${metadata.pid.path}" 
+							<a href="/requestAccess/${metadata.pid.pid}" 
 								title="Contact us to request access to this item">Request Access</a>
 						</li>
 						<li>${metadata.resourceType}</li>
@@ -232,25 +226,19 @@
 			</c:when>
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
 				<div class="containerinfo">
-					<c:url var="browseUrl" scope="page" value='browse?${searchStateUrl}'>
-						<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.searchValue}"/>
-						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${searchSettings.actions['RESET_NAVIGATION']}:structure"/>
-					</c:url>
+					<c:url var="structureUrl" scope="page" value='structure/${metadata.id}'/>
 					<ul>
 						<li><a href="<c:out value='${fullRecordUrl}'/>" title="View folder information for ${metadata.title}" class="has_tooltip">View ${fn:toLowerCase(metadata.resourceType)} details</a></li>
-						<li><a href="<c:out value='${browseUrl}'/>" title="View the structure of this folder in a file browser view." class="has_tooltip">Browse structure</a></li>
+						<li><a href="<c:out value='${structureUrl}'/>" title="View the structure of this folder in a file browser view." class="has_tooltip">Browse structure</a></li>
 					</ul>
 				</div>
 			</c:when>
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
 				<div class="containerinfo">
-					<c:url var="browseUrl" scope="page" value='browse?${searchStateUrl}'>
-						<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.path.searchValue}"/>
-						<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value="${searchSettings.actions['RESET_NAVIGATION']}:structure"/>
-					</c:url>
+					<c:url var="structureUrl" scope="page" value='structure/${metadata.id}'/>
 					<ul>
 						<li><a href="<c:out value='${containerResultsUrl}'/>" title="View the contents of this collection" class="has_tooltip">View ${childCount} items</a></li>
-						<li><a href="<c:out value='${browseUrl}'/>" title="View the structure of this collection in a file browser view." class="has_tooltip">Browse structure</a></li>
+						<li><a href="<c:out value='${structureUrl}'/>" title="View the structure of this collection in a file browser view." class="has_tooltip">Browse structure</a></li>
 						<li>${metadata.resourceType}</li>
 					</ul>
 				</div>
