@@ -38,13 +38,12 @@ import org.fcrepo.server.storage.lowlevel.ILowlevelStorage;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.connection.JargonProperties;
 import org.irods.jargon.core.connection.SettableJargonProperties;
-import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.query.IRODSQueryResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.util.IRODSURLStreamHandlerFactory;
+import edu.unc.lib.staging.StagesURLStreamHandlerFactory;
 
 /**
  * iRODS implementation of the Fedora's LowlevelStorage.
@@ -62,11 +61,11 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 	static {
 		// Register IRODS URL Protocol Handler (see metadata project)
 		// https://issues.apache.org/bugzilla/show_bug.cgi?id=26701
-		URLStreamHandlerFactory urlHandlerFactory = new IRODSURLStreamHandlerFactory();
+		URLStreamHandlerFactory urlHandlerFactory = new StagesURLStreamHandlerFactory();
 		try {
 			URL.setURLStreamHandlerFactory(urlHandlerFactory);
 		} catch(Error e) {}
-		DirContextURLStreamHandlerFactory.addUserFactory(new IRODSURLStreamHandlerFactory());
+		DirContextURLStreamHandlerFactory.addUserFactory(new StagesURLStreamHandlerFactory());
 	}
 
 	// constants
@@ -124,6 +123,14 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 	
 	// initialized properties
 	private IRODSFileSystem irodsFileSystem;
+	public IRODSFileSystem getIrodsFileSystem() {
+		return irodsFileSystem;
+	}
+
+	public void setIrodsFileSystem(IRODSFileSystem irodsFileSystem) {
+		this.irodsFileSystem = irodsFileSystem;
+	}
+
 	private IrodsFileStore objectStore;
 	private IrodsFileStore datastreamStore;
 	private ConnectionPool connectionPool;
@@ -149,17 +156,11 @@ public class IrodsLowlevelStorageModule extends Module implements ILowlevelStora
 			throw new ModuleInitializationException("Could not find requested " + "connectionPool.", getRole());
 		}
 
-		try {
-			irodsFileSystem = IRODSFileSystem.instance();
-			JargonProperties origProps = irodsFileSystem.getIrodsSession().getJargonProperties();
-			SettableJargonProperties overrideJargonProperties = new SettableJargonProperties(origProps);
-			overrideJargonProperties.setIrodsSocketTimeout(irodsSocketTimeout); // was 300
-			overrideJargonProperties.setIrodsParallelSocketTimeout(irodsSocketTimeout); // was 300
-			irodsFileSystem.getIrodsSession().setJargonProperties(overrideJargonProperties);
-		} catch (JargonException e) {
-			throw new ModuleInitializationException("Could not create IRODSFileSystem: " + e.getLocalizedMessage(),
-					getRole());
-		}
+		JargonProperties origProps = irodsFileSystem.getIrodsSession().getJargonProperties();
+		SettableJargonProperties overrideJargonProperties = new SettableJargonProperties(origProps);
+		overrideJargonProperties.setIrodsSocketTimeout(irodsSocketTimeout); // was 300
+		overrideJargonProperties.setIrodsParallelSocketTimeout(irodsSocketTimeout); // was 300
+		irodsFileSystem.getIrodsSession().setJargonProperties(overrideJargonProperties);
 		objectStore = makeStore(objectStoreBase, OBJECT_REGISTRY_TABLE);
 		datastreamStore = makeStore(datastreamStoreBase, DATASTREAM_REGISTRY_TABLE);
 	}

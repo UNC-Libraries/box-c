@@ -16,26 +16,25 @@
 package fedorax.server.module.storage;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.ObjectName;
 
 import org.apache.commons.httpclient.Header;
-import org.apache.naming.resources.DirContextURLStreamHandlerFactory;
 import org.fcrepo.common.http.HttpInputStream;
 import org.fcrepo.common.http.WebClient;
 import org.fcrepo.server.Module;
@@ -44,7 +43,6 @@ import org.fcrepo.server.errors.GeneralException;
 import org.fcrepo.server.errors.HttpServiceNotFoundException;
 import org.fcrepo.server.errors.ModuleInitializationException;
 import org.fcrepo.server.errors.ValidationException;
-import org.fcrepo.server.errors.authorization.AuthzDeniedException;
 import org.fcrepo.server.errors.authorization.AuthzException;
 import org.fcrepo.server.security.Authorization;
 import org.fcrepo.server.security.BackendPolicies;
@@ -64,7 +62,10 @@ import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.util.IRODSURLStreamHandlerFactory;
+import edu.unc.lib.staging.FileResolver;
+import edu.unc.lib.staging.Stages;
+import edu.unc.lib.staging.StagingArea;
+import edu.unc.lib.staging.StagingException;
 import fedorax.server.module.storage.lowlevel.irods.IrodsLowlevelStorageModule;
 
 /**
@@ -79,27 +80,37 @@ public class IrodsExternalContentManager extends Module implements
 	static {
 		// Register IRODS URL Protocol Handler (see metadata project)
 		// by making a static reference to the class that loads it
+		@SuppressWarnings("unused")
 		String foo = IrodsLowlevelStorageModule.REGISTRY_NAME;
 	}
+
+	/**
+	 * Stages configuration JSON file
+	 */
+	private File stagesConfiguration;
+
+	public File getStagesConfiguration() {
+		return stagesConfiguration;
+	}
+
+	public void setStagesConfiguration(File stagesConfiguration) {
+		this.stagesConfiguration = stagesConfiguration;
+	}
+
+	private Stages stages;
 	
+	public Stages getStages() {
+		return this.stages;
+	}
+
 	// injected properties
 	private IRODSAccount irodsAccount;
-	private StagingManager stagingManager;
-	public StagingManager getStagingManager() {
-		return stagingManager;
-	}
-
-
-	public void setStagingManager(StagingManager stagingManager) {
-		this.stagingManager = stagingManager;
-	}
 
 	private int irodsReadBufferSize;
-	
+
 	public IRODSAccount getIrodsAccount() {
 		return irodsAccount;
 	}
-
 
 	public void setIrodsAccount(IRODSAccount irodsAccount) {
 		this.irodsAccount = irodsAccount;
@@ -122,8 +133,8 @@ public class IrodsExternalContentManager extends Module implements
 	private static final String DEFAULT_MIMETYPE = "text/plain";
 
 	// initialized properties
-	private String fedoraServerPort;
-	private String fedoraServerRedirectPort;
+	private String fedoraServerPort = "80";
+	private String fedoraServerRedirectPort = "443";
 	private WebClient m_http;
 
 	/**
@@ -151,16 +162,41 @@ public class IrodsExternalContentManager extends Module implements
 	public void initModule() throws ModuleInitializationException {
 		try {
 			Server s_server = getServer();
-			fedoraServerPort = s_server.getParameter("fedoraServerPort");
-			fedoraServerRedirectPort = s_server
-					.getParameter("fedoraRedirectPort");
+			if (s_server != null) {
+				fedoraServerPort = s_server.getParameter("fedoraServerPort");
+				fedoraServerRedirectPort = s_server
+						.getParameter("fedoraRedirectPort");
+			}
 			m_http = new WebClient();
 
-			// register StagingManagerMBean
-			MBeanServer mbs = this.getMBeanServer();
-			ObjectName name = new ObjectName(
-					"edu.unc.lib.cdr:type=StagingManager");
-			mbs.registerMBean(this.getStagingManager(), name);
+			StringBuilder sb = new StringBuilder();
+			BufferedReader r = null;
+			try {
+				r = new BufferedReader(new FileReader(this.stagesConfiguration));
+				for (String line = r.readLine(); line != null; line = r
+						.readLine()) {
+					sb.append(line).append('\n');
+				}
+			} finally {
+				if (r != null)
+					r.close();
+			}
+			LOG.debug("local staging config:\n"+sb.toString());
+			this.stages = new Stages(sb.toString(), new FileResolver());
+			for (StagingArea s : this.stages.getAllAreas().values()) {
+				if (!s.isConnected()) {
+					this.stages.connect(s.getURI());
+					if (!s.isConnected()) {
+						LOG.warn("Cannot connect to staging area: "
+								+ s.getURI());
+					}
+				}
+			}
+
+			// TODO register Stages as MBean
+			//ObjectName name = new ObjectName("edu.unc.lib.cdr:type=Stages");
+			//MBeanServer mbs = this.getMBeanServer();
+			//mbs.registerMBean(this.stages, name);
 
 		} catch (Throwable th) {
 			th.printStackTrace();
@@ -175,7 +211,8 @@ public class IrodsExternalContentManager extends Module implements
 
 	private MBeanServer getMBeanServer() {
 		MBeanServer mbserver = null;
-		ArrayList<MBeanServer> mbservers = MBeanServerFactory.findMBeanServer(null);
+		ArrayList<MBeanServer> mbservers = MBeanServerFactory
+				.findMBeanServer(null);
 
 		if (mbservers.size() > 0) {
 			mbserver = (MBeanServer) mbservers.get(0);
@@ -207,37 +244,38 @@ public class IrodsExternalContentManager extends Module implements
 
 		boolean staged = false;
 		try {
-			String stageUrl = this.getStagingManager().resolveStageLocation(
-					url);
-			if (!url.equals(stageUrl)) {
-				staged = true;
-				URI temp = null;
-				try {
-					temp = new URI(stageUrl);
-				} catch (URISyntaxException e) {
-					e.printStackTrace();
-				}
-				url = stageUrl;
-				protocol = temp.getScheme();
-			}
-			LOG.debug("protocol is " + protocol + ", url is " + url);
-			if (protocol == null && url.startsWith("irods://")) {
-				return getFromIrods(url, params.getMimeType());
-			} else if (protocol == null || protocol.equals("file")) {
-				return getFromFilesystem(url, params.getMimeType(), staged,
-						params);
-			} else if (protocol.equals("http") || protocol.equals("https")) {
-				return getFromWeb(params);
-			} else if (protocol.equals("irods")) {
-				return getFromIrods(url, params.getMimeType());
-			}
-			throw new GeneralException(
-					"protocol for retrieval of external content not supported. URL: "
-							+ params.getUrl());
-		} catch (Exception ex) {
-			// catch anything but generalexception
-			throw new HttpServiceNotFoundException("", ex);
+			URI manifestURI = URI.create(url);
+			LOG.debug("manifestURI: "+manifestURI);
+			LOG.debug("stages: "+this.stages);
+			LOG.debug("stages size: "+this.stages.getAllAreas().size());
+			URI stageUrl = this.stages.getStorageURI(manifestURI);
+			LOG.debug("stageUrl: "+stageUrl);
+			staged = true;
+			protocol = stageUrl.getScheme();
+			url = URLDecoder.decode(stageUrl.toString(), "utf-8");
+		} catch(StagingException e) {
+			LOG.warn("Exception throw resolving local URL", e);
+		} catch (UnsupportedEncodingException e) {
+			throw new Error(e);
 		}
+		LOG.debug("protocol is " + protocol + ", url is " + url);
+		if (protocol == null && url.startsWith("irods://")) {
+			return getFromIrods(url, params.getMimeType());
+		} else if (protocol == null || protocol.equals("file")) {
+			return getFromFilesystem(url, params.getMimeType(), staged,
+					params);
+		} else if (protocol.equals("http") || protocol.equals("https")) {
+			try {
+				return getFromWeb(params);
+			} catch(ModuleInitializationException e) {
+				throw new GeneralException(e.getMessage()+"("+params.getUrl()+")", e);
+			}
+		} else if (protocol.equals("irods")) {
+			return getFromIrods(url, params.getMimeType());
+		}
+		throw new GeneralException(
+				"protocol for retrieval of external content not supported. URL: "
+						+ params.getUrl());
 	}
 
 	/**
@@ -249,6 +287,7 @@ public class IrodsExternalContentManager extends Module implements
 		LOG.debug("in getFromIrods(), url=" + url);
 		try {
 			URI uri = new URI(url);
+			LOG.debug("uri: "+uri);
 			IRODSFileFactory ff = IRODSFileSystem.instance()
 					.getIRODSFileFactory(irodsAccount);
 			IRODSFile file = ff.instanceIRODSFile(URLDecoder.decode(
@@ -393,19 +432,18 @@ public class IrodsExternalContentManager extends Module implements
 	 * @throws HttpServiceNotFoundException
 	 * @throws GeneralException
 	 */
-	private MIMETypedStream getFromFilesystem(String url, String mimeType,
+	private MIMETypedStream getFromFilesystem(String uri, String mimeType,
 			boolean staged, ContentManagerParams params)
 			throws HttpServiceNotFoundException, GeneralException {
-		LOG.debug("in getFile(), url=" + url);
+		LOG.debug("in getFile(), url=" + uri);
 
 		try {
-			URL fileUrl = new URL(url);
-			File cFile = new File(fileUrl.toURI()).getCanonicalFile();
+			URL fileUri = new URL(uri);
+			String path = fileUri.getPath();
+			File cFile = new File(path).getCanonicalFile();
 
-			// security check
-			if (staged) {
-				// staged files are checked by the StagingManager
-			} else {
+			// security check, staged files are in known locations
+			if (!staged) {
 				URI cURI = cFile.toURI();
 				LOG.info("Checking resolution security on " + cURI);
 				Authorization authModule = (Authorization) getServer()
@@ -417,13 +455,13 @@ public class IrodsExternalContentManager extends Module implements
 				authModule.enforceRetrieveFile(params.getContext(),
 						cURI.toString());
 			}
-			// end security check
 
 			// if mimeType was not given, try to determine it automatically
 			if (mimeType == null || mimeType.equalsIgnoreCase("")) {
 				mimeType = determineMimeType(cFile);
 			}
-			return new MIMETypedStream(mimeType, fileUrl.openStream(),
+			InputStream in = new FileInputStream(cFile);
+			return new MIMETypedStream(mimeType, in,
 					getPropertyArray(cFile, mimeType));
 		} catch (AuthzException ae) {
 			LOG.error(ae.getMessage(), ae);
