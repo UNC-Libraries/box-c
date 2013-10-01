@@ -352,9 +352,9 @@
 			<url>http://ci-dev.renci.org/nexus/content/repositories/snapshots/</url>
 		</repository>
 		<repository>
-			<id>springsource</id>
-			<name>Spring repository</name>
-			<url>http://repo.spring.io/release</url>
+			<id>renci-releases</id>
+			<name>RENCI Maven repository</name>
+			<url>http://ci-dev.renci.org/nexus/content/repositories/releases/</url>
 		</repository>
 	</repositories>
 
