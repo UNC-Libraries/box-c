@@ -445,11 +445,6 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.dom4j</groupId>
-			<artifactId>com.springsource.org.dom4j</artifactId>
-			<version>1.6.1</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.abdera</groupId>
 			<artifactId>abdera-client</artifactId>
 			<version>1.1.1</version>

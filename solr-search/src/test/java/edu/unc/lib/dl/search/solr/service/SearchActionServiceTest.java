@@ -332,17 +332,8 @@ public class SearchActionServiceTest extends Assert {
 	public void hierarchicalFacetTest() {
 		Map<String,String[]> params = new LinkedHashMap<String,String[]>();
 		SearchState searchState = new SearchState();
-		
-		//Invalid hier
-		try {
-			params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"format:audio"});
-			searchActionService.executeActions(searchState, params);
-			fail();
-		} catch (InvalidHierarchicalFacetException e){
-			//Expected
-		}
 		assertEquals(0, searchState.getFacets().size());
-		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"format:^audio"});
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"format:audio"});
 		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 1);
 //		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"format:%5Eaudio"});
@@ -354,7 +345,7 @@ public class SearchActionServiceTest extends Assert {
 		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 0);
 		params.clear();
-		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"format:/audio^wav"});
+		params.put("a." + searchSettings.actionName("SET_FACET"), new String[]{"format:audio/wav"});
 		searchActionService.executeActions(searchState, params);
 		assertEquals(searchState.getFacets().size(), 1);
 		
