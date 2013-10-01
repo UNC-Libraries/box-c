@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <premis xmlns="info:lc/xmlns/premis-v2" xmlns:xsi="http://www.w3c.org/2001/XMLSchema-instance"
+	xsi:schemaLoc="info:lc/xmlns/premis-v2 premis.xsd" 
     version="2.0">
     <object xsi:type="representation">
         <objectIdentifier>

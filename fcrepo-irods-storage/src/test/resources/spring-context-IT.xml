@@ -12,17 +12,15 @@
 		<property name="ignoreResourceNotFound" value="false"/>
 	</bean>
 	
-	<bean id="irodsAccount"  class="org.irods.jargon.core.connection.IRODSAccount">
-		<constructor-arg value="localhost"/>
-		<constructor-arg type="int" value="5555"/>
-		<constructor-arg value="fedora"/>
-		<constructor-arg value="fedoraIrodsPassword"/>
-		<constructor-arg value="/fedoraZone/home/fedora"/>
-		<constructor-arg value="fedoraZone"/>
-		<constructor-arg value="fedoraResource"/>
+	<bean id="irodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">
+		<constructor-arg value="${fedora.irods.host}"/>
+		<constructor-arg type="int" value="${fedora.irods.port}"/>
+		<constructor-arg value="${fedora.irods.username}"/>
+		<constructor-arg value="${fedora.irods.password}"/>
+		<constructor-arg value="${fedora.irods.homedir}"/>
+		<constructor-arg value="${fedora.irods.zone}"/>
+		<constructor-arg value="${fedora.irods.resource}"/>
 	</bean>
-	
-	<bean id="irodsFileSystem"  class="org.irods.jargon.core.pub.IRODSFileSystem" factory-method="instance"/>
 	
 	<bean id="org.fcrepo.server.storage.lowlevel.ILowlevelStorage"
 		name="org.fcrepo.server.storage.lowlevel.ILowlevelStorage"
@@ -32,26 +30,26 @@
 		<constructor-arg index="0">
 			<map/>
 		</constructor-arg>
-		<constructor-arg><null /></constructor-arg> <!-- using null for org.fcrepo.server.Server -->
+		<constructor-arg index="1" ref="org.fcrepo.server.Server" />
 		<constructor-arg index="2" value="org.fcrepo.server.storage.lowlevel.ILowlevelStorage"/>
-		<property name="account" ref="irodsAccount"/>
-		<property name="objectStoreBase" value="/fedoraZone/home/fedora/objects"/>
-		<property name="datastreamStoreBase" value="/fedoraZone/home/fedora/datastreams"/>
-		<property name="irodsReadBufferSize" value="8192"/>
-		<property name="irodsSocketTimeout" value="1200"/>
-		<property name="irodsFileSystem" ref="irodsFileSystem"/>
+		<property name="account" ref="fedoraIrodsAccount"/>
+		<property name="objectStoreBase" value="/${fedora.irods.zone}/home/${fedora.irods.username}/objects"/>
+		<property name="datastreamStoreBase" value="/${fedora.irods.zone}/home/${fedora.irods.username}/datastreams"/>
+		<property name="irodsReadBufferSize" value="${fedora.irods.readBufferSize}"/>
+		<property name="irodsSocketTimeout" value="${fedora.irods.socketTimeout}"/>
 	</bean>
 	
 	<bean id="org.fcrepo.server.storage.ExternalContentManager"
 		name="org.fcrepo.server.storage.ExternalContentManager"
 		class="fedorax.server.module.storage.IrodsExternalContentManager"
-		depends-on="org.fcrepo.server.storage.lowlevel.ILowlevelStorage" init-method="initModule">
+		depends-on="org.fcrepo.server.storage.lowlevel.ILowlevelStorage">
 		<constructor-arg><map></map></constructor-arg>
-		<constructor-arg><null /></constructor-arg> <!-- using null for org.fcrepo.server.Server -->
+		<constructor-arg ref="org.fcrepo.server.Server"/>
 		<constructor-arg value="org.fcrepo.server.storage.ExternalContentManager"/>
-		<property name="irodsAccount" ref="irodsAccount"/>
-		<property name="irodsReadBufferSize" value="8192"/>
-		<property name="stagesConfiguration" value="classpath:localConfig.json"/>
+		<property name="irodsAccount" ref="fedoraIrodsAccount"/>
+		<property name="irodsReadBufferSize" value="${fedora.irods.readBufferSize}"/>
+		<!--property name="irodsSocketTimeout" value="${irods.fedora.socketTimeout"/-->
+		<property name="stageConfiguration" value="file:src/test/resources/localConfig.json"/>
 	</bean>
 
 </beans>

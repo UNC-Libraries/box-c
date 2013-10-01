@@ -117,7 +117,6 @@ public class AIPIngestPipelineTest {
 		PID containerPID = new PID("test:1");
 		try {
 			sip = new METSPackageSIP(containerPID, testFile, true);
-			sip.setDiscardDataFilesOnDestroy(false);
 		} catch (IOException e) {
 			throw new Error(e);
 		}
@@ -173,7 +172,6 @@ public class AIPIngestPipelineTest {
 		PID containerPID = new PID("test:1");
 		try {
 			sip = new METSPackageSIP(containerPID, testFile, true);
-			sip.setDiscardDataFilesOnDestroy(false);
 		} catch (IOException e) {
 			throw new Error(e);
 		}
@@ -212,7 +210,6 @@ public class AIPIngestPipelineTest {
 		PID containerPID = new PID("test:Foo");
 		try {
 			sip = new METSPackageSIP(containerPID, testFile, false);
-			sip.setDiscardDataFilesOnDestroy(false);
 		} catch (IOException e) {
 			throw new Error(e);
 		}
