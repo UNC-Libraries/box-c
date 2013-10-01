@@ -1,0 +1,6 @@
+{
+    "customMappings" :{
+    	"tag:cdr.lib.unc.edu,2013:/storhouse_shc/":"file:${basedir}/src/test/resources/storhouse_shc_test/"
+    },
+    "repositoryConfigurations": ["file:${basedir}/src/test/resources/stages.json"]
+}

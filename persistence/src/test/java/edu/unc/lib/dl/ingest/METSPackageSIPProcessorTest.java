@@ -46,13 +46,11 @@ import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositMethod;
-import edu.unc.lib.dl.util.PremisEventLogger;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class METSPackageSIPProcessorTest extends Assert {
 
-@SuppressWarnings("unused")
 private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcessorTest.class);
 
 	PID containerPID = new PID("test:1");
@@ -74,7 +72,6 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		File testFile = tempCopy(new File(testFilePath));
 		String adminGroup = ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI();
 		DepositRecord record = new DepositRecord(adminGroup, adminGroup, DepositMethod.Unspecified);
-		PremisEventLogger logger = new PremisEventLogger("admin");
 		METSPackageSIP sip = null;
 		boolean isZip = testFilePath.endsWith(".zip") || testFilePath.endsWith(".ZIP");
 		try {
@@ -83,6 +80,7 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 			LOG.debug("STACK TRACE: ", e);
 			fail("EXPECTED: " + testMsg + "\nTHROWN: " + e.getMessage());
 		}
+		@SuppressWarnings("unused")
 		ArchivalInformationPackage aip = this.getMetsPackageSIPProcessor().createAIP(sip, record);
 	}
 
@@ -145,7 +143,6 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		ArchivalInformationPackage aip = null;
 		try {
 			sip = new METSPackageSIP(containerPID, testFile, false);
-			sip.setDiscardDataFilesOnDestroy(false);
 		} catch (IOException e) {
 			throw new Error(e);
 		}
@@ -194,7 +191,6 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		ArchivalInformationPackage aip = null;
 		try {
 			sip = new METSPackageSIP(containerPID, testFile, true);
-			sip.setDiscardDataFilesOnDestroy(false);
 			sip.getPreIngestEventLogger().addMD5ChecksumCalculation(new Date(System.currentTimeMillis()), "ClamAV v2.1",
 					"Jane Smith");
 			sip.getPreIngestEventLogger().addVirusScan(new Date(System.currentTimeMillis()), "ClamAV", "Bob Smith");
@@ -284,7 +280,6 @@ private static final Logger LOG = LoggerFactory.getLogger(METSPackageSIPProcesso
 		ArchivalInformationPackage aip = null;
 		try {
 			sip = new METSPackageSIP(containerPID, testFile, true);
-			sip.setDiscardDataFilesOnDestroy(false);
 			sip.getPreIngestEventLogger().addMD5ChecksumCalculation(new Date(System.currentTimeMillis()), "ClamAV v2.1",
 					"Jane Smith");
 			sip.getPreIngestEventLogger().addVirusScan(new Date(System.currentTimeMillis()), "ClamAV", "Bob Smith");

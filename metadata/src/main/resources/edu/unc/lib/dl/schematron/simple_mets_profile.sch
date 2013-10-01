@@ -82,7 +82,7 @@
         </sch:rule>
         <sch:rule context="m:FLocat">
             <sch:assert test="@LOCTYPE = 'URL' or @LOCTYPE = 'OTHER'">File locations MUST be specified as a URL.</sch:assert>
-            <sch:assert test="not(contains(@xlink:href,':')) or starts-with(@xlink:href,'http:') or starts-with(@xlink:href,'https:') or starts-with(@xlink:href,'file:') or starts-with(@xlink:href,'irods:')">File locations must be relative or start with a protocol prefix of 'http:', 'https:', 'file:', or 'irods:'.</sch:assert>
+            <sch:assert test="not(contains(@xlink:href,':')) or starts-with(@xlink:href,'http:') or starts-with(@xlink:href,'https:') or starts-with(@xlink:href,'file:') or starts-with(@xlink:href,'irods:') or starts-with(@xlink:href,'tag:')">File locations must be relative or start with a protocol prefix of 'http:', 'https:', 'file:', 'tag:', or 'irods:'.</sch:assert>
         </sch:rule>
     </sch:pattern>
     

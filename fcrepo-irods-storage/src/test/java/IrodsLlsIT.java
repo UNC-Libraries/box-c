@@ -39,7 +39,7 @@ import fedorax.server.module.storage.lowlevel.irods.IrodsIFileSystem;
 // TODO test all public methods inc. rebuild interface
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/spring-context.xml" })
+@ContextConfiguration(locations = { "/spring-context-IT.xml" })
 public class IrodsLlsIT extends Assert {
 
     @Autowired
