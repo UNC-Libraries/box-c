@@ -23,7 +23,7 @@
 	<td class="itemdetails">
 		<div>
 			<% if (metadata.type == "File") { %>
-				<a href="/record?id=<%= metadata.id %>" target="_new" class="title has_tooltip"
+				<a href="/record/<%= metadata.id %>" target="_new" class="title has_tooltip"
 							title="View details for <%= _.escape(metadata.title) %>'/>."><%= _.escape(metadata.title) %></a>
 			<% } else { %>
 				<a href="list/<%= metadata.id %>" class="title has_tooltip"

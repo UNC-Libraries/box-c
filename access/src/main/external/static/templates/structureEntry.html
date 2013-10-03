@@ -6,7 +6,7 @@
 				<div class="cont_toggle <%= toggleClass %>"></div>
 			<% } %>
 			<div class="resource_icon <%= metadata.type %>" title="<%= metadata.type %>"></div>
-			<a href="<%- primaryAction %>" class="primary_action" title="${primaryTooltip}"><%= metadata.title %></a>
+			<a href="<%- primaryAction %>" class="primary_action"><%= metadata.title %></a>
 			
 			<% if (downloadUrl && secondaryActions) { %>
 				<p class="secondary_actions"><a href="<%= downloadUrl %>">Download</a></p>
