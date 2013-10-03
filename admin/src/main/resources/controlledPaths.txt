@@ -1,2 +1,0 @@
-/cdradmin/ir** enter:admin:group:here
-/cdradmin/** IS_AUTHENTICATED_ANONYMOUSLY

@@ -96,7 +96,6 @@
 	<modules>
 		<module>access</module>
 		<module>security</module>
-		<module>admin</module>
 		<module>fcrepo-cdr-fesl</module>
 		<module>fcrepo-clients</module>
 		<module>fcrepo-irods-storage</module>
@@ -106,7 +105,7 @@
 		<module>solr-ingest</module>
 		<module>solr-search</module>
 		<module>sword-server</module>
-		<module>admin-review</module>
+		<module>admin</module>
 		<module>access-common</module>
 	</modules>
 

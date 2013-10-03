@@ -89,14 +89,9 @@
 				</c:forEach>
 			</ul>
 			<ul class="secondarymenu">
-				<c:if test="${cdr:contains(requestScope.accessGroupSet, accessGroupConstants.ADMIN_GROUP)}">
-					<li>
-						<a href="external?page=cdradmin" target="_blank">Admin</a>
-					</li>
-				</c:if>
 				<c:if test="${requestScope.hasAdminViewPermission}">
 					<li>
-						<a href="/admin/" target="_blank">Review</a>
+						<a href="/admin/" target="_blank">Admin</a>
 					</li>
 				</c:if>
 				<c:choose>
