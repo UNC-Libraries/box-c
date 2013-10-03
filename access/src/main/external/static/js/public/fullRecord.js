@@ -7,7 +7,7 @@ require.config({
 		'text' : 'lib/text',
 		'tpl' : 'lib/tpl',
 		'underscore' : 'lib/underscore',
-		'preload' : 'cdr-access'
+		'preload' : 'cdr-access',
 		'StructureEntry' : 'cdr-access',
 		'StructureView' : 'cdr-access',
 		'JP2Viewer' : 'cdr-access',
