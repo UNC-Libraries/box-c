@@ -19,9 +19,6 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<script type="text/javascript" src="/static/js/jquery-ui-datepicker.min.js"></script>
-<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.css"/>
-<script type="text/javascript" src="/static/js/public/advancedSearch.js"></script>
 
 <div class="content-wrap">
 <div class="contentarea">
@@ -91,3 +88,6 @@
 	</div>
 </form>
 </div>
+<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/jquery.qtip.min.css"/>
+<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/advancedSearch"></script>

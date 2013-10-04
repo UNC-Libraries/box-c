@@ -292,10 +292,12 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.2.1</version>
 				<executions>
 					<execution>
 						<configuration>
 							<executable>make</executable>
+							<commandlineArgs>VERSION=${cdr.version}</commandlineArgs>
 						</configuration>
 						<id>static-build</id>
 						<phase>prepare-package</phase>

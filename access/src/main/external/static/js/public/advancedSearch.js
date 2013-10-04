@@ -1,4 +1,19 @@
-$(function() {
+require.config({
+	urlArgs: "3.3-SNAPSHOT",
+	baseUrl: '/static/js/',
+	paths: {
+		'jquery' : 'cdr-access',
+		'jquery-ui' : 'cdr-access',
+		'datepicker' : 'lib/jquery-ui-datepicker.min',
+		'qtip' : 'lib/jquery.qtip.min',
+	},
+	shim: {
+		'jquery-ui' : ['jquery'],
+		'datepicker' : ['jquery'],
+		'qtip' : ['jquery']
+	}
+});
+define('advancedSearch', ['module', 'jquery', 'datepicker', 'qtip'], function(module, $) {
 	$(".advsearch_date").datepicker({showOn: false});
 	$(".advsearch_date").datepicker("option", "dateFormat", "yy-mm-dd");
 	$(".date_field_tooltip").qtip({

@@ -1,3 +1,5 @@
+VERSION = ""
+
 build-all: build-admin build-access
 
 build-admin:
@@ -7,7 +9,7 @@ build-admin:
 	echo "});" >> access/src/main/external/static/js/cdr-admin.js
 	cat access/src/main/external/static/js/admin/lib/jquery.detachplus.js \
 		access/src/main/external/static/js/lib/moment.min.js \
-		access/src/main/external/static/js/src/Structure* \
+		access/src/main/external/static/js/public/src/Structure* \
 		access/src/main/external/static/js/admin/src/*.js \
 		access/src/main/external/static/js/admin/src/*/*.js \
 		>> access/src/main/external/static/js/cdr-admin.js
@@ -21,7 +23,11 @@ build-admin:
 		access/src/main/external/static/css/admin/admin_forms.css \
 		access/src/main/external/static/css/structure_browse.css \
 		> access/src/main/external/static/css/cdr_admin.css
-		
+	
+	for i in access/src/main/external/static/js/admin/*.js; do \
+		sed -i "" "s/\(urlArgs *: *\)\".*\"/\1\"$(VERSION)\"/" $$i; \
+	done
+
 build-access:
 	cat access/src/main/external/static/js/lib/jquery.min.js > access/src/main/external/static/js/cdr-access.js
 	echo "define('jquery-ui', ['jquery'], function ($$) {" >> access/src/main/external/static/js/cdr-access.js
@@ -29,8 +35,7 @@ build-access:
 	echo "});" >> access/src/main/external/static/js/cdr-access.js
 	cat \
 		access/src/main/external/static/js/lib/jquery.preload-1.0.8-unc.js \
-		access/src/main/external/static/js/public/thumbnails.js \
-		access/src/main/external/static/js/src/*.js \
+		access/src/main/external/static/js/public/src/*.js \
 		>> access/src/main/external/static/js/cdr-access.js
 		
 	cat access/src/main/external/static/css/reset.css \
@@ -41,3 +46,7 @@ build-access:
 		access/src/main/external/static/front/front.css \
 		access/src/main/external/static/front/peek.css \
 		> access/src/main/external/static/css/cdr_access.css
+	
+	for i in access/src/main/external/static/js/public/*.js; do \
+		sed -i "" "s/\(urlArgs *: *\)\".*\"/\1\"$(VERSION)\"/" $$i; \
+	done
