@@ -28,7 +28,7 @@
 		<div class="contentarea">
 			<p>
 				<a href="${pageContext.request.contextPath}/">Home</a>&nbsp;|&nbsp;
-				<a href="search?types=Collection">Browse Collections</a>&nbsp;|&nbsp;
+				<a href="collections">Browse Collections</a>&nbsp;|&nbsp;
 				<a href="external?page=about.about">About</a>&nbsp;|&nbsp;
 				<c:url var="contactUrl" scope="page" value="contact">
 					<c:choose>

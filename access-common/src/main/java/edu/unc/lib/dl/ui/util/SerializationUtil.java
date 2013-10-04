@@ -90,7 +90,7 @@ public class SerializationUtil {
 		result.append("\"id\":\"").append(metadata.getId()).append('"');
 		if (metadata.getTitle() != null) {
 			result.append(',');
-			result.append("\"title\":\"").append(metadata.getTitle().replace("\"", "\\\"")).append('"');
+			result.append("\"title\":\"").append(metadata.getTitle().replace("\"", "\\\"").replace("\n", "\\n")).append('"');
 		}
 		if (metadata.get_version_() != null) {
 			result.append(',');
@@ -152,7 +152,7 @@ public class SerializationUtil {
 		for (String value : collection) {
 			if (result.length() > 1)
 				result.append(',');
-			result.append('"').append(value.replace("\"", "\\\"")).append('"');
+			result.append('"').append(value.replace("\"", "\\\"").replace("\n", "\\n")).append('"');
 		}
 		result.append(']');
 		return result.toString();
