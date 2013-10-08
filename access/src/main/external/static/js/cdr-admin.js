@@ -3545,7 +3545,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	};
 
 	function AbstractStatusMonitor() {
-	};
+	}
 	
 	AbstractStatusMonitor.prototype.init = function() {
 		this.monitorId = "status_monitor_" + this.options.name.replace(" ", "_");
@@ -3556,7 +3556,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		this.createJobTable();
 		for (var index in this.options.jobConfig.jobTypes) {
 			var jobType = this.options.jobConfig.jobTypes[index];
-			this.initializeJobType(jobType);
+			jobType = this.initializeJobType(jobType);
+			// Update job type in config
+			this.jobConfig.jobTypes[index] = jobType;
 		}
 		this.createDetailsView();
 		return this;
@@ -3694,8 +3696,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			self.element.addClass("show_details");
 			self.positionDetailsView();
 		});
-		// Add job type to config
-		this.jobConfig.jobTypes.push(jobType);
+		return jobType;
 	};
 	
 	// Default job type rendering, calls the job type's template for each job result

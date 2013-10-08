@@ -61,7 +61,7 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui'], function($, ui) {
 				$('#viewer_bar').hide();
 				return;
 			};
-			console.log(metadata);
+			
 			var resolutions = OUlayer.getResolutions();
 			var maxExtent = new OpenLayers.Bounds(0, 0, metadata.width, metadata.height);
 			var tileSize = OUlayer.getTileSize();

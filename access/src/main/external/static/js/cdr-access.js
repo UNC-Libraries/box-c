@@ -271,7 +271,7 @@ return isNaN(t)?d:t},g=p(h[0]),m=Math.max(g,p(h[1]||"")),g=a?Math.max(g,a.getFul
 				$('#viewer_bar').hide();
 				return;
 			};
-			console.log(metadata);
+			
 			var resolutions = OUlayer.getResolutions();
 			var maxExtent = new OpenLayers.Bounds(0, 0, metadata.width, metadata.height);
 			var tileSize = OUlayer.getTileSize();
