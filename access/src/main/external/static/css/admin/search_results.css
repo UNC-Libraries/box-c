@@ -108,10 +108,11 @@
 
 .container_header > span > h2 {
 	display: inline-block;
+	height: 21px;
 }
 
-.container_header > h2 > img {
-	vertical-align: bottom;
+.container_header > span > h2 > img {
+	vertical-align: middle;
 }
 
 .container_action {

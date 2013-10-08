@@ -64,7 +64,9 @@
 								</span>
 							</c:when>
 							<c:otherwise>
-								<h2>Searching</h2>
+								<span>
+									<h2>Searching</h2>
+								</span>
 							</c:otherwise>
 						</c:choose>
 						<c:if test="${not empty containerBean}">
