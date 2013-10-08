@@ -24,9 +24,11 @@ build-admin:
 		access/src/main/external/static/css/structure_browse.css \
 		> access/src/main/external/static/css/cdr_admin.css
 	
+ifneq ($(VERSION), "")
 	for i in access/src/main/external/static/js/admin/*.js; do \
 		sed -i "" "s/\(urlArgs *: *\)\".*\"/\1\"$(VERSION)\"/" $$i; \
 	done
+endif
 
 build-access:
 	cat access/src/main/external/static/js/lib/jquery.min.js > access/src/main/external/static/js/cdr-access.js
@@ -47,6 +49,8 @@ build-access:
 		access/src/main/external/static/front/peek.css \
 		> access/src/main/external/static/css/cdr_access.css
 	
+ifneq ($(VERSION), "")
 	for i in access/src/main/external/static/js/public/*.js; do \
 		sed -i "" "s/\(urlArgs *: *\)\".*\"/\1\"$(VERSION)\"/" $$i; \
 	done
+endif
