@@ -861,7 +861,7 @@ p.navigation_bar a {
 	font-size: 13px;
 }
 
-.jp2_imageviewer_window.full_screen {
+.full_screen .jp2_imageviewer_window {
 	z-index: 1;
 	border-width: 0;
 	position: absolute;

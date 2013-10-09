@@ -24,13 +24,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.ui.model.response.RssFeedBean;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.ui.service.RssParserService;
-import edu.unc.lib.dl.ui.util.ExternalContentSettings;
-
 /**
  * Controller which populates the dynamic components making up the front page of
  * the public UI
@@ -49,24 +42,6 @@ public class FrontPageController extends AbstractSolrSearchController {
 		model.addAttribute("departmentsCount", this.queryLayer.getDepartmentsCount());
 		model.addAttribute("collectionsCount", this.queryLayer.getCollectionsCount());
 		model.addAttribute("formatCounts", this.queryLayer.getFormatCounts());
-		
-		//Retrieve the list of newly added items
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-		SearchResultResponse resultResponse = queryLayer.getNewlyAdded(accessGroups);
-		if (resultResponse != null){
-			model.addAttribute("newlyAddedList", resultResponse.getResultList());
-		}
-		
-		//Retrieve news list
-		try {
-			RssFeedBean newsRssFeed = RssParserService.getRssFeed(ExternalContentSettings.getUrl("newsRss"), Integer.parseInt(ExternalContentSettings.get("external.newsRss.maxLinks")));
-			model.addAttribute("newsRssFeed", newsRssFeed);
-			RssFeedBean featuredContentFeed = RssParserService.getRssFeed(ExternalContentSettings.getUrl("featuredContent"));
-			model.addAttribute("featuredContentFeed", featuredContentFeed);
-		} catch (Exception e) {
-			LOG.error("Error retrieving the news RSS feed: ", e);
-			
-		}
 		
 		model.addAttribute("menuId", "home");
 		
