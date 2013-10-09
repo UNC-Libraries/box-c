@@ -293,6 +293,7 @@ return isNaN(t)?d:t},g=p(h[0]),m=Math.max(g,p(h[1]||"")),g=a?Math.max(g,a.getFul
 			OpenLayers.Util.onImageLoadError = function(){
 				self.element.removeClass("not_loaded").height("30px")
 					.html("<div class='error'>Sorry, an error occurred while loading the image.</div>");
+				$(document.body).removeClass("full_screen");
 			};
 
 			// Create the image_viewer
@@ -304,14 +305,14 @@ return isNaN(t)?d:t},g=p(h[0]),m=Math.max(g,p(h[1]||"")),g=a?Math.max(g,a.getFul
 			
 			var fullScreen = new OpenLayers.Control.Button({title: "Toggle full screen mode",
 			    displayClass: "ol_fullscreen", trigger: function(){
-			    	if (self.element.hasClass("full_screen")){
-			    		self.element.removeClass("full_screen");
+			    	if ($(document.body).hasClass("full_screen")){
+			    		$(document.body).removeClass("full_screen");
 			    		$(document).unbind("keyup");
 			    	} else {
-			    		self.element.addClass("full_screen");
+			    		$(document.body).addClass("full_screen");
 			    		$(document).keyup(function(e) {
 			    			if (e.keyCode == 27) {
-			    				self.element.removeClass("full_screen");
+			    				$(document.body).removeClass("full_screen");
 			    				map.updateSize();
 			    				$(document).unbind("keyup");
 			    			}

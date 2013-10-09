@@ -26,6 +26,20 @@ body {
 	position: relative;
 }
 
+body.full_screen {
+	overflow: hidden;
+}
+
+.full_screen #header, .full_screen #footer {
+	display: none;
+}
+
+.full_screen #content {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
 #header {
 	z-index: 2;
 }
