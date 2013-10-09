@@ -338,7 +338,7 @@ public class IrodsIFileSystem {
 			if (!copyResult.md5.equals(irodschecksum)) {
 				LOG.debug("local and iRODS checksums DO NOT MATCH");
 				rollback = true;
-				if (temp.delete()) {
+				if (temp.deleteWithForceOption()) {
 					rollback = false;
 				}
 				throw new LowlevelStorageException(true, temp.getAbsolutePath() + " did not match local checksum");
@@ -356,7 +356,7 @@ public class IrodsIFileSystem {
 				throw new LowlevelStorageException(true, temp.getAbsolutePath() + " could not be renamed to "
 						+ trueLocation.getAbsolutePath());
 			}
-			if (!old.delete()) {
+			if (!old.deleteWithForceOption()) {
 				rollback = true;
 				throw new LowlevelStorageException(true, old.getAbsolutePath() + " could not be deleted");
 			}

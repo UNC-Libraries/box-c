@@ -25,7 +25,7 @@ import org.irods.jargon.core.pub.io.IRODSFile;
 
 /**
  * @author Gregory Jansen
- *
+ * 
  */
 public abstract class AbstractIrodsObjectEnhancementService extends AbstractFedoraEnhancementService {
 	private IRODSAccount irodsAccount = null;
@@ -73,7 +73,7 @@ public abstract class AbstractIrodsObjectEnhancementService extends AbstractFedo
 		IRODSFile irodsFile = getIrodsFileSystem().getIRODSFileFactory(irodsAccount).instanceIRODSFile(path);
 		try {
 			getIrodsFileSystem().getIRODSAccessObjectFactory().getIRODSFileSystemAO(irodsAccount)
-					.fileDeleteNoForce(irodsFile);
+					.fileDeleteForce(irodsFile);
 		} catch (JargonException e) {
 			throw e;
 		} finally {
