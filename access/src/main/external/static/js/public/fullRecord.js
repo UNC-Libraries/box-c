@@ -49,9 +49,14 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'VideoPl
 				$(this).html(showLabel);
 				window.location.hash = '';
 			} else {
-				$viewer[widgetName].call($viewer, "show");
-				$(this).html("Hide");
-				window.location.hash = '#' + hashValue;
+				try {
+					$viewer[widgetName].call($viewer, "show");
+					$(this).html("Hide");
+					window.location.hash = '#' + hashValue;
+				} catch (e) {
+					console.log(e);
+				}
+				
 			}
 			return false;
 		});

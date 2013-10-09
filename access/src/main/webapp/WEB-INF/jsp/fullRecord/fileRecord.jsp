@@ -85,7 +85,7 @@
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
 					<div class="actionlink left">
-						<a href="" class="inline_viewer_link jp2_viewer_link">View</a>
+						<a class="inline_viewer_link jp2_viewer_link">View</a>
 					</div>
 					<div class="clear_space"></div>
 					<div id="jp2_viewer" class="jp2_imageviewer_window djatokalayers_window" data-url='${briefObject.id}'></div>
@@ -99,7 +99,7 @@
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
 							<div class="actionlink left">
-								<a href="" class="inline_viewer_link audio_player_link">Listen</a>
+								<a class="inline_viewer_link audio_player_link">Listen</a>
 							</div>
 							<div class="clear_space"></div>
 							<audio class="audio_player inline_viewer" src="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}&ext=.${briefObject.contentTypeFacet[0].searchKey}">
@@ -107,7 +107,7 @@
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
 							<div class="actionlink left">
-								<a href="" class="inline_viewer_link video_player_link">View</a>
+								<a class="inline_viewer_link video_player_link">View</a>
 							</div>
 							<div class="clear_space"></div>
 							<link rel="stylesheet" type="text/css" href="/static/plugins/flowplayer/skin/minimalist.css">
