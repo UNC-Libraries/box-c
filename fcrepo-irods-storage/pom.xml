@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>edu.unc.lib.cdr</groupId>
 		<artifactId>cdr</artifactId>
-		<version>3.3-SNAPSHOT</version>
+		<version>3.3</version>
 	</parent>
 	<profiles>
 		<!-- this profile is defined for use by the CI server and unit testing -->
