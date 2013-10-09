@@ -26,7 +26,8 @@ build-admin:
 	
 ifneq ($(VERSION), "")
 	for i in access/src/main/external/static/js/admin/*.js; do \
-		sed -i "" "s/\(urlArgs *: *\)\".*\"/\1\"$(VERSION)\"/" $$i; \
+		sed "s/\(urlArgs *: *\)\".*\"/\1\"v=$(VERSION)\"/" $$i > $$i.temp; \
+		mv $$i.temp $$i; \
 	done
 endif
 
@@ -51,6 +52,7 @@ build-access:
 	
 ifneq ($(VERSION), "")
 	for i in access/src/main/external/static/js/public/*.js; do \
-		sed -i "" "s/\(urlArgs *: *\)\".*\"/\1\"$(VERSION)\"/" $$i; \
+		sed "s/\(urlArgs *: *\)\".*\"/\1\"v=$(VERSION)\"/" $$i > $$i.temp; \
+		mv $$i.temp $$i; \
 	done
 endif
