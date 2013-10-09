@@ -57,28 +57,28 @@
 			<h3>Structure</h3>
 			<c:set var="structureDataUrl">structure/<c:if test="${not empty resultResponse.selectedContainer}">${resultResponse.selectedContainer.id}/</c:if>collection<c:if test="${not empty searchStateParameters}">?${searchStateParameters}</c:if></c:set>
 			<div data-href="${structureDataUrl}" id="structure_facet">
-				<div class="center"><img src="/static/images/admin/loading-small.gif"/></div>
+				<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
 			</div>
 		</div>
 		<div>
 			<h3>Descriptive</h3>
 			<c:set var="facetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=collection,dept,language,subject<c:if test="${not empty searchStateParameters}">&${searchStateParameters}</c:if></c:set>
 			<div data-href="${facetsDataUrl}">
-				<div class="center"><img src="/static/images/admin/loading-small.gif"/></div>
+				<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
 			</div>
 		</div>
 		<div>
 			<h3>Access Control</h3>
 			<c:set var="facetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=role,status<c:if test="${not empty searchStateParameters}">&${searchStateParameters}</c:if></c:set>
 			<div data-href="${facetsDataUrl}">
-				<div class="center"><img src="/static/images/admin/loading-small.gif"/></div>
+				<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
 			</div>
 		</div>
 		<div>
 			<h3>Content</h3>
 			<c:set var="facetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=format,type,model,contentStatus<c:if test="${not empty searchStateParameters}">&${searchStateParameters}</c:if></c:set>
 			<div data-href="${facetsDataUrl}">
-				<div class="center"><img src="/static/images/admin/loading-small.gif"/></div>
+				<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
 			</div>
 		</div>
 	</div>

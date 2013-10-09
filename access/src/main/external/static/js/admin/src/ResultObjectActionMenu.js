@@ -87,7 +87,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 	};
 	
 	ResultObjectActionMenu.prototype.editAccess = function(resultObject) {
-		var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading-large.gif'/></div>");
+		var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading_large.gif'/></div>");
 		dialog.dialog({
 			autoOpen: true,
 			width: 500,
