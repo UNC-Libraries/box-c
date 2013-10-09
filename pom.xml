@@ -39,6 +39,17 @@
 			<timezone>-5</timezone>
 		</developer>
 		<developer>
+			<id>daines</id>
+			<name>Mike Daines</name>
+			<email>daines@email.unc.edu</email>
+			<organization>University of North Carolina at Chapel Hill Libraries</organization>
+			<organizationUrl>http://www.lib.unc.edu</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
 			<id>smbarr</id>
 			<name>Steve Barr</name>
 			<organization>University of North Carolina at Chapel Hill Libraries</organization>
@@ -220,6 +231,8 @@
 						<exclude>djatoka-cdr/**</exclude>
 						<exclude>.git/**</exclude>
 						<exclude>**/.gitignore</exclude>
+						<exclude>**/*.md</exclude>
+						<exclude>Makefile</exclude>
 						<exclude>**/header.txt</exclude>
 						<exclude>**/bin/**</exclude>
 						<exclude>**/bundled/**</exclude>
