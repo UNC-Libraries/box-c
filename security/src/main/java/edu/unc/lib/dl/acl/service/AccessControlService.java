@@ -15,7 +15,9 @@
  */
 package edu.unc.lib.dl.acl.service;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -32,4 +34,14 @@ public interface AccessControlService {
 	 * @return
 	 */
 	public ObjectAccessControlsBean getObjectAccessControls(PID pid);
+	
+	/**
+	 * Returns true if the given groups have the specified permission on the object pid
+	 * 
+	 * @param pid
+	 * @param groups
+	 * @param permission
+	 * @return
+	 */
+	public boolean hasAccess(PID pid, AccessGroupSet groups, Permission permission);
 }

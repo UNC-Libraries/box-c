@@ -31,7 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
@@ -56,10 +58,10 @@ public class FedoraAccessControlService implements AccessControlService {
 		this.httpClient = new HttpClient(this.multiThreadedHttpConnectionManager);
 		this.mapper = new ObjectMapper();
 	}
-	
+
 	public void init() {
 		UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
-      httpClient.getState().setCredentials(HttpClientUtil.getAuthenticationScope(aclEndpointUrl), creds);
+		httpClient.getState().setCredentials(HttpClientUtil.getAuthenticationScope(aclEndpointUrl), creds);
 	}
 
 	public void destroy() {
@@ -85,8 +87,8 @@ public class FedoraAccessControlService implements AccessControlService {
 				Map<?, ?> result = (Map<?, ?>) mapper.readValue(method.getResponseBodyAsStream(), Object.class);
 				Map<String, List<String>> roles = (Map<String, List<String>>) result.get("roles");
 				Map<String, List<String>> globalRoles = (Map<String, List<String>>) result.get("globals");
-				List<String> embargoes = (List<String>)result.get("embargoes");
-				
+				List<String> embargoes = (List<String>) result.get("embargoes");
+
 				return new ObjectAccessControlsBean(pid, roles, globalRoles, embargoes);
 			}
 		} catch (HttpException e) {
@@ -98,6 +100,27 @@ public class FedoraAccessControlService implements AccessControlService {
 		}
 
 		return null;
+	}
+
+	public boolean hasAccess(PID pid, AccessGroupSet groups, Permission permission) {
+		GetMethod method = new GetMethod(this.aclEndpointUrl + pid.getPid() + "/hasAccess/" + permission.name());
+		try {
+			method.setQueryString(new NameValuePair[] { new NameValuePair("groups", groups.joinAccessGroups(";")) });
+			int statusCode = httpClient.executeMethod(method);
+			if (statusCode == HttpStatus.SC_OK) {
+				String response = method.getResponseBodyAsString();
+				Boolean hasAccess = Boolean.parseBoolean(response);
+				return hasAccess != null && hasAccess;
+			}
+		} catch (HttpException e) {
+			log.error("Failed to check hasAccess for " + pid, e);
+		} catch (IOException e) {
+			log.error("Failed to check hasAccess for " + pid, e);
+		} finally {
+			method.releaseConnection();
+		}
+
+		return false;
 	}
 
 	public void setAclEndpointUrl(String aclEndpointUrl) {
