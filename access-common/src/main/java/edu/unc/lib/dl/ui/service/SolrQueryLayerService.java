@@ -154,11 +154,11 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public SearchResultResponse getFacetList(SearchRequest searchRequest) {
 		SearchState searchState = (SearchState) searchRequest.getSearchState().clone();
 
-		
 		LOG.debug("Retrieving facet list");
 		BriefObjectMetadata selectedContainer = null;
 		if (searchRequest.getRootPid() != null) {
-			selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState, searchRequest.isApplyCutoffs());
+			selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
+					searchRequest.isApplyCutoffs());
 		} else {
 			CutoffFacet ancestorPath;
 			if (!searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
@@ -174,7 +174,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 				ancestorPath.setCutoff(null);
 			}
 		}
-		
+
 		// Turning off rollup because it is really slow
 		searchState.setRollup(false);
 
@@ -542,7 +542,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public void getChildrenCounts(List<BriefObjectMetadata> resultList, AccessGroupSet accessGroups) {
 		this.getChildrenCounts(resultList, accessGroups, "child", null, null);
 	}
-	
+
 	public void getChildrenCounts(List<BriefObjectMetadata> resultList, AccessGroupSet accessGroups, String countName,
 			String queryAddendum, SolrQuery baseQuery) {
 		long startTime = System.currentTimeMillis();
@@ -584,7 +584,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		if (queryAddendum != null) {
 			solrQuery.setQuery(solrQuery.getQuery() + " AND " + queryAddendum);
 		}
-		
+
 		solrQuery.setFacet(true);
 		solrQuery.setFacetMinCount(1);
 		solrQuery.addFacetField(ancestorPathField);
@@ -595,14 +595,14 @@ public class SolrQueryLayerService extends SolrSearchService {
 		} catch (NumberFormatException e) {
 			countPageSize = 20;
 		}
-		
+
 		solrQuery.add("f." + ancestorPathField + ".facet.limit", Integer.toString(Integer.MAX_VALUE));
 		// Sort by value rather than count so that earlier tiers will come first in case the result gets cut off
 		solrQuery.setFacetSort("index");
-		
+
 		java.util.Map<Integer, StringBuilder> tierQueryMap = new java.util.HashMap<Integer, StringBuilder>();
 		java.util.Map<Integer, List<BriefObjectMetadata>> containerMap = new java.util.HashMap<Integer, List<BriefObjectMetadata>>();
-		
+
 		// Pare the list of ids we are searching for and assigning counts to down to just containers
 		for (BriefObjectMetadata metadataObject : resultList) {
 			if (metadataObject.getPath() != null && metadataObject.getContentModel() != null
@@ -613,43 +613,48 @@ public class SolrQueryLayerService extends SolrSearchService {
 				if (tierQuery == null) {
 					tierQuery = new StringBuilder();
 					tierQueryMap.put(highestTier.getTier(), tierQuery);
-					
+
 					containerObjects = new ArrayList<BriefObjectMetadata>();
 					containerMap.put(highestTier.getTier(), containerObjects);
 				}
-				
+
 				if (tierQuery.length() == 0) {
 					tierQuery.append(ancestorPathField).append(":(");
 				} else {
 					tierQuery.append(" OR ");
 				}
-				
+
 				tierQuery.append(SolrSettings.sanitize(highestTier.getSearchValue())).append(",*");
 				containerObjects.add(metadataObject);
-				
+
 				// If there are a lot of results, then do a partial lookup
 				if (containerObjects.size() >= countPageSize) {
 					tierQuery.append(")");
 					this.executeChildrenCounts(tierQuery, containerObjects, solrQuery, countName, highestTier.getTier());
-					LOG.info("Partial query done at " + System.currentTimeMillis() + " (" + (System.currentTimeMillis() - startTime) + ")");
+					LOG.info("Partial query done at " + System.currentTimeMillis() + " ("
+							+ (System.currentTimeMillis() - startTime) + ")");
 					containerMap.remove(highestTier.getTier());
 					tierQueryMap.remove(highestTier.getTier());
 				}
 			}
 		}
 
-		Iterator<java.util.Map.Entry<Integer,StringBuilder>> queryIt = tierQueryMap.entrySet().iterator();
+		Iterator<java.util.Map.Entry<Integer, StringBuilder>> queryIt = tierQueryMap.entrySet().iterator();
 		while (queryIt.hasNext()) {
-			java.util.Map.Entry<Integer,StringBuilder> tierQueryEntry = queryIt.next();
+			java.util.Map.Entry<Integer, StringBuilder> tierQueryEntry = queryIt.next();
 			tierQueryEntry.getValue().append(')');
-			this.executeChildrenCounts(tierQueryEntry.getValue(), containerMap.get(tierQueryEntry.getKey()), solrQuery, countName, tierQueryEntry.getKey());
+			this.executeChildrenCounts(tierQueryEntry.getValue(), containerMap.get(tierQueryEntry.getKey()), solrQuery,
+					countName, tierQueryEntry.getKey());
 		}
-		LOG.info("Child count query done at " + System.currentTimeMillis() + " (" + (System.currentTimeMillis() - startTime) + ")");
+		LOG.info("Child count query done at " + System.currentTimeMillis() + " ("
+				+ (System.currentTimeMillis() - startTime) + ")");
 	}
-	
-	private void executeChildrenCounts(StringBuilder query, List<BriefObjectMetadata> containerObjects, SolrQuery solrQuery, String countName, Integer tier) {
+
+	private void executeChildrenCounts(StringBuilder query, List<BriefObjectMetadata> containerObjects,
+			SolrQuery solrQuery, String countName, Integer tier) {
 		String ancestorPathField = solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name());
-		// Remove all ancestor path related filter queries or filter queries from previous count executions, so the counts won't be cut off
+		// Remove all ancestor path related filter queries or filter queries from previous count executions, so the counts
+		// won't be cut off
 		if (solrQuery.getFilterQueries() != null) {
 			for (String filterQuery : solrQuery.getFilterQueries()) {
 				if (filterQuery.contains(ancestorPathField)) {
@@ -741,16 +746,18 @@ public class SolrQueryLayerService extends SolrSearchService {
 			return collectionResponse;
 		}
 
-		// MERGE THESE? Make sure that distance of 0, 1 and greater all work
+		// For a distance of 1, the parent collection's children set already contains the only intermediate node so just
+		// add the original tree as its child
 		if (collectionToRequestDistance == 1) {
 			int childNodeIndex = collectionResponse.getChildNodeIndex(requestRoot.getAncestorPathFacet().getSearchKey());
-			collectionResponse.getRootNode().getChildren().set(childNodeIndex, requestResponse.getRootNode());
+			collectionResponse.getRootNode().getChildren().get(childNodeIndex).getChildren()
+					.add(requestResponse.getRootNode());
 			return collectionResponse;
 		}
 
 		List<String> idList = new ArrayList<String>();
-		// If the distance between the collection root and request root is bigger than 1, then fill in records for all the
-		// intermediaries
+		// Get all the intermediate nodes between the parent collection's children and the original root node.
+		// The collection tree contains the next tier after the collection, so we don't need to retrieve that again
 		for (int i = parentCollectionTier + 1; i < requestRoot.getAncestorPath().size(); i++) {
 			idList.add(requestRoot.getAncestorPathFacet().getFacetNodes().get(i).getSearchKey());
 		}
@@ -767,16 +774,19 @@ public class SolrQueryLayerService extends SolrSearchService {
 		});
 
 		// Build tree-line containing all the bridge folders
+		// Set up the root for the bridge by creating a new node from the first of the intermediate metadata objects
+		// retrieved
 		HierarchicalBrowseResultResponse.ResultNode bridgeRoot = new HierarchicalBrowseResultResponse.ResultNode(
 				bridgeMetadata.get(0));
 		HierarchicalBrowseResultResponse.ResultNode currentNode = bridgeRoot;
+		// Add the rest of the bridge metadata nodes into the bridge "tree"
 		for (int i = 1; i < bridgeMetadata.size(); i++)
 			currentNode = currentNode.addChild(bridgeMetadata.get(i));
 
-		// Join the bridge to the original request tree
+		// Insert the original tree as a child of the bridge tree
 		currentNode.getChildren().add(requestResponse.getRootNode());
 
-		// Insert the bridge into the collection tree
+		// Insert the bridge as a child of the appropriate child of the collection
 		int bridgeRootParentIndex = collectionResponse.getChildNodeIndex(bridgeRoot.getMetadata().getAncestorPathFacet()
 				.getSearchKey());
 		collectionResponse.getRootNode().getChildren().get(bridgeRootParentIndex).getChildren().add(bridgeRoot);
@@ -796,7 +806,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		AccessGroupSet accessGroups = browseRequest.getAccessGroups();
 		SearchState browseState = (SearchState) browseRequest.getSearchState().clone();
 		HierarchicalBrowseResultResponse browseResults = new HierarchicalBrowseResultResponse();
-		
+
 		CutoffFacet rootPath;
 		BriefObjectMetadataBean rootNode;
 		if (browseRequest.getRootPid() != null) {
@@ -822,7 +832,6 @@ public class SolrQueryLayerService extends SolrSearchService {
 			rootNode.setAncestorPathFacet(rootPath);
 		}
 
-		
 		SearchState hierarchyState = searchStateFactory.createHierarchyListSearchState();
 		// Use the ancestor path facet from the state where we will have set a default value
 		hierarchyState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
@@ -852,7 +861,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		}
 		// Add the root node into the result set
 		browseResults.getResultList().add(0, rootNode);
-		
+
 		if (browseRequest.isRetrieveFacets() && browseRequest.getSearchState().getFacetsToRetrieve() != null) {
 			SearchState facetState = (SearchState) browseState.clone();
 			facetState.setRowsPerPage(0);
@@ -873,8 +882,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 			SearchRequest filteredChildrenRequest = new SearchRequest(browseState, browseRequest.getAccessGroups(), true);
 			this.getChildrenCounts(results.getResultList(), accessGroups, "child", null,
 					this.generateSearch(filteredChildrenRequest));
-			
-			this.getChildrenCounts(results.getResultList(), accessGroups, "containers", "contentModel:" + SolrSettings.sanitize(ContentModelHelper.Model.CONTAINER.toString()),
+
+			this.getChildrenCounts(results.getResultList(), accessGroups, "containers",
+					"contentModel:" + SolrSettings.sanitize(ContentModelHelper.Model.CONTAINER.toString()),
 					this.generateSearch(filteredChildrenRequest));
 
 			try {
@@ -1099,7 +1109,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 		BriefObjectMetadata selectedContainer = null;
 		// Get the record for the currently selected container if one is selected.
 		if (searchRequest.getRootPid() != null) {
-			selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState, searchRequest.isApplyCutoffs());
+			selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
+					searchRequest.isApplyCutoffs());
 		} else if (rollup == null) {
 			LOG.debug("No container and no rollup, defaulting rollup to true");
 			searchState.setRollup(true);
@@ -1126,7 +1137,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public void populateBreadcrumbs(SearchRequest searchRequest, SearchResultResponse resultResponse) {
 		SearchState searchState = (SearchState) searchRequest.getSearchState();
 		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE.name())) {
-			if (resultResponse.getResultCount() == 0 || searchState.getResultFields() == null 
+			if (resultResponse.getResultCount() == 0 || searchState.getResultFields() == null
 					|| !searchState.getResultFields().contains(SearchFieldKeys.CONTENT_TYPE.name())) {
 				SearchState contentTypeSearchState = new SearchState();
 				contentTypeSearchState.setRowsPerPage(1);
@@ -1151,17 +1162,18 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public void setCollectionsPid(PID collectionsPid) {
 		this.collectionsPid = collectionsPid;
 	}
-	
+
 	/**
 	 * Get the number of departments represented in the collection
+	 * 
 	 * @return the count, or -1 if there was an error retrieving the count
 	 */
-	
+
 	public int getDepartmentsCount() {
-		
+
 		SolrQuery query;
 		QueryResponse response;
-		
+
 		query = new SolrQuery();
 		query.setQuery("*:*");
 		query.setRows(0);
@@ -1174,21 +1186,22 @@ public class SolrQueryLayerService extends SolrSearchService {
 		} catch (SolrServerException e) {
 			LOG.error("Error retrieving Solr object request: " + e);
 		}
-		
+
 		return -1;
 
 	}
-	
+
 	/**
 	 * Get the total number of collections
+	 * 
 	 * @return the count, or -1 if there was an error retrieving the count
 	 */
 
 	public long getCollectionsCount() {
-		
+
 		SolrQuery query;
 		QueryResponse response;
-		
+
 		query = new SolrQuery();
 		query.setQuery("resourceType:Collection");
 		query.setRows(0);
@@ -1200,28 +1213,29 @@ public class SolrQueryLayerService extends SolrSearchService {
 		} catch (SolrServerException e) {
 			LOG.error("Error retrieving Solr object request: " + e);
 		}
-		
+
 		return -1;
 
 	}
-	
+
 	/**
 	 * Get the number of objects present in the collection for various formats
+	 * 
 	 * @return a map from format name to count
 	 */
 
-	public Map<String,Long> getFormatCounts() {
-		
+	public Map<String, Long> getFormatCounts() {
+
 		SolrQuery query;
 		QueryResponse response;
-		
+
 		query = new SolrQuery();
 		query.setQuery("*:*");
 		query.setRows(0);
 		query.addFacetField("contentType");
 		query.setFacetLimit(-1);
-		
-		HashMap<String,Long> counts = new HashMap<String,Long>();
+
+		HashMap<String, Long> counts = new HashMap<String, Long>();
 
 		try {
 			response = this.executeQuery(query);
@@ -1245,9 +1259,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 		} catch (SolrServerException e) {
 			LOG.error("Error retrieving Solr object request: " + e);
 		}
-		
+
 		return counts;
 
 	}
-	
+
 }

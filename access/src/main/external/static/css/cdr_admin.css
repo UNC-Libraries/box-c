@@ -3308,7 +3308,7 @@ h1 {
 }
 
 .structure .indent.last_sib {
-	background-position: -27px -89px;
+	background-position: -27px -90px;
 }
 
 .structure .indent.empty {
@@ -3438,11 +3438,11 @@ h1 {
 }
 
 .structure.facet.inset .indent.with_sib {
-	background-position: -27px -24px;
+	background-position: -27px -23px;
 }
 
 .structure.facet.inset .indent.last_sib {
-	background-position: -27px -89px;
+	background-position: -27px -88px;
 }
 
 .structure.facet.inset .expanded > .entry {
