@@ -43,7 +43,7 @@ public class IndexingController {
 			return;
 		}
 
-		if (inplace || inplace == null) {
+		if (inplace == null || inplace) {
 			log.info("Reindexing " + id + ", inplace reindex mode");
 			messageDirector.direct(new SolrUpdateRequest(id, IndexingActionType.RECURSIVE_REINDEX));
 		} else {
