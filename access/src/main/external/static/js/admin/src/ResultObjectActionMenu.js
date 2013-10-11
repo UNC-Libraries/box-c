@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 'PublishObjectButton', 'contextMenu'],
-		function($, ui, DeleteObjectButton, PublishObjectButton) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 'PublishObjectButton', 'ReindexObjectButton', 'contextMenu'],
+		function($, ui, DeleteObjectButton, PublishObjectButton, ReindexObjectButton) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -36,9 +36,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 					items["editAccess"] = {name : 'Edit Access'};
 				if ($.inArray('editDescription', metadata.permissions) != -1)
 					items["editDescription"] = {name : 'Edit Description'};
-				if ($.inArray('purgeForever', metadata.permissions) != -1)
+				if ($.inArray('purgeForever', metadata.permissions) != -1) {
 					items["purgeForever"] = {name : 'Delete'};
-					
+					items["reindex"] = {name : 'Reindex'};
+				}
+				
 				return {
 					callback: function(key, options) {
 						switch (key) {
@@ -68,6 +70,15 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 									confirmAnchor : options.$trigger
 								});
 								deleteButton.activate();
+								break;
+							case "reindex" :
+								var reindexButton = new ReindexObjectButton({
+									pid : resultObject.pid,
+									parentObject : resultObject,
+									metadata : metadata,
+									confirmAnchor : options.$trigger
+								});
+								reindexButton.activate();
 								break;
 						}
 					},

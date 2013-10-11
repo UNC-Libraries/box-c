@@ -2280,6 +2280,46 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	return PublishObjectButton;
+});define('ReindexObjectButton', [ 'jquery', 'AjaxCallbackButton'], function($, AjaxCallbackButton) {
+	function ReindexObjectButton(options) {
+		this._create(options);
+	}
+	
+	ReindexObjectButton.prototype.constructor = ReindexObjectButton;
+	ReindexObjectButton.prototype = Object.create( AjaxCallbackButton.prototype );
+	
+	var defaultOptions = {
+			workLabel: "Updating...",
+			workPath: "services/rest/edit/solr/reindex/{idPath}?inplace=true",
+			followupLabel: "Updating...",
+			followupPath: "services/rest/item/{idPath}/solrRecord/version",
+			confirm: true,
+			confirmMessage: "Reindex this object and all of its children?",
+			animateSpeed: 'fast',
+			complete: ReindexObjectButton.prototype.complete
+		};
+		
+	ReindexObjectButton.prototype._create = function(options) {
+		var merged = $.extend({}, defaultOptions, options);
+		merged.complete = ReindexObjectButton.prototype.complete;
+		AjaxCallbackButton.prototype._create.call(this, merged);
+		
+		if (this.options.parentObject)
+			this.options.confirmAnchor = this.options.parentObject.element;
+	};
+	
+	ReindexObjectButton.prototype.complete = function() {
+		if (this.options.metadata)
+			this.alertHandler.alertHandler("success", "Reindexing of " + this.options.metadata.title + " is underway, view status monitor");
+		else this.alertHandler.alertHandler("success", "Reindexing is underway, view status monitor");
+	};
+
+	ReindexObjectButton.prototype.completeState = function() {
+		if (this.options.parentObject != null)
+			this.options.parentObject.refresh(true);
+	};
+	
+	return ReindexObjectButton;
 });define('RemoteStateChangeMonitor', ['jquery'], function($) {
 	function RemoteStateChangeMonitor(options) {
 		this.init(options);
@@ -2613,8 +2653,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	};
 	
 	return ResultObject;
-});define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 'PublishObjectButton', 'contextMenu'],
-		function($, ui, DeleteObjectButton, PublishObjectButton) {
+});define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 'PublishObjectButton', 'ReindexObjectButton', 'contextMenu'],
+		function($, ui, DeleteObjectButton, PublishObjectButton, ReindexObjectButton) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -2651,9 +2691,11 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 					items["editAccess"] = {name : 'Edit Access'};
 				if ($.inArray('editDescription', metadata.permissions) != -1)
 					items["editDescription"] = {name : 'Edit Description'};
-				if ($.inArray('purgeForever', metadata.permissions) != -1)
+				if ($.inArray('purgeForever', metadata.permissions) != -1) {
 					items["purgeForever"] = {name : 'Delete'};
-					
+					items["reindex"] = {name : 'Reindex'};
+				}
+				
 				return {
 					callback: function(key, options) {
 						switch (key) {
@@ -2683,6 +2725,15 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 									confirmAnchor : options.$trigger
 								});
 								deleteButton.activate();
+								break;
+							case "reindex" :
+								var reindexButton = new ReindexObjectButton({
+									pid : resultObject.pid,
+									parentObject : resultObject,
+									metadata : metadata,
+									confirmAnchor : options.$trigger
+								});
+								reindexButton.activate();
 								break;
 						}
 					},

@@ -13,6 +13,7 @@ require.config({
 		'AjaxCallbackButton' : 'cdr-admin',
 		'PublishObjectButton' : 'cdr-admin',
 		'DeleteObjectButton' : 'cdr-admin',
+		'ReindexObjectButton' : 'cdr-admin',
 		'ResultObject' : 'cdr-admin',
 		'ResultObjectList' : 'cdr-admin',
 		'BatchCallbackButton' : 'cdr-admin',
