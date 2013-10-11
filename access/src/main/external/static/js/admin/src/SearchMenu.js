@@ -33,7 +33,8 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 										showParentLink : true,
 										queryPath : 'list',
 										filterParams : self.options.filterParams,
-										selectedId : self.options.selectedId
+										selectedId : self.options.selectedId,
+										onChangeEvent : $.proxy(self._adjustHeight, self)
 									});
 									$structureView.addClass('inset facet');
 									// Inform the result view that the structure browse is ready for move purposes
@@ -74,6 +75,7 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 		},
 		
 		_adjustHeight : function () {
+			console.log("Adjusting height");
 			var activeMenu = this.element.find(".filter_menu .ui-accordion-content-active");
 			if (activeMenu.length == 0) {
 				return;

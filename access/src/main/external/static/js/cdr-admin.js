@@ -203,6 +203,7 @@ define('detachplus', [ 'jquery'], function($) {
 								$childrenContainer.find(".indent").show();
 								$childrenContainer.show(100, function() {
 									self.element.addClass("expanded");
+									self.options.structureView.onChangeEvent(self);
 								});
 							}
 							
@@ -222,6 +223,7 @@ define('detachplus', [ 'jquery'], function($) {
 					$childrenContainer.find(".indent").show();
 					$childrenContainer.show(100, function() {
 						self.element.addClass("expanded");
+						self.options.structureView.onChangeEvent(self);
 					});
 					$toggleButton.removeClass('expand').addClass('collapse');
 				}
@@ -230,10 +232,12 @@ define('detachplus', [ 'jquery'], function($) {
 			if ($childrenContainer.children().length > 0) {
 				$childrenContainer.hide(100, function() {
 					self.element.removeClass("expanded");
+					self.options.structureView.onChangeEvent(self);
 				});
 			}
 			$toggleButton.removeClass('collapse').addClass('expand');
 		}
+		self.options.structureView.onChangeEvent(self);
 	};
 	
 	StructureEntry.prototype.refreshIndent = function() {
@@ -328,7 +332,8 @@ define('detachplus', [ 'jquery'], function($) {
 			filterParams : '',
 			excludeIds : null,
 			retrieveFiles : false,
-			selectedId : false
+			selectedId : false,
+			onChangeEvent : undefined
 		},
 		_create : function() {
 			
@@ -406,12 +411,20 @@ define('detachplus', [ 'jquery'], function($) {
 						self.$content.append(newRoot.element);
 						if (data.root.isTopLevel)
 							$parentLink.addClass('disabled');
+						
+						self.onChangeEvent(newRoot);
 					}
 				});
 				return false;
 			});
 			
 			this.$content.before($parentLink);
+		},
+		
+		// Trigger the change event function in case some other part of the code needs to know the view changed sizes
+		onChangeEvent : function(target) {
+			if (this.options.onChangeEvent)
+				this.options.onChangeEvent(target);
 		}
 	});
 });/**
@@ -2213,7 +2226,6 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	};
 	
 	MoveDropLocation.prototype.setMoveActive = function(active) {
-		this.moveActive = active;
 		if (active) {
 			this.element.addClass("moving");
 			this.element.on("click.dropClickBlocking", "a", function(e) {
@@ -3308,6 +3320,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		deactivateMove : function() {
 			this.dragTargets = null;
 			this.dropActive = false;
+			this.move = false;
 			for (var index in this.dropLocations) {
 				this.dropLocations[index].setMoveActive(false);
 			}
@@ -3472,7 +3485,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 										showParentLink : true,
 										queryPath : 'list',
 										filterParams : self.options.filterParams,
-										selectedId : self.options.selectedId
+										selectedId : self.options.selectedId,
+										onChangeEvent : $.proxy(self._adjustHeight, self)
 									});
 									$structureView.addClass('inset facet');
 									// Inform the result view that the structure browse is ready for move purposes
@@ -3513,6 +3527,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		},
 		
 		_adjustHeight : function () {
+			console.log("Adjusting height");
 			var activeMenu = this.element.find(".filter_menu .ui-accordion-content-active");
 			if (activeMenu.length == 0) {
 				return;

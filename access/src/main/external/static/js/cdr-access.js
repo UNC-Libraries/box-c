@@ -476,6 +476,7 @@ return isNaN(t)?d:t},g=p(h[0]),m=Math.max(g,p(h[1]||"")),g=a?Math.max(g,a.getFul
 								$childrenContainer.find(".indent").show();
 								$childrenContainer.show(100, function() {
 									self.element.addClass("expanded");
+									self.options.structureView.onChangeEvent(self);
 								});
 							}
 							
@@ -495,6 +496,7 @@ return isNaN(t)?d:t},g=p(h[0]),m=Math.max(g,p(h[1]||"")),g=a?Math.max(g,a.getFul
 					$childrenContainer.find(".indent").show();
 					$childrenContainer.show(100, function() {
 						self.element.addClass("expanded");
+						self.options.structureView.onChangeEvent(self);
 					});
 					$toggleButton.removeClass('expand').addClass('collapse');
 				}
@@ -503,10 +505,12 @@ return isNaN(t)?d:t},g=p(h[0]),m=Math.max(g,p(h[1]||"")),g=a?Math.max(g,a.getFul
 			if ($childrenContainer.children().length > 0) {
 				$childrenContainer.hide(100, function() {
 					self.element.removeClass("expanded");
+					self.options.structureView.onChangeEvent(self);
 				});
 			}
 			$toggleButton.removeClass('collapse').addClass('expand');
 		}
+		self.options.structureView.onChangeEvent(self);
 	};
 	
 	StructureEntry.prototype.refreshIndent = function() {
@@ -601,7 +605,8 @@ return isNaN(t)?d:t},g=p(h[0]),m=Math.max(g,p(h[1]||"")),g=a?Math.max(g,a.getFul
 			filterParams : '',
 			excludeIds : null,
 			retrieveFiles : false,
-			selectedId : false
+			selectedId : false,
+			onChangeEvent : undefined
 		},
 		_create : function() {
 			
@@ -679,12 +684,20 @@ return isNaN(t)?d:t},g=p(h[0]),m=Math.max(g,p(h[1]||"")),g=a?Math.max(g,a.getFul
 						self.$content.append(newRoot.element);
 						if (data.root.isTopLevel)
 							$parentLink.addClass('disabled');
+						
+						self.onChangeEvent(newRoot);
 					}
 				});
 				return false;
 			});
 			
 			this.$content.before($parentLink);
+		},
+		
+		// Trigger the change event function in case some other part of the code needs to know the view changed sizes
+		onChangeEvent : function(target) {
+			if (this.options.onChangeEvent)
+				this.options.onChangeEvent(target);
 		}
 	});
 });define("VideoPlayer", [ 'jquery', 'jquery-ui'], function($, ui) {

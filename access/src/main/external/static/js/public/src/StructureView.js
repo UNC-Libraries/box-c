@@ -11,7 +11,8 @@ define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, 
 			filterParams : '',
 			excludeIds : null,
 			retrieveFiles : false,
-			selectedId : false
+			selectedId : false,
+			onChangeEvent : undefined
 		},
 		_create : function() {
 			
@@ -89,12 +90,20 @@ define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, 
 						self.$content.append(newRoot.element);
 						if (data.root.isTopLevel)
 							$parentLink.addClass('disabled');
+						
+						self.onChangeEvent(newRoot);
 					}
 				});
 				return false;
 			});
 			
 			this.$content.before($parentLink);
+		},
+		
+		// Trigger the change event function in case some other part of the code needs to know the view changed sizes
+		onChangeEvent : function(target) {
+			if (this.options.onChangeEvent)
+				this.options.onChangeEvent(target);
 		}
 	});
 });
