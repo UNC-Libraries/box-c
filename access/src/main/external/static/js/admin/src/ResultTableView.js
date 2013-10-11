@@ -1,7 +1,7 @@
 define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'ParentResultObject', 'AddMenu', 
-		'ResultObjectActionMenu', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'ConfirmationDialog', 'detachplus'], 
+		'ResultObjectActionMenu', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
 		function($, ui, ResultObjectList, URLUtilities, ParentResultObject, AddMenu, ResultObjectActionMenu,
-				PublishBatchButton, UnpublishBatchButton, DeleteBatchButton, ConfirmationDialog) {
+				PublishBatchButton, UnpublishBatchButton, DeleteBatchButton, ConfirmationDialog, MoveDropLocation) {
 	$.widget("cdr.resultTableView", {
 		options : {
 			enableSort : true,
@@ -42,13 +42,6 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				selector : ".res_entry td",
 				containerSelector : ".res_entry,.container_entry"
 			})];
-			$(".res_entry .title", this.$resultTable).mousedown(function(event){
-				event.stopPropagation();
-				event.stopImmediatePropagation();
-			}).mouseup(function(event){
-				event.stopPropagation();
-				event.stopImmediatePropagation();
-			});
 			
 			this._initMoveLocations();
 			this._initReordering();
@@ -320,7 +313,6 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		//Initializes the droppable elements used in move operations
 		_initMoveLocations : function() {
 			// Jquery result containing all elements to use as move drop zones
-			this.$dropLocations = $();
 			this.addMoveDropLocation(this.$resultTable, ".res_entry.container.move_into .title", function($dropTarget){
 				var dropObject = $dropTarget.closest(".res_entry").data("resultObject");
 				// Needs to be a valid container with sufficient perms
@@ -329,110 +321,31 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			});
 		},
 		
+		deactivateMove : function() {
+			this.dragTargets = null;
+			this.dropActive = false;
+			this.move = false;
+			for (var index in this.dropLocations) {
+				this.dropLocations[index].setMoveActive(false);
+			}
+		},
+		
+		activateMove : function() {
+			this.move = true;
+			for (var index in this.dropLocations) {
+				this.dropLocations[index].setMoveActive(true);
+			}
+		},
+		
 		addMoveDropLocation : function($dropLocation, dropTargetSelector, dropTargetGetDataFunction) {
-			if (!this.$dropLocations)
-				return;
-			var self = this;
-			this.$dropLocations = this.$dropLocations.add($dropLocation);
-			$dropLocation.on("mouseenter", dropTargetSelector, function() {
-				//console.log("Hovering", this);
-				$(this).addClass("drop_hover");
-			}).on("mouseleave", dropTargetSelector, function() {
-				//console.log("Blur", this);
-				$(this).removeClass("drop_hover");
+			if (!this.dropLocations)
+				this.dropLocations = [];
+			var dropLocation = new MoveDropLocation($dropLocation, {
+				dropTargetSelector : dropTargetSelector,
+				dropTargetGetDataFunction : dropTargetGetDataFunction,
+				manager : this
 			});
-			$dropLocation.droppable({
-				drop : function(event, ui) {
-					// Locate which element is being dropped on
-					var $dropTarget = $(document.elementFromPoint(event.pageX - $(window).scrollLeft(), event.pageY - $(window).scrollTop()));
-					// Verify that it is the correct type of element and retrieve metadata
-					var metadata = dropTargetGetDataFunction($dropTarget);
-					if (!metadata) return false;
-					// Activate move drop mode
-					self.dropActive = true;
-					
-					// Confirm the move operation before performing it
-					var representative = ui.draggable.data("resultObject");
-					var repTitle = representative.metadata.title;
-					if (repTitle.length > 50) repTitle = repTitle.substring(0, 50) + "...";
-					var destTitle = metadata.title;
-					if (destTitle.length > 50) destTitle = destTitle.substring(0, 50) + "...";
-					var promptText = "Move \"<a class='result_object_link' data-id='" + representative.pid + "'>" + repTitle + "</a>\"";
-					if (self.dragTargets.length > 1)
-						promptText += " and " + (self.dragTargets.length - 1) + " other object" + (self.dragTargets.length - 1 > 1? "s" :"");
-					promptText += " into \"<a class='result_object_link' data-id='" + metadata.id + "'>" + destTitle + "</a>\"?";
-					var confirm = new ConfirmationDialog({
-						promptText : promptText,
-						modal : true,
-						autoOpen : true,
-						addClass : "move",
-						dialogOptions : {
-							width : 'auto',
-							maxWidth : 400,
-							position : "center center"
-						},
-						confirmFunction : function() {
-							// Perform the move operation and clean up the result entries
-							if (self.dragTargets) {
-								var moveData = {
-										newParent : metadata.id,
-										ids : []
-									};
-								$.each(self.dragTargets, function() {
-									moveData.ids.push(this.pid);
-									this.element.hide();
-								});
-								// Store a reference to the targeted item list since moving happens asynchronously
-								var moveObjects = self.dragTargets;
-								$.ajax({
-									url : "/services/rest/edit/move",
-									type : "POST",
-									data : JSON.stringify(moveData),
-									contentType: "application/json; charset=utf-8",
-									dataType: "json",
-									success : function(data) {
-										$.each(moveObjects, function() {
-											this.deleteElement();
-										});
-										self.options.alertHandler.alertHandler("success", "Moved " + moveObjects.length + " object" + (moveObjects.length > 1? "s" : "") 
-												+ " to " + destTitle);
-									},
-									error : function() {
-										$.each(moveObjects, function() {
-											this.element.show();
-										});
-										self.options.alertHandler.alertHandler("error", "Failed to move " + moveObjects.length + " object" + (moveObjects.length > 1? "s" : "") 
-												+ " to " + destTitle);
-										
-									}
-								});
-							}
-							self.dragTargets = null;
-							self.$dropLocations.removeClass("moving");
-							self.dropActive = false;
-						},
-						cancelFunction : function() {
-							// Cancel and revert the page state
-							if (self.dragTargets) {
-								$.each(self.dragTargets, function() {
-									this.element.show();
-								});
-								self.dragTargets = null;
-							}
-							self.$dropLocations.removeClass("moving");
-							self.dropActive = false;
-						}
-					});
-				},
-				tolerance: 'pointer',
-				over: function(event, ui) {
-					console.log("Over " + this);
-					$(".ui-sortable-placeholder").hide();
-				},
-				out: function(event, ui) {
-					$(".ui-sortable-placeholder").show();
-				}
-			});
+			this.dropLocations.push(dropLocation);
 		},
 		
 		// Initializes draggable elements used in move and reorder operations
@@ -484,14 +397,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						ui.item.show();
 					}
 					// Set the table to move mode and enable drop zone hover highlighting
-					self.$dropLocations.addClass("moving")
-						.on("mouseenter", ".res_entry.container.move_into .title", function() {
-							//console.log("Hovering");
-							$(this).addClass("drop_hover");
-						}).on("mouseleave", ".res_entry.container.move_into .title", function() {
-							//console.log("Blur");
-							$(this).removeClass("drop_hover");
-						});
+					self.activateMove();
 				},
 				stop: function(e, ui) {
 					// Move drop mode overrides reorder
@@ -504,7 +410,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						});
 						self.dragTargets = null;
 					}
-					self.$dropLocations.removeClass("moving");
+					self.deactivateMove();
 					return false;
 					
 					/*if (!moving && !arrangeMode)

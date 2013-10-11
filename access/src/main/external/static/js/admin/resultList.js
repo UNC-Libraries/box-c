@@ -27,6 +27,7 @@ require.config({
 		'AlertHandler' : 'cdr-admin',
 		'SearchMenu' : 'cdr-admin',
 		'ResultTableView' : 'cdr-admin',
+		'MoveDropLocation' : 'cdr-admin',
 		'CreateContainerForm' : 'cdr-admin',
 		'AbstractFileUploadForm' : 'cdr-admin',
 		'IngestPackageForm' : 'cdr-admin',
