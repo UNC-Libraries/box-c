@@ -17,7 +17,6 @@ package edu.unc.lib.dl.ui.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -28,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -45,9 +43,7 @@ import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacetNode;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
-import edu.unc.lib.dl.search.solr.model.GroupedMetadataBean;
 import edu.unc.lib.dl.search.solr.model.IdListRequest;
-import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -64,7 +60,6 @@ import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
-import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
@@ -353,7 +348,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			solrQuery.setStart(0);
 			solrQuery.setRows(windowSize);
 
-			solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
+			solrQuery.setSort(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
 
 			try {
 				QueryResponse queryResponse = this.executeQuery(solrQuery);
@@ -390,7 +385,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			query.append(accessRestrictionClause);
 			solrQuery.setQuery(query.toString());
 
-			solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.asc);
+			solrQuery.setSort(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.asc);
 
 			try {
 				QueryResponse queryResponse = this.executeQuery(solrQuery);
@@ -413,7 +408,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			query.append(accessRestrictionClause);
 			solrQuery.setQuery(query.toString());
 
-			solrQuery.setSortField(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
+			solrQuery.setSort(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
 
 			try {
 				QueryResponse queryResponse = this.executeQuery(solrQuery);
@@ -807,15 +802,18 @@ public class SolrQueryLayerService extends SolrSearchService {
 		SearchState browseState = (SearchState) browseRequest.getSearchState().clone();
 		HierarchicalBrowseResultResponse browseResults = new HierarchicalBrowseResultResponse();
 
-		CutoffFacet rootPath;
-		BriefObjectMetadataBean rootNode;
+		CutoffFacet rootPath = null;
+		BriefObjectMetadataBean rootNode = null;
 		if (browseRequest.getRootPid() != null) {
 			rootNode = getObjectById(new SimpleIdRequest(browseRequest.getRootPid(), browseRequest.getAccessGroups()));
-			rootPath = rootNode.getPath();
-			browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
-			browseResults.setSelectedContainer(rootNode);
-		} else {
-			// Default the ancestor path to the collections object so we always have a root
+			if (rootNode != null) {
+				rootPath = rootNode.getPath();
+				browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
+				browseResults.setSelectedContainer(rootNode);
+			}
+		}
+		// Default the ancestor path to the collections object so we always have a root
+		if (rootNode == null) {
 			rootPath = (CutoffFacet) browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
 			if (rootPath == null) {
 				rootPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + this.collectionsPid.getPid());
