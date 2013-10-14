@@ -30,10 +30,11 @@ import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 
+import edu.unc.lib.dl.ui.exception.ClientAbortException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 
 public class FileIOUtil {
-
+	
 	public static void stream(OutputStream outStream, HttpMethodBase method) throws IOException{
 		InputStream in = method.getResponseBodyAsStream();
 		BufferedInputStream reader = null;
@@ -43,12 +44,21 @@ public class FileIOUtil {
 			int count = 0;
 			int length = 0;
 			while ((length = reader.read(buffer)) >= 0) {
-				outStream.write(buffer, 0, length);
-				if (count++ % 5 == 0){
-					outStream.flush();
+				try {
+					outStream.write(buffer, 0, length);
+					if (count++ % 5 == 0){
+						outStream.flush();
+					}
+				} catch (IOException e) {
+					// Differentiate between socket being closed when writing vs reading
+					throw new ClientAbortException(e);
 				}
 			}
-			outStream.flush();
+			try {
+				outStream.flush();
+			} catch (IOException e) {
+				throw new ClientAbortException(e);
+			}
 		} finally {
 			if (reader != null)
 				reader.close();

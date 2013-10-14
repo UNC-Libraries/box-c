@@ -34,6 +34,7 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.dl.ui.exception.ClientAbortException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.FedoraUtil;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
@@ -153,6 +154,9 @@ public class FedoraContentService {
 							+ method.getStatusLine().toString() + "\nPath was: " + dataUrl);
 				}
 			}
+		} catch (ClientAbortException e) {
+			if (LOG.isDebugEnabled())
+				LOG.debug("User client aborted request to stream Fedora content for " + simplepid, e);
 		} catch (HttpException e) {
 			LOG.error("Error while attempting to stream Fedora content for " + simplepid, e);
 		} catch (IOException e) {

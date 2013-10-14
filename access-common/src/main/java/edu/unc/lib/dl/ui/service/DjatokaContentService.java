@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.dl.ui.exception.ClientAbortException;
 import edu.unc.lib.dl.ui.util.ApplicationPathSettings;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
 
@@ -73,6 +74,9 @@ public class DjatokaContentService {
 					LOG.error("Path was: " + method.getURI().getURI());
 				}
 			}
+		} catch (ClientAbortException e) {
+			if (LOG.isDebugEnabled())
+				LOG.debug("User client aborted request to stream jp2 metadata for " + simplepid, e);
 		} catch (Exception e){
 			LOG.error("Problem retrieving metadata for " + path, e);
 		} finally {
@@ -114,6 +118,9 @@ public class DjatokaContentService {
 					LOG.error("Path was: " + method.getURI().getURI());
 				}
 			}
+		} catch (ClientAbortException e) {
+			if (LOG.isDebugEnabled())
+				LOG.debug("User client aborted request to stream jp2 for " + simplepid, e);
 		} catch (Exception e){
 			LOG.error("Problem retrieving metadata for " + path, e);
 		} finally {
