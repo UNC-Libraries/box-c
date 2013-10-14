@@ -800,6 +800,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 			metadata : undefined,
 			element : undefined,
 			defaultLabel : undefined,
+			workMethod : $.get,
 			workLabel : undefined,
 			workPath : "",
 			workDone : undefined,
@@ -922,7 +923,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 	AjaxCallbackButton.prototype.doWork = function(workMethod, workData) {
 		if (this.options.disabled)
 			return;
-		this.performWork($.get, null);
+		this.performWork(this.options.workMethod, null);
 	};
 
 	AjaxCallbackButton.prototype.workState = function() {
@@ -2435,6 +2436,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	var defaultOptions = {
 			workLabel: "Updating...",
 			workPath: "services/rest/edit/solr/reindex/{idPath}?inplace=true",
+			workMethod: $.post,
 			followupLabel: "Updating...",
 			followupPath: "services/rest/item/{idPath}/solrRecord/version",
 			confirm: true,

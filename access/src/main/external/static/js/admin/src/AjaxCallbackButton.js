@@ -29,6 +29,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 			metadata : undefined,
 			element : undefined,
 			defaultLabel : undefined,
+			workMethod : $.get,
 			workLabel : undefined,
 			workPath : "",
 			workDone : undefined,
@@ -151,7 +152,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 	AjaxCallbackButton.prototype.doWork = function(workMethod, workData) {
 		if (this.options.disabled)
 			return;
-		this.performWork($.get, null);
+		this.performWork(this.options.workMethod, null);
 	};
 
 	AjaxCallbackButton.prototype.workState = function() {

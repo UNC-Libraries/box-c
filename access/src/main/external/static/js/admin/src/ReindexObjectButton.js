@@ -9,6 +9,7 @@ define('ReindexObjectButton', [ 'jquery', 'AjaxCallbackButton'], function($, Aja
 	var defaultOptions = {
 			workLabel: "Updating...",
 			workPath: "services/rest/edit/solr/reindex/{idPath}?inplace=true",
+			workMethod: $.post,
 			followupLabel: "Updating...",
 			followupPath: "services/rest/item/{idPath}/solrRecord/version",
 			confirm: true,
