@@ -33,16 +33,22 @@ public abstract class AbstractContactFormValidator implements Validator {
 	protected ReCaptcha reCaptcha;
 	
 	protected void validateEmail(String email, Errors errors) {
-		if (!emailRegex.matcher(email).matches()) {
+		if (email == null || !emailRegex.matcher(email).matches()) {
 			errors.rejectValue("emailAddress", "invalid.emailAddress");
 		}
 	}
 	
 	protected void validateRecaptcha(String remoteAddr, String challengeField, String responseField, Errors errors) {
-		ReCaptchaResponse response = reCaptcha.checkAnswer(remoteAddr, challengeField, responseField);
+		ReCaptchaResponse response = null;
+		try {
+			response = reCaptcha.checkAnswer(remoteAddr, challengeField, responseField);
+		} catch (NullPointerException e){
+			// User didn't provide one of the required fields, therefore response is invalid
+		}
 		
-		if (!response.isValid()) {
-			LOG.debug("Recaptcha validation failed because: " + response.getErrorMessage());
+		if (response == null || !response.isValid()) {
+			if (LOG.isDebugEnabled() && response != null)
+				LOG.debug("Recaptcha validation failed because: " + response.getErrorMessage());
 			errors.rejectValue("recaptcha_challenge_field", "incorrect.recaptcha");
 		}
 	}

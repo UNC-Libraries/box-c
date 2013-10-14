@@ -228,7 +228,11 @@ public class SearchActionService {
 	private void setStartRow(SearchState searchState, String[] values){
 		if (values.length == 0)
 			return;
-		setStartRow(searchState, Integer.parseInt(values[0]));
+		try {
+			setStartRow(searchState, Integer.parseInt(values[0]));
+		} catch (NumberFormatException e){
+			setStartRow(searchState, 0);
+		}
 	}
 	
 	private void setStartRow(SearchState searchState, int startRow){
@@ -238,7 +242,11 @@ public class SearchActionService {
 	private void setRow(SearchState searchState, String[] values){
 		if (values.length == 0)
 			return;
-		setRow(searchState, Integer.parseInt(values[0]));
+		try {
+			setRow(searchState, Integer.parseInt(values[0]));
+		} catch (NumberFormatException e){
+			// Ignore invalid number
+		}
 	}
 	
 	private void setRow(SearchState searchState, int row){

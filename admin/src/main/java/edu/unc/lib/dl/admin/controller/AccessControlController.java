@@ -95,12 +95,15 @@ public class AccessControlController extends AbstractSwordController {
 		model.addAttribute("targetMetadata", targetObject);
 
 		// Get access information for the target's parent
-		objectRequest = new SimpleIdRequest(targetObject.getAncestorPathFacet().getSearchKey(), parentResultFields,
-				accessGroups);
-		BriefObjectMetadataBean parentObject = queryLayer.getObjectById(objectRequest);
-		if (parentObject == null)
-			throw new InvalidRecordRequestException();
-		model.addAttribute("parentMetadata", parentObject);
+		BriefObjectMetadataBean parentObject = null;
+		if (targetObject.getAncestorPathFacet() != null) {
+			objectRequest = new SimpleIdRequest(targetObject.getAncestorPathFacet().getSearchKey(), parentResultFields,
+					accessGroups);
+			parentObject = queryLayer.getObjectById(objectRequest);
+			if (parentObject == null)
+				throw new InvalidRecordRequestException();
+			model.addAttribute("parentMetadata", parentObject);
+		}
 
 		// Retrieve the targeted objects directly attributed ACL document
 		String dataUrl = swordUrl + "em/" + pid + "/ACL";
@@ -152,21 +155,23 @@ public class AccessControlController extends AbstractSwordController {
 			}
 		}
 
-		for (String parentRoles : parentObject.getRoleGroup()) {
-			String[] roleParts = parentRoles.split("\\|");
-			if (roleParts.length < 2)
-				continue;
-			String role = roleParts[0];
-			role = role.split("#")[1];
-
-			List<RoleGrant> groupList = rolesGranted.get(role);
-			if (groupList == null) {
-				groupList = new ArrayList<RoleGrant>();
-				rolesGranted.put(role, groupList);
+		if (parentObject != null) {
+			for (String parentRoles : parentObject.getRoleGroup()) {
+				String[] roleParts = parentRoles.split("\\|");
+				if (roleParts.length < 2)
+					continue;
+				String role = roleParts[0];
+				role = role.split("#")[1];
+	
+				List<RoleGrant> groupList = rolesGranted.get(role);
+				if (groupList == null) {
+					groupList = new ArrayList<RoleGrant>();
+					rolesGranted.put(role, groupList);
+				}
+				String group = roleParts[1];
+				// If the map already contains this group, then it is marked explicitly as not inherited
+				groupList.add(new RoleGrant(group, true));
 			}
-			String group = roleParts[1];
-			// If the map already contains this group, then it is marked explicitly as not inherited
-			groupList.add(new RoleGrant(group, true));
 		}
 
 		model.addAttribute("rolesGranted", rolesGranted);

@@ -28,6 +28,8 @@ public class RequestAccessFormValidator extends AbstractContactFormValidator {
 
 	@Override
 	public void validate(Object target, Errors errors) {
+		if (target == null)
+			return;
 		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "personalName", "required.personalName");
 		RequestAccessForm form = (RequestAccessForm)target;
 		validateEmail(form.getEmailAddress(), errors);

@@ -28,6 +28,8 @@ public class ContactFormValidator extends AbstractContactFormValidator {
 	
 	@Override
 	public void validate(Object target, Errors errors) {
+		if (target == null)
+			return;
 		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "personalName", "required.personalName");
 		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "comments", "required.comments");
 		ContactForm form = (ContactForm)target;
