@@ -522,7 +522,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			queryResponse = this.executeQuery(solrQuery);
 			return queryResponse.getResults().getNumFound();
 		} catch (SolrServerException e) {
-			LOG.error("Error retrieving Solr search result request: " + e);
+			LOG.error("Error retrieving Solr search result request", e);
 		}
 		return -1;
 	}
@@ -668,7 +668,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			LOG.info("Query executed in " + (System.currentTimeMillis() - startTime));
 			assignChildrenCounts(queryResponse.getFacetField(ancestorPathField), containerObjects, countName);
 		} catch (SolrServerException e) {
-			LOG.error("Error retrieving Solr search result request: " + e);
+			LOG.error("Error retrieving Solr search result request", e);
 		}
 	}
 
