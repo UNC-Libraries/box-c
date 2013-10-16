@@ -24,8 +24,6 @@ import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.PID;
 
 public interface BriefObjectMetadata {
-	public String getIdWithoutPrefix() ;
-
 	public CutoffFacet getAncestorPathFacet();
 	
 	public CutoffFacet getPath();

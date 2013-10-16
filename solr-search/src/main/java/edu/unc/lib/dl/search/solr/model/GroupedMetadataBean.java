@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.search.solr.model;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -62,11 +61,6 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 
 	public String getGroupId() {
 		return groupId;
-	}
-
-	@Override
-	public String getIdWithoutPrefix() {
-		return this.representative.getIdWithoutPrefix();
 	}
 
 	@Override

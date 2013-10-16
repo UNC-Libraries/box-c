@@ -17,11 +17,13 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
@@ -468,5 +470,12 @@ public class SetStatusFilterTest extends Assert {
 		SetStatusFilter filter = new SetStatusFilter();
 		filter.setTripleStoreQueryService(tsqs);
 		filter.filter(dip);
+	}
+	
+	@Test
+	public void blah() throws Exception {
+		Class<?> clazz = Class.forName("edu.unc.lib.dl.data.ingest.solr.filter.collection.RLASupplementalFilter");
+		Constructor<?> constructor = clazz.getConstructor();
+		System.out.println("Loaded? " + constructor.newInstance().getClass().getName());
 	}
 }

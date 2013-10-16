@@ -18,6 +18,7 @@ package edu.unc.lib.dl.search.solr.model;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.solr.client.solrj.beans.Field;
 
@@ -80,6 +81,9 @@ public class IndexDocumentBean {
 	protected String citation;
 	
 	protected String fullText;
+	
+	@Field("*_s")
+	protected Map<String, String> stringFields;
 
 	public String getId() {
 		return id;
@@ -453,6 +457,12 @@ public class IndexDocumentBean {
 	public void setFullText(String fullText) {
 		this.fullText = fullText;
 	}
-	
-	
+
+	public Map<String, String> getStringFields() {
+		return stringFields;
+	}
+
+	public void setStringFields(Map<String, String> stringFields) {
+		this.stringFields = stringFields;
+	}
 }

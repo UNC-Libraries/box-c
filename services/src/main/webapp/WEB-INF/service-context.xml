@@ -269,13 +269,13 @@
 	
 	<bean id="solrUpdateEnhancementService" class="edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService"
 			init-method="init">
-		<property name="solrSearchService" ref="solrSearchService" />
+		<property name="solrSearchService" ref="queryLayer" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="active" value="true"/>
 	</bean>
 	
 	<bean id="embargoUpdateService" class="edu.unc.lib.dl.cdr.services.solr.EmbargoUpdateService">
-		<property name="solrSearchService" ref="solrSearchService" />
+		<property name="solrSearchService" ref="queryLayer" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="active" value="true"/>
 		<property name="windowSizeHours" value="${scheduled.embargoUpdate.windowHours}" />
