@@ -294,8 +294,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 		if (altIds != null) {
 			for (String altid : altIds.split(" ")) {
 				if (altid.length() > 0) {
-					URI alt = new URI(altid);
-					String rawPath = alt.getRawPath();
+					String rawPath = altid;
 					// Narrow file name down to after the last /
 					int lastSlash = rawPath.lastIndexOf("/");
 					if (lastSlash > 0)
