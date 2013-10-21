@@ -1,6 +1,7 @@
 package edu.unc.lib.dl.data.ingest.solr.filter.collection;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.jdom.Element;
@@ -17,10 +18,10 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 	private static final Logger log = LoggerFactory.getLogger(RLASupplementalFilter.class);
 	
 	private static final String SPECIMEN_LABEL = "RLA Specimen Number";
-	private static final String SPECIMEN_FIELD = "rla_specimen_s";
+	private static final String SPECIMEN_FIELD = "rla_specimen_d";
 	
 	private static final String SITE_CODE_LABEL = "RLA Site Code";
-	private static final String SITE_CODE_FIELD = "rla_site_code_s";
+	private static final String SITE_CODE_FIELD = "rla_site_code_d";
 	
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -29,6 +30,8 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 		
 		idb.setKeyword(new ArrayList<String>());
 		if (mods != null) {
+			if (idb.getDynamicFields() == null)
+				idb.setDynamicFields(new HashMap<String, Object>());
 			try {
 				extractSpecimen(mods, idb);
 				extractSite(mods, idb);
@@ -43,7 +46,7 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 		for (Object element : elements) {
 			Element identifierEl = (Element) element;
 			if (SPECIMEN_LABEL.equalsIgnoreCase(identifierEl.getAttributeValue("displayLabel"))) {
-				idb.getStringFields().put(SPECIMEN_FIELD, identifierEl.getTextTrim());
+				idb.getDynamicFields().put(SPECIMEN_FIELD, identifierEl.getTextTrim());
 				return;
 			}
 		}
@@ -55,7 +58,7 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 			Element subjectEl = (Element) element;
 			if (SITE_CODE_LABEL.equalsIgnoreCase(subjectEl.getAttributeValue("displayLabel"))) {
 				Element geographicEl = subjectEl.getChild("geographic", JDOMNamespaceUtil.MODS_V3_NS);
-				idb.getStringFields().put(SITE_CODE_FIELD, geographicEl.getTextTrim());
+				idb.getDynamicFields().put(SITE_CODE_FIELD, geographicEl.getTextTrim());
 				return;
 			}
 		}

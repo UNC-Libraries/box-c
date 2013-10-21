@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -122,6 +123,14 @@ public class SerializationUtil {
 		
 		if (groups != null && metadata.getAccessControlBean() != null)
 			result.put("permissions", metadata.getAccessControlBean().getPermissionsByGroups(groups));
+		
+		if (metadata.getDynamicFields() != null) {
+			Iterator<Entry<String, Object>> fieldIt = metadata.getDynamicFields().entrySet().iterator();
+			while (fieldIt.hasNext()) {
+				Entry<String, Object> entry = fieldIt.next();
+				result.put(entry.getKey(), entry.getValue());
+			}
+		}
 		
 		return result;
 	}

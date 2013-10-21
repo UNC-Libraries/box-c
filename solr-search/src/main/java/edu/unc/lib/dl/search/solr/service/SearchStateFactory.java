@@ -270,14 +270,16 @@ public class SearchStateFactory {
 		Map<String,String> searchFields = searchState.getSearchFields();
 		Map<String,SearchState.RangePair> rangeFields = searchState.getRangeFields();
 		Map<String,Object> facetFields = searchState.getFacets();
+		Map<String,Object> dynamicFields = searchState.getDynamicFields();
 		
 		Iterator<Entry<String, String[]>> paramIt = request.entrySet().iterator();
 		while (paramIt.hasNext()) {
 			Entry<String, String[]> param = paramIt.next();
 			if (param.getValue().length == 0)
 				continue;
+			String urlKey = param.getKey();
 			String key = searchSettings.searchFieldKey(param.getKey());
-			if (key == null)
+			if (key == null && !urlKey.endsWith("_d"))
 				continue;
 			String value;
 			try {
@@ -285,19 +287,24 @@ public class SearchStateFactory {
 			} catch (UnsupportedEncodingException e) {
 				continue;
 			}
-			if (searchSettings.searchableFields.contains(key)) {
-				searchFields.put(key, value);
-			} else if (searchSettings.facetNames.contains(key)) {
-				try {
-					facetFields.put(key, this.facetFieldFactory.createFacet(key, value));
-				} catch (InvalidFacetException e) {
-					log.debug("Invalid facet " + key + " with value " + value, e);
-				}
-			} else if (searchSettings.rangeSearchableFields.contains(key)) {
-				try {
-					rangeFields.put(key, new SearchState.RangePair(value));
-				} catch (ArrayIndexOutOfBoundsException e){
-					//An invalid range was specified, throw away the term pair
+			if (key == null) {
+				// Dynamic fields
+				dynamicFields.put(urlKey, value);
+			} else {
+				if (searchSettings.searchableFields.contains(key)) {
+					searchFields.put(key, value);
+				} else if (searchSettings.facetNames.contains(key)) {
+					try {
+						facetFields.put(key, this.facetFieldFactory.createFacet(key, value));
+					} catch (InvalidFacetException e) {
+						log.debug("Invalid facet " + key + " with value " + value, e);
+					}
+				} else if (searchSettings.rangeSearchableFields.contains(key)) {
+					try {
+						rangeFields.put(key, new SearchState.RangePair(value));
+					} catch (ArrayIndexOutOfBoundsException e){
+						//An invalid range was specified, throw away the term pair
+					}
 				}
 			}
 		}

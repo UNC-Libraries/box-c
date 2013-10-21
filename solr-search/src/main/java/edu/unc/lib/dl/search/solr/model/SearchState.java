@@ -41,6 +41,7 @@ public class SearchState implements Serializable, Cloneable {
 	private Map<String, String> searchFields;
 	private Map<String, RangePair> rangeFields;
 	private Map<String, Object> facets;
+	private Map<String, Object> dynamicFields;
 	private Map<String, Integer> facetLimits;
 	private Map<String, String> facetSorts;
 	private Collection<String> facetsToRetrieve;
@@ -54,17 +55,19 @@ public class SearchState implements Serializable, Cloneable {
 	private String searchTermOperator;
 	private List<String> resultFields;
 	private Boolean rollup;
+	private String rollupField;
 
 	public SearchState() {
 		LOG.debug("Instantiating new SearchState");
 		searchFields = new HashMap<String, String>();
 		rangeFields = new HashMap<String, RangePair>();
 		facets = new HashMap<String, Object>();
+		dynamicFields = new HashMap<String, Object>();
 		facetLimits = new HashMap<String, Integer>();
 		facetSorts = new HashMap<String, String>();
 		resultFields = null;
 		facetsToRetrieve = null;
-		this.rollup = null;
+		rollup = null;
 		baseFacetLimit = null;
 		startRow = null;
 	}
@@ -89,6 +92,9 @@ public class SearchState implements Serializable, Cloneable {
 				}
 			}
 		}
+		if (searchState.getDynamicFields() != null) {
+			this.dynamicFields = new HashMap<String, Object>(searchState.getDynamicFields());
+		}
 		if (searchState.getFacetLimits() != null) {
 			this.facetLimits = new HashMap<String, Integer>(searchState.getFacetLimits());
 		}
@@ -112,7 +118,8 @@ public class SearchState implements Serializable, Cloneable {
 		sortType = searchState.getSortType();
 		sortOrder = searchState.getSortOrder();
 		searchTermOperator = searchState.getSearchTermOperator();
-		this.rollup = searchState.getRollup();
+		rollup = searchState.getRollup();
+		rollupField = searchState.rollupField;
 	}
 
 	public Map<String, String> getSearchFields() {
@@ -129,6 +136,14 @@ public class SearchState implements Serializable, Cloneable {
 
 	public void setFacets(Map<String, Object> facets) {
 		this.facets = facets;
+	}
+
+	public Map<String, Object> getDynamicFields() {
+		return dynamicFields;
+	}
+
+	public void setDynamicFields(Map<String, Object> dynamicFields) {
+		this.dynamicFields = dynamicFields;
 	}
 
 	public Integer getStartRow() {
@@ -335,6 +350,14 @@ public class SearchState implements Serializable, Cloneable {
 
 	public void setRollup(Boolean rollup) {
 		this.rollup = rollup;
+	}
+
+	public String getRollupField() {
+		return rollupField;
+	}
+
+	public void setRollupField(String rollupField) {
+		this.rollupField = rollupField;
 	}
 
 	/**

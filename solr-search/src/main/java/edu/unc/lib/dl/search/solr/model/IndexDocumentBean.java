@@ -82,8 +82,8 @@ public class IndexDocumentBean {
 	
 	protected String fullText;
 	
-	@Field("*_s")
-	protected Map<String, String> stringFields;
+	@Field("*_d")
+	protected Map<String, Object> dynamicFields;
 
 	public String getId() {
 		return id;
@@ -458,11 +458,11 @@ public class IndexDocumentBean {
 		this.fullText = fullText;
 	}
 
-	public Map<String, String> getStringFields() {
-		return stringFields;
+	public Map<String, Object> getDynamicFields() {
+		return dynamicFields;
 	}
 
-	public void setStringFields(Map<String, String> stringFields) {
-		this.stringFields = stringFields;
+	public void setDynamicFields(Map<String, Object> dynamicFields) {
+		this.dynamicFields = dynamicFields;
 	}
 }

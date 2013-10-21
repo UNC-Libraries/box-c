@@ -129,4 +129,6 @@ public interface BriefObjectMetadata {
 	public List<Tag> getTags();
 	
 	public void addTag(Tag t);
+	
+	public Map<String,Object> getDynamicFields();
 }
