@@ -10,7 +10,7 @@ define('DeleteObjectButton', [ 'jquery', 'AjaxCallbackButton'], function($, Ajax
 			workLabel: "Deleting...",
 			workPath: "delete/{idPath}",
 			followupLabel: "Cleaning up...",
-			followupPath: "services/rest/item/{idPath}/solrRecord/version",
+			followupPath: "/services/api/v1/item/{idPath}/solrRecord/version",
 			confirm: true,
 			confirmMessage: "Delete this object?",
 			animateSpeed: 'fast',

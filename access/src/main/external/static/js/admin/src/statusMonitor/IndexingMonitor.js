@@ -4,9 +4,9 @@ define('IndexingMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatus
 	var defaultOptions = {
 		name : "indexing",
 		jobConfig : {
-			url : "/services/rest/indexing/jobs?begin=0&end=20",
+			url : "/services/api/v1/indexing/jobs?begin=0&end=20",
 			template : indexingMonitorJobTemplate,
-			detailsUrl : "/services/rest/indexing/jobs/job/{id}",
+			detailsUrl : "/services/api/v1/indexing/jobs/job/{id}",
 			detailsTemplate : indexingMonitorDetailsTemplate,
 			fields : ["Status", "Label", "Action", "Progress"],
 			jobTypes : [
@@ -14,7 +14,7 @@ define('IndexingMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatus
 			]
 		},
 		overviewConfig : {
-			url : "/services/rest/indexing"
+			url : "/services/api/v1/indexing"
 		}
 	};
 			

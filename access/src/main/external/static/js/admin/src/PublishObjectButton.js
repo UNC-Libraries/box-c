@@ -8,7 +8,7 @@ define('PublishObjectButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'Re
 	
 	var defaultOptions = {
 			defaultPublish: false,
-			followupPath: "services/rest/item/{idPath}/solrRecord/version"
+			followupPath: "/services/api/v1/item/{idPath}/solrRecord/version"
 		};
 		
 	PublishObjectButton.prototype._create = function(options) {
@@ -51,14 +51,14 @@ define('PublishObjectButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'Re
 
 	PublishObjectButton.prototype.publishedState = function() {
 		this.published = true;
-		this.setWorkURL("services/rest/edit/unpublish/{idPath}");
+		this.setWorkURL("services/api/v1/edit/unpublish/{idPath}");
 		this.options.workLabel = "Unpublishing...";
 		this.options.followupLabel = "Unpublishing....";
 	};
 
 	PublishObjectButton.prototype.unpublishedState = function() {
 		this.published = false;
-		this.setWorkURL("services/rest/edit/publish/{idPath}");
+		this.setWorkURL("services/api/v1/edit/publish/{idPath}");
 		this.options.workLabel = "Publishing...";
 		this.options.followupLabel = "Publishing....";
 	};

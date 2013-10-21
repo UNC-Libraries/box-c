@@ -1176,7 +1176,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 	
 	var defaultOptions = {
 			resultObjectList : undefined,
-			followupPath: "services/rest/item/solrRecord/version",
+			followupPath: "/services/api/v1/item/solrRecord/version",
 			childWorkLinkName : undefined,
 			workFunction : undefined,
 			followupFunction : undefined,
@@ -1590,7 +1590,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			workLabel: "Deleting...",
 			workPath: "delete/{idPath}",
 			followupLabel: "Cleaning up...",
-			followupPath: "services/rest/item/{idPath}/solrRecord/version",
+			followupPath: "/services/api/v1/item/{idPath}/solrRecord/version",
 			confirm: true,
 			confirmMessage: "Delete this object?",
 			animateSpeed: 'fast',
@@ -2181,7 +2181,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 							// Store a reference to the targeted item list since moving happens asynchronously
 							var moveObjects = self.manager.dragTargets;
 							$.ajax({
-								url : "/services/rest/edit/move",
+								url : "/services/api/v1/edit/move",
 								type : "POST",
 								data : JSON.stringify(moveData),
 								contentType: "application/json; charset=utf-8",
@@ -2321,7 +2321,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	var defaultOptions = {
 		resultObjectList : undefined,
-		workPath: "services/rest/edit/publish",
+		workPath: "/services/api/v1/edit/publish",
 		childWorkLinkName : 'publish'
 	};
 	
@@ -2352,7 +2352,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	var defaultOptions = {
 			defaultPublish: false,
-			followupPath: "services/rest/item/{idPath}/solrRecord/version"
+			followupPath: "/services/api/v1/item/{idPath}/solrRecord/version"
 		};
 		
 	PublishObjectButton.prototype._create = function(options) {
@@ -2395,14 +2395,14 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 
 	PublishObjectButton.prototype.publishedState = function() {
 		this.published = true;
-		this.setWorkURL("services/rest/edit/unpublish/{idPath}");
+		this.setWorkURL("services/api/v1/edit/unpublish/{idPath}");
 		this.options.workLabel = "Unpublishing...";
 		this.options.followupLabel = "Unpublishing....";
 	};
 
 	PublishObjectButton.prototype.unpublishedState = function() {
 		this.published = false;
-		this.setWorkURL("services/rest/edit/publish/{idPath}");
+		this.setWorkURL("services/api/v1/edit/publish/{idPath}");
 		this.options.workLabel = "Publishing...";
 		this.options.followupLabel = "Publishing....";
 	};
@@ -2435,10 +2435,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	var defaultOptions = {
 			workLabel: "Updating...",
-			workPath: "services/rest/edit/solr/reindex/{idPath}?inplace=true",
+			workPath: "/services/api/v1/edit/solr/reindex/{idPath}?inplace=true",
 			workMethod: $.post,
 			followupLabel: "Updating...",
-			followupPath: "services/rest/item/{idPath}/solrRecord/version",
+			followupPath: "/services/api/v1/item/{idPath}/solrRecord/version",
 			confirm: true,
 			confirmMessage: "Reindex this object and all of its children?",
 			animateSpeed: 'fast',
@@ -2770,7 +2770,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			},
 			'statusChangedTarget' : this, 
 			'checkStatusAjax' : {
-				url : "services/rest/item/" + self.pid + "/solrRecord/version",
+				url : "/services/api/v1/item/" + self.pid + "/solrRecord/version",
 				dataType : 'json'
 			}
 		});
@@ -3611,7 +3611,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	
 	var defaultOptions = {
 			resultObjectList : undefined,
-			workPath: "services/rest/edit/unpublish",
+			workPath: "/services/api/v1/edit/unpublish",
 			childWorkLinkName : 'publish'
 		};
 	
@@ -3852,9 +3852,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	var defaultOptions = {
 		name : "enhancement",
 		jobConfig : {
-			url : "services/rest/enhancement/{name}?begin=0&end=20",
+			url : "/services/api/v1/enhancement/{name}?begin=0&end=20",
 			template : enhancementMonitorJobTemplate,
-			detailsUrl : "/services/rest/enhancement/job/{id}?type={name}",
+			detailsUrl : "/services/api/v1/enhancement/job/{id}?type={name}",
 			detailsTemplate : enhancementMonitorDetailsTemplate,
 			fields : ["Status", "Label", "Enhancements", "Triggered by"],
 			jobTypes : [
@@ -3866,7 +3866,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			]
 		},
 		overviewConfig : {
-			url : "/services/rest/enhancement"
+			url : "/services/api/v1/enhancement"
 		}
 	};
 			
@@ -3884,9 +3884,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	var defaultOptions = {
 		name : "indexing",
 		jobConfig : {
-			url : "/services/rest/indexing/jobs?begin=0&end=20",
+			url : "/services/api/v1/indexing/jobs?begin=0&end=20",
 			template : indexingMonitorJobTemplate,
-			detailsUrl : "/services/rest/indexing/jobs/job/{id}",
+			detailsUrl : "/services/api/v1/indexing/jobs/job/{id}",
 			detailsTemplate : indexingMonitorDetailsTemplate,
 			fields : ["Status", "Label", "Action", "Progress"],
 			jobTypes : [
@@ -3894,7 +3894,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			]
 		},
 		overviewConfig : {
-			url : "/services/rest/indexing"
+			url : "/services/api/v1/indexing"
 		}
 	};
 			
@@ -3912,9 +3912,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	var defaultOptions = {
 		name : "ingest",
 		jobConfig : {
-			url : "/services/rest/ingest/{name}/",
+			url : "/services/api/v1/ingest/{name}/",
 			template : ingestMonitorJobTemplate,
-			detailsUrl : "/services/rest/ingest/job/{id}",
+			detailsUrl : "/services/api/v1/ingest/job/{id}",
 			detailsTemplate : ingestMonitorDetailsTemplate,
 			fields : ["Status", "Submitter", "Submit time", "Ingested", "First object", "Note"],
 			jobTypes : [
@@ -3925,7 +3925,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			]
 		},
 		overviewConfig : {
-			url : "/services/rest/ingest/"
+			url : "/services/api/v1/ingest/"
 		}
 	};
 			
