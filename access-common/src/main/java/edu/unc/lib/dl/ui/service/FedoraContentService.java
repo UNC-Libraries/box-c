@@ -17,6 +17,8 @@ package edu.unc.lib.dl.ui.service;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -26,16 +28,24 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.ui.exception.ClientAbortException;
+import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
+import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.ui.util.FedoraUtil;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
 import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
@@ -52,12 +62,56 @@ public class FedoraContentService {
 
 	private FedoraUtil fedoraUtil;
 
-	public void setAccessClient(edu.unc.lib.dl.fedora.AccessClient accessClient) {
-		this.accessClient = accessClient;
-	}
+	@Autowired
+	private SearchSettings searchSettings;
+	@Autowired
+	protected SolrQueryLayerService queryLayer;
 
-	public void setFedoraUtil(FedoraUtil fedoraUtil) {
-		this.fedoraUtil = fedoraUtil;
+	private static List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name(),
+			SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.RELATIONS.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
+			SearchFieldKeys.ROLE_GROUP.name());
+
+	public void streamData(String pid, String datastream, boolean download, HttpServletResponse response) {
+		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+
+		// Default datastream is DATA_FILE
+		if (datastream == null) {
+			datastream = edu.unc.lib.dl.util.ContentModelHelper.Datastream.DATA_FILE.toString();
+		}
+
+		// Use solr to check if the user is allowed to view this item.
+		SimpleIdRequest idRequest = new SimpleIdRequest(pid, resultFields, accessGroups);
+
+		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
+		// If the record isn't accessible then invalid record exception.
+		if (briefObject == null) {
+			throw new InvalidRecordRequestException();
+		}
+		// Block access to thumbnails for non-containers,
+		if (AccessUtil.hasListAccessOnly(accessGroups, briefObject)
+				&& (searchSettings.resourceTypeFile.equals(briefObject.getResourceType()) || searchSettings.resourceTypeAggregate
+						.equals(briefObject.getResourceType())))
+			throw new InvalidRecordRequestException();
+		// Grab out the slug if its available, to be used as the filename.
+		List<String> slugRelations = briefObject.getRelation("slug");
+		String slug = null;
+		if (slugRelations != null && slugRelations.size() > 0)
+			slug = slugRelations.get(0);
+
+		try {
+			edu.unc.lib.dl.search.solr.model.Datastream datastreamResult = briefObject.getDatastreamObject(datastream);
+			if (datastreamResult == null)
+				throw new ResourceNotFoundException("Datastream " + datastream + " was not found on object " + pid);
+			this.streamData(pid, datastreamResult, slug, response, download);
+		} catch (AuthorizationException e) {
+			throw new InvalidRecordRequestException(e);
+		} catch (ResourceNotFoundException e) {
+			LOG.info("Resource not found while attempting to stream datastream", e);
+			throw e;
+		} catch (Exception e) {
+			LOG.error("Failed to retrieve content for " + pid + " datastream: " + datastream, e);
+			throw new ResourceNotFoundException();
+		}
 	}
 
 	public void streamData(String simplepid, Datastream datastream, String slug, HttpServletResponse response,
@@ -165,6 +219,21 @@ public class FedoraContentService {
 			if (method != null)
 				method.releaseConnection();
 		}
+	}
 
+	public void setAccessClient(edu.unc.lib.dl.fedora.AccessClient accessClient) {
+		this.accessClient = accessClient;
+	}
+
+	public void setFedoraUtil(FedoraUtil fedoraUtil) {
+		this.fedoraUtil = fedoraUtil;
+	}
+
+	public void setSearchSettings(SearchSettings searchSettings) {
+		this.searchSettings = searchSettings;
+	}
+
+	public void setQueryLayer(SolrQueryLayerService queryLayer) {
+		this.queryLayer = queryLayer;
 	}
 }
