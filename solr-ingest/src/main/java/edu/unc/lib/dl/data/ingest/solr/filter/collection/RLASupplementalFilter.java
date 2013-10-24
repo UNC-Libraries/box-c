@@ -20,6 +20,9 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 	private static final String SPECIMEN_LABEL = "RLA Specimen Number";
 	private static final String SPECIMEN_FIELD = "rla_specimen_d";
 	
+	private static final String CATALOG_LABEL = "RLA Catalog Number";
+	private static final String CATALOG_FIELD = "rla_catalog_number_d";
+	
 	private static final String SITE_CODE_LABEL = "RLA Site Code";
 	private static final String SITE_CODE_FIELD = "rla_site_code_d";
 	
@@ -33,27 +36,34 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 			if (idb.getDynamicFields() == null)
 				idb.setDynamicFields(new HashMap<String, Object>());
 			try {
-				extractSpecimen(mods, idb);
+				extractIdentifiers(mods, idb);
 				extractSite(mods, idb);
 			} catch (JDOMException e) {
 				log.error("Failed to set RLA fields", e);
 			}
 		}
 	}
-
-	private void extractSpecimen(Element mods, IndexDocumentBean idb) throws JDOMException {
+	
+	private void extractIdentifiers(Element mods, IndexDocumentBean idb) throws JDOMException {
 		List<?> elements = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+		if (elements == null)
+			return;
+		
 		for (Object element : elements) {
 			Element identifierEl = (Element) element;
 			if (SPECIMEN_LABEL.equalsIgnoreCase(identifierEl.getAttributeValue("displayLabel"))) {
 				idb.getDynamicFields().put(SPECIMEN_FIELD, identifierEl.getTextTrim());
-				return;
+			} else if (CATALOG_LABEL.equalsIgnoreCase(identifierEl.getAttributeValue("displayLabel"))) {
+				idb.getDynamicFields().put(CATALOG_FIELD, identifierEl.getTextTrim());
 			}
 		}
 	}
 	
 	private void extractSite(Element mods, IndexDocumentBean idb) throws JDOMException {
 		List<?> elements = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
+		if (elements == null)
+			return;
+		
 		for (Object element : elements) {
 			Element subjectEl = (Element) element;
 			if (SITE_CODE_LABEL.equalsIgnoreCase(subjectEl.getAttributeValue("displayLabel"))) {
