@@ -409,7 +409,7 @@ return isNaN(t)?d:t},g=p(h[0]),m=Math.max(g,p(h[1]||"")),g=a?Math.max(g,a.getFul
 			primaryAction += "?" + decodeURIComponent(this.options.structureView.options.filterParams).replace('"', '%22');
 		
 		var downloadUrl = null;
-		if ($.inArray('viewOriginal', this.metadata.permissions) != -1 && $.inArray('DATA_FILE', this.metadata.datastreams) != -1){
+		if ($.inArray('viewOriginal', this.metadata.permissions) != -1 && $.inArray('DATA_FILE', this.metadata.datastream) != -1){
 			downloadUrl = "files/" + this.metadata.id + "/DATA_FILE?dl=true"; 
 		}
 		

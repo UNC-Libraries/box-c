@@ -32,10 +32,16 @@ public class DatastreamRestController {
 	}
 
 	@RequestMapping("/thumb/{pid}")
-	public void getThumbnail(@PathVariable("pid") String pid,
+	public void getThumbnailSmall(@PathVariable("pid") String pid,
 			@RequestParam(value = "size", defaultValue = "small") String size, HttpServletRequest request,
 			HttpServletResponse response) {
-
+		fedoraContentService.streamData(pid, ContentModelHelper.Datastream.THUMB_SMALL.getName(), false, response);
+	}
+	
+	@RequestMapping("/thumb/{pid}/{size}")
+	public void getThumbnail(@PathVariable("pid") String pid,
+			@PathVariable("size") String size, HttpServletRequest request,
+			HttpServletResponse response) {
 		String datastream = ("large".equals(size)) ? ContentModelHelper.Datastream.THUMB_LARGE.getName()
 				: ContentModelHelper.Datastream.THUMB_SMALL.getName();
 		fedoraContentService.streamData(pid, datastream, false, response);

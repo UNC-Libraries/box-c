@@ -85,6 +85,12 @@
 		<property name="subViewPrefix" value="" />
 	</bean>
 	
+	<bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
+		<property name="queryLayer" ref="queryLayer" />
+		<property name="requireViewAdmin" value="true" />
+		<property name="nonAdminRedirectUrl" value="/noAccess" />
+	</bean>
+	
 	<bean name="requireLoginFilter" class="edu.unc.lib.dl.acl.filter.RequireLoginFilter">
 		<property name="notLoggedInUrl" value="/login"/>
 		<property name="forwardRequest" value="true"/>
@@ -105,7 +111,7 @@
 					<array value-type="java.lang.Class">
 						<value>de.stefanheintz.log.jmxservice.LoggingConfig</value>
 					</array>
-				</property>				
+				</property>
 			</bean>
 		</property>
 	</bean>

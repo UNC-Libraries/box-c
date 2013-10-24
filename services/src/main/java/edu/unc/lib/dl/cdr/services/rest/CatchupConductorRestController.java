@@ -44,11 +44,11 @@ import edu.unc.lib.dl.fedora.PID;
  * 
  */
 @Controller
-@RequestMapping(value = { "/catchup*", "/catchup" })
+@RequestMapping(value = { "/status/catchup*", "/status/catchup" })
 public class CatchupConductorRestController extends AbstractServiceConductorRestController {
 	private static final Logger log = LoggerFactory.getLogger(CatchupConductorRestController.class);
 
-	public static final String BASE_PATH = "/rest/catchup/";
+	public static final String BASE_PATH = "/api/status/catchup/";
 	private static int NUM_RESULTS_PER_SERVICE = 30;
 
 	@Resource

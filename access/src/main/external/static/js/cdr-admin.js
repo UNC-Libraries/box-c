@@ -136,7 +136,7 @@ define('detachplus', [ 'jquery'], function($) {
 			primaryAction += "?" + decodeURIComponent(this.options.structureView.options.filterParams).replace('"', '%22');
 		
 		var downloadUrl = null;
-		if ($.inArray('viewOriginal', this.metadata.permissions) != -1 && $.inArray('DATA_FILE', this.metadata.datastreams) != -1){
+		if ($.inArray('viewOriginal', this.metadata.permissions) != -1 && $.inArray('DATA_FILE', this.metadata.datastream) != -1){
 			downloadUrl = "files/" + this.metadata.id + "/DATA_FILE?dl=true"; 
 		}
 		
@@ -1176,7 +1176,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 	
 	var defaultOptions = {
 			resultObjectList : undefined,
-			followupPath: "/services/api/v1/item/solrRecord/version",
+			followupPath: "/services/api/status/item/solrRecord/version",
 			childWorkLinkName : undefined,
 			workFunction : undefined,
 			followupFunction : undefined,
@@ -1590,7 +1590,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			workLabel: "Deleting...",
 			workPath: "delete/{idPath}",
 			followupLabel: "Cleaning up...",
-			followupPath: "/services/api/v1/item/{idPath}/solrRecord/version",
+			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
 			confirm: true,
 			confirmMessage: "Delete this object?",
 			animateSpeed: 'fast',
@@ -2181,7 +2181,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 							// Store a reference to the targeted item list since moving happens asynchronously
 							var moveObjects = self.manager.dragTargets;
 							$.ajax({
-								url : "/services/api/v1/edit/move",
+								url : "/services/api/edit/move",
 								type : "POST",
 								data : JSON.stringify(moveData),
 								contentType: "application/json; charset=utf-8",
@@ -2321,7 +2321,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	var defaultOptions = {
 		resultObjectList : undefined,
-		workPath: "/services/api/v1/edit/publish",
+		workPath: "/services/api/edit/publish",
 		childWorkLinkName : 'publish'
 	};
 	
@@ -2352,7 +2352,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	var defaultOptions = {
 			defaultPublish: false,
-			followupPath: "/services/api/v1/item/{idPath}/solrRecord/version"
+			followupPath: "/services/api/status/item/{idPath}/solrRecord/version"
 		};
 		
 	PublishObjectButton.prototype._create = function(options) {
@@ -2395,14 +2395,14 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 
 	PublishObjectButton.prototype.publishedState = function() {
 		this.published = true;
-		this.setWorkURL("services/api/v1/edit/unpublish/{idPath}");
+		this.setWorkURL("/services/api/edit/unpublish/{idPath}");
 		this.options.workLabel = "Unpublishing...";
 		this.options.followupLabel = "Unpublishing....";
 	};
 
 	PublishObjectButton.prototype.unpublishedState = function() {
 		this.published = false;
-		this.setWorkURL("services/api/v1/edit/publish/{idPath}");
+		this.setWorkURL("/services/api/edit/publish/{idPath}");
 		this.options.workLabel = "Publishing...";
 		this.options.followupLabel = "Publishing....";
 	};
@@ -2435,10 +2435,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	var defaultOptions = {
 			workLabel: "Updating...",
-			workPath: "/services/api/v1/edit/solr/reindex/{idPath}?inplace=true",
+			workPath: "/services/api/edit/solr/reindex/{idPath}?inplace=true",
 			workMethod: $.post,
 			followupLabel: "Updating...",
-			followupPath: "/services/api/v1/item/{idPath}/solrRecord/version",
+			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
 			confirm: true,
 			confirmMessage: "Reindex this object and all of its children?",
 			animateSpeed: 'fast',
@@ -2770,7 +2770,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			},
 			'statusChangedTarget' : this, 
 			'checkStatusAjax' : {
-				url : "/services/api/v1/item/" + self.pid + "/solrRecord/version",
+				url : "/services/api/status/item/" + self.pid + "/solrRecord/version",
 				dataType : 'json'
 			}
 		});
@@ -3529,7 +3529,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		},
 		
 		_adjustHeight : function () {
-			console.log("Adjusting height");
 			var activeMenu = this.element.find(".filter_menu .ui-accordion-content-active");
 			if (activeMenu.length == 0) {
 				return;
@@ -3611,7 +3610,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	
 	var defaultOptions = {
 			resultObjectList : undefined,
-			workPath: "/services/api/v1/edit/unpublish",
+			workPath: "/services/api/edit/unpublish",
 			childWorkLinkName : 'publish'
 		};
 	
@@ -3852,9 +3851,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	var defaultOptions = {
 		name : "enhancement",
 		jobConfig : {
-			url : "/services/api/v1/enhancement/{name}?begin=0&end=20",
+			url : "/services/api/status/enhancement/{name}?begin=0&end=20",
 			template : enhancementMonitorJobTemplate,
-			detailsUrl : "/services/api/v1/enhancement/job/{id}?type={name}",
+			detailsUrl : "/services/api/status/enhancement/job/{id}?type={name}",
 			detailsTemplate : enhancementMonitorDetailsTemplate,
 			fields : ["Status", "Label", "Enhancements", "Triggered by"],
 			jobTypes : [
@@ -3866,7 +3865,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			]
 		},
 		overviewConfig : {
-			url : "/services/api/v1/enhancement"
+			url : "/services/api/status/enhancement"
 		}
 	};
 			
@@ -3884,9 +3883,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	var defaultOptions = {
 		name : "indexing",
 		jobConfig : {
-			url : "/services/api/v1/indexing/jobs?begin=0&end=20",
+			url : "/services/api/status/indexing/jobs?begin=0&end=20",
 			template : indexingMonitorJobTemplate,
-			detailsUrl : "/services/api/v1/indexing/jobs/job/{id}",
+			detailsUrl : "/services/api/status/indexing/jobs/job/{id}",
 			detailsTemplate : indexingMonitorDetailsTemplate,
 			fields : ["Status", "Label", "Action", "Progress"],
 			jobTypes : [
@@ -3894,7 +3893,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			]
 		},
 		overviewConfig : {
-			url : "/services/api/v1/indexing"
+			url : "/services/api/status/indexing"
 		}
 	};
 			
@@ -3912,9 +3911,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	var defaultOptions = {
 		name : "ingest",
 		jobConfig : {
-			url : "/services/api/v1/ingest/{name}/",
+			url : "/services/api/status/ingest/{name}/",
 			template : ingestMonitorJobTemplate,
-			detailsUrl : "/services/api/v1/ingest/job/{id}",
+			detailsUrl : "/services/api/status/ingest/job/{id}",
 			detailsTemplate : ingestMonitorDetailsTemplate,
 			fields : ["Status", "Submitter", "Submit time", "Ingested", "First object", "Note"],
 			jobTypes : [
@@ -3925,7 +3924,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			]
 		},
 		overviewConfig : {
-			url : "/services/api/v1/ingest/"
+			url : "/services/api/status/ingest/"
 		}
 	};
 			

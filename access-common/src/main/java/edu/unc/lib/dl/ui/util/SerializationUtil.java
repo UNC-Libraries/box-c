@@ -17,9 +17,10 @@ package edu.unc.lib.dl.ui.util;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -34,7 +35,6 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.Tag;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 public class SerializationUtil {
@@ -43,68 +43,85 @@ public class SerializationUtil {
 	private static ObjectMapper jsonMapper = new ObjectMapper();
 	{
 		jsonMapper.setSerializationInclusion(Inclusion.NON_EMPTY);
-		//jsonMapper.getSerializerProvider().
 	}
-	
-	
-	
+
 	public static String structureToJSON(HierarchicalBrowseResultResponse response, AccessGroupSet groups) {
 		Map<String, Object> result = new HashMap<String, Object>();
-		result.put("root", response.getRootNode());
+		result.put("root", structureStep(response.getRootNode(), groups));
 		return objectToJSON(result);
 	}
-	
+
+	private static Map<String, Object> structureStep(HierarchicalBrowseResultResponse.ResultNode node,
+			AccessGroupSet groups) {
+		Map<String, Object> entryMap = new HashMap<String, Object>();
+		Map<String, Object> metadataMap = metadataToMap(node.getMetadata(), groups);
+		entryMap.put("entry", metadataMap);
+		if (node.getMetadata().getAncestorNames() != null
+				&& (node.getMetadata().getAncestorPath() == null || node.getMetadata().getAncestorPath().size() == 0))
+			entryMap.put("isTopLevel", "true");
+
+		if (node.getChildren().size() > 0) {
+			List<Object> childrenList = new ArrayList<Object>(node.getChildren().size());
+			entryMap.put("children", childrenList);
+			for (int i = 0; i < node.getChildren().size(); i++) {
+				childrenList.add(structureStep(node.getChildren().get(i), groups));
+			}
+		}
+		return entryMap;
+	}
+
 	public static String resultsToJSON(SearchResultResponse resultResponse, AccessGroupSet groups) {
 		StringBuilder result = new StringBuilder();
 		result.append('[');
 		boolean firstEntry = true;
-		for (BriefObjectMetadata metadata: resultResponse.getResultList()) {
+		for (BriefObjectMetadata metadata : resultResponse.getResultList()) {
 			if (firstEntry)
 				firstEntry = false;
-			else result.append(',');
+			else
+				result.append(',');
 			result.append(metadataToJSON(metadata, groups));
 		}
 		result.append(']');
 		return result.toString();
 	}
-	
+
 	public static Map<String, Object> metadataToMap(BriefObjectMetadata metadata, AccessGroupSet groups) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("id", metadata.getId());
-		
-		if (metadata.getTitle() != null) 
+
+		if (metadata.getTitle() != null)
 			result.put("title", metadata.getTitle());
-		
+
 		if (metadata.get_version_() != null)
 			result.put("_version_", metadata.get_version_());
-		
+
 		if (metadata.getStatus() != null && metadata.getStatus().size() > 0)
 			result.put("status", metadata.getStatus());
-		
+
 		if (metadata.getSubject() != null)
 			result.put("subject", metadata.getSubject());
-		
+
 		if (metadata.getResourceType() != null)
 			result.put("type", metadata.getResourceType());
-		
+
 		if (metadata.getContentModel() != null && metadata.getContentModel().size() > 0)
 			result.put("model", metadata.getContentModel());
-		
+
 		if (metadata.getCreator() != null)
 			result.put("creator", metadata.getCreator());
-		
+
 		if (metadata.getDatastream() != null)
 			result.put("datastream", metadata.getDatastream());
-		
+
 		if (metadata.getIdentifier() != null)
 			result.put("identifier", metadata.getIdentifier());
-		
+
 		if (metadata.getTags() != null)
 			result.put("tags", metadata.getTags());
-		
+
 		if (metadata.getCountMap() != null && metadata.getCountMap().size() > 0)
 			result.put("counts", metadata.getCountMap());
-		
+
 		try {
 			if (metadata.getDateAdded() != null) {
 				String dateAdded = DateTimeUtil.formatDateToUTC(metadata.getDateAdded());
@@ -117,13 +134,13 @@ public class SerializationUtil {
 		} catch (ParseException e) {
 			log.debug("Failed to parse date field for " + metadata.getId(), e);
 		}
-		
+
 		if (metadata.getDateCreated() != null)
 			result.put("created", metadata.getDateCreated());
-		
+
 		if (groups != null && metadata.getAccessControlBean() != null)
 			result.put("permissions", metadata.getAccessControlBean().getPermissionsByGroups(groups));
-		
+
 		if (metadata.getDynamicFields() != null) {
 			Iterator<Entry<String, Object>> fieldIt = metadata.getDynamicFields().entrySet().iterator();
 			while (fieldIt.hasNext()) {
@@ -131,10 +148,10 @@ public class SerializationUtil {
 				result.put(entry.getKey(), entry.getValue());
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	public static String metadataToJSON(BriefObjectMetadata metadata, AccessGroupSet groups) {
 		try {
 			return jsonMapper.writeValueAsString(metadataToMap(metadata, groups));
@@ -147,47 +164,7 @@ public class SerializationUtil {
 		}
 		return null;
 	}
-	
-	private static String joinArray(Collection<String> collection) {
-		StringBuilder result = new StringBuilder();
-		result.append('[');
-		for (String value : collection) {
-			if (result.length() > 1)
-				result.append(',');
-			result.append('"').append(value.replace("\"", "\\\"").replace("\n", "\\n")).append('"');
-		}
-		result.append(']');
-		return result.toString();
-	}
-	
-	private static String joinTags(Collection<Tag> collection) {
-		StringBuilder result = new StringBuilder();
-		result.append('[');
-		for (Tag value : collection) {
-			if (result.length() > 1)
-				result.append(',');
-			result.append("{\"label\":\"").append(value.getLabel()).append('"');
-			result.append(",\"text\":\"").append(value.getText()).append('"').append('}');
-		}
-		result.append(']');
-		return result.toString();
-	}
-	
-	private static String joinMap(Map<?, ?> map) {
-		StringBuilder result = new StringBuilder();
-		result.append('{');
-		for (Entry<?, ?> entry : map.entrySet()) {
-			if (result.length() > 1)
-				result.append(',');
-			result.append('"').append(entry.getKey().toString()).append('"').append(':');
-			if (entry.getValue() instanceof Number)
-				result.append(entry.getValue().toString());
-			else result.append('"').append(entry.getValue().toString()).append('"');
-		}
-		result.append('}');
-		return result.toString();
-	}
-	
+
 	public static String objectToJSON(Object object) {
 		try {
 			return jsonMapper.writeValueAsString(object);

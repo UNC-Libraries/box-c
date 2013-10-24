@@ -67,16 +67,28 @@
 		</bean>
 	</mvc:interceptors>
 	
+	<bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
+		<property name="queryLayer" ref="queryLayer" />
+		<property name="requireViewAdmin" value="true" />
+		<property name="nonAdminRedirectUrl" value="/error/401.html" />
+	</bean>
+	
+	<bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
+		<property name="fedoraUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+	</bean>
+	
+	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
+		<property name="accessClient" ref="accessClient" />
+		<property name="fedoraUtil" ref="fedoraUtil" />
+	</bean>
+	
 	<bean id="multipartResolver"
 		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
 		<property name="maxUploadSize" value="3000000"/>
 	</bean>
 
 	<context:component-scan base-package="edu.unc.lib.dl.cdr.services.rest"/>
-
 	
 	<mvc:annotation-driven/>	
-	<!-- context:annotation-config/-->
-<!-- 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
-	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"></bean> -->
 </beans>

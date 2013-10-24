@@ -75,7 +75,6 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 		},
 		
 		_adjustHeight : function () {
-			console.log("Adjusting height");
 			var activeMenu = this.element.find(".filter_menu .ui-accordion-content-active");
 			if (activeMenu.length == 0) {
 				return;

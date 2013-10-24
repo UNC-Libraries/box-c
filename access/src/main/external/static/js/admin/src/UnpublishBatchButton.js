@@ -8,7 +8,7 @@ define('UnpublishBatchButton', [ 'jquery', 'BatchCallbackButton' ], function($, 
 	
 	var defaultOptions = {
 			resultObjectList : undefined,
-			workPath: "/services/api/v1/edit/unpublish",
+			workPath: "/services/api/edit/unpublish",
 			childWorkLinkName : 'publish'
 		};
 	

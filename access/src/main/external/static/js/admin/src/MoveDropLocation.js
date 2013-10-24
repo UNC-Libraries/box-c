@@ -67,7 +67,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 							// Store a reference to the targeted item list since moving happens asynchronously
 							var moveObjects = self.manager.dragTargets;
 							$.ajax({
-								url : "/services/api/v1/edit/move",
+								url : "/services/api/edit/move",
 								type : "POST",
 								data : JSON.stringify(moveData),
 								contentType: "application/json; charset=utf-8",
