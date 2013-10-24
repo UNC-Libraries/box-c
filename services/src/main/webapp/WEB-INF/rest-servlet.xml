@@ -48,24 +48,12 @@
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="false" />
-		<property name="properties">
-			<props>
-				<prop key="rest.allow.ip.regex">127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1</prop>
-			</props>
-		</property>
 	</bean>
 
 	<bean id="contextUrl" class="java.lang.String">
 		<constructor-arg
 			value="${repository.protocol}://${repository.host}${repository.port}/${services.context}" />
 	</bean>
-	
-	<mvc:interceptors>
-		<bean id="localhostOnlyInterceptor"
-				class="edu.unc.lib.dl.cdr.services.util.APIRestrictingInterceptor">
-			<property name="allowRegEx" value="${rest.allow.ip.regex}"/>
-		</bean>
-	</mvc:interceptors>
 	
 	<bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
 		<property name="queryLayer" ref="queryLayer" />

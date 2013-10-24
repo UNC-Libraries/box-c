@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +27,8 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 @Controller
 public class SearchRestController extends AbstractSolrSearchController {
+	
+	private static Pattern jsonpCleanupPattern = Pattern.compile("[^a-zA-Z0-9_$]+");
 
 	@RequestMapping(value = "/search")
 	public @ResponseBody String search(HttpServletRequest request, HttpServletResponse response) {
@@ -106,6 +109,13 @@ public class SearchRestController extends AbstractSolrSearchController {
 		}
 		response.put("results", results);
 		
+		String callback = request.getParameter("callback");
+		// If there's a jsonp callback, do some overzealous cleanup to remove any bad stuff
+		if (callback != null) {
+			callback = jsonpCleanupPattern.matcher(callback).replaceAll("");
+			return callback + "(" + SerializationUtil.objectToJSON(response) + ")";
+		}
+		
 		return SerializationUtil.objectToJSON(response);
 	}
 	
@@ -119,6 +129,14 @@ public class SearchRestController extends AbstractSolrSearchController {
 			response.setStatus(404);
 			return null;
 		}
+		
+		String callback = request.getParameter("callback");
+		// If there's a jsonp callback, do some overzealous cleanup to remove any bad stuff
+		if (callback != null) {
+			callback = jsonpCleanupPattern.matcher(callback).replaceAll("");
+			return callback + "(" + SerializationUtil.metadataToJSON(briefObject, GroupsThreadStore.getGroups()) + ")";
+		}
+		
 		return SerializationUtil.metadataToJSON(briefObject, GroupsThreadStore.getGroups());
 	}
 }
