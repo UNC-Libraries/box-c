@@ -33,12 +33,15 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 		this.items = items;
 		this.itemCount = itemCount;
 		this.groupId = groupId;
-		for (BriefObjectMetadataBean item : items) {
-			if (this.groupId.equals(item.getRollup())) {
-				this.representative = item;
-				break;
+		if (this.groupId != null) {
+			for (BriefObjectMetadataBean item : items) {
+				if (this.groupId.equals(item.getRollup())) {
+					this.representative = item;
+					break;
+				}
 			}
 		}
+		
 		if (this.representative == null && items.size() > 0)
 			this.representative = items.get(0);
 	}

@@ -87,7 +87,8 @@ public class SerializationUtil {
 
 	public static Map<String, Object> metadataToMap(BriefObjectMetadata metadata, AccessGroupSet groups) {
 		Map<String, Object> result = new HashMap<String, Object>();
-		result.put("id", metadata.getId());
+		if (metadata.getId() != null)
+			result.put("id", metadata.getId());
 
 		if (metadata.getTitle() != null)
 			result.put("title", metadata.getTitle());
