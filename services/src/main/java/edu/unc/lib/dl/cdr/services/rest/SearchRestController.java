@@ -16,42 +16,38 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 @Controller
 public class SearchRestController extends AbstractSolrSearchController {
 
-	@RequestMapping(value = "/search", method = RequestMethod.GET)
+	@RequestMapping(value = "/search")
 	public @ResponseBody String search(HttpServletRequest request, HttpServletResponse response) {
 		return doSearch(null, request, false);
 	}
 	
-	@RequestMapping(value = "/search/{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "/search/{id}")
 	public @ResponseBody String search(@PathVariable("id") String id, HttpServletRequest request) {
 		return doSearch(id, request, false);
 	}
 	
-	@RequestMapping(value = "/list", method = RequestMethod.GET)
+	@RequestMapping(value = "/list")
 	public @ResponseBody String list(HttpServletRequest request, HttpServletResponse response) {
 		return doSearch(null, request, true);
 	}
 	
-	@RequestMapping(value = "/list/{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "/list/{id}")
 	public @ResponseBody String list(@PathVariable("id") String id, HttpServletRequest request) {
 		return doSearch(id, request, true);
 	}
 	
-	private String doSearch(String pid, HttpServletRequest request, boolean applyCutoffs) {
-		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setApplyCutoffs(applyCutoffs);
-		searchRequest.setRootPid(pid);
-		
-		SearchState searchState = searchRequest.getSearchState();
-		
+	private List<String> getResultFields(HttpServletRequest request) {
 		String fields = request.getParameter("fields");
 		// Allow for retrieving of specific fields
 		if (fields != null) {
@@ -64,15 +60,26 @@ public class SearchRestController extends AbstractSolrSearchController {
 				else if (searchSettings.isDynamicField(fieldName))
 					resultFields.add(fieldName);
 			}
-			searchState.setResultFields(resultFields);
+			return resultFields;
 		} else {
 			// Retrieve a predefined set of fields
 			String fieldSet = request.getParameter("fieldSet");
 			List<String> resultFields = searchSettings.resultFields.get(fieldSet);
 			if (resultFields == null)
-				resultFields = searchSettings.resultFields.get("brief");
-			searchState.setResultFields(resultFields);
+				resultFields = new ArrayList<String>(searchSettings.resultFields.get("brief"));
+			return resultFields;
 		}
+	}
+	
+	private String doSearch(String pid, HttpServletRequest request, boolean applyCutoffs) {
+		SearchRequest searchRequest = generateSearchRequest(request);
+		searchRequest.setApplyCutoffs(applyCutoffs);
+		searchRequest.setRootPid(pid);
+		
+		SearchState searchState = searchRequest.getSearchState();
+		
+		List<String> resultFields = this.getResultFields(request);
+		searchState.setResultFields(resultFields);
 		
 		// Rollup
 		String rollup = request.getParameter("rollup");
@@ -100,5 +107,18 @@ public class SearchRestController extends AbstractSolrSearchController {
 		response.put("results", results);
 		
 		return SerializationUtil.objectToJSON(response);
+	}
+	
+	@RequestMapping(value = "/record/{id}")
+	public @ResponseBody String getSingleItem(@PathVariable("id") String id, HttpServletRequest request, HttpServletResponse response) {
+		List<String> resultFields = this.getResultFields(request);
+		
+		SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields);
+		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
+		if (briefObject == null) {
+			response.setStatus(404);
+			return null;
+		}
+		return SerializationUtil.metadataToJSON(briefObject, GroupsThreadStore.getGroups());
 	}
 }
