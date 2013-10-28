@@ -41,11 +41,15 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 public class SetStatusFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetStatusFilter.class);
 
+	private static final String DELETED_STATE = "info:fedora/fedora-system:def/model#Deleted";
+
 	private String isPublishedQuery;
+	private String isDeletedQuery;
 
 	public SetStatusFilter() {
 		try {
 			this.isPublishedQuery = this.readFileAsString("isPublished.itql");
+			this.isDeletedQuery = this.readFileAsString("isDeleted.itql");
 		} catch (IOException e) {
 			log.error("Unable to find query file", e);
 		}
@@ -57,6 +61,7 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 		List<String> status = new ArrayList<String>();
 		setAccessStatus(triples, status);
 		setPublicationStatus(dip, triples, status);
+		setObjectStateStatus(dip, triples, status);
 		List<String> contentStatus = new ArrayList<String>();
 		setContentStatus(dip, triples, contentStatus);
 
@@ -71,11 +76,12 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 			boolean described = datastreams.contains(mdDescriptive);
 			if (described)
 				status.add("Described");
-			else status.add("Not Described");
+			else
+				status.add("Not Described");
 		}
-		
+
 		// Valid/Not Valid content according to FITS
-		
+
 		// If its an aggregate, indicate if it has a default web object
 		List<String> contentModels = triples.get(ContentModelHelper.FedoraProperty.hasModel.toString());
 		if (contentModels != null && contentModels.contains(ContentModelHelper.Model.AGGREGATE_WORK.toString())) {
@@ -88,7 +94,8 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 	}
 
 	private void setAccessStatus(Map<String, List<String>> triples, List<String> status) {
-		String inheritPermissions = getFirstTripleValue(triples, ContentModelHelper.CDRProperty.inheritPermissions.toString());
+		String inheritPermissions = getFirstTripleValue(triples,
+				ContentModelHelper.CDRProperty.inheritPermissions.toString());
 		if ("false".equals(inheritPermissions)) {
 			status.add("Not Inheriting Roles");
 		}
@@ -187,5 +194,41 @@ public class SetStatusFilter extends AbstractIndexDocumentFilter {
 		}
 
 		dip.setIsPublished(parentIsPublished && isPublished);
+	}
+
+	/**
+	 * Inspects an object's Fedora state property to determine status.  Adds "Deleted" state if the object
+	 * or any of its ancestors have been marked for deletion.
+	 * 
+	 * @param dip
+	 * @param triples
+	 * @param status
+	 */
+	private void setObjectStateStatus(DocumentIndexingPackage dip, Map<String, List<String>> triples, List<String> status) {
+		String objectState = getFirstTripleValue(triples, ContentModelHelper.FedoraProperty.state.toString());
+		if (DELETED_STATE.equalsIgnoreCase(objectState)) {
+			status.add("Deleted");
+			dip.setIsDeleted(true);
+		} else {
+			if (dip.getParentDocument().getIsDeleted() == null) {
+				// Deletion answer not cached by parent, so retrieve it
+				String query = String.format(isDeletedQuery, tsqs.getResourceIndexModelUri(), dip.getPid().getURI());
+				List<List<String>> results = tsqs.queryResourceIndex(query);
+
+				for (List<String> row : results) {
+					// Since we know the target object is not tagged as deleted, the parent has to have inherited or set it
+					if (DELETED_STATE.equals(row.get(0))) {
+						dip.getParentDocument().setIsDeleted(true);
+						break;
+					}
+				}
+			}
+			// Inherit deletion status from any deleted ancestors
+			if (dip.getParentDocument().getIsDeleted()) {
+				status.add("Deleted");
+				dip.setIsDeleted(true);
+			} else
+				dip.setIsDeleted(false);
+		}
 	}
 }

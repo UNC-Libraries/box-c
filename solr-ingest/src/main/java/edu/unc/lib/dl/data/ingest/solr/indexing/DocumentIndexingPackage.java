@@ -47,6 +47,7 @@ public class DocumentIndexingPackage {
 	private Element mdContents;
 	private Element objectProperties;
 	private Boolean isPublished;
+	private Boolean isDeleted;
 	private IndexDocumentBean document;
 	private String label;
 	private ResourceType resourceType;
@@ -357,6 +358,14 @@ public class DocumentIndexingPackage {
 
 	public void setIsPublished(Boolean isPublished) {
 		this.isPublished = isPublished;
+	}
+
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 
 	public ObjectAccessControlsBean getAclBean() {
