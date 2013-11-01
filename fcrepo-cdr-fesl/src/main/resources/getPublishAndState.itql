@@ -1,0 +1,6 @@
+select $published $state
+from <%1$s>
+where $pid <mulgara:is> <%2$s>
+and ($pid <http://cdr.unc.edu/definitions/1.0/base-model.xml#isPublished> $published
+	or $published <mulgara:is> <mulgara:null>)
+and $pid <info:fedora/fedora-system:def/model#state> $state;

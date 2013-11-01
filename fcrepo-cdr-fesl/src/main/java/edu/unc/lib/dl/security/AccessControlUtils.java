@@ -44,6 +44,7 @@ public class AccessControlUtils {
 	private AncestorFactory ancestorFactory = null;
 	private GroupRolesFactory groupRolesFactory = null;
 	private EmbargoFactory embargoFactory = null;
+	private PatronAccessFactory patronAccessFactory = null;
 	private Map<String, Set<String>> globalRoles;
 	private String adminGroup;
 	private String curatorGroup;
@@ -78,6 +79,14 @@ public class AccessControlUtils {
 
 	public void setGroupRolesFactory(GroupRolesFactory groupRolesFactory) {
 		this.groupRolesFactory = groupRolesFactory;
+	}
+
+	public PatronAccessFactory getPatronAccessFactory() {
+		return patronAccessFactory;
+	}
+
+	public void setPatronAccessFactory(PatronAccessFactory patronAccessFactory) {
+		this.patronAccessFactory = patronAccessFactory;
 	}
 
 	public edu.unc.lib.dl.util.TripleStoreQueryService getTripleStoreQueryService() {
@@ -428,6 +437,40 @@ public class AccessControlUtils {
 			LOG.debug(b.toString());
 		}
 		return groups;
+	}
+	
+	public boolean isPublished(PID pid) {
+		try {
+			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
+			ancestors.add(pid);
+			for (PID ancestor: ancestors) {
+				LOG.warn("Getting publish status for {}", ancestor.getPid());
+				Boolean status = patronAccessFactory.isPublished(ancestor);
+				LOG.warn("Publication state: {}", status);
+				if (!status) {
+					return false;
+				}
+			}
+		} catch (ObjectNotFoundException e) {
+			LOG.error("Cannot find object in question", e);
+		}
+		return true;
+	}
+	
+	public boolean isActive(PID pid) {
+		try {
+			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
+			ancestors.add(pid);
+			for (PID ancestor: ancestors) {
+				Boolean isActive = patronAccessFactory.isStateActive(pid);
+				if (!isActive) {
+					return false;
+				}
+			}
+		} catch (ObjectNotFoundException e) {
+			LOG.error("Cannot find object in question", e);
+		}
+		return true;
 	}
 
 	public List<String> getDatastreamCategories(String datastreamId) {
