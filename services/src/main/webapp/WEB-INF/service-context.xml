@@ -385,6 +385,7 @@
 				<entry key="cdr-services:name=solrUpdateEnhancementService" value-ref="solrUpdateEnhancementService" />
 				<entry key="cdr-services:name=imageEnhancementService" value-ref="imageEnhancementService" />
 				<entry key="cdr-services:name=tripleStoreQueryService" value-ref="tripleStoreQueryService" />
+				<entry key="cdr-services:name=fixityLogService" value-ref="fixityLogService" />
 			</map>
 		</property>
 		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>

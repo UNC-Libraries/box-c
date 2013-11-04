@@ -63,10 +63,12 @@ public class FixityLogService implements ServiceConductor {
 	}
 	
 	private void executeFixityLogTask() {
-		LOG.debug("Creating and executing fixity log task");
-		
-		FixityLogTask task = this.fixityLogTaskFactory.createTask();
-		this.executor.execute(task);
+		if (!this.executor.isPaused()) {
+			LOG.debug("Creating and executing fixity log task");
+			
+			FixityLogTask task = this.fixityLogTaskFactory.createTask();
+			this.executor.execute(task);
+		}
 	}
 	
 	
