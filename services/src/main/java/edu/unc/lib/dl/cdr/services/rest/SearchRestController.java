@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -60,8 +59,6 @@ public class SearchRestController extends AbstractSolrSearchController {
 				String fieldKey = searchSettings.searchFieldKey(fieldName);
 				if (fieldKey != null)
 					resultFields.add(fieldKey);
-				else if (searchSettings.isDynamicField(fieldName))
-					resultFields.add(fieldName);
 			}
 			return resultFields;
 		} else {
@@ -91,8 +88,6 @@ public class SearchRestController extends AbstractSolrSearchController {
 			String fieldKey = searchSettings.searchFieldKey(rollup);
 			if (fieldKey != null)
 				searchState.setRollupField(fieldKey);
-			else if (searchSettings.isDynamicField(rollup))
-				searchState.setRollupField(rollup);
 			else
 				searchState.setRollup(false);
 		}

@@ -41,7 +41,6 @@ public class SearchState implements Serializable, Cloneable {
 	private Map<String, String> searchFields;
 	private Map<String, RangePair> rangeFields;
 	private Map<String, Object> facets;
-	private Map<String, Object> dynamicFields;
 	private Map<String, Integer> facetLimits;
 	private Map<String, String> facetSorts;
 	private Collection<String> facetsToRetrieve;
@@ -62,7 +61,6 @@ public class SearchState implements Serializable, Cloneable {
 		searchFields = new HashMap<String, String>();
 		rangeFields = new HashMap<String, RangePair>();
 		facets = new HashMap<String, Object>();
-		dynamicFields = new HashMap<String, Object>();
 		facetLimits = new HashMap<String, Integer>();
 		facetSorts = new HashMap<String, String>();
 		resultFields = null;
@@ -91,9 +89,6 @@ public class SearchState implements Serializable, Cloneable {
 					facets.put(item.getKey(), (String) item.getValue());
 				}
 			}
-		}
-		if (searchState.getDynamicFields() != null) {
-			this.dynamicFields = new HashMap<String, Object>(searchState.getDynamicFields());
 		}
 		if (searchState.getFacetLimits() != null) {
 			this.facetLimits = new HashMap<String, Integer>(searchState.getFacetLimits());
@@ -136,14 +131,6 @@ public class SearchState implements Serializable, Cloneable {
 
 	public void setFacets(Map<String, Object> facets) {
 		this.facets = facets;
-	}
-
-	public Map<String, Object> getDynamicFields() {
-		return dynamicFields;
-	}
-
-	public void setDynamicFields(Map<String, Object> dynamicFields) {
-		this.dynamicFields = dynamicFields;
 	}
 
 	public Integer getStartRow() {

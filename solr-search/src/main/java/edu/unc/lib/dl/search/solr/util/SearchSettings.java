@@ -657,16 +657,6 @@ public class SearchSettings extends AbstractSettings {
 	public String getProperty(String key) {
 		return this.properties.getProperty(key);
 	}
-	
-	/** 
-	 * Determines if a field is a dynamic field
-	 * 
-	 * @param fieldName
-	 * @return
-	 */
-	public boolean isDynamicField(String fieldName) {
-		return fieldName != null && fieldName.endsWith("_d");
-	}
 
 	@Override
 	public String toString() {

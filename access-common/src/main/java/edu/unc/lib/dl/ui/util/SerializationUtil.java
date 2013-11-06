@@ -35,15 +35,19 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.util.SearchSettings;
+import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 public class SerializationUtil {
 	private static final Logger log = LoggerFactory.getLogger(SerializationUtil.class);
 
 	private static ObjectMapper jsonMapper = new ObjectMapper();
-	{
-		jsonMapper.setSerializationInclusion(Inclusion.NON_EMPTY);
+	static {
+		jsonMapper.setSerializationInclusion(Inclusion.NON_NULL);
 	}
+	private static SearchSettings searchSettings;
+	private static SolrSettings solrSettings;
 
 	public static String structureToJSON(HierarchicalBrowseResultResponse response, AccessGroupSet groups) {
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -146,7 +150,11 @@ public class SerializationUtil {
 			Iterator<Entry<String, Object>> fieldIt = metadata.getDynamicFields().entrySet().iterator();
 			while (fieldIt.hasNext()) {
 				Entry<String, Object> entry = fieldIt.next();
-				result.put(entry.getKey(), entry.getValue());
+				// Translate the solr field back into the query parameter name
+				String fieldKey = solrSettings.getFieldKey(entry.getKey());
+				String paramName = searchSettings.getSearchFieldParam(fieldKey);
+				if (paramName != null)
+					result.put(paramName, entry.getValue());
 			}
 		}
 
@@ -177,5 +185,10 @@ public class SerializationUtil {
 			log.error("Unable to serialize object of type " + object.getClass().getName() + " to json", e);
 		}
 		return "";
+	}
+	
+	public static void injectSettings(SearchSettings searchSettings, SolrSettings solrSettings) {
+		SerializationUtil.searchSettings = searchSettings;
+		SerializationUtil.solrSettings = solrSettings;
 	}
 }

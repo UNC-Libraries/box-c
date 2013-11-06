@@ -18,7 +18,7 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 	private static final Logger log = LoggerFactory.getLogger(RLASupplementalFilter.class);
 	
 	private static final String SPECIMEN_LABEL = "RLA Specimen Number";
-	private static final String SPECIMEN_FIELD = "rla_specimen_d";
+	private static final String SPECIMEN_FIELD = "rla_specimen_number_d";
 	
 	private static final String CATALOG_LABEL = "RLA Catalog Number";
 	private static final String CATALOG_FIELD = "rla_catalog_number_d";

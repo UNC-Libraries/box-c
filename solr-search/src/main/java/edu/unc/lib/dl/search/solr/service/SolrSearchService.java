@@ -427,9 +427,6 @@ public class SolrSearchService {
 		// Add range Fields to the query
 		addRangeFields(searchState, termQuery);
 
-		// Added in dynamic search fields
-		addDynamicFields(searchState, termQuery);
-
 		// No query terms given, make it an everything query
 		StringBuilder query = new StringBuilder();
 		if (termQuery.length() == 0) {
@@ -453,9 +450,8 @@ public class SolrSearchService {
 		if (searchState.getResultFields() != null) {
 			for (String field : searchState.getResultFields()) {
 				String solrFieldName = solrSettings.getFieldName(field);
-				if (solrFieldName == null && searchSettings.isDynamicField(field))
-					solrFieldName = field;
-				solrQuery.addField(solrFieldName);
+				if (solrFieldName != null)
+					solrQuery.addField(solrFieldName);
 			}
 		}
 
@@ -463,8 +459,6 @@ public class SolrSearchService {
 			solrQuery.set(GroupParams.GROUP, true);
 			if (searchState.getRollupField() == null)
 				solrQuery.set(GroupParams.GROUP_FIELD, solrSettings.getFieldName(SearchFieldKeys.ROLLUP_ID.name()));
-			else if (searchSettings.isDynamicField(searchState.getRollupField()))
-				solrQuery.set(GroupParams.GROUP_FIELD, SolrSettings.sanitize(searchState.getRollupField()));
 			else
 				solrQuery.set(GroupParams.GROUP_FIELD, solrSettings.getFieldName(searchState.getRollupField()));
 			
@@ -645,33 +639,6 @@ public class SolrSearchService {
 						}
 					}
 					termQuery.append("] ");
-				}
-			}
-		}
-	}
-
-	private void addDynamicFields(SearchState searchState, StringBuilder termQuery) {
-		Map<String, Object> dynamicFields = searchState.getDynamicFields();
-		if (dynamicFields != null) {
-			Iterator<String> fieldsIt = dynamicFields.keySet().iterator();
-
-			while (fieldsIt.hasNext()) {
-				String fieldKey = fieldsIt.next();
-				List<String> searchFragments = SolrSettings.getSearchTermFragments(dynamicFields.get(fieldKey).toString());
-
-				if (searchFragments != null && searchFragments.size() > 0) {
-					if (termQuery.length() > 0)
-						termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
-					termQuery.append(SolrSettings.sanitize(fieldKey)).append(':').append('(');
-					boolean firstTerm = true;
-					for (String searchFragment : searchFragments) {
-						if (firstTerm)
-							firstTerm = false;
-						else
-							termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
-						termQuery.append(searchFragment);
-					}
-					termQuery.append(')');
 				}
 			}
 		}

@@ -66,7 +66,7 @@ public class FacetFieldFactory {
 	public FacetFieldList createFacetFieldList(List<FacetField> facetFields) {
 		if (facetFields == null)
 			return null;
-		Map<String, String> fieldNameMappings = solrSettings.getFieldNamesInverted();
+		Map<String, String> fieldNameMappings = solrSettings.getFieldNameToKey();
 
 		FacetFieldList facetFieldList = new FacetFieldList();
 		for (FacetField facetField : facetFields) {

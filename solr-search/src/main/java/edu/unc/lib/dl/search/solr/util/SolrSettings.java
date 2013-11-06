@@ -30,9 +30,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Utility class which stores Solr index addressing and instantiation settings from a properties file.
+ * 
  * @author bbpennel
  */
-public class SolrSettings extends AbstractSettings  {
+public class SolrSettings extends AbstractSettings {
 	private final Logger LOG = LoggerFactory.getLogger(SolrSettings.class);
 	private String path;
 	private String url;
@@ -42,69 +43,77 @@ public class SolrSettings extends AbstractSettings  {
 	private int defaultMaxConnectionsPerHost;
 	private int maxConnections;
 	private int maxRetries;
-	private HashMap<String,String> fieldNames;
-	
-	public SolrSettings(){
-		fieldNames = new HashMap<String,String>();
+	// Mapping of field keys to internal solr field names
+	private HashMap<String, String> fieldNames;
+	// Reverse of fieldName, for translating from the internal solr field name to the general field identification key
+	private HashMap<String, String> fieldNameToKey;
+
+	public SolrSettings() {
+		fieldNames = new HashMap<String, String>();
 	}
-	
+
 	/**
-	 * Initialize SolrSettings attributes from a properties input object 
-	 * @param properties solr settings properties object.
+	 * Initialize SolrSettings attributes from a properties input object
+	 * 
+	 * @param properties
+	 *           solr settings properties object.
 	 */
-	public void setProperties(Properties properties){
+	public void setProperties(Properties properties) {
 		LOG.debug("Setting properties.");
 		this.setPath(properties.getProperty("solr.path", ""));
 		this.setCore(properties.getProperty("solr.core", ""));
 		this.setSocketTimeout(Integer.parseInt(properties.getProperty("solr.socketTimeout", "1000")));
 		this.setConnectionTimeout(Integer.parseInt(properties.getProperty("solr.connectionTimeout", "100")));
-		this.setDefaultMaxConnectionsPerHost(Integer.parseInt(properties.getProperty("solr.defaultMaxConnectionsPerHost", "100")));
+		this.setDefaultMaxConnectionsPerHost(Integer.parseInt(properties.getProperty("solr.defaultMaxConnectionsPerHost",
+				"100")));
 		this.setMaxConnections(Integer.parseInt(properties.getProperty("solr.maxConnections", "100")));
 		this.setMaxRetries(Integer.parseInt(properties.getProperty("solr.maxRetries", "1")));
-		
-		//Store the URL to the Solr index for non-embedded connections.  Add the core if specified.
-		if (this.path != null){
+
+		// Store the URL to the Solr index for non-embedded connections. Add the core if specified.
+		if (this.path != null) {
 			this.url = this.path;
-			if (this.core != null && !this.core.equals("")){
-				if (this.url.lastIndexOf("/") != this.url.length()-1)
+			if (this.core != null && !this.core.equals("")) {
+				if (this.url.lastIndexOf("/") != this.url.length() - 1)
 					this.url += "/";
 				this.url += this.core;
 			}
 		}
-		
+
 		populateMapFromProperty("solr.field.", fieldNames, properties);
-		
+		fieldNameToKey = getInvertedHashMap(fieldNames);
+
 		LOG.debug(this.toStringStatic());
 	}
-
 
 	/**
 	 * Retrieve a SolrServer object according to the configuration specified in settings.
 	 */
-	public SolrServer getSolrServer(){
+	public SolrServer getSolrServer() {
 		SolrServer server = null;
 		try {
 			LOG.debug("Establishing Solr server:" + getUrl());
 			server = new HttpSolrServer(getUrl());
-			((HttpSolrServer)server).setSoTimeout(getSocketTimeout());  // socket read timeout
-			((HttpSolrServer)server).setConnectionTimeout(getConnectionTimeout());
-			((HttpSolrServer)server).setDefaultMaxConnectionsPerHost(getDefaultMaxConnectionsPerHost());
-			((HttpSolrServer)server).setMaxTotalConnections(getMaxConnections());
-			((HttpSolrServer)server).setMaxRetries(maxRetries);
+			((HttpSolrServer) server).setSoTimeout(getSocketTimeout()); // socket read timeout
+			((HttpSolrServer) server).setConnectionTimeout(getConnectionTimeout());
+			((HttpSolrServer) server).setDefaultMaxConnectionsPerHost(getDefaultMaxConnectionsPerHost());
+			((HttpSolrServer) server).setMaxTotalConnections(getMaxConnections());
+			((HttpSolrServer) server).setMaxRetries(maxRetries);
 		} catch (Exception e) {
 			LOG.error("Error initializing Solr Server instance", e);
 		}
 		return server;
 	}
-	
+
 	private static Pattern escapeReservedWords = Pattern.compile("\\b(AND|OR|NOT)\\b");
-	public static String sanitize(String value){
+
+	public static String sanitize(String value) {
 		if (value == null)
 			return value;
 		return escapeReservedWords.matcher(ClientUtils.escapeQueryChars(value)).replaceAll("'$1'");
 	}
-	
+
 	private static Pattern splitTermFragmentsRegex = Pattern.compile("(\"([^\"]*)\"|([^\" ,]+))");
+
 	/**
 	 * Retrieves all the search term fragments contained in the selected field. Fragments are either single words
 	 * separated by non-alphanumeric characters, or phrases encapsulated by quotes.
@@ -120,24 +129,23 @@ public class SolrSettings extends AbstractSettings  {
 		while (matcher.find()) {
 			if (matcher.groupCount() == 3) {
 				boolean quoted = matcher.group(2) != null;
-				String fragment = quoted? matcher.group(2) : matcher.group(3);
+				String fragment = quoted ? matcher.group(2) : matcher.group(3);
 				fragment = sanitize(fragment);
 				if (quoted || fragment.indexOf('\\') > -1)
-						fragment = '"' + fragment + '"';
+					fragment = '"' + fragment + '"';
 				fragments.add(fragment);
 			}
 		}
 		return fragments;
 	}
-	
+
 	public String getPath() {
 		return path;
 	}
-	
+
 	public void setPath(String path) {
 		this.path = path;
 	}
-	
 
 	public String getCore() {
 		return core;
@@ -146,7 +154,6 @@ public class SolrSettings extends AbstractSettings  {
 	public void setCore(String core) {
 		this.core = core;
 	}
-
 
 	public int getSocketTimeout() {
 		return socketTimeout;
@@ -187,8 +194,8 @@ public class SolrSettings extends AbstractSettings  {
 	public void setUrl(String url) {
 		this.url = url;
 	}
-	
-	public String toStringStatic(){
+
+	public String toStringStatic() {
 		String output = " path: " + path;
 		output += "\n url: " + url;
 		output += "\n core: " + core;
@@ -200,26 +207,39 @@ public class SolrSettings extends AbstractSettings  {
 		return output;
 	}
 
-	public String getFieldKey(String name){
-		return getKey(fieldNames, name);
+	/**
+	 * Returns the field identification key for the internal solr field name given
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public String getFieldKey(String name) {
+		return fieldNameToKey.get(name);
 	}
-	
-	public String getFieldName(String key){
+
+	public HashMap<String, String> getFieldNameToKey() {
+		return this.fieldNameToKey;
+	}
+
+	/**
+	 * Returns the internal solr field name for the field identified by key
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public String getFieldName(String key) {
 		return fieldNames.get(key);
 	}
-	
-	public HashMap<String, String> getFieldNamesInverted() {
-		return getInvertedHashMap(fieldNames);
-	}
-	
+
 	public HashMap<String, String> getFieldNames() {
 		return fieldNames;
 	}
 
 	public void setFieldNames(HashMap<String, String> fieldNames) {
 		this.fieldNames = fieldNames;
+		fieldNameToKey = getInvertedHashMap(fieldNames);
 	}
-	
+
 	public int getMaxRetries() {
 		return maxRetries;
 	}
