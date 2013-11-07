@@ -36,6 +36,7 @@ public class CacheInvalidatingInvocationHandler extends
 	EmbargoFactory embargoFactory = null;
 	GroupRolesFactory groupRolesFactory = null;
 	AncestorFactory ancestorFactory = null;
+	PatronAccessFactory patronAccessFactory = null;
 
 	private void init() {
 		this.setAncestorFactory((AncestorFactory) SpringApplicationContext
@@ -44,6 +45,8 @@ public class CacheInvalidatingInvocationHandler extends
 				.getBean("embargoFactory"));
 		this.setGroupRolesFactory((GroupRolesFactory) SpringApplicationContext
 				.getBean("groupRolesFactory"));
+		this.setPatronAccessFactory((PatronAccessFactory) SpringApplicationContext
+				.getBean("patronAccessFactory"));
 	}
 
 	public EmbargoFactory getEmbargoFactory() {
@@ -68,6 +71,14 @@ public class CacheInvalidatingInvocationHandler extends
 
 	public void setAncestorFactory(AncestorFactory ancestorFactory) {
 		this.ancestorFactory = ancestorFactory;
+	}
+
+	public PatronAccessFactory getPatronAccessFactory() {
+		return patronAccessFactory;
+	}
+
+	public void setPatronAccessFactory(PatronAccessFactory patronAccessFactory) {
+		this.patronAccessFactory = patronAccessFactory;
 	}
 
 	/**
@@ -96,7 +107,7 @@ public class CacheInvalidatingInvocationHandler extends
 		}
 		
 		new CacheInvalidator(method, args, returnValue).call();
-		log.debug("CacheInvalidateInvocationHandler finished in " + (System.currentTimeMillis() - start));
+		log.debug("CacheInvalidateInvocationHandler finished in {}", (System.currentTimeMillis() - start));
 		return returnValue;
 	}
 
@@ -117,7 +128,7 @@ public class CacheInvalidatingInvocationHandler extends
 
 		public String call() throws Exception {
 			if (ancestorFactory == null || embargoFactory == null
-					|| groupRolesFactory == null) {
+					|| groupRolesFactory == null || patronAccessFactory == null) {
 				init(); // load spring beans
 			}
 			FedoraMethod fm = new FedoraMethod(method, args, returnValue);
@@ -129,10 +140,14 @@ public class CacheInvalidatingInvocationHandler extends
 			}
 			PID pid = new PID(fm.getPID().toURI());
 			
+			if (log.isDebugEnabled())
+				log.debug("Checking for cache invalidation on object {} triggered by {}", pid.getPid(), methodName);
+			
 			if("purgeObject".equals(methodName)) {
 				// does not invalidate active embargoes
 				getAncestorFactory().invalidateBondsToChildren(pid);
 				getGroupRolesFactory().invalidate(pid);
+				getPatronAccessFactory().invalidate(pid);
 			} else if(methodName.startsWith("modifyDatastream")) {
 				String dsId = (String)fm.getParameters()[2];
 				if("RELS-EXT".equals(dsId)) {
@@ -140,6 +155,7 @@ public class CacheInvalidatingInvocationHandler extends
 					getAncestorFactory().invalidateBondToParent(pid);
 					getGroupRolesFactory().invalidate(pid);
 					getEmbargoFactory().invalidate();
+					getPatronAccessFactory().invalidate(pid);
 				}
 			} else if("addRelationship".equals(methodName)) {
 				// cdr:contains - new triples not cached
@@ -156,6 +172,8 @@ public class CacheInvalidatingInvocationHandler extends
 				} else if(UserRole.matchesMemberURI(relationship)) {
 					// cdr:<role> - adding a role invalidates cached roles
 					getGroupRolesFactory().invalidate(pid);
+				} else if (ContentModelHelper.CDRProperty.isPublished.getURI().toASCIIString().equals(relationship)) {
+					getPatronAccessFactory().invalidate(pid);
 				}
 			} else if("purgeRelationship".equals(methodName)) {
 				String relationship = (String)fm.getParameters()[2];
@@ -169,7 +187,11 @@ public class CacheInvalidatingInvocationHandler extends
 					// removing a contains relation invalidates just that one child-parent bond
 					String childPID = (String)fm.getParameters()[3];
 					getAncestorFactory().invalidateBondToParent(new PID(childPID)); // this is parent invalidation
+				} else if (ContentModelHelper.CDRProperty.isPublished.getURI().toASCIIString().equals(relationship)) {
+					getPatronAccessFactory().invalidate(pid);
 				}
+			} else if ("modifyObject".endsWith(methodName)) {
+				getPatronAccessFactory().invalidate(pid);
 			}
 			return "ok";
 		}

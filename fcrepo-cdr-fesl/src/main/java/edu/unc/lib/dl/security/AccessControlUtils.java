@@ -444,9 +444,7 @@ public class AccessControlUtils {
 			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
 			ancestors.add(pid);
 			for (PID ancestor: ancestors) {
-				LOG.warn("Getting publish status for {}", ancestor.getPid());
 				Boolean status = patronAccessFactory.isPublished(ancestor);
-				LOG.warn("Publication state: {}", status);
 				if (!status) {
 					return false;
 				}
@@ -462,7 +460,7 @@ public class AccessControlUtils {
 			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
 			ancestors.add(pid);
 			for (PID ancestor: ancestors) {
-				Boolean isActive = patronAccessFactory.isStateActive(pid);
+				Boolean isActive = patronAccessFactory.isStateActive(ancestor);
 				if (!isActive) {
 					return false;
 				}

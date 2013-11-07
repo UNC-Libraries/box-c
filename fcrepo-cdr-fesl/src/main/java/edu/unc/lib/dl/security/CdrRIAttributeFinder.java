@@ -71,13 +71,13 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	}
 
 	public void init() {
-		log.info("Initialised AttributeFinder:" + this.getClass().getName());
+		log.info("Initialised AttributeFinder: {}", this.getClass().getName());
 		if (log.isDebugEnabled()) {
 			log.debug("registering the following attributes: ");
 			for (Integer desNum : this.getSupportedDesignatorTypes()) {
-				log.debug("Designator Type: " + desNum);
+				log.debug("Designator Type: {}", desNum);
 				for (String attrName : m_attributes.get(desNum).keySet()) {
-					log.debug("\t" + attrName);
+					log.debug("\t{}", attrName);
 				}
 			}
 		}
