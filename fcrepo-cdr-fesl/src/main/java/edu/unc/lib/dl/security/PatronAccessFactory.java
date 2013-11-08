@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap.Builder;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
@@ -23,7 +24,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 public class PatronAccessFactory {
 	private static final Logger log = LoggerFactory.getLogger(PatronAccessFactory.class);
 
-	private static final String STATE_ACTIVE = "info:fedora/fedora-system:def/model#Active";
+	private static final String STATE_ACTIVE = ContentModelHelper.FedoraProperty.Active.toString();
 
 	private Map<String, Boolean> pid2Publish;
 	private Map<String, Boolean> pid2StateActive;

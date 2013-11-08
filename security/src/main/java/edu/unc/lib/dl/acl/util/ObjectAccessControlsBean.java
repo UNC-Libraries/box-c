@@ -43,6 +43,8 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  */
 public class ObjectAccessControlsBean {
 	private static final Logger LOG = LoggerFactory.getLogger(ObjectAccessControlsBean.class);
+	
+	private static final String ACTIVE_STATE = ContentModelHelper.FedoraProperty.Active.toString();
 
 	PID object = null;
 	// Inherited or directly applied groups
@@ -52,11 +54,14 @@ public class ObjectAccessControlsBean {
 	// Roles after merging base, global and embargoes
 	Map<UserRole, Set<String>> activeRoleGroups = null;
 	List<Date> activeEmbargoes = null;
+	boolean ancestorsPublished = true;
+	Boolean isPublished = true;
+	Boolean isActive = true;
 
 	public ObjectAccessControlsBean(PID pid, Map<UserRole, Set<String>> baseRoleGroups) {
 		this.object = pid;
 		this.baseRoleGroups = baseRoleGroups;
-		this.activeRoleGroups = this.mergeRoleGroupsAndEmbargoes();
+		this.activeRoleGroups = this.getMergedRoleGroups();
 	}
 
 	/**
@@ -86,7 +91,7 @@ public class ObjectAccessControlsBean {
 			}
 		}
 
-		this.activeRoleGroups = this.mergeRoleGroupsAndEmbargoes();
+		this.activeRoleGroups = this.getMergedRoleGroups();
 	}
 
 	/**
@@ -97,14 +102,21 @@ public class ObjectAccessControlsBean {
 	 * @param embargoes
 	 */
 	public ObjectAccessControlsBean(PID pid, Map<String, ? extends Collection<String>> roles,
-			Map<String, ? extends Collection<String>> globalRoles, Collection<String> embargoes) {
+			Map<String, ? extends Collection<String>> globalRoles, Collection<String> embargoes,
+			Collection<String> publicationStatus, Boolean isActive) {
 		this.object = pid;
 		this.baseRoleGroups = new HashMap<UserRole, Set<String>>();
 		this.globalRoleGroups = new HashMap<UserRole, Set<String>>();
+		if (isActive != null)
+			this.isActive = isActive;
+		if (publicationStatus != null) {
+			this.isPublished = publicationStatus.contains("Published");
+			this.ancestorsPublished = !publicationStatus.contains("Unpublished Ancestor");
+		}
 		copyRoles(roles, this.baseRoleGroups);
 		copyRoles(globalRoles, this.globalRoleGroups);
 		extractEmbargoes(embargoes);
-		this.activeRoleGroups = this.mergeRoleGroupsAndEmbargoes();
+		this.activeRoleGroups = this.getMergedRoleGroups();
 	}
 
 	/**
@@ -161,7 +173,15 @@ public class ObjectAccessControlsBean {
 			}
 		}
 
-		this.activeRoleGroups = this.mergeRoleGroupsAndEmbargoes();
+		this.ancestorsPublished = baseAcls.isPublished();
+		List<String> publicationTriples = triples.get(ContentModelHelper.CDRProperty.isPublished.toString());
+		this.isPublished = publicationTriples == null || "yes".equals(publicationTriples.get(0));
+
+		List<String> objectState = triples.get(ContentModelHelper.FedoraProperty.state.toString());
+		this.isActive = (baseAcls.getIsActive() == null || baseAcls.getIsActive())
+				&& ACTIVE_STATE.equals(objectState.get(0));
+
+		this.activeRoleGroups = this.getMergedRoleGroups();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -197,22 +217,30 @@ public class ObjectAccessControlsBean {
 	}
 
 	/**
-	 * Generates a new role/group mapping by filtering out role mappings that do not have administrative viewing rights
-	 * if there are any active embargoes.
+	 * Generates a new role/group mapping by filtering out role mappings that do not have administrative viewing rights.
+	 * This is based on if there are any active embargoes, the object is unpublished or not active.
 	 * 
 	 * @return
 	 */
-	private Map<UserRole, Set<String>> mergeRoleGroupsAndEmbargoes() {
-		// Check to see if there are active embargoes, and if there are that their window has not passed
-		Date lastActiveEmbargo = getLastActiveEmbargoUntilDate();
-		Map<UserRole, Set<String>> activeRoleGroups = null;
-		if (lastActiveEmbargo != null) {
+	private Map<UserRole, Set<String>> getMergedRoleGroups() {
+		boolean removePatrons = (this.isPublished != null && !this.isPublished)
+				|| (this.isActive != null && !this.isActive);
+
+		if (!removePatrons) {
+			// Check to see if there are active embargoes, and if there are that their window has not passed
+			Date lastActiveEmbargo = getLastActiveEmbargoUntilDate();
+			removePatrons = lastActiveEmbargo != null;
+		}
+
+		// Patrons were blocked, remove groups granted to non-admin user rules
+		if (removePatrons) {
 			activeRoleGroups = new HashMap<UserRole, Set<String>>();
 			if (this.baseRoleGroups != null)
 				for (Map.Entry<UserRole, Set<String>> roleGroups : this.baseRoleGroups.entrySet())
 					if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI))
 						activeRoleGroups.put(roleGroups.getKey(), roleGroups.getValue());
 		} else {
+			// Patrons not blocked, return all the grants plus the global roles.
 			activeRoleGroups = new HashMap<UserRole, Set<String>>(this.baseRoleGroups);
 		}
 		if (this.globalRoleGroups != null)
@@ -443,5 +471,33 @@ public class ObjectAccessControlsBean {
 			}
 		}
 		return result;
+	}
+
+	public boolean isPublished() {
+		return this.ancestorsPublished && (isPublished == null || isPublished);
+	}
+
+	public Boolean getIsPublished() {
+		return isPublished;
+	}
+
+	public void setIsPublished(Boolean isPublished) {
+		this.isPublished = isPublished;
+	}
+
+	public boolean isAncestorsPublished() {
+		return ancestorsPublished;
+	}
+
+	public void setAncestorsPublished(boolean ancestorsPublished) {
+		this.ancestorsPublished = ancestorsPublished;
+	}
+
+	public Boolean getIsActive() {
+		return isActive;
+	}
+
+	public void setIsActive(Boolean isActive) {
+		this.isActive = isActive;
 	}
 }

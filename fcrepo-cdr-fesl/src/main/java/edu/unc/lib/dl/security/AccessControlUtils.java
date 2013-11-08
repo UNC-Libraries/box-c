@@ -153,6 +153,8 @@ public class AccessControlUtils {
 		result.put("roles", this.getRoles(pid));
 		result.put("globals", this.getGlobalRoles());
 		result.put("embargoes", this.getEmbargoes(pid));
+		result.put("objectActive", this.isActive(pid));
+		result.put("publicationStatus", this.getPublished(pid));
 		return result;
 	}
 
@@ -469,6 +471,36 @@ public class AccessControlUtils {
 			LOG.error("Cannot find object in question", e);
 		}
 		return true;
+	}
+	
+	public List<String> getPublished(PID pid) {
+		try {
+			// Compute inherited publication state
+			boolean inheritedStatus = true;
+			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
+			for (PID ancestor: ancestors) {
+				Boolean status = patronAccessFactory.isPublished(ancestor);
+				if (!status) {
+					inheritedStatus = false;
+					break;
+				}
+			}
+			
+			// Get the publication state for this particular item
+			Boolean status = patronAccessFactory.isPublished(pid);
+			
+			List<String> answer = new ArrayList<String>(2);
+			if (!inheritedStatus)
+				answer.add("Unpublished Ancestor");
+			if (!status)
+				answer.add("Unpublished");
+			else if (!inheritedStatus)
+				answer.add("Published");
+			return answer;
+		} catch (ObjectNotFoundException e) {
+			LOG.error("Cannot find object in question", e);
+		}
+		return null;
 	}
 
 	public List<String> getDatastreamCategories(String datastreamId) {

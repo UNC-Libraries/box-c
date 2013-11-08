@@ -39,8 +39,7 @@ import edu.unc.lib.dl.security.AncestorFactory;
 
 @Controller
 public class AccessLookupController {
-	private static final Logger log = LoggerFactory
-			.getLogger(AccessLookupController.class);
+	private static final Logger log = LoggerFactory.getLogger(AccessLookupController.class);
 
 	@Autowired
 	private AncestorFactory ancestorFactory = null;
@@ -48,8 +47,7 @@ public class AccessLookupController {
 	private AccessControlUtils accessControlUtils;
 
 	/**
-	 * Returns a JSON representation of all the roles and groups for the
-	 * provided pid
+	 * Returns a JSON representation of all the roles and groups for the provided pid
 	 * 
 	 * @param id
 	 * @return
@@ -62,9 +60,8 @@ public class AccessLookupController {
 	}
 
 	/**
-	 * Returns true or false depending on if the provided groups have the
-	 * specified permission on the selected pid. The groups can either be
-	 * forwarded via headers or as a GET parameter.
+	 * Returns true or false depending on if the provided groups have the specified permission on the selected pid. The
+	 * groups can either be forwarded via headers or as a GET parameter.
 	 * 
 	 * @param id
 	 * @param permissionName
@@ -73,8 +70,7 @@ public class AccessLookupController {
 	 */
 	@RequestMapping(value = "fesl/{id}/hasAccess/{permissionName}", method = RequestMethod.GET)
 	public @ResponseBody
-	boolean hasAccess(@PathVariable("id") String id,
-			@PathVariable("permissionName") String permissionName,
+	boolean hasAccess(@PathVariable("id") String id, @PathVariable("permissionName") String permissionName,
 			@RequestParam("groups") String groups) {
 
 		AccessGroupSet accessGroups;
@@ -86,17 +82,18 @@ public class AccessLookupController {
 		return this.hasAccess(id, permissionName, accessGroups);
 	}
 
-	private boolean hasAccess(String id, String permissionName,
-			AccessGroupSet accessGroups) {
+	private boolean hasAccess(String id, String permissionName, AccessGroupSet accessGroups) {
 		PID pid = new PID(id);
 		Permission permission = Permission.getPermission(permissionName);
 		if (permission == null)
 			return false;
 		Map<String, Set<String>> roles = accessControlUtils.getRoles(pid);
 		List<String> activeEmbargoes = accessControlUtils.getEmbargoes(pid);
+		List<String> publicationStatus = accessControlUtils.getPublished(pid);
+		boolean isActive = accessControlUtils.isActive(pid);
 
-		return (new ObjectAccessControlsBean(pid, roles, accessControlUtils.getGlobalRoles(), activeEmbargoes))
-				.hasPermission(accessGroups, permission);
+		return (new ObjectAccessControlsBean(pid, roles, accessControlUtils.getGlobalRoles(), activeEmbargoes,
+				publicationStatus, isActive)).hasPermission(accessGroups, permission);
 	}
 
 	public void setAncestorFactory(AncestorFactory ancestorFactory) {

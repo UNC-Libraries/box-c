@@ -90,7 +90,7 @@
 		class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
 		<property name="accessControlService" ref="accessControlService" />
 	</bean>
-	<bean id="setStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetStatusFilter">
+	<bean id="SetContentStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentStatusFilter">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 	<bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
@@ -107,19 +107,10 @@
 				<ref bean="setDisplayOrderFilter" />
 				<ref bean="setPathFilter" />
 				<ref bean="setDescriptiveMetadataFilter" />
+				<ref bean="SetContentStatusFilter" />
 				<ref bean="setAccessControlFilter" />
-				<ref bean="setStatusFilter" />
 				<ref bean="setRelationsFilter" />
 				<ref bean="setCollectionSupplementalInformationFilter" />
-			</list>
-		</property>
-	</bean>
-
-	<bean id="solrStatusUpdatePipeline"
-		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
-		<property name="filters">
-			<list>
-				<ref bean="setStatusFilter" />
 			</list>
 		</property>
 	</bean>
@@ -129,7 +120,6 @@
 		<property name="filters">
 			<list>
 				<ref bean="setAccessControlFilter" />
-				<ref bean="setStatusFilter" />
 			</list>
 		</property>
 	</bean>
@@ -198,15 +188,6 @@
 	<bean id="commitAction" class="edu.unc.lib.dl.data.ingest.solr.action.CommitAction">
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 	</bean>
-
-	<bean id="updateStatusAction"
-		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateStatusAction">
-		<property name="pipeline" ref="solrStatusUpdatePipeline" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
-		<property name="solrSearchService" ref="queryLayer" />
-		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
-		<property name="solrUpdateService" ref="solrUpdateConductor" />
-	</bean>
 	
 	<bean id="updateAccessControlAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateStatusAction">
@@ -229,7 +210,7 @@
 		<entry key="DELETE_SOLR_TREE" value-ref="deleteSolrTreeAction" />
 		<entry key="DELETE_CHILDREN_PRIOR_TO_TIMESTAMP" value-ref="deleteChildrenPriorToTimestamp" />
 		<entry key="COMMIT" value-ref="commitAction" />
-		<entry key="UPDATE_STATUS" value-ref="updateStatusAction" />
+		<entry key="UPDATE_STATUS" value-ref="updateAccessControlAction" />
 		<entry key="UPDATE_ACCESS" value-ref="updateAccessControlAction" />
 	</util:map>
 	
