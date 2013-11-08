@@ -1,4 +1,4 @@
-define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../templates/structureEntry'], function($, ui, _, structureEntryTemplate) {
+define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEntry'], function($, ui, structureEntryTemplate) {
 	var defaultOptions = {
 			indentSuppressed : false,
 			isRoot : false,
