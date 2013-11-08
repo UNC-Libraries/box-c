@@ -1,4 +1,4 @@
-define('thumbnails', ['jquery'], function($) {
+define('thumbnails', ['jquery', 'preload'], function($) {
 	var placeholderUrls = {};
 	
 	$(".smallthumb, .largethumb").each(function(){
