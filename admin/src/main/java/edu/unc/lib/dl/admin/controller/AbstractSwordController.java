@@ -26,6 +26,7 @@ import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
+import org.apache.abdera.parser.ParserOptions;
 import org.apache.abdera.parser.stax.FOMExtensibleElement;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -62,8 +63,13 @@ public class AbstractSwordController extends AbstractSolrSearchController {
 		Document<FOMExtensibleElement> doc;
 		HttpClient client;
 		PutMethod method;
+
+		ParserOptions parserOptions = parser.getDefaultParserOptions();
+		parserOptions.setCharset(request.getCharacterEncoding());
+		
 		try {
-			doc = parser.parse(request.getInputStream());
+			
+			doc = parser.parse(request.getInputStream(), parserOptions);
 			entry.addExtension(doc.getRoot());
 
 			client = HttpClientUtil.getAuthenticatedClient(dataUrl, swordUsername, swordPassword);
