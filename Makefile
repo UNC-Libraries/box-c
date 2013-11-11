@@ -65,3 +65,6 @@ ifneq ($(VERSION), "")
 		mv $$i.temp $$i; \
 	done
 endif
+
+clean:
+	rm -f $(OUT) access/src/main/external/static/js/lib/jquery-ui.min.wrap.js

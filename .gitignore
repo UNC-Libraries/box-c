@@ -10,3 +10,9 @@
 /.settings
 /*/src/jaxb
 .DS_Store
+
+access/src/main/external/static/js/lib/jquery-ui.min.wrap.js
+access/src/main/external/static/css/cdr_access.css
+access/src/main/external/static/css/cdr_admin.css
+access/src/main/external/static/js/cdr-access.js
+access/src/main/external/static/js/cdr-admin.js
