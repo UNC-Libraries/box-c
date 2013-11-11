@@ -182,7 +182,7 @@ public class IrodsExternalContentManager extends Module implements
 					r.close();
 			}
 			LOG.debug("local staging config:\n"+sb.toString());
-			this.stages = new Stages(sb.toString(), new FileResolver());
+			this.stages = new Stages(sb.toString(), new IRODSStageResolver(irodsAccount));
 			for (StagingArea s : this.stages.getAllAreas().values()) {
 				if (!s.isConnected()) {
 					this.stages.connect(s.getURI());
