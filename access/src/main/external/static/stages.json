@@ -28,7 +28,8 @@
             "file:/Volume/projects"
         ],
         "confirmFile":".tag_lib_projects",
-        "ingestCleanupPolicy":"DO_NOTHING"
+        "ingestCleanupPolicy":"DO_NOTHING",
+        "readOnly":"true"
     },
     "tag:cdr.lib.unc.edu,2013:/digital_archive/":{
         "name":"Legacy Digital Archive (Pre-staged)",
@@ -37,6 +38,7 @@
             "file:/Volume/DA/"
         ],
         "confirmFile":"sfc",
-        "ingestCleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS"
+        "ingestCleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS",
+        "readOnly":"true"
     }
 }
