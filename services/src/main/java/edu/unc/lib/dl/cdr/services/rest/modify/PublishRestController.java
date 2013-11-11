@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -54,14 +53,14 @@ public class PublishRestController {
 
 	@RequestMapping(value = "edit/publish/{id}", method = RequestMethod.GET)
 	public @ResponseBody
-	Map<String, ? extends Object> publishObject(@PathVariable("id") String id, Model model, HttpServletRequest request) {
+	Map<String, ? extends Object> publishObject(@PathVariable("id") String id, HttpServletRequest request) {
 		PID pid = new PID(id);
 		return this.publishObject(pid, true, request.getRemoteUser());
 	}
 
 	@RequestMapping(value = "edit/unpublish/{id}", method = RequestMethod.GET)
 	public @ResponseBody
-	Map<String, ? extends Object> unpublishObject(@PathVariable("id") String id, Model model, HttpServletRequest request) {
+	Map<String, ? extends Object> unpublishObject(@PathVariable("id") String id, HttpServletRequest request) {
 		PID pid = new PID(id);
 		return this.publishObject(pid, false, request.getRemoteUser());
 	}
