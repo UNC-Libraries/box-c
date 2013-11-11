@@ -1,5 +1,5 @@
 require.config({
-	urlArgs: "v=3.4-SNAPSHOT",
+	urlArgs: "v=4.3.1",
 	baseUrl: '/static/js/',
 	paths: {
 		'jquery' : 'cdr-admin',
@@ -20,6 +20,7 @@ require.config({
 		'UnpublishBatchButton' : 'cdr-admin',
 		'PublishBatchButton' : 'cdr-admin',
 		'DeleteBatchButton' : 'cdr-admin',
+		'MoveObjectToTrashButton' : 'cdr-admin',
 		'ModalLoadingOverlay' : 'cdr-admin',
 		'EditAccessControlForm' : 'cdr-admin',
 		'RemoteStateChangeMonitor' : 'cdr-admin',

@@ -211,6 +211,15 @@
 	background-color: #FFFFC5;
 }
 
+.res_entry.deleted {
+	
+	
+}
+
+.res_entry.deleted > .type > div > img {
+	
+}
+
 .result_table .column_headers + .res_entry > td{
 	padding-top: 8px;
 }

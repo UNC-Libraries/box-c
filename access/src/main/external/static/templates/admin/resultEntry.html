@@ -1,4 +1,5 @@
-<tr class="res_entry<%= isContainer? " container": "" %><%= isContainer && _.contains(metadata.permissions, 'addRemoveContents')? " move_into" : "" %>" id="res_<%= metadata.id.substring(metadata.id.indexOf(':') + 1) %>">
+<tr class="res_entry<%= isContainer? " container": "" %><%= isContainer && _.contains(metadata.permissions, 'addRemoveContents')? " move_into" : "" 
+		%><%= isDeleted? " deleted" : "" %>" id="res_<%= metadata.id.substring(metadata.id.indexOf(':') + 1) %>">
 	<td class="check_box">
 		<div>
 			<input type="checkbox">

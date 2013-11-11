@@ -37,7 +37,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		this.pid = metadata.id;
 		this.actionMenuInitialized = false;
 		this.isContainer = this.metadata.type != "File";
-		var newElement = $(resultEntryTemplate({metadata : metadata, isContainer : this.isContainer}));
+		this.isDeleted = $.inArray(this.metadata.status, "Deleted");
+		var newElement = $(resultEntryTemplate({metadata : metadata, isContainer : this.isContainer, isDeleted : this.isDeleted}));
 		this.checkbox = null;
 		if (this.element) {
 			if (this.actionMenu)

@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 'PublishObjectButton', 'ReindexObjectButton', 'contextMenu'],
-		function($, ui, DeleteObjectButton, PublishObjectButton, ReindexObjectButton) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 'PublishObjectButton', 'ReindexObjectButton', 'MoveObjectToTrashButton', 'contextMenu'],
+		function($, ui, DeleteObjectButton, PublishObjectButton, ReindexObjectButton, MoveObjectToTrashButton) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -29,7 +29,15 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 			build: function($trigger, e) {
 				var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
 				var metadata = resultObject.metadata;
+				var baseUrl = document.location.href;
+				var serverUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/")) + "/";
+				baseUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/") + 7);
+				
 				var items = {};
+				if (resultObject.isContainer)
+					items["openContainer"] = {name : "Open"};
+				items["viewInCDR"] = {name : "View in CDR"};
+				items["sepedit"] = "";
 				if ($.inArray('publish', metadata.permissions) != -1)
 					items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
 				if ($.inArray('editAccessControl', metadata.permissions) != -1) 
@@ -37,13 +45,29 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 				if ($.inArray('editDescription', metadata.permissions) != -1)
 					items["editDescription"] = {name : 'Edit Description'};
 				if ($.inArray('purgeForever', metadata.permissions) != -1) {
-					items["purgeForever"] = {name : 'Delete'};
+					items["sepadmin"] = "";
 					items["reindex"] = {name : 'Reindex'};
+				}
+				items["sepdel"] = "";
+				if ($.inArray('purgeForever', metadata.permissions) != -1) {
+					items["purgeForever"] = {name : 'Delete'};
+				}
+				if ($.inArray('moveToTrash', metadata.permissions) != -1) {
+					if ($.inArray('Deleted', metadata.status) == -1)
+						items["moveToTrash"] = {name : 'Move to trash'};
+					else
+						items["moveToTrash"] = {name : 'Remove from trash'};
 				}
 				
 				return {
 					callback: function(key, options) {
 						switch (key) {
+							case "viewInCDR" :
+								window.open(serverUrl + "record/" + metadata.id,'_blank');
+								break;
+							case "openContainer" :
+								document.location.href = baseUrl + "list/" + metadata.id;
+								break;
 							case "publish" :
 								var publishButton = new PublishObjectButton({
 									pid : resultObject.pid,
@@ -58,9 +82,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 								break;
 							case "editDescription" :
 								// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
-								var url = document.location.href;
-								url = url.substring(0, url.indexOf("/admin/") + 7);
-								document.location.href = url + "describe/" + metadata.id;
+								document.location.href = baseUrl + "describe/" + metadata.id;
 								break;
 							case "purgeForever" :
 								var deleteButton = new DeleteObjectButton({
@@ -70,6 +92,16 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 									confirmAnchor : options.$trigger
 								});
 								deleteButton.activate();
+								break;
+							case "moveToTrash":
+								var trashButton = new MoveObjectToTrashButton({
+									pid : resultObject.pid,
+									parentObject : resultObject,
+									metadata : metadata,
+									confirmAnchor : options.$trigger,
+									moveToTrash: ($.inArray('Deleted', metadata.status) == -1)
+								});
+								trashButton.activate();
 								break;
 							case "reindex" :
 								var reindexButton = new ReindexObjectButton({
