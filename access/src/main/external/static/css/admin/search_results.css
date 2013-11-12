@@ -212,13 +212,26 @@
 }
 
 .res_entry.deleted {
-	
-	
+	color: #8CB4C6;
+}
+
+.res_entry.deleted .title {
+	color: #8CB4C6;
+}
+
+.res_entry.deleted .searchitem_container_count {
+	color: #8CB4C6;
+}
+
+.res_entry.deleted .status {
+	color: #B6BAB8;
 }
 
 .res_entry.deleted > .type > div > img {
-	
+	opacity: .5;
 }
+
+
 
 .result_table .column_headers + .res_entry > td{
 	padding-top: 8px;

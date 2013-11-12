@@ -1,6 +1,8 @@
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.fedora.AuthorizationException;
@@ -20,7 +23,7 @@ import edu.unc.lib.dl.fedora.ManagementClient.State;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
- * Controller for marking an object as trash, or unmarking an object
+ * Controller for marking objects as trash, or unmarking objects
  * 
  * @author bbpennel
  *
@@ -66,5 +69,27 @@ public class MoveToTrashController {
 		}
 
 		return result;
+	}
+	
+	@RequestMapping(value = "edit/removeFromTrash", method = RequestMethod.POST)
+	public @ResponseBody
+	List<? extends Object> removeBatchFromTrash(@PathVariable("ids") String ids) {
+		return this.changeBatchObjectState(ids, false);
+	}
+	
+	@RequestMapping(value = "edit/moveToTrash", method = RequestMethod.POST)
+	public @ResponseBody
+	List<? extends Object> moveBatchToTrash(@RequestParam("ids") String ids) {
+		return this.changeBatchObjectState(ids, true);
+	}
+	
+	public List<? extends Object> changeBatchObjectState(String ids, boolean moveToTrash) {
+		if (ids == null)
+			return null;
+		List<Object> results = new ArrayList<Object>();
+		for (String id : ids.split("\n")) {
+			results.add(this.changeObjectState(id, moveToTrash));
+		}
+		return results;
 	}
 }

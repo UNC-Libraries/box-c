@@ -31,7 +31,7 @@ define('MoveObjectToTrashButton', [ 'jquery', 'AjaxCallbackButton'], function($,
 	};
 	
 	MoveObjectToTrashButton.prototype.removeFromTrashState = function() {
-		this.options.workPath = "services/rest/edit/removeFromTrash/{idPath}";
+		this.options.workPath = "/services/rest/edit/removeFromTrash/{idPath}";
 		this.options.workLabel = "Restoring object...";
 		this.options.followupLabel = "Restoring object....";
 		this.options.confirm =  false;
@@ -42,7 +42,7 @@ define('MoveObjectToTrashButton', [ 'jquery', 'AjaxCallbackButton'], function($,
 		this.options.workLabel = "Moving to trash...";
 		this.options.followupLabel = "Moving to trash....";
 		this.options.confirm =  true;
-		this.options.confirmMessage = "Move this object to trash?";
+		this.options.confirmMessage = "Move this object to the Trash?";
 	};
 	
 	MoveObjectToTrashButton.prototype.moveWorkDone = function(data) {

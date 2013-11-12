@@ -2112,6 +2112,94 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	};
 	
 	return ModalLoadingOverlay;
+});define('MoveBatchToTrashButton', [ 'jquery', 'BatchCallbackButton' ], function($, BatchCallbackButton) {
+	function MoveBatchToTrashButton(options, element) {
+		this._create(options, element);
+	};
+	
+	MoveBatchToTrashButton.prototype.constructor = MoveBatchToTrashButton;
+	MoveBatchToTrashButton.prototype = Object.create( BatchCallbackButton.prototype );
+	
+	var defaultOptions = {
+		resultObjectList : undefined,
+		childWorkLinkName : "trash",
+		confirm: true,
+		animateSpeed: 'fast'
+	};
+	
+	MoveBatchToTrashButton.prototype._create = function(options, element) {
+		var merged = $.extend({}, defaultOptions, options);
+		BatchCallbackButton.prototype._create.call(this, merged, element);
+	};
+	
+	MoveBatchToTrashButton.prototype.removeFromTrashState = function() {
+		this.options.workPath = "/services/rest/edit/removeFromTrash";
+		this.options.workLabel = "Removing from trash...";
+		this.options.followupLabel = "Removing from trash....";
+		this.options.confirmMessage = "Move these object(s) to the Trash?";
+	};
+
+	MoveBatchToTrashButton.prototype.moveToTrashState = function() {
+		this.options.workPath = "/services/rest/edit/moveToTrash";
+		this.options.workLabel = "Moving to trash...";
+		this.options.followupLabel = "Moving to trash....";
+		this.options.confirmMessage = "Move these object(s) to the Trash?";
+	};
+
+	MoveBatchToTrashButton.prototype.getTargetIds = function() {
+		var targetIds = [];
+		for (var id in this.options.resultObjectList.resultObjects) {
+			var resultObject = this.options.resultObjectList.resultObjects[id];
+			if (resultObject.isSelected() && resultObject.isEnabled()) {
+				targetIds.push(resultObject.getPid());
+			}
+		}
+		return targetIds;
+	};
+	
+	MoveBatchToTrashButton.prototype.followup = function(data) {
+		var removedIds;
+		var emptyData = jQuery.isEmptyObject(data.length);
+		if (emptyData){
+			removedIds = this.followupObjects;
+		} else {
+			removedIds = [];
+			for (var index in this.followupObjects) {
+				var id = this.followupObjects[index];
+				if (!(id in data)) {
+					removedIds.push(id);
+				}
+			}
+		}
+		
+		if (removedIds.length > 0) {
+			if (emptyData)
+				this.followupObjects = null;
+			for (var index in removedIds) {
+				var id = removedIds[index];
+				// Don't bother trimming out followup objects if all ids are complete
+				if (!emptyData) {
+					var followupIndex = $.inArray(id, this.followupObjects);
+					this.followupObjects.splice(followupIndex, 1);
+				}
+				
+				var resultObject = this.options.resultObjectList.resultObjects[id];
+				// Trigger the complete function on targeted child callback buttons
+				if (this.options.completeFunction) {
+					if ($.isFunction(this.options.completeFunction))
+						this.options.completeFunction.call(resultObject);
+					else
+						resultObject[this.options.completeFunction]();
+				} else {
+					resultObject.setState("idle");
+				}
+			}
+		}
+		
+		return !this.followupObjects;
+	};
+	
+	return MoveBatchToTrashButton;
 });define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'], 
 		function($, ui, ConfirmationDialog) {
 			
@@ -2276,7 +2364,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	};
 	
 	MoveObjectToTrashButton.prototype.removeFromTrashState = function() {
-		this.options.workPath = "services/rest/edit/removeFromTrash/{idPath}";
+		this.options.workPath = "/services/rest/edit/removeFromTrash/{idPath}";
 		this.options.workLabel = "Restoring object...";
 		this.options.followupLabel = "Restoring object....";
 		this.options.confirm =  false;
@@ -2287,7 +2375,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		this.options.workLabel = "Moving to trash...";
 		this.options.followupLabel = "Moving to trash....";
 		this.options.confirm =  true;
-		this.options.confirmMessage = "Move this object to trash?";
+		this.options.confirmMessage = "Move this object to the Trash?";
 	};
 	
 	MoveObjectToTrashButton.prototype.moveWorkDone = function(data) {
@@ -2317,12 +2405,12 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		if (this.options.parentObject) {
 			if (this.options.showTrash) {
 				this.options.parentObject.refresh(true);
-				this.alertHandler.alertHandler("success", "Successfully moved item " + this.options.parentObject.metadata.title 
-						+ " (" + this.options.parentObject.metadata.id + ") to trash");
+				this.alertHandler.alertHandler("success", "Moved item " + this.options.parentObject.metadata.title 
+						+ " (" + this.options.parentObject.metadata.id + ") to the Trash");
 			} else {
 				this.options.parentObject.deleteElement();
-				this.alertHandler.alertHandler("success", "Successfully removed item " + this.options.parentObject.metadata.title 
-						+ " (" + this.options.parentObject.metadata.id + ") from trash");
+				this.alertHandler.alertHandler("success", "Removed item " + this.options.parentObject.metadata.title 
+						+ " (" + this.options.parentObject.metadata.id + ") from the Trash");
 			}
 		}
 		
@@ -2646,7 +2734,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		this.pid = metadata.id;
 		this.actionMenuInitialized = false;
 		this.isContainer = this.metadata.type != "File";
-		this.isDeleted = $.inArray(this.metadata.status, "Deleted");
+		this.isDeleted = $.inArray("Deleted", this.metadata.status) != -1;
 		var newElement = $(resultEntryTemplate({metadata : metadata, isContainer : this.isContainer, isDeleted : this.isDeleted}));
 		this.checkbox = null;
 		if (this.element) {
@@ -2918,28 +3006,45 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			build: function($trigger, e) {
 				var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
 				var metadata = resultObject.metadata;
+				var baseUrl = document.location.href;
+				var serverUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/")) + "/";
+				baseUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/") + 7);
+				
 				var items = {};
+				if (resultObject.isContainer)
+					items["openContainer"] = {name : "Open"};
+				items["viewInCDR"] = {name : "View in CDR"};
+				items["sepedit"] = "";
 				if ($.inArray('publish', metadata.permissions) != -1)
 					items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
 				if ($.inArray('editAccessControl', metadata.permissions) != -1) 
 					items["editAccess"] = {name : 'Edit Access'};
 				if ($.inArray('editDescription', metadata.permissions) != -1)
 					items["editDescription"] = {name : 'Edit Description'};
+				if ($.inArray('purgeForever', metadata.permissions) != -1) {
+					items["sepadmin"] = "";
+					items["reindex"] = {name : 'Reindex'};
+				}
+				items["sepdel"] = "";
+				if ($.inArray('purgeForever', metadata.permissions) != -1) {
+					items["purgeForever"] = {name : 'Delete'};
+				}
 				if ($.inArray('moveToTrash', metadata.permissions) != -1) {
 					if ($.inArray('Deleted', metadata.status) == -1)
 						items["moveToTrash"] = {name : 'Move to trash'};
 					else
 						items["moveToTrash"] = {name : 'Remove from trash'};
 				}
-					
-				if ($.inArray('purgeForever', metadata.permissions) != -1) {
-					items["purgeForever"] = {name : 'Delete'};
-					items["reindex"] = {name : 'Reindex'};
-				}
 				
 				return {
 					callback: function(key, options) {
 						switch (key) {
+							case "viewInCDR" :
+								window.open(serverUrl + "record/" + metadata.id,'_blank');
+								break;
+							case "openContainer" :
+								document.location.href = baseUrl + "list/" + metadata.id;
+								break;
 							case "publish" :
 								var publishButton = new PublishObjectButton({
 									pid : resultObject.pid,
@@ -2954,9 +3059,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 								break;
 							case "editDescription" :
 								// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
-								var url = document.location.href;
-								url = url.substring(0, url.indexOf("/admin/") + 7);
-								document.location.href = url + "describe/" + metadata.id;
+								document.location.href = baseUrl + "describe/" + metadata.id;
 								break;
 							case "purgeForever" :
 								var deleteButton = new DeleteObjectButton({

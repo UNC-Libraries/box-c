@@ -59,6 +59,10 @@ public class AccessRestrictionsTagProvider implements TagProvider {
 		if (record.getStatus().contains("Unpublished")) {
 			record.addTag(new Tag("unpublished", "This object is not published."));
 		}
+		
+		if (record.getStatus().contains("Deleted")) {
+			record.addTag(new Tag("deleted", "This object is in the trash and marked for deletion"));
+		}
 
 		if (accessGroups != null) {
 			Set<UserRole> myRoles = record.getAccessControlBean().getRoles(accessGroups);

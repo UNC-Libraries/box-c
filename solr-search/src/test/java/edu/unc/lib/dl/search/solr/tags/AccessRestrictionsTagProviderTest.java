@@ -88,4 +88,19 @@ public class AccessRestrictionsTagProviderTest extends Assert {
 		// No tags were added, so tag array never initialized
 		assertNull(metadata.getTags());
 	}
+	
+	@Test
+	public void deleted() {
+		AccessRestrictionsTagProvider tagProvider = new AccessRestrictionsTagProvider();
+		BriefObjectMetadata metadata = mock(BriefObjectMetadata.class);
+		Set<UserRole> roles = new HashSet<UserRole>();
+		ObjectAccessControlsBean access = mock(ObjectAccessControlsBean.class);
+		when(access.getRoles(any(String[].class))).thenReturn(roles);
+		when(metadata.getAccessControlBean()).thenReturn(access);
+		when(metadata.getStatus()).thenReturn(Arrays.asList("Deleted"));
+		
+		tagProvider.addTags(metadata, null);
+		
+		Mockito.verify(metadata, Mockito.atMost(1)).addTag(any(Tag.class));
+	}
 }
