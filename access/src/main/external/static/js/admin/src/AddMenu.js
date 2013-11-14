@@ -20,7 +20,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		var self = this;
 		
 		var items = self.getMenuItems();
-		if (items.length == 0)
+		if ($.isEmptyObject(items))
 			return;
 		var createContainerForm = new CreateContainerForm({
 			alertHandler : this.options.alertHandler

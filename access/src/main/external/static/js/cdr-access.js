@@ -329,7 +329,7 @@ return isNaN(t)?d:t},g=p(h[0]),m=Math.max(g,p(h[1]||"")),g=a?Math.max(g,a.getFul
 			map.addControl(panel);
 		}
 	});
-});define('StructureEntry', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../templates/structureEntry'], function($, ui, _, structureEntryTemplate) {
+});define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEntry'], function($, ui, structureEntryTemplate) {
 	var defaultOptions = {
 			indentSuppressed : false,
 			isRoot : false,
@@ -741,7 +741,7 @@ return isNaN(t)?d:t},g=p(h[0]),m=Math.max(g,p(h[1]||"")),g=a?Math.max(g,a.getFul
 			});
 		}
 	});
-});define('thumbnails', ['jquery'], function($) {
+});define('thumbnails', ['jquery', 'preload'], function($) {
 	var placeholderUrls = {};
 	
 	$(".smallthumb, .largethumb").each(function(){

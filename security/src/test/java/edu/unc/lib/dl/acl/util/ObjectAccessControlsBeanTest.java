@@ -282,4 +282,40 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		assertTrue(groupsByPermission.contains("testgroup"));
 		assertEquals(1, groupsByPermission.size());
 	}
+	
+	@Test
+	public void twoGrantsForSameGroup() {
+		Map<String, List<String>> roles = new HashMap<String, List<String>>();
+		roles.put(UserRole.patron.getURI().toString(), Arrays.asList("patron"));
+		roles.put(UserRole.curator.getURI().toString(), Arrays.asList("admingroup"));
+		roles.put(UserRole.observer.getURI().toString(), Arrays.asList("admingroup"));
+		
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, null);
+		
+		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.curator));
+		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.observer));
+		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.patron));
+		assertFalse(aclBean.getActiveRoleGroups().containsKey(UserRole.metadataPatron));
+		
+		assertTrue(aclBean.hasPermission(new AccessGroupSet("admingroup"), Permission.moveToTrash));
+		
+	}
+	
+	@Test
+	public void globalAndLocalGrantSameRole() {
+		Map<String, List<String>> roles = new HashMap<String, List<String>>();
+		roles.put(UserRole.patron.getURI().toString(), Arrays.asList("patron"));
+		roles.put(UserRole.curator.getURI().toString(), Arrays.asList("admingroup"));
+		
+		Map<String, List<String>> globalRoles = new HashMap<String, List<String>>();
+		globalRoles.put(UserRole.curator.getURI().toString(), Arrays.asList("globalcure"));
+		
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, globalRoles, null);
+		
+		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.curator));
+		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.patron));
+		
+		assertTrue(aclBean.hasPermission(new AccessGroupSet("globalcure"), Permission.moveToTrash));
+		assertTrue(aclBean.hasPermission(new AccessGroupSet("admingroup"), Permission.moveToTrash));
+	}
 }

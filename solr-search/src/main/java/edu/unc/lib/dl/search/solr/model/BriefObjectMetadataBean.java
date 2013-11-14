@@ -183,6 +183,10 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	public Map<String, Collection<String>> getGroupRoleMap() {
 		return groupRoleMap;
 	}
+	
+	public void setAccessControlBean(ObjectAccessControlsBean aclBean) {
+		this.accessControlBean = aclBean;
+	}
 
 	@Override
 	public ObjectAccessControlsBean getAccessControlBean() {

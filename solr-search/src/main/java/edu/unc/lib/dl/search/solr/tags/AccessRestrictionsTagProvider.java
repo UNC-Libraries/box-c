@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Tag;
@@ -37,8 +38,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 public class AccessRestrictionsTagProvider implements TagProvider {
-	private static final Logger LOG = LoggerFactory
-			.getLogger(AccessRestrictionsTagProvider.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AccessRestrictionsTagProvider.class);
 	private static final String[] PUBLIC = new String[] { "public" };
 	private static final String EMBARGO = ContentModelHelper.CDRProperty.embargoUntil.getPredicate();
 	private static final DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
@@ -46,39 +46,32 @@ public class AccessRestrictionsTagProvider implements TagProvider {
 	@Override
 	public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
 		// public
-		Set<UserRole> publicRoles = record.getAccessControlBean().getRoles(
-				PUBLIC);
+		Set<UserRole> publicRoles = record.getAccessControlBean().getRoles(PUBLIC);
 		if (publicRoles.contains(UserRole.patron)) {
-			record.addTag(new Tag("public",
-					"The public has access to this object."));
+			record.addTag(new Tag("public", "The public has access to this object."));
 		} else if (publicRoles.contains(UserRole.metadataPatron)) {
-			record.addTag(new Tag("public",
-					"The public has access to this object's metadata."));
+			record.addTag(new Tag("public", "The public has access to this object's metadata."));
 		} else if (publicRoles.contains(UserRole.accessCopiesPatron)) {
-			record.addTag(new Tag("public",
-					"This public has access to this object's metadata and access copies."));
+			record.addTag(new Tag("public", "This public has access to this object's metadata and access copies."));
 		}
 
 		// unpublished
 		if (record.getStatus().contains("Unpublished")) {
-			record.addTag(new Tag("unpublished",
-					"This object is not published."));
+			record.addTag(new Tag("unpublished", "This object is not published."));
 		}
 
 		if (accessGroups != null) {
-			Set<UserRole> myRoles = record.getAccessControlBean().getRoles(
-					accessGroups);
+			Set<UserRole> myRoles = record.getAccessControlBean().getRoles(accessGroups);
 
-			// view only
-			if (myRoles.contains(UserRole.observer)) {
-				record.addTag(new Tag("view only",
-						"You are an observer of this object."));
+			// view only, meaning observer but no editing permissions
+			if (myRoles.contains(UserRole.observer)
+					&& !record.getAccessControlBean().hasPermission(accessGroups, Permission.editDescription)) {
+				record.addTag(new Tag("view only", "You are an observer of this object."));
 			}
 		}
-		
+
 		if (record.getStatus().contains("Roles Assigned")) {
-			record.addTag(new Tag("roles",
-					"This object has roles directly assigned."));
+			record.addTag(new Tag("roles", "This object has roles directly assigned."));
 		}
 
 		// embargo
@@ -86,13 +79,10 @@ public class AccessRestrictionsTagProvider implements TagProvider {
 			if (rel.startsWith(EMBARGO)) {
 				try {
 					// parse the date and compare with now.
-					XMLGregorianCalendar cal = DatatypeFactory.newInstance()
-							.newXMLGregorianCalendar(
-									rel.substring(EMBARGO.length() + 1).trim());
-					if (cal.toGregorianCalendar().compareTo(
-							GregorianCalendar.getInstance()) > 0) {
-						StringBuilder text = new StringBuilder(
-								"This object is embargoed");
+					XMLGregorianCalendar cal = DatatypeFactory.newInstance().newXMLGregorianCalendar(
+							rel.substring(EMBARGO.length() + 1).trim());
+					if (cal.toGregorianCalendar().compareTo(GregorianCalendar.getInstance()) > 0) {
+						StringBuilder text = new StringBuilder("This object is embargoed");
 						try {
 							Date embargoDate = DateTimeUtil.parsePartialUTCToDate(cal.toXMLFormat());
 							String embargoString = formatter.print(embargoDate.getTime());
@@ -103,9 +93,7 @@ public class AccessRestrictionsTagProvider implements TagProvider {
 						record.addTag(new Tag("embargoed", text.append('.').toString()));
 					}
 				} catch (DatatypeConfigurationException e) {
-					LOG.error(
-							"Cannot get DatatypeFactory to parse embargo XML dates.",
-							e);
+					LOG.error("Cannot get DatatypeFactory to parse embargo XML dates.", e);
 				}
 			}
 		}

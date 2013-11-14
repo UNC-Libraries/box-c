@@ -212,15 +212,17 @@ public class ObjectAccessControlsBean {
 				for (Map.Entry<UserRole, Set<String>> roleGroups : this.baseRoleGroups.entrySet())
 					if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI))
 						activeRoleGroups.put(roleGroups.getKey(), roleGroups.getValue());
-			if (this.globalRoleGroups != null)
-				for (Map.Entry<UserRole, Set<String>> roleGroups : this.globalRoleGroups.entrySet())
-					if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI))
-						activeRoleGroups.put(roleGroups.getKey(), roleGroups.getValue());
 		} else {
 			activeRoleGroups = new HashMap<UserRole, Set<String>>(this.baseRoleGroups);
-			if (this.globalRoleGroups != null)
-				activeRoleGroups.putAll(this.globalRoleGroups);
 		}
+		if (this.globalRoleGroups != null)
+			for (Map.Entry<UserRole, Set<String>> roleGroups : this.globalRoleGroups.entrySet())
+				if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI)) {
+					Set<String> roleGroup = activeRoleGroups.get(roleGroups.getKey());
+					if (roleGroup == null)
+						activeRoleGroups.put(roleGroups.getKey(), roleGroups.getValue());
+					else roleGroup.addAll(roleGroups.getValue());
+				}
 		return activeRoleGroups;
 	}
 

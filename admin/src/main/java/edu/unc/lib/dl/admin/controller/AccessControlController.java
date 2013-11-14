@@ -119,7 +119,7 @@ public class AccessControlController extends AbstractSwordController {
 			client.executeMethod(method);
 			if (method.getStatusCode() == HttpStatus.SC_OK) {
 				String accessControlXML = method.getResponseBodyAsString();
-				log.warn(accessControlXML);
+				log.debug(accessControlXML);
 				SAXBuilder saxBuilder = new SAXBuilder();
 				accessControlElement = saxBuilder.build(new StringReader(accessControlXML)).getRootElement();
 				model.addAttribute("accessControlXML", accessControlXML);
