@@ -17,9 +17,6 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 public class RLASupplementalFilter extends CollectionSupplementalInformationFilter {
 	private static final Logger log = LoggerFactory.getLogger(RLASupplementalFilter.class);
 	
-	private static final String SPECIMEN_LABEL = "RLA Specimen Number";
-	private static final String SPECIMEN_FIELD = "rla_specimen_number_d";
-	
 	private static final String CATALOG_LABEL = "RLA Catalog Number";
 	private static final String CATALOG_FIELD = "rla_catalog_number_d";
 	
@@ -51,9 +48,7 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 		
 		for (Object element : elements) {
 			Element identifierEl = (Element) element;
-			if (SPECIMEN_LABEL.equalsIgnoreCase(identifierEl.getAttributeValue("displayLabel"))) {
-				idb.getDynamicFields().put(SPECIMEN_FIELD, identifierEl.getTextTrim());
-			} else if (CATALOG_LABEL.equalsIgnoreCase(identifierEl.getAttributeValue("displayLabel"))) {
+			if (CATALOG_LABEL.equalsIgnoreCase(identifierEl.getAttributeValue("displayLabel"))) {
 				idb.getDynamicFields().put(CATALOG_FIELD, identifierEl.getTextTrim());
 			}
 		}

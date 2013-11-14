@@ -244,13 +244,13 @@ return isNaN(t)?d:t},g=p(h[0]),m=Math.max(g,p(h[1]||"")),g=a?Math.max(g,a.getFul
 		},
 		
 		_initDjatokaLayers : function() {
-			var metadataUrl = 'jp2Metadata/' + this.options.url.replace(':', '/') + '/IMAGE_JP2000',
+			var metadataUrl = 'jp2Metadata/' + this.options.url + '/IMAGE_JP2000',
 				self = this;
 			
 			this.initialized = true;
 			this.element.addClass('not_loaded');
 			
-			OpenLayers.Layer.OpenURL.djatokaURL = this.options.context + '/jp2Region/' + this.options.url.replace(':', '/') + '/IMAGE_JP2000';
+			OpenLayers.Layer.OpenURL.djatokaURL = this.options.context + '/jp2Region/' + this.options.url + '/IMAGE_JP2000';
 			OpenLayers.Layer.OpenURL.viewerWidth = this.element.width(); // Use viewer width
 			OpenLayers.Layer.OpenURL.viewerHeight = this.element.height(); // Use viewer height
 			

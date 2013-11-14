@@ -19,72 +19,84 @@ import java.util.Arrays;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.dl.util.ContentModelHelper;
 
 public class FedoraUtil {
 	private String fedoraUrl;
-	
-	public static String getDatastreamUrl(Object object, String datastream, FedoraUtil fedoraUtil){
+
+	public static String getDatastreamUrl(Object object, String datastream, FedoraUtil fedoraUtil) {
 		if (object instanceof String)
-			return fedoraUtil.getDatastreamUrl((String)object, datastream);
+			return fedoraUtil.getDatastreamUrl((String) object, datastream);
 		if (object instanceof BriefObjectMetadata)
-			return fedoraUtil.getDatastreamUrl((BriefObjectMetadata)object, datastream);
+			return fedoraUtil.getDatastreamUrl((BriefObjectMetadata) object, datastream);
 		return null;
 	}
-	
+
 	/**
-	 * Returns a URL for a specific datastream of the object identified by pid, according
-	 * to the RESTful Fedora API.
-	 * Example:
-	 * <fedoraBaseURL>/objects/uuid:5fdc16d9-8272-41f7-a7da-a953192174df/datastreams/DC/content
+	 * Returns a URL for a specific datastream of the object identified by pid, according to the RESTful Fedora API.
+	 * Example: <fedoraBaseURL>/objects/uuid:5fdc16d9-8272-41f7-a7da-a953192174df/datastreams/DC/content
+	 * 
 	 * @param pid
 	 * @param datastream
 	 * @return
 	 */
-	public String getDatastreamUrl(String pid, String datastream){
+	public String getDatastreamUrl(String pid, String datastream) {
 		StringBuilder url = new StringBuilder();
-		//url.append(fedoraUrl).append("/objects/").append(pid).append("/datastreams/").append(datastream).append("/content");
-		//Temporarily using a proxy servlet while fedora access control isn't in place
-		url.append("content?id=").append(pid).append("&ds=").append(datastream);
-		return url.toString(); 
+		url.append("content/").append(pid);
+		if (!ContentModelHelper.Datastream.DATA_FILE.getName().equals(datastream))
+			url.append("/").append(datastream);
+		return url.toString();
 	}
-	
-	public String getDatastreamUrl(BriefObjectMetadata metadata, String datastreamName){
+
+	public String getDatastreamUrl(BriefObjectMetadata metadata, String datastreamName) {
 		// Prefer the matching datastream from this object over the same datastream with a different pid prefix
 		Datastream preferredDS = getPreferredDatastream(metadata, datastreamName);
-		
+
 		if (preferredDS == null)
 			return "";
-		
+
 		StringBuilder url = new StringBuilder();
-		
+
 		if (preferredDS.getExtension() != null) {
-			int extensionIndex = Arrays.binarySearch(new String[]{"doc", "docx", "htm", "html", "pdf", "ppt", "pptx", "rtf", "txt", "xls", "xlsx", "xml"}, preferredDS.getExtension());
+			int extensionIndex = Arrays.binarySearch(new String[] { "doc", "docx", "htm", "html", "pdf", "ppt", "pptx",
+					"rtf", "txt", "xls", "xlsx", "xml" }, preferredDS.getExtension());
 			if (extensionIndex >= 0)
 				url.append("indexable");
 		}
-		
-		url.append("content?id=");
+
+		url.append("content/");
 		if (preferredDS.getOwner() == null) {
 			url.append(metadata.getId());
 		} else {
 			url.append(preferredDS.getOwner());
 		}
-		url.append("&ds=").append(preferredDS.getName());
-		return url.toString(); 
+		if (!ContentModelHelper.Datastream.DATA_FILE.getName().equals(datastreamName))
+			url.append("/").append(preferredDS.getName());
+		return url.toString();
 	}
-	
+
+	/**
+	 * Finds the preferred instance of the datastream identified by datastreamName. The preferred datastream is the
+	 * datastream owned by the object itself, rather then a reference to a datastream owed by another object.  This
+	 * arises in cases where an object has a defaultWebObject which is another object.
+	 * 
+	 * @param metadata
+	 * @param datastreamName
+	 * @return
+	 */
 	public static Datastream getPreferredDatastream(BriefObjectMetadata metadata, String datastreamName) {
 		Datastream preferredDS = null;
 		Datastream incomingDS = new Datastream(datastreamName);
-		for (Datastream ds: metadata.getDatastreamObjects()){
+		for (Datastream ds : metadata.getDatastreamObjects()) {
 			if (ds.equals(incomingDS)) {
 				preferredDS = ds;
-				if ((incomingDS.getOwner() == null && preferredDS.getOwner() == null) || (incomingDS.getOwner() != null && preferredDS.getOwner() != null)){
-						break;
+				if ((incomingDS.getOwner() == null && preferredDS.getOwner() == null)
+						|| (incomingDS.getOwner() != null && preferredDS.getOwner() != null)) {
+					break;
 				}
 			}
 		}
-		
+
 		return preferredDS;
 	}
 
@@ -95,5 +107,5 @@ public class FedoraUtil {
 	public void setFedoraUrl(String fedoraUrl) {
 		this.fedoraUrl = fedoraUrl;
 	}
-	
+
 }
