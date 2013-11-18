@@ -19,7 +19,7 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <c:forEach items="${resultResponse.resultList}" var="metadata" varStatus="status">
 	<div id="entry${metadata.id}" class="browseitem">
-		<c:set var="thumbnailUrl" value="${cdr:getDatastreamUrl(metadata, 'THUMB_LARGE', fedoraUtil)}"/>
+		<c:set var="thumbnailUrl" value="/services/api/thumb/${metadata.id}/large"/>
 		<a href="/record/${metadata.id}" target="_blank">
 			<c:choose>
 				<c:when test="${metadata.datastreamObjects.contains('THUMB_LARGE')}"><img class="largethumb" src="${thumbnailUrl}" /></c:when>
