@@ -2159,7 +2159,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	
 	MoveBatchToTrashButton.prototype.followup = function(data) {
 		var removedIds;
-		var emptyData = jQuery.isEmptyObject(data.length);
+		var emptyData = $.isEmptyObject(data);
 		if (emptyData){
 			removedIds = this.followupObjects;
 		} else {
@@ -3216,41 +3216,74 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			enableArrange : false,
 			enableMove : false,
 			pagingActive : false,
-			container : undefined
+			container : undefined,
+			resultTableTemplate : "tpl!../templates/admin/resultTableView",
+			navigationBarTemplate : "tpl!../templates/admin/navigationBar",
+			resultFields : {
+				"select" : {name : "", colClass : "narrow", dataType : "index", sortField : "collection"},
+				"resourceType" : {name : "", colClass : "narrow", sortField : "resourceType"},
+				"title" : {name : "Title", colClass : "itemdetails", dataType : "title", sortField : "title"},
+				"creator" : {name : "Creator", colClass : "creator", sortField : "creator"},
+				"dateAdded" : {name : "Added", colClass : "date_added", sortField : "dateAdded"},
+				"dateModified" : {name : "Modified", colClass : "date_added", sortField : "dateUpdated"},
+				"actionMenu" : {name : "", colClass : "narrow"}
+			}
 		},
 		
 		_create : function() {
-			this.$resultTable = this.element.find('.result_table').eq(0);
-			var fragment = $(document.createDocumentFragment());
-			this.resultObjectList = new ResultObjectList({
-				'metadataObjects' : this.options.metadataObjects, 
-				parent : this.$resultTable.children('tbody')
+			// Instantiate the result table view and add it to the page
+			var self = this;
+			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
+				var navigationBar = navigationBarTemplate({pageNavigation : self.options.pageNavigation, container : self.options.container});
+				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container, navigationBar : navigationBar}));
+				self.$resultTable = self.$resultView.find('.result_table').eq(0);
+				self.element.append(self.$resultView);
+			
+				self.resultUrl = self.options.resultUrl;
+			
+				// Generate result entries
+				var fragment = $(document.createDocumentFragment());
+				self.resultObjectList = new ResultObjectList({
+					'metadataObjects' : self.options.metadataObjects, 
+					parent : self.$resultTable.children('tbody')
+				});
+			
+				// No results message
+				if (self.options.metadataObjects.length == 0) {
+					self.$resultTable.after("<div class='no_results'>No matching results</div>");
+				}
+			
+				// Activate the parent container entry
+				if (self.options.container) {
+					self.containerObject = new ParentResultObject({metadata : self.options.container, 
+							resultObjectList : self.resultObjectList, element : $(".container_entry")});
+					self._initializeAddMenu();
+				}
+			
+				// Activate sorting
+				if (self.options.enableSort)
+					self._initSort();
+				
+				// Initialize batch operation buttons
+				self._initBatchOperations();
+			
+				self._initEventHandlers();
+			
+				// Activate the result entry context menus, on the action gear and right clicking
+				self.actionMenu = [new ResultObjectActionMenu({
+					selector : ".action_gear",
+					containerSelector : ".res_entry,.container_entry"
+				}), new ResultObjectActionMenu({
+					trigger : 'right',
+					positionAtTrigger : false,
+					selector : ".res_entry td",
+					containerSelector : ".res_entry,.container_entry"
+				})];
+			
+				// Initialize click and drag operations
+				self._initMoveLocations();
+				self._initReordering();
 			});
-			if (this.options.metadataObjects.length == 0) {
-				this.$resultTable.after("<div class='no_results'>No matching results</div>");
-			}
-			if (this.options.container) {
-				this.containerObject = new ParentResultObject({metadata : this.options.container, 
-						resultObjectList : this.resultObjectList, element : $(".container_entry")});
-				this._initializeAddMenu();
-			}
-			
-			if (this.options.enableSort)
-				this._initSort();
-			this._initBatchOperations();
-			this._initEventHandlers();
-			this.actionMenu = [new ResultObjectActionMenu({
-				selector : ".action_gear",
-				containerSelector : ".res_entry,.container_entry"
-			}), new ResultObjectActionMenu({
-				trigger : 'right',
-				positionAtTrigger : false,
-				selector : ".res_entry td",
-				containerSelector : ".res_entry,.container_entry"
-			})];
-			
-			this._initMoveLocations();
-			this._initReordering();
 		},
 		
 		// Initialize sorting headers according to whether or not paging is active
@@ -3281,7 +3314,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 								$this.addClass('desc');
 							}
 						}
-						var sortUrl = URLUtilities.setParameter(self.options.resultUrl, 'sort', sortField + (sortOrder? ",reverse" : ""));
+						var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', sortField + (sortOrder? ",reverse" : ""));
 						this.children[0].href = sortUrl;
 					}
 				});

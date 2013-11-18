@@ -45,7 +45,7 @@ define('MoveBatchToTrashButton', [ 'jquery', 'BatchCallbackButton' ], function($
 	
 	MoveBatchToTrashButton.prototype.followup = function(data) {
 		var removedIds;
-		var emptyData = jQuery.isEmptyObject(data.length);
+		var emptyData = $.isEmptyObject(data);
 		if (emptyData){
 			removedIds = this.followupObjects;
 		} else {

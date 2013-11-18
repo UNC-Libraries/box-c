@@ -1,0 +1,55 @@
+<tr class="res_entry<%= isContainer? " container": "" %>">
+	<td class="check_box">
+		<div>
+			<input type="checkbox">
+		</div>
+	</td>
+	<td class="type">
+		<div>
+			<%
+				var typeName;
+				if (metadata.type == "File")
+					typeName = 'file';
+				else if (metadata.type == "Folder")
+					typeName = 'folder';
+				else if (metadata.type == "Collection")
+					typeName = 'coll';
+				else if (metadata.type == "Aggregate")
+					typeName = 'aggr';
+			%>
+			<img src="/static/images/admin/type_<%= typeName %>.png" />
+		</div>
+	</td>
+	<td class="itemdetails">
+		<div>
+			<% if (metadata.type == "File") { %>
+				<a href="/record/<%= metadata.id %>" target="_new" class="title has_tooltip"
+							title="View details for <%= _.escape(metadata.title) %>."><%= _.escape(metadata.title) %></a>
+			<% } else { %>
+				<a href="list/<%= metadata.id %>" class="title has_tooltip"
+							title="View contents of <%= _.escape(metadata.title) %>."><%= _.escape(metadata.title) %></a>
+					<span class="searchitem_container_count">
+						(<%= metadata.counts && metadata.counts.child? metadata.counts.child: 0 %> item<%= metadata.counts && metadata.counts.child == 1? '' : 's' %>)
+					</span>
+			<% } %>
+			<% if ("DATA_FILE" in metadata.datastreams) { %>
+				&nbsp;<a target="_preview" href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}" class="preview">(preview ${metadata.getDatastreamObject("DATA_FILE").extension})</a>
+			<% } %>	
+			<% for (var i in metadata.tags) { 
+				var tag = metadata.tags[i];
+				%>
+				<a class="status" title="<%= tag.text %>" ><%= _.escape(tag.label) %></a>
+			<% } %>
+		</div>
+	</td>
+	<td class="ancestorPath">
+		<div>
+			<%= metadata.ancestorNames %>
+		</div>
+	</td>
+	<td class="date_added">
+		<div>
+			<%= metadata.dateUpdated? metadata.dateUpdated.substring(0, metadata.dateUpdated.indexOf('T')) : '-' %>
+		</div>
+	</td>
+</tr>

@@ -1,5 +1,5 @@
 require.config({
-	urlArgs: "v=4.3.1",
+	urlArgs: "v=3.4-SNAPSHOT",
 	baseUrl: '/static/js/',
 	paths: {
 		'jquery' : 'cdr-admin',
@@ -94,12 +94,18 @@ define('resultList', ['module', 'jquery', 'AlertHandler', 'SearchMenu', 'ResultT
 		resizeResults.call();
 	});
 	
-	$("#result_view").resultTableView({
+	$(".result_area > div").resultTableView({
 		metadataObjects : module.config().metadataObjects,
-		resultUrl : module.config().resultUrl,
-		pagingActive : module.config().pagingActive,
 		container : module.config().container,
-		alertHandler : alertHandler
+		alertHandler : alertHandler,
+		pageNavigation : {
+			resultUrl : module.config().resultUrl,
+			filterParams : module.config().filterParams,
+			pagingActive : module.config().pagingActive,
+			pageStart : module.config().pageStart,
+			pageRows : module.config().pageRows,
+			resultCount : module.config().resultCount
+		}
 	});
 	
 	//console.profileEnd();

@@ -1,5 +1,5 @@
 require.config({
-	urlArgs: "v=4.3.1",
+	urlArgs: "v=3.4-SNAPSHOT",
 	baseUrl: '/static/js/',
 	paths: {
 		'jquery' : 'jquery.min',

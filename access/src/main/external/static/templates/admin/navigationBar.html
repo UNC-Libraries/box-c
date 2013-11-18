@@ -1,0 +1,56 @@
+<%
+var resultCount = pageNavigation.resultCount;
+var pageRows = pageNavigation.pageRows;
+var pageStart = pageNavigation.pageStart;
+var containerId = container? container.id : "";
+var pageUrl = pageNavigation.resultUrl;
+
+var totalPages = Math.floor(resultCount / pageRows);
+if (resultCount % pageRows > 0)
+	totalPages++;
+
+var currentPage = pageStart / pageRows + 1;
+var sideGap = 10 / 2;
+var leftGap = currentPage - sideGap;
+var rightGap = currentPage + sideGap;
+
+if (leftGap < 1) {
+	rightGap -= leftGap;
+	leftGap = 1;
+}
+
+if (rightGap > totalPages) {
+	leftGap -= (rightGap - totalPages);
+	if (leftGap < 1)
+		leftGap = 1;
+	rightGap = totalPages;
+}
+
+var pageEndCount = resultCount;
+
+if (resultCount > pageRows + pageStart)
+	pageEndCount = pageRows + pageStart;
+
+var showingRange = "";
+if (resultCount > 1) {
+	showingRange = "<span class='showing_range'>" + (pageStart + 1) + "-" + pageEndCount + "</span> of ";
+}
+console.log("Total pages " + totalPages);
+%>
+<p class="navigation_bar">
+	<span class="navigation_results_shown">Showing <%= showingRange %><span class="bold"><%= resultCount %></span> result<%= (resultCount != 1)? 's' : '' %></span>
+	<% if (totalPages > 1) { %>
+	<span class="navigation_pages">
+		<%
+		for (var pageNumber = leftGap; pageNumber < rightGap; pageNumber++) { 
+			if (pageNumber == currentPage) {
+				%><span class="bold"><%= pageNumber %></span><%
+			} else {
+				var newPageUrl = pageUrl;
+				newPageUrl = URLUtilities.setParameter(newPageUrl, 'start', pageRows * pageNumber);
+				%><a href="<%= newPageUrl %>"><%= pageNumber %></a><%
+			}
+		} %>
+	</span>
+	<% } %>
+</p>
