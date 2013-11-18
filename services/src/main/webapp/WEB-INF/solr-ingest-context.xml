@@ -93,6 +93,9 @@
 	<bean id="setStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetStatusFilter">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
+	<bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
+		<property name="collectionFilters" value="${services.indexing.collectionFilters}" />
+	</bean>
 
 	<!-- Ingest pipeline -->
 	<bean id="solrFullUpdatePipeline"
@@ -107,6 +110,7 @@
 				<ref bean="setAccessControlFilter" />
 				<ref bean="setStatusFilter" />
 				<ref bean="setRelationsFilter" />
+				<ref bean="setCollectionSupplementalInformationFilter" />
 			</list>
 		</property>
 	</bean>
@@ -176,7 +180,7 @@
 		class="edu.unc.lib.dl.data.ingest.solr.action.DeleteSolrTreeAction">
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="solrUpdateService" ref="solrUpdateConductor" />
-		<property name="solrSearchService" ref="solrSearchService" />
+		<property name="solrSearchService" ref="queryLayer" />
 		<property name="searchSettings" ref="searchSettings" />
 		<property name="accessGroups" ref="accessGroups" />
 	</bean>
@@ -185,7 +189,7 @@
 		class="edu.unc.lib.dl.data.ingest.solr.action.DeleteChildrenPriorToTimestamp">
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="solrUpdateService" ref="solrUpdateConductor" />
-		<property name="solrSearchService" ref="solrSearchService" />
+		<property name="solrSearchService" ref="queryLayer" />
 		<property name="searchStateFactory" ref="searchStateFactory" />
 		<property name="searchSettings" ref="searchSettings" />
 		<property name="accessGroups" ref="accessGroups" />
@@ -199,7 +203,7 @@
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateStatusAction">
 		<property name="pipeline" ref="solrStatusUpdatePipeline" />
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
-		<property name="solrSearchService" ref="solrSearchService" />
+		<property name="solrSearchService" ref="queryLayer" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="solrUpdateService" ref="solrUpdateConductor" />
 	</bean>
@@ -208,7 +212,7 @@
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateStatusAction">
 		<property name="pipeline" ref="solrAccessControlUpdatePipeline" />
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
-		<property name="solrSearchService" ref="solrSearchService" />
+		<property name="solrSearchService" ref="queryLayer" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="solrUpdateService" ref="solrUpdateConductor" />
 	</bean>

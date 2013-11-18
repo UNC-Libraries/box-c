@@ -85,11 +85,13 @@
 		<property name="facetFieldFactory" ref="facetFieldFactory" />
 	</bean>
 	
-	<bean id="solrSearchService" class="edu.unc.lib.dl.search.solr.service.SolrSearchService"
+	<bean id="queryLayer" class="edu.unc.lib.dl.ui.service.SolrQueryLayerService"
 		init-method="initializeSolrServer">
-		<property name="solrSettings" ref="solrSettings"/>
+		<property name="solrSettings" ref="solrSettings" />
 		<property name="searchSettings" ref="searchSettings" />
+		<property name="searchStateFactory" ref="searchStateFactory" />
 		<property name="facetFieldUtil" ref="facetFieldUtil" />
+		<property name="collectionsPid" ref="collectionsPid" />
 	</bean>
 	
 	<!-- Validators -->

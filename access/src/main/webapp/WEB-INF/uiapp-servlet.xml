@@ -183,8 +183,9 @@
 		</property>
 	</bean>
 	
-	<bean name="hasViewAdminPermissionFilter" class="edu.unc.lib.dl.ui.filter.HasViewAdminPermissionFilter">
+	<bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
 		<property name="queryLayer" ref="queryLayer" />
+		<property name="requireViewAdmin" value="false" />
 	</bean>
 	
 	<!-- JMX -->

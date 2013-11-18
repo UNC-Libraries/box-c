@@ -48,11 +48,6 @@
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="false" />
-		<property name="properties">
-			<props>
-				<prop key="rest.allow.ip.regex">127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1</prop>
-			</props>
-		</property>
 	</bean>
 
 	<bean id="contextUrl" class="java.lang.String">
@@ -60,12 +55,35 @@
 			value="${repository.protocol}://${repository.host}${repository.port}/${services.context}" />
 	</bean>
 	
-	<mvc:interceptors>
-		<bean id="localhostOnlyInterceptor"
-				class="edu.unc.lib.dl.cdr.services.util.APIRestrictingInterceptor">
-			<property name="allowRegEx" value="${rest.allow.ip.regex}"/>
-		</bean>
-	</mvc:interceptors>
+	<bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
+		<property name="queryLayer" ref="queryLayer" />
+		<property name="requireViewAdmin" value="true" />
+		<property name="nonAdminRedirectUrl" value="/error/401.html" />
+	</bean>
+	
+	<bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
+		<property name="fedoraUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+	</bean>
+	
+	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
+		<property name="accessClient" ref="accessClient" />
+		<property name="fedoraUtil" ref="fedoraUtil" />
+	</bean>
+	
+	
+
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>
+		<property name="arguments">
+			<list>
+				<ref bean="searchSettings"/>
+				<ref bean="solrSettings"/>
+			</list>
+		</property>
+	</bean>
+
+	
 	
 	<bean id="multipartResolver"
 		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
@@ -73,10 +91,6 @@
 	</bean>
 
 	<context:component-scan base-package="edu.unc.lib.dl.cdr.services.rest"/>
-
 	
 	<mvc:annotation-driven/>	
-	<!-- context:annotation-config/-->
-<!-- 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
-	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"></bean> -->
 </beans>

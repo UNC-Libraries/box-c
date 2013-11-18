@@ -89,7 +89,7 @@
 				</c:forEach>
 			</ul>
 			<ul class="secondarymenu">
-				<c:if test="${requestScope.hasAdminViewPermission}">
+				<c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
 					<li>
 						<a href="/admin/" target="_blank">Admin</a>
 					</li>

@@ -48,7 +48,7 @@ import edu.unc.lib.dl.util.IngestProperties;
  * 
  */
 @Controller
-@RequestMapping(value = { "/ingest*", "/ingest" })
+@RequestMapping(value = { "/status/ingest*", "/status/ingest" })
 public class IngestServiceRestController extends AbstractServiceConductorRestController {
 	private static final Logger LOG = LoggerFactory.getLogger(IngestServiceRestController.class);
 
@@ -66,10 +66,10 @@ public class IngestServiceRestController extends AbstractServiceConductorRestCon
 		result.put("finishedJobs", this.batchIngestService.getFinishedJobCount());
 		Map<String, Object> uris = new HashMap<String, Object>();
 		result.put("uris", uris);
-		uris.put("queuedJobs", "/rest/ingest/queued");
-		uris.put("activeJobs", "/rest/ingest/active");
-		uris.put("finishedJobs", "/rest/ingest/finished");
-		uris.put("failedJobs", "/rest/ingest/failed");
+		uris.put("queuedJobs", "/api/status/ingest/queued");
+		uris.put("activeJobs", "/api/status/ingest/active");
+		uris.put("finishedJobs", "/api/status/ingest/finished");
+		uris.put("failedJobs", "/api/status/ingest/failed");
 		return result;
 	}
 

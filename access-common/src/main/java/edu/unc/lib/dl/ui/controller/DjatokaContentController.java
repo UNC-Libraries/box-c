@@ -79,11 +79,9 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 	 * @param request
 	 * @param response
 	 */
-	@RequestMapping("/jp2Metadata/{idPrefix}/{id}/{datastream}")
-	public void getMetadata(@PathVariable("idPrefix") String idPrefix, @PathVariable("id") String idSuffix,
+	@RequestMapping("/jp2Metadata/{id}/{datastream}")
+	public void getMetadata(@PathVariable("id") String id,
 			@PathVariable("datastream") String datastream, HttpServletResponse response) {
-		String id = idPrefix + ":" + idSuffix;
-
 		// Check if the user is allowed to view this object
 		if (this.hasAccess(id, datastream)) {
 			try {
@@ -104,13 +102,12 @@ public class DjatokaContentController extends AbstractSolrSearchController {
 	 * @param request
 	 * @param response
 	 */
-	@RequestMapping("/jp2Region/{idPrefix}/{id}/{datastream}")
-	public void getRegion(@PathVariable("idPrefix") String idPrefix, @PathVariable("id") String idSuffix,
+	@RequestMapping("/jp2Region/{id}/{datastream}")
+	public void getRegion(@PathVariable("id") String id,
 			@PathVariable("datastream") String datastream, @RequestParam("svc.region") String region,
 			@RequestParam("svc.level") String scale, @RequestParam("svc.rotate") String rotate,
 			HttpServletResponse response) {
 		// Check if the user is allowed to view this object
-		String id = idPrefix + ":" + idSuffix;
 		if (this.hasAccess(id, datastream)) {
 			try {
 				djatokaContentService

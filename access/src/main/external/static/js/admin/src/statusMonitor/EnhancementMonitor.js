@@ -4,9 +4,9 @@ define('EnhancementMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractSta
 	var defaultOptions = {
 		name : "enhancement",
 		jobConfig : {
-			url : "services/rest/enhancement/{name}?begin=0&end=20",
+			url : "/services/api/status/enhancement/{name}?begin=0&end=20",
 			template : enhancementMonitorJobTemplate,
-			detailsUrl : "/services/rest/enhancement/job/{id}?type={name}",
+			detailsUrl : "/services/api/status/enhancement/job/{id}?type={name}",
 			detailsTemplate : enhancementMonitorDetailsTemplate,
 			fields : ["Status", "Label", "Enhancements", "Triggered by"],
 			jobTypes : [
@@ -18,7 +18,7 @@ define('EnhancementMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractSta
 			]
 		},
 		overviewConfig : {
-			url : "/services/rest/enhancement"
+			url : "/services/api/status/enhancement"
 		}
 	};
 			

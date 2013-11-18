@@ -8,10 +8,10 @@ define('ReindexObjectButton', [ 'jquery', 'AjaxCallbackButton'], function($, Aja
 	
 	var defaultOptions = {
 			workLabel: "Updating...",
-			workPath: "services/rest/edit/solr/reindex/{idPath}?inplace=true",
+			workPath: "/services/api/edit/solr/reindex/{idPath}?inplace=true",
 			workMethod: $.post,
 			followupLabel: "Updating...",
-			followupPath: "services/rest/item/{idPath}/solrRecord/version",
+			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
 			confirm: true,
 			confirmMessage: "Reindex this object and all of its children?",
 			animateSpeed: 'fast',

@@ -24,8 +24,6 @@ import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.PID;
 
 public interface BriefObjectMetadata {
-	public String getIdWithoutPrefix() ;
-
 	public CutoffFacet getAncestorPathFacet();
 	
 	public CutoffFacet getPath();
@@ -131,4 +129,6 @@ public interface BriefObjectMetadata {
 	public List<Tag> getTags();
 	
 	public void addTag(Tag t);
+	
+	public Map<String,Object> getDynamicFields();
 }

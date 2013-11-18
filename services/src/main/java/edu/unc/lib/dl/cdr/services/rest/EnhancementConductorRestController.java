@@ -54,10 +54,10 @@ import edu.unc.lib.dl.message.ActionMessage;
  * 
  */
 @Controller
-@RequestMapping(value = { "/enhancement*", "/enhancement" })
+@RequestMapping(value = { "/status/enhancement*", "/status/enhancement" })
 public class EnhancementConductorRestController extends AbstractServiceConductorRestController {
 	private static final Logger LOG = LoggerFactory.getLogger(EnhancementConductorRestController.class);
-	public static final String BASE_PATH = "/rest/enhancement/";
+	public static final String BASE_PATH = "/api/status/enhancement/";
 	public static final String QUEUED_PATH = "queued";
 	public static final String BLOCKED_PATH = "blocked";
 	public static final String ACTIVE_PATH = "active";

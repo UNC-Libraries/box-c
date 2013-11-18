@@ -248,7 +248,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			},
 			'statusChangedTarget' : this, 
 			'checkStatusAjax' : {
-				url : "services/rest/item/" + self.pid + "/solrRecord/version",
+				url : "/services/api/status/item/" + self.pid + "/solrRecord/version",
 				dataType : 'json'
 			}
 		});

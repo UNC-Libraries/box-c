@@ -44,10 +44,10 @@ import edu.unc.lib.dl.data.ingest.solr.UpdateNodeRequest;
 import edu.unc.lib.dl.message.ActionMessage;
 
 @Controller
-@RequestMapping(value={"/indexing*", "/indexing"})
+@RequestMapping(value={"/status/indexing*", "/status/indexing"})
 public class SolrUpdateConductorRestController extends AbstractServiceConductorRestController {
 	private static final Logger log = LoggerFactory.getLogger(SolrUpdateConductorRestController.class);
-	public static final String BASE_PATH = "/rest/indexing/";
+	public static final String BASE_PATH = "/api/status/indexing/";
 	public static final String QUEUED_PATH = "queued";
 	public static final String BLOCKED_PATH = "blocked";
 	public static final String ACTIVE_PATH = "active";

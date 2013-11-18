@@ -64,11 +64,11 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.util.TripleStoreQueryService.PathInfo;
 
 @Controller
-@RequestMapping(value = { "/item*", "/item" })
+@RequestMapping(value = { "/status/item*", "/status/item" })
 public class ItemInfoRestController extends AbstractServiceConductorRestController {
 	private static final Logger LOG = LoggerFactory.getLogger(ItemInfoRestController.class);
 
-	public static final String BASE_PATH = "/rest/item/";
+	public static final String BASE_PATH = "/api/status/item/";
 	public static final String SERVICE_STATUS_PATH = "serviceStatus";
 
 	@Resource

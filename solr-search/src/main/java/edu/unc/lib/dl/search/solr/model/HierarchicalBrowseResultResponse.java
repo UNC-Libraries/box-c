@@ -221,7 +221,8 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 	public static class ResultNode {
 		private BriefObjectMetadata metadata;
 		private List<ResultNode> children;
-
+		boolean isTopLevel;
+		
 		public ResultNode() {
 			this.children = new ArrayList<ResultNode>();
 		}
@@ -245,6 +246,16 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 
 		public void setChildren(List<ResultNode> children) {
 			this.children = children;
+		}
+
+		public Boolean getIsTopLevel() {
+			if (metadata.getAncestorNames() != null && (metadata.getAncestorPath() == null || metadata.getAncestorPath().size() == 0))
+				return true;
+			return null;
+		}
+
+		public void setIsTopLevel(boolean isTopLevel) {
+			this.isTopLevel = isTopLevel;
 		}
 
 		public ResultNode addChild(BriefObjectMetadata metadata) {

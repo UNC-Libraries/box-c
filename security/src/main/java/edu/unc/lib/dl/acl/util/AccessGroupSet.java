@@ -95,13 +95,13 @@ public class AccessGroupSet extends HashSet<String> {
 		Iterator<String> agIt = this.iterator();
 		while (agIt.hasNext()){
 			value = agIt.next();
+			if (prefix != null)
+				value = prefix + value;
 			if (escapeColons)
 				value = value.replaceAll("\\:", "\\\\:");
 			if (firstEntry)
 				firstEntry = false;
 			else sb.append(delimiter);
-			if (prefix != null)
-				sb.append(prefix);
 			sb.append(value);
 		}
 		

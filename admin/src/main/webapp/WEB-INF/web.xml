@@ -28,10 +28,10 @@
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value> 
-            /WEB-INF/uiapp-servlet.xml
-            /WEB-INF/solr-search-context.xml
-            /WEB-INF/access-fedora-context.xml
-        </param-value>
+			/WEB-INF/uiapp-servlet.xml
+			/WEB-INF/solr-search-context.xml
+			/WEB-INF/access-fedora-context.xml
+		</param-value>
 	</context-param>
 
 	<error-page>
@@ -58,19 +58,19 @@
 	</servlet-mapping>
 	
 	<servlet-mapping>
-        <servlet-name>default</servlet-name>
-        <url-pattern>*.css</url-pattern>
-        <url-pattern>*.html</url-pattern>
-        <url-pattern>*.htm</url-pattern>
-        <url-pattern>*.xml</url-pattern>
-        <url-pattern>*.js</url-pattern>
-        <url-pattern>*.jpg</url-pattern>
-        <url-pattern>*.png</url-pattern>
-        <url-pattern>*.gif</url-pattern>
-        <url-pattern>*.ico</url-pattern>
-        <url-pattern>*.txt</url-pattern>
-        <url-pattern>*.swf</url-pattern>
-    </servlet-mapping>
+		<servlet-name>default</servlet-name>
+		<url-pattern>*.css</url-pattern>
+		<url-pattern>*.html</url-pattern>
+		<url-pattern>*.htm</url-pattern>
+		<url-pattern>*.xml</url-pattern>
+		<url-pattern>*.js</url-pattern>
+		<url-pattern>*.jpg</url-pattern>
+		<url-pattern>*.png</url-pattern>
+		<url-pattern>*.gif</url-pattern>
+		<url-pattern>*.ico</url-pattern>
+		<url-pattern>*.txt</url-pattern>
+		<url-pattern>*.swf</url-pattern>
+	</servlet-mapping>
 	
 	<filter>
 		<filter-name>SetCharacterEncodingFilter</filter-name>
@@ -93,18 +93,26 @@
 		<filter-name>requireLoginFilter</filter-name>
 		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
 	</filter>
-
 	<filter-mapping>
 		<filter-name>requireLoginFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	
 	<filter>
-		<filter-name>UserSecurityProfileFilter</filter-name>
+		<filter-name>StoreUserAccessControlFilter</filter-name>
 		<filter-class>edu.unc.lib.dl.acl.filter.StoreUserAccessControlFilter</filter-class>
 	</filter>
 	<filter-mapping>
-		<filter-name>UserSecurityProfileFilter</filter-name>
+		<filter-name>StoreUserAccessControlFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<filter>
+		<filter-name>storeAccessLevelFilter</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>storeAccessLevelFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 

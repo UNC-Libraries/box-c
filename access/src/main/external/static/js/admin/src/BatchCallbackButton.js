@@ -8,7 +8,7 @@ define('BatchCallbackButton', [ 'jquery', 'AjaxCallbackButton', 'ResultObjectLis
 	
 	var defaultOptions = {
 			resultObjectList : undefined,
-			followupPath: "services/rest/item/solrRecord/version",
+			followupPath: "/services/api/status/item/solrRecord/version",
 			childWorkLinkName : undefined,
 			workFunction : undefined,
 			followupFunction : undefined,

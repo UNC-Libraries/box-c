@@ -1,5 +1,5 @@
 require.config({
-	urlArgs: "v=3.3-SNAPSHOT",
+	urlArgs: "v=3.4-SNAPSHOT",
 	baseUrl: '/static/js/',
 	paths: {
 		'jquery' : 'cdr-access',

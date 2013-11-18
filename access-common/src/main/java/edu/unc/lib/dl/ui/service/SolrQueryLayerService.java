@@ -56,6 +56,7 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
@@ -1075,6 +1076,24 @@ public class SolrQueryLayerService extends SolrSearchService {
 		StringBuilder query = new StringBuilder();
 		String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
 		query.append("adminGroup:(").append(joinedGroups).append(')');
+
+		SolrQuery solrQuery = new SolrQuery();
+		solrQuery.setQuery(query.toString());
+		solrQuery.setRows(0);
+
+		try {
+			QueryResponse queryResponse = this.executeQuery(solrQuery);
+			return queryResponse.getResults().getNumFound() > 0;
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+		}
+		return false;
+	}
+	
+	public boolean hasRole(AccessGroupSet accessGroups, UserRole userRole) {
+		StringBuilder query = new StringBuilder();
+		String joinedGroups = accessGroups.joinAccessGroups(" OR ", userRole.toString() + "|", true);
+		query.append("roleGroup:(").append(joinedGroups).append(')');
 
 		SolrQuery solrQuery = new SolrQuery();
 		solrQuery.setQuery(query.toString());

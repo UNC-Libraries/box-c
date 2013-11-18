@@ -248,7 +248,7 @@
 					<c:choose>
 						<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', metadata)}">
 							<div class="actionlink right download">
-								<a href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}&dl=true">Download</a>
+								<a href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}?dl=true">Download</a>
 							</div>
 						</c:when>
 						<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'SURROGATE', metadata)}">

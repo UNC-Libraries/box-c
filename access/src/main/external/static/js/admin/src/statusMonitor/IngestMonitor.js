@@ -4,9 +4,9 @@ define('IngestMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMo
 	var defaultOptions = {
 		name : "ingest",
 		jobConfig : {
-			url : "/services/rest/ingest/{name}/",
+			url : "/services/api/status/ingest/{name}/",
 			template : ingestMonitorJobTemplate,
-			detailsUrl : "/services/rest/ingest/job/{id}",
+			detailsUrl : "/services/api/status/ingest/job/{id}",
 			detailsTemplate : ingestMonitorDetailsTemplate,
 			fields : ["Status", "Submitter", "Submit time", "Ingested", "First object", "Note"],
 			jobTypes : [
@@ -17,7 +17,7 @@ define('IngestMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMo
 			]
 		},
 		overviewConfig : {
-			url : "/services/rest/ingest/"
+			url : "/services/api/status/ingest/"
 		}
 	};
 			
