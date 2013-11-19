@@ -112,7 +112,7 @@ public class SolrSettings extends AbstractSettings {
 		return escapeReservedWords.matcher(ClientUtils.escapeQueryChars(value)).replaceAll("'$1'");
 	}
 
-	private static Pattern splitTermFragmentsRegex = Pattern.compile("(\"([^\"]*)\"|([^\" ,]+))");
+	private static Pattern splitTermFragmentsRegex = Pattern.compile("(\"(([^\"]|\\\")*)\"|([^\" ,]+))");
 
 	/**
 	 * Retrieves all the search term fragments contained in the selected field. Fragments are either single words
@@ -127,10 +127,10 @@ public class SolrSettings extends AbstractSettings {
 		Matcher matcher = splitTermFragmentsRegex.matcher(value);
 		List<String> fragments = new ArrayList<String>();
 		while (matcher.find()) {
-			if (matcher.groupCount() == 3) {
+			if (matcher.groupCount() == 4) {
 				boolean quoted = matcher.group(2) != null;
-				String fragment = quoted ? matcher.group(2) : matcher.group(3);
-				fragment = sanitize(fragment);
+				String fragment = quoted ? matcher.group(2) : matcher.group(4);
+				fragment = sanitize(fragment.replace("\\\"", "\""));
 				if (quoted || fragment.indexOf('\\') > -1)
 					fragment = '"' + fragment + '"';
 				fragments.add(fragment);

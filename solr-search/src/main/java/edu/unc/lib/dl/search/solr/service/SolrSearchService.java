@@ -574,12 +574,19 @@ public class SolrSearchService {
 			Iterator<String> searchTypeIt = searchFields.keySet().iterator();
 			while (searchTypeIt.hasNext()) {
 				searchType = searchTypeIt.next();
-				List<String> searchFragments = SolrSettings.getSearchTermFragments(searchState.getSearchFields().get(
-						searchType));
+				String fieldValue = searchState.getSearchFields().get(searchType);
+				// Special "field exists" keyword
+				if ("*".equals(fieldValue)) {
+					if (termQuery.length() > 0)
+						termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
+					termQuery.append(solrSettings.getFieldName(searchType)).append(":*");
+					continue;
+				}
+				List<String> searchFragments = SolrSettings.getSearchTermFragments(fieldValue);
 				if (searchFragments != null && searchFragments.size() > 0) {
 					if (termQuery.length() > 0)
 						termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
-					LOG.debug(searchType + ": " + searchFragments);
+					LOG.debug("{} : {}", searchType, searchFragments);
 					termQuery.append(solrSettings.getFieldName(searchType)).append(':').append('(');
 					boolean firstTerm = true;
 					for (String searchFragment : searchFragments) {
