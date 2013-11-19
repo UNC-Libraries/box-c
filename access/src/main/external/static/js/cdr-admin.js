@@ -3204,10 +3204,79 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	});
 	
 	return ResultObjectList;
+});define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'], 
+		function($, ui, ResultObjectList) {
+
+	var defaultOptions = {
+		resultObjectList : null,
+		actions : {
+			deleteBatch : {
+				label : "Delete",
+				className : "DeleteBatchButton",
+				permissions : ["moveToTrash"]
+			}, publish : {
+				label : "Publish",
+				className : "PublishBatchButton",
+				permissions : ["publish"]
+			}, unpublish : {
+				label : "Unpublish",
+				className : "UnpublishBatchButton",
+				permissions : ["publish"]
+			}, reindex : {
+				label : "Reindex",
+				className : "UnpublishBatchButton",
+				permissions : ["purgeForever"]
+			}
+		},
+		groups : {
+			1 : ['deleteBatch'],
+			2 : ['publish', 'unpublish']/*,
+			'more' : ['reindex']*/
+		}
+	};
+	
+	function ResultTableActionMenu(options) {
+		this.options = $.extend({}, defaultOptions, options);
+		this.resultObjectList = this.options.resultObjectList;
+		this.init(this.options.metadata);
+	};
+	
+	ResultTableActionMenu.prototype.init = function() {
+		var self = this;
+		// Load action classes
+		var actionClasses = [];
+		$.each(this.options.groups, function(groupName, actionList){
+			for (var i in actionList) {
+				actionClasses.push(self.options.actions[actionList[i]].className);
+			}
+		});
+		
+		require(actionClasses, function(){
+			var argIndex = 0, loadedClasses = arguments;
+			self.element = $("<div/>").addClass("result_table_action_menu");
+			
+			$.each(self.options.groups, function(groupName, actionList){
+				var groupSpan = $("<span/>").addClass("container_action_group").appendTo(self.element);
+				for (var i in actionList) {
+					var actionDefinition = self.options.actions[actionList[i]];
+					actionDefinition.actionClass = loadedClasses[argIndex++];
+					
+					if (groupName != 'more') {
+						var actionButton = $("<span>" + actionList[i] + "</span>")
+								.addClass(actionList[i] + "_selected ajaxCallbackButton container_action")
+								.appendTo(groupSpan);
+						actionDefinition.actionObject =  new actionDefinition.actionClass({resultObjectList : self.resultObjectList}, actionButton);
+					}
+				}
+			});
+		});
+	};
+	
+	return ResultTableActionMenu;
 });define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'ParentResultObject', 'AddMenu', 
-		'ResultObjectActionMenu', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
 		function($, ui, ResultObjectList, URLUtilities, ParentResultObject, AddMenu, ResultObjectActionMenu,
-				PublishBatchButton, UnpublishBatchButton, DeleteBatchButton, ConfirmationDialog, MoveDropLocation) {
+				ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
 	$.widget("cdr.resultTableView", {
 		options : {
 			enableSort : true,
@@ -3237,6 +3306,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				var navigationBar = navigationBarTemplate({pageNavigation : self.options.pageNavigation, container : self.options.container});
 				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container, navigationBar : navigationBar}));
 				self.$resultTable = self.$resultView.find('.result_table').eq(0);
+				self.$containerHeader = self.$resultView.find(".container_header").eq(0);
 				self.element.append(self.$resultView);
 			
 				self.resultUrl = self.options.resultUrl;
@@ -3492,56 +3562,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				}
 			}).children("input").prop("checked", false);
 			
-			var publishButton = $(".publish_selected", self.element);
-			var publishBatch = new PublishBatchButton({
-				'resultObjectList' : this.resultObjectList, 
-				'workFunction' : function() {
-						this.setStatusText('Publishing...');
-						this.updateOverlay('open');
-					}, 
-				'followupFunction' : function() {
-					this.setStatusText('Publishing....');
-				}, 
-				'completeFunction' : function(){
-					this.refresh(true);
-				}
-			}, publishButton);
-			publishButton.click(function(){
-				publishBatch.activate();
-			});
-			var unpublishButton = $(".unpublish_selected", self.element);
-			var unpublishBatch = new UnpublishBatchButton({
-				'resultObjectList' : this.resultObjectList, 
-				'workFunction' : function() {
-						this.setStatusText('Unpublishing...');
-						this.updateOverlay('open');
-					}, 
-				'followupFunction' : function() {
-					this.setStatusText('Unpublishing....');
-				}, 
-				'completeFunction' : function(){
-					this.refresh(true);
-				}
-			}, unpublishButton);
-			unpublishButton.click(function(){
-				unpublishBatch.activate();
-			});
-			var deleteButton = $(".delete_selected", self.element);
-			var deleteBatch = new DeleteBatchButton({
-				'resultObjectList' : this.resultObjectList, 
-				'workFunction' : function() {
-						this.setStatusText('Deleting...');
-						this.updateOverlay('open');
-					}, 
-				'followupFunction' : function() {
-						this.setStatusText('Cleaning up...');
-					}, 
-				'completeFunction' : 'deleteElement',
-				confirmAnchor : deleteButton
-			}, deleteButton);
-			deleteButton.click(function(){
-				deleteBatch.activate();
-			});
+			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList});
+			this.$containerHeader.append(this.actionMenu.element);
 		},
 		
 		_initEventHandlers : function() {

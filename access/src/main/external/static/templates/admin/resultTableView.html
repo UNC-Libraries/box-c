@@ -18,10 +18,6 @@
 				%><span id="add_menu" class="container_action">+ Add</span><%
 			}
 			%>
-			<div class="right">
-				<span class="trash_selected ajaxCallbackButton container_action">Delete</span>&nbsp;&nbsp; <span class="publish_selected ajaxCallbackButton container_action">Publish</span><span class="unpublish_selected ajaxCallbackButton container_action">Unpublish</span>
-			</div>
-			
 		</div>
 		<div class="left batch_actions">
 			<p class="select_all">
@@ -47,7 +43,7 @@
 						<th class="<%= resultField.colClass 
 									%><%= ('sortField' in resultField)? ' sort_col' : '' %>" <%= 
 									('sortField' in resultField)? ' data-field="' + resultField.sortField + '"' : '' %> <%= 
-									('dataType' in resultField)? ' data-type="' + resultField.dataType + '"' : '' %>></th>
+									('dataType' in resultField)? ' data-type="' + resultField.dataType + '"' : '' %>><a><%= resultField.name %></a></th>
 						<% }); %>
 					</tr>
 				</thead>

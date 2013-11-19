@@ -27,6 +27,7 @@ require.config({
 		'ConfirmationDialog' : 'cdr-admin',
 		'AlertHandler' : 'cdr-admin',
 		'SearchMenu' : 'cdr-admin',
+		'ResultTableActionMenu' : 'cdr-admin',
 		'ResultTableView' : 'cdr-admin',
 		'MoveDropLocation' : 'cdr-admin',
 		'CreateContainerForm' : 'cdr-admin',

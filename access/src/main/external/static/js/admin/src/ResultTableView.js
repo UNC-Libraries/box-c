@@ -1,7 +1,7 @@
 define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'ParentResultObject', 'AddMenu', 
-		'ResultObjectActionMenu', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
 		function($, ui, ResultObjectList, URLUtilities, ParentResultObject, AddMenu, ResultObjectActionMenu,
-				PublishBatchButton, UnpublishBatchButton, DeleteBatchButton, ConfirmationDialog, MoveDropLocation) {
+				ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
 	$.widget("cdr.resultTableView", {
 		options : {
 			enableSort : true,
@@ -31,6 +31,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				var navigationBar = navigationBarTemplate({pageNavigation : self.options.pageNavigation, container : self.options.container});
 				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container, navigationBar : navigationBar}));
 				self.$resultTable = self.$resultView.find('.result_table').eq(0);
+				self.$containerHeader = self.$resultView.find(".container_header").eq(0);
 				self.element.append(self.$resultView);
 			
 				self.resultUrl = self.options.resultUrl;
@@ -286,56 +287,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				}
 			}).children("input").prop("checked", false);
 			
-			var publishButton = $(".publish_selected", self.element);
-			var publishBatch = new PublishBatchButton({
-				'resultObjectList' : this.resultObjectList, 
-				'workFunction' : function() {
-						this.setStatusText('Publishing...');
-						this.updateOverlay('open');
-					}, 
-				'followupFunction' : function() {
-					this.setStatusText('Publishing....');
-				}, 
-				'completeFunction' : function(){
-					this.refresh(true);
-				}
-			}, publishButton);
-			publishButton.click(function(){
-				publishBatch.activate();
-			});
-			var unpublishButton = $(".unpublish_selected", self.element);
-			var unpublishBatch = new UnpublishBatchButton({
-				'resultObjectList' : this.resultObjectList, 
-				'workFunction' : function() {
-						this.setStatusText('Unpublishing...');
-						this.updateOverlay('open');
-					}, 
-				'followupFunction' : function() {
-					this.setStatusText('Unpublishing....');
-				}, 
-				'completeFunction' : function(){
-					this.refresh(true);
-				}
-			}, unpublishButton);
-			unpublishButton.click(function(){
-				unpublishBatch.activate();
-			});
-			var deleteButton = $(".delete_selected", self.element);
-			var deleteBatch = new DeleteBatchButton({
-				'resultObjectList' : this.resultObjectList, 
-				'workFunction' : function() {
-						this.setStatusText('Deleting...');
-						this.updateOverlay('open');
-					}, 
-				'followupFunction' : function() {
-						this.setStatusText('Cleaning up...');
-					}, 
-				'completeFunction' : 'deleteElement',
-				confirmAnchor : deleteButton
-			}, deleteButton);
-			deleteButton.click(function(){
-				deleteBatch.activate();
-			});
+			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList});
+			this.$containerHeader.append(this.actionMenu.element);
 		},
 		
 		_initEventHandlers : function() {
