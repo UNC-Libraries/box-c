@@ -29,13 +29,13 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 		}
 	};
 	
-	function ResultTableActionMenu(options) {
+	function ResultTableActionMenu(options, parentElement) {
 		this.options = $.extend({}, defaultOptions, options);
 		this.resultObjectList = this.options.resultObjectList;
-		this.init(this.options.metadata);
+		this.init(parentElement);
 	};
 	
-	ResultTableActionMenu.prototype.init = function() {
+	ResultTableActionMenu.prototype.init = function(parentElement) {
 		var self = this;
 		// Load action classes
 		var actionClasses = [];
@@ -48,6 +48,7 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 		require(actionClasses, function(){
 			var argIndex = 0, loadedClasses = arguments;
 			self.element = $("<div/>").addClass("result_table_action_menu");
+			parentElement.append(self.element);
 			
 			$.each(self.options.groups, function(groupName, actionList){
 				var groupSpan = $("<span/>").addClass("container_action_group").appendTo(self.element);
@@ -56,7 +57,7 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 					actionDefinition.actionClass = loadedClasses[argIndex++];
 					
 					if (groupName != 'more') {
-						var actionButton = $("<span>" + actionList[i] + "</span>")
+						var actionButton = $("<span>" + actionDefinition.label + "</span>")
 								.addClass(actionList[i] + "_selected ajaxCallbackButton container_action")
 								.appendTo(groupSpan);
 						actionDefinition.actionObject =  new actionDefinition.actionClass({resultObjectList : self.resultObjectList}, actionButton);

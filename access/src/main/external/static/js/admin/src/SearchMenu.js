@@ -3,7 +3,8 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 	$.widget("cdr.searchMenu", {
 		options : {
 			filterParams : '',
-			selectedId : false
+			selectedId : false,
+			queryPath : 'list'
 		},
 		
 		_create : function() {
@@ -31,7 +32,7 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 										rootNode : data.root,
 										showResourceIcons : true,
 										showParentLink : true,
-										queryPath : 'list',
+										queryPath : self.options.queryPath,
 										filterParams : self.options.filterParams,
 										selectedId : self.options.selectedId,
 										onChangeEvent : $.proxy(self._adjustHeight, self)

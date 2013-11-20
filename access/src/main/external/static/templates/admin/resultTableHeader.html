@@ -1,0 +1,36 @@
+<div class="result_header">
+	<div class="container_header">
+		<% if (containerPath) { %>
+			<div class="results_header_hierarchy_path">
+				<%= containerPath %>
+			</div>
+		<% } %>
+		<span class="container_entry">
+			<h2 class="container_title">
+				<%
+					var typeName;
+					if (container.type == "Folder")
+						typeName = 'folder';
+					else if (container.type == "Collection")
+						typeName = 'coll';
+					else if (container.type == "Aggregate")
+						typeName = 'aggr';
+				%>
+				<img src="/static/images/admin/type_<%= typeName %>.png" />&nbsp;<%= container.title %>
+			</h2><img class="action_gear container_menu" src="/static/images/admin/gear.png">
+		</span>
+		<%
+		if (container && _.indexOf(container.permissions, "addRemoveContents") != -1) {
+			%><span id="add_menu" class="container_action">+ Add</span><%
+		}
+		%>
+	</div>
+	<div class="left batch_actions">
+		<p class="select_all">
+			<input type="checkbox">
+		</p>
+	</div>
+	<div class="right">
+		<%= navigationBar %>
+	</div>
+</div>

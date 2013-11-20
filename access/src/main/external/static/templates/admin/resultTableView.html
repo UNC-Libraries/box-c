@@ -1,33 +1,5 @@
 <div id="result_view">
-	<div class="result_header">
-		<div class="container_header">
-			<div class="results_header_hierarchy_path">
-				<%
-				if (container) {
-					
-				}
-				%>
-				
-				<span class="path_trail"><a href="list/uuid:c34ae354-8626-48c6-9963-d907aa65a713">Collections</a> &gt; <a href="list/uuid:52726582-2cea-455a-8220-c360dbe5082b">ACL Tests</a> &gt; <a href="list/uuid:ab8bbf15-6cb6-4f8c-92ab-f96b50e33353">observer_here</a> &gt;</span>
-			</div>
-			<h2>
-				<span class="container_entry"><img src="/static/images/admin/type_folder.png"> &nbsp;curator_here</span>
-			</h2><span class="container_entry"><span><img class="action_gear container_menu" src="/static/images/admin/gear.png"></span></span> 
-			<%
-			if (container && _.indexOf(container.permissions, "addRemoveContents") != -1) {
-				%><span id="add_menu" class="container_action">+ Add</span><%
-			}
-			%>
-		</div>
-		<div class="left batch_actions">
-			<p class="select_all">
-				<input type="checkbox">
-			</p>
-		</div>
-		<div class="right">
-			<%= navigationBar %>
-		</div>
-	</div>
+	<%= resultHeader? resultHeader : "" %>
 	<div class="result_table_scroll">
 		<div class="result_table_wrap with_path">
 			<table class="result_table">
@@ -40,7 +12,7 @@
 				<thead>
 					<tr class="column_headers">
 						<% _.each(resultFields, function(resultField) { %>
-						<th class="<%= resultField.colClass 
+							<th class="<%= resultField.colClass 
 									%><%= ('sortField' in resultField)? ' sort_col' : '' %>" <%= 
 									('sortField' in resultField)? ' data-field="' + resultField.sortField + '"' : '' %> <%= 
 									('dataType' in resultField)? ' data-type="' + resultField.dataType + '"' : '' %>><a><%= resultField.name %></a></th>

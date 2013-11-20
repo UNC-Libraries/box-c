@@ -1,7 +1,6 @@
-define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'ParentResultObject', 'AddMenu', 
+define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
 		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
-		function($, ui, ResultObjectList, URLUtilities, ParentResultObject, AddMenu, ResultObjectActionMenu,
-				ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
+		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
 	$.widget("cdr.resultTableView", {
 		options : {
 			enableSort : true,
@@ -12,27 +11,23 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			pagingActive : false,
 			container : undefined,
 			resultTableTemplate : "tpl!../templates/admin/resultTableView",
-			navigationBarTemplate : "tpl!../templates/admin/navigationBar",
-			resultFields : {
-				"select" : {name : "", colClass : "narrow", dataType : "index", sortField : "collection"},
-				"resourceType" : {name : "", colClass : "narrow", sortField : "resourceType"},
-				"title" : {name : "Title", colClass : "itemdetails", dataType : "title", sortField : "title"},
-				"creator" : {name : "Creator", colClass : "creator", sortField : "creator"},
-				"dateAdded" : {name : "Added", colClass : "date_added", sortField : "dateAdded"},
-				"dateModified" : {name : "Modified", colClass : "date_added", sortField : "dateUpdated"},
-				"actionMenu" : {name : "", colClass : "narrow"}
-			}
+			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
+			resultFields : undefined,
+			resultHeader : undefined,
+			postRender : undefined
 		},
 		
 		_create : function() {
 			// Instantiate the result table view and add it to the page
 			var self = this;
 			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
-				var navigationBar = navigationBarTemplate({pageNavigation : self.options.pageNavigation, container : self.options.container});
-				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container, navigationBar : navigationBar}));
+				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container, resultHeader : self.options.resultHeader}));
 				self.$resultTable = self.$resultView.find('.result_table').eq(0);
-				self.$containerHeader = self.$resultView.find(".container_header").eq(0);
+				self.$containerHeader = self.$resultView.find('.container_header').eq(0);
 				self.element.append(self.$resultView);
+			
+				if (self.options.postRender)
+					self.options.postRender(self);
 			
 				self.resultUrl = self.options.resultUrl;
 			
@@ -40,19 +35,13 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				var fragment = $(document.createDocumentFragment());
 				self.resultObjectList = new ResultObjectList({
 					'metadataObjects' : self.options.metadataObjects, 
-					parent : self.$resultTable.children('tbody')
+					parent : self.$resultTable.children('tbody'),
+					resultEntryTemplate : self.options.resultEntryTemplate
 				});
 			
 				// No results message
 				if (self.options.metadataObjects.length == 0) {
 					self.$resultTable.after("<div class='no_results'>No matching results</div>");
-				}
-			
-				// Activate the parent container entry
-				if (self.options.container) {
-					self.containerObject = new ParentResultObject({metadata : self.options.container, 
-							resultObjectList : self.resultObjectList, element : $(".container_entry")});
-					self._initializeAddMenu();
 				}
 			
 				// Activate sorting
@@ -287,8 +276,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				}
 			}).children("input").prop("checked", false);
 			
-			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList});
-			this.$containerHeader.append(this.actionMenu.element);
+			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList}, this.$containerHeader);
 		},
 		
 		_initEventHandlers : function() {
@@ -433,15 +421,6 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			} else {
 				$("th.sort_col").addClass("sorting");
 			}
-		},
-		
-		// Initialize the menu for adding new items
-		_initializeAddMenu : function() {
-			this.addMenu = new AddMenu({
-				container : this.options.container,
-				selector : "#add_menu",
-				alertHandler : this.options.alertHandler
-			});
 		}
 	});
 });

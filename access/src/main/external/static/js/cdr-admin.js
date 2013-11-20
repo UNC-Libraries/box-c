@@ -2695,32 +2695,16 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	});
 	
 	return RemoteStateChangeMonitor;
-});/*
-
-    Copyright 2008 The University of North Carolina at Chapel Hill
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-
- */
-define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/resultEntry',
+});define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor',
 		'ModalLoadingOverlay', 'DeleteObjectButton',	'PublishObjectButton', 'EditAccessControlForm'], 
-		function($, ui, _, RemoteStateChangeMonitor, resultEntryTemplate, ModalLoadingOverlay) {
+		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay) {
 	var defaultOptions = {
 			animateSpeed : 100,
 			metadata : null,
 			selected : false,
 			selectable : true,
-			selectCheckboxInitialState : false
+			selectCheckboxInitialState : false,
+			template : undefined
 		};
 	
 	function ResultObject(options) {
@@ -2735,7 +2719,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		this.actionMenuInitialized = false;
 		this.isContainer = this.metadata.type != "File";
 		this.isDeleted = $.inArray("Deleted", this.metadata.status) != -1;
-		var newElement = $(resultEntryTemplate({metadata : metadata, isContainer : this.isContainer, isDeleted : this.isDeleted}));
+		var newElement = $(this.options.template({metadata : metadata, isContainer : this.isContainer, isDeleted : this.isDeleted}));
 		this.checkbox = null;
 		if (this.element) {
 			if (this.actionMenu)
@@ -3138,7 +3122,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			metadataObjects : undefined,
 			refreshEntryUrl : "entry/",
 			parent : null,
-			splitLoadLimit : 70
+			splitLoadLimit : 70,
+			resultEntryTemplate : 'tpl!../templates/admin/resultEntry'
 		},
 		resultObjects: {},
 		
@@ -3146,27 +3131,29 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			this.options = $.extend({}, this.defaultOptions, options);
 			var self = this;
 			//console.time("Initialize entries");
-			//console.profile();
-			var metadataObjects = self.options.metadataObjects;
-			for (var i = 0; i < metadataObjects.length && i < self.options.splitLoadLimit; i++) {
-				var metadata = metadataObjects[i];
-				self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self});
-				if (self.options.parent)
-					self.options.parent.append(self.resultObjects[metadata.id].element);
-			}
-			if (metadataObjects.length > self.options.splitLoadLimit) {
-				setTimeout(function(){
-					//console.time("Second batch");
-					for (var i = self.options.splitLoadLimit; i < metadataObjects.length; i++) {
-						var metadata = metadataObjects[i];
-						self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self});
-						if (self.options.parent)
-							self.options.parent.append(self.resultObjects[metadata.id].element);
-					}
-					//console.timeEnd("Second batch");
-				}, 100);
-			}
-			//console.timeEnd("Initialize entries");
+			require([this.options.resultEntryTemplate], function(resultEntryTemplate){
+				//console.profile();
+				var metadataObjects = self.options.metadataObjects;
+				for (var i = 0; i < metadataObjects.length && i < self.options.splitLoadLimit; i++) {
+					var metadata = metadataObjects[i];
+					self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self, template : resultEntryTemplate});
+					if (self.options.parent)
+						self.options.parent.append(self.resultObjects[metadata.id].element);
+				}
+				if (metadataObjects.length > self.options.splitLoadLimit) {
+					setTimeout(function(){
+						//console.time("Second batch");
+						for (var i = self.options.splitLoadLimit; i < metadataObjects.length; i++) {
+							var metadata = metadataObjects[i];
+							self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self, template : resultEntryTemplate});
+							if (self.options.parent)
+								self.options.parent.append(self.resultObjects[metadata.id].element);
+						}
+						//console.timeEnd("Second batch");
+					}, 100);
+				}
+				//console.timeEnd("Initialize entries");
+			});
 		},
 		
 		getResultObject: function(id) {
@@ -3235,13 +3222,13 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		}
 	};
 	
-	function ResultTableActionMenu(options) {
+	function ResultTableActionMenu(options, parentElement) {
 		this.options = $.extend({}, defaultOptions, options);
 		this.resultObjectList = this.options.resultObjectList;
-		this.init(this.options.metadata);
+		this.init(parentElement);
 	};
 	
-	ResultTableActionMenu.prototype.init = function() {
+	ResultTableActionMenu.prototype.init = function(parentElement) {
 		var self = this;
 		// Load action classes
 		var actionClasses = [];
@@ -3254,6 +3241,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		require(actionClasses, function(){
 			var argIndex = 0, loadedClasses = arguments;
 			self.element = $("<div/>").addClass("result_table_action_menu");
+			parentElement.append(self.element);
 			
 			$.each(self.options.groups, function(groupName, actionList){
 				var groupSpan = $("<span/>").addClass("container_action_group").appendTo(self.element);
@@ -3262,7 +3250,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 					actionDefinition.actionClass = loadedClasses[argIndex++];
 					
 					if (groupName != 'more') {
-						var actionButton = $("<span>" + actionList[i] + "</span>")
+						var actionButton = $("<span>" + actionDefinition.label + "</span>")
 								.addClass(actionList[i] + "_selected ajaxCallbackButton container_action")
 								.appendTo(groupSpan);
 						actionDefinition.actionObject =  new actionDefinition.actionClass({resultObjectList : self.resultObjectList}, actionButton);
@@ -3273,10 +3261,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	};
 	
 	return ResultTableActionMenu;
-});define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'ParentResultObject', 'AddMenu', 
+});define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
 		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
-		function($, ui, ResultObjectList, URLUtilities, ParentResultObject, AddMenu, ResultObjectActionMenu,
-				ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
+		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
 	$.widget("cdr.resultTableView", {
 		options : {
 			enableSort : true,
@@ -3287,27 +3274,23 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			pagingActive : false,
 			container : undefined,
 			resultTableTemplate : "tpl!../templates/admin/resultTableView",
-			navigationBarTemplate : "tpl!../templates/admin/navigationBar",
-			resultFields : {
-				"select" : {name : "", colClass : "narrow", dataType : "index", sortField : "collection"},
-				"resourceType" : {name : "", colClass : "narrow", sortField : "resourceType"},
-				"title" : {name : "Title", colClass : "itemdetails", dataType : "title", sortField : "title"},
-				"creator" : {name : "Creator", colClass : "creator", sortField : "creator"},
-				"dateAdded" : {name : "Added", colClass : "date_added", sortField : "dateAdded"},
-				"dateModified" : {name : "Modified", colClass : "date_added", sortField : "dateUpdated"},
-				"actionMenu" : {name : "", colClass : "narrow"}
-			}
+			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
+			resultFields : undefined,
+			resultHeader : undefined,
+			postRender : undefined
 		},
 		
 		_create : function() {
 			// Instantiate the result table view and add it to the page
 			var self = this;
 			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
-				var navigationBar = navigationBarTemplate({pageNavigation : self.options.pageNavigation, container : self.options.container});
-				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container, navigationBar : navigationBar}));
+				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container, resultHeader : self.options.resultHeader}));
 				self.$resultTable = self.$resultView.find('.result_table').eq(0);
-				self.$containerHeader = self.$resultView.find(".container_header").eq(0);
+				self.$containerHeader = self.$resultView.find('.container_header').eq(0);
 				self.element.append(self.$resultView);
+			
+				if (self.options.postRender)
+					self.options.postRender(self);
 			
 				self.resultUrl = self.options.resultUrl;
 			
@@ -3315,19 +3298,13 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				var fragment = $(document.createDocumentFragment());
 				self.resultObjectList = new ResultObjectList({
 					'metadataObjects' : self.options.metadataObjects, 
-					parent : self.$resultTable.children('tbody')
+					parent : self.$resultTable.children('tbody'),
+					resultEntryTemplate : self.options.resultEntryTemplate
 				});
 			
 				// No results message
 				if (self.options.metadataObjects.length == 0) {
 					self.$resultTable.after("<div class='no_results'>No matching results</div>");
-				}
-			
-				// Activate the parent container entry
-				if (self.options.container) {
-					self.containerObject = new ParentResultObject({metadata : self.options.container, 
-							resultObjectList : self.resultObjectList, element : $(".container_entry")});
-					self._initializeAddMenu();
 				}
 			
 				// Activate sorting
@@ -3562,8 +3539,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 				}
 			}).children("input").prop("checked", false);
 			
-			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList});
-			this.$containerHeader.append(this.actionMenu.element);
+			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList}, this.$containerHeader);
 		},
 		
 		_initEventHandlers : function() {
@@ -3708,15 +3684,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			} else {
 				$("th.sort_col").addClass("sorting");
 			}
-		},
-		
-		// Initialize the menu for adding new items
-		_initializeAddMenu : function() {
-			this.addMenu = new AddMenu({
-				container : this.options.container,
-				selector : "#add_menu",
-				alertHandler : this.options.alertHandler
-			});
 		}
 	});
 });
@@ -3725,7 +3692,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	$.widget("cdr.searchMenu", {
 		options : {
 			filterParams : '',
-			selectedId : false
+			selectedId : false,
+			queryPath : 'list'
 		},
 		
 		_create : function() {
@@ -3753,7 +3721,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 										rootNode : data.root,
 										showResourceIcons : true,
 										showParentLink : true,
-										queryPath : 'list',
+										queryPath : self.options.queryPath,
 										filterParams : self.options.filterParams,
 										selectedId : self.options.selectedId,
 										onChangeEvent : $.proxy(self._adjustHeight, self)

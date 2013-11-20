@@ -2663,6 +2663,14 @@ h1 {
 	vertical-align: middle;
 }
 
+.result_table_action_menu {
+	float: right;
+}
+
+.container_action_group + .container_action_group {
+	margin-left: 1em;
+}
+
 .container_action {
 	display: inline-block;
 	background-color: #EFEFFF;
@@ -2833,6 +2841,10 @@ h1 {
 	width: 75px;
 }
 
+.result_table colgroup > .original_path, .result_table .column_headers > .original_path > a { 
+	width: 300px;
+}
+
 .res_entry > td {
 	vertical-align: top;
 }
@@ -2893,6 +2905,14 @@ h1 {
 
 .res_entry > .type > img {
 	vertical-align: text-bottom;
+}
+
+.res_entry > .original_path > div {
+	font-size: 70%;
+	width: 299px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
 }
 
 .res_entry > .menu_box > div {
@@ -3064,6 +3084,13 @@ h1 {
 .confirm_dialog .move a {
 	color: #2222aa;
 }
+
+/** Trash folder */
+
+.trash_header .container_header {
+	margin-bottom: 20px;
+}
+
 
 /** Other */
 

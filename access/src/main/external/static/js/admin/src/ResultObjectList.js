@@ -9,7 +9,8 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 			metadataObjects : undefined,
 			refreshEntryUrl : "entry/",
 			parent : null,
-			splitLoadLimit : 70
+			splitLoadLimit : 70,
+			resultEntryTemplate : 'tpl!../templates/admin/resultEntry'
 		},
 		resultObjects: {},
 		
@@ -17,27 +18,29 @@ define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], functi
 			this.options = $.extend({}, this.defaultOptions, options);
 			var self = this;
 			//console.time("Initialize entries");
-			//console.profile();
-			var metadataObjects = self.options.metadataObjects;
-			for (var i = 0; i < metadataObjects.length && i < self.options.splitLoadLimit; i++) {
-				var metadata = metadataObjects[i];
-				self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self});
-				if (self.options.parent)
-					self.options.parent.append(self.resultObjects[metadata.id].element);
-			}
-			if (metadataObjects.length > self.options.splitLoadLimit) {
-				setTimeout(function(){
-					//console.time("Second batch");
-					for (var i = self.options.splitLoadLimit; i < metadataObjects.length; i++) {
-						var metadata = metadataObjects[i];
-						self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self});
-						if (self.options.parent)
-							self.options.parent.append(self.resultObjects[metadata.id].element);
-					}
-					//console.timeEnd("Second batch");
-				}, 100);
-			}
-			//console.timeEnd("Initialize entries");
+			require([this.options.resultEntryTemplate], function(resultEntryTemplate){
+				//console.profile();
+				var metadataObjects = self.options.metadataObjects;
+				for (var i = 0; i < metadataObjects.length && i < self.options.splitLoadLimit; i++) {
+					var metadata = metadataObjects[i];
+					self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self, template : resultEntryTemplate});
+					if (self.options.parent)
+						self.options.parent.append(self.resultObjects[metadata.id].element);
+				}
+				if (metadataObjects.length > self.options.splitLoadLimit) {
+					setTimeout(function(){
+						//console.time("Second batch");
+						for (var i = self.options.splitLoadLimit; i < metadataObjects.length; i++) {
+							var metadata = metadataObjects[i];
+							self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self, template : resultEntryTemplate});
+							if (self.options.parent)
+								self.options.parent.append(self.resultObjects[metadata.id].element);
+						}
+						//console.timeEnd("Second batch");
+					}, 100);
+				}
+				//console.timeEnd("Initialize entries");
+			});
 		},
 		
 		getResultObject: function(id) {
