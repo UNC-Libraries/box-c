@@ -17,9 +17,6 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 public class RLASupplementalFilter extends CollectionSupplementalInformationFilter {
 	private static final Logger log = LoggerFactory.getLogger(RLASupplementalFilter.class);
 	
-	private static final String SPECIMEN_LABEL = "RLA Specimen Number";
-	private static final String SPECIMEN_FIELD = "rla_specimen_number_d";
-	
 	private static final String CATALOG_LABEL = "RLA Catalog Number";
 	private static final String CATALOG_FIELD = "rla_catalog_number_d";
 	
@@ -28,9 +25,6 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 	
 	private static final String CONTEXT_1_LABEL = "Context1";
 	private static final String CONTEXT_1_FIELD = "rla_context_1_d";
-	
-	private static final String CONTEXT_2_LABEL = "Context2";
-	private static final String CONTEXT_2_FIELD = "rla_context_2_d";
 	
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -59,9 +53,7 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 			Element element = (Element) elementObject;
 			
 			if ("identifier".equals(element.getName())) {
-				if (SPECIMEN_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
-					idb.getDynamicFields().put(SPECIMEN_FIELD, element.getTextTrim());
-				} else if (CATALOG_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
+				if (CATALOG_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
 					idb.getDynamicFields().put(CATALOG_FIELD, element.getTextTrim());
 				}
 			} else if ("subject".equals(element.getName())) {
@@ -72,8 +64,6 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 			} else if ("note".equals(element.getName())) {
 				if (CONTEXT_1_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
 					idb.getDynamicFields().put(CONTEXT_1_FIELD, element.getTextTrim());
-				} else if (CONTEXT_2_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
-					idb.getDynamicFields().put(CONTEXT_2_FIELD, element.getTextTrim());
 				}
 			}
 		}
