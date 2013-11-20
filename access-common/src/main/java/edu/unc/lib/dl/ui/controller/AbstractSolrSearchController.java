@@ -120,7 +120,7 @@ public abstract class AbstractSolrSearchController {
 		boolean added = this.getOldPath(action, searchRequest);
 		if (added)
 			return true;
-		String facet = request.getParameter("facet");
+		String facet = request.getParameter("facets");
 		return this.getOldPath(facet, searchRequest);
 	}
 	

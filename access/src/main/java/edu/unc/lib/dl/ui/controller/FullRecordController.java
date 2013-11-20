@@ -47,6 +47,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
@@ -73,8 +74,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 	}
 	
 	@RequestMapping(method = RequestMethod.GET)
-	public String handleRequest(Model model, HttpServletRequest request) {
-		String id = request.getParameter(searchSettings.searchStateParam(SearchFieldKeys.ID.name()));
+	public String handleOldRequest(@RequestParam("id") String id, Model model, HttpServletRequest request) {
 		return getFullRecord(id, model, request);
 	}
 	
