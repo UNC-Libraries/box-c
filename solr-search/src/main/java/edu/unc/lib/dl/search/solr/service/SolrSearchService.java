@@ -578,14 +578,14 @@ public class SolrSearchService {
 				// Special "field exists" keyword
 				if ("*".equals(fieldValue)) {
 					if (termQuery.length() > 0)
-						termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
+						termQuery.append(" AND ");
 					termQuery.append(solrSettings.getFieldName(searchType)).append(":*");
 					continue;
 				}
 				List<String> searchFragments = SolrSettings.getSearchTermFragments(fieldValue);
 				if (searchFragments != null && searchFragments.size() > 0) {
 					if (termQuery.length() > 0)
-						termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
+						termQuery.append(" AND ");
 					LOG.debug("{} : {}", searchType, searchFragments);
 					termQuery.append(solrSettings.getFieldName(searchType)).append(':').append('(');
 					boolean firstTerm = true;
@@ -612,7 +612,7 @@ public class SolrSearchService {
 						&& !(rangeTerm.getValue().getLeftHand() == null && rangeTerm.getValue().getRightHand() == null)) {
 
 					if (termQuery.length() > 0)
-						termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
+						termQuery.append(" AND ");
 
 					termQuery.append(solrSettings.getFieldName(rangeTerm.getKey())).append(":[");
 
