@@ -102,7 +102,7 @@
 		<property name="defaultSubjectLine" value="Access request received"/>
 		<property name="emailRecipients">
 			<list>
-				<value>${administrator.email}</value>
+				<value>${contact.email}</value>
 			</list>
 		</property>
 		<property name="freemarkerConfiguration" ref="freemarkerConfiguration" />
@@ -123,7 +123,7 @@
 	<bean id="contactEmailService" class="edu.unc.lib.dl.ui.service.ContactEmailService">
 	<property name="emailRecipients">
 			<list>
-				<value>${administrator.email}</value>
+				<value>${contact.email}</value>
 			</list>
 		</property>
 		<property name="fromAddress" value="${repository.reply.email}"/>
