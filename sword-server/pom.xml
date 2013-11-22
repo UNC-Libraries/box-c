@@ -31,11 +31,9 @@
 			<groupId>org.swordapp</groupId>
 			<artifactId>sword2-server</artifactId>
 			<version>1.0</version>
+			<type>jar</type>
+			<classifier>classes</classifier>
 			<exclusions>
-				<exclusion>
-					<groupId>javax.servlet</groupId>
-					<artifactId>servlet-api</artifactId>
-				</exclusion>
 				<exclusion>
 					<groupId>commons-fileupload</groupId>
 					<artifactId>commons-fileupload</artifactId>

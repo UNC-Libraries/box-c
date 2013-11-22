@@ -196,4 +196,9 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 	public static void clearUserEmailAddress() {
 		SwordConfigurationImpl.userEmailAddress.remove();
 	}
+
+	@Override
+	public boolean allowUnauthenticatedMediaAccess() {
+		return false;
+	}
 }
