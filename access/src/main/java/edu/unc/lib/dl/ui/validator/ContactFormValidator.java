@@ -34,6 +34,6 @@ public class ContactFormValidator extends AbstractContactFormValidator {
 		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "comments", "required.comments");
 		ContactForm form = (ContactForm)target;
 		validateEmail(form.getEmailAddress(), errors);
-		//validateRecaptcha(form.getRemoteAddr(), form.getRecaptcha_challenge_field(), form.getRecaptcha_response_field(), errors);
+		validateRecaptcha(form.getRemoteAddr(), form.getRecaptcha_challenge_field(), form.getRecaptcha_response_field(), errors);
 	}
 }

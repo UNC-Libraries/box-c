@@ -48,12 +48,10 @@
 						<label for="comments">Comments *</label>&nbsp;<span><form:errors path="comments" /></span><br/>
 						<form:textarea path="comments" cols="90" rows="8"/>
 					</div>
-					<%--
 					<div class="form_section">
 						${requestScope.reCaptcha}
 						<span><form:errors path="recaptcha_challenge_field" /></span>
 					</div>
-					 --%>
 					<div class="form_section">
 						<input type="submit" name="submit" value="Submit request"/>
 					</div>

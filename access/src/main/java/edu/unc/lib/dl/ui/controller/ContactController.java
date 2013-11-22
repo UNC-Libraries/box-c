@@ -54,7 +54,7 @@ public class ContactController {
 		contactForm.setReferrer(referrer);
 		model.addAttribute("contactForm", contactForm);
 		
-		//model.addAttribute("reCaptcha", this.reCaptcha.createRecaptchaHtml("", "clean", null));
+		model.addAttribute("reCaptcha", this.reCaptcha.createRecaptchaHtml("", "clean", null));
 		model.addAttribute("menuId", "contact");
 		
 		return "forms/contact";
@@ -73,7 +73,7 @@ public class ContactController {
 		validator.validate(contactForm, results);
 
 		if (results.hasErrors()) {
-			//model.addAttribute("reCaptcha", this.reCaptcha.createRecaptchaHtml("", "clean", null));
+			model.addAttribute("reCaptcha", this.reCaptcha.createRecaptchaHtml("", "clean", null));
 			return "forms/contact";
 		}
 

@@ -33,6 +33,6 @@ public class RequestAccessFormValidator extends AbstractContactFormValidator {
 		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "personalName", "required.personalName");
 		RequestAccessForm form = (RequestAccessForm)target;
 		validateEmail(form.getEmailAddress(), errors);
-		//validateRecaptcha(form.getRemoteAddr(), form.getRecaptcha_challenge_field(), form.getRecaptcha_response_field(), errors);
+		validateRecaptcha(form.getRemoteAddr(), form.getRecaptcha_challenge_field(), form.getRecaptcha_response_field(), errors);
 	}
 }

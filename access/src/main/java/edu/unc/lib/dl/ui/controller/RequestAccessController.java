@@ -79,7 +79,7 @@ public class RequestAccessController extends AbstractSolrSearchController {
 		LOG.debug("Initializing request access form, retrieving metadata for " + id);
 		if (id != null)
 			this.setFormAttributes(id, model);
-		//model.addAttribute("reCaptcha", this.reCaptcha.createRecaptchaHtml("", "clean", null));
+		model.addAttribute("reCaptcha", this.reCaptcha.createRecaptchaHtml("", "clean", null));
 
 		model.addAttribute("menuId", "contact");
 
@@ -108,7 +108,7 @@ public class RequestAccessController extends AbstractSolrSearchController {
 			this.setFormAttributes(id, model);
 
 		if (results.hasErrors()) {
-			//model.addAttribute("reCaptcha", this.reCaptcha.createRecaptchaHtml("", "clean", null));
+			model.addAttribute("reCaptcha", this.reCaptcha.createRecaptchaHtml("", "clean", null));
 			return "forms/requestAccessForm";
 		}
 
