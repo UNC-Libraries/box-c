@@ -494,7 +494,7 @@ public class AccessControlUtils {
 				answer.add("Unpublished Ancestor");
 			if (!status)
 				answer.add("Unpublished");
-			else if (!inheritedStatus)
+			else if (inheritedStatus)
 				answer.add("Published");
 			return answer;
 		} catch (ObjectNotFoundException e) {
