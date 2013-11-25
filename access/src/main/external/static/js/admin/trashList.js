@@ -105,7 +105,7 @@ define('trashList', ['module', 'jquery', "tpl!../templates/admin/trashTableHeade
 		resultCount : module.config().resultCount
 	};
 	
-	var container = module.config().container;
+	var container = module.config().container? module.config().container : null;
 	var navigationBar = navigationBarTemplate({pageNavigation : pageNavigation, container : container});
 	var resultTableHeader = resultTableHeaderTemplate({container : container, navigationBar : navigationBar})
 	

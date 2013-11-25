@@ -73,7 +73,7 @@ public class MoveToTrashController {
 	
 	@RequestMapping(value = "edit/removeFromTrash", method = RequestMethod.POST)
 	public @ResponseBody
-	List<? extends Object> removeBatchFromTrash(@PathVariable("ids") String ids) {
+	List<? extends Object> removeBatchFromTrash(@RequestParam("ids") String ids) {
 		return this.changeBatchObjectState(ids, false);
 	}
 	

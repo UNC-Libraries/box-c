@@ -51,14 +51,14 @@ public class PublishRestController {
 	@Autowired(required = true)
 	private OperationsMessageSender messageSender;
 
-	@RequestMapping(value = "edit/publish/{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "edit/publish/{id}", method = RequestMethod.POST)
 	public @ResponseBody
 	Map<String, ? extends Object> publishObject(@PathVariable("id") String id, HttpServletRequest request) {
 		PID pid = new PID(id);
 		return this.publishObject(pid, true, request.getRemoteUser());
 	}
 
-	@RequestMapping(value = "edit/unpublish/{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "edit/unpublish/{id}", method = RequestMethod.POST)
 	public @ResponseBody
 	Map<String, ? extends Object> unpublishObject(@PathVariable("id") String id, HttpServletRequest request) {
 		PID pid = new PID(id);
@@ -101,7 +101,7 @@ public class PublishRestController {
 		return publishObjects(ids, false, request.getRemoteUser());
 	}
 
-	public List<? extends Object> publishObjects(@RequestParam("ids") String ids, boolean publish, String username) {
+	public List<? extends Object> publishObjects(String ids, boolean publish, String username) {
 		if (ids == null)
 			return null;
 		List<Object> results = new ArrayList<Object>();

@@ -10,7 +10,7 @@ define('MoveObjectToTrashButton', [ 'jquery', 'AjaxCallbackButton'], function($,
 			moveToTrash: true,
 			showTrash: true,
 			workMethod: $.post,
-			followupPath: "/services/rest/item/{idPath}/solrRecord/version",
+			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
 			animateSpeed: 'fast'
 		};
 		
@@ -31,17 +31,19 @@ define('MoveObjectToTrashButton', [ 'jquery', 'AjaxCallbackButton'], function($,
 	};
 	
 	MoveObjectToTrashButton.prototype.removeFromTrashState = function() {
-		this.options.workPath = "/services/rest/edit/removeFromTrash/{idPath}";
+		this.options.workPath = "/services/api/edit/removeFromTrash/{idPath}";
 		this.options.workLabel = "Restoring object...";
 		this.options.followupLabel = "Restoring object....";
-		this.options.confirm =  false;
+		if (!('confirm' in this.options))
+			this.options.confirm = false;
 	};
 
 	MoveObjectToTrashButton.prototype.moveToTrashState = function() {
-		this.options.workPath = "/services/rest/edit/moveToTrash/{idPath}";
+		this.options.workPath = "/services/api/edit/moveToTrash/{idPath}";
 		this.options.workLabel = "Moving to trash...";
 		this.options.followupLabel = "Moving to trash....";
-		this.options.confirm =  true;
+		if (!('confirm' in this.options))
+			this.options.confirm =  true;
 		this.options.confirmMessage = "Move this object to the Trash?";
 	};
 	
@@ -70,14 +72,15 @@ define('MoveObjectToTrashButton', [ 'jquery', 'AjaxCallbackButton'], function($,
 	
 	MoveObjectToTrashButton.prototype.completeState = function() {
 		if (this.options.parentObject) {
-			if (this.options.showTrash) {
-				this.options.parentObject.refresh(true);
-				this.alertHandler.alertHandler("success", "Moved item " + this.options.parentObject.metadata.title 
-						+ " (" + this.options.parentObject.metadata.id + ") to the Trash");
+			this.options.parentObject.refresh(true);
+			if (this.options.moveToTrash) {
+				this.alertHandler.alertHandler("success", "Marked item " + this.options.parentObject.metadata.title 
+						+ " (" + this.options.parentObject.metadata.id + ") for deletion");
+				this.options.parentObject.enable();
 			} else {
-				this.options.parentObject.deleteElement();
-				this.alertHandler.alertHandler("success", "Removed item " + this.options.parentObject.metadata.title 
+				this.alertHandler.alertHandler("success", "Restored item " + this.options.parentObject.metadata.title 
 						+ " (" + this.options.parentObject.metadata.id + ") from the Trash");
+				this.options.parentObject.enable();
 			}
 		}
 		

@@ -1,7 +1,7 @@
-<div id="result_view">
+<div id="result_view"<%= headerHeightClass? ' class="' + headerHeightClass + '"' : '' %>>
 	<%= resultHeader? resultHeader : "" %>
 	<div class="result_table_scroll">
-		<div class="result_table_wrap with_path">
+		<div class="result_table_wrap">
 			<table class="result_table">
 				<colgroup>
 					<% _.each(resultFields, function(resultField) { 

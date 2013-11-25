@@ -44,7 +44,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 			animateSpeed : 80,
 			confirm : false,
 			confirmMessage : "Are you sure?",
-			confirmPositionElement : undefined,
+			confirmAnchor : undefined,
 			alertHandler : "#alertHandler"
 		};
 
@@ -103,25 +103,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 		}
 		
 		if (this.options.confirm) {
-			var dialogOptions = {
-					width : 'auto',
-					modal : true
-				};
-			if (this.options.parentObject)
-				dialogOptions['close'] = function() {
-					op.options.parentObject.unhighlight();
-				};
-			if (this.options.confirmAnchor) {
-				dialogOptions['position'] = {};
-				dialogOptions['position']['of'] = this.options.confirmAnchor; 
-			}
 			
-			this.confirmationDialog = new ConfirmationDialog({
-				'promptText' : this.options.confirmMessage,
-				'confirmFunction' : this.doWork,
-				'confirmTarget' : this,
-				'dialogOptions' : dialogOptions
-			});
 		}
 
 		/*this.element.text(this.options.defaultLabel);
@@ -141,9 +123,29 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 		if (this.options.disabled)
 			return;
 		if (this.options.confirm) {
-			if (this.options.parentObject)
+			var dialogOptions = {
+					width : 'auto',
+					modal : true
+				};
+			if (this.options.parentObject) {
 				this.options.parentObject.highlight();
-			this.confirmationDialog.open();
+				dialogOptions['close'] = function() {
+					op.options.parentObject.unhighlight();
+				};
+			}
+				
+			if (this.options.confirmAnchor) {
+				dialogOptions['position'] = {};
+				dialogOptions['position']['of'] = this.options.confirmAnchor; 
+			}
+		
+			var confirmationDialog = new ConfirmationDialog({
+				'promptText' : this.options.confirmMessage,
+				'confirmFunction' : this.doWork,
+				'confirmTarget' : this,
+				'dialogOptions' : dialogOptions,
+				autoOpen : true
+			});
 		} else {
 			this.doWork();
 		}

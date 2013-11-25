@@ -2635,6 +2635,11 @@ h1 {
 	top: 0;
 }
 
+.container_title {
+	display: inline-block;
+}
+
+
 #result_view {
 	/*height: calc(100vh - 105px);
 	height: -webkit-calc(100vh - 105px);*/
@@ -2645,12 +2650,13 @@ h1 {
 	padding-top: 80px;
 }
 
-.result_table_wrap.with_path {
+.with_path .result_table_wrap {
 	padding-top: 96px;
 }
 
 /** Container header */
 .container_header {
+	display: inline-block;
 	margin-bottom: 3px;
 }
 
@@ -2661,6 +2667,16 @@ h1 {
 
 .container_header > span > h2 > img {
 	vertical-align: middle;
+}
+
+.result_header_bottom {
+	clear: right;
+	position: relative;
+	top: 11px;
+}
+
+.with_container .result_header_bottom, .with_path .result_header_bottom {
+	top : 0;
 }
 
 .result_table_action_menu {

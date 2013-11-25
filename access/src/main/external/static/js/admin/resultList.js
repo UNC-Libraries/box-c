@@ -72,11 +72,12 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 	// Keep the result area locked to the size of the view port
 	var $resultPage = $('.result_page');
 	var $resultView = $('#result_view');
-	var $columnHeaders = $('.column_headers');
-	var $resultHeader = $('.result_header');
-	var $resultTable = $('.result_table');
+	var $columnHeaders;
+	var $resultHeader;
+	var $resultTable;
 	var $window = $(window);
 	var menuOffset = 360;
+	
 	var resizeResults = function () {
 		var wHeight = $window.height(), wWidth = $window.width();
 		$resultPage.height(wHeight - 105);
@@ -85,8 +86,15 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 		$resultTable.width(wWidth - menuOffset);
 		$columnHeaders.width(wWidth - menuOffset);
 	};
-	resizeResults.call();
-	$window.resize(resizeResults);
+	
+	function setResizeReferences(resultTable) {
+		$columnHeaders = $('.column_headers');
+		$resultHeader = $('.result_header');
+		$resultTable = $('.result_table');
+		
+		resizeResults.call();
+		$window.resize(resizeResults);
+	}
 	
 	// Keep result area the right size when the menu is resized
 	var searchMenu = $("#search_menu").searchMenu({
@@ -107,9 +115,11 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 		resultCount : module.config().resultCount
 	};
 	
-	var container = module.config().container;
+	var container = module.config().container? module.config().container : null;
 	var navigationBar = navigationBarTemplate({pageNavigation : pageNavigation, container : container});
-	var containerPath = pathTrailTemplate({ancestorPath : container.ancestorPath, queryMethod : 'list', filterParams : module.config().filterParams, skipLast : true});
+	var containerPath = null;
+	if (container)
+		containerPath = pathTrailTemplate({ancestorPath : container.ancestorPath, queryMethod : 'list', filterParams : module.config().filterParams, skipLast : true});
 	var resultTableHeader = resultTableHeaderTemplate({container : container, navigationBar : navigationBar, containerPath : containerPath})
 	
 	if (container) {
@@ -137,7 +147,8 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 			"dateModified" : {name : "Modified", colClass : "date_added", sortField : "dateUpdated"},
 			"actionMenu" : {name : "", colClass : "narrow"}
 		},
-		resultHeader : resultTableHeader
+		resultHeader : resultTableHeader,
+		postRender : setResizeReferences
 	});
 	
 	//console.profileEnd();

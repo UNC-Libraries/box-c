@@ -815,7 +815,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 			animateSpeed : 80,
 			confirm : false,
 			confirmMessage : "Are you sure?",
-			confirmPositionElement : undefined,
+			confirmAnchor : undefined,
 			alertHandler : "#alertHandler"
 		};
 
@@ -874,25 +874,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 		}
 		
 		if (this.options.confirm) {
-			var dialogOptions = {
-					width : 'auto',
-					modal : true
-				};
-			if (this.options.parentObject)
-				dialogOptions['close'] = function() {
-					op.options.parentObject.unhighlight();
-				};
-			if (this.options.confirmAnchor) {
-				dialogOptions['position'] = {};
-				dialogOptions['position']['of'] = this.options.confirmAnchor; 
-			}
 			
-			this.confirmationDialog = new ConfirmationDialog({
-				'promptText' : this.options.confirmMessage,
-				'confirmFunction' : this.doWork,
-				'confirmTarget' : this,
-				'dialogOptions' : dialogOptions
-			});
 		}
 
 		/*this.element.text(this.options.defaultLabel);
@@ -912,9 +894,29 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 		if (this.options.disabled)
 			return;
 		if (this.options.confirm) {
-			if (this.options.parentObject)
+			var dialogOptions = {
+					width : 'auto',
+					modal : true
+				};
+			if (this.options.parentObject) {
 				this.options.parentObject.highlight();
-			this.confirmationDialog.open();
+				dialogOptions['close'] = function() {
+					op.options.parentObject.unhighlight();
+				};
+			}
+				
+			if (this.options.confirmAnchor) {
+				dialogOptions['position'] = {};
+				dialogOptions['position']['of'] = this.options.confirmAnchor; 
+			}
+		
+			var confirmationDialog = new ConfirmationDialog({
+				'promptText' : this.options.confirmMessage,
+				'confirmFunction' : this.doWork,
+				'confirmTarget' : this,
+				'dialogOptions' : dialogOptions,
+				autoOpen : true
+			});
 		} else {
 			this.doWork();
 		}
@@ -1222,7 +1224,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 			for (var index in data) {
 				var id = data[index].pid;
 				this.followupObjects.push(id);
-				if (this.options.workFunction) {
+				if (this.options.followupFunction) {
 					var resultObject = this.options.resultObjectList.resultObjects[id];
 					if ($.isFunction(this.options.followupFunction))
 						this.options.followupFunction.call(resultObject);
@@ -1321,7 +1323,8 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			solo : true,
 			additionalButtons : undefined,
 			autoOpen : false,
-			addClass : undefined
+			addClass : undefined,
+			destroyOnClose : false
 		},
 		
 		dialogOptions : {
@@ -1363,15 +1366,23 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 				},
 				buttons : buttonsObject
 			});
+			
+			if (this.options.destroyOnClose)
+				this.dialogOptions.close(function(){
+					self.remove();
+				});
+			
 			this.confirmDialog.dialog(this.dialogOptions);
 			if (this.options.addClass)
 				this.confirmDialog.addClass(this.options.addClass);
+				
 			if (this.options.autoOpen)
 				this.open();
 		},
 		
 		_generateButtons : function() {
-			var buttonsObject = {}, self = this;
+			var buttonsObject = {};
+			var self = this;
 			
 			buttonsObject[this.options.cancelText] = function() {
 				if (self.options.cancelFunction) {
@@ -2112,7 +2123,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	};
 	
 	return ModalLoadingOverlay;
-});define('MoveBatchToTrashButton', [ 'jquery', 'BatchCallbackButton' ], function($, BatchCallbackButton) {
+});define('MoveBatchToTrashButton', [ 'jquery', 'BatchCallbackButton', 'MoveObjectToTrashButton'], function($, BatchCallbackButton, MoveObjectToTrashButton) {
 	function MoveBatchToTrashButton(options, element) {
 		this._create(options, element);
 	};
@@ -2129,74 +2140,43 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	
 	MoveBatchToTrashButton.prototype._create = function(options, element) {
 		var merged = $.extend({}, defaultOptions, options);
+		
+		merged.workPath = "/services/api/edit/moveToTrash";
+		merged.workLabel = "Deleting...";
+		merged.followupLabel = "Deleting....";
+		merged.confirmMessage = "Mark these objects as deleted?";
+		merged.confirmAnchor = element;
+		
 		BatchCallbackButton.prototype._create.call(this, merged, element);
-	};
-	
-	MoveBatchToTrashButton.prototype.removeFromTrashState = function() {
-		this.options.workPath = "/services/rest/edit/removeFromTrash";
-		this.options.workLabel = "Removing from trash...";
-		this.options.followupLabel = "Removing from trash....";
-		this.options.confirmMessage = "Move these object(s) to the Trash?";
-	};
-
-	MoveBatchToTrashButton.prototype.moveToTrashState = function() {
-		this.options.workPath = "/services/rest/edit/moveToTrash";
-		this.options.workLabel = "Moving to trash...";
-		this.options.followupLabel = "Moving to trash....";
-		this.options.confirmMessage = "Move these object(s) to the Trash?";
 	};
 
 	MoveBatchToTrashButton.prototype.getTargetIds = function() {
 		var targetIds = [];
 		for (var id in this.options.resultObjectList.resultObjects) {
 			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (resultObject.isSelected() && resultObject.isEnabled()) {
+			if (resultObject.isSelected() && resultObject.isEnabled() && $.inArray("Deleted", resultObject.getMetadata().status) == -1) {
 				targetIds.push(resultObject.getPid());
 			}
 		}
 		return targetIds;
 	};
 	
-	MoveBatchToTrashButton.prototype.followup = function(data) {
-		var removedIds;
-		var emptyData = $.isEmptyObject(data);
-		if (emptyData){
-			removedIds = this.followupObjects;
-		} else {
-			removedIds = [];
-			for (var index in this.followupObjects) {
-				var id = this.followupObjects[index];
-				if (!(id in data)) {
-					removedIds.push(id);
-				}
-			}
+	MoveBatchToTrashButton.prototype.doWork = function() {
+		this.disable();
+		this.targetIds = this.getTargetIds();
+	
+		for (var index in this.targetIds) {
+			var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
+			var trashButton = new MoveObjectToTrashButton({
+				pid : resultObject.pid,
+				parentObject : resultObject,
+				metadata : resultObject.metadata,
+				confirm : false,
+				moveToTrash: true
+			});
+			trashButton.activate();
 		}
-		
-		if (removedIds.length > 0) {
-			if (emptyData)
-				this.followupObjects = null;
-			for (var index in removedIds) {
-				var id = removedIds[index];
-				// Don't bother trimming out followup objects if all ids are complete
-				if (!emptyData) {
-					var followupIndex = $.inArray(id, this.followupObjects);
-					this.followupObjects.splice(followupIndex, 1);
-				}
-				
-				var resultObject = this.options.resultObjectList.resultObjects[id];
-				// Trigger the complete function on targeted child callback buttons
-				if (this.options.completeFunction) {
-					if ($.isFunction(this.options.completeFunction))
-						this.options.completeFunction.call(resultObject);
-					else
-						resultObject[this.options.completeFunction]();
-				} else {
-					resultObject.setState("idle");
-				}
-			}
-		}
-		
-		return !this.followupObjects;
+		this.enable();
 	};
 	
 	return MoveBatchToTrashButton;
@@ -2343,7 +2323,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 			moveToTrash: true,
 			showTrash: true,
 			workMethod: $.post,
-			followupPath: "/services/rest/item/{idPath}/solrRecord/version",
+			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
 			animateSpeed: 'fast'
 		};
 		
@@ -2364,17 +2344,19 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	};
 	
 	MoveObjectToTrashButton.prototype.removeFromTrashState = function() {
-		this.options.workPath = "/services/rest/edit/removeFromTrash/{idPath}";
+		this.options.workPath = "/services/api/edit/removeFromTrash/{idPath}";
 		this.options.workLabel = "Restoring object...";
 		this.options.followupLabel = "Restoring object....";
-		this.options.confirm =  false;
+		if (!('confirm' in this.options))
+			this.options.confirm = false;
 	};
 
 	MoveObjectToTrashButton.prototype.moveToTrashState = function() {
-		this.options.workPath = "/services/rest/edit/moveToTrash/{idPath}";
+		this.options.workPath = "/services/api/edit/moveToTrash/{idPath}";
 		this.options.workLabel = "Moving to trash...";
 		this.options.followupLabel = "Moving to trash....";
-		this.options.confirm =  true;
+		if (!('confirm' in this.options))
+			this.options.confirm =  true;
 		this.options.confirmMessage = "Move this object to the Trash?";
 	};
 	
@@ -2403,14 +2385,15 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	
 	MoveObjectToTrashButton.prototype.completeState = function() {
 		if (this.options.parentObject) {
-			if (this.options.showTrash) {
-				this.options.parentObject.refresh(true);
-				this.alertHandler.alertHandler("success", "Moved item " + this.options.parentObject.metadata.title 
-						+ " (" + this.options.parentObject.metadata.id + ") to the Trash");
+			this.options.parentObject.refresh(true);
+			if (this.options.moveToTrash) {
+				this.alertHandler.alertHandler("success", "Marked item " + this.options.parentObject.metadata.title 
+						+ " (" + this.options.parentObject.metadata.id + ") for deletion");
+				this.options.parentObject.enable();
 			} else {
-				this.options.parentObject.deleteElement();
-				this.alertHandler.alertHandler("success", "Removed item " + this.options.parentObject.metadata.title 
+				this.alertHandler.alertHandler("success", "Restored item " + this.options.parentObject.metadata.title 
 						+ " (" + this.options.parentObject.metadata.id + ") from the Trash");
+				this.options.parentObject.enable();
 			}
 		}
 		
@@ -2486,7 +2469,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	return ParentResultObject;
-});define('PublishBatchButton', [ 'jquery', 'BatchCallbackButton' ], function($, BatchCallbackButton) {
+});define('PublishBatchButton', [ 'jquery', 'BatchCallbackButton', 'PublishObjectButton'], function($, BatchCallbackButton, PublishObjectButton) {
+	
 	function PublishBatchButton(options, element) {
 		this._create(options, element);
 	};
@@ -2502,6 +2486,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	PublishBatchButton.prototype._create = function(options, element) {
 		var merged = $.extend({}, defaultOptions, options);
+		merged.workFunction = this.resultObjectWorkFunction;
 		BatchCallbackButton.prototype._create.call(this, merged, element);
 	};
 
@@ -2516,6 +2501,24 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		}
 		return targetIds;
 	};
+	
+	PublishBatchButton.prototype.doWork = function() {
+		this.disable();
+		this.targetIds = this.getTargetIds();
+	
+		for (var index in this.targetIds) {
+			var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
+			var publishButton = new PublishObjectButton({
+				pid : resultObject.pid,
+				parentObject : resultObject,
+				defaultPublish : false,
+				metadata : resultObject.metadata
+			});
+			publishButton.activate();
+		}
+		this.enable();
+	};
+	
 	return PublishBatchButton;
 });define('PublishObjectButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'ResultObject'], function($, ui, AjaxCallbackButton) {
 	function PublishObjectButton(options) {
@@ -2527,7 +2530,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	var defaultOptions = {
 			defaultPublish: false,
-			followupPath: "/services/api/status/item/{idPath}/solrRecord/version"
+			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
+			workMethod: $.post
 		};
 		
 	PublishObjectButton.prototype._create = function(options) {
@@ -2554,6 +2558,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	PublishObjectButton.prototype.completeState = function() {
 		if (this.options.parentObject) {
 			this.options.parentObject.refresh(true);
+			this.options.parentObject.enable();
 		} else {
 			this.toggleState();
 		}
@@ -2695,6 +2700,63 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	});
 	
 	return RemoteStateChangeMonitor;
+});define('RemoveBatchFromTrashButton', [ 'jquery', 'BatchCallbackButton', 'MoveObjectToTrashButton'], function($, BatchCallbackButton, MoveObjectToTrashButton) {
+	function RemoveBatchFromTrashButton(options, element) {
+		this._create(options, element);
+	};
+	
+	RemoveBatchFromTrashButton.prototype.constructor = RemoveBatchFromTrashButton;
+	RemoveBatchFromTrashButton.prototype = Object.create( BatchCallbackButton.prototype );
+	
+	var defaultOptions = {
+		resultObjectList : undefined,
+		childWorkLinkName : "restore",
+		confirm: true,
+		animateSpeed: 'fast'
+	};
+	
+	RemoveBatchFromTrashButton.prototype._create = function(options, element) {
+		var merged = $.extend({}, defaultOptions, options);
+		
+		merged.workPath = "/services/api/edit/removeFromTrash";
+		merged.workLabel = "Restoring from trash...";
+		merged.followupLabel = "Restoring from trash....";
+		merged.confirmMessage = "Restore these objects from the Trash?";
+		merged.confirmAnchor = element;
+		
+		BatchCallbackButton.prototype._create.call(this, merged, element);
+	};
+
+	RemoveBatchFromTrashButton.prototype.getTargetIds = function() {
+		var targetIds = [];
+		for (var id in this.options.resultObjectList.resultObjects) {
+			var resultObject = this.options.resultObjectList.resultObjects[id];
+			if (resultObject.isSelected() && resultObject.isEnabled() && $.inArray("Deleted", resultObject.getMetadata().status) != -1) {
+				targetIds.push(resultObject.getPid());
+			}
+		}
+		return targetIds;
+	};
+	
+	RemoveBatchFromTrashButton.prototype.doWork = function() {
+		this.disable();
+		this.targetIds = this.getTargetIds();
+	
+		for (var index in this.targetIds) {
+			var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
+			var trashButton = new MoveObjectToTrashButton({
+				pid : resultObject.pid,
+				parentObject : resultObject,
+				metadata : resultObject.metadata,
+				confirm : false,
+				moveToTrash: false
+			});
+			trashButton.activate();
+		}
+		this.enable();
+	};
+	
+	return RemoveBatchFromTrashButton;
 });define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor',
 		'ModalLoadingOverlay', 'DeleteObjectButton',	'PublishObjectButton', 'EditAccessControlForm'], 
 		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay) {
@@ -3199,7 +3261,11 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		actions : {
 			deleteBatch : {
 				label : "Delete",
-				className : "DeleteBatchButton",
+				className : "MoveBatchToTrashButton",
+				permissions : ["moveToTrash"]
+			}, restoreBatch : {
+				label : "Restore",
+				className : "RemoveBatchFromTrashButton",
 				permissions : ["moveToTrash"]
 			}, publish : {
 				label : "Publish",
@@ -3216,7 +3282,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			}
 		},
 		groups : {
-			1 : ['deleteBatch'],
+			1 : ['restoreBatch', 'deleteBatch'],
 			2 : ['publish', 'unpublish']/*,
 			'more' : ['reindex']*/
 		}
@@ -3253,7 +3319,11 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 						var actionButton = $("<span>" + actionDefinition.label + "</span>")
 								.addClass(actionList[i] + "_selected ajaxCallbackButton container_action")
 								.appendTo(groupSpan);
-						actionDefinition.actionObject =  new actionDefinition.actionClass({resultObjectList : self.resultObjectList}, actionButton);
+						actionButton.data('actionObject', new actionDefinition.actionClass({resultObjectList : self.resultObjectList}, actionButton));
+						
+						actionButton.click(function(){
+							$(this).data('actionObject').activate();
+						});
 					}
 				}
 			});
@@ -3284,9 +3354,18 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			// Instantiate the result table view and add it to the page
 			var self = this;
 			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
-				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container, resultHeader : self.options.resultHeader}));
+				var headerHeightClass = '';
+				if (self.options.container) {
+					if (self.options.container.ancestorPath)
+						headerHeightClass = "with_path";
+					else
+						headerHeightClass = "with_container";
+				}
+				
+				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container,
+						resultHeader : self.options.resultHeader, headerHeightClass : headerHeightClass}));
 				self.$resultTable = self.$resultView.find('.result_table').eq(0);
-				self.$containerHeader = self.$resultView.find('.container_header').eq(0);
+				self.$resultHeaderTop = self.$resultView.find('.result_header_top').eq(0);
 				self.element.append(self.$resultView);
 			
 				if (self.options.postRender)
@@ -3539,7 +3618,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				}
 			}).children("input").prop("checked", false);
 			
-			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList}, this.$containerHeader);
+			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList}, this.$resultHeaderTop);
 		},
 		
 		_initEventHandlers : function() {
@@ -3836,7 +3915,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			return baseURL;
 		}
 	};
-});define('UnpublishBatchButton', [ 'jquery', 'BatchCallbackButton' ], function($, BatchCallbackButton) {
+});define('UnpublishBatchButton', [ 'jquery', 'BatchCallbackButton', 'PublishObjectButton'], function($, BatchCallbackButton, PublishObjectButton) {
 	function UnpublishBatchButton(options, element) {
 		this._create(options, element);
 	};
@@ -3866,6 +3945,24 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		}
 		return targetIds;
 	};
+
+	UnpublishBatchButton.prototype.doWork = function() {
+		this.disable();
+		this.targetIds = this.getTargetIds();
+	
+		for (var index in this.targetIds) {
+			var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
+			var publishButton = new PublishObjectButton({
+				pid : resultObject.pid,
+				parentObject : resultObject,
+				defaultPublish : true,
+				metadata : resultObject.metadata
+			});
+			publishButton.activate();
+		}
+		this.enable();
+	};
+
 	return UnpublishBatchButton;
 });define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../templates/admin/statusMonitor/overview', 'tpl!../templates/admin/statusMonitor/details', 'moment'], 
 		function($, ui, _, overviewTemplate, detailsTemplate) {

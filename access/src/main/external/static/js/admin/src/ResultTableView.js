@@ -21,9 +21,18 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			// Instantiate the result table view and add it to the page
 			var self = this;
 			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
-				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container, resultHeader : self.options.resultHeader}));
+				var headerHeightClass = '';
+				if (self.options.container) {
+					if (self.options.container.ancestorPath)
+						headerHeightClass = "with_path";
+					else
+						headerHeightClass = "with_container";
+				}
+				
+				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container,
+						resultHeader : self.options.resultHeader, headerHeightClass : headerHeightClass}));
 				self.$resultTable = self.$resultView.find('.result_table').eq(0);
-				self.$containerHeader = self.$resultView.find('.container_header').eq(0);
+				self.$resultHeaderTop = self.$resultView.find('.result_header_top').eq(0);
 				self.element.append(self.$resultView);
 			
 				if (self.options.postRender)
@@ -276,7 +285,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				}
 			}).children("input").prop("checked", false);
 			
-			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList}, this.$containerHeader);
+			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList}, this.$resultHeaderTop);
 		},
 		
 		_initEventHandlers : function() {

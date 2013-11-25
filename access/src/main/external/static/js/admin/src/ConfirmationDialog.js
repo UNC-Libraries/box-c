@@ -36,7 +36,8 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			solo : true,
 			additionalButtons : undefined,
 			autoOpen : false,
-			addClass : undefined
+			addClass : undefined,
+			destroyOnClose : false
 		},
 		
 		dialogOptions : {
@@ -78,15 +79,23 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 				},
 				buttons : buttonsObject
 			});
+			
+			if (this.options.destroyOnClose)
+				this.dialogOptions.close(function(){
+					self.remove();
+				});
+			
 			this.confirmDialog.dialog(this.dialogOptions);
 			if (this.options.addClass)
 				this.confirmDialog.addClass(this.options.addClass);
+				
 			if (this.options.autoOpen)
 				this.open();
 		},
 		
 		_generateButtons : function() {
-			var buttonsObject = {}, self = this;
+			var buttonsObject = {};
+			var self = this;
 			
 			buttonsObject[this.options.cancelText] = function() {
 				if (self.options.cancelFunction) {

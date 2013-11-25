@@ -6,7 +6,11 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 		actions : {
 			deleteBatch : {
 				label : "Delete",
-				className : "DeleteBatchButton",
+				className : "MoveBatchToTrashButton",
+				permissions : ["moveToTrash"]
+			}, restoreBatch : {
+				label : "Restore",
+				className : "RemoveBatchFromTrashButton",
 				permissions : ["moveToTrash"]
 			}, publish : {
 				label : "Publish",
@@ -23,7 +27,7 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 			}
 		},
 		groups : {
-			1 : ['deleteBatch'],
+			1 : ['restoreBatch', 'deleteBatch'],
 			2 : ['publish', 'unpublish']/*,
 			'more' : ['reindex']*/
 		}
@@ -60,7 +64,11 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 						var actionButton = $("<span>" + actionDefinition.label + "</span>")
 								.addClass(actionList[i] + "_selected ajaxCallbackButton container_action")
 								.appendTo(groupSpan);
-						actionDefinition.actionObject =  new actionDefinition.actionClass({resultObjectList : self.resultObjectList}, actionButton);
+						actionButton.data('actionObject', new actionDefinition.actionClass({resultObjectList : self.resultObjectList}, actionButton));
+						
+						actionButton.click(function(){
+							$(this).data('actionObject').activate();
+						});
 					}
 				}
 			});

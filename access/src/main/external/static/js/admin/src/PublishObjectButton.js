@@ -8,7 +8,8 @@ define('PublishObjectButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'Re
 	
 	var defaultOptions = {
 			defaultPublish: false,
-			followupPath: "/services/api/status/item/{idPath}/solrRecord/version"
+			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
+			workMethod: $.post
 		};
 		
 	PublishObjectButton.prototype._create = function(options) {
@@ -35,6 +36,7 @@ define('PublishObjectButton', [ 'jquery', 'jquery-ui', 'AjaxCallbackButton', 'Re
 	PublishObjectButton.prototype.completeState = function() {
 		if (this.options.parentObject) {
 			this.options.parentObject.refresh(true);
+			this.options.parentObject.enable();
 		} else {
 			this.toggleState();
 		}

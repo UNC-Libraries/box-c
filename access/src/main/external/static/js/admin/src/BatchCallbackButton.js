@@ -54,7 +54,7 @@ define('BatchCallbackButton', [ 'jquery', 'AjaxCallbackButton', 'ResultObjectLis
 			for (var index in data) {
 				var id = data[index].pid;
 				this.followupObjects.push(id);
-				if (this.options.workFunction) {
+				if (this.options.followupFunction) {
 					var resultObject = this.options.resultObjectList.resultObjects[id];
 					if ($.isFunction(this.options.followupFunction))
 						this.options.followupFunction.call(resultObject);
