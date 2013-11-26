@@ -1,11 +1,11 @@
 <div class="result_header">
 	<div class="result_header_top">
+		<% if (containerPath) { %>
+			<div class="results_header_hierarchy_path">
+				<%= containerPath %>
+			</div>
+		<% } %>
 		<div class="container_header">
-			<% if (containerPath) { %>
-				<div class="results_header_hierarchy_path">
-					<%= containerPath %>
-				</div>
-			<% } %>
 			<% if (container) { %>
 				<span class="container_entry">
 					<h2 class="container_title">
@@ -23,11 +23,13 @@
 					</h2>
 				</span>
 			<% } %>
-			<%
-			if (container && _.indexOf(container.permissions, "addRemoveContents") != -1) {
-				%><span id="add_menu" class="container_action">+ Add</span><%
-			}
-			%>
+		</div>
+		<%
+		if (container && _.indexOf(container.permissions, "addRemoveContents") != -1) {
+			%><span id="add_menu" class="container_action">+ Add</span><%
+		}
+		%>
+		<div class="result_table_action_menu">
 		</div>
 	</div>
 	<div class="result_header_bottom">

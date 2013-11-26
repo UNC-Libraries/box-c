@@ -14,19 +14,21 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
 			resultFields : undefined,
 			resultHeader : undefined,
-			postRender : undefined
+			postRender : undefined,
+			resultActions : undefined,
+			headerHeightClass : ''
 		},
 		
 		_create : function() {
 			// Instantiate the result table view and add it to the page
 			var self = this;
 			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
-				var headerHeightClass = '';
+				var headerHeightClass = self.options.headerHeightClass;
 				if (self.options.container) {
 					if (self.options.container.ancestorPath)
-						headerHeightClass = "with_path";
+						headerHeightClass += " with_path";
 					else
-						headerHeightClass = "with_container";
+						headerHeightClass += " with_container";
 				}
 				
 				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container,
@@ -284,8 +286,9 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					resultObjects[index][toggleFn]();
 				}
 			}).children("input").prop("checked", false);
-			
-			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList}, this.$resultHeaderTop);
+
+			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList, groups : this.options.resultActions}, 
+					$(".result_table_action_menu", this.$resultHeaderTop));
 		},
 		
 		_initEventHandlers : function() {

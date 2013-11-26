@@ -56,6 +56,8 @@ define('trashList', ['module', 'jquery', "tpl!../templates/admin/trashTableHeade
 	var $resultPage = $('.result_page');
 	var $resultView = $('#result_view');
 	var $columnHeaders;
+	var $containerEntry;
+	var $tableActionMenu;
 	var $resultHeader;
 	var $resultTable;
 	var $window = $(window);
@@ -68,16 +70,8 @@ define('trashList', ['module', 'jquery', "tpl!../templates/admin/trashTableHeade
 		$resultHeader.width(wWidth - menuOffset);
 		$resultTable.width(wWidth - menuOffset);
 		$columnHeaders.width(wWidth - menuOffset);
+		$containerEntry.css('max-width', (wWidth - $tableActionMenu.width() - menuOffset - 105));
 	};
-	
-	function setResizeReferences(resultTable) {
-		$columnHeaders = $('.column_headers');
-		$resultHeader = $('.result_header');
-		$resultTable = $('.result_table');
-		
-		resizeResults.call();
-		$window.resize(resizeResults);
-	}
 	
 	//var startTime = new Date();
 	
@@ -109,11 +103,23 @@ define('trashList', ['module', 'jquery', "tpl!../templates/admin/trashTableHeade
 	var navigationBar = navigationBarTemplate({pageNavigation : pageNavigation, container : container});
 	var resultTableHeader = resultTableHeaderTemplate({container : container, navigationBar : navigationBar})
 	
+	function postRender(resultTable) {
+		$columnHeaders = $('.column_headers');
+		$resultHeader = $('.result_header');
+		$resultTable = $('.result_table');
+		$containerEntry = $('.container_header > span > h2');
+		$tableActionMenu = $('.result_table_action_menu');
+		
+		resizeResults.call();
+		$window.resize(resizeResults);
+	}
+	
 	$(".result_area > div").resultTableView({
 		metadataObjects : module.config().metadataObjects,
 		container : module.config().container,
 		alertHandler : alertHandler,
 		resultUrl : module.config().resultUrl,
+		headerHeightClass : 'trash_header',
 		resultFields : {
 			"select" : {name : "", colClass : "narrow", dataType : "index", sortField : "collection"},
 			"resourceType" : {name : "", colClass : "narrow", sortField : "resourceType"},
@@ -123,7 +129,11 @@ define('trashList', ['module', 'jquery', "tpl!../templates/admin/trashTableHeade
 		},
 		resultEntryTemplate : "tpl!../templates/admin/trashResultEntry",
 		resultHeader : resultTableHeader,
-		postRender : setResizeReferences
+		postRender : postRender,
+		resultActions : {
+			1 : ['restoreBatch'],
+			2 : ['deleteBatchForever']
+		}
 	});
 	
 	//console.profileEnd();

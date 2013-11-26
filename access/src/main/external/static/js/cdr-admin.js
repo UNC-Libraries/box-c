@@ -894,6 +894,7 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 		if (this.options.disabled)
 			return;
 		if (this.options.confirm) {
+			var op = this;
 			var dialogOptions = {
 					width : 'auto',
 					modal : true
@@ -1182,7 +1183,8 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 			childWorkLinkName : undefined,
 			workFunction : undefined,
 			followupFunction : undefined,
-			completeFunction : undefined 
+			completeFunction : undefined,
+			animateSpeed: 'fast'
 		};
 
 	BatchCallbackButton.prototype._create = function(options, element) {
@@ -1513,7 +1515,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	};
 	
 	return CreateSimpleObjectForm;
-});define('DeleteBatchButton', [ 'jquery', 'BatchCallbackButton' ], function($, BatchCallbackButton) {
+});define('DeleteBatchButton', [ 'jquery', 'BatchCallbackButton', 'DeleteObjectButton'], function($, BatchCallbackButton, DeleteObjectButton) {
 	function DeleteBatchButton(options, element) {
 		this._create(options, element);
 	};
@@ -1522,16 +1524,13 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	DeleteBatchButton.prototype = Object.create( BatchCallbackButton.prototype );
 	
 	var defaultOptions = {
-		resultObjectList : undefined,
-		workPath: "delete",
-		childWorkLinkName : "delete",
 		confirm: true,
-		confirmMessage: "Delete selected object(s)?",
-		animateSpeed: 'fast'
+		confirmMessage: "Permanently delete selected object(s)?  This action cannot be undone."
 	};
 	
 	DeleteBatchButton.prototype._create = function(options, element) {
 		var merged = $.extend({}, defaultOptions, options);
+		merged.confirmAnchor = element;
 		BatchCallbackButton.prototype._create.call(this, merged, element);
 	};
 
@@ -1546,46 +1545,21 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		return targetIds;
 	};
 	
-	DeleteBatchButton.prototype.followup = function(data) {
-		var removedIds;
-		var emptyData = jQuery.isEmptyObject(data.length);
-		if (emptyData){
-			removedIds = this.followupObjects;
-		} else {
-			removedIds = [];
-			for (var index in this.followupObjects) {
-				var id = this.followupObjects[index];
-				if (!(id in data)) {
-					removedIds.push(id);
-				}
-			}
+	DeleteBatchButton.prototype.doWork = function() {
+		this.disable();
+		this.targetIds = this.getTargetIds();
+	
+		for (var index in this.targetIds) {
+			var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
+			var deleteButton = new DeleteObjectButton({
+				pid : resultObject.pid,
+				parentObject : resultObject,
+				metadata : resultObject.metadata,
+				confirm : false
+			});
+			deleteButton.activate();
 		}
-		
-		if (removedIds.length > 0) {
-			if (emptyData)
-				this.followupObjects = null;
-			for (var index in removedIds) {
-				var id = removedIds[index];
-				// Don't bother trimming out followup objects if all ids are complete
-				if (!emptyData) {
-					var followupIndex = $.inArray(id, this.followupObjects);
-					this.followupObjects.splice(followupIndex, 1);
-				}
-				
-				var resultObject = this.options.resultObjectList.resultObjects[id];
-				// Trigger the complete function on targeted child callback buttons
-				if (this.options.completeFunction) {
-					if ($.isFunction(this.options.completeFunction))
-						this.options.completeFunction.call(resultObject);
-					else
-						resultObject[this.options.completeFunction]();
-				} else {
-					resultObject.setState("idle");
-				}
-			}
-		}
-		
-		return !this.followupObjects;
+		this.enable();
 	};
 	
 	return DeleteBatchButton;
@@ -1598,12 +1572,12 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	DeleteObjectButton.prototype = Object.create( AjaxCallbackButton.prototype );
 	
 	var defaultOptions = {
-			workLabel: "Deleting...",
+			workLabel: "Deleting forever...",
 			workPath: "delete/{idPath}",
 			followupLabel: "Cleaning up...",
 			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
 			confirm: true,
-			confirmMessage: "Delete this object?",
+			confirmMessage: "Permanently delete this object?  This action cannot be undone",
 			animateSpeed: 'fast',
 			workDone: DeleteObjectButton.prototype.deleteWorkDone,
 			followup: DeleteObjectButton.prototype.deleteFollowup,
@@ -1630,8 +1604,8 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	
 	DeleteObjectButton.prototype.complete = function() {
 		if (this.options.metadata)
-			this.alertHandler.alertHandler("success", "Successfully deleted item " + metadata.title + " (" + metadata.id + ")");
-		else this.alertHandler.alertHandler("success", "Successfully deleted item " + data);
+			this.alertHandler.alertHandler("success", "Permanently deleted item " + metadata.title + " (" + metadata.id + ")");
+		else this.alertHandler.alertHandler("success", "Permanently deleted item " + data);
 	};
 
 	DeleteObjectButton.prototype.completeState = function() {
@@ -2353,11 +2327,11 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 
 	MoveObjectToTrashButton.prototype.moveToTrashState = function() {
 		this.options.workPath = "/services/api/edit/moveToTrash/{idPath}";
-		this.options.workLabel = "Moving to trash...";
-		this.options.followupLabel = "Moving to trash....";
+		this.options.workLabel = "Deleting object...";
+		this.options.followupLabel = "Deleting object....";
 		if (!('confirm' in this.options))
 			this.options.confirm =  true;
-		this.options.confirmMessage = "Move this object to the Trash?";
+		this.options.confirmMessage = "Mark this object for deletion?";
 	};
 	
 	MoveObjectToTrashButton.prototype.moveWorkDone = function(data) {
@@ -3060,6 +3034,11 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				if (resultObject.isContainer)
 					items["openContainer"] = {name : "Open"};
 				items["viewInCDR"] = {name : "View in CDR"};
+				if (resultObject.metadata.type == 'Collection') {
+					items["sepbrowse"] = "";
+					items["viewTrash"] = {name : "View trash for this collection"};
+					items["review"] = {name : "Review unpublished"};
+				}
 				items["sepedit"] = "";
 				if ($.inArray('publish', metadata.permissions) != -1)
 					items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
@@ -3072,14 +3051,14 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					items["reindex"] = {name : 'Reindex'};
 				}
 				items["sepdel"] = "";
-				if ($.inArray('purgeForever', metadata.permissions) != -1) {
-					items["purgeForever"] = {name : 'Delete'};
+				if ($.inArray('purgeForever', metadata.permissions) != -1 && $.inArray('Deleted', metadata.status) != -1) {
+					items["purgeForever"] = {name : 'Delete Forever'};
 				}
 				if ($.inArray('moveToTrash', metadata.permissions) != -1) {
 					if ($.inArray('Deleted', metadata.status) == -1)
-						items["moveToTrash"] = {name : 'Move to trash'};
+						items["moveToTrash"] = {name : 'Delete'};
 					else
-						items["moveToTrash"] = {name : 'Remove from trash'};
+						items["moveToTrash"] = {name : 'Restore'};
 				}
 				
 				return {
@@ -3090,6 +3069,12 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 								break;
 							case "openContainer" :
 								document.location.href = baseUrl + "list/" + metadata.id;
+								break;
+							case "viewTrash" :
+								document.location.href = baseUrl + "trash/" + metadata.id;
+								break;
+							case "review" :
+								document.location.href = baseUrl + "review/" + metadata.id;
 								break;
 							case "publish" :
 								var publishButton = new PublishObjectButton({
@@ -3267,6 +3252,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				label : "Restore",
 				className : "RemoveBatchFromTrashButton",
 				permissions : ["moveToTrash"]
+			}, deleteBatchForever : {
+				label : "Delete Forever",
+				className : "DeleteBatchButton",
+				permissions : ["purgeForever"]
 			}, publish : {
 				label : "Publish",
 				className : "PublishBatchButton",
@@ -3281,20 +3270,17 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				permissions : ["purgeForever"]
 			}
 		},
-		groups : {
-			1 : ['restoreBatch', 'deleteBatch'],
-			2 : ['publish', 'unpublish']/*,
-			'more' : ['reindex']*/
-		}
+		groups : undefined
 	};
 	
-	function ResultTableActionMenu(options, parentElement) {
+	function ResultTableActionMenu(options, element) {
 		this.options = $.extend({}, defaultOptions, options);
+		this.element = element;
 		this.resultObjectList = this.options.resultObjectList;
-		this.init(parentElement);
+		this.init();
 	};
 	
-	ResultTableActionMenu.prototype.init = function(parentElement) {
+	ResultTableActionMenu.prototype.init = function() {
 		var self = this;
 		// Load action classes
 		var actionClasses = [];
@@ -3306,8 +3292,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		
 		require(actionClasses, function(){
 			var argIndex = 0, loadedClasses = arguments;
-			self.element = $("<div/>").addClass("result_table_action_menu");
-			parentElement.append(self.element);
 			
 			$.each(self.options.groups, function(groupName, actionList){
 				var groupSpan = $("<span/>").addClass("container_action_group").appendTo(self.element);
@@ -3327,6 +3311,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					}
 				}
 			});
+			$(window).resize();
 		});
 	};
 	
@@ -3347,19 +3332,21 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
 			resultFields : undefined,
 			resultHeader : undefined,
-			postRender : undefined
+			postRender : undefined,
+			resultActions : undefined,
+			headerHeightClass : ''
 		},
 		
 		_create : function() {
 			// Instantiate the result table view and add it to the page
 			var self = this;
 			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
-				var headerHeightClass = '';
+				var headerHeightClass = self.options.headerHeightClass;
 				if (self.options.container) {
 					if (self.options.container.ancestorPath)
-						headerHeightClass = "with_path";
+						headerHeightClass += " with_path";
 					else
-						headerHeightClass = "with_container";
+						headerHeightClass += " with_container";
 				}
 				
 				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container,
@@ -3617,8 +3604,9 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					resultObjects[index][toggleFn]();
 				}
 			}).children("input").prop("checked", false);
-			
-			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList}, this.$resultHeaderTop);
+
+			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList, groups : this.options.resultActions}, 
+					$(".result_table_action_menu", this.$resultHeaderTop));
 		},
 		
 		_initEventHandlers : function() {

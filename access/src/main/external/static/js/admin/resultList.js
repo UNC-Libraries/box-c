@@ -73,6 +73,8 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 	var $resultPage = $('.result_page');
 	var $resultView = $('#result_view');
 	var $columnHeaders;
+	var $containerEntry;
+	var $tableActionMenu;
 	var $resultHeader;
 	var $resultTable;
 	var $window = $(window);
@@ -85,16 +87,8 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 		$resultHeader.width(wWidth - menuOffset);
 		$resultTable.width(wWidth - menuOffset);
 		$columnHeaders.width(wWidth - menuOffset);
+		$containerEntry.css('max-width', (wWidth - $tableActionMenu.width() - menuOffset - 105));
 	};
-	
-	function setResizeReferences(resultTable) {
-		$columnHeaders = $('.column_headers');
-		$resultHeader = $('.result_header');
-		$resultTable = $('.result_table');
-		
-		resizeResults.call();
-		$window.resize(resizeResults);
-	}
 	
 	// Keep result area the right size when the menu is resized
 	var searchMenu = $("#search_menu").searchMenu({
@@ -122,15 +116,26 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 		containerPath = pathTrailTemplate({ancestorPath : container.ancestorPath, queryMethod : 'list', filterParams : module.config().filterParams, skipLast : true});
 	var resultTableHeader = resultTableHeaderTemplate({container : container, navigationBar : navigationBar, containerPath : containerPath})
 	
-	if (container) {
-		var containerObject = new ParentResultObject({metadata : container, 
-				element : $(".container_entry", resultTableHeader)});
+	function postRender(resultTable) {
+		if (container) {
+			var containerObject = new ParentResultObject({metadata : container, 
+					element : $(".container_entry")});
 		
-		new AddMenu({
-			container : $(resultTableHeader),
-			selector : "#add_menu",
-			alertHandler : alertHandler
-		});
+			new AddMenu({
+				container : container,
+				selector : "#add_menu",
+				alertHandler : alertHandler
+			});
+		}
+		
+		$columnHeaders = $('.column_headers');
+		$resultHeader = $('.result_header');
+		$resultTable = $('.result_table');
+		$containerEntry = $('.container_header > span > h2');
+		$tableActionMenu = $('.result_table_action_menu');
+		
+		resizeResults.call();
+		$window.resize(resizeResults);
 	}
 	
 	$(".result_area > div").resultTableView({
@@ -148,7 +153,13 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 			"actionMenu" : {name : "", colClass : "narrow"}
 		},
 		resultHeader : resultTableHeader,
-		postRender : setResizeReferences
+		postRender : postRender,
+		postInit : resizeResults,
+		resultActions : {
+			1 : ['restoreBatch', 'deleteBatch'],
+			2 : ['publish', 'unpublish']/*,
+			'more' : ['reindex']*/
+		}
 	});
 	
 	//console.profileEnd();

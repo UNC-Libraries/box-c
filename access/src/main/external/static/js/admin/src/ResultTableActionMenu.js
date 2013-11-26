@@ -12,6 +12,10 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 				label : "Restore",
 				className : "RemoveBatchFromTrashButton",
 				permissions : ["moveToTrash"]
+			}, deleteBatchForever : {
+				label : "Delete Forever",
+				className : "DeleteBatchButton",
+				permissions : ["purgeForever"]
 			}, publish : {
 				label : "Publish",
 				className : "PublishBatchButton",
@@ -26,20 +30,17 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 				permissions : ["purgeForever"]
 			}
 		},
-		groups : {
-			1 : ['restoreBatch', 'deleteBatch'],
-			2 : ['publish', 'unpublish']/*,
-			'more' : ['reindex']*/
-		}
+		groups : undefined
 	};
 	
-	function ResultTableActionMenu(options, parentElement) {
+	function ResultTableActionMenu(options, element) {
 		this.options = $.extend({}, defaultOptions, options);
+		this.element = element;
 		this.resultObjectList = this.options.resultObjectList;
-		this.init(parentElement);
+		this.init();
 	};
 	
-	ResultTableActionMenu.prototype.init = function(parentElement) {
+	ResultTableActionMenu.prototype.init = function() {
 		var self = this;
 		// Load action classes
 		var actionClasses = [];
@@ -51,8 +52,6 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 		
 		require(actionClasses, function(){
 			var argIndex = 0, loadedClasses = arguments;
-			self.element = $("<div/>").addClass("result_table_action_menu");
-			parentElement.append(self.element);
 			
 			$.each(self.options.groups, function(groupName, actionList){
 				var groupSpan = $("<span/>").addClass("container_action_group").appendTo(self.element);
@@ -72,6 +71,7 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 					}
 				}
 			});
+			$(window).resize();
 		});
 	};
 	

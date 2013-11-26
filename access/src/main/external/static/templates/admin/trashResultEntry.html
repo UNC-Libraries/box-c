@@ -39,9 +39,9 @@
 			<% } %>
 		</div>
 	</td>
-	<td class="original_path">
+	<td class="original_path" title="<%= metadata.ancestorNames %>">
 		<div>
-			<%= metadata.ancestorNames %>
+			<%= metadata.ancestorNames? metadata.ancestorNames.substring(12) : '' %>
 		</div>
 	</td>
 	<td class="date_added">

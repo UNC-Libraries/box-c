@@ -12,7 +12,8 @@ define('BatchCallbackButton', [ 'jquery', 'AjaxCallbackButton', 'ResultObjectLis
 			childWorkLinkName : undefined,
 			workFunction : undefined,
 			followupFunction : undefined,
-			completeFunction : undefined 
+			completeFunction : undefined,
+			animateSpeed: 'fast'
 		};
 
 	BatchCallbackButton.prototype._create = function(options, element) {

@@ -30,7 +30,7 @@
 	</c:otherwise>
 </c:choose>
 
-<div class="onecol container_record" id="full_record">
+<div class="onecol container_record full_record_top" id="full_record">
 	<c:url var="structureUrl" scope="page" value='structure/${briefObject.id}'></c:url>
 
 	<div class="contentarea">

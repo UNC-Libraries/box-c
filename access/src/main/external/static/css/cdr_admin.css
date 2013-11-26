@@ -2307,11 +2307,16 @@ h1 {
 #mainmenu li a {
 	margin-right: 6px;
 	border-right: 0px;
-	background-color: #FFFFFF;
+	background-color: #DDF0FA;
 	border-right: 0px;
 	border: 1px solid #D8EDf5;
 	color: #0A5274;
 	background-image: none;
+}
+
+#mainmenu > li > .active {
+	background-color: #fff;
+	border-bottom: 1px solid #fff;
 }
 
 /** Dashboard */
@@ -2655,18 +2660,27 @@ h1 {
 }
 
 /** Container header */
+
+.result_header_top {
+	overflow: hidden;
+}
+
 .container_header {
 	display: inline-block;
 	margin-bottom: 3px;
+	float: left;
 }
 
 .container_header > span > h2 {
 	display: inline-block;
 	height: 21px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .container_header > span > h2 > img {
-	vertical-align: middle;
+	vertical-align: bottom;
 }
 
 .result_header_bottom {
@@ -2722,6 +2736,10 @@ h1 {
 
 .container_header > ul {
 	display: none;
+}
+
+.deleteBatchForever_selected {
+	color: #b33;
 }
 
 .arrange_placeholder {
@@ -3104,9 +3122,20 @@ h1 {
 /** Trash folder */
 
 .trash_header .container_header {
-	margin-bottom: 20px;
+	margin-bottom: 0;
 }
 
+.trash_header .result_header_bottom {
+	top : 3px;
+}
+
+.trash_header .result_table_wrap {
+	padding-top: 80px;
+}
+
+.trash_header .result_table .column_headers {
+	top: 58px;
+}
 
 /** Other */
 

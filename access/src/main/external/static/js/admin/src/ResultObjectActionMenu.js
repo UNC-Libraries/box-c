@@ -37,6 +37,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 				if (resultObject.isContainer)
 					items["openContainer"] = {name : "Open"};
 				items["viewInCDR"] = {name : "View in CDR"};
+				if (resultObject.metadata.type == 'Collection') {
+					items["sepbrowse"] = "";
+					items["viewTrash"] = {name : "View trash for this collection"};
+					items["review"] = {name : "Review unpublished"};
+				}
 				items["sepedit"] = "";
 				if ($.inArray('publish', metadata.permissions) != -1)
 					items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
@@ -49,14 +54,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 					items["reindex"] = {name : 'Reindex'};
 				}
 				items["sepdel"] = "";
-				if ($.inArray('purgeForever', metadata.permissions) != -1) {
-					items["purgeForever"] = {name : 'Delete'};
+				if ($.inArray('purgeForever', metadata.permissions) != -1 && $.inArray('Deleted', metadata.status) != -1) {
+					items["purgeForever"] = {name : 'Delete Forever'};
 				}
 				if ($.inArray('moveToTrash', metadata.permissions) != -1) {
 					if ($.inArray('Deleted', metadata.status) == -1)
-						items["moveToTrash"] = {name : 'Move to trash'};
+						items["moveToTrash"] = {name : 'Delete'};
 					else
-						items["moveToTrash"] = {name : 'Remove from trash'};
+						items["moveToTrash"] = {name : 'Restore'};
 				}
 				
 				return {
@@ -67,6 +72,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 								break;
 							case "openContainer" :
 								document.location.href = baseUrl + "list/" + metadata.id;
+								break;
+							case "viewTrash" :
+								document.location.href = baseUrl + "trash/" + metadata.id;
+								break;
+							case "review" :
+								document.location.href = baseUrl + "review/" + metadata.id;
 								break;
 							case "publish" :
 								var publishButton = new PublishObjectButton({

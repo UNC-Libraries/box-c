@@ -7,12 +7,12 @@ define('DeleteObjectButton', [ 'jquery', 'AjaxCallbackButton'], function($, Ajax
 	DeleteObjectButton.prototype = Object.create( AjaxCallbackButton.prototype );
 	
 	var defaultOptions = {
-			workLabel: "Deleting...",
+			workLabel: "Deleting forever...",
 			workPath: "delete/{idPath}",
 			followupLabel: "Cleaning up...",
 			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
 			confirm: true,
-			confirmMessage: "Delete this object?",
+			confirmMessage: "Permanently delete this object?  This action cannot be undone",
 			animateSpeed: 'fast',
 			workDone: DeleteObjectButton.prototype.deleteWorkDone,
 			followup: DeleteObjectButton.prototype.deleteFollowup,
@@ -39,8 +39,8 @@ define('DeleteObjectButton', [ 'jquery', 'AjaxCallbackButton'], function($, Ajax
 	
 	DeleteObjectButton.prototype.complete = function() {
 		if (this.options.metadata)
-			this.alertHandler.alertHandler("success", "Successfully deleted item " + metadata.title + " (" + metadata.id + ")");
-		else this.alertHandler.alertHandler("success", "Successfully deleted item " + data);
+			this.alertHandler.alertHandler("success", "Permanently deleted item " + metadata.title + " (" + metadata.id + ")");
+		else this.alertHandler.alertHandler("success", "Permanently deleted item " + data);
 	};
 
 	DeleteObjectButton.prototype.completeState = function() {

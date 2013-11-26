@@ -25,14 +25,16 @@
 			
 			<ul id="mainmenu">
 				<li>
-					<c:set var="homeTabClass" value=""/>
-					<c:if test="${contentPage == 'frontPage.jsp'}">
-						<c:set var="homeTabClass" value="active"/>
-					</c:if>
-					<a href="${pageContext.request.contextPath}/" class="${homeTabClass}" id="home">Home</a>
+					<c:set var="tabClass"><c:if test="${requestScope.queryMethod == 'list' || requestScope.queryMethod == 'search'}">active</c:if></c:set>
+					<a class="${tabClass}" href="${pageContext.request.contextPath}/list">Browse</a>
 				</li>
 				<li>
-					<a href="statusMonitor" id="menu_status_monitor">Status Monitor</a>
+					<c:set var="tabClass"><c:if test="${requestScope.queryMethod == 'trash'}">active</c:if></c:set>
+					<a class="${tabClass}" href="${pageContext.request.contextPath}/trash">Trash</a>
+				</li>
+				<li>
+					<c:set var="tabClass"><c:if test="${contentPage == 'report/statusMonitor.jsp'}">active</c:if></c:set>
+					<a href="statusMonitor" id="menu_status_monitor" class="${tabClass}">Status Monitor</a>
 				</li>
 			</ul>
 			<ul class="secondarymenu">
