@@ -9,7 +9,7 @@
             "file:/P:/in_process",
             "file:/Volume/storhouse/in_process"
         ],
-        "confirmFile":"tag_storhouse_in_process",
+        "confirmFile":"sohp",
         "ingestCleanupPolicy":"DO_NOTHING"
     },
     "tag:cdr.lib.unc.edu,2013:/storhouse_born_digital/":{
@@ -18,16 +18,15 @@
             "file:/P:/born_digital",
             "file:/Volume/storhouse/born_digital"
         ],
-        "confirmFile":"tag_storhouse_born_digital",
+        "confirmFile":"UARMS",
         "ingestCleanupPolicy":"DO_NOTHING"
     },
     "tag:cdr.lib.unc.edu,2013:/lib_projects/":{
         "name":"Library Projects Drive (Pre-staged)",
         "mappings":[
-            "file:/P:/",
             "file:/Volume/projects"
         ],
-        "confirmFile":".tag_lib_projects",
+        "confirmFile":"CDR/tag_lib_projects",
         "ingestCleanupPolicy":"DO_NOTHING",
         "readOnly":"true"
     },
