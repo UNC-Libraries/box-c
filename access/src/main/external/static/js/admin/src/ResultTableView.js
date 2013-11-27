@@ -65,7 +65,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				self._initEventHandlers();
 			
 				// Activate the result entry context menus, on the action gear and right clicking
-				self.actionMenu = [new ResultObjectActionMenu({
+				self.contextMenus = [new ResultObjectActionMenu({
 					selector : ".action_gear",
 					containerSelector : ".res_entry,.container_entry"
 				}), new ResultObjectActionMenu({
@@ -285,6 +285,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				for (var index in resultObjects) {
 					resultObjects[index][toggleFn]();
 				}
+				self._selectionUpdated();
 			}).children("input").prop("checked", false);
 
 			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList, groups : this.options.resultActions}, 
@@ -295,10 +296,15 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			var self = this;
 			$(document).on('click', ".res_entry", function(e){
 				$(this).data('resultObject').toggleSelect();
+				self._selectionUpdated();
 			});
 			this.$resultTable.on('click', ".res_entry a", function(e){
 				e.stopPropagation();
 			});
+		},
+		
+		_selectionUpdated : function() {
+			this.actionMenu.selectionUpdated();
 		},
 		
 		//Initializes the droppable elements used in move operations

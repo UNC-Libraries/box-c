@@ -16,16 +16,9 @@ define('DeleteBatchButton', [ 'jquery', 'BatchCallbackButton', 'DeleteObjectButt
 		merged.confirmAnchor = element;
 		BatchCallbackButton.prototype._create.call(this, merged, element);
 	};
-
-	DeleteBatchButton.prototype.getTargetIds = function() {
-		var targetIds = [];
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (resultObject.isSelected() && resultObject.isEnabled()) {
-				targetIds.push(resultObject.getPid());
-			}
-		}
-		return targetIds;
+	
+	DeleteBatchButton.prototype.isValidTarget = function(resultObject) {
+		return resultObject.isSelected() && resultObject.isEnabled();
 	};
 	
 	DeleteBatchButton.prototype.doWork = function() {

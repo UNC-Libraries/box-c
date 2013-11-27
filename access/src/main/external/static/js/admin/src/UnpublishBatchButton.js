@@ -16,17 +16,10 @@ define('UnpublishBatchButton', [ 'jquery', 'BatchCallbackButton', 'PublishObject
 		var merged = $.extend({}, defaultOptions, options);
 		BatchCallbackButton.prototype._create.call(this, merged, element);
 	};
-
-	UnpublishBatchButton.prototype.getTargetIds = function() {
-		var targetIds = [];
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (resultObject.isSelected() && $.inArray("Unpublished", resultObject.getMetadata().status) == -1
-					&& resultObject.isEnabled()) {
-				targetIds.push(resultObject.getPid());
-			}
-		}
-		return targetIds;
+	
+	UnpublishBatchButton.prototype.isValidTarget = function(resultObject) {
+		return resultObject.isSelected() && $.inArray("Unpublished", resultObject.getMetadata().status) == -1
+					&& resultObject.isEnabled();
 	};
 
 	UnpublishBatchButton.prototype.doWork = function() {

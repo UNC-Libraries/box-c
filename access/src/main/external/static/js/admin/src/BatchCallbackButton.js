@@ -101,18 +101,29 @@ define('BatchCallbackButton', [ 'jquery', 'AjaxCallbackButton', 'ResultObjectLis
 		this.targetIds = null;
 		this.enable();
 	};
-
+		
 	BatchCallbackButton.prototype.getTargetIds = function() {
 		var targetIds = [];
-
-		$.each(this.options.resultObjects, function() {
-			var resultObject = this;
-			if (this.isSelected()) {
+		for (var id in this.options.resultObjectList.resultObjects) {
+			var resultObject = this.options.resultObjectList.resultObjects[id];
+			if (this.isValidTarget(resultObject))
 				targetIds.push(resultObject.getPid());
-			}
-		});
-
+		}
 		return targetIds;
 	};
+
+	BatchCallbackButton.prototype.hasTargets = function() {
+		for (var id in this.options.resultObjectList.resultObjects) {
+			var resultObject = this.options.resultObjectList.resultObjects[id];
+			if (this.isValidTarget(resultObject))
+				return true;
+		}
+		return false;
+	};
+	
+	BatchCallbackButton.prototype.isValidTarget = function(resultObject) {
+		return resultObject.isSelected();
+	};
+	
 	return BatchCallbackButton;
 });

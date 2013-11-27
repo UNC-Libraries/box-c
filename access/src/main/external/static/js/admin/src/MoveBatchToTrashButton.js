@@ -24,16 +24,10 @@ define('MoveBatchToTrashButton', [ 'jquery', 'BatchCallbackButton', 'MoveObjectT
 		
 		BatchCallbackButton.prototype._create.call(this, merged, element);
 	};
-
-	MoveBatchToTrashButton.prototype.getTargetIds = function() {
-		var targetIds = [];
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (resultObject.isSelected() && resultObject.isEnabled() && $.inArray("Deleted", resultObject.getMetadata().status) == -1) {
-				targetIds.push(resultObject.getPid());
-			}
-		}
-		return targetIds;
+	
+	MoveBatchToTrashButton.prototype.isValidTarget = function(resultObject) {
+		return resultObject.isSelected() && resultObject.isEnabled() 
+					&& $.inArray("Deleted", resultObject.getMetadata().status) == -1;
 	};
 	
 	MoveBatchToTrashButton.prototype.doWork = function() {

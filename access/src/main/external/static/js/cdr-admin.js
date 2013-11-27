@@ -1272,19 +1272,30 @@ define('AjaxCallbackButton', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 		this.targetIds = null;
 		this.enable();
 	};
-
+		
 	BatchCallbackButton.prototype.getTargetIds = function() {
 		var targetIds = [];
-
-		$.each(this.options.resultObjects, function() {
-			var resultObject = this;
-			if (this.isSelected()) {
+		for (var id in this.options.resultObjectList.resultObjects) {
+			var resultObject = this.options.resultObjectList.resultObjects[id];
+			if (this.isValidTarget(resultObject))
 				targetIds.push(resultObject.getPid());
-			}
-		});
-
+		}
 		return targetIds;
 	};
+
+	BatchCallbackButton.prototype.hasTargets = function() {
+		for (var id in this.options.resultObjectList.resultObjects) {
+			var resultObject = this.options.resultObjectList.resultObjects[id];
+			if (this.isValidTarget(resultObject))
+				return true;
+		}
+		return false;
+	};
+	
+	BatchCallbackButton.prototype.isValidTarget = function(resultObject) {
+		return resultObject.isSelected();
+	};
+	
 	return BatchCallbackButton;
 });
 /*
@@ -1533,16 +1544,9 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		merged.confirmAnchor = element;
 		BatchCallbackButton.prototype._create.call(this, merged, element);
 	};
-
-	DeleteBatchButton.prototype.getTargetIds = function() {
-		var targetIds = [];
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (resultObject.isSelected() && resultObject.isEnabled()) {
-				targetIds.push(resultObject.getPid());
-			}
-		}
-		return targetIds;
+	
+	DeleteBatchButton.prototype.isValidTarget = function(resultObject) {
+		return resultObject.isSelected() && resultObject.isEnabled();
 	};
 	
 	DeleteBatchButton.prototype.doWork = function() {
@@ -2123,16 +2127,10 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		
 		BatchCallbackButton.prototype._create.call(this, merged, element);
 	};
-
-	MoveBatchToTrashButton.prototype.getTargetIds = function() {
-		var targetIds = [];
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (resultObject.isSelected() && resultObject.isEnabled() && $.inArray("Deleted", resultObject.getMetadata().status) == -1) {
-				targetIds.push(resultObject.getPid());
-			}
-		}
-		return targetIds;
+	
+	MoveBatchToTrashButton.prototype.isValidTarget = function(resultObject) {
+		return resultObject.isSelected() && resultObject.isEnabled() 
+					&& $.inArray("Deleted", resultObject.getMetadata().status) == -1;
 	};
 	
 	MoveBatchToTrashButton.prototype.doWork = function() {
@@ -2463,17 +2461,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		merged.workFunction = this.resultObjectWorkFunction;
 		BatchCallbackButton.prototype._create.call(this, merged, element);
 	};
-
-	PublishBatchButton.prototype.getTargetIds = function() {
-		var targetIds = [];
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (resultObject.isSelected() && $.inArray("Unpublished", resultObject.getMetadata().status) != -1
-					&& resultObject.isEnabled()) {
-				targetIds.push(resultObject.getPid());
-			}
-		}
-		return targetIds;
+	
+	PublishBatchButton.prototype.isValidTarget = function(resultObject) {
+		return resultObject.isSelected() && $.inArray("Unpublished", resultObject.getMetadata().status) != -1
+					&& resultObject.isEnabled();
 	};
 	
 	PublishBatchButton.prototype.doWork = function() {
@@ -2701,15 +2692,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		BatchCallbackButton.prototype._create.call(this, merged, element);
 	};
 
-	RemoveBatchFromTrashButton.prototype.getTargetIds = function() {
-		var targetIds = [];
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (resultObject.isSelected() && resultObject.isEnabled() && $.inArray("Deleted", resultObject.getMetadata().status) != -1) {
-				targetIds.push(resultObject.getPid());
-			}
-		}
-		return targetIds;
+	
+	RemoveBatchFromTrashButton.prototype.isValidTarget = function(resultObject) {
+		return resultObject.isSelected() && resultObject.isEnabled() 
+					&& $.inArray("Deleted", resultObject.getMetadata().status) != -1;
 	};
 	
 	RemoveBatchFromTrashButton.prototype.doWork = function() {
@@ -3290,11 +3276,15 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			}
 		});
 		
+		this.actionButtons = [];
+		this.actionGroups = [];
+		
 		require(actionClasses, function(){
 			var argIndex = 0, loadedClasses = arguments;
 			
 			$.each(self.options.groups, function(groupName, actionList){
 				var groupSpan = $("<span/>").addClass("container_action_group").appendTo(self.element);
+				self.actionGroups.push(groupSpan);
 				for (var i in actionList) {
 					var actionDefinition = self.options.actions[actionList[i]];
 					actionDefinition.actionClass = loadedClasses[argIndex++];
@@ -3308,11 +3298,37 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 						actionButton.click(function(){
 							$(this).data('actionObject').activate();
 						});
+						
+						self.actionButtons.push(actionButton);
 					}
 				}
 			});
+			self.selectionUpdated();
 			$(window).resize();
 		});
+	};
+	
+	ResultTableActionMenu.prototype.selectionUpdated = function() {
+		for (var i in this.actionButtons) {
+			var actionButton = this.actionButtons[i];
+			var actionObject = actionButton.data('actionObject');
+			if (actionObject.hasTargets()) {
+				actionButton.removeClass("hidden");
+			} else {
+				actionButton.addClass("hidden");
+			}
+		}
+		
+		for (var i in this.actionGroups) {
+			var actionGroup = this.actionGroups[i];
+			var visibleChildren = actionGroup.children(".container_action").not(".hidden");
+			if (visibleChildren.length == 0) {
+				actionGroup.hide();
+			} else {
+				visibleChildren.removeClass("first_visible").first().addClass("first_visible");
+				actionGroup.show();
+			}
+		}
 	};
 	
 	return ResultTableActionMenu;
@@ -3383,7 +3399,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				self._initEventHandlers();
 			
 				// Activate the result entry context menus, on the action gear and right clicking
-				self.actionMenu = [new ResultObjectActionMenu({
+				self.contextMenus = [new ResultObjectActionMenu({
 					selector : ".action_gear",
 					containerSelector : ".res_entry,.container_entry"
 				}), new ResultObjectActionMenu({
@@ -3603,6 +3619,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				for (var index in resultObjects) {
 					resultObjects[index][toggleFn]();
 				}
+				self._selectionUpdated();
 			}).children("input").prop("checked", false);
 
 			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList, groups : this.options.resultActions}, 
@@ -3613,10 +3630,15 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			var self = this;
 			$(document).on('click', ".res_entry", function(e){
 				$(this).data('resultObject').toggleSelect();
+				self._selectionUpdated();
 			});
 			this.$resultTable.on('click', ".res_entry a", function(e){
 				e.stopPropagation();
 			});
+		},
+		
+		_selectionUpdated : function() {
+			this.actionMenu.selectionUpdated();
 		},
 		
 		//Initializes the droppable elements used in move operations
@@ -3921,17 +3943,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		var merged = $.extend({}, defaultOptions, options);
 		BatchCallbackButton.prototype._create.call(this, merged, element);
 	};
-
-	UnpublishBatchButton.prototype.getTargetIds = function() {
-		var targetIds = [];
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (resultObject.isSelected() && $.inArray("Unpublished", resultObject.getMetadata().status) == -1
-					&& resultObject.isEnabled()) {
-				targetIds.push(resultObject.getPid());
-			}
-		}
-		return targetIds;
+	
+	UnpublishBatchButton.prototype.isValidTarget = function(resultObject) {
+		return resultObject.isSelected() && $.inArray("Unpublished", resultObject.getMetadata().status) == -1
+					&& resultObject.isEnabled();
 	};
 
 	UnpublishBatchButton.prototype.doWork = function() {
