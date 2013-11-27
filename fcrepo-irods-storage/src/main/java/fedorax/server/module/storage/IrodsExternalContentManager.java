@@ -62,7 +62,6 @@ import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.staging.FileResolver;
 import edu.unc.lib.staging.Stages;
 import edu.unc.lib.staging.StagingArea;
 import edu.unc.lib.staging.StagingException;
@@ -240,29 +239,26 @@ public class IrodsExternalContentManager extends Module implements
 		LOG.debug("in getExternalContent(), url=" + params.getUrl());
 
 		String protocol = params.getProtocol();
-		String url = params.getUrl();
+		URI uri = URI.create(params.getUrl());
 
 		boolean staged = false;
 		try {
-			URI manifestURI = URI.create(url);
-			LOG.debug("manifestURI: "+manifestURI);
+			LOG.debug("manifestURI: "+uri);
 			LOG.debug("stages: "+this.stages);
 			LOG.debug("stages size: "+this.stages.getAllAreas().size());
-			URI stageUrl = this.stages.getStorageURI(manifestURI);
-			LOG.debug("stageUrl: "+stageUrl);
+			URI storageURI = this.stages.getStorageURI(uri);
+			LOG.debug("storageURI: "+storageURI);
 			staged = true;
-			protocol = stageUrl.getScheme();
-			url = URLDecoder.decode(stageUrl.toString(), "utf-8");
+			protocol = storageURI.getScheme();
+			uri = storageURI;
 		} catch(StagingException e) {
 			LOG.warn("Exception throw resolving local URL", e);
-		} catch (UnsupportedEncodingException e) {
-			throw new Error(e);
 		}
-		LOG.debug("protocol is " + protocol + ", url is " + url);
-		if (protocol == null && url.startsWith("irods://")) {
-			return getFromIrods(url, params.getMimeType());
+		LOG.debug("protocol is " + protocol + ", uri is " + uri);
+		if (protocol == null && uri.toString().startsWith("irods://")) {
+			return getFromIrods(uri, params.getMimeType());
 		} else if (protocol == null || protocol.equals("file")) {
-			return getFromFilesystem(url, params.getMimeType(), staged,
+			return getFromFilesystem(uri, params.getMimeType(), staged,
 					params);
 		} else if (protocol.equals("http") || protocol.equals("https")) {
 			try {
@@ -271,7 +267,7 @@ public class IrodsExternalContentManager extends Module implements
 				throw new GeneralException(e.getMessage()+"("+params.getUrl()+")", e);
 			}
 		} else if (protocol.equals("irods")) {
-			return getFromIrods(url, params.getMimeType());
+			return getFromIrods(uri, params.getMimeType());
 		}
 		throw new GeneralException(
 				"protocol for retrieval of external content not supported. URL: "
@@ -282,11 +278,9 @@ public class IrodsExternalContentManager extends Module implements
 	 * @param params
 	 * @return
 	 */
-	private MIMETypedStream getFromIrods(String url, String mimeType)
+	private MIMETypedStream getFromIrods(URI uri, String mimeType)
 			throws HttpServiceNotFoundException, GeneralException {
-		LOG.debug("in getFromIrods(), url=" + url);
 		try {
-			URI uri = new URI(url);
 			LOG.debug("uri: "+uri);
 			IRODSFileFactory ff = IRODSFileSystem.instance()
 					.getIRODSFileFactory(irodsAccount);
@@ -432,13 +426,13 @@ public class IrodsExternalContentManager extends Module implements
 	 * @throws HttpServiceNotFoundException
 	 * @throws GeneralException
 	 */
-	private MIMETypedStream getFromFilesystem(String uri, String mimeType,
+	private MIMETypedStream getFromFilesystem(URI uri, String mimeType,
 			boolean staged, ContentManagerParams params)
 			throws HttpServiceNotFoundException, GeneralException {
 		LOG.debug("in getFile(), url=" + uri);
 
 		try {
-			URL fileUri = new URL(uri);
+			URL fileUri = new URL(URLDecoder.decode(uri.toString(), "utf-8"));
 			String path = fileUri.getPath();
 			File cFile = new File(path).getCanonicalFile();
 
