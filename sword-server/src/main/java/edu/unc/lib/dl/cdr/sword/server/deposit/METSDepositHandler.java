@@ -22,6 +22,7 @@ import org.swordapp.server.SwordConfiguration;
 
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.services.IngestResult;
@@ -49,7 +50,15 @@ public class METSDepositHandler extends AbstractDepositHandler {
 		record.setMessage("Added through SWORD");
 		record.setPackagingType(type);
 		record.setDepositorEmail(SwordConfigurationImpl.getUserEmailAddress());
-		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
+    
+		IngestResult ingestResult;
+    
+		try {
+			ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
+		} catch (IngestException e) {
+			sip.delete();
+			throw e;
+		}
 
 		return buildReceipt(ingestResult, config);
 	}
