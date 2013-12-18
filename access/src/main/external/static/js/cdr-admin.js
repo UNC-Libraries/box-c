@@ -2184,6 +2184,19 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 				// Verify that it is the correct type of element and retrieve metadata
 				var metadata = self.options.dropTargetGetDataFunction($dropTarget);
 				if (!metadata) return false;
+				
+				// Check that we are not moving an object to itself
+				try {
+					$.each(self.manager.dragTargets, function() {
+						if (this.pid == metadata.id) {
+							throw "Invalid destination.  Object " + this.pid + " cannot be move into itself.";
+						}
+					});
+				} catch (e) {
+					self.manager.options.alertHandler.alertHandler("error", e);
+					return false;
+				}
+				
 				// Activate move drop mode
 				self.manager.dropActive = true;
 				
@@ -3817,7 +3830,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 									});
 									$structureView.addClass('inset facet');
 									// Inform the result view that the structure browse is ready for move purposes
-									if (self.options.resultTableView)
+									if (self.options.resultTableView) {
 										self.options.resultTableView.resultTableView('addMoveDropLocation', 
 											$structureView.find(".structure_content"),
 											'.entry > .primary_action', 
@@ -3827,8 +3840,9 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 												if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
 													return false;
 												return dropObject.metadata;
-											});
-									data = $structureView;
+										});
+										data = $structureView;
+									}
 								}
 								ui.newPanel.html(data);
 								ui.newPanel.data('contentLoaded', true);

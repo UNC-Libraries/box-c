@@ -671,6 +671,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 
 		for (PID pid : moving) {
+			if (pid.equals(destination))
+				throw new IngestException("The destination folder and one of the moving objects are the same: " + destination);
 			for (PID destPid : destinationPath) {
 				if (pid.equals(destPid))
 					throw new IngestException("The destination folder is below one of the moving objects: " + destination);

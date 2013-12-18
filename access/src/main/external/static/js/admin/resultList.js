@@ -71,7 +71,7 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 	
 	// Keep the result area locked to the size of the view port
 	var $resultPage = $('.result_page');
-	var $resultView = $('#result_view');
+	var $resultView;
 	var $columnHeaders;
 	var $containerEntry;
 	var $tableActionMenu;
@@ -80,6 +80,7 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 	var $window = $(window);
 	var menuOffset = 360;
 	
+	// Keep result area the right size when the menu or window is resized
 	var resizeResults = function () {
 		var wHeight = $window.height(), wWidth = $window.width();
 		$resultPage.height(wHeight - 105);
@@ -89,16 +90,6 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 		$columnHeaders.width(wWidth - menuOffset);
 		$containerEntry.css('max-width', (wWidth - $tableActionMenu.width() - menuOffset - 105));
 	};
-	
-	// Keep result area the right size when the menu is resized
-	var searchMenu = $("#search_menu").searchMenu({
-		filterParams : module.config().filterParams,
-		resultTableView : $("#result_view"),
-		selectedId : module.config().container && /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? module.config().container.id : false,
-	}).on("resize", function(){
-		menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
-		resizeResults.call();
-	});
 	
 	var pageNavigation = {
 		resultUrl : module.config().resultUrl,
@@ -117,6 +108,23 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 	var resultTableHeader = resultTableHeaderTemplate({container : container, navigationBar : navigationBar, containerPath : containerPath})
 	
 	function postRender(resultTable) {
+		$resultView = $('#result_view');
+		$columnHeaders = $('.column_headers');
+		$resultHeader = $('.result_header');
+		$resultTable = $('.result_table');
+		$containerEntry = $('.container_header > span > h2');
+		$tableActionMenu = $('.result_table_action_menu');
+		
+		// Keep result area the right size when the menu is resized
+		var searchMenu = $("#search_menu").searchMenu({
+			filterParams : module.config().filterParams,
+			resultTableView : $(".result_area > div"),
+			selectedId : module.config().container && /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? module.config().container.id : false,
+		}).on("resize", function(){
+			menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
+			resizeResults.call();
+		});
+		
 		if (container) {
 			var containerObject = new ParentResultObject({metadata : container, 
 					element : $(".container_entry")});
@@ -127,12 +135,6 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 				alertHandler : alertHandler
 			});
 		}
-		
-		$columnHeaders = $('.column_headers');
-		$resultHeader = $('.result_header');
-		$resultTable = $('.result_table');
-		$containerEntry = $('.container_header > span > h2');
-		$tableActionMenu = $('.result_table_action_menu');
 		
 		resizeResults.call();
 		$window.resize(resizeResults);

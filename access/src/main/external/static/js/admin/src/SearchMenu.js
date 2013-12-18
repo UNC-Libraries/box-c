@@ -39,7 +39,7 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 									});
 									$structureView.addClass('inset facet');
 									// Inform the result view that the structure browse is ready for move purposes
-									if (self.options.resultTableView)
+									if (self.options.resultTableView) {
 										self.options.resultTableView.resultTableView('addMoveDropLocation', 
 											$structureView.find(".structure_content"),
 											'.entry > .primary_action', 
@@ -49,8 +49,9 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 												if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
 													return false;
 												return dropObject.metadata;
-											});
-									data = $structureView;
+										});
+										data = $structureView;
+									}
 								}
 								ui.newPanel.html(data);
 								ui.newPanel.data('contentLoaded', true);

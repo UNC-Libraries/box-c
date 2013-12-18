@@ -85,6 +85,7 @@
 	position: absolute;
 	width: calc(100vw - 360px);
 	top: 0;
+	z-index: 50;
 }
 
 .container_title {
@@ -316,6 +317,7 @@
 	width: calc(100vw - 360px);
 	position: absolute;
 	top: 58px;
+	z-index: 51;
 }
 
 .with_path .result_table .column_headers {

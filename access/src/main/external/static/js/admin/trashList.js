@@ -54,7 +54,7 @@ define('trashList', ['module', 'jquery', "tpl!../templates/admin/trashTableHeade
 	alertHandler.alertHandler().appendTo(document.body).hide();
 	
 	var $resultPage = $('.result_page');
-	var $resultView = $('#result_view');
+	var $resultView;
 	var $columnHeaders;
 	var $containerEntry;
 	var $tableActionMenu;
@@ -80,15 +80,6 @@ define('trashList', ['module', 'jquery', "tpl!../templates/admin/trashTableHeade
 	// Keep the result area locked to the size of the view port
 	
 	// Keep result area the right size when the menu is resized
-	var searchMenu = $("#search_menu").searchMenu({
-		filterParams : module.config().filterParams,
-		resultTableView : $("#result_view"),
-		selectedId : module.config().container && /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? module.config().container.id : false,
-		queryPath : 'trash'
-	}).on("resize", function(){
-		menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
-		resizeResults.call();
-	});
 	
 	var pageNavigation = {
 		resultUrl : module.config().resultUrl,
@@ -104,11 +95,22 @@ define('trashList', ['module', 'jquery', "tpl!../templates/admin/trashTableHeade
 	var resultTableHeader = resultTableHeaderTemplate({container : container, navigationBar : navigationBar})
 	
 	function postRender(resultTable) {
+		$resultView = $('#result_view');
 		$columnHeaders = $('.column_headers');
 		$resultHeader = $('.result_header');
 		$resultTable = $('.result_table');
 		$containerEntry = $('.container_header > span > h2');
 		$tableActionMenu = $('.result_table_action_menu');
+		
+		var searchMenu = $("#search_menu").searchMenu({
+			filterParams : module.config().filterParams,
+			resultTableView : $(".result_area > div"),
+			selectedId : module.config().container && /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? module.config().container.id : false,
+			queryPath : 'trash'
+		}).on("resize", function(){
+			menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
+			resizeResults.call();
+		});
 		
 		resizeResults.call();
 		$window.resize(resizeResults);

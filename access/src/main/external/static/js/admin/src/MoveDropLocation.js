@@ -30,6 +30,19 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				// Verify that it is the correct type of element and retrieve metadata
 				var metadata = self.options.dropTargetGetDataFunction($dropTarget);
 				if (!metadata) return false;
+				
+				// Check that we are not moving an object to itself
+				try {
+					$.each(self.manager.dragTargets, function() {
+						if (this.pid == metadata.id) {
+							throw "Invalid destination.  Object " + this.pid + " cannot be move into itself.";
+						}
+					});
+				} catch (e) {
+					self.manager.options.alertHandler.alertHandler("error", e);
+					return false;
+				}
+				
 				// Activate move drop mode
 				self.manager.dropActive = true;
 				
