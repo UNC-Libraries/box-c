@@ -2638,6 +2638,7 @@ h1 {
 	position: absolute;
 	width: calc(100vw - 360px);
 	top: 0;
+	min-height: 58px;
 	z-index: 50;
 }
 
@@ -2765,8 +2766,12 @@ h1 {
 	vertical-align: text-bottom;
 }
 
-.container_header > .path_trail {
-	font-size: 0.8em;
+.path_trail {
+	font-size: 0.9em;
+}
+
+.path_trail > span {
+	padding: 0 .4em;
 }
 
 .container_header > ul {
@@ -2874,7 +2879,7 @@ h1 {
 }
 
 .with_path .result_table .column_headers {
-	top: 74px;
+	top: 76px;
 }
 
 .result_table .column_headers > th {

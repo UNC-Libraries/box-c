@@ -1,8 +1,8 @@
 <span class="path_trail">
 	<% for (var tier in ancestorPath) {
 		if (tier != ancestorPath.length || !skipLast) {
-			if (tier > 0) { %>&gt;<%}
-			var url = "/" + queryMethod + "/" + ancestorPath[tier].id;
+			if (tier > 0) { %><span>&gt;</span><%}
+			var url = "/admin/" + queryMethod + "/" + ancestorPath[tier].id;
 			if (filterParams)
 				url += "?" + filterParams;
 				%><a href="<%= url %>"><%= ancestorPath[tier].title %></a><%

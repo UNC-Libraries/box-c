@@ -110,7 +110,7 @@ public class ObjectAccessControlsBean {
 		if (isActive != null)
 			this.isActive = isActive;
 		if (publicationStatus != null) {
-			this.isPublished = publicationStatus.contains("Published");
+			this.isPublished = !publicationStatus.contains("Unpublished");
 			this.ancestorsPublished = !publicationStatus.contains("Unpublished Ancestor");
 		}
 		copyRoles(roles, this.baseRoleGroups);

@@ -58,8 +58,8 @@ require.config({
 });
 
 define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHeader", "tpl!../templates/admin/navigationBar", "tpl!../templates/admin/pathTrail", 
-	'AddMenu', 'ParentResultObject', 'AlertHandler', 'SearchMenu', 'ResultTableView'],
-	function(module, $, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate, AddMenu, ParentResultObject) {
+	'AddMenu', 'ParentResultObject', 'URLUtilities', 'AlertHandler', 'SearchMenu', 'ResultTableView'],
+	function(module, $, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate, AddMenu, ParentResultObject, URLUtilities) {
 	//console.profile();
 	var alertHandler = $("<div id='alertHandler'></div>");
 	alertHandler.alertHandler().appendTo(document.body).hide();
@@ -101,7 +101,7 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 	};
 	
 	var container = module.config().container? module.config().container : null;
-	var navigationBar = navigationBarTemplate({pageNavigation : pageNavigation, container : container});
+	var navigationBar = navigationBarTemplate({pageNavigation : pageNavigation, container : container, URLUtilities : URLUtilities});
 	var containerPath = null;
 	if (container)
 		containerPath = pathTrailTemplate({ancestorPath : container.ancestorPath, queryMethod : 'list', filterParams : module.config().filterParams, skipLast : true});
