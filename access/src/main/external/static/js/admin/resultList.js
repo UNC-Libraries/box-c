@@ -36,6 +36,8 @@ require.config({
 		'IngestPackageForm' : 'cdr-admin',
 		'CreateSimpleObjectForm' : 'cdr-admin',
 		'ResultObjectActionMenu' : 'cdr-admin',
+		'ActionEventHandler' : 'cdr-admin',
+		'RefreshResultAction' : 'cdr-admin',
 		'AddMenu' : 'cdr-admin',
 		'contextMenu' : 'admin/lib/jquery.contextMenu',
 		'detachplus' : 'cdr-admin',
@@ -58,8 +60,8 @@ require.config({
 });
 
 define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHeader", "tpl!../templates/admin/navigationBar", "tpl!../templates/admin/pathTrail", 
-	'AddMenu', 'ParentResultObject', 'URLUtilities', 'AlertHandler', 'SearchMenu', 'ResultTableView'],
-	function(module, $, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate, AddMenu, ParentResultObject, URLUtilities) {
+	'AddMenu', 'ParentResultObject', 'URLUtilities', 'ActionEventHandler', 'AlertHandler', 'SearchMenu', 'ResultTableView'],
+	function(module, $, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate, AddMenu, ParentResultObject, URLUtilities, ActionEventHandler) {
 	//console.profile();
 	var alertHandler = $("<div id='alertHandler'></div>");
 	alertHandler.alertHandler().appendTo(document.body).hide();
@@ -106,6 +108,9 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 	if (container)
 		containerPath = pathTrailTemplate({ancestorPath : container.ancestorPath, queryMethod : 'list', filterParams : module.config().filterParams, skipLast : true});
 	var resultTableHeader = resultTableHeaderTemplate({container : container, navigationBar : navigationBar, containerPath : containerPath})
+	
+	
+	var actionHandler = new ActionEventHandler();
 	
 	function postRender(resultTable) {
 		$resultView = $('#result_view');
@@ -157,6 +162,7 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 		resultHeader : resultTableHeader,
 		postRender : postRender,
 		postInit : resizeResults,
+		actionHandler : actionHandler,
 		resultActions : {
 			1 : ['restoreBatch', 'deleteBatch'],
 			2 : ['publish', 'unpublish']/*,

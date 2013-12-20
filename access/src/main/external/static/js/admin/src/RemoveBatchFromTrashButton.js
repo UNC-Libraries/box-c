@@ -1,4 +1,4 @@
-define('RemoveBatchFromTrashButton', [ 'jquery', 'BatchCallbackButton', 'MoveObjectToTrashButton'], function($, BatchCallbackButton, MoveObjectToTrashButton) {
+define('RemoveBatchFromTrashButton', [ 'jquery', 'BatchCallbackButton'], function($, BatchCallbackButton) {
 	function RemoveBatchFromTrashButton(options, element) {
 		this._create(options, element);
 	};
@@ -8,7 +8,6 @@ define('RemoveBatchFromTrashButton', [ 'jquery', 'BatchCallbackButton', 'MoveObj
 	
 	var defaultOptions = {
 		resultObjectList : undefined,
-		childWorkLinkName : "restore",
 		confirm: true,
 		animateSpeed: 'fast'
 	};
@@ -36,15 +35,11 @@ define('RemoveBatchFromTrashButton', [ 'jquery', 'BatchCallbackButton', 'MoveObj
 		this.targetIds = this.getTargetIds();
 	
 		for (var index in this.targetIds) {
-			var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
-			var trashButton = new MoveObjectToTrashButton({
-				pid : resultObject.pid,
-				parentObject : resultObject,
-				metadata : resultObject.metadata,
-				confirm : false,
-				moveToTrash: false
+			this.actionHandler.addEvent({
+				action : 'RestoreResult',
+				target : this.options.resultObjectList.resultObjects[this.targetIds[index]],
+				confirm : false
 			});
-			trashButton.activate();
 		}
 		this.enable();
 	};

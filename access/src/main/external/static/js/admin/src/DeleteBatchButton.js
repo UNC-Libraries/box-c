@@ -1,4 +1,4 @@
-define('DeleteBatchButton', [ 'jquery', 'BatchCallbackButton', 'DeleteObjectButton'], function($, BatchCallbackButton, DeleteObjectButton) {
+define('DeleteBatchButton', ['jquery', 'BatchCallbackButton'], function($, BatchCallbackButton) {
 	function DeleteBatchButton(options, element) {
 		this._create(options, element);
 	};
@@ -26,14 +26,11 @@ define('DeleteBatchButton', [ 'jquery', 'BatchCallbackButton', 'DeleteObjectButt
 		this.targetIds = this.getTargetIds();
 	
 		for (var index in this.targetIds) {
-			var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
-			var deleteButton = new DeleteObjectButton({
-				pid : resultObject.pid,
-				parentObject : resultObject,
-				metadata : resultObject.metadata,
+			this.actionHandler.addEvent({
+				action : 'DeleteForever',
+				target : this.options.resultObjectList.resultObjects[this.targetIds[index]],
 				confirm : false
 			});
-			deleteButton.activate();
 		}
 		this.enable();
 	};

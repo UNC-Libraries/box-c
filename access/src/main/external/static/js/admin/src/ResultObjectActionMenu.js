@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 'PublishObjectButton', 'ReindexObjectButton', 'MoveObjectToTrashButton', 'contextMenu'],
-		function($, ui, DeleteObjectButton, PublishObjectButton, ReindexObjectButton, MoveObjectToTrashButton) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
+		function($, ui) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -10,6 +10,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 	
 	function ResultObjectActionMenu(options) {
 		this.options = $.extend({}, defaultOptions, options);
+		this.actionHandler = this.options.actionHandler;
 		this.create();
 	};
 	
@@ -80,13 +81,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 								document.location.href = baseUrl + "review/" + metadata.id;
 								break;
 							case "publish" :
-								var publishButton = new PublishObjectButton({
-									pid : resultObject.pid,
-									parentObject : resultObject,
-									defaultPublish : $.inArray("Unpublished", resultObject.metadata.status) == -1,
-									metadata : metadata
+								self.actionHandler.addEvent({
+									action : $.inArray("Unpublished", resultObject.metadata.status) == -1? 
+											'Unpublish' : 'Publish',
+									target : resultObject
 								});
-								publishButton.activate();
 								break;
 							case "editAccess" :
 								self.editAccess(resultObject);
@@ -96,32 +95,26 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'DeleteObjectButton', 
 								document.location.href = baseUrl + "describe/" + metadata.id;
 								break;
 							case "purgeForever" :
-								var deleteButton = new DeleteObjectButton({
-									pid : resultObject.pid,
-									parentObject : resultObject,
-									metadata : metadata,
+								self.actionHandler.addEvent({
+									action : 'DeleteForever',
+									target : resultObject,
 									confirmAnchor : options.$trigger
 								});
-								deleteButton.activate();
 								break;
 							case "moveToTrash":
-								var trashButton = new MoveObjectToTrashButton({
-									pid : resultObject.pid,
-									parentObject : resultObject,
-									metadata : metadata,
-									confirmAnchor : options.$trigger,
-									moveToTrash: ($.inArray('Deleted', metadata.status) == -1)
-								});
-								trashButton.activate();
-								break;
-							case "reindex" :
-								var reindexButton = new ReindexObjectButton({
-									pid : resultObject.pid,
-									parentObject : resultObject,
-									metadata : metadata,
+								self.actionHandler.addEvent({
+									action : ($.inArray('Deleted', metadata.status) == -1)? 
+											'TrashResult' : 'RestoreResult',
+									target : resultObject,
 									confirmAnchor : options.$trigger
 								});
-								reindexButton.activate();
+								break;
+							case "reindex" :
+								self.actionHandler.addEvent({
+									action : 'ReindexResult',
+									target : resultObject,
+									confirmAnchor : options.$trigger
+								});
 								break;
 						}
 					},

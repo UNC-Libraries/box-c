@@ -37,6 +37,7 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 		this.options = $.extend({}, defaultOptions, options);
 		this.element = element;
 		this.resultObjectList = this.options.resultObjectList;
+		this.actionHandler = this.options.actionHandler;
 		this.init();
 	};
 	
@@ -67,7 +68,10 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 						var actionButton = $("<span>" + actionDefinition.label + "</span>")
 								.addClass(actionList[i] + "_selected ajaxCallbackButton container_action")
 								.appendTo(groupSpan);
-						actionButton.data('actionObject', new actionDefinition.actionClass({resultObjectList : self.resultObjectList}, actionButton));
+						actionButton.data('actionObject', new actionDefinition.actionClass({
+								resultObjectList : self.resultObjectList,
+								actionHandler : self.actionHandler
+							}, actionButton));
 						
 						actionButton.click(function(){
 							$(this).data('actionObject').activate();

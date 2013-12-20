@@ -4,13 +4,15 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 	var defaultOptions = {
 		dropTargetSelector : undefined,
 		dropTargetGetDataFunction : undefined,
-		manager : undefined
+		manager : undefined,
+		actionHandler: undefined
 	};
 	
 	function MoveDropLocation(element, options) {
 		this.element = element;
 		this.options = $.extend({}, options);
 		this.manager = this.options.manager;
+		this.actionHandler = this.options.actionHandler;
 		this.create();
 	}
 	
@@ -69,38 +71,12 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 					confirmFunction : function() {
 						// Perform the move operation and clean up the result entries
 						if (self.manager.dragTargets) {
-							var moveData = {
-									newParent : metadata.id,
-									ids : []
-								};
-							$.each(self.manager.dragTargets, function() {
-								moveData.ids.push(this.pid);
-								this.element.hide();
-							});
-							// Store a reference to the targeted item list since moving happens asynchronously
-							var moveObjects = self.manager.dragTargets;
-							$.ajax({
-								url : "/services/api/edit/move",
-								type : "POST",
-								data : JSON.stringify(moveData),
-								contentType: "application/json; charset=utf-8",
-								dataType: "json",
-								success : function(data) {
-									$.each(moveObjects, function() {
-										this.deleteElement();
-									});
-									self.manager.options.alertHandler.alertHandler("success", "Moved " + moveObjects.length + " object" + (moveObjects.length > 1? "s" : "") 
-											+ " to " + destTitle);
-								},
-								error : function() {
-									$.each(moveObjects, function() {
-										this.element.show();
-									});
-									self.manager.options.alertHandler.alertHandler("error", "Failed to move " + moveObjects.length + " object" + (moveObjects.length > 1? "s" : "") 
-											+ " to " + destTitle);
-									
-								}
-							});
+							var event = {
+								action : 'MoveObjects',
+								newParent : metadata,
+								targets : self.manager.dragTargets
+							};
+							self.actionHandler.addEvent(event);
 						}
 						self.manager.deactivateMove();
 					},

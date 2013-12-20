@@ -9,7 +9,6 @@ define('BatchCallbackButton', [ 'jquery', 'AjaxCallbackButton', 'ResultObjectLis
 	var defaultOptions = {
 			resultObjectList : undefined,
 			followupPath: "/services/api/status/item/solrRecord/version",
-			childWorkLinkName : undefined,
 			workFunction : undefined,
 			followupFunction : undefined,
 			completeFunction : undefined,
@@ -23,6 +22,8 @@ define('BatchCallbackButton', [ 'jquery', 'AjaxCallbackButton', 'ResultObjectLis
 		merged.completeTarget = this;
 		AjaxCallbackButton.prototype._create.call(this, merged, element);
 		this.followupMonitor.options.checkStatusAjax.type = 'POST';
+		
+		this.actionHandler = this.options.actionHandler;
 	};
 
 	BatchCallbackButton.prototype.doWork = function() {

@@ -1,4 +1,4 @@
-define('UnpublishBatchButton', [ 'jquery', 'BatchCallbackButton', 'PublishObjectButton'], function($, BatchCallbackButton, PublishObjectButton) {
+define('UnpublishBatchButton', [ 'jquery', 'BatchCallbackButton'], function($, BatchCallbackButton) {
 	function UnpublishBatchButton(options, element) {
 		this._create(options, element);
 	};
@@ -7,9 +7,7 @@ define('UnpublishBatchButton', [ 'jquery', 'BatchCallbackButton', 'PublishObject
 	UnpublishBatchButton.prototype = Object.create( BatchCallbackButton.prototype );
 	
 	var defaultOptions = {
-			resultObjectList : undefined,
-			workPath: "/services/api/edit/unpublish",
-			childWorkLinkName : 'publish'
+			resultObjectList : undefined
 		};
 	
 	UnpublishBatchButton.prototype._create = function(options, element) {
@@ -27,14 +25,10 @@ define('UnpublishBatchButton', [ 'jquery', 'BatchCallbackButton', 'PublishObject
 		this.targetIds = this.getTargetIds();
 	
 		for (var index in this.targetIds) {
-			var resultObject = this.options.resultObjectList.resultObjects[this.targetIds[index]];
-			var publishButton = new PublishObjectButton({
-				pid : resultObject.pid,
-				parentObject : resultObject,
-				defaultPublish : true,
-				metadata : resultObject.metadata
+			this.actionHandler.addEvent({
+				action : 'Unpublish',
+				target : this.options.resultObjectList.resultObjects[this.targetIds[index]]
 			});
-			publishButton.activate();
 		}
 		this.enable();
 	};

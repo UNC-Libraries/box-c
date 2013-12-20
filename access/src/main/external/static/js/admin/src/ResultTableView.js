@@ -22,6 +22,10 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		_create : function() {
 			// Instantiate the result table view and add it to the page
 			var self = this;
+			
+			this.actionHandler = this.options.actionHandler;
+			this.actionHandler.addToBaseContext('resultTable', this);
+			
 			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
 				var headerHeightClass = self.options.headerHeightClass;
 				if (self.options.container) {
@@ -67,12 +71,14 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				// Activate the result entry context menus, on the action gear and right clicking
 				self.contextMenus = [new ResultObjectActionMenu({
 					selector : ".action_gear",
-					containerSelector : ".res_entry,.container_entry"
+					containerSelector : ".res_entry,.container_entry",
+					actionHandler : self.actionHandler
 				}), new ResultObjectActionMenu({
 					trigger : 'right',
 					positionAtTrigger : false,
 					selector : ".res_entry td",
-					containerSelector : ".res_entry,.container_entry"
+					containerSelector : ".res_entry,.container_entry",
+					actionHandler : self.actionHandler
 				})];
 			
 				// Initialize click and drag operations
@@ -285,25 +291,28 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				for (var index in resultObjects) {
 					resultObjects[index][toggleFn]();
 				}
-				self._selectionUpdated();
+				self.selectionUpdated();
 			}).children("input").prop("checked", false);
 
-			this.actionMenu = new ResultTableActionMenu({resultObjectList : this.resultObjectList, groups : this.options.resultActions}, 
-					$(".result_table_action_menu", this.$resultHeaderTop));
+			this.actionMenu = new ResultTableActionMenu({
+				resultObjectList : this.resultObjectList, 
+				groups : this.options.resultActions,
+				actionHandler : this.actionHandler
+			}, $(".result_table_action_menu", this.$resultHeaderTop));
 		},
 		
 		_initEventHandlers : function() {
 			var self = this;
 			$(document).on('click', ".res_entry", function(e){
 				$(this).data('resultObject').toggleSelect();
-				self._selectionUpdated();
+				self.selectionUpdated();
 			});
 			this.$resultTable.on('click', ".res_entry a", function(e){
 				e.stopPropagation();
 			});
 		},
 		
-		_selectionUpdated : function() {
+		selectionUpdated : function() {
 			this.actionMenu.selectionUpdated();
 		},
 		
@@ -340,7 +349,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			var dropLocation = new MoveDropLocation($dropLocation, {
 				dropTargetSelector : dropTargetSelector,
 				dropTargetGetDataFunction : dropTargetGetDataFunction,
-				manager : this
+				manager : this,
+				actionHandler : this.actionHandler
 			});
 			this.dropLocations.push(dropLocation);
 		},
