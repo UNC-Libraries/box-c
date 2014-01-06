@@ -53,7 +53,7 @@ define('TrashResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, AjaxC
 	
 	TrashResultAction.prototype.moveFollowup = function(data) {
 		if (data) {
-			return this.options.parentObject.updateVersion(data);
+			return this.context.target.updateVersion(data);
 		}
 		return false;
 	};
@@ -63,8 +63,8 @@ define('TrashResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, AjaxC
 			action : 'RefreshResult',
 			target : this.context.target
 		});
-		this.alertHandler.alertHandler("success", "Marked item " + this.options.parentObject.metadata.title 
-				+ " (" + this.options.parentObject.metadata.id + ") for deletion");
+		this.alertHandler.alertHandler("success", "Marked item " + this.context.target.metadata.title 
+				+ " (" + this.context.target.metadata.id + ") for deletion");
 		this.context.target.enable();
 	};
 

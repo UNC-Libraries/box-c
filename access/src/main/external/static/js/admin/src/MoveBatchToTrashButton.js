@@ -1,10 +1,10 @@
-define('MoveBatchToTrashButton', [ 'jquery', 'BatchCallbackButton'], function($, BatchCallbackButton) {
+define('MoveBatchToTrashButton', [ 'jquery', 'BatchActionButton'], function($, BatchActionButton) {
 	function MoveBatchToTrashButton(options, element) {
 		this._create(options, element);
 	};
 	
 	MoveBatchToTrashButton.prototype.constructor = MoveBatchToTrashButton;
-	MoveBatchToTrashButton.prototype = Object.create( BatchCallbackButton.prototype );
+	MoveBatchToTrashButton.prototype = Object.create( BatchActionButton.prototype );
 	
 	var defaultOptions = {
 		resultObjectList : undefined,
@@ -21,7 +21,7 @@ define('MoveBatchToTrashButton', [ 'jquery', 'BatchCallbackButton'], function($,
 		merged.confirmMessage = "Mark these objects as deleted?";
 		merged.confirmAnchor = element;
 		
-		BatchCallbackButton.prototype._create.call(this, merged, element);
+		BatchActionButton.prototype._create.call(this, merged, element);
 	};
 	
 	MoveBatchToTrashButton.prototype.isValidTarget = function(resultObject) {

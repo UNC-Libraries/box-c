@@ -9,14 +9,11 @@ require.config({
 		'tpl' : 'lib/tpl',
 		'qtip' : 'lib/jquery.qtip.min',
 		'PID' : 'cdr-admin',
-		'MetadataObject' : 'cdr-admin',
 		'AjaxCallbackButton' : 'cdr-admin',
-		'DeleteObjectButton' : 'cdr-admin',
 		'ResultObject' : 'cdr-admin',
 		'ResultObjectList' : 'cdr-admin',
 		'BatchCallbackButton' : 'cdr-admin',
 		'DeleteBatchButton' : 'cdr-admin',
-		'MoveObjectToTrashButton' : 'cdr-admin',
 		'ModalLoadingOverlay' : 'cdr-admin',
 		'RemoteStateChangeMonitor' : 'cdr-admin',
 		'ConfirmationDialog' : 'cdr-admin',
@@ -26,6 +23,7 @@ require.config({
 		'ResultTableView' : 'cdr-admin',
 		'MoveDropLocation' : 'cdr-admin',
 		'ResultObjectActionMenu' : 'cdr-admin',
+		'ActionEventHandler' : 'cdr-admin',
 		'contextMenu' : 'admin/lib/jquery.contextMenu',
 		'detachplus' : 'cdr-admin',
 		
@@ -47,8 +45,8 @@ require.config({
 });
 
 define('trashList', ['module', 'jquery', "tpl!../templates/admin/trashTableHeader", "tpl!../templates/admin/navigationBar",
-	'AlertHandler', 'SearchMenu', 'ResultTableView'],
-	function(module, $, resultTableHeaderTemplate, navigationBarTemplate) {
+	'ActionEventHandler', 'AlertHandler', 'SearchMenu', 'ResultTableView'],
+	function(module, $, resultTableHeaderTemplate, navigationBarTemplate, ActionEventHandler) {
 	//console.profile();
 	var alertHandler = $("<div id='alertHandler'></div>");
 	alertHandler.alertHandler().appendTo(document.body).hide();
@@ -94,6 +92,8 @@ define('trashList', ['module', 'jquery', "tpl!../templates/admin/trashTableHeade
 	var navigationBar = navigationBarTemplate({pageNavigation : pageNavigation, container : container});
 	var resultTableHeader = resultTableHeaderTemplate({container : container, navigationBar : navigationBar})
 	
+	var actionHandler = new ActionEventHandler();
+	
 	function postRender(resultTable) {
 		$resultView = $('#result_view');
 		$columnHeaders = $('.column_headers');
@@ -132,6 +132,7 @@ define('trashList', ['module', 'jquery', "tpl!../templates/admin/trashTableHeade
 		resultEntryTemplate : "tpl!../templates/admin/trashResultEntry",
 		resultHeader : resultTableHeader,
 		postRender : postRender,
+		actionHandler : actionHandler,
 		resultActions : {
 			1 : ['restoreBatch'],
 			2 : ['deleteBatchForever']

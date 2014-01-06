@@ -1,4 +1,4 @@
-define('ResultObjectList', ['jquery', 'MetadataObject', 'ResultObject' ], function($, MetadataObject, ResultObject) {
+define('ResultObjectList', ['jquery', 'ResultObject' ], function($, ResultObject) {
 	function ResultObjectList(options) {
 		this.init(options);
 	};

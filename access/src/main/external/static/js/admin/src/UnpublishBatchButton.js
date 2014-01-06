@@ -1,10 +1,10 @@
-define('UnpublishBatchButton', [ 'jquery', 'BatchCallbackButton'], function($, BatchCallbackButton) {
+define('UnpublishBatchButton', [ 'jquery', 'BatchActionButton'], function($, BatchActionButton) {
 	function UnpublishBatchButton(options, element) {
 		this._create(options, element);
 	};
 	
 	UnpublishBatchButton.prototype.constructor = UnpublishBatchButton;
-	UnpublishBatchButton.prototype = Object.create( BatchCallbackButton.prototype );
+	UnpublishBatchButton.prototype = Object.create( BatchActionButton.prototype );
 	
 	var defaultOptions = {
 			resultObjectList : undefined
@@ -12,7 +12,7 @@ define('UnpublishBatchButton', [ 'jquery', 'BatchCallbackButton'], function($, B
 	
 	UnpublishBatchButton.prototype._create = function(options, element) {
 		var merged = $.extend({}, defaultOptions, options);
-		BatchCallbackButton.prototype._create.call(this, merged, element);
+		BatchActionButton.prototype._create.call(this, merged, element);
 	};
 	
 	UnpublishBatchButton.prototype.isValidTarget = function(resultObject) {

@@ -1,10 +1,10 @@
-define('DeleteBatchButton', ['jquery', 'BatchCallbackButton'], function($, BatchCallbackButton) {
+define('DeleteBatchButton', ['jquery', 'BatchActionButton'], function($, BatchActionButton) {
 	function DeleteBatchButton(options, element) {
 		this._create(options, element);
 	};
 	
 	DeleteBatchButton.prototype.constructor = DeleteBatchButton;
-	DeleteBatchButton.prototype = Object.create( BatchCallbackButton.prototype );
+	DeleteBatchButton.prototype = Object.create( BatchActionButton.prototype );
 	
 	var defaultOptions = {
 		confirm: true,
@@ -14,7 +14,7 @@ define('DeleteBatchButton', ['jquery', 'BatchCallbackButton'], function($, Batch
 	DeleteBatchButton.prototype._create = function(options, element) {
 		var merged = $.extend({}, defaultOptions, options);
 		merged.confirmAnchor = element;
-		BatchCallbackButton.prototype._create.call(this, merged, element);
+		BatchActionButton.prototype._create.call(this, merged, element);
 	};
 	
 	DeleteBatchButton.prototype.isValidTarget = function(resultObject) {

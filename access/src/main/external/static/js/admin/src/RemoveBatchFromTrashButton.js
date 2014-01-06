@@ -1,10 +1,10 @@
-define('RemoveBatchFromTrashButton', [ 'jquery', 'BatchCallbackButton'], function($, BatchCallbackButton) {
+define('RemoveBatchFromTrashButton', [ 'jquery', 'BatchActionButton'], function($, BatchActionButton) {
 	function RemoveBatchFromTrashButton(options, element) {
 		this._create(options, element);
 	};
 	
 	RemoveBatchFromTrashButton.prototype.constructor = RemoveBatchFromTrashButton;
-	RemoveBatchFromTrashButton.prototype = Object.create( BatchCallbackButton.prototype );
+	RemoveBatchFromTrashButton.prototype = Object.create( BatchActionButton.prototype );
 	
 	var defaultOptions = {
 		resultObjectList : undefined,
@@ -21,7 +21,7 @@ define('RemoveBatchFromTrashButton', [ 'jquery', 'BatchCallbackButton'], functio
 		merged.confirmMessage = "Restore these objects from the Trash?";
 		merged.confirmAnchor = element;
 		
-		BatchCallbackButton.prototype._create.call(this, merged, element);
+		BatchActionButton.prototype._create.call(this, merged, element);
 	};
 
 	

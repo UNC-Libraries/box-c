@@ -1,12 +1,12 @@
-define('ReindexResultAction', [ 'jquery', 'AjaxCallbackButton'], function($, AjaxCallbackButton) {
+define('ReindexResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, AjaxCallbackAction) {
 	function ReindexResultAction(context) {
 		this._create(context);
 	}
 	
 	ReindexResultAction.prototype.constructor = ReindexResultAction;
-	ReindexResultAction.prototype = Object.create( AjaxCallbackButton.prototype );
+	ReindexResultAction.prototype = Object.create( AjaxCallbackAction.prototype );
 	
-	ReindexResultAction.prototype._create = function(options) {
+	ReindexResultAction.prototype._create = function(context) {
 		this.context = context;
 		
 		this.options = {
@@ -20,7 +20,7 @@ define('ReindexResultAction', [ 'jquery', 'AjaxCallbackButton'], function($, Aja
 				animateSpeed: 'fast',
 				complete: ReindexResultAction.prototype.complete
 			};
-		AjaxCallbackButton.prototype._create.call(this, this.options);
+		AjaxCallbackAction.prototype._create.call(this, this.options);
 	};
 	
 	ReindexResultAction.prototype.complete = function() {
@@ -30,7 +30,11 @@ define('ReindexResultAction', [ 'jquery', 'AjaxCallbackButton'], function($, Aja
 	};
 
 	ReindexResultAction.prototype.completeState = function() {
-		this.context.target.refresh(true);
+		this.context.actionHandler.addEvent({
+			action : 'RefreshResult',
+			target : this.context.target,
+			waitForUpdate : true
+		});
 	};
 	
 	return ReindexResultAction;

@@ -22,8 +22,8 @@ define('RestoreResultAction', [ 'jquery', 'AjaxCallbackAction', 'TrashResultActi
 			action : 'RefreshResult',
 			target : this.context.target
 		});
-		this.alertHandler.alertHandler("success", "Restored item " + this.options.parentObject.metadata.title 
-				+ " (" + this.options.parentObject.metadata.id + ") from the Trash");
+		this.alertHandler.alertHandler("success", "Restored item " + this.context.target.metadata.title 
+				+ " (" + this.context.target.metadata.id + ") from the Trash");
 		this.context.target.enable();
 	};
 
