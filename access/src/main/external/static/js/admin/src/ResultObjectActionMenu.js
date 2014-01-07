@@ -134,6 +134,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 	};
 	
 	ResultObjectActionMenu.prototype.editAccess = function(resultObject) {
+		var self = this;
 		var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading_large.gif'/></div>");
 		dialog.dialog({
 			autoOpen: true,
@@ -144,6 +145,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 			modal: true,
 			title: 'Access Control Settings',
 			close: function() {
+				self.actionHandler.addEvent({
+					action : 'RefreshResult',
+					target : resultObject,
+					waitForUpdate : true,
+					maxAttempts : 3
+				});
 				dialog.remove();
 				resultObject.unhighlight();
 			}

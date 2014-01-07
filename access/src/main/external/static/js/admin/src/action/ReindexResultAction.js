@@ -33,7 +33,8 @@ define('ReindexResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 		this.context.actionHandler.addEvent({
 			action : 'RefreshResult',
 			target : this.context.target,
-			waitForUpdate : true
+			waitForUpdate : true,
+			maxAttempts : 5
 		});
 	};
 	

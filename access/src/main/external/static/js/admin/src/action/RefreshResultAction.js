@@ -41,7 +41,8 @@ define('RefreshResultAction', ['jquery', 'RemoteStateChangeMonitor'], function($
 			'checkStatusAjax' : {
 				url : "/services/api/status/item/" + resultObject.pid + "/solrRecord/version",
 				dataType : 'json'
-			}
+			},
+			maxAttempts : this.context.maxAttempts? this.context.maxAttempts : 0
 		});
 	
 		followupMonitor.performPing();

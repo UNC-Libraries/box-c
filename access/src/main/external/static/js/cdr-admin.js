@@ -1463,7 +1463,6 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 							self.options.containingDialog.dialog('close');
 						}
 						self.alertHandler.alertHandler('success', 'Access control changes saved');
-						$("#res_" + self.options.pid.substring(self.options.pid.indexOf(':') + 1)).data('resultObject').refresh();
 					},
 					error : function(data) {
 						overlay.remove();
@@ -2035,6 +2034,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	$.extend(RemoteStateChangeMonitor.prototype, {
 		defaultOptions : {
+			maxAttempts : 30,
 			'pingFrequency' : 1000,
 			'statusChanged' : undefined,
 			'statusChangedTarget' : undefined,
@@ -2051,6 +2051,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			this.options = $.extend({}, this.defaultOptions, options);
 			this.options.checkStatusAjax.success = $.proxy(this.pingSuccessCheck, this);
 			this.options.checkStatusAjax.error = $.proxy(this.pingError, this);
+			this.attempts = 0;
 		},
 		
 		performPing : function() {
@@ -2061,7 +2062,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		
 		pingSuccessCheck : function(data) {
 			var isDone = this.options.checkStatus.call(this.options.checkStatusTarget, data);
-			if (isDone) {
+			if (isDone || (this.options.maxAttempts > 0 && ++this.attempts >= this.options.maxAttempts)) {
 				if (this.pingId != null) {
 					clearInterval(this.pingId);
 					this.pingId = null;
@@ -2437,6 +2438,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	ResultObjectActionMenu.prototype.editAccess = function(resultObject) {
+		var self = this;
 		var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading_large.gif'/></div>");
 		dialog.dialog({
 			autoOpen: true,
@@ -2447,6 +2449,12 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			modal: true,
 			title: 'Access Control Settings',
 			close: function() {
+				self.actionHandler.addEvent({
+					action : 'RefreshResult',
+					target : resultObject,
+					waitForUpdate : true,
+					maxAttempts : 3
+				});
 				dialog.remove();
 				resultObject.unhighlight();
 			}
@@ -3712,7 +3720,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			'checkStatusAjax' : {
 				url : "/services/api/status/item/" + resultObject.pid + "/solrRecord/version",
 				dataType : 'json'
-			}
+			},
+			maxAttempts : this.context.maxAttempts? this.context.maxAttempts : 0
 		});
 	
 		followupMonitor.performPing();
