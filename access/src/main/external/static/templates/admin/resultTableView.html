@@ -4,8 +4,7 @@
 		<div class="result_table_wrap">
 			<table class="result_table">
 				<colgroup>
-					<% _.each(resultFields, function(resultField) { 
-						console.log(resultField); %>
+					<% _.each(resultFields, function(resultField) { %>
 						<col class="<%= resultField.colClass %>">
 					<% }); %>
 				</colgroup>

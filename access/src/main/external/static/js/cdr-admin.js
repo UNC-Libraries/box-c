@@ -3750,7 +3750,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	RefreshResultAction.prototype.getDataUrl = function(resultObject) {
-		return resultObject.options.resultObjectList.options.refreshEntryUrl + resultObject.pid;
+		return "entry/" + resultObject.pid;
 	};
 	
 	return RefreshResultAction;
@@ -3789,7 +3789,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		this.context.actionHandler.addEvent({
 			action : 'RefreshResult',
 			target : this.context.target,
-			waitForUpdate : true
+			waitForUpdate : true,
+			maxAttempts : 5
 		});
 	};
 	

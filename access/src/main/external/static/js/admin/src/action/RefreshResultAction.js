@@ -71,7 +71,7 @@ define('RefreshResultAction', ['jquery', 'RemoteStateChangeMonitor'], function($
 	};
 	
 	RefreshResultAction.prototype.getDataUrl = function(resultObject) {
-		return resultObject.options.resultObjectList.options.refreshEntryUrl + resultObject.pid;
+		return "entry/" + resultObject.pid;
 	};
 	
 	return RefreshResultAction;
