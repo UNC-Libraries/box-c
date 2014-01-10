@@ -15,6 +15,14 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.deposit;
 
+import java.io.File;
+import java.util.Collection;
+
+import net.greghaines.jesque.Config;
+import net.greghaines.jesque.Job;
+import net.greghaines.jesque.client.Client;
+import net.greghaines.jesque.client.ClientImpl;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordConfiguration;
@@ -22,15 +30,48 @@ import org.swordapp.server.SwordError;
 
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
-import edu.unc.lib.dl.services.DigitalObjectManager;
-import edu.unc.lib.dl.services.IngestResult;
-import edu.unc.lib.dl.util.ErrorURIRegistry;
+import edu.unc.lib.dl.fedora.PID;
 
 public abstract class AbstractDepositHandler implements DepositHandler {
 	@Autowired
 	protected DepositReportingUtil depositReportingUtil;
 	@Autowired
-	protected DigitalObjectManager digitalObjectManager;
+	private File bagsDirectory;
+	@Autowired
+	private Config jesqueConfig = null;
+	@Autowired
+	private Collection<String> overridePermissionGroups = null;
+	
+	public Config getJesqueConfig() {
+		return jesqueConfig;
+	}
+
+	public void setJesqueConfig(Config jesqueConfig) {
+		this.jesqueConfig = jesqueConfig;
+	}
+	
+	public Collection<String> getOverridePermissionGroups() {
+		return overridePermissionGroups;
+	}
+
+	public void setOverridePermissionGroups(
+			Collection<String> overridePermissionGroups) {
+		this.overridePermissionGroups = overridePermissionGroups;
+	}
+
+	public File getBagsDirectory() {
+		return bagsDirectory;
+	}
+
+	public void setBagsDirectory(File bagsDirectory) {
+		this.bagsDirectory = bagsDirectory;
+	}
+	
+	public File getNewBagDirectory(String bagName) {
+		File f = new File(getBagsDirectory(), bagName);
+		f.mkdir();
+		return f;
+	}
 
 	public DepositReportingUtil getDepositReportingUtil() {
 		return depositReportingUtil;
@@ -40,22 +81,20 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 		this.depositReportingUtil = depositReportingUtil;
 	}
 
-	public DigitalObjectManager getDigitalObjectManager() {
-		return digitalObjectManager;
-	}
-
-	public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
-		this.digitalObjectManager = digitalObjectManager;
-	}
-
-	protected DepositReceipt buildReceipt(IngestResult ingestResult, SwordConfiguration config) throws SwordError {
-		if (ingestResult == null || ingestResult.derivedPIDs == null || ingestResult.derivedPIDs.size() == 0) {
-			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400, "Add batch request "
-					+ ingestResult.originalDepositID.getPid() + " did not return any derived results.");
-		}
-
-		DepositReceipt receipt = depositReportingUtil.retrieveDepositReceipt(ingestResult,
+	protected DepositReceipt buildReceipt(PID depositID, SwordConfiguration config) throws SwordError {
+		DepositReceipt receipt = depositReportingUtil.retrieveDepositReceipt(depositID,
 				(SwordConfigurationImpl) config);
 		return receipt;
+	}
+	
+	/**
+	 * Adds the bag to the ingest resque
+	 * @param bag
+	 */
+	protected void queueForIngest(File bag) {
+		Job job = new Job("Scheduler", bag); // job to schedule bag processing
+		final Client client = new ClientImpl(getJesqueConfig());
+		client.enqueue("Deposit", job);
+		client.end();
 	}
 }

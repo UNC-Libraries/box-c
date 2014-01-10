@@ -15,6 +15,19 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.deposit;
 
+import static edu.unc.lib.dl.util.DepositBagInfo.CONTAINER_ID;
+import static edu.unc.lib.dl.util.DepositBagInfo.DEPOSIT_ID;
+import static edu.unc.lib.dl.util.DepositBagInfo.DEPOSIT_METHOD;
+import static edu.unc.lib.dl.util.DepositBagInfo.DEPOSIT_PERMISSION_GROUP;
+import static edu.unc.lib.dl.util.DepositBagInfo.PACKAGING_TYPE;
+import static edu.unc.lib.dl.util.DepositBagInfo.SWORD_SLUG;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.UUID;
+
 import org.apache.abdera.Abdera;
 import org.apache.abdera.writer.Writer;
 import org.apache.log4j.Logger;
@@ -24,46 +37,137 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.UriRegistry;
 
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.aip.DepositRecord;
-import edu.unc.lib.dl.ingest.sip.AtomPubEntrySIP;
-import edu.unc.lib.dl.services.IngestResult;
 import edu.unc.lib.dl.util.DepositMethod;
+import edu.unc.lib.dl.util.ErrorURIRegistry;
+import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
+import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagInfoTxt;
+import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.PreBag;
 
 public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
-	private static Logger log = Logger.getLogger(AtomPubEntryDepositHandler.class);
+	private static Logger log = Logger
+			.getLogger(AtomPubEntryDepositHandler.class);
 
 	@Override
-	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, SwordConfiguration config,
-			String depositor, String owner) throws Exception {
-		log.debug("Preparing to perform an Atom Pub entry metadata only deposit to " + destination.getPid());
+	public DepositReceipt doDeposit(PID destination, Deposit deposit,
+			PackagingType type, SwordConfiguration config, String depositor,
+			String owner) throws SwordError {
+		log.debug("Preparing to perform an Atom Pub entry metadata only deposit to "
+				+ destination.getPid());
 
-		if (deposit.getSwordEntry() == null || deposit.getSwordEntry().getEntry() == null)
-			throw new SwordError(UriRegistry.ERROR_CONTENT, 415, "No AtomPub entry was included in the submission");
+		if (deposit.getSwordEntry() == null
+				|| deposit.getSwordEntry().getEntry() == null)
+			throw new SwordError(UriRegistry.ERROR_CONTENT, 415,
+					"No AtomPub entry was included in the submission");
 
-		AtomPubEntrySIP sip = new AtomPubEntrySIP(destination, deposit.getSwordEntry().getEntry());
 		if (log.isDebugEnabled()) {
 			Abdera abdera = new Abdera();
 			Writer writer = abdera.getWriterFactory().getWriter("prettyxml");
-			writer.writeTo(deposit.getSwordEntry().getEntry(), System.out);
+			try {
+				writer.writeTo(deposit.getSwordEntry().getEntry(), System.out);
+			} catch (IOException e) {
+				throw new Error(e);
+			}
 		}
 
-		if (deposit.getFile() == null) {
-			sip = new AtomPubEntrySIP(destination, deposit.getSwordEntry().getEntry());
+		PID depositPID = null;
+		UUID depositUUID = UUID.randomUUID();
+		depositPID = new PID("uuid:" + depositUUID.toString());
+		File bagDir = getNewBagDirectory(depositPID.getUUID());
+		bagDir.mkdir();
+
+		// write SWORD Atom entry to file
+		File atomFile = new File(bagDir, "sword-atom.xml");
+		Abdera abdera = new Abdera();
+		Writer writer = abdera.getWriterFactory().getWriter("prettyxml");
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream(atomFile);
+			writer.writeTo(deposit.getSwordEntry().getEntry(), fos);
+		} catch (IOException e) {
+			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400,
+					"Unable to unpack your deposit: " + deposit.getFilename(),
+					e);
+		} finally {
+			if (fos != null) {
+				try {
+					fos.close();
+				} catch (IOException ignored) {
+				}
+			}
+		}
+
+		// write deposit file to data directory
+		if (deposit.getFile() != null) {
+			File dataDir = new File(bagDir, "data");
+			File depositFile = new File(dataDir, deposit.getFilename());
+			depositFile.mkdirs();
+			try {
+				FileUtils.renameOrMoveTo(deposit.getFile(), depositFile);
+			} catch (IOException e) {
+				throw new Error(e);
+			}
+		}
+
+		// make bag
+		PreBag prebag = new BagFactory().createPreBag(bagDir);
+		prebag.setTagFiles(Collections.singletonList(atomFile));
+		Bag bag = prebag.makeBagInPlace(BagFactory.LATEST, false);
+
+		// verify checksum for payload file
+		if (deposit.getMd5() != null) {
+			Manifest mani = bag.getPayloadManifest(Algorithm.MD5);
+			String bagitMD5 = mani.get("data/" + deposit.getFilename());
+			if (bagitMD5 == null || !bagitMD5.equals(deposit.getMd5())) {
+				throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400,
+						"The supplied checksum of " + deposit.getMd5()
+								+ " does not match " + bagitMD5
+								+ " (calculated)");
+			}
+		}
+		
+		// deposit.getMimeType()
+
+		// add metadata from SWORD/Atom
+		BagInfoTxt info = bag.getBagInfoTxt();
+		String email = SwordConfigurationImpl.getUserEmailAddress();
+		if (email != null) {
+			info.addContactEmail(email);
+			info.addContactName(depositor);
 		} else {
-			sip = new AtomPubEntrySIP(destination, deposit.getSwordEntry().getEntry(), deposit.getFile(),
-					deposit.getMimeType(), deposit.getFilename(), deposit.getMd5());
+			info.addContactEmail(owner + "@email.unc.edu");
+			info.addContactName(owner);
 		}
-		sip.setInProgress(deposit.isInProgress());
-		sip.setSuggestedSlug(deposit.getSlug());
+		info.setInternalSenderDescription("Added via SWORD");
+		info.setInternalSenderIdentifier(depositor);
+		info.addExternalIdentifier(deposit.getFilename());
+		// info.setBaggingDate( ?? );
+		info.put(DEPOSIT_METHOD, DepositMethod.SWORD13.getLabel());
+		info.put(DEPOSIT_ID, depositPID.getPid());
+		info.put(CONTAINER_ID, destination.getPid());
+		info.put(PACKAGING_TYPE, type.getUri());
+		info.put(SWORD_SLUG, deposit.getSlug());
 
-		DepositRecord record = new DepositRecord(depositor, owner, DepositMethod.SWORD13);
-		record.setDepositorEmail(SwordConfigurationImpl.getUserEmailAddress());
-		record.setMessage("Added through SWORD");
-		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
+		// depositor groups (forwarded for permissions)
+		if (this.getOverridePermissionGroups() != null) {
+			info.putList(DEPOSIT_PERMISSION_GROUP,
+					this.getOverridePermissionGroups());
+		} else {
+			info.putList(DEPOSIT_PERMISSION_GROUP,
+					GroupsThreadStore.getGroups());
+		}
 
-		return buildReceipt(ingestResult, config);
+		bag.putBagFile(info);
+
+		bag.makeComplete();
+		queueForIngest(bagDir);
+		return buildReceipt(depositPID, config);
 	}
 }

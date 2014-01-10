@@ -183,5 +183,10 @@
 			<artifactId>jackson-core-asl</artifactId>
 			<version>1.9.2</version>
 		</dependency>
+		<dependency>
+			<groupId>net.lariverosc</groupId>
+			<artifactId>jesque-spring</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 </project>

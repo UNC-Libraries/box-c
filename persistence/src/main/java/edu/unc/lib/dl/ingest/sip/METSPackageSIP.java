@@ -35,16 +35,7 @@ public class METSPackageSIP implements SubmissionInformationPackage {
 	private File batchPrepDir = null;
 	private File sipDataSubDir = null;
 	private PID containerPID = null;
-	private boolean allowIndexing = true;
 	private PreIngestEventLogger preIngestEvents = new PreIngestEventLogger();
-
-	public boolean isAllowIndexing() {
-		return allowIndexing;
-	}
-
-	public void setAllowIndexing(boolean allowIndexing) {
-		this.allowIndexing = allowIndexing;
-	}
 
 	public PreIngestEventLogger getPreIngestEventLogger() {
 		return this.preIngestEvents;

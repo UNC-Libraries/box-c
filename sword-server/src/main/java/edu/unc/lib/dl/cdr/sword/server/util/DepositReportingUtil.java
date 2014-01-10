@@ -37,11 +37,10 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
-import edu.unc.lib.dl.services.IngestResult;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 public class DepositReportingUtil {
 	private static Logger log = Logger.getLogger(DepositReportingUtil.class);
@@ -176,31 +175,6 @@ public class DepositReportingUtil {
 	public DepositReceipt retrieveDepositReceipt(PID targetPID, SwordConfigurationImpl config) {
 		DepositReceipt receipt = new DepositReceipt();
 		return retrieveDepositReceipt(receipt, targetPID, config);
-	}
-	
-	/**
-	 * Generates a DepositReceipt object for the derived resources from the provided ingestResult.  If there are
-	 * multiple derived resources, then the first one is used as a representative for the rest of the set for IRIs
-	 * which cannot be repeated.
-	 * @param ingestResult
-	 * @param config
-	 * @return
-	 */
-	public DepositReceipt retrieveDepositReceipt(IngestResult ingestResult, SwordConfigurationImpl config) {
-		DepositReceipt receipt = new DepositReceipt();
-		
-		// grab a representative pid from the top level result derived pids, since a lot of the IRI's can only be set once
-		PID representativePID = null;
-
-		for (PID resultPID: ingestResult.derivedPIDs){
-			if (representativePID == null){
-				representativePID = resultPID;
-			} else {
-				//Skip the edit media iri f or the representative PID since it'll be added later
-				receipt.addEditMediaIRI(new IRI(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + resultPID.getPid()));
-			}
-		}
-		return retrieveDepositReceipt(receipt, representativePID, config);
 	}
 	
 	/**

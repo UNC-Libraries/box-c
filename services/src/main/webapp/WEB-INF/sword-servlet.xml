@@ -61,36 +61,6 @@
 		<property name="jmsTemplate" ref="jmsTemplate" />
 	</bean>
 
-	<bean id="aipIngestPipeline" class="edu.unc.lib.dl.ingest.aip.AIPIngestPipeline">
-		<property name="preIngestFilters">
-			<list>
-				<bean class="edu.unc.lib.dl.ingest.aip.LogIdentifierAssignmentFilter" />
-				<bean class="edu.unc.lib.dl.ingest.aip.VirusScanFilter">
-					<property name="clamScan">
-						<bean class="com.philvarner.clamavj.ClamScan">
-							<property name="host" value="${clamd.host}"/>
-							<property name="port" value="${clamd.port}"/>
-							<property name="timeout" value="${clamd.timeout}"/>
-						</bean>
-					</property>
-				</bean>
-				<bean class="edu.unc.lib.dl.ingest.aip.CheckAIPRequirementsFilter" />
-				<bean class="edu.unc.lib.dl.ingest.aip.CheckContainerFilter">
-					<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-				</bean>
-				<bean class="edu.unc.lib.dl.ingest.aip.FixPathConflictFilter">
-					<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-				</bean>
-				<bean class="edu.unc.lib.dl.ingest.aip.BiomedCentralAIPFilter" init-method="init" />
-				<bean class="edu.unc.lib.dl.ingest.aip.MODSValidationFilter">
-					<property name="schematronValidator" ref="schematronValidator" />
-				</bean>
-				<bean class="edu.unc.lib.dl.ingest.aip.DublinCoreCrosswalkFilter" />
-				<bean class="edu.unc.lib.dl.ingest.aip.SetOriginalDepositRecordFilter"/>
-			</list>
-		</property>
-	</bean>
-
 	<bean id="mailNotifier" class="edu.unc.lib.dl.services.MailNotifier">
 		<property name="mailSender">
 			<bean class="org.springframework.mail.javamail.JavaMailSenderImpl">
@@ -125,27 +95,8 @@
 		<property name="sipProcessorFactory" ref="sipProcessorFactory"/>
 		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="schematronValidator" ref="schematronValidator"/>
-		<property name="batchIngestQueue" ref="batchIngestQueue"/>
-		<property name="batchIngestTaskFactory" ref="batchIngestTaskFactory"/>	
 		<property name="available" value="true"/>
 		<property name="collectionsPid" ref="collectionsPid"/>
-	</bean>
-	
-	<bean id="batchIngestQueue" class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">
-		  <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
-	</bean>
-	
-  <bean id="batchIngestTaskFactory" class="edu.unc.lib.dl.services.BatchIngestTaskFactory">
-		<lookup-method name="createTask" bean="batchIngestTask"/>
-	</bean>
-	
-	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">
-		<property name="managementClient" ref="forwardedManagementClient"/>
-		<property name="accessClient" ref="accessClient"/>
-		<property name="operationsMessageSender" ref="operationsMessageSender"/>
-		<property name="mailNotifier" ref="mailNotifier"/>
-		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
-		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
 	</bean>
 
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
@@ -169,22 +120,6 @@
 		<property name="verifyUnique" value="false" />
 	</bean>
 
-	<!-- Ingest package processors -->
-
-	<bean id="singleFileSIPProcessor" class="edu.unc.lib.dl.ingest.sip.SingleFileSIPProcessor">
-		<property name="pidGenerator" ref="pidGenerator" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-	</bean>
-
-	<bean id="singleFolderSIPProcessor" class="edu.unc.lib.dl.ingest.sip.SingleFolderSIPProcessor">
-		<property name="pidGenerator" ref="pidGenerator" />
-	</bean>
-	
-	<bean id="atomPubEntrySIPProcessor" class="edu.unc.lib.dl.ingest.sip.AtomPubEntrySIPProcessor">
-		<property name="pidGenerator" ref="pidGenerator" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-	</bean>
-
 	<bean id="metsPackageSIPProcessor" class="edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsPackageFileValidator">
@@ -198,25 +133,8 @@
 			</list>
 		</property>
 	</bean>
-
-	<bean id="sipProcessorFactory" class="edu.unc.lib.dl.ingest.sip.SIPProcessorFactory"
-		init-method="init">
-		<property name="sipProcessors">
-			<map>
-				<entry key="edu.unc.lib.dl.ingest.sip.METSPackageSIP"
-					value-ref="metsPackageSIPProcessor" />
-				<entry key="edu.unc.lib.dl.ingest.sip.SingleFileSIP"
-					value-ref="singleFileSIPProcessor" />
-				<entry key="edu.unc.lib.dl.ingest.sip.SingleFolderSIP"
-					value-ref="singleFolderSIPProcessor" />
-				<entry key="edu.unc.lib.dl.ingest.sip.AtomPubEntrySIP"
-					value-ref="atomPubEntrySIPProcessor" />
-			</map>
-		</property>
-	</bean>
 	
 	<!-- Update processing -->
-	
 	<bean id="uipPipeline" class="edu.unc.lib.dl.update.UIPUpdatePipeline">
 		<property name="updateFilters">
 			<list>
@@ -231,7 +149,6 @@
 			</list>
 		</property>
 	</bean>
-	
 	
 	<util:map id="virtualDatastreamMap" key-type="java.lang.String" value-type="edu.unc.lib.dl.util.ContentModelHelper.Datastream">
 		<entry key="ACL" value="RELS_EXT"/>
@@ -252,7 +169,7 @@
 		<property name="authType" value="Basic"/>
 		<property name="swordPath" ref="swordPath"/>
 		<property name="basePath" value="${repository.protocol}://${repository.host}${repository.port}/${repository.context}"/>
-		<property name="tempDirectory" value="${initial.batch.ingest.dir}"/>
+		<property name="tempDirectory" value="${sword.temp.dir}"/>
 		<property name="swordVersion" value="${sword.version}"/>
 		<property name="generatorVersion" value="${cdr.version}"/>
 		<property name="generator" value="${repository.protocol}://${repository.host}"/>

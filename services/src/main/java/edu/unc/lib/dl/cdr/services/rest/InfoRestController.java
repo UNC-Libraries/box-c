@@ -32,8 +32,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
-import edu.unc.lib.dl.cdr.services.BatchIngestService;
-
 /**
  * @author Gregory Jansen
  *
@@ -48,9 +46,6 @@ public class InfoRestController implements ServletContextAware {
 
 	@Resource(name="contextUrl")
 	protected String contextUrl = null;
-
-	@Resource
-	protected BatchIngestService batchIngestService = null;
 
 	@PostConstruct
 	public void init() {

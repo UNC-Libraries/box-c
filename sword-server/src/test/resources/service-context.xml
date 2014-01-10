@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2008 The University of North Carolina at Chapel Hill Licensed 
+	under the Apache License, Version 2.0 (the "License"); you may not use this 
+	file except in compliance with the License. You may obtain a copy of the 
+	License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by 
+	applicable law or agreed to in writing, software distributed under the License 
+	is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY 
+	KIND, either express or implied. See the License for the specific language 
+	governing permissions and limitations under the License. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jms="http://www.springframework.org/schema/jms"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-3.0.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<bean name="propertiesURI" class="java.lang.System"
+		factory-method="getProperty">
+		<constructor-arg index="0" value="server.properties.uri" />
+		<!-- property name for properties URI location -->
+		<constructor-arg index="1" value="classpath:server.properties" />
+		<!-- default location for testing -->
+	</bean>
+	<bean id="serverProperties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<ref bean="propertiesURI" />
+			</list>
+		</property>
+		<property name="ignoreResourceNotFound" value="false" />
+	</bean>
+
+	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
+		<constructor-arg value="localhost" />
+		<constructor-arg value="6379" />
+		<constructor-arg value="2000" />
+		<constructor-arg value="" />
+		<constructor-arg value="resque" />
+		<constructor-arg value="0" />
+	</bean>
+
+	<bean id="swordPath" class="java.lang.String">
+		<constructor-arg
+			value="${repository.protocol}://${repository.host}${repository.port}/${services.context}/${sword.context}" />
+	</bean>
+
+	<bean id="bagsDirectory" class="java.io.File">
+		<constructor-arg value="/tmp" />
+	</bean>
+
+	<bean id="forwardedManagementClient" class="org.mockito.Mockito"
+		factory-method="mock">
+		<constructor-arg index="0"
+			value="edu.unc.lib.dl.fedora.ManagementClient" />
+	</bean>
+
+	<bean id="accessClient" class="org.mockito.Mockito"
+		factory-method="mock">
+		<constructor-arg value="edu.unc.lib.dl.fedora.AccessClient" />
+	</bean>
+
+	<bean id="tripleStoreQueryService" class="org.mockito.Mockito"
+		factory-method="mock">
+		<constructor-arg value="edu.unc.lib.dl.util.TripleStoreQueryService" />
+	</bean>
+
+	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
+		<property name="managementClient" ref="forwardedManagementClient" />
+		<property name="accessClient" ref="accessClient" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="schematronValidator" ref="schematronValidator" />
+		<property name="available" value="true" />
+	</bean>
+
+	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
+		init-method="loadSchemas">
+		<property name="schemas">
+			<map>
+				<entry key="#{T(edu.unc.lib.dl.xml.METSProfile).CDR_SIMPLE.name}"
+					value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch" />
+				<entry key="object-mods"
+					value="classpath:edu/unc/lib/dl/schematron/object-mods.sch" />
+				<entry key="vocabularies-mods"
+					value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch" />
+				<entry key="#{T(edu.unc.lib.dl.xml.METSProfile).DSPACE_SIP.name}"
+					value="classpath:edu/unc/lib/dl/schematron/dspace_mets_profile.sch" />
+			</map>
+		</property>
+	</bean>
+
+	<util:map id="virtualDatastreamMap" key-type="java.lang.String"
+		value-type="edu.unc.lib.dl.util.ContentModelHelper.Datastream">
+		<entry key="ACL" value="RELS_EXT" />
+	</util:map>
+
+	<!-- SWORD config -->
+
+	<bean id="config" class="edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl"
+		init-method="init">
+		<property name="authType" value="Basic" />
+		<property name="swordPath" ref="swordPath" />
+		<property name="basePath"
+			value="${repository.protocol}://${repository.host}${repository.port}/${repository.context}" />
+		<property name="tempDirectory" value="${sword.temp.dir}" />
+		<property name="swordVersion" value="${sword.version}" />
+		<property name="generatorVersion" value="${cdr.version}" />
+		<property name="generator" value="${repository.protocol}://${repository.host}" />
+		<property name="depositorNamespace" value="${sword.depositorNamespace}" />
+		<property name="adminDepositor" value="${sword.username}" />
+	</bean>
+
+	<bean id="depositReportingUtil"
+		class="edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="accessClient" ref="accessClient" />
+	</bean>
+
+	<!-- Deposit Handlers -->
+	<bean id="metsDepositHandler"
+		class="edu.unc.lib.dl.cdr.sword.server.deposit.METSDepositHandler" />
+	<bean id="simpleObjectDepositHandler"
+		class="edu.unc.lib.dl.cdr.sword.server.deposit.SimpleObjectDepositHandler" />
+	<bean id="atomPubEntryDepositHandler"
+		class="edu.unc.lib.dl.cdr.sword.server.deposit.AtomPubEntryDepositHandler" />
+
+	<util:map id="packageHandlers">
+		<entry>
+			<key>
+				<null />
+			</key>
+			<ref bean="atomPubEntryDepositHandler" />
+		</entry>
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_1}"
+			value-ref="metsDepositHandler" />
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_2}"
+			value-ref="metsDepositHandler" />
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}"
+			value-ref="metsDepositHandler" />
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}"
+			value-ref="simpleObjectDepositHandler" />
+	</util:map>
+
+</beans>

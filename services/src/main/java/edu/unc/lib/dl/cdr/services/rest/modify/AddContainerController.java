@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,11 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.DepositRecord;
-import edu.unc.lib.dl.ingest.sip.SingleFolderSIP;
 import edu.unc.lib.dl.services.DigitalObjectManager;
-import edu.unc.lib.dl.services.IngestResult;
-import edu.unc.lib.dl.util.DepositMethod;
 
 /**
  * API controller for creating new containers
@@ -56,32 +52,26 @@ public class AddContainerController {
 
 	@RequestMapping(value = "edit/create_container/{id}", method = RequestMethod.POST)
 	public @ResponseBody
-	String createContainer(@PathVariable("id") String id, @RequestParam("name") String filename,
+	String createContainer(@PathVariable("id") String parentId, @RequestParam("name") String name,
 			@RequestParam(value = "type", required = false) String type,
 			@RequestParam(value = "description", required = false) MultipartFile description, Model model,
 			HttpServletRequest request, HttpServletResponse response) {
-		PID pid = new PID(id);
+		PID parent = new PID(parentId);
 		try {
 			String user = request.getHeader("On-Behalf-Of");
 			if (user == null)
 				user = request.getRemoteUser();
 
-			SingleFolderSIP sip = new SingleFolderSIP();
-			sip.setContainerPID(pid);
-			sip.setSlug(filename);
-			// Store the mods to a temporary file
+			// Store the mods in a byte array
+			InputStream mods = null;
 			if (description != null && !description.isEmpty()) {
-				File modsFile = File.createTempFile("mods", "xml");
-				description.transferTo(modsFile);
-				sip.setModsXML(modsFile);
+				mods = description.getInputStream();
 			}
-			sip.setCollection(type != null && type.equals("collection"));
-
-			DepositRecord record = new DepositRecord(user, user, DepositMethod.CDRAPI1);
-			IngestResult ingestResult = digitalObjectManager.addWhileBlocking(sip, record);
+			boolean isCollection = type != null && type.equals("collection");
+			PID newContainer = digitalObjectManager.createContainer(name, parent, isCollection, user, mods);
 
 			response.setStatus(201);
-			return "{\"pid\": \"" + ingestResult.originalDepositID.getPid() + "\"}";
+			return "{\"pid\": \"" + newContainer + "\"}";
 		} catch (IOException e) {
 			log.error("Unexpected IO exception", e);
 		} catch (IngestException e) {
@@ -90,7 +80,7 @@ public class AddContainerController {
 			log.error("Unexpected exception", e);
 		}
 		response.setStatus(500);
-		return "{\"error\": \"An error occurred while attempting to create a container in " + pid + "\"}";
+		return "{\"error\": \"An error occurred while attempting to create a container in " + parent + "\"}";
 	}
 
 	public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {

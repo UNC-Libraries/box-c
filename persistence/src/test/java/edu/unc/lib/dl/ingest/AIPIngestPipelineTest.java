@@ -51,8 +51,6 @@ import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
 import edu.unc.lib.dl.ingest.aip.DepositRecord;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
 import edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor;
-import edu.unc.lib.dl.ingest.sip.SingleFolderSIP;
-import edu.unc.lib.dl.ingest.sip.SingleFolderSIPProcessor;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -75,9 +73,6 @@ public class AIPIngestPipelineTest {
 
 	@Resource
 	private METSPackageSIPProcessor metsPackageSIPProcessor = null;
-
-	@Resource
-	private SingleFolderSIPProcessor singleFolderSIPProcessor = null;
 
 	@Autowired
 	TripleStoreQueryService tripleStoreQueryService = null;
@@ -109,7 +104,7 @@ public class AIPIngestPipelineTest {
 	@Test
 	public void testProcessAIP() {
 		// testing for successful conversion of SIP w/simple content model
-		File testFile = tempCopy(new File("src/test/resources/simple.zip"));
+		File testFile = tempCopy(new File("src/test/resources/mets-bags/simple.zip"));
 		DepositRecord record = new DepositRecord("test", "test", DepositMethod.Unspecified);
 		METSPackageSIP sip = null;
 		ArchivalInformationPackage aip = null;
@@ -149,17 +144,17 @@ public class AIPIngestPipelineTest {
 
 	@Test
 	public void testExtraFiles() {
-		this.testProcessBadAIP("src/test/resources/extrafiles.zip");
+		this.testProcessBadAIP("src/test/resources/mets-bags/extrafiles.zip");
 	}
 
 	@Test
 	public void testInvalidMETS() {
-		this.testProcessBadAIP("src/test/resources/invalid_mets.zip");
+		this.testProcessBadAIP("src/test/resources/mets-bags/invalid-mets.zip");
 	}
 
 	@Test
 	public void testBadProfileMETS() {
-		this.testProcessBadAIP("src/test/resources/simple_bad_profile.zip");
+		this.testProcessBadAIP("src/test/resources/mets-bags/simple_bad_profile.zip");
 	}
 
 	public void testProcessBadAIP(String testfile) {
@@ -250,51 +245,4 @@ public class AIPIngestPipelineTest {
 		}
 	}
 
-	@Test
-	public void testProcessCollectionFolder() {
-		// testing for successful conversion of SIP w/simple content model
-		File testFile = tempCopy(new File("src/test/resources/coll_mods.xml"));
-		DepositRecord record = new DepositRecord("test", "test", DepositMethod.Unspecified);
-		SingleFolderSIP sip = null;
-		ArchivalInformationPackage aip = null;
-		String containerPath = "/test/container/path";
-		PID containerPID = new PID("test:1");
-		sip = new SingleFolderSIP();
-		sip.setContainerPID(containerPID);
-		sip.setSlug("etd");
-		sip.setModsXML(testFile);
-
-		// SETUP MOCK TRIPLES!
-		ArrayList<URI> ans = new ArrayList<URI>();
-		ans.add(ContentModelHelper.Model.CONTAINER.getURI());
-		when(this.tripleStoreQueryService.lookupContentModels(any(PID.class))).thenReturn(ans);
-		when(this.tripleStoreQueryService.lookupRepositoryPath(eq(containerPID))).thenReturn(containerPath);
-		when(this.tripleStoreQueryService.fetchByRepositoryPath(eq(containerPath))).thenReturn(containerPID);
-		when(this.tripleStoreQueryService.verify(eq(containerPID))).thenReturn(containerPID);
-
-		try {
-			aip = this.getSingleFolderSIPProcessor().createAIP(sip, record);
-		} catch (IngestException e) {
-			throw new Error(e);
-		}
-		assertNotNull("The result ingest context is null.", aip);
-		int count = aip.getPIDs().size();
-		assertTrue("There should be 1 PID in the resulting AIP, found " + count, count == 1);
-
-		try {
-			aip = this.getAipIngestPipeline().processAIP(aip);
-			aip.prepareIngest();
-		} catch (IngestException e) {
-			log.error("ingest exception during test", e);
-			fail("get exception processing AIP" + e.getMessage());
-		}
-	}
-
-	public SingleFolderSIPProcessor getSingleFolderSIPProcessor() {
-		return singleFolderSIPProcessor;
-	}
-
-	public void setSingleFolderSIPProcessor(SingleFolderSIPProcessor singleFolderSIPProcessor) {
-		this.singleFolderSIPProcessor = singleFolderSIPProcessor;
-	}
 }

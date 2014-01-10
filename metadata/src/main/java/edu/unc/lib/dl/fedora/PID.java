@@ -65,6 +65,14 @@ public class PID implements Serializable {
     public String getPath() {
    	 return pid.replace(":", "/");
     }
+    
+    public String getUUID() throws UnsupportedOperationException {
+    	if(pid.startsWith("uuid:")) {
+    		return pid.substring(5);
+    	} else {
+    		throw new UnsupportedOperationException("PID is not a UUID PID");
+    	}
+    }
 
     @Override
     public int hashCode() {

@@ -152,7 +152,6 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		
 		record.setManifest(metsPack.getMetsFile());
 		if(record.getPackagingType() == null) {
-			PackagingType recognizedType = null;
 			for(PackagingType t : PackagingType.values()) {
 				if(t.equals(profile)) {
 					record.setPackagingType(t);
@@ -170,8 +169,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 				new Date(System.currentTimeMillis()));
 
 		// CONVERT METS DOCUMENT INTO AN AIP
-		ArchivalInformationPackage aip = transformMETS(metsPack, mets,
-				metsPack.isAllowIndexing(), record);
+		ArchivalInformationPackage aip = transformMETS(metsPack, mets, record);
 
 		// increment any duplicate slugs
 		RDFAwareAIPImpl rdfaip = null;
@@ -256,7 +254,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 	}
 
 	private AIPImpl transformMETS(METSPackageSIP metsPack, Document mets,
-			boolean allowIndexing, DepositRecord record) throws IngestException {
+			DepositRecord record) throws IngestException {
 
 		AIPImpl aip = new AIPImpl(metsPack.getBatchPrepDir(), record);
 
@@ -295,11 +293,7 @@ public class METSPackageSIPProcessor implements SIPProcessor {
 		t.setParameter("pids",
 				new StreamSource(new StringReader(sb.toString())));
 
-		String allowIndexingParam = "no";
-		if (allowIndexing) {
-			allowIndexingParam = "yes";
-		}
-		t.setParameter("allowAnyIndexing", allowIndexingParam);
+		t.setParameter("allowAnyIndexing", "yes");
 
 		t.setParameter("ownerURI", record.getOwner());
 		

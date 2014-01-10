@@ -16,39 +16,17 @@
 package edu.unc.lib.dl.services;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.DepositRecord;
-import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
 import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 public interface DigitalObjectManager {
-
-	/**
-	 * Creates repository objects in a single transaction with appropriate additions to preservation logs. This method
-	 * will also upload any local files referenced in the IngestContext. This method will report failure if any paths
-	 * conflict with existing objects. This method will ingest files and objects in batches appropriate to the underlying
-	 * architecture. The entire method is implemented as a single transaction and will send an email to specified
-	 * recipients. This method also updates the parent folder object in the repository.
-	 *
-	 * @param containerPath
-	 *           a path to the folder which will hold this object
-	 * @param sip
-	 *           a zip file containing content, metadata and METS manifest.
-	 * @param owner
-	 *           an agent object, usually a group, that will own this object
-	 * @param user
-	 *           an agent object representing the user performing ingest
-	 * @param message
-	 *           a log message for this ingest action
-	 * @return a log of ingest events
-	 */
-	public abstract IngestResult addToIngestQueue(SubmissionInformationPackage sip, DepositRecord record) throws IngestException;
 
 	/**
 	 * Adds a relationship between two repository objects.
@@ -173,17 +151,16 @@ public interface DigitalObjectManager {
 	public abstract boolean isAvailable();
 
 	/**
-	 * Adds a single object to the repository, without waiting in the queue. This method does not send email.
-	 *
-	 * @param sip
-	 *           a SingleFileSIP, SingleFolderSIP, MultiFileObjectSIP or AgentSIP
-	 * @param user
-	 *           the submitter
-	 * @param message
-	 *           the ingest message
-	 * @return the PID of the object added
+	 * Adds a container to the specified parent container.
+	 * @param name container name
+	 * @param parent parent pid
+	 * @param isCollection true if this is a collection container
+	 * @param user depositor username
+	 * @param mods optional MODS XML stream
+	 * @return PID of the new container
 	 */
-	public abstract IngestResult addWhileBlocking(SubmissionInformationPackage sip, DepositRecord record)
-			throws IngestException;
+	public abstract PID createContainer(String name, PID parent, boolean isCollection,
+			String user, InputStream mods) throws IngestException;
+	
 
 }

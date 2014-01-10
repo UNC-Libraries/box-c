@@ -20,8 +20,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,7 +40,6 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.joda.time.DateTime;
 
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -51,11 +50,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
-import edu.unc.lib.dl.ingest.aip.ArchivalInformationPackage;
-import edu.unc.lib.dl.ingest.aip.DepositRecord;
-import edu.unc.lib.dl.ingest.sip.SIPProcessor;
 import edu.unc.lib.dl.ingest.sip.SIPProcessorFactory;
-import edu.unc.lib.dl.ingest.sip.SubmissionInformationPackage;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.Checksum;
@@ -86,19 +81,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private OperationsMessageSender operationsMessageSender = null;
 	private TripleStoreQueryService tripleStoreQueryService = null;
 	private SchematronValidator schematronValidator = null;
-	private BatchIngestQueue batchIngestQueue = null;
-	private BatchIngestTaskFactory batchIngestTaskFactory = null;
 	private MailNotifier mailNotifier;
-	private String submitterGroupsOverride = null;
 	private PID collectionsPid = null;
-
-	public String getSubmitterGroupsOverride() {
-		return submitterGroupsOverride;
-	}
-
-	public void setSubmitterGroupsOverride(String submitterGroupsOverride) {
-		this.submitterGroupsOverride = submitterGroupsOverride;
-	}
 
 	public void setMailNotifier(MailNotifier mailNotifier) {
 		this.mailNotifier = mailNotifier;
@@ -125,62 +109,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	}
 
 	public DigitalObjectManagerImpl() {
-	}
-
-	public IngestResult addToIngestQueue(SubmissionInformationPackage sip, DepositRecord record) throws IngestException {
-		IngestResult result = new IngestResult();
-		ArchivalInformationPackage aip = null;
-		try {
-			availableCheck();
-			if (record.getDepositedBy() == null) {
-				throw new IngestException("A user must be supplied for every ingest");
-			}
-			// lookup the processor for this SIP
-			SIPProcessor processor = this.getSipProcessorFactory().getSIPProcessor(sip);
-
-			// process the SIP into a standard AIP
-			aip = processor.createAIP(sip, record);
-
-			// run routine AIP processing steps
-			aip = this.getAipIngestPipeline().processAIP(aip);
-
-			// Add depositor as an email notification recipient if provided
-			try {
-				URI email;
-				if (record.getDepositorEmail() != null) {
-					email = new URI(record.getDepositorEmail());
-				} else {
-					// Attempt to email the user by onyen since no email was provided
-					email = new URI(record.getOwner() + "@email.unc.edu");
-				}
-				if (email != null)
-					aip.setEmailRecipients(Collections.singletonList(email));
-			} catch (URISyntaxException e) {
-				log.error("Invalid onyen, cannot create email URI", e);
-			}
-			
-			// Add ingestor groups to the AIP for group forwarding
-			if (this.getSubmitterGroupsOverride() != null) {
-				aip.setSubmitterGroups(this.getSubmitterGroupsOverride());
-			} else {
-				aip.setSubmitterGroups(GroupsThreadStore.getGroupString());
-			}
-			aip.prepareIngest();
-
-			// move the AIP into the ingest queue.
-			this.getBatchIngestQueue().add(aip.getTempFOXDir());
-
-			result.originalDepositID = aip.getDepositRecord().getPid();
-			result.derivedPIDs = aip.getTopPIDs();
-			return result;
-		} catch (IngestException e) {
-			// exception on AIP preparation, no transaction started
-			log.error("Exception during submission or enqueuing", e);
-			if (aip != null) {
-				aip.delete();
-			}
-			throw e;
-		}
 	}
 
 	private void availableCheck() throws IngestException {
@@ -785,87 +713,14 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		this.operationsMessageSender = operationsMessageSender;
 	}
 
-	@Override
-	public IngestResult addWhileBlocking(SubmissionInformationPackage sip, DepositRecord record) throws IngestException {
-		boolean reject = true;
-		// normal SIP processing
-		ArchivalInformationPackage aip = null;
-		try {
-			availableCheck();
-			// lookup the processor for this SIP
-			SIPProcessor processor = this.getSipProcessorFactory().getSIPProcessor(sip);
-
-			// process the SIP into a standard AIP
-			aip = processor.createAIP(sip, record);
-
-			// run routine AIP processing steps
-			aip = this.getAipIngestPipeline().processAIP(aip);
-
-			// no emails for blocking ingests
-			aip.setEmailRecipients(null); 
-
-			if (this.getSubmitterGroupsOverride() != null) {
-				aip.setSubmitterGroups(this.getSubmitterGroupsOverride());
-			} else {
-				aip.setSubmitterGroups(GroupsThreadStore.getGroupString());
-			}
-
-			// persist the AIP to disk
-			aip.prepareIngest();
-
-			// move the AIP into the ingest queue.
-			// run ingest task immediately and wait for it.
-			this.ingestBatchNow(aip.getTempFOXDir());
-
-			// return the newly minted pid
-			IngestResult result = new IngestResult();
-			result.derivedPIDs = aip.getTopPIDs();
-			result.originalDepositID = aip.getDepositRecord().getPid();
-			return result;
-		} catch (IngestException e) {
-			// exception on AIP preparation, no transaction started
-			log.info("User level exception on ingest, prior to Fedora transaction", e);
-			throw e;
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see edu.unc.lib.dl.services.BatchIngestServiceInterface#ingestBatchNow(java.io.File)
-	 */
-	public void ingestBatchNow(File prepDir) throws IngestException {
-		// File queuedDir = moveToInstant(prepDir);
-		// do not set marker file!
-		log.info("Ingesting batch now, in parallel with queue: " + prepDir.getAbsolutePath());
-		BatchIngestTask task = this.batchIngestTaskFactory.createTask();
-		task.setBaseDir(prepDir);
-		try {
-			task.init();
-		} catch (BatchFailedException e) {
-			throw new IngestException("Batch ingest task failed", e);
-		}
-		task.run();
-		task = null;
-	}
-
-	public BatchIngestQueue getBatchIngestQueue() {
-		return batchIngestQueue;
-	}
-
-	public void setBatchIngestQueue(BatchIngestQueue batchIngestQueue) {
-		this.batchIngestQueue = batchIngestQueue;
-	}
-
-	public BatchIngestTaskFactory getBatchIngestTaskFactory() {
-		return batchIngestTaskFactory;
-	}
-
-	public void setBatchIngestTaskFactory(BatchIngestTaskFactory batchIngestTaskFactory) {
-		this.batchIngestTaskFactory = batchIngestTaskFactory;
-	}
-
 	public void setCollectionsPid(PID collectionsPid) {
 		this.collectionsPid = collectionsPid;
+	}
+
+	@Override
+	public PID createContainer(String name, PID parent, boolean isCollection,
+			String user, InputStream mods) throws IngestException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

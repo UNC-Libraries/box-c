@@ -171,23 +171,6 @@
 		</property>
 	</bean>
 
-	<bean id="repositoryInitializer" class="edu.unc.lib.dl.services.RepositoryInitializer"
-		init-method="init">
-		<property name="digitalObjectManager" ref="digitalObjectManager"/>
-		<property name="managementClient" ref="managementClient"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="folderManager" ref="folderManager"/>
-		<property name="mailNotifier" ref="mailNotifier"/>
-		<property name="initialAdministrators">
-			<map>
-				<entry key="count0" value="Greg Jansen"/>
-				<entry key="smbarr" value="Steve Barr"/>
-			</map>
-		</property>
-		<property name="autoinitialize" value="${auto.initialize.repo}"/>
-		<property name="initialBatchIngestDir" value="${initial.batch.ingest.dir}"/>
-	</bean>
-
 	<bean name="folderManager" class="edu.unc.lib.dl.services.FolderManager">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>

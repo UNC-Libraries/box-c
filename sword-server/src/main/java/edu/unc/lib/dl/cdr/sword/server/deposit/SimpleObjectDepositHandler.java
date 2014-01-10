@@ -15,38 +15,115 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.deposit;
 
+import static edu.unc.lib.dl.util.DepositBagInfo.CONTAINER_ID;
+import static edu.unc.lib.dl.util.DepositBagInfo.DEPOSIT_ID;
+import static edu.unc.lib.dl.util.DepositBagInfo.DEPOSIT_METHOD;
+import static edu.unc.lib.dl.util.DepositBagInfo.DEPOSIT_PERMISSION_GROUP;
+import static edu.unc.lib.dl.util.DepositBagInfo.PACKAGING_TYPE;
+import static edu.unc.lib.dl.util.DepositBagInfo.SWORD_SLUG;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+
 import org.apache.log4j.Logger;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordConfiguration;
+import org.swordapp.server.SwordError;
 
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.aip.DepositRecord;
-import edu.unc.lib.dl.ingest.sip.SingleFileSIP;
-import edu.unc.lib.dl.services.IngestResult;
 import edu.unc.lib.dl.util.DepositMethod;
+import edu.unc.lib.dl.util.ErrorURIRegistry;
+import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
+import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagInfoTxt;
+import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.PreBag;
 
 public class SimpleObjectDepositHandler extends AbstractDepositHandler {
-	private static Logger log = Logger.getLogger(SimpleObjectDepositHandler.class);
+	private static Logger log = Logger
+			.getLogger(SimpleObjectDepositHandler.class);
 
 	@Override
-	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, SwordConfiguration config,
-			String depositor, String owner) throws Exception {
-		log.debug("Preparing to perform a Simple Object deposit to " + destination.getPid());
-		String label = deposit.getSlug();
-		if (label == null || label.trim().length() == 0)
-			label = deposit.getFilename();
-		SingleFileSIP sip = new SingleFileSIP(destination, deposit.getFile(), deposit.getMimeType(), label,
-				deposit.getMd5());
+	public DepositReceipt doDeposit(PID destination, Deposit deposit,
+			PackagingType type, SwordConfiguration config, String depositor,
+			String owner) throws Exception {
+		log.debug("Preparing to perform a Simple Object deposit to "
+				+ destination.getPid());
 
-		DepositRecord record = new DepositRecord(depositor, owner, DepositMethod.SWORD13);
-		record.setMessage("Added through SWORD");
-		record.setPackagingType(type);
-		record.setDepositorEmail(SwordConfigurationImpl.getUserEmailAddress());
-		IngestResult ingestResult = digitalObjectManager.addToIngestQueue(sip, record);
+		PID depositPID = null;
+		UUID depositUUID = UUID.randomUUID();
+		depositPID = new PID("uuid:" + depositUUID.toString());
+		File bagDir = getNewBagDirectory(depositPID.getUUID());
+		bagDir.mkdir();
 
-		return buildReceipt(ingestResult, config);
+		// write deposit file to data directory
+		if (deposit.getFile() != null) {
+			File dataDir = new File(bagDir, "data");
+			File depositFile = new File(dataDir, deposit.getFilename());
+			depositFile.mkdirs();
+			try {
+				FileUtils.renameOrMoveTo(deposit.getFile(), depositFile);
+			} catch (IOException e) {
+				throw new Error(e);
+			}
+		}
+
+		// make bag
+		PreBag prebag = new BagFactory().createPreBag(bagDir);
+		Bag bag = prebag.makeBagInPlace(BagFactory.LATEST, false);
+
+		// verify checksum for payload file
+		if (deposit.getMd5() != null) {
+			Manifest mani = bag.getPayloadManifest(Algorithm.MD5);
+			String bagitMD5 = mani.get("data/" + deposit.getFilename());
+			if (bagitMD5 == null || !bagitMD5.equals(deposit.getMd5())) {
+				throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400,
+						"The supplied checksum of " + deposit.getMd5()
+								+ " does not match " + bagitMD5
+								+ " (calculated)");
+			}
+		}
+
+		// add metadata from SWORD/Atom
+		BagInfoTxt info = bag.getBagInfoTxt();
+		String email = SwordConfigurationImpl.getUserEmailAddress();
+		if (email != null) {
+			info.addContactEmail(email);
+			info.addContactName(depositor);
+		} else {
+			info.addContactEmail(owner + "@email.unc.edu");
+			info.addContactName(owner);
+		}
+		info.setInternalSenderDescription("Added via SWORD");
+		info.setInternalSenderIdentifier(depositor);
+		info.addExternalIdentifier(deposit.getFilename());
+		// info.setBaggingDate( ?? );
+		info.put(DEPOSIT_METHOD, DepositMethod.SWORD13.getLabel());
+		info.put(DEPOSIT_ID, depositPID.getPid());
+		info.put(CONTAINER_ID, destination.getPid());
+		info.put(PACKAGING_TYPE, type.getUri());
+		info.put(SWORD_SLUG, deposit.getSlug());
+
+		// depositor groups (forwarded for permissions)
+		if (this.getOverridePermissionGroups() != null) {
+			info.putList(DEPOSIT_PERMISSION_GROUP,
+					this.getOverridePermissionGroups());
+		} else {
+			info.putList(DEPOSIT_PERMISSION_GROUP,
+					GroupsThreadStore.getGroups());
+		}
+
+		bag.putBagFile(info);
+
+		bag.makeComplete();
+		queueForIngest(bagDir);
+		return buildReceipt(depositPID, config);
 	}
 }

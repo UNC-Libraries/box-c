@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.services;
 
-import static edu.unc.lib.dl.util.FileUtils.tempCopy;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -23,7 +22,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -34,7 +32,6 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -47,7 +44,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.mail.SimpleMailMessage;
@@ -58,18 +54,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
-import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.DepositRecord;
-import edu.unc.lib.dl.ingest.sip.METSPackageSIP;
-import edu.unc.lib.dl.ingest.sip.SingleFolderSIP;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.util.ZipFileUtil;
 
 /**
  * @author Gregory Jansen
@@ -84,9 +76,6 @@ public class DigitalObjectManagerImplTest {
 
 	@Resource
 	ManagementClient managementClient = null;
-
-	@Resource
-	BatchIngestQueue batchIngestQueue = null;
 
 	@Resource
 	AccessClient accessClient = null;
@@ -425,69 +414,5 @@ public class DigitalObjectManagerImplTest {
 	// @Test
 	public void testMove() {
 		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#add(...)} .
-	 */
-	@Test
-	public void testAdd() throws Exception {
-		File test = tempCopy(new File("src/test/resources/simple.zip"));
-		String user = ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI();
-		DepositRecord record = new DepositRecord(user, user, DepositMethod.Unspecified);
-		PID container = new PID("test:container");
-		METSPackageSIP sip = new METSPackageSIP(container, test, true);
-
-		when(this.tripleStoreQueryService.lookupRepositoryPath(eq(container))).thenReturn("/test/container/path");
-		when(this.tripleStoreQueryService.fetchByRepositoryPath(eq("/test/container/path"))).thenReturn(container);
-		when(this.tripleStoreQueryService.verify(eq(container))).thenReturn(container);
-		ArrayList<URI> ans = new ArrayList<URI>();
-		ans.add(ContentModelHelper.Model.CONTAINER.getURI());
-		when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
-		this.getDigitalObjectManagerImpl().addToIngestQueue(sip, record);
-		// verify batch ingest called
-		verify(this.batchIngestQueue, times(1)).add(any(File.class));
-	}
-
-	/**
-	 * Test method for {@link edu.unc.lib.dl.services.BatchIngestService#ingestBatchNow(java.io.File)}.
-	 */
-	@Test
-	public void testSingleIngestNow() {
-		try {
-			reset(this.managementClient);
-			DepositRecord record = new DepositRecord("testonyen", "testonyen", DepositMethod.Unspecified);
-			PID container = new PID("test:container");
-			SingleFolderSIP sip = new SingleFolderSIP();
-			sip.setContainerPID(container);
-			sip.setSlug("testslug");
-
-			when(this.managementClient.pollForObject(any(PID.class), Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
-			List<String> personrow = new ArrayList<String>();
-			personrow.add("testonyen");
-			personrow.add("testonyen");
-			personrow.add("testonyen");
-			List<List<String>> answer = new ArrayList<List<String>>();
-			answer.add(personrow);
-			when(this.tripleStoreQueryService.queryResourceIndex(any(String.class))).thenReturn(answer);
-			when(this.tripleStoreQueryService.lookupRepositoryPath(eq(container))).thenReturn("/test/container/path");
-			when(this.tripleStoreQueryService.fetchByRepositoryPath(eq("/test/container/path"))).thenReturn(container);
-			when(this.tripleStoreQueryService.verify(any(PID.class))).thenReturn(container);
-
-			when(this.managementClient.upload(any(File.class))).thenReturn("upload:19238");
-			when(this.managementClient.upload(any(Document.class))).thenReturn("upload:19238");
-
-			ArrayList<URI> ans = new ArrayList<URI>();
-			ans.add(ContentModelHelper.Model.CONTAINER.getURI());
-			when(this.tripleStoreQueryService.lookupContentModels(eq(container))).thenReturn(ans);
-
-			digitalObjectManagerImpl.addWhileBlocking(sip, record);
-
-			// verify batch ingest called
-			verify(this.managementClient, times(2)).ingest(any(Document.class), any(Format.class), any(String.class));
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new Error(e);
-		}
 	}
 }
