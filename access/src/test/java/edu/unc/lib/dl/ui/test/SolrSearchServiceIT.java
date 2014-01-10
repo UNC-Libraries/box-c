@@ -279,7 +279,6 @@ public class SolrSearchServiceIT extends Assert  {
 		searchState.setSearchFields(searchFields);
 		
 		
-		searchState.setSortOrder("");
 		searchState.setSortType("dateUpdated");
 		
 		requestObject.setSearchState(searchState);
@@ -304,7 +303,6 @@ public class SolrSearchServiceIT extends Assert  {
 		searchState.setRowsPerPage(searchSettings.defaultPerPage);
 		searchState.setStartRow(0);
 		
-		searchState.setSortOrder("");
 		searchState.setSortType("collection");
 		
 		requestObject.setSearchState(searchState);

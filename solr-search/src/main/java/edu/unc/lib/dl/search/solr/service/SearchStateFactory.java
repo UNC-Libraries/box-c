@@ -66,7 +66,7 @@ public class SearchStateFactory {
 		searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.searchFacetNames));
 		searchState.setStartRow(0);
 		searchState.setSortType("default");
-		searchState.setSortOrder(searchSettings.sortNormal);
+		searchState.setSortNormalOrder(true);
 		searchState.setAccessTypeFilter(null);
 		return searchState;
 	}
@@ -163,7 +163,7 @@ public class SearchStateFactory {
 		searchState.setResourceTypes(containerTypes);
 		
 		searchState.setSortType("collection");
-		searchState.setSortOrder(searchSettings.sortNormal);
+		searchState.setSortNormalOrder(true);
 		
 		return searchState;
 	}
@@ -177,7 +177,7 @@ public class SearchStateFactory {
 		searchState.setStartRow(0);
 		
 		searchState.setSortType("collection");
-		searchState.setSortOrder(searchSettings.sortNormal);
+		searchState.setSortNormalOrder(true);
 		
 		return searchState;
 	}
@@ -203,7 +203,7 @@ public class SearchStateFactory {
 		searchState.setStartRow(0);
 		
 		searchState.setSortType("collection");
-		searchState.setSortOrder(searchSettings.sortNormal);
+		searchState.setSortNormalOrder(true);
 		
 		searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.facetNamesStructureBrowse));
 		
@@ -400,7 +400,7 @@ public class SearchStateFactory {
 			if (sortParts.length > 0) {
 				searchState.setSortType(sortParts[0]);
 				if (sortParts.length == 2)
-					searchState.setSortOrder(sortParts[1]);
+					searchState.setSortNormalOrder(!sortParts[1].equals(searchSettings.sortReverse));
 			}
 		}
 		

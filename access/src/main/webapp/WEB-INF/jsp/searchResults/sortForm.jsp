@@ -20,22 +20,16 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <c:choose>
-	<c:when test="${param.currentSortOrder == searchSettings.sortReverse}">
+	<c:when test="${!param.currentSortOrder}">
 		<c:set var="currentSortOrder" value="reverse"/>
 	</c:when>
 	<c:otherwise>
 		<c:set var="currentSortOrder" value="normal"/>
 	</c:otherwise>
 </c:choose>
-<c:if test="${not empty resultResponse.selectedContainer.id}">
-	<c:set var="actionPath" value="/${resultResponse.selectedContainer.id}"/>
-</c:if>
-<c:if test="${not empty searchQueryUrl}">
-	<c:set var="actionPath" value="${actionPath}?${fn:replace(searchQueryUrl, '\\\"', '%22')}"/>
-</c:if>
 
 <c:set var="currentSortKey" value="${param.currentSort},${currentSortOrder}"/>
-<form action="${queryMethod}${actionPath}" id="result_sort_form" class="navigation_sort_form right">
+<form action="sort" id="result_sort_form" class="navigation_sort_form right">
 	<select id="sort_select" name="sort">
 		<option>sort by</option>
 		<c:forEach var="sortEntry" items="${searchSettings.sortDisplayOrder}">
@@ -50,6 +44,10 @@
 			<option value="${sortEntry}" ${selected}>${searchSettings.sortDisplayNames[sortEntry]}</option>
 		</c:forEach>
 	</select>
+	<input type="hidden" name="queryPath" value="${queryMethod}" />
+	<c:if test="${not empty searchQueryUrl}">
+		<input type="hidden" name="within" value="${fn:replace(searchQueryUrl, '\\\"', '%22')}" />
+	</c:if>
 	<noscript>
 		<input type="submit" value="Go"/>
 	</noscript>

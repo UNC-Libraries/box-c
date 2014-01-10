@@ -114,10 +114,14 @@ public class SearchStateUtil {
 		}
 		
 		if (searchState.getSortType() != null && searchState.getSortType().length() != 0){
-			if (!"default".equals(searchState.getSortType()))
-				params.put(searchSettings.searchStateParam("SORT_TYPE"), searchState.getSortType());
-			if (searchState.getSortOrder() != null){
-				params.put(searchSettings.searchStateParam("SORT_ORDER"), searchState.getSortOrder());
+			if (!"default".equals(searchState.getSortType()) || !searchState.getSortNormalOrder()) {
+				StringBuilder sortValue = new StringBuilder();
+				sortValue.append(searchState.getSortType());
+				
+				if (!searchState.getSortNormalOrder())
+					sortValue.append(',').append(searchSettings.sortReverse);
+				
+				params.put(searchSettings.searchStateParam("SORT_ORDER"), sortValue.toString());
 			}
 		}
 		

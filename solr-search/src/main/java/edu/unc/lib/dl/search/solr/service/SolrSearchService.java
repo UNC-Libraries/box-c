@@ -474,9 +474,8 @@ public class SolrSearchService {
 			for (int i = 0; i < sortFields.size(); i++) {
 				SearchSettings.SortField sortField = sortFields.get(i);
 				SolrQuery.ORDER sortOrder = SolrQuery.ORDER.valueOf(sortField.getSortOrder());
-				if (searchState.getSortOrder() != null && searchState.getSortOrder().equals(searchSettings.sortReverse)) {
+				if (!searchState.getSortNormalOrder())
 					sortOrder = sortOrder.reverse();
-				}
 				solrQuery.addSort(solrSettings.getFieldName(sortField.getFieldName()), sortOrder);
 			}
 		}

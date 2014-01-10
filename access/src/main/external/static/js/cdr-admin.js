@@ -3052,23 +3052,28 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			if (this.options.pagingActive) {
 				// Paging active, so need to make server callback to perform sort
 				var sortParam = URLUtilities.getParameter('sort');
-				var sortOrder = URLUtilities.getParameter('sortOrder');
+				var sortOrder = true;
+				if (sortParam != null) {
+					sortParam = sortParam.split(",");
+					if (sortParam.length > 1)
+						sortOrder = "reverse" != sortParam[1];
+					if (sortParam.length > 0)
+						sortParam = sortParam[0];
+				}
+				
 				$("th.sort_col", $resultTable).each(function(){
 					var $this = $(this);
 					$this.addClass('sorting');
 					var sortField = $this.attr('data-field');
 					if (sortField) {
-						var order = '';
 						if (sortParam == sortField) {
 							if (sortOrder) {
 								$this.addClass('asc');
 							} else {
 								$this.addClass('desc');
-								order = 'reverse';
 							}
 						}
-						var sortUrl = URLUtilities.setParameter(self.options.resultUrl, 'sort', sortField);
-						sortUrl = URLUtilities.setParameter(sortUrl, 'sortOrder', order);
+						var sortUrl = URLUtilities.setParameter(self.options.resultUrl, 'sort', sortField + (sortOrder? ",reverse" : ""));
 						this.children[0].href = sortUrl;
 					}
 				});

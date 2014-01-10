@@ -115,14 +115,7 @@ public class SearchStateValidator {
 				!searchSettings.sortTypes.containsKey(searchState.getSortType())){
 			//Sort type was invalid, so overwrite it and order with defaults
 			searchState.setSortType("default");
-			searchState.setSortOrder(searchSettings.sortNormal);
-		} else {
-			//Sort type is valid, check the sort order
-			if (searchState.getSortOrder() != null 
-					&& !searchState.getSortOrder().equals(searchSettings.sortReverse) 
-					&& !searchState.getSortOrder().equals(searchSettings.sortNormal)){
-				searchState.setSortOrder(searchSettings.sortNormal);
-			}
+			searchState.setSortNormalOrder(true);
 		}
 	}
 

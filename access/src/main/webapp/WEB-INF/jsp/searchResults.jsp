@@ -106,8 +106,9 @@
 							</c:import>
 							${navigationBar}
 							<c:import url="searchResults/sortForm.jsp">
+								<c:param name="queryMethod">${queryMethod}</c:param>
 								<c:param name="currentSort">${searchState.sortType}</c:param>
-								<c:param name="currentSortOrder">${searchState.sortOrder}</c:param>
+								<c:param name="currentSortOrder">${searchState.sortNormalOrder}</c:param>
 							</c:import>
 						</div>
 						<c:if test="${not empty resultResponse.selectedContainer}">
