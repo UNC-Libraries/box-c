@@ -45,6 +45,7 @@
 	<servlet-mapping>
 		<servlet-name>rest</servlet-name>
 		<url-pattern>/api/*</url-pattern>
+		<url-pattern>/api-s/*</url-pattern>
 	</servlet-mapping>
 	
 	<filter>
@@ -54,6 +55,7 @@
 	<filter-mapping>
 		<filter-name>StoreUserAccessControlFilter</filter-name>
 		<url-pattern>/api/*</url-pattern>
+		<url-pattern>/api-s/*</url-pattern>
 	</filter-mapping>
 	
 	<filter>
@@ -104,6 +106,16 @@
 		</auth-constraint>
 	</security-constraint>
 	
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Forwarding API</web-resource-name>
+			<url-pattern>/api-s/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>group-forwarding</role-name>
+		</auth-constraint>
+	</security-constraint>
+	
 	<login-config>
 		<auth-method>BASIC</auth-method>
 		<realm-name>Services Application</realm-name>
@@ -112,6 +124,8 @@
 	<security-role>
 		<role-name>sword-depositor</role-name>
 	</security-role>
+	
+	<security-role>
+		<role-name>group-forwarding</role-name>
+	</security-role>
 </web-app>
-
-
