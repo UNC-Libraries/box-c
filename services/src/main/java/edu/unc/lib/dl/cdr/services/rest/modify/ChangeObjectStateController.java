@@ -23,41 +23,41 @@ import edu.unc.lib.dl.fedora.ManagementClient.State;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
- * Controller for marking objects as trash, or unmarking objects
+ * API controller for changing an object's state, specifically to mark it as either deleted or active
  * 
  * @author bbpennel
  *
  */
 @Controller
-public class MoveToTrashController {
-	private static final Logger log = LoggerFactory.getLogger(MoveToTrashController.class);
+public class ChangeObjectStateController {
+	private static final Logger log = LoggerFactory.getLogger(ChangeObjectStateController.class);
 	
 	@Autowired(required = true)
 	@Qualifier("forwardedManagementClient")
 	private ManagementClient managementClient;
 	
-	@RequestMapping(value = "edit/removeFromTrash/{id}", method = RequestMethod.POST)
+	@RequestMapping(value = "edit/restore/{id}", method = RequestMethod.POST)
 	public @ResponseBody
 	Map<String, ? extends Object> removeFromTrash(@PathVariable("id") String id) {
 		return this.changeObjectState(id, false);
 	}
 	
-	@RequestMapping(value = "edit/moveToTrash/{id}", method = RequestMethod.POST)
+	@RequestMapping(value = "edit/delete/{id}", method = RequestMethod.POST)
 	public @ResponseBody
 	Map<String, ? extends Object> moveToTrash(@PathVariable("id") String id) {
 		return this.changeObjectState(id, true);
 	}
 	
-	private Map<String, ? extends Object> changeObjectState(String id, boolean moveToTrash) {
+	private Map<String, ? extends Object> changeObjectState(String id, boolean markAsDeleted) {
 		PID pid = new PID(id);
 		
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("pid", id);
-		result.put("action", (moveToTrash) ? "moveToTrash" : "removeFromTrash");
+		result.put("action", (markAsDeleted) ? "delete" : "restore");
 		
 
 		try {
-			State newState = moveToTrash? State.DELETED : State.ACTIVE;
+			State newState = markAsDeleted? State.DELETED : State.ACTIVE;
 			log.debug("Changing the state of object {} to {}", id, newState);
 			managementClient.modifyObject(pid, null, null, newState, null);
 			result.put("timestamp", System.currentTimeMillis());
@@ -71,13 +71,13 @@ public class MoveToTrashController {
 		return result;
 	}
 	
-	@RequestMapping(value = "edit/removeFromTrash", method = RequestMethod.POST)
+	@RequestMapping(value = "edit/restore", method = RequestMethod.POST)
 	public @ResponseBody
 	List<? extends Object> removeBatchFromTrash(@RequestParam("ids") String ids) {
 		return this.changeBatchObjectState(ids, false);
 	}
 	
-	@RequestMapping(value = "edit/moveToTrash", method = RequestMethod.POST)
+	@RequestMapping(value = "edit/delete", method = RequestMethod.POST)
 	public @ResponseBody
 	List<? extends Object> moveBatchToTrash(@RequestParam("ids") String ids) {
 		return this.changeBatchObjectState(ids, true);

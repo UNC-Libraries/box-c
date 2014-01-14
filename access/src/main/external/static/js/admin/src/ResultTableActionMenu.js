@@ -6,15 +6,15 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 		actions : {
 			deleteBatch : {
 				label : "Delete",
-				className : "MoveBatchToTrashButton",
+				className : "DeleteBatchButton",
 				permissions : ["moveToTrash"]
 			}, restoreBatch : {
 				label : "Restore",
-				className : "RemoveBatchFromTrashButton",
+				className : "RestoreBatchButton",
 				permissions : ["moveToTrash"]
 			}, deleteBatchForever : {
-				label : "Delete Forever",
-				className : "DeleteBatchButton",
+				label : "Destroy",
+				className : "DestroyBatchButton",
 				permissions : ["purgeForever"]
 			}, publish : {
 				label : "Publish",

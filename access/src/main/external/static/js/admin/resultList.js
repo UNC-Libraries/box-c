@@ -16,7 +16,7 @@ require.config({
 		'BatchCallbackButton' : 'cdr-admin',
 		'UnpublishBatchButton' : 'cdr-admin',
 		'PublishBatchButton' : 'cdr-admin',
-		'DeleteBatchButton' : 'cdr-admin',
+		'DestroyBatchButton' : 'cdr-admin',
 		'ModalLoadingOverlay' : 'cdr-admin',
 		'EditAccessControlForm' : 'cdr-admin',
 		'RemoteStateChangeMonitor' : 'cdr-admin',

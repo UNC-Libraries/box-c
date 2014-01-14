@@ -54,15 +54,15 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 					items["sepadmin"] = "";
 					items["reindex"] = {name : 'Reindex'};
 				}
-				items["sepdel"] = "";
-				if ($.inArray('purgeForever', metadata.permissions) != -1 && $.inArray('Deleted', metadata.status) != -1) {
-					items["purgeForever"] = {name : 'Delete Forever'};
+				if ($.inArray('purgeForever', metadata.permissions) != -1) {
+					items["sepdestroy"] = "";
+					items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Deleted', metadata.status) == -1};
 				}
+				
 				if ($.inArray('moveToTrash', metadata.permissions) != -1) {
-					if ($.inArray('Deleted', metadata.status) == -1)
-						items["moveToTrash"] = {name : 'Delete'};
-					else
-						items["moveToTrash"] = {name : 'Restore'};
+					items["sepdel"] = "";
+					items["deleteResult"] = {name : 'Delete', disabled : $.inArray('Deleted', metadata.status) != -1};
+					items["restoreResult"] = {name : 'Restore', disabled : $.inArray('Deleted', metadata.status) == -1};
 				}
 				
 				return {
@@ -94,17 +94,17 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 								// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
 								document.location.href = baseUrl + "describe/" + metadata.id;
 								break;
-							case "purgeForever" :
+							case "destroy" :
 								self.actionHandler.addEvent({
-									action : 'DeleteForever',
+									action : 'DestroyResult',
 									target : resultObject,
 									confirmAnchor : options.$trigger
 								});
 								break;
-							case "moveToTrash":
+							case "deleteResult": case "restoreResult":
 								self.actionHandler.addEvent({
 									action : ($.inArray('Deleted', metadata.status) == -1)? 
-											'TrashResult' : 'RestoreResult',
+											'DeleteResult' : 'RestoreResult',
 									target : resultObject,
 									confirmAnchor : options.$trigger
 								});

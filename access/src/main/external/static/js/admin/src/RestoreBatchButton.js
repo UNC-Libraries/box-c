@@ -1,10 +1,10 @@
-define('RemoveBatchFromTrashButton', [ 'jquery', 'BatchActionButton'], function($, BatchActionButton) {
-	function RemoveBatchFromTrashButton(options, element) {
+define('RestoreBatchButton', [ 'jquery', 'BatchActionButton'], function($, BatchActionButton) {
+	function RestoreBatchButton(options, element) {
 		this._create(options, element);
 	};
 	
-	RemoveBatchFromTrashButton.prototype.constructor = RemoveBatchFromTrashButton;
-	RemoveBatchFromTrashButton.prototype = Object.create( BatchActionButton.prototype );
+	RestoreBatchButton.prototype.constructor = RestoreBatchButton;
+	RestoreBatchButton.prototype = Object.create( BatchActionButton.prototype );
 	
 	var defaultOptions = {
 		resultObjectList : undefined,
@@ -12,10 +12,9 @@ define('RemoveBatchFromTrashButton', [ 'jquery', 'BatchActionButton'], function(
 		animateSpeed: 'fast'
 	};
 	
-	RemoveBatchFromTrashButton.prototype._create = function(options, element) {
+	RestoreBatchButton.prototype._create = function(options, element) {
 		var merged = $.extend({}, defaultOptions, options);
 		
-		merged.workPath = "/services/api/edit/removeFromTrash";
 		merged.workLabel = "Restoring from trash...";
 		merged.followupLabel = "Restoring from trash....";
 		merged.confirmMessage = "Restore these objects from the Trash?";
@@ -25,12 +24,12 @@ define('RemoveBatchFromTrashButton', [ 'jquery', 'BatchActionButton'], function(
 	};
 
 	
-	RemoveBatchFromTrashButton.prototype.isValidTarget = function(resultObject) {
+	RestoreBatchButton.prototype.isValidTarget = function(resultObject) {
 		return resultObject.isSelected() && resultObject.isEnabled() 
 					&& $.inArray("Deleted", resultObject.getMetadata().status) != -1;
 	};
 	
-	RemoveBatchFromTrashButton.prototype.doWork = function() {
+	RestoreBatchButton.prototype.doWork = function() {
 		this.disable();
 		this.targetIds = this.getTargetIds();
 	
@@ -44,5 +43,5 @@ define('RemoveBatchFromTrashButton', [ 'jquery', 'BatchActionButton'], function(
 		this.enable();
 	};
 	
-	return RemoveBatchFromTrashButton;
+	return RestoreBatchButton;
 });

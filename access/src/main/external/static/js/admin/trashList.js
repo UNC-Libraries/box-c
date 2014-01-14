@@ -13,7 +13,7 @@ require.config({
 		'ResultObject' : 'cdr-admin',
 		'ResultObjectList' : 'cdr-admin',
 		'BatchCallbackButton' : 'cdr-admin',
-		'DeleteBatchButton' : 'cdr-admin',
+		'DestroyBatchButton' : 'cdr-admin',
 		'ModalLoadingOverlay' : 'cdr-admin',
 		'RemoteStateChangeMonitor' : 'cdr-admin',
 		'ConfirmationDialog' : 'cdr-admin',

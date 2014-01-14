@@ -1,4 +1,4 @@
-define('DeleteBatchButton', ['jquery', 'BatchActionButton'], function($, BatchActionButton) {
+define('DeleteBatchButton', [ 'jquery', 'BatchActionButton'], function($, BatchActionButton) {
 	function DeleteBatchButton(options, element) {
 		this._create(options, element);
 	};
@@ -7,18 +7,25 @@ define('DeleteBatchButton', ['jquery', 'BatchActionButton'], function($, BatchAc
 	DeleteBatchButton.prototype = Object.create( BatchActionButton.prototype );
 	
 	var defaultOptions = {
+		resultObjectList : undefined,
 		confirm: true,
-		confirmMessage: "Permanently delete selected object(s)?  This action cannot be undone."
+		animateSpeed: 'fast'
 	};
 	
 	DeleteBatchButton.prototype._create = function(options, element) {
 		var merged = $.extend({}, defaultOptions, options);
+		
+		merged.workLabel = "Deleting...";
+		merged.followupLabel = "Deleting....";
+		merged.confirmMessage = "Mark these objects as deleted?";
 		merged.confirmAnchor = element;
+		
 		BatchActionButton.prototype._create.call(this, merged, element);
 	};
 	
 	DeleteBatchButton.prototype.isValidTarget = function(resultObject) {
-		return resultObject.isSelected() && resultObject.isEnabled();
+		return resultObject.isSelected() && resultObject.isEnabled() 
+					&& $.inArray("Deleted", resultObject.getMetadata().status) == -1;
 	};
 	
 	DeleteBatchButton.prototype.doWork = function() {
@@ -27,7 +34,7 @@ define('DeleteBatchButton', ['jquery', 'BatchActionButton'], function($, BatchAc
 	
 		for (var index in this.targetIds) {
 			this.actionHandler.addEvent({
-				action : 'DeleteForever',
+				action : 'DeleteResult',
 				target : this.options.resultObjectList.resultObjects[this.targetIds[index]],
 				confirm : false
 			});
