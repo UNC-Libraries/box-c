@@ -28,6 +28,7 @@ import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancement;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
@@ -48,7 +49,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author Gregory Jansen, bbpennel
  *
  */
-public class ThumbnailEnhancement extends Enhancement<Element> {
+public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 	private static final Logger LOG = LoggerFactory.getLogger(ThumbnailEnhancement.class);
 
 	private ThumbnailEnhancementService service = null;
@@ -98,6 +99,8 @@ public class ThumbnailEnhancement extends Enhancement<Element> {
 			if (mimetype != null && mimetype.indexOf("image/") != -1 /* || mimetype.indexOf("application/pdf") != -1 */) {
 				LOG.debug("Image DS found: " + surrogateDsId + ", " + mimetype);
 
+				dsLocation = this.getDSLocation(surrogateDsId, vid, surrogateFoxml);
+				
 				Element dsEl = FOXMLJDOMUtil.getDatastream(surrogateFoxml, surrogateDsId);
 				for (Object o : dsEl.getChildren("datastreamVersion", JDOMNamespaceUtil.FOXML_NS)) {
 					if (o instanceof Element) {

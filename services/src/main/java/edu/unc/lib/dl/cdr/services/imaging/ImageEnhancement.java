@@ -27,6 +27,7 @@ import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancement;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
@@ -45,7 +46,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * 
  * @author bbpennel
  */
-public class ImageEnhancement extends Enhancement<Element> {
+public class ImageEnhancement extends AbstractFedoraEnhancement {
 	private static final Logger LOG = LoggerFactory.getLogger(ImageEnhancement.class);
 
 	private ImageEnhancementService service = null;
@@ -79,17 +80,8 @@ public class ImageEnhancement extends Enhancement<Element> {
 				if (mimetype.indexOf("image/") != -1) {
 					LOG.debug("Image DS found: " + dsid + ", " + mimetype);
 
-					Element dsEl = FOXMLJDOMUtil.getDatastream(foxml, dsid);
-					for (Object o : dsEl.getChildren("datastreamVersion", JDOMNamespaceUtil.FOXML_NS)) {
-						if (o instanceof Element) {
-							Element dsvEl = (Element) o;
-							if (vid.equals(dsvEl.getAttributeValue("ID"))) {
-								dsLocation = dsvEl.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
-										.getAttributeValue("REF");
-								break;
-							}
-						}
-					}
+					dsLocation = this.getDSLocation(dsid, vid, foxml);
+					
 					LOG.debug("Image DS location: " + dsLocation);
 					if (dsLocation != null) {
 						dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
@@ -177,7 +169,6 @@ public class ImageEnhancement extends Enhancement<Element> {
 	}
 
 	public ImageEnhancement(ImageEnhancementService service, PID pid) {
-		super(pid);
-		this.service = service;
+		super(service, pid);
 	}
 }

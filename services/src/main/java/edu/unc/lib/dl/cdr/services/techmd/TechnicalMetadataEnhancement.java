@@ -21,7 +21,6 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +36,8 @@ import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.cdr.services.Enhancement;
+import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancement;
+import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -55,13 +55,11 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author Gregory Jansen
  * 
  */
-public class TechnicalMetadataEnhancement extends Enhancement<Element> {
+public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 	Namespace ns = JDOMNamespaceUtil.FITS_NS;
 
 	private static final Logger LOG = LoggerFactory.getLogger(TechnicalMetadataEnhancement.class);
 	private static final int MAX_EXTENSION_LENGTH = 8;
-
-	private TechnicalMetadataEnhancementService service = null;
 
 	/*
 	 * (non-Javadoc)
@@ -253,34 +251,6 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 	}
 
 	/**
-	 * Set a single value for a given predicate and pid.
-	 * 
-	 * @param pid
-	 * @param predicate
-	 * @param newExclusiveValue
-	 * @throws FedoraException
-	 */
-	private void setExclusiveTripleValue(PID pid, String predicate, String newExclusiveValue, String datatype)
-			throws FedoraException {
-		List<String> rel = service.getTripleStoreQueryService().fetchAllTriples(pid).get(predicate);
-		if (rel != null) {
-			if (rel.contains(newExclusiveValue)) {
-				rel.remove(newExclusiveValue);
-			} else {
-				// add missing rel
-				service.getManagementClient().addLiteralStatement(pid, predicate, newExclusiveValue, datatype);
-			}
-			// remove any other same predicate triples
-			for (String oldValue : rel) {
-				service.getManagementClient().purgeLiteralStatement(pid, predicate, oldValue, datatype);
-			}
-		} else {
-			// add missing rel
-			service.getManagementClient().addLiteralStatement(pid, predicate, newExclusiveValue, datatype);
-		}
-	}
-
-	/**
 	 * Executes fits extract irods script
 	 * 
 	 * @param dsIrodsPath
@@ -317,11 +287,13 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 		String errstr = null;
 		try {
 			if (filename == null) {
-				reader = new BufferedReader(new InputStreamReader(service.remoteExecuteWithPhysicalLocation("fitsextract",
-						dsIrodsPath)));
+				reader = new BufferedReader(new InputStreamReader(
+						((AbstractIrodsObjectEnhancementService) service).remoteExecuteWithPhysicalLocation("fitsextract",
+								dsIrodsPath)));
 			} else {
-				reader = new BufferedReader(new InputStreamReader(service.remoteExecuteWithPhysicalLocation("fitsextract",
-						"'" + filename + "'", dsIrodsPath)));
+				reader = new BufferedReader(new InputStreamReader(
+						((AbstractIrodsObjectEnhancementService) service).remoteExecuteWithPhysicalLocation("fitsextract",
+								"'" + filename + "'", dsIrodsPath)));
 			}
 			StringBuilder xml = new StringBuilder();
 			StringBuilder err = new StringBuilder();
@@ -358,8 +330,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 	}
 
 	public TechnicalMetadataEnhancement(TechnicalMetadataEnhancementService technicalMetadataEnhancementService, PID pid) {
-		super(pid);
-		this.service = technicalMetadataEnhancementService;
+		super(technicalMetadataEnhancementService, pid);
 	}
 
 }

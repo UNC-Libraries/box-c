@@ -52,7 +52,7 @@ public class ContentModelHelper {
 		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), defaultWebObject("defaultWebObject"), sourceData(
 				"sourceData"), indexText("indexText"), onyen("onyen"), slug("slug"), sortOrder("sortOrder"), hasSourceMimeType(
 				"hasSourceMimeType"), hasSourceFileSize("hasSourceFileSize"), hasChecksum("hasChecksum"), hasSurrogate(
-				"hasSurrogate"), thumb("thumb"), derivedJP2("derivedJP2"), techData("techData"), depositedOnBehalfOf(
+				"hasSurrogate"), thumb("thumb"), derivedJP2("derivedJP2"), techData("techData"), fullText("fullText"), depositedOnBehalfOf(
 				"depositedOnBehalfOf"), depositMethod("depositMethod"), depositPackageType("depositPackageType"), depositPackageSubType(
 				"depositPackageSubType"), inheritPermissions("inheritPermissions", NamespaceConstants.CDR_ACL_NS_URI), embargoUntil(
 				"embargo-until", NamespaceConstants.CDR_ACL_NS_URI), dataAccessCategory("data-access-category",
@@ -93,7 +93,7 @@ public class ContentModelHelper {
 		public String getPredicate() {
 			return predicate;
 		}
-		
+
 		public String getNamespace() {
 			return namespace;
 		}
@@ -314,8 +314,9 @@ public class ContentModelHelper {
 		RELS_EXT("RELS-EXT", ControlGroup.INTERNAL, false, "Fedora Object-to-Object Relationship Metadata",
 				DatastreamCategory.ADMINISTRATIVE), DATA_FILE("DATA_FILE", ControlGroup.MANAGED, true, null,
 				DatastreamCategory.ORIGINAL), MD_TECHNICAL("MD_TECHNICAL", ControlGroup.MANAGED, false,
-				"PREMIS Technical Metadata", DatastreamCategory.ADMINISTRATIVE), IMAGE_JP2000("IMAGE_JP2000",
-				ControlGroup.MANAGED, false, "Derived JP2000 image", DatastreamCategory.DERIVATIVE), MD_DESCRIPTIVE(
+				"PREMIS Technical Metadata", DatastreamCategory.ADMINISTRATIVE), MD_FULL_TEXT("MD_FULL_TEXT",
+				ControlGroup.MANAGED, false, "Full text metadata", DatastreamCategory.ADMINISTRATIVE), IMAGE_JP2000(
+				"IMAGE_JP2000", ControlGroup.MANAGED, false, "Derived JP2000 image", DatastreamCategory.DERIVATIVE), MD_DESCRIPTIVE(
 				"MD_DESCRIPTIVE", ControlGroup.INTERNAL, true, "Descriptive Metadata", DatastreamCategory.METADATA), DC(
 				"DC", ControlGroup.INTERNAL, false, "Internal XML Metadata", DatastreamCategory.METADATA), MD_EVENTS(
 				"MD_EVENTS", ControlGroup.MANAGED, false, "PREMIS Events Metadata", DatastreamCategory.METADATA), THUMB_SMALL(

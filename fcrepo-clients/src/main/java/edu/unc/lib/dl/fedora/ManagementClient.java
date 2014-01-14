@@ -636,6 +636,7 @@ public class ManagementClient extends WebServiceTemplate {
 	public void setUsername(String username) {
 		this.username = username;
 	}
+	
 
 	public String upload(File file) {
 		String result = null;
@@ -687,10 +688,12 @@ public class ManagementClient extends WebServiceTemplate {
 		}
 		return result;
 	}
+	
+	public String upload(String content) {
+		return this.uploadBytes(content.getBytes(), "tmp_" + System.currentTimeMillis());
+	}
 
 	public String upload(Document xml) {
-		String result = null;
-
 		// write the document to a byte array
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		XMLOutputter out = new XMLOutputter();
@@ -704,7 +707,12 @@ public class ManagementClient extends WebServiceTemplate {
 			} catch (IOException ignored) {
 			}
 		}
-
+		
+		return this.uploadBytes(baos.toByteArray(), "md_events.xml");
+	}
+	
+	private String uploadBytes(byte[] bytes, String fileName) {
+		String result = null;
 		// construct a post request to Fedora upload service
 		String uploadURL = this.getFedoraContextUrl() + "/upload";
 		HttpClient http = HttpClientUtil.getAuthenticatedClient(uploadURL, this.getUsername(), this.getPassword());
@@ -714,7 +722,7 @@ public class ManagementClient extends WebServiceTemplate {
 		post.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
 		try {
 			log.debug("Uploading to " + uploadURL);
-			Part[] parts = { new FilePart("file", new ByteArrayPartSource("md_events.xml", baos.toByteArray())) };
+			Part[] parts = { new FilePart("file", new ByteArrayPartSource(fileName, bytes)) };
 			post.setRequestEntity(new MultipartRequestEntity(parts, post.getParams()));
 			http.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
 
