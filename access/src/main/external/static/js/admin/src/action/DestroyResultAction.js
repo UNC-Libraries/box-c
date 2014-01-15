@@ -11,15 +11,30 @@ define('DestroyResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 	DestroyResultAction.prototype._create = function(context) {
 		this.context = context;
 		
+		var targetIsCollection = this.context.target.metadata && this.context.target.metadata.type == "Collection";
+		
 		var options = {
 			workMethod: $.post,
 			workLabel: "Destroying...",
 			workPath: "/services/api/edit/destroy/{idPath}",
 			followupLabel: "Cleaning up...",
 			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
-			confirm: true,
-			confirmMessage: "Permanently destroy this object?  This action cannot be undone.",
-			animateSpeed: 'fast',
+			confirm : {
+				promptText: targetIsCollection ?
+					$("<h3>Are you sure you want to destroy this collection?</h3>"
+						+ "<p>This action will permanently destroy <span class='bold'>" + this.context.target.metadata.title.substring(0, 50) + "</span> and all of its contents.  It <span class='bold'>cannot</span> be undone.</p>"
+						+ "<p>Please type in the name of the collection to confirm.</p>") :
+					$("<h3>Permanently destroy " + (this.context.target.metadata? this.context.target.metadata.title.substring(0, 50) : "this object") 
+						+ "?</h3><p>This action <span class='bold'>cannot</span> be undone.</p>"),
+				confirmMatchText: targetIsCollection ? this.context.target.metadata.title.substring(0, 10) : undefined,
+				confirmText : "Confirm",
+				confirmAnchor : null,
+				dialogOptions : {
+					width : 400,
+					modal : true,
+					position : 'center'
+				}
+			},
 			workDone: DestroyResultAction.prototype.destroyWorkDone,
 			followup: DestroyResultAction.prototype.destroyFollowup
 		};

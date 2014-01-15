@@ -5,10 +5,7 @@ define('ActionButton', ['jquery', 'ResultObjectList', 'ConfirmationDialog'], fun
 	};
 	
 	var defaultOptions = {
-			confirmAnchor : undefined,
-			confirmMessage : "Are you sure?",
-			confirm : false,
-			animateSpeed: 'fast'
+			confirm : false
 		};
 
 	ActionButton.prototype._create = function(options, element) {
@@ -22,23 +19,23 @@ define('ActionButton', ['jquery', 'ResultObjectList', 'ConfirmationDialog'], fun
 			
 		if (this.options.confirm) {
 			var op = this;
-			var dialogOptions = {
+			
+			var confirmOptions = $.extend({
+				confirmFunction : this.doWork,
+				confirmTarget : this,
+				autoOpen : true,
+				dialogOptions : {
 					width : 'auto',
 					modal : true
-				};
+				}
+			}, this.options.confirm);
 				
-			if (this.options.confirmAnchor) {
-				dialogOptions['position'] = {};
-				dialogOptions['position']['of'] = this.options.confirmAnchor; 
+			if (confirmOptions.confirmAnchor) {
+				confirmOptions.dialogOptions['position'] = {};
+				confirmOptions.dialogOptions['position']['of'] = confirmOptions.confirmAnchor; 
 			}
 		
-			var confirmationDialog = new ConfirmationDialog({
-				'promptText' : this.options.confirmMessage,
-				'confirmFunction' : this.doWork,
-				'confirmTarget' : this,
-				'dialogOptions' : dialogOptions,
-				autoOpen : true
-			});
+			var confirmationDialog = new ConfirmationDialog(confirmOptions);
 		} else {
 			this.doWork();
 		}

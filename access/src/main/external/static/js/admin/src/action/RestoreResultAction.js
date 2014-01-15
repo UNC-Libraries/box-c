@@ -10,8 +10,12 @@ define('RestoreResultAction', [ 'jquery', 'AjaxCallbackAction', 'DeleteResultAct
 		this.options.workPath = "/services/api/edit/restore/{idPath}";
 		this.options.workLabel = "Restoring object...";
 		this.options.followupLabel = "Restoring object....";
-		if ('confirm' in this.context) {
-			this.options.confirm = this.context.confirm;
+		
+		if (this.context.confirm) {
+			this.options.confirm = {
+				promptText : "Restore this object from the trash?",
+				confirmAnchor : this.context.confirmAnchor
+			};
 		} else {
 			this.options.confirm = false;
 		}

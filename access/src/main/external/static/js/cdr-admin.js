@@ -705,10 +705,7 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	};
 	
 	var defaultOptions = {
-			confirmAnchor : undefined,
-			confirmMessage : "Are you sure?",
-			confirm : false,
-			animateSpeed: 'fast'
+			confirm : false
 		};
 
 	ActionButton.prototype._create = function(options, element) {
@@ -722,23 +719,23 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			
 		if (this.options.confirm) {
 			var op = this;
-			var dialogOptions = {
+			
+			var confirmOptions = $.extend({
+				confirmFunction : this.doWork,
+				confirmTarget : this,
+				autoOpen : true,
+				dialogOptions : {
 					width : 'auto',
 					modal : true
-				};
+				}
+			}, this.options.confirm);
 				
-			if (this.options.confirmAnchor) {
-				dialogOptions['position'] = {};
-				dialogOptions['position']['of'] = this.options.confirmAnchor; 
+			if (confirmOptions.confirmAnchor) {
+				confirmOptions.dialogOptions['position'] = {};
+				confirmOptions.dialogOptions['position']['of'] = confirmOptions.confirmAnchor; 
 			}
 		
-			var confirmationDialog = new ConfirmationDialog({
-				'promptText' : this.options.confirmMessage,
-				'confirmFunction' : this.doWork,
-				'confirmTarget' : this,
-				'dialogOptions' : dialogOptions,
-				autoOpen : true
-			});
+			var confirmationDialog = new ConfirmationDialog(confirmOptions);
 		} else {
 			this.doWork();
 		}
@@ -1034,14 +1031,6 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 	
 	BatchActionButton.prototype.constructor = BatchActionButton;
 	BatchActionButton.prototype = Object.create( ActionButton.prototype );
-	
-	var defaultOptions = {
-			confirmAnchor : undefined,
-			confirmMessage : "Are you sure?",
-			animateSpeed: 'fast',
-			
-			resultObjectList : undefined
-		};
 		
 	BatchActionButton.prototype.getTargetIds = function() {
 		var targetIds = [];
@@ -1051,6 +1040,16 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 				targetIds.push(resultObject.getPid());
 		}
 		return targetIds;
+	};
+	
+	BatchActionButton.prototype.getTargets = function() {
+		var targets = [];
+		for (var id in this.options.resultObjectList.resultObjects) {
+			var resultObject = this.options.resultObjectList.resultObjects[id];
+			if (this.isValidTarget(resultObject))
+				targets.push(resultObject);
+		}
+		return targets;
 	};
 
 	BatchActionButton.prototype.hasTargets = function() {
@@ -1094,49 +1093,55 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		this._create(options);
 	};
 	
+	var defaultOptions = {
+		promptText : 'Are you sure?',
+		confirmFunction : undefined,
+		confirmTarget : undefined,
+		confirmText : 'Yes',
+		confirmMatchText : null,
+		cancelTarget : undefined,
+		cancelFunction : undefined,
+		cancelText : 'Cancel',
+		solo : true,
+		additionalButtons : undefined,
+		autoOpen : false,
+		addClass : undefined,
+		destroyOnClose : false
+	};
+	
+	var defaultDialog = {
+		modal : false,
+		minHeight : 60,
+		autoOpen : false,
+		resizable : false,
+		dialogClass : "no_titlebar confirm_dialog",
+		position : {
+			my : "right top",
+			at : "right bottom"
+		}
+	};
+	
 	$.extend(ConfirmationDialog.prototype, {
-		options : {
-			promptText : 'Are you sure?',
-			confirmFunction : undefined,
-			confirmTarget : undefined,
-			confirmText : 'Yes',
-			cancelTarget : undefined,
-			cancelFunction : undefined,
-			cancelText : 'Cancel',
-			solo : true,
-			additionalButtons : undefined,
-			autoOpen : false,
-			addClass : undefined,
-			destroyOnClose : false
-		},
-		
-		dialogOptions : {
-			modal : false,
-			minHeight : 60,
-			autoOpen : false,
-			resizable : false,
-			dialogClass : "no_titlebar confirm_dialog",
-			position : {
-				my : "right top",
-				at : "right bottom"
-			}
-		},
-		
 		_create : function(options) {
-			$.extend(this.options, options);
+			this.options = $.extend({}, defaultOptions, options);
 			if ('dialogOptions' in this.options)
-				$.extend(this.dialogOptions, this.options.dialogOptions);
+				this.dialogOptions = $.extend({}, defaultDialog, this.options.dialogOptions);
+			else this.dialogOptions = $.extend({}, defaultDialog);
+			
 			var self = this;
 			
 			this.confirmDialog = $("<div class='confirm_dialogue'></div>");
-			if (this.options.promptText === undefined) {
-				this.confirmDialog.append("<p>Are you sure?</p>");
-			} else {
-				this.confirmDialog.append("<p>" + this.options.promptText + "</p>");
+			
+			this.setPromptText(this.options.promptText);
+			
+			if (this.options.confirmMatchText) {
+				this.confirmMatchInput = $("<input type='text' />");
+				$("<p class='confirm_match_input'/>").append(this.confirmMatchInput).appendTo(this.confirmDialog);
 			}
+			
 			$("body").append(this.confirmDialog);
 			
-			var buttonsObject = this._generateButtons();
+			var buttons = this._generateButtons();
 			
 			$.extend(this.dialogOptions, {
 				open : function() {
@@ -1147,7 +1152,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 						});
 					}
 				},
-				buttons : buttonsObject
+				buttons : buttons
 			});
 			
 			if (this.options.destroyOnClose)
@@ -1159,6 +1164,13 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			if (this.options.addClass)
 				this.confirmDialog.addClass(this.options.addClass);
 				
+			if (this.options.confirmMatchText) {
+				this.confirmMatchInput.keyup(function(){
+					$(".confirm_dialog_confirm").button('option', 'disabled', !self.inputMatches());
+				});
+				$(".confirm_dialog_confirm").button('option', 'disabled', true);
+			}
+				
 			if (this.options.autoOpen)
 				this.open();
 		},
@@ -1167,30 +1179,53 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			var buttonsObject = {};
 			var self = this;
 			
-			buttonsObject[this.options.cancelText] = function() {
-				if (self.options.cancelFunction) {
-					var result = self.options.cancelFunction.call(self.options.cancelTarget);
-					if (result !== undefined && !result)
-						return;
+			var buttons = [
+				{
+					id : 'cancel',
+					class : 'confirm_dialog_cancel',
+					text : self.options.cancelText,
+					click : function() {
+						if (self.options.cancelFunction) {
+							var result = self.options.cancelFunction.call(self.options.cancelTarget);
+							if (result !== undefined && !result)
+								return;
+						}
+						$(this).dialog("close");
+					}
+				}, {
+					id : 'cancel',
+					class : 'confirm_dialog_confirm',
+					text : self.options.confirmText,
+					click : function() {
+						if (self.options.confirmFunction) {
+							if (!self.inputMatches())
+								return;
+							var result = self.options.confirmFunction.call(self.options.confirmTarget);
+							if (result !== undefined && !result)
+								return;
+						}
+						$(this).dialog("close");
+					}
 				}
-				$(this).dialog("close");
-			};
-			
-			buttonsObject[this.options.confirmText] = function() {
-				if (self.options.confirmFunction) {
-					var result = self.options.confirmFunction.call(self.options.confirmTarget);
-					if (result !== undefined && !result)
-						return;
-				}
-				$(this).dialog("close");
-			};
+			];
 			
 			// Add any additional buttons in
 			if (this.options.additionalButtons) {
-				for (var index in this.options.additionalButtons)
-					buttonsObject[index] = this.options.additionalButtons[index];
+				for (var index in this.options.additionalButtons) {
+					buttons.push({
+						id : 'confirm_' + index,
+						text : index,
+						click : this.options.additionalButtons[index]
+					});
+				}
 			}
-			return buttonsObject;
+			
+			return buttons;
+		},
+		
+		inputMatches : function () {
+			return !this.confirmMatchInput || (this.confirmMatchInput
+				&& this.confirmMatchInput.val().substring(0, this.options.confirmMatchText.length).toUpperCase() == this.options.confirmMatchText.toUpperCase());
 		},
 		
 		open : function () {
@@ -1204,6 +1239,17 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		remove : function() {
 			this.confirmDialog.dialog('close');
 			this.confirmDialog.remove();
+		},
+		
+		setPromptText : function(text) {
+			if (text === undefined) {
+				this.confirmDialog.append("<p>Are you sure?</p>");
+			} else {
+				if (text instanceof jQuery)
+					this.confirmDialog.append(text);
+				else 
+					this.confirmDialog.append("<p>" + text + "</p>");
+			}
 		}
 	});
 	return ConfirmationDialog;
@@ -1296,6 +1342,64 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	};
 	
 	return CreateSimpleObjectForm;
+});define('DeleteBatchButton', [ 'jquery', 'BatchActionButton'], function($, BatchActionButton) {
+	function DeleteBatchButton(options, element) {
+		this._create(options, element);
+	};
+	
+	DeleteBatchButton.prototype.constructor = DeleteBatchButton;
+	DeleteBatchButton.prototype = Object.create( BatchActionButton.prototype );
+	
+	var defaultOptions = {
+		resultObjectList : undefined,
+		confirm: true
+	};
+	
+	DeleteBatchButton.prototype._create = function(options, element) {
+		var merged = $.extend({}, defaultOptions, options);
+		
+		merged.workLabel = "Deleting...";
+		merged.followupLabel = "Deleting....";
+		merged.confirm = {
+			confirmAnchor : element
+		};
+		
+		BatchActionButton.prototype._create.call(this, merged, element);
+	};
+	
+	DeleteBatchButton.prototype.activate = function() {
+		if (this.options.disabled)
+			return;
+		
+		this.targetIds = this.getTargetIds();
+		
+		if (this.targetIds.length == 1)	
+			this.options.confirm.promptText = "Mark the selected object as deleted?";
+		else
+			this.options.confirm.promptText = "Mark " + this.targetIds.length + " selected objects as deleted?";
+		
+		BatchActionButton.prototype.activate.call(this);
+	}
+	
+	DeleteBatchButton.prototype.isValidTarget = function(resultObject) {
+		return resultObject.isSelected() && resultObject.isEnabled() 
+					&& $.inArray("Deleted", resultObject.getMetadata().status) == -1;
+	};
+	
+	DeleteBatchButton.prototype.doWork = function() {
+		this.disable();
+	
+		for (var index in this.targetIds) {
+			this.actionHandler.addEvent({
+				action : 'DeleteResult',
+				target : this.options.resultObjectList.resultObjects[this.targetIds[index]],
+				confirm : false
+			});
+		}
+		this.enable();
+	};
+	
+	return DeleteBatchButton;
 });define('DestroyBatchButton', ['jquery', 'BatchActionButton'], function($, BatchActionButton) {
 	function DestroyBatchButton(options, element) {
 		this._create(options, element);
@@ -1305,18 +1409,69 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	DestroyBatchButton.prototype = Object.create( BatchActionButton.prototype );
 	
 	var defaultOptions = {
-		confirm: true,
-		confirmMessage: "Permanently destroy selected object(s)?  This action cannot be undone."
+		confirm: {
+			confirmText : 'Confirm',
+			confirmAnchor : null,
+			dialogOptions : {
+				width : 400,
+				modal : true,
+				position : 'center'
+			}
+		}
 	};
 	
 	DestroyBatchButton.prototype._create = function(options, element) {
 		var merged = $.extend({}, defaultOptions, options);
+		merged.confirmMessage = $("<h3>Permanently destroy selected object" +  + "?</h3>")
+		
 		merged.confirmAnchor = element;
 		BatchActionButton.prototype._create.call(this, merged, element);
 	};
 	
+	DestroyBatchButton.prototype.activate = function() {
+		if (this.options.disabled)
+			return;
+		
+		var containsCollection = false;
+		var deleteList = $("<ul class='confirm_selected_list'></ul>");
+		// Add valid targets to the confirmation text
+		for (var id in this.options.resultObjectList.resultObjects) {
+			var resultObject = this.options.resultObjectList.resultObjects[id];
+			if (this.isValidTarget(resultObject)) {
+				if (resultObject.metadata.type == 'Collection') {
+					containsCollection = true;
+					deleteList.append("<li class='collection'>" + resultObject.metadata.title + " (Collection)</li>");
+				} else {
+					deleteList.append("<li>" + resultObject.metadata.title + "</li>");
+				}
+			}
+		}
+		
+		var message = $("<p></p>");
+		message.append("<h3>Permanently destroy " + deleteList.children().length + " selected object" + (deleteList.children().length != 1? "s" : "") + "?</h3>");
+		
+		var warning;
+		var undoWarning = "This action <span class='bold'>cannot</span> be undone.";
+		if (containsCollection) {
+			this.options.confirm.confirmMatchText = "delete";
+			warning = "All objects listed below, including at least one <span class='bold'>collection</span>, will be permanently removed from the repository along with all of their contents.";
+			undoWarning += "  To confirm, type '<span class='bold'>delete</span>' below.";
+		} else {
+			warning = "All objects listed below will be permanently removed from the repository along with all of their contents.";
+		}
+		message.append("<p>" + warning + "</p>")
+		
+		message.append("<p>" + undoWarning + "</p>")
+			.append(deleteList);
+			
+		this.options.confirm.promptText = message;
+		
+		BatchActionButton.prototype.activate.call(this);
+	}
+	
 	DestroyBatchButton.prototype.isValidTarget = function(resultObject) {
-		return resultObject.isSelected() && resultObject.isEnabled();
+		return resultObject.isSelected() && resultObject.isEnabled()
+			&& $.inArray("Deleted", resultObject.getMetadata().status) != -1;
 	};
 	
 	DestroyBatchButton.prototype.doWork = function() {
@@ -1755,51 +1910,6 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	};
 	
 	return ModalLoadingOverlay;
-});define('DeleteBatchButton', [ 'jquery', 'BatchActionButton'], function($, BatchActionButton) {
-	function DeleteBatchButton(options, element) {
-		this._create(options, element);
-	};
-	
-	DeleteBatchButton.prototype.constructor = DeleteBatchButton;
-	DeleteBatchButton.prototype = Object.create( BatchActionButton.prototype );
-	
-	var defaultOptions = {
-		resultObjectList : undefined,
-		confirm: true,
-		animateSpeed: 'fast'
-	};
-	
-	DeleteBatchButton.prototype._create = function(options, element) {
-		var merged = $.extend({}, defaultOptions, options);
-		
-		merged.workLabel = "Deleting...";
-		merged.followupLabel = "Deleting....";
-		merged.confirmMessage = "Mark these objects as deleted?";
-		merged.confirmAnchor = element;
-		
-		BatchActionButton.prototype._create.call(this, merged, element);
-	};
-	
-	DeleteBatchButton.prototype.isValidTarget = function(resultObject) {
-		return resultObject.isSelected() && resultObject.isEnabled() 
-					&& $.inArray("Deleted", resultObject.getMetadata().status) == -1;
-	};
-	
-	DeleteBatchButton.prototype.doWork = function() {
-		this.disable();
-		this.targetIds = this.getTargetIds();
-	
-		for (var index in this.targetIds) {
-			this.actionHandler.addEvent({
-				action : 'DeleteResult',
-				target : this.options.resultObjectList.resultObjects[this.targetIds[index]],
-				confirm : false
-			});
-		}
-		this.enable();
-	};
-	
-	return DeleteBatchButton;
 });define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'], 
 		function($, ui, ConfirmationDialog) {
 			
@@ -2091,9 +2201,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	RestoreBatchButton.prototype = Object.create( BatchActionButton.prototype );
 	
 	var defaultOptions = {
-		resultObjectList : undefined,
-		confirm: true,
-		animateSpeed: 'fast'
+		resultObjectList : undefined
 	};
 	
 	RestoreBatchButton.prototype._create = function(options, element) {
@@ -2101,11 +2209,26 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		
 		merged.workLabel = "Restoring from trash...";
 		merged.followupLabel = "Restoring from trash....";
-		merged.confirmMessage = "Restore these objects from the Trash?";
-		merged.confirmAnchor = element;
+		merged.confirm = {
+			confirmAnchor : element
+		};
 		
 		BatchActionButton.prototype._create.call(this, merged, element);
 	};
+	
+	RestoreBatchButton.prototype.activate = function() {
+		if (this.options.disabled)
+			return;
+		
+		this.targetIds = this.getTargetIds();
+		
+		if (this.targetIds.length == 1)	
+			this.options.confirm.promptText = "Restore the selected object from the trash?";
+		else
+			this.options.confirm.promptText = "Restore " + this.targetIds.length + " selected objects from the trash?";
+		
+		BatchActionButton.prototype.activate.call(this);
+	}
 
 	
 	RestoreBatchButton.prototype.isValidTarget = function(resultObject) {
@@ -2399,8 +2522,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 							case "destroy" :
 								self.actionHandler.addEvent({
 									action : 'DestroyResult',
-									target : resultObject,
-									confirmAnchor : options.$trigger
+									target : resultObject
 								});
 								break;
 							case "deleteResult": case "restoreResult":
@@ -3317,8 +3439,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			parentElement : undefined,
 			animateSpeed : 80,
 			confirm : false,
-			confirmMessage : "Are you sure?",
-			confirmAnchor : undefined,
 			alertHandler : "#alertHandler"
 		};
 
@@ -3376,30 +3496,23 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		if (this.options.disabled)
 			return;
 		if (this.options.confirm) {
-			var op = this;
-			var dialogOptions = {
+			var confirmOptions = $.extend({
+				promptText : "Are you sure?",
+				confirmFunction : this.doWork,
+				confirmTarget : this,
+				autoOpen : true,
+				dialogOptions : {
 					width : 'auto',
 					modal : true
-				};
-			if (this.context.target) {
-				this.context.target.highlight();
-				dialogOptions['close'] = function() {
-					op.context.target.unhighlight();
-				};
-			}
-			
-			if (this.context.confirmAnchor) {
-				dialogOptions['position'] = {};
-				dialogOptions['position']['of'] = this.context.confirmAnchor; 
+				}
+			}, this.options.confirm);
+				
+			if (confirmOptions.confirmAnchor) {
+				confirmOptions.dialogOptions['position'] = {};
+				confirmOptions.dialogOptions['position']['of'] = confirmOptions.confirmAnchor; 
 			}
 		
-			var confirmationDialog = new ConfirmationDialog({
-				'promptText' : this.options.confirmMessage,
-				'confirmFunction' : this.doWork,
-				'confirmTarget' : this,
-				'dialogOptions' : dialogOptions,
-				autoOpen : true
-			});
+			var confirmationDialog = new ConfirmationDialog(confirmOptions);
 		} else {
 			this.doWork();
 		}
@@ -3512,7 +3625,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		this.options = {
 			workMethod: $.post,
 			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
-			animateSpeed: 'fast',
 			workDone: DeleteResultAction.prototype.moveWorkDone,
 			followup: DeleteResultAction.prototype.moveFollowup
 		};
@@ -3526,12 +3638,15 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		this.options.workPath = "/services/api/edit/delete/{idPath}";
 		this.options.workLabel = "Deleting object...";
 		this.options.followupLabel = "Deleting object....";
-		if ('confirm' in this.context) {
-			this.options.confirm = this.context.confirm;
+		
+		if ('confirm' in this.context && !this.context.confirm) {
+			this.options.confirm = false;
 		} else {
-			this.options.confirm = true;
+			this.options.confirm = {
+				promptText : "Mark this object for deletion?",
+				confirmAnchor : this.context.confirmAnchor
+			};
 		}
-		this.options.confirmMessage = "Mark this object for deletion?";
 	};
 	
 	DeleteResultAction.prototype.moveWorkDone = function(data) {
@@ -3582,15 +3697,30 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	DestroyResultAction.prototype._create = function(context) {
 		this.context = context;
 		
+		var targetIsCollection = this.context.target.metadata && this.context.target.metadata.type == "Collection";
+		
 		var options = {
 			workMethod: $.post,
 			workLabel: "Destroying...",
 			workPath: "/services/api/edit/destroy/{idPath}",
 			followupLabel: "Cleaning up...",
 			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
-			confirm: true,
-			confirmMessage: "Permanently destroy this object?  This action cannot be undone.",
-			animateSpeed: 'fast',
+			confirm : {
+				promptText: targetIsCollection ?
+					$("<h3>Are you sure you want to destroy this collection?</h3>"
+						+ "<p>This action will permanently destroy <span class='bold'>" + this.context.target.metadata.title.substring(0, 50) + "</span> and all of its contents.  It <span class='bold'>cannot</span> be undone.</p>"
+						+ "<p>Please type in the name of the collection to confirm.</p>") :
+					$("<h3>Permanently destroy " + (this.context.target.metadata? this.context.target.metadata.title.substring(0, 50) : "this object") 
+						+ "?</h3><p>This action <span class='bold'>cannot</span> be undone.</p>"),
+				confirmMatchText: targetIsCollection ? this.context.target.metadata.title.substring(0, 10) : undefined,
+				confirmText : "Confirm",
+				confirmAnchor : null,
+				dialogOptions : {
+					width : 400,
+					modal : true,
+					position : 'center'
+				}
+			},
 			workDone: DestroyResultAction.prototype.destroyWorkDone,
 			followup: DestroyResultAction.prototype.destroyFollowup
 		};
@@ -3837,9 +3967,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				workMethod: $.post,
 				followupLabel: "Updating...",
 				followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
-				confirm: true,
-				confirmMessage: "Reindex this object and all of its children?",
-				animateSpeed: 'fast',
+				confirm: {
+					promptText : "Reindex this object and all of its children?",
+					confirmAnchor : this.context.confirmAnchor
+				},
 				complete: ReindexResultAction.prototype.complete
 			};
 		AjaxCallbackAction.prototype._create.call(this, this.options);
@@ -3873,8 +4004,12 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		this.options.workPath = "/services/api/edit/restore/{idPath}";
 		this.options.workLabel = "Restoring object...";
 		this.options.followupLabel = "Restoring object....";
-		if ('confirm' in this.context) {
-			this.options.confirm = this.context.confirm;
+		
+		if (this.context.confirm) {
+			this.options.confirm = {
+				promptText : "Restore this object from the trash?",
+				confirmAnchor : this.context.confirmAnchor
+			};
 		} else {
 			this.options.confirm = false;
 		}

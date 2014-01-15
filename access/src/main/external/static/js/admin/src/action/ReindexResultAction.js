@@ -15,9 +15,10 @@ define('ReindexResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 				workMethod: $.post,
 				followupLabel: "Updating...",
 				followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
-				confirm: true,
-				confirmMessage: "Reindex this object and all of its children?",
-				animateSpeed: 'fast',
+				confirm: {
+					promptText : "Reindex this object and all of its children?",
+					confirmAnchor : this.context.confirmAnchor
+				},
 				complete: ReindexResultAction.prototype.complete
 			};
 		AjaxCallbackAction.prototype._create.call(this, this.options);

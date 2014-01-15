@@ -6,14 +6,6 @@ define('BatchActionButton', ['jquery', 'ActionButton', 'ResultObjectList' ], fun
 	
 	BatchActionButton.prototype.constructor = BatchActionButton;
 	BatchActionButton.prototype = Object.create( ActionButton.prototype );
-	
-	var defaultOptions = {
-			confirmAnchor : undefined,
-			confirmMessage : "Are you sure?",
-			animateSpeed: 'fast',
-			
-			resultObjectList : undefined
-		};
 		
 	BatchActionButton.prototype.getTargetIds = function() {
 		var targetIds = [];
@@ -23,6 +15,16 @@ define('BatchActionButton', ['jquery', 'ActionButton', 'ResultObjectList' ], fun
 				targetIds.push(resultObject.getPid());
 		}
 		return targetIds;
+	};
+	
+	BatchActionButton.prototype.getTargets = function() {
+		var targets = [];
+		for (var id in this.options.resultObjectList.resultObjects) {
+			var resultObject = this.options.resultObjectList.resultObjects[id];
+			if (this.isValidTarget(resultObject))
+				targets.push(resultObject);
+		}
+		return targets;
 	};
 
 	BatchActionButton.prototype.hasTargets = function() {

@@ -12,7 +12,6 @@ define('DeleteResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Ajax
 		this.options = {
 			workMethod: $.post,
 			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
-			animateSpeed: 'fast',
 			workDone: DeleteResultAction.prototype.moveWorkDone,
 			followup: DeleteResultAction.prototype.moveFollowup
 		};
@@ -26,12 +25,15 @@ define('DeleteResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Ajax
 		this.options.workPath = "/services/api/edit/delete/{idPath}";
 		this.options.workLabel = "Deleting object...";
 		this.options.followupLabel = "Deleting object....";
-		if ('confirm' in this.context) {
-			this.options.confirm = this.context.confirm;
+		
+		if ('confirm' in this.context && !this.context.confirm) {
+			this.options.confirm = false;
 		} else {
-			this.options.confirm = true;
+			this.options.confirm = {
+				promptText : "Mark this object for deletion?",
+				confirmAnchor : this.context.confirmAnchor
+			};
 		}
-		this.options.confirmMessage = "Mark this object for deletion?";
 	};
 	
 	DeleteResultAction.prototype.moveWorkDone = function(data) {

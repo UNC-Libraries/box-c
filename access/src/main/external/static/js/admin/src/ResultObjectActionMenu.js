@@ -97,8 +97,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 							case "destroy" :
 								self.actionHandler.addEvent({
 									action : 'DestroyResult',
-									target : resultObject,
-									confirmAnchor : options.$trigger
+									target : resultObject
 								});
 								break;
 							case "deleteResult": case "restoreResult":
