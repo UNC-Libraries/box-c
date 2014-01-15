@@ -6,7 +6,7 @@ define('DestroyResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 	DestroyResultAction.prototype.constructor = DestroyResultAction;
 	DestroyResultAction.prototype = Object.create( AjaxCallbackAction.prototype );
 	
-	
+	DestroyResultAction.prototype.actionName = "Destroy";
 		
 	DestroyResultAction.prototype._create = function(context) {
 		this.context = context;
@@ -19,7 +19,7 @@ define('DestroyResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 			workPath: "/services/api/edit/destroy/{idPath}",
 			followupLabel: "Cleaning up...",
 			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
-			confirm : {
+			confirm : 'confirm' in this.context && !this.context.confirm? false : {
 				promptText: targetIsCollection ?
 					$("<h3>Are you sure you want to destroy this collection?</h3>"
 						+ "<p>This action will permanently destroy <span class='bold'>" + this.context.target.metadata.title.substring(0, 50) + "</span> and all of its contents.  It <span class='bold'>cannot</span> be undone.</p>"
@@ -34,15 +34,13 @@ define('DestroyResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 					modal : true,
 					position : 'center'
 				}
-			},
-			workDone: DestroyResultAction.prototype.destroyWorkDone,
-			followup: DestroyResultAction.prototype.destroyFollowup
+			}
 		};
 		
 		AjaxCallbackAction.prototype._create.call(this, options);
 	};
 
-	DestroyResultAction.prototype.destroyFollowup = function(data) {
+	DestroyResultAction.prototype.followup = function(data) {
 		if (data == null) {
 			return true;
 		}
@@ -59,18 +57,5 @@ define('DestroyResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 		}
 	};
 
-	DestroyResultAction.prototype.destroyWorkDone = function(data) {
-		var jsonData;
-		if ($.type(data) === "string") {
-			try {
-				jsonData = $.parseJSON(data);
-			} catch (e) {
-				throw "An error occurred while attempting to destroy object " + this.context.target.pid;
-			}
-		} else jsonData = data;
-		
-		this.completeTimestamp = jsonData.timestamp;
-		return true;
-	};
 	return DestroyResultAction;
 });

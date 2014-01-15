@@ -5,15 +5,15 @@ define('DeleteResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Ajax
 	
 	DeleteResultAction.prototype.constructor = DeleteResultAction;
 	DeleteResultAction.prototype = Object.create( AjaxCallbackAction.prototype );
+	
+	DeleteResultAction.prototype.actionName = "Delete";
 		
 	DeleteResultAction.prototype._create = function(context) {
 		this.context = context;
 		
 		this.options = {
 			workMethod: $.post,
-			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
-			workDone: DeleteResultAction.prototype.moveWorkDone,
-			followup: DeleteResultAction.prototype.moveFollowup
+			followupPath: "/services/api/status/item/{idPath}/solrRecord/version"
 		};
 		
 		this._configure();
@@ -36,24 +36,7 @@ define('DeleteResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Ajax
 		}
 	};
 	
-	DeleteResultAction.prototype.moveWorkDone = function(data) {
-		var jsonData;
-		if ($.type(data) === "string") {
-			try {
-				jsonData = $.parseJSON(data);
-			} catch (e) {
-				throw "Failed to move object for " + (this.options.target.metadata? 
-						this.options.target.metadata.title : this.target.pid);
-			}
-		} else {
-			jsonData = data;
-		}
-		
-		this.completeTimestamp = jsonData.timestamp;
-		return true;
-	};
-	
-	DeleteResultAction.prototype.moveFollowup = function(data) {
+	DeleteResultAction.prototype.followup = function(data) {
 		if (data) {
 			return this.context.target.updateVersion(data);
 		}

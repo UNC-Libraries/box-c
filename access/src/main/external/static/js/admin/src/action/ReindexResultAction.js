@@ -6,6 +6,8 @@ define('ReindexResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 	ReindexResultAction.prototype.constructor = ReindexResultAction;
 	ReindexResultAction.prototype = Object.create( AjaxCallbackAction.prototype );
 	
+	ReindexResultAction.prototype.actionName = "Reindex";
+	
 	ReindexResultAction.prototype._create = function(context) {
 		this.context = context;
 		
@@ -19,18 +21,16 @@ define('ReindexResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 					promptText : "Reindex this object and all of its children?",
 					confirmAnchor : this.context.confirmAnchor
 				},
-				complete: ReindexResultAction.prototype.complete
+				followup: false
 			};
 		AjaxCallbackAction.prototype._create.call(this, this.options);
 	};
-	
+
 	ReindexResultAction.prototype.complete = function() {
 		if (this.context.target.metadata)
 			this.alertHandler.alertHandler("success", "Reindexing of " + this.context.target.metadata.title + " is underway, view status monitor");
 		else this.alertHandler.alertHandler("success", "Reindexing is underway, view status monitor");
-	};
-
-	ReindexResultAction.prototype.completeState = function() {
+		
 		this.context.actionHandler.addEvent({
 			action : 'RefreshResult',
 			target : this.context.target,
@@ -38,6 +38,10 @@ define('ReindexResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 			maxAttempts : 5
 		});
 	};
+	
+	ReindexResultAction.prototype.workDone = function() {
+		return true;
+	}
 	
 	return ReindexResultAction;
 });

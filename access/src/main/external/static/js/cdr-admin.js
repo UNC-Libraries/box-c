@@ -3419,44 +3419,34 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	return UnpublishBatchButton;
 });define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'ConfirmationDialog'], function(
 		$, ui, RemoteStateChangeMonitor, ConfirmationDialog) {
-			
+	
+	/**
+	Flow:
+	execute > doWork > workState > workDone > followup* > completeState
+	OR
+	execute > doWork > workState > workDone > complete > completeState
+	*/
+	
 	function AjaxCallbackAction(options) {
 		this._create(options);
 	};
+	
+	AjaxCallbackAction.prototype.actionName = "Action";
 	
 	AjaxCallbackAction.prototype.defaultOptions = {
 			workMethod : $.get,
 			workLabel : undefined,
 			workPath : "",
-			workDone : undefined,
-			workDoneTarget : undefined,
-			followup : undefined,
-			followupTarget : undefined,
+			followup : true,
 			followupPath : "",
-			followupLabel : undefined,
 			followupFrequency : 1000,
-			completeTarget : undefined,
-			parentElement : undefined,
-			animateSpeed : 80,
 			confirm : false,
 			alertHandler : "#alertHandler"
 		};
 
-	AjaxCallbackAction.prototype._create = function(options) {
+	AjaxCallbackAction.prototype._create = function(options, target) {
 		this.options = $.extend({}, this.defaultOptions, options);
 		
-		if (this.options.workDoneTarget == undefined)
-			this.options.workDoneTarget = this;
-		if (this.options.completeTarget == undefined)
-			this.options.completeTarget = this;
-		if (this.options.followupTarget == undefined)
-			this.options.followupTarget = this;
-		if (this.options.setText == undefined)
-			this.options.setText = this.setText;
-		if (this.options.followupError == undefined)
-			this.options.followupError = this.followupError;
-		if (this.options.followupErrorTarget == undefined)
-			this.options.followupErrorTarget = this;
 		this.alertHandler = $(this.options.alertHandler);
 		
 		this.setWorkURL(this.options.workPath);
@@ -3472,29 +3462,22 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			this.setFollowupURL(this.options.followupPath);
 
 			this.followupMonitor = new RemoteStateChangeMonitor({
-				'checkStatus' : this.options.followup,
-				'checkStatusTarget' : this.options.followupTarget,
-				'checkError' : this.options.followupError,
-				'checkErrorTarget' : this.options.followupErrorTarget,
-				'statusChanged' : this.completeState,
-				'statusChangedTarget' : this.options.completeTarget, 
-				'checkStatusAjax' : {
+				checkStatus : this.followup,
+				checkStatusTarget : this,
+				checkError : this.options.followupError,
+				checkErrorTarget : this,
+				statusChanged : this.completeState,
+				statusChangedTarget : this,
+				pingFrequency : this.options.followupFrequency,
+				checkStatusAjax : {
 					url : this.followupURL,
 					dataType : 'json'
 				}
 			});
 		}
-		
-		if (this.options.disabled){
-			this.disable();
-		} else {
-			this.enable();
-		}
 	};
 	
 	AjaxCallbackAction.prototype.execute = function() {
-		if (this.options.disabled)
-			return;
 		if (this.options.confirm) {
 			var confirmOptions = $.extend({
 				promptText : "Are you sure?",
@@ -3519,13 +3502,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 
 	AjaxCallbackAction.prototype.doWork = function(workMethod, workData) {
-		if (this.options.disabled)
-			return;
 		this.performWork(this.options.workMethod, null);
 	};
 
 	AjaxCallbackAction.prototype.workState = function() {
-		this.disable();
 		if (this.context.target) {
 			this.context.target.setState("working");
 			this.context.target.setStatusText(this.options.workLabel);
@@ -3537,17 +3517,18 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		var op = this;
 		workMethod(this.workURL, workData, function(data, textStatus, jqXHR) {
 			if (op.options.followup) {
-				if (op.options.workDone) {
-					try {
-						var workSuccessful = op.options.workDone.call(op.options.workDoneTarget, data);
-						if (!workSuccessful)
-							throw "Operation was unsuccessful";
-					} catch (e) {
-						op.alertHandler.alertHandler('error', e);
-						if (op.context.target)
-							op.context.target.setState("failed");
-						return;
-					}
+				try {
+					var workSuccessful = op.workDone(data);
+					
+					if (!workSuccessful)
+						throw "Operation was unsuccessful";
+				} catch (e) {
+					op.alertHandler.alertHandler('error', e.message);
+					if (typeof console == "object")
+						console.error(e.message, e.error);
+					if (op.context.target)
+						op.context.target.setState("failed");
+					return;
 				}
 				if (op.context.target)
 					op.context.target.setState("followup");
@@ -3555,29 +3536,36 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			} else {
 				if (op.context.target)
 					op.context.target.setState("idle");
-				if (op.options.complete)
-					op.options.complete.call(op.options.completeTarget, data);
-				op.enable();
+				op.complete(data);
 			}
 		}).fail(function(jqxhr, textStatus, error) {
 			op.alertHandler.alertHandler('error', textStatus + ", " + error);
+			console.error(textStatus, error);
 		});
 	};
 	
-	AjaxCallbackAction.prototype.followupError = function(obj, errorText, error) {
-		this.alertHandler.alertHandler('error', "An error occurred while checking the status of " + (this.options.metadata? this.options.metadata.title : "an object"));
-		if (console && console.log)
-			console.log((this.options.metadata? "Error while checking " + this.options.metadata.id + ": " : "") +errorText, error);
-		if (this.context.target)
-			this.context.target.setState("failed");
-	};
-
-	AjaxCallbackAction.prototype.disable = function() {
-		this.options.disabled = true;
-	};
-
-	AjaxCallbackAction.prototype.enable = function() {
-		this.options.disabled = false;
+	AjaxCallbackAction.prototype.workDone = function(data) {
+		var jsonData;
+		try {
+			if ($.type(data) === "string")
+				jsonData = $.parseJSON(data);
+			else
+				jsonData = data;
+			
+			if (jsonData.error)
+				throw jsonData.error;
+			
+			this.completeTimestamp = jsonData.timestamp;
+		} catch (e) {
+			throw {
+				message : "Failed to perform action " + this.actionName + " on object " + (this.context.target.metadata? 
+					this.context.target.metadata.title : this.context.target.pid),
+				error : e
+			};
+		}
+		
+		
+		return true;
 	};
 
 	AjaxCallbackAction.prototype.setWorkURL = function(url) {
@@ -3595,6 +3583,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			return url;
 		return url.replace("{idPath}", this.context.target.pid);
 	};
+	
+	AjaxCallbackAction.prototype.followup = function(data) {
+		return true;
+	};
 
 	AjaxCallbackAction.prototype.followupState = function() {
 		if (this.options.followupLabel != null) {
@@ -3602,12 +3594,22 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				this.context.target.setStatusText(this.options.followupLabel);
 		}
 	};
+	
+	AjaxCallbackAction.prototype.followupError = function(obj, errorText, error) {
+		this.alertHandler.alertHandler('error', "An error occurred while checking the status of " + (this.options.metadata? this.options.metadata.title : "an object"));
+		if (console && console.log)
+			console.log((this.options.metadata? "Error while checking " + this.options.metadata.id + ": " : "") +errorText, error);
+		if (this.context.target)
+			this.context.target.setState("failed");
+	};
+
+	AjaxCallbackAction.prototype.complete = function(data) {
+	};
 
 	AjaxCallbackAction.prototype.completeState = function(data) {
 		if (this.context.target) {
 			this.context.target.setState("idle");
 		}
-		this.enable();
 	};
 	
 	return AjaxCallbackAction;
@@ -3618,15 +3620,15 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	DeleteResultAction.prototype.constructor = DeleteResultAction;
 	DeleteResultAction.prototype = Object.create( AjaxCallbackAction.prototype );
+	
+	DeleteResultAction.prototype.actionName = "Delete";
 		
 	DeleteResultAction.prototype._create = function(context) {
 		this.context = context;
 		
 		this.options = {
 			workMethod: $.post,
-			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
-			workDone: DeleteResultAction.prototype.moveWorkDone,
-			followup: DeleteResultAction.prototype.moveFollowup
+			followupPath: "/services/api/status/item/{idPath}/solrRecord/version"
 		};
 		
 		this._configure();
@@ -3649,24 +3651,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		}
 	};
 	
-	DeleteResultAction.prototype.moveWorkDone = function(data) {
-		var jsonData;
-		if ($.type(data) === "string") {
-			try {
-				jsonData = $.parseJSON(data);
-			} catch (e) {
-				throw "Failed to move object for " + (this.options.target.metadata? 
-						this.options.target.metadata.title : this.target.pid);
-			}
-		} else {
-			jsonData = data;
-		}
-		
-		this.completeTimestamp = jsonData.timestamp;
-		return true;
-	};
-	
-	DeleteResultAction.prototype.moveFollowup = function(data) {
+	DeleteResultAction.prototype.followup = function(data) {
 		if (data) {
 			return this.context.target.updateVersion(data);
 		}
@@ -3692,7 +3677,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	DestroyResultAction.prototype.constructor = DestroyResultAction;
 	DestroyResultAction.prototype = Object.create( AjaxCallbackAction.prototype );
 	
-	
+	DestroyResultAction.prototype.actionName = "Destroy";
 		
 	DestroyResultAction.prototype._create = function(context) {
 		this.context = context;
@@ -3705,7 +3690,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			workPath: "/services/api/edit/destroy/{idPath}",
 			followupLabel: "Cleaning up...",
 			followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
-			confirm : {
+			confirm : 'confirm' in this.context && !this.context.confirm? false : {
 				promptText: targetIsCollection ?
 					$("<h3>Are you sure you want to destroy this collection?</h3>"
 						+ "<p>This action will permanently destroy <span class='bold'>" + this.context.target.metadata.title.substring(0, 50) + "</span> and all of its contents.  It <span class='bold'>cannot</span> be undone.</p>"
@@ -3720,15 +3705,13 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					modal : true,
 					position : 'center'
 				}
-			},
-			workDone: DestroyResultAction.prototype.destroyWorkDone,
-			followup: DestroyResultAction.prototype.destroyFollowup
+			}
 		};
 		
 		AjaxCallbackAction.prototype._create.call(this, options);
 	};
 
-	DestroyResultAction.prototype.destroyFollowup = function(data) {
+	DestroyResultAction.prototype.followup = function(data) {
 		if (data == null) {
 			return true;
 		}
@@ -3745,19 +3728,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		}
 	};
 
-	DestroyResultAction.prototype.destroyWorkDone = function(data) {
-		var jsonData;
-		if ($.type(data) === "string") {
-			try {
-				jsonData = $.parseJSON(data);
-			} catch (e) {
-				throw "An error occurred while attempting to destroy object " + this.context.target.pid;
-			}
-		} else jsonData = data;
-		
-		this.completeTimestamp = jsonData.timestamp;
-		return true;
-	};
 	return DestroyResultAction;
 });define('MoveObjectsAction', ['jquery'], function($) {
 	
@@ -3817,13 +3787,13 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 
 	PublishAction.prototype.constructor = PublishAction;
 	PublishAction.prototype = Object.create(AjaxCallbackAction.prototype);
+	
+	PublishAction.prototype.actionName = "Publish";
 
 	PublishAction.prototype._create = function(context) {
 		this.context = context;
 		
 		this.options = {
-			workDone : this.publishWorkDone,
-			followup : this.publishFollowup,
 			followupPath : "/services/api/status/item/{idPath}/solrRecord/version",
 			workMethod : $.post
 		};
@@ -3833,7 +3803,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		AjaxCallbackAction.prototype._create.call(this, this.options);
 	};
 	
-	PublishAction.prototype.publishFollowup = function(data) {
+	PublishAction.prototype.followup = function(data) {
 		if (data) {
 			return this.context.target.updateVersion(data);
 		}
@@ -3853,23 +3823,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		this.options.workPath = "/services/api/edit/publish/{idPath}";
 		this.options.workLabel = "Publishing...";
 		this.options.followupLabel = "Publishing....";
-	};
-
-	PublishAction.prototype.publishWorkDone = function(data) {
-		var jsonData;
-		if ($.type(data) === "string") {
-			try {
-				jsonData = $.parseJSON(data);
-			} catch (e) {
-				throw "Failed to change publication status for " + (this.context.target.metadata? 
-						this.context.target.metadata.title : this.context.target.pid);
-			}
-		} else {
-			jsonData = data;
-		}
-		
-		this.completeTimestamp = jsonData.timestamp;
-		return true;
 	};
 	
 	return PublishAction;
@@ -3958,6 +3911,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	ReindexResultAction.prototype.constructor = ReindexResultAction;
 	ReindexResultAction.prototype = Object.create( AjaxCallbackAction.prototype );
 	
+	ReindexResultAction.prototype.actionName = "Reindex";
+	
 	ReindexResultAction.prototype._create = function(context) {
 		this.context = context;
 		
@@ -3971,18 +3926,16 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					promptText : "Reindex this object and all of its children?",
 					confirmAnchor : this.context.confirmAnchor
 				},
-				complete: ReindexResultAction.prototype.complete
+				followup: false
 			};
 		AjaxCallbackAction.prototype._create.call(this, this.options);
 	};
-	
+
 	ReindexResultAction.prototype.complete = function() {
 		if (this.context.target.metadata)
 			this.alertHandler.alertHandler("success", "Reindexing of " + this.context.target.metadata.title + " is underway, view status monitor");
 		else this.alertHandler.alertHandler("success", "Reindexing is underway, view status monitor");
-	};
-
-	ReindexResultAction.prototype.completeState = function() {
+		
 		this.context.actionHandler.addEvent({
 			action : 'RefreshResult',
 			target : this.context.target,
@@ -3990,6 +3943,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			maxAttempts : 5
 		});
 	};
+	
+	ReindexResultAction.prototype.workDone = function() {
+		return true;
+	}
 	
 	return ReindexResultAction;
 });define('RestoreResultAction', [ 'jquery', 'AjaxCallbackAction', 'DeleteResultAction'], function($, AjaxCallbackAction,DeleteResultAction) {
@@ -3999,6 +3956,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	RestoreResultAction.prototype.constructor = RestoreResultAction;
 	RestoreResultAction.prototype = Object.create(DeleteResultAction.prototype );
+	
+	RestoreResultAction.prototype.actionName = "Restore";
 	
 	RestoreResultAction.prototype._configure = function() {
 		this.options.workPath = "/services/api/edit/restore/{idPath}";
@@ -4034,6 +3993,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 
 	UnpublishAction.prototype.constructor = UnpublishAction;
 	UnpublishAction.prototype = Object.create(PublishAction.prototype);
+	
+	UnpublishAction.prototype.actionName = "Unpublish";
 	
 	UnpublishAction.prototype._configure = function() {
 		this.options.workPath = "/services/api/edit/unpublish/{idPath}";

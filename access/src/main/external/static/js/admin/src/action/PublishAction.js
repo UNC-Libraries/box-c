@@ -6,13 +6,13 @@ define('PublishAction', ['jquery', 'AjaxCallbackAction'], function($, AjaxCallba
 
 	PublishAction.prototype.constructor = PublishAction;
 	PublishAction.prototype = Object.create(AjaxCallbackAction.prototype);
+	
+	PublishAction.prototype.actionName = "Publish";
 
 	PublishAction.prototype._create = function(context) {
 		this.context = context;
 		
 		this.options = {
-			workDone : this.publishWorkDone,
-			followup : this.publishFollowup,
 			followupPath : "/services/api/status/item/{idPath}/solrRecord/version",
 			workMethod : $.post
 		};
@@ -22,7 +22,7 @@ define('PublishAction', ['jquery', 'AjaxCallbackAction'], function($, AjaxCallba
 		AjaxCallbackAction.prototype._create.call(this, this.options);
 	};
 	
-	PublishAction.prototype.publishFollowup = function(data) {
+	PublishAction.prototype.followup = function(data) {
 		if (data) {
 			return this.context.target.updateVersion(data);
 		}
@@ -42,23 +42,6 @@ define('PublishAction', ['jquery', 'AjaxCallbackAction'], function($, AjaxCallba
 		this.options.workPath = "/services/api/edit/publish/{idPath}";
 		this.options.workLabel = "Publishing...";
 		this.options.followupLabel = "Publishing....";
-	};
-
-	PublishAction.prototype.publishWorkDone = function(data) {
-		var jsonData;
-		if ($.type(data) === "string") {
-			try {
-				jsonData = $.parseJSON(data);
-			} catch (e) {
-				throw "Failed to change publication status for " + (this.context.target.metadata? 
-						this.context.target.metadata.title : this.context.target.pid);
-			}
-		} else {
-			jsonData = data;
-		}
-		
-		this.completeTimestamp = jsonData.timestamp;
-		return true;
 	};
 	
 	return PublishAction;

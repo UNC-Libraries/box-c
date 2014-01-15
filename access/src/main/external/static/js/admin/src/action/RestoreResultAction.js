@@ -6,6 +6,8 @@ define('RestoreResultAction', [ 'jquery', 'AjaxCallbackAction', 'DeleteResultAct
 	RestoreResultAction.prototype.constructor = RestoreResultAction;
 	RestoreResultAction.prototype = Object.create(DeleteResultAction.prototype );
 	
+	RestoreResultAction.prototype.actionName = "Restore";
+	
 	RestoreResultAction.prototype._configure = function() {
 		this.options.workPath = "/services/api/edit/restore/{idPath}";
 		this.options.workLabel = "Restoring object...";

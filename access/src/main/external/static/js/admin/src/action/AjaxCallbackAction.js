@@ -1,43 +1,33 @@
 define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'ConfirmationDialog'], function(
 		$, ui, RemoteStateChangeMonitor, ConfirmationDialog) {
-			
+	
+	/**
+	Flow:
+	execute > doWork > workState > workDone > followup* > completeState
+	OR
+	execute > doWork > workState > workDone > complete > completeState
+	*/
+	
 	function AjaxCallbackAction(options) {
 		this._create(options);
 	};
+	
+	AjaxCallbackAction.prototype.actionName = "Action";
 	
 	AjaxCallbackAction.prototype.defaultOptions = {
 			workMethod : $.get,
 			workLabel : undefined,
 			workPath : "",
-			workDone : undefined,
-			workDoneTarget : undefined,
-			followup : undefined,
-			followupTarget : undefined,
+			followup : true,
 			followupPath : "",
-			followupLabel : undefined,
 			followupFrequency : 1000,
-			completeTarget : undefined,
-			parentElement : undefined,
-			animateSpeed : 80,
 			confirm : false,
 			alertHandler : "#alertHandler"
 		};
 
-	AjaxCallbackAction.prototype._create = function(options) {
+	AjaxCallbackAction.prototype._create = function(options, target) {
 		this.options = $.extend({}, this.defaultOptions, options);
 		
-		if (this.options.workDoneTarget == undefined)
-			this.options.workDoneTarget = this;
-		if (this.options.completeTarget == undefined)
-			this.options.completeTarget = this;
-		if (this.options.followupTarget == undefined)
-			this.options.followupTarget = this;
-		if (this.options.setText == undefined)
-			this.options.setText = this.setText;
-		if (this.options.followupError == undefined)
-			this.options.followupError = this.followupError;
-		if (this.options.followupErrorTarget == undefined)
-			this.options.followupErrorTarget = this;
 		this.alertHandler = $(this.options.alertHandler);
 		
 		this.setWorkURL(this.options.workPath);
@@ -53,29 +43,22 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 			this.setFollowupURL(this.options.followupPath);
 
 			this.followupMonitor = new RemoteStateChangeMonitor({
-				'checkStatus' : this.options.followup,
-				'checkStatusTarget' : this.options.followupTarget,
-				'checkError' : this.options.followupError,
-				'checkErrorTarget' : this.options.followupErrorTarget,
-				'statusChanged' : this.completeState,
-				'statusChangedTarget' : this.options.completeTarget, 
-				'checkStatusAjax' : {
+				checkStatus : this.followup,
+				checkStatusTarget : this,
+				checkError : this.options.followupError,
+				checkErrorTarget : this,
+				statusChanged : this.completeState,
+				statusChangedTarget : this,
+				pingFrequency : this.options.followupFrequency,
+				checkStatusAjax : {
 					url : this.followupURL,
 					dataType : 'json'
 				}
 			});
 		}
-		
-		if (this.options.disabled){
-			this.disable();
-		} else {
-			this.enable();
-		}
 	};
 	
 	AjaxCallbackAction.prototype.execute = function() {
-		if (this.options.disabled)
-			return;
 		if (this.options.confirm) {
 			var confirmOptions = $.extend({
 				promptText : "Are you sure?",
@@ -100,13 +83,10 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 	};
 
 	AjaxCallbackAction.prototype.doWork = function(workMethod, workData) {
-		if (this.options.disabled)
-			return;
 		this.performWork(this.options.workMethod, null);
 	};
 
 	AjaxCallbackAction.prototype.workState = function() {
-		this.disable();
 		if (this.context.target) {
 			this.context.target.setState("working");
 			this.context.target.setStatusText(this.options.workLabel);
@@ -118,17 +98,18 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 		var op = this;
 		workMethod(this.workURL, workData, function(data, textStatus, jqXHR) {
 			if (op.options.followup) {
-				if (op.options.workDone) {
-					try {
-						var workSuccessful = op.options.workDone.call(op.options.workDoneTarget, data);
-						if (!workSuccessful)
-							throw "Operation was unsuccessful";
-					} catch (e) {
-						op.alertHandler.alertHandler('error', e);
-						if (op.context.target)
-							op.context.target.setState("failed");
-						return;
-					}
+				try {
+					var workSuccessful = op.workDone(data);
+					
+					if (!workSuccessful)
+						throw "Operation was unsuccessful";
+				} catch (e) {
+					op.alertHandler.alertHandler('error', e.message);
+					if (typeof console == "object")
+						console.error(e.message, e.error);
+					if (op.context.target)
+						op.context.target.setState("failed");
+					return;
 				}
 				if (op.context.target)
 					op.context.target.setState("followup");
@@ -136,29 +117,36 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 			} else {
 				if (op.context.target)
 					op.context.target.setState("idle");
-				if (op.options.complete)
-					op.options.complete.call(op.options.completeTarget, data);
-				op.enable();
+				op.complete(data);
 			}
 		}).fail(function(jqxhr, textStatus, error) {
 			op.alertHandler.alertHandler('error', textStatus + ", " + error);
+			console.error(textStatus, error);
 		});
 	};
 	
-	AjaxCallbackAction.prototype.followupError = function(obj, errorText, error) {
-		this.alertHandler.alertHandler('error', "An error occurred while checking the status of " + (this.options.metadata? this.options.metadata.title : "an object"));
-		if (console && console.log)
-			console.log((this.options.metadata? "Error while checking " + this.options.metadata.id + ": " : "") +errorText, error);
-		if (this.context.target)
-			this.context.target.setState("failed");
-	};
-
-	AjaxCallbackAction.prototype.disable = function() {
-		this.options.disabled = true;
-	};
-
-	AjaxCallbackAction.prototype.enable = function() {
-		this.options.disabled = false;
+	AjaxCallbackAction.prototype.workDone = function(data) {
+		var jsonData;
+		try {
+			if ($.type(data) === "string")
+				jsonData = $.parseJSON(data);
+			else
+				jsonData = data;
+			
+			if (jsonData.error)
+				throw jsonData.error;
+			
+			this.completeTimestamp = jsonData.timestamp;
+		} catch (e) {
+			throw {
+				message : "Failed to perform action " + this.actionName + " on object " + (this.context.target.metadata? 
+					this.context.target.metadata.title : this.context.target.pid),
+				error : e
+			};
+		}
+		
+		
+		return true;
 	};
 
 	AjaxCallbackAction.prototype.setWorkURL = function(url) {
@@ -176,6 +164,10 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 			return url;
 		return url.replace("{idPath}", this.context.target.pid);
 	};
+	
+	AjaxCallbackAction.prototype.followup = function(data) {
+		return true;
+	};
 
 	AjaxCallbackAction.prototype.followupState = function() {
 		if (this.options.followupLabel != null) {
@@ -183,12 +175,22 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 				this.context.target.setStatusText(this.options.followupLabel);
 		}
 	};
+	
+	AjaxCallbackAction.prototype.followupError = function(obj, errorText, error) {
+		this.alertHandler.alertHandler('error', "An error occurred while checking the status of " + (this.options.metadata? this.options.metadata.title : "an object"));
+		if (console && console.log)
+			console.log((this.options.metadata? "Error while checking " + this.options.metadata.id + ": " : "") +errorText, error);
+		if (this.context.target)
+			this.context.target.setState("failed");
+	};
+
+	AjaxCallbackAction.prototype.complete = function(data) {
+	};
 
 	AjaxCallbackAction.prototype.completeState = function(data) {
 		if (this.context.target) {
 			this.context.target.setState("idle");
 		}
-		this.enable();
 	};
 	
 	return AjaxCallbackAction;

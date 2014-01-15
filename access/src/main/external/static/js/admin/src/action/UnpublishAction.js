@@ -7,6 +7,8 @@ define('UnpublishAction', ['jquery', 'AjaxCallbackAction', 'PublishAction'], fun
 	UnpublishAction.prototype.constructor = UnpublishAction;
 	UnpublishAction.prototype = Object.create(PublishAction.prototype);
 	
+	UnpublishAction.prototype.actionName = "Unpublish";
+	
 	UnpublishAction.prototype._configure = function() {
 		this.options.workPath = "/services/api/edit/unpublish/{idPath}";
 		this.options.workLabel = "Unpublishing...";
