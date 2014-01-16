@@ -67,7 +67,7 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		List<String> embargoes = Arrays.asList("3000-01-01");
 
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, embargoes,
-				null, true);
+				null, null);
 
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.curator));
 		assertFalse(aclBean.getActiveRoleGroups().containsKey(UserRole.patron));
@@ -84,7 +84,7 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		List<String> embargoes = Arrays.asList("1970-01-01");
 
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, embargoes,
-				null, true);
+				null, null);
 
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.curator));
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.patron));
@@ -101,7 +101,7 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		List<String> embargoes = Arrays.asList("1970-01-01", "1984-01-01");
 
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, embargoes,
-				null, true);
+				null, null);
 
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.curator));
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.patron));
@@ -117,7 +117,7 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		List<String> embargoes = Arrays.asList("1970-01-01", "3000-01-01");
 
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, embargoes,
-				null, true);
+				null, null);
 
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.curator));
 		assertFalse(aclBean.getActiveRoleGroups().containsKey(UserRole.patron));
@@ -136,7 +136,7 @@ public class ObjectAccessControlsBeanTest extends Assert {
 	public void getRolesTest() {
 		Map<String, List<String>> roles = getRoleGroups();
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, null, null,
-				true);
+				null);
 		Set<UserRole> filteredRoles = aclBean.getRoles(new AccessGroupSet("unc:app:lib:cdr:curator"));
 		assertTrue(filteredRoles.contains(UserRole.curator));
 		assertFalse(filteredRoles.contains(UserRole.patron));
@@ -149,7 +149,7 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		Map<String, List<String>> roles = getRoleGroups();
 		roles.put(UserRole.observer.getURI().toString(), Arrays.asList("unc:app:lib:cdr:patron"));
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, null, null,
-				true);
+				null);
 
 		Set<UserRole> filteredRoles = aclBean.getRoles(new AccessGroupSet("unc:app:lib:cdr:patron"));
 		assertFalse(filteredRoles.contains(UserRole.curator));
@@ -161,7 +161,7 @@ public class ObjectAccessControlsBeanTest extends Assert {
 	public void getRolesNoMatchesTest() {
 		Map<String, List<String>> roles = getRoleGroups();
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, null, null,
-				true);
+				null);
 
 		Set<UserRole> filteredRoles = aclBean.getRoles(new AccessGroupSet("unc:app:lib:cdr:observer"));
 		assertFalse(filteredRoles.contains(UserRole.curator));
@@ -173,7 +173,7 @@ public class ObjectAccessControlsBeanTest extends Assert {
 	public void roleGroupsToListTest() {
 		Map<String, List<String>> roles = getRoleGroups();
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, null, null,
-				true);
+				null);
 
 		List<String> roleGroups = aclBean.roleGroupsToList();
 		assertTrue(roleGroups.contains(UserRole.curator.getURI().toString() + "|unc:app:lib:cdr:curator"));
@@ -188,7 +188,7 @@ public class ObjectAccessControlsBeanTest extends Assert {
 	public void constructFromRoleGroupList() {
 		Map<String, List<String>> roles = getRoleGroups();
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, null, null,
-				true);
+				null);
 
 		List<String> roleGroups = aclBean.roleGroupsToList();
 		aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roleGroups);
@@ -204,7 +204,7 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		roles.put("http://cdr.unc.edu/definitions/acl#inheritPermissions", Arrays.asList("true"));
 
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, null, null,
-				true);
+				null);
 
 		List<String> roleGroups = aclBean.roleGroupsToList();
 		aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roleGroups);
@@ -237,7 +237,8 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		Map<String, List<String>> triples = new HashMap<String, List<String>>();
 		triples.put(ContentModelHelper.CDRProperty.inheritPermissions.toString(), Arrays.asList("false"));
 		triples.put(UserRole.patron.toString(), Arrays.asList("testgroup"));
-		triples.put(ContentModelHelper.FedoraProperty.state.toString(), Arrays.asList(ContentModelHelper.FedoraProperty.Active.toString()));
+		triples.put(ContentModelHelper.FedoraProperty.state.toString(),
+				Arrays.asList(ContentModelHelper.FedoraProperty.Active.toString()));
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(parentAclBean, new PID("uuid:test"), triples);
 
 		assertFalse(aclBean.hasPermission(new AccessGroupSet("unc:app:lib:cdr:patron"), Permission.viewDescription));
@@ -252,7 +253,8 @@ public class ObjectAccessControlsBeanTest extends Assert {
 
 		Map<String, List<String>> triples = new HashMap<String, List<String>>();
 		triples.put(ContentModelHelper.CDRProperty.inheritPermissions.toString(), Arrays.asList("true"));
-		triples.put(ContentModelHelper.FedoraProperty.state.toString(), Arrays.asList(ContentModelHelper.FedoraProperty.Active.toString()));
+		triples.put(ContentModelHelper.FedoraProperty.state.toString(),
+				Arrays.asList(ContentModelHelper.FedoraProperty.Active.toString()));
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(parentAclBean, new PID("uuid:test"), triples);
 
 		assertTrue(aclBean.hasPermission(new AccessGroupSet("unc:app:lib:cdr:patron"), Permission.viewDescription));
@@ -276,7 +278,8 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		triples.put(UserRole.curator.toString(), Arrays.asList("testgroup"));
 		triples.put(UserRole.patron.toString(), Arrays.asList("testpatron"));
 		triples.put(UserRole.list.toString(), Arrays.asList("listgroup"));
-		triples.put(ContentModelHelper.FedoraProperty.state.toString(), Arrays.asList(ContentModelHelper.FedoraProperty.Active.toString()));
+		triples.put(ContentModelHelper.FedoraProperty.state.toString(),
+				Arrays.asList(ContentModelHelper.FedoraProperty.Active.toString()));
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(parentAclBean, new PID("uuid:test"), triples);
 
 		assertTrue(aclBean.hasPermission(new AccessGroupSet("unc:app:lib:cdr:patron"), Permission.viewDescription));
@@ -294,39 +297,41 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		assertTrue(groupsByPermission.contains("testgroup"));
 		assertEquals(1, groupsByPermission.size());
 	}
-	
+
 	@Test
 	public void twoGrantsForSameGroup() {
 		Map<String, List<String>> roles = new HashMap<String, List<String>>();
 		roles.put(UserRole.patron.getURI().toString(), Arrays.asList("patron"));
 		roles.put(UserRole.curator.getURI().toString(), Arrays.asList("admingroup"));
 		roles.put(UserRole.observer.getURI().toString(), Arrays.asList("admingroup"));
-		
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, null, null, null);
-		
+
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, null, null, null,
+				null);
+
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.curator));
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.observer));
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.patron));
 		assertFalse(aclBean.getActiveRoleGroups().containsKey(UserRole.metadataPatron));
-		
+
 		assertTrue(aclBean.hasPermission(new AccessGroupSet("admingroup"), Permission.moveToTrash));
-		
+
 	}
-	
+
 	@Test
 	public void globalAndLocalGrantSameRole() {
 		Map<String, List<String>> roles = new HashMap<String, List<String>>();
 		roles.put(UserRole.patron.getURI().toString(), Arrays.asList("patron"));
 		roles.put(UserRole.curator.getURI().toString(), Arrays.asList("admingroup"));
-		
+
 		Map<String, List<String>> globalRoles = new HashMap<String, List<String>>();
 		globalRoles.put(UserRole.curator.getURI().toString(), Arrays.asList("globalcure"));
-		
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, globalRoles, null, null, null);
-		
+
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:test"), roles, globalRoles, null,
+				null, null);
+
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.curator));
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.patron));
-		
+
 		assertTrue(aclBean.hasPermission(new AccessGroupSet("globalcure"), Permission.moveToTrash));
 		assertTrue(aclBean.hasPermission(new AccessGroupSet("admingroup"), Permission.moveToTrash));
 	}

@@ -89,9 +89,9 @@ public class FedoraAccessControlService implements AccessControlService {
 				Map<String, List<String>> globalRoles = (Map<String, List<String>>) result.get("globals");
 				List<String> embargoes = (List<String>) result.get("embargoes");
 				List<String> publicationStatus = (List<String>) result.get("publicationStatus");
-				Boolean isActive = (Boolean) result.get("objectActive");
+				List<String> objectState = (List<String>) result.get("objectState");
 
-				return new ObjectAccessControlsBean(pid, roles, globalRoles, embargoes, publicationStatus, isActive);
+				return new ObjectAccessControlsBean(pid, roles, globalRoles, embargoes, publicationStatus, objectState);
 			}
 		} catch (HttpException e) {
 			log.error("Failed to retrieve object access control for " + pid, e);

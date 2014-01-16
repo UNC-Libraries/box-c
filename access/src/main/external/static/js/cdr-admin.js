@@ -1383,7 +1383,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	
 	DeleteBatchButton.prototype.isValidTarget = function(resultObject) {
 		return resultObject.isSelected() && resultObject.isEnabled() 
-					&& $.inArray("Deleted", resultObject.getMetadata().status) == -1;
+					&& $.inArray("Active", resultObject.getMetadata().status) != -1;
 	};
 	
 	DeleteBatchButton.prototype.doWork = function() {
@@ -2272,7 +2272,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		this.metadata = metadata;
 		this.pid = metadata.id;
 		this.isContainer = this.metadata.type != "File";
-		this.isDeleted = $.inArray("Deleted", this.metadata.status) != -1;
+		this.isDeleted = $.inArray("Active", this.metadata.status) == -1;
 		var newElement = $(this.options.template({metadata : metadata, isContainer : this.isContainer, isDeleted : this.isDeleted}));
 		this.checkbox = null;
 		if (this.element) {

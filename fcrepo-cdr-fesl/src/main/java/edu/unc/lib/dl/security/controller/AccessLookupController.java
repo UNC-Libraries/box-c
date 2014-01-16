@@ -90,10 +90,10 @@ public class AccessLookupController {
 		Map<String, Set<String>> roles = accessControlUtils.getRoles(pid);
 		List<String> activeEmbargoes = accessControlUtils.getEmbargoes(pid);
 		List<String> publicationStatus = accessControlUtils.getPublished(pid);
-		boolean isActive = accessControlUtils.isActive(pid);
+		List<String> objectState = accessControlUtils.getObjectState(pid);
 
 		return (new ObjectAccessControlsBean(pid, roles, accessControlUtils.getGlobalRoles(), activeEmbargoes,
-				publicationStatus, isActive)).hasPermission(accessGroups, permission);
+				publicationStatus, objectState)).hasPermission(accessGroups, permission);
 	}
 
 	public void setAncestorFactory(AncestorFactory ancestorFactory) {

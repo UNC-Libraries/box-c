@@ -275,7 +275,7 @@ public class SetAccessControlFilterTest extends Assert {
 		roles.put("http://cdr.unc.edu/definitions/roles#patron", Arrays.asList("public"));
 		roles.put("http://cdr.unc.edu/definitions/roles#curator", Arrays.asList("curator"));
 		
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, null, new ArrayList<String>(), null, false);
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, null, new ArrayList<String>(), null, Arrays.asList("Deleted"));
 		
 		AccessControlService accessControlService = mock(AccessControlService.class);
 		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);

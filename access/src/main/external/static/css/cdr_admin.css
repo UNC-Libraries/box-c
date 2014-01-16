@@ -2693,7 +2693,7 @@ h1 {
 }
 
 .with_container .result_header_bottom {
-	top : 4px;
+	top : 0;
 }
 
 .with_path .result_header_bottom {

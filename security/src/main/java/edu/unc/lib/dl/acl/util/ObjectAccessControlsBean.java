@@ -57,6 +57,7 @@ public class ObjectAccessControlsBean {
 	boolean ancestorsPublished = true;
 	Boolean isPublished = true;
 	Boolean isActive = true;
+	boolean ancestorsActive = true;
 
 	public ObjectAccessControlsBean(PID pid, Map<UserRole, Set<String>> baseRoleGroups) {
 		this.object = pid;
@@ -103,12 +104,14 @@ public class ObjectAccessControlsBean {
 	 */
 	public ObjectAccessControlsBean(PID pid, Map<String, ? extends Collection<String>> roles,
 			Map<String, ? extends Collection<String>> globalRoles, Collection<String> embargoes,
-			Collection<String> publicationStatus, Boolean isActive) {
+			Collection<String> publicationStatus, Collection<String> objectState) {
 		this.object = pid;
 		this.baseRoleGroups = new HashMap<UserRole, Set<String>>();
 		this.globalRoleGroups = new HashMap<UserRole, Set<String>>();
-		if (isActive != null)
-			this.isActive = isActive;
+		if (objectState != null) {
+			this.isActive = !objectState.contains("Deleted");
+			this.ancestorsActive = !objectState.contains("Deleted Ancestor");
+		}
 		if (publicationStatus != null) {
 			this.isPublished = !publicationStatus.contains("Unpublished");
 			this.ancestorsPublished = !publicationStatus.contains("Unpublished Ancestor");
@@ -177,9 +180,9 @@ public class ObjectAccessControlsBean {
 		List<String> publicationTriples = triples.get(ContentModelHelper.CDRProperty.isPublished.toString());
 		this.isPublished = publicationTriples == null || "yes".equals(publicationTriples.get(0));
 
+		this.ancestorsActive = baseAcls.isActive();
 		List<String> objectState = triples.get(ContentModelHelper.FedoraProperty.state.toString());
-		this.isActive = (baseAcls.getIsActive() == null || baseAcls.getIsActive())
-				&& ACTIVE_STATE.equals(objectState.get(0));
+		this.isActive = objectState == null || ACTIVE_STATE.equals(objectState.get(0));
 
 		this.activeRoleGroups = this.getMergedRoleGroups();
 	}
@@ -223,8 +226,7 @@ public class ObjectAccessControlsBean {
 	 * @return
 	 */
 	private Map<UserRole, Set<String>> getMergedRoleGroups() {
-		boolean removePatrons = (this.isPublished != null && !this.isPublished)
-				|| (this.isActive != null && !this.isActive);
+		boolean removePatrons = !this.isPublished() || !this.isActive();
 
 		if (!removePatrons) {
 			// Check to see if there are active embargoes, and if there are that their window has not passed
@@ -492,6 +494,10 @@ public class ObjectAccessControlsBean {
 	public void setAncestorsPublished(boolean ancestorsPublished) {
 		this.ancestorsPublished = ancestorsPublished;
 	}
+	
+	public boolean isActive() {
+		return this.ancestorsActive && (isActive == null || isActive);
+	}
 
 	public Boolean getIsActive() {
 		return isActive;
@@ -499,5 +505,13 @@ public class ObjectAccessControlsBean {
 
 	public void setIsActive(Boolean isActive) {
 		this.isActive = isActive;
+	}
+	
+	public boolean isAncestorsActive() {
+		return ancestorsActive;
+	}
+
+	public void setAncestorsActive(boolean ancestorsActive) {
+		this.ancestorsActive = ancestorsActive;
 	}
 }

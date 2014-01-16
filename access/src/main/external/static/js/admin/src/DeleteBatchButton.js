@@ -39,7 +39,7 @@ define('DeleteBatchButton', [ 'jquery', 'BatchActionButton'], function($, BatchA
 	
 	DeleteBatchButton.prototype.isValidTarget = function(resultObject) {
 		return resultObject.isSelected() && resultObject.isEnabled() 
-					&& $.inArray("Deleted", resultObject.getMetadata().status) == -1;
+					&& $.inArray("Active", resultObject.getMetadata().status) != -1;
 	};
 	
 	DeleteBatchButton.prototype.doWork = function() {

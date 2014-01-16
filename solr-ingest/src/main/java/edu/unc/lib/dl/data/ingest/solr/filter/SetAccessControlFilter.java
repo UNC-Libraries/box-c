@@ -175,15 +175,21 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 	 * @param status
 	 */
 	private void setObjectStateStatus(DocumentIndexingPackage dip, ObjectAccessControlsBean aclBean, List<String> status) {
-		boolean isActive = aclBean.getIsActive();
-		
-		if (isActive) {
-			dip.setIsDeleted(false);
-		} else {
-			// We aren't using "Inactive" right now, so assume everything other than "Active" is "Deleted".
+		// Check if the object itself is tagged as deleted
+		if (!aclBean.getIsActive())
 			status.add("Deleted");
-			dip.setIsDeleted(true);
+		
+		if (aclBean.isAncestorsActive()) {
+			// If no ancestors were deleted either, then this object is active
+			if (aclBean.getIsActive())
+				status.add("Active");
+		} else {
+			// At least one ancestor was deleted, so this object is not active
+			status.add("Parent Deleted");
 		}
+		
+		// Store computed activity state in the dip for future generations to reference
+		dip.setIsDeleted(!aclBean.isActive());
 	}
 
 	public void setAccessControlService(AccessControlService accessControlService) {
