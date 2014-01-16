@@ -1,3 +1,4 @@
+<% var containerDeleted = _.contains(container.status, 'Deleted'); %>
 <div class="result_header">
 	<div class="result_header_top">
 		<% if (containerPath) { %>
@@ -11,25 +12,28 @@
 					<h2 class="container_title">
 						<%
 							var typeName;
-							if (container.type == "Folder")
-								typeName = 'folder';
+							if (containerDeleted)
+								typeName = "trash_can";
+							else if (container.type == "Folder")
+								typeName = 'admin/type_folder';
 							else if (container.type == "Collection")
-								typeName = 'coll';
+								typeName = 'admin/type_coll';
 							else if (container.type == "Aggregate")
-								typeName = 'aggr';
+								typeName = 'admin/type_aggr';
 						%>
-						<img src="/static/images/admin/type_<%= typeName %>.png" />&nbsp;<%= container.title %>
+						<img src="/static/images/<%= typeName %>.png" />
+						<span class="<%= containerDeleted? "deleted" : "" %>"><%= container.title %></span>
 						<img class="action_gear container_menu" src="/static/images/admin/gear.png">
 					</h2>
 				</span>
 			<% } %>
 		</div>
-		<%
-		if (container && _.indexOf(container.permissions, "addRemoveContents") != -1) {
-			%><span id="add_menu" class="container_action">+ Add</span><%
-		}
-		%>
 		<div class="result_table_action_menu">
+			<%
+			if (container && _.indexOf(container.permissions, "addRemoveContents") != -1 && !containerDeleted) {
+				%><span id="add_menu" class="container_action">+ Add</span><%
+			}
+			%>
 		</div>
 	</div>
 	<div class="result_header_bottom">

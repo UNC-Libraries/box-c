@@ -19,9 +19,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 		var menuOptions = {
 			selector: this.options.selector,
 			trigger: this.options.trigger,
+			className: 'result_entry_context_menu',
 			events : {
-				show: function() {
+				show: function(event) {
 					this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear_dark.png");
+					var resultObject = event.$trigger.parents(self.options.containerSelector).data('resultObject');
+					event.$menu.attr('data-menutitle', resultObject.metadata.title);
 				},
 				hide: function() {
 					this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear.png");
@@ -61,7 +64,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 				
 				if ($.inArray('moveToTrash', metadata.permissions) != -1) {
 					items["sepdel"] = "";
-					items["deleteResult"] = {name : 'Delete', disabled : $.inArray('Deleted', metadata.status) != -1};
+					items["deleteResult"] = {name : 'Delete', disabled : $.inArray('Active', metadata.status) == -1};
 					items["restoreResult"] = {name : 'Restore', disabled : $.inArray('Deleted', metadata.status) == -1};
 				}
 				
