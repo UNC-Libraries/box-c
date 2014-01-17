@@ -64,6 +64,7 @@ public class CollectionServlet extends BaseSwordServlet {
 			LOG.debug("POST request to submit to collection: " + req.getQueryString());
 			LOG.debug("Packaging: " + req.getHeader("Packaging"));
 			String headers = null;
+			@SuppressWarnings("unchecked")
 			Enumeration<String> e = req.getHeaderNames();
 			LOG.debug("Collection submission headers:");
 			while (e.hasMoreElements()) {

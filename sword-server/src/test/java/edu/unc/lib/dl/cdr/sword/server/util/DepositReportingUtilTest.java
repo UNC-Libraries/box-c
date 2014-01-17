@@ -15,6 +15,12 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.util;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.List;
@@ -25,20 +31,15 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Link;
 import org.junit.Assert;
 import org.junit.Test;
-import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.UriRegistry;
 
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
-import edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl;
-import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-
-import static org.mockito.Mockito.*;
 
 public class DepositReportingUtilTest extends Assert {
 
@@ -62,6 +63,7 @@ public class DepositReportingUtilTest extends Assert {
 		
 		when(tripleStoreQueryService.fetchDisseminatorMimetypes(any(PID.class))).thenReturn(disseminations);
 		
+		@SuppressWarnings("resource")
 		RandomAccessFile modsFile = new RandomAccessFile("src/test/resources/modsDocument.xml", "r");
 		byte[] modsBytes = new byte[(int)modsFile.length()];
 		modsFile.read(modsBytes);
@@ -116,6 +118,7 @@ public class DepositReportingUtilTest extends Assert {
 		
 		when(tripleStoreQueryService.fetchDisseminatorMimetypes(any(PID.class))).thenReturn(disseminations);
 		
+		@SuppressWarnings("resource")
 		RandomAccessFile modsFile = new RandomAccessFile("src/test/resources/dcDocument.xml", "r");
 		byte[] modsBytes = new byte[(int)modsFile.length()];
 		modsFile.read(modsBytes);

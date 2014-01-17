@@ -16,7 +16,10 @@
 package edu.unc.lib.dl.schematron;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.Source;
@@ -39,6 +42,8 @@ import org.jdom.transform.JDOMSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+
 /**
  * This class validates XML documents against ISO Schematron files. It can be
  * configured as a Spring bean or used separately. The bean must be initialized
@@ -52,6 +57,20 @@ public class SchematronValidator {
     private Map<String, Resource> schemas = new HashMap<String, Resource>();
     private Map<String, Templates> templates = null;
 
+	private static Filter failedAsserts = new Filter() {
+		private static final long serialVersionUID = 1965854034232575078L;
+
+		public boolean matches(Object obj) {
+			if (obj instanceof Element) {
+				Element e = (Element) obj;
+				if ("failed-assert".equals(e.getName())) {
+					return true;
+				}
+			}
+			return false;
+		}
+	};
+	
     public SchematronValidator() {
     }
 
@@ -72,20 +91,6 @@ public class SchematronValidator {
      * @return true if assertions failed
      */
     public boolean hasFailedAssertions(Document svrl) {
-	// find failed assertions in output SVRL
-	Filter failedAsserts = new Filter() {
-	    private static final long serialVersionUID = 1965854034232575078L;
-
-	    public boolean matches(Object obj) {
-		if (obj instanceof Element) {
-		    Element e = (Element) obj;
-		    if ("failed-assert".equals(e.getName())) {
-			return true;
-		    }
-		}
-		return false;
-	    }
-	};
 	return svrl.getDescendants(failedAsserts).hasNext();
     }
 
@@ -261,5 +266,24 @@ public class SchematronValidator {
 	}
 	return svrlRes.getDocument();
     }
+    
+    public List<String> validateReportErrors(Source source, String schema) {
+    	Document svrl = this.validate(source, schema);
+    	return parseSVRLErrors(svrl);
+    }
+    
+	public static List<String> parseSVRLErrors(Document svrl) {
+		List<String> result = new ArrayList<String>();
+		@SuppressWarnings("rawtypes")
+		Iterator desc = svrl.getDescendants(failedAsserts);
+		if (desc.hasNext()) {
+			while (desc.hasNext()) {
+				Element failedAssert = (Element) desc.next();
+				result.add(failedAssert.getChildText("text",
+						JDOMNamespaceUtil.SCHEMATRON_VALIDATION_REPORT_NS));
+			}
+		}
+		return result;
+	}
 
 }

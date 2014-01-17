@@ -25,7 +25,6 @@ import static edu.unc.lib.dl.util.DepositBagInfo.PACKAGING_TYPE;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -39,24 +38,24 @@ import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.MetsHeaderScanner;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.ZipFileUtil;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagInfoTxt;
+import gov.loc.repository.bagit.PreBag;
 import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 
-public class METSDepositHandler extends AbstractDepositHandler {
-	private static Logger log = Logger.getLogger(METSDepositHandler.class);
+public class DSPACEMETSDepositHandler extends AbstractDepositHandler {
+	private static Logger log = Logger.getLogger(DSPACEMETSDepositHandler.class);
 
 	@Override
 	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, SwordConfiguration config,
 			String depositor, String owner) throws SwordError {
 		if (log.isDebugEnabled()) {
-			log.debug("Preparing to perform a CDR METS deposit to " + destination.getPid());
+			log.debug("Preparing to perform a DSPACE METS deposit to " + destination.getPid());
 			log.debug("Working with temporary file: "+ deposit.getFile().getAbsolutePath());
 		}
 		
@@ -64,36 +63,24 @@ public class METSDepositHandler extends AbstractDepositHandler {
 		MetsHeaderScanner scanner = new MetsHeaderScanner();
 		try {
 			scanner.scan(deposit.getFile());
-		} catch (IOException e1) {
-			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400, "Unable to unpack your deposit: "+deposit.getFilename());
+		} catch (Exception e1) {
+			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400, "Unable to parse your METS file: "+deposit.getFilename(), e1);
 		}
 		
-		PID depositPID = scanner.getObjID();
-		if(depositPID == null) {
-			UUID depositUUID = UUID.randomUUID();
-			depositPID = new PID("uuid:"+depositUUID.toString());
-		}
+		
+		UUID depositUUID = UUID.randomUUID();
+		PID depositPID = new PID("uuid:"+depositUUID.toString());
 		File bagDir = getNewBagDirectory(depositPID.getUUID());
 		
 		// create or unzip bag directory
-		String name = deposit.getFilename();
 		BagFactory factory = new BagFactory();
 		Bag bag = null;
-		File metsFile = new File(bagDir, "METS.xml");
-		if(name.endsWith(".zip")) {
-			try {
-				ZipFileUtil.unzipToDir(deposit.getFile(), bagDir);
-				bag = factory.createBag(bagDir);
-			} catch (IOException e) {
-				throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400, "Unable to unpack your deposit: "+depositPID.getPid());
-			}
-		} else {
-			try {
-				FileUtils.renameOrMoveTo(deposit.getFile(), metsFile);
-				bag = factory.createBagByPayloadFiles(bagDir, BagFactory.LATEST, Collections.<String> emptyList());
-			} catch (IOException e) {
-				throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to create your deposit bag: "+depositPID.getPid(), e);
-			}
+		try {
+			ZipFileUtil.unzipToDir(deposit.getFile(), bagDir);
+			PreBag prebag = factory.createPreBag(bagDir);
+			bag = prebag.makeBagInPlace(BagFactory.LATEST, false);
+		} catch (IOException e) {
+			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400, "Unable to unpack your deposit: "+depositPID.getPid());
 		}
 
 		// add metadata from METS
@@ -108,8 +95,10 @@ public class METSDepositHandler extends AbstractDepositHandler {
 			info.addContactEmail(owner+"@email.unc.edu");
 			info.addContactName(owner);
 		}
-		info.setInternalSenderDescription("Added via SWORD");
 		info.setInternalSenderIdentifier(depositor);
+		for(String name : scanner.getNames()) {
+			info.addInternalSenderDescription(name);
+		}
 		info.addExternalIdentifier(deposit.getFilename());
 		info.setBaggingDate(scanner.getCreateDate());
 		info.put(DEPOSIT_METHOD, DepositMethod.SWORD13.getLabel());
@@ -132,7 +121,6 @@ public class METSDepositHandler extends AbstractDepositHandler {
 			writer.setTagFilesOnly(true);
 			writer.write(bag, bagDir);
 			bag.close();
-			
 		} catch (IOException e) {
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to write to deposit bag: "+depositPID.getPid());
 		}

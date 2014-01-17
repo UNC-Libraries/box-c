@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.ingest.sip;
+package edu.unc.lib.dl.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +22,11 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import edu.unc.lib.dl.ingest.IngestException;
-
 /**
  * @author Gregory Jansen
  * 
  */
-public class METSParseException extends IngestException implements ErrorHandler {
+public class METSParseException extends Exception implements ErrorHandler {
 
 	/**
      *

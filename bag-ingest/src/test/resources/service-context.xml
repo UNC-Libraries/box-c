@@ -44,9 +44,9 @@
 		<constructor-arg value="0" />
 	</bean>
 
-	<bean id="swordPath" class="java.lang.String">
-		<constructor-arg
-			value="${repository.protocol}://${repository.host}${repository.port}/${services.context}/${sword.context}" />
+	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl"
+		scope="prototype">
+		<constructor-arg ref="jesqueConfig" />
 	</bean>
 
 	<bean id="bagsDirectory" class="java.io.File">
@@ -69,14 +69,6 @@
 		<constructor-arg value="edu.unc.lib.dl.util.TripleStoreQueryService" />
 	</bean>
 
-	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
-		<property name="managementClient" ref="forwardedManagementClient" />
-		<property name="accessClient" ref="accessClient" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-		<property name="schematronValidator" ref="schematronValidator" />
-		<property name="available" value="true" />
-	</bean>
-
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
 		init-method="loadSchemas">
 		<property name="schemas">
@@ -93,58 +85,41 @@
 		</property>
 	</bean>
 
-	<util:map id="virtualDatastreamMap" key-type="java.lang.String"
-		value-type="edu.unc.lib.dl.util.ContentModelHelper.Datastream">
-		<entry key="ACL" value="RELS_EXT" />
-	</util:map>
-
-	<!-- SWORD config -->
-
-	<bean id="config" class="edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl"
-		init-method="init">
-		<property name="authType" value="Basic" />
-		<property name="swordPath" ref="swordPath" />
-		<property name="basePath"
-			value="${repository.protocol}://${repository.host}${repository.port}/${repository.context}" />
-		<property name="tempDirectory" value="${sword.temp.dir}" />
-		<property name="swordVersion" value="${sword.version}" />
-		<property name="generatorVersion" value="${cdr.version}" />
-		<property name="generator" value="${repository.protocol}://${repository.host}" />
-		<property name="depositorNamespace" value="${sword.depositorNamespace}" />
-		<property name="adminDepositor" value="${sword.username}" />
+	<bean id="schemaFactory" class="javax.xml.validation.SchemaFactory"
+		factory-method="newInstance">
+		<constructor-arg value="#{T(javax.xml.XMLConstants).W3C_XML_SCHEMA_NS_URI}" />
 	</bean>
 
-	<bean id="depositReportingUtil"
-		class="edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-		<property name="accessClient" ref="accessClient" />
+	<bean id="metsSipSchema" class="javax.xml.validation.Schema"
+		factory-bean="schemaFactory" factory-method="newSchema">
+		<constructor-arg>
+			<list value-type="javax.xml.transform.Source">
+				<bean class="javax.xml.transform.stream.StreamSource">
+					<constructor-arg value="${xml.schema.location}/xml.xsd" />
+				</bean>
+				<bean class="javax.xml.transform.stream.StreamSource">
+					<constructor-arg value="${xml.schema.location}/xlink.xsd" />
+				</bean>
+				<bean class="javax.xml.transform.stream.StreamSource">
+					<constructor-arg value="${xml.schema.location}/mets.xsd" />
+				</bean>
+				<bean class="javax.xml.transform.stream.StreamSource">
+					<constructor-arg value="${xml.schema.location}/premis-v2-0.xsd" />
+				</bean>
+				<bean class="javax.xml.transform.stream.StreamSource">
+					<constructor-arg value="${xml.schema.location}/mods-3-4.xsd" />
+				</bean>
+				<bean class="javax.xml.transform.stream.StreamSource">
+					<constructor-arg value="${xml.schema.location}/acl.xsd" />
+				</bean>
+			</list>
+		</constructor-arg>
 	</bean>
 
-	<!-- Deposit Handlers -->
-	<bean id="cdrMetsDepositHandler"
-		class="edu.unc.lib.dl.cdr.sword.server.deposit.CDRMETSDepositHandler" />
-	<bean id="dspaceMetsDepositHandler"
-		class="edu.unc.lib.dl.cdr.sword.server.deposit.DSPACEMETSDepositHandler" />
-	<bean id="simpleObjectDepositHandler"
-		class="edu.unc.lib.dl.cdr.sword.server.deposit.SimpleObjectDepositHandler" />
-	<bean id="atomPubEntryDepositHandler"
-		class="edu.unc.lib.dl.cdr.sword.server.deposit.AtomPubEntryDepositHandler" />
-
-	<util:map id="packageHandlers">
-		<entry>
-			<key>
-				<null />
-			</key>
-			<ref bean="atomPubEntryDepositHandler" />
-		</entry>
-		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_1}"
-			value-ref="dspaceMetsDepositHandler" />
-		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_2}"
-			value-ref="dspaceMetsDepositHandler" />
-		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}"
-			value-ref="cdrMetsDepositHandler" />
-		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}"
-			value-ref="simpleObjectDepositHandler" />
-	</util:map>
+	<bean id="CDRMETS2N3BagJob" class="edu.unc.lib.bag.CDRMETS2N3BagJob"
+		scope="prototype">
+		<property name="schematronValidator" ref="schematronValidator" />
+		<property name="metsSipSchema" ref="metsSipSchema" />
+	</bean>
 
 </beans>

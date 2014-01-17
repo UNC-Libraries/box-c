@@ -19,9 +19,9 @@ import edu.unc.lib.dl.util.PackagingType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
-public class METSDepositHandlerTest {
+public class CDRMETSDepositHandlerTest {
 	@Autowired
-	private METSDepositHandler metsDepositHandler = null;
+	private CDRMETSDepositHandler metsDepositHandler = null;
 	@Autowired
 	private SwordConfigurationImpl swordConfiguration;
 
@@ -33,23 +33,23 @@ public class METSDepositHandlerTest {
 		this.swordConfiguration = swordConfiguration;
 	}
 
-	public METSDepositHandler getMetsDepositHandler() {
+	public CDRMETSDepositHandler getMetsDepositHandler() {
 		return metsDepositHandler;
 	}
 
-	public void setMetsDepositHandler(METSDepositHandler metsDepositHandler) {
+	public void setMetsDepositHandler(CDRMETSDepositHandler metsDepositHandler) {
 		this.metsDepositHandler = metsDepositHandler;
 	}
 
 	@Test(expected = JedisDataException.class)
-	public void testDoDepositZIP() throws SwordError {
+	public void testDoDepositBagit() throws SwordError {
 		Deposit d = new Deposit();
 		d.setFile(new File("src/test/resources/simple.zip"));
 		d.setMd5("d2b88d292e2c47943231205ed36f6c94");
 		d.setFilename("simple.zip");
 		d.setMimeType("application/zip");
-		d.setSlug("simpletest");
-		d.setPackaging(PackagingType.SIMPLE_ZIP.getUri());
+		d.setSlug("metsbagittest");
+		d.setPackaging(PackagingType.METS_CDR.getUri());
 		Entry entry = Abdera.getInstance().getFactory().newEntry();
 		d.setEntry(entry);
 		
@@ -65,8 +65,8 @@ public class METSDepositHandlerTest {
 		d.setFile(testMETS);
 		d.setMd5("d2b88d292e2c47943231205ed36f6c94");
 		d.setFilename("METS.xml");
-		d.setMimeType("application/zip");
-		d.setSlug("simpletest");
+		d.setMimeType("application/xml");
+		d.setSlug("metsxmltest");
 		d.setPackaging(PackagingType.METS_CDR.getUri());
 		Entry entry = Abdera.getInstance().getFactory().newEntry();
 		d.setEntry(entry);

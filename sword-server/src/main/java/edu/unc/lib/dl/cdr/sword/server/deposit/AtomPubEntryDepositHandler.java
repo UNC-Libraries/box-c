@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Date;
 import java.util.UUID;
 
 import org.apache.abdera.Abdera;
@@ -49,8 +50,17 @@ import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
+import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 import gov.loc.repository.bagit.PreBag;
 
+/**
+ * Default handler when packaging type is null.
+ * May include a file or not.
+ * All metadata is inside of the Atom entry.
+ * @author count0
+ *
+ */
 public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 	private static Logger log = Logger
 			.getLogger(AtomPubEntryDepositHandler.class);
@@ -84,11 +94,11 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 		bagDir.mkdir();
 
 		// write SWORD Atom entry to file
-		File atomFile = new File(bagDir, "sword-atom.xml");
+		File atomFile = new File(bagDir, "atom.xml");
 		Abdera abdera = new Abdera();
-		Writer writer = abdera.getWriterFactory().getWriter("prettyxml");
 		FileOutputStream fos = null;
 		try {
+			Writer writer = abdera.getWriterFactory().getWriter("prettyxml");
 			fos = new FileOutputStream(atomFile);
 			writer.writeTo(deposit.getSwordEntry().getEntry(), fos);
 		} catch (IOException e) {
@@ -117,7 +127,8 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 		}
 
 		// make bag
-		PreBag prebag = new BagFactory().createPreBag(bagDir);
+		BagFactory factory = new BagFactory();
+		PreBag prebag = factory.createPreBag(bagDir);
 		prebag.setTagFiles(Collections.singletonList(atomFile));
 		Bag bag = prebag.makeBagInPlace(BagFactory.LATEST, false);
 
@@ -137,6 +148,8 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 
 		// add metadata from SWORD/Atom
 		BagInfoTxt info = bag.getBagInfoTxt();
+		if(info == null) info = bag.getBagPartFactory().createBagInfoTxt();
+		bag.putBagFile(info);
 		String email = SwordConfigurationImpl.getUserEmailAddress();
 		if (email != null) {
 			info.addContactEmail(email);
@@ -145,14 +158,13 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 			info.addContactEmail(owner + "@email.unc.edu");
 			info.addContactName(owner);
 		}
-		info.setInternalSenderDescription("Added via SWORD");
 		info.setInternalSenderIdentifier(depositor);
 		info.addExternalIdentifier(deposit.getFilename());
-		// info.setBaggingDate( ?? );
+		info.setBaggingDate(new Date(System.currentTimeMillis()));
 		info.put(DEPOSIT_METHOD, DepositMethod.SWORD13.getLabel());
 		info.put(DEPOSIT_ID, depositPID.getPid());
 		info.put(CONTAINER_ID, destination.getPid());
-		info.put(PACKAGING_TYPE, type.getUri());
+		info.put(PACKAGING_TYPE, PackagingType.ATOM.getUri());
 		info.put(SWORD_SLUG, deposit.getSlug());
 
 		// depositor groups (forwarded for permissions)
@@ -163,10 +175,17 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 			info.putList(DEPOSIT_PERMISSION_GROUP,
 					GroupsThreadStore.getGroups());
 		}
+		info.generateBagSize(bag);
+		bag = bag.makeComplete(new UpdateCompleter(factory));
+		try {
+			FileSystemWriter writer = new FileSystemWriter(factory);
+			writer.setTagFilesOnly(true);
+			writer.write(bag, bagDir);
+			bag.close();
+		} catch (IOException e) {
+			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to write to deposit bag: "+depositPID.getPid());
+		}
 
-		bag.putBagFile(info);
-
-		bag.makeComplete();
 		queueForIngest(bagDir);
 		return buildReceipt(depositPID, config);
 	}

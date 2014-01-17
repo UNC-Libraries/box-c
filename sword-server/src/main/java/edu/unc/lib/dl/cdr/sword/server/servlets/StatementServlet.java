@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.servlets;
 
-import java.io.IOException;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.ServletException;

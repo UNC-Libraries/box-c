@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -35,7 +37,13 @@ public class MetsHeaderScanner extends DefaultHandler {
 	String profile = null;
 	String type = null;
 	String id = null;
+	List<String> names = new ArrayList<String>();
+	StringBuilder nameBuffer = null;
 	
+	public List<String> getNames() {
+		return names;
+	}
+
 	String metsURI = NamespaceConstants.METS_URI;
 
 	public PID getObjID() {
@@ -94,11 +102,33 @@ public class MetsHeaderScanner extends DefaultHandler {
 					lastModDate = attr.getValue(i);
 				}
 			}
+		} else if (localName.equals("name")) {
+			nameBuffer = new StringBuilder();
 		}
 		super.startElement(uri, localName, qName, attr);
 	}
 
-	public void scan(File f) throws IOException {
+	@Override
+	public void characters(char[] ch, int start, int length)
+			throws SAXException {
+		if(nameBuffer != null) nameBuffer.append(ch, start, length);
+		super.characters(ch, start, length);
+	}
+
+	@Override
+	public void endElement(String uri, String localName, String qName)
+			throws SAXException {
+		if(!NamespaceConstants.METS_URI.equals(uri)) return;
+		if (localName.equals("name")) {
+			if(nameBuffer != null) {
+				names.add(nameBuffer.toString());
+				nameBuffer = null;
+			}
+		}
+		super.endElement(uri, localName, qName);
+	}
+
+	public void scan(File f) throws Exception {
 		InputStream toParse = null;
 		try {
 			if (f.getName().endsWith(".zip")) {
@@ -125,8 +155,6 @@ public class MetsHeaderScanner extends DefaultHandler {
 			SAXParser saxParser = null;
 			saxParser = factory.newSAXParser();
 			saxParser.parse(toParse, this);
-		} catch (Exception e) {
-			throw new Error("Cannot create a SAX parser.", e);
 		} finally {
 			if (toParse != null) {
 				try {

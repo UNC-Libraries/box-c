@@ -54,7 +54,6 @@ public class ContainerManagerTest extends Assert {
 	}
 	
 	
-	@SuppressWarnings("unchecked")
 	@Test
 	public void getEntryCredentials() throws Exception {
 		DepositReceipt resultReceipt = mock(DepositReceipt.class);

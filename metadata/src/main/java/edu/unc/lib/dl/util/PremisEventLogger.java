@@ -379,7 +379,7 @@ public class PremisEventLogger {
 		return event;
 	}
 
-	public void logException(String message, Throwable e) {
+	public Element logException(String message, Throwable e) {
 		Element event = new Element("event", NS);
 
 		// add event identifier UUID
@@ -412,5 +412,6 @@ public class PremisEventLogger {
 
 		// push the event into the root element
 		this.exceptionEvents.add(event);
+		return event;
 	}
 }

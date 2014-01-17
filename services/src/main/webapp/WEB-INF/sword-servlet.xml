@@ -198,7 +198,8 @@
 	</bean>
 	
 	<!-- Deposit Handlers -->
-	<bean id="metsDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.METSDepositHandler" />
+	<bean id="cdrMetsDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.CDRMETSDepositHandler" />
+	<bean id="dspaceMetsDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.DSPACEMETSDepositHandler" />
 	<bean id="simpleObjectDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.SimpleObjectDepositHandler" />
 	<bean id="atomPubEntryDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.AtomPubEntryDepositHandler" />
 	
@@ -207,9 +208,9 @@
 			<key><null/></key>
 			<ref bean="atomPubEntryDepositHandler"/>
 		</entry>
-		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_1}" value-ref="metsDepositHandler" />
-		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_2}" value-ref="metsDepositHandler" />
-		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="metsDepositHandler" />
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_1}" value-ref="dspaceMetsDepositHandler" />
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_2}" value-ref="dspaceMetsDepositHandler" />
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
 		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
 	</util:map>
 	
