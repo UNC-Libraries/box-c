@@ -711,6 +711,11 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	ActionButton.prototype._create = function(options, element) {
 		this.options = $.extend({}, defaultOptions, options);
 		this.actionHandler = this.options.actionHandler;
+		
+		if (this.options.actionClass) {
+			// Local instance of an action, which can be used for validation
+			this.action = new this.options.actionClass(this.options.context);
+		}
 	};
 	
 	ActionButton.prototype.activate = function() {
@@ -760,29 +765,11 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	};
 	
 	ActionButton.prototype.doWork = function() {
-	};
-		
-	ActionButton.prototype.getTargetIds = function() {
-		var targetIds = [];
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (this.isValidTarget(resultObject))
-				targetIds.push(resultObject.getPid());
+		if (this.options.disabled)
+			return;
+		if (this.options.context) {
+			this.actionHandler.addEvent(this.options.context);
 		}
-		return targetIds;
-	};
-
-	ActionButton.prototype.hasTargets = function() {
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (this.isValidTarget(resultObject))
-				return true;
-		}
-		return false;
-	};
-	
-	ActionButton.prototype.isValidTarget = function(resultObject) {
-		return resultObject.isSelected();
 	};
 	
 	return ActionButton;
@@ -1023,51 +1010,176 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 			}
 		}
 	});
-});define('BatchActionButton', ['jquery', 'ActionButton', 'ResultObjectList' ], function($, ActionButton, ResultObjectList) {
-
-	function BatchActionButton(options, element) {
-		this._create(options, element);
+});define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
+		function($, ui) {
+	
+	var defaultOptions = {
+		selector : undefined,
+		containerSelector : undefined,
+		trigger : 'left',
+		positionAtTrigger : true
 	};
 	
-	BatchActionButton.prototype.constructor = BatchActionButton;
-	BatchActionButton.prototype = Object.create( ActionButton.prototype );
-		
-	BatchActionButton.prototype.getTargetIds = function() {
-		var targetIds = [];
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (this.isValidTarget(resultObject))
-				targetIds.push(resultObject.getPid());
-		}
-		return targetIds;
+	function BatchActionMenu(options) {
+		this.options = $.extend({}, defaultOptions, options);
+		this.actionHandler = this.options.actionHandler;
+		this.create();
 	};
 	
-	BatchActionButton.prototype.getTargets = function() {
-		var targets = [];
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (this.isValidTarget(resultObject))
-				targets.push(resultObject);
-		}
-		return targets;
-	};
-
-	BatchActionButton.prototype.hasTargets = function() {
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (this.isValidTarget(resultObject))
-				return true;
-		}
-		return false;
+	BatchActionMenu.prototype.create = function() {
+		var self = this;
+		var menuOptions = {
+			selector: this.options.selector,
+			trigger: this.options.trigger,
+			className: 'result_entry_context_menu',
+			events : {
+				show: function(event) {
+					var resultObject = event.$trigger.parents(self.options.containerSelector).data('resultObject');
+					event.$menu.attr('data-menutitle', resultObject.metadata.title);
+				}
+			},
+			build: function($trigger, e) {
+				var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
+				var metadata = resultObject.metadata;
+				var baseUrl = document.location.href;
+				var serverUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/")) + "/";
+				baseUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/") + 7);
+				
+				var items = {};
+				if (resultObject.isContainer)
+					items["openContainer"] = {name : "Open"};
+				items["viewInCDR"] = {name : "View in CDR"};
+				if (resultObject.metadata.type == 'Collection') {
+					items["sepbrowse"] = "";
+					items["viewTrash"] = {name : "View trash for this collection"};
+					items["review"] = {name : "Review unpublished"};
+				}
+				items["sepedit"] = "";
+				if ($.inArray('publish', metadata.permissions) != -1)
+					items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
+				if ($.inArray('editAccessControl', metadata.permissions) != -1) 
+					items["editAccess"] = {name : 'Edit Access'};
+				if ($.inArray('editDescription', metadata.permissions) != -1)
+					items["editDescription"] = {name : 'Edit Description'};
+				if ($.inArray('purgeForever', metadata.permissions) != -1) {
+					items["sepadmin"] = "";
+					items["reindex"] = {name : 'Reindex'};
+				}
+				if ($.inArray('purgeForever', metadata.permissions) != -1) {
+					items["sepdestroy"] = "";
+					items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Deleted', metadata.status) == -1};
+				}
+				
+				if ($.inArray('moveToTrash', metadata.permissions) != -1) {
+					items["sepdel"] = "";
+					items["deleteResult"] = {name : 'Delete', disabled : $.inArray('Active', metadata.status) == -1};
+					items["restoreResult"] = {name : 'Restore', disabled : $.inArray('Deleted', metadata.status) == -1};
+				}
+				
+				return {
+					callback: function(key, options) {
+						switch (key) {
+							case "viewInCDR" :
+								window.open(serverUrl + "record/" + metadata.id,'_blank');
+								break;
+							case "openContainer" :
+								document.location.href = baseUrl + "list/" + metadata.id;
+								break;
+							case "viewTrash" :
+								document.location.href = baseUrl + "trash/" + metadata.id;
+								break;
+							case "review" :
+								document.location.href = baseUrl + "review/" + metadata.id;
+								break;
+							case "publish" :
+								self.actionHandler.addEvent({
+									action : $.inArray("Unpublished", resultObject.metadata.status) == -1? 
+											'Unpublish' : 'Publish',
+									target : resultObject
+								});
+								break;
+							case "editAccess" :
+								self.editAccess(resultObject);
+								break;
+							case "editDescription" :
+								// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
+								document.location.href = baseUrl + "describe/" + metadata.id;
+								break;
+							case "destroy" :
+								self.actionHandler.addEvent({
+									action : 'DestroyResult',
+									target : resultObject
+								});
+								break;
+							case "deleteResult": case "restoreResult":
+								self.actionHandler.addEvent({
+									action : ($.inArray('Deleted', metadata.status) == -1)? 
+											'DeleteResult' : 'RestoreResult',
+									target : resultObject,
+									confirmAnchor : options.$trigger
+								});
+								break;
+							case "reindex" :
+								self.actionHandler.addEvent({
+									action : 'ReindexResult',
+									target : resultObject,
+									confirmAnchor : options.$trigger
+								});
+								break;
+						}
+					},
+					items: items
+				};
+			}
+		};
+		if (self.options.positionAtTrigger)
+			menuOptions.position = function(options, x, y) {
+				options.$menu.position({
+					my : "right top",
+					at : "right bottom",
+					of : options.$trigger
+				});
+			};
+		$.contextMenu(menuOptions);
 	};
 	
-	BatchActionButton.prototype.isValidTarget = function(resultObject) {
-		return resultObject.isSelected();
+	BatchActionMenu.prototype.editAccess = function(resultObject) {
+		var self = this;
+		var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading_large.gif'/></div>");
+		dialog.dialog({
+			autoOpen: true,
+			width: 500,
+			height: 'auto',
+			maxHeight: 800,
+			minWidth: 500,
+			modal: true,
+			title: 'Access Control Settings',
+			close: function() {
+				self.actionHandler.addEvent({
+					action : 'RefreshResult',
+					target : resultObject,
+					waitForUpdate : true,
+					maxAttempts : 3
+				});
+				dialog.remove();
+				resultObject.unhighlight();
+			}
+		});
+		dialog.load("acl/" + resultObject.metadata.id, function(responseText, textStatus, xmlHttpRequest){
+			dialog.dialog('option', 'position', 'center');
+		});
 	};
 	
-	return BatchActionButton;
-});
-/*
+	BatchActionMenu.prototype.disable = function() {
+		$(this.options.selector).contextMenu(false);
+	};
+	
+	BatchActionMenu.prototype.enable = function() {
+		$(this.options.selector).contextMenu(true);
+	};
+	
+	return BatchActionMenu;
+});/*
 
     Copyright 2008 The University of North Carolina at Chapel Hill
 
@@ -1342,153 +1454,6 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	};
 	
 	return CreateSimpleObjectForm;
-});define('DeleteBatchButton', [ 'jquery', 'BatchActionButton'], function($, BatchActionButton) {
-	function DeleteBatchButton(options, element) {
-		this._create(options, element);
-	};
-	
-	DeleteBatchButton.prototype.constructor = DeleteBatchButton;
-	DeleteBatchButton.prototype = Object.create( BatchActionButton.prototype );
-	
-	var defaultOptions = {
-		resultObjectList : undefined,
-		confirm: true
-	};
-	
-	DeleteBatchButton.prototype._create = function(options, element) {
-		var merged = $.extend({}, defaultOptions, options);
-		
-		merged.workLabel = "Deleting...";
-		merged.followupLabel = "Deleting....";
-		merged.confirm = {
-			confirmAnchor : element
-		};
-		
-		BatchActionButton.prototype._create.call(this, merged, element);
-	};
-	
-	DeleteBatchButton.prototype.activate = function() {
-		if (this.options.disabled)
-			return;
-		
-		this.targetIds = this.getTargetIds();
-		
-		if (this.targetIds.length == 1)	
-			this.options.confirm.promptText = "Mark the selected object as deleted?";
-		else
-			this.options.confirm.promptText = "Mark " + this.targetIds.length + " selected objects as deleted?";
-		
-		BatchActionButton.prototype.activate.call(this);
-	}
-	
-	DeleteBatchButton.prototype.isValidTarget = function(resultObject) {
-		return resultObject.isSelected() && resultObject.isEnabled() 
-					&& $.inArray("Active", resultObject.getMetadata().status) != -1;
-	};
-	
-	DeleteBatchButton.prototype.doWork = function() {
-		this.disable();
-	
-		for (var index in this.targetIds) {
-			this.actionHandler.addEvent({
-				action : 'DeleteResult',
-				target : this.options.resultObjectList.resultObjects[this.targetIds[index]],
-				confirm : false
-			});
-		}
-		this.enable();
-	};
-	
-	return DeleteBatchButton;
-});define('DestroyBatchButton', ['jquery', 'BatchActionButton'], function($, BatchActionButton) {
-	function DestroyBatchButton(options, element) {
-		this._create(options, element);
-	};
-	
-	DestroyBatchButton.prototype.constructor = DestroyBatchButton;
-	DestroyBatchButton.prototype = Object.create( BatchActionButton.prototype );
-	
-	var defaultOptions = {
-		confirm: {
-			confirmText : 'Confirm',
-			confirmAnchor : null,
-			dialogOptions : {
-				width : 400,
-				modal : true,
-				position : 'center'
-			}
-		}
-	};
-	
-	DestroyBatchButton.prototype._create = function(options, element) {
-		var merged = $.extend({}, defaultOptions, options);
-		merged.confirmMessage = $("<h3>Permanently destroy selected object" +  + "?</h3>")
-		
-		merged.confirmAnchor = element;
-		BatchActionButton.prototype._create.call(this, merged, element);
-	};
-	
-	DestroyBatchButton.prototype.activate = function() {
-		if (this.options.disabled)
-			return;
-		
-		var containsCollection = false;
-		var deleteList = $("<ul class='confirm_selected_list'></ul>");
-		// Add valid targets to the confirmation text
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (this.isValidTarget(resultObject)) {
-				if (resultObject.metadata.type == 'Collection') {
-					containsCollection = true;
-					deleteList.append("<li class='collection'>" + resultObject.metadata.title + " (Collection)</li>");
-				} else {
-					deleteList.append("<li>" + resultObject.metadata.title + "</li>");
-				}
-			}
-		}
-		
-		var message = $("<p></p>");
-		message.append("<h3>Permanently destroy " + deleteList.children().length + " selected object" + (deleteList.children().length != 1? "s" : "") + "?</h3>");
-		
-		var warning;
-		var undoWarning = "This action <span class='bold'>cannot</span> be undone.";
-		if (containsCollection) {
-			this.options.confirm.confirmMatchText = "delete";
-			warning = "All objects listed below, including at least one <span class='bold'>collection</span>, will be permanently removed from the repository along with all of their contents.";
-			undoWarning += "  To confirm, type '<span class='bold'>delete</span>' below.";
-		} else {
-			warning = "All objects listed below will be permanently removed from the repository along with all of their contents.";
-		}
-		message.append("<p>" + warning + "</p>")
-		
-		message.append("<p>" + undoWarning + "</p>")
-			.append(deleteList);
-			
-		this.options.confirm.promptText = message;
-		
-		BatchActionButton.prototype.activate.call(this);
-	}
-	
-	DestroyBatchButton.prototype.isValidTarget = function(resultObject) {
-		return resultObject.isSelected() && resultObject.isEnabled()
-			&& $.inArray("Deleted", resultObject.getMetadata().status) != -1;
-	};
-	
-	DestroyBatchButton.prototype.doWork = function() {
-		this.disable();
-		this.targetIds = this.getTargetIds();
-	
-		for (var index in this.targetIds) {
-			this.actionHandler.addEvent({
-				action : 'DestroyResult',
-				target : this.options.resultObjectList.resultObjects[this.targetIds[index]],
-				confirm : false
-			});
-		}
-		this.enable();
-	};
-	
-	return DestroyBatchButton;
 });define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 'ConfirmationDialog', 'AlertHandler', 
          'editable', 'moment', 'qtip'], function($, ui, ModalLoadingOverlay, ConfirmationDialog) {
 	$.widget("cdr.editAccessControlForm", {
@@ -2098,44 +2063,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	return ParentResultObject;
-});define('PublishBatchButton', [ 'jquery', 'BatchActionButton'], function($, BatchActionButton) {
-	
-	function PublishBatchButton(options, element) {
-		this._create(options, element);
-	};
-	
-	PublishBatchButton.prototype.constructor = PublishBatchButton;
-	PublishBatchButton.prototype = Object.create( BatchActionButton.prototype );
-	
-	var defaultOptions = {
-		resultObjectList : undefined
-	};
-	
-	PublishBatchButton.prototype._create = function(options, element) {
-		var merged = $.extend({}, defaultOptions, options);
-		merged.workFunction = this.resultObjectWorkFunction;
-		BatchActionButton.prototype._create.call(this, merged, element);
-	};
-	
-	PublishBatchButton.prototype.isValidTarget = function(resultObject) {
-		return resultObject.isSelected() && $.inArray("Unpublished", resultObject.getMetadata().status) != -1
-					&& resultObject.isEnabled();
-	};
-	
-	PublishBatchButton.prototype.doWork = function() {
-		this.disable();
-		this.targetIds = this.getTargetIds();
-	
-		for (var index in this.targetIds) {
-			this.actionHandler.addEvent({
-				action : 'Publish',
-				target : this.options.resultObjectList.resultObjects[this.targetIds[index]]
-			});
-		}
-		this.enable();
-	};
-	
-	return PublishBatchButton;
 });define('RemoteStateChangeMonitor', ['jquery'], function($) {
 	function RemoteStateChangeMonitor(options) {
 		this.init(options);
@@ -2192,65 +2119,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	});
 	
 	return RemoteStateChangeMonitor;
-});define('RestoreBatchButton', [ 'jquery', 'BatchActionButton'], function($, BatchActionButton) {
-	function RestoreBatchButton(options, element) {
-		this._create(options, element);
-	};
-	
-	RestoreBatchButton.prototype.constructor = RestoreBatchButton;
-	RestoreBatchButton.prototype = Object.create( BatchActionButton.prototype );
-	
-	var defaultOptions = {
-		resultObjectList : undefined
-	};
-	
-	RestoreBatchButton.prototype._create = function(options, element) {
-		var merged = $.extend({}, defaultOptions, options);
-		
-		merged.workLabel = "Restoring from trash...";
-		merged.followupLabel = "Restoring from trash....";
-		merged.confirm = {
-			confirmAnchor : element
-		};
-		
-		BatchActionButton.prototype._create.call(this, merged, element);
-	};
-	
-	RestoreBatchButton.prototype.activate = function() {
-		if (this.options.disabled)
-			return;
-		
-		this.targetIds = this.getTargetIds();
-		
-		if (this.targetIds.length == 1)	
-			this.options.confirm.promptText = "Restore the selected object from the trash?";
-		else
-			this.options.confirm.promptText = "Restore " + this.targetIds.length + " selected objects from the trash?";
-		
-		BatchActionButton.prototype.activate.call(this);
-	}
-
-	
-	RestoreBatchButton.prototype.isValidTarget = function(resultObject) {
-		return resultObject.isSelected() && resultObject.isEnabled() 
-					&& $.inArray("Deleted", resultObject.getMetadata().status) != -1;
-	};
-	
-	RestoreBatchButton.prototype.doWork = function() {
-		this.disable();
-		this.targetIds = this.getTargetIds();
-	
-		for (var index in this.targetIds) {
-			this.actionHandler.addEvent({
-				action : 'RestoreResult',
-				target : this.options.resultObjectList.resultObjects[this.targetIds[index]],
-				confirm : false
-			});
-		}
-		this.enable();
-	};
-	
-	return RestoreBatchButton;
 });define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverlay'], 
 		function($, ui, _, ModalLoadingOverlay) {
 	var defaultOptions = {
@@ -2587,6 +2455,14 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		});
 	};
 	
+	ResultObjectActionMenu.prototype.disable = function() {
+		$(this.options.selector).contextMenu(false);
+	};
+	
+	ResultObjectActionMenu.prototype.enable = function() {
+		$(this.options.selector).contextMenu(true);
+	};
+	
 	return ResultObjectActionMenu;
 });define('ResultObjectList', ['jquery', 'ResultObject' ], function($, ResultObject) {
 	function ResultObjectList(options) {
@@ -2668,36 +2544,32 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	});
 	
 	return ResultObjectList;
-});define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'], 
-		function($, ui, ResultObjectList) {
+});define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'ActionButton'], 
+		function($, ui, ResultObjectList, ActionButton) {
 
 	var defaultOptions = {
 		resultObjectList : null,
 		actions : {
 			deleteBatch : {
 				label : "Delete",
-				className : "DeleteBatchButton",
+				action : "DeleteBatch",
 				permissions : ["moveToTrash"]
 			}, restoreBatch : {
 				label : "Restore",
-				className : "RestoreBatchButton",
+				action : "RestoreBatch",
 				permissions : ["moveToTrash"]
 			}, deleteBatchForever : {
 				label : "Destroy",
-				className : "DestroyBatchButton",
+				action : "DestroyBatch",
 				permissions : ["purgeForever"]
 			}, publish : {
 				label : "Publish",
-				className : "PublishBatchButton",
+				action : "PublishBatch",
 				permissions : ["publish"]
 			}, unpublish : {
 				label : "Unpublish",
-				className : "UnpublishBatchButton",
+				action : "UnpublishBatch",
 				permissions : ["publish"]
-			}, reindex : {
-				label : "Reindex",
-				className : "UnpublishBatchButton",
-				permissions : ["purgeForever"]
 			}
 		},
 		groups : undefined
@@ -2717,7 +2589,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		var actionClasses = [];
 		$.each(this.options.groups, function(groupName, actionList){
 			for (var i in actionList) {
-				actionClasses.push(self.options.actions[actionList[i]].className);
+				actionClasses.push(self.options.actions[actionList[i]].action + "Action");
 			}
 		});
 		
@@ -2733,25 +2605,30 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				for (var i in actionList) {
 					var actionDefinition = self.options.actions[actionList[i]];
 					actionDefinition.actionClass = loadedClasses[argIndex++];
-					
+				
 					if (groupName != 'more') {
-						var actionButton = $("<span>" + actionDefinition.label + "</span>")
+						var actionButton = $("<span class='hidden'>" + actionDefinition.label + "</span>")
 								.addClass(actionList[i] + "_selected ajaxCallbackButton container_action")
 								.appendTo(groupSpan);
-						actionButton.data('actionObject', new actionDefinition.actionClass({
-								resultObjectList : self.resultObjectList,
-								actionHandler : self.actionHandler
+						actionButton.data('actionObject', new ActionButton({
+								actionClass : actionDefinition.actionClass,
+								context : {
+									action : actionDefinition.action,
+									target : self.resultObjectList,
+									anchor : actionButton
+								},
+								actionHandler : self.actionHandler,
 							}, actionButton));
-						
+					
 						actionButton.click(function(){
 							$(this).data('actionObject').activate();
 						});
-						
+					
 						self.actionButtons.push(actionButton);
 					}
 				}
 			});
-			self.selectionUpdated();
+		
 			$(window).resize();
 		});
 	};
@@ -2760,7 +2637,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		for (var i in this.actionButtons) {
 			var actionButton = this.actionButtons[i];
 			var actionObject = actionButton.data('actionObject');
-			if (actionObject.hasTargets()) {
+			if (actionObject.action.hasTargets()) {
 				actionButton.removeClass("hidden");
 			} else {
 				actionButton.addClass("hidden");
@@ -3096,6 +2973,13 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		
 		selectionUpdated : function() {
 			this.actionMenu.selectionUpdated();
+			var selectedCount = 0;
+			for (var index in this.resultObjectList.resultObjects) {
+				if (this.resultObjectList.resultObjects[index].isSelected()) selectedCount++;
+			}
+			if (selectedCount > 1)
+				this.contextMenus[1].disable();
+			else this.contextMenus[1].enable();
 		},
 		
 		//Initializes the droppable elements used in move operations
@@ -3384,42 +3268,79 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			return baseURL;
 		}
 	};
-});define('UnpublishBatchButton', [ 'jquery', 'BatchActionButton'], function($, BatchActionButton) {
-	function UnpublishBatchButton(options, element) {
-		this._create(options, element);
+});define('AbstractBatchAction', ['jquery', 'AjaxCallbackAction', 'ConfirmationDialog'], function($, AjaxCallbackAction, ConfirmationDialog) {
+	
+	function AbstractBatchAction(context) {
+		this._create(options);
 	};
 	
-	UnpublishBatchButton.prototype.constructor = UnpublishBatchButton;
-	UnpublishBatchButton.prototype = Object.create( BatchActionButton.prototype );
-	
-	var defaultOptions = {
-			resultObjectList : undefined
-		};
-	
-	UnpublishBatchButton.prototype._create = function(options, element) {
-		var merged = $.extend({}, defaultOptions, options);
-		BatchActionButton.prototype._create.call(this, merged, element);
+	AbstractBatchAction.prototype._create = function(context) {
+		this.context = context;
+		this.actionHandler = context.actionHandler;
+		this.resultList = this.context.target;
 	};
 	
-	UnpublishBatchButton.prototype.isValidTarget = function(resultObject) {
-		return resultObject.isSelected() && $.inArray("Unpublished", resultObject.getMetadata().status) == -1
-					&& resultObject.isEnabled();
-	};
-
-	UnpublishBatchButton.prototype.doWork = function() {
-		this.disable();
-		this.targetIds = this.getTargetIds();
-	
-		for (var index in this.targetIds) {
-			this.actionHandler.addEvent({
-				action : 'Unpublish',
-				target : this.options.resultObjectList.resultObjects[this.targetIds[index]]
-			});
+	AbstractBatchAction.prototype.execute = function() {
+		if (this.context.confirm) {
+			var confirmOptions = $.extend({
+				promptText : "Are you sure?",
+				confirmFunction : this.doWork,
+				confirmTarget : this,
+				autoOpen : true,
+				dialogOptions : {
+					width : 'auto',
+					modal : true
+				}
+			}, this.context.confirm);
+				
+			if (confirmOptions.confirmAnchor) {
+				confirmOptions.dialogOptions['position'] = {};
+				confirmOptions.dialogOptions['position']['of'] = confirmOptions.confirmAnchor; 
+			}
+		
+			var confirmationDialog = new ConfirmationDialog(confirmOptions);
+		} else {
+			this.doWork();
 		}
-		this.enable();
+	};
+	
+	AbstractBatchAction.prototype.getTargetIds = function() {
+		var targetIds = [];
+		var targetList = this.resultList.resultObjects;
+		for (var id in targetList) {
+			var target = targetList[id];
+			if (this.isValidTarget(target))
+				targetIds.push(target.getPid());
+		}
+		return targetIds;
+	};
+	
+	AbstractBatchAction.prototype.getTargets = function(targets) {
+		var targets = [];
+		var targetList = this.resultList.resultObjects;
+		for (var id in targetList) {
+			var target = targetList[id];
+			if (this.isValidTarget(target))
+				targets.push(target);
+		}
+		return targets;
 	};
 
-	return UnpublishBatchButton;
+	AbstractBatchAction.prototype.hasTargets = function(targets) {
+		var targetList = this.resultList.resultObjects;
+		for (var id in targetList) {
+			var target = targetList[id];
+			if (this.isValidTarget(target))
+				return true;
+		}
+		return false;
+	};
+	
+	AbstractBatchAction.prototype.isValidTarget = function(target) {
+		return target.isSelected();
+	};
+
+	return AbstractBatchAction;
 });define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor', 'ConfirmationDialog'], function(
 		$, ui, RemoteStateChangeMonitor, ConfirmationDialog) {
 	
@@ -3616,6 +3537,49 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	return AjaxCallbackAction;
+});define('DeleteBatchAction', [ 'jquery', 'AbstractBatchAction'], function($, AbstractBatchAction) {
+	
+	function DeleteBatchAction(context) {
+		this._create(context);
+	};
+	
+	DeleteBatchAction.prototype.constructor = DeleteBatchAction;
+	DeleteBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
+	
+	DeleteBatchAction.prototype.isValidTarget = function(target) {
+		return target.isSelected() && target.isEnabled() 
+					&& $.inArray("Active", target.getMetadata().status) != -1;
+	};
+	
+	DeleteBatchAction.prototype.execute = function() {
+		this.targets = this.getTargets();
+		
+		if (!('confirm' in this.context) || this.context.confirm) {
+			this.context.confirm = {
+				confirmAnchor : this.context.anchor
+			};
+			if (this.targets.length == 1)
+				this.context.confirm.promptText = "Mark the selected object as deleted?";
+			else
+				this.context.confirm.promptText = "Mark " + this.targets.length + " selected objects as deleted?";
+		}
+	
+		AbstractBatchAction.prototype.execute.call(this);
+	};
+	
+	DeleteBatchAction.prototype.doWork = function() {
+		var validTargets = this.targets;
+		
+		for (var index in validTargets) {
+			this.actionHandler.addEvent({
+				action : 'DeleteResult',
+				target : validTargets[index],
+				confirm : false
+			});
+		}
+	};
+	
+	return DeleteBatchAction;
 });define('DeleteResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, AjaxCallbackAction) {
 	function DeleteResultAction(options) {
 		this._create(options);
@@ -3672,6 +3636,81 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 
 	return DeleteResultAction;
+});define('DestroyBatchAction', [ 'jquery', 'AbstractBatchAction'], function($, AbstractBatchAction) {
+	function DestroyBatchAction(context) {
+		this._create(context);
+	};
+	
+	DestroyBatchAction.prototype.constructor = DestroyBatchAction;
+	DestroyBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
+	
+	DestroyBatchAction.prototype.isValidTarget = function(target) {
+		return target.isSelected() && target.isEnabled()
+			&& $.inArray("Deleted", target.getMetadata().status) != -1;
+	};
+	
+	DestroyBatchAction.prototype.execute = function() {
+		var containsCollection = false;
+		var deleteList = $("<ul class='confirm_selected_list'></ul>");
+		// Add valid targets to the confirmation text
+		for (var id in this.resultList.resultObjects) {
+			var resultObject = this.resultList.resultObjects[id];
+			if (this.isValidTarget(resultObject)) {
+				if (resultObject.metadata.type == 'Collection') {
+					containsCollection = true;
+					deleteList.append("<li class='collection'>" + resultObject.metadata.title + " (Collection)</li>");
+				} else {
+					deleteList.append("<li>" + resultObject.metadata.title + "</li>");
+				}
+			}
+		}
+		
+		var message = $("<p></p>");
+		message.append("<h3>Permanently destroy " + deleteList.children().length + " selected object" + (deleteList.children().length != 1? "s" : "") + "?</h3>");
+		
+		var confirmMatchText;
+		var warning;
+		var undoWarning = "This action <span class='bold'>cannot</span> be undone.";
+		if (containsCollection) {
+			confirmMatchText = "delete";
+			warning = "All objects listed below, including at least one <span class='bold'>collection</span>, will be permanently removed from the repository along with all of their contents.";
+			undoWarning += "  To confirm, type '<span class='bold'>delete</span>' below.";
+		} else {
+			warning = "All objects listed below will be permanently removed from the repository along with all of their contents.";
+		}
+		message.append("<p>" + warning + "</p>")
+		
+		message.append("<p>" + undoWarning + "</p>")
+			.append(deleteList);
+			
+		this.context.confirm = {
+			promptText : message,
+			confirmText : 'Confirm',
+			confirmAnchor : null,
+			confirmMatchText : confirmMatchText,
+			dialogOptions : {
+				width : 400,
+				modal : true,
+				position : 'center'
+			}
+		};
+		
+		AbstractBatchAction.prototype.execute.call(this);
+	}
+	
+	DestroyBatchAction.prototype.doWork = function() {
+		var validTargets = this.getTargets();
+		
+		for (var index in validTargets) {
+			this.actionHandler.addEvent({
+				action : 'DestroyResult',
+				target : validTargets[index],
+				confirm : false
+			});
+		}
+	};
+	
+	return DestroyBatchAction;
 });define('DestroyResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, AjaxCallbackAction) {
 	function DestroyResultAction(context) {
 		this._create(context);
@@ -3829,6 +3868,31 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	return PublishAction;
+});define('PublishBatchAction', [ 'jquery', 'AbstractBatchAction'], function($, AbstractBatchAction) {
+	function PublishBatchAction(context) {
+		this._create(context);
+	};
+	
+	PublishBatchAction.prototype.constructor = PublishBatchAction;
+	PublishBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
+	
+	PublishBatchAction.prototype.isValidTarget = function(target) {
+		return target.isSelected() && $.inArray("Unpublished", target.getMetadata().status) != -1
+					&& target.isEnabled();
+	};
+	
+	PublishBatchAction.prototype.doWork = function() {
+		var validTargets = this.getTargets();
+		
+		for (var index in validTargets) {
+			this.actionHandler.addEvent({
+				action : 'Publish',
+				target : validTargets[index]
+			});
+		}
+	};
+	
+	return PublishBatchAction;
 });define('RefreshResultAction', ['jquery', 'RemoteStateChangeMonitor'], function($, RemoteStateChangeMonitor) {
 	function RefreshResultAction(context) {
 		// target - ResultObject or array of ResultObjects to refresh
@@ -3952,6 +4016,48 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	}
 	
 	return ReindexResultAction;
+});define('RestoreBatchAction', [ 'jquery', 'AbstractBatchAction'], function($, AbstractBatchAction) {
+	function RestoreBatchAction(context) {
+		this._create(context);
+	};
+	
+	RestoreBatchAction.prototype.constructor = RestoreBatchAction;
+	RestoreBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
+	
+	RestoreBatchAction.prototype.isValidTarget = function(target) {
+		return target.isSelected() && target.isEnabled() 
+					&& $.inArray("Deleted", target.getMetadata().status) != -1;
+	};
+	
+	RestoreBatchAction.prototype.execute = function() {
+		this.targets = this.getTargets();
+		
+		if (!('confirm' in this.context) || this.context.confirm) {
+			this.context.confirm = {
+				confirmAnchor : this.context.anchor
+			};
+			if (this.targets.length == 1)	
+				this.context.confirm.promptText = "Restore the selected object from the trash?";
+			else
+				this.context.confirm.promptText = "Restore " + this.targets.length + " selected objects from the trash?";
+		}
+		
+		AbstractBatchAction.prototype.execute.call(this);
+	}
+	
+	RestoreBatchAction.prototype.doWork = function() {
+		var validTargets = this.targets;
+		
+		for (var index in validTargets) {
+			this.actionHandler.addEvent({
+				action : 'RestoreResult',
+				target : validTargets[index],
+				confirm : false
+			});
+		}
+	};
+	
+	return RestoreBatchAction;
 });define('RestoreResultAction', [ 'jquery', 'AjaxCallbackAction', 'DeleteResultAction'], function($, AjaxCallbackAction,DeleteResultAction) {
 	function RestoreResultAction(options) {
 		this._create(options);
@@ -4006,6 +4112,31 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	return UnpublishAction;
+});define('UnpublishBatchAction', [ 'jquery', 'AbstractBatchAction'], function($, AbstractBatchAction) {
+	function UnpublishBatchAction(options, element) {
+		this._create(options, element);
+	};
+	
+	UnpublishBatchAction.prototype.constructor = UnpublishBatchAction;
+	UnpublishBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
+	
+	UnpublishBatchAction.prototype.isValidTarget = function(target) {
+		return target.isSelected() && $.inArray("Unpublished", target.getMetadata().status) == -1
+			&& target.isEnabled();
+	};
+	
+	UnpublishBatchAction.prototype.doWork = function() {
+		var validTargets = this.getTargets();
+		
+		for (var index in validTargets) {
+			this.actionHandler.addEvent({
+				action : 'Unpublish',
+				target : validTargets[index]
+			});
+		}
+	};
+	
+	return UnpublishBatchAction;
 });define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../templates/admin/statusMonitor/overview', 'tpl!../templates/admin/statusMonitor/details', 'moment'], 
 		function($, ui, _, overviewTemplate, detailsTemplate) {
 

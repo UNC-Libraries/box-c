@@ -314,6 +314,13 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		
 		selectionUpdated : function() {
 			this.actionMenu.selectionUpdated();
+			var selectedCount = 0;
+			for (var index in this.resultObjectList.resultObjects) {
+				if (this.resultObjectList.resultObjects[index].isSelected()) selectedCount++;
+			}
+			if (selectedCount > 1)
+				this.contextMenus[1].disable();
+			else this.contextMenus[1].enable();
 		},
 		
 		//Initializes the droppable elements used in move operations

@@ -1,4 +1,4 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
+define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 		function($, ui) {
 	
 	var defaultOptions = {
@@ -8,13 +8,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 		positionAtTrigger : true
 	};
 	
-	function ResultObjectActionMenu(options) {
+	function BatchActionMenu(options) {
 		this.options = $.extend({}, defaultOptions, options);
 		this.actionHandler = this.options.actionHandler;
 		this.create();
 	};
 	
-	ResultObjectActionMenu.prototype.create = function() {
+	BatchActionMenu.prototype.create = function() {
 		var self = this;
 		var menuOptions = {
 			selector: this.options.selector,
@@ -22,12 +22,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 			className: 'result_entry_context_menu',
 			events : {
 				show: function(event) {
-					this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear_dark.png");
 					var resultObject = event.$trigger.parents(self.options.containerSelector).data('resultObject');
 					event.$menu.attr('data-menutitle', resultObject.metadata.title);
-				},
-				hide: function() {
-					this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear.png");
 				}
 			},
 			build: function($trigger, e) {
@@ -135,7 +131,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 		$.contextMenu(menuOptions);
 	};
 	
-	ResultObjectActionMenu.prototype.editAccess = function(resultObject) {
+	BatchActionMenu.prototype.editAccess = function(resultObject) {
 		var self = this;
 		var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading_large.gif'/></div>");
 		dialog.dialog({
@@ -162,13 +158,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 		});
 	};
 	
-	ResultObjectActionMenu.prototype.disable = function() {
+	BatchActionMenu.prototype.disable = function() {
 		$(this.options.selector).contextMenu(false);
 	};
 	
-	ResultObjectActionMenu.prototype.enable = function() {
+	BatchActionMenu.prototype.enable = function() {
 		$(this.options.selector).contextMenu(true);
 	};
 	
-	return ResultObjectActionMenu;
+	return BatchActionMenu;
 });

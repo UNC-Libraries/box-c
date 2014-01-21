@@ -1,33 +1,29 @@
-define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'], 
-		function($, ui, ResultObjectList) {
+define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'ActionButton'], 
+		function($, ui, ResultObjectList, ActionButton) {
 
 	var defaultOptions = {
 		resultObjectList : null,
 		actions : {
 			deleteBatch : {
 				label : "Delete",
-				className : "DeleteBatchButton",
+				action : "DeleteBatch",
 				permissions : ["moveToTrash"]
 			}, restoreBatch : {
 				label : "Restore",
-				className : "RestoreBatchButton",
+				action : "RestoreBatch",
 				permissions : ["moveToTrash"]
 			}, deleteBatchForever : {
 				label : "Destroy",
-				className : "DestroyBatchButton",
+				action : "DestroyBatch",
 				permissions : ["purgeForever"]
 			}, publish : {
 				label : "Publish",
-				className : "PublishBatchButton",
+				action : "PublishBatch",
 				permissions : ["publish"]
 			}, unpublish : {
 				label : "Unpublish",
-				className : "UnpublishBatchButton",
+				action : "UnpublishBatch",
 				permissions : ["publish"]
-			}, reindex : {
-				label : "Reindex",
-				className : "UnpublishBatchButton",
-				permissions : ["purgeForever"]
 			}
 		},
 		groups : undefined
@@ -47,7 +43,7 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 		var actionClasses = [];
 		$.each(this.options.groups, function(groupName, actionList){
 			for (var i in actionList) {
-				actionClasses.push(self.options.actions[actionList[i]].className);
+				actionClasses.push(self.options.actions[actionList[i]].action + "Action");
 			}
 		});
 		
@@ -63,25 +59,30 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 				for (var i in actionList) {
 					var actionDefinition = self.options.actions[actionList[i]];
 					actionDefinition.actionClass = loadedClasses[argIndex++];
-					
+				
 					if (groupName != 'more') {
-						var actionButton = $("<span>" + actionDefinition.label + "</span>")
+						var actionButton = $("<span class='hidden'>" + actionDefinition.label + "</span>")
 								.addClass(actionList[i] + "_selected ajaxCallbackButton container_action")
 								.appendTo(groupSpan);
-						actionButton.data('actionObject', new actionDefinition.actionClass({
-								resultObjectList : self.resultObjectList,
-								actionHandler : self.actionHandler
+						actionButton.data('actionObject', new ActionButton({
+								actionClass : actionDefinition.actionClass,
+								context : {
+									action : actionDefinition.action,
+									target : self.resultObjectList,
+									anchor : actionButton
+								},
+								actionHandler : self.actionHandler,
 							}, actionButton));
-						
+					
 						actionButton.click(function(){
 							$(this).data('actionObject').activate();
 						});
-						
+					
 						self.actionButtons.push(actionButton);
 					}
 				}
 			});
-			self.selectionUpdated();
+		
 			$(window).resize();
 		});
 	};
@@ -90,7 +91,7 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList'],
 		for (var i in this.actionButtons) {
 			var actionButton = this.actionButtons[i];
 			var actionObject = actionButton.data('actionObject');
-			if (actionObject.hasTargets()) {
+			if (actionObject.action.hasTargets()) {
 				actionButton.removeClass("hidden");
 			} else {
 				actionButton.addClass("hidden");

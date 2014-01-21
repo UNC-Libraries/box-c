@@ -39,7 +39,7 @@ public class SolrUpdateRunnable implements Runnable {
 	private SolrUpdateService solrUpdateService;
 	private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
 	private long idleWaitTime = 1000L;
-	private long nextMessageWaitTime = 0L;
+	private long nextMessageWaitTime = 15L;
 	private long blockedWaitTime = 200L;
 
 	// State information

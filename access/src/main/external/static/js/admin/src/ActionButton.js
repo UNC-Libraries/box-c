@@ -11,6 +11,11 @@ define('ActionButton', ['jquery', 'ResultObjectList', 'ConfirmationDialog'], fun
 	ActionButton.prototype._create = function(options, element) {
 		this.options = $.extend({}, defaultOptions, options);
 		this.actionHandler = this.options.actionHandler;
+		
+		if (this.options.actionClass) {
+			// Local instance of an action, which can be used for validation
+			this.action = new this.options.actionClass(this.options.context);
+		}
 	};
 	
 	ActionButton.prototype.activate = function() {
@@ -60,29 +65,11 @@ define('ActionButton', ['jquery', 'ResultObjectList', 'ConfirmationDialog'], fun
 	};
 	
 	ActionButton.prototype.doWork = function() {
-	};
-		
-	ActionButton.prototype.getTargetIds = function() {
-		var targetIds = [];
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (this.isValidTarget(resultObject))
-				targetIds.push(resultObject.getPid());
+		if (this.options.disabled)
+			return;
+		if (this.options.context) {
+			this.actionHandler.addEvent(this.options.context);
 		}
-		return targetIds;
-	};
-
-	ActionButton.prototype.hasTargets = function() {
-		for (var id in this.options.resultObjectList.resultObjects) {
-			var resultObject = this.options.resultObjectList.resultObjects[id];
-			if (this.isValidTarget(resultObject))
-				return true;
-		}
-		return false;
-	};
-	
-	ActionButton.prototype.isValidTarget = function(resultObject) {
-		return resultObject.isSelected();
 	};
 	
 	return ActionButton;
