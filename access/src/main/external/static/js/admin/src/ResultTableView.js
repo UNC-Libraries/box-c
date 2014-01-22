@@ -78,7 +78,10 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					positionAtTrigger : false,
 					selector : ".res_entry td",
 					containerSelector : ".res_entry,.container_entry",
-					actionHandler : self.actionHandler
+					actionHandler : self.actionHandler,
+					multipleSelectionEnabled : true,
+					resultList : self.resultObjectList,
+					batchActions : self.options.resultActions
 				})];
 			
 				// Initialize click and drag operations
@@ -318,9 +321,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			for (var index in this.resultObjectList.resultObjects) {
 				if (this.resultObjectList.resultObjects[index].isSelected()) selectedCount++;
 			}
-			if (selectedCount > 1)
-				this.contextMenus[1].disable();
-			else this.contextMenus[1].enable();
+			this.contextMenus[1].setSelectedCount(selectedCount);
 		},
 		
 		//Initializes the droppable elements used in move operations

@@ -66,6 +66,17 @@ define('AbstractBatchAction', ['jquery', 'AjaxCallbackAction', 'ConfirmationDial
 		return false;
 	};
 	
+	AbstractBatchAction.prototype.countTargets = function() {
+		var count = 0;
+		var targetList = this.resultList.resultObjects;
+		for (var id in targetList) {
+			var target = targetList[id];
+			if (this.isValidTarget(target))
+				count++;
+		}
+		return count;
+	};
+	
 	AbstractBatchAction.prototype.isValidTarget = function(target) {
 		return target.isSelected();
 	};

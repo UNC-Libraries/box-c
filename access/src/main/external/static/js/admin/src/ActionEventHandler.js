@@ -25,10 +25,15 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 	ActionEventHandler.prototype._trigger = function(event) {
 		var eventContext = $.extend({}, this.baseContext, event);
 		
-		require([eventContext.action + "Action"], function(actionClass) {
-			var action = new actionClass(eventContext);
+		if ($.isFunction(eventContext.action)) {
+			var action = new eventContext.action(eventContext);
 			action.execute();
-		});
+		} else {
+			require([eventContext.action + "Action"], function(actionClass) {
+				var action = new actionClass(eventContext);
+				action.execute();
+			});
+		}
 	};
 	
 	return ActionEventHandler;

@@ -133,10 +133,17 @@ define('trashList', ['module', 'jquery', "tpl!../templates/admin/trashTableHeade
 		resultHeader : resultTableHeader,
 		postRender : postRender,
 		actionHandler : actionHandler,
-		resultActions : {
-			1 : ['restoreBatch'],
-			2 : ['deleteBatchForever']
-		}
+		resultActions : [
+			{
+				actions : [
+					{action : 'RestoreBatch', label : 'Restore'}
+				]
+			}, {
+				actions : [
+					{action : 'DestroyBatch', label : 'Destroy'}
+				]
+			}
+		]
 	});
 	
 	//console.profileEnd();

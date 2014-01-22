@@ -6,24 +6,19 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 		actions : {
 			deleteBatch : {
 				label : "Delete",
-				action : "DeleteBatch",
-				permissions : ["moveToTrash"]
+				action : "DeleteBatch"
 			}, restoreBatch : {
 				label : "Restore",
-				action : "RestoreBatch",
-				permissions : ["moveToTrash"]
-			}, deleteBatchForever : {
+				action : "RestoreBatch"
+			}, destroyBatch : {
 				label : "Destroy",
-				action : "DestroyBatch",
-				permissions : ["purgeForever"]
+				action : "DestroyBatch"
 			}, publish : {
 				label : "Publish",
-				action : "PublishBatch",
-				permissions : ["publish"]
+				action : "PublishBatch"
 			}, unpublish : {
 				label : "Unpublish",
-				action : "UnpublishBatch",
-				permissions : ["publish"]
+				action : "UnpublishBatch"
 			}
 		},
 		groups : undefined
@@ -39,13 +34,15 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 	
 	ResultTableActionMenu.prototype.init = function() {
 		var self = this;
+		
 		// Load action classes
 		var actionClasses = [];
-		$.each(this.options.groups, function(groupName, actionList){
-			for (var i in actionList) {
-				actionClasses.push(self.options.actions[actionList[i]].action + "Action");
+		for (var index in this.options.groups) {
+			var group = this.options.groups[index];
+			for (var aIndex in group.actions) {
+				actionClasses.push(group.actions[aIndex].action + "Action");
 			}
-		});
+		}
 		
 		this.actionButtons = [];
 		this.actionGroups = [];
@@ -53,35 +50,37 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 		require(actionClasses, function(){
 			var argIndex = 0, loadedClasses = arguments;
 			
-			$.each(self.options.groups, function(groupName, actionList){
+			for (var index in self.options.groups) {
+				var group = self.options.groups[index];
+			
 				var groupSpan = $("<span/>").addClass("container_action_group").appendTo(self.element);
 				self.actionGroups.push(groupSpan);
-				for (var i in actionList) {
-					var actionDefinition = self.options.actions[actionList[i]];
-					actionDefinition.actionClass = loadedClasses[argIndex++];
+			
+				for (var aIndex in group.actions) {
+					var actionDefinition = group.actions[aIndex];
+					var actionClass = loadedClasses[argIndex++];
 				
-					if (groupName != 'more') {
-						var actionButton = $("<span class='hidden'>" + actionDefinition.label + "</span>")
-								.addClass(actionList[i] + "_selected ajaxCallbackButton container_action")
-								.appendTo(groupSpan);
-						actionButton.data('actionObject', new ActionButton({
-								actionClass : actionDefinition.actionClass,
-								context : {
-									action : actionDefinition.action,
-									target : self.resultObjectList,
-									anchor : actionButton
-								},
-								actionHandler : self.actionHandler,
-							}, actionButton));
-					
-						actionButton.click(function(){
-							$(this).data('actionObject').activate();
-						});
-					
-						self.actionButtons.push(actionButton);
-					}
+					var actionButton = $("<span class='hidden'>" + actionDefinition.label + "</span>")
+							.addClass(actionDefinition.action + "_selected ajaxCallbackButton container_action")
+							.appendTo(groupSpan);
+							actionButton.data('test1', 'yes');
+				
+					actionButton.data('actionObject', new ActionButton({
+						actionClass : actionClass,
+						context : {
+							action : actionClass,
+							target : self.resultObjectList,
+							anchor : actionButton
+						},
+						actionHandler : self.actionHandler,
+					}, actionButton));
+			actionButton.data('test2', 'yes');
+					actionButton.click(function(){
+						$(this).data('actionObject').activate();
+					});
+					self.actionButtons.push(actionButton);
 				}
-			});
+			}
 		
 			$(window).resize();
 		});

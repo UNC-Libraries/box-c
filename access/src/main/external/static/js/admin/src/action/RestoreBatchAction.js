@@ -7,8 +7,8 @@ define('RestoreBatchAction', [ 'jquery', 'AbstractBatchAction'], function($, Abs
 	RestoreBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
 	
 	RestoreBatchAction.prototype.isValidTarget = function(target) {
-		return target.isSelected() && target.isEnabled() 
-					&& $.inArray("Deleted", target.getMetadata().status) != -1;
+		return target.isSelected() && target.isEnabled() && $.inArray("moveToTrash", target.metadata.permissions) != -1
+			&& $.inArray("Deleted", target.getMetadata().status) != -1;
 	};
 	
 	RestoreBatchAction.prototype.execute = function() {

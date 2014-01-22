@@ -801,10 +801,15 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 	ActionEventHandler.prototype._trigger = function(event) {
 		var eventContext = $.extend({}, this.baseContext, event);
 		
-		require([eventContext.action + "Action"], function(actionClass) {
-			var action = new actionClass(eventContext);
+		if ($.isFunction(eventContext.action)) {
+			var action = new eventContext.action(eventContext);
 			action.execute();
-		});
+		} else {
+			require([eventContext.action + "Action"], function(actionClass) {
+				var action = new actionClass(eventContext);
+				action.execute();
+			});
+		}
 	};
 	
 	return ActionEventHandler;
@@ -2309,112 +2314,63 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	ResultObjectActionMenu.prototype.create = function() {
 		var self = this;
+		
+		if (this.options.multipleSelectionEnabled) {
+			this.batchActions = {};
+			var actionClasses = [];
+			for (var index in this.options.batchActions) {
+				var group = this.options.batchActions[index];
+				for (var aIndex in group.actions) {
+					actionClasses.push(group.actions[aIndex].action + "Action");
+				}
+			}
+			
+			require(actionClasses, function(){
+				var argIndex = 0, loadedClasses = arguments;
+				
+				for (var index in self.options.batchActions) {
+					var group = self.options.batchActions[index];
+			
+					for (var aIndex in group.actions) {
+						var actionDefinition = group.actions[aIndex];
+						var actionClass = loadedClasses[argIndex++];
+					
+						var actionName = actionDefinition.action;
+						var def = {
+							label : actionDefinition.label,
+							actionClass : actionClass,
+							action : new actionClass({ target : self.options.resultList }),
+							group : group.groupName? group.groupName : index
+						};
+						self.batchActions[actionName] = def;
+					}
+				}
+			});
+		}
+		
 		var menuOptions = {
 			selector: this.options.selector,
 			trigger: this.options.trigger,
 			className: 'result_entry_context_menu',
 			events : {
 				show: function(event) {
-					this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear_dark.png");
-					var resultObject = event.$trigger.parents(self.options.containerSelector).data('resultObject');
-					event.$menu.attr('data-menutitle', resultObject.metadata.title);
+					if (!self.hasMultipleSelected() || self.showingSingleMenu) {
+						this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear_dark.png");
+						var resultObject = event.$trigger.parents(self.options.containerSelector).data('resultObject');
+						event.$menu.attr('data-menutitle', resultObject.metadata.title);
+					} else {
+						event.$menu.attr('data-menutitle', "Selected " + self.selectedCount + " objects...");
+					}
 				},
 				hide: function() {
-					this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear.png");
+					if (self.showingSingleMenu)
+						this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear.png");
 				}
 			},
 			build: function($trigger, e) {
-				var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
-				var metadata = resultObject.metadata;
-				var baseUrl = document.location.href;
-				var serverUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/")) + "/";
-				baseUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/") + 7);
-				
-				var items = {};
-				if (resultObject.isContainer)
-					items["openContainer"] = {name : "Open"};
-				items["viewInCDR"] = {name : "View in CDR"};
-				if (resultObject.metadata.type == 'Collection') {
-					items["sepbrowse"] = "";
-					items["viewTrash"] = {name : "View trash for this collection"};
-					items["review"] = {name : "Review unpublished"};
-				}
-				items["sepedit"] = "";
-				if ($.inArray('publish', metadata.permissions) != -1)
-					items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
-				if ($.inArray('editAccessControl', metadata.permissions) != -1) 
-					items["editAccess"] = {name : 'Edit Access'};
-				if ($.inArray('editDescription', metadata.permissions) != -1)
-					items["editDescription"] = {name : 'Edit Description'};
-				if ($.inArray('purgeForever', metadata.permissions) != -1) {
-					items["sepadmin"] = "";
-					items["reindex"] = {name : 'Reindex'};
-				}
-				if ($.inArray('purgeForever', metadata.permissions) != -1) {
-					items["sepdestroy"] = "";
-					items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Deleted', metadata.status) == -1};
-				}
-				
-				if ($.inArray('moveToTrash', metadata.permissions) != -1) {
-					items["sepdel"] = "";
-					items["deleteResult"] = {name : 'Delete', disabled : $.inArray('Active', metadata.status) == -1};
-					items["restoreResult"] = {name : 'Restore', disabled : $.inArray('Deleted', metadata.status) == -1};
-				}
-				
-				return {
-					callback: function(key, options) {
-						switch (key) {
-							case "viewInCDR" :
-								window.open(serverUrl + "record/" + metadata.id,'_blank');
-								break;
-							case "openContainer" :
-								document.location.href = baseUrl + "list/" + metadata.id;
-								break;
-							case "viewTrash" :
-								document.location.href = baseUrl + "trash/" + metadata.id;
-								break;
-							case "review" :
-								document.location.href = baseUrl + "review/" + metadata.id;
-								break;
-							case "publish" :
-								self.actionHandler.addEvent({
-									action : $.inArray("Unpublished", resultObject.metadata.status) == -1? 
-											'Unpublish' : 'Publish',
-									target : resultObject
-								});
-								break;
-							case "editAccess" :
-								self.editAccess(resultObject);
-								break;
-							case "editDescription" :
-								// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
-								document.location.href = baseUrl + "describe/" + metadata.id;
-								break;
-							case "destroy" :
-								self.actionHandler.addEvent({
-									action : 'DestroyResult',
-									target : resultObject
-								});
-								break;
-							case "deleteResult": case "restoreResult":
-								self.actionHandler.addEvent({
-									action : ($.inArray('Deleted', metadata.status) == -1)? 
-											'DeleteResult' : 'RestoreResult',
-									target : resultObject,
-									confirmAnchor : options.$trigger
-								});
-								break;
-							case "reindex" :
-								self.actionHandler.addEvent({
-									action : 'ReindexResult',
-									target : resultObject,
-									confirmAnchor : options.$trigger
-								});
-								break;
-						}
-					},
-					items: items
-				};
+				if (self.hasMultipleSelected())
+					return self._buildSelectionMenu.call(self, $trigger, e);
+				return self._buildSingleMenu.call(self, $trigger, e);
 			}
 		};
 		if (self.options.positionAtTrigger)
@@ -2426,6 +2382,153 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				});
 			};
 		$.contextMenu(menuOptions);
+	};
+	
+	ResultObjectActionMenu.prototype._buildSingleMenu = function($trigger, e) {
+		var self = this;
+		var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
+		var metadata = resultObject.metadata;
+		var baseUrl = document.location.href;
+		var serverUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/")) + "/";
+		baseUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/") + 7);
+		
+		// Record which menu has been activated
+		this.showingSingleMenu = true;
+		
+		var items = {};
+		if (resultObject.isContainer)
+			items["openContainer"] = {name : "Open"};
+		items["viewInCDR"] = {name : "View in CDR"};
+		if (resultObject.metadata.type == 'Collection') {
+			items["sepbrowse"] = "";
+			items["viewTrash"] = {name : "View trash for this collection"};
+			items["review"] = {name : "Review unpublished"};
+		}
+		items["sepedit"] = "";
+		if ($.inArray('publish', metadata.permissions) != -1)
+			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
+		if ($.inArray('editAccessControl', metadata.permissions) != -1) 
+			items["editAccess"] = {name : 'Edit Access'};
+		if ($.inArray('editDescription', metadata.permissions) != -1)
+			items["editDescription"] = {name : 'Edit Description'};
+		if ($.inArray('purgeForever', metadata.permissions) != -1) {
+			items["sepadmin"] = "";
+			items["reindex"] = {name : 'Reindex'};
+		}
+		if ($.inArray('purgeForever', metadata.permissions) != -1) {
+			items["sepdestroy"] = "";
+			items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Deleted', metadata.status) == -1};
+		}
+		
+		if ($.inArray('moveToTrash', metadata.permissions) != -1) {
+			items["sepdel"] = "";
+			items["restoreResult"] = {name : 'Restore', disabled : $.inArray('Deleted', metadata.status) == -1};
+			items["deleteResult"] = {name : 'Delete', disabled : $.inArray('Active', metadata.status) == -1};
+		}
+		
+		return {
+			callback: function(key, options) {
+				switch (key) {
+					case "viewInCDR" :
+						window.open(serverUrl + "record/" + metadata.id,'_blank');
+						break;
+					case "openContainer" :
+						document.location.href = baseUrl + "list/" + metadata.id;
+						break;
+					case "viewTrash" :
+						document.location.href = baseUrl + "trash/" + metadata.id;
+						break;
+					case "review" :
+						document.location.href = baseUrl + "review/" + metadata.id;
+						break;
+					case "publish" :
+						self.actionHandler.addEvent({
+							action : $.inArray("Unpublished", resultObject.metadata.status) == -1? 
+									'Unpublish' : 'Publish',
+							target : resultObject
+						});
+						break;
+					case "editAccess" :
+						self.editAccess(resultObject);
+						break;
+					case "editDescription" :
+						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
+						document.location.href = baseUrl + "describe/" + metadata.id;
+						break;
+					case "destroy" :
+						self.actionHandler.addEvent({
+							action : 'DestroyResult',
+							target : resultObject
+						});
+						break;
+					case "deleteResult": case "restoreResult":
+						self.actionHandler.addEvent({
+							action : ($.inArray('Deleted', metadata.status) == -1)? 
+									'DeleteResult' : 'RestoreResult',
+							target : resultObject,
+							confirmAnchor : options.$trigger
+						});
+						break;
+					case "reindex" :
+						self.actionHandler.addEvent({
+							action : 'ReindexResult',
+							target : resultObject,
+							confirmAnchor : options.$trigger
+						});
+						break;
+				}
+			},
+			items : items
+		};
+	};
+	
+	ResultObjectActionMenu.prototype._buildSelectionMenu = function($trigger, e) {
+		var self = this;
+		var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
+		// If the user activates 
+		if (!resultObject.isSelected()) {
+			return this._buildSingleMenu($trigger, e);
+		}
+		
+		// Record which menu has been activated so that show/hide will know
+		this.showingSingleMenu = false;
+		
+		var items = {};
+		
+		var previousGroup = null;
+		$.each(this.batchActions, function(actionName, definition){
+			// Add separators between groups
+			if (definition.group != previousGroup) {
+				if (previousGroup != null)
+					items["sep" + definition.group] = "";
+				previousGroup = definition.group;
+			}
+			
+			var validCount = definition.action.countTargets();
+			items[actionName] = {
+				name : definition.label + (validCount? ' ' + validCount : '') 
+					+ " object" + (validCount == 1? '' : 's'),
+				disabled : validCount == 0
+			};
+		});
+		
+		return {
+			callback: function(key, options) {
+				self.actionHandler.addEvent({
+					action : key,
+					target : self.options.resultList,
+					anchor : options.$trigger
+				});
+			}, items : items
+		};
+	};
+	
+	ResultObjectActionMenu.prototype.hasMultipleSelected = function() {
+		return this.options.multipleSelectionEnabled && this.selectedCount > 1;
+	};
+	
+	ResultObjectActionMenu.prototype.setSelectedCount = function(selectedCount) {
+		this.selectedCount = selectedCount;
 	};
 	
 	ResultObjectActionMenu.prototype.editAccess = function(resultObject) {
@@ -2552,24 +2655,19 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		actions : {
 			deleteBatch : {
 				label : "Delete",
-				action : "DeleteBatch",
-				permissions : ["moveToTrash"]
+				action : "DeleteBatch"
 			}, restoreBatch : {
 				label : "Restore",
-				action : "RestoreBatch",
-				permissions : ["moveToTrash"]
-			}, deleteBatchForever : {
+				action : "RestoreBatch"
+			}, destroyBatch : {
 				label : "Destroy",
-				action : "DestroyBatch",
-				permissions : ["purgeForever"]
+				action : "DestroyBatch"
 			}, publish : {
 				label : "Publish",
-				action : "PublishBatch",
-				permissions : ["publish"]
+				action : "PublishBatch"
 			}, unpublish : {
 				label : "Unpublish",
-				action : "UnpublishBatch",
-				permissions : ["publish"]
+				action : "UnpublishBatch"
 			}
 		},
 		groups : undefined
@@ -2585,13 +2683,15 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	ResultTableActionMenu.prototype.init = function() {
 		var self = this;
+		
 		// Load action classes
 		var actionClasses = [];
-		$.each(this.options.groups, function(groupName, actionList){
-			for (var i in actionList) {
-				actionClasses.push(self.options.actions[actionList[i]].action + "Action");
+		for (var index in this.options.groups) {
+			var group = this.options.groups[index];
+			for (var aIndex in group.actions) {
+				actionClasses.push(group.actions[aIndex].action + "Action");
 			}
-		});
+		}
 		
 		this.actionButtons = [];
 		this.actionGroups = [];
@@ -2599,35 +2699,37 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		require(actionClasses, function(){
 			var argIndex = 0, loadedClasses = arguments;
 			
-			$.each(self.options.groups, function(groupName, actionList){
+			for (var index in self.options.groups) {
+				var group = self.options.groups[index];
+			
 				var groupSpan = $("<span/>").addClass("container_action_group").appendTo(self.element);
 				self.actionGroups.push(groupSpan);
-				for (var i in actionList) {
-					var actionDefinition = self.options.actions[actionList[i]];
-					actionDefinition.actionClass = loadedClasses[argIndex++];
+			
+				for (var aIndex in group.actions) {
+					var actionDefinition = group.actions[aIndex];
+					var actionClass = loadedClasses[argIndex++];
 				
-					if (groupName != 'more') {
-						var actionButton = $("<span class='hidden'>" + actionDefinition.label + "</span>")
-								.addClass(actionList[i] + "_selected ajaxCallbackButton container_action")
-								.appendTo(groupSpan);
-						actionButton.data('actionObject', new ActionButton({
-								actionClass : actionDefinition.actionClass,
-								context : {
-									action : actionDefinition.action,
-									target : self.resultObjectList,
-									anchor : actionButton
-								},
-								actionHandler : self.actionHandler,
-							}, actionButton));
-					
-						actionButton.click(function(){
-							$(this).data('actionObject').activate();
-						});
-					
-						self.actionButtons.push(actionButton);
-					}
+					var actionButton = $("<span class='hidden'>" + actionDefinition.label + "</span>")
+							.addClass(actionDefinition.action + "_selected ajaxCallbackButton container_action")
+							.appendTo(groupSpan);
+							actionButton.data('test1', 'yes');
+				
+					actionButton.data('actionObject', new ActionButton({
+						actionClass : actionClass,
+						context : {
+							action : actionClass,
+							target : self.resultObjectList,
+							anchor : actionButton
+						},
+						actionHandler : self.actionHandler,
+					}, actionButton));
+			actionButton.data('test2', 'yes');
+					actionButton.click(function(){
+						$(this).data('actionObject').activate();
+					});
+					self.actionButtons.push(actionButton);
 				}
-			});
+			}
 		
 			$(window).resize();
 		});
@@ -2737,7 +2839,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					positionAtTrigger : false,
 					selector : ".res_entry td",
 					containerSelector : ".res_entry,.container_entry",
-					actionHandler : self.actionHandler
+					actionHandler : self.actionHandler,
+					multipleSelectionEnabled : true,
+					resultList : self.resultObjectList,
+					batchActions : self.options.resultActions
 				})];
 			
 				// Initialize click and drag operations
@@ -2977,9 +3082,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			for (var index in this.resultObjectList.resultObjects) {
 				if (this.resultObjectList.resultObjects[index].isSelected()) selectedCount++;
 			}
-			if (selectedCount > 1)
-				this.contextMenus[1].disable();
-			else this.contextMenus[1].enable();
+			this.contextMenus[1].setSelectedCount(selectedCount);
 		},
 		
 		//Initializes the droppable elements used in move operations
@@ -3336,6 +3439,17 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		return false;
 	};
 	
+	AbstractBatchAction.prototype.countTargets = function() {
+		var count = 0;
+		var targetList = this.resultList.resultObjects;
+		for (var id in targetList) {
+			var target = targetList[id];
+			if (this.isValidTarget(target))
+				count++;
+		}
+		return count;
+	};
+	
 	AbstractBatchAction.prototype.isValidTarget = function(target) {
 		return target.isSelected();
 	};
@@ -3547,7 +3661,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	DeleteBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
 	
 	DeleteBatchAction.prototype.isValidTarget = function(target) {
-		return target.isSelected() && target.isEnabled() 
+		return target.isSelected() && target.isEnabled() && $.inArray("moveToTrash", target.metadata.permissions) != -1
 					&& $.inArray("Active", target.getMetadata().status) != -1;
 	};
 	
@@ -3645,7 +3759,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	DestroyBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
 	
 	DestroyBatchAction.prototype.isValidTarget = function(target) {
-		return target.isSelected() && target.isEnabled()
+		return target.isSelected() && target.isEnabled() && $.inArray("purgeForever", target.metadata.permissions) != -1
 			&& $.inArray("Deleted", target.getMetadata().status) != -1;
 	};
 	
@@ -3877,8 +3991,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	PublishBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
 	
 	PublishBatchAction.prototype.isValidTarget = function(target) {
-		return target.isSelected() && $.inArray("Unpublished", target.getMetadata().status) != -1
-					&& target.isEnabled();
+		return target.isSelected() && $.inArray("publish", target.metadata.permissions) != -1
+			&& $.inArray("Unpublished", target.getMetadata().status) != -1 && target.isEnabled();
 	};
 	
 	PublishBatchAction.prototype.doWork = function() {
@@ -4025,8 +4139,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	RestoreBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
 	
 	RestoreBatchAction.prototype.isValidTarget = function(target) {
-		return target.isSelected() && target.isEnabled() 
-					&& $.inArray("Deleted", target.getMetadata().status) != -1;
+		return target.isSelected() && target.isEnabled() && $.inArray("moveToTrash", target.metadata.permissions) != -1
+			&& $.inArray("Deleted", target.getMetadata().status) != -1;
 	};
 	
 	RestoreBatchAction.prototype.execute = function() {
@@ -4121,8 +4235,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	UnpublishBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
 	
 	UnpublishBatchAction.prototype.isValidTarget = function(target) {
-		return target.isSelected() && $.inArray("Unpublished", target.getMetadata().status) == -1
-			&& target.isEnabled();
+		return target.isSelected() && $.inArray("publish", target.metadata.permissions) != -1
+			&& $.inArray("Unpublished", target.getMetadata().status) == -1 && target.isEnabled();
 	};
 	
 	UnpublishBatchAction.prototype.doWork = function() {

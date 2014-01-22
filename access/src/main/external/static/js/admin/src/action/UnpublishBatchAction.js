@@ -7,8 +7,8 @@ define('UnpublishBatchAction', [ 'jquery', 'AbstractBatchAction'], function($, A
 	UnpublishBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
 	
 	UnpublishBatchAction.prototype.isValidTarget = function(target) {
-		return target.isSelected() && $.inArray("Unpublished", target.getMetadata().status) == -1
-			&& target.isEnabled();
+		return target.isSelected() && $.inArray("publish", target.metadata.permissions) != -1
+			&& $.inArray("Unpublished", target.getMetadata().status) == -1 && target.isEnabled();
 	};
 	
 	UnpublishBatchAction.prototype.doWork = function() {

@@ -157,11 +157,24 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 		postRender : postRender,
 		postInit : resizeResults,
 		actionHandler : actionHandler,
-		resultActions : {
-			1 : ['restoreBatch', 'deleteBatch'],
-			2 : ['publish', 'unpublish']/*,
-			'more' : ['reindex']*/
-		}
+		resultActions : [
+			{
+				actions : [
+					{action : 'PublishBatch', label : 'Publish'},
+					{action : 'UnpublishBatch', label : 'Unpublish'}
+				]
+			}, {
+				actions : [
+					{action : 'RestoreBatch', label : 'Restore'},
+					{action : 'DeleteBatch', label : 'Delete'}
+				]
+			} /*, {
+				groupName : 'more',
+				actions : {
+					ReindexBatch : "Reindex"
+				}
+			}*/
+		]
 	});
 	
 	//console.profileEnd();
