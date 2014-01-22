@@ -1,7 +1,15 @@
 {
-	"irods://cdr-stage.lib.unc.edu:3333/stagingZone/projects/":{
+    "irods://cdr-stage.lib.unc.edu:3333/stagingZone/projects/":{
         "name":"Shared iRODS Staging Area",
         "ingestCleanupPolicy":"DELETE_INGESTED_FILES"
+    },
+    "tag:cdr.lib.unc.edu,2013:/cdr_projects/":{
+        "name":"CDR Projects",
+        "mappings":[
+            "file:/Volume/projects/cdr/staging"
+        ],
+        "confirmFile":"born_digital",
+        "ingestCleanupPolicy":"DO_NOTHING"
     },
     "tag:cdr.lib.unc.edu,2013:/storhouse_in_process/":{
         "name":"Storhouse SHC In Process",
