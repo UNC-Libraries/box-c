@@ -59,14 +59,19 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 					if (!self.hasMultipleSelected() || self.showingSingleMenu) {
 						this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear_dark.png");
 						var resultObject = event.$trigger.parents(self.options.containerSelector).data('resultObject');
+						resultObject.highlight();
 						event.$menu.attr('data-menutitle', resultObject.metadata.title);
 					} else {
 						event.$menu.attr('data-menutitle', "Selected " + self.selectedCount + " objects...");
 					}
 				},
-				hide: function() {
-					if (self.showingSingleMenu)
+				hide: function(event) {
+					if (self.showingSingleMenu) {
+						var resultObject = event.$trigger.parents(self.options.containerSelector).data('resultObject');
 						this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear.png");
+						resultObject.unhighlight();
+					}
+						
 				}
 			},
 			build: function($trigger, e) {
@@ -119,7 +124,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 		}
 		if ($.inArray('purgeForever', metadata.permissions) != -1) {
 			items["sepdestroy"] = "";
-			items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Deleted', metadata.status) == -1};
+			items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Active', metadata.status) != -1};
 		}
 		
 		if ($.inArray('moveToTrash', metadata.permissions) != -1) {

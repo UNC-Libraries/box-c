@@ -53,7 +53,7 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 			for (var index in self.options.groups) {
 				var group = self.options.groups[index];
 			
-				var groupSpan = $("<span/>").addClass("container_action_group").appendTo(self.element);
+				var groupSpan = $("<span/>").addClass("container_action_group").hide().appendTo(self.element);
 				self.actionGroups.push(groupSpan);
 			
 				for (var aIndex in group.actions) {
@@ -63,7 +63,6 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 					var actionButton = $("<span class='hidden'>" + actionDefinition.label + "</span>")
 							.addClass(actionDefinition.action + "_selected ajaxCallbackButton container_action")
 							.appendTo(groupSpan);
-							actionButton.data('test1', 'yes');
 				
 					actionButton.data('actionObject', new ActionButton({
 						actionClass : actionClass,
@@ -74,7 +73,7 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 						},
 						actionHandler : self.actionHandler,
 					}, actionButton));
-			actionButton.data('test2', 'yes');
+
 					actionButton.click(function(){
 						$(this).data('actionObject').activate();
 					});

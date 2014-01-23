@@ -2357,14 +2357,19 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					if (!self.hasMultipleSelected() || self.showingSingleMenu) {
 						this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear_dark.png");
 						var resultObject = event.$trigger.parents(self.options.containerSelector).data('resultObject');
+						resultObject.highlight();
 						event.$menu.attr('data-menutitle', resultObject.metadata.title);
 					} else {
 						event.$menu.attr('data-menutitle', "Selected " + self.selectedCount + " objects...");
 					}
 				},
-				hide: function() {
-					if (self.showingSingleMenu)
+				hide: function(event) {
+					if (self.showingSingleMenu) {
+						var resultObject = event.$trigger.parents(self.options.containerSelector).data('resultObject');
 						this.parents(self.options.containerSelector).find(".action_gear").attr("src", "/static/images/admin/gear.png");
+						resultObject.unhighlight();
+					}
+						
 				}
 			},
 			build: function($trigger, e) {
@@ -2417,7 +2422,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		}
 		if ($.inArray('purgeForever', metadata.permissions) != -1) {
 			items["sepdestroy"] = "";
-			items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Deleted', metadata.status) == -1};
+			items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Active', metadata.status) != -1};
 		}
 		
 		if ($.inArray('moveToTrash', metadata.permissions) != -1) {
@@ -2702,7 +2707,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			for (var index in self.options.groups) {
 				var group = self.options.groups[index];
 			
-				var groupSpan = $("<span/>").addClass("container_action_group").appendTo(self.element);
+				var groupSpan = $("<span/>").addClass("container_action_group").hide().appendTo(self.element);
 				self.actionGroups.push(groupSpan);
 			
 				for (var aIndex in group.actions) {
@@ -2712,7 +2717,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					var actionButton = $("<span class='hidden'>" + actionDefinition.label + "</span>")
 							.addClass(actionDefinition.action + "_selected ajaxCallbackButton container_action")
 							.appendTo(groupSpan);
-							actionButton.data('test1', 'yes');
 				
 					actionButton.data('actionObject', new ActionButton({
 						actionClass : actionClass,
@@ -2723,7 +2727,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 						},
 						actionHandler : self.actionHandler,
 					}, actionButton));
-			actionButton.data('test2', 'yes');
+
 					actionButton.click(function(){
 						$(this).data('actionObject').activate();
 					});
@@ -3760,22 +3764,34 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	DestroyBatchAction.prototype.isValidTarget = function(target) {
 		return target.isSelected() && target.isEnabled() && $.inArray("purgeForever", target.metadata.permissions) != -1
-			&& $.inArray("Deleted", target.getMetadata().status) != -1;
+			&& $.inArray("Active", target.getMetadata().status) == -1;
 	};
 	
 	DestroyBatchAction.prototype.execute = function() {
 		var containsCollection = false;
 		var deleteList = $("<ul class='confirm_selected_list'></ul>");
+		
+		this.targets = this.getTargets();
+		
+		// Only one item being deleted, switch over to non-batch delete
+		if (this.targets.length == 1) {
+			this.actionHandler.addEvent({
+				action : 'DestroyResult',
+				target : this.targets[0],
+				confirm : true
+			});
+			return;
+		}
+		
 		// Add valid targets to the confirmation text
-		for (var id in this.resultList.resultObjects) {
-			var resultObject = this.resultList.resultObjects[id];
-			if (this.isValidTarget(resultObject)) {
-				if (resultObject.metadata.type == 'Collection') {
-					containsCollection = true;
-					deleteList.append("<li class='collection'>" + resultObject.metadata.title + " (Collection)</li>");
-				} else {
-					deleteList.append("<li>" + resultObject.metadata.title + "</li>");
-				}
+		for (var index in this.targets) {
+			var resultObject = this.targets[index];
+			
+			if (resultObject.metadata.type == 'Collection') {
+				containsCollection = true;
+				deleteList.append("<li class='collection'>" + resultObject.metadata.title + " (Collection)</li>");
+			} else {
+				deleteList.append("<li>" + resultObject.metadata.title + "</li>");
 			}
 		}
 		
@@ -3813,12 +3829,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	}
 	
 	DestroyBatchAction.prototype.doWork = function() {
-		var validTargets = this.getTargets();
-		
-		for (var index in validTargets) {
+		for (var index in this.targets) {
 			this.actionHandler.addEvent({
 				action : 'DestroyResult',
-				target : validTargets[index],
+				target : this.targets[index],
 				confirm : false
 			});
 		}

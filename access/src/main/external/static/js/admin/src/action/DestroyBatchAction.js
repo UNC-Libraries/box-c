@@ -8,22 +8,34 @@ define('DestroyBatchAction', [ 'jquery', 'AbstractBatchAction'], function($, Abs
 	
 	DestroyBatchAction.prototype.isValidTarget = function(target) {
 		return target.isSelected() && target.isEnabled() && $.inArray("purgeForever", target.metadata.permissions) != -1
-			&& $.inArray("Deleted", target.getMetadata().status) != -1;
+			&& $.inArray("Active", target.getMetadata().status) == -1;
 	};
 	
 	DestroyBatchAction.prototype.execute = function() {
 		var containsCollection = false;
 		var deleteList = $("<ul class='confirm_selected_list'></ul>");
+		
+		this.targets = this.getTargets();
+		
+		// Only one item being deleted, switch over to non-batch delete
+		if (this.targets.length == 1) {
+			this.actionHandler.addEvent({
+				action : 'DestroyResult',
+				target : this.targets[0],
+				confirm : true
+			});
+			return;
+		}
+		
 		// Add valid targets to the confirmation text
-		for (var id in this.resultList.resultObjects) {
-			var resultObject = this.resultList.resultObjects[id];
-			if (this.isValidTarget(resultObject)) {
-				if (resultObject.metadata.type == 'Collection') {
-					containsCollection = true;
-					deleteList.append("<li class='collection'>" + resultObject.metadata.title + " (Collection)</li>");
-				} else {
-					deleteList.append("<li>" + resultObject.metadata.title + "</li>");
-				}
+		for (var index in this.targets) {
+			var resultObject = this.targets[index];
+			
+			if (resultObject.metadata.type == 'Collection') {
+				containsCollection = true;
+				deleteList.append("<li class='collection'>" + resultObject.metadata.title + " (Collection)</li>");
+			} else {
+				deleteList.append("<li>" + resultObject.metadata.title + "</li>");
 			}
 		}
 		
@@ -61,12 +73,10 @@ define('DestroyBatchAction', [ 'jquery', 'AbstractBatchAction'], function($, Abs
 	}
 	
 	DestroyBatchAction.prototype.doWork = function() {
-		var validTargets = this.getTargets();
-		
-		for (var index in validTargets) {
+		for (var index in this.targets) {
 			this.actionHandler.addEvent({
 				action : 'DestroyResult',
-				target : validTargets[index],
+				target : this.targets[index],
 				confirm : false
 			});
 		}

@@ -1,4 +1,4 @@
-<% var containerDeleted = _.contains(container.status, 'Deleted'); %>
+<% var containerDeleted = container? !_.contains(container.status, 'Active') : false; %>
 <div class="result_header">
 	<div class="result_header_top">
 		<% if (containerPath) { %>
