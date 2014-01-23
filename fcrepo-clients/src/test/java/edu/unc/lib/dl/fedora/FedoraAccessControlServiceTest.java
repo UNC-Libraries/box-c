@@ -41,7 +41,7 @@ public class FedoraAccessControlServiceTest extends Assert {
 		
 		PID pid = new PID("uuid:test");
 		
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(pid, roleMappings, null, null);
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(pid, roleMappings, null, null, null, null);
 		
 		AccessGroupSet groups = new AccessGroupSet("group1;group3");
 		Set<UserRole> userRoles = aclBean.getRoles(groups);
@@ -58,7 +58,7 @@ public class FedoraAccessControlServiceTest extends Assert {
 		
 		PID pid = new PID("uuid:test");
 		
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(pid, roleMappings, null, null);
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(pid, roleMappings, null, null, null, null);
 		
 		AccessGroupSet groups = new AccessGroupSet("group1;group3");
 		Set<UserRole> userRoles = aclBean.getRoles(groups);

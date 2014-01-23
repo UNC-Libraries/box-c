@@ -31,7 +31,7 @@
 	</c:otherwise>
 </c:choose>
 
-<div class="onecol">
+<div class="onecol full_record_top">
 	<div class="contentarea">
 		<c:set var="thumbUrl">
 			<c:choose>

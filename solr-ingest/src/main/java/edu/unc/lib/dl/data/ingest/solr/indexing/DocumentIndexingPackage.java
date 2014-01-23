@@ -32,9 +32,12 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.ResourceType;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public class DocumentIndexingPackage {
 	private static final Logger log = LoggerFactory.getLogger(DocumentIndexingPackage.class);
+	
+	private static final String OBJECT_STATE_RELATION = ContentModelHelper.FedoraProperty.state.toString();
 
 	private PID pid;
 	private DocumentIndexingPackage parentDocument;
@@ -47,6 +50,7 @@ public class DocumentIndexingPackage {
 	private Element mdContents;
 	private Element objectProperties;
 	private Boolean isPublished;
+	private Boolean isDeleted;
 	private IndexDocumentBean document;
 	private String label;
 	private ResourceType resourceType;
@@ -310,6 +314,9 @@ public class DocumentIndexingPackage {
 				Element tripleEl = (Element) tripleObject;
 				String predicate = tripleEl.getAttributeValue("NAME");
 				String value = tripleEl.getAttributeValue("VALUE");
+				// Fedora prefixes the state value into a URI in the triple store, so add in prefix
+				if (OBJECT_STATE_RELATION.equals(predicate))
+					value = NamespaceConstants.FEDORA_MODEL_URI + value;
 				List<String> predicateTriples = triples.get(predicate);
 				if (predicateTriples == null) {
 					predicateTriples = new ArrayList<String>();
@@ -357,6 +364,14 @@ public class DocumentIndexingPackage {
 
 	public void setIsPublished(Boolean isPublished) {
 		this.isPublished = isPublished;
+	}
+
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 
 	public ObjectAccessControlsBean getAclBean() {

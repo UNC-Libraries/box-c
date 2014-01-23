@@ -85,6 +85,8 @@
 	position: absolute;
 	width: calc(100vw - 360px);
 	top: 0;
+	min-height: 58px;
+	z-index: 50;
 }
 
 #result_view {
@@ -97,13 +99,21 @@
 	padding-top: 80px;
 }
 
-.result_table_wrap.with_path {
+.with_path .result_table_wrap {
 	padding-top: 96px;
 }
 
 /** Container header */
+
+.result_header_top {
+	overflow: hidden;
+}
+
 .container_header {
-	margin-bottom: 3px;
+	display: inline-block;
+	float: left;
+	padding-top: 2px;
+	min-height: 21px;
 }
 
 .container_header > span > h2 {
@@ -111,21 +121,86 @@
 	height: 21px;
 }
 
-.container_header > span > h2 > img {
+.container_title {
+	display: inline-block;
+}
+
+.container_title > span {
+	display: inline-block;
+	max-width: 300px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
 	vertical-align: middle;
+}
+
+.container_title > .deleted {
+	color: #999;
+}
+
+.container_header > span > h2 > img {
+	vertical-align: bottom;
+}
+
+.result_header_bottom {
+	clear: right;
+	position: relative;
+	top: 11px;
+}
+
+.with_container .result_header_bottom {
+	top : 0;
+}
+
+.with_path .result_header_bottom {
+	top : 0;
+}
+
+.result_table_action_menu {
+	float: right;
+}
+
+#add_menu {
+	margin-left: 8px;
+	padding: 4px;
+	border: 1px solid #CCD;
+	border-radius: 4px;
+	background-color: #E5EFFF;
+}
+
+#add_menu.active {
+	background-color: #59AACE;
+	border: 1px solid #0F80B3;
+	box-shadow: 0 0 8px 0 #55ABE0;
+	color: white;
+}
+
+.container_action_group {
+	border: 1px solid #CCD;
+	border-radius: 4px;
+	background-color: #E5EFFF;
+	display: inline-block;
+	margin-left: 1em;
 }
 
 .container_action {
 	display: inline-block;
-	background-color: #EFEFFF;
-	border: 1px solid #DDDDEE;
-	border-radius: 4px;
-	margin: 0 0 0 8px;
-	padding: 5px;
+	padding: 4px 8px;
 	cursor: pointer;
 	font-size: 14px;
 	line-height: 14px;
-	color: #666666;
+	color: #555;
+	border-left: 1px solid #CCD;
+}
+
+.container_action:active {
+	background-color: #59AACE;
+	border-radius: 4px;
+	color: white;
+}
+
+.container_action.first_visible {
+	border-left: none;
 }
 
 .container_action.active {
@@ -144,12 +219,20 @@
 	vertical-align: text-bottom;
 }
 
-.container_header > .path_trail {
-	font-size: 0.8em;
+.path_trail {
+	font-size: 0.9em;
+}
+
+.path_trail > span {
+	padding: 0 .4em;
 }
 
 .container_header > ul {
 	display: none;
+}
+
+.deleteBatchForever_selected {
+	color: #b33;
 }
 
 .arrange_placeholder {
@@ -211,6 +294,28 @@
 	background-color: #FFFFC5;
 }
 
+.res_entry.deleted {
+	color: #8CB4C6;
+}
+
+.res_entry.deleted .title {
+	color: #8CB4C6;
+}
+
+.res_entry.deleted .searchitem_container_count {
+	color: #8CB4C6;
+}
+
+.res_entry.deleted .status {
+	color: #B6BAB8;
+}
+
+.res_entry.deleted > .type > div > img {
+	opacity: .5;
+}
+
+
+
 .result_table .column_headers + .res_entry > td{
 	padding-top: 8px;
 }
@@ -223,10 +328,11 @@
 	width: calc(100vw - 360px);
 	position: absolute;
 	top: 58px;
+	z-index: 51;
 }
 
 .with_path .result_table .column_headers {
-	top: 74px;
+	top: 76px;
 }
 
 .result_table .column_headers > th {
@@ -261,6 +367,10 @@
 
 .result_table colgroup > .date_added, .result_table .column_headers > .date_added > a {
 	width: 75px;
+}
+
+.result_table colgroup > .original_path, .result_table .column_headers > .original_path > a { 
+	width: 300px;
 }
 
 .res_entry > td {
@@ -323,6 +433,14 @@
 
 .res_entry > .type > img {
 	vertical-align: text-bottom;
+}
+
+.res_entry > .original_path > div {
+	font-size: 70%;
+	width: 299px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
 }
 
 .res_entry > .menu_box > div {
@@ -494,6 +612,49 @@
 .confirm_dialog .move a {
 	color: #2222aa;
 }
+
+/** Trash folder */
+
+.trash_header .result_header_bottom {
+	top : 1px;
+}
+
+.trash_header .result_table_wrap {
+	padding-top: 80px;
+}
+
+.trash_header .result_table .column_headers {
+	top: 58px;
+}
+
+/** Dialogs */
+
+.confirm_selected_list {
+	list-style-type: disc;
+	padding-left: 20px;
+	border-top: 1px solid #e9e9e9;
+	padding-top: 10px;
+	box-shadow: 0px 6px 6px -6px #eee inset;
+	margin-top: -4px;
+}
+
+.confirm_selected_list > li {
+	text-indent: 0;
+	margin-left: 0;
+}
+
+.confirm_selected_list > li.collection {
+	font-weight: bold;
+}
+
+.confirm_dialog .confirm_match_input {
+	text-align: right;
+	margin-bottom: 0;
+}
+
+.confirm_dialog .confirm_match_input > input {
+	width: 200px;
+}   
 
 /** Other */
 

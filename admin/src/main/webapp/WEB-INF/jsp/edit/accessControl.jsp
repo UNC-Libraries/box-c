@@ -143,16 +143,15 @@
 	require({
 		baseUrl: '/static/js/',
 		paths: {
-			'jquery' : 'jquery.min',
-			'jquery-ui' : 'jquery-ui.min',
-			'qtip' : 'jquery.qtip.min',
-			'PID' : 'admin/src/PID',
-			'EditAccessControlForm' : 'admin/src/EditAccessControlForm',
-			'ModalLoadingOverlay' : 'admin/src/ModalLoadingOverlay',
-			'AlertHandler' : 'admin/src/AlertHandler',
-			'ConfirmationDialog' : 'admin/src/ConfirmationDialog',
+			'jquery' : 'cdr-admin',
+			'jquery-ui' : 'cdr-admin',
+			'qtip' : 'lib/jquery.qtip.min',
+			'EditAccessControlForm' : 'cdr-admin',
+			'ModalLoadingOverlay' : 'cdr-admin',
+			'AlertHandler' : 'cdr-admin',
+			'ConfirmationDialog' : 'cdr-admin',
 			'editable' : 'jqueryui-editable.min',
-			'moment' : 'moment.min'
+			'moment' : 'cdr-admin'
 		},
 		shim: {
 			'jquery-ui' : ['jquery'],

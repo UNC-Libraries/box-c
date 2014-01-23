@@ -46,6 +46,7 @@ public class JMSMessageUtil {
 	}
 	
 	public static enum FedoraActions {
+		MODIFY_OBJECT ("modifyObject"),
 		MODIFY_DATASTREAM_BY_VALUE ("modifyDatastreamByValue"),
 		MODIFY_DATASTREAM_BY_REFERENCE ("modifyDatastreamByReference"),
 		ADD_DATASTREAM ("addDatastream"),

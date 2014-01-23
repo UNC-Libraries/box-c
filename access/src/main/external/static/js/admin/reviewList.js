@@ -18,7 +18,7 @@ require.config({
 		'BatchCallbackButton' : 'admin/src/BatchCallbackButton',
 		'UnpublishBatchButton' : 'admin/src/UnpublishBatchButton',
 		'PublishBatchButton' : 'admin/src/PublishBatchButton',
-		'DeleteBatchButton' : 'admin/src/DeleteBatchButton'
+		'DestroyBatchButton' : 'admin/src/DestroyBatchButton'
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
@@ -29,7 +29,7 @@ require.config({
 	}
 });
 
-define('reviewList', ['module', 'jquery', 'ResultObjectList', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton'], function(module, $, ResultObjectList) {
+define('reviewList', ['module', 'jquery', 'ResultObjectList', 'PublishBatchButton', 'UnpublishBatchButton', 'DestroyBatchButton'], function(module, $, ResultObjectList) {
 	$("#select_all").click(function(){
 		$(".browseitem input[type='checkbox']").prop("checked", true);
 		$(".browseitem").addClass("selected");

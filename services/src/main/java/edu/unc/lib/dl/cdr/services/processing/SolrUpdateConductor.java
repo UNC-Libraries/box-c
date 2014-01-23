@@ -61,6 +61,8 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 		if (message instanceof FedoraEventMessage) {
 			if (JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)) {
 				this.offer(message.getTargetID(), IndexingActionType.DELETE_SOLR_TREE);
+			} else if (JMSMessageUtil.FedoraActions.MODIFY_OBJECT.equals(action)) {
+				this.offer(message.getTargetID(), IndexingActionType.UPDATE_STATUS);
 			} else {
 				this.offer(message.getTargetID());
 			}

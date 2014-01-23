@@ -54,6 +54,11 @@ public class SolrJMXService {
 		}
 	}
 	
+	public void reindexACLs(String pid) {
+		if (!active) return;
+		messageDirector.direct(new SolrUpdateRequest(pid, IndexingActionType.UPDATE_ACCESS));
+	}
+	
 	public void clearIndex(String confirmation){
 		if (!active || !confirmation.equalsIgnoreCase("yes")) return;
 		LOG.info("Issuing request to delete all Solr index contents.");

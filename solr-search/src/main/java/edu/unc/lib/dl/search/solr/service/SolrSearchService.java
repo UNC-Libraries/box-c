@@ -272,8 +272,8 @@ public class SolrSearchService {
 		if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)) {
 			String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
 			if (allowPatronAccess) {
-				query.append(" AND ((").append("readGroup:(").append(joinedGroups).append(')')
-						.append(" AND status:Published) OR adminGroup:(").append(joinedGroups).append("))");
+				query.append(" AND (").append("readGroup:(").append(joinedGroups).append(')')
+						.append(" OR adminGroup:(").append(joinedGroups).append("))");
 			} else {
 				query.append(" AND adminGroup:(").append(joinedGroups).append(')');
 			}

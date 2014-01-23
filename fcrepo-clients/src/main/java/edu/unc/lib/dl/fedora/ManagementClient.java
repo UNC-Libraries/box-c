@@ -165,7 +165,7 @@ public class ManagementClient extends WebServiceTemplate {
 	}
 
 	public enum State {
-		ACTIVE("A"), INACTIVE("I");
+		ACTIVE("A"), INACTIVE("I"), DELETED("D");
 		private final String id;
 
 		State(String id) {
