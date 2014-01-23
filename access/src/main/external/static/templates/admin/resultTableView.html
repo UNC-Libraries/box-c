@@ -1,0 +1,26 @@
+<div id="result_view"<%= headerHeightClass? ' class="' + headerHeightClass + '"' : '' %>>
+	<%= resultHeader? resultHeader : "" %>
+	<div class="result_table_scroll">
+		<div class="result_table_wrap">
+			<table class="result_table">
+				<colgroup>
+					<% _.each(resultFields, function(resultField) { %>
+						<col class="<%= resultField.colClass %>">
+					<% }); %>
+				</colgroup>
+				<thead>
+					<tr class="column_headers">
+						<% _.each(resultFields, function(resultField) { %>
+							<th class="<%= resultField.colClass 
+									%><%= ('sortField' in resultField)? ' sort_col' : '' %>" <%= 
+									('sortField' in resultField)? ' data-field="' + resultField.sortField + '"' : '' %> <%= 
+									('dataType' in resultField)? ' data-type="' + resultField.dataType + '"' : '' %>><a><%= resultField.name %></a></th>
+						<% }); %>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

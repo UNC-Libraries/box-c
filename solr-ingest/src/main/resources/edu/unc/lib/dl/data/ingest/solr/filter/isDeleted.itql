@@ -1,0 +1,5 @@
+select $state
+from <%1$s>
+where walk( $p <http://cdr.unc.edu/definitions/1.0/base-model.xml#contains> <%2$s> 
+and $p <http://cdr.unc.edu/definitions/1.0/base-model.xml#contains> $pid)
+and ($pid <info:fedora/fedora-system:def/model#state> $state);

@@ -44,6 +44,7 @@ public class AccessControlUtils {
 	private AncestorFactory ancestorFactory = null;
 	private GroupRolesFactory groupRolesFactory = null;
 	private EmbargoFactory embargoFactory = null;
+	private PatronAccessFactory patronAccessFactory = null;
 	private Map<String, Set<String>> globalRoles;
 	private String adminGroup;
 	private String curatorGroup;
@@ -78,6 +79,14 @@ public class AccessControlUtils {
 
 	public void setGroupRolesFactory(GroupRolesFactory groupRolesFactory) {
 		this.groupRolesFactory = groupRolesFactory;
+	}
+
+	public PatronAccessFactory getPatronAccessFactory() {
+		return patronAccessFactory;
+	}
+
+	public void setPatronAccessFactory(PatronAccessFactory patronAccessFactory) {
+		this.patronAccessFactory = patronAccessFactory;
 	}
 
 	public edu.unc.lib.dl.util.TripleStoreQueryService getTripleStoreQueryService() {
@@ -144,6 +153,8 @@ public class AccessControlUtils {
 		result.put("roles", this.getRoles(pid));
 		result.put("globals", this.getGlobalRoles());
 		result.put("embargoes", this.getEmbargoes(pid));
+		result.put("objectState", this.getObjectState(pid));
+		result.put("publicationStatus", this.getPublished(pid));
 		return result;
 	}
 
@@ -428,6 +439,98 @@ public class AccessControlUtils {
 			LOG.debug(b.toString());
 		}
 		return groups;
+	}
+	
+	public boolean isPublished(PID pid) {
+		try {
+			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
+			ancestors.add(pid);
+			for (PID ancestor: ancestors) {
+				Boolean status = patronAccessFactory.isPublished(ancestor);
+				if (!status) {
+					return false;
+				}
+			}
+		} catch (ObjectNotFoundException e) {
+			LOG.error("Cannot find object in question", e);
+		}
+		return true;
+	}
+	
+	public boolean isActive(PID pid) {
+		try {
+			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
+			ancestors.add(pid);
+			for (PID ancestor: ancestors) {
+				Boolean isActive = patronAccessFactory.isStateActive(ancestor);
+				if (!isActive) {
+					return false;
+				}
+			}
+		} catch (ObjectNotFoundException e) {
+			LOG.error("Cannot find object in question", e);
+		}
+		return true;
+	}
+	
+	public List<String> getObjectState(PID pid) {
+		try {
+			// Compute inherited publication state
+			boolean inheritedStatus = true;
+			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
+			for (PID ancestor: ancestors) {
+				Boolean status = patronAccessFactory.isStateActive(ancestor);
+				if (!status) {
+					inheritedStatus = false;
+					break;
+				}
+			}
+			
+			// Get the publication state for this particular item
+			Boolean status = patronAccessFactory.isStateActive(pid);
+			
+			List<String> answer = new ArrayList<String>(2);
+			if (!inheritedStatus)
+				answer.add("Deleted Ancestor");
+			if (!status)
+				answer.add("Deleted");
+			else if (inheritedStatus)
+				answer.add("Active");
+			return answer;
+		} catch (ObjectNotFoundException e) {
+			LOG.error("Cannot find object in question", e);
+		}
+		return null;
+	}
+	
+	public List<String> getPublished(PID pid) {
+		try {
+			// Compute inherited publication state
+			boolean inheritedStatus = true;
+			List<PID> ancestors = this.ancestorFactory.getInheritanceList(pid);
+			for (PID ancestor: ancestors) {
+				Boolean status = patronAccessFactory.isPublished(ancestor);
+				if (!status) {
+					inheritedStatus = false;
+					break;
+				}
+			}
+			
+			// Get the publication state for this particular item
+			Boolean status = patronAccessFactory.isPublished(pid);
+			
+			List<String> answer = new ArrayList<String>(2);
+			if (!inheritedStatus)
+				answer.add("Unpublished Ancestor");
+			if (!status)
+				answer.add("Unpublished");
+			else if (inheritedStatus)
+				answer.add("Published");
+			return answer;
+		} catch (ObjectNotFoundException e) {
+			LOG.error("Cannot find object in question", e);
+		}
+		return null;
 	}
 
 	public List<String> getDatastreamCategories(String datastreamId) {

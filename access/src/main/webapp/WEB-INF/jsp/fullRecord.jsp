@@ -18,8 +18,12 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 
-<div class="content-wrap">
+<c:if test="${not empty briefObject && cdr:contains(briefObject.status, 'Deleted')}">
+	<c:set var="isDeleted" value="deleted" scope="page"/>
+</c:if>
+<div class="content-wrap full_record ${isDeleted}">
 <c:import url="fullRecord/navigationBar.jsp" />
 <c:choose>
 	<c:when test="${requestScope.listAccess == true}">

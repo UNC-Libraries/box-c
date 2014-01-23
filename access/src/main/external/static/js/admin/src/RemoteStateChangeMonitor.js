@@ -5,6 +5,7 @@ define('RemoteStateChangeMonitor', ['jquery'], function($) {
 	
 	$.extend(RemoteStateChangeMonitor.prototype, {
 		defaultOptions : {
+			maxAttempts : 30,
 			'pingFrequency' : 1000,
 			'statusChanged' : undefined,
 			'statusChangedTarget' : undefined,
@@ -21,6 +22,7 @@ define('RemoteStateChangeMonitor', ['jquery'], function($) {
 			this.options = $.extend({}, this.defaultOptions, options);
 			this.options.checkStatusAjax.success = $.proxy(this.pingSuccessCheck, this);
 			this.options.checkStatusAjax.error = $.proxy(this.pingError, this);
+			this.attempts = 0;
 		},
 		
 		performPing : function() {
@@ -31,7 +33,7 @@ define('RemoteStateChangeMonitor', ['jquery'], function($) {
 		
 		pingSuccessCheck : function(data) {
 			var isDone = this.options.checkStatus.call(this.options.checkStatusTarget, data);
-			if (isDone) {
+			if (isDone || (this.options.maxAttempts > 0 && ++this.attempts >= this.options.maxAttempts)) {
 				if (this.pingId != null) {
 					clearInterval(this.pingId);
 					this.pingId = null;

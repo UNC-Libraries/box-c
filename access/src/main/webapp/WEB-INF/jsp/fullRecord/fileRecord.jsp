@@ -21,7 +21,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<div class="onecol">
+<div class="onecol full_record_top">
 	<div class="contentarea">
 		<c:set var="thumbUrl">
 			<c:choose>
@@ -60,20 +60,22 @@
 			</c:choose>
 		</a>
 		<div class="collinfo">
-			<h2><c:out value="${briefObject.title}" /></h2>
-			<c:if test="${not empty briefObject.creator}">
-				<p class="smaller"><span class="bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span> 
-					<c:forEach var="creatorObject" items="${briefObject.creator}" varStatus="creatorStatus">
-						<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">, </c:if>
-					</c:forEach>
+			<div class="collinfo_metadata">
+				<h2><c:out value="${briefObject.title}" /></h2>
+				<c:if test="${not empty briefObject.creator}">
+					<p class="smaller"><span class="bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span> 
+						<c:forEach var="creatorObject" items="${briefObject.creator}" varStatus="creatorStatus">
+							<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">, </c:if>
+						</c:forEach>
+					</p>
+				</c:if>
+				<p class="smaller">
+					<span class="bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" />
+					<c:if test="${briefObject.filesizeSort != -1}">  | <span class="bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if>
+					<c:if test="${not empty briefObject.dateAdded}">  | <span class="bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></c:if>
+					<c:if test="${not empty briefObject.dateCreated}">  | <span class="bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></c:if>
 				</p>
-			</c:if>
-			<p class="smaller">
-				<span class="bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" />
-				<c:if test="${briefObject.filesizeSort != -1}">  | <span class="bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if>
-				<c:if test="${not empty briefObject.dateAdded}">  | <span class="bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></c:if>
-				<c:if test="${not empty briefObject.dateCreated}">  | <span class="bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></c:if>
-			</p>
+			</div>
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<div class="actionlink left download">

@@ -529,10 +529,13 @@ div#username_wrap {
 	word-wrap: break-word;
 }
 
+.searchitem h2 > span, .full_record_top h2 > span {
+	font-size: 11px;
+}
+
 .searchitem_container_count {
 	color: #676777;
 	white-space: nowrap;
-	font-size: 11px;
 	line-height: 14px;
 	margin-bottom: 4px;
 	width: 100%;
@@ -542,6 +545,10 @@ div#username_wrap {
 	width: 760px;
 	float: left;
 	margin-bottom: 13px;
+}
+
+.collinfo_metadata {
+	min-height: 90px;
 }
 
 .fileinfo {
@@ -1300,6 +1307,44 @@ p.navigation_bar a {
 
 .inline_viewer {
 	display: none;
+}
+
+/** Deleted search results */
+.searchitem.deleted {
+	color: #888;
+}
+
+.deleted .full_record_top h2, .searchitem.deleted h2 > a {
+	color: #aaa;
+	background: url("/static/images/trash_can.png") no-repeat -2px 1px;
+	padding-left: 20px;
+}
+
+.deleted .full_record_top h2:after {
+	padding-left: 10px;
+}
+
+.deleted .full_record_top h2:after, .searchitem.deleted h2:after {
+	content: "Deleted";
+	font-size: 11px;
+	color: #bbb;
+}
+
+.searchitem.deleted h2 > span, .deleted .full_record_top h2 > span {
+	color: #bbb;
+}
+
+.deleted .actionlink > a {
+	background-color: #567C8D;
+	border-color: #415E6B;
+}
+
+.searchitem.deleted .thumb_container, .deleted .full_record_top .thumb_container {
+	opacity: .5;
+}
+
+.deleted .collinfo {
+	color: #888;
 }#pagewrap {
   width: 100%;
 }

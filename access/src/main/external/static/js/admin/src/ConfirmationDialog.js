@@ -24,48 +24,55 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		this._create(options);
 	};
 	
+	var defaultOptions = {
+		promptText : 'Are you sure?',
+		confirmFunction : undefined,
+		confirmTarget : undefined,
+		confirmText : 'Yes',
+		confirmMatchText : null,
+		cancelTarget : undefined,
+		cancelFunction : undefined,
+		cancelText : 'Cancel',
+		solo : true,
+		additionalButtons : undefined,
+		autoOpen : false,
+		addClass : undefined,
+		destroyOnClose : false
+	};
+	
+	var defaultDialog = {
+		modal : false,
+		minHeight : 60,
+		autoOpen : false,
+		resizable : false,
+		dialogClass : "no_titlebar confirm_dialog",
+		position : {
+			my : "right top",
+			at : "right bottom"
+		}
+	};
+	
 	$.extend(ConfirmationDialog.prototype, {
-		options : {
-			promptText : 'Are you sure?',
-			confirmFunction : undefined,
-			confirmTarget : undefined,
-			confirmText : 'Yes',
-			cancelTarget : undefined,
-			cancelFunction : undefined,
-			cancelText : 'Cancel',
-			solo : true,
-			additionalButtons : undefined,
-			autoOpen : false,
-			addClass : undefined
-		},
-		
-		dialogOptions : {
-			modal : false,
-			minHeight : 60,
-			autoOpen : false,
-			resizable : false,
-			dialogClass : "no_titlebar confirm_dialog",
-			position : {
-				my : "right top",
-				at : "right bottom"
-			}
-		},
-		
 		_create : function(options) {
-			$.extend(this.options, options);
+			this.options = $.extend({}, defaultOptions, options);
 			if ('dialogOptions' in this.options)
-				$.extend(this.dialogOptions, this.options.dialogOptions);
+				this.dialogOptions = $.extend({}, defaultDialog, this.options.dialogOptions);
+			else this.dialogOptions = $.extend({}, defaultDialog);
+			
 			var self = this;
 			
 			this.confirmDialog = $("<div class='confirm_dialogue'></div>");
-			if (this.options.promptText === undefined) {
-				this.confirmDialog.append("<p>Are you sure?</p>");
-			} else {
-				this.confirmDialog.append("<p>" + this.options.promptText + "</p>");
+			
+			this.setPromptText(this.options.promptText);
+			
+			if (this.options.confirmMatchText) {
+				this.confirmMatchInput = $("<input type='text' />");
+				$("<p class='confirm_match_input'/>").append(this.confirmMatchInput).appendTo(this.confirmDialog);
 			}
+			
 			$("body").append(this.confirmDialog);
 			
-			var buttonsObject = this._generateButtons();
+			var buttons = this._generateButtons();
 			
 			$.extend(this.dialogOptions, {
 				open : function() {
@@ -76,42 +83,80 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 						});
 					}
 				},
-				buttons : buttonsObject
+				buttons : buttons
 			});
+			
+			if (this.options.destroyOnClose)
+				this.dialogOptions.close(function(){
+					self.remove();
+				});
+			
 			this.confirmDialog.dialog(this.dialogOptions);
 			if (this.options.addClass)
 				this.confirmDialog.addClass(this.options.addClass);
+				
+			if (this.options.confirmMatchText) {
+				this.confirmMatchInput.keyup(function(){
+					$(".confirm_dialog_confirm").button('option', 'disabled', !self.inputMatches());
+				});
+				$(".confirm_dialog_confirm").button('option', 'disabled', true);
+			}
+				
 			if (this.options.autoOpen)
 				this.open();
 		},
 		
 		_generateButtons : function() {
-			var buttonsObject = {}, self = this;
+			var buttonsObject = {};
+			var self = this;
 			
-			buttonsObject[this.options.cancelText] = function() {
-				if (self.options.cancelFunction) {
-					var result = self.options.cancelFunction.call(self.options.cancelTarget);
-					if (result !== undefined && !result)
-						return;
+			var buttons = [
+				{
+					id : 'cancel',
+					class : 'confirm_dialog_cancel',
+					text : self.options.cancelText,
+					click : function() {
+						if (self.options.cancelFunction) {
+							var result = self.options.cancelFunction.call(self.options.cancelTarget);
+							if (result !== undefined && !result)
+								return;
+						}
+						$(this).dialog("close");
+					}
+				}, {
+					id : 'cancel',
+					class : 'confirm_dialog_confirm',
+					text : self.options.confirmText,
+					click : function() {
+						if (self.options.confirmFunction) {
+							if (!self.inputMatches())
+								return;
+							var result = self.options.confirmFunction.call(self.options.confirmTarget);
+							if (result !== undefined && !result)
+								return;
+						}
+						$(this).dialog("close");
+					}
 				}
-				$(this).dialog("close");
-			};
-			
-			buttonsObject[this.options.confirmText] = function() {
-				if (self.options.confirmFunction) {
-					var result = self.options.confirmFunction.call(self.options.confirmTarget);
-					if (result !== undefined && !result)
-						return;
-				}
-				$(this).dialog("close");
-			};
+			];
 			
 			// Add any additional buttons in
 			if (this.options.additionalButtons) {
-				for (var index in this.options.additionalButtons)
-					buttonsObject[index] = this.options.additionalButtons[index];
+				for (var index in this.options.additionalButtons) {
+					buttons.push({
+						id : 'confirm_' + index,
+						text : index,
+						click : this.options.additionalButtons[index]
+					});
+				}
 			}
-			return buttonsObject;
+			
+			return buttons;
+		},
+		
+		inputMatches : function () {
+			return !this.confirmMatchInput || (this.confirmMatchInput
+				&& this.confirmMatchInput.val().substring(0, this.options.confirmMatchText.length).toUpperCase() == this.options.confirmMatchText.toUpperCase());
 		},
 		
 		open : function () {
@@ -125,6 +170,17 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 		remove : function() {
 			this.confirmDialog.dialog('close');
 			this.confirmDialog.remove();
+		},
+		
+		setPromptText : function(text) {
+			if (text === undefined) {
+				this.confirmDialog.append("<p>Are you sure?</p>");
+			} else {
+				if (text instanceof jQuery)
+					this.confirmDialog.append(text);
+				else 
+					this.confirmDialog.append("<p>" + text + "</p>");
+			}
 		}
 	});
 	return ConfirmationDialog;

@@ -57,7 +57,7 @@ public class ContentModelHelper {
 				"depositPackageSubType"), inheritPermissions("inheritPermissions", NamespaceConstants.CDR_ACL_NS_URI), embargoUntil(
 				"embargo-until", NamespaceConstants.CDR_ACL_NS_URI), dataAccessCategory("data-access-category",
 				NamespaceConstants.CDR_ACL_NS_URI), userRole("user-role", NamespaceConstants.CDR_ACL_NS_URI), isPublished(
-				"isPublished");
+				"isPublished"), isActive("isActive", NamespaceConstants.CDR_ACL_NS_URI);
 		private URI uri;
 		private String predicate;
 		private String namespace;

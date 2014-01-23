@@ -23,23 +23,23 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 
 public class SolrUpdateMessageFilter implements MessageFilter {
-	
-	public SolrUpdateMessageFilter(){
+
+	public SolrUpdateMessageFilter() {
 	}
-	
+
 	@Override
-	public String getConductor(){
+	public String getConductor() {
 		return SolrUpdateConductor.identifier;
 	}
-	
+
 	@Override
 	public boolean filter(ActionMessage message) {
 		if (message == null)
 			return false;
-		
+
 		if (message instanceof SolrUpdateRequest)
 			return true;
-		
+
 		String action = message.getQualifiedAction();
 		if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)
 				|| JMSMessageUtil.CDRActions.REORDER.equals(action) || JMSMessageUtil.CDRActions.REINDEX.equals(action)
@@ -48,13 +48,14 @@ public class SolrUpdateMessageFilter implements MessageFilter {
 		}
 		if (!(message instanceof FedoraEventMessage))
 			return false;
-		if (JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action))
+		if (JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)
+				|| JMSMessageUtil.FedoraActions.MODIFY_OBJECT.equals(action))
 			return true;
-		String datastream = ((FedoraEventMessage)message).getDatastream();
+		String datastream = ((FedoraEventMessage) message).getDatastream();
 		return ContentModelHelper.Datastream.MD_DESCRIPTIVE.equals(datastream)
 				&& (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
-				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action)
-				|| JMSMessageUtil.FedoraActions.PURGE_DATASTREAM.equals(action)
-				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action));
+						|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action)
+						|| JMSMessageUtil.FedoraActions.PURGE_DATASTREAM.equals(action) || JMSMessageUtil.FedoraActions.ADD_DATASTREAM
+							.equals(action));
 	}
 }

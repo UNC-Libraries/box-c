@@ -1,29 +1,12 @@
-/*
-
-    Copyright 2008 The University of North Carolina at Chapel Hill
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-
- */
-define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/resultEntry',
-		'ModalLoadingOverlay', 'DeleteObjectButton',	'PublishObjectButton', 'EditAccessControlForm'], 
-		function($, ui, _, RemoteStateChangeMonitor, resultEntryTemplate, ModalLoadingOverlay) {
+define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverlay'], 
+		function($, ui, _, ModalLoadingOverlay) {
 	var defaultOptions = {
 			animateSpeed : 100,
 			metadata : null,
 			selected : false,
 			selectable : true,
-			selectCheckboxInitialState : false
+			selectCheckboxInitialState : false,
+			template : undefined
 		};
 	
 	function ResultObject(options) {
@@ -35,9 +18,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 	ResultObject.prototype.init = function(metadata) {
 		this.metadata = metadata;
 		this.pid = metadata.id;
-		this.actionMenuInitialized = false;
 		this.isContainer = this.metadata.type != "File";
-		var newElement = $(resultEntryTemplate({metadata : metadata, isContainer : this.isContainer}));
+		this.isDeleted = $.inArray("Active", this.metadata.status) == -1;
+		var newElement = $(this.options.template({metadata : metadata, isContainer : this.isContainer, isDeleted : this.isDeleted}));
 		this.checkbox = null;
 		if (this.element) {
 			if (this.actionMenu)
@@ -46,7 +29,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		}
 		this.element = newElement;
 		this.element.data('resultObject', this);
-		this.links = [];
 		if (this.options.selected || this.selected)
 			this.select();
 	};
@@ -55,31 +37,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 		if (this.overlay) {
 			this.overlay.close();
 		}
-	};
-
-	ResultObject.prototype.initializePublishLinks = function(baseElement) {
-		var links = baseElement.find(".publish_link");
-		if (!links)
-			return;
-		this.links['publish'] = links;
-		var obj = this;
-		$(links).publishObjectButton({
-			pid : obj.pid,
-			parentObject : obj,
-			defaultPublish : $.inArray("Unpublished", this.metadata.status) == -1
-		});
-	};
-
-	ResultObject.prototype.initializeDeleteLinks = function(baseElement) {
-		var links = baseElement.find(".delete_link");
-		if (!links)
-			return;
-		this.links['delete'] = links;
-		var obj = this;
-		$(links).deleteObjectButton({
-			pid : obj.pid,
-			parentObject : obj
-		});
 	};
 
 	ResultObject.prototype.disable = function() {
@@ -167,30 +124,12 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			this.element.removeClass("idle").addClass("followup", this.options.animateSpeed);
 		}
 	};
-
-	ResultObject.prototype.getActionLinks = function(linkNames) {
-		return this.links[linkNames];
-	};
 	
 	ResultObject.prototype.isPublished = function() {
 		if (!$.isArray(this.metadata.status)){
 			return true;
 		}
 		return $.inArray("Unpublished", this.metadata.status) == -1;
-	};
-	
-	ResultObject.prototype.publish = function() {
-		var links = this.links['publish'];
-		if (links.length == 0)
-			return;
-		$(links[0]).publishObjectButton('activate');
-	};
-	
-	ResultObject.prototype['delete'] = function() {
-		var links = this.links['delete'];
-		if (links.length == 0)
-			return;
-		$(links[0]).deleteObjectButton('activate');
 	};
 
 	ResultObject.prototype.deleteElement = function() {
@@ -228,52 +167,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			});
 		}
 		this.overlay[fnName].apply(this.overlay, fnArgs);
-	};
-	
-	ResultObject.prototype.refresh = function(immediately) {
-		this.updateOverlay('open');
-		this.setStatusText('Refreshing...');
-		if (immediately) {
-			this.refreshData(true);
-			return;
-		}
-		var self = this;
-		var followupMonitor = new RemoteStateChangeMonitor({
-			'checkStatus' : function(data) {
-				return (data != self.metadata._version_);
-			},
-			'checkStatusTarget' : this,
-			'statusChanged' : function(data) {
-				self.refreshData(true);
-			},
-			'statusChangedTarget' : this, 
-			'checkStatusAjax' : {
-				url : "/services/api/status/item/" + self.pid + "/solrRecord/version",
-				dataType : 'json'
-			}
-		});
-		
-		followupMonitor.performPing();
-	};
-	
-	ResultObject.prototype.refreshData = function(clearOverlay) {
-		var self = this;
-		$.ajax({
-			url : self.options.resultObjectList.options.refreshEntryUrl + self.pid,
-			dataType : 'json',
-			success : function(data, textStatus, jqXHR) {
-				self.init(data);
-				if (self.overlay)
-					self.overlay.element = self.element;
-				if (clearOverlay)
-					self.updateOverlay("close");
-			},
-			error : function(a, b, c) {
-				if (clearOverlay)
-					self.updateOverlay("close");
-				console.log(c);
-			}
-		});
 	};
 	
 	return ResultObject;

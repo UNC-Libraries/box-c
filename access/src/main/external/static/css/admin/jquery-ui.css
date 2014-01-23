@@ -1019,23 +1019,23 @@ body .ui-tooltip {
 .context-menu-list {
 	margin: 0;
 	padding: 0;
-	min-width: 120px;
+	min-width: 165px;
 	max-width: 250px;
 	display: inline-block;
 	position: absolute;
 	list-style-type: none;
 	border: 1px solid #DDD;
 	background: #FFFFFF;
-	-webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-	-moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-	-ms-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-	-o-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+	-webkit-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+	-moz-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+	-ms-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+	-o-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 	text-align: left;
 }
 
 .context-menu-item {
-	padding: 2px 2px 2px 5px;
+	padding: 2px 4px 2px 16px;
 	text-indent: 0;
 	margin: 0;
 	position: relative;
@@ -1063,7 +1063,7 @@ body .ui-tooltip {
 }
 
 .context-menu-item.disabled {
-	color: #666;
+	color: #999;
 }
 
 .context-menu-input.hover,.context-menu-item.disabled.hover {
@@ -1163,4 +1163,24 @@ body .ui-tooltip {
 
 .context-menu-accesskey {
 	text-decoration: underline;
+}
+
+.result_entry_context_menu:before {
+    content: attr(data-menutitle);
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    background: linear-gradient(to bottom, #f0f0f0, #fefefe);
+	background-color: #fdfdfd;
+    padding: 3px 1px 1px 5px;
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+    font-size: 10px;
+    font-weight: bold;
+}
+.result_entry_context_menu :first-child {
+    margin-top: 21px;
 }

@@ -23,7 +23,7 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <c:set var="defaultWebData" value="${briefObject.defaultWebData}"/>
 
-<div class="onecol">
+<div class="onecol full_record_top">
 	<div class="contentarea">
 		<c:set var="thumbUrl">
 			<c:choose>

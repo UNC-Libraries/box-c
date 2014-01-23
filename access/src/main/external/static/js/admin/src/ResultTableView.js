@@ -1,7 +1,6 @@
-define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'ParentResultObject', 'AddMenu', 
-		'ResultObjectActionMenu', 'PublishBatchButton', 'UnpublishBatchButton', 'DeleteBatchButton', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
-		function($, ui, ResultObjectList, URLUtilities, ParentResultObject, AddMenu, ResultObjectActionMenu,
-				PublishBatchButton, UnpublishBatchButton, DeleteBatchButton, ConfirmationDialog, MoveDropLocation) {
+define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
+		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
 	$.widget("cdr.resultTableView", {
 		options : {
 			enableSort : true,
@@ -10,41 +9,85 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			enableArrange : false,
 			enableMove : false,
 			pagingActive : false,
-			container : undefined
+			container : undefined,
+			resultTableTemplate : "tpl!../templates/admin/resultTableView",
+			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
+			resultFields : undefined,
+			resultHeader : undefined,
+			postRender : undefined,
+			resultActions : undefined,
+			headerHeightClass : ''
 		},
 		
 		_create : function() {
-			this.$resultTable = this.element.find('.result_table').eq(0);
-			var fragment = $(document.createDocumentFragment());
-			this.resultObjectList = new ResultObjectList({
-				'metadataObjects' : this.options.metadataObjects, 
-				parent : this.$resultTable.children('tbody')
+			// Instantiate the result table view and add it to the page
+			var self = this;
+			
+			this.actionHandler = this.options.actionHandler;
+			this.actionHandler.addToBaseContext('resultTable', this);
+			
+			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
+				var headerHeightClass = self.options.headerHeightClass;
+				if (self.options.container) {
+					if (self.options.container.ancestorPath)
+						headerHeightClass += " with_path";
+					else
+						headerHeightClass += " with_container";
+				}
+				
+				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container,
+						resultHeader : self.options.resultHeader, headerHeightClass : headerHeightClass}));
+				self.$resultTable = self.$resultView.find('.result_table').eq(0);
+				self.$resultHeaderTop = self.$resultView.find('.result_header_top').eq(0);
+				self.element.append(self.$resultView);
+			
+				if (self.options.postRender)
+					self.options.postRender(self);
+			
+				self.resultUrl = self.options.resultUrl;
+			
+				// Generate result entries
+				var fragment = $(document.createDocumentFragment());
+				self.resultObjectList = new ResultObjectList({
+					'metadataObjects' : self.options.metadataObjects, 
+					parent : self.$resultTable.children('tbody'),
+					resultEntryTemplate : self.options.resultEntryTemplate
+				});
+			
+				// No results message
+				if (self.options.metadataObjects.length == 0) {
+					self.$resultTable.after("<div class='no_results'>No matching results</div>");
+				}
+			
+				// Activate sorting
+				if (self.options.enableSort)
+					self._initSort();
+				
+				// Initialize batch operation buttons
+				self._initBatchOperations();
+			
+				self._initEventHandlers();
+			
+				// Activate the result entry context menus, on the action gear and right clicking
+				self.contextMenus = [new ResultObjectActionMenu({
+					selector : ".action_gear",
+					containerSelector : ".res_entry,.container_entry",
+					actionHandler : self.actionHandler
+				}), new ResultObjectActionMenu({
+					trigger : 'right',
+					positionAtTrigger : false,
+					selector : ".res_entry td",
+					containerSelector : ".res_entry,.container_entry",
+					actionHandler : self.actionHandler,
+					multipleSelectionEnabled : true,
+					resultList : self.resultObjectList,
+					batchActions : self.options.resultActions
+				})];
+			
+				// Initialize click and drag operations
+				self._initMoveLocations();
+				self._initReordering();
 			});
-			if (this.options.metadataObjects.length == 0) {
-				this.$resultTable.after("<div class='no_results'>No matching results</div>");
-			}
-			if (this.options.container) {
-				this.containerObject = new ParentResultObject({metadata : this.options.container, 
-						resultObjectList : this.resultObjectList, element : $(".container_entry")});
-				this._initializeAddMenu();
-			}
-			
-			if (this.options.enableSort)
-				this._initSort();
-			this._initBatchOperations();
-			this._initEventHandlers();
-			this.actionMenu = [new ResultObjectActionMenu({
-				selector : ".action_gear",
-				containerSelector : ".res_entry,.container_entry"
-			}), new ResultObjectActionMenu({
-				trigger : 'right',
-				positionAtTrigger : false,
-				selector : ".res_entry td",
-				containerSelector : ".res_entry,.container_entry"
-			})];
-			
-			this._initMoveLocations();
-			this._initReordering();
 		},
 		
 		// Initialize sorting headers according to whether or not paging is active
@@ -75,7 +118,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 								$this.addClass('desc');
 							}
 						}
-						var sortUrl = URLUtilities.setParameter(self.options.resultUrl, 'sort', sortField + (sortOrder? ",reverse" : ""));
+						var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', sortField + (sortOrder? ",reverse" : ""));
 						this.children[0].href = sortUrl;
 					}
 				});
@@ -251,68 +294,34 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				for (var index in resultObjects) {
 					resultObjects[index][toggleFn]();
 				}
+				self.selectionUpdated();
 			}).children("input").prop("checked", false);
-			
-			var publishButton = $(".publish_selected", self.element);
-			var publishBatch = new PublishBatchButton({
-				'resultObjectList' : this.resultObjectList, 
-				'workFunction' : function() {
-						this.setStatusText('Publishing...');
-						this.updateOverlay('open');
-					}, 
-				'followupFunction' : function() {
-					this.setStatusText('Publishing....');
-				}, 
-				'completeFunction' : function(){
-					this.refresh(true);
-				}
-			}, publishButton);
-			publishButton.click(function(){
-				publishBatch.activate();
-			});
-			var unpublishButton = $(".unpublish_selected", self.element);
-			var unpublishBatch = new UnpublishBatchButton({
-				'resultObjectList' : this.resultObjectList, 
-				'workFunction' : function() {
-						this.setStatusText('Unpublishing...');
-						this.updateOverlay('open');
-					}, 
-				'followupFunction' : function() {
-					this.setStatusText('Unpublishing....');
-				}, 
-				'completeFunction' : function(){
-					this.refresh(true);
-				}
-			}, unpublishButton);
-			unpublishButton.click(function(){
-				unpublishBatch.activate();
-			});
-			var deleteButton = $(".delete_selected", self.element);
-			var deleteBatch = new DeleteBatchButton({
-				'resultObjectList' : this.resultObjectList, 
-				'workFunction' : function() {
-						this.setStatusText('Deleting...');
-						this.updateOverlay('open');
-					}, 
-				'followupFunction' : function() {
-						this.setStatusText('Cleaning up...');
-					}, 
-				'completeFunction' : 'deleteElement',
-				confirmAnchor : deleteButton
-			}, deleteButton);
-			deleteButton.click(function(){
-				deleteBatch.activate();
-			});
+
+			this.actionMenu = new ResultTableActionMenu({
+				resultObjectList : this.resultObjectList, 
+				groups : this.options.resultActions,
+				actionHandler : this.actionHandler
+			}, $(".result_table_action_menu", this.$resultHeaderTop));
 		},
 		
 		_initEventHandlers : function() {
 			var self = this;
 			$(document).on('click', ".res_entry", function(e){
 				$(this).data('resultObject').toggleSelect();
+				self.selectionUpdated();
 			});
 			this.$resultTable.on('click', ".res_entry a", function(e){
 				e.stopPropagation();
 			});
+		},
+		
+		selectionUpdated : function() {
+			this.actionMenu.selectionUpdated();
+			var selectedCount = 0;
+			for (var index in this.resultObjectList.resultObjects) {
+				if (this.resultObjectList.resultObjects[index].isSelected()) selectedCount++;
+			}
+			this.contextMenus[1].setSelectedCount(selectedCount);
 		},
 		
 		//Initializes the droppable elements used in move operations
@@ -348,7 +357,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			var dropLocation = new MoveDropLocation($dropLocation, {
 				dropTargetSelector : dropTargetSelector,
 				dropTargetGetDataFunction : dropTargetGetDataFunction,
-				manager : this
+				manager : this,
+				actionHandler : this.actionHandler
 			});
 			this.dropLocations.push(dropLocation);
 		},
@@ -447,15 +457,6 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			} else {
 				$("th.sort_col").addClass("sorting");
 			}
-		},
-		
-		// Initialize the menu for adding new items
-		_initializeAddMenu : function() {
-			this.addMenu = new AddMenu({
-				container : this.options.container,
-				selector : "#add_menu",
-				alertHandler : this.options.alertHandler
-			});
 		}
 	});
 });

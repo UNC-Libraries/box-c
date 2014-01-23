@@ -23,14 +23,17 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <jsp:useBean id="accessGroupConstants" class="edu.unc.lib.dl.acl.util.AccessGroupConstants" scope="request"/>
 
-<c:choose>
+<c:if test="${cdr:contains(metadata.status, 'Deleted')}">
+	<c:set var="isDeleted" value="deleted" scope="page"/>
+</c:if>
+<%--<c:choose>
 	<c:when test="${param.resultNumber % 2 == 0 }">
 		<c:set var="resultEntryClass" value="even" scope="page"/>
 	</c:when>
 	<c:otherwise>
 		<c:set var="resultEntryClass" value="" scope="page"/>
 	</c:otherwise>
-</c:choose>
+</c:choose>--%>
 <c:choose>
 	<c:when test="${not empty metadata.countMap}">
 		<c:set var="childCount" value="${metadata.countMap.child}"/>
@@ -40,7 +43,7 @@
 	</c:otherwise>
 </c:choose>
 <c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, metadata)}"/>
-<div id="entry${metadata.id}" class="searchitem ${resultEntryClass}">
+<div id="entry${metadata.id}" class="searchitem ${isDeleted}">
 	<div class="contentarea">
 		<%-- Link to full record of the current item --%>
 		<c:url var="fullRecordUrl" scope="page" value="record/${metadata.id}">
@@ -117,18 +120,20 @@
 			<c:choose>
 				<%-- Metadata body for containers --%>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection || metadata.resourceType == searchSettings.resourceTypeFolder}">
-					<c:choose>
-						<c:when test="${hasListAccessOnly}">
-							<h2><c:out value="${metadata.title}"/>&nbsp;<span class="searchitem_container_count">(access by request)</span></h2>
-						</c:when>
-						<c:otherwise>
-							<h2><a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>
+					<h2>
+						<c:choose>
+							<c:when test="${hasListAccessOnly}">
+								<c:out value="${metadata.title}"/>&nbsp;<span class="searchitem_container_count">(access by request)</span>
+							</c:when>
+							<c:otherwise>
+								<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>
 								<c:if test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
 									<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
 								</c:if>
-							</h2>
-						</c:otherwise>
-					</c:choose>
+							</c:otherwise>
+						</c:choose>
+					</h2>
+					
 					<div class="halfwidth">
 						<c:choose>
 							<c:when test="${not empty metadata.creator}">
@@ -156,18 +161,19 @@
 				</c:when>
 				<%-- Metadata body for items --%>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
-					<c:choose>
-						<c:when test="${hasListAccessOnly}">
-							<h2><c:out value="${metadata.title}"/></h2>
-						</c:when>
-						<c:otherwise>
-							<h2><a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
+					<h2>
+						<c:choose>
+							<c:when test="${hasListAccessOnly}">
+								<c:out value="${metadata.title}"/>
+							</c:when>
+							<c:otherwise>
+								<a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
 								<c:if test="${metadata.resourceType == searchSettings.resourceTypeAggregate && childCount > 1}">
 									<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
 								</c:if>
-							</h2>
-						</c:otherwise>
-					</c:choose>
+							</c:otherwise>
+						</c:choose>
+					</h2>
 					<div class="halfwidth">
 						<c:if test="${not empty metadata.creator}">
 							<p>${searchSettings.searchFieldLabels['CREATOR']}:
@@ -183,11 +189,13 @@
 								<c:if test="${fn:length(metadata.creator) > 5}">; et al.</c:if>
 							</p>
 						</c:if>
-						<p>
-							<c:url var="parentUrl" scope="page" value="record/${metadata.parentCollection}">
-							</c:url>
-							${searchSettings.searchFieldLabels['PARENT_COLLECTION']}: <a href="<c:out value='${parentUrl}' />"><c:out value="${metadata.parentCollectionObject.displayValue}"/></a>
-						</p>
+						<c:if test="${not empty metadata.parentCollection}">
+							<p>
+								<c:url var="parentUrl" scope="page" value="record/${metadata.parentCollection}">
+								</c:url>
+								${searchSettings.searchFieldLabels['PARENT_COLLECTION']}: <a href="<c:out value='${parentUrl}' />"><c:out value="${metadata.parentCollectionObject.displayValue}"/></a>
+							</p>
+						</c:if>
 					</div>
 					<div class="halfwidth">
 						<p>${searchSettings.searchFieldLabels['DATE_ADDED']}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateAdded}" /></p>
@@ -272,16 +280,11 @@
 						</p>
 					</c:if>
 					
-					<c:choose>
-						<c:when test="${cdr:contains(metadata.readGroup, accessGroupConstants.PUBLIC_GROUP)}">
-							
-						</c:when>
-						<c:otherwise>
-							<p class="right">
-								Restricted Access
-							</p>
-						</c:otherwise>
-					</c:choose>
+					<c:if test="${!cdr:contains(metadata.readGroup, accessGroupConstants.PUBLIC_GROUP)}">
+						<p class="right">
+							Restricted Access
+						</p>
+					</c:if>
 					
 					<c:if test="${childCount > 1}">
 						<p class="right">
