@@ -54,6 +54,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 			selector: this.options.selector,
 			trigger: this.options.trigger,
 			className: 'result_entry_context_menu',
+			zIndex: 101,
 			events : {
 				show: function(event) {
 					if (!self.hasMultipleSelected() || self.showingSingleMenu) {

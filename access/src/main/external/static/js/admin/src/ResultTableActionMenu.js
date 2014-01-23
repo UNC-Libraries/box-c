@@ -100,10 +100,10 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 			var actionGroup = this.actionGroups[i];
 			var visibleChildren = actionGroup.children(".container_action").not(".hidden");
 			if (visibleChildren.length == 0) {
-				actionGroup.hide();
+				actionGroup.css('display', 'none');
 			} else {
 				visibleChildren.removeClass("first_visible").first().addClass("first_visible");
-				actionGroup.show();
+				actionGroup.css('display', 'inline-block')
 			}
 		}
 	};

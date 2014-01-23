@@ -2352,6 +2352,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			selector: this.options.selector,
 			trigger: this.options.trigger,
 			className: 'result_entry_context_menu',
+			zIndex: 101,
 			events : {
 				show: function(event) {
 					if (!self.hasMultipleSelected() || self.showingSingleMenu) {
@@ -2754,10 +2755,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			var actionGroup = this.actionGroups[i];
 			var visibleChildren = actionGroup.children(".container_action").not(".hidden");
 			if (visibleChildren.length == 0) {
-				actionGroup.hide();
+				actionGroup.css('display', 'none');
 			} else {
 				visibleChildren.removeClass("first_visible").first().addClass("first_visible");
-				actionGroup.show();
+				actionGroup.css('display', 'inline-block')
 			}
 		}
 	};
