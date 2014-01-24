@@ -116,7 +116,7 @@
 		</constructor-arg>
 	</bean>
 
-	<bean id="CDRMETS2N3BagJob" class="edu.unc.lib.bag.CDRMETS2N3BagJob"
+	<bean id="CDRMETS2N3BagJob" class="edu.unc.lib.bag.normalize.CDRMETS2N3BagJob"
 		scope="prototype">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />

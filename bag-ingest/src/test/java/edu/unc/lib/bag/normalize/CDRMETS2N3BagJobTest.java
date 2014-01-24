@@ -1,4 +1,4 @@
-package edu.unc.lib.bag;
+package edu.unc.lib.bag.normalize;
 
 import static org.junit.Assert.fail;
 
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.bag.normalize.CDRMETS2N3BagJob;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ZipFileUtil;
 

@@ -1,6 +1,7 @@
 package edu.unc.lib.bag;
 
 import static edu.unc.lib.dl.util.DepositBagInfo.PACKAGING_TYPE;
+import edu.unc.lib.bag.normalize.CDRMETS2N3BagJob;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import gov.loc.repository.bagit.Bag;

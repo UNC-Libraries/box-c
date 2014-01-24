@@ -90,6 +90,7 @@ public abstract class AbstractBagJob implements Runnable {
 	        	// Get an exclusive lock on the whole file
 	            lock = channel.lock();
 			    out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
+			    out.append("\n");
 			    new XMLOutputter(Format.getPrettyFormat()).output(event, out);
 			    out.close();
 	        } catch(IOException e) {

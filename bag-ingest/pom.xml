@@ -57,6 +57,11 @@
     	<groupId>edu.unc.lib.cdr</groupId>
     	<artifactId>fcrepo-clients</artifactId>
     </dependency>
+    <dependency>
+    	<groupId>jdom</groupId>
+    	<artifactId>jdom</artifactId>
+    	<version>1.1</version>
+    </dependency>
   </dependencies>
   
 	<build>

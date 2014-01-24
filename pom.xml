@@ -118,8 +118,7 @@
 		<module>sword-server</module>
 		<module>admin</module>
 		<module>access-common</module>
-    <module>microservices</module>
-    <module>bag-ingest</module>
+    		<module>bag-ingest</module>
   </modules>
 
 	<reporting>

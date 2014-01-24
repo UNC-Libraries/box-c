@@ -1,4 +1,4 @@
-package edu.unc.lib.bag;
+package edu.unc.lib.bag.normalize;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,6 +25,8 @@ import org.xml.sax.SAXException;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
+import edu.unc.lib.bag.AbstractBagJob;
+import edu.unc.lib.bag.normalize.METSGraphExtractor.FilePathFunction;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.METSParseException;
@@ -84,19 +86,33 @@ public class CDRMETS2N3BagJob extends AbstractBagJob {
 		Document mets = loadMETS();
 		assignPIDs(mets); // assign any missing PIDs
 		saveMETS(mets); // manifest updated to have record of all PIDs
-		makeArrangementGraph(mets);
-		//buildObjectProperties(mets);
-	}
 
-	private void makeArrangementGraph(Document mets) {
-		Model structure = ModelFactory.createDefaultModel();
-		METSGraphExtractor extractor = new METSGraphExtractor(structure, mets, this.getDepositPID());
-		Model arrangement = extractor.extractModel();
-		File arrangementFile = new File(this.getBagDirectory(), "arrangement.n3");
+		Model model = ModelFactory.createDefaultModel();
+		METSGraphExtractor extractor = new METSGraphExtractor(mets, this.getDepositPID());
+		extractor.addArrangement(model);
+		extractor.addFileAssociations(model);
+		extractor.addAccessControls(model);
+		final File modsFolder = new File(getBagDirectory(), "description");
+		modsFolder.mkdir();
+		extractor.saveDescriptions(new FilePathFunction() {
+			@Override
+			public String getPath(String piduri) {
+				String uuid = new PID(piduri).getUUID();
+				return new File(modsFolder, uuid+".xml").getAbsolutePath();
+			}
+		});
+		saveModel(model, "everything.n3");
+		// extract MODS files
+		
+		// addN3PackagingType();
+	}
+	
+	private void saveModel(Model model, String tagfilepath) {
+		File arrangementFile = new File(this.getBagDirectory(), tagfilepath);
 		FileOutputStream fos = null;
 		try {
 			fos = new FileOutputStream(arrangementFile);
-			arrangement.write(fos, "N-TRIPLE");
+			model.write(fos, "N-TRIPLE");
 		} catch(IOException e) {
 			throw new Error("Cannot open file "+arrangementFile, e);
 		} finally {

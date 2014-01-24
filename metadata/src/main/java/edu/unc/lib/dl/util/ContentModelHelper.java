@@ -51,7 +51,7 @@ public class ContentModelHelper {
 	public static enum CDRProperty {
 		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), defaultWebObject("defaultWebObject"), sourceData(
 				"sourceData"), indexText("indexText"), onyen("onyen"), slug("slug"), sortOrder("sortOrder"), hasSourceMimeType(
-				"hasSourceMimeType"), hasSourceFileSize("hasSourceFileSize"), hasChecksum("hasChecksum"), hasSurrogate(
+				"hasSourceMimeType"), hasSourceFileSize("hasSourceFileSize"), hasChecksum("hasChecksum"), hasCreatedDate("hasCreatedDate"), hasStagingLocation("hasStagingLocation"), hasSurrogate(
 				"hasSurrogate"), thumb("thumb"), derivedJP2("derivedJP2"), techData("techData"), depositedOnBehalfOf(
 				"depositedOnBehalfOf"), depositMethod("depositMethod"), depositPackageType("depositPackageType"), depositPackageSubType(
 				"depositPackageSubType"), inheritPermissions("inheritPermissions", NamespaceConstants.CDR_ACL_NS_URI), embargoUntil(
