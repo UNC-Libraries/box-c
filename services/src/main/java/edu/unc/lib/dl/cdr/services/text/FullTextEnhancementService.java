@@ -23,22 +23,22 @@ public class FullTextEnhancementService extends AbstractDatastreamEnhancementSer
 
 	public void init() {
 		try {
-			/*this.findCandidatesQueries = Arrays.asList(this.readFileAsString("techmd-candidates-no-ds.sparql"),
-					this.readFileAsString("techmd-candidates-stale-ds.sparql"));
+			this.findCandidatesQueries = Arrays.asList(this.readFileAsString("fulltext-candidates-no-ds.sparql"),
+					this.readFileAsString("fulltext-candidates-stale-ds.sparql"));
 			for (int i = 0; i < this.findCandidatesQueries.size(); i++) {
 				this.findCandidatesQueries.set(
 						i,
 						String.format(this.findCandidatesQueries.get(i),
 								this.tripleStoreQueryService.getResourceIndexModelUri()));
-			}*/
+			}
 			
 			this.isApplicableQueries = Arrays.asList(this.readFileAsString("fulltext-applicable-no-ds.sparql"),
 					this.readFileAsString("fulltext-applicable-stale-ds.sparql"));
 			this.applicableNoDSQuery = this.isApplicableQueries.get(0);
 			this.applicableStaleDSQuery = this.isApplicableQueries.get(1);
 			
-			/*this.findStaleCandidatesQuery = this.readFileAsString("techmd-stale-candidates.sparql");
-			this.lastAppliedQuery = this.readFileAsString("techmd-last-applied.sparql");*/
+			this.findStaleCandidatesQuery = this.readFileAsString("fulltext-stale-candidates.sparql");
+			this.lastAppliedQuery = this.readFileAsString("fulltext-last-applied.sparql");
 		} catch (IOException e) {
 			LOG.error("Failed to read service query", e);
 		}
