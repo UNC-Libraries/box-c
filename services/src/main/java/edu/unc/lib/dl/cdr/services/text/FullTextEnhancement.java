@@ -1,4 +1,4 @@
-package edu.unc.lib.dl.cdr.services.tika;
+package edu.unc.lib.dl.cdr.services.text;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -94,9 +94,9 @@ public class FullTextEnhancement extends AbstractFedoraEnhancement {
 		} catch (NotFoundException e) {
 			throw new EnhancementException(e, Severity.UNRECOVERABLE);
 		} catch (FedoraException e) {
-			throw new EnhancementException("Image Enhancement failed to process " + dsid, e, Severity.RECOVERABLE);
+			throw new EnhancementException("Full Text Enhancement failed to process " + dsid, e, Severity.RECOVERABLE);
 		} catch (Exception e) {
-			throw new EnhancementException("Image Enhancement failed to process " + dsid, e, Severity.UNRECOVERABLE);
+			throw new EnhancementException("Full Text Enhancement failed to process " + dsid, e, Severity.UNRECOVERABLE);
 		}
 
 		return result;

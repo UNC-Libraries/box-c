@@ -162,6 +162,7 @@
 		<ref bean="technicalMetadataEnhancementService"/>
 		<ref bean="imageEnhancementService"/>
 		<ref bean="thumbnailEnhancementService"/>
+		<ref bean="fullTextEnhancementService"/>
 		<ref bean="solrUpdateEnhancementService"/>
 	</util:list>
 	
@@ -259,6 +260,15 @@
 	</bean>
 	
 	<bean id="thumbnailEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService"
+			init-method="init">
+		<property name="irodsAccount" ref="irodsAccount"/>
+		<property name="irodsFileSystem" ref="irodsFileSystem"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="active" value="true"/>
+	</bean>
+	
+	<bean id="fullTextEnhancementService" class="edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService"
 			init-method="init">
 		<property name="irodsAccount" ref="irodsAccount"/>
 		<property name="irodsFileSystem" ref="irodsFileSystem"/>

@@ -690,7 +690,7 @@ public class ManagementClient extends WebServiceTemplate {
 	}
 	
 	public String upload(String content) {
-		return this.uploadBytes(content.getBytes(), "tmp_" + System.currentTimeMillis());
+		return this.uploadBytes(content.getBytes(), "tmp_" + System.nanoTime());
 	}
 
 	public String upload(Document xml) {

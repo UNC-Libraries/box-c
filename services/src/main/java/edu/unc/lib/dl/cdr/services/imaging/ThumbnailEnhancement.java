@@ -190,7 +190,6 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 	}
 
 	public ThumbnailEnhancement(ThumbnailEnhancementService service, PID pid) {
-		super(pid);
-		this.service = service;
+		super(service, pid);
 	}
 }

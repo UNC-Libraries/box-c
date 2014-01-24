@@ -9,6 +9,6 @@ WHERE {
     ?pid cdr-base:hasSourceMimeType ?srcMime
     FILTER (
       ?pid = <%2$s> 
-      && regex( str(?srcMime), '(text/|application/pdf|application/msword|application/vnd\.|application/rtf|application/powerpoint|application/postscript)')
+      && regex( str(?srcMime), '(text/|application/pdf|application/msword|application/vnd\\.|application/rtf|application/powerpoint|application/postscript)')
     ) 
 }

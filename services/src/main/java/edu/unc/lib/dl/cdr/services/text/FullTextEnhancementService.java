@@ -1,4 +1,4 @@
-package edu.unc.lib.dl.cdr.services.tika;
+package edu.unc.lib.dl.cdr.services.text;
 
 import java.io.IOException;
 import java.util.Arrays;
