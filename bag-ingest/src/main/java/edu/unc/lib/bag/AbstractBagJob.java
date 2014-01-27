@@ -10,9 +10,15 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.text.MessageFormat;
 
+import net.greghaines.jesque.Job;
+import net.greghaines.jesque.client.Client;
+
 import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PremisEventLogger;
@@ -25,12 +31,48 @@ import edu.unc.lib.dl.util.PremisEventLogger.Type;
  *
  */
 public abstract class AbstractBagJob implements Runnable {
+	private static final Logger log = LoggerFactory.getLogger(AbstractBagJob.class);
+	private static final String DEPOSIT_QUEUE = "Deposit";
 	private File bagDirectory;
 	private PID depositPID;
+	@Autowired
+	Client jesqueClient = null;
+	public Client getJesqueClient() {
+		return jesqueClient;
+	}
+
+	public void setJesqueClient(Client jesqueClient) {
+		this.jesqueClient = jesqueClient;
+	}
+	
+	private String defaultNextJob = null;
+	public String getDefaultNextJob() {
+		return defaultNextJob;
+	}
+
+	public void setDefaultNextJob(String defaultNextJob) {
+		this.defaultNextJob = defaultNextJob;
+	}
+	
+	public void enqueueDefaultNextJob() {
+		if(this.defaultNextJob != null) {
+			Job job = new Job(this.defaultNextJob, getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
+			jesqueClient.enqueue(DEPOSIT_QUEUE, job);
+		}
+	}
+	
+	public void enqueueNextJob(String jobName) {
+		if(jobName != null) {
+			Job job = new Job(jobName, getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
+			jesqueClient.enqueue(DEPOSIT_QUEUE, job);
+		}
+	}
+
 	private PremisEventLogger eventLog = new PremisEventLogger(this.getClass().getName());
 
-	public AbstractBagJob(File bagDirectory, String depositId) {
-		this.bagDirectory = bagDirectory;
+	public AbstractBagJob(String bagDirectory, String depositId) {
+		log.debug("Bag job created: {} {}", bagDirectory, depositId);
+		this.bagDirectory = new File(bagDirectory);
 		this.depositPID = new PID(depositId);
 	}
 	
@@ -104,5 +146,7 @@ public abstract class AbstractBagJob implements Runnable {
 				}
 	        }
 	}
+	
+	
 	
 }

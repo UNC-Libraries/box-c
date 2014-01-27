@@ -62,6 +62,11 @@
     	<artifactId>jdom</artifactId>
     	<version>1.1</version>
     </dependency>
+    <dependency>
+    	<groupId>redis.clients</groupId>
+    	<artifactId>jedis</artifactId>
+    	<version>2.2.1</version>
+    </dependency>
   </dependencies>
   
 	<build>

@@ -135,7 +135,7 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to write to deposit bag: "+depositPID.getPid());
 		}
 
-		queueForIngest(bagDir);
+		queueForIngest(bagDir, depositPID);
 		return buildReceipt(depositPID, config);
 	}
 }

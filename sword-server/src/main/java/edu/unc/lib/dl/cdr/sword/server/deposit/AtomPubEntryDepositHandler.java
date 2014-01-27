@@ -117,8 +117,8 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 		// write deposit file to data directory
 		if (deposit.getFile() != null) {
 			File dataDir = new File(bagDir, "data");
+			dataDir.mkdirs();
 			File depositFile = new File(dataDir, deposit.getFilename());
-			depositFile.mkdirs();
 			try {
 				FileUtils.renameOrMoveTo(deposit.getFile(), depositFile);
 			} catch (IOException e) {
@@ -129,7 +129,7 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 		// make bag
 		BagFactory factory = new BagFactory();
 		PreBag prebag = factory.createPreBag(bagDir);
-		prebag.setTagFiles(Collections.singletonList(atomFile));
+		//prebag.setTagFiles(Collections.singletonList(atomFile));
 		Bag bag = prebag.makeBagInPlace(BagFactory.LATEST, false);
 
 		// verify checksum for payload file
@@ -186,7 +186,7 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to write to deposit bag: "+depositPID.getPid());
 		}
 
-		queueForIngest(bagDir);
+		queueForIngest(bagDir, depositPID);
 		return buildReceipt(depositPID, config);
 	}
 }

@@ -39,7 +39,9 @@
 		<constructor-arg value="localhost" />
 		<constructor-arg value="6379" />
 		<constructor-arg value="2000" />
-		<constructor-arg value="" />
+		<constructor-arg>
+			<null />
+		</constructor-arg>
 		<constructor-arg value="resque" />
 		<constructor-arg value="0" />
 	</bean>
@@ -47,6 +49,21 @@
 	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl"
 		scope="prototype">
 		<constructor-arg ref="jesqueConfig" />
+	</bean>
+
+	<bean id="workerFactory" class="net.lariverosc.jesquespring.SpringWorkerFactory">
+		<constructor-arg name="config" ref="jesqueConfig" />
+		<constructor-arg name="queues">
+			<util:set set-class="java.util.HashSet">
+				<value>Deposit</value>
+			</util:set>
+		</constructor-arg>
+	</bean>
+
+	<bean id="worker" class="net.lariverosc.jesquespring.SpringWorkerPool"
+		init-method="init" destroy-method="destroy">
+		<constructor-arg name="workerFactory" ref="workerFactory" />
+		<constructor-arg name="numWorkers" value="1" />
 	</bean>
 
 	<bean id="bagsDirectory" class="java.io.File">
@@ -116,10 +133,20 @@
 		</constructor-arg>
 	</bean>
 
+	<bean id="NormalizeBag" class="edu.unc.lib.bag.normalize.NormalizeBag"
+		scope="prototype">
+		<property name="jesqueClient" ref="jesqueClient" />
+	</bean>
+
 	<bean id="CDRMETS2N3BagJob" class="edu.unc.lib.bag.normalize.CDRMETS2N3BagJob"
 		scope="prototype">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />
 	</bean>
 
+	<bean id="DSPACEMETS2N3BagJob" class="edu.unc.lib.bag.normalize.DSPACEMETS2N3BagJob"
+		scope="prototype">
+		<property name="schematronValidator" ref="schematronValidator" />
+		<property name="metsSipSchema" ref="metsSipSchema" />
+	</bean>
 </beans>

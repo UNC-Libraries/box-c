@@ -91,8 +91,8 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 	 * Adds the bag to the ingest resque
 	 * @param bag
 	 */
-	protected void queueForIngest(File bag) {
-		Job job = new Job("Scheduler", bag); // job to schedule bag processing
+	protected void queueForIngest(File bag, PID depositId) {
+		Job job = new Job("NormalizeBag", bag, depositId.getURI()); // job to schedule bag processing
 		final Client client = new ClientImpl(getJesqueConfig());
 		client.enqueue("Deposit", job);
 		client.end();

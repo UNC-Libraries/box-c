@@ -1,37 +1,39 @@
-package edu.unc.lib.bag;
+package edu.unc.lib.bag.normalize;
 
 import static edu.unc.lib.dl.util.DepositBagInfo.PACKAGING_TYPE;
-import edu.unc.lib.bag.normalize.CDRMETS2N3BagJob;
+
+import java.text.MessageFormat;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.unc.lib.bag.AbstractBagJob;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 
-import java.io.File;
-import java.text.MessageFormat;
-import java.util.List;
-
-import net.greghaines.jesque.Job;
-import net.greghaines.jesque.client.Client;
-
-public class BagChewingJob extends AbstractBagJob {
-	Client jesqueClient = null;
-	public Client getJesqueClient() {
-		return jesqueClient;
-	}
-
-	public void setJesqueClient(Client jesqueClient) {
-		this.jesqueClient = jesqueClient;
-	}
+/**
+ * Taking in a deposit directory in BagIt form, with a variety of manifest types,
+ * this job adds required elements to make a normal CDR BagIt RDF deposit.
+ * 
+ * All specialized package-specific transforms are handled here.
+ * @author count0
+ *
+ */
+public class NormalizeBag extends AbstractBagJob {
+	private static final Logger log = LoggerFactory.getLogger(NormalizeBag.class);
 
 	BagFactory bagFactory = new BagFactory();
 	
-	public BagChewingJob(File bagDirectory, String depositId) {
+	public NormalizeBag(String bagDirectory, String depositId) {
 		super(bagDirectory, depositId);
 	}
 
 	@Override
 	public void run() {
+		log.debug("starting NormalizeBag job: {}", this.getBagDirectory().getPath());
 		Bag bag = bagFactory.createBag(getBagDirectory());
 		
 		// pack the bag in N3 CDR style
@@ -52,10 +54,9 @@ public class BagChewingJob extends AbstractBagJob {
 			if(convertJob == null) {
 				String msg = MessageFormat.format("Cannot convert deposit package to N3 BagIt. No converter for this packaging type(s): {}", packagings.toArray());
 				failDeposit(Type.NORMALIZATION, "Cannot convert deposit to N3 BagIt package.", msg);
+			} else {
+				enqueueNextJob(convertJob);
 			}
-			Job job = new Job(convertJob, getBagDirectory().getAbsolutePath());
-			jesqueClient.enqueue("INGEST_QUEUE", job);
-			return;
 		}
 
 		// BagIt validation

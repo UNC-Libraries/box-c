@@ -54,7 +54,7 @@ public class DSPACEMETSDepositHandlerTest {
 		d.setEntry(entry);
 		
 		PID dest = new PID("uuid:destination");
-		getMetsDepositHandler().doDeposit(dest, d, PackagingType.METS_CDR, getSwordConfiguration(),
+		getMetsDepositHandler().doDeposit(dest, d, PackagingType.METS_DSPACE_SIP_1, getSwordConfiguration(),
 				"test-depositor", "test-owner");
 	}
 

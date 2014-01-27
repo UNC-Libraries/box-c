@@ -34,7 +34,6 @@ import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.deposit.DepositHandler;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.sip.FilesDoNotMatchManifestException;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
 import edu.unc.lib.dl.util.PackagingType;
 
@@ -74,11 +73,6 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		try {
 			DepositHandler depositHandler = packageHandlers.get(type);
 			return depositHandler.doDeposit(containerPID, deposit, type, config, depositor, owner);
-		} catch (FilesDoNotMatchManifestException e) {
-			log.warn("Files in the package " + deposit.getFilename()
-					+ " did not match the provided METS manifest of package type " + deposit.getPackaging(), e);
-			throw new SwordError(UriRegistry.ERROR_CONTENT, 415, "Files in the package " + deposit.getFilename()
-					+ " did not match the provided METS manifest.", e);
 		} catch (JDOMException e) {
 			log.warn("Failed to deposit", e);
 			throw new SwordError(UriRegistry.ERROR_CONTENT, 415,
