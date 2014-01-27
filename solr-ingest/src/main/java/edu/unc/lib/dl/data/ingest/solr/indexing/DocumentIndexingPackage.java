@@ -96,9 +96,9 @@ public class DocumentIndexingPackage {
 	public void setParentDocument(DocumentIndexingPackage parentDocument) {
 		this.parentDocument = parentDocument;
 		// Break the grand parent bond
-		if (this.parentDocument != null) {
+		/*if (this.parentDocument != null) {
 			this.parentDocument.setParentDocument(null);
-		}
+		}*/
 	}
 
 	public boolean isAttemptedToRetrieveDefaultWebObject() {

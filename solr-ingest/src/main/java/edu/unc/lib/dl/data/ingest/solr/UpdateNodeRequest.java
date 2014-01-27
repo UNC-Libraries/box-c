@@ -30,6 +30,7 @@ public class UpdateNodeRequest implements ActionMessage {
 
 	protected String messageID;
 	protected long timeCreated = System.currentTimeMillis();
+	protected long timeStarted;
 	protected long timeFinished;
 
 	protected DocumentIndexingPackage documentIndexingPackage;
@@ -55,6 +56,21 @@ public class UpdateNodeRequest implements ActionMessage {
 		this(messageID, parent);
 		this.status = status;
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	public void addChild(UpdateNodeRequest node) {
 		if (node == null)
@@ -231,11 +247,19 @@ public class UpdateNodeRequest implements ActionMessage {
 
 		return counts;
 	}
+	
+	public void setChildrenPending(int newValue) {
+		this.childrenPending.set(newValue);
+	}
 
 	public int getChildrenPending() {
 		return childrenPending.get();
 	}
 
+	public int incrementChildrenProcessed() {
+		return this.childrenProcessed.incrementAndGet();
+	}
+	
 	public int getChildrenProcessed() {
 		return childrenProcessed.get();
 	}
@@ -282,6 +306,14 @@ public class UpdateNodeRequest implements ActionMessage {
 	public long getTimeFinished() {
 		return timeFinished;
 	}
+	
+	public long getTimeStarted() {
+		return this.timeStarted;
+	}
+	
+	public long getActiveDuration() {
+		return this.timeFinished - this.timeStarted;
+	}
 
 	public ProcessingStatus getStatus() {
 		return status;
@@ -289,6 +321,12 @@ public class UpdateNodeRequest implements ActionMessage {
 
 	public void setStatus(ProcessingStatus status) {
 		this.status = status;
+		if (this.status == ProcessingStatus.FINISHED || this.status == ProcessingStatus.FAILED) {
+			this.timeFinished = System.currentTimeMillis();
+		}
+		if (this.status == ProcessingStatus.ACTIVE) {
+			this.timeStarted = System.currentTimeMillis();
+		}
 	}
 
 	public UpdateNodeRequest getParent() {

@@ -34,6 +34,7 @@ import edu.unc.lib.dl.cdr.services.model.LabeledPID;
 import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -207,21 +208,7 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 	 *           name of file to open. The file can reside anywhere in the classpath
 	 */
 	protected String readFileAsString(String filePath) throws java.io.IOException {
-		StringBuffer fileData = new StringBuffer(1000);
-		java.io.InputStream inStream = this.getClass().getResourceAsStream(filePath);
-		java.io.InputStreamReader inStreamReader = new InputStreamReader(inStream);
-		BufferedReader reader = new BufferedReader(inStreamReader);
-		char[] buf = new char[1024];
-		int numRead = 0;
-		while ((numRead = reader.read(buf)) != -1) {
-			String readData = String.valueOf(buf, 0, numRead);
-			fileData.append(readData);
-			buf = new char[1024];
-		}
-		reader.close();
-		inStreamReader.close();
-		inStream.close();
-		return fileData.toString();
+		return FileUtils.inputStreamToString(this.getClass().getResourceAsStream(filePath));
 	}
 	
 	protected class MaxSizeList<E> extends ArrayList<E> {
