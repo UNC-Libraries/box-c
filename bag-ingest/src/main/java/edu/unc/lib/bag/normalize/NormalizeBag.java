@@ -34,7 +34,7 @@ public class NormalizeBag extends AbstractBagJob {
 	@Override
 	public void run() {
 		log.debug("starting NormalizeBag job: {}", this.getBagDirectory().getPath());
-		Bag bag = bagFactory.createBag(getBagDirectory());
+		Bag bag = loadBag();
 		
 		// pack the bag in N3 CDR style
 		List<String> packagings = bag.getBagInfoTxt().getList(PACKAGING_TYPE);

@@ -233,6 +233,10 @@ public final class NamespaceConstants {
 	public static final String CDR_ACL_PREFIX = "cdr-acl";
 	
 	public static final String CDR_ACL_NS_URI = "http://cdr.unc.edu/definitions/acl#";
+	
+	public static final String EPDCX_PREFIX = "epdcx";
+	
+	public static final String EPDCX_URI = "http://purl.org/eprint/epdcx/2006-11-16/";
 
     // Prevent instantiation.
     private NamespaceConstants() {

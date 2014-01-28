@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<option-set label="EPrints Types for Scholarly Works" authority-term="local" type="work type"
+    url="http://purl.org/eprint/type/" contextElement="genre"
+    contextNamespace="http://www.loc.gov/mods/v3" date="1/21/09">
+    <option>
+        <value>Scholarly Text</value>
+        <valueURI>http://purl.org/eprint/type/ScholarlyText</valueURI>
+        <definition>A scholarly text that is primarily words for reading. Where the text is one of
+            the more specific types listed here, use the more specific term.</definition>
+    </option>
+    <option>
+        <value>Book</value>
+        <valueURI>http://purl.org/eprint/type/Book</valueURI>
+        <definition>A non-serial publication that is complete in one volume or a designated finite
+            number of volumes. In physical form, a book is a collection of sheets of paper,
+            parchment or other material bound together along one edge within covers. Books are often
+            identified with an ISBN.</definition>
+    </option>
+    <option>
+        <value>Book Item</value>
+        <valueURI>http://purl.org/eprint/type/BookItem</valueURI>
+        <definition>A defined chapter or section of a book, usually with a separate title or number.</definition>
+    </option>
+    <option>
+        <value>Book Review</value>
+        <valueURI>http://purl.org/eprint/type/BookReview</valueURI>
+        <definition>A review of a book.</definition>
+    </option>
+    <option>
+        <value>Conference Item</value>
+        <valueURI>http://purl.org/eprint/type/ConferenceItem</valueURI>
+        <definition>A contribution to a conference, workshop or other event. Where the contribution is a paper or poster, use Conference Paper or Conference Poster as appropriate.</definition>
+    </option>
+    <option>
+        <value>Conference Paper</value>
+        <valueURI>http://purl.org/eprint/type/ConferencePaper</valueURI>
+        <definition>A paper submitted and/or presented at a conference, workshop or other event.</definition>
+    </option>
+    <option>
+        <value>Conference Poster</value>
+        <valueURI>http://purl.org/eprint/type/ConferencePoster</valueURI>
+        <definition>A poster submitted and/or presented at a conference, workshop or other event.</definition>
+    </option>
+    <option>
+        <valueURI>http://purl.org/eprint/type/JournalItem</valueURI>
+        <value>Journal Item</value>
+        <definition>A contribution to a journal, e.g. an article, editorial, conference report, debate, letter or response. Where the contribution is an article, use Journal Article.</definition>
+    </option>
+    <option>
+        <valueURI>http://purl.org/eprint/type/JournalArticle</valueURI>
+        <value>Journal Article</value>
+        <definition>An article or paper published in a journal. For book reviews, use Book Review. For news items use News Item. For other types of contribution use Journal Item.</definition>
+    </option>
+    <option>
+        <valueURI>http://purl.org/eprint/type/NewsItem</valueURI>
+        <value>News Item</value>
+        <definition>A news item.</definition>
+    </option>
+    <option>
+        <valueURI>http://purl.org/eprint/type/Patent</valueURI>
+        <value>Patent</value>
+        <definition>A patent or patent application.</definition>
+    </option>
+    <option>
+        <valueURI>http://purl.org/eprint/type/Report</valueURI>
+        <value>Report</value>
+        <definition>A research, statistical or technical report issued by an institution, agency, government body or other organisation.</definition>
+    </option>
+    <option>
+        <valueURI>http://purl.org/eprint/type/SubmittedJournalArticle</valueURI>
+        <value>Submitted Journal Article</value>
+        <definition>The author's original manuscript as submitted to and/or accepted by a journal. In the terminology recommended by the Sherpa project, a submission prior to peer review is a preprint; a submission after peer review is a postprint. Therefore, a Submitted Journal Article can be either a preprint or a postprint. For the version of the article published by the journal, use Journal Article.</definition>
+    </option>
+    <option>
+        <valueURI>http://purl.org/eprint/type/Thesis</valueURI>
+        <value>Thesis</value>
+        <label>Thesis or Dissertation</label>
+        <definition>A thesis or dissertation submitted in completion of a course of study at an institution of higher education.</definition>
+    </option>
+    <option>
+        <valueURI>http://purl.org/eprint/type/WorkingPaper</valueURI>
+        <value>Working Paper</value>
+        <label>Working or Discussion Paper</label>
+        <definition>A working or discussion paper circulated publicly or among a group of peers. Certain disciplines, for example economics, issue working papers in series. Working or discussion papers may form the basis for a Journal Article or Conference Paper.</definition>
+    </option>
+</option-set>

@@ -1,12 +1,24 @@
 package edu.unc.lib.bag.normalize;
 
+import static edu.unc.lib.dl.util.DepositBagInfo.PACKAGING_TYPE;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.EPDCX_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
+
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
+import org.jdom.transform.JDOMResult;
+import org.jdom.transform.JDOMSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,12 +28,26 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.FileUtils;
+import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.METSProfile;
 
 public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
+
 	private static final Logger log = LoggerFactory.getLogger(DSPACEMETS2N3BagJob.class);
+	
+	private Transformer epdcx2modsTransformer = null;
+
+	public Transformer getEpdcx2modsTransformer() {
+		return epdcx2modsTransformer;
+	}
+
+	public void setEpdcx2modsTransformer(Transformer epdcx2modsTransformer) {
+		this.epdcx2modsTransformer = epdcx2modsTransformer;
+	}
 
 	public DSPACEMETS2N3BagJob(String bagDirectory, String depositId) {
 		super(bagDirectory, depositId);
@@ -29,8 +55,17 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 	
 	@Override
 	public void run() {
+		gov.loc.repository.bagit.Bag bag = loadBag();
+		// copy DSPACE METS into tag space.
+		try {
+			File payloadMets = new File(getBagDirectory(), "data/mets.xml");
+			FileUtils.copyFile(payloadMets, new File(getBagDirectory(), "mets.xml"));
+			bag.addFileAsTag(getMETSFile());
+		} catch (IOException e) {
+			throw new Error(e);
+		}
 		validateMETS();
-		validateProfile(METSProfile.CDR_SIMPLE);
+		validateProfile(METSProfile.DSPACE_SIP);
 		Document mets = loadMETS();
 		assignPIDs(mets); // assign any missing PIDs
 		saveMETS(mets); // manifest updated to have record of all PIDs
@@ -54,17 +89,43 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 			model.add(child, hasModel, simple);
 		}
 		helper.addFileAssociations(model, true);
-		
-		final File modsFolder = new File(getBagDirectory(), "description");
-		modsFolder.mkdir();
-		
-		// TODO extract EPDCX from mets
-		
 		saveModel(model, "everything.n3");
-		// addN3PackagingType();
-		recordEvent(Type.NORMALIZATION, "Converted METS {1} to N3 form", METSProfile.CDR_SIMPLE.getName());
+		bag.addFileAsTag(new File(getBagDirectory(), "everything.n3"));
 		
-		// TODO enqueue for additional BIOMED job if applicable
+		// extract EPDCX from mets
+		FileOutputStream fos = null;
+		try {
+			Element epdcxEl = mets.getRootElement().getChild("dmdSec", METS_NS).getChild("mdWrap", METS_NS).getChild("xmlData", METS_NS).getChild("descriptionSet", EPDCX_NS);
+			JDOMResult mods = new JDOMResult();
+			epdcx2modsTransformer.transform(new JDOMSource(epdcxEl), mods);
+			final File modsFolder = new File(getBagDirectory(), "description");
+			modsFolder.mkdir();
+			File modsFile = new File(modsFolder, new PID(aggregate.getURI()).getUUID().toString()+".xml");
+			fos = new FileOutputStream(modsFile);
+			new XMLOutputter(Format.getPrettyFormat()).output(mods.getDocument(), fos);
+			bag.addFileAsTag(modsFolder);
+		} catch(NullPointerException ignored) {
+			log.debug("NPE", ignored);
+			// no embedded metadata
+		} catch (TransformerException e) {
+			failDeposit(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS");
+		} catch (FileNotFoundException e) {
+			failDeposit(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS");
+		} catch (IOException e) {
+			failDeposit(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS");
+		}
+
+		bag.getBagInfoTxt().putList(PACKAGING_TYPE, PackagingType.BAG_WITH_N3.getUri());
+		recordEvent(Type.NORMALIZATION, "Converted {0} to N3 form", METSProfile.DSPACE_SIP.getName());
+		
+		saveBag(bag);
+		
+		// enqueue for additional BIOMED job if applicable
+		if("BioMed Central".equals(bag.getBagInfoTxt().getInternalSenderDescription())) {
+			enqueueNextJob(BioMedCentralExtrasJob.class.getName());
+		} else {
+			enqueueDefaultNextJob();
+		}
 	}
 
 }

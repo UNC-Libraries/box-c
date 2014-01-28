@@ -1,5 +1,7 @@
 package edu.unc.lib.bag.normalize;
 
+import static edu.unc.lib.dl.util.DepositBagInfo.PACKAGING_TYPE;
+
 import java.io.File;
 
 import org.jdom.Document;
@@ -8,6 +10,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.METSProfile;
 
@@ -22,6 +25,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 	
 	@Override
 	public void run() {
+		gov.loc.repository.bagit.Bag bag = loadBag();
 		validateMETS();
 		validateProfile(METSProfile.CDR_SIMPLE);
 		Document mets = loadMETS();
@@ -33,6 +37,9 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		extractor.addArrangement(model);
 		extractor.helper.addFileAssociations(model, false);
 		extractor.addAccessControls(model);
+		saveModel(model, "everything.n3");
+		bag.addFileAsTag(new File(getBagDirectory(), "everything.n3"));
+		
 		final File modsFolder = new File(getBagDirectory(), "description");
 		modsFolder.mkdir();
 		extractor.saveDescriptions(new FilePathFunction() {
@@ -42,9 +49,13 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 				return new File(modsFolder, uuid+".xml").getAbsolutePath();
 			}
 		});
-		saveModel(model, "everything.n3");
-		// addN3PackagingType();
-		recordEvent(Type.NORMALIZATION, "Converted METS {1} to N3 form", METSProfile.CDR_SIMPLE.getName());
+		bag.addFileAsTag(modsFolder);
+		
+		bag.getBagInfoTxt().putList(PACKAGING_TYPE, PackagingType.BAG_WITH_N3.getUri());
+		recordEvent(Type.NORMALIZATION, "Converted METS {0} to N3 form", METSProfile.CDR_SIMPLE.getName());
+		
+		saveBag(bag);
+		enqueueDefaultNextJob();
 	}
 
 }

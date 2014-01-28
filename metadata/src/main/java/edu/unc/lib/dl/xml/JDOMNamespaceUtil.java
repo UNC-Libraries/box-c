@@ -198,6 +198,8 @@ public class JDOMNamespaceUtil {
     
     public static final Namespace CDR_ACL_NS = Namespace.getNamespace(NamespaceConstants.CDR_ACL_PREFIX, NamespaceConstants.CDR_ACL_NS_URI);
 
+    public static final Namespace EPDCX_NS = Namespace.getNamespace(NamespaceConstants.EPDCX_PREFIX, NamespaceConstants.EPDCX_URI);
+    
     /**
      * Generates an XPath object from the given query, with the provided namespaces added.
      * @param query

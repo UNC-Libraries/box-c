@@ -23,6 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
+import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 
 /**
  * Constructed with bag directory and deposit ID.
@@ -35,6 +39,11 @@ public abstract class AbstractBagJob implements Runnable {
 	private static final String DEPOSIT_QUEUE = "Deposit";
 	private File bagDirectory;
 	private PID depositPID;
+	private BagFactory bagFactory = new BagFactory();
+	public BagFactory getBagFactory() {
+		return bagFactory;
+	}
+
 	@Autowired
 	Client jesqueClient = null;
 	public Client getJesqueClient() {
@@ -69,10 +78,12 @@ public abstract class AbstractBagJob implements Runnable {
 	}
 
 	private PremisEventLogger eventLog = new PremisEventLogger(this.getClass().getName());
+	private File eventsFile;
 
 	public AbstractBagJob(String bagDirectory, String depositId) {
 		log.debug("Bag job created: {} {}", bagDirectory, depositId);
 		this.bagDirectory = new File(bagDirectory);
+		this.eventsFile = new File(bagDirectory, "events.xml");
 		this.depositPID = new PID(depositId);
 	}
 	
@@ -113,6 +124,7 @@ public abstract class AbstractBagJob implements Runnable {
 	}
 	
 	public void failDeposit(Throwable throwable, Type type, String messageformat, Object... args) {
+		log.debug(messageformat, args);
 		String message = MessageFormat.format(messageformat, args);
 		Element event = getEventLog().logException(message, throwable);
 		event = PremisEventLogger.addLinkingAgentIdentifier(event, "SIP Processing Job", this.getClass().getName(), "Software");
@@ -147,6 +159,21 @@ public abstract class AbstractBagJob implements Runnable {
 	        }
 	}
 	
-	
-	
+	protected Bag loadBag() {
+		Bag bag = getBagFactory().createBag(getBagDirectory());
+		return bag;
+	}
+
+	protected void saveBag(gov.loc.repository.bagit.Bag bag) {
+		if(eventsFile.exists())	bag.addFileAsTag(eventsFile);
+		bag = bag.makeComplete(new UpdateCompleter(getBagFactory()));
+		try {
+			FileSystemWriter writer = new FileSystemWriter(getBagFactory());
+			writer.setTagFilesOnly(true);
+			writer.write(bag, getBagDirectory());
+			bag.close();
+		} catch (IOException e) {
+			failDeposit(e, Type.NORMALIZATION, "Unable to write to deposit bag");
+		}
+	}
 }

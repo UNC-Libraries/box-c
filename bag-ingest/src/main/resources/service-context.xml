@@ -132,6 +132,19 @@
 			</list>
 		</constructor-arg>
 	</bean>
+	
+	<bean id="transformerFactory" class="javax.xml.transform.TransformerFactory" factory-method="newInstance"/>
+
+	<bean id="epdcx2modsTransformer" factory-bean="transformerFactory"
+		factory-method="newTransformer">
+		<constructor-arg>
+			<bean class="org.springframework.xml.transform.ResourceSource">
+				<constructor-arg>
+					<value>classpath:epdcx2mods.xsl</value>
+				</constructor-arg>
+			</bean>
+		</constructor-arg>
+	</bean>
 
 	<bean id="NormalizeBag" class="edu.unc.lib.bag.normalize.NormalizeBag"
 		scope="prototype">
@@ -148,5 +161,6 @@
 		scope="prototype">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />
+		<property name="epdcx2modsTransformer" ref="epdcx2modsTransformer"/>
 	</bean>
 </beans>
