@@ -18,6 +18,8 @@ package edu.unc.lib.dl.data.ingest.solr.indexing;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
 import org.apache.solr.client.solrj.util.ClientUtils;
@@ -40,7 +42,7 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 public class SolrUpdateDriver {
 	private static final Logger log = LoggerFactory.getLogger(SolrUpdateDriver.class);
 
-	private ConcurrentUpdateSolrServer solrServer;
+	private SolrServer solrServer;
 	private SolrSettings solrSettings;
 
 	private int autoPushCount;
@@ -81,7 +83,6 @@ public class SolrUpdateDriver {
 					SolrInputField inputField = sid.getField(fieldName);
 					// Adding in each non-null field value, except the timestamp field which gets cleared if not specified so
 					// that it always gets updated as part of a partial update
-					// TODO enable timestamp updating when fix for SOLR-4133 is released, which enables setting null fields
 					if (inputField != null && (inputField.getValue() != null || UPDATE_TIMESTAMP.equals(fieldName))) {
 						Map<String, Object> partialUpdate = new HashMap<String, Object>();
 						partialUpdate.put(operation, inputField.getValue());
@@ -89,7 +90,8 @@ public class SolrUpdateDriver {
 					}
 				}
 			}
-			log.debug("Performing partial update:\n" + ClientUtils.toXML(sid));
+			if (log.isDebugEnabled())
+				log.debug("Performing partial update:\n{}", ClientUtils.toXML(sid));
 			solrServer.add(sid);
 		} catch (IOException e) {
 			throw new IndexingException("Failed to add document to solr", e);
@@ -151,7 +153,7 @@ public class SolrUpdateDriver {
 		this.updateThreads = updateThreads;
 	}
 
-	public void setSolrServer(ConcurrentUpdateSolrServer solrServer) {
+	public void setSolrServer(SolrServer solrServer) {
 		this.solrServer = solrServer;
 	}
 

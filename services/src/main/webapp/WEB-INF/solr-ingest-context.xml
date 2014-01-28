@@ -136,6 +136,23 @@
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 	</bean>
+	
+	<bean id="updateTreeAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
+		<property name="pipeline" ref="solrFullUpdatePipeline" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="collectionsPid" ref="collectionsPid" />
+	</bean>
+	
+	<bean id="indexTreeInplaceAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeInplaceAction">
+		<property name="pipeline" ref="solrFullUpdatePipeline" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="solrSettings" ref="solrSettings" />
+		<property name="collectionsPid" ref="collectionsPid" />
+	</bean>
 
 	<bean id="recursiveReindexAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.RecursiveReindexAction">
@@ -207,8 +224,8 @@
 		key-type="edu.unc.lib.dl.util.IndexingActionType"
 		value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
 		<entry key="ADD" value-ref="updateObjectAction" />
-		<entry key="RECURSIVE_REINDEX" value-ref="recursiveReindexAction" />
-		<entry key="RECURSIVE_ADD" value-ref="recursiveUpdateAction" />
+		<entry key="RECURSIVE_REINDEX" value-ref="indexTreeInplaceAction" />
+		<entry key="RECURSIVE_ADD" value-ref="updateTreeAction" />
 		<entry key="CLEAN_REINDEX" value-ref="cleanReindexAction" />
 		<entry key="CLEAR_INDEX" value-ref="clearIndexAction" />
 		<entry key="DELETE" value-ref="deleteObjectAction" />

@@ -70,6 +70,10 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 		this.pipeline = pipeline;
 	}
 
+	public DocumentIndexingPipeline getPipeline() {
+		return pipeline;
+	}
+
 	public void setSolrUpdateService(SolrUpdateService solrUpdateService) {
 		this.solrUpdateService = solrUpdateService;
 	}
@@ -80,6 +84,10 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 
 	public void setSolrUpdateDriver(SolrUpdateDriver solrUpdateDriver) {
 		this.solrUpdateDriver = solrUpdateDriver;
+	}
+	
+	public SolrUpdateDriver getSolrUpdateDriver() {
+		return this.solrUpdateDriver;
 	}
 
 	public void setSolrSearchService(SolrSearchService solrSearchService) {
