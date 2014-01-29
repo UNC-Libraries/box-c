@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.bag.AbstractBagJob;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ZipFileUtil;
 
@@ -18,13 +19,13 @@ import edu.unc.lib.dl.util.ZipFileUtil;
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class CDRMETS2N3BagJobTest {
 	@Autowired
-	private AbstractMETS2N3BagJob job = null;
+	private AbstractBagJob job = null;
 
-	public AbstractMETS2N3BagJob getJob() {
+	public AbstractBagJob getJob() {
 		return job;
 	}
 
-	public void setJob(AbstractMETS2N3BagJob job) {
+	public void setJob(AbstractBagJob job) {
 		this.job = job;
 	}
 

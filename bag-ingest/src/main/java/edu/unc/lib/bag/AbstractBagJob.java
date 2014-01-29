@@ -2,6 +2,7 @@ package edu.unc.lib.bag;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -20,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hp.hpl.jena.rdf.model.Model;
+
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
@@ -37,6 +40,7 @@ import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 public abstract class AbstractBagJob implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(AbstractBagJob.class);
 	private static final String DEPOSIT_QUEUE = "Deposit";
+	public static final String MODEL_FILE = "everything.n3";
 	private File bagDirectory;
 	private PID depositPID;
 	private BagFactory bagFactory = new BagFactory();
@@ -174,6 +178,21 @@ public abstract class AbstractBagJob implements Runnable {
 			bag.close();
 		} catch (IOException e) {
 			failDeposit(e, Type.NORMALIZATION, "Unable to write to deposit bag");
+		}
+	}
+
+	protected void saveModel(Model model, String tagfilepath) {
+		File arrangementFile = new File(this.getBagDirectory(), tagfilepath);
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream(arrangementFile);
+			model.write(fos, "N-TRIPLE");
+		} catch(IOException e) {
+			throw new Error("Cannot open file "+arrangementFile, e);
+		} finally {
+			try {
+				fos.close();
+			} catch (IOException ignored) {}
 		}
 	}
 }

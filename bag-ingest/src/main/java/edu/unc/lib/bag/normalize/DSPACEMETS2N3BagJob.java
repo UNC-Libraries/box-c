@@ -73,9 +73,12 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		Model model = ModelFactory.createDefaultModel();
 		METSHelper helper = new METSHelper(mets);
 		
+		// deposit bag
+		Bag top = model.createBag(getDepositPID().getURI().toString());
 		// add aggregate work bag
 		Element aggregateEl = helper.mets.getRootElement().getChild("structMap", METS_NS).getChild("div", METS_NS);
 		Bag aggregate = model.createBag(METSHelper.getPIDURI(aggregateEl));
+		top.add(aggregate);
 		Property hasModel = model.createProperty(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
 		model.add(aggregate, hasModel, model.createResource(ContentModelHelper.Model.CONTAINER.getURI().toString()));
 		model.add(aggregate, hasModel, model.createResource(ContentModelHelper.Model.AGGREGATE_WORK.getURI().toString()));
@@ -89,8 +92,8 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 			model.add(child, hasModel, simple);
 		}
 		helper.addFileAssociations(model, true);
-		saveModel(model, "everything.n3");
-		bag.addFileAsTag(new File(getBagDirectory(), "everything.n3"));
+		saveModel(model, MODEL_FILE);
+		bag.addFileAsTag(new File(getBagDirectory(), MODEL_FILE));
 		
 		// extract EPDCX from mets
 		FileOutputStream fos = null;
@@ -116,7 +119,7 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		}
 
 		bag.getBagInfoTxt().putList(PACKAGING_TYPE, PackagingType.BAG_WITH_N3.getUri());
-		recordEvent(Type.NORMALIZATION, "Converted {0} to N3 form", METSProfile.DSPACE_SIP.getName());
+		recordEvent(Type.NORMALIZATION, "Converted {0} to {1}", METSProfile.DSPACE_SIP.getName(), PackagingType.BAG_WITH_N3.getUri());
 		
 		saveBag(bag);
 		

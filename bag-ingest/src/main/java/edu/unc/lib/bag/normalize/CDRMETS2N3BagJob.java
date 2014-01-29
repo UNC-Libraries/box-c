@@ -37,8 +37,8 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		extractor.addArrangement(model);
 		extractor.helper.addFileAssociations(model, false);
 		extractor.addAccessControls(model);
-		saveModel(model, "everything.n3");
-		bag.addFileAsTag(new File(getBagDirectory(), "everything.n3"));
+		saveModel(model, MODEL_FILE);
+		bag.addFileAsTag(new File(getBagDirectory(), MODEL_FILE));
 		
 		final File modsFolder = new File(getBagDirectory(), "description");
 		modsFolder.mkdir();
@@ -52,7 +52,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		bag.addFileAsTag(modsFolder);
 		
 		bag.getBagInfoTxt().putList(PACKAGING_TYPE, PackagingType.BAG_WITH_N3.getUri());
-		recordEvent(Type.NORMALIZATION, "Converted METS {0} to N3 form", METSProfile.CDR_SIMPLE.getName());
+		recordEvent(Type.NORMALIZATION, "Converted METS {0} to {1}", METSProfile.CDR_SIMPLE.getName(), PackagingType.BAG_WITH_N3.getUri());
 		
 		saveBag(bag);
 		enqueueDefaultNextJob();

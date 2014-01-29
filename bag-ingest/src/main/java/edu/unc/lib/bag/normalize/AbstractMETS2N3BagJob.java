@@ -22,8 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
 
-import com.hp.hpl.jena.rdf.model.Model;
-
 import edu.unc.lib.bag.AbstractBagJob;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schematron.SchematronValidator;
@@ -150,21 +148,6 @@ public abstract class AbstractMETS2N3BagJob extends AbstractBagJob {
 			failDeposit(e, Type.VALIDATION, "Cannot parse METS file: {0}", getMETSFile());
 		}
 		recordEvent(Type.VALIDATION, "METS schema(s) validated");
-	}
-
-	protected void saveModel(Model model, String tagfilepath) {
-		File arrangementFile = new File(this.getBagDirectory(), tagfilepath);
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(arrangementFile);
-			model.write(fos, "N-TRIPLE");
-		} catch(IOException e) {
-			throw new Error("Cannot open file "+arrangementFile, e);
-		} finally {
-			try {
-				fos.close();
-			} catch (IOException ignored) {}
-		}
 	}
 
 	protected void validateProfile(METSProfile profile) {

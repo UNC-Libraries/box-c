@@ -30,7 +30,7 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 		resetRedis();
 	}
 
-	private void testBag(File testBagResource, String depositId) {
+	private void testBag(File testBagResource, String depositId, int expectedJobsProcessed) {
 		File workingDir = new File("/tmp/cdrMets2N3BagTest_"
 				+ testBagResource.getName().hashCode());
 		try {
@@ -55,7 +55,7 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 		// Assert that the job was run by the worker
 		Jedis jedis = createJedis(getConfig());
 		try {
-			Assert.assertEquals("Jobs processed <> 1", "2", jedis.get(createKey(getConfig().getNamespace(),
+			Assert.assertEquals("Wrong number of jobs processed", String.valueOf(expectedJobsProcessed), jedis.get(createKey(getConfig().getNamespace(),
 					STAT, PROCESSED)));
 			Assert.assertNull("Jobs failed", jedis.get(createKey(getConfig().getNamespace(), STAT,
 					FAILED)));
@@ -70,7 +70,7 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 	public void testCdrMetsBag() {
 		File testBagResource = new File("src/test/resources/cdrMETS.zip");
 		String depositId = "info:fedora/uuid:bd5ff703-9c2e-466b-b4cc-15bbfd03c8ae";
-		testBag(testBagResource, depositId);
+		testBag(testBagResource, depositId, 2);
 	}
 
 	@Test
@@ -78,7 +78,7 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 		File testBagResource = new File(
 				"src/test/resources/biomedDspaceMETS.zip");
 		String depositId = "info:fedora/uuid:4b81ce23-8171-4d28-a440-b4cf8c8a781c";
-		testBag(testBagResource, depositId);
+		testBag(testBagResource, depositId, 3);
 	}
 	//
 	// @Test
@@ -90,7 +90,7 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 	public void testAtomBag() {
 		File testBagResource = new File("src/test/resources/atomPubEntryBag.zip");
 		String depositId = "info:fedora/uuid:31e06abf-c365-4761-bed2-ba03934c815f";
-		testBag(testBagResource, depositId);
+		testBag(testBagResource, depositId, 2);
 	}
 	//
 	// @Test

@@ -163,4 +163,7 @@
 		<property name="metsSipSchema" ref="metsSipSchema" />
 		<property name="epdcx2modsTransformer" ref="epdcx2modsTransformer"/>
 	</bean>
+	
+	<bean id="BioMedCentralExtrasJob" class="edu.unc.lib.bag.normalize.BioMedCentralExtrasJob"	scope="prototype"/>
+
 </beans>
