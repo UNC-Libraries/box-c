@@ -31,6 +31,7 @@ import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
+import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 public abstract class AbstractIndexingAction implements IndexingAction {
 	protected DocumentIndexingPipeline pipeline;
@@ -41,6 +42,7 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 	protected PID collectionsPid;
 	protected SearchSettings searchSettings;
 	protected AccessGroupSet accessGroups;
+	protected SolrSettings solrSettings;
 	
 	public static final String TARGET_ALL = "fullIndex";
 
@@ -100,6 +102,10 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 
 	public void setSearchSettings(SearchSettings searchSettings) {
 		this.searchSettings = searchSettings;
+	}
+
+	public void setSolrSettings(SolrSettings solrSettings) {
+		this.solrSettings = solrSettings;
 	}
 
 	public void setAccessGroups(AccessGroupSet accessGroups) {

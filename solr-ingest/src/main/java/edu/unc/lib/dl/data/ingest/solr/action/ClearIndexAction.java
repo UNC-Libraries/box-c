@@ -17,15 +17,18 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.util.IndexingActionType;
 
+/**
+ * Deletes all records from the index
+ * 
+ * @author bbpennel
+ *
+ */
 public class ClearIndexAction extends AbstractIndexingAction {
 
 	@Override
 	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
 		solrUpdateDriver.deleteByQuery("*:*");
-		solrUpdateService.offer(new SolrUpdateRequest(updateRequest.getTargetID(), IndexingActionType.COMMIT,
-				solrUpdateService.nextMessageID(), updateRequest));
+		solrUpdateDriver.commit();
 	}
-
 }

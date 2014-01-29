@@ -47,14 +47,16 @@ public class DeleteSolrTreeAction extends AbstractIndexingAction {
 				|| ancestorPathBean.getResourceType().equals(searchSettings.getResourceTypeFolder())) {
 			// Deleting a folder or collection, so perform a full path delete.
 
+			// Delete the container itself
 			solrUpdateDriver.deleteByQuery(
-					solrSearchService.getSolrSettings().getFieldName(SearchFieldKeys.ID.name()) + ":"
+					solrSettings.getFieldName(SearchFieldKeys.ID.name()) + ":"
 							+ SolrSettings.sanitize(updateRequest.getTargetID()));
 
+			// Delete the containers contents
 			solrUpdateDriver.deleteByQuery(
-					solrSearchService.getSolrSettings().getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())
+					solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())
 							+ ":" + SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue())
-							+ searchSettings.getFacetSubfieldDelimiter() + "*");
+							+ ",*");
 		} else {
 			// Targeting an individual file, just delete it.
 			solrUpdateDriver.delete(updateRequest.getTargetID());

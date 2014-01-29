@@ -36,7 +36,7 @@ import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public class DocumentIndexingPackage {
 	private static final Logger log = LoggerFactory.getLogger(DocumentIndexingPackage.class);
-	
+
 	private static final String OBJECT_STATE_RELATION = ContentModelHelper.FedoraProperty.state.toString();
 
 	private PID pid;
@@ -96,9 +96,9 @@ public class DocumentIndexingPackage {
 	public void setParentDocument(DocumentIndexingPackage parentDocument) {
 		this.parentDocument = parentDocument;
 		// Break the grand parent bond
-		/*if (this.parentDocument != null) {
-			this.parentDocument.setParentDocument(null);
-		}*/
+		/*
+		 * if (this.parentDocument != null) { this.parentDocument.setParentDocument(null); }
+		 */
 	}
 
 	public boolean isAttemptedToRetrieveDefaultWebObject() {
@@ -191,6 +191,19 @@ public class DocumentIndexingPackage {
 		this.mdContents = mdContents;
 	}
 
+	public Long getDisplayOrder(String pid) throws NumberFormatException {
+		Element mdContents = getMdContents();
+		if (mdContents == null)
+			return null;
+		Element containerDiv = mdContents.getChild("div", JDOMNamespaceUtil.METS_NS);
+		Element orderDiv = JDOMQueryUtil.getChildByAttribute(containerDiv, "div", JDOMNamespaceUtil.METS_NS, "ID", pid);
+		if (orderDiv != null) {
+			Long order = new Long(orderDiv.getAttributeValue("ORDER"));
+			return order;
+		}
+		return null;
+	}
+
 	private Element extractDatastream(ContentModelHelper.Datastream datastream) {
 		Element dsVersion;
 		if (datastreams == null) {
@@ -237,7 +250,8 @@ public class DocumentIndexingPackage {
 	public Element getObjectProperties() {
 		if (objectProperties == null && foxml != null) {
 			// /foxml:digitalObject/foxml:objectProperties
-			this.objectProperties = this.foxml.getRootElement().getChild("objectProperties", JDOMNamespaceUtil.FOXML_NS);
+			this.objectProperties = this.foxml.getRootElement()
+					.getChild("objectProperties", JDOMNamespaceUtil.FOXML_NS);
 		}
 		return this.objectProperties;
 	}
@@ -261,7 +275,7 @@ public class DocumentIndexingPackage {
 				this.children = new ArrayList<PID>(0);
 			else {
 				this.children = new ArrayList<PID>(childrenRelations.size());
-				for (String childRelation: childrenRelations)
+				for (String childRelation : childrenRelations)
 					this.children.add(new PID(childRelation));
 			}
 		} else {

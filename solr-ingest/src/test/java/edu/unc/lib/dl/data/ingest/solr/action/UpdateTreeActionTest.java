@@ -1,6 +1,5 @@
 package edu.unc.lib.dl.data.ingest.solr.action;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,18 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.core.CoreContainer;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -38,32 +31,8 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
-public class UpdateTreeActionTest extends Assert {
+public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 	private static final Logger log = LoggerFactory.getLogger(UpdateTreeActionTest.class);
-	EmbeddedSolrServer server;
-	CoreContainer container;
-	
-	@Before
-	public void setUp() throws Exception {
-		// If indexing a brand-new index, you might want to delete the data directory first
-		//FileUtilities.deleteDirectory("testdata/solr/access/data");
-
-		File home = new File( "src/test/resources/config" );
-		File configFile = new File( home, "solr.xml" );
-		
-		System.setProperty("solr.data.dir", "src/test/resources/config/data/");
-		container = new CoreContainer("src/test/resources/config", configFile);
-
-		server = new EmbeddedSolrServer(container, "access-master");
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		server.shutdown();
-		log.debug("Cleaning up data directory");
-		File dataDir = new File("src/test/resources/config/data");
-		FileUtils.deleteDirectory(dataDir);
-	}
 	
 	protected UpdateTreeAction getAction() {
 		return new UpdateTreeAction();

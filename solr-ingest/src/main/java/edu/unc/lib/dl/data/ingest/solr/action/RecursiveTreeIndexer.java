@@ -52,15 +52,18 @@ public class RecursiveTreeIndexer {
 				this.updateRequest.incrementChildrenProcessed();
 
 				// Start indexing the children
-				List<PID> children = dip.getChildren();
-				if (children != null) {
-					for (PID child : children) {
-						this.index(child, dip);
-					}
-				}
+				this.indexChildren(dip, dip.getChildren());
 			}
 		} catch (IndexingException e) {
 			log.warn("Failed to index {}", pid.getPid(), e);
+		}
+	}
+	
+	public void indexChildren(DocumentIndexingPackage parent, List<PID> children) {
+		if (children != null) {
+			for (PID child : children) {
+				this.index(child, parent);
+			}
 		}
 	}
 }

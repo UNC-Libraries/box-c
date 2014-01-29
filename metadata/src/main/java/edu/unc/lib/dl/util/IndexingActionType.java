@@ -38,7 +38,8 @@ public enum IndexingActionType {
 	CLEAR_INDEX("Delete Index", "Deletes everything from the index"),
 	UPDATE_STATUS("Update status", "Partial update operation which refreshes the status of an object and all of its children"),
 	MOVE("Move", "Partial update which updates the location and access control of an object and all its children"),
-	UPDATE_ACCESS("Update access control", "Partial update which refreshes the access control for an object and all its children");
+	UPDATE_ACCESS("Update access control", "Partial update which refreshes the access control for an object and all its children"),
+	ADD_SET_TO_PARENT("Add Set To Parent", "Indexes a set of newly added children contained by a shared parent");
 	
 	private final String label;
 	private final String description;

@@ -38,7 +38,7 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
 	}
 	
 	public SolrUpdateRequest(PID pid, IndexingActionType action, String messageID, UpdateNodeRequest parent){
-		super(messageID, parent);
+		super(messageID);
 		if (pid == null || action == null)
 			throw new IllegalArgumentException("Both a target pid and an action are required.");
 		this.pid = pid;

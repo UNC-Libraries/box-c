@@ -2,7 +2,6 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
@@ -19,9 +18,6 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
  */
 public class IndexTreeInplaceAction extends UpdateTreeAction {
 	private static final Logger log = LoggerFactory.getLogger(IndexTreeInplaceAction.class);
-
-	@Autowired
-	private SolrSettings solrSettings;
 
 	@Override
 	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
@@ -70,9 +66,5 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 			throw new IndexingException("Error encountered in deleteChildrenPriorToTimestampRequest for "
 					+ updateRequest.getTargetID(), e);
 		}
-	}
-
-	public void setSolrSettings(SolrSettings solrSettings) {
-		this.solrSettings = solrSettings;
 	}
 }

@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +28,7 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.ResourceType;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
  * Indexing filter which extracts and stores hierarchical path information for the object being processed. It also sets
@@ -198,16 +197,13 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 					+ " did not contain ancestor information for object " + dip.getPid().getPid());
 		}
 
-		Element relsExt = dip.getRelsExt();
-		// Retrieve and store content models from the FOXML
-		//fedModel:hasModel/@rdf:resource
-		List<?> cmResults = relsExt.getChildren("hasModel", JDOMNamespaceUtil.FEDORA_MODEL_NS);
-		List<String> contentModels = new ArrayList<String>(cmResults.size());
-		for (Object modelObj: cmResults){
-			Element modelEl = (Element)modelObj;
-			contentModels.add(modelEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
+		// Retrieve and store content models, either from rels-ext or stored
+		List<String> cmResults = parentDIP.getTriples().get(ContentModelHelper.FedoraProperty.hasModel.toString());
+		if (cmResults != null) {
+			List<String> contentModels = new ArrayList<String>(cmResults.size());
+			contentModels.addAll(cmResults);
+			idb.setContentModel(contentModels);
 		}
-		idb.setContentModel(contentModels);
 
 		// Store the resourceType for this object
 		ResourceType resourceType = ResourceType.getResourceTypeByContentModels(idb.getContentModel());

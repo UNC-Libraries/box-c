@@ -4518,13 +4518,16 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	var defaultOptions = {
 		name : "indexing",
 		jobConfig : {
-			url : "/services/api/status/indexing/jobs?begin=0&end=20",
+			url : "/services/api/status/indexing/{name}",
 			template : indexingMonitorJobTemplate,
-			detailsUrl : "/services/api/status/indexing/jobs/job/{id}",
+			detailsUrl : "/services/api/status/indexing/job/{id}",
 			detailsTemplate : indexingMonitorDetailsTemplate,
 			fields : ["Status", "Label", "Action", "Progress"],
 			jobTypes : [
-				{name : "all", refresh : 10000}
+				{name : "active", refresh : 1000, detailsRefresh : 1000},
+				{name : "queued", refresh : 5000},
+				{name : "finished", refresh : 10000},
+				{name : "failed", refresh : 10000}
 			]
 		},
 		overviewConfig : {

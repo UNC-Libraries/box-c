@@ -57,8 +57,6 @@ public class SolrUpdateService {
 	protected int finishedQueueSize = 1000;
 	protected boolean isPaused = false;
 
-	protected UpdateNodeRequest root;
-
 	public SolrUpdateService() {
 		pidQueue = new LinkedBlockingQueue<SolrUpdateRequest>();
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
@@ -66,8 +64,6 @@ public class SolrUpdateService {
 		activeMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		failedMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		finishedMessages = Collections.synchronizedList(new LimitedQueue<SolrUpdateRequest>(this.finishedQueueSize));
-		
-		root = new UpdateNodeWithManagedChildrenRequest(identifier + ":ROOT", null);
 	}
 
 	public void init() {
@@ -97,11 +93,11 @@ public class SolrUpdateService {
 	}
 
 	public void offer(String pid, IndexingActionType action) {
-		offer(new SolrUpdateRequest(pid, action, nextMessageID(), root));
+		offer(new SolrUpdateRequest(pid, action, nextMessageID()));
 	}
 
 	public void offer(String pid) {
-		offer(new SolrUpdateRequest(pid, IndexingActionType.ADD, nextMessageID(), root));
+		offer(new SolrUpdateRequest(pid, IndexingActionType.ADD, nextMessageID()));
 	}
 
 	public void offer(SolrUpdateRequest ingestRequest) {
@@ -111,10 +107,6 @@ public class SolrUpdateService {
 		if (ingestRequest.getMessageID() == null) {
 			ingestRequest.setMessageID(nextMessageID());
 		}
-
-		// If no parent is provided, then this is a root node
-		if (ingestRequest.getParent() == null)
-			ingestRequest.setParent(root);
 
 		synchronized (pidQueue) {
 			if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated())
@@ -166,10 +158,6 @@ public class SolrUpdateService {
 
 	public List<SolrUpdateRequest> getFailedMessages() {
 		return failedMessages;
-	}
-
-	public UpdateNodeRequest getRoot() {
-		return root;
 	}
 
 	public boolean isAutoCommit() {

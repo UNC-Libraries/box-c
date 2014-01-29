@@ -3,6 +3,8 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 import java.io.IOException;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +29,9 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 	@Autowired
 	protected TripleStoreQueryService tsqs;
 	private String descendantsQuery;
-	private boolean addDocumentMode = true;
+	protected boolean addDocumentMode = true;
 
+	@PostConstruct
 	public void init() {
 		try {
 			descendantsQuery = FileUtils.inputStreamToString(this.getClass().getResourceAsStream("countDescendants.itql"));

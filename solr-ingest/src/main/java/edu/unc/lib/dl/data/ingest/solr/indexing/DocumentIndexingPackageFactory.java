@@ -77,6 +77,24 @@ public class DocumentIndexingPackageFactory {
 			throw new IndexingException("Failed to parse RELS-EXT for " + pid.getPid(), e);
 		}
 	}
+	
+	public DocumentIndexingPackage createDocumentIndexingPackageWithMDContents(PID pid) {
+		try {
+			DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
+			
+			byte[] stream = accessClient.getDatastreamDissemination(pid, Datastream.MD_CONTENTS.getName(), null).getStream();
+			Document dsDocument = builder.build(new ByteArrayInputStream(stream));
+			dip.setMdContents(dsDocument.getRootElement());
+			
+			return dip;
+		} catch (FedoraException e) {
+			throw new IndexingException("Failed to retrieve RELS-EXT for " + pid.getPid(), e);
+		} catch (JDOMException e) {
+			throw new IndexingException("Failed to parse RELS-EXT for " + pid.getPid(), e);
+		} catch (IOException e) {
+			throw new IndexingException("Failed to parse RELS-EXT for " + pid.getPid(), e);
+		}
+	}
 
 	public void setManagementClient(ManagementClient managementClient) {
 		this.managementClient = managementClient;

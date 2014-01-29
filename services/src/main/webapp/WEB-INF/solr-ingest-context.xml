@@ -128,6 +128,17 @@
 			</list>
 		</property>
 	</bean>
+	
+	<bean id="solrMoveUpdatePipeline"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+		<property name="filters">
+			<list>
+				<ref bean="setPathFilter" />
+				<ref bean="setAccessControlFilter" />
+				<ref bean="setCollectionSupplementalInformationFilter" />
+			</list>
+		</property>
+	</bean>
 
 	<!-- Ingest Actions -->
 	<bean id="updateObjectAction"
@@ -153,32 +164,17 @@
 		<property name="solrSettings" ref="solrSettings" />
 		<property name="collectionsPid" ref="collectionsPid" />
 	</bean>
-
-	<bean id="recursiveReindexAction"
-		class="edu.unc.lib.dl.data.ingest.solr.action.RecursiveReindexAction">
+	
+	<bean id="indexTreeCleanAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeCleanAction">
+		<property name="deleteAction" ref="deleteSolrTreeAction" />
 		<property name="pipeline" ref="solrFullUpdatePipeline" />
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
-		<property name="solrUpdateService" ref="solrUpdateConductor" />
 		<property name="collectionsPid" ref="collectionsPid" />
-	</bean>
-	
-	<bean id="recursiveUpdateAction"
-		class="edu.unc.lib.dl.data.ingest.solr.action.RecursiveUpdateAction">
-		<property name="pipeline" ref="solrFullUpdatePipeline" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
-		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
-		<property name="solrUpdateService" ref="solrUpdateConductor" />
-		<property name="collectionsPid" ref="collectionsPid" />
-	</bean>
-	
-	<bean id="cleanReindexAction"
-		class="edu.unc.lib.dl.data.ingest.solr.action.CleanReindexAction">
-		<property name="solrUpdateService" ref="solrUpdateConductor" />
 	</bean>
 
 	<bean id="clearIndexAction" class="edu.unc.lib.dl.data.ingest.solr.action.ClearIndexAction">
-		<property name="solrUpdateService" ref="solrUpdateConductor" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 	</bean>
 
@@ -191,19 +187,9 @@
 	<bean id="deleteSolrTreeAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.DeleteSolrTreeAction">
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
-		<property name="solrUpdateService" ref="solrUpdateConductor" />
 		<property name="solrSearchService" ref="queryLayer" />
 		<property name="searchSettings" ref="searchSettings" />
-		<property name="accessGroups" ref="accessGroups" />
-	</bean>
-
-	<bean id="deleteChildrenPriorToTimestamp"
-		class="edu.unc.lib.dl.data.ingest.solr.action.DeleteChildrenPriorToTimestamp">
-		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
-		<property name="solrUpdateService" ref="solrUpdateConductor" />
-		<property name="solrSearchService" ref="queryLayer" />
-		<property name="searchStateFactory" ref="searchStateFactory" />
-		<property name="searchSettings" ref="searchSettings" />
+		<property name="solrSettings" ref="solrSettings" />
 		<property name="accessGroups" ref="accessGroups" />
 	</bean>
 
@@ -212,12 +198,23 @@
 	</bean>
 	
 	<bean id="updateAccessControlAction"
-		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateStatusAction">
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateAccessAction">
 		<property name="pipeline" ref="solrAccessControlUpdatePipeline" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
-		<property name="solrSearchService" ref="queryLayer" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
-		<property name="solrUpdateService" ref="solrUpdateConductor" />
+	</bean>
+	
+	<bean id="addSetToParentAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateChildSetAction">
+		<property name="pipeline" ref="solrFullUpdatePipeline" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+	</bean>
+	
+	<bean id="moveObjectsAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateAccessAction">
+		<property name="pipeline" ref="solrMoveUpdatePipeline" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
 	</bean>
 
 	<util:map id="solrIndexingActionMap"
@@ -226,14 +223,15 @@
 		<entry key="ADD" value-ref="updateObjectAction" />
 		<entry key="RECURSIVE_REINDEX" value-ref="indexTreeInplaceAction" />
 		<entry key="RECURSIVE_ADD" value-ref="updateTreeAction" />
-		<entry key="CLEAN_REINDEX" value-ref="cleanReindexAction" />
+		<entry key="CLEAN_REINDEX" value-ref="indexTreeCleanAction" />
 		<entry key="CLEAR_INDEX" value-ref="clearIndexAction" />
 		<entry key="DELETE" value-ref="deleteObjectAction" />
 		<entry key="DELETE_SOLR_TREE" value-ref="deleteSolrTreeAction" />
-		<entry key="DELETE_CHILDREN_PRIOR_TO_TIMESTAMP" value-ref="deleteChildrenPriorToTimestamp" />
 		<entry key="COMMIT" value-ref="commitAction" />
 		<entry key="UPDATE_STATUS" value-ref="updateAccessControlAction" />
 		<entry key="UPDATE_ACCESS" value-ref="updateAccessControlAction" />
+		<entry key="MOVE" value-ref="moveObjectsAction" />
+		<entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
 	</util:map>
 	
 	<bean id="solrUpdateRunnableFactory" class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnableFactory">
