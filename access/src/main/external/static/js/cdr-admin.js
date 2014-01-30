@@ -1938,7 +1938,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 				if (destTitle.length > 50) destTitle = destTitle.substring(0, 50) + "...";
 				var promptText = "Move \"<a class='result_object_link' data-id='" + representative.pid + "'>" + repTitle + "</a>\"";
 				if (self.manager.dragTargets.length > 1)
-					promptText += " and " + (self.manager.length - 1) + " other object" + (self.manager.dragTargets.length - 1 > 1? "s" :"");
+					promptText += " and " + (self.manager.dragTargets.length - 1) + " other object" + (self.manager.dragTargets.length - 1 > 1? "s" :"");
 				promptText += " into \"<a class='result_object_link' data-id='" + metadata.id + "'>" + destTitle + "</a>\"?";
 				var confirm = new ConfirmationDialog({
 					promptText : promptText,
@@ -1956,7 +1956,8 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 							var event = {
 								action : 'MoveObjects',
 								newParent : metadata,
-								targets : self.manager.dragTargets
+								targets : self.manager.dragTargets,
+								alertHandler : self.manager.options.alertHandler
 							};
 							self.actionHandler.addEvent(event);
 						}
@@ -3913,16 +3914,15 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	MoveObjectsAction.prototype.execute = function() {
 		var action = this;
 		var moveData = {
-				newParent : metadata.id,
+				newParent : this.context.newParent.id,
 				ids : []
 			};
-		var destTitle = this.context.destTitle? this.context.destTitle : this.context.newParent.metadata.title;
+		var destTitle = this.context.destTitle? this.context.destTitle : this.context.newParent.title;
 		$.each(this.context.targets, function() {
 			moveData.ids.push(this.pid);
 			this.element.hide();
 		});
 		// Store a reference to the targeted item list since moving happens asynchronously
-		var moveObjects = self.manager.dragTargets;
 		$.ajax({
 			url : "/services/api/edit/move",
 			type : "POST",
@@ -3933,7 +3933,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				$.each(action.context.targets, function() {
 					this.deleteElement();
 				});
-				self.manager.options.alertHandler.alertHandler("success", "Moved " + action.context.targets.length 
+				action.context.alertHandler.alertHandler("success", "Moved " + action.context.targets.length 
 						+ " object" + (action.context.targets.length > 1? "s" : "") 
 						+ " to " + destTitle);
 			},
@@ -3941,7 +3941,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				$.each(action.context.targets, function() {
 					this.element.show();
 				});
-				self.manager.options.alertHandler.alertHandler("error", "Failed to move " + action.context.targets.length 
+				action.context.alertHandler.alertHandler("error", "Failed to move " + action.context.targets.length 
 						+ " object" + (action.context.targets.length > 1? "s" : "") 
 						+ " to " + destTitle);
 				
