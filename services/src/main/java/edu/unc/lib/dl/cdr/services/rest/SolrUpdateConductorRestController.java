@@ -33,8 +33,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor;
+import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.UpdateNodeRequest;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.message.ActionMessage;
 
 @Controller
@@ -47,7 +49,7 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 	public static final String ACTIVE_PATH = "active";
 	public static final String FAILED_PATH = "failed";
 	public static final String FINISHED_PATH = "finished";
-	public static final String CHILDREN_JOBS_PATH = "jobs";
+	public static final String JOB_PATH = "job";
 	
 	@Resource
 	private SolrUpdateConductor solrUpdateConductor;
@@ -71,12 +73,12 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 		uris.put("activeJobs", BASE_PATH + ACTIVE_PATH);
 		uris.put("failedJobs", BASE_PATH + FAILED_PATH);
 		uris.put("finishedJobs", BASE_PATH + FINISHED_PATH);
-		uris.put("childrenJobs", BASE_PATH + CHILDREN_JOBS_PATH);
+		uris.put("childrenJobs", BASE_PATH + JOB_PATH);
 		
 		return result;
 	}
 	
-	@RequestMapping(value = {CHILDREN_JOBS_PATH + "/{id}"}, method = RequestMethod.GET)
+	@RequestMapping(value = {JOB_PATH + "/{id}"}, method = RequestMethod.GET)
 	public @ResponseBody Map<String, ? extends Object> getChildrenJobsInfo(
 			@PathVariable("id") String id,
 			@RequestParam(value = "begin", required = false) Integer begin,
@@ -254,6 +256,15 @@ public class SolrUpdateConductorRestController extends AbstractServiceConductorR
 		Map<String, Object> uris = new HashMap<String, Object>();
 		uris.put("targetInfo", ItemInfoRestController.BASE_PATH + message.getTargetID());
 		job.put("uris", uris);
+		
+		if (message instanceof ChildSetRequest) {
+			ChildSetRequest childRequest = (ChildSetRequest) message;
+			List<String> children = new ArrayList<String>(childRequest.getChildren().size());
+			for (PID child : childRequest.getChildren()) {
+				children.add(child.getPid());
+			}
+			job.put("topChildren", children);
+		}
 
 		return job;
 	}

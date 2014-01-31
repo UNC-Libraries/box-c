@@ -115,8 +115,10 @@ define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 			this.refreshType(jobType, true);
 		}
 		// Restart details refreshing if a job is selected
-		if (this.detailsType)
+		if (this.detailsType) {
+			clearTimeout(this.detailsType.repeatId);
 			this.refreshType(this.detailsType, true);
+		}
 		return this;
 	};
 	

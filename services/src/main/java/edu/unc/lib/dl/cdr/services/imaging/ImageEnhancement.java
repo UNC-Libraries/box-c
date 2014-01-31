@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancement;
-import edu.unc.lib.dl.cdr.services.Enhancement;
+import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -38,7 +38,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Enhancement class for the construction of a jp2 derived datastream based off of all image data_file datastreams
@@ -48,8 +47,6 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  */
 public class ImageEnhancement extends AbstractFedoraEnhancement {
 	private static final Logger LOG = LoggerFactory.getLogger(ImageEnhancement.class);
-
-	private ImageEnhancementService service = null;
 
 	@Override
 	public Element call() throws EnhancementException {
@@ -81,7 +78,7 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 					LOG.debug("Image DS found: " + dsid + ", " + mimetype);
 
 					dsLocation = this.getDSLocation(dsid, vid, foxml);
-					
+
 					LOG.debug("Image DS location: " + dsLocation);
 					if (dsLocation != null) {
 						dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
@@ -89,7 +86,8 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 						LOG.debug("Convert to JP2");
 						String convertResultPath = runConvertJP2(dsIrodsPath);
 
-						String convertResultURI = service.makeIrodsURIFromPath(convertResultPath);
+						String convertResultURI = ((AbstractIrodsObjectEnhancementService) service)
+								.makeIrodsURIFromPath(convertResultPath);
 						LOG.debug("attempting to ingest conversion result: " + convertResultPath);
 
 						if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.IMAGE_JP2000.getName()) == null) {
@@ -104,16 +102,13 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 							String message = "Replacing derived JP2000 image datastream.";
 							service.getManagementClient().modifyDatastreamByReference(pid,
 									ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
-									new ArrayList<String>(), "Derived JP2000 image", "image/jp2", null, null,
-									convertResultURI);
+									new ArrayList<String>(), "Derived JP2000 image", "image/jp2", null, null, convertResultURI);
 						}
 
 						// Add DATA_JP2, cdr-base:derivedJP2 relation triple
 						LOG.debug("Adding JP2 relationship");
-						PID newDSPID = new PID(pid.getPid() + "/"
-								+ ContentModelHelper.Datastream.IMAGE_JP2000.getName());
-						Map<String, List<String>> rels = service.getTripleStoreQueryService()
-								.fetchAllTriples(pid);
+						PID newDSPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.IMAGE_JP2000.getName());
+						Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid);
 
 						List<String> jp2rel = rels.get(ContentModelHelper.CDRProperty.derivedJP2.toString());
 						if (jp2rel == null || !jp2rel.contains(newDSPID.getURI())) {
@@ -133,7 +128,7 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 
 						// Clean up the temporary irods file
 						LOG.debug("Deleting temporary jp2 Irods file");
-						service.deleteIRODSFile(convertResultPath);
+						((AbstractIrodsObjectEnhancementService) service).deleteIRODSFile(convertResultPath);
 						LOG.debug("Finished JP2 processing");
 					}
 				}
@@ -154,7 +149,8 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 	private String runConvertJP2(String dsIrodsPath) throws Exception {
 		LOG.debug("Run (image magick) convertjp2 " + dsIrodsPath);
 		// execute irods image magick rule
-		InputStream response = service.remoteExecuteWithPhysicalLocation("convertjp2", dsIrodsPath);
+		InputStream response = ((AbstractIrodsObjectEnhancementService) service).remoteExecuteWithPhysicalLocation(
+				"convertjp2", dsIrodsPath);
 		BufferedReader r = new BufferedReader(new InputStreamReader(response));
 		try {
 			return r.readLine().trim();

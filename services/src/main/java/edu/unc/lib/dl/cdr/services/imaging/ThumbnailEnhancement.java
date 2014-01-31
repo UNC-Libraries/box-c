@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancement;
-import edu.unc.lib.dl.cdr.services.Enhancement;
+import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
@@ -46,52 +46,55 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Enhancement for the creation of derivative thumbnail images.
+ * 
  * @author Gregory Jansen, bbpennel
- *
+ * 
  */
 public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 	private static final Logger LOG = LoggerFactory.getLogger(ThumbnailEnhancement.class);
-
-	private ThumbnailEnhancementService service = null;
 
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
 		LOG.debug("Called thumbnail enhancement service for " + pid);
-		
+
 		String surrogateDsUri = null;
 		String surrogateDsId = null;
 		PID surrogatePid = null;
-		
+
 		String dsLocation = null;
 		String dsIrodsPath = null;
 		String vid = null;
 
 		try {
-		// enqueues objects that use this one as a surrogate.
+			// enqueues objects that use this one as a surrogate.
 			List<PID> usesMeForSurrogate = this.service.getTripleStoreQueryService().fetchPIDsSurrogateFor(pid);
-			for(PID usesMe: usesMeForSurrogate) {
-				this.service.getMessageDirector().direct(new EnhancementMessage(usesMe, JMSMessageUtil.servicesMessageNamespace, 
-						JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), ThumbnailEnhancementService.class.getName()));
-				this.service.getMessageDirector().direct(new EnhancementMessage(usesMe, JMSMessageUtil.servicesMessageNamespace, 
-						JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), SolrUpdateEnhancementService.class.getName()));
+			for (PID usesMe : usesMeForSurrogate) {
+				this.service.getMessageDirector().direct(
+						new EnhancementMessage(usesMe, JMSMessageUtil.servicesMessageNamespace,
+								JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), ThumbnailEnhancementService.class
+										.getName()));
+				this.service.getMessageDirector().direct(
+						new EnhancementMessage(usesMe, JMSMessageUtil.servicesMessageNamespace,
+								JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), SolrUpdateEnhancementService.class
+										.getName()));
 			}
 
 			// get sourceData data stream IDs
 			List<String> surrogateDSIDs = this.service.getTripleStoreQueryService().getSurrogateData(pid);
-			if(surrogateDSIDs == null || surrogateDSIDs.size() < 1) {
+			if (surrogateDSIDs == null || surrogateDSIDs.size() < 1) {
 				throw new EnhancementException(pid, "Cannot find a suitable DSID for making a thumbnail.");
 			}
 			surrogateDsUri = surrogateDSIDs.get(0);
 			surrogateDsId = surrogateDsUri.substring(surrogateDsUri.lastIndexOf("/") + 1);
-			surrogatePid = new PID(surrogateDsUri.substring(0,surrogateDsUri.lastIndexOf("/")));
+			surrogatePid = new PID(surrogateDsUri.substring(0, surrogateDsUri.lastIndexOf("/")));
 
 			Document foxml = service.getManagementClient().getObjectXML(pid);
 
 			Document surrogateFoxml = service.getManagementClient().getObjectXML(surrogatePid);
 
 			String mimetype = service.getTripleStoreQueryService().lookupSourceMimeType(surrogatePid);
-			
+
 			Datastream ds = service.getManagementClient().getDatastream(surrogatePid, surrogateDsId, "");
 			vid = ds.getVersionID();
 
@@ -100,7 +103,7 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 				LOG.debug("Image DS found: " + surrogateDsId + ", " + mimetype);
 
 				dsLocation = this.getDSLocation(surrogateDsId, vid, surrogateFoxml);
-				
+
 				Element dsEl = FOXMLJDOMUtil.getDatastream(surrogateFoxml, surrogateDsId);
 				for (Object o : dsEl.getChildren("datastreamVersion", JDOMNamespaceUtil.FOXML_NS)) {
 					if (o instanceof Element) {
@@ -139,11 +142,11 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 		} catch (NotFoundException e) {
 			throw new EnhancementException(e, Severity.UNRECOVERABLE);
 		} catch (FedoraException e) {
-			throw new EnhancementException("Thumbnail Enhancement failed to process, pid: " + pid.getPid() 
-					+ " surrogateDS: "+surrogateDsId, e, Severity.RECOVERABLE);
+			throw new EnhancementException("Thumbnail Enhancement failed to process, pid: " + pid.getPid()
+					+ " surrogateDS: " + surrogateDsId, e, Severity.RECOVERABLE);
 		} catch (Exception e) {
-			throw new EnhancementException("Thumbnail Enhancement failed to process, pid "+pid.getPid()
-					+ " surrogateDS: "+surrogateDsId, e, Severity.UNRECOVERABLE);
+			throw new EnhancementException("Thumbnail Enhancement failed to process, pid " + pid.getPid()
+					+ " surrogateDS: " + surrogateDsId, e, Severity.UNRECOVERABLE);
 		}
 
 		return result;
@@ -152,11 +155,11 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 	private void createStoreThumb(String dsIrodsPath, int width, int height, String dsname, boolean exists,
 			List<String> thumbRels) throws Exception {
 		String resultPath = runConvertScaleStage(dsIrodsPath, "PNG", width, height);
-		String resultURI = service.makeIrodsURIFromPath(resultPath);
+		String resultURI = ((AbstractIrodsObjectEnhancementService) service).makeIrodsURIFromPath(resultPath);
 		if (!exists) {
 			String message = "adding thumbnail";
 			service.getManagementClient().addManagedDatastream(pid, dsname, false, message,
-					Collections.<String>emptyList(), "Thumbnail Image", false, "image/png", resultURI);
+					Collections.<String> emptyList(), "Thumbnail Image", false, "image/png", resultURI);
 		} else {
 			String message = "updating thumbnail";
 			service.getManagementClient().modifyDatastreamByReference(pid, dsname, false, message,
@@ -164,18 +167,18 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 		}
 		PID newDSPID = new PID(pid.getPid() + "/" + dsname);
 		if (thumbRels == null || !thumbRels.contains(newDSPID.getURI())) {
-			service.getManagementClient().addObjectRelationship(pid,
-					ContentModelHelper.CDRProperty.thumb.toString(), newDSPID);
+			service.getManagementClient().addObjectRelationship(pid, ContentModelHelper.CDRProperty.thumb.toString(),
+					newDSPID);
 		}
-		service.deleteIRODSFile(resultPath);
+		((AbstractIrodsObjectEnhancementService) service).deleteIRODSFile(resultPath);
 	}
 
 	private String runConvertScaleStage(String dsIrodsPath, String format, int width, int height) throws Exception {
 		LOG.debug("Run (image magick) convertScaleStage");
 		// execute irods image magick rule
 		StringBuilder arguments = new StringBuilder().append(format).append(" ").append(width).append(" ").append(height);
-		InputStream response = service.remoteExecuteWithPhysicalLocation("convertScaleStage", arguments.toString(),
-				dsIrodsPath);
+		InputStream response = ((AbstractIrodsObjectEnhancementService) service).remoteExecuteWithPhysicalLocation(
+				"convertScaleStage", arguments.toString(), dsIrodsPath);
 		BufferedReader r = new BufferedReader(new InputStreamReader(response));
 		try {
 			return r.readLine().trim();

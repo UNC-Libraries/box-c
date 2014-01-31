@@ -28,6 +28,7 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnable;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.message.ActionMessage;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 
@@ -49,31 +50,41 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 
 	@Override
 	public void add(ActionMessage message) {
-		LOG.debug("Adding " + message.getTargetID() + " " + message.getClass().getName() + ": " + message.getQualifiedAction());
+		LOG.debug("Adding " + message.getTargetID() + " " + message.getClass().getName() + ": "
+				+ message.getQualifiedAction());
 		if (message instanceof SolrUpdateRequest) {
 			this.offer((SolrUpdateRequest) message);
 			return;
 		}
 		String action = message.getQualifiedAction();
-		
+
 		if (action == null)
 			return;
 
 		if (message instanceof FedoraEventMessage) {
+			String datastream = ((FedoraEventMessage) message).getDatastream();
 			if (JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)) {
 				this.offer(message.getTargetID(), IndexingActionType.DELETE_SOLR_TREE);
 			} else if (JMSMessageUtil.FedoraActions.MODIFY_OBJECT.equals(action)) {
 				this.offer(message.getTargetID(), IndexingActionType.UPDATE_STATUS);
+			} else if (ContentModelHelper.Datastream.MD_DESCRIPTIVE.equals(datastream)
+					&& (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
+							|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action)
+							|| JMSMessageUtil.FedoraActions.PURGE_DATASTREAM.equals(action) || JMSMessageUtil.FedoraActions.ADD_DATASTREAM
+								.equals(action))) {
+				this.offer(message.getTargetID(), IndexingActionType.UPDATE_DESCRIPTION);
 			} else {
 				this.offer(message.getTargetID());
 			}
 		} else if (message instanceof CDREventMessage) {
 			CDREventMessage cdrMessage = (CDREventMessage) message;
 			if (JMSMessageUtil.CDRActions.MOVE.equals(action)) {
-				SolrUpdateRequest request = new ChildSetRequest(cdrMessage.getTargetID(), cdrMessage.getSubjects(), IndexingActionType.MOVE);
+				SolrUpdateRequest request = new ChildSetRequest(cdrMessage.getTargetID(), cdrMessage.getSubjects(),
+						IndexingActionType.MOVE);
 				this.offer(request);
 			} else if (JMSMessageUtil.CDRActions.ADD.equals(action)) {
-				SolrUpdateRequest request = new ChildSetRequest(cdrMessage.getTargetID(), cdrMessage.getSubjects(), IndexingActionType.ADD_SET_TO_PARENT);
+				SolrUpdateRequest request = new ChildSetRequest(cdrMessage.getTargetID(), cdrMessage.getSubjects(),
+						IndexingActionType.ADD_SET_TO_PARENT);
 				this.offer(request);
 			} else if (JMSMessageUtil.CDRActions.REORDER.equals(action)) {
 				// TODO this is a placeholder until a partial update for reorder is worked out
@@ -81,7 +92,8 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 					this.offer(pidString, IndexingActionType.ADD);
 				}
 			} else if (JMSMessageUtil.CDRActions.INDEX.equals(action)) {
-				IndexingActionType indexingAction = IndexingActionType.getAction(IndexingActionType.namespace + cdrMessage.getOperation());
+				IndexingActionType indexingAction = IndexingActionType.getAction(IndexingActionType.namespace
+						+ cdrMessage.getOperation());
 				if (indexingAction != null) {
 					for (String pidString : cdrMessage.getSubjects()) {
 						this.offer(pidString, indexingAction);

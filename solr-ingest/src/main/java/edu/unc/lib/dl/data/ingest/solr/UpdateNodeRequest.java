@@ -47,23 +47,11 @@ public class UpdateNodeRequest implements ActionMessage {
 	}
 	
 	public void requestCompleted() {
-		if (ProcessingStatus.FINISHED.equals(status)){
-			this.cleanupExternalReferences();
-			return;
-		}
-
-		if (ProcessingStatus.FAILED.equals(status)) {
-			this.cleanupExternalReferences();
-			timeFinished = System.currentTimeMillis();
-		} else {
-			if (childrenProcessed.get() == childrenPending.get()) {
-				status = ProcessingStatus.FINISHED;
-				this.cleanupExternalReferences();
-				timeFinished = System.currentTimeMillis();
-			} else {
-				status = ProcessingStatus.INPROGRESS;
-			}
-		}
+		timeFinished = System.currentTimeMillis();
+		this.cleanupExternalReferences();
+		
+		if (ProcessingStatus.ACTIVE.equals(this.status))
+			this.status = ProcessingStatus.FINISHED;
 	}
 
 	/**

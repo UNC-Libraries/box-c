@@ -257,11 +257,10 @@ public class DocumentIndexingPackage {
 	}
 
 	public String getLabel() {
-		if (label == null && foxml != null) {
-			Element objectProperties = this.getObjectProperties();
-			Element labelElement = JDOMQueryUtil.getChildByAttribute(objectProperties, "property",
-					JDOMNamespaceUtil.FOXML_NS, "NAME", "info:fedora/fedora-system:def/model#label");
-			this.label = labelElement.getAttributeValue("VALUE");
+		if (label == null) {
+			Map<String, List<String>> triples = getTriples();
+			if (triples != null)
+				this.label = triples.get(ContentModelHelper.FedoraProperty.label.toString()).get(0);
 		}
 		return label;
 	}

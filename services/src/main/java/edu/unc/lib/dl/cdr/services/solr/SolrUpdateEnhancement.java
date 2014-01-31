@@ -21,8 +21,12 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
+import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
+import edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -33,6 +37,7 @@ import edu.unc.lib.dl.util.IndexingActionType;
 public class SolrUpdateEnhancement extends Enhancement<Element> {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateEnhancement.class);
 	SolrUpdateEnhancementService service = null;
+	EnhancementMessage message;
 
 	@Override
 	public Element call() throws EnhancementException {
@@ -40,13 +45,24 @@ public class SolrUpdateEnhancement extends Enhancement<Element> {
 		LOG.debug("Called Solr update service for " + pid.getPid());
 		
 		//Perform a single item update
+		if (message.getFilteredServices().contains(FullTextEnhancementService.enhancementName)) {
+			// IndexingActionType.FULL_TEXT
+			// This would be much better if it carried over FOXML from the enhancement
+		}
+		
+		if (message.getFilteredServices().contains(TechnicalMetadataEnhancementService.enhancementName)
+				|| message.getFilteredServices().contains(ImageEnhancementService.enhancementName)
+				|| message.getFilteredServices().contains(ThumbnailEnhancementService.enhancementName)) {
+			// IndexingActionType.UPDATE_DATASTREAMS
+		}
 		service.getMessageDirector().direct(new SolrUpdateRequest(pid.getPid(), IndexingActionType.ADD));
 		
 		return result;
 	}
 
-	public SolrUpdateEnhancement(SolrUpdateEnhancementService service, PID pid) {
-		super(pid);
+	public SolrUpdateEnhancement(SolrUpdateEnhancementService service, EnhancementMessage message) {
+		super(message.getPid());
 		this.service = service;
+		this.message = message;
 	}
 }

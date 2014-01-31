@@ -4383,8 +4383,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			this.refreshType(jobType, true);
 		}
 		// Restart details refreshing if a job is selected
-		if (this.detailsType)
+		if (this.detailsType) {
+			clearTimeout(this.detailsType.repeatId);
 			this.refreshType(this.detailsType, true);
+		}
 		return this;
 	};
 	
@@ -4524,7 +4526,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			detailsTemplate : indexingMonitorDetailsTemplate,
 			fields : ["Status", "Label", "Action", "Progress"],
 			jobTypes : [
-				{name : "active", refresh : 1000, detailsRefresh : 1000},
+				{name : "active", refresh : 2000, detailsRefresh : 2000},
 				{name : "queued", refresh : 5000},
 				{name : "finished", refresh : 10000},
 				{name : "failed", refresh : 10000}

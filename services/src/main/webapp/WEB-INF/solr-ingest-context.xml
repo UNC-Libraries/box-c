@@ -89,6 +89,7 @@
 	<bean id="setAccessControlFilter"
 		class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
 		<property name="accessControlService" ref="accessControlService" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 	<bean id="setContentStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentStatusFilter">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
@@ -125,6 +126,7 @@
 		<property name="filters">
 			<list>
 				<ref bean="setAccessControlFilter" />
+				<ref bean="setRelationsFilter" />
 			</list>
 		</property>
 	</bean>
@@ -139,6 +141,35 @@
 			</list>
 		</property>
 	</bean>
+	
+	<bean id="solrDescriptionUpdatePipeline"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+		<property name="filters">
+			<list>
+				<ref bean="setDescriptiveMetadataFilter" />
+				<ref bean="setContentStatusFilter" />
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="solrDatastreamUpdatePipeline"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+		<property name="filters">
+			<list>
+				<ref bean="setDatastreamContentFilter" />
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="solrFullTextUpdatePipeline"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+		<property name="filters">
+			<list>
+				<ref bean="setDatastreamContentFilter" />
+				<ref bean="setFullTextFilter" />
+			</list>
+		</property>
+	</bean>
 
 	<!-- Ingest Actions -->
 	<bean id="updateObjectAction"
@@ -148,12 +179,35 @@
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 	</bean>
 	
+	<bean id="updateDescriptionAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+		<property name="pipeline" ref="solrDescriptionUpdatePipeline" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+	</bean>
+	
+	<bean id="updateDatastreamsAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+		<property name="pipeline" ref="solrDatastreamUpdatePipeline" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+	</bean>
+	
+	<bean id="updateFullTextAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+		<property name="pipeline" ref="solrFullTextUpdatePipeline" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+	</bean>
+	
 	<bean id="updateTreeAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
 		<property name="pipeline" ref="solrFullUpdatePipeline" />
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="solrSearchService" ref="queryLayer" />
 		<property name="collectionsPid" ref="collectionsPid" />
+		<property name="accessGroups" ref="accessGroups" />
 	</bean>
 	
 	<bean id="indexTreeInplaceAction"
@@ -163,6 +217,8 @@
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="solrSettings" ref="solrSettings" />
 		<property name="collectionsPid" ref="collectionsPid" />
+		<property name="solrSearchService" ref="queryLayer" />
+		<property name="accessGroups" ref="accessGroups" />
 	</bean>
 	
 	<bean id="indexTreeCleanAction"
@@ -172,6 +228,8 @@
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="collectionsPid" ref="collectionsPid" />
+		<property name="solrSearchService" ref="queryLayer" />
+		<property name="accessGroups" ref="accessGroups" />
 	</bean>
 
 	<bean id="clearIndexAction" class="edu.unc.lib.dl.data.ingest.solr.action.ClearIndexAction">
@@ -211,7 +269,7 @@
 	</bean>
 	
 	<bean id="moveObjectsAction"
-		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateAccessAction">
+		class="edu.unc.lib.dl.data.ingest.solr.action.MoveObjectsAction">
 		<property name="pipeline" ref="solrMoveUpdatePipeline" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
@@ -221,6 +279,9 @@
 		key-type="edu.unc.lib.dl.util.IndexingActionType"
 		value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
 		<entry key="ADD" value-ref="updateObjectAction" />
+		<entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
+		<entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />
+		<entry key="UPDATE_FULL_TEXT" value-ref="updateFullTextAction" />
 		<entry key="RECURSIVE_REINDEX" value-ref="indexTreeInplaceAction" />
 		<entry key="RECURSIVE_ADD" value-ref="updateTreeAction" />
 		<entry key="CLEAN_REINDEX" value-ref="indexTreeCleanAction" />

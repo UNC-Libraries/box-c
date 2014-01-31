@@ -18,6 +18,7 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,8 +198,13 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 					+ " did not contain ancestor information for object " + dip.getPid().getPid());
 		}
 
+		Map<String, List<String>> triples = dip.getTriples();
+		if (triples == null) {
+			dip.setTriples(tsqs.fetchAllTriples(dip.getPid()));
+			triples = dip.getTriples();
+		}
 		// Retrieve and store content models, either from rels-ext or stored
-		List<String> cmResults = parentDIP.getTriples().get(ContentModelHelper.FedoraProperty.hasModel.toString());
+		List<String> cmResults = triples.get(ContentModelHelper.FedoraProperty.hasModel.toString());
 		if (cmResults != null) {
 			List<String> contentModels = new ArrayList<String>(cmResults.size());
 			contentModels.addAll(cmResults);
