@@ -57,19 +57,9 @@ public class NormalizeBag extends AbstractBagJob {
 			} else {
 				enqueueNextJob(convertJob);
 			}
-		}
-
-		// BagIt validation
-		
-		// 1st set of parallel metadata creation and file operations:
-		//   Biomed metadata extraction
-		//   Atom metadata extraction
-		//   Virus scan
-		
-		// Parallel 
-		// Container check
-		// Fix path conflicts
-		
+		} else {
+			enqueueDefaultNextJob();
+		}		
 	}
 
 }

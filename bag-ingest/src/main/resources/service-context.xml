@@ -132,8 +132,9 @@
 			</list>
 		</constructor-arg>
 	</bean>
-	
-	<bean id="transformerFactory" class="javax.xml.transform.TransformerFactory" factory-method="newInstance"/>
+
+	<bean id="transformerFactory" class="javax.xml.transform.TransformerFactory"
+		factory-method="newInstance" />
 
 	<bean id="epdcx2modsTransformer" factory-bean="transformerFactory"
 		factory-method="newTransformer">
@@ -155,15 +156,43 @@
 		scope="prototype">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />
+		<property name="defaultNextJob" value="ValidateMODS"/>
 	</bean>
 
 	<bean id="DSPACEMETS2N3BagJob" class="edu.unc.lib.bag.normalize.DSPACEMETS2N3BagJob"
 		scope="prototype">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />
-		<property name="epdcx2modsTransformer" ref="epdcx2modsTransformer"/>
+		<property name="epdcx2modsTransformer" ref="epdcx2modsTransformer" />
+		<property name="defaultNextJob" value="ValidateMODS"/>
 	</bean>
-	
-	<bean id="BioMedCentralExtrasJob" class="edu.unc.lib.bag.normalize.BioMedCentralExtrasJob"	scope="prototype"/>
+
+	<bean id="BioMedCentralExtrasJob" class="edu.unc.lib.bag.normalize.BioMedCentralExtrasJob"
+		scope="prototype">
+		<property name="defaultNextJob" value="ValidateMODS"/>
+	</bean>
+
+	<bean id="ValidateMODS" class="edu.unc.lib.bag.validate.ValidateMODS"
+		scope="prototype">
+		<property name="schematronValidator" ref="schematronValidator" />
+		<property name="modsSchema">
+			<bean class="javax.xml.validation.Schema"
+				factory-bean="schemaFactory" factory-method="newSchema">
+				<constructor-arg>
+					<list value-type="javax.xml.transform.Source">
+						<bean class="javax.xml.transform.stream.StreamSource">
+							<constructor-arg value="${xml.schema.location}/xml.xsd" />
+						</bean>
+						<bean class="javax.xml.transform.stream.StreamSource">
+							<constructor-arg value="${xml.schema.location}/xlink.xsd" />
+						</bean>
+						<bean class="javax.xml.transform.stream.StreamSource">
+							<constructor-arg value="${xml.schema.location}/mods-3-4.xsd" />
+						</bean>
+					</list>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>
 
 </beans>

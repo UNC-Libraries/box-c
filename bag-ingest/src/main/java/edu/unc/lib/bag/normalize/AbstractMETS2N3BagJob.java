@@ -101,7 +101,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractBagJob {
 			}
 			count++;
 		}
-		recordEvent(Type.NORMALIZATION, "Assigned {0,choice,1#PID|2#PIDs} to {0,choice,1#one object|2#{0,number} objects} ", count);
+		recordDepositEvent(Type.NORMALIZATION, "Assigned {0,choice,1#PID|2#PIDs} to {0,choice,1#one object|2#{0,number} objects} ", count);
 	}
 
 	protected Document loadMETS() {
@@ -147,7 +147,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractBagJob {
 		} catch (IOException e) {
 			failDeposit(e, Type.VALIDATION, "Cannot parse METS file: {0}", getMETSFile());
 		}
-		recordEvent(Type.VALIDATION, "METS schema(s) validated");
+		recordDepositEvent(Type.VALIDATION, "METS schema(s) validated");
 	}
 
 	protected void validateProfile(METSProfile profile) {

@@ -101,9 +101,9 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 			Element epdcxEl = mets.getRootElement().getChild("dmdSec", METS_NS).getChild("mdWrap", METS_NS).getChild("xmlData", METS_NS).getChild("descriptionSet", EPDCX_NS);
 			JDOMResult mods = new JDOMResult();
 			epdcx2modsTransformer.transform(new JDOMSource(epdcxEl), mods);
-			final File modsFolder = new File(getBagDirectory(), "description");
+			final File modsFolder = getDescriptionDir();
 			modsFolder.mkdir();
-			File modsFile = new File(modsFolder, new PID(aggregate.getURI()).getUUID().toString()+".xml");
+			File modsFile = new File(modsFolder, new PID(aggregate.getURI()).getUUID()+".xml");
 			fos = new FileOutputStream(modsFile);
 			new XMLOutputter(Format.getPrettyFormat()).output(mods.getDocument(), fos);
 			bag.addFileAsTag(modsFolder);
@@ -118,8 +118,9 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 			failDeposit(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS");
 		}
 
+		List<String> packagings = bag.getBagInfoTxt().getList(PACKAGING_TYPE);
 		bag.getBagInfoTxt().putList(PACKAGING_TYPE, PackagingType.BAG_WITH_N3.getUri());
-		recordEvent(Type.NORMALIZATION, "Converted {0} to {1}", METSProfile.DSPACE_SIP.getName(), PackagingType.BAG_WITH_N3.getUri());
+		recordDepositEvent(Type.NORMALIZATION, "Normalized deposit package from {0} to {1}", packagings, PackagingType.BAG_WITH_N3.getUri());
 		
 		saveBag(bag);
 		

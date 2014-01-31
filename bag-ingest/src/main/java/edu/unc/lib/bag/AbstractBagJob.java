@@ -30,6 +30,7 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
+import static edu.unc.lib.bag.BagConstants.DESCRIPTION_DIR;
 
 /**
  * Constructed with bag directory and deposit ID.
@@ -46,6 +47,10 @@ public abstract class AbstractBagJob implements Runnable {
 	private BagFactory bagFactory = new BagFactory();
 	public BagFactory getBagFactory() {
 		return bagFactory;
+	}
+	
+	public File getDescriptionDir() {
+		return new File(getBagDirectory(), DESCRIPTION_DIR);
 	}
 
 	@Autowired
@@ -113,13 +118,15 @@ public abstract class AbstractBagJob implements Runnable {
 		return eventLog;
 	}
 	
-	public void recordEvent(Type type, String messageformat, Object... args) {
+	public void recordDepositEvent(Type type, String messageformat, Object... args) {
 		String message = MessageFormat.format(messageformat, args);
+		log.debug("event recorded: {}", message);
 		Element event = getEventLog().logEvent(type, message, this.getDepositPID());
 		appendDepositEvent(event);
 	}
 	
 	public void failDeposit(Type type, String message, String details) {
+		log.debug("failed deposit: {}", message);
 		Element event = getEventLog().logEvent(type, message, this.getDepositPID());
 		event = PremisEventLogger.addDetailedOutcome(event, "failed", details, null);
 		appendDepositEvent(event);
@@ -128,8 +135,8 @@ public abstract class AbstractBagJob implements Runnable {
 	}
 	
 	public void failDeposit(Throwable throwable, Type type, String messageformat, Object... args) {
-		log.debug(messageformat, args);
 		String message = MessageFormat.format(messageformat, args);
+		log.debug("failed deposit: {}", message);
 		Element event = getEventLog().logException(message, throwable);
 		event = PremisEventLogger.addLinkingAgentIdentifier(event, "SIP Processing Job", this.getClass().getName(), "Software");
 		appendDepositEvent(event); 
@@ -170,6 +177,7 @@ public abstract class AbstractBagJob implements Runnable {
 
 	protected void saveBag(gov.loc.repository.bagit.Bag bag) {
 		if(eventsFile.exists())	bag.addFileAsTag(eventsFile);
+		// TODO serialize object-level events streams
 		bag = bag.makeComplete(new UpdateCompleter(getBagFactory()));
 		try {
 			FileSystemWriter writer = new FileSystemWriter(getBagFactory());

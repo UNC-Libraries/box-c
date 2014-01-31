@@ -92,7 +92,7 @@ public class BioMedCentralExtrasJob extends AbstractBagJob {
 		if(articleXMLPath != null) {
 			File articleXMLFile = new File(getBagDirectory(), articleXMLPath);
 			PID aggregatePID = new PID(aggregate.getURI());
-			File modsFile = new File(getBagDirectory(), "description/"+aggregatePID.getUUID()+".xml");
+			File modsFile = new File(getDescriptionDir(), aggregatePID.getUUID()+".xml");
 			SAXBuilder sb = new SAXBuilder();
 			FileOutputStream out = null;
 			Map<String, String> fileLC2supplementLabels = null;
@@ -139,7 +139,7 @@ public class BioMedCentralExtrasJob extends AbstractBagJob {
 		}
 		
 		saveModel(model, MODEL_FILE);
-		recordEvent(Type.NORMALIZATION, "Normalized BioMed Central article as aggregate with extracted description");
+		recordDepositEvent(Type.NORMALIZATION, "Normalized BioMed Central article as aggregate with extracted description");
 		saveBag(bag);
 	}
 

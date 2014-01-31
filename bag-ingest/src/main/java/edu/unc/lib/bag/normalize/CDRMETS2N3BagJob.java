@@ -40,7 +40,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		saveModel(model, MODEL_FILE);
 		bag.addFileAsTag(new File(getBagDirectory(), MODEL_FILE));
 		
-		final File modsFolder = new File(getBagDirectory(), "description");
+		final File modsFolder = getDescriptionDir();
 		modsFolder.mkdir();
 		extractor.saveDescriptions(new FilePathFunction() {
 			@Override
@@ -52,7 +52,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		bag.addFileAsTag(modsFolder);
 		
 		bag.getBagInfoTxt().putList(PACKAGING_TYPE, PackagingType.BAG_WITH_N3.getUri());
-		recordEvent(Type.NORMALIZATION, "Converted METS {0} to {1}", METSProfile.CDR_SIMPLE.getName(), PackagingType.BAG_WITH_N3.getUri());
+		recordDepositEvent(Type.NORMALIZATION, "Normalized deposit package from {0} to {1}", PackagingType.METS_CDR.getUri(), PackagingType.BAG_WITH_N3.getUri());
 		
 		saveBag(bag);
 		enqueueDefaultNextJob();

@@ -80,9 +80,11 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 		String depositId = "info:fedora/uuid:4b81ce23-8171-4d28-a440-b4cf8c8a781c";
 		testBag(testBagResource, depositId, 3);
 	}
+	// TODO test invalid MODS against XSD
+	// TODO test invalid MODS against schematron
 	//
 	// @Test
-	// public void testSimpleBag() {
+	// TODO public void testSimpleBag() {
 	//
 	// }
 	//
