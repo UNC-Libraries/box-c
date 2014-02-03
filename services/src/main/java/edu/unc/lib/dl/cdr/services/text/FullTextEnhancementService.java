@@ -62,7 +62,7 @@ public class FullTextEnhancementService extends AbstractDatastreamEnhancementSer
 	
 	@Override
 	public Enhancement<Element> getEnhancement(EnhancementMessage message) throws EnhancementException {
-		return new FullTextEnhancement(this, message.getPid());
+		return new FullTextEnhancement(this, message);
 	}
 
 	@Override

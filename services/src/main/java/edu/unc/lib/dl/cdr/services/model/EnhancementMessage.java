@@ -16,6 +16,9 @@
 package edu.unc.lib.dl.cdr.services.model;
 
 import java.util.List;
+
+import org.jdom.Document;
+
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.message.ActionMessage;
 
@@ -39,6 +42,9 @@ public class EnhancementMessage implements ActionMessage {
 	protected long timeCreated = System.currentTimeMillis();
 	protected long timeFinished = -1;
 	protected List<String> filteredServices = null;
+	protected List<String> executedServices = null;
+	protected List<String> successfulServices = null;
+	protected Document foxml;
 	
 	protected EnhancementMessage(){
 	}
@@ -179,6 +185,26 @@ public class EnhancementMessage implements ActionMessage {
 
 	public void setActiveService(String activeService) {
 		this.activeService = activeService;
+	}
+
+	public List<String> getSuccessfulServices() {
+		return successfulServices;
+	}
+
+	public void setSuccessfulServices(List<String> successfulServices) {
+		this.successfulServices = successfulServices;
+	}
+
+	public Document getFoxml() {
+		return foxml;
+	}
+
+	public void setFoxml(Document foxml) {
+		this.foxml = foxml;
+	}
+
+	public void setQualifiedAction(String qualifiedAction) {
+		this.qualifiedAction = qualifiedAction;
 	}
 
 	@Override

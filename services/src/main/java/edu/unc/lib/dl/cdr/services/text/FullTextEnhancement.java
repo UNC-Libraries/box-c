@@ -15,13 +15,14 @@ import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancement;
 import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Enhancement which extracts the full text from sourceData datastreams of supported mimetypes. The text is stored to
@@ -34,35 +35,31 @@ import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 public class FullTextEnhancement extends AbstractFedoraEnhancement {
 	private static final Logger LOG = LoggerFactory.getLogger(FullTextEnhancement.class);
 
-	public FullTextEnhancement(FullTextEnhancementService service, PID pid) {
-		super(service, pid);
+	public FullTextEnhancement(FullTextEnhancementService service, EnhancementMessage message) {
+		super(service, message);
 	}
 
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
-		LOG.debug("Called image enhancement service for " + pid);
+		LOG.debug("Called image enhancement service for {}", pid);
 
-		Document foxml = null;
 		String dsid = null;
 		try {
+			Document foxml = this.retrieveFoxml();
 			// get sourceData data stream IDs
-			List<String> srcDSURIs = this.service.getTripleStoreQueryService().getSourceData(pid);
-
-			foxml = service.getManagementClient().getObjectXML(pid);
+			List<String> srcDSURIs = this.getSourceData(foxml);
 
 			// get current DS version paths in iRODS
 			for (String srcURI : srcDSURIs) {
 				dsid = srcURI.substring(srcURI.lastIndexOf("/") + 1);
+				
+				Element newestSourceDS = FOXMLJDOMUtil.getMostRecentDatastream(
+						ContentModelHelper.Datastream.getDatastream(dsid), foxml);
 
-				String dsLocation = null;
+				String dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS).getAttributeValue(
+						"REF");
 				String dsIrodsPath = null;
-				String vid = null;
-
-				Datastream ds = service.getManagementClient().getDatastream(pid, dsid, "");
-
-				vid = ds.getVersionID();
-				dsLocation = this.getDSLocation(dsid, vid, foxml);
 
 				if (dsLocation != null) {
 					dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);

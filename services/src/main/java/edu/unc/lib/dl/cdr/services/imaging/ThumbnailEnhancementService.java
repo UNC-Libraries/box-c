@@ -95,7 +95,7 @@ public class ThumbnailEnhancementService extends AbstractDatastreamEnhancementSe
 
 	@Override
 	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
-		return new ThumbnailEnhancement(this, message.getPid());
+		return new ThumbnailEnhancement(this, message);
 	}
 
 	@Override

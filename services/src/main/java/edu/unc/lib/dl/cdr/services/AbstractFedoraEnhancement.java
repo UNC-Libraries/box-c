@@ -5,32 +5,27 @@ import java.util.List;
 import org.jdom.Document;
 import org.jdom.Element;
 
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public abstract class AbstractFedoraEnhancement extends Enhancement<Element> {
 	protected AbstractFedoraEnhancementService service;
+	protected EnhancementMessage message;
 	
 	protected AbstractFedoraEnhancement(AbstractFedoraEnhancementService service, PID pid) {
 		super(pid);
 		this.service = service;
+		this.message = null;
 	}
 	
-	protected String getDSLocation(String dsid, String vid, Document foxml) {
-		Element dsEl = FOXMLJDOMUtil.getDatastream(foxml, dsid);
-		for (Object o : dsEl.getChildren("datastreamVersion", JDOMNamespaceUtil.FOXML_NS)) {
-			if (o instanceof Element) {
-				Element dsvEl = (Element) o;
-				if (vid.equals(dsvEl.getAttributeValue("ID"))) {
-					return dsvEl.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
-							.getAttributeValue("REF");
-				}
-			}
-		}
-		
-		return null;
+	protected AbstractFedoraEnhancement(AbstractFedoraEnhancementService service, EnhancementMessage message) {
+		super(message.getPid());
+		this.message = message;
+		this.service = service;
 	}
 	
 	protected void setExclusiveTripleRelation(PID pid, String predicate, PID exclusivePID)
@@ -73,5 +68,26 @@ public abstract class AbstractFedoraEnhancement extends Enhancement<Element> {
 			// add missing rel
 			service.getManagementClient().addLiteralStatement(pid, predicate, newExclusiveValue, datatype);
 		}
+	}
+	
+	protected Document retrieveFoxml() throws FedoraException {
+		if (message != null) {
+			if (message.getFoxml() == null) {
+				Document foxml = service.getManagementClient().getObjectXML(pid);
+				message.setFoxml(foxml);
+			}
+			return message.getFoxml();
+		}
+		
+		return service.getManagementClient().getObjectXML(pid);
+	}
+	
+	protected List<String> getSourceData() throws FedoraException {
+		return getSourceData(this.retrieveFoxml());
+	}
+	
+	protected List<String> getSourceData(Document foxml) throws FedoraException {
+		Element relsExt = FOXMLJDOMUtil.getRelsExt(foxml);
+		return FOXMLJDOMUtil.getRelationValues(ContentModelHelper.CDRProperty.sourceData.getPredicate(), JDOMNamespaceUtil.CDR_NS, relsExt);
 	}
 }

@@ -8,12 +8,12 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -32,7 +32,7 @@ public class SetFullTextFilter extends AbstractIndexDocumentFilter{
 		// Check that this object has a full text DS before retrying to retrieve it
 		if (dip.getFoxml() != null) {
 			Element relsExt = dip.getRelsExt();
-			String fullText = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.fullText.name(), JDOMNamespaceUtil.CDR_NS, relsExt);
+			String fullText = FOXMLJDOMUtil.getRelationValue(ContentModelHelper.CDRProperty.fullText.name(), JDOMNamespaceUtil.CDR_NS, relsExt);
 			if (fullText == null)
 				return;
 		} else {

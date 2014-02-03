@@ -35,11 +35,11 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.util.ContentCategory;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -165,7 +165,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		Datastream currentDS = null;
 		long filesize = 0;
 
-		Map<String, Element> datastreamMap = dip.getMostRecentDatastreamMap();
+		Map<String, Element> datastreamMap = FOXMLJDOMUtil.getMostRecentDatastreamMap(dip.getFoxml());
 		Iterator<Entry<String, Element>> it = datastreamMap.entrySet().iterator();
 		while (it.hasNext()) {
 			Entry<String, Element> dsEntry = it.next();
@@ -195,7 +195,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	}
 
 	private DocumentIndexingPackage getDefaultWebObject(Element relsExt) throws JDOMException {
-		String defaultWebObject = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebObject.name(),
+		String defaultWebObject = FOXMLJDOMUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebObject.name(),
 				JDOMNamespaceUtil.CDR_NS, relsExt);
 		if (defaultWebObject == null)
 			return null;
@@ -209,12 +209,12 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	private Datastream getDefaultWebData(DocumentIndexingPackage dip, List<Datastream> datastreams) throws JDOMException {
 		PID owner = null;
 		Element relsExt = dip.getRelsExt();
-		String defaultWebData = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
+		String defaultWebData = FOXMLJDOMUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
 				JDOMNamespaceUtil.CDR_NS, relsExt);
 
 		// If this object does not have a defaultWebData but its defaultWebObject does, then use that instead.
 		if (defaultWebData == null && dip.getDefaultWebObject() != null) {
-			defaultWebData = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
+			defaultWebData = FOXMLJDOMUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
 					JDOMNamespaceUtil.CDR_NS, dip.getDefaultWebObject().getRelsExt());
 			owner = dip.getDefaultWebObject().getPid();
 		}

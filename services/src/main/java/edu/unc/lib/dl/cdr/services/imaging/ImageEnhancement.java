@@ -31,13 +31,14 @@ import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancement;
 import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Enhancement class for the construction of a jp2 derived datastream based off of all image data_file datastreams
@@ -51,35 +52,33 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
-		LOG.debug("Called image enhancement service for " + pid);
+		LOG.debug("Called image enhancement service for {}", pid);
 
-		Document foxml = null;
 		String dsid = null;
 		try {
+			Document foxml = this.retrieveFoxml();
 			// get sourceData data stream IDs
-			List<String> srcDSURIs = this.service.getTripleStoreQueryService().getSourceData(pid);
-
-			foxml = service.getManagementClient().getObjectXML(pid);
-			String mimetype = service.getTripleStoreQueryService().lookupSourceMimeType(pid);
+			List<String> srcDSURIs = this.getSourceData(foxml);
 
 			// get current DS version paths in iRODS
 			for (String srcURI : srcDSURIs) {
 				dsid = srcURI.substring(srcURI.lastIndexOf("/") + 1);
 
+				Element newestSourceDS = FOXMLJDOMUtil.getMostRecentDatastream(
+						ContentModelHelper.Datastream.getDatastream(dsid), foxml);
+
 				String dsLocation = null;
 				String dsIrodsPath = null;
-				String vid = null;
-
-				Datastream ds = service.getManagementClient().getDatastream(pid, dsid, "");
-				vid = ds.getVersionID();
+				String mimetype = newestSourceDS.getAttributeValue("MIMETYPE");
 
 				// Only need to process image datastreams.
 				if (mimetype.indexOf("image/") != -1) {
-					LOG.debug("Image DS found: " + dsid + ", " + mimetype);
+					LOG.debug("Image DS found: {}, {}", dsid, mimetype);
 
-					dsLocation = this.getDSLocation(dsid, vid, foxml);
+					dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS).getAttributeValue(
+							"REF");
 
-					LOG.debug("Image DS location: " + dsLocation);
+					LOG.debug("Image DS location: {}", dsLocation);
 					if (dsLocation != null) {
 						dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
 						// Ask irods to make the jp2 object
@@ -147,7 +146,7 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 	}
 
 	private String runConvertJP2(String dsIrodsPath) throws Exception {
-		LOG.debug("Run (image magick) convertjp2 " + dsIrodsPath);
+		LOG.debug("Run (image magick) convertjp2 {}", dsIrodsPath);
 		// execute irods image magick rule
 		InputStream response = ((AbstractIrodsObjectEnhancementService) service).remoteExecuteWithPhysicalLocation(
 				"convertjp2", dsIrodsPath);
@@ -164,7 +163,7 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 		}
 	}
 
-	public ImageEnhancement(ImageEnhancementService service, PID pid) {
-		super(service, pid);
+	public ImageEnhancement(ImageEnhancementService service, EnhancementMessage message) {
+		super(service, message);
 	}
 }

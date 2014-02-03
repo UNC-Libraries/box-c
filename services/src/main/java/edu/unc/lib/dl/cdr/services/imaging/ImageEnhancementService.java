@@ -82,7 +82,7 @@ public class ImageEnhancementService extends AbstractDatastreamEnhancementServic
 
 	@Override
 	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
-		return new ImageEnhancement(this, message.getPid());
+		return new ImageEnhancement(this, message);
 	}
 
 	@Override

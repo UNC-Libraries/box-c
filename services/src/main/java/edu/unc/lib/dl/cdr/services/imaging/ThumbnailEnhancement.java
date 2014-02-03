@@ -21,7 +21,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -38,7 +37,6 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
@@ -56,7 +54,7 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
-		LOG.debug("Called thumbnail enhancement service for " + pid);
+		LOG.debug("Called thumbnail enhancement service for {}", pid);
 
 		String surrogateDsUri = null;
 		String surrogateDsId = null;
@@ -64,7 +62,6 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 
 		String dsLocation = null;
 		String dsIrodsPath = null;
-		String vid = null;
 
 		try {
 			// enqueues objects that use this one as a surrogate.
@@ -89,39 +86,35 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 			surrogateDsId = surrogateDsUri.substring(surrogateDsUri.lastIndexOf("/") + 1);
 			surrogatePid = new PID(surrogateDsUri.substring(0, surrogateDsUri.lastIndexOf("/")));
 
-			Document foxml = service.getManagementClient().getObjectXML(pid);
+			Document foxml = this.retrieveFoxml();
+			Document surrogateFoxml;
+			// Only retrieve the surrogate FOXML if the surrogate is a different object
+			if (surrogatePid.equals(message.getPid())) {
+				surrogateFoxml = foxml;
+			} else {
+				surrogateFoxml = service.getManagementClient().getObjectXML(surrogatePid);
+			}
 
-			Document surrogateFoxml = service.getManagementClient().getObjectXML(surrogatePid);
+			Element newestSourceDS = FOXMLJDOMUtil.getMostRecentDatastream(
+					ContentModelHelper.Datastream.getDatastream(surrogateDsId), surrogateFoxml);
 
-			String mimetype = service.getTripleStoreQueryService().lookupSourceMimeType(surrogatePid);
-
-			Datastream ds = service.getManagementClient().getDatastream(surrogatePid, surrogateDsId, "");
-			vid = ds.getVersionID();
+			String mimetype = newestSourceDS.getAttributeValue("MIMETYPE");
 
 			// Only need to process image datastreams.
 			if (mimetype != null && mimetype.indexOf("image/") != -1 /* || mimetype.indexOf("application/pdf") != -1 */) {
-				LOG.debug("Image DS found: " + surrogateDsId + ", " + mimetype);
+				LOG.debug("Image DS found: {}, {}", surrogateDsId, mimetype);
 
-				dsLocation = this.getDSLocation(surrogateDsId, vid, surrogateFoxml);
+				dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
+						.getAttributeValue("REF");
 
-				Element dsEl = FOXMLJDOMUtil.getDatastream(surrogateFoxml, surrogateDsId);
-				for (Object o : dsEl.getChildren("datastreamVersion", JDOMNamespaceUtil.FOXML_NS)) {
-					if (o instanceof Element) {
-						Element dsvEl = (Element) o;
-						if (vid.equals(dsvEl.getAttributeValue("ID"))) {
-							dsLocation = dsvEl.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
-									.getAttributeValue("REF");
-							break;
-						}
-					}
-				}
-				LOG.debug("Source DS location: " + dsLocation);
+				LOG.debug("Source DS location: {}", dsLocation);
 				if (dsLocation != null) {
 					dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
 					LOG.debug("Making 2 Thumbnails..");
 
-					Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid);
-					List<String> thumbRels = rels.get(ContentModelHelper.CDRProperty.thumb.toString());
+					List<String> thumbRels = FOXMLJDOMUtil.getRelationValues(
+							ContentModelHelper.CDRProperty.thumb.getPredicate(), JDOMNamespaceUtil.CDR_NS,
+							FOXMLJDOMUtil.getRelsExt(foxml));
 					{
 						String dsname = ContentModelHelper.Datastream.THUMB_SMALL.getName();
 						boolean exists = FOXMLJDOMUtil.getDatastream(foxml, dsname) != null;
@@ -192,7 +185,7 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 		}
 	}
 
-	public ThumbnailEnhancement(ThumbnailEnhancementService service, PID pid) {
-		super(service, pid);
+	public ThumbnailEnhancement(ThumbnailEnhancementService service, EnhancementMessage message) {
+		super(service, message);
 	}
 }

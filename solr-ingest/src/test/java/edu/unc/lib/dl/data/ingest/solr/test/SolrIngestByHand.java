@@ -44,12 +44,13 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.data.ingest.solr.UpdateDocTransformer;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.fedora.ClientUtils;
 import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
+import edu.unc.lib.dl.xml.JDOMQueryUtil;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -276,7 +277,7 @@ public class SolrIngestByHand {
 		
 		Element modsDS = JDOMQueryUtil.getChildByAttribute(result.getRootElement(),
 				"datastream", JDOMNamespaceUtil.FOXML_NS, "ID", "MD_DESCRIPTIVE");
-		Element modsVersion = JDOMQueryUtil.getMostRecentDatastreamVersion(modsDS.getChildren("datastreamVersion", JDOMNamespaceUtil.FOXML_NS));
+		Element modsVersion = FOXMLJDOMUtil.getMostRecentDatastreamVersion(modsDS.getChildren("datastreamVersion", JDOMNamespaceUtil.FOXML_NS));
 		
 		XPath contentModelXpath = XPath.newInstance("/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']/"
 				+ "foxml:datastreamVersion/foxml:xmlContent/rdf:RDF/"

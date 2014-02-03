@@ -21,9 +21,9 @@ import java.util.List;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelException;
 import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
-import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.dl.xml.JDOMQueryUtil;
 
 public class DocumentIndexingPipeline implements DocumentFilteringPipeline {
 	protected Collection<IndexDocumentFilter> filters;

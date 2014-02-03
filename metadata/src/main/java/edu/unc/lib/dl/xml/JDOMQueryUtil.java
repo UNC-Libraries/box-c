@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.data.ingest.solr.util;
+package edu.unc.lib.dl.xml;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -23,7 +23,6 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 
 import edu.unc.lib.dl.util.DateTimeUtil;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class JDOMQueryUtil {
 	
@@ -54,27 +53,6 @@ public class JDOMQueryUtil {
 		return getElementByAttribute(elements, attribute, value);
 	}
 	
-	public static Element getMostRecentDatastreamVersion(List<?> elements) {
-		if (elements == null || elements.size() == 0)
-			return null;
-		if (elements.size() == 1)
-			return (Element) elements.get(0);
-		
-		String mostRecentDate = "";
-		Element mostRecent = null;
-		for (Object datastreamVersionObj: elements) {
-			Element datastreamVersion = (Element) datastreamVersionObj;
-			String created = datastreamVersion.getAttributeValue("CREATED");
-			if (mostRecentDate.compareTo(created) < 0){
-				mostRecentDate = created;
-				mostRecent = datastreamVersion;
-			}
-		}
-		if (mostRecent != null)
-			return mostRecent;
-		return (Element) elements.get(0);
-	}
-	
 	public static Date parseISO6392bDateChild(Element parent, String childName, Namespace namespace) {
 		String dateString = parent.getChildText(childName, namespace);
 		if (dateString != null) {
@@ -85,14 +63,6 @@ public class JDOMQueryUtil {
 			} catch (IllegalArgumentException e) {
 				// Wasn't a valid date, ignore it.
 			}
-		}
-		return null;
-	}
-	
-	public static String getRelationValue(String relationName, Namespace relationNS, Element relsExt) {
-		Element relationEl = relsExt.getChild(relationName, relationNS);
-		if (relationEl != null) {
-			return relationEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS);
 		}
 		return null;
 	}
