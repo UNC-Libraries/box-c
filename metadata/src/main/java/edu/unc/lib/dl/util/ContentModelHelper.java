@@ -54,19 +54,19 @@ public class ContentModelHelper {
 				"hasSourceMimeType"), hasSourceFileSize("hasSourceFileSize"), hasChecksum("hasChecksum"), hasSurrogate(
 				"hasSurrogate"), thumb("thumb"), derivedJP2("derivedJP2"), techData("techData"), fullText("fullText"), depositedOnBehalfOf(
 				"depositedOnBehalfOf"), depositMethod("depositMethod"), depositPackageType("depositPackageType"), depositPackageSubType(
-				"depositPackageSubType"), inheritPermissions("inheritPermissions", NamespaceConstants.CDR_ACL_NS_URI), embargoUntil(
-				"embargo-until", NamespaceConstants.CDR_ACL_NS_URI), dataAccessCategory("data-access-category",
-				NamespaceConstants.CDR_ACL_NS_URI), userRole("user-role", NamespaceConstants.CDR_ACL_NS_URI), isPublished(
-				"isPublished"), isActive("isActive", NamespaceConstants.CDR_ACL_NS_URI);
+				"depositPackageSubType"), inheritPermissions("inheritPermissions", JDOMNamespaceUtil.CDR_ACL_NS), embargoUntil(
+				"embargo-until", JDOMNamespaceUtil.CDR_ACL_NS), dataAccessCategory("data-access-category",
+						JDOMNamespaceUtil.CDR_ACL_NS), userRole("user-role", JDOMNamespaceUtil.CDR_ACL_NS), isPublished(
+				"isPublished"), isActive("isActive", JDOMNamespaceUtil.CDR_ACL_NS);
 		private URI uri;
 		private String predicate;
-		private String namespace;
+		private Namespace namespace;
 
 		CDRProperty(String predicate) {
 			try {
 				this.predicate = predicate;
 				this.uri = new URI(JDOMNamespaceUtil.CDR_NS.getURI() + predicate);
-				this.namespace = JDOMNamespaceUtil.CDR_NS.getURI();
+				this.namespace = JDOMNamespaceUtil.CDR_NS;
 			} catch (URISyntaxException e) {
 				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
 				x.initCause(e);
@@ -74,10 +74,10 @@ public class ContentModelHelper {
 			}
 		}
 
-		CDRProperty(String predicate, String namespace) {
+		CDRProperty(String predicate, Namespace namespace) {
 			try {
 				this.predicate = predicate;
-				this.uri = new URI(namespace + predicate);
+				this.uri = new URI(namespace.getURI() + predicate);
 				this.namespace = namespace;
 			} catch (URISyntaxException e) {
 				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
@@ -94,7 +94,7 @@ public class ContentModelHelper {
 			return predicate;
 		}
 
-		public String getNamespace() {
+		public Namespace getNamespace() {
 			return namespace;
 		}
 
@@ -176,10 +176,12 @@ public class ContentModelHelper {
 				JDOMNamespaceUtil.FEDORA_VIEW_NS, "lastModifiedDate"), createdDate(JDOMNamespaceUtil.FEDORA_MODEL_NS,
 				"createdDate");
 		private URI uri;
+		private Namespace namespace;
 
 		FedoraProperty(Namespace ns, String suffix) {
 			try {
 				this.uri = new URI(ns.getURI() + suffix);
+				this.namespace = ns;
 			} catch (URISyntaxException e) {
 				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
 				x.initCause(e);
@@ -189,6 +191,10 @@ public class ContentModelHelper {
 
 		public URI getURI() {
 			return this.uri;
+		}
+
+		public Namespace getNamespace() {
+			return namespace;
 		}
 
 		public boolean equals(String value) {
@@ -263,10 +269,12 @@ public class ContentModelHelper {
 				JDOMNamespaceUtil.CDR_NS, "owner"), originalDeposit(JDOMNamespaceUtil.CDR_NS, "originalDeposit"), depositedBy(
 				JDOMNamespaceUtil.CDR_NS, "depositedBy");
 		private URI uri;
+		private Namespace namespace;
 
 		Relationship(Namespace ns, String suffix) {
 			try {
 				this.uri = new URI(ns.getURI() + suffix);
+				this.namespace = ns;
 			} catch (URISyntaxException e) {
 				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
 				x.initCause(e);
@@ -276,6 +284,10 @@ public class ContentModelHelper {
 
 		public URI getURI() {
 			return this.uri;
+		}
+		
+		public Namespace getNamespace() {
+			return namespace;
 		}
 
 		public boolean equals(String value) {

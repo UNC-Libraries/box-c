@@ -9,7 +9,8 @@ WHERE {
     ?pid cdr-base:hasSourceMimeType ?srcMime .
     OPTIONAL { ?pid cdr-base:fullText ?textDS . }
     FILTER (
-      regex( str(?srcMime), '(text/|application/pdf|application/msword|application/vnd\\.|application/rtf|application/powerpoint|application/postscript)')
+      ?pid = <%2$s>
+      && regex( str(?srcMime), '(text/|application/pdf|application/msword|application/vnd\\.|application/rtf|application/powerpoint|application/postscript)')
       && !bound(?textDS)
     ) 
 }

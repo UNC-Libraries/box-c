@@ -613,8 +613,10 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 						+ " interrupted before calling enhancement");
 				return;
 			}
+			
 			// Enhancement services need to be run serially per pid, so making a direct invocation of call
 			task.call();
+			message.getCompletedServices().add(s.getClass().getName());
 		}
 
 		private void pauseWait() {
@@ -648,6 +650,9 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 					
 					// Store message as active
 					activeMessages.add(message);
+					
+				// Initialize the completed services list
+					message.setCompletedServices(new ArrayList<String>(message.getFilteredServices().size()));
 					
 					for (String serviceClassName : message.getFilteredServices()) {
 						ObjectEnhancementService s = servicesMap.get(serviceClassName);

@@ -27,6 +27,7 @@ import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -44,18 +45,24 @@ public class SolrUpdateEnhancement extends Enhancement<Element> {
 		Element result = null;
 		LOG.debug("Called Solr update service for " + pid.getPid());
 		
+		IndexingActionType action = IndexingActionType.ADD;
+		
 		//Perform a single item update
 		if (message.getFilteredServices().contains(FullTextEnhancementService.enhancementName)) {
-			// IndexingActionType.FULL_TEXT
-			// This would be much better if it carried over FOXML from the enhancement
-		}
-		
-		if (message.getFilteredServices().contains(TechnicalMetadataEnhancementService.enhancementName)
+			action = IndexingActionType.UPDATE_FULL_TEXT;
+		} else if (message.getFilteredServices().contains(TechnicalMetadataEnhancementService.enhancementName)
 				|| message.getFilteredServices().contains(ImageEnhancementService.enhancementName)
 				|| message.getFilteredServices().contains(ThumbnailEnhancementService.enhancementName)) {
-			// IndexingActionType.UPDATE_DATASTREAMS
+			action = IndexingActionType.UPDATE_DATASTREAMS;
 		}
-		service.getMessageDirector().direct(new SolrUpdateRequest(pid.getPid(), IndexingActionType.ADD));
+		
+		SolrUpdateRequest updateRequest = new SolrUpdateRequest(pid.getPid(), action);
+		if (message.getFoxml() != null) {
+			DocumentIndexingPackage dip = new DocumentIndexingPackage(pid, message.getFoxml());
+			updateRequest.setDocumentIndexingPackage(dip);
+		}
+		
+		service.getMessageDirector().direct(updateRequest);
 		
 		return result;
 	}

@@ -322,3 +322,7 @@
 #enhancement_monitor_jobs td {
 	border-bottom: 1px solid #f5f5ff;
 }
+
+#enhancement_monitor_jobs .active_service {
+	font-weight: bold;
+}

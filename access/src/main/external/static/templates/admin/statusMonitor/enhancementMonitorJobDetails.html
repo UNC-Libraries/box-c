@@ -21,7 +21,20 @@
 	if (data.filteredServices && !jQuery.isEmptyObject(data.filteredServices)) {
 		var details = "<p><label>Filtered service(s):</label><ul>";
 		for (serviceIndex in data.filteredServices) {
-			details += "<li>" + data.filteredServices[serviceIndex] + "</li>";
+			details += "<li";
+			if (data.activeService == serviceIndex) {
+				details += " class='active_service'";
+			}
+			details += ">" + data.filteredServices[serviceIndex] + "</li>";
+		}
+		details += "</ul></p>";
+		%><%= details %><%
+	}
+	
+	if (data.type != "ACTIVE" && data.completedServices && !jQuery.isEmptyObject(data.completedServices)) {
+		var details = "<p><label>Completed service(s):</label><ul>";
+		for (serviceIndex in data.completedServices) {
+			details += "<li>" + data.completedServices[serviceIndex] + "</li>";
 		}
 		details += "</ul></p>";
 		%><%= details %><%

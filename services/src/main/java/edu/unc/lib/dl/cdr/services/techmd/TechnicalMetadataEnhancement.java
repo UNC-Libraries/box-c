@@ -167,17 +167,19 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 
 				if ("DATA_FILE".equals(dsid)) {
 					if (fitsMimetype != null) {
-						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.toString(),
-								fitsMimetype, null);
+						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.getPredicate(),
+								ContentModelHelper.CDRProperty.hasSourceMimeType.getNamespace(), fitsMimetype, null, foxml);
 					} else { // application/octet-stream
-						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.toString(),
-								"application/octet-stream", null);
+						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.getPredicate(),
+								ContentModelHelper.CDRProperty.hasSourceMimeType.getNamespace(), "application/octet-stream",
+								null, foxml);
 					}
 
 					try {
 						Long.parseLong(size);
-						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceFileSize.toString(), size,
-								"http://www.w3.org/2001/XMLSchema#long");
+						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceFileSize.getPredicate(),
+								ContentModelHelper.CDRProperty.hasSourceFileSize.getNamespace(), size,
+								"http://www.w3.org/2001/XMLSchema#long", foxml);
 					} catch (NumberFormatException e) {
 						LOG.error("FITS produced a non-integer value for size: " + size);
 					}

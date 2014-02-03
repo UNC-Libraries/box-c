@@ -18,6 +18,15 @@
 				out += "<li>" + className + "</li>";
 			}
 			%><%= out %><%
+		} else if (data.completedServices || data.activeServiceName) {
+			for (var key in data.completedServices) {
+				if (data.completedServices.hasOwnProperty(key)) { %>
+						<li><%= data.completedServices[key] %></li>
+				<% }
+			}
+			if (data.activeServiceName) {
+				%><li class="active_service"><%= data.activeServiceName %></li><%
+			}
 		} else {
 			for (var key in data.filteredServices) {
 				if (data.filteredServices.hasOwnProperty(key)) { %>

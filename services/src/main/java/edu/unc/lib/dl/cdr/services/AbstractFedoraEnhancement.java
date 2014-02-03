@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.Namespace;
 
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -28,45 +29,46 @@ public abstract class AbstractFedoraEnhancement extends Enhancement<Element> {
 		this.service = service;
 	}
 	
-	protected void setExclusiveTripleRelation(PID pid, String predicate, PID exclusivePID)
+	protected void setExclusiveTripleRelation(PID pid, String predicate, Namespace namespace, PID exclusivePID, Document foxml)
 			throws FedoraException {
-		List<String> rel = service.getTripleStoreQueryService().fetchAllTriples(pid).get(predicate);
-		
+		List<String> rel = FOXMLJDOMUtil.getRelationValues(predicate, namespace, FOXMLJDOMUtil.getRelsExt(foxml));
+		String predicateUri = namespace.getURI() + predicate;
 		if (rel != null) {
 			String valueString = exclusivePID.toString();
 			if (rel.contains(valueString)) {
 				rel.remove(valueString);
 			} else {
 				// add missing rel
-				service.getManagementClient().addObjectRelationship(pid, predicate, exclusivePID);
+				service.getManagementClient().addObjectRelationship(pid, predicateUri, exclusivePID);
 			}
 			// remove any other same predicate triples
 			for (String oldValue : rel) {
-				service.getManagementClient().purgeObjectRelationship(pid, predicate, new PID(oldValue));
+				service.getManagementClient().purgeObjectRelationship(pid, predicateUri, new PID(oldValue));
 			}
 		} else {
 			// add missing rel
-			service.getManagementClient().addObjectRelationship(pid, predicate, exclusivePID);
+			service.getManagementClient().addObjectRelationship(pid, predicateUri, exclusivePID);
 		}
 	}
-
-	protected void setExclusiveTripleValue(PID pid, String predicate, String newExclusiveValue, String datatype)
+	
+	protected void setExclusiveTripleValue(PID pid, String predicate, Namespace namespace, String newExclusiveValue, String datatype, Document foxml)
 			throws FedoraException {
-		List<String> rel = service.getTripleStoreQueryService().fetchAllTriples(pid).get(predicate);
+		List<String> rel = FOXMLJDOMUtil.getRelationValues(predicate, namespace, FOXMLJDOMUtil.getRelsExt(foxml));
+		String predicateUri = namespace.getURI() + predicate;
 		if (rel != null) {
 			if (rel.contains(newExclusiveValue)) {
 				rel.remove(newExclusiveValue);
 			} else {
 				// add missing rel
-				service.getManagementClient().addLiteralStatement(pid, predicate, newExclusiveValue, datatype);
+				service.getManagementClient().addLiteralStatement(pid, predicateUri, newExclusiveValue, datatype);
 			}
 			// remove any other same predicate triples
 			for (String oldValue : rel) {
-				service.getManagementClient().purgeLiteralStatement(pid, predicate, oldValue, datatype);
+				service.getManagementClient().purgeLiteralStatement(pid, predicateUri, oldValue, datatype);
 			}
 		} else {
 			// add missing rel
-			service.getManagementClient().addLiteralStatement(pid, predicate, newExclusiveValue, datatype);
+			service.getManagementClient().addLiteralStatement(pid, predicateUri, newExclusiveValue, datatype);
 		}
 	}
 	

@@ -43,7 +43,7 @@ public class EnhancementMessage implements ActionMessage {
 	protected long timeFinished = -1;
 	protected List<String> filteredServices = null;
 	protected List<String> executedServices = null;
-	protected List<String> successfulServices = null;
+	protected List<String> completedServices = null;
 	protected Document foxml;
 	
 	protected EnhancementMessage(){
@@ -187,12 +187,12 @@ public class EnhancementMessage implements ActionMessage {
 		this.activeService = activeService;
 	}
 
-	public List<String> getSuccessfulServices() {
-		return successfulServices;
+	public List<String> getCompletedServices() {
+		return completedServices;
 	}
 
-	public void setSuccessfulServices(List<String> successfulServices) {
-		this.successfulServices = successfulServices;
+	public void setCompletedServices(List<String> completedServices) {
+		this.completedServices = completedServices;
 	}
 
 	public Document getFoxml() {

@@ -53,12 +53,12 @@ public class FullTextEnhancement extends AbstractFedoraEnhancement {
 			// get current DS version paths in iRODS
 			for (String srcURI : srcDSURIs) {
 				dsid = srcURI.substring(srcURI.lastIndexOf("/") + 1);
-				
+
 				Element newestSourceDS = FOXMLJDOMUtil.getMostRecentDatastream(
 						ContentModelHelper.Datastream.getDatastream(dsid), foxml);
 
-				String dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS).getAttributeValue(
-						"REF");
+				String dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
+						.getAttributeValue("REF");
 				String dsIrodsPath = null;
 
 				if (dsLocation != null) {
@@ -83,7 +83,8 @@ public class FullTextEnhancement extends AbstractFedoraEnhancement {
 
 					// Add full text relation
 					PID textPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.MD_FULL_TEXT.getName());
-					setExclusiveTripleRelation(pid, ContentModelHelper.CDRProperty.fullText.toString(), textPID);
+					setExclusiveTripleRelation(pid, ContentModelHelper.CDRProperty.fullText.getPredicate(),
+							ContentModelHelper.CDRProperty.fullText.getNamespace(), textPID, foxml);
 				}
 			}
 		} catch (FileSystemException e) {
