@@ -4,7 +4,7 @@ package edu.unc.lib.dl.util;
  * @author count0
  *
  */
-public class DepositBagInfo {
+public class DepositBagInfoTxt {
 	
 	/**
 	 * PID of destination folder 

@@ -1,6 +1,6 @@
 package edu.unc.lib.bag.normalize;
 
-import static edu.unc.lib.dl.util.DepositBagInfo.PACKAGING_TYPE;
+import static edu.unc.lib.dl.util.DepositBagInfoTxt.PACKAGING_TYPE;
 
 import java.io.File;
 
@@ -10,6 +10,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.BagConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.METSProfile;
@@ -19,8 +20,8 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		super();
 	}
 
-	public CDRMETS2N3BagJob(String bagDirectory, String depositId) {
-		super(bagDirectory, depositId);
+	public CDRMETS2N3BagJob(String uuid, String bagDirectory, String depositId) {
+		super(uuid, bagDirectory, depositId);
 	}
 	
 	@Override
@@ -37,8 +38,8 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		extractor.addArrangement(model);
 		extractor.helper.addFileAssociations(model, false);
 		extractor.addAccessControls(model);
-		saveModel(model, MODEL_FILE);
-		bag.addFileAsTag(new File(getBagDirectory(), MODEL_FILE));
+		saveModel(model, BagConstants.MODEL_FILE);
+		bag.addFileAsTag(new File(getBagDirectory(), BagConstants.MODEL_FILE));
 		
 		final File modsFolder = getDescriptionDir();
 		modsFolder.mkdir();

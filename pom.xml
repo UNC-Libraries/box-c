@@ -400,11 +400,6 @@
 				<version>4.8</version>
 			</dependency>
 			<dependency>
-				<groupId>net.lariverosc</groupId>
-				<artifactId>jesque-spring</artifactId>
-				<version>1.0.1</version>
-			</dependency>
-			<dependency>
 				<groupId>edu.unc.lib.cdr</groupId>
 				<artifactId>metadata</artifactId>
 				<version>${cdr.version}</version>

@@ -1,6 +1,6 @@
 package edu.unc.lib.bag.normalize;
 
-import static edu.unc.lib.dl.util.DepositBagInfo.PACKAGING_TYPE;
+import static edu.unc.lib.dl.util.DepositBagInfoTxt.PACKAGING_TYPE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.EPDCX_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 
@@ -29,6 +29,7 @@ import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.BagConstants;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
@@ -49,8 +50,8 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		this.epdcx2modsTransformer = epdcx2modsTransformer;
 	}
 
-	public DSPACEMETS2N3BagJob(String bagDirectory, String depositId) {
-		super(bagDirectory, depositId);
+	public DSPACEMETS2N3BagJob(String uuid, String bagDirectory, String depositId) {
+		super(uuid, bagDirectory, depositId);
 	}
 	
 	@Override
@@ -92,8 +93,8 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 			model.add(child, hasModel, simple);
 		}
 		helper.addFileAssociations(model, true);
-		saveModel(model, MODEL_FILE);
-		bag.addFileAsTag(new File(getBagDirectory(), MODEL_FILE));
+		saveModel(model, BagConstants.MODEL_FILE);
+		bag.addFileAsTag(new File(getBagDirectory(), BagConstants.MODEL_FILE));
 		
 		// extract EPDCX from mets
 		FileOutputStream fos = null;
@@ -111,11 +112,11 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 			log.debug("NPE", ignored);
 			// no embedded metadata
 		} catch (TransformerException e) {
-			failDeposit(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS");
+			failJob(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS");
 		} catch (FileNotFoundException e) {
-			failDeposit(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS");
+			failJob(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS");
 		} catch (IOException e) {
-			failDeposit(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS");
+			failJob(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS");
 		}
 
 		List<String> packagings = bag.getBagInfoTxt().getList(PACKAGING_TYPE);
@@ -126,7 +127,7 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		
 		// enqueue for additional BIOMED job if applicable
 		if("BioMed Central".equals(bag.getBagInfoTxt().getInternalSenderDescription())) {
-			enqueueNextJob(BioMedCentralExtrasJob.class.getName());
+			enqueueJob(BioMedCentralExtrasJob.class.getName());
 		} else {
 			enqueueDefaultNextJob();
 		}

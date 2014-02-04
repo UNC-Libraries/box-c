@@ -1,9 +1,11 @@
-package edu.unc.lib.bag;
+package edu.unc.lib.dl.util;
 
 import edu.unc.lib.dl.fedora.PID;
 
 public class BagConstants {
 	public static final String DESCRIPTION_DIR = "description";
+	public static final String MODEL_FILE = "everything.n3";
+	public static final String EVENTS_FILE = "events.xml";
 	
 	/**
 	 * Answers the object's PID for a given metadata file within a tag directory.

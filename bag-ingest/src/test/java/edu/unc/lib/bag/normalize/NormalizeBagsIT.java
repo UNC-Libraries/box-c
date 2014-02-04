@@ -1,13 +1,14 @@
 package edu.unc.lib.bag.normalize;
 
 import static net.greghaines.jesque.utils.JesqueUtils.createKey;
+import static net.greghaines.jesque.utils.ResqueConstants.FAILED;
 import static net.greghaines.jesque.utils.ResqueConstants.PROCESSED;
 import static net.greghaines.jesque.utils.ResqueConstants.QUEUE;
 import static net.greghaines.jesque.utils.ResqueConstants.STAT;
-import static net.greghaines.jesque.utils.ResqueConstants.FAILED;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
 import net.greghaines.jesque.Job;
 
@@ -20,6 +21,7 @@ import redis.clients.jedis.Jedis;
 import edu.unc.lib.bag.AbstractResqueIT;
 import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.ZipFileUtil;
+import edu.unc.lib.workers.JedisFactory;
 
 public class NormalizeBagsIT extends AbstractResqueIT {
 	private static final org.slf4j.Logger log = LoggerFactory
@@ -31,8 +33,8 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 	}
 
 	private void testBag(File testBagResource, String depositId, int expectedJobsProcessed) {
-		File workingDir = new File("/tmp/cdrMets2N3BagTest_"
-				+ testBagResource.getName().hashCode());
+		File workingDir = new File("/tmp/bagTest_"
+				+ testBagResource.getName().substring(0, testBagResource.getName().lastIndexOf(".")));
 		try {
 			if (workingDir.exists()) {
 				FileUtils.deleteDir(workingDir);
@@ -42,7 +44,7 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 			throw new Error(
 					"Unable to unpack your deposit: " + testBagResource, e);
 		}
-		Job job = new Job("NormalizeBag", workingDir, depositId);
+		Job job = new Job("NormalizeBag", UUID.randomUUID().toString(), workingDir, depositId);
 		getClient().enqueue("Deposit", job);
 		getClient().end();
 		log.debug("Enqueued depositId: {}, working dir: {}", depositId,
@@ -53,7 +55,7 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 			e.printStackTrace();
 		}
 		// Assert that the job was run by the worker
-		Jedis jedis = createJedis(getConfig());
+		Jedis jedis = JedisFactory.createJedis(getConfig());
 		try {
 			Assert.assertEquals("Wrong number of jobs processed", String.valueOf(expectedJobsProcessed), jedis.get(createKey(getConfig().getNamespace(),
 					STAT, PROCESSED)));

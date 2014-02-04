@@ -34,6 +34,18 @@
 		</property>
 		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
+	
+	<bean id="jedis" class="edu.unc.lib.workers.JedisFactory" factory-method="createJedis" scope="prototype">
+		<constructor-arg ref="jesqueConfig"/>
+	</bean>
+	
+	<bean id="jobStatusFactory" class="edu.unc.lib.workers.JobStatusFactory">
+		<property name="jedis" ref="jedis"/>
+	</bean>
+	
+	<bean id="depositStatusFactory" class="edu.unc.lib.workers.DepositStatusFactory">
+		<property name="jedis" ref="jedis"/>
+	</bean>
 
 	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
 		<constructor-arg value="localhost" />
@@ -51,16 +63,17 @@
 		<constructor-arg ref="jesqueConfig" />
 	</bean>
 
-	<bean id="workerFactory" class="net.lariverosc.jesquespring.SpringWorkerFactory">
+	<bean id="workerFactory" class="edu.unc.lib.workers.SpringWorkerFactory">
 		<constructor-arg name="config" ref="jesqueConfig" />
 		<constructor-arg name="queues">
 			<util:set set-class="java.util.HashSet">
 				<value>Deposit</value>
 			</util:set>
 		</constructor-arg>
+		<property name="jobStatusFactory" ref="jobStatusFactory"/>
 	</bean>
 
-	<bean id="worker" class="net.lariverosc.jesquespring.SpringWorkerPool"
+	<bean id="worker" class="edu.unc.lib.workers.SpringWorkerPool"
 		init-method="init" destroy-method="destroy">
 		<constructor-arg name="workerFactory" ref="workerFactory" />
 		<constructor-arg name="numWorkers" value="1" />

@@ -22,13 +22,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
 
-import edu.unc.lib.bag.AbstractBagJob;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.METSParseException;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.METSProfile;
 import edu.unc.lib.dl.xml.NamespaceConstants;
+import edu.unc.lib.workers.AbstractBagJob;
 
 public abstract class AbstractMETS2N3BagJob extends AbstractBagJob {
 
@@ -47,8 +47,8 @@ public abstract class AbstractMETS2N3BagJob extends AbstractBagJob {
 		this.schematronValidator = schematronValidator;
 	}
 
-	public AbstractMETS2N3BagJob(String bagDirectory, String depositId) {
-		super(bagDirectory, depositId);
+	public AbstractMETS2N3BagJob(String uuid, String bagDirectory, String depositId) {
+		super(uuid, bagDirectory, depositId);
 	}
 
 	public AbstractMETS2N3BagJob() {
@@ -110,7 +110,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractBagJob {
 		try {
 			mets = builder.build(getMETSFile());
 		} catch (Exception e) {
-			failDeposit(e, Type.NORMALIZATION, "Unexpected error parsing METS file: {0}", getMETSFile().getAbsolutePath());
+			failJob(e, Type.NORMALIZATION, "Unexpected error parsing METS file: {0}", getMETSFile().getAbsolutePath());
 		}
 		return mets;
 	}
@@ -121,7 +121,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractBagJob {
 			fos = new FileOutputStream(getMETSFile());
 			new XMLOutputter().output(mets, fos);
 		} catch(Exception e) {
-			failDeposit(e, Type.NORMALIZATION, "Unexpected error saving METS: {0}", getMETSFile());
+			failJob(e, Type.NORMALIZATION, "Unexpected error saving METS: {0}", getMETSFile());
 		} finally {
 			if(fos != null) {
 				try {
@@ -143,9 +143,9 @@ public abstract class AbstractMETS2N3BagJob extends AbstractBagJob {
 			if (log.isDebugEnabled()) {
 				log.debug(e.getMessage());
 			}
-			failDeposit(handler, Type.VALIDATION, "METS is not valid with respect to schemas");
+			failJob(handler, Type.VALIDATION, "METS is not valid with respect to schemas");
 		} catch (IOException e) {
-			failDeposit(e, Type.VALIDATION, "Cannot parse METS file: {0}", getMETSFile());
+			failJob(e, Type.VALIDATION, "Cannot parse METS file: {0}", getMETSFile());
 		}
 		recordDepositEvent(Type.VALIDATION, "METS schema(s) validated");
 	}
@@ -158,7 +158,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractBagJob {
 			for(String error : errors) {
 				details.append(error).append('\n');
 			}
-			failDeposit(Type.VALIDATION, msg, details.toString());
+			failJob(Type.VALIDATION, msg, details.toString());
 		}
 	}
 

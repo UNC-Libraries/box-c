@@ -12,12 +12,12 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.xml.sax.SAXException;
 
-import edu.unc.lib.bag.AbstractBagJob;
-import edu.unc.lib.bag.BagConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schematron.SchematronValidator;
+import edu.unc.lib.dl.util.BagConstants;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.workers.AbstractBagJob;
 import gov.loc.repository.bagit.Bag;
 
 /**
@@ -51,8 +51,8 @@ public class ValidateMODS extends AbstractBagJob {
 		super();
 	}
 
-	public ValidateMODS(String bagDirectory, String depositId) {
-		super(bagDirectory, depositId);
+	public ValidateMODS(String uuid, String bagDirectory, String depositId) {
+		super(uuid, bagDirectory, depositId);
 	}
 
 	@Override
@@ -107,7 +107,7 @@ public class ValidateMODS extends AbstractBagJob {
 		
 		if((invalidVocab + invalidXSD) > 0) {
 			String message = MessageFormat.format("{0} invalid against XSD; {1} invalid against vocabularies", invalidXSD, invalidVocab);
-			failDeposit(Type.VALIDATION, "Some descriptive metadata (MODS) did not meet requirements.", message);
+			failJob(Type.VALIDATION, "Some descriptive metadata (MODS) did not meet requirements.", message);
 		} else {
 			recordDepositEvent(Type.VALIDATION, "{0} MODS records validated", count);
 		}

@@ -1,6 +1,6 @@
 package edu.unc.lib.bag.validate;
 
-import edu.unc.lib.bag.AbstractBagJob;
+import edu.unc.lib.workers.AbstractBagJob;
 
 /**
  * Asserts that the destination container exists and is the right sort of container.
@@ -9,8 +9,8 @@ import edu.unc.lib.bag.AbstractBagJob;
  */
 public class ValidateDepositContainer extends AbstractBagJob {
 
-	public ValidateDepositContainer(String bagDirectory, String depositId) {
-		super(bagDirectory, depositId);
+	public ValidateDepositContainer(String uuid, String bagDirectory, String depositId) {
+		super(uuid, bagDirectory, depositId);
 	}
 
 	public ValidateDepositContainer() {

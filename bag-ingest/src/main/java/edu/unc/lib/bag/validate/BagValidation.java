@@ -1,6 +1,6 @@
 package edu.unc.lib.bag.validate;
 
-import edu.unc.lib.bag.AbstractBagJob;
+import edu.unc.lib.workers.AbstractBagJob;
 
 /**
  * Orchestrates parallel validation jobs, including
@@ -15,13 +15,15 @@ public class BagValidation extends AbstractBagJob {
 		super();
 	}
 
-	public BagValidation(String bagDirectory, String depositId) {
-		super(bagDirectory, depositId);
+	public BagValidation(String uuid, String bagDirectory, String depositId) {
+		super(uuid, bagDirectory, depositId);
 	}
 
 	@Override
 	public void run() {
-		
+		enqueueJob(VirusScanJob.class.getName());
+		enqueueJob(ValidateMODS.class.getName());
+		enqueueJob(ValidateDepositContainer.class.getName());
 	}
 
 }

@@ -23,10 +23,11 @@ import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.unc.lib.bag.AbstractBagJob;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.BagConstants;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.workers.AbstractBagJob;
 import gov.loc.repository.bagit.Bag;
 
 public class BioMedCentralExtrasJob extends AbstractBagJob {
@@ -35,8 +36,8 @@ public class BioMedCentralExtrasJob extends AbstractBagJob {
 	public BioMedCentralExtrasJob() {
 		super();
 	}
-	public BioMedCentralExtrasJob(String bagDirectory, String depositId) {
-		super(bagDirectory, depositId);
+	public BioMedCentralExtrasJob(String uuid, String bagDirectory, String depositId) {
+		super(uuid, bagDirectory, depositId);
 	}
 	
 	@Override
@@ -45,7 +46,7 @@ public class BioMedCentralExtrasJob extends AbstractBagJob {
 		Bag bag = loadBag();
 		log.debug("loaded bag {}", getBagDirectory());
 		Model model = ModelFactory.createDefaultModel();
-		File modelFile = new File(getBagDirectory(), MODEL_FILE);
+		File modelFile = new File(getBagDirectory(), BagConstants.MODEL_FILE);
 		model.read(modelFile.toURI().toString());
 		log.debug("loaded RDF model {}", modelFile);
 		
@@ -61,10 +62,10 @@ public class BioMedCentralExtrasJob extends AbstractBagJob {
 			aggregate = model.getBag(ni.next().asResource());
 			ni.close();
 			if(!model.contains(aggregate, hasModel, aggregateModel)) {
-				failDeposit(Type.NORMALIZATION, "Cannot find aggregate work", null);
+				failJob(Type.NORMALIZATION, "Cannot find aggregate work", null);
 			}
 		} catch(NoSuchElementException e) {
-			failDeposit(e, Type.NORMALIZATION, "Cannot find top contents of deposit");
+			failJob(e, Type.NORMALIZATION, "Cannot find top contents of deposit");
 		}
 		log.debug("identified aggregate {}", aggregate);
 		
@@ -119,7 +120,7 @@ public class BioMedCentralExtrasJob extends AbstractBagJob {
 				new XMLOutputter(Format.getPrettyFormat()).output(mods, out);
 				fileLC2supplementLabels = biohelper.getFilesLC2SupplementLabels(articleDocument);
 			} catch (Exception e) {
-				failDeposit(e, Type.NORMALIZATION, "Cannot extract metadata from BioMed Central article XML.");
+				failJob(e, Type.NORMALIZATION, "Cannot extract metadata from BioMed Central article XML.");
 			} finally {
 				IOUtils.closeQuietly(out);
 			}
@@ -138,7 +139,7 @@ public class BioMedCentralExtrasJob extends AbstractBagJob {
 			}
 		}
 		
-		saveModel(model, MODEL_FILE);
+		saveModel(model, BagConstants.MODEL_FILE);
 		recordDepositEvent(Type.NORMALIZATION, "Normalized BioMed Central article as aggregate with extracted description");
 		saveBag(bag);
 	}

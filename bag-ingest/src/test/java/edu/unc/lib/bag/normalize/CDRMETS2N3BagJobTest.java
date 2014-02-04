@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.bag.AbstractBagJob;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ZipFileUtil;
+import edu.unc.lib.workers.AbstractBagJob;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })

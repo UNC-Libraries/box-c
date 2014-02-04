@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.deposit;
 
-import static edu.unc.lib.dl.util.DepositBagInfo.CONTAINER_ID;
-import static edu.unc.lib.dl.util.DepositBagInfo.DEPOSIT_ID;
-import static edu.unc.lib.dl.util.DepositBagInfo.DEPOSIT_METHOD;
-import static edu.unc.lib.dl.util.DepositBagInfo.DEPOSIT_PERMISSION_GROUP;
-import static edu.unc.lib.dl.util.DepositBagInfo.PACKAGING_TYPE;
-import static edu.unc.lib.dl.util.DepositBagInfo.SWORD_SLUG;
+import static edu.unc.lib.dl.util.DepositBagInfoTxt.CONTAINER_ID;
+import static edu.unc.lib.dl.util.DepositBagInfoTxt.DEPOSIT_ID;
+import static edu.unc.lib.dl.util.DepositBagInfoTxt.DEPOSIT_METHOD;
+import static edu.unc.lib.dl.util.DepositBagInfoTxt.DEPOSIT_PERMISSION_GROUP;
+import static edu.unc.lib.dl.util.DepositBagInfoTxt.PACKAGING_TYPE;
+import static edu.unc.lib.dl.util.DepositBagInfoTxt.SWORD_SLUG;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,19 +1,20 @@
-package edu.unc.lib.bag;
+package edu.unc.lib.workers;
 
-import java.io.BufferedWriter;
+import static edu.unc.lib.dl.util.BagConstants.DESCRIPTION_DIR;
+
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.text.MessageFormat;
+import java.util.UUID;
 
 import net.greghaines.jesque.Job;
 import net.greghaines.jesque.client.Client;
 
+import org.apache.commons.io.IOUtils;
 import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
@@ -24,13 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hp.hpl.jena.rdf.model.Model;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.BagConstants;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
-import static edu.unc.lib.bag.BagConstants.DESCRIPTION_DIR;
 
 /**
  * Constructed with bag directory and deposit ID.
@@ -40,10 +41,37 @@ import static edu.unc.lib.bag.BagConstants.DESCRIPTION_DIR;
  */
 public abstract class AbstractBagJob implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(AbstractBagJob.class);
-	private static final String DEPOSIT_QUEUE = "Deposit";
-	public static final String MODEL_FILE = "everything.n3";
+	public static final String DEPOSIT_QUEUE = "Deposit";
 	private File bagDirectory;
 	private PID depositPID;
+	private String jobUUID;
+	public String getJobUUID() {
+		return jobUUID;
+	}
+
+	public void setJobUUID(String uuid) {
+		this.jobUUID = uuid;
+	}
+
+	private JobStatusFactory jobStatusFactory;
+	
+	public JobStatusFactory getJobStatusFactory() {
+		return jobStatusFactory;
+	}
+
+	public void setJobStatusFactory(JobStatusFactory jobStatusFactory) {
+		this.jobStatusFactory = jobStatusFactory;
+	}
+
+	private DepositStatusFactory depositStatusFactory;
+	public DepositStatusFactory getDepositStatusFactory() {
+		return depositStatusFactory;
+	}
+
+	public void setBagStatusFactory(DepositStatusFactory depositStatusFactory) {
+		this.depositStatusFactory = depositStatusFactory;
+	}
+
 	private BagFactory bagFactory = new BagFactory();
 	public BagFactory getBagFactory() {
 		return bagFactory;
@@ -74,14 +102,14 @@ public abstract class AbstractBagJob implements Runnable {
 	
 	public void enqueueDefaultNextJob() {
 		if(this.defaultNextJob != null) {
-			Job job = new Job(this.defaultNextJob, getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
+			Job job = new Job(this.defaultNextJob, UUID.randomUUID().toString(), getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
 			jesqueClient.enqueue(DEPOSIT_QUEUE, job);
 		}
 	}
 	
-	public void enqueueNextJob(String jobName) {
+	public void enqueueJob(String jobName) {
 		if(jobName != null) {
-			Job job = new Job(jobName, getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
+			Job job = new Job(jobName, UUID.randomUUID().toString(), getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
 			jesqueClient.enqueue(DEPOSIT_QUEUE, job);
 		}
 	}
@@ -89,10 +117,11 @@ public abstract class AbstractBagJob implements Runnable {
 	private PremisEventLogger eventLog = new PremisEventLogger(this.getClass().getName());
 	private File eventsFile;
 
-	public AbstractBagJob(String bagDirectory, String depositId) {
+	public AbstractBagJob(String uuid, String bagDirectory, String depositId) {
 		log.debug("Bag job created: {} {}", bagDirectory, depositId);
+		this.jobUUID = uuid;
 		this.bagDirectory = new File(bagDirectory);
-		this.eventsFile = new File(bagDirectory, "events.xml");
+		this.eventsFile = new File(bagDirectory, BagConstants.EVENTS_FILE);
 		this.depositPID = new PID(depositId);
 	}
 	
@@ -125,43 +154,41 @@ public abstract class AbstractBagJob implements Runnable {
 		appendDepositEvent(event);
 	}
 	
-	public void failDeposit(Type type, String message, String details) {
+	public void failJob(Type type, String message, String details) {
 		log.debug("failed deposit: {}", message);
 		Element event = getEventLog().logEvent(type, message, this.getDepositPID());
 		event = PremisEventLogger.addDetailedOutcome(event, "failed", details, null);
 		appendDepositEvent(event);
-		Throwable e = new DepositFailedException(message);
-		throw new RuntimeException(e);
+		throw new JobFailedException(message);
 	}
 	
-	public void failDeposit(Throwable throwable, Type type, String messageformat, Object... args) {
+	public void failJob(Throwable throwable, Type type, String messageformat, Object... args) {
 		String message = MessageFormat.format(messageformat, args);
 		log.debug("failed deposit: {}", message);
 		Element event = getEventLog().logException(message, throwable);
 		event = PremisEventLogger.addLinkingAgentIdentifier(event, "SIP Processing Job", this.getClass().getName(), "Software");
-		appendDepositEvent(event); 
-		Throwable e = new DepositFailedException(message, throwable);
-		throw new RuntimeException(e);
+		appendDepositEvent(event);
+		throw new JobFailedException(message, throwable);
 	}
 	
 	protected void appendDepositEvent(Element event) {
-			File file = new File(bagDirectory, "events.xml");
+			File file = new File(bagDirectory, BagConstants.EVENTS_FILE);
 	        FileLock lock = null;
-	        PrintWriter out = null;
+	        FileOutputStream out = null;
 	        try {
 	        	file.createNewFile();
 	        	@SuppressWarnings("resource")
 				FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
 	        	// Get an exclusive lock on the whole file
 	            lock = channel.lock();
-			    out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
-			    out.append("\n");
+			    out = new FileOutputStream(file, true);
+			    out.write("\n".getBytes());
 			    new XMLOutputter(Format.getPrettyFormat()).output(event, out);
 			    out.close();
 	        } catch(IOException e) {
 	        	throw new Error(e);
 	        } finally {
-	        	out.close();
+	        	IOUtils.closeQuietly(out);
 	            try {
 					lock.release();
 				} catch (IOException e) {
@@ -185,7 +212,7 @@ public abstract class AbstractBagJob implements Runnable {
 			writer.write(bag, getBagDirectory());
 			bag.close();
 		} catch (IOException e) {
-			failDeposit(e, Type.NORMALIZATION, "Unable to write to deposit bag");
+			failJob(e, Type.NORMALIZATION, "Unable to write to deposit bag");
 		}
 	}
 
