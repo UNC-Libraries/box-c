@@ -98,34 +98,27 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 			Element newestSourceDS = FOXMLJDOMUtil.getMostRecentDatastream(
 					ContentModelHelper.Datastream.getDatastream(surrogateDsId), surrogateFoxml);
 
-			String mimetype = newestSourceDS.getAttributeValue("MIMETYPE");
+			dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
+					.getAttributeValue("REF");
 
-			// Only need to process image datastreams.
-			if (mimetype != null && mimetype.indexOf("image/") != -1 /* || mimetype.indexOf("application/pdf") != -1 */) {
-				LOG.debug("Image DS found: {}, {}", surrogateDsId, mimetype);
+			LOG.debug("Source DS location: {}", dsLocation);
+			if (dsLocation != null) {
+				dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
+				LOG.debug("Making 2 Thumbnails..");
 
-				dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
-						.getAttributeValue("REF");
+				List<String> thumbRels = FOXMLJDOMUtil.getRelationValues(
+						ContentModelHelper.CDRProperty.thumb.getPredicate(), JDOMNamespaceUtil.CDR_NS,
+						FOXMLJDOMUtil.getRelsExt(foxml));
+				{
+					String dsname = ContentModelHelper.Datastream.THUMB_SMALL.getName();
+					boolean exists = FOXMLJDOMUtil.getDatastream(foxml, dsname) != null;
+					createStoreThumb(dsIrodsPath, 64, 64, dsname, exists, thumbRels);
+				}
 
-				LOG.debug("Source DS location: {}", dsLocation);
-				if (dsLocation != null) {
-					dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
-					LOG.debug("Making 2 Thumbnails..");
-
-					List<String> thumbRels = FOXMLJDOMUtil.getRelationValues(
-							ContentModelHelper.CDRProperty.thumb.getPredicate(), JDOMNamespaceUtil.CDR_NS,
-							FOXMLJDOMUtil.getRelsExt(foxml));
-					{
-						String dsname = ContentModelHelper.Datastream.THUMB_SMALL.getName();
-						boolean exists = FOXMLJDOMUtil.getDatastream(foxml, dsname) != null;
-						createStoreThumb(dsIrodsPath, 64, 64, dsname, exists, thumbRels);
-					}
-
-					{
-						String dsname = ContentModelHelper.Datastream.THUMB_LARGE.getName();
-						boolean exists = FOXMLJDOMUtil.getDatastream(foxml, dsname) != null;
-						createStoreThumb(dsIrodsPath, 128, 128, dsname, exists, thumbRels);
-					}
+				{
+					String dsname = ContentModelHelper.Datastream.THUMB_LARGE.getName();
+					boolean exists = FOXMLJDOMUtil.getDatastream(foxml, dsname) != null;
+					createStoreThumb(dsIrodsPath, 128, 128, dsname, exists, thumbRels);
 				}
 			}
 		} catch (EnhancementException e) {

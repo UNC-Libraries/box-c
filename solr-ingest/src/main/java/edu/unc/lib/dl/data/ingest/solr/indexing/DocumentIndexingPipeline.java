@@ -22,23 +22,20 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelException;
 import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
-import edu.unc.lib.dl.xml.JDOMQueryUtil;
 
 public class DocumentIndexingPipeline implements DocumentFilteringPipeline {
 	protected Collection<IndexDocumentFilter> filters;
 
 	@Override
 	public void process(DocumentIndexingPackage dip) throws IndexingException {
-		if (dip.getRelsExt() != null) {
-			@SuppressWarnings("unchecked")
-			List<org.jdom.Element> hasModelElements = dip.getRelsExt().getChildren(
-					ContentModelHelper.FedoraProperty.hasModel.name(), JDOMNamespaceUtil.FEDORA_MODEL_NS);
-			if (JDOMQueryUtil.getElementByAttribute(hasModelElements, "resource", JDOMNamespaceUtil.RDF_NS,
-					ContentModelHelper.Model.DEPOSIT_RECORD.toString()) != null)
+		// Do not process deposit records for now
+		if (dip.getTriples() != null) {
+			List<String> contentModels = dip.getTriples().get(ContentModelHelper.FedoraProperty.hasModel.toString());
+			if (contentModels.contains(ContentModelHelper.Model.DEPOSIT_RECORD.toString())) {
 				throw new UnsupportedContentModelException("Could not index object " + dip.getPid().toString()
 						+ ", objects of type " + ContentModelHelper.Model.DEPOSIT_RECORD.toString()
 						+ " are not supported for indexing.");
+			}
 		}
 
 		for (IndexDocumentFilter filter : filters) {

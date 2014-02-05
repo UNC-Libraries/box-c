@@ -56,6 +56,8 @@ public class UpdateChildSetAction extends UpdateTreeAction {
 	}
 
 	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent) {
-		return dipFactory.createDocumentIndexingPackage(pid);
+		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackage(pid);
+		dip.setParentDocument(parent);
+		return dip;
 	}
 }

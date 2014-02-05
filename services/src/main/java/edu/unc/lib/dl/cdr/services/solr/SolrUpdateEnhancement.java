@@ -48,11 +48,11 @@ public class SolrUpdateEnhancement extends Enhancement<Element> {
 		IndexingActionType action = IndexingActionType.ADD;
 		
 		//Perform a single item update
-		if (message.getFilteredServices().contains(FullTextEnhancementService.enhancementName)) {
+		if (message.getCompletedServices().contains(FullTextEnhancementService.class.getName())) {
 			action = IndexingActionType.UPDATE_FULL_TEXT;
-		} else if (message.getFilteredServices().contains(TechnicalMetadataEnhancementService.enhancementName)
-				|| message.getFilteredServices().contains(ImageEnhancementService.enhancementName)
-				|| message.getFilteredServices().contains(ThumbnailEnhancementService.enhancementName)) {
+		} else if (message.getCompletedServices().contains(TechnicalMetadataEnhancementService.class.getName())
+				|| message.getCompletedServices().contains(ImageEnhancementService.class.getName())
+				|| message.getCompletedServices().contains(ThumbnailEnhancementService.class.getName())) {
 			action = IndexingActionType.UPDATE_DATASTREAMS;
 		}
 		

@@ -69,67 +69,61 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 
 				String dsLocation = null;
 				String dsIrodsPath = null;
-				String mimetype = newestSourceDS.getAttributeValue("MIMETYPE");
 
-				// Only need to process image datastreams.
-				if (mimetype.indexOf("image/") != -1) {
-					LOG.debug("Image DS found: {}, {}", dsid, mimetype);
+				dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS).getAttributeValue(
+						"REF");
 
-					dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS).getAttributeValue(
-							"REF");
+				LOG.debug("Image DS location: {}", dsLocation);
+				if (dsLocation != null) {
+					dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
+					// Ask irods to make the jp2 object
+					LOG.debug("Convert to JP2");
+					String convertResultPath = runConvertJP2(dsIrodsPath);
 
-					LOG.debug("Image DS location: {}", dsLocation);
-					if (dsLocation != null) {
-						dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
-						// Ask irods to make the jp2 object
-						LOG.debug("Convert to JP2");
-						String convertResultPath = runConvertJP2(dsIrodsPath);
+					String convertResultURI = ((AbstractIrodsObjectEnhancementService) service)
+							.makeIrodsURIFromPath(convertResultPath);
+					LOG.debug("attempting to ingest conversion result: " + convertResultPath);
 
-						String convertResultURI = ((AbstractIrodsObjectEnhancementService) service)
-								.makeIrodsURIFromPath(convertResultPath);
-						LOG.debug("attempting to ingest conversion result: " + convertResultPath);
-
-						if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.IMAGE_JP2000.getName()) == null) {
-							// Add the datastream for the new derived jp2
-							LOG.debug("Adding managed datastream for JP2");
-							String message = "Adding derived JP2000 image datastream.";
-							service.getManagementClient().addManagedDatastream(pid,
-									ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
-									new ArrayList<String>(), "Derived JP2000 image", false, "image/jp2", convertResultURI);
-						} else {
-							LOG.debug("Replacing managed datastream for JP2");
-							String message = "Replacing derived JP2000 image datastream.";
-							service.getManagementClient().modifyDatastreamByReference(pid,
-									ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
-									new ArrayList<String>(), "Derived JP2000 image", "image/jp2", null, null, convertResultURI);
-						}
-
-						// Add DATA_JP2, cdr-base:derivedJP2 relation triple
-						LOG.debug("Adding JP2 relationship");
-						PID newDSPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.IMAGE_JP2000.getName());
-						Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid);
-
-						List<String> jp2rel = rels.get(ContentModelHelper.CDRProperty.derivedJP2.toString());
-						if (jp2rel == null || !jp2rel.contains(newDSPID.getURI())) {
-							service.getManagementClient().addObjectRelationship(pid,
-									ContentModelHelper.CDRProperty.derivedJP2.toString(), newDSPID);
-						}
-
-						// add object model
-						List<String> models = rels.get(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
-						if (models == null
-								|| !models.contains(ContentModelHelper.Model.JP2DERIVEDIMAGE.getPID().getURI().toString())) {
-							LOG.debug("Adding JP2DerivedImage content model relationship");
-							service.getManagementClient().addObjectRelationship(pid,
-									ContentModelHelper.FedoraProperty.hasModel.toString(),
-									ContentModelHelper.Model.JP2DERIVEDIMAGE.getPID());
-						}
-
-						// Clean up the temporary irods file
-						LOG.debug("Deleting temporary jp2 Irods file");
-						((AbstractIrodsObjectEnhancementService) service).deleteIRODSFile(convertResultPath);
-						LOG.debug("Finished JP2 processing");
+					if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.IMAGE_JP2000.getName()) == null) {
+						// Add the datastream for the new derived jp2
+						LOG.debug("Adding managed datastream for JP2");
+						String message = "Adding derived JP2000 image datastream.";
+						service.getManagementClient().addManagedDatastream(pid,
+								ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
+								new ArrayList<String>(), "Derived JP2000 image", false, "image/jp2", convertResultURI);
+					} else {
+						LOG.debug("Replacing managed datastream for JP2");
+						String message = "Replacing derived JP2000 image datastream.";
+						service.getManagementClient().modifyDatastreamByReference(pid,
+								ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
+								new ArrayList<String>(), "Derived JP2000 image", "image/jp2", null, null, convertResultURI);
 					}
+
+					// Add DATA_JP2, cdr-base:derivedJP2 relation triple
+					LOG.debug("Adding JP2 relationship");
+					PID newDSPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.IMAGE_JP2000.getName());
+					Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid);
+
+					List<String> jp2rel = rels.get(ContentModelHelper.CDRProperty.derivedJP2.toString());
+					if (jp2rel == null || !jp2rel.contains(newDSPID.getURI())) {
+						service.getManagementClient().addObjectRelationship(pid,
+								ContentModelHelper.CDRProperty.derivedJP2.toString(), newDSPID);
+					}
+
+					// add object model
+					List<String> models = rels.get(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
+					if (models == null
+							|| !models.contains(ContentModelHelper.Model.JP2DERIVEDIMAGE.getPID().getURI().toString())) {
+						LOG.debug("Adding JP2DerivedImage content model relationship");
+						service.getManagementClient().addObjectRelationship(pid,
+								ContentModelHelper.FedoraProperty.hasModel.toString(),
+								ContentModelHelper.Model.JP2DERIVEDIMAGE.getPID());
+					}
+
+					// Clean up the temporary irods file
+					LOG.debug("Deleting temporary jp2 Irods file");
+					((AbstractIrodsObjectEnhancementService) service).deleteIRODSFile(convertResultPath);
+					LOG.debug("Finished JP2 processing");
 				}
 			}
 		} catch (FileSystemException e) {
