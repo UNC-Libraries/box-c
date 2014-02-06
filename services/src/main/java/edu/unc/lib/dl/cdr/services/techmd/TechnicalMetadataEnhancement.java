@@ -101,6 +101,9 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 					dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS).getAttributeValue(
 							"REF");
 					dsAltIds = newestSourceDS.getAttributeValue("ALT_IDS");
+				} else {
+					throw new EnhancementException("Specified source datastream " + srcURI + " was not found, the object "
+							+ this.pid.getPid() + " is most likely invalid", Severity.UNRECOVERABLE);
 				}
 
 				// get logical iRODS path for datastream version

@@ -66,6 +66,10 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 
 				Element newestSourceDS = FOXMLJDOMUtil.getMostRecentDatastream(
 						ContentModelHelper.Datastream.getDatastream(dsid), foxml);
+				
+				if (newestSourceDS == null)
+					throw new EnhancementException("Specified source datastream " + srcURI + " was not found, the object "
+							+ this.pid.getPid() + " is most likely invalid", Severity.UNRECOVERABLE);
 
 				String dsLocation = null;
 				String dsIrodsPath = null;

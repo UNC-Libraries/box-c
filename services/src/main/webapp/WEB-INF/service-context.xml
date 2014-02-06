@@ -56,7 +56,7 @@
 		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#"/>
 	</bean>
 	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
-		init-method="init">
+		init-method="init" destroy-method="destroy">
 		<property name="fedoraContextUrl"
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
 		<property name="username" value="${fedora.admin.username}" />
@@ -65,7 +65,7 @@
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 	</bean>
 	<bean id="forwardedManagementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
-		init-method="init">
+		init-method="init" destroy-method="destroy">
 		<property name="fedoraContextUrl"
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
 		<property name="username" value="${fedora.appUser.username}" />

@@ -184,6 +184,7 @@
 		<property name="pipeline" ref="solrDescriptionUpdatePipeline" />
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="addDocumentMode" value="false" />
 	</bean>
 	
 	<bean id="updateDatastreamsAction"
@@ -191,6 +192,7 @@
 		<property name="pipeline" ref="solrDatastreamUpdatePipeline" />
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="addDocumentMode" value="false" />
 	</bean>
 	
 	<bean id="updateFullTextAction"
@@ -198,6 +200,7 @@
 		<property name="pipeline" ref="solrFullTextUpdatePipeline" />
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="addDocumentMode" value="false" />
 	</bean>
 	
 	<bean id="updateTreeAction"

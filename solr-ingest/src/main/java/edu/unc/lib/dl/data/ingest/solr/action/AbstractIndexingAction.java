@@ -43,6 +43,7 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 	protected SearchSettings searchSettings;
 	protected AccessGroupSet accessGroups;
 	protected SolrSettings solrSettings;
+	protected boolean addDocumentMode = true;
 	
 	public static final String TARGET_ALL = "fullIndex";
 
@@ -110,5 +111,13 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 
 	public void setAccessGroups(AccessGroupSet accessGroups) {
 		this.accessGroups = accessGroups;
+	}
+	
+	public boolean isAddDocumentMode() {
+		return addDocumentMode;
+	}
+
+	public void setAddDocumentMode(boolean addDocumentMode) {
+		this.addDocumentMode = addDocumentMode;
 	}
 }

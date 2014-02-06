@@ -6,9 +6,10 @@ FROM <%1$s>
 WHERE { 
     ?pid <info:fedora/fedora-system:def/model#hasModel> <info:fedora/cdr-model:Simple> .
     ?pid cdr-base:sourceData ?srcDS .
+	?srcDS fedora-view:lastModifiedDate ?srcModified .
     ?pid cdr-base:hasSourceMimeType ?srcMime .
     ?pid cdr-base:fullText ?textDS .
-    ?textDS fedora-view:lastModifiedDate ?textModified . 
+    ?textDS fedora-view:lastModifiedDate ?textModified .
     FILTER (
       ?pid = <%2$s> 
       && regex( str(?srcMime), '(text/|application/pdf|application/msword|application/vnd\\.|application/rtf|application/powerpoint|application/postscript)')

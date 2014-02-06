@@ -98,8 +98,12 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 			Element newestSourceDS = FOXMLJDOMUtil.getMostRecentDatastream(
 					ContentModelHelper.Datastream.getDatastream(surrogateDsId), surrogateFoxml);
 
-			dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
-					.getAttributeValue("REF");
+			if (newestSourceDS == null)
+				throw new EnhancementException("Specified source or surrogate datastream " + surrogateDsUri
+						+ " was not found, the object " + this.pid.getPid() + " is most likely invalid",
+						Severity.UNRECOVERABLE);
+
+			dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS).getAttributeValue("REF");
 
 			LOG.debug("Source DS location: {}", dsLocation);
 			if (dsLocation != null) {

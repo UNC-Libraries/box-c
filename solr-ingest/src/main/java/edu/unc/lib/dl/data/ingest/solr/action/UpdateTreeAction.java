@@ -29,7 +29,6 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 	@Autowired
 	protected TripleStoreQueryService tsqs;
 	private String descendantsQuery;
-	protected boolean addDocumentMode = true;
 
 	@PostConstruct
 	public void init() {
@@ -55,14 +54,6 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 
 	public void setTsqs(TripleStoreQueryService tsqs) {
 		this.tsqs = tsqs;
-	}
-
-	public boolean isAddDocumentMode() {
-		return addDocumentMode;
-	}
-
-	public void setAddDocumentMode(boolean addDocumentMode) {
-		this.addDocumentMode = addDocumentMode;
 	}
 
 	protected void index(SolrUpdateRequest updateRequest) {

@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -98,6 +99,8 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 public class ManagementClient extends WebServiceTemplate {
 	private AccessClient accessClient = null;
 	private TripleStoreQueryService tripleStoreQueryService;
+	private MultiThreadedHttpConnectionManager httpManager;
+	private HttpClient httpClient;
 
 	// ENUMS
 	private enum Action {
@@ -217,7 +220,7 @@ public class ManagementClient extends WebServiceTemplate {
 		File file = ClientUtils.writeXMLToTempFile(xml);
 		return addInlineXMLDatastream(pid, dsid, force, message, altids, label, versionable, file);
 	}
-	
+
 	public String addInlineXMLDatastream(PID pid, String dsid, boolean force, String message, List<String> altids,
 			String label, boolean versionable, File contentFile) throws FedoraException {
 		String location = null;
@@ -444,21 +447,33 @@ public class ManagementClient extends WebServiceTemplate {
 		// this.setFaultMessageResolver(new FedoraFaultMessageResolver());
 		this.setDefaultUri(this.getFedoraContextUrl() + "/services/management");
 		this.afterPropertiesSet();
+
+		this.httpManager = new MultiThreadedHttpConnectionManager();
+		this.httpClient = HttpClientUtil.getAuthenticatedClient(this.getFedoraContextUrl(), this.getUsername(),
+				this.getPassword(), this.httpManager);
+		this.httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
+	}
+
+	public void destroy() {
+		if (this.httpManager != null)
+			this.httpManager.shutdown();
 	}
 
 	// DEPENDENCY SETTERS AND GETTERS
 	public String modifyDatastreamByValue(PID pid, String dsid, boolean force, String message, List<String> altids,
-			String label, String mimetype, String checksum, ChecksumType checksumType, File contentFile) throws FedoraException {
+			String label, String mimetype, String checksum, ChecksumType checksumType, File contentFile)
+			throws FedoraException {
 		byte[] contentBytes;
 		try {
 			contentBytes = FileUtils.readFileToByteArray(contentFile);
-			return modifyDatastreamByValue(pid, dsid, force, message, altids, label, mimetype, checksum, checksumType, contentBytes);
+			return modifyDatastreamByValue(pid, dsid, force, message, altids, label, mimetype, checksum, checksumType,
+					contentBytes);
 		} catch (IOException e) {
 			log.error("Could not read the new content file", e);
 		}
 		return null;
 	}
-	
+
 	public String modifyDatastreamByValue(PID pid, String dsid, boolean force, String message, List<String> altids,
 			String label, String mimetype, String checksum, ChecksumType checksumType, byte[] content)
 			throws FedoraException {
@@ -572,10 +587,11 @@ public class ManagementClient extends WebServiceTemplate {
 		PurgeDatastreamResponse resp = (PurgeDatastreamResponse) this.callService(req, Action.purgeDatastream);
 		return resp.getPurgedVersionDate();
 	}
-	
-	public boolean setExclusiveLiteral(PID pid, String relationship, String literal, String datatype) throws FedoraException {
+
+	public boolean setExclusiveLiteral(PID pid, String relationship, String literal, String datatype)
+			throws FedoraException {
 		List<String> rel = tripleStoreQueryService.fetchAllTriples(pid).get(relationship);
-		
+
 		if (rel != null) {
 			if (rel.contains(literal)) {
 				rel.remove(literal);
@@ -587,7 +603,7 @@ public class ManagementClient extends WebServiceTemplate {
 			for (String oldValue : rel) {
 				this.purgeLiteralStatement(pid, relationship, oldValue, datatype);
 			}
-			return true; 
+			return true;
 		} else {
 			// add missing rel
 			return this.addLiteralStatement(pid, relationship, literal, datatype);
@@ -636,12 +652,10 @@ public class ManagementClient extends WebServiceTemplate {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-	
 
 	public String upload(File file) {
 		String result = null;
 		String uploadURL = this.getFedoraContextUrl() + "/upload";
-		HttpClient http = HttpClientUtil.getAuthenticatedClient(uploadURL, this.getUsername(), this.getPassword());
 		PostMethod post = new PostMethod(uploadURL);
 		post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, false);
 		log.debug("Uploading file with forwarded groups: " + GroupsThreadStore.getGroupString());
@@ -650,8 +664,7 @@ public class ManagementClient extends WebServiceTemplate {
 			log.debug("Uploading to " + uploadURL);
 			Part[] parts = { new FilePart("file", file) };
 			post.setRequestEntity(new MultipartRequestEntity(parts, post.getParams()));
-			http.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
-			int status = http.executeMethod(post);
+			int status = httpClient.executeMethod(post);
 
 			InputStream in = post.getResponseBodyAsStream();
 			StringWriter sw = new StringWriter();
@@ -688,7 +701,7 @@ public class ManagementClient extends WebServiceTemplate {
 		}
 		return result;
 	}
-	
+
 	public String upload(String content) {
 		return this.uploadBytes(content.getBytes(), "tmp_" + System.nanoTime());
 	}
@@ -707,15 +720,14 @@ public class ManagementClient extends WebServiceTemplate {
 			} catch (IOException ignored) {
 			}
 		}
-		
+
 		return this.uploadBytes(baos.toByteArray(), "md_events.xml");
 	}
-	
+
 	private String uploadBytes(byte[] bytes, String fileName) {
 		String result = null;
 		// construct a post request to Fedora upload service
 		String uploadURL = this.getFedoraContextUrl() + "/upload";
-		HttpClient http = HttpClientUtil.getAuthenticatedClient(uploadURL, this.getUsername(), this.getPassword());
 		PostMethod post = new PostMethod(uploadURL);
 		post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, false);
 		log.debug("Uploading XML with forwarded groups: " + GroupsThreadStore.getGroupString());
@@ -724,9 +736,8 @@ public class ManagementClient extends WebServiceTemplate {
 			log.debug("Uploading to " + uploadURL);
 			Part[] parts = { new FilePart("file", new ByteArrayPartSource(fileName, bytes)) };
 			post.setRequestEntity(new MultipartRequestEntity(parts, post.getParams()));
-			http.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
 
-			int status = http.executeMethod(post);
+			int status = httpClient.executeMethod(post);
 
 			InputStream in = post.getResponseBodyAsStream();
 			StringWriter sw = new StringWriter();
@@ -767,10 +778,10 @@ public class ManagementClient extends WebServiceTemplate {
 	public String getIrodsPath(String dsFedoraLocationToken) {
 		log.debug("getting iRODS path for " + dsFedoraLocationToken);
 		String result = null;
+		GetMethod get = null;
 		try {
 			String url = getFedoraContextUrl() + "/storagelocation";
-			HttpClient httpClient = HttpClientUtil.getAuthenticatedClient(url, this.getUsername(), this.getPassword());
-			GetMethod get = new GetMethod(url);
+			get = new GetMethod(url);
 			get.setQueryString("pid=" + URLEncoder.encode(dsFedoraLocationToken, "utf-8"));
 			int statusCode = httpClient.executeMethod(get);
 			if (statusCode != HttpStatus.SC_OK) {
@@ -782,7 +793,11 @@ public class ManagementClient extends WebServiceTemplate {
 				result = result.trim();
 			}
 		} catch (Exception e) {
-			throw new ServiceException("Cannot contact iRODS location service.", e);
+			throw new ServiceException("Error while contacting iRODS location service with datastream location "
+					+ dsFedoraLocationToken, e);
+		} finally {
+			if (get != null)
+				get.releaseConnection();
 		}
 		return result;
 	}

@@ -73,7 +73,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	private List<EnhancementMessage> finishedMessages = null;
 	private int maxFinishedMessages = 300;
 	private long finishedMessageTimeout = 86400000;
-	
+
 	// Set of locked pids, used to prevent items from being processed multiple
 	// times at once
 	private Set<String> lockedPids = null;
@@ -412,10 +412,10 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	public List<EnhancementMessage> getFinishedMessages() {
 		return finishedMessages;
 	}
-	
+
 	public void cleanupFinishedMessages() {
 		long currentTime = System.currentTimeMillis();
-		
+
 		synchronized (finishedMessages) {
 			Iterator<EnhancementMessage> iterator = finishedMessages.iterator();
 			while (iterator.hasNext()) {
@@ -451,17 +451,17 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 	public static class LimitedWindowList<E> extends ArrayList<E> {
 		private static final long serialVersionUID = 1L;
 		private int maxWindowSize;
-		
+
 		public LimitedWindowList(int maxWindowSize) {
 			super(maxWindowSize);
 			this.maxWindowSize = maxWindowSize;
 		}
-		
+
 		@Override
 		public boolean addAll(Collection<? extends E> c) {
 			if (this.size() + c.size() >= maxWindowSize) {
 				if (c.size() >= maxWindowSize) {
-					for (E e: c) {
+					for (E e : c) {
 						this.add(e);
 					}
 					return true;
@@ -472,7 +472,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 			super.addAll(c);
 			return true;
 		}
-		
+
 		@Override
 		public boolean add(E e) {
 			// if the list is full, remove the oldest first
@@ -482,7 +482,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 			return true;
 		}
 	}
-	
+
 	/**
 	 * Runnable class which performs the actual processing of messages from the queue. Messages are read if they do not
 	 * apply to a pid that is already being processed, and a list of services are tested against each message to
@@ -581,7 +581,15 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 			return null;
 		}
 
-		public void applyService(ObjectEnhancementService s) throws EnhancementException {
+		/**
+		 * Determines if an enhancement is applicable for the current message's target. If so, then the enhancement is
+		 * performed on the target. Returns true if the enhancement completes, otherwise false.
+		 * 
+		 * @param s
+		 * @return
+		 * @throws EnhancementException
+		 */
+		public boolean applyService(ObjectEnhancementService s) throws EnhancementException {
 			// Check if there were any failed services for this pid. If there were, check if the current service
 			// was one of them.
 
@@ -597,7 +605,7 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 						|| (failedServices != null && failedServices.contains(s.getClass().getName()))) {
 					if (log.isDebugEnabled())
 						log.debug("Enhancement not run: " + s.getClass().getCanonicalName() + " on " + message.getTargetID());
-					return;
+					return false;
 				}
 			}
 
@@ -611,12 +619,14 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 			if (Thread.currentThread().isInterrupted()) {
 				log.warn("Services thread " + Thread.currentThread().getId() + " for " + message.getTargetID()
 						+ " interrupted before calling enhancement");
-				return;
+				return false;
 			}
-			
+
 			// Enhancement services need to be run serially per pid, so making a direct invocation of call
 			task.call();
 			message.getCompletedServices().add(s.getClass().getName());
+
+			return true;
 		}
 
 		private void pauseWait() {
@@ -647,13 +657,13 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 						log.debug("Thread was interrupted");
 						return;
 					}
-					
+
 					// Store message as active
 					activeMessages.add(message);
-					
-				// Initialize the completed services list
+
+					// Initialize the completed services list
 					message.setCompletedServices(new ArrayList<String>(message.getFilteredServices().size()));
-					
+
 					for (String serviceClassName : message.getFilteredServices()) {
 						ObjectEnhancementService s = servicesMap.get(serviceClassName);
 						try {
@@ -667,9 +677,8 @@ public class EnhancementConductor implements MessageConductor, ServiceConductor 
 								}
 								// Store which service is presently active on this message
 								message.setActiveService(serviceClassName);
-								// Apply the service
-								this.applyService(s);
-								serviceSuccess = true;
+								// Apply the service and record whether any service has been successful so far.
+								serviceSuccess = this.applyService(s) || serviceSuccess;
 							}
 						} catch (EnhancementException e) {
 							switch (e.getSeverity()) {
