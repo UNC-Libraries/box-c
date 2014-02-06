@@ -10,6 +10,8 @@ import javax.xml.validation.Schema;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -27,6 +29,7 @@ import gov.loc.repository.bagit.Bag;
  *
  */
 public class ValidateMODS extends AbstractBagJob {
+	private static final Logger log = LoggerFactory.getLogger(ValidateMODS.class);
 
 	private SchematronValidator schematronValidator = null;
 	private Schema modsSchema = null;
@@ -61,12 +64,18 @@ public class ValidateMODS extends AbstractBagJob {
 		int count = 0;
 		int invalidXSD = 0;
 		int invalidVocab = 0;
-		for (File f : getDescriptionDir().listFiles(new FileFilter() {
+		if(!getDescriptionDir().exists()) {
+			log.debug("MODS directory does not exist");
+			return;
+		}
+		File[] modsFiles = getDescriptionDir().listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File f) {
 				return (f.isFile() && f.getName().endsWith(".xml"));
 			}
-		})) {
+		});
+		setTotalClicks(modsFiles.length);
+		for (File f : modsFiles) {
 			count++;
 			PID p = BagConstants.getPIDForTagFile(f.getPath());
 			String xsdMessage = "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)";
@@ -103,6 +112,7 @@ public class ValidateMODS extends AbstractBagJob {
 								svrl.detachRootElement());
 				invalidVocab++;
 			}
+			addClicks(1);
 		}
 		
 		if((invalidVocab + invalidXSD) > 0) {

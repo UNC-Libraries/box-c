@@ -32,11 +32,18 @@ import edu.unc.lib.staging.Stages;
 import edu.unc.lib.staging.StagingException;
 import edu.unc.lib.workers.AbstractBagJob;
 
+/**
+ * Scans all files mentioned in N3 manifest for viruses. If a Staging configuration
+ * is supplied then staged files will be resolved. Otherwise files are resolved
+ * with the bag directory as the base URI.
+ * @author count0
+ *
+ */
 public class VirusScanJob extends AbstractBagJob {
 	private static final Logger log = LoggerFactory
 			.getLogger(VirusScanJob.class);
-	private ClamScan clamScan = null;
-	private Stages stages = null;
+	private ClamScan clamScan;
+	private Stages stages;
 
 	public VirusScanJob() {
 		super();
@@ -92,13 +99,19 @@ public class VirusScanJob extends AbstractBagJob {
 				hrefs.put(p, href);
 			}
 		}
+		
+		setTotalClicks(hrefs.size());
 
 		for (Entry<PID, String> href : hrefs.entrySet()) {
 			URI manifestURI;
 			URI storageURI = null;
 			try {
 				manifestURI = new URI(href.getValue());
-				storageURI = getStages().getStorageURI(manifestURI);
+				if(getStages() != null) {
+					storageURI = getStages().getStorageURI(manifestURI);
+				} else {
+					storageURI = manifestURI;
+				}
 			} catch (URISyntaxException e) {
 				failJob(e, Type.VIRUS_CHECK, "Unable to parse manifest URI: {0}", href.getValue());
 			} catch (StagingException e) {
@@ -106,6 +119,9 @@ public class VirusScanJob extends AbstractBagJob {
 			}
 			if (storageURI.getScheme() == null
 					|| storageURI.getScheme().contains("file")) {
+				if(!storageURI.isAbsolute()) {
+					storageURI = getBagDirectory().toURI().resolve(storageURI);
+				}
 				File file = new File(storageURI.getPath());
 				ScanResult result = this.clamScan.scan(file);
 				switch (result.getStatus()) {
@@ -136,6 +152,7 @@ public class VirusScanJob extends AbstractBagJob {
 					break;
 				}
 			}
+			addClicks(1);
 		}
 		if(failures.size() > 0) {
 			StringBuilder sb = new StringBuilder("Virus checks failed for some files:\n");
@@ -143,6 +160,8 @@ public class VirusScanJob extends AbstractBagJob {
 				sb.append(uri).append(" - ").append(failures.get(uri)).append("\n");
 			}
 			failJob(Type.VIRUS_CHECK, failures.size()+ " virus check(s) failed", sb.toString());
+		} else {
+			recordDepositEvent(Type.VIRUS_CHECK, "{0} files scanned for viruses.", hrefs.size());
 		}
 	}
 

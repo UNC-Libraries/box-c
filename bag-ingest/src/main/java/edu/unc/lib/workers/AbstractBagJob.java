@@ -9,6 +9,9 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import net.greghaines.jesque.Job;
@@ -28,6 +31,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.BagConstants;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.dl.util.RedisWorkerConstants.JobStatus;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
@@ -42,6 +46,7 @@ import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 public abstract class AbstractBagJob implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(AbstractBagJob.class);
 	public static final String DEPOSIT_QUEUE = "Deposit";
+	private static final int joinPollingSeconds = 5;
 	private File bagDirectory;
 	private PID depositPID;
 	private String jobUUID;
@@ -53,6 +58,7 @@ public abstract class AbstractBagJob implements Runnable {
 		this.jobUUID = uuid;
 	}
 
+	@Autowired
 	private JobStatusFactory jobStatusFactory;
 	
 	public JobStatusFactory getJobStatusFactory() {
@@ -100,18 +106,22 @@ public abstract class AbstractBagJob implements Runnable {
 		this.defaultNextJob = defaultNextJob;
 	}
 	
-	public void enqueueDefaultNextJob() {
+	public String enqueueDefaultNextJob() {
 		if(this.defaultNextJob != null) {
-			Job job = new Job(this.defaultNextJob, UUID.randomUUID().toString(), getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
+			String uuid = UUID.randomUUID().toString();
+			Job job = new Job(this.defaultNextJob, uuid, getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
 			jesqueClient.enqueue(DEPOSIT_QUEUE, job);
+			return uuid;
+		} else {
+			return null;
 		}
 	}
 	
-	public void enqueueJob(String jobName) {
-		if(jobName != null) {
-			Job job = new Job(jobName, UUID.randomUUID().toString(), getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
-			jesqueClient.enqueue(DEPOSIT_QUEUE, job);
-		}
+	public String enqueueJob(String jobName) {
+		String uuid = UUID.randomUUID().toString();
+		Job job = new Job(jobName, uuid, getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
+		jesqueClient.enqueue(DEPOSIT_QUEUE, job);
+		return uuid;
 	}
 
 	private PremisEventLogger eventLog = new PremisEventLogger(this.getClass().getName());
@@ -229,5 +239,56 @@ public abstract class AbstractBagJob implements Runnable {
 				fos.close();
 			} catch (IOException ignored) {}
 		}
+	}
+	
+	protected void setTotalClicks(int totalClicks) {
+		getJobStatusFactory().setTotalCompletion(this, totalClicks);
+	}
+	
+	protected void addClicks(int clicks) {
+		getJobStatusFactory().incrCompletion(this, clicks);
+	}
+
+	/**
+	 * Pauses the current thread while polling Redis until the listed jobs
+	 * are completed, failed or killed.
+	 * @param jobUUIDs
+	 * @return true if all jobs completed successfully, false if any did not or on timeout.
+	 * @throws InterruptedException
+	 */
+	public boolean joinAfterExecute(int maxSeconds, boolean failFast, String... jobUUIDs) {
+		log.debug("job {} waiting for completion of {}", getJobUUID(), jobUUIDs);
+		boolean allSuccess = true;
+		Set<String> jobsRemaining = new HashSet<String>(Arrays.asList(jobUUIDs));
+		long start = System.currentTimeMillis();
+		sleep: do {
+			if(System.currentTimeMillis() - start > maxSeconds*1000) {
+				log.debug("job {} joining after timeout of {}", getJobUUID(), maxSeconds);
+				allSuccess = false;
+				break sleep;
+			}
+			try {
+				Thread.sleep(1000*joinPollingSeconds);
+			} catch (InterruptedException expected) {
+			}
+			Set<String> done = new HashSet<String>();
+			for(String uuid : jobsRemaining) {
+				String state = getJobStatusFactory().getJobState(uuid);
+				if(state == null) continue; // job state not posted yet
+				if(JobStatus.queued.name().equals(state)) continue;
+				if(JobStatus.working.name().equals(state)) continue;
+				done.add(uuid);
+				if(JobStatus.failed.name().equals(state) || JobStatus.killed.name().equals(state)) {
+					allSuccess = false;
+					if(failFast) {
+						log.debug("job {} will join after fast fail of {}", getJobUUID(), uuid);
+						break sleep;
+					}
+				}
+			}
+			jobsRemaining.removeAll(done);
+		} while(jobsRemaining.size() > 0);
+		log.debug("job {} joining after completion of {}", getJobUUID(), jobUUIDs);
+		return allSuccess;
 	}
 }

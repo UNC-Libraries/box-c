@@ -35,16 +35,13 @@
 		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
 	
-	<bean id="jedis" class="edu.unc.lib.workers.JedisFactory" factory-method="createJedis" scope="prototype">
-		<constructor-arg ref="jesqueConfig"/>
+	<bean id="bagsDirectory" class="java.io.File">
+		<constructor-arg value="${batch.ingest.dir}" />
 	</bean>
-	
-	<bean id="jobStatusFactory" class="edu.unc.lib.workers.JobStatusFactory">
-		<property name="jedis" ref="jedis"/>
-	</bean>
-	
-	<bean id="depositStatusFactory" class="edu.unc.lib.workers.DepositStatusFactory">
-		<property name="jedis" ref="jedis"/>
+
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool" scope="singleton"
+		destroy-method="destroy">
+		<constructor-arg type="String" value="localhost"/>
 	</bean>
 
 	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
@@ -63,24 +60,33 @@
 		<constructor-arg ref="jesqueConfig" />
 	</bean>
 
-	<bean id="workerFactory" class="edu.unc.lib.workers.SpringWorkerFactory">
-		<constructor-arg name="config" ref="jesqueConfig" />
-		<constructor-arg name="queues">
-			<util:set set-class="java.util.HashSet">
-				<value>Deposit</value>
-			</util:set>
+	<bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool" init-method="run">
+		<constructor-arg name="workerFactory">
+			<bean id="workerFactory" class="net.greghaines.jesque.worker.WorkerImplFactory">
+				<constructor-arg name="config" ref="jesqueConfig" />
+				<constructor-arg name="queues">
+					<util:set set-class="java.util.HashSet">
+						<value>Deposit</value>
+					</util:set>
+				</constructor-arg>
+				<constructor-arg>
+					<map></map>
+				</constructor-arg>
+				<property name="jobFactory" ref="jobFactory"/>
+				<!-- <property name="jobStatusFactory" ref="jobStatusFactory" /> -->
+			</bean>
 		</constructor-arg>
-		<property name="jobStatusFactory" ref="jobStatusFactory"/>
+		<constructor-arg name="numWorkers" value="5" />
+	</bean>
+	
+	<bean id="jobFactory" class="edu.unc.lib.workers.SpringJobFactory"/>
+	
+	<bean id="jobStatusFactory" class="edu.unc.lib.workers.JobStatusFactory">
+		<property name="jedisPool" ref="jedisPool" />
 	</bean>
 
-	<bean id="worker" class="edu.unc.lib.workers.SpringWorkerPool"
-		init-method="init" destroy-method="destroy">
-		<constructor-arg name="workerFactory" ref="workerFactory" />
-		<constructor-arg name="numWorkers" value="1" />
-	</bean>
-
-	<bean id="bagsDirectory" class="java.io.File">
-		<constructor-arg value="/tmp" />
+	<bean id="depositStatusFactory" class="edu.unc.lib.workers.DepositStatusFactory">
+		<property name="jedisPool" ref="jedisPool" />
 	</bean>
 
 	<bean id="forwardedManagementClient" class="org.mockito.Mockito"
@@ -169,7 +175,7 @@
 		scope="prototype">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />
-		<property name="defaultNextJob" value="ValidateMODS"/>
+		<property name="defaultNextJob" value="BagValidation" />
 	</bean>
 
 	<bean id="DSPACEMETS2N3BagJob" class="edu.unc.lib.bag.normalize.DSPACEMETS2N3BagJob"
@@ -177,20 +183,47 @@
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />
 		<property name="epdcx2modsTransformer" ref="epdcx2modsTransformer" />
-		<property name="defaultNextJob" value="ValidateMODS"/>
+		<property name="defaultNextJob" value="BagValidation" />
 	</bean>
 
 	<bean id="BioMedCentralExtrasJob" class="edu.unc.lib.bag.normalize.BioMedCentralExtrasJob"
 		scope="prototype">
-		<property name="defaultNextJob" value="ValidateMODS"/>
+		<property name="defaultNextJob" value="BagValidation" />
+	</bean>
+
+	<bean id="BagValidation" class="edu.unc.lib.bag.validate.BagValidation"
+		scope="prototype">
+		<!-- property name="defaultNextJob" value="BagValidation"/ -->
+	</bean>
+
+	<bean id="VirusScanJob" class="edu.unc.lib.bag.validate.VirusScanJob"
+		scope="prototype">
+		<property name="clamScan">
+			<bean class="com.philvarner.clamavj.ClamScan">
+				<constructor-arg type="String" value="${clamd.host}" />
+				<constructor-arg type="int" value="${clamd.port}" />
+				<constructor-arg type="int" value="${clamd.timeout}" />
+			</bean>
+		</property>
+		<!-- property name="defaultNextJob" value="BagValidation"/ -->
+	</bean>
+
+	<bean id="ValidateDepositContainer" class="edu.unc.lib.bag.validate.ValidateDepositContainer"
+		scope="prototype">
+		<!-- property name="defaultNextJob" value="BagValidation"/ -->
+	</bean>
+
+	<bean id="ValidateRdfGraph" class="edu.unc.lib.bag.validate.ValidateRdfGraph"
+		scope="prototype">
+		<!-- property name="defaultNextJob" value="BagValidation"/ -->
 	</bean>
 
 	<bean id="ValidateMODS" class="edu.unc.lib.bag.validate.ValidateMODS"
 		scope="prototype">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="modsSchema">
-			<bean class="javax.xml.validation.Schema"
-				factory-bean="schemaFactory" factory-method="newSchema">
+			<bean class="javax.xml.validation.Schema" factory-bean="schemaFactory"
+				factory-method="newSchema">
 				<constructor-arg>
 					<list value-type="javax.xml.transform.Source">
 						<bean class="javax.xml.transform.stream.StreamSource">

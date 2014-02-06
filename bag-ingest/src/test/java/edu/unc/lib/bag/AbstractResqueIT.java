@@ -1,5 +1,8 @@
 package edu.unc.lib.bag;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +11,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import redis.clients.jedis.Jedis;
+import edu.unc.lib.dl.util.RedisWorkerConstants;
 import edu.unc.lib.workers.JedisFactory;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -47,7 +51,12 @@ public class AbstractResqueIT {
 		final Jedis jedis = JedisFactory.createJedis(getConfig());
 		try {
 			log.info("Resetting Redis for next test...");
-			jedis.flushDB();
+			Set<String> delete = new HashSet<String>();
+			delete.add(RedisWorkerConstants.DEPOSIT_SET);
+			delete.addAll(jedis.keys(RedisWorkerConstants.DEPOSIT_STATUS_PREFIX+"*"));
+			delete.addAll(jedis.keys(RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX+"*"));
+			delete.addAll(jedis.keys(RedisWorkerConstants.JOB_STATUS_PREFIX+"*"));
+			jedis.del(delete.toArray(new String[] {}));
 		} finally {
 			jedis.quit();
 		}

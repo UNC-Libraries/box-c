@@ -16,6 +16,7 @@
 
 package edu.unc.lib.workers;
 
+import static net.greghaines.jesque.utils.ResqueConstants.WORKER;
 import static net.greghaines.jesque.worker.WorkerEvent.JOB_PROCESS;
 
 import java.util.Collection;
@@ -38,7 +39,7 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class SpringWorker extends WorkerImpl implements ApplicationContextAware {
 
-	private Logger logger = LoggerFactory.getLogger(SpringWorker.class);
+	private Logger log = LoggerFactory.getLogger(SpringWorker.class);
 	private ApplicationContext applicationContext;
 	
 	private JobStatusFactory jobStatusFactory;
@@ -62,7 +63,7 @@ public class SpringWorker extends WorkerImpl implements ApplicationContextAware 
 
 	@Override
 	protected void process(final Job job, final String curQueue) {
-		logger.info("Process new Job from queue {}", curQueue);
+		log.info("Process new Job {} from queue {}", job.getClassName(), curQueue);
 		Runnable runnableJob = null;
 		try {
 			if (applicationContext.containsBeanDefinition(job.getClassName())) {//Lookup by bean Id
@@ -79,26 +80,31 @@ public class SpringWorker extends WorkerImpl implements ApplicationContextAware 
 						}
 					}
 				} catch (ClassNotFoundException cnfe) {
-					logger.error("Not bean Id or class definition found {}", job.getClassName());
+					log.error("Not bean Id or class definition found {}", job.getClassName());
 					throw new Exception("Not bean Id or class definition found " + job.getClassName());
 				}
 			}
 			if (runnableJob != null) {
-				logger.info("Prepared the Job {}", runnableJob);
+				log.info("Prepared the Job {}", runnableJob);
 				this.listenerDelegate.fireEvent(JOB_PROCESS, this, curQueue, job, null, null, null);
+	            this.jedis.set(key(WORKER, this.getName()), statusMsg(curQueue, job));
 				if (isThreadNameChangingEnabled()) {
 					renameThread("Processing " + curQueue + " since " + System.currentTimeMillis());
 				}
 				if(runnableJob instanceof AbstractBagJob) getJobStatusFactory().started((AbstractBagJob)runnableJob);
-				execute(job, curQueue, runnableJob);
+				Object result = execute(job, curQueue, runnableJob);
+	            success(job, runnableJob, result, curQueue);
 				if(runnableJob instanceof AbstractBagJob) getJobStatusFactory().completed((AbstractBagJob)runnableJob);
 			}
 		} catch (Exception e) {
 			failure(e, job, curQueue);
 			if(runnableJob != null && runnableJob instanceof AbstractBagJob) {
 				getJobStatusFactory().failed((AbstractBagJob)runnableJob, e.getMessage());
+				log.error("Exception while running job", e);
 			}
-		}
+		} finally {
+            this.jedis.del(key(WORKER, getName()));
+        }
 	}
 
 	@Override
@@ -110,7 +116,7 @@ public class SpringWorker extends WorkerImpl implements ApplicationContextAware 
 	 * Convenient initialization method for the Spring container
 	 */
 	public void init(){
-		logger.info("Start a new thread for SpringWorker");
+		log.info("Start a new thread for SpringWorker");
 		new Thread(this).start();
 	}
 	
@@ -118,7 +124,7 @@ public class SpringWorker extends WorkerImpl implements ApplicationContextAware 
 	 * Convenient destroy method for the Spring container
 	 */
 	public void destroy(){
-		logger.info("End the SpringWorker thread");
+		log.info("End the SpringWorker thread");
 		end(true);
 	}
 }

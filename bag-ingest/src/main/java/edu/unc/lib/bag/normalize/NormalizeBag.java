@@ -4,8 +4,10 @@ import static edu.unc.lib.dl.util.DepositBagInfoTxt.PACKAGING_TYPE;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +69,11 @@ public class NormalizeBag extends AbstractBagJob {
 		status.put(DepositField.startTime.name(), String.valueOf(System.currentTimeMillis()));
 		status.put(DepositField.status.name(), "");
 		status.put(DepositField.uuid.name(), getDepositPID().getUUID());
+		Set<String> nulls = new HashSet<String>();
+		for(String key : status.keySet()) {
+			if(status.get(key) == null) nulls.add(key);
+		}
+		for(String key : nulls) status.remove(key);
 		this.getDepositStatusFactory().save(getDepositPID().getUUID(), status);
 		
 		// pack the bag in N3 CDR style

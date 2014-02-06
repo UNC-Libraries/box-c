@@ -1,23 +1,25 @@
 package edu.unc.lib.workers;
 
+import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX;
+import static edu.unc.lib.dl.util.RedisWorkerConstants.JOB_STATUS_PREFIX;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import static edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
-import static edu.unc.lib.dl.util.RedisWorkerConstants.JobStatus;
-import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX;
-import static edu.unc.lib.dl.util.RedisWorkerConstants.JOB_STATUS_PREFIX;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
+import edu.unc.lib.dl.util.RedisWorkerConstants.JobStatus;
 
 public class JobStatusFactory {
-	Jedis jedis;
+	JedisPool jedisPool;
 	
-	public Jedis getJedis() {
-		return jedis;
+	public JedisPool getJedisPool() {
+		return jedisPool;
 	}
 
-	public void setJedis(Jedis jedis) {
-		this.jedis = jedis;
+	public void setJedisPool(JedisPool jedisPool) {
+		this.jedisPool = jedisPool;
 	}
 	
 	public void started(AbstractBagJob job) {
@@ -27,31 +29,58 @@ public class JobStatusFactory {
 		status.put(JobField.status.name(), JobStatus.working.name());
 		status.put(JobField.starttime.name(), String.valueOf(System.currentTimeMillis()));
 		status.put(JobField.num.name(), "0");
-		this.jedis.hmset(JOB_STATUS_PREFIX+job.getJobUUID(), status);
-		this.jedis.sadd(DEPOSIT_TO_JOBS_PREFIX+job.getDepositPID().getUUID(), job.getJobUUID());
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hmset(JOB_STATUS_PREFIX+job.getJobUUID(), status);
+		jedis.sadd(DEPOSIT_TO_JOBS_PREFIX+job.getDepositPID().getUUID(), job.getJobUUID());
+		getJedisPool().returnResource(jedis);
 	}
 	
 	public void failed(AbstractBagJob job) {
-		this.jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.status.name(), JobStatus.failed.name());
-		this.jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.status.name(), JobStatus.failed.name());
+		jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));
+		getJedisPool().returnResource(jedis);
 	}
 	
 	public void failed(AbstractBagJob job, String message) {
 		failed(job);
-		if(message != null) this.jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.message.name(), message);
+		if(message != null) {
+			Jedis jedis = getJedisPool().getResource();
+			jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.message.name(), message);
+			getJedisPool().returnResource(jedis);
+		}
 	}
 	
 	public void completed(AbstractBagJob job) {
-		this.jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.status.name(), JobStatus.completed.name());
-		this.jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));		
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.status.name(), JobStatus.completed.name());
+		jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));
+		getJedisPool().returnResource(jedis);		
 	}
 	
 	public void killed(AbstractBagJob job) {
-		this.jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.status.name(), JobStatus.killed.name());
-		this.jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));		
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.status.name(), JobStatus.killed.name());
+		jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));
+		getJedisPool().returnResource(jedis);		
 	}
 	
 	public void incrCompletion(AbstractBagJob job, int amount) {
-		this.jedis.hincrBy(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.num.name(), amount);
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hincrBy(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.num.name(), amount);
+		getJedisPool().returnResource(jedis);
+	}
+	
+	public String getJobState(String uuid) {
+		Jedis jedis = getJedisPool().getResource();
+		String result = jedis.hget(JOB_STATUS_PREFIX+uuid, JobField.status.name());
+		getJedisPool().returnResource(jedis);
+		return result;
+	}
+
+	public void setTotalCompletion(AbstractBagJob job, int totalClicks) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.total.name(), String.valueOf(totalClicks));
+		getJedisPool().returnResource(jedis);
 	}
 }

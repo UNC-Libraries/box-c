@@ -50,7 +50,7 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 		log.debug("Enqueued depositId: {}, working dir: {}", depositId,
 				workingDir.getPath());
 		try {
-			Thread.sleep(10*1000);
+			Thread.sleep(120*1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -69,7 +69,7 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 	}
 
 	@Test
-	public void testCdrMetsBag() {
+	public void testCdrMetsBag() throws InterruptedException {
 		File testBagResource = new File("src/test/resources/cdrMETS.zip");
 		String depositId = "info:fedora/uuid:bd5ff703-9c2e-466b-b4cc-15bbfd03c8ae";
 		testBag(testBagResource, depositId, 2);
@@ -96,7 +96,7 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 		String depositId = "info:fedora/uuid:31e06abf-c365-4761-bed2-ba03934c815f";
 		testBag(testBagResource, depositId, 2);
 	}
-	//
+	
 	// @Test
 	// public void testBigBag() {
 	//
