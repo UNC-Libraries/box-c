@@ -56,7 +56,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				if (destTitle.length > 50) destTitle = destTitle.substring(0, 50) + "...";
 				var promptText = "Move \"<a class='result_object_link' data-id='" + representative.pid + "'>" + repTitle + "</a>\"";
 				if (self.manager.dragTargets.length > 1)
-					promptText += " and " + (self.manager.length - 1) + " other object" + (self.manager.dragTargets.length - 1 > 1? "s" :"");
+					promptText += " and " + (self.manager.dragTargets.length - 1) + " other object" + (self.manager.dragTargets.length - 1 > 1? "s" :"");
 				promptText += " into \"<a class='result_object_link' data-id='" + metadata.id + "'>" + destTitle + "</a>\"?";
 				var confirm = new ConfirmationDialog({
 					promptText : promptText,
@@ -74,7 +74,8 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 							var event = {
 								action : 'MoveObjects',
 								newParent : metadata,
-								targets : self.manager.dragTargets
+								targets : self.manager.dragTargets,
+								alertHandler : self.manager.options.alertHandler
 							};
 							self.actionHandler.addEvent(event);
 						}

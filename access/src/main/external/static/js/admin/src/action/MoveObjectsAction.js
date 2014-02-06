@@ -11,16 +11,15 @@ define('MoveObjectsAction', ['jquery'], function($) {
 	MoveObjectsAction.prototype.execute = function() {
 		var action = this;
 		var moveData = {
-				newParent : metadata.id,
+				newParent : this.context.newParent.id,
 				ids : []
 			};
-		var destTitle = this.context.destTitle? this.context.destTitle : this.context.newParent.metadata.title;
+		var destTitle = this.context.destTitle? this.context.destTitle : this.context.newParent.title;
 		$.each(this.context.targets, function() {
 			moveData.ids.push(this.pid);
 			this.element.hide();
 		});
 		// Store a reference to the targeted item list since moving happens asynchronously
-		var moveObjects = self.manager.dragTargets;
 		$.ajax({
 			url : "/services/api/edit/move",
 			type : "POST",
@@ -31,7 +30,7 @@ define('MoveObjectsAction', ['jquery'], function($) {
 				$.each(action.context.targets, function() {
 					this.deleteElement();
 				});
-				self.manager.options.alertHandler.alertHandler("success", "Moved " + action.context.targets.length 
+				action.context.alertHandler.alertHandler("success", "Moved " + action.context.targets.length 
 						+ " object" + (action.context.targets.length > 1? "s" : "") 
 						+ " to " + destTitle);
 			},
@@ -39,7 +38,7 @@ define('MoveObjectsAction', ['jquery'], function($) {
 				$.each(action.context.targets, function() {
 					this.element.show();
 				});
-				self.manager.options.alertHandler.alertHandler("error", "Failed to move " + action.context.targets.length 
+				action.context.alertHandler.alertHandler("error", "Failed to move " + action.context.targets.length 
 						+ " object" + (action.context.targets.length > 1? "s" : "") 
 						+ " to " + destTitle);
 				
