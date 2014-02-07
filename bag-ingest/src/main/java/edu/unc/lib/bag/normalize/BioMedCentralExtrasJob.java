@@ -30,7 +30,7 @@ import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.workers.AbstractBagJob;
 import gov.loc.repository.bagit.Bag;
 
-public class BioMedCentralExtrasJob extends AbstractBagJob {
+public class BioMedCentralExtrasJob extends AbstractBagJob implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(BioMedCentralExtrasJob.class);
 	
 	public BioMedCentralExtrasJob() {
@@ -54,8 +54,7 @@ public class BioMedCentralExtrasJob extends AbstractBagJob {
 		com.hp.hpl.jena.rdf.model.Bag deposit = model.getBag(getDepositPID().getURI());
 		Property hasModel = model.createProperty(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
 		Resource aggregateModel = model.createProperty(ContentModelHelper.Model.AGGREGATE_WORK.getURI().toString());
-		Property sourceData = model.createProperty(ContentModelHelper.CDRProperty.sourceData.getURI().toString());
-		Property hasStagingLocation = model.createProperty(ContentModelHelper.CDRProperty.hasStagingLocation.getURI().toString());
+		Property fileLocation = model.createProperty(BagConstants.FILE_LOCATOR_URI);
 		com.hp.hpl.jena.rdf.model.Bag aggregate = null;
 		try {
 			NodeIterator ni = model.getBag(deposit).iterator();
@@ -73,8 +72,8 @@ public class BioMedCentralExtrasJob extends AbstractBagJob {
 		String articleXMLPath = null;
 		for(NodeIterator children = aggregate.iterator(); children.hasNext();) {
 			Resource child = children.nextNode().asResource();
-			Resource file = child.getProperty(sourceData).getResource();
-			String location = file.getProperty(hasStagingLocation).getString();
+			//Resource file = child.getProperty(sourceData).getResource();
+			String location = child.getProperty(fileLocation).getString();
 			log.debug("examining child location {}", location);
 			if(location.matches("data/[\\w\\-]+\\-S\\d+\\.\\w+$")) continue;
 			if(location.matches("data/[\\w\\-]+\\.[xX][mM][lL]$")) {
@@ -128,8 +127,7 @@ public class BioMedCentralExtrasJob extends AbstractBagJob {
 			if(fileLC2supplementLabels != null) {
 				for(NodeIterator children = aggregate.iterator(); children.hasNext();) {
 					Resource child = children.nextNode().asResource();
-					Resource file = child.getProperty(sourceData).getResource();
-					String location = file.getProperty(hasStagingLocation).getString();
+					String location = child.getProperty(fileLocation).getString();
 					String filename = location.substring("data/".length()).toLowerCase();
 					if(fileLC2supplementLabels.containsKey(filename)) {
 						Property label = model.createProperty(ContentModelHelper.FedoraProperty.label.getURI().toString()); 

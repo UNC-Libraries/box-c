@@ -28,7 +28,7 @@ import gov.loc.repository.bagit.Bag;
  * @author count0
  *
  */
-public class ValidateMODS extends AbstractBagJob {
+public class ValidateMODS extends AbstractBagJob implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(ValidateMODS.class);
 
 	private SchematronValidator schematronValidator = null;
@@ -123,7 +123,6 @@ public class ValidateMODS extends AbstractBagJob {
 		}
 
 		saveBag(bag);
-		enqueueDefaultNextJob();
 	}
 
 }

@@ -43,7 +43,7 @@ import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
  * @author count0
  *
  */
-public abstract class AbstractBagJob implements Runnable {
+public abstract class AbstractBagJob {
 	private static final Logger log = LoggerFactory.getLogger(AbstractBagJob.class);
 	public static final String DEPOSIT_QUEUE = "Deposit";
 	private static final int joinPollingSeconds = 5;
@@ -87,41 +87,19 @@ public abstract class AbstractBagJob implements Runnable {
 		return new File(getBagDirectory(), DESCRIPTION_DIR);
 	}
 
-	@Autowired
-	Client jesqueClient = null;
-	public Client getJesqueClient() {
-		return jesqueClient;
-	}
+//	@Autowired
+//	Client jesqueClient = null;
+//	public Client getJesqueClient() {
+//		return jesqueClient;
+//	}
 
-	public void setJesqueClient(Client jesqueClient) {
-		this.jesqueClient = jesqueClient;
-	}
+//	public void setJesqueClient(Client jesqueClient) {
+//		this.jesqueClient = jesqueClient;
+//	}
 	
-	private String defaultNextJob = null;
-	public String getDefaultNextJob() {
-		return defaultNextJob;
-	}
-
-	public void setDefaultNextJob(String defaultNextJob) {
-		this.defaultNextJob = defaultNextJob;
-	}
-	
-	public String enqueueDefaultNextJob() {
-		if(this.defaultNextJob != null) {
-			String uuid = UUID.randomUUID().toString();
-			Job job = new Job(this.defaultNextJob, uuid, getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
-			jesqueClient.enqueue(DEPOSIT_QUEUE, job);
-			return uuid;
-		} else {
-			return null;
-		}
-	}
-	
-	public String enqueueJob(String jobName) {
+	public Job makeJob(Class jobName) {
 		String uuid = UUID.randomUUID().toString();
-		Job job = new Job(jobName, uuid, getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
-		jesqueClient.enqueue(DEPOSIT_QUEUE, job);
-		return uuid;
+		return new Job(jobName.getName(), uuid, getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
 	}
 
 	private PremisEventLogger eventLog = new PremisEventLogger(this.getClass().getName());

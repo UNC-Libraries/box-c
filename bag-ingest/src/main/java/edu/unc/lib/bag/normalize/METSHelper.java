@@ -16,6 +16,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.unc.lib.dl.util.BagConstants;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.xml.NamespaceConstants;
@@ -128,32 +129,32 @@ public class METSHelper {
 			Resource file = m.createResource(); // blank node represents file
 			m.add(object, hasSourceData, file); // associate object with file
 			
-			// record staging location
-			Property hasStagingLocation = m.createProperty(ContentModelHelper.CDRProperty.hasStagingLocation.getURI().toString());
-			m.add(file, hasStagingLocation, href);
+			// record file location
+			Property fileLocation = m.createProperty(BagConstants.FILE_LOCATOR_URI);
+			m.add(object, fileLocation, href);
 			
 			// record mimetype
 			if(fileEl.getAttributeValue("MIMETYPE") != null) {
 				Property hasMimetype = m.createProperty(CDRProperty.hasSourceMimeType.getURI().toString());
-				m.add(file, hasMimetype, fileEl.getAttributeValue("MIMETYPE"));
+				m.add(object, hasMimetype, fileEl.getAttributeValue("MIMETYPE"));
 			}
 			
 			// record File checksum if supplied, we only support MD5 in Simple profile
 			if(fileEl.getAttributeValue("CHECKSUM") != null) {
 				Property hasChecksum = m.createProperty(CDRProperty.hasChecksum.getURI().toString());
-				m.add(file, hasChecksum, fileEl.getAttributeValue("CHECKSUM"));
+				m.add(object, hasChecksum, fileEl.getAttributeValue("CHECKSUM"));
 			}
 			
 			// record SIZE (bytes/octets)
 			if(fileEl.getAttributeValue("SIZE") != null) {
 				Property hasSize = m.createProperty(CDRProperty.hasSourceFileSize.getURI().toString());
-				m.add(file, hasSize, fileEl.getAttributeValue("SIZE"));
+				m.add(object, hasSize, fileEl.getAttributeValue("SIZE"));
 			}
 			
 			// record CREATED (iso8601)
 			if(fileEl.getAttributeValue("CREATED") != null) {
-				Property hasChecksum = m.createProperty(CDRProperty.hasCreatedDate.getURI().toString());
-				m.add(file, hasChecksum, fileEl.getAttributeValue("CREATED"), XSDDatatype.XSDdateTime);
+				Property hasCreated = m.createProperty(CDRProperty.hasCreatedDate.getURI().toString());
+				m.add(object, hasCreated, fileEl.getAttributeValue("CREATED"), XSDDatatype.XSDdateTime);
 			}
 				
 		}

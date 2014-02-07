@@ -6,20 +6,42 @@ import static edu.unc.lib.dl.util.RedisWorkerConstants.JOB_STATUS_PREFIX;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.greghaines.jesque.Job;
+import net.greghaines.jesque.worker.Worker;
+import net.greghaines.jesque.worker.WorkerEvent;
+import net.greghaines.jesque.worker.WorkerEventEmitter;
+import net.greghaines.jesque.worker.WorkerListener;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobStatus;
 
-public class JobStatusFactory {
-	JedisPool jedisPool;
+public class JobStatusFactory implements WorkerListener {
+	private JedisPool jedisPool;
+	private WorkerEventEmitter workerEventEmitter;
 	
+	public WorkerEventEmitter getWorkerEventEmitter() {
+		return workerEventEmitter;
+	}
+
+	public void setWorkerEventEmitter(WorkerEventEmitter workerEventEmitter) {
+		this.workerEventEmitter = workerEventEmitter;
+	}
+
 	public JedisPool getJedisPool() {
 		return jedisPool;
 	}
 
 	public void setJedisPool(JedisPool jedisPool) {
 		this.jedisPool = jedisPool;
+	}
+	
+	public void init() {
+		if(workerEventEmitter != null) this.workerEventEmitter.addListener(this);
+	}
+	
+	public void destroy() {
+		if(workerEventEmitter != null) workerEventEmitter.removeListener(this);
 	}
 	
 	public void started(AbstractBagJob job) {
@@ -82,5 +104,28 @@ public class JobStatusFactory {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.hset(JOB_STATUS_PREFIX+job.getJobUUID(), JobField.total.name(), String.valueOf(totalClicks));
 		getJedisPool().returnResource(jedis);
+	}
+	
+	@Override
+	public void onEvent(WorkerEvent event, Worker worker, String queue,
+			Job job, Object runner, Object result, Exception ex) {
+		if (runner instanceof AbstractBagJob) {
+			AbstractBagJob j = (AbstractBagJob)runner;
+			switch (event) {
+			case JOB_EXECUTE:
+				started(j);
+			case JOB_SUCCESS:
+				completed(j);
+			case JOB_FAILURE:
+				if(ex != null) {
+					failed(j, ex.getLocalizedMessage());
+				} else {
+					failed(j);
+				}
+			default:
+				break;
+			}
+		}
+
 	}
 }

@@ -10,7 +10,7 @@ import net.greghaines.jesque.Job;
 import net.greghaines.jesque.worker.JobFactory;
 
 public class SpringJobFactory implements JobFactory, ApplicationContextAware {
-	private Logger log = LoggerFactory.getLogger(SpringWorker.class);
+	private Logger log = LoggerFactory.getLogger(SpringJobFactory.class);
 
 	private ApplicationContext applicationContext;
 
@@ -19,21 +19,22 @@ public class SpringJobFactory implements JobFactory, ApplicationContextAware {
 
 	@Override
 	public Object materializeJob(Job job) throws ClassNotFoundException {
-		Runnable runnableJob = null;
+		log.debug("looking for job in Spring context: {}", job.getClassName());
+		Object runnableJob = null;
 		if (applicationContext.containsBeanDefinition(job.getClassName())) {
-			runnableJob = (Runnable) applicationContext.getBean(
+			runnableJob = applicationContext.getBean(
 					job.getClassName(), job.getArgs());
 		} else {
+			@SuppressWarnings("rawtypes")
 			Class clazz = Class.forName(job.getClassName());// Lookup by Class
-															// type
 			String[] beanNames = applicationContext.getBeanNamesForType(clazz,
 					true, false);
 			if (applicationContext.containsBeanDefinition(job.getClassName())) {
-				runnableJob = (Runnable) applicationContext.getBean(
+				runnableJob = applicationContext.getBean(
 						beanNames[0], job.getArgs());
 			} else {
 				if (beanNames != null && beanNames.length == 1) {
-					runnableJob = (Runnable) applicationContext.getBean(
+					runnableJob = applicationContext.getBean(
 							beanNames[0], job.getArgs());
 				}
 			}

@@ -2,7 +2,6 @@ package edu.unc.lib.workers;
 
 import net.greghaines.jesque.Config;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 public class JedisFactory {
 

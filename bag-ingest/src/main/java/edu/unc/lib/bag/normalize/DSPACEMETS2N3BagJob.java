@@ -9,9 +9,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
+
+import net.greghaines.jesque.Job;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -36,7 +39,7 @@ import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.METSProfile;
 
-public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
+public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Callable<Job> {
 
 	private static final Logger log = LoggerFactory.getLogger(DSPACEMETS2N3BagJob.class);
 	
@@ -55,7 +58,7 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 	}
 	
 	@Override
-	public void run() {
+	public Job call() {
 		gov.loc.repository.bagit.Bag bag = loadBag();
 		// copy DSPACE METS into tag space.
 		try {
@@ -127,9 +130,9 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		
 		// enqueue for additional BIOMED job if applicable
 		if("BioMed Central".equals(bag.getBagInfoTxt().getInternalSenderDescription())) {
-			enqueueJob(BioMedCentralExtrasJob.class.getName());
+			return makeJob(BioMedCentralExtrasJob.class);
 		} else {
-			enqueueDefaultNextJob();
+			return null;
 		}
 	}
 

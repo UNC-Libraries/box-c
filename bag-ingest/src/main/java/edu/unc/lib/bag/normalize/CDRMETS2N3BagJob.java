@@ -15,7 +15,7 @@ import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.METSProfile;
 
-public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
+public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnable {
 	public CDRMETS2N3BagJob() {
 		super();
 	}
@@ -56,7 +56,6 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		recordDepositEvent(Type.NORMALIZATION, "Normalized deposit package from {0} to {1}", PackagingType.METS_CDR.getUri(), PackagingType.BAG_WITH_N3.getUri());
 		
 		saveBag(bag);
-		enqueueDefaultNextJob();
 	}
 
 }

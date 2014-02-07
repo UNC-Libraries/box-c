@@ -6,6 +6,10 @@ public class BagConstants {
 	public static final String DESCRIPTION_DIR = "description";
 	public static final String MODEL_FILE = "everything.n3";
 	public static final String EVENTS_FILE = "events.xml";
+	public static final String EVENTS_DIR = "events";
+	public static final String DUBLINCORE_DIR = "dc";
+	public static final String FOXML_DIR = "foxml";
+    public static final String FILE_LOCATOR_URI = "http://cdr.lib.unc.edu/schema/bag#locator";
 	
 	/**
 	 * Answers the object's PID for a given metadata file within a tag directory.

@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -39,7 +38,7 @@ import edu.unc.lib.workers.AbstractBagJob;
  * @author count0
  *
  */
-public class VirusScanJob extends AbstractBagJob {
+public class VirusScanJob extends AbstractBagJob implements Runnable {
 	private static final Logger log = LoggerFactory
 			.getLogger(VirusScanJob.class);
 	private ClamScan clamScan;
@@ -83,21 +82,14 @@ public class VirusScanJob extends AbstractBagJob {
 		Model model = ModelFactory.createDefaultModel();
 		File modelFile = new File(getBagDirectory(), BagConstants.MODEL_FILE);
 		model.read(modelFile.toURI().toString());
-		Property sourceData = model
-				.createProperty(ContentModelHelper.CDRProperty.sourceData
-						.getURI().toString());
-		Property hasStagedLocation = model
-				.createProperty(ContentModelHelper.CDRProperty.hasStagingLocation
-						.getURI().toString());
-		StmtIterator i = model.listStatements(new SimpleSelector((Resource)null, sourceData, (RDFNode)null));
+		Property fileLocation = model
+				.createProperty(BagConstants.FILE_LOCATOR_URI);
+		StmtIterator i = model.listStatements(new SimpleSelector((Resource)null, fileLocation, (RDFNode)null));
 		while (i.hasNext()) {
 			Statement s = i.nextStatement();
 			PID p = new PID(s.getSubject().getURI());
-			NodeIterator ni = model.listObjectsOfProperty(s.getObject().asResource(), hasStagedLocation);
-			if(ni.hasNext()) {
-				String href = ni.nextNode().asLiteral().getString();
-				hrefs.put(p, href);
-			}
+			String href = s.getObject().asLiteral().getString();
+			hrefs.put(p, href);
 		}
 		
 		setTotalClicks(hrefs.size());

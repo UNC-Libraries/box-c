@@ -73,7 +73,6 @@
 					<map></map>
 				</constructor-arg>
 				<property name="jobFactory" ref="jobFactory"/>
-				<!-- <property name="jobStatusFactory" ref="jobStatusFactory" /> -->
 			</bean>
 		</constructor-arg>
 		<constructor-arg name="numWorkers" value="5" />
@@ -81,8 +80,9 @@
 	
 	<bean id="jobFactory" class="edu.unc.lib.workers.SpringJobFactory"/>
 	
-	<bean id="jobStatusFactory" class="edu.unc.lib.workers.JobStatusFactory">
+	<bean id="jobStatusFactory" class="edu.unc.lib.workers.JobStatusFactory" init-method="init" destroy-method="destroy">
 		<property name="jedisPool" ref="jedisPool" />
+		<property name="workerEventEmitter" ref="depositWorkerPool"/>
 	</bean>
 
 	<bean id="depositStatusFactory" class="edu.unc.lib.workers.DepositStatusFactory">
@@ -175,7 +175,6 @@
 		scope="prototype">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />
-		<property name="defaultNextJob" value="BagValidation" />
 	</bean>
 
 	<bean id="DSPACEMETS2N3BagJob" class="edu.unc.lib.bag.normalize.DSPACEMETS2N3BagJob"
@@ -183,17 +182,10 @@
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />
 		<property name="epdcx2modsTransformer" ref="epdcx2modsTransformer" />
-		<property name="defaultNextJob" value="BagValidation" />
 	</bean>
 
 	<bean id="BioMedCentralExtrasJob" class="edu.unc.lib.bag.normalize.BioMedCentralExtrasJob"
 		scope="prototype">
-		<property name="defaultNextJob" value="BagValidation" />
-	</bean>
-
-	<bean id="BagValidation" class="edu.unc.lib.bag.validate.BagValidation"
-		scope="prototype">
-		<!-- property name="defaultNextJob" value="BagValidation"/ -->
 	</bean>
 
 	<bean id="VirusScanJob" class="edu.unc.lib.bag.validate.VirusScanJob"
@@ -205,17 +197,10 @@
 				<constructor-arg type="int" value="${clamd.timeout}" />
 			</bean>
 		</property>
-		<!-- property name="defaultNextJob" value="BagValidation"/ -->
-	</bean>
-
-	<bean id="ValidateDepositContainer" class="edu.unc.lib.bag.validate.ValidateDepositContainer"
-		scope="prototype">
-		<!-- property name="defaultNextJob" value="BagValidation"/ -->
 	</bean>
 
 	<bean id="ValidateRdfGraph" class="edu.unc.lib.bag.validate.ValidateRdfGraph"
 		scope="prototype">
-		<!-- property name="defaultNextJob" value="BagValidation"/ -->
 	</bean>
 
 	<bean id="ValidateMODS" class="edu.unc.lib.bag.validate.ValidateMODS"
@@ -241,4 +226,7 @@
 		</property>
 	</bean>
 
+	<bean id="MakeFOXML" class="edu.unc.lib.bag.f3ingest.MakeFOXML"
+		scope="prototype">
+	</bean>
 </beans>
