@@ -420,7 +420,7 @@
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
 	</bean>
 
-	<bean id="mailNotifier" class="edu.unc.lib.dl.services.MailNotifier">
+	<bean id="mailNotifier" class="edu.unc.lib.bag.clean.MailNotifier">
 		<property name="mailSender" ref="javaMailSender"/>
 		<property name="irBaseUrl"
 			value="http://${repository.host}${repository.port}/${repository.context}"/>
@@ -433,7 +433,7 @@
 		<property name="templateLoader">
 			<bean class="freemarker.cache.ClassTemplateLoader">
 				<constructor-arg index="0" type="java.lang.Class"
-					value="edu.unc.lib.dl.services.MailNotifier"/>
+					value="edu.unc.lib.bag.clean.MailNotifier"/>
 				<constructor-arg index="1" value=""/>
 			</bean>
 		</property>

@@ -1,9 +1,9 @@
 package edu.unc.lib.bag.normalize;
 
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_ACL_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XLINK_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_ACL_NS;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,6 +27,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public class CDRMETSGraphExtractor {
 	private static Map<String, URI> containerTypes = new HashMap<String, URI>();
@@ -201,7 +202,15 @@ public class CDRMETSGraphExtractor {
 					m.add(object, inheritPermissions, "false");
 				}
 				
-				// TODO add grants
+                // add grants to groups
+                for(Object o : aclEl.getChildren("grant", CDR_ACL_NS)) {
+                    Element grant = (Element)o;
+                    String role = grant.getAttributeValue("role", CDR_ACL_NS);
+                    String group = grant.getAttributeValue("group", CDR_ACL_NS);
+                    String roleURI = NamespaceConstants.CDR_ROLE_NS_URI+role;
+                    Property roleProp = m.createProperty(roleURI);
+                    m.add(object, roleProp, group);
+                }
 				
 			}
 		}

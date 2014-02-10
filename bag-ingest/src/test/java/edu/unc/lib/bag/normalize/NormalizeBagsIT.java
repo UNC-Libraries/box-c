@@ -57,6 +57,9 @@ public class NormalizeBagsIT extends AbstractResqueIT {
 		Object j = getSpringJobFactory().materializeJob(job);
 		Runnable r = (Runnable)j;
 		r.run();
+		
+		// validate N3 model (#objs, #files, #mods, 
+		// create ValidateRdfGraph job
 	}
 
 	@Test

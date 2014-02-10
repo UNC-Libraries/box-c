@@ -16,7 +16,7 @@
 /**
  *
  */
-package edu.unc.lib.dl.ingest.sip;
+package edu.unc.lib.bag.normalize;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

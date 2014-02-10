@@ -49,8 +49,6 @@ import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.ingest.aip.AIPIngestPipeline;
-import edu.unc.lib.dl.ingest.sip.SIPProcessorFactory;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.Checksum;
@@ -75,25 +73,15 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private boolean available = false;
 	private String availableMessage = "The repository manager is not available yet.";
 	private AccessClient accessClient = null;
-	private AIPIngestPipeline aipIngestPipeline = null;
 	private ManagementClient managementClient = null;
-	private SIPProcessorFactory sipProcessorFactory = null;
 	private OperationsMessageSender operationsMessageSender = null;
 	private TripleStoreQueryService tripleStoreQueryService = null;
 	private SchematronValidator schematronValidator = null;
-	private MailNotifier mailNotifier;
 	private PID collectionsPid = null;
-
-	public void setMailNotifier(MailNotifier mailNotifier) {
-		this.mailNotifier = mailNotifier;
-	}
 
 	public synchronized void setAvailable(boolean available, String message) {
 		this.available = available;
 		this.availableMessage = message;
-		if (!this.available) {
-			this.mailNotifier.sendAdministratorMessage("DO manager became unavailable", message);
-		}
 	}
 
 	public synchronized void setAvailable(boolean available) {
@@ -246,10 +234,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		return accessClient;
 	}
 
-	public AIPIngestPipeline getAipIngestPipeline() {
-		return aipIngestPipeline;
-	}
-
 	ManagementClient getManagementClient() {
 		return managementClient;
 	}
@@ -270,10 +254,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			refs.remove(container);
 		}
 		return refs;
-	}
-
-	public SIPProcessorFactory getSipProcessorFactory() {
-		return sipProcessorFactory;
 	}
 
 	public TripleStoreQueryService getTripleStoreQueryService() {
@@ -361,16 +341,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		this.accessClient = accessClient;
 	}
 
-	public void setAipIngestPipeline(AIPIngestPipeline aipIngestPipeline) {
-		this.aipIngestPipeline = aipIngestPipeline;
-	}
-
 	public void setManagementClient(ManagementClient managementClient) {
 		this.managementClient = managementClient;
-	}
-
-	public void setSipProcessorFactory(SIPProcessorFactory sipProcessorFactory) {
-		this.sipProcessorFactory = sipProcessorFactory;
 	}
 
 	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {

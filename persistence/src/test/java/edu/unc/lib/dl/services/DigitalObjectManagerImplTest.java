@@ -22,9 +22,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,7 +33,6 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import javax.annotation.Resource;
-import javax.mail.internet.MimeMessage;
 
 import org.jdom.Document;
 import org.junit.After;
@@ -46,8 +43,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -61,7 +56,6 @@ import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import edu.unc.lib.dl.util.ZipFileUtil;
 
 /**
  * @author Gregory Jansen
@@ -82,9 +76,6 @@ public class DigitalObjectManagerImplTest {
 
 	@Resource
 	TripleStoreQueryService tripleStoreQueryService = null;
-
-	@Resource
-	JavaMailSender javaMailSender = null;
 
 	private static final String MD_CONTENTS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 			+ "<m:structMap xmlns:m=\"http://www.loc.gov/METS/\">" + "<m:div TYPE=\"Container\">"
@@ -116,7 +107,6 @@ public class DigitalObjectManagerImplTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		reset(this.managementClient, this.javaMailSender, this.tripleStoreQueryService);
 		this.getDigitalObjectManagerImpl().setAvailable(true, "available");
 		// setup default MD_CONTENTS stream
 		MIMETypedStream mts = mock(MIMETypedStream.class);
@@ -138,30 +128,6 @@ public class DigitalObjectManagerImplTest {
 		};
 		when(this.managementClient.upload(any(File.class))).thenAnswer(upload);
 		when(this.managementClient.upload(any(Document.class))).thenAnswer(upload);
-
-		// setup mail sender mock invocations
-		when(this.javaMailSender.createMimeMessage()).thenCallRealMethod();
-
-		Answer dumpMessage = new Answer() {
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				Object arg = invocation.getArguments()[0];
-				if (arg instanceof MimeMessage) {
-					MimeMessage m = (MimeMessage) arg;
-					System.out.println("EMAIL DUMP:");
-					m.writeTo(System.out);
-				} else if (arg instanceof SimpleMailMessage) {
-					SimpleMailMessage m = (SimpleMailMessage) arg;
-					System.out.println("EMAIL DUMP:");
-					System.out.println(m.toString());
-				} else {
-					throw new Error("Could not print email: " + arg);
-				}
-				return null;
-			}
-		};
-		doAnswer(dumpMessage).when(this.javaMailSender).send(any(MimeMessage.class));
-		doAnswer(dumpMessage).when(this.javaMailSender).send(any(SimpleMailMessage.class));
 	}
 
 	/**

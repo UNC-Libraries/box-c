@@ -165,6 +165,16 @@
 			</bean>
 		</constructor-arg>
 	</bean>
+	
+	<bean id="freemarkerConfiguration" class="freemarker.template.Configuration">
+		<property name="templateLoader">
+			<bean class="freemarker.cache.ClassTemplateLoader">
+				<constructor-arg index="0" type="java.lang.Class"
+					value="edu.unc.lib.bag.clean.MailNotifier"/>
+				<constructor-arg index="1" value=""/>
+			</bean>
+		</property>
+	</bean>
 
 	<bean id="NormalizeBag" class="edu.unc.lib.bag.normalize.NormalizeBag"
 		scope="prototype">
