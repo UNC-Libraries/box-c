@@ -6,46 +6,20 @@
     "tag:cdr.lib.unc.edu,2013:/cdr_projects/":{
         "name":"CDR Projects",
         "mappings":[
-            "file:/Volume/projects/cdr/staging"
+            "file:/Volume/projects/cdr/staging",
+            "file:/mnt/projects/cdr/staging"
         ],
         "confirmFile":"born_digital",
-        "ingestCleanupPolicy":"DO_NOTHING"
-    },
-    "tag:cdr.lib.unc.edu,2013:/storhouse_in_process/":{
-        "name":"Storhouse SHC In Process",
-        "mappings":[
-            "file:/P:/in_process",
-            "file:/Volume/storhouse/in_process"
-        ],
-        "confirmFile":"sohp",
-        "ingestCleanupPolicy":"DO_NOTHING"
-    },
-    "tag:cdr.lib.unc.edu,2013:/storhouse_born_digital/":{
-        "name":"Storhouse Born Digital",
-        "mappings":[
-            "file:/P:/born_digital",
-            "file:/Volume/storhouse/born_digital"
-        ],
-        "confirmFile":"UARMS",
         "ingestCleanupPolicy":"DO_NOTHING"
     },
     "tag:cdr.lib.unc.edu,2013:/lib_projects/":{
         "name":"Library Projects Drive (Pre-staged)",
         "mappings":[
-            "file:/Volume/projects"
+            "file:/Volume/projects",
+            "file:/mnt/projects"
         ],
         "confirmFile":"CDR/tag_lib_projects",
         "ingestCleanupPolicy":"DO_NOTHING",
-        "readOnly":"true"
-    },
-    "tag:cdr.lib.unc.edu,2013:/digital_archive/":{
-        "name":"Legacy Digital Archive (Pre-staged)",
-        "mappings":[
-            "file:/H:/",
-            "file:/Volume/DA/"
-        ],
-        "confirmFile":"sfc",
-        "ingestCleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS",
         "readOnly":"true"
     }
 }
