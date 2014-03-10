@@ -242,8 +242,9 @@ public class SchematronValidatorTest extends Assert {
 	    Document output = sv.validate(good, "test");
 	    XMLOutputter dbout = new XMLOutputter();
 	    dbout.setFormat(Format.getPrettyFormat());
-	    log.info(dbout.outputString(output));
-	    assertTrue("This XML must be valid according to the schema", valid);
+	    String msg = dbout.outputString(output);
+	    log.info(msg);
+	    assertTrue("This XML must be valid according to the schema \n"+msg, valid);
 	} catch (IOException e) {
 	    fail("Got exception" + e.getMessage());
 	}

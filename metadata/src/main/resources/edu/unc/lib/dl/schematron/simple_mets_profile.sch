@@ -73,7 +73,7 @@
         <sch:title>METS fileSec validation</sch:title>
         <sch:rule context="m:file">
             <sch:assert test="not(parent::m:fileGrp/@USE)">fileGrp elements MUST not have a USE attribute.</sch:assert>
-            <sch:assert test="not(@USE) or contains('Master,DiskImage,CoverImage', @USE)">The specified USE (<sch:value-of select="@USE"/>) MUST be one of Master, DiskImage, or Thumbnail.</sch:assert>
+            <sch:assert test="not(@USE) or @USE = 'Master'">The specified USE (<sch:value-of select="@USE"/>) MUST be Master.</sch:assert>
             <sch:assert test="@MIMETYPE">file elements MUST have a MIMETYPE attribute</sch:assert>
             <sch:assert test="string-length(@MIMETYPE) &gt; 2">MIMETYPE attribute cannot be empty.</sch:assert>
             <sch:assert test="not(@CHECKSUMTYPE) or @CHECKSUMTYPE = 'MD5'">If a file element has a CHECKSUMTYPE, it must be MD5.</sch:assert>
@@ -86,29 +86,10 @@
         </sch:rule>
     </sch:pattern>
     
- <!--   <sch:pattern>
-        <sch:title>MIMETYPE validation</sch:title>
-        <sch:rule context="key('fileuse','INDEX_TEXT')">
-            <sch:assert test="@MIMETYPE = 'text/plain'">INDEX_TEXT files MUST have the MIMETYPE "text/plain".</sch:assert>
-        </sch:rule>
-        
-        <sch:rule context="key('fileuse','SURROGATE')">
-            <sch:assert test="not( starts-with( @MIMETYPE, 'image') ) or @MIMETYPE = 'image/png'">SURROGATE files that are images MUST have the MIMETYPE "image/png".</sch:assert>
-        </sch:rule>
-    </sch:pattern>-->
-    
     <sch:pattern>
         <sch:title>Structure Map Validation (structMap)</sch:title>
         <sch:rule context="m:structMap">
             <sch:assert test="not(@TYPE) or @TYPE='Basic'">The specified structMap TYPE (<sch:value-of select="@TYPE"/>) MUST be blank or 'Basic'</sch:assert>
-        </sch:rule>        
-        <sch:rule context="m:div[ @TYPE = 'Disk' ]">
-            <sch:let name="fileMatches" value="key('fileid',m:fptr/@FILEID)"/>
-            <sch:let name="fileGrpMatch" value="key('filegrpid',m:fptr/@FILEID)/m:file"/>
-            <sch:let name="nestedFileGrpMatch" value="key('nestedfilegrpid',m:fptr/@FILEID)/m:file"/>
-            <sch:let name="allFiles" value="insert-before($fileMatches, 0, insert-before($fileGrpMatch, 0, $nestedFileGrpMatch))"/>      
-            <sch:assert test="@LABEL or @DMDID">Disk divs MUST have a label or DMDID pointing to MODS with a title.</sch:assert>
-            <sch:assert test="count($allFiles[@USE = 'DiskImage']) = 1 or count($allFiles) = 0 ">Disk divs MAY ONLY reference a single file with the USE of DiskImage.</sch:assert>
         </sch:rule>
         <sch:rule context="m:div[ @TYPE = 'Folder' or @TYPE = 'Aggregate Work' or (not(@TYPE) and (count(m:div) &gt; 0 or count(m:fptr) = 0)) ]">
             <sch:let name="fileMatches" value="key('fileid',m:fptr/@FILEID)"/>
@@ -133,14 +114,8 @@
             <sch:let name="allFiles" value="insert-before($fileMatches, 0, insert-before($fileGrpMatch, 0, $nestedFileGrpMatch))"/>            
             <sch:assert test="count($allFiles[@USE = 'Master' or not(@USE)]) = 1">File divs MUST have one file with a USE of Master or no USE attribute. (found <sch:value-of select="count($allFiles)"/> METS file elements)</sch:assert>
         </sch:rule>
-        <sch:rule context="m:div[ @TYPE = 'Reference' ]">
-            <sch:let name="ident" value="@ID"/>
-            <sch:assert test="not(@LABEL or @DMDID)">Reference divs MUST NOT have a LABEL or a DMDID.</sch:assert> 
-            <sch:assert test="@ID">Reference divs MUST have an ID attribute.</sch:assert>
-            <sch:assert test="/m:mets/m:structLink/m:smLink[@xlink:from = concat('#',$ident)]">Reference divs MUST be identified in a smLink xlink:from attribute.</sch:assert>          
-        </sch:rule>
         <sch:rule context="m:div">
-            <sch:assert test="not(@TYPE) or contains('Bag,Collection,Disk,Folder,Aggregate Work,File,Reference', @TYPE)">The specified TYPE (<sch:value-of select="@TYPE"/>) MUST be one of Disk, Folder, Aggregate Work, File or Reference.</sch:assert>
+            <sch:assert test="not(@TYPE) or contains('Bag,Collection,Folder,Aggregate Work,File', @TYPE)">The specified TYPE (<sch:value-of select="@TYPE"/>) MUST be one of Folder, Aggregate Work, or File.</sch:assert>
         </sch:rule>
         <sch:rule context="m:div[ not(@TYPE) and (count(m:fptr) &gt; 0 and count(m:div) &gt; 0) ]">
             <sch:assert test="false">A div without a TYPE cannot contain both other divs and fptrs.</sch:assert>
@@ -149,18 +124,12 @@
     
     <sch:pattern>
         <sch:title>METS elements not allowed</sch:title>
-        <!--<sch:rule context="m:amdSec">
-            <sch:assert test="false">The amdSec element cannot be used in this profile.</sch:assert>
-        </sch:rule>-->
         <sch:rule context="m:behaviorSec">
             <sch:assert test="false">The behaviorSec element cannot be used in this profile.</sch:assert>
         </sch:rule>
         <sch:rule context="m:techMD">
             <sch:assert test="false">The techMD element cannot be used in this profile.</sch:assert>
         </sch:rule>
-        <!--<sch:rule context="m:rightsMD">
-            <sch:assert test="false">The rightsMD element cannot be used in this profile.</sch:assert>
-        </sch:rule>-->
     </sch:pattern>
     
     <sch:pattern>
@@ -168,8 +137,7 @@
         <sch:let name="referenceURI" value="'http://cdr.unc.edu/definitions/1.0/base-model.xml#refersTo'"/>
         <sch:let name="predicates"
             value="'http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSurrogate
-            		http://cdr.unc.edu/definitions/1.0/base-model.xml#hasAlphabeticalOrder 
-            		http://cdr.unc.edu/definitions/1.0/base-model.xml#refersTo
+            		http://cdr.unc.edu/definitions/1.0/base-model.xml#hasAlphabeticalOrder
             		http://cdr.unc.edu/definitions/1.0/base-model.xml#defaultWebObject
             		http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSupplemental'"/>
         <sch:rule context="m:structLink/m:smLink">
@@ -179,7 +147,6 @@
             <sch:assert test="count(key('divid',substring(@xlink:from,2))) &gt; 0">The xlink:from attribute must refer to a div ID.</sch:assert>
             <sch:assert test="count(key('divid',substring(@xlink:to,2))) &gt; 0">The xlink:to attribute must refer to a div ID.</sch:assert>
             <sch:assert test="contains($predicates,@xlink:arcrole)">The smLink element may ONLY have a supported xlink:arcrole, found <sch:value-of select="@xlink:arcrole"/></sch:assert>
-            <sch:assert test="not(@xlink:arcrole eq $referenceURI) or key('divid',substring(@xlink:from,2))/@TYPE eq 'Reference'">An smLink without an xlink:arcrole or with an xlink:arcrole of 'refersTo' must be from a Reference TYPE div, but found <sch:value-of select="key('divid',@xlink:from)/@TYPE"/>.</sch:assert>
         </sch:rule>
     </sch:pattern>
     
