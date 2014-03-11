@@ -33,11 +33,11 @@ public class SetFullTextFilter extends AbstractIndexDocumentFilter{
 		if (dip.getFoxml() != null) {
 			Element relsExt = dip.getRelsExt();
 			String fullText = FOXMLJDOMUtil.getRelationValue(ContentModelHelper.CDRProperty.fullText.name(), JDOMNamespaceUtil.CDR_NS, relsExt);
-			if (fullText == null)
+			if (fullText == null || "false".equals(fullText))
 				return;
 		} else {
 			List<String> result = tsqs.fetchBySubjectAndPredicate(dip.getPid(), ContentModelHelper.CDRProperty.fullText.name());
-			if (result.size() == 0)
+			if (result.size() == 0 || "false".equals(result.get(0)))
 				return;
 		}
 		

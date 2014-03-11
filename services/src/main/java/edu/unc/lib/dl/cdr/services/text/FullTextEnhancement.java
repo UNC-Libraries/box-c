@@ -69,6 +69,14 @@ public class FullTextEnhancement extends AbstractFedoraEnhancement {
 					dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
 
 					String text = this.extractText(dsIrodsPath);
+					
+					// Instead of adding an empty full text DS, add flag to indicate this object has nothing to extract some e
+					if (text == null || text.trim().length() == 0) {
+						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.fullText.getPredicate(),
+								ContentModelHelper.CDRProperty.fullText.getNamespace(), 
+								"false", null, foxml);
+						continue;
+					}
 
 					// Add full text ds to object
 					String textURL = service.getManagementClient().upload(text);
