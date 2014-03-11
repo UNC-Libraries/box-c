@@ -27,7 +27,6 @@ import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -57,11 +56,6 @@ public class SolrUpdateEnhancement extends Enhancement<Element> {
 		}
 		
 		SolrUpdateRequest updateRequest = new SolrUpdateRequest(pid.getPid(), action);
-		if (message.getFoxml() != null) {
-			DocumentIndexingPackage dip = new DocumentIndexingPackage(pid, message.getFoxml());
-			updateRequest.setDocumentIndexingPackage(dip);
-		}
-		
 		service.getMessageDirector().direct(updateRequest);
 		
 		return result;
