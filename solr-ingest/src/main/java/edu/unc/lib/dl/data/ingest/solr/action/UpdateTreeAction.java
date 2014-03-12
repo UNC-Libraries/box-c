@@ -19,9 +19,9 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 /**
  * Updates an object and all of its descendants using the pipeline provided. No cleanup is performed on any of the
  * updated objects.
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class UpdateTreeAction extends AbstractIndexingAction {
 	private static final Logger log = LoggerFactory.getLogger(UpdateTreeAction.class);
@@ -62,7 +62,13 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 
 		// Start indexing
 		RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, addDocumentMode);
-		treeIndexer.index(updateRequest.getPid(), null);
+
+		PID startingPid;
+		if (TARGET_ALL.equals(updateRequest.getTargetID()))
+			startingPid = collectionsPid;
+		else
+			startingPid = updateRequest.getPid();
+		treeIndexer.index(startingPid, null);
 	}
 
 	protected int countDescendants(PID pid) {

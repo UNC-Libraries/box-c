@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
@@ -36,7 +36,7 @@ public class DeleteSolrTreeAction extends AbstractIndexingAction {
 			return;
 		}
 
-		BriefObjectMetadataBean ancestorPathBean = getRootAncestorPath(updateRequest);
+		BriefObjectMetadata ancestorPathBean = getRootAncestorPath(updateRequest);
 		if (ancestorPathBean == null) {
 			LOG.debug("Root object " + updateRequest.getTargetID() + " was not found while attempting to delete tree.");
 			return;

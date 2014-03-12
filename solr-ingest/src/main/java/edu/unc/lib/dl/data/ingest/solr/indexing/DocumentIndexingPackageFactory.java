@@ -15,38 +15,44 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
 import org.jdom.Document;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.ClientUtils;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 public class DocumentIndexingPackageFactory {
 	private static final Logger log = LoggerFactory.getLogger(DocumentIndexingPackageFactory.class);
-	
+
 	private ManagementClient managementClient = null;
+
 	private AccessClient accessClient = null;
-	private SAXBuilder builder = new SAXBuilder();
-	private int MAX_RETRIES = 2;
-	
+
+	private int maxRetries = 2;
+
+	private long retryDelay = 1000L;
+
 	public DocumentIndexingPackage createDocumentIndexingPackage(PID pid) {
+
 		try {
+			log.debug("Creating DIP from FOXML for {}", pid.getPid());
+
 			Document foxml = null;
-			int tries = MAX_RETRIES;
+			int tries = maxRetries;
 			do {
-				if (tries < MAX_RETRIES)
-					Thread.sleep(1000L);
-				log.debug("Retrieving FOXML for DIP, tries remaining: " + tries);
+
+				if (tries < maxRetries) {
+					Thread.sleep(retryDelay);
+					log.debug("Retrieving FOXML for DIP, tries remaining: {}", tries);
+				}
+
 				foxml = managementClient.getObjectXML(pid);
 			} while (foxml == null && --tries > 0);
 			if (foxml == null)
@@ -58,41 +64,45 @@ public class DocumentIndexingPackageFactory {
 			throw new IndexingException("Interrupted while waiting to retry FOXML retrieval for " + pid.getPid(), e);
 		}
 	}
-	
+
 	public DocumentIndexingPackage createDocumentIndexingPackageWithRelsExt(PID pid) {
+
 		try {
+			log.debug("Creating DIP with RELS-EXT for {}", pid.getPid());
+
 			DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
-			
+
 			byte[] stream = accessClient.getDatastreamDissemination(pid, Datastream.RELS_EXT.getName(), null).getStream();
-			log.debug("Retrieving RELS-EXT for " + pid + " " + stream);
-			Document relsExtDocument = builder.build(new ByteArrayInputStream(stream));
+			Document relsExtDocument = ClientUtils.parseXML(stream);
+
 			dip.setRelsExt(relsExtDocument.getRootElement());
-			
+
 			return dip;
-		} catch (FedoraException e) {
+		} catch (Exception e) {
 			throw new IndexingException("Failed to retrieve RELS-EXT for " + pid.getPid(), e);
-		} catch (JDOMException e) {
-			throw new IndexingException("Failed to parse RELS-EXT for " + pid.getPid(), e);
-		} catch (IOException e) {
-			throw new IndexingException("Failed to parse RELS-EXT for " + pid.getPid(), e);
 		}
 	}
-	
+
 	public DocumentIndexingPackage createDocumentIndexingPackageWithMDContents(PID pid) {
+
 		try {
+			log.debug("Creating DIP with MD-CONTENTS for {}", pid.getPid());
+
 			DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
-			
-			byte[] stream = accessClient.getDatastreamDissemination(pid, Datastream.MD_CONTENTS.getName(), null).getStream();
-			Document dsDocument = builder.build(new ByteArrayInputStream(stream));
-			dip.setMdContents(dsDocument.getRootElement());
-			
+
+			try {
+				byte[] stream = accessClient.getDatastreamDissemination(pid, Datastream.MD_CONTENTS.getName(), null)
+						.getStream();
+				Document dsDocument = ClientUtils.parseXML(stream);
+
+				dip.setMdContents(dsDocument.getRootElement());
+			} catch (NotFoundException notFound) {
+				// Datastream was not found, which is okay
+			}
+
 			return dip;
-		} catch (FedoraException e) {
+		} catch (Exception e) {
 			throw new IndexingException("Failed to retrieve RELS-EXT for " + pid.getPid(), e);
-		} catch (JDOMException e) {
-			throw new IndexingException("Failed to parse RELS-EXT for " + pid.getPid(), e);
-		} catch (IOException e) {
-			throw new IndexingException("Failed to parse RELS-EXT for " + pid.getPid(), e);
 		}
 	}
 
@@ -102,5 +112,13 @@ public class DocumentIndexingPackageFactory {
 
 	public void setAccessClient(AccessClient accessClient) {
 		this.accessClient = accessClient;
+	}
+
+	public void setMaxRetries(int maxRetries) {
+		this.maxRetries = maxRetries;
+	}
+
+	public void setRetryDelay(long retryDelay) {
+		this.retryDelay = retryDelay;
 	}
 }

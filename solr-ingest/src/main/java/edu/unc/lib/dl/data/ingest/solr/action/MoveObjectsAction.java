@@ -9,9 +9,9 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Updates the path and inherited properties of one or more objects sharing the same parent container
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class MoveObjectsAction extends UpdateChildSetAction {
 	private static final Logger log = LoggerFactory.getLogger(MoveObjectsAction.class);
@@ -19,7 +19,7 @@ public class MoveObjectsAction extends UpdateChildSetAction {
 	public MoveObjectsAction() {
 		this.addDocumentMode = false;
 	}
-	
+
 	@Override
 	protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) {
 		// Store the MD_CONTENTS of the parents so new children can be correctly located
@@ -33,6 +33,9 @@ public class MoveObjectsAction extends UpdateChildSetAction {
 	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent) {
 		DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
 		dip.setParentDocument(parent);
+		// Get all triples in order to retrieve children
+		dip.setTriples(tsqs.fetchAllTriples(dip.getPid()));
+
 		// For the top level children that were just moved we need to check for display order
 		if (parent.getMdContents() != null) {
 			log.debug("Updating display order for top level moved object {}", pid.getPid());

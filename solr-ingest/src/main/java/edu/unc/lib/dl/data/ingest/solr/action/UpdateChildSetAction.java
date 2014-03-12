@@ -11,15 +11,15 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Performs indexing of a specific set of children sharing a single parent. Does not index the parent itself
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class UpdateChildSetAction extends UpdateTreeAction {
 	private static final Logger log = LoggerFactory.getLogger(UpdateChildSetAction.class);
-	
+
 	public UpdateChildSetAction() {
-		this.addDocumentMode = true;
+		this.addDocumentMode = false;
 	}
 
 	@Override
@@ -42,19 +42,20 @@ public class UpdateChildSetAction extends UpdateTreeAction {
 		updateRequest.setChildrenPending(indexTargetTotal);
 
 		// Index all the newly moved children
-		RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, false);
+		RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, this.addDocumentMode);
 		treeIndexer.indexChildren(dip, childSetRequest.getChildren());
 
 		if (log.isDebugEnabled())
-			log.debug("Finished updating tree of " + updateRequest.getPid().getPid() + ".  "
-					+ updateRequest.getChildrenPending() + " objects updated in "
-					+ (System.currentTimeMillis() - updateRequest.getTimeStarted()) + " ms");
+			log.debug("Finished updating tree of {}.  {} objects updated in {} ms.", new Object[] {
+					updateRequest.getPid().getPid(), updateRequest.getChildrenPending(),
+					(System.currentTimeMillis() - updateRequest.getTimeStarted()) });
 	}
 
 	protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) {
 		return dipFactory.createDocumentIndexingPackage(childSetRequest.getPid());
 	}
 
+	@Override
 	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent) {
 		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackage(pid);
 		dip.setParentDocument(parent);

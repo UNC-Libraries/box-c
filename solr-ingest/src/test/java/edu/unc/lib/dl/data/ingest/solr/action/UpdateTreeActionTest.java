@@ -1,5 +1,11 @@
 package edu.unc.lib.dl.data.ingest.solr.action;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,55 +14,94 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.params.ModifiableSolrParams;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.mockito.Mockito.*;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
-import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 	private static final Logger log = LoggerFactory.getLogger(UpdateTreeActionTest.class);
-	
+
+	@Mock
+	protected DocumentIndexingPackageFactory dipFactory;
+	@Mock
+	protected TripleStoreQueryService tsqs;
+
+	protected Map<String, List<PID>> children;
+
+	protected UpdateTreeAction action;
+
+	@SuppressWarnings("unchecked")
+	@Before
+	public void setup() throws SolrServerException, IOException {
+		initMocks(this);
+
+		server.add(populate());
+		server.commit();
+
+		when(tsqs.queryResourceIndex(anyString())).thenReturn(Arrays.asList(Arrays.asList("3")));
+
+		DocumentIndexingPipeline pipeline = mock(DocumentIndexingPipeline.class);
+
+		children = populateChildren();
+
+		when(dipFactory.createDocumentIndexingPackage(any(PID.class))).thenAnswer(new Answer<DocumentIndexingPackage>() {
+			@Override
+			public DocumentIndexingPackage answer(InvocationOnMock invocation) throws Throwable {
+				Object[] args = invocation.getArguments();
+				PID pid = (PID) args[0];
+				if (pid.getPid().equals("uuid:doesnotexist"))
+					throw new IndexingException("");
+				DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
+				dip.setChildren(children.get(pid.getPid()));
+				dip.getDocument().setTitle("Text");
+				return dip;
+			}
+		});
+
+		action = getAction();
+
+		action.setTsqs(tsqs);
+		action.setPipeline(pipeline);
+		action.setSolrUpdateDriver(driver);
+		action.setDipFactory(dipFactory);
+		action.setAddDocumentMode(false);
+		action.setCollectionsPid(new PID("uuid:1"));
+		action.init();
+	}
+
 	protected UpdateTreeAction getAction() {
 		return new UpdateTreeAction();
 	}
 
 	@Test
 	public void testVerifyUpdated() throws SolrServerException, IOException {
-		UpdateTreeAction action = initializeOrphanSet(populateChildren());
-		
-		ModifiableSolrParams params = new ModifiableSolrParams();
-		params.set("q", "*:*");
-		params.set("fl", "id,_version_");
-		QueryResponse qResp = server.query(params);
-		SolrDocumentList docListBefore = qResp.getResults();
-		
+
+		SolrDocumentList docListBefore = getDocumentList();
+
 		action.performAction(new SolrUpdateRequest(new PID("uuid:2"), IndexingActionType.RECURSIVE_ADD, "1", null));
 		server.commit();
-		
-		qResp = server.query(params);
-		SolrDocumentList docListAfter = qResp.getResults();
-		
+
+		SolrDocumentList docListAfter = getDocumentList();
+
 		log.debug("Docs: " + docListBefore);
 		log.debug("Docs: " + docListAfter);
-		
+
 		// Verify that only the object itself and its children, excluding orphans, were updated
 		for (SolrDocument docAfter : docListAfter) {
 			String id = (String) docAfter.getFieldValue("id");
@@ -69,25 +114,18 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 			}
 		}
 	}
-	
+
 	@Test
 	public void danglingContains() throws SolrServerException, IOException {
-		Map<String, List<PID>> children = populateChildren();
 		children.put("uuid:4", Arrays.asList(new PID("uuid:doesnotexist")));
-		UpdateTreeAction action = initializeOrphanSet(children);
-		
-		ModifiableSolrParams params = new ModifiableSolrParams();
-		params.set("q", "*:*");
-		params.set("fl", "id,_version_");
-		QueryResponse qResp = server.query(params);
-		SolrDocumentList docListBefore = qResp.getResults();
-		
+
+		SolrDocumentList docListBefore = getDocumentList();
+
 		action.performAction(new SolrUpdateRequest(new PID("uuid:2"), IndexingActionType.RECURSIVE_ADD, "1", null));
 		server.commit();
-		
-		qResp = server.query(params);
-		SolrDocumentList docListAfter = qResp.getResults();
-		
+
+		SolrDocumentList docListAfter = getDocumentList();
+
 		// Verify that all appropriate objects were updated, and that the dangling contains didn't create a record
 		for (SolrDocument docAfter : docListAfter) {
 			String id = (String) docAfter.getFieldValue("id");
@@ -97,61 +135,49 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 				if (id.equals(docBefore.getFieldValue("id"))) {
 					if ("uuid:1".equals(id) || "uuid:3".equals(id) || "uuid:5".equals(id))
 						assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
-					else assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+					else
+						assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
 				}
 			}
 		}
 	}
-	
-	@SuppressWarnings("unchecked")
-	protected UpdateTreeAction initializeOrphanSet(final Map<String, List<PID>> children) throws SolrServerException, IOException {
-		server.add(populate());
+
+	@Test
+	public void testNoDescendents() throws SolrServerException, IOException {
+
+		SolrDocumentList docListBefore = getDocumentList();
+
+		when(tsqs.queryResourceIndex(anyString())).thenReturn(new ArrayList<List<String>>());
+
+		action.performAction(new SolrUpdateRequest("uuid:6", IndexingActionType.RECURSIVE_ADD));
 		server.commit();
-		
-		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
-		when(tsqs.queryResourceIndex(anyString())).thenReturn(Arrays.asList(Arrays.asList("3")));
-		
-		DocumentIndexingPipeline pipeline = mock(DocumentIndexingPipeline.class);
-		
-		SolrUpdateDriver driver = new SolrUpdateDriver();
-		driver.setSolrServer(server);
-		
-		DocumentIndexingPackageFactory dipFactory = mock(DocumentIndexingPackageFactory.class);
-		when(dipFactory.createDocumentIndexingPackage(any(PID.class))).thenAnswer(new Answer<DocumentIndexingPackage>() {
-			public DocumentIndexingPackage answer(InvocationOnMock invocation) throws Throwable {
-				Object[] args = invocation.getArguments();
-				PID pid = (PID) args[0];
-				if (pid.getPid().equals("uuid:doesnotexist"))
-					throw new IndexingException("");
-				DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
-				dip.setChildren(children.get(pid.getPid()));
-				dip.getDocument().setTitle("Text");
-				return dip;
+
+		SolrDocumentList docListAfter = getDocumentList();
+
+		// Verify that only the object itself and its children, excluding orphans, were updated
+		for (SolrDocument docAfter : docListAfter) {
+			String id = (String) docAfter.getFieldValue("id");
+			for (SolrDocument docBefore : docListBefore) {
+				if (id.equals(docBefore.getFieldValue("id"))) {
+					if ("uuid:6".equals(id))
+						assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+					else
+						assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+				}
 			}
-		});
-		
-		UpdateTreeAction action = getAction();
-		
-		action.setTsqs(tsqs);
-		action.setPipeline(pipeline);
-		action.setSolrUpdateDriver(driver);
-		action.setDipFactory(dipFactory);
-		action.setAddDocumentMode(false);
-		action.init(); 
-		
-		return action;
+		}
 	}
-	
+
 	protected Map<String, List<PID>> populateChildren() {
 		Map<String, List<PID>> children = new HashMap<String, List<PID>>();
 		children.put("uuid:1", Arrays.asList(new PID("uuid:2"), new PID("uuid:3")));
 		children.put("uuid:2", Arrays.asList(new PID("uuid:4"), new PID("uuid:6")));
 		return children;
 	}
-	
+
 	protected List<SolrInputDocument> populate() {
 		List<SolrInputDocument> docs = new ArrayList<SolrInputDocument>();
-		
+
 		SolrInputDocument newDoc = new SolrInputDocument();
 		newDoc.addField("title", "Collections");
 		newDoc.addField("id", "uuid:1");
@@ -162,7 +188,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 		newDoc.addField("ancestorNames", "");
 		newDoc.addField("resourceType", "Folder");
 		docs.add(newDoc);
-		
+
 		newDoc = new SolrInputDocument();
 		newDoc.addField("title", "A collection");
 		newDoc.addField("id", "uuid:2");
@@ -174,7 +200,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1,Collections"));
 		newDoc.addField("resourceType", "Collection");
 		docs.add(newDoc);
-		
+
 		newDoc = new SolrInputDocument();
 		newDoc.addField("title", "Subfolder 1");
 		newDoc.addField("id", "uuid:4");
@@ -186,7 +212,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1,Collections", "2,uuid:2,A collection"));
 		newDoc.addField("resourceType", "Folder");
 		docs.add(newDoc);
-		
+
 		newDoc = new SolrInputDocument();
 		newDoc.addField("title", "Orphaned");
 		newDoc.addField("id", "uuid:5");
@@ -198,7 +224,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1,Collections", "2,uuid:2,A collection"));
 		newDoc.addField("resourceType", "File");
 		docs.add(newDoc);
-		
+
 		newDoc = new SolrInputDocument();
 		newDoc.addField("title", "File");
 		newDoc.addField("id", "uuid:6");
@@ -210,7 +236,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1,Collections", "2,uuid:2,A collection"));
 		newDoc.addField("resourceType", "File");
 		docs.add(newDoc);
-		
+
 		newDoc = new SolrInputDocument();
 		newDoc.addField("title", "Second collection");
 		newDoc.addField("id", "uuid:3");
@@ -222,7 +248,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1,Collections"));
 		newDoc.addField("resourceType", "Collection");
 		docs.add(newDoc);
-		
+
 		return docs;
 	}
 }

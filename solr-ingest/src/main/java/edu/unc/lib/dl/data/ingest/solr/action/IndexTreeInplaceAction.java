@@ -5,16 +5,16 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
  * Performs an update of an object and all of its descendants. After they have all updated, any descendants which were
  * not updated (thereby indicating they have been deleted or removed) will be removed from the index.
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class IndexTreeInplaceAction extends UpdateTreeAction {
 	private static final Logger log = LoggerFactory.getLogger(IndexTreeInplaceAction.class);
@@ -42,28 +42,24 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 
 			StringBuilder query = new StringBuilder();
 
-			// If the root is not the all target then restrict the delete query to its path.
-			if (!TARGET_ALL.equals(updateRequest.getTargetID())) {
+			if (TARGET_ALL.equals(updateRequest.getTargetID())) {
+				query.append("*:*");
+			} else {
 				// Get the path facet value for the starting point, since we need the hierarchy tier.
-				BriefObjectMetadataBean ancestorPathBean = getRootAncestorPath(updateRequest);
-				// If no ancestor path was returned, then this item either doesn't exist or can't have children, so exit
-				if (ancestorPathBean == null) {
-					log.debug("Canceling deleteChildrenPriorToTimestamp, the root object was not found.");
-					return;
-				}
+				BriefObjectMetadata ancestorPathBean = getRootAncestorPath(updateRequest);
 
 				// Limit cleanup scope to root pid
 				query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':')
 						.append(SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue())).append(",*");
-				// Target any children with timestamp older than start time.
-				query.append(" AND ").append(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name())).append(":[* TO ")
-						.append(org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(startTime))
-						.append("]");
 			}
+
+			// Target any children with timestamp older than start time.
+			query.append(" AND ").append(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name())).append(":[* TO ")
+					.append(org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(startTime)).append("]");
 
 			solrUpdateDriver.deleteByQuery(query.toString());
 		} catch (Exception e) {
-			throw new IndexingException("Error encountered in deleteChildrenPriorToTimestampRequest for "
+			throw new IndexingException("Error encountered in deleteStaleChildren for "
 					+ updateRequest.getTargetID(), e);
 		}
 	}

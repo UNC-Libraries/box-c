@@ -44,12 +44,12 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 	protected AccessGroupSet accessGroups;
 	protected SolrSettings solrSettings;
 	protected boolean addDocumentMode = true;
-	
+
 	public static final String TARGET_ALL = "fullIndex";
 
 	/**
 	 * Gets the ancestor path facet value for
-	 * 
+	 *
 	 * @param updateRequest
 	 * @return
 	 */
@@ -68,7 +68,7 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 			throw new IndexingException("Failed to retrieve ancestors for " + updateRequest.getTargetID(), e);
 		}
 	}
-	
+
 	public void setPipeline(DocumentIndexingPipeline pipeline) {
 		this.pipeline = pipeline;
 	}
@@ -88,7 +88,7 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 	public void setSolrUpdateDriver(SolrUpdateDriver solrUpdateDriver) {
 		this.solrUpdateDriver = solrUpdateDriver;
 	}
-	
+
 	public SolrUpdateDriver getSolrUpdateDriver() {
 		return this.solrUpdateDriver;
 	}
@@ -112,7 +112,7 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 	public void setAccessGroups(AccessGroupSet accessGroups) {
 		this.accessGroups = accessGroups;
 	}
-	
+
 	public boolean isAddDocumentMode() {
 		return addDocumentMode;
 	}
