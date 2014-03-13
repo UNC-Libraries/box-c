@@ -15,6 +15,15 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.startsWith;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -24,26 +33,17 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.mockito.Mockito.*;
-
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
-import edu.unc.lib.dl.data.ingest.solr.BlockUntilTargetCompleteRequest;
-import edu.unc.lib.dl.data.ingest.solr.CountDownUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.DeleteChildrenPriorToTimestampRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnableFactory;
-import edu.unc.lib.dl.data.ingest.solr.UpdateDocTransformer;
 import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -53,9 +53,9 @@ public class SolrUpdateConductorTest extends Assert {
 	private SolrUpdateConductor solrUpdateConductor;
 	private MessageDirector messageDirector;
 	private TripleStoreQueryService tripleStoreQueryService;
-	private Document simpleObject;
+	private final Document simpleObject;
 	private int numberTestMessages;
-	private List<MessageFilter> filters;
+	private final List<MessageFilter> filters;
 
 	public SolrUpdateConductorTest() throws Exception {
 		String simpleObjectXML = readFileAsString("fedoraObjectSimple.xml");
@@ -91,7 +91,7 @@ public class SolrUpdateConductorTest extends Assert {
 
 		messageDirector.setConductorsList(conductorsList);
 		messageDirector.setFilters(filters);
-		
+
 		//SolrUpdateRunnableFactory solrUpdateRunnableFactory = ;
 
 		solrUpdateConductor.init();
@@ -225,38 +225,33 @@ public class SolrUpdateConductorTest extends Assert {
 		// Create a blocked message and make sure that it doesn't get picked up until
 		int numberTestMessages = 5;
 		SolrUpdateRequest parentRequest = new SolrUpdateRequest("uuid:parent", IndexingActionType.ADD);
-		
-		SolrUpdateRequest blockedRequest = new BlockUntilTargetCompleteRequest("uuid:blocked",
-				IndexingActionType.ADD, "urn:uuid:msg", null, parentRequest);
 
-		for (int i = 0; i < numberTestMessages; i++) {
-			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:1", IndexingActionType.ADD, blockedRequest, null,
-					null);
-			solrUpdateConductor.offer(childRequest);
-		}
-		for (int i = 0; i < numberTestMessages; i++) {
-			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:2", IndexingActionType.ADD, blockedRequest, null,
-					null);
-			solrUpdateConductor.offer(childRequest);
-		}
-
-		solrUpdateConductor.offer(blockedRequest);
-
-		// Add some post block non-blocked messages
-		for (int i = 0; i < numberTestMessages; i++) {
-			SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:3", IndexingActionType.ADD);
-			solrUpdateConductor.offer(childRequest);
-		}
-
-		solrUpdateConductor.resume();
-		while (((DeleteChildrenPriorToTimestampRequest) blockedRequest).isBlocked()) {
-			synchronized (solrUpdateConductor.getLockedPids()) {
-				if (((DeleteChildrenPriorToTimestampRequest) blockedRequest).isBlocked())
-					assertFalse(solrUpdateConductor.getLockedPids().contains("uuid:blocked"));
-			}
-		}
-		while (!solrUpdateConductor.isEmpty())
-			;
+		// SolrUpdateRequest blockedRequest = new BlockUntilTargetCompleteRequest("uuid:blocked",
+		// IndexingActionType.ADD, "urn:uuid:msg", null, parentRequest);
+		//
+		// for (int i = 0; i < numberTestMessages; i++) {
+		// SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:1", IndexingActionType.ADD, blockedRequest, null,
+		// null);
+		// solrUpdateConductor.offer(childRequest);
+		// }
+		// for (int i = 0; i < numberTestMessages; i++) {
+		// SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:2", IndexingActionType.ADD, blockedRequest, null,
+		// null);
+		// solrUpdateConductor.offer(childRequest);
+		// }
+		//
+		// solrUpdateConductor.offer(blockedRequest);
+		//
+		// // Add some post block non-blocked messages
+		// for (int i = 0; i < numberTestMessages; i++) {
+		// SolrUpdateRequest childRequest = new SolrUpdateRequest("uuid:3", IndexingActionType.ADD);
+		// solrUpdateConductor.offer(childRequest);
+		// }
+		//
+		// solrUpdateConductor.resume();
+		//
+		// while (!solrUpdateConductor.isEmpty())
+		// ;
 		//verify(solrUpdateConductor.getUpdateDocTransformer(), times(numberTestMessages * 3 + 1)).addDocument(
 		//		any(Document.class));
 	}
@@ -350,12 +345,13 @@ public class SolrUpdateConductorTest extends Assert {
 	}
 
 	class IsMatchingPID extends ArgumentMatcher<PID> {
-		private String pid;
+		private final String pid;
 
 		public IsMatchingPID(String pid) {
 			this.pid = pid;
 		}
 
+		@Override
 		public boolean matches(Object pid) {
 			return ((PID) pid).getPid().startsWith(this.pid);
 		}

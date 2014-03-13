@@ -2,7 +2,6 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -41,6 +40,8 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 	protected DocumentIndexingPackageFactory dipFactory;
 	@Mock
 	protected TripleStoreQueryService tsqs;
+	@Mock
+	protected DocumentIndexingPipeline pipeline;
 
 	protected Map<String, List<PID>> children;
 
@@ -55,8 +56,6 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 		server.commit();
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(Arrays.asList(Arrays.asList("3")));
-
-		DocumentIndexingPipeline pipeline = mock(DocumentIndexingPipeline.class);
 
 		children = populateChildren();
 

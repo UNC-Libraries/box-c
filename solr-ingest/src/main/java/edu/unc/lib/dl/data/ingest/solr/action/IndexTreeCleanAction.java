@@ -12,6 +12,11 @@ public class IndexTreeCleanAction extends UpdateTreeAction {
 
 	private DeleteSolrTreeAction deleteAction;
 
+	public IndexTreeCleanAction() {
+		// Clean index doesn't make sense with update mode
+		addDocumentMode = true;
+	}
+
 	@Override
 	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
 		log.debug("Starting clean indexing of {}", updateRequest.getPid().getPid());
@@ -34,5 +39,10 @@ public class IndexTreeCleanAction extends UpdateTreeAction {
 
 	public void setDeleteAction(DeleteSolrTreeAction deleteAction) {
 		this.deleteAction = deleteAction;
+	}
+
+	@Override
+	public void setAddDocumentMode(boolean addDocumentMode) {
+		// Do nothing, clean index should always be in add mode
 	}
 }
