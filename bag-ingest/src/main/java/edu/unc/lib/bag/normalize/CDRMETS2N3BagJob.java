@@ -1,6 +1,6 @@
 package edu.unc.lib.bag.normalize;
 
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.PACKAGING_TYPE;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.PACKAGING_TYPE;
 
 import java.io.File;
 
@@ -24,9 +24,8 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnable 
 		super(uuid, bagDirectory, depositId);
 	}
 	
-	@Override
 	public void run() {
-		gov.loc.repository.bagit.Bag bag = loadBag();
+		gov.loc.repository.bagit.Bag bag = getBag();
 		validateMETS();
 		validateProfile(METSProfile.CDR_SIMPLE);
 		Document mets = loadMETS();

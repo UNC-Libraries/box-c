@@ -14,6 +14,7 @@ import org.swordapp.server.SwordError;
 import redis.clients.jedis.exceptions.JedisDataException;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -43,7 +44,7 @@ public class DSPACEMETSDepositHandlerTest {
 	@Test(expected = JedisDataException.class)
 	public void testDoDepositMETSBiomed() throws SwordError {
 		Deposit d = new Deposit();
-		File test = new File("src/test/resources/biomedWithSupplements.zip");
+		File test = FileUtils.tempCopy(new File("src/test/resources/biomedWithSupplements.zip"));
 		d.setFile(test);
 		d.setMd5("7ca5899e938e385c4ad61087bd834a0e");
 		d.setFilename("biomedWithSupplements.zip");

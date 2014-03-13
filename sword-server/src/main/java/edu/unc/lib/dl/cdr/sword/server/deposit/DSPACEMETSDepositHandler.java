@@ -15,13 +15,13 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.deposit;
 
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.CONTAINER_ID;
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.DEPOSIT_ID;
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.DEPOSIT_METHOD;
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.DEPOSIT_PERMISSION_GROUP;
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.METS_PROFILE;
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.METS_TYPE;
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.PACKAGING_TYPE;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.CONTAINER_ID;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.DEPOSIT_ID;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.DEPOSIT_METHOD;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.DEPOSIT_PERMISSION_GROUP;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.METS_PROFILE;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.METS_TYPE;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.PACKAGING_TYPE;
 
 import java.io.File;
 import java.io.IOException;
@@ -124,7 +124,7 @@ public class DSPACEMETSDepositHandler extends AbstractDepositHandler {
 		} catch (IOException e) {
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to write to deposit bag: "+depositPID.getPid());
 		}
-		queueForIngest(bagDir, depositPID);
+		registerDeposit(depositPID.getUUID(), bag);
 		return buildReceipt(depositPID, config);
 	}
 }

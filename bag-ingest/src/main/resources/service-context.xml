@@ -85,7 +85,7 @@
 		<property name="workerEventEmitter" ref="depositWorkerPool"/>
 	</bean>
 
-	<bean id="depositStatusFactory" class="edu.unc.lib.workers.DepositStatusFactory">
+	<bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
 		<property name="jedisPool" ref="jedisPool" />
 	</bean>
 

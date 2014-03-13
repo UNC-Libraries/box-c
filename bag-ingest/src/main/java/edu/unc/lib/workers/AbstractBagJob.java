@@ -12,10 +12,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
-
-import net.greghaines.jesque.Job;
-import net.greghaines.jesque.client.Client;
 
 import org.apache.commons.io.IOUtils;
 import org.jdom.Element;
@@ -29,6 +25,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.BagConstants;
+import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobStatus;
@@ -49,6 +46,15 @@ public abstract class AbstractBagJob {
 	private static final int joinPollingSeconds = 5;
 	private File bagDirectory;
 	private PID depositPID;
+	private Bag bag;
+	
+	public Bag getBag() {
+		if(bag == null) {
+			loadBag();
+		}
+		return bag;
+	}
+
 	private String jobUUID;
 	public String getJobUUID() {
 		return jobUUID;
@@ -85,21 +91,6 @@ public abstract class AbstractBagJob {
 	
 	public File getDescriptionDir() {
 		return new File(getBagDirectory(), DESCRIPTION_DIR);
-	}
-
-//	@Autowired
-//	Client jesqueClient = null;
-//	public Client getJesqueClient() {
-//		return jesqueClient;
-//	}
-
-//	public void setJesqueClient(Client jesqueClient) {
-//		this.jesqueClient = jesqueClient;
-//	}
-	
-	public Job makeJob(Class jobName) {
-		String uuid = UUID.randomUUID().toString();
-		return new Job(jobName.getName(), uuid, getBagDirectory().getAbsolutePath(), this.getDepositPID().getURI());
 	}
 
 	private PremisEventLogger eventLog = new PremisEventLogger(this.getClass().getName());
@@ -185,9 +176,8 @@ public abstract class AbstractBagJob {
 	        }
 	}
 	
-	protected Bag loadBag() {
-		Bag bag = getBagFactory().createBag(getBagDirectory());
-		return bag;
+	private void loadBag() {
+		bag = getBagFactory().createBag(getBagDirectory());
 	}
 
 	protected void saveBag(gov.loc.repository.bagit.Bag bag) {

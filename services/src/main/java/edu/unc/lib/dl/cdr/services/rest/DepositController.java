@@ -38,6 +38,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import redis.clients.jedis.Jedis;
@@ -50,29 +51,87 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * 
  */
 @Controller
-@RequestMapping(value = { "/status/deposit*", "/status/deposit" })
-public class DepositRestController {
-	private static final Logger LOG = LoggerFactory.getLogger(DepositRestController.class);
+@RequestMapping(value = { "/deposit*", "/deposit" })
+public class DepositController {
+	private static final Logger LOG = LoggerFactory.getLogger(DepositController.class);
 
 	@Resource
 	protected Jedis jedis;
+	
+	@Resource
+	private File batchIngestFolder;
 
 	@RequestMapping(value = { "", "/" }, method = RequestMethod.GET)
 	public @ResponseBody
-	Map<String, ? extends Object> getDeposits() {
+	Map<String, ? extends Object> getAll() {
 		Map<String, Object> result = new HashMap<String, Object>();
-		LOG.debug("getDeposits()");		
+		LOG.debug("getAll()");
 		Map<String, Map<String, String>> deposits = new HashMap<String, Map<String, String>>();
 		result.put("deposits", deposits);
 		Set<String> depositUUIDs = this.jedis.smembers(RedisWorkerConstants.DEPOSIT_SET);
 		for(String depositUUID : depositUUIDs) {
-			Map<String, String> info = this.jedis.hgetAll(depositUUID);
-			info.put("jobsURI", "/api/status/deposit/"+depositUUID+"/jobs");
-			info.put("eventsURI", "/api/status/deposit/"+depositUUID+"/eventsXML");
-			deposits.put(depositUUID, info);
+			deposits.put(depositUUID, get(depositUUID));
 		}
 		return result;
 	}
+	
+	public List<String> getUnregistered() {
+		List<String> result = null;
+		return result;
+	}
+
+	/**
+	 * Registers a new deposit folder or file in Jedis.
+	 * @param uuid
+	 */
+	@RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.PUT)
+	public void register(@PathVariable String uuid) {
+		
+	}
+	
+	@RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.GET)
+	public @ResponseBody
+	Map<String, String> get(@PathVariable String uuid) {
+		Map<String, String> info = this.jedis.hgetAll(uuid);
+		info.put("jobsURI", "/api/status/deposit/"+uuid+"/jobs");
+		info.put("eventsURI", "/api/status/deposit/"+uuid+"/eventsXML");
+		return info;
+	}
+	
+	/**
+	 * Aborts the deposit, reversing any ingests and scheduling a cleanup job.
+	 * @param depositUUID
+	 */
+	@RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.DELETE)
+	public void cancel(@PathVariable String uuid) {
+		// verify deposit is registered and not yet cleaned up
+		// set deposit status to cancelled
+	}
+	
+//	/**
+//	 * Asks repository to pause work on this deposit until further notice.
+//	 * @param depositUUID
+//	 */
+//	public void pause(String depositUUID) {
+//		
+//	}
+//	
+//	/**
+//	 * Asks repository to resume work on this deposit (after finishing other deposits).
+//	 * @param depositUUID
+//	 */
+//	public void resume(String depositUUID) {
+//		
+//	}
+//	
+//	/**
+//	 * Requests clean up of the deposit package and optionally any staged files.
+//	 * @param depositUUID
+//	 * @param deleteExtraStagedFiles if true, attempt to delete ingested staged files
+//	 */
+//	public void cleanup(String depositUUID, boolean deleteExtraStagedFiles) {
+//		
+//	}
 	
 	@RequestMapping(value = { "{uuid}/jobs", "/{uuid}/jobs" }, method = RequestMethod.GET)
 	public @ResponseBody
@@ -89,7 +148,7 @@ public class DepositRestController {
 		return result;
 	}
 	
-	@RequestMapping(value = { "{uuid}/eventsXML", "/{uuid}/eventsXML" }, method = RequestMethod.GET)
+	@RequestMapping(value = { "{uuid}/events", "/{uuid}/events" }, method = RequestMethod.GET)
 	public @ResponseBody()
 	Document getEvents(@PathVariable String uuid) throws Exception {
 		LOG.debug("getEvents( {} )", uuid);

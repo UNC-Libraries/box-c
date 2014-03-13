@@ -8,7 +8,7 @@ import edu.unc.lib.workers.AbstractBagJob;
  * @author count0
  *
  */
-public class IngestBag extends AbstractBagJob implements Runnable {
+public class IngestBag extends AbstractBagJob {
 
 	public IngestBag() {
 		super();
@@ -18,12 +18,12 @@ public class IngestBag extends AbstractBagJob implements Runnable {
 		super(uuid, bagDirectory, depositId);
 	}
 
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		// make foxml 
-		// update container
-		// queue all object ingests
+	public String execute() {
+		// TODO update container
+		// queue object ingests, root to branches
+		// listen to Fedora JMS to see when all objects are ingested
+		// send email
+		return null;
 	}
 
 }

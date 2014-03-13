@@ -68,7 +68,6 @@ public class VirusScanJob extends AbstractBagJob implements Runnable {
 		super(uuid, bagDirectory, depositId);
 	}
 
-	@Override
 	public void run() {
 		log.debug("Running virus checks on : {}", getBagDirectory());
 		

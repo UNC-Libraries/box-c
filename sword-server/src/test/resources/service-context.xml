@@ -35,13 +35,13 @@
 		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
 
-	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
-		<constructor-arg value="localhost" />
-		<constructor-arg value="6379" />
-		<constructor-arg value="2000" />
-		<constructor-arg value="" />
-		<constructor-arg value="resque" />
-		<constructor-arg value="0" />
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool" scope="singleton"
+		destroy-method="destroy">
+		<constructor-arg type="String" value="localhost"/>
+	</bean>
+	
+	<bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
+		<property name="jedisPool" ref="jedisPool"/>
 	</bean>
 
 	<bean id="swordPath" class="java.lang.String">

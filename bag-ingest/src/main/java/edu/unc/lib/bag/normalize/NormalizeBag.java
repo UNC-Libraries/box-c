@@ -1,21 +1,14 @@
 package edu.unc.lib.bag.normalize;
 
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.PACKAGING_TYPE;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.PACKAGING_TYPE;
 
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import net.greghaines.jesque.Job;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.workers.AbstractBagJob;
-import edu.unc.lib.workers.DepositStatusFactory;
 import gov.loc.repository.bagit.Bag;
 
 /**
@@ -26,29 +19,15 @@ import gov.loc.repository.bagit.Bag;
  * @author count0
  *
  */
-public class NormalizeBag extends AbstractBagJob implements Callable<Job> {
-	private static final Logger log = LoggerFactory.getLogger(NormalizeBag.class);
-	
-	@Autowired
-	private DepositStatusFactory depositStatusFactory = null;
-	
-	public DepositStatusFactory getDepositStatusFactory() {
-		return depositStatusFactory;
-	}
-
-	public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
-		this.depositStatusFactory = depositStatusFactory;
-	}
+public class NormalizeBag extends AbstractBagJob implements Callable<String> {
 
 	public NormalizeBag(String uuid, String bagDirectory, String depositId) {
 		super(uuid, bagDirectory, depositId);
 	}
 
-	@Override
-	public Job call() {
-		log.debug("normalizing deposit: {}", this.getBagDirectory().getPath());
+	public String call() {
 		
-		Bag bag = loadBag();
+		Bag bag = getBag();
 		// pack the bag in N3 CDR style
 		List<String> packagings = bag.getBagInfoTxt().getList(PACKAGING_TYPE);
 		
@@ -69,7 +48,7 @@ public class NormalizeBag extends AbstractBagJob implements Callable<Job> {
 				String msg = MessageFormat.format("Cannot convert deposit package to N3 BagIt. No converter for this packaging type(s): {}", packagings.toArray());
 				failJob(Type.NORMALIZATION, "Cannot convert deposit to N3 BagIt package.", msg);
 			} else {
-				return makeJob(convertJob);
+				return convertJob.getName();
 			}
 		}
 		return null;

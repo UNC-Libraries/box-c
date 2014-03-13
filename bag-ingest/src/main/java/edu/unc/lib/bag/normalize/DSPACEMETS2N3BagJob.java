@@ -1,6 +1,6 @@
 package edu.unc.lib.bag.normalize;
 
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.PACKAGING_TYPE;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.PACKAGING_TYPE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.EPDCX_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 
@@ -13,8 +13,6 @@ import java.util.concurrent.Callable;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-
-import net.greghaines.jesque.Job;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -39,7 +37,7 @@ import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.METSProfile;
 
-public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Callable<Job> {
+public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Callable<String> {
 
 	private static final Logger log = LoggerFactory.getLogger(DSPACEMETS2N3BagJob.class);
 	
@@ -57,9 +55,8 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Callab
 		super(uuid, bagDirectory, depositId);
 	}
 	
-	@Override
-	public Job call() {
-		gov.loc.repository.bagit.Bag bag = loadBag();
+	public String call() {
+		gov.loc.repository.bagit.Bag bag = getBag();
 		// copy DSPACE METS into tag space.
 		try {
 			File payloadMets = new File(getBagDirectory(), "data/mets.xml");
@@ -130,7 +127,7 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Callab
 		
 		// enqueue for additional BIOMED job if applicable
 		if("BioMed Central".equals(bag.getBagInfoTxt().getInternalSenderDescription())) {
-			return makeJob(BioMedCentralExtrasJob.class);
+			return BioMedCentralExtrasJob.class.getName();
 		} else {
 			return null;
 		}

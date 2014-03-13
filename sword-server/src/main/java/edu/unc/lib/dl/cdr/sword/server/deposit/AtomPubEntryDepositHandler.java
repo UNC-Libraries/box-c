@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.deposit;
 
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.CONTAINER_ID;
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.DEPOSIT_ID;
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.DEPOSIT_METHOD;
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.DEPOSIT_PERMISSION_GROUP;
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.PACKAGING_TYPE;
-import static edu.unc.lib.dl.util.DepositBagInfoTxt.SWORD_SLUG;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.CONTAINER_ID;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.DEPOSIT_ID;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.DEPOSIT_METHOD;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.DEPOSIT_PERMISSION_GROUP;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.PACKAGING_TYPE;
+import static edu.unc.lib.dl.util.BagInfoTxtExtensions.SWORD_SLUG;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -186,7 +186,7 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to write to deposit bag: "+depositPID.getPid());
 		}
 
-		queueForIngest(bagDir, depositPID);
+		registerDeposit(depositPID.getUUID(), bag);
 		return buildReceipt(depositPID, config);
 	}
 }

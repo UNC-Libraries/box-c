@@ -17,11 +17,10 @@ package edu.unc.lib.dl.cdr.sword.server.deposit;
 
 import java.io.File;
 import java.util.Collection;
-
-import net.greghaines.jesque.Config;
-import net.greghaines.jesque.Job;
-import net.greghaines.jesque.client.Client;
-import net.greghaines.jesque.client.ClientImpl;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.swordapp.server.DepositReceipt;
@@ -31,25 +30,31 @@ import org.swordapp.server.SwordError;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.BagInfoTxtExtensions;
+import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
+import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.BagInfoTxt;
 
 public abstract class AbstractDepositHandler implements DepositHandler {
 	@Autowired
 	protected DepositReportingUtil depositReportingUtil;
 	@Autowired
-	private File bagsDirectory;
+	private DepositStatusFactory depositStatusFactory;
 	@Autowired
-	private Config jesqueConfig = null;
+	private File bagsDirectory;
 	@Autowired
 	private Collection<String> overridePermissionGroups = null;
 	
-	public Config getJesqueConfig() {
-		return jesqueConfig;
+	public DepositStatusFactory getDepositStatusFactory() {
+		return depositStatusFactory;
 	}
 
-	public void setJesqueConfig(Config jesqueConfig) {
-		this.jesqueConfig = jesqueConfig;
+	public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
+		this.depositStatusFactory = depositStatusFactory;
 	}
-	
+
 	public Collection<String> getOverridePermissionGroups() {
 		return overridePermissionGroups;
 	}
@@ -87,14 +92,29 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 		return receipt;
 	}
 	
-	/**
-	 * Adds the bag to the ingest resque
-	 * @param bag
-	 */
-	protected void queueForIngest(File bag, PID depositId) {
-		Job job = new Job("NormalizeBag", bag, depositId.getURI()); // job to schedule bag processing
-		final Client client = new ClientImpl(getJesqueConfig());
-		client.enqueue("Deposit", job);
-		client.end();
+	protected void registerDeposit(String uuid, Bag bag) {		
+		// create deposit status
+		BagInfoTxt info = bag.getBagInfoTxt();
+		Map<String, String> status = new HashMap<String, String>();
+		status.put(DepositField.bagDate.name(), info.getBaggingDate());
+		status.put(DepositField.bagDirectory.name(), bag.getFile().getAbsolutePath());
+		status.put(DepositField.contactEmail.name(), info.getContactEmail());
+		status.put(DepositField.contactName.name(), info.getContactName());
+		status.put(DepositField.containerId.name(), info.get(BagInfoTxtExtensions.CONTAINER_ID));
+		status.put(DepositField.depositMethod.name(), info.get(BagInfoTxtExtensions.DEPOSIT_METHOD));
+		status.put(DepositField.extIdentifier.name(), info.getExternalIdentifier());
+		status.put(DepositField.intSenderDescription.name(), info.getInternalSenderDescription());
+		status.put(DepositField.intSenderIdentifier.name(), info.getInternalSenderIdentifier());
+		status.put(DepositField.payLoadOctets.name(), info.getPayloadOxum());
+		status.put(DepositField.startTime.name(), String.valueOf(System.currentTimeMillis()));
+		status.put(DepositField.status.name(), DepositState.registered.name());
+		status.put(DepositField.uuid.name(), uuid);
+		Set<String> nulls = new HashSet<String>();
+		for(String key : status.keySet()) {
+			if(status.get(key) == null) nulls.add(key);
+		}
+		for(String key : nulls) status.remove(key);
+		this.depositStatusFactory.save(uuid, status);
 	}
+
 }

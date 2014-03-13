@@ -11,10 +11,9 @@ public class ValidateRdfGraph extends AbstractBagJob implements Runnable {
 	public ValidateRdfGraph() {
 	}
 
-	@Override
 	public void run() {
 		// TODO Validate RDF Graph (no implementation)
-
+		return;
 	}
 
 }

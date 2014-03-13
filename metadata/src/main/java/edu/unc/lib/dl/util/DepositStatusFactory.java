@@ -1,4 +1,4 @@
-package edu.unc.lib.workers;
+package edu.unc.lib.dl.util;
 
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_SET;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_STATUS_PREFIX;
@@ -10,6 +10,7 @@ import java.util.Set;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 public class DepositStatusFactory {
 	JedisPool jedisPool;
@@ -50,6 +51,50 @@ public class DepositStatusFactory {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.hmset(DEPOSIT_STATUS_PREFIX+depositUUID, status);
 		jedis.sadd(DEPOSIT_SET, depositUUID);
+		getJedisPool().returnResource(jedis);
+	}
+	
+	/**
+	 * Locks the given deposit for a designated supervisor. These
+	 * are short term locks and should be released after every
+	 * set of jobs are queued.
+	 * @param depositUUID identify of the deposit
+	 * @param owner identity of the supervisor
+	 * @return true if lock acquired
+	 */
+	public boolean addSupervisorLock(String depositUUID, String owner) {
+		Jedis jedis = getJedisPool().getResource();
+		Long result = jedis.hsetnx(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.lock.name(), owner);
+		getJedisPool().returnResource(jedis);
+		return result == 1;
+	}
+	
+	/**
+	 * Unlocks the given deposit, allowing a new supervisor to manage it.
+	 * @param depositUUID
+	 */
+	public void removeSupervisorLock(String depositUUID) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hdel(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.lock.name());
+		getJedisPool().returnResource(jedis);
+	}
+	
+	public DepositState getState(String depositUUID) {
+		DepositState result = null;
+		Jedis jedis = getJedisPool().getResource();
+		String state = jedis.hget(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.status.name());
+		try {
+			result = DepositState.valueOf(state);
+		} catch(NullPointerException e) {
+		} catch(IllegalArgumentException e) {
+		}
+		getJedisPool().returnResource(jedis);
+		return result;
+	}
+	
+	public void setState(String depositUUID, DepositState state) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.status.name(), state.name());
 		getJedisPool().returnResource(jedis);
 	}
 	

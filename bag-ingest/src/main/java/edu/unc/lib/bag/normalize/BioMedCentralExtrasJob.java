@@ -40,10 +40,9 @@ public class BioMedCentralExtrasJob extends AbstractBagJob implements Runnable {
 		super(uuid, bagDirectory, depositId);
 	}
 	
-	@Override
 	public void run() {
 		log.debug("starting on {}", getBagDirectory());
-		Bag bag = loadBag();
+		Bag bag = getBag();
 		log.debug("loaded bag {}", getBagDirectory());
 		Model model = ModelFactory.createDefaultModel();
 		File modelFile = new File(getBagDirectory(), BagConstants.MODEL_FILE);

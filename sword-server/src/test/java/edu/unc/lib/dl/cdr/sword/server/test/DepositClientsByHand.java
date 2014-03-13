@@ -71,7 +71,6 @@ public class DepositClientsByHand {
 		
 		post.setRequestEntity(mpEntity);
 		
-		
 		LOG.debug("" + client.executeMethod(post));
 	}
 }

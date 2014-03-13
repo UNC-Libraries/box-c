@@ -44,7 +44,8 @@ public class CDRMETSDepositHandlerTest {
 	@Test(expected = JedisDataException.class)
 	public void testDoDepositBagit() throws SwordError {
 		Deposit d = new Deposit();
-		d.setFile(new File("src/test/resources/simple.zip"));
+		File testFile = FileUtils.tempCopy(new File("src/test/resources/simple.zip"));
+		d.setFile(testFile);
 		d.setMd5("d2b88d292e2c47943231205ed36f6c94");
 		d.setFilename("simple.zip");
 		d.setMimeType("application/zip");

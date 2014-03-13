@@ -58,9 +58,8 @@ public class ValidateMODS extends AbstractBagJob implements Runnable {
 		super(uuid, bagDirectory, depositId);
 	}
 
-	@Override
 	public void run() {
-		Bag bag = loadBag();
+		Bag bag = getBag();
 		int count = 0;
 		int invalidXSD = 0;
 		int invalidVocab = 0;
