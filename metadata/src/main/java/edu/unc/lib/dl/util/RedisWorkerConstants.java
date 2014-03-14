@@ -7,9 +7,9 @@ public class RedisWorkerConstants {
 	public static final String JOB_STATUS_PREFIX = "job-status:";
 	
 	public static enum DepositField {
-		uuid, status, contactName, contactEmail, intSenderIdentifier, intSenderDescription,
-		extIdentifier, depositMethod, containerId, payLoadOctets, bagDate, startTime,
-		endTime, ingestedOctets, ingestedObjects, bagDirectory, lock;
+		uuid, status, contactName, depositorName, intSenderIdentifier, intSenderDescription,
+		fileName, depositMethod, containerId, payLoadOctets, createTime, startTime,
+		endTime, ingestedOctets, ingestedObjects, directory, lock, submitTime, depositorEmail, packagingType, metsProfile, metsType, permissionGroups, depositMd5, depositSlug;
 	}
 
 	public static enum JobField {

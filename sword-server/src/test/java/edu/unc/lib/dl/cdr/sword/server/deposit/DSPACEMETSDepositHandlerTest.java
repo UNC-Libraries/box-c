@@ -1,47 +1,50 @@
 package edu.unc.lib.dl.cdr.sword.server.deposit;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+
 import java.io.File;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.SwordError;
 
-import redis.clients.jedis.exceptions.JedisDataException;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class DSPACEMETSDepositHandlerTest {
-	@Autowired
-	private DSPACEMETSDepositHandler metsDepositHandler = null;
-	@Autowired
-	private SwordConfigurationImpl swordConfiguration;
-
-	public SwordConfigurationImpl getSwordConfiguration() {
-		return swordConfiguration;
-	}
-
-	public void setSwordConfiguration(SwordConfigurationImpl swordConfiguration) {
-		this.swordConfiguration = swordConfiguration;
-	}
-
-	public DSPACEMETSDepositHandler getMetsDepositHandler() {
-		return metsDepositHandler;
-	}
-
-	public void setMetsDepositHandler(DSPACEMETSDepositHandler metsDepositHandler) {
-		this.metsDepositHandler = metsDepositHandler;
+	@Mock
+	private DepositStatusFactory depositStatusFactory;
+	@Before
+	public void setup() {
+	    // Initialize mocks created above
+	    MockitoAnnotations.initMocks(this);
 	}
 	
-	@Test(expected = JedisDataException.class)
+	@InjectMocks
+	@Autowired
+	private DSPACEMETSDepositHandler metsDepositHandler;
+	@Autowired
+	private SwordConfigurationImpl swordConfiguration;
+	
+	@SuppressWarnings("unchecked")
+	@Test
 	public void testDoDepositMETSBiomed() throws SwordError {
 		Deposit d = new Deposit();
 		File test = FileUtils.tempCopy(new File("src/test/resources/biomedWithSupplements.zip"));
@@ -55,8 +58,10 @@ public class DSPACEMETSDepositHandlerTest {
 		d.setEntry(entry);
 		
 		PID dest = new PID("uuid:destination");
-		getMetsDepositHandler().doDeposit(dest, d, PackagingType.METS_DSPACE_SIP_1, getSwordConfiguration(),
+		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_DSPACE_SIP_1, swordConfiguration,
 				"test-depositor", "test-owner");
+
+		verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
 	}
 
 }
