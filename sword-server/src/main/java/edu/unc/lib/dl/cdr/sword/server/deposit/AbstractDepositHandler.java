@@ -22,20 +22,22 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.BagInfoTxtExtensions;
+import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
-import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.BagInfoTxt;
 
 public abstract class AbstractDepositHandler implements DepositHandler {
 	@Autowired
@@ -43,7 +45,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 	@Autowired
 	private DepositStatusFactory depositStatusFactory;
 	@Autowired
-	private File bagsDirectory;
+	private File depositsDirectory;
 	@Autowired
 	private Collection<String> overridePermissionGroups = null;
 	
@@ -64,16 +66,16 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 		this.overridePermissionGroups = overridePermissionGroups;
 	}
 
-	public File getBagsDirectory() {
-		return bagsDirectory;
+	public File getDepositsDirectory() {
+		return depositsDirectory;
 	}
 
-	public void setBagsDirectory(File bagsDirectory) {
-		this.bagsDirectory = bagsDirectory;
+	public void setDepositsDirectory(File depositsDirectory) {
+		this.depositsDirectory = depositsDirectory;
 	}
 	
-	public File getNewBagDirectory(String bagName) {
-		File f = new File(getBagsDirectory(), bagName);
+	public File makeNewDepositDirectory(String uuid) {
+		File f = new File(getDepositsDirectory(), uuid);
 		f.mkdir();
 		return f;
 	}
@@ -92,29 +94,37 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 		return receipt;
 	}
 	
-	protected void registerDeposit(String uuid, Bag bag) {		
-		// create deposit status
-		BagInfoTxt info = bag.getBagInfoTxt();
+	protected void registerDeposit(PID depositPid, PID destination, Deposit deposit,
+			PackagingType type, String depositor, String owner, Map<String, String> extras) {
 		Map<String, String> status = new HashMap<String, String>();
-		status.put(DepositField.bagDate.name(), info.getBaggingDate());
-		status.put(DepositField.bagDirectory.name(), bag.getFile().getAbsolutePath());
-		status.put(DepositField.contactEmail.name(), info.getContactEmail());
-		status.put(DepositField.contactName.name(), info.getContactName());
-		status.put(DepositField.containerId.name(), info.get(BagInfoTxtExtensions.CONTAINER_ID));
-		status.put(DepositField.depositMethod.name(), info.get(BagInfoTxtExtensions.DEPOSIT_METHOD));
-		status.put(DepositField.extIdentifier.name(), info.getExternalIdentifier());
-		status.put(DepositField.intSenderDescription.name(), info.getInternalSenderDescription());
-		status.put(DepositField.intSenderIdentifier.name(), info.getInternalSenderIdentifier());
-		status.put(DepositField.payLoadOctets.name(), info.getPayloadOxum());
-		status.put(DepositField.startTime.name(), String.valueOf(System.currentTimeMillis()));
+		status.putAll(extras);
+		
+		// generic deposit fields
+		status.put(DepositField.uuid.name(), depositPid.getUUID());
+		status.put(DepositField.submitTime.name(), String.valueOf(System.currentTimeMillis()));
+		status.put(DepositField.fileName.name(), deposit.getFilename());
+		String email = SwordConfigurationImpl.getUserEmailAddress();
+		status.put(DepositField.depositorName.name(), email != null ? depositor : owner);
+		status.put(DepositField.depositorEmail.name(), email != null ? email : owner+"@email.unc.edu");
+		status.put(DepositField.containerId.name(), destination.getPid());
+		status.put(DepositField.depositMethod.name(), DepositMethod.SWORD13.getLabel());
+		status.put(DepositField.packagingType.name(), type.getUri());
+		status.put(DepositField.depositMd5.name(), deposit.getMd5());
+		status.put(DepositField.depositSlug.name(), deposit.getSlug());
+		String permGroups = null;
+		if (this.getOverridePermissionGroups() != null) {
+			permGroups = StringUtils.join(this.getOverridePermissionGroups(), ',');
+		} else {
+			permGroups = StringUtils.join(GroupsThreadStore.getGroups(), ',');
+		}
+		status.put(DepositField.permissionGroups.name(), permGroups);
 		status.put(DepositField.status.name(), DepositState.registered.name());
-		status.put(DepositField.uuid.name(), uuid);
 		Set<String> nulls = new HashSet<String>();
 		for(String key : status.keySet()) {
 			if(status.get(key) == null) nulls.add(key);
 		}
 		for(String key : nulls) status.remove(key);
-		this.depositStatusFactory.save(uuid, status);
+		this.depositStatusFactory.save(depositPid.getUUID(), status);
 	}
 
 }

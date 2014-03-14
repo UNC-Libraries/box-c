@@ -98,7 +98,8 @@ public class FileUtils {
 	 */
 	public static File tempCopy(File file) {
 		try {
-			File result = File.createTempFile("tempCopy", "");
+			String extension = file.getName().substring(file.getName().lastIndexOf('.'));
+			File result = File.createTempFile("tempCopy", extension);
 			result.deleteOnExit();
 			copyFolder(file, result);
 			return result;

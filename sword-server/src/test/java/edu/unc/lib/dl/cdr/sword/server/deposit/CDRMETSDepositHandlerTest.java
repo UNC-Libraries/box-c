@@ -1,47 +1,52 @@
 package edu.unc.lib.dl.cdr.sword.server.deposit;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.reset;
+
 import java.io.File;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.SwordError;
 
-import redis.clients.jedis.exceptions.JedisDataException;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class CDRMETSDepositHandlerTest {
+	@Mock
+	private DepositStatusFactory depositStatusFactory;
+	@Before
+	public void setup() {
+	    // Initialize mocks created above
+	    MockitoAnnotations.initMocks(this);
+	}
+	
+	@InjectMocks
 	@Autowired
-	private CDRMETSDepositHandler metsDepositHandler = null;
+	private CDRMETSDepositHandler metsDepositHandler;
+	
 	@Autowired
 	private SwordConfigurationImpl swordConfiguration;
-
-	public SwordConfigurationImpl getSwordConfiguration() {
-		return swordConfiguration;
-	}
-
-	public void setSwordConfiguration(SwordConfigurationImpl swordConfiguration) {
-		this.swordConfiguration = swordConfiguration;
-	}
-
-	public CDRMETSDepositHandler getMetsDepositHandler() {
-		return metsDepositHandler;
-	}
-
-	public void setMetsDepositHandler(CDRMETSDepositHandler metsDepositHandler) {
-		this.metsDepositHandler = metsDepositHandler;
-	}
-
-	@Test(expected = JedisDataException.class)
+	
+	@SuppressWarnings("unchecked")
+	@Test
 	public void testDoDepositBagit() throws SwordError {
 		Deposit d = new Deposit();
 		File testFile = FileUtils.tempCopy(new File("src/test/resources/simple.zip"));
@@ -54,12 +59,17 @@ public class CDRMETSDepositHandlerTest {
 		Entry entry = Abdera.getInstance().getFactory().newEntry();
 		d.setEntry(entry);
 		
+		reset(depositStatusFactory);
+		
 		PID dest = new PID("uuid:destination");
-		getMetsDepositHandler().doDeposit(dest, d, PackagingType.METS_CDR, getSwordConfiguration(),
+		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_CDR, swordConfiguration,
 				"test-depositor", "test-owner");
+
+		verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
 	}
 	
-	@Test(expected = JedisDataException.class)
+	@SuppressWarnings("unchecked")
+	@Test
 	public void testDoDepositMETSXML() throws SwordError {
 		Deposit d = new Deposit();
 		File testMETS = FileUtils.tempCopy(new File("src/test/resources/METS.xml"));
@@ -71,10 +81,14 @@ public class CDRMETSDepositHandlerTest {
 		d.setPackaging(PackagingType.METS_CDR.getUri());
 		Entry entry = Abdera.getInstance().getFactory().newEntry();
 		d.setEntry(entry);
+
+		reset(depositStatusFactory);
 		
 		PID dest = new PID("uuid:destination");
-		getMetsDepositHandler().doDeposit(dest, d, PackagingType.METS_CDR, getSwordConfiguration(),
+		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_CDR, swordConfiguration,
 				"test-depositor", "test-owner");
+
+		verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
 	}
 
 }

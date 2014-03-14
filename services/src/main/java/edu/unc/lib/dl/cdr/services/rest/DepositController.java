@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import redis.clients.jedis.Jedis;
-import edu.unc.lib.dl.util.BagConstants;
+import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.RedisWorkerConstants;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -154,10 +154,10 @@ public class DepositController {
 		LOG.debug("getEvents( {} )", uuid);
 		String bagDirectory = this.jedis.hget(
 				RedisWorkerConstants.DEPOSIT_STATUS_PREFIX+uuid, 
-				RedisWorkerConstants.DepositField.bagDirectory.name());
+				RedisWorkerConstants.DepositField.directory.name());
 		File bagFile = new File(bagDirectory);
 		if(!bagFile.exists()) return null;
-		File eventsFile = new File(bagDirectory, BagConstants.EVENTS_FILE);
+		File eventsFile = new File(bagDirectory, DepositConstants.EVENTS_FILE);
 		if(!eventsFile.exists()) return null;
 		Element events = new Element("events", JDOMNamespaceUtil.PREMIS_V2_NS);
 		Document result = new Document(events);

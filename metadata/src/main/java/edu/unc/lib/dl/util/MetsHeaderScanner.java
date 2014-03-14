@@ -141,6 +141,7 @@ public class MetsHeaderScanner extends DefaultHandler {
 					if (!entry.isDirectory()) {
 						if (entry.getName().equals("METS.xml")
 								|| entry.getName().equals("mets.xml")) {
+							log.debug("Found METS entry in ZIP: {}", entry.getName());
 							toParse = zis;
 							break;
 						}
