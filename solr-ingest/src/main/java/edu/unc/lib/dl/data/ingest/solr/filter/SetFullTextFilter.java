@@ -29,12 +29,12 @@ public class SetFullTextFilter extends AbstractIndexDocumentFilter{
 		List<String> result;
 		// Check that this object has a full text DS before retrying to retrieve it
 		if (dip.getTriples() != null) {
-			result = dip.getTriples().get(ContentModelHelper.CDRProperty.fullText.getPredicate());
+			result = dip.getTriples().get(ContentModelHelper.CDRProperty.fullText.toString());
 		} else {
-			result = tsqs.fetchBySubjectAndPredicate(dip.getPid(), ContentModelHelper.CDRProperty.fullText.name());
+			result = tsqs.fetchBySubjectAndPredicate(dip.getPid(), ContentModelHelper.CDRProperty.fullText.toString());
 		}
 
-		if (result.size() == 0 || "false".equals(result.get(0)))
+		if (result == null || result.size() == 0 || "false".equals(result.get(0)))
 			return;
 
 		try {

@@ -8,9 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +42,10 @@ public class SetFullTextFilterTest extends Assert {
 	private IndexDocumentBean idb;
 	@Mock
 	private MIMETypedStream stream;
+	@Mock
+	Map<String, List<String>> triples;
+	@Mock
+	List<String> tripleValues;
 
 	private SetFullTextFilter filter;
 
@@ -64,13 +65,18 @@ public class SetFullTextFilterTest extends Assert {
 
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq(Datastream.MD_FULL_TEXT.name()), anyString()))
 				.thenReturn(stream);
+
+		when(tsqs.fetchBySubjectAndPredicate(any(PID.class), eq(ContentModelHelper.CDRProperty.fullText.toString())))
+				.thenReturn(tripleValues);
+
+		when(tripleValues.size()).thenReturn(0);
+		when(triples.get(eq(ContentModelHelper.CDRProperty.fullText.toString()))).thenReturn(tripleValues);
 	}
 
 	@Test
 	public void testNoTriplesNoFullText() {
 
-		when(tsqs.fetchBySubjectAndPredicate(any(PID.class), eq(ContentModelHelper.CDRProperty.fullText.name())))
-				.thenReturn(new ArrayList<String>());
+		when(tripleValues.size()).thenReturn(0);
 
 		filter.filter(dip);
 
@@ -81,8 +87,8 @@ public class SetFullTextFilterTest extends Assert {
 	@Test
 	public void testNoTriplesFullText() throws Exception {
 
-		when(tsqs.fetchBySubjectAndPredicate(any(PID.class), eq(ContentModelHelper.CDRProperty.fullText.name())))
-				.thenReturn(Arrays.asList("pid/MD_FULL_TEXT"));
+		when(tripleValues.size()).thenReturn(1);
+		when(tripleValues.get(eq(0))).thenReturn("pid/MD_FULL_TEXT");
 
 		filter.filter(dip);
 
@@ -94,8 +100,8 @@ public class SetFullTextFilterTest extends Assert {
 	@Test
 	public void testTriplesFullText() throws Exception {
 
-		Map<String, List<String>> triples = new HashMap<String, List<String>>();
-		triples.put(ContentModelHelper.CDRProperty.fullText.name(), Arrays.asList("pid/MD_FULL_TEXT"));
+		when(tripleValues.size()).thenReturn(1);
+		when(tripleValues.get(eq(0))).thenReturn("pid/MD_FULL_TEXT");
 
 		when(dip.getTriples()).thenReturn(triples);
 
@@ -107,10 +113,22 @@ public class SetFullTextFilterTest extends Assert {
 	}
 
 	@Test
+	public void testTriplesNoFullText() {
+
+		when(tsqs.fetchBySubjectAndPredicate(any(PID.class), eq(ContentModelHelper.CDRProperty.fullText.toString())))
+				.thenReturn(null);
+
+		filter.filter(dip);
+
+		verify(idb, never()).setFullText(anyString());
+
+	}
+
+	@Test
 	public void testTriplesFalseFullText() throws Exception {
 
-		Map<String, List<String>> triples = new HashMap<String, List<String>>();
-		triples.put(ContentModelHelper.CDRProperty.fullText.name(), Arrays.asList("false"));
+		when(tripleValues.size()).thenReturn(1);
+		when(tripleValues.get(eq(0))).thenReturn("false");
 
 		when(dip.getTriples()).thenReturn(triples);
 
@@ -118,6 +136,8 @@ public class SetFullTextFilterTest extends Assert {
 
 		verify(stream, never()).getStream();
 		verify(idb, never()).setFullText(anyString());
+
+		verify(tripleValues).get(eq(0));
 
 	}
 
