@@ -118,8 +118,8 @@
 		<module>sword-server</module>
 		<module>admin</module>
 		<module>access-common</module>
-    		<module>bag-ingest</module>
-  </modules>
+		<module>deposit</module>
+	</modules>
 
 	<reporting>
 		<plugins>
