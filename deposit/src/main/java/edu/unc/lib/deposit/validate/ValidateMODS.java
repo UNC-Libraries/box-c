@@ -53,8 +53,8 @@ public class ValidateMODS extends AbstractDepositJob implements Runnable {
 		super();
 	}
 
-	public ValidateMODS(String uuid, String bagDirectory, String depositId) {
-		super(uuid, bagDirectory, depositId);
+	public ValidateMODS(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
 	}
 
 	public void run() {

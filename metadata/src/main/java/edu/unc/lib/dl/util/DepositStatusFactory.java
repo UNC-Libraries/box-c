@@ -109,4 +109,11 @@ public class DepositStatusFactory {
 		jedis.hincrBy(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.ingestedObjects.name(), amount);
 		getJedisPool().returnResource(jedis);
 	}
+
+	public void fail(String depositUUID, Throwable e) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.status.name(), DepositState.failed.name());
+		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.errorMessage.name(), e.getMessage());
+		getJedisPool().returnResource(jedis);
+	}
 }

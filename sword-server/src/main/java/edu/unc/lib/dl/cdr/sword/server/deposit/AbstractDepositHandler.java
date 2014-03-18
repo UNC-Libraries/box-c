@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
@@ -40,6 +42,8 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 public abstract class AbstractDepositHandler implements DepositHandler {
+	private static final Logger log = LoggerFactory.getLogger(AbstractDepositHandler.class);
+	
 	@Autowired
 	protected DepositReportingUtil depositReportingUtil;
 	@Autowired
@@ -125,6 +129,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 		}
 		for(String key : nulls) status.remove(key);
 		this.depositStatusFactory.save(depositPid.getUUID(), status);
+		log.info(status.toString());
 	}
 
 }

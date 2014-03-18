@@ -14,8 +14,8 @@ public class IngestBag extends AbstractDepositJob {
 		super();
 	}
 
-	public IngestBag(String uuid, String bagDirectory, String depositId) {
-		super(uuid, bagDirectory, depositId);
+	public IngestBag(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
 	}
 
 	public String execute() {

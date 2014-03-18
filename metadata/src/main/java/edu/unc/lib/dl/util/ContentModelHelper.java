@@ -312,7 +312,7 @@ public class ContentModelHelper {
 
 	public static enum Datastream {
 		RELS_EXT("RELS-EXT", ControlGroup.INTERNAL, false, "Fedora Object-to-Object Relationship Metadata",
-				DatastreamCategory.ADMINISTRATIVE), DATA_FILE("DATA_FILE", ControlGroup.MANAGED, true, null,
+				DatastreamCategory.ADMINISTRATIVE), DATA_FILE("DATA_FILE", ControlGroup.MANAGED, true, "Original Data File",
 				DatastreamCategory.ORIGINAL), MD_TECHNICAL("MD_TECHNICAL", ControlGroup.MANAGED, false,
 				"PREMIS Technical Metadata", DatastreamCategory.ADMINISTRATIVE), IMAGE_JP2000("IMAGE_JP2000",
 				ControlGroup.MANAGED, false, "Derived JP2000 image", DatastreamCategory.DERIVATIVE), MD_DESCRIPTIVE(

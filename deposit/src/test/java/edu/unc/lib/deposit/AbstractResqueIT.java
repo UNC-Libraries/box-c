@@ -1,8 +1,5 @@
 package edu.unc.lib.deposit;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +10,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import redis.clients.jedis.Jedis;
 import edu.unc.lib.deposit.work.JedisFactory;
 import edu.unc.lib.deposit.work.SpringJobFactory;
-import edu.unc.lib.dl.util.FileUtils;
-import edu.unc.lib.dl.util.ZipFileUtil;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
@@ -28,19 +23,11 @@ public class AbstractResqueIT {
 		return springJobFactory;
 	}
 
-	public void setSpringJobFactory(SpringJobFactory springJobFactory) {
-		this.springJobFactory = springJobFactory;
-	}
-
 	@Autowired
 	net.greghaines.jesque.Config config = null;
 
 	public net.greghaines.jesque.Config getConfig() {
 		return config;
-	}
-
-	public void setConfig(net.greghaines.jesque.Config config) {
-		this.config = config;
 	}
 
 	public net.greghaines.jesque.client.Client getClient() {
@@ -54,22 +41,6 @@ public class AbstractResqueIT {
 	@Autowired
 	net.greghaines.jesque.client.Client client = null;
 	
-	public String makeWorkingDir(String testBagPath) {
-		File testBagResource = new File(testBagPath);
-		File workingDir = new File("/tmp/bagTest_"
-				+ testBagResource.getName().substring(0, testBagResource.getName().lastIndexOf(".")));
-		try {
-			if (workingDir.exists()) {
-				FileUtils.deleteDir(workingDir);
-			}
-			ZipFileUtil.unzipToDir(testBagResource, workingDir);
-		} catch (IOException e) {
-			throw new Error(
-					"Unable to unpack your deposit: " + testBagResource, e);
-		}
-		return workingDir.getAbsolutePath();
-	}
-
 	/**
 	 * Reset the Redis database using the supplied Config.
 	 * 

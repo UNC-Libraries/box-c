@@ -35,7 +35,7 @@
 		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
 	
-	<bean id="bagsDirectory" class="java.io.File">
+	<bean id="depositsDirectory" class="java.io.File">
 		<constructor-arg value="${batch.ingest.dir}" />
 	</bean>
 
@@ -65,24 +65,24 @@
 			<bean id="workerFactory" class="net.greghaines.jesque.worker.WorkerImplFactory">
 				<constructor-arg name="config" ref="jesqueConfig" />
 				<constructor-arg name="queues">
-					<util:set set-class="java.util.HashSet">
-						<value>Deposit</value>
-					</util:set>
+					<util:list>
+						<value>PREPARE</value>
+					</util:list>
 				</constructor-arg>
-				<constructor-arg>
-					<map></map>
-				</constructor-arg>
-				<property name="jobFactory" ref="jobFactory"/>
+				<constructor-arg ref="jobFactory"/>
 			</bean>
 		</constructor-arg>
 		<constructor-arg name="numWorkers" value="5" />
 	</bean>
 	
-	<bean id="jobFactory" class="edu.unc.lib.workers.SpringJobFactory"/>
+	<bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor">
+		<property name="workerEventEmitter" value="#{depositWorkerPool.workerEventEmitter}"/>
+	</bean>
+		
+	<bean id="jobFactory" class="edu.unc.lib.deposit.work.SpringJobFactory"/>
 	
-	<bean id="jobStatusFactory" class="edu.unc.lib.workers.JobStatusFactory" init-method="init" destroy-method="destroy">
+	<bean id="jobStatusFactory" class="edu.unc.lib.deposit.work.JobStatusFactory">
 		<property name="jedisPool" ref="jedisPool" />
-		<property name="workerEventEmitter" ref="depositWorkerPool"/>
 	</bean>
 
 	<bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
@@ -166,39 +166,42 @@
 		</constructor-arg>
 	</bean>
 	
-	<bean id="freemarkerConfiguration" class="freemarker.template.Configuration">
+<!-- 	<bean id="freemarkerConfiguration" class="freemarker.template.Configuration">
 		<property name="templateLoader">
 			<bean class="freemarker.cache.ClassTemplateLoader">
 				<constructor-arg index="0" type="java.lang.Class"
-					value="edu.unc.lib.bag.clean.MailNotifier"/>
+					value="edu.unc.lib.deposit.clean.MailNotifier"/>
 				<constructor-arg index="1" value=""/>
 			</bean>
 		</property>
-	</bean>
+	</bean> -->
 
-	<bean id="NormalizeBag" class="edu.unc.lib.bag.normalize.NormalizeBag"
+	<bean id="PackageIntegrityCheckJob" class="edu.unc.lib.deposit.validate.PackageIntegrityCheckJob"
 		scope="prototype">
-		<property name="jesqueClient" ref="jesqueClient" />
 	</bean>
 
-	<bean id="CDRMETS2N3BagJob" class="edu.unc.lib.bag.normalize.CDRMETS2N3BagJob"
+	<bean id="UnpackDepositJob" class="edu.unc.lib.deposit.normalize.UnpackDepositJob"
+		scope="prototype">
+	</bean>
+
+	<bean id="CDRMETS2N3BagJob" class="edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob"
 		scope="prototype">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />
 	</bean>
 
-	<bean id="DSPACEMETS2N3BagJob" class="edu.unc.lib.bag.normalize.DSPACEMETS2N3BagJob"
+	<bean id="DSPACEMETS2N3BagJob" class="edu.unc.lib.deposit.normalize.DSPACEMETS2N3BagJob"
 		scope="prototype">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />
 		<property name="epdcx2modsTransformer" ref="epdcx2modsTransformer" />
 	</bean>
 
-	<bean id="BioMedCentralExtrasJob" class="edu.unc.lib.bag.normalize.BioMedCentralExtrasJob"
+	<bean id="BioMedCentralExtrasJob" class="edu.unc.lib.deposit.normalize.BioMedCentralExtrasJob"
 		scope="prototype">
 	</bean>
 
-	<bean id="VirusScanJob" class="edu.unc.lib.bag.validate.VirusScanJob"
+	<bean id="VirusScanJob" class="edu.unc.lib.deposit.validate.VirusScanJob"
 		scope="prototype">
 		<property name="clamScan">
 			<bean class="com.philvarner.clamavj.ClamScan">
@@ -209,11 +212,11 @@
 		</property>
 	</bean>
 
-	<bean id="ValidateRdfGraph" class="edu.unc.lib.bag.validate.ValidateRdfGraph"
+	<bean id="ValidateRdfGraph" class="edu.unc.lib.deposit.validate.ValidateRdfGraph"
 		scope="prototype">
 	</bean>
 
-	<bean id="ValidateMODS" class="edu.unc.lib.bag.validate.ValidateMODS"
+	<bean id="ValidateMODS" class="edu.unc.lib.deposit.validate.ValidateMODS"
 		scope="prototype">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="modsSchema">
@@ -236,7 +239,7 @@
 		</property>
 	</bean>
 
-	<bean id="MakeFOXML" class="edu.unc.lib.bag.f3ingest.MakeFOXML"
+	<bean id="MakeFOXML" class="edu.unc.lib.deposit.fcrepo3.MakeFOXML"
 		scope="prototype">
 	</bean>
 </beans>

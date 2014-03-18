@@ -64,8 +64,8 @@ public class VirusScanJob extends AbstractDepositJob implements Runnable {
 		this.stages = stages;
 	}
 
-	public VirusScanJob(String uuid, String bagDirectory, String depositId) {
-		super(uuid, bagDirectory, depositId);
+	public VirusScanJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
 	}
 
 	public void run() {

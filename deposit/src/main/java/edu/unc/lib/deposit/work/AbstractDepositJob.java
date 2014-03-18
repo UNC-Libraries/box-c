@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.io.IOUtils;
 import org.jdom.Element;
 import org.jdom.output.Format;
@@ -43,7 +45,7 @@ public abstract class AbstractDepositJob {
 	public static final String DEPOSIT_QUEUE = "Deposit";
 	private static final int joinPollingSeconds = 5;
 	private File depositDirectory;
-	private PID depositPID;
+	private String depositUUID;
 
 	private String jobUUID;
 	public String getJobUUID() {
@@ -55,6 +57,9 @@ public abstract class AbstractDepositJob {
 	}
 
 	@Autowired
+	private File depositsDirectory;
+	
+	@Autowired
 	private JobStatusFactory jobStatusFactory;
 	
 	public JobStatusFactory getJobStatusFactory() {
@@ -65,6 +70,7 @@ public abstract class AbstractDepositJob {
 		this.jobStatusFactory = jobStatusFactory;
 	}
 
+	@Autowired
 	private DepositStatusFactory depositStatusFactory;
 	public DepositStatusFactory getDepositStatusFactory() {
 		return depositStatusFactory;
@@ -75,7 +81,7 @@ public abstract class AbstractDepositJob {
 	}
 	
 	public Map<String, String> getDepositStatus() {
-		Map<String, String> result = this.getDepositStatusFactory().get(depositPID.getUUID());
+		Map<String, String> result = this.getDepositStatusFactory().get(depositUUID);
 		return Collections.unmodifiableMap(result);
 	}
 	
@@ -86,23 +92,19 @@ public abstract class AbstractDepositJob {
 	private PremisEventLogger eventLog = new PremisEventLogger(this.getClass().getName());
 	private File eventsFile;
 
-	public AbstractDepositJob(String uuid, String depositDirectory, String depositId) {
-		log.debug("Deposit job created: {} {}", depositDirectory, depositId);
+	public AbstractDepositJob(String uuid, String depositUUID) {
+		log.debug("Deposit job created: job:{} deposit:{}", uuid, depositUUID);
 		this.jobUUID = uuid;
-		this.depositDirectory = new File(depositDirectory);
+		this.depositUUID = depositUUID;
+	}
+	
+	@PostConstruct
+	public void init() {
+		this.depositDirectory = new File(depositsDirectory, depositUUID);
 		this.eventsFile = new File(depositDirectory, DepositConstants.EVENTS_FILE);
-		this.depositPID = new PID(depositId);
 	}
 	
 	public AbstractDepositJob() {}
-	
-	public PID getDepositPID() {
-		return depositPID;
-	}
-
-	public void setDepositPID(PID depositPID) {
-		this.depositPID = depositPID;
-	}
 
 	public File getDepositDirectory() {
 		return depositDirectory;
@@ -123,6 +125,10 @@ public abstract class AbstractDepositJob {
 		appendDepositEvent(event);
 	}
 	
+	public PID getDepositPID() {
+		return new PID("uuid:"+this.depositUUID);
+	}
+
 	public void failJob(Type type, String message, String details) {
 		log.debug("failed deposit: {}", message);
 		Element event = getEventLog().logEvent(type, message, this.getDepositPID());

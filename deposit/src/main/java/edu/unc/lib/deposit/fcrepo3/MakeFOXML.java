@@ -6,7 +6,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
@@ -31,10 +33,10 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.DatastreamPID;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
+import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
 public class MakeFOXML extends AbstractDepositJob implements Runnable {
@@ -50,10 +52,11 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 		for(FedoraProperty p : ContentModelHelper.FedoraProperty.values()) {
 			copyPropertyURIs.add(p.getURI().toString());
 		}
+		copyPropertyURIs.remove(ContentModelHelper.CDRProperty.sourceData.getURI().toString());
 	}
 
-	public MakeFOXML(String uuid, String bagDirectory, String depositId) {
-		super(uuid, bagDirectory, depositId);
+	public MakeFOXML(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
 	}
 
 	public MakeFOXML() {}
@@ -85,11 +88,13 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 		Resource container = m.getProperty(ContentModelHelper.Model.CONTAINER.getURI().toString());
 		Property originalDeposit = m.getProperty(ContentModelHelper.Relationship.originalDeposit.getURI().toString());
 		Property sourceData = m.getProperty(ContentModelHelper.CDRProperty.sourceData.getURI().toString());
-		NodeIterator ni = m.listObjectsOfProperty(contains);
-		while(ni.hasNext()) { // all object content is contained, except deposit record
-			Resource o = ni.nextNode().asResource();
+		List<Resource> topDownObjects = getBreadthFirstTree(m);
+		for(Resource o : topDownObjects) { // all object content is contained, except deposit record
 			PID p = new PID(o.getURI());
+			log.debug("making FOXML for: {}", p); 
 			Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(p.getPid());
+			// TODO set object properties: label, state, etc..
+			
 			Model relsExt = ModelFactory.createDefaultModel();
 
 			// copy Fedora and CDR property statements
@@ -98,7 +103,8 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 				Statement s = properties.nextStatement();
 				if(copyPropertyURIs.contains(s.getPredicate().getURI())) {
 					relsExt.add(s);
-				} else if(/* TODO is a role property*/true ) {
+				} else if(/* TODO is a role property*/false ) {
+					// TODO copy role statements to relsExt		
 					relsExt.add(s);
 				}
 			}
@@ -114,8 +120,7 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 			
 			// deposit link
 			relsExt.add(o, originalDeposit, deposit);
-			
-			// TODO copy role statements to relsExt			
+				
 			// TODO translate supplemental this is already copied, check it
 			// TODO translate default web object, already copied, check it
 			
@@ -125,8 +130,12 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 				String href = o.getProperty(fileLocation).getString();
 				Property hasMimetype = m.createProperty(CDRProperty.hasSourceMimeType.getURI().toString());
 				Property hasChecksum = m.createProperty(CDRProperty.hasChecksum.getURI().toString());
-				String mimeType = o.getProperty(hasMimetype).toString();
-				String md5checksum = o.getProperty(hasChecksum).toString();
+				String mimeType = o.getProperty(hasMimetype).getString();
+				String md5checksum = null;
+				if(o.hasProperty(hasChecksum)) {
+					md5checksum = o.getProperty(hasChecksum).getString();
+				}
+				// TODO set label to original name
 				Element el = FOXMLJDOMUtil.makeLocatorDatastream(ContentModelHelper.Datastream.DATA_FILE.getName(),
 						"M", href, mimeType, "URL", ContentModelHelper.Datastream.DATA_FILE.getLabel(),
 						true, md5checksum);
@@ -195,6 +204,31 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 				if(fos != null)	IOUtils.closeQuietly(fos);
 			}
 			addClicks(1);
+		}
+	}
+
+	private List<Resource> getBreadthFirstTree(Model m) {
+		List<Resource> result = new ArrayList<Resource>();
+		Bag bag = m.getBag(this.getDepositPID().getURI());
+		addChildren(bag, result);
+		log.debug("tree list: {}", result);
+		return result;
+	}
+
+	private void addChildren(Bag bag, List<Resource> result) {
+		NodeIterator iterator = bag.iterator();
+		List<Bag> bags = new ArrayList<Bag>();
+		while(iterator.hasNext()) {
+			Resource n = (Resource)iterator.next();
+			result.add(n);
+			Bag b = n.getModel().getBag(n.getURI());
+			if(b != null) {
+				bags.add(b);
+			}
+		}
+		iterator.close();
+		for(Bag b : bags) {
+			addChildren(b, result);
 		}
 	}
 
