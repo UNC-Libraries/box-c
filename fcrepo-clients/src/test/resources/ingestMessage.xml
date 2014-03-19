@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:fedora-types="http://www.fedora.info/definitions/1/0/types/">
+  <id>urn:uuid:68b8d82e-c107-4082-ab7d-b799bd8f16ba</id>
+  <updated>2014-03-23T16:13:07.126Z</updated>
+  <author>
+    <name>admin</name>
+    <uri>http://localhost/fedora</uri>
+  </author>
+  <title type="text">ingest</title>
+  <category term="uuid:pid" scheme="fedora-types:pid" label="xsd:string"></category>
+  <category term="MD5" scheme="fedora-types:checksumType" label="xsd:string"></category>
+  <category term="null" scheme="fedora-types:checksum" label="xsd:string"></category>
+  <category term="Object ingested" scheme="fedora-types:logMessage" label="xsd:string"></category>
+  <summary type="text">uuid:pid</summary>
+  <content type="text">2014-03-23T16:13:07.126Z</content>
+  <category term="3.4.3-SNAPSHOT" scheme="info:fedora/fedora-system:def/view#version"></category>
+  <category term="info:fedora/fedora-system:ATOM-APIM-1.0" scheme="http://www.fedora.info/definitions/1/0/types/formatURI"></category>
+</entry>
