@@ -9,7 +9,7 @@ public class RedisWorkerConstants {
 	public static enum DepositField {
 		uuid, status, contactName, depositorName, intSenderIdentifier, intSenderDescription,
 		fileName, depositMethod, containerId, payLoadOctets, createTime, startTime,
-		endTime, ingestedOctets, ingestedObjects, directory, lock, submitTime, depositorEmail, packagingType, metsProfile, metsType, permissionGroups, depositMd5, depositSlug;
+		endTime, ingestedOctets, ingestedObjects, directory, lock, submitTime, depositorEmail, packagingType, metsProfile, metsType, permissionGroups, depositMd5, depositSlug, errorMessage;
 	}
 
 	public static enum JobField {
@@ -21,6 +21,6 @@ public class RedisWorkerConstants {
 	}
 
 	public static enum DepositState {
-		registered, queued, running, paused, finished, cancelled;
+		registered, queued, running, paused, finished, cancelled, failed;
 	}
 }

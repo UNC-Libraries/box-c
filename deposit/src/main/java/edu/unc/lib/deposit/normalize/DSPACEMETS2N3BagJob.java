@@ -49,8 +49,8 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnab
 		this.epdcx2modsTransformer = epdcx2modsTransformer;
 	}
 
-	public DSPACEMETS2N3BagJob(String uuid, String depositDirectory, String depositId) {
-		super(uuid, depositDirectory, depositId);
+	public DSPACEMETS2N3BagJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
 	}
 	
 	public void run() {

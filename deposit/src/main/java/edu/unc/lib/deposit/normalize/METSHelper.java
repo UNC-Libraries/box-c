@@ -72,9 +72,16 @@ public class METSHelper {
 	}
 
 	protected Iterator<Element> getDivs() {
+		// add deposit-level parent (represented as structMap or bag div)
+		Element topContainer = (Element) mets.getRootElement().getChild(
+				"structMap", METS_NS);
+		Element firstdiv = topContainer.getChild("div", METS_NS);
+		if (firstdiv != null
+				&& "Bag".equals(firstdiv.getAttributeValue("TYPE"))) {
+			topContainer = firstdiv;
+		}
 		@SuppressWarnings("unchecked")
-		Iterator<Element> divs = (Iterator<Element>) mets.getRootElement()
-				.getChild("structMap", METS_NS)
+		Iterator<Element> divs = (Iterator<Element>) topContainer
 				.getDescendants(new MetsDivFilter());
 		return divs;
 	}

@@ -47,8 +47,8 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		this.schematronValidator = schematronValidator;
 	}
 
-	public AbstractMETS2N3BagJob(String uuid, String bagDirectory, String depositId) {
-		super(uuid, bagDirectory, depositId);
+	public AbstractMETS2N3BagJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
 	}
 
 	public AbstractMETS2N3BagJob() {
@@ -56,7 +56,13 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 	}
 
 	protected File getMETSFile() {
-		return new File(getDepositDirectory(), "mets.xml");
+		File result = new File(getDepositDirectory(), "mets.xml");
+		if(!result.exists()) {
+			result = new File(getDepositDirectory(), "METS.xml");
+		} else if(!result.exists()) {
+			result = new File(getDepositDirectory(), "METS.XML");
+		}
+		return result;
 	}
 
 	public Schema getMetsSipSchema() {
@@ -133,6 +139,9 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 	}
 
 	protected void validateMETS() {
+		if(!getMETSFile().exists()) {
+			failJob(Type.VALIDATION, "Cannot find a METS file", "A METS was not found in the expected locations: mets.xml, METS.xml or METS.XML");
+		}
 		Validator metsValidator = getMetsSipSchema().newValidator();
 		METSParseException handler = new METSParseException(
 				"There was a problem parsing METS XML.");
@@ -153,7 +162,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 	protected void validateProfile(METSProfile profile) {
 		List<String> errors = schematronValidator.validateReportErrors(new StreamSource(getMETSFile()), profile.getName());
 		if(errors != null && errors.size() > 0) {
-			String msg = MessageFormat.format("METS is not valid with respect to profile: {}", profile.getName());
+			String msg = MessageFormat.format("METS is not valid with respect to profile: {0}", profile.getName());
 			StringBuilder details = new StringBuilder();
 			for(String error : errors) {
 				details.append(error).append('\n');

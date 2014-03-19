@@ -35,8 +35,8 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob implements Runnab
 	public BioMedCentralExtrasJob() {
 		super();
 	}
-	public BioMedCentralExtrasJob(String uuid, String bagDirectory, String depositId) {
-		super(uuid, bagDirectory, depositId);
+	public BioMedCentralExtrasJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
 	}
 	
 	public void run() {

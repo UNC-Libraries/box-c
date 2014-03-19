@@ -18,8 +18,8 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnable 
 		super();
 	}
 
-	public CDRMETS2N3BagJob(String uuid, String bagDirectory, String depositId) {
-		super(uuid, bagDirectory, depositId);
+	public CDRMETS2N3BagJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
 	}
 	
 	public void run() {

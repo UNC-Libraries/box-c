@@ -38,7 +38,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import redis.clients.jedis.Jedis;
@@ -135,17 +134,15 @@ public class DepositController {
 	
 	@RequestMapping(value = { "{uuid}/jobs", "/{uuid}/jobs" }, method = RequestMethod.GET)
 	public @ResponseBody
-	Map<String, ? extends Object> getJobs(@PathVariable String uuid) {
-		Map<String, Object> result = new HashMap<String, Object>();
-		LOG.debug("getJobs( {} )", uuid);		
+	Map<String, Map<String, String>> getJobs(@PathVariable String uuid) {
+		LOG.debug("getJobs( {} )", uuid);
 		Map<String, Map<String, String>> jobs = new HashMap<String, Map<String, String>>();
-		result.put("jobs", jobs);
 		Set<String> jobUUIDs = this.jedis.smembers(RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX+uuid);
 		for(String jobUUID : jobUUIDs) {
 			Map<String, String> info = this.jedis.hgetAll(RedisWorkerConstants.JOB_STATUS_PREFIX+jobUUID);
 			jobs.put(jobUUID, info);
 		}
-		return result;
+		return jobs;
 	}
 	
 	@RequestMapping(value = { "{uuid}/events", "/{uuid}/events" }, method = RequestMethod.GET)

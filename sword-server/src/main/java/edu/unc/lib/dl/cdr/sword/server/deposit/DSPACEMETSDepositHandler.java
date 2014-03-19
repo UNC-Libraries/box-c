@@ -34,7 +34,6 @@ import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.MetsHeaderScanner;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.dl.util.ZipFileUtil;
 
 public class DSPACEMETSDepositHandler extends AbstractDepositHandler {
 	private static Logger log = Logger.getLogger(DSPACEMETSDepositHandler.class);

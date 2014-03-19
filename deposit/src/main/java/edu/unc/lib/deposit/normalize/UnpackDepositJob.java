@@ -12,25 +12,51 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
  * @author count0
  *
  */
-public class UnpackDepositJob extends AbstractDepositJob {
+public class UnpackDepositJob extends AbstractDepositJob implements Runnable {
 
-	public UnpackDepositJob(String uuid, String depositDirectory,
-			String depositId) {
-		super(uuid, depositDirectory, depositId);
+	public UnpackDepositJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
 	}
 
-	public UnpackDepositJob() {
+	public void run() {
 		// unzip deposit file to directory
 		String filename = getDepositStatus().get(DepositField.fileName.name());
-		if (filename.endsWith(".zip") || filename.endsWith(".ZIP")) {
+		if (filename.toLowerCase().endsWith(".zip")) {
 			File depositFile = new File(getDepositDirectory(), "data/"
 					+ filename);
 			try {
 				ZipFileUtil.unzipToDir(depositFile, getDepositDirectory());
 			} catch (IOException e) {
-				throw new Error("Unable to unpack your deposit: " + getDepositPID().getPid());
+				throw new Error("Unable to unpack your deposit: " + getDepositPID().getUUID(), e);
 			}
 		}
+		
+		// TODO move this block to a job
+		// create or unzip bag directory
+//		String filename = deposit.getFilename();
+//		File metsFile = new File(dir, "mets.xml");
+//		if(filename.endsWith(".zip")) {
+//			try {
+//				ZipFileUtil.unzipToDir(deposit.getFile(), dir);
+//			} catch (IOException e) {
+//				throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400, "Unable to unpack your deposit: "+depositPID.getPid());
+//			}
+//		} else {
+//			try {
+//				FileUtils.renameOrMoveTo(deposit.getFile(), metsFile);
+//			} catch (IOException e) {
+//				throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to create your deposit bag: "+depositPID.getPid(), e);
+//			}
+//		}
+//		// normalize METS.xml to mets.xml
+//		File legacyFile = new File(dir, "METS.xml");
+//		if(legacyFile.exists() && !metsFile.exists()) {
+//			try {
+//				FileUtils.renameOrMoveTo(legacyFile, metsFile);
+//			} catch(IOException e) {
+//				throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to create your deposit bag: "+depositPID.getPid(), e);
+//			}
+//		}
 	}
 
 }
