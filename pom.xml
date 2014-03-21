@@ -405,6 +405,13 @@
 				<version>${cdr.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>edu.unc.lib.cdr</groupId>
+				<artifactId>metadata</artifactId>
+				<version>${cdr.version}</version>
+				<type>test-jar</type>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.11</version>

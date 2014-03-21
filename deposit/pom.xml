@@ -27,6 +27,12 @@
 			<artifactId>metadata</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>metadata</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>net.greghaines</groupId>
 			<artifactId>jesque</artifactId>
 		</dependency>
@@ -53,7 +59,7 @@
 			<artifactId>fcrepo-clients</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>jdom</groupId>
+			<groupId>org.jdom</groupId>
 			<artifactId>jdom</artifactId>
 			<version>1.1</version>
 		</dependency>
