@@ -13,6 +13,18 @@
 	</parent>
 	<build>
 		<finalName>cdr-metadata</finalName>
+		<plugins>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
 	<dependencies>
 		<!-- Note that most of the dependencies here have optional set to "true" which means that projects 
