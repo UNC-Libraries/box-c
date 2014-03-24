@@ -35,19 +35,74 @@ import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobStatus;
 
 /**
- * Constructed with deposit directory and deposit ID.
+ * Constructed with deposit directory and deposit ID. 
  * Facilitates event logging with standard success/failure states.
- * @author count0
  *
+ * @author count0
+ * 
  */
 public abstract class AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(AbstractDepositJob.class);
 	public static final String DEPOSIT_QUEUE = "Deposit";
 	private static final int joinPollingSeconds = 5;
-	private File depositDirectory;
+
+	@Autowired
+	private JobStatusFactory jobStatusFactory;
+
+	@Autowired
+	private DepositStatusFactory depositStatusFactory;
+
+	// UUID for this deposit and its deposit record
 	private String depositUUID;
 
+	// UUID for this ingest job
 	private String jobUUID;
+
+	// Root directory where all deposits are stored
+	@Autowired
+	private File depositsDirectory;
+
+	// Directory for this deposit
+	private File depositDirectory;
+
+	// Directory for local data files
+	private File dataDirectory;
+
+	private final PremisEventLogger eventLog = new PremisEventLogger(this.getClass().getName());
+	// PREMIS events file for the deposit
+	private File eventsFile;
+	// Directory containing PREMIS event files for individual objects in this deposit
+	private File eventsDirectory;
+
+	public AbstractDepositJob() {
+	}
+
+	public AbstractDepositJob(String uuid, String depositUUID) {
+		log.debug("Deposit job created: job:{} deposit:{}", uuid, depositUUID);
+		this.jobUUID = uuid;
+		this.depositUUID = depositUUID;
+	}
+
+	@PostConstruct
+	public void init() {
+		this.depositDirectory = new File(depositsDirectory, depositUUID);
+		this.dataDirectory = new File(depositDirectory, DepositConstants.DATA_DIR);
+		this.eventsDirectory = new File(depositDirectory, DepositConstants.EVENTS_DIR);
+		this.eventsFile = new File(depositDirectory, DepositConstants.EVENTS_FILE);
+	}
+
+	public String getDepositUUID() {
+		return depositUUID;
+	}
+
+	public void setDepositUUID(String depositUUID) {
+		this.depositUUID = depositUUID;
+	}
+
+	public PID getDepositPID() {
+		return new PID("uuid:" + this.depositUUID);
+	}
+
 	public String getJobUUID() {
 		return jobUUID;
 	}
@@ -56,13 +111,7 @@ public abstract class AbstractDepositJob {
 		this.jobUUID = uuid;
 	}
 
-	@Autowired
-	private File depositsDirectory;
-	
-	@Autowired
-	private JobStatusFactory jobStatusFactory;
-	
-	public JobStatusFactory getJobStatusFactory() {
+	protected JobStatusFactory getJobStatusFactory() {
 		return jobStatusFactory;
 	}
 
@@ -70,41 +119,22 @@ public abstract class AbstractDepositJob {
 		this.jobStatusFactory = jobStatusFactory;
 	}
 
-	@Autowired
-	private DepositStatusFactory depositStatusFactory;
-	public DepositStatusFactory getDepositStatusFactory() {
+	protected DepositStatusFactory getDepositStatusFactory() {
 		return depositStatusFactory;
 	}
 
 	public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
 		this.depositStatusFactory = depositStatusFactory;
 	}
-	
+
 	public Map<String, String> getDepositStatus() {
 		Map<String, String> result = this.getDepositStatusFactory().get(depositUUID);
 		return Collections.unmodifiableMap(result);
 	}
-	
+
 	public File getDescriptionDir() {
 		return new File(getDepositDirectory(), DESCRIPTION_DIR);
 	}
-
-	private PremisEventLogger eventLog = new PremisEventLogger(this.getClass().getName());
-	private File eventsFile;
-
-	public AbstractDepositJob(String uuid, String depositUUID) {
-		log.debug("Deposit job created: job:{} deposit:{}", uuid, depositUUID);
-		this.jobUUID = uuid;
-		this.depositUUID = depositUUID;
-	}
-	
-	@PostConstruct
-	public void init() {
-		this.depositDirectory = new File(depositsDirectory, depositUUID);
-		this.eventsFile = new File(depositDirectory, DepositConstants.EVENTS_FILE);
-	}
-	
-	public AbstractDepositJob() {}
 
 	public File getDepositDirectory() {
 		return depositDirectory;
@@ -114,19 +144,27 @@ public abstract class AbstractDepositJob {
 		this.depositDirectory = depositDirectory;
 	}
 
+	public File getDataDirectory() {
+		return dataDirectory;
+	}
+
 	public PremisEventLogger getEventLog() {
 		return eventLog;
 	}
-	
+
+	public File getEventsFile() {
+		return eventsFile;
+	}
+
+	public File getEventsDirectory() {
+		return eventsDirectory;
+	}
+
 	public void recordDepositEvent(Type type, String messageformat, Object... args) {
 		String message = MessageFormat.format(messageformat, args);
 		log.debug("event recorded: {}", message);
 		Element event = getEventLog().logEvent(type, message, this.getDepositPID());
 		appendDepositEvent(event);
-	}
-	
-	public PID getDepositPID() {
-		return new PID("uuid:"+this.depositUUID);
 	}
 
 	public void failJob(Type type, String message, String details) {
@@ -136,7 +174,7 @@ public abstract class AbstractDepositJob {
 		appendDepositEvent(event);
 		throw new JobFailedException(message);
 	}
-	
+
 	public void failJob(Throwable throwable, Type type, String messageformat, Object... args) {
 		String message = MessageFormat.format(messageformat, args);
 		log.debug("failed deposit: {}", message);
@@ -145,31 +183,31 @@ public abstract class AbstractDepositJob {
 		appendDepositEvent(event);
 		throw new JobFailedException(message, throwable);
 	}
-	
+
 	protected void appendDepositEvent(Element event) {
-			File file = new File(depositDirectory, DepositConstants.EVENTS_FILE);
-	        FileLock lock = null;
-	        FileOutputStream out = null;
-	        try {
-	        	file.createNewFile();
-	        	@SuppressWarnings("resource")
-				FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
-	        	// Get an exclusive lock on the whole file
-	            lock = channel.lock();
-			    out = new FileOutputStream(file, true);
-			    out.write("\n".getBytes());
-			    new XMLOutputter(Format.getPrettyFormat()).output(event, out);
-			    out.close();
-	        } catch(IOException e) {
-	        	throw new Error(e);
-	        } finally {
-	        	IOUtils.closeQuietly(out);
-	            try {
-					lock.release();
-				} catch (IOException e) {
-					throw new Error(e);
-				}
-	        }
+		File file = new File(depositDirectory, DepositConstants.EVENTS_FILE);
+		FileLock lock = null;
+		FileOutputStream out = null;
+		try {
+			file.createNewFile();
+			@SuppressWarnings("resource")
+			FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
+			// Get an exclusive lock on the whole file
+			lock = channel.lock();
+			out = new FileOutputStream(file, true);
+			out.write("\n".getBytes());
+			new XMLOutputter(Format.getPrettyFormat()).output(event, out);
+			out.close();
+		} catch (IOException e) {
+			throw new Error(e);
+		} finally {
+			IOUtils.closeQuietly(out);
+			try {
+				lock.release();
+			} catch (IOException e) {
+				throw new Error(e);
+			}
+		}
 	}
 
 	protected void saveModel(Model model, String filepath) {
@@ -186,11 +224,11 @@ public abstract class AbstractDepositJob {
 			} catch (IOException ignored) {}
 		}
 	}
-	
+
 	protected void setTotalClicks(int totalClicks) {
 		getJobStatusFactory().setTotalCompletion(this, totalClicks);
 	}
-	
+
 	protected void addClicks(int clicks) {
 		getJobStatusFactory().incrCompletion(this, clicks);
 	}
