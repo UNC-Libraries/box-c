@@ -163,11 +163,11 @@
 			<artifactId>cglib</artifactId>
 			<version>2.2.2</version>
 		</dependency>
-		<dependency>
+		<!-- XXX dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>clamavj</artifactId>
 			<version>0.3</version>
-		</dependency>
+		</dependency-->
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-core</artifactId>

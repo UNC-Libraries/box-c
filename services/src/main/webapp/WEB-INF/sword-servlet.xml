@@ -65,7 +65,7 @@
 		<property name="preIngestFilters">
 			<list>
 				<bean class="edu.unc.lib.dl.ingest.aip.LogIdentifierAssignmentFilter" />
-				<bean class="edu.unc.lib.dl.ingest.aip.VirusScanFilter">
+				<!--XXX bean class="edu.unc.lib.dl.ingest.aip.VirusScanFilter">
 					<property name="clamScan">
 						<bean class="com.philvarner.clamavj.ClamScan">
 							<property name="host" value="${clamd.host}"/>
@@ -73,7 +73,7 @@
 							<property name="timeout" value="${clamd.timeout}"/>
 						</bean>
 					</property>
-				</bean>
+				</bean-->
 				<bean class="edu.unc.lib.dl.ingest.aip.CheckAIPRequirementsFilter" />
 				<bean class="edu.unc.lib.dl.ingest.aip.CheckContainerFilter">
 					<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
