@@ -57,20 +57,28 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 	}
 
 	protected void index(SolrUpdateRequest updateRequest) {
-		int totalObjects = countDescendants(updateRequest.getPid()) + 1;
-		updateRequest.setChildrenPending(totalObjects);
-
-		// Start indexing
-		RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, addDocumentMode);
-
+		// Translate the index all flag into the collections pid if neccessary
 		PID startingPid;
 		if (TARGET_ALL.equals(updateRequest.getTargetID()))
 			startingPid = collectionsPid;
 		else
 			startingPid = updateRequest.getPid();
+
+		// Get the number of objects in the tree being indexed
+		int totalObjects = countDescendants(startingPid) + 1;
+		updateRequest.setChildrenPending(totalObjects);
+
+		// Start indexing
+		RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, addDocumentMode);
 		treeIndexer.index(startingPid, null);
 	}
 
+	/**
+	 * Count the number of children objects belonging to the pid provided
+	 *
+	 * @param pid
+	 * @return
+	 */
 	protected int countDescendants(PID pid) {
 		List<List<String>> results = tsqs.queryResourceIndex(String.format(descendantsQuery,
 				this.tsqs.getResourceIndexModelUri(), pid.getURI()));
