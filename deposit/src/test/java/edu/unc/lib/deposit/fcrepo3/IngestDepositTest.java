@@ -18,6 +18,7 @@ package edu.unc.lib.deposit.fcrepo3;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -49,6 +50,7 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobStatusFactory;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.JobForwardingJMSListener;
 import edu.unc.lib.dl.fedora.ListenerJob;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -236,6 +238,44 @@ public class IngestDepositTest {
 		assertTrue("Job must have been unregistered on failure", jmsListener.registeredJob);
 
 		assertTrue("Exception must have been thrown by job", exceptionCaught[0]);
+
+	}
+
+	@Test
+	public void testRunIngestTimeout() throws Exception {
+
+		when(client.ingestRaw(any(byte[].class), any(Format.class), anyString())).thenReturn(new PID("pid"))
+				.thenReturn(new PID("pid")).thenThrow(new FedoraTimeoutException(new Exception()))
+				.thenReturn(new PID("pid"));
+
+		Thread.UncaughtExceptionHandler jobFailedHandler = new Thread.UncaughtExceptionHandler() {
+			@Override
+			public void uncaughtException(Thread th, Throwable ex) {
+				fail("Uncaught exception, job should have completed.");
+			}
+		};
+
+		Thread jobThread = new Thread(job);
+		Thread finishThread = new Thread(jmsListener);
+
+		jobThread.setUncaughtExceptionHandler(jobFailedHandler);
+
+		jobThread.start();
+		finishThread.start();
+
+		// Start processing with a timelimit to prevent infinite wait in case of failure
+		jobThread.join(5000L);
+		finishThread.join(5000L);
+
+		// All ingests, including the timed out object, should have registered as a click
+		verify(jobStatusFactory, times(job.getIngestObjectCount() + 1)).incrCompletion(eq(job), eq(1));
+
+		// All objects should have been ingested despite the timeout
+		verify(client, times(job.getIngestObjectCount() + 1))
+				.ingestRaw(any(byte[].class), any(Format.class), anyString());
+
+		assertTrue("Job must have been registered", jmsListener.registeredJob);
+		assertTrue("Job must have been unregistered", jmsListener.registeredJob);
 
 	}
 

@@ -29,6 +29,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.GraphUtils;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.JobForwardingJMSListener;
 import edu.unc.lib.dl.fedora.ListenerJob;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -258,6 +259,9 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 			log.debug("Ingesting foxml for {}", ingestPid);
 			client.ingestRaw(outputStream.toByteArray(), Format.FOXML_1_1, getDepositUUID());
 
+		} catch (FedoraTimeoutException e) {
+			log.info("Fedora ingest timed out, awaiting ingest confirmation and proceeding with the remainder of the deposit: "
+					+ e.getLocalizedMessage());
 		} catch (Exception e) {
 			throw new DepositException("Failed to ingest object " + pid.getPid() + " into Fedora.", e);
 		}
