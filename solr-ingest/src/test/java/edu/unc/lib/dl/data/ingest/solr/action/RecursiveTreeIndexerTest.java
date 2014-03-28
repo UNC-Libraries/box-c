@@ -25,6 +25,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
+import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
@@ -36,6 +37,8 @@ public class RecursiveTreeIndexerTest extends Assert {
 
 	private RecursiveTreeIndexer indexer;
 
+	@Mock
+	private SolrUpdateService updateService;
 	@Mock
 	private SolrUpdateDriver driver;
 	@Mock
@@ -54,6 +57,7 @@ public class RecursiveTreeIndexerTest extends Assert {
 
 		when(action.getSolrUpdateDriver()).thenReturn(driver);
 		when(action.getPipeline()).thenReturn(pipeline);
+		when(action.getSolrUpdateService()).thenReturn(updateService);
 
 		indexer = new RecursiveTreeIndexer(request, action);
 	}

@@ -37,6 +37,15 @@ public class RecursiveTreeIndexer {
 	public void index(PID pid, DocumentIndexingPackage parent) {
 		DocumentIndexingPackage dip = null;
 		try {
+			// Force wait before each document being indexed
+			if (this.action.getSolrUpdateService().getUpdateDelay() > 0)
+				Thread.sleep(this.action.getSolrUpdateService().getUpdateDelay());
+			// Wait if the service is paused
+			while (this.action.getSolrUpdateService().isPaused()) {
+				Thread.sleep(1000L);
+			}
+
+			// Get the DIP for the next object being indexed
 			dip = this.action.getDocumentIndexingPackage(pid, parent);
 			if (dip == null)
 				throw new IndexingException("No document indexing package was retrieved for " + pid.getPid());
@@ -53,6 +62,9 @@ public class RecursiveTreeIndexer {
 			// Update the number of objects processed in this action
 			this.updateRequest.incrementChildrenProcessed();
 
+		} catch (InterruptedException e) {
+			log.warn("Indexing of {} was interrupted", updateRequest.getPid().getPid());
+			return;
 		} catch (IndexingException e) {
 			log.warn("Failed to index {} and its children", pid.getPid(), e);
 			return;

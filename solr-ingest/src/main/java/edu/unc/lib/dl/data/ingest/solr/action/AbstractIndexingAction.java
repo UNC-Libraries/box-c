@@ -18,6 +18,8 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
@@ -35,13 +37,19 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 public abstract class AbstractIndexingAction implements IndexingAction {
 	protected DocumentIndexingPipeline pipeline;
+	@Autowired
 	protected SolrUpdateService solrUpdateService;
+	@Autowired
 	protected DocumentIndexingPackageFactory dipFactory;
+	@Autowired
 	protected SolrUpdateDriver solrUpdateDriver;
+	@Autowired
 	protected SolrSearchService solrSearchService;
 	protected PID collectionsPid;
+	@Autowired
 	protected SearchSettings searchSettings;
 	protected AccessGroupSet accessGroups;
+	@Autowired
 	protected SolrSettings solrSettings;
 	protected boolean addDocumentMode = true;
 
@@ -75,6 +83,10 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 
 	public DocumentIndexingPipeline getPipeline() {
 		return pipeline;
+	}
+
+	public SolrUpdateService getSolrUpdateService() {
+		return solrUpdateService;
 	}
 
 	public void setSolrUpdateService(SolrUpdateService solrUpdateService) {

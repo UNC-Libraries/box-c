@@ -16,9 +16,9 @@
 package edu.unc.lib.dl.data.ingest.solr;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -36,7 +36,7 @@ import edu.unc.lib.dl.util.IndexingActionType;
 /**
  * Service which handles ingest and update of a solr index via threaded processors which read from a queue of ordered
  * update requests.
- * 
+ *
  * @author bbpennel
  */
 public class SolrUpdateService {
@@ -52,6 +52,8 @@ public class SolrUpdateService {
 	protected List<SolrUpdateRequest> failedMessages = null;
 	protected Set<String> lockedPids = null;
 	protected int maxThreads = 3;
+	// Delay between update jobs
+	protected long updateDelay = 20L;
 	protected long recoverableDelay = 0;
 	protected boolean autoCommit = true;
 	protected int finishedQueueSize = 1000;
@@ -187,7 +189,15 @@ public class SolrUpdateService {
 	public int activeThreadsCount() {
 		return executor.getActiveCount();
 	}
-	
+
+	public long getUpdateDelay() {
+		return updateDelay;
+	}
+
+	public void setUpdateDelay(long updateDelay) {
+		this.updateDelay = updateDelay;
+	}
+
 	public boolean isPaused() {
 		return this.isPaused;
 	}
@@ -204,10 +214,10 @@ public class SolrUpdateService {
 				.append("\nLocked Pids: ").append(lockedPids.size()).append("(" + lockedPids + ")");
 		return status.toString();
 	}
-	
+
 	public class LimitedQueue<E> extends LinkedList<E> {
 		private static final long serialVersionUID = 1L;
-		private int limit;
+		private final int limit;
 
 	    public LimitedQueue(int limit) {
 	        this.limit = limit;
