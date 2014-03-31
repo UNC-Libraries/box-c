@@ -1,0 +1,22 @@
+<premis version="2.0" xmlns="info:lc/xmlns/premis-v2">
+	<object xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="representation">
+		<objectIdentifier>
+			<objectIdentifierType>PID</objectIdentifierType>
+			<objectIdentifierValue>uuid:pid</objectIdentifierValue>
+		</objectIdentifier>
+	</object>
+	<event>
+		<eventIdentifier>
+			<eventIdentifierType>URN</eventIdentifierType>
+			<eventIdentifierValue>urn:uuid:pid</eventIdentifierValue>
+		</eventIdentifier>
+		<eventType>http://id.loc.gov/vocabulary/preservationEvents/ingestion</eventType>
+		<eventDateTime>2014-08-06T13:39:16</eventDateTime>
+		<eventDetail>ingested</eventDetail>
+		<linkingAgentIdentifier>
+			<linkingAgentIdentifierType>PID</linkingAgentIdentifierType>
+			<linkingAgentIdentifierValue>admin</linkingAgentIdentifierValue>
+			<linkingAgentRole>Initiator</linkingAgentRole>
+		</linkingAgentIdentifier>
+	</event>
+</premis>
