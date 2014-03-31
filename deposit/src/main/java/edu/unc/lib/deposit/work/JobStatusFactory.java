@@ -129,4 +129,24 @@ public class JobStatusFactory {
 		return result;
 	}
 
+	/**
+	 * Delete all job status related to the deposit.
+	 * @param depositUUID
+	 */
+	public void deleteAll(String depositUUID) {
+		Jedis jedis = getJedisPool().getResource();
+		try {
+			Set<String> jobUUIDs = jedis
+					.smembers(RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX
+							+ depositUUID);
+			for (String jobUUID : jobUUIDs) {
+				jedis.del(RedisWorkerConstants.JOB_STATUS_PREFIX+jobUUID);
+			}
+			jedis.del(RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX
+					+ depositUUID);
+		} finally {
+			getJedisPool().returnResource(jedis);
+		}
+	}
+
 }

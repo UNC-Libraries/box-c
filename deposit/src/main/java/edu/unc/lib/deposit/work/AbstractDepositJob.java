@@ -275,4 +275,8 @@ public abstract class AbstractDepositJob {
 		log.debug("job {} joining after completion of {}", getJobUUID(), jobUUIDs);
 		return allSuccess;
 	}
+	
+	public File getSubdir(String subpath) {
+		return new File(getDepositDirectory(), subpath);
+	}
 }

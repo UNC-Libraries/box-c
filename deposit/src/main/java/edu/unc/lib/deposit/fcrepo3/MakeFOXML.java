@@ -1,12 +1,16 @@
 package edu.unc.lib.deposit.fcrepo3;
 
+import static edu.unc.lib.deposit.work.DepositGraphUtils.cdrprop;
+import static edu.unc.lib.deposit.work.DepositGraphUtils.cmodel;
+import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
+import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,13 +35,17 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.fedora.DatastreamPID;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
 
 public class MakeFOXML extends AbstractDepositJob implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(MakeFOXML.class);
@@ -63,85 +71,81 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 
 	@Override
 	public void run() {
+		getSubdir(DepositConstants.FOXML_DIR).mkdir();
+		
 		Model m = ModelFactory.createDefaultModel();
 		File modelFile = new File(getDepositDirectory(), DepositConstants.MODEL_FILE);
 		m.read(modelFile.toURI().toString());
 		
 		// establish task size
-		Property contains = m.getProperty(ContentModelHelper.Relationship.contains.getURI().toString());
-		NodeIterator ncounter = m.listObjectsOfProperty(contains);
-		int count = 0;
-		while(ncounter.hasNext()) {
-			ncounter.next(); count++;
-		}
-		setTotalClicks(count);
+		List<Resource> topDownObjects = DepositGraphUtils.getObjectsBreadthFirst(m, getDepositPID());
+		setTotalClicks(topDownObjects.size());
 		
-		// gov.loc.repository.bagit.Bag bagit = loadBag();
 		Resource deposit = m.getResource(this.getDepositPID().getURI());
 
-		File foxmlDir = new File(getDepositDirectory(), DepositConstants.FOXML_DIR);
-		foxmlDir.mkdir();
-		File eventsDir = new File(getDepositDirectory(), DepositConstants.EVENTS_DIR);
-		File modsDir = new File(getDepositDirectory(), DepositConstants.DESCRIPTION_DIR);
-		File dcDir = new File(getDepositDirectory(), DepositConstants.DUBLINCORE_DIR);
-		Property hasModel = m.getProperty(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
-		Resource container = m.getProperty(ContentModelHelper.Model.CONTAINER.getURI().toString());
-		Property originalDeposit = m.getProperty(ContentModelHelper.Relationship.originalDeposit.getURI().toString());
-		Property sourceData = m.getProperty(ContentModelHelper.CDRProperty.sourceData.getURI().toString());
-		List<Resource> topDownObjects = getBreadthFirstTree(m);
-		for(Resource o : topDownObjects) { // all object content is contained, except deposit record
+		for(Resource o : topDownObjects) {
 			PID p = new PID(o.getURI());
-			log.debug("making FOXML for: {}", p); 
+			log.debug("making FOXML for: {}", p);
 			Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(p.getPid());
-			// TODO set object properties: label, state, etc..
+			FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.state, "A");
+			Statement lstmt = o.getProperty(dprop(m, DepositRelationship.label));
+			if(lstmt != null) {
+				FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.label, lstmt.getString());
+			}
 			
 			Model relsExt = ModelFactory.createDefaultModel();
-
 			// copy Fedora and CDR property statements
 			StmtIterator properties = o.listProperties();
 			while(properties.hasNext()) {
 				Statement s = properties.nextStatement();
 				if(copyPropertyURIs.contains(s.getPredicate().getURI())) {
 					relsExt.add(s);
+					// supplemental - these rels already copied
 				} else if(/* TODO is a role property*/false ) {
-					// TODO copy role statements to relsExt		
+					// TODO copy role statements to relsExt
+					// TODO verify ACL translates from METS to RELS
 					relsExt.add(s);
 				}
 			}
 			
 			// add contains statements
-			if(o.hasProperty(hasModel, container)) {
+			if(o.hasProperty(fprop(m, FedoraProperty.hasModel), cmodel(m, ContentModelHelper.Model.CONTAINER))) {
 				Bag bag = m.getBag(o);
 				NodeIterator contents = bag.iterator();
 				while(contents.hasNext()) {
-					relsExt.add(o, contains, contents.next());
+					relsExt.add(o, cdrprop(m, Relationship.contains), contents.next());
 				}
 			}
 			
 			// deposit link
-			relsExt.add(o, originalDeposit, deposit);
+			relsExt.add(o, cdrprop(m, Relationship.originalDeposit), deposit);
 				
-			// TODO translate supplemental this is already copied, check it
 			// TODO translate default web object, already copied, check it
 			
 			// add DATA_FILE
-			Property fileLocation = m.createProperty(DepositConstants.FILE_LOCATOR_URI);
+			Property fileLocation = dprop(m, DepositRelationship.stagingLocation);
 			if(o.hasProperty(fileLocation)) {
 				String href = o.getProperty(fileLocation).getString();
-				Property hasMimetype = m.createProperty(CDRProperty.hasSourceMimeType.getURI().toString());
-				Property hasChecksum = m.createProperty(CDRProperty.hasChecksum.getURI().toString());
-				String mimeType = o.getProperty(hasMimetype).getString();
+				Property mimetype = dprop(m, DepositRelationship.mimetype);
+				Property md5sum = dprop(m, DepositRelationship.md5sum);
+				String mimeType = o.getProperty(mimetype).getString();
 				String md5checksum = null;
-				if(o.hasProperty(hasChecksum)) {
-					md5checksum = o.getProperty(hasChecksum).getString();
+				if(o.hasProperty(md5sum)) {
+					md5checksum = o.getProperty(md5sum).getString();
 				}
-				// TODO set label to original name
+				String dsLabel = ContentModelHelper.Datastream.DATA_FILE.getLabel();
 				Element el = FOXMLJDOMUtil.makeLocatorDatastream(ContentModelHelper.Datastream.DATA_FILE.getName(),
-						"M", href, mimeType, "URL", ContentModelHelper.Datastream.DATA_FILE.getLabel(),
+						"M", href, mimeType, "URL", dsLabel,
 						true, md5checksum);
 				foxml.getRootElement().addContent(el);
+				// Add ALT_IDS - original location URI
+				Statement origLoc = o.getProperty(dprop(m, DepositRelationship.originalLocation));
+				if(origLoc != null) {
+					el.setAttribute("ALT_IDS", origLoc.getResource().getURI());
+				}
 				// add sourceData property
-				relsExt.add(o, sourceData, new DatastreamPID(p.getPid()+"/DATA_FILE").getDatastreamURI());
+				relsExt.add(o, cdrprop(m, CDRProperty.sourceData), new DatastreamPID(p.getPid()+"/DATA_FILE").getDatastreamURI());
+				// TODO add create time RDF dateTime property
 			}
 			
 			// add RELS-EXT
@@ -158,10 +162,8 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 				log.error("trouble making RELS-EXT", e);
 			}
 			
-			// TODO feature: add tag file checksums
-			
 			// add MD_EVENTS
-			File events = new File(eventsDir, p.getUUID()+".xml");
+			File events = new File(getSubdir(DepositConstants.EVENTS_DIR), p.getUUID()+".xml");
 			if(events.exists()) {
 				Element el = FOXMLJDOMUtil.makeLocatorDatastream(ContentModelHelper.Datastream.MD_EVENTS.getName(),
 						"M",
@@ -171,7 +173,7 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 			}
 			
 			// add MD_DESCRIPTIVE
-			File mods = new File(modsDir, p.getUUID()+".xml");
+			File mods = new File(getSubdir(DepositConstants.DESCRIPTION_DIR), p.getUUID()+".xml");
 			if(mods.exists()) {
 				Element el = FOXMLJDOMUtil.makeLocatorDatastream(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(),
 						"M",
@@ -181,7 +183,7 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 			}
 			
 			// add DC
-			File dc = new File(dcDir, p.getUUID()+".xml");
+			File dc = new File(getSubdir(DepositConstants.DUBLINCORE_DIR), p.getUUID()+".xml");
 			if(dc.exists()) {
 				Element el = FOXMLJDOMUtil.makeLocatorDatastream(ContentModelHelper.Datastream.DC.getName(),
 						"M",
@@ -191,7 +193,7 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 			}
 			
 			// save foxml to file
-			File foxmlFile = new File(foxmlDir, p.getUUID()+".xml");
+			File foxmlFile = new File(getSubdir(DepositConstants.FOXML_DIR), p.getUUID()+".xml");
 			FileOutputStream fos = null;
 			try {
 				fos = new FileOutputStream(foxmlFile);
@@ -204,31 +206,6 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 				if(fos != null)	IOUtils.closeQuietly(fos);
 			}
 			addClicks(1);
-		}
-	}
-
-	private List<Resource> getBreadthFirstTree(Model m) {
-		List<Resource> result = new ArrayList<Resource>();
-		Bag bag = m.getBag(this.getDepositPID().getURI());
-		addChildren(bag, result);
-		log.debug("tree list: {}", result);
-		return result;
-	}
-
-	private void addChildren(Bag bag, List<Resource> result) {
-		NodeIterator iterator = bag.iterator();
-		List<Bag> bags = new ArrayList<Bag>();
-		while(iterator.hasNext()) {
-			Resource n = (Resource)iterator.next();
-			result.add(n);
-			Bag b = n.getModel().getBag(n.getURI());
-			if(b != null) {
-				bags.add(b);
-			}
-		}
-		iterator.close();
-		for(Bag b : bags) {
-			addChildren(b, result);
 		}
 	}
 

@@ -50,7 +50,7 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob implements Runnab
 		com.hp.hpl.jena.rdf.model.Bag deposit = model.getBag(getDepositPID().getURI());
 		Property hasModel = model.createProperty(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
 		Resource aggregateModel = model.createProperty(ContentModelHelper.Model.AGGREGATE_WORK.getURI().toString());
-		Property fileLocation = model.createProperty(DepositConstants.FILE_LOCATOR_URI);
+		Property fileLocation = model.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
 		com.hp.hpl.jena.rdf.model.Bag aggregate = null;
 		try {
 			NodeIterator ni = model.getBag(deposit).iterator();

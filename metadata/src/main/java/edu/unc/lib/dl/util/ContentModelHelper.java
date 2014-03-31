@@ -398,5 +398,34 @@ public class ContentModelHelper {
 			return this.name;
 		}
 	}
+	
+	/**
+	 * These are the relationships used within CDR N3 submission packages.
+	 * 
+	 * @author count0
+	 * 
+	 */
+	public static enum DepositRelationship {
+		stagingLocation, mimetype, md5sum, size, createTime, label, originalLocation;
+		
+		DepositRelationship() {
+			try {
+				this.uri = new URI(JDOMNamespaceUtil.DEPOSIT_NS.getURI() + name());
+			} catch (URISyntaxException e) {
+				throw new Error(e);
+			}
+		}
+		
+		private URI uri;
+
+		public URI getURI() {
+			return this.uri;
+		}
+
+		@Override
+		public String toString() {
+			return this.uri.toString();
+		}
+	}
 
 }

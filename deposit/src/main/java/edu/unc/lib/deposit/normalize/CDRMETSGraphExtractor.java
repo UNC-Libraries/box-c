@@ -4,6 +4,7 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_ACL_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XLINK_NS;
+import static edu.unc.lib.deposit.work.DepositGraphUtils.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,6 +28,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public class CDRMETSGraphExtractor {
@@ -53,8 +55,25 @@ public class CDRMETSGraphExtractor {
 	}
 
 	public void addArrangement(Model m) {
+		addDivProperties(m);
 		addStructLinkProperties(m);
 		addContainerTriples(m);
+	}
+
+	private void addDivProperties(Model m) {
+		Iterator<Element> divs = helper.getDivs();
+		while (divs.hasNext()) {
+			Element div = divs.next();
+			String pid = METSHelper.getPIDURI(div);
+			Resource o = m.getResource(pid);
+			if(div.getAttributeValue("LABEL") != null) {
+				m.add(o, dprop(m, DepositRelationship.label), div.getAttributeValue("LABEL"));
+			}
+			String orig = METSHelper.getOriginalURI(div);
+			if(orig != null) {
+				m.add(o, dprop(m, DepositRelationship.originalLocation), m.getResource(orig));
+			}
+		}
 	}
 
 	private void addStructLinkProperties(Model m) {
@@ -70,15 +89,15 @@ public class CDRMETSGraphExtractor {
 			String to = link.getAttributeValue("to", XLINK_NS);
 			if ("http://cdr.unc.edu/definitions/1.0/base-model.xml#hasAlphabeticalOrder"
 					.equals(arcrole)) {
-				Resource fromR = m.createResource(helper.getPIDURI(from));
+				Resource fromR = m.createResource(helper.getPIDURIForDIVID(from));
 				Property role = m.createProperty(CDRProperty.sortOrder.getURI()
 						.toString());
 				Resource alpha = m
 						.createResource("http://cdr.unc.edu/definitions/1.0/base-model.xml#alphabetical");
 				m.add(fromR, role, alpha);
 			} else {
-				Resource fromR = m.createResource(helper.getPIDURI(from));
-				Resource toR = m.createResource(helper.getPIDURI(to));
+				Resource fromR = m.createResource(helper.getPIDURIForDIVID(from));
+				Resource toR = m.createResource(helper.getPIDURIForDIVID(to));
 				Property role = m.createProperty(arcrole);
 				m.add(fromR, role, toR);
 			}

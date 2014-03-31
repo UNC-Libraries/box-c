@@ -9,6 +9,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import net.greghaines.jesque.Job;
 import net.greghaines.jesque.client.Client;
@@ -113,7 +114,12 @@ public class DepositSupervisor implements WorkerListener {
 
 		}, 10 * 1000, 10 * 1000);
 	}
-
+	
+	@PreDestroy
+	public void destroy() {
+		this.timer.cancel();
+	}
+	
 	public Job makeJob(Class jobClass, String depositUUID) {
 		String uuid = UUID.randomUUID().toString();
 		return new Job(jobClass.getName(), uuid, depositUUID);
