@@ -33,7 +33,7 @@ public class DepositSupervisorIT {
 	
 	@Test
 	public void testWorkbenchZIP() throws ClassNotFoundException, InterruptedException {
-		String workDir = DepositTestUtils.makeTestDir(depositsDirectory, "84f69180-3e40-4152-be80-a30c60c3f846", new File("src/test/resources/workbench.zip"));
+		DepositTestUtils.makeTestDir(depositsDirectory, "84f69180-3e40-4152-be80-a30c60c3f846", new File("src/test/resources/workbench.zip"));
 		String depositUUID = "84f69180-3e40-4152-be80-a30c60c3f846";
 		depositStatusFactory.delete(depositUUID);
 		jobStatusFactory.deleteAll(depositUUID);
@@ -54,19 +54,19 @@ public class DepositSupervisorIT {
 		status.put("depositMethod","SWORD 1.3");
 		status.put("containerId","uuid:destination");
 		depositStatusFactory.save(depositUUID, status);
-		Thread.sleep(1000*60);
+		Thread.sleep(1000*30);
 	}
 	
 	@Test
 	public void testCDRMETS() throws ClassNotFoundException, InterruptedException {
-		String workDir = DepositTestUtils.makeTestDir(depositsDirectory, "bd5ff703-9c2e-466b-b4cc-15bbfd03c8ae", new File("src/test/resources/depositFileZipped.zip"));
+		DepositTestUtils.makeTestDir(depositsDirectory, "bd5ff703-9c2e-466b-b4cc-15bbfd03c8ae", new File("src/test/resources/depositFileZipped.zip"));
 		String depositUUID = "bd5ff703-9c2e-466b-b4cc-15bbfd03c8ae";
 		depositStatusFactory.delete(depositUUID);
 		jobStatusFactory.deleteAll(depositUUID);
 		Map<String, String> status = new HashMap<String, String>();
 		status.put("metsProfile", "http://cdr.unc.edu/METS/profiles/Simple");
 		status.put("createTime", "2009-07-16T22:56:00-05:00");
-		status.put("depositMd5", "d2b88d292e2c47943231205ed36f6c94");
+		status.put("depositMd5", "c949138500f67e8617ac9968d2632d4e");
 		status.put("status","registered");
 		status.put("submitTime","1395158020363");
 		status.put("permissionGroups","classpath:server.properties,https://localhost/services/sword");
@@ -80,7 +80,7 @@ public class DepositSupervisorIT {
 		status.put("depositMethod","SWORD 1.3");
 		status.put("containerId","uuid:destination");
 		depositStatusFactory.save(depositUUID, status);
-		Thread.sleep(1000*60);
+		Thread.sleep(1000*30);
 	}
 	
 }

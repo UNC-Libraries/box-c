@@ -207,7 +207,14 @@ public class DepositSupervisor implements WorkerListener {
 				.getSuccessfulJobNames(depositUUID);
 		log.debug("Got completed job names: {}", successfulJobs);
 
-		// Payload may be unpacked
+		// Package integrity check
+		if (status.get(DepositField.depositMd5.name()) != null) {
+			if (!successfulJobs.contains(PackageIntegrityCheckJob.class.getName())) {
+				return makeJob(PackageIntegrityCheckJob.class, depositUUID);
+			}
+		}
+		
+		// Package may be unpacked
 		String filename = status.get(DepositField.fileName.name());
 		if (filename.toLowerCase().endsWith(".zip")) {
 			if (!successfulJobs.contains(UnpackDepositJob.class.getName())) {

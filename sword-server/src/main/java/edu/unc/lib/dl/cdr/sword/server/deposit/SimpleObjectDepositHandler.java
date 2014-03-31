@@ -58,18 +58,6 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 			}
 		}
 
-		// TODO MOVE verify checksum for payload file
-//		if (deposit.getMd5() != null) {
-//			Manifest mani = bag.getPayloadManifest(Algorithm.MD5);
-//			String bagitMD5 = mani.get("data/" + deposit.getFilename());
-//			if (bagitMD5 == null || !bagitMD5.equals(deposit.getMd5())) {
-//				throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400,
-//						"The supplied checksum of " + deposit.getMd5()
-//								+ " does not match " + bagitMD5
-//								+ " (calculated)");
-//			}
-//		}
-
 		registerDeposit(depositPID, destination, deposit,
 				type, depositor, owner, Collections.<String, String> emptyMap());
 		return buildReceipt(depositPID, config);
