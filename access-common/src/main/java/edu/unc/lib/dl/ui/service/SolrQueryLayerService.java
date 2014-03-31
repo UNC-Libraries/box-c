@@ -35,6 +35,12 @@ import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -43,6 +49,8 @@ import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacetNode;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
+import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
+import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.IdListRequest;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -52,22 +60,13 @@ import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
-
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
  * Solr query construction layer. Constructs search states specific to common tasks before passing them on to lower
  * level classes to retrieve the results.
- * 
+ *
  * @author bbpennel
  */
 public class SolrQueryLayerService extends SolrSearchService {
@@ -77,7 +76,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Returns a list of the most recently added items in the collection
-	 * 
+	 *
 	 * @param accessGroups
 	 * @return Result response, where items only contain title and id.
 	 */
@@ -98,7 +97,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Returns a list of collections
-	 * 
+	 *
 	 * @param accessGroups
 	 * @return
 	 */
@@ -141,7 +140,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	/**
 	 * Retrieves the facet list for the search defined by searchState. The facet results optionally can ignore
 	 * hierarchical cutoffs.
-	 * 
+	 *
 	 * @param searchState
 	 * @param facetsToRetrieve
 	 * @param applyCutoffs
@@ -213,7 +212,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Retrieves metadata fields for the parent collection pids contained by the supplied facet object.
-	 * 
+	 *
 	 * @param parentCollectionFacet
 	 *           Facet object containing parent collection ids to lookup
 	 * @param accessGroups
@@ -281,7 +280,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * item metadata, based on the order field of the item. The first windowSize - 1 neighbors are retrieved to each side
 	 * of the item, and trimmed so that there are always windowSize - 1 neighbors surrounding the item if possible. If no
 	 * order field is available, a list of arbitrary windowSize neighbors is returned.
-	 * 
+	 *
 	 * @param metadata
 	 *           Record which the window pivots around.
 	 * @param windowSize
@@ -479,7 +478,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Returns the number of children plus a facet list for the parent defined by ancestorPath.
-	 * 
+	 *
 	 * @param ancestorPath
 	 * @param accessGroups
 	 * @return
@@ -531,7 +530,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	/**
 	 * Populates the child count attributes of all metadata objects in the given search result response by querying for
 	 * all non-folder objects which have the metadata object's highest ancestor path tier somewhere in its ancestor path.
-	 * 
+	 *
 	 * @param resultResponse
 	 * @param accessGroups
 	 */
@@ -675,7 +674,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Assigns children counts to container objects from ancestor path facet results based on matching search values
-	 * 
+	 *
 	 * @param facetField
 	 * @param containerObjects
 	 * @param countName
@@ -760,6 +759,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 		List<BriefObjectMetadata> bridgeMetadata = this.getObjectsById(new IdListRequest(idList, null, browseRequest
 				.getAccessGroups()));
 		this.getChildrenCounts(bridgeMetadata, browseRequest.getAccessGroups());
+		this.getChildrenCounts(bridgeMetadata, browseRequest.getAccessGroups(), "containers", "contentModel:"
+				+ SolrSettings.sanitize(ContentModelHelper.Model.CONTAINER.toString()), null);
 
 		// Guarantee sort order of the bridge items by structure depth
 		Collections.sort(bridgeMetadata, new Comparator<BriefObjectMetadata>() {
@@ -794,7 +795,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * Retrieves results for populating a hierarchical browse view. Supports all the regular navigation available to
 	 * searches. Results contain child counts for each item (all items returned are containers), and a map containing the
 	 * number of nested subcontainers per container. Children counts are retrieved based on facet counts.
-	 * 
+	 *
 	 * @param browseRequest
 	 * @return
 	 */
@@ -923,7 +924,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Returns a set of object IDs for containers that directly matched the restrictions from the base query.
-	 * 
+	 *
 	 * @param baseState
 	 * @param accessGroups
 	 * @return
@@ -953,7 +954,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		CutoffFacet ancestorPath = (CutoffFacet) fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
 		if (ancestorPath != null) {
-			((CutoffFacet) ancestorPath).setCutoff(((CutoffFacet) ancestorPath).getHighestTier() + 1);
+			ancestorPath.setCutoff(ancestorPath.getHighestTier() + 1);
 		} else {
 			ancestorPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
 			fileSearchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPath);
@@ -979,7 +980,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	/**
 	 * Matches hierarchical facets in the search state with those in the facet list. If a match is found, then the search
 	 * state hierarchical facet is overwritten with the result facet in order to give it a display value.
-	 * 
+	 *
 	 * @param searchState
 	 * @param resultResponse
 	 */
@@ -1005,7 +1006,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Checks if an item is accessible given the specified access restrictions
-	 * 
+	 *
 	 * @param idRequest
 	 * @param accessType
 	 * @return
@@ -1065,7 +1066,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Determines if the user has adminRole permissions on any items
-	 * 
+	 *
 	 * @param accessGroups
 	 * @return
 	 */
@@ -1089,7 +1090,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		}
 		return false;
 	}
-	
+
 	public boolean hasRole(AccessGroupSet accessGroups, UserRole userRole) {
 		StringBuilder query = new StringBuilder();
 		String joinedGroups = accessGroups.joinAccessGroups(" OR ", userRole.toString() + "|", true);
@@ -1152,7 +1153,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	}
 
 	public void populateBreadcrumbs(SearchRequest searchRequest, SearchResultResponse resultResponse) {
-		SearchState searchState = (SearchState) searchRequest.getSearchState();
+		SearchState searchState = searchRequest.getSearchState();
 		if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE.name())) {
 			if (resultResponse.getResultCount() == 0 || searchState.getResultFields() == null
 					|| !searchState.getResultFields().contains(SearchFieldKeys.CONTENT_TYPE.name())) {
@@ -1182,7 +1183,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Get the number of departments represented in the collection
-	 * 
+	 *
 	 * @return the count, or -1 if there was an error retrieving the count
 	 */
 
@@ -1210,7 +1211,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Get the total number of collections
-	 * 
+	 *
 	 * @return the count, or -1 if there was an error retrieving the count
 	 */
 
@@ -1237,7 +1238,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	/**
 	 * Get the number of objects present in the collection for various formats
-	 * 
+	 *
 	 * @return a map from format name to count
 	 */
 
