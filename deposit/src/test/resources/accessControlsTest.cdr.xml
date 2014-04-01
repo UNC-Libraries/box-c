@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets xmlns:mets="http://www.loc.gov/METS/" xmlns:acl="http://cdr.unc.edu/definitions/acl" ID="uuid_e10b6c14-db6a-4e48-b6a1-9fd1408cff4d" LABEL="accessControlsTest Workbench Manifest" OBJID="info:fedora/uuid:e10b6c14-db6a-4e48-b6a1-9fd1408cff4d" PROFILE="http://cdr.unc.edu/METS/profiles/Simple" TYPE="WORKBENCH">
+  <mets:metsHdr CREATEDATE="2014-03-31T17:18:44.943Z" LASTMODDATE="2014-03-31T17:18:44.943Z">
+    <mets:agent ROLE="CREATOR" TYPE="OTHER">
+      <mets:name>CDR Workbench</mets:name>
+    </mets:agent>
+    <mets:agent ROLE="CREATOR" TYPE="INDIVIDUAL">
+      <mets:name>count0</mets:name>
+    </mets:agent>
+  </mets:metsHdr>
+  <mets:amdSec>
+    <mets:rightsMD CREATED="2014-03-31T17:20:05.169Z" ID="uuid_dba3cd17-a198-477e-b0fa-3a5caed0277d" STATUS="USER_EDITED">
+      <mets:mdWrap MDTYPE="OTHER">
+        <mets:xmlData>
+          <acl:accessControl acl:discoverable="false" acl:published="false" acl:embargo-until="2017-03-31" acl:inherit="false">
+            <acl:grant acl:group="public" acl:role="patron" />
+            <acl:grant acl:group="testgroup" acl:role="curator" />
+          </acl:accessControl>
+        </mets:xmlData>
+      </mets:mdWrap>
+    </mets:rightsMD>
+  </mets:amdSec>
+  <mets:fileSec>
+    <mets:fileGrp ID="OBJECTS" />
+  </mets:fileSec>
+  <mets:structMap>
+    <mets:div TYPE="Bag" CONTENTIDS="info:fedora/uuid:be00f00b-3c2e-4962-8243-14a6ef7e9d5f">
+      <mets:div ADMID="uuid_dba3cd17-a198-477e-b0fa-3a5caed0277d" CONTENTIDS="info:fedora/uuid:d00eb5f8-235b-490d-a1bf-1b3af7984d3c" ID="uuid_ba1d4792-916a-4019-8950-4d886f6aad04" LABEL="controlled folder" TYPE="Folder" />
+    </mets:div>
+  </mets:structMap>
+</mets:mets>

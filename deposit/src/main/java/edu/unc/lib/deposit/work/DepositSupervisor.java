@@ -216,7 +216,7 @@ public class DepositSupervisor implements WorkerListener {
 		
 		// Package may be unpacked
 		String filename = status.get(DepositField.fileName.name());
-		if (filename.toLowerCase().endsWith(".zip")) {
+		if (filename != null && filename.toLowerCase().endsWith(".zip")) {
 			if (!successfulJobs.contains(UnpackDepositJob.class.getName())) {
 				return makeJob(UnpackDepositJob.class, depositUUID);
 			}

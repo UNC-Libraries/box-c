@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -36,6 +35,7 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.DatastreamPID;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -60,7 +60,6 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 		for(FedoraProperty p : ContentModelHelper.FedoraProperty.values()) {
 			copyPropertyURIs.add(p.getURI().toString());
 		}
-		copyPropertyURIs.remove(ContentModelHelper.CDRProperty.sourceData.getURI().toString());
 	}
 
 	public MakeFOXML(String uuid, String depositUUID) {
@@ -100,10 +99,7 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 				Statement s = properties.nextStatement();
 				if(copyPropertyURIs.contains(s.getPredicate().getURI())) {
 					relsExt.add(s);
-					// supplemental - these rels already copied
-				} else if(/* TODO is a role property*/false ) {
-					// TODO copy role statements to relsExt
-					// TODO verify ACL translates from METS to RELS
+				} else if(UserRole.getUserRole(s.getPredicate().getURI()) != null) {
 					relsExt.add(s);
 				}
 			}
@@ -194,16 +190,13 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 			
 			// save foxml to file
 			File foxmlFile = new File(getSubdir(DepositConstants.FOXML_DIR), p.getUUID()+".xml");
-			FileOutputStream fos = null;
-			try {
-				fos = new FileOutputStream(foxmlFile);
+			
+			try(FileOutputStream fos = new FileOutputStream(foxmlFile)) {
 				new XMLOutputter(Format.getPrettyFormat()).output(foxml, fos);
 			} catch (FileNotFoundException e) {
 				throw new Error("Unexpected error creating foxml file.", e);
 			} catch (IOException e) {
 				throw new Error("Unexpected error creating foxml file.", e);
-			} finally {
-				if(fos != null)	IOUtils.closeQuietly(fos);
 			}
 			addClicks(1);
 		}

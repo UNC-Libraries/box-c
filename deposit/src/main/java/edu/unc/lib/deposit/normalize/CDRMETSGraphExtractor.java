@@ -1,10 +1,9 @@
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_ACL_NS;
+import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XLINK_NS;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -16,6 +15,7 @@ import java.util.Map;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.Namespace;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
@@ -32,6 +32,8 @@ import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public class CDRMETSGraphExtractor {
+	public static final Namespace METS_ACL_NS = Namespace.getNamespace("acl", "http://cdr.unc.edu/definitions/acl");
+	
 	private static Map<String, URI> containerTypes = new HashMap<String, URI>();
 	static {
 		containerTypes.put("Folder",
@@ -208,11 +210,11 @@ public class CDRMETSGraphExtractor {
 						.getAttributeValue("ADMID"));
 				Element aclEl = rightsMdEl.getChild("mdWrap", METS_NS)
 						.getChild("xmlData", METS_NS)
-						.getChild("accessControl", CDR_ACL_NS);
+						.getChild("accessControl", METS_ACL_NS);
 
 				// set allowIndexing, record "no" when discoverable is false
 				String discoverableVal = aclEl.getAttributeValue(
-						"discoverable", CDR_ACL_NS);
+						"discoverable", METS_ACL_NS);
 				if ("false".equals(discoverableVal)) {
 					Property allowIndexing = m
 							.createProperty(ContentModelHelper.CDRProperty.allowIndexing
@@ -222,7 +224,7 @@ public class CDRMETSGraphExtractor {
 
 				// isPublished, when "false" record "no"
 				String publishedVal = aclEl.getAttributeValue("published",
-						CDR_ACL_NS);
+						METS_ACL_NS);
 				if ("false".equals(publishedVal)) {
 					Property published = m
 							.createProperty(ContentModelHelper.CDRProperty.isPublished
@@ -232,7 +234,7 @@ public class CDRMETSGraphExtractor {
 
 				// embargo, converts date to dateTime
 				String embargoUntilVal = aclEl.getAttributeValue(
-						"embargo-until", CDR_ACL_NS);
+						"embargo-until", METS_ACL_NS);
 				if (embargoUntilVal != null) {
 					Property embargoUntil = m
 							.createProperty(ContentModelHelper.CDRProperty.embargoUntil
@@ -243,7 +245,7 @@ public class CDRMETSGraphExtractor {
 
 				// inherit, default is true, literal
 				String inheritVal = aclEl.getAttributeValue("inherit",
-						CDR_ACL_NS);
+						METS_ACL_NS);
 				if ("false".equals(inheritVal)) {
 					Property inheritPermissions = m
 							.createProperty(ContentModelHelper.CDRProperty.inheritPermissions
@@ -252,10 +254,10 @@ public class CDRMETSGraphExtractor {
 				}
 
 				// add grants to groups
-				for (Object o : aclEl.getChildren("grant", CDR_ACL_NS)) {
+				for (Object o : aclEl.getChildren("grant", METS_ACL_NS)) {
 					Element grant = (Element) o;
-					String role = grant.getAttributeValue("role", CDR_ACL_NS);
-					String group = grant.getAttributeValue("group", CDR_ACL_NS);
+					String role = grant.getAttributeValue("role", METS_ACL_NS);
+					String group = grant.getAttributeValue("group", METS_ACL_NS);
 					String roleURI = NamespaceConstants.CDR_ROLE_NS_URI + role;
 					Property roleProp = m.createProperty(roleURI);
 					m.add(object, roleProp, group);
