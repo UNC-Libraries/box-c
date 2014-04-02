@@ -237,6 +237,10 @@ public final class NamespaceConstants {
 	public static final String EPDCX_PREFIX = "epdcx";
 	
 	public static final String EPDCX_URI = "http://purl.org/eprint/epdcx/2006-11-16/";
+	
+	public static final String DEPOSIT_PREFIX = "deposit";
+	
+	public static final String DEPOSIT_URI = "http://cdr.unc.edu/definitions/deposit/";
 
     // Prevent instantiation.
     private NamespaceConstants() {

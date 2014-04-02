@@ -16,9 +16,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public class METSHelper {
@@ -38,6 +36,21 @@ public class METSHelper {
 			String cids = div.getAttributeValue("CONTENTIDS");
 			for (String s : cids.split("\\s")) {
 				if (s.startsWith("info:fedora/")) {
+					result = s;
+					break;
+				}
+			}
+		} catch (Exception ignored) {
+		}
+		return result;
+	}
+	
+	protected static String getOriginalURI(Element div) {
+		String result = null;
+		try {
+			String cids = div.getAttributeValue("CONTENTIDS");
+			for (String s : cids.split("\\s")) {
+				if (!s.startsWith("info:fedora/")) {
 					result = s;
 					break;
 				}
@@ -131,36 +144,32 @@ public class METSHelper {
 			
 			// record object source data file
 			// only supporting one USE in fileSec, i.e. source data
-			Property hasSourceData = m.createProperty(CDRProperty.sourceData.getURI()
-					.toString());
-			Resource file = m.createResource(); // blank node represents file
-			m.add(object, hasSourceData, file); // associate object with file
 			
 			// record file location
-			Property fileLocation = m.createProperty(DepositConstants.FILE_LOCATOR_URI);
+			Property fileLocation = m.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
 			m.add(object, fileLocation, href);
 			
 			// record mimetype
 			if(fileEl.getAttributeValue("MIMETYPE") != null) {
-				Property hasMimetype = m.createProperty(CDRProperty.hasSourceMimeType.getURI().toString());
+				Property hasMimetype = m.createProperty(ContentModelHelper.DepositRelationship.mimetype.toString());
 				m.add(object, hasMimetype, fileEl.getAttributeValue("MIMETYPE"));
 			}
 			
 			// record File checksum if supplied, we only support MD5 in Simple profile
 			if(fileEl.getAttributeValue("CHECKSUM") != null) {
-				Property hasChecksum = m.createProperty(CDRProperty.hasChecksum.getURI().toString());
+				Property hasChecksum = m.createProperty(ContentModelHelper.DepositRelationship.md5sum.toString());
 				m.add(object, hasChecksum, fileEl.getAttributeValue("CHECKSUM"));
 			}
 			
 			// record SIZE (bytes/octets)
 			if(fileEl.getAttributeValue("SIZE") != null) {
-				Property hasSize = m.createProperty(CDRProperty.hasSourceFileSize.getURI().toString());
+				Property hasSize = m.createProperty(ContentModelHelper.DepositRelationship.size.toString());
 				m.add(object, hasSize, fileEl.getAttributeValue("SIZE"));
 			}
 			
 			// record CREATED (iso8601)
 			if(fileEl.getAttributeValue("CREATED") != null) {
-				Property hasCreated = m.createProperty(CDRProperty.hasCreatedDate.getURI().toString());
+				Property hasCreated = m.createProperty(ContentModelHelper.DepositRelationship.createTime.toString());
 				m.add(object, hasCreated, fileEl.getAttributeValue("CREATED"), XSDDatatype.XSDdateTime);
 			}
 				
@@ -178,6 +187,20 @@ public class METSHelper {
 			return (NamespaceConstants.METS_URI.equals(e.getNamespaceURI()) && "fptr"
 					.equals(e.getName()));
 		}
+	}
+
+	public String getPIDURIForDIVID(String ref) {
+		if(ref.startsWith("#")) {
+			ref = ref.substring(1);
+		}
+		Iterator<Element> i = getDivs();
+		while(i.hasNext()) {
+			Element div = i.next();
+			if(ref.equals(div.getAttributeValue("ID"))) {
+				return getPIDURI(div);
+			}
+		}
+		return null;
 	}
 
 }

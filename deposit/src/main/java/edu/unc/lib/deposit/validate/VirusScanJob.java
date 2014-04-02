@@ -82,7 +82,7 @@ public class VirusScanJob extends AbstractDepositJob implements Runnable {
 		File modelFile = new File(getDepositDirectory(), DepositConstants.MODEL_FILE);
 		model.read(modelFile.toURI().toString());
 		Property fileLocation = model
-				.createProperty(DepositConstants.FILE_LOCATOR_URI);
+				.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
 		StmtIterator i = model.listStatements(new SimpleSelector((Resource)null, fileLocation, (RDFNode)null));
 		while (i.hasNext()) {
 			Statement s = i.nextStatement();

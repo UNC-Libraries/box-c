@@ -27,7 +27,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.deposit.work.GraphUtils;
+import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.JobForwardingJMSListener;
@@ -139,7 +139,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 		Bag depositBag = model.getBag(depositPid);
 
 		// Capture number of objects and depth first list of pids for individual objects to be ingested
-		GraphUtils.walkChildrenDepthFirst(depositBag, ingestPids, true);
+		DepositGraphUtils.walkChildrenDepthFirst(depositBag, ingestPids, true);
 
 		// Store the number of objects being ingested now before it starts changing
 		ingestObjectCount = ingestPids.size();
@@ -150,7 +150,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 		}
 
 		// Capture the top level pids
-		GraphUtils.walkChildrenDepthFirst(depositBag, topLevelPids, false);
+		DepositGraphUtils.walkChildrenDepthFirst(depositBag, topLevelPids, false);
 
 		// TODO capture structure for ordered sequences instead of just bags
 

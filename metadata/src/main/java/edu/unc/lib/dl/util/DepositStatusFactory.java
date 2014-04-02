@@ -116,4 +116,14 @@ public class DepositStatusFactory {
 		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.errorMessage.name(), e.getMessage());
 		getJedisPool().returnResource(jedis);
 	}
+
+	/**
+	 * Delete deposit status.
+	 * @param depositUUID
+	 */
+	public void delete(String depositUUID) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.del(DEPOSIT_STATUS_PREFIX+depositUUID);
+		getJedisPool().returnResource(jedis);
+	}
 }
