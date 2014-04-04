@@ -134,6 +134,7 @@
 	</bean>
 	
 	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">
+		<property name="adminManagementClient" ref="managementClient"/>
 		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="accessClient" ref="accessClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
