@@ -351,8 +351,8 @@ public class BatchIngestTask implements Runnable {
 			}
 		}
 		if (next >= foxmlFiles.length) { // no more to ingest, next step
-			log.debug("detected that ingests are done, not going to container update state");
-			this.state = STATE.CONTAINER_UPDATES;
+			log.debug("detected that ingests are done, now going to container update state");
+			this.state = STATE.SEND_MESSAGES;
 			return;
 		}
 
@@ -457,8 +457,9 @@ public class BatchIngestTask implements Runnable {
 			this.eventLogger = new PremisEventLogger(ContentModelHelper.Administrative_PID.REPOSITORY_MANAGEMENT_SOFTWARE
 					.getPID().getURI());
 
-			this.state = STATE.CHECK;
 			if (ingestLog.exists()) { // this is a resume, find next foxml
+				this.state = STATE.CHECK;
+
 				BufferedReader r = new BufferedReader(new FileReader(ingestLog));
 				String lastLine = null;
 				for (String line = r.readLine(); line != null; line = r.readLine()) {
@@ -478,6 +479,8 @@ public class BatchIngestTask implements Runnable {
 						log.info("Resuming ingest from " + this.lastIngestFilename + " in " + this.getBaseDir().getName());
 					}
 				}
+			} else {
+				this.state = STATE.CONTAINER_UPDATES;
 			}
 			this.ingestLogWriter = new BufferedWriter(new FileWriter(ingestLog, true));
 		} catch (Exception e) {
@@ -714,8 +717,8 @@ public class BatchIngestTask implements Runnable {
 			}
 		}
 		if (next >= containers.length) { // no more to update
-			log.debug("no containers left to update");
-			this.state = STATE.SEND_MESSAGES;
+			log.debug("no containers left to update, start ingesting");
+			this.state = STATE.INGEST;
 			return;
 		}
 		PrintWriter reorderedWriter = null;
