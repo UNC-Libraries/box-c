@@ -1,10 +1,16 @@
 package edu.unc.lib.deposit.integration;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.jdom.Document;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +22,7 @@ import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.deposit.work.JobStatusFactory;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.FileUtils;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
@@ -86,8 +93,9 @@ public class DepositSupervisorIT {
 	}
 	
 	@Test
-	public void testCDRMETSwACL() throws ClassNotFoundException, InterruptedException, IOException {
+	public void testCDRMETSwACL() throws ClassNotFoundException, InterruptedException, IOException, JDOMException {
 		File workingDir = new File(depositsDirectory, "fooff703-9c2e-466b-b4cc-15bbfd03c8ae");
+		if(workingDir.exists()) FileUtils.deleteDir(workingDir);
 		workingDir.mkdirs();
 		File testMETS = new File("src/test/resources/accessControlsTest.cdr.xml");
 		File mets = new File(workingDir, "METS.xml");
@@ -105,13 +113,18 @@ public class DepositSupervisorIT {
 		status.put("depositSlug","metsbagittest");
 		status.put("intSenderDescription","Greg Jansen");
 		status.put("packagingType","http://cdr.unc.edu/METS/profiles/Simple");
-		//status.put("fileName","cdrMETS.zip");
 		status.put("depositorName","test-owner");
 		status.put("uuid",depositUUID);
 		status.put("depositMethod","SWORD 1.3");
 		status.put("containerId","uuid:destination");
 		depositStatusFactory.save(depositUUID, status);
 		Thread.sleep(1000*30);
+		
+		File depositevents = new File(workingDir, "events/"+depositUUID+".xml");
+		Document doc = new SAXBuilder().build(depositevents);
+		@SuppressWarnings("rawtypes")
+		List events = doc.getRootElement().getChildren("event", JDOMNamespaceUtil.PREMIS_V2_NS);
+		assertEquals("Expected 5 PREMIS events for this ingest", 5, events.size());
 	}
 	
 }
