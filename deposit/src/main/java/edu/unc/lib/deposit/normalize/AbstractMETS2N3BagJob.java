@@ -122,19 +122,10 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 	}
 
 	protected void saveMETS(Document mets) {
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(getMETSFile());
+		try(FileOutputStream fos = new FileOutputStream(getMETSFile())) {
 			new XMLOutputter().output(mets, fos);
 		} catch(Exception e) {
 			failJob(e, Type.NORMALIZATION, "Unexpected error saving METS: {0}", getMETSFile());
-		} finally {
-			if(fos != null) {
-				try {
-					fos.close();
-				} catch (IOException ignored) {
-				}
-			}
 		}
 	}
 

@@ -221,13 +221,7 @@ public class PremisEventLogger {
 	 *           the PID
 	 * @return object Element
 	 */
-	public Element getObjectElement(PID pid) {
-		// <object xsi:type="representation">
-		// <objectIdentifier>
-		// <objectIdentifierType>Fedora PID</objectIdentifierType>
-		// <objectIdentifierValue>cdr:1234</objectIdentifierValue>
-		// </objectIdentifier>
-		// </object>
+	public static Element getObjectElement(PID pid) {
 		Element result = new Element("object", NS);
 		result.setAttribute("type", "representation", JDOMNamespaceUtil.XSI_NS);
 		Element id = new Element("objectIdentifier", NS);

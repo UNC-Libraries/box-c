@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.io.IOUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.filter.Filter;
@@ -90,9 +89,8 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob implements Runnab
 			PID aggregatePID = new PID(aggregate.getURI());
 			File modsFile = new File(getDescriptionDir(), aggregatePID.getUUID()+".xml");
 			SAXBuilder sb = new SAXBuilder();
-			FileOutputStream out = null;
 			Map<String, String> fileLC2supplementLabels = null;
-			try {
+			try(FileOutputStream out = new FileOutputStream(modsFile)) {
 				Document articleDocument = sb.build(articleXMLFile);
 				Document existingMODSDocument = null;
 				if(modsFile.exists()) existingMODSDocument = sb.build(modsFile);
@@ -111,13 +109,10 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob implements Runnab
 				}
 				for(Element el : moving) mods.getRootElement().addContent(el.detach());
 				// overwrite MODS XML
-				out = new FileOutputStream(modsFile); 
 				new XMLOutputter(Format.getPrettyFormat()).output(mods, out);
 				fileLC2supplementLabels = biohelper.getFilesLC2SupplementLabels(articleDocument);
 			} catch (Exception e) {
 				failJob(e, Type.NORMALIZATION, "Cannot extract metadata from BioMed Central article XML.");
-			} finally {
-				IOUtils.closeQuietly(out);
 			}
 			
 			if(fileLC2supplementLabels != null) {

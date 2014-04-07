@@ -3,12 +3,8 @@ package edu.unc.lib.deposit.work;
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,7 +14,6 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.io.IOUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -34,7 +29,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobStatus;
@@ -77,8 +71,6 @@ public abstract class AbstractDepositJob {
 
 	private final PremisEventLogger eventLog = new PremisEventLogger(this
 			.getClass().getName());
-	// PREMIS events file for the deposit
-	private File eventsFile;
 	// Directory containing PREMIS event files for individual objects in this
 	// deposit
 	private File eventsDirectory;
@@ -99,8 +91,6 @@ public abstract class AbstractDepositJob {
 				DepositConstants.DATA_DIR);
 		this.eventsDirectory = new File(depositDirectory,
 				DepositConstants.EVENTS_DIR);
-		this.eventsFile = new File(depositDirectory,
-				DepositConstants.EVENTS_FILE);
 	}
 
 	public String getDepositUUID() {
@@ -166,10 +156,6 @@ public abstract class AbstractDepositJob {
 		return eventLog;
 	}
 
-	public File getEventsFile() {
-		return eventsFile;
-	}
-
 	public File getEventsDirectory() {
 		return eventsDirectory;
 	}
@@ -177,9 +163,9 @@ public abstract class AbstractDepositJob {
 	public void recordDepositEvent(Type type, String messageformat,
 			Object... args) {
 		String message = MessageFormat.format(messageformat, args);
-		log.debug("event recorded: {}", message);
 		Element event = getEventLog().logEvent(type, message,
 				this.getDepositPID());
+		log.debug("event recorded: {}", event);
 		appendDepositEvent(getDepositPID(), event);
 	}
 
@@ -207,52 +193,33 @@ public abstract class AbstractDepositJob {
 	protected void appendDepositEvent(PID pid, Element event) {
 		File file = new File(depositDirectory, DepositConstants.EVENTS_DIR
 				+ "/" + pid.getUUID() + ".xml");
-		FileLock lock = null;
 		try {
-			boolean newFile = file.createNewFile();
-			@SuppressWarnings("resource")
-			FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
-			// Get an exclusive lock on the whole file
-			lock = channel.lock();
 			Document dom;
-			if (!newFile) {
-				try (FileInputStream is = new FileInputStream(file)) {
-					dom = new SAXBuilder().build(is);
-				}
-			} else {
+			if (!file.exists()) {
+				file.getParentFile().mkdirs();
+				file.createNewFile();
 				dom = new Document();
-				dom.setRootElement(new Element("premis",
-						JDOMNamespaceUtil.PREMIS_V2_NS));
-				// FIXME add object element to premis element
+				Element premis = new Element("premis",
+						JDOMNamespaceUtil.PREMIS_V2_NS).addContent(PremisEventLogger.getObjectElement(pid));
+				dom.setRootElement(premis);
+			} else {
+				dom = new SAXBuilder().build(file);
 			}
-			dom.getRootElement().addContent(event);
-			try (FileOutputStream out = new FileOutputStream(file, true)) {
+			dom.getRootElement().addContent(event.detach());
+			try (FileOutputStream out = new FileOutputStream(file, false)) {
 				new XMLOutputter(Format.getPrettyFormat()).output(dom, out);
 			}
 		} catch (JDOMException | IOException e1) {
 			throw new Error("Unexpected problem with deposit events file", e1);
-		} finally {
-			try {
-				lock.release();
-			} catch (IOException e) {
-				throw new Error(e);
-			}
 		}
 	}
 
 	protected void saveModel(Model model, String filepath) {
 		File arrangementFile = new File(this.getDepositDirectory(), filepath);
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(arrangementFile);
+		try(FileOutputStream fos = new FileOutputStream(arrangementFile)) {
 			model.write(fos, "N-TRIPLE");
 		} catch (IOException e) {
 			throw new Error("Cannot open file " + arrangementFile, e);
-		} finally {
-			try {
-				fos.close();
-			} catch (IOException ignored) {
-			}
 		}
 	}
 
