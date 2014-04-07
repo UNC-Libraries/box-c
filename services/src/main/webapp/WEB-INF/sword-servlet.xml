@@ -75,12 +75,6 @@
 					</property>
 				</bean>
 				<bean class="edu.unc.lib.dl.ingest.aip.CheckAIPRequirementsFilter" />
-				<bean class="edu.unc.lib.dl.ingest.aip.CheckContainerFilter">
-					<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-				</bean>
-				<bean class="edu.unc.lib.dl.ingest.aip.FixPathConflictFilter">
-					<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-				</bean>
 				<bean class="edu.unc.lib.dl.ingest.aip.BiomedCentralAIPFilter" init-method="init" />
 				<bean class="edu.unc.lib.dl.ingest.aip.MODSValidationFilter">
 					<property name="schematronValidator" ref="schematronValidator" />
@@ -140,6 +134,7 @@
 	</bean>
 	
 	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">
+		<property name="adminManagementClient" ref="managementClient"/>
 		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="accessClient" ref="accessClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>

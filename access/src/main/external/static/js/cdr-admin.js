@@ -88,8 +88,10 @@ define('detachplus', [ 'jquery'], function($) {
 			}
 		}
 		
-		this.contentLoaded = (this.childEntries && this.childEntries.length > 0) 
-				|| (this.metadata.counts && this.metadata.counts.containers !== undefined && this.metadata.counts.containers == 0);
+		var childrenPresent = this.countChildrenPresent(this);
+		
+		this.hasContent = this.childEntries && this.childEntries.length > 0;
+		this.contentLoaded = false;
 	};
 	
 	StructureEntry.prototype.render = function($parentElement) {
@@ -118,10 +120,18 @@ define('detachplus', [ 'jquery'], function($) {
 		
 	StructureEntry.prototype.getTemplate = function() {
 		var toggleClass = '';
-		if (this.childEntries && this.childEntries.length > 0) {
-			if (this.options.isRoot || !this.options.showingItems)
+		
+		var childrenPresent = this.countChildrenPresent(this);
+		this.hasContent = this.childEntries && this.childEntries.length > 0;
+		this.moreContainersAvailable = (this.metadata.counts && this.metadata.counts.containers > childrenPresent);
+		
+		if (this.hasContent) {
+			if (this.moreContainersAvailable)
+				toggleClass = 'expand';
+			else toggleClass = 'collapse';
+			/*if (this.options.isRoot || !this.options.showingItems)
 				toggleClass = 'collapse';
-			else toggleClass = 'expand';
+			else toggleClass = 'expand';*/
 		} else if ((this.metadata.counts && this.metadata.counts.containers) ||
 				(this.options.structureView.options.retrieveFiles && this.metadata.counts && this.metadata.counts.child)) {
 			toggleClass = 'expand';
@@ -160,12 +170,24 @@ define('detachplus', [ 'jquery'], function($) {
 		});
 	};
 	
+	StructureEntry.prototype.countChildrenPresent = function() {
+		if (!this.childEntries)
+			return 0;
+		
+		var count = this.childEntries.length;
+		for (var i in this.childEntries) {
+			count += this.childEntries[i].countChildrenPresent();
+		}
+		
+		return count;
+	};
+	
 	StructureEntry.prototype.toggleChildren = function() {
 		var self = this;
 		var $toggleButton = this.$entry.find('.cont_toggle');
 		var $childrenContainer = this.element.children(".children");
 		if ($toggleButton.hasClass('expand')) {
-			if (!self.contentLoaded) {
+			if ((this.moreContainersAvailable || !this.hasContent) && !this.contentLoaded) {
 				var loadingImage = $("<img src=\"/static/images/ajax_loader.gif\"/>");
 				$toggleButton.after(loadingImage);
 				var childrenUrl = "structure/" + this.metadata.id + "/json";
@@ -185,19 +207,29 @@ define('detachplus', [ 'jquery'], function($) {
 					success: function(data){
 						loadingImage.remove();
 						if (data) {
-							this.childEntries = [];
+							var existingEntries = self.childEntries;
+							self.childEntries = [];
+							$childrenContainer.empty();
 							if (data.root && data.root.children && data.root.children.length > 0) {
+								// Add all children into the new children set, both existing and new children
 								for (var i in data.root.children) {
-									var childEntry = new StructureEntry({
-										node : data.root.children[i],
-										structureView : self.options.structureView
-									});
-									this.childEntries.push(childEntry);
+									var resultChild = data.root.children[i];
+									// Check if there is an existing child for this result id
+									var childEntry = self.findEntryById(resultChild.entry.id, existingEntries);
+									if (!childEntry) {
+										// No existing child, so use the new data to create child
+										childEntry = new StructureEntry({
+											node : resultChild,
+											structureView : self.options.structureView
+										});
+									}
+									
+									self.childEntries.push(childEntry);
 									$childrenContainer.append(childEntry.getTemplate());
 								}
 								
-								for (var i in this.childEntries) {
-									this.childEntries[i].initializeElement(self.element);
+								for (var i in self.childEntries) {
+									self.childEntries[i].initializeElement(self.element);
 								}
 								
 								$childrenContainer.find(".indent").show();
@@ -307,11 +339,13 @@ define('detachplus', [ 'jquery'], function($) {
 		this.options.isSelected = true;
 	};
 	
-	StructureEntry.prototype.findEntryById = function(id) {
+	StructureEntry.prototype.findEntryById = function(id, childEntries) {
 		if (this.metadata.id == id)
 			return this;
-		for (var index in this.childEntries) {
-			var result = this.childEntries[index].findEntryById(id);
+			
+		var entries = childEntries? childEntries : this.childEntries;
+		for (var index in entries) {
+			var result = entries[index].findEntryById(id);
 			if (result)
 				return result;
 		}

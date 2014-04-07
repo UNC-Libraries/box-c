@@ -71,13 +71,13 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * @author Gregory Jansen
- * 
+ *
  */
 public class BatchIngestTask implements Runnable {
 	/**
 	 * States for this task. The ingest states loop until the last object is verified. Container update state repeats
 	 * until all containers are updated.
-	 * 
+	 *
 	 */
 	public enum STATE {
 		INIT, CHECK, INGEST, INGEST_WAIT, INGEST_VERIFY_CHECKSUMS, CONTAINER_UPDATES, SEND_MESSAGES, CLEANUP, FINISHED
@@ -164,12 +164,13 @@ public class BatchIngestTask implements Runnable {
 	 */
 	private long lastIngestTime = -1;
 
-	private String submitterAgent = null;
+	private final String submitterAgent = null;
 
 	private File ingestLog;
 	private BufferedWriter ingestLogWriter = null;
 
 	// injected dependencies
+	private ManagementClient adminManagementClient = null;
 	private ManagementClient managementClient = null;
 	private AccessClient accessClient = null;
 	private OperationsMessageSender operationsMessageSender = null;
@@ -183,7 +184,7 @@ public class BatchIngestTask implements Runnable {
 	/**
 	 * Updates the RELS-EXT contains relationships and the MD_CONTENTS datastream. Call this method last, after all other
 	 * transactions, it will roll itself back on failure and throw an IngestException.
-	 * 
+	 *
 	 * @param submitter
 	 *           the Agent that submitted this change
 	 * @param placements
@@ -512,7 +513,7 @@ public class BatchIngestTask implements Runnable {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
@@ -578,7 +579,7 @@ public class BatchIngestTask implements Runnable {
 
 	/**
 	 * @throws BatchFailedException
-	 * 
+	 *
 	 */
 	private void checkDestination() throws BatchFailedException {
 		this.eventLogger = new PremisEventLogger(ingestProperties.getSubmitter());
@@ -687,6 +688,14 @@ public class BatchIngestTask implements Runnable {
 		this.managementClient = managementClient;
 	}
 
+	public ManagementClient getAdminManagementClient() {
+		return adminManagementClient;
+	}
+
+	public void setAdminManagementClient(ManagementClient adminManagementClient) {
+		this.adminManagementClient = adminManagementClient;
+	}
+
 	public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
 		this.operationsMessageSender = operationsMessageSender;
 	}
@@ -701,7 +710,7 @@ public class BatchIngestTask implements Runnable {
 
 	/**
 	 * @throws BatchFailedException
-	 * 
+	 *
 	 */
 	private void updateNextContainer() throws BatchFailedException {
 		int next = 0;
@@ -746,7 +755,7 @@ public class BatchIngestTask implements Runnable {
 	/**
 	 * Same as ingest, but verifies any supplied checksums against available repository metadata. If the checksums do not
 	 * match, returns false.
-	 * 
+	 *
 	 * @param xml
 	 *           FOXML document to ingest (may include MD5 contentDigest elements)
 	 * @param message
@@ -785,7 +794,7 @@ public class BatchIngestTask implements Runnable {
 		for (String dsID : dsID2md5.keySet()) {
 			Datastream d;
 			try {
-				d = this.getManagementClient().getDatastream(pid, dsID);
+				d = this.getAdminManagementClient().getDatastream(pid, dsID);
 			} catch (FedoraException e) {
 				throw fail("Cannot get datastream metadata for checksum comparison:" + pid + dsID, e);
 			}
@@ -802,7 +811,7 @@ public class BatchIngestTask implements Runnable {
 
 	/**
 	 * Polls Fedora for the last ingested PID
-	 * 
+	 *
 	 * @throws BatchFailedException
 	 */
 	private void waitForLastIngest() throws BatchFailedException {
