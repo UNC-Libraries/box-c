@@ -47,6 +47,7 @@
 		<property name="maxThreads" value="${conductor.solr.maxThreads}" />
 		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecuteDelay}" />
 		<property name="finishedQueueSize" value="1024"/>
+		<property name="updateDelay" value="50"/>
 	</bean>
 
 	<bean id="solrUpdateDriver"

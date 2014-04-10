@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
@@ -33,7 +33,7 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 	@PostConstruct
 	public void init() {
 		try {
-			descendantsQuery = FileUtils.inputStreamToString(this.getClass().getResourceAsStream("countDescendants.itql"));
+			descendantsQuery = IOUtils.toString(this.getClass().getResourceAsStream("countDescendants.itql"), "UTF-8");
 		} catch (IOException e) {
 			log.error("Failed to load queries", e);
 		}

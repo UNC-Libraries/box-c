@@ -15,15 +15,12 @@
  */
 package edu.unc.lib.dl.util;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -42,22 +39,6 @@ public class FileUtils {
 
 	static {
 		filePathPattern = Pattern.compile("^(file:)?([/\\\\]{0,3})?(.+)$");
-	}
-
-	public static void copyFile(File in, File out) throws IOException {
-		FileChannel inChannel = new FileInputStream(in).getChannel();
-		FileChannel outChannel = new FileOutputStream(out).getChannel();
-		try {
-			inChannel.transferTo(0, inChannel.size(), outChannel);
-		} catch (IOException e) {
-			throw e;
-		} finally {
-			if (inChannel != null)
-				inChannel.close();
-			if (outChannel != null)
-				outChannel.close();
-		}
-
 	}
 
 	public static void copyFolder(File src, File dest) throws IOException {
@@ -219,35 +200,6 @@ public class FileUtils {
 		} finally {
 			if (ios != null)
 				ios.close();
-		}
-	}
-	
-	public static String readFileAsString(File file) throws IOException {
-		return new String(readFileToByteArray(file));
-	}
-	
-	public static String inputStreamToString(java.io.InputStream inStream) throws java.io.IOException {
-		InputStreamReader inStreamReader = null;
-		BufferedReader reader = null;
-		try {
-			StringBuffer fileData = new StringBuffer(1000);
-			inStreamReader = new InputStreamReader(inStream);
-			reader = new BufferedReader(inStreamReader);
-			char[] buf = new char[1024];
-			int numRead = 0;
-			while ((numRead = reader.read(buf)) != -1) {
-				String readData = String.valueOf(buf, 0, numRead);
-				fileData.append(readData);
-				buf = new char[1024];
-			}
-			return fileData.toString();
-		} finally {
-			if (reader != null)
-				reader.close();
-			if (inStreamReader != null)
-				inStreamReader.close();
-			if (inStream != null)
-				inStream.close();
 		}
 	}
 }
