@@ -26,6 +26,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 public class DocumentIndexingPackageFactory {
@@ -39,7 +40,7 @@ public class DocumentIndexingPackageFactory {
 
 	private long retryDelay = 1000L;
 
-	public DocumentIndexingPackage createDocumentIndexingPackage(PID pid) {
+	public DocumentIndexingPackage createDocumentIndexingPackage(PID pid) throws IndexingException {
 
 		try {
 			log.debug("Creating DIP from FOXML for {}", pid.getPid());
@@ -53,10 +54,24 @@ public class DocumentIndexingPackageFactory {
 					log.debug("Retrieving FOXML for DIP, tries remaining: {}", tries);
 				}
 
-				foxml = managementClient.getObjectXML(pid);
+				try {
+
+					foxml = managementClient.getObjectXML(pid);
+
+				} catch (ServiceException e) {
+					// If there are retries left, retry on service exception
+					if (tries > 1) {
+						log.warn("Failed to retrieve FOXML for " + pid.getPid() + ", retrying.", e);
+					} else {
+						throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid() + " after " + maxRetries
+								+ " tries.", e);
+					}
+				}
 			} while (foxml == null && --tries > 0);
+
 			if (foxml == null)
 				throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid());
+
 			return new DocumentIndexingPackage(pid, foxml);
 		} catch (FedoraException e) {
 			throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid(), e);
@@ -65,7 +80,7 @@ public class DocumentIndexingPackageFactory {
 		}
 	}
 
-	public DocumentIndexingPackage createDocumentIndexingPackageWithRelsExt(PID pid) {
+	public DocumentIndexingPackage createDocumentIndexingPackageWithRelsExt(PID pid) throws IndexingException {
 
 		try {
 			log.debug("Creating DIP with RELS-EXT for {}", pid.getPid());
@@ -83,7 +98,7 @@ public class DocumentIndexingPackageFactory {
 		}
 	}
 
-	public DocumentIndexingPackage createDocumentIndexingPackageWithMDContents(PID pid) {
+	public DocumentIndexingPackage createDocumentIndexingPackageWithMDContents(PID pid) throws IndexingException {
 
 		try {
 			log.debug("Creating DIP with MD-CONTENTS for {}", pid.getPid());

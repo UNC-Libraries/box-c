@@ -5,14 +5,12 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
@@ -52,7 +50,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 
 	@SuppressWarnings("unchecked")
 	@Before
-	public void setup() throws SolrServerException, IOException {
+	public void setup() throws Exception {
 		initMocks(this);
 
 		server.add(populate());
@@ -93,7 +91,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 	}
 
 	@Test
-	public void testVerifyUpdated() throws SolrServerException, IOException {
+	public void testVerifyUpdated() throws Exception {
 
 		SolrDocumentList docListBefore = getDocumentList();
 
@@ -119,7 +117,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 	}
 
 	@Test
-	public void danglingContains() throws SolrServerException, IOException {
+	public void danglingContains() throws Exception {
 		children.put("uuid:4", Arrays.asList(new PID("uuid:doesnotexist")));
 
 		SolrDocumentList docListBefore = getDocumentList();
@@ -146,7 +144,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 	}
 
 	@Test
-	public void testNoDescendents() throws SolrServerException, IOException {
+	public void testNoDescendents() throws Exception {
 
 		SolrDocumentList docListBefore = getDocumentList();
 

@@ -22,6 +22,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
@@ -34,6 +35,8 @@ public class DocumentIndexingPackageFactoryTest extends Assert {
 
 	@Mock
 	private MIMETypedStream datastream;
+	@Mock
+	private Document mockFoxml;
 
 	private DocumentIndexingPackageFactory dipFactory;
 
@@ -171,6 +174,36 @@ public class DocumentIndexingPackageFactoryTest extends Assert {
 		dipFactory.setMaxRetries(3);
 
 		when(managementClient.getObjectXML(any(PID.class))).thenReturn(null);
+
+		try {
+			dipFactory.createDocumentIndexingPackage(new PID("pid"));
+		} finally {
+			verify(managementClient, times(3)).getObjectXML(any(PID.class));
+		}
+
+	}
+
+	@Test
+	public void testCreateDocumentIndexingPackageServiceException() throws Exception {
+
+		dipFactory.setRetryDelay(1L);
+		dipFactory.setMaxRetries(3);
+
+		when(managementClient.getObjectXML(any(PID.class))).thenThrow(new ServiceException("")).thenReturn(mockFoxml);
+
+		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackage(new PID("pid"));
+
+		verify(managementClient, times(2)).getObjectXML(any(PID.class));
+		assertNotNull(dip);
+	}
+
+	@Test(expected = IndexingException.class)
+	public void testCreateDocumentIndexingPackageMultipleServiceException() throws Exception {
+
+		dipFactory.setRetryDelay(1L);
+		dipFactory.setMaxRetries(3);
+
+		when(managementClient.getObjectXML(any(PID.class))).thenThrow(new ServiceException(""));
 
 		try {
 			dipFactory.createDocumentIndexingPackage(new PID("pid"));

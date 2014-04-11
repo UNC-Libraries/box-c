@@ -4,10 +4,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.junit.Before;
@@ -44,7 +42,7 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
 
 	@Before
 	@Override
-	public void setup() throws SolrServerException, IOException {
+	public void setup() throws Exception {
 		super.setup();
 
 		when(solrSettings.getFieldName(eq(SearchFieldKeys.ANCESTOR_PATH.name()))).thenReturn("ancestorPath");
@@ -64,7 +62,7 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
 	}
 
 	@Test
-	public void verifyOrphanCleanup() throws SolrServerException, IOException {
+	public void verifyOrphanCleanup() throws Exception {
 
 		when(metadata.getId()).thenReturn("uuid:2");
 		when(metadata.getAncestorPath()).thenReturn(Arrays.asList("1,uuid:1,Collections"));
@@ -96,7 +94,7 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
 	}
 
 	@Test
-	public void testIndexAll() throws SolrServerException, IOException {
+	public void testIndexAll() throws Exception {
 
 		SolrDocumentList docListBefore = getDocumentList();
 
@@ -124,7 +122,7 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
 	}
 
 	@Test(expected = IndexingException.class)
-	public void testNoAncestorBean() throws SolrServerException, IOException {
+	public void testNoAncestorBean() throws Exception {
 
 		when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(null);
 

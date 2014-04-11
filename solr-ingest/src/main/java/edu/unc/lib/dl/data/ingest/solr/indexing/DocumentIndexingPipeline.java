@@ -28,9 +28,14 @@ public class DocumentIndexingPipeline implements DocumentFilteringPipeline {
 
 	@Override
 	public void process(DocumentIndexingPackage dip) throws IndexingException {
-		// Do not process deposit records for now
+		// Do not process deposit records or objects without content models
 		if (dip.getTriples() != null) {
 			List<String> contentModels = dip.getTriples().get(ContentModelHelper.FedoraProperty.hasModel.toString());
+
+			if (contentModels == null || contentModels.size() == 0)
+				throw new UnsupportedContentModelException("Could not index object " + dip.getPid().toString()
+						+ " due having no content models assigned.");
+
 			if (contentModels.contains(ContentModelHelper.Model.DEPOSIT_RECORD.toString())) {
 				throw new UnsupportedContentModelException("Could not index object " + dip.getPid().toString()
 						+ ", objects of type " + ContentModelHelper.Model.DEPOSIT_RECORD.toString()

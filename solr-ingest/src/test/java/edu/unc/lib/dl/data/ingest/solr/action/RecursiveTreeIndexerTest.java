@@ -63,7 +63,7 @@ public class RecursiveTreeIndexerTest extends Assert {
 	}
 
 	@Test
-	public void indexNoDip() {
+	public void indexNoDip() throws Exception {
 
 		when(action.getDocumentIndexingPackage(any(PID.class), any(DocumentIndexingPackage.class))).thenReturn(null);
 
@@ -76,7 +76,7 @@ public class RecursiveTreeIndexerTest extends Assert {
 	}
 
 	@Test
-	public void indexGetDipException() {
+	public void indexGetDipException() throws Exception {
 
 		when(action.getDocumentIndexingPackage(any(PID.class), any(DocumentIndexingPackage.class)))
 			.thenThrow(new IndexingException(""));
@@ -90,7 +90,7 @@ public class RecursiveTreeIndexerTest extends Assert {
 	}
 
 	@Test
-	public void indexNoChildren() {
+	public void indexNoChildren() throws Exception {
 
 		DocumentIndexingPackage dip = mock(DocumentIndexingPackage.class);
 		when(dip.getChildren()).thenReturn(null);
@@ -106,7 +106,7 @@ public class RecursiveTreeIndexerTest extends Assert {
 	}
 
 	@Test
-	public void indexUpdate() {
+	public void indexUpdate() throws Exception {
 
 		indexer = new RecursiveTreeIndexer(request, action, false);
 
@@ -124,7 +124,7 @@ public class RecursiveTreeIndexerTest extends Assert {
 	}
 
 	@Test
-	public void indexVerifyOrder() {
+	public void indexVerifyOrder() throws Exception {
 
 		final Map<String, DocumentIndexingPackage> tree = new HashMap<String, DocumentIndexingPackage>();
 
@@ -171,7 +171,7 @@ public class RecursiveTreeIndexerTest extends Assert {
 	}
 
 	@Test
-	public void testIndexingExceptionThrown() {
+	public void testIndexingExceptionThrown() throws Exception {
 		DocumentIndexingPackage dipRoot = mock(DocumentIndexingPackage.class);
 		List<PID> children1 = Arrays.asList(new PID("c1"), new PID("c2"), new PID("c3"));
 		when(dipRoot.getChildren()).thenReturn(children1);
@@ -208,7 +208,7 @@ public class RecursiveTreeIndexerTest extends Assert {
 	 * unexpected exception occurs.
 	 */
 	@Test(expected = Exception.class)
-	public void indexUnexpectedException() {
+	public void indexUnexpectedException() throws Exception {
 
 		when(action.getSolrUpdateDriver()).thenReturn(driver, (SolrUpdateDriver) null);
 

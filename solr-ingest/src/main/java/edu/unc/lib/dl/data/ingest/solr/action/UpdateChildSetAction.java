@@ -51,12 +51,13 @@ public class UpdateChildSetAction extends UpdateTreeAction {
 					(System.currentTimeMillis() - updateRequest.getTimeStarted()) });
 	}
 
-	protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) {
+	protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) throws IndexingException {
 		return dipFactory.createDocumentIndexingPackage(childSetRequest.getPid());
 	}
 
 	@Override
-	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent) {
+	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent)
+			throws IndexingException {
 		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackage(pid);
 		dip.setParentDocument(parent);
 		return dip;

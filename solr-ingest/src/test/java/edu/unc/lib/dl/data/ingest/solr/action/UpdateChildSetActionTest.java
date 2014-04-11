@@ -69,7 +69,7 @@ public class UpdateChildSetActionTest {
 	}
 
 	@Test(expected = IndexingException.class)
-	public void testInvalidRequest() {
+	public void testInvalidRequest() throws Exception {
 
 		SolrUpdateRequest request = mock(SolrUpdateRequest.class);
 
@@ -78,7 +78,7 @@ public class UpdateChildSetActionTest {
 	}
 
 	@Test
-	public void testPerformAction() {
+	public void testPerformAction() throws Exception {
 
 		DocumentIndexingPackage dipRoot = mock(DocumentIndexingPackage.class);
 		IndexDocumentBean idbRoot = mock(IndexDocumentBean.class);
@@ -109,7 +109,7 @@ public class UpdateChildSetActionTest {
 	}
 
 	@Test
-	public void testPerformActionNoRequestTargets() {
+	public void testPerformActionNoRequestTargets() throws Exception {
 
 		DocumentIndexingPackage dipRoot = mock(DocumentIndexingPackage.class);
 		IndexDocumentBean idbRoot = mock(IndexDocumentBean.class);

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -21,7 +22,7 @@ public class MoveObjectsAction extends UpdateChildSetAction {
 	}
 
 	@Override
-	protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) {
+	protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) throws IndexingException {
 		// Store the MD_CONTENTS of the parents so new children can be correctly located
 		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackageWithMDContents(childSetRequest.getPid());
 		// Process the parent to get its inheritable properties
@@ -30,7 +31,8 @@ public class MoveObjectsAction extends UpdateChildSetAction {
 	}
 
 	@Override
-	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent) {
+	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent)
+			throws IndexingException {
 		DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
 		dip.setParentDocument(parent);
 		// Get all triples in order to retrieve children

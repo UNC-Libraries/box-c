@@ -62,7 +62,7 @@ public class IndexTreeCleanActionTest {
 	private IndexTreeCleanAction action;
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 
 		initMocks(this);
 
@@ -82,7 +82,7 @@ public class IndexTreeCleanActionTest {
 	}
 
 	@Test
-	public void testPerformAction() {
+	public void testPerformAction() throws Exception {
 
 		action.performAction(request);
 
@@ -92,7 +92,7 @@ public class IndexTreeCleanActionTest {
 	}
 
 	@Test
-	public void testPerformActionChangeAddMode() {
+	public void testPerformActionChangeAddMode() throws Exception {
 
 		action.setAddDocumentMode(false);
 

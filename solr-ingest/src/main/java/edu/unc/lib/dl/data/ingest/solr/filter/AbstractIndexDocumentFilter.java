@@ -15,14 +15,14 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.exception.OrphanedObjectException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
@@ -31,32 +31,23 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
+/**
+ * Base class for document indexing filters containing utility methods.
+ *
+ * @author bbpennel
+ * @date Apr 11, 2014
+ */
 public abstract class AbstractIndexDocumentFilter implements IndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexDocumentFilter.class);
+
 	protected TripleStoreQueryService tsqs;
 	protected DocumentIndexingPackageFactory dipFactory;
-	
+
 	protected String readFileAsString(String filePath) throws java.io.IOException {
-		StringBuffer fileData = new StringBuffer(1000);
-		java.io.InputStream inStream = this.getClass().getResourceAsStream(filePath);
-		java.io.InputStreamReader inStreamReader = new InputStreamReader(inStream);
-		BufferedReader reader = new BufferedReader(inStreamReader);
-		// BufferedReader reader = new BufferedReader(new
-		// InputStreamReader(this.getClass().getResourceAsStream(filePath)));
-		char[] buf = new char[1024];
-		int numRead = 0;
-		while ((numRead = reader.read(buf)) != -1) {
-			String readData = String.valueOf(buf, 0, numRead);
-			fileData.append(readData);
-			buf = new char[1024];
-		}
-		reader.close();
-		inStreamReader.close();
-		inStream.close();
-		return fileData.toString();
+		return IOUtils.toString(this.getClass().getResourceAsStream(filePath));
 	}
-	
-	protected DocumentIndexingPackage retrieveParentDIP(DocumentIndexingPackage dip) {
+
+	protected DocumentIndexingPackage retrieveParentDIP(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();
 		PID parentPID = null;
 		// Try to get the parent pid from the items ancestors if available.
@@ -80,7 +71,14 @@ public abstract class AbstractIndexDocumentFilter implements IndexDocumentFilter
 		dip.setParentDocument(parentDIP);
 		return parentDIP;
 	}
-	
+
+	/**
+	 * Gets a map of triples for the object identified in a DIP, either by pulling it from the indexing package if it is
+	 * available or calling back to the triple store.
+	 *
+	 * @param dip
+	 * @return
+	 */
 	protected Map<String, List<String>> retrieveTriples(DocumentIndexingPackage dip) {
 		Map<String, List<String>> triples;
 		if (dip.getFoxml() == null) {
@@ -93,8 +91,8 @@ public abstract class AbstractIndexDocumentFilter implements IndexDocumentFilter
 		}
 		return triples;
 	}
-	
-	protected String getFirstTripleValue(Map<String, List<String>> triples, String property) { 
+
+	protected String getFirstTripleValue(Map<String, List<String>> triples, String property) {
 		List<String> values = triples.get(property);
 		if (values == null || values.size() == 0)
 			return null;

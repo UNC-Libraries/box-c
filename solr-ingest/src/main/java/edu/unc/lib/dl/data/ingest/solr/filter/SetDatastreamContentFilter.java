@@ -45,11 +45,11 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 /**
  * Extracts datastreams from an object and sets related properties concerning the default datastream for the object,
  * including the mimetype and extension into the content type hierarchical facet.
- * 
+ *
  * Sets datastream, contentType, filesizeTotal, filesizeSort
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDatastreamContentFilter.class);
@@ -120,7 +120,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 							defaultWebData.setMimetype(mimetype);
 					}
 				}
-				
+
 				// If the filesize on the datastream is not set (due to old version of fedora creating it), then grab it from rels-ext
 				if (defaultWebData.getFilesize() < 0) {
 					String sourceFileSize = relsExt.getChildText(ContentModelHelper.CDRProperty.hasSourceFileSize.name(), JDOMNamespaceUtil.CDR_NS);
@@ -138,7 +138,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		} catch (JDOMException e) {
 			throw new IndexingException("Failed to extract default web data for " + dip.getPid().getPid(), e);
 		}
-		
+
 		long totalSize = 0;
 		List<String> datastreamList = new ArrayList<String>(datastreams.size());
 		dip.getDocument().setDatastream(datastreamList);
@@ -154,7 +154,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	/**
 	 * Extracts a list of datastreams from a FOXML documents, including the datastream's name, file type, file size and
 	 * backing enumeration.
-	 * 
+	 *
 	 * @param dip
 	 * @param datastreams
 	 *           List of datastreams to add to
@@ -194,7 +194,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		}
 	}
 
-	private DocumentIndexingPackage getDefaultWebObject(Element relsExt) throws JDOMException {
+	private DocumentIndexingPackage getDefaultWebObject(Element relsExt) throws IndexingException, JDOMException {
 		String defaultWebObject = FOXMLJDOMUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebObject.name(),
 				JDOMNamespaceUtil.CDR_NS, relsExt);
 		if (defaultWebObject == null)
@@ -284,7 +284,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 			if (mimetypeType.equals("audio"))
 				return ContentCategory.audio;
 		}
-		
+
 		String contentCategory = (String)this.contentTypeProperties.get("mime." + mimetype);
 		if (contentCategory == null)
 			contentCategory = (String)this.contentTypeProperties.get("ext." + extension);

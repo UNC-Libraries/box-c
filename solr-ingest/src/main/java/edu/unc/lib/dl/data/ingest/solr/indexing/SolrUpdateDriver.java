@@ -35,9 +35,9 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
  * Performs batch add/delete/update operations to a Solr index.
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class SolrUpdateDriver {
 	private static final Logger log = LoggerFactory.getLogger(SolrUpdateDriver.class);
@@ -70,7 +70,7 @@ public class SolrUpdateDriver {
 	/**
 	 * Perform a partial document update from a IndexDocumentBean. Null fields are considered to be unspecified and will
 	 * not be changed, except for the update timestamp field which is always set.
-	 * 
+	 *
 	 * @param operation
 	 * @param idb
 	 * @throws IndexingException
@@ -100,11 +100,11 @@ public class SolrUpdateDriver {
 		}
 	}
 
-	public void delete(PID pid) {
+	public void delete(PID pid) throws IndexingException {
 		this.delete(pid.getPid());
 	}
 
-	public void delete(String pid) {
+	public void delete(String pid) throws IndexingException {
 		try {
 			solrServer.deleteById(pid);
 		} catch (IOException e) {
@@ -114,7 +114,7 @@ public class SolrUpdateDriver {
 		}
 	}
 
-	public void deleteByQuery(String query) {
+	public void deleteByQuery(String query) throws IndexingException {
 		try {
 			solrServer.deleteByQuery(query);
 		} catch (IOException e) {
@@ -127,7 +127,7 @@ public class SolrUpdateDriver {
 	/**
 	 * Force a commit of the currently staged updates.
 	 */
-	public void commit() {
+	public void commit() throws IndexingException {
 		try {
 			solrServer.commit();
 		} catch (SolrServerException e) {

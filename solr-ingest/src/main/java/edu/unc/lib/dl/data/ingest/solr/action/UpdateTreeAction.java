@@ -87,7 +87,8 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 		return Integer.parseInt(results.get(0).get(0));
 	}
 
-	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent) {
+	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent)
+			throws IndexingException {
 		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackage(pid);
 		dip.setParentDocument(parent);
 		return dip;

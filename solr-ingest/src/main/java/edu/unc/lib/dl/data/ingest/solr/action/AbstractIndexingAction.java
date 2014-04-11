@@ -61,7 +61,7 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 	 * @param updateRequest
 	 * @return
 	 */
-	protected BriefObjectMetadataBean getRootAncestorPath(SolrUpdateRequest updateRequest) {
+	protected BriefObjectMetadataBean getRootAncestorPath(SolrUpdateRequest updateRequest) throws IndexingException {
 		List<String> resultFields = new ArrayList<String>();
 		resultFields.add(SearchFieldKeys.ID.name());
 		resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());

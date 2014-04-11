@@ -62,6 +62,8 @@
 		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
 		<property name="managementClient" ref="managementClient" />
 		<property name="accessClient" ref="accessClient" />
+		<property name="retryDelay" value="10000" />
+		<property name="maxRetries" value="3" />
 	</bean>
 
 	<!-- Ingest filters -->

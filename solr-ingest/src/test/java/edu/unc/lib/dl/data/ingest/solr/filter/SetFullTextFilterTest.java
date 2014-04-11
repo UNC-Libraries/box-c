@@ -74,7 +74,7 @@ public class SetFullTextFilterTest extends Assert {
 	}
 
 	@Test
-	public void testNoTriplesNoFullText() {
+	public void testNoTriplesNoFullText() throws Exception {
 
 		when(tripleValues.size()).thenReturn(0);
 
@@ -113,7 +113,7 @@ public class SetFullTextFilterTest extends Assert {
 	}
 
 	@Test
-	public void testTriplesNoFullText() {
+	public void testTriplesNoFullText() throws Exception {
 
 		when(tsqs.fetchBySubjectAndPredicate(any(PID.class), eq(ContentModelHelper.CDRProperty.fullText.toString())))
 				.thenReturn(null);

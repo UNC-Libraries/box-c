@@ -44,31 +44,31 @@ public class SetContentStatusFilterTest extends Assert {
 
 	@Mock
 	private TripleStoreQueryService tsqs;
-	
+
 	private Map<String, List<String>> triples;
-	
+
 	private SetContentStatusFilter filter;
-	
+
 	@Before
 	public void setUp() {
 		initMocks(this);
-		
+
 		triples = new HashMap<String, List<String>>();
 		triples.put(ContentModelHelper.FedoraProperty.disseminates.toString(),
 				Arrays.asList("info:fedora/uuid:item/" + ContentModelHelper.Datastream.RELS_EXT.getName()));
-		
+
 		when(tsqs.fetchAllTriples(any(PID.class))).thenReturn(triples);
-		
+
 		filter = new SetContentStatusFilter();
 		filter.setTripleStoreQueryService(tsqs);
 	}
-	
+
 	@Test
 	public void testDescribedQuery() throws Exception {
-		
+
 		triples.put(ContentModelHelper.FedoraProperty.hasModel.toString(),
 				Arrays.asList(ContentModelHelper.Model.SIMPLE.toString()));
-		
+
 		triples.put(ContentModelHelper.FedoraProperty.disseminates.toString(), Arrays.asList("info:fedora/uuid:item/"
 				+ ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), "info:fedora/uuid:item/"
 				+ ContentModelHelper.Datastream.RELS_EXT.getName()));
@@ -76,60 +76,60 @@ public class SetContentStatusFilterTest extends Assert {
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
 		filter.filter(dip);
 		IndexDocumentBean idb = dip.getDocument();
-		
+
 		assertEquals("Only one content status should be set for non-aggregate", 1, idb.getContentStatus().size());
 		assertTrue(idb.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
-		
+
 	}
-	
+
 	@Test
-	public void testNotDescribedQuery() {
-		
+	public void testNotDescribedQuery() throws Exception {
+
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
 		filter.filter(dip);
 		IndexDocumentBean idb = dip.getDocument();
-		
+
 		assertEquals("Only one content status should be set for non-aggregate", 1, idb.getContentStatus().size());
 		assertTrue(idb.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
-		
+
 	}
-	
+
 	@Test
-	public void testAggregateNoDWOQuery() {
+	public void testAggregateNoDWOQuery() throws Exception {
 		triples.put(ContentModelHelper.FedoraProperty.hasModel.toString(),
 				Arrays.asList(ContentModelHelper.Model.AGGREGATE_WORK.toString()));
-		
+
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
 		filter.filter(dip);
 		IndexDocumentBean idb = dip.getDocument();
-		
+
 		assertEquals("Two statuses expected for aggregate object", 2, idb.getContentStatus().size());
 		assertTrue("Object incorrectly labeled as described",
 				idb.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
 		assertTrue("Aggregate should not have a default web object assigned",
 				idb.getContentStatus().contains(FacetConstants.CONTENT_NO_DEFAULT_OBJECT));
 	}
-	
+
 	@Test
-	public void testAggregateWithDWOQuery() {
-		
+	public void testAggregateWithDWOQuery() throws Exception {
+
 		triples.put(ContentModelHelper.CDRProperty.defaultWebObject.toString(),
 				Arrays.asList("dwo"));
-		
+
 		triples.put(ContentModelHelper.FedoraProperty.hasModel.toString(),
 				Arrays.asList(ContentModelHelper.Model.AGGREGATE_WORK.toString()));
-		
+
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
 		filter.filter(dip);
 		IndexDocumentBean idb = dip.getDocument();
-		
+
 		assertEquals("Two statuses expected for aggregate object", 2, idb.getContentStatus().size());
 		assertTrue("Object incorrectly labeled as described",
 				idb.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
 		assertTrue("Aggregate should not have a default web object assigned",
 				idb.getContentStatus().contains(FacetConstants.CONTENT_DEFAULT_OBJECT));
 	}
-	
+
 	@Test
 	public void testDescribedFoxml() throws Exception {
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
@@ -150,5 +150,5 @@ public class SetContentStatusFilterTest extends Assert {
 		assertTrue(idb.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
 		assertTrue(idb.getContentStatus().contains(FacetConstants.CONTENT_DEFAULT_OBJECT));
 	}
-	
+
 }
