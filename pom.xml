@@ -330,6 +330,12 @@
 			<id>aduna</id>
 			<name>Aduna software</name>
 			<url>http://repo.aduna-software.org/maven2/releases</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 		<repository>
 			<id>duraspace</id>

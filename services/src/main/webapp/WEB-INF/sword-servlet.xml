@@ -89,11 +89,8 @@
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
 		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="accessClient" ref="accessClient"/>
-		<property name="aipIngestPipeline" ref="aipIngestPipeline"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="sipProcessorFactory" ref="sipProcessorFactory"/>
-		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="schematronValidator" ref="schematronValidator"/>
 		<property name="available" value="true"/>
 		<property name="collectionsPid" ref="collectionsPid"/>
