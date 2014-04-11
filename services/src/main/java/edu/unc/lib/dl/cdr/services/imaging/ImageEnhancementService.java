@@ -31,7 +31,8 @@ import edu.unc.lib.dl.util.JMSMessageUtil;
 /**
  * Enhancement service used for construction of jp2 derived images.
  * 
- * @author Gregory Jansen, bbpennel
+ * @author Gregory Jansen
+ * @author bbpennel
  */
 public class ImageEnhancementService extends AbstractDatastreamEnhancementService {
 	private static final Logger LOG = LoggerFactory.getLogger(ImageEnhancementService.class);

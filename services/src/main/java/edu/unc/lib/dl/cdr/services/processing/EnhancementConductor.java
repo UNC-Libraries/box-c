@@ -44,7 +44,8 @@ import edu.unc.lib.dl.util.JMSMessageUtil;
 /**
  * Central service conductor class which stores and processes a queue of messages indicating updates to Fedora objects.
  * 
- * @author Gregory Jansen, Ben Pennell
+ * @author Gregory Jansen
+ * @author bbpennel
  */
 public class EnhancementConductor implements MessageConductor, ServiceConductor {
 	private static final Logger log = LoggerFactory.getLogger(EnhancementConductor.class);

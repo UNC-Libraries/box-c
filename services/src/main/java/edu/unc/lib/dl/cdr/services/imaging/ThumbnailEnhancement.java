@@ -44,9 +44,10 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Enhancement for the creation of derivative thumbnail images.
- * 
- * @author Gregory Jansen, bbpennel
- * 
+ *
+ * @author Gregory Jansen
+ * @author bbpennel
+ *
  */
 public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 	private static final Logger LOG = LoggerFactory.getLogger(ThumbnailEnhancement.class);

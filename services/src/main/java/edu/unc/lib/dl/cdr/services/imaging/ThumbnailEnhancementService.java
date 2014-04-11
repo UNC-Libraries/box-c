@@ -34,7 +34,8 @@ import edu.unc.lib.dl.util.JMSMessageUtil;
 /**
  * Generates surrogate thumbnail images of items with data_files of image format types.
  * 
- * @author Gregory Jansen, bbpennel
+ * @author Gregory Jansen
+ * @author bbpennel
  * 
  */
 public class ThumbnailEnhancementService extends AbstractDatastreamEnhancementService {
