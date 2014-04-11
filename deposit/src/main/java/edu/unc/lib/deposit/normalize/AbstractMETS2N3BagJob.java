@@ -105,6 +105,8 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 				}
 				div.setAttribute("CONTENTIDS", sb.toString());
 			}
+			Element pidEvent = getEventLog().logEvent(Type.NORMALIZATION, "Assigned PID to object defined in a METS div", pid);
+			appendDepositEvent(pid, pidEvent);
 			count++;
 		}
 		recordDepositEvent(Type.NORMALIZATION, "Assigned {0,choice,1#PID|2#PIDs} to {0,choice,1#one object|2#{0,number} objects} ", count);

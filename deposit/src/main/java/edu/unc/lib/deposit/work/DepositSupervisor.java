@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
 import edu.unc.lib.deposit.fcrepo3.MakeFOXML;
 import edu.unc.lib.deposit.normalize.BioMedCentralExtrasJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
@@ -33,6 +34,7 @@ import edu.unc.lib.deposit.validate.VirusScanJob;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
@@ -90,12 +92,11 @@ public class DepositSupervisor implements WorkerListener {
 
 			@Override
 			public void run() {
-				log.info("Checking for registered deposits.. ({})", id);
 				for (Map<String, String> fields : depositStatusFactory.getAll()) {
-					if (DepositState.registered.name().equals(
-							fields.get(DepositField.status.name()))) {
+					if (DepositAction.register.name().equals(
+							fields.get(DepositField.actionRequest.name()))) {
 						String uuid = fields.get(DepositField.uuid.name());
-						log.info("Found new registered deposit: {}", uuid);
+						log.info("Found request to register a deposit: {}", uuid);
 						if (depositStatusFactory.addSupervisorLock(uuid, id)) {
 							try {
 								log.info("Queued first job ({})", uuid);
@@ -112,7 +113,7 @@ public class DepositSupervisor implements WorkerListener {
 				}
 			}
 
-		}, 10 * 1000, 10 * 1000);
+		}, 1000, 1000);
 	}
 	
 	@PreDestroy
@@ -274,6 +275,11 @@ public class DepositSupervisor implements WorkerListener {
 		}
 
 		// TODO RDF Graph Validation
+		
+		// Ingest
+		if (!successfulJobs.contains(IngestDeposit.class.getName())) {
+			return makeJob(IngestDeposit.class, depositUUID);
+		}
 
 		return null;
 	}

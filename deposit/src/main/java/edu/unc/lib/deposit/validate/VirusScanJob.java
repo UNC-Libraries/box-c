@@ -125,6 +125,7 @@ public class VirusScanJob extends AbstractDepositJob implements Runnable {
 					PremisEventLogger.addDetailedOutcome(ev, "failure",
 							"found virus signature " + result.getSignature(),
 							null);
+					appendDepositEvent(href.getKey(), ev);
 					failures.put(storageURI.toString(), result.getSignature());
 					break;
 				case ERROR:
@@ -140,6 +141,7 @@ public class VirusScanJob extends AbstractDepositJob implements Runnable {
 					PremisEventLogger.addSoftwareAgent(ev2, "ClamAV", version);
 					PremisEventLogger.addDetailedOutcome(ev2, "success", null,
 							null);
+					appendDepositEvent(href.getKey(), ev2);
 					break;
 				}
 			}

@@ -38,11 +38,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import redis.clients.jedis.Jedis;
 import edu.unc.lib.dl.util.DepositConstants;
+import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -58,11 +63,15 @@ public class DepositController {
 	protected Jedis jedis;
 	
 	@Resource
+	private DepositStatusFactory depositStatusFactory;
+	
+	@Resource
 	private File batchIngestFolder;
 
 	@RequestMapping(value = { "", "/" }, method = RequestMethod.GET)
 	public @ResponseBody
 	Map<String, ? extends Object> getAll() {
+		//depositStatusFactory.getAll()
 		Map<String, Object> result = new HashMap<String, Object>();
 		LOG.debug("getAll()");
 		Map<String, Map<String, String>> deposits = new HashMap<String, Map<String, String>>();
@@ -102,35 +111,64 @@ public class DepositController {
 	 * @param depositUUID
 	 */
 	@RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.DELETE)
-	public void cancel(@PathVariable String uuid) {
+	public void destroy(@PathVariable String uuid) {
 		// verify deposit is registered and not yet cleaned up
-		// set deposit status to cancelled
+		// set deposit status to canceling
 	}
 	
-//	/**
-//	 * Asks repository to pause work on this deposit until further notice.
-//	 * @param depositUUID
-//	 */
-//	public void pause(String depositUUID) {
-//		
-//	}
-//	
-//	/**
-//	 * Asks repository to resume work on this deposit (after finishing other deposits).
-//	 * @param depositUUID
-//	 */
-//	public void resume(String depositUUID) {
-//		
-//	}
-//	
-//	/**
-//	 * Requests clean up of the deposit package and optionally any staged files.
-//	 * @param depositUUID
-//	 * @param deleteExtraStagedFiles if true, attempt to delete ingested staged files
-//	 */
-//	public void cleanup(String depositUUID, boolean deleteExtraStagedFiles) {
-//		
-//	}
+	/**
+	 * Request to pause, resume, cancel or destroy a deposit.
+	 * The deposit cancel action will stop the deposit, purge any ingested objects and schedule 
+	 * deposit destroy in the future. The deposit pause action halts work on a deposit
+	 * such that it can be resumed later. The deposit destroy action cleans up the 
+	 * submitted deposit package, leaving staged files alone.
+	 * @param depositUUID the unique identifier of the deposit
+	 * @param action the action to take on the deposit (pause, resume, cancel, destroy)
+	 */
+	@RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.POST)
+	public void update(@PathVariable String uuid, @RequestParam(required = true) String action) {
+		DepositAction actionRequested = DepositAction.valueOf(action);
+		if(actionRequested == null) {
+			throw new IllegalArgumentException("The deposit action is not recognized: "+action);
+		}
+		Map<String, String> status = depositStatusFactory.get(uuid);
+		String state = status.get(DepositField.state.name());
+		switch(actionRequested) {
+		case pause:
+			if(DepositState.finished.name().equals(state)) {
+				throw new IllegalArgumentException("That deposit has already finished");
+			} else if(DepositState.failed.name().equals(state)) {
+				throw new IllegalArgumentException("That deposit has already failed");
+			} else {
+				depositStatusFactory.requestAction(uuid, DepositAction.pause);
+			}
+			break;
+		case resume:
+			if(!DepositState.paused.name().equals(state)) {
+				throw new IllegalArgumentException("The deposit must be paused before you can resume");
+			} else {
+				depositStatusFactory.requestAction(uuid, DepositAction.resume);
+			}
+			break;
+		case cancel:
+			if(DepositState.finished.name().equals(state)) {
+				throw new IllegalArgumentException("That deposit has already finished");
+			} else {
+				depositStatusFactory.requestAction(uuid, DepositAction.cancel);
+			}
+			break;
+		case destroy:
+			if(DepositState.cancelled.name().equals(state) ||
+					DepositState.finished.name().equals(state)) {
+				depositStatusFactory.requestAction(uuid, DepositAction.destroy);
+			} else {
+				throw new IllegalArgumentException("The deposit must be finished or cancelled before it is destroyed");
+			}
+			break;
+		default:
+			throw new IllegalArgumentException("The requested deposit action is not implemented: "+action);
+		}
+	}
 	
 	@RequestMapping(value = { "{uuid}/jobs", "/{uuid}/jobs" }, method = RequestMethod.GET)
 	public @ResponseBody

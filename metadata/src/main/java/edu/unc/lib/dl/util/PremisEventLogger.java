@@ -45,7 +45,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  *
  */
 public class PremisEventLogger {
-	public static final String PID_TYPE = "PID";
+	public static final String PID_ID_TYPE = "PID";
 	public static final Namespace NS = Namespace.getNamespace(JDOMNamespaceUtil.PREMIS_V2_NS.getURI());
 	public static final String LOC_EVENT_TYPE_NS = "http://id.loc.gov/vocabulary/preservationEvents/";
 	public static final String EXCEPTION_EVENT_TYPE = "exception";
@@ -93,7 +93,7 @@ public class PremisEventLogger {
 	// Date(System.currentTimeMillis()));
 
 	private String defaultAgent = null;
-
+	
 	/**
 	 * A list of the exception events logged.
 	 */
@@ -225,7 +225,7 @@ public class PremisEventLogger {
 		Element result = new Element("object", NS);
 		result.setAttribute("type", "representation", JDOMNamespaceUtil.XSI_NS);
 		Element id = new Element("objectIdentifier", NS);
-		id.addContent(new Element("objectIdentifierType", NS).setText(PID_TYPE));
+		id.addContent(new Element("objectIdentifierType", NS).setText(PID_ID_TYPE));
 		id.addContent(new Element("objectIdentifierValue", NS).setText(pid.getPid()));
 		result.addContent(id);
 		return result;
@@ -329,7 +329,7 @@ public class PremisEventLogger {
 
 		// add linked agent
 		Element lai = new Element("linkingAgentIdentifier", NS);
-		lai.addContent(new Element("linkingAgentIdentifierType", NS).setText(PID_TYPE));
+		lai.addContent(new Element("linkingAgentIdentifierType", NS).setText(PID_ID_TYPE));
 		lai.addContent(new Element("linkingAgentIdentifierValue", NS).setText(this.defaultAgent));
 		lai.addContent(new Element("linkingAgentRole", NS).setText("Initiator"));
 		event.addContent(lai);
@@ -349,7 +349,7 @@ public class PremisEventLogger {
 	public Element logEvent(Type type, String message, PID pid, String dataStream) {
 		Element event = this.logEvent(type, message, pid);
 		Element source = new Element("linkingObjectIdentifier", NS);
-		source.addContent(new Element("linkingObjectIdentifierType", NS).setText(PID_TYPE));
+		source.addContent(new Element("linkingObjectIdentifierType", NS).setText(PID_ID_TYPE));
 		source.addContent(new Element("linkingObjectIdentifierValue", NS).setText(pid.getPid() + "/" + dataStream));
 		source.addContent(new Element("linkingObjectRole", NS).setText("Source Data"));
 		event.addContent(source);
@@ -361,12 +361,12 @@ public class PremisEventLogger {
 		// log the source and destination datastreams
 		// add linked object (this pid)
 		Element source = new Element("linkingObjectIdentifier", NS);
-		source.addContent(new Element("linkingObjectIdentifierType", NS).setText(PID_TYPE));
+		source.addContent(new Element("linkingObjectIdentifierType", NS).setText(PID_ID_TYPE));
 		source.addContent(new Element("linkingObjectIdentifierValue", NS).setText(pid.getPid() + "/" + sourceDataStream));
 		source.addContent(new Element("linkingObjectRole", NS).setText("Source Data"));
 		event.addContent(source);
 		Element dest = new Element("linkingObjectIdentifier", NS);
-		dest.addContent(new Element("linkingObjectIdentifierType", NS).setText(PID_TYPE));
+		dest.addContent(new Element("linkingObjectIdentifierType", NS).setText(PID_ID_TYPE));
 		dest.addContent(new Element("linkingObjectIdentifierValue", NS).setText(pid.getPid() + "/" + destDataStream));
 		dest.addContent(new Element("linkingObjectRole", NS).setText("Derived Data"));
 		event.addContent(dest);

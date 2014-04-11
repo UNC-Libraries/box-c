@@ -122,7 +122,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 			permGroups = StringUtils.join(GroupsThreadStore.getGroups(), ',');
 		}
 		status.put(DepositField.permissionGroups.name(), permGroups);
-		status.put(DepositField.status.name(), DepositState.registered.name());
+		status.put(DepositField.state.name(), DepositState.registered.name());
 		Set<String> nulls = new HashSet<String>();
 		for(String key : status.keySet()) {
 			if(status.get(key) == null) nulls.add(key);

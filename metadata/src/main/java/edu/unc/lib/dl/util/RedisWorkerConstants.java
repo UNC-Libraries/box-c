@@ -7,7 +7,7 @@ public class RedisWorkerConstants {
 	public static final String JOB_STATUS_PREFIX = "job-status:";
 
 	public static enum DepositField {
-		uuid, status, contactName, depositorName, intSenderIdentifier, intSenderDescription,
+		uuid, state, actionRequest, contactName, depositorName, intSenderIdentifier, intSenderDescription,
 		fileName, depositMethod, containerId, payLoadOctets, createTime, startTime,
 		endTime, ingestedOctets, ingestedObjects, directory, lock, submitTime, depositorEmail, 
 		packagingType, metsProfile, metsType, permissionGroups, depositMd5, depositSlug, errorMessage, 
@@ -23,6 +23,15 @@ public class RedisWorkerConstants {
 	}
 
 	public static enum DepositState {
-		registered, queued, running, paused, finished, cancelled, failed;
+		unregistered, queued, running, paused, finished, cancelled, failed;
+	}
+	
+	/**
+	 * Deposit-level instructions that can be executed by a deposit supervisor.
+	 * @author count0
+	 *
+	 */
+	public static enum DepositAction {
+		register, pause, resume, cancel, destroy;
 	}
 }

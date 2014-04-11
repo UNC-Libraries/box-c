@@ -45,7 +45,6 @@ public abstract class AbstractDepositJob {
 	private static final Logger log = LoggerFactory
 			.getLogger(AbstractDepositJob.class);
 	public static final String DEPOSIT_QUEUE = "Deposit";
-	private static final int joinPollingSeconds = 5;
 
 	@Autowired
 	private JobStatusFactory jobStatusFactory;
@@ -229,59 +228,6 @@ public abstract class AbstractDepositJob {
 
 	protected void addClicks(int clicks) {
 		getJobStatusFactory().incrCompletion(this, clicks);
-	}
-
-	/**
-	 * Pauses the current thread while polling Redis until the listed jobs are
-	 * completed, failed or killed.
-	 * 
-	 * @param jobUUIDs
-	 * @return true if all jobs completed successfully, false if any did not or
-	 *         on timeout.
-	 * @throws InterruptedException
-	 */
-	public boolean joinAfterExecute(int maxSeconds, boolean failFast,
-			String... jobUUIDs) {
-		log.debug("job {} waiting for completion of {}", getJobUUID(), jobUUIDs);
-		boolean allSuccess = true;
-		Set<String> jobsRemaining = new HashSet<String>(Arrays.asList(jobUUIDs));
-		long start = System.currentTimeMillis();
-		sleep: do {
-			if (System.currentTimeMillis() - start > maxSeconds * 1000) {
-				log.debug("job {} joining after timeout of {}", getJobUUID(),
-						maxSeconds);
-				allSuccess = false;
-				break sleep;
-			}
-			try {
-				Thread.sleep(1000 * joinPollingSeconds);
-			} catch (InterruptedException expected) {
-			}
-			Set<String> done = new HashSet<String>();
-			for (String uuid : jobsRemaining) {
-				String state = getJobStatusFactory().getJobState(uuid);
-				if (state == null)
-					continue; // job state not posted yet
-				if (JobStatus.queued.name().equals(state))
-					continue;
-				if (JobStatus.working.name().equals(state))
-					continue;
-				done.add(uuid);
-				if (JobStatus.failed.name().equals(state)
-						|| JobStatus.killed.name().equals(state)) {
-					allSuccess = false;
-					if (failFast) {
-						log.debug("job {} will join after fast fail of {}",
-								getJobUUID(), uuid);
-						break sleep;
-					}
-				}
-			}
-			jobsRemaining.removeAll(done);
-		} while (jobsRemaining.size() > 0);
-		log.debug("job {} joining after completion of {}", getJobUUID(),
-				jobUUIDs);
-		return allSuccess;
 	}
 
 	public File getSubdir(String subpath) {
