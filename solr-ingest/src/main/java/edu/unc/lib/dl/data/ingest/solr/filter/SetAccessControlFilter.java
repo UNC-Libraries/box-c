@@ -15,13 +15,12 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +37,9 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Filter which sets access control related fields for a document.
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetAccessControlFilter.class);
@@ -53,7 +52,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		Map<String, List<String>> triples = this.retrieveTriples(dip);
-		
+
 		// Generate access control information
 		ObjectAccessControlsBean aclBean;
 		if (dip.getParentDocument() == null || dip.getParentDocument().getAclBean() == null) {
@@ -67,7 +66,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 		setAccessStatus(triples, status);
 		setPublicationStatus(dip, aclBean, status);
 		setObjectStateStatus(dip, aclBean, status);
-		
+
 		dip.getDocument().setStatus(status);
 
 		String allowIndexingString = getFirstTripleValue(triples, ContentModelHelper.CDRProperty.allowIndexing.toString());
@@ -98,7 +97,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 			log.debug("Role groups: {}", dip.getDocument().getRoleGroup());
 		dip.setAclBean(aclBean);
 	}
-	
+
 	private void setAccessStatus(Map<String, List<String>> triples, List<String> status) {
 		String inheritPermissions = getFirstTripleValue(triples,
 				ContentModelHelper.CDRProperty.inheritPermissions.toString());
@@ -113,7 +112,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 				Date currentDate = new Date();
 				if (currentDate.before(embargoDate))
 					status.add("Embargoed");
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				log.warn("Failed to parse embargo date " + embargo, e);
 			}
 		}
@@ -169,7 +168,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 	/**
 	 * Inspects an object's Fedora state property to determine status.  Adds "Deleted" state if the object
 	 * or any of its ancestors have been marked for deletion.
-	 * 
+	 *
 	 * @param dip
 	 * @param triples
 	 * @param status
@@ -178,7 +177,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 		// Check if the object itself is tagged as deleted
 		if (!aclBean.getIsActive())
 			status.add("Deleted");
-		
+
 		if (aclBean.isAncestorsActive()) {
 			// If no ancestors were deleted either, then this object is active
 			if (aclBean.getIsActive())
@@ -187,7 +186,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 			// At least one ancestor was deleted, so this object is not active
 			status.add("Parent Deleted");
 		}
-		
+
 		// Store computed activity state in the dip for future generations to reference
 		dip.setIsDeleted(!aclBean.isActive());
 	}

@@ -44,6 +44,7 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 	@Autowired
 	protected TripleStoreQueryService tsqs;
 	private String descendantsQuery;
+	private long updateDelay;
 
 	@PostConstruct
 	public void init() {
@@ -107,5 +108,13 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackage(pid);
 		dip.setParentDocument(parent);
 		return dip;
+	}
+
+	public long getUpdateDelay() {
+		return updateDelay;
+	}
+
+	public void setUpdateDelay(long updateDelay) {
+		this.updateDelay = updateDelay;
 	}
 }

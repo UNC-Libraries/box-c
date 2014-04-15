@@ -47,7 +47,6 @@
 		<property name="maxThreads" value="${conductor.solr.maxThreads}" />
 		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecuteDelay}" />
 		<property name="finishedQueueSize" value="1024"/>
-		<property name="updateDelay" value="50"/>
 	</bean>
 
 	<bean id="solrUpdateDriver"
@@ -214,6 +213,7 @@
 		<property name="solrSearchService" ref="queryLayer" />
 		<property name="collectionsPid" ref="collectionsPid" />
 		<property name="accessGroups" ref="accessGroups" />
+		<property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
 	</bean>
 	
 	<bean id="indexTreeInplaceAction"
@@ -225,6 +225,7 @@
 		<property name="collectionsPid" ref="collectionsPid" />
 		<property name="solrSearchService" ref="queryLayer" />
 		<property name="accessGroups" ref="accessGroups" />
+		<property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
 	</bean>
 	
 	<bean id="indexTreeCleanAction"
@@ -236,6 +237,7 @@
 		<property name="collectionsPid" ref="collectionsPid" />
 		<property name="solrSearchService" ref="queryLayer" />
 		<property name="accessGroups" ref="accessGroups" />
+		<property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
 	</bean>
 
 	<bean id="clearIndexAction" class="edu.unc.lib.dl.data.ingest.solr.action.ClearIndexAction">
@@ -265,6 +267,7 @@
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateAccessAction">
 		<property name="pipeline" ref="solrAccessControlUpdatePipeline" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
 	</bean>
 	
 	<bean id="addSetToParentAction"
@@ -272,6 +275,7 @@
 		<property name="pipeline" ref="solrFullUpdatePipeline" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
 	</bean>
 	
 	<bean id="moveObjectsAction"
@@ -279,6 +283,7 @@
 		<property name="pipeline" ref="solrMoveUpdatePipeline" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
 	</bean>
 
 	<util:map id="solrIndexingActionMap"

@@ -30,22 +30,17 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
  * Populates the relations field with pertinent triples from RELS-Ext that are primarily intended for post retrieval purposes.
- * 
+ *
  * @author bbpennel
  *
  */
 public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetRelationsFilter.class);
-	
-	public SetRelationsFilter() {
-	}
-	
+
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		if (dip.getFoxml() == null)
-			throw new IndexingException("Unable to extract relations, no FOXML document was provided for " + dip.getPid().getPid());
-		
 		log.debug("Applying setRelationsFilter");
+
 		List<String> relations = new ArrayList<String>();
 		Map<String, List<String>> triples = retrieveTriples(dip);
 		try {
@@ -53,7 +48,7 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 			String defaultWebData = this.getDefaultWebData(dip, triples);
 			if (defaultWebData != null)
 				relations.add(ContentModelHelper.CDRProperty.defaultWebData.getPredicate() + "|" + new PID(defaultWebData).getPid());
-			
+
 			// Retrieve the default web object, from the cached version if possible.
 			DocumentIndexingPackage defaultWebObjectPackage = dip.getDefaultWebObject();
 			String defaultWebObject = null;
@@ -66,7 +61,7 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 			}
 			if (defaultWebObject != null)
 				relations.add(ContentModelHelper.CDRProperty.defaultWebObject.getPredicate() + "|" + (new PID(defaultWebObject)).getPid());
-			
+
 			// Retrieve original content datastream name for items with a main content payload
 			List<String> sourceData = triples.get(ContentModelHelper.CDRProperty.sourceData.toString());
 			if (sourceData != null)
@@ -85,13 +80,13 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 			List<String> embargoUntil = triples.get(ContentModelHelper.CDRProperty.embargoUntil.toString());
 			if (embargoUntil != null)
 				relations.add(ContentModelHelper.CDRProperty.embargoUntil.getPredicate() + "|" + embargoUntil.get(0));
-			
+
 			dip.getDocument().setRelations(relations);
 		} catch (JDOMException e) {
 			throw new IndexingException("Failed to set relations for " + dip.getPid(), e);
 		}
 	}
-	
+
 	private String getDefaultWebData(DocumentIndexingPackage dip, Map<String, List<String>> triples) throws JDOMException {
 		List<String> defaultWebData = triples.get(ContentModelHelper.CDRProperty.defaultWebData.toString());
 		// If this object does not have a defaultWebData but its defaultWebObject does, then use that instead.

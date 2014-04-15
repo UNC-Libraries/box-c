@@ -52,8 +52,6 @@ public class SolrUpdateService {
 	protected List<SolrUpdateRequest> failedMessages = null;
 	protected Set<String> lockedPids = null;
 	protected int maxThreads = 3;
-	// Delay between update jobs
-	protected long updateDelay = 20L;
 	protected long recoverableDelay = 0;
 	protected boolean autoCommit = true;
 	protected int finishedQueueSize = 1000;
@@ -188,14 +186,6 @@ public class SolrUpdateService {
 
 	public int activeThreadsCount() {
 		return executor.getActiveCount();
-	}
-
-	public long getUpdateDelay() {
-		return updateDelay;
-	}
-
-	public void setUpdateDelay(long updateDelay) {
-		this.updateDelay = updateDelay;
 	}
 
 	public boolean isPaused() {
