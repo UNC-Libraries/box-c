@@ -196,22 +196,23 @@ public class RecursiveTreeIndexerTest extends Assert {
 		List<PID> children2 = Arrays.asList(new PID("c4"));
 		when(dipC2.getChildren()).thenReturn(children2);
 		DocumentIndexingPackage dipC3 = mock(DocumentIndexingPackage.class);
+		DocumentIndexingPackage dipC4 = mock(DocumentIndexingPackage.class);
 
 		when(action.getDocumentIndexingPackage(any(PID.class), any(DocumentIndexingPackage.class)))
-				.thenReturn(dipRoot, dipC1, dipC2, dipC3);
+				.thenReturn(dipRoot, dipC1, dipC2, dipC4, dipC3);
 
 		doThrow(new IndexingException("")).when(pipeline).process(eq(dipC2));
 
 		indexer.index(new PID("c0"), parentDip);
 
-		// All objects except for the children of c2 should have been retrieved
-		verify(action, times(4)).getDocumentIndexingPackage(any(PID.class),
+		// All objects, including the children of c2 should have been retrieved
+		verify(action, times(5)).getDocumentIndexingPackage(any(PID.class),
 				any(DocumentIndexingPackage.class));
-		verify(pipeline, times(4)).process(any(DocumentIndexingPackage.class));
-		// All objects except c2 and its children should have been added to driver
-		verify(driver, times(3)).addDocument(any(IndexDocumentBean.class));
+		verify(pipeline, times(5)).process(any(DocumentIndexingPackage.class));
+		// All objects except c2 should have been added to driver
+		verify(driver, times(4)).addDocument(any(IndexDocumentBean.class));
 		// Count should only be increment for objects that successfully indexed
-		verify(request, times(3)).incrementChildrenProcessed();
+		verify(request, times(4)).incrementChildrenProcessed();
 
 		verify(dipC3).setParentDocument(isNull(DocumentIndexingPackage.class));
 		// Ensure that parent reference cleared on object that throws exception
@@ -219,13 +220,13 @@ public class RecursiveTreeIndexerTest extends Assert {
 	}
 
 	/**
-	 * This test seems a bit contrived, but it is to ensure that cleanup happens and other children are not indexed if an
-	 * unexpected exception occurs.
+	 * This test seems a bit contrived, but it is to ensure that cleanup happens and the children of the object that
+	 * threw the exception are not indexed.
 	 */
-	@Test(expected = Exception.class)
+	@Test
 	public void indexUnexpectedException() throws Exception {
 
-		when(action.getSolrUpdateDriver()).thenReturn(driver, (SolrUpdateDriver) null);
+		when(action.getSolrUpdateDriver()).thenReturn(driver, (SolrUpdateDriver) null, driver);
 
 		DocumentIndexingPackage dipRoot = mock(DocumentIndexingPackage.class);
 		List<PID> children1 = Arrays.asList(new PID("c1"), new PID("c2"));
@@ -234,16 +235,21 @@ public class RecursiveTreeIndexerTest extends Assert {
 		DocumentIndexingPackage dipC1 = mock(DocumentIndexingPackage.class);
 		IndexDocumentBean idbC1 = mock(IndexDocumentBean.class);
 		when(dipC1.getDocument()).thenReturn(idbC1);
+		List<PID> children2 = Arrays.asList(new PID("c3"));
+		when(dipC1.getChildren()).thenReturn(children2);
+
+		DocumentIndexingPackage dipC2 = mock(DocumentIndexingPackage.class);
 
 		when(action.getDocumentIndexingPackage(any(PID.class), any(DocumentIndexingPackage.class)))
-				.thenReturn(dipRoot, dipC1);
+				.thenReturn(dipRoot, dipC1, dipC2);
 
 		try {
 			indexer.index(new PID("c0"), parentDip);
 		} finally {
-			verify(action, times(2)).getDocumentIndexingPackage(any(PID.class), any(DocumentIndexingPackage.class));
+			// Everything except the children of c1 and its children should have been indexed
+			verify(action, times(3)).getDocumentIndexingPackage(any(PID.class), any(DocumentIndexingPackage.class));
 
-			verify(driver).addDocument(any(IndexDocumentBean.class));
+			verify(driver, times(2)).addDocument(any(IndexDocumentBean.class));
 			verify(driver, never()).addDocument(eq(idbC1));
 
 			verify(dipC1).setParentDocument(isNull(DocumentIndexingPackage.class));
