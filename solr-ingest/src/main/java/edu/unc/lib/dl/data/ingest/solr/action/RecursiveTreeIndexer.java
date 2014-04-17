@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.exception.OrphanedObjectException;
+import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -79,6 +81,12 @@ public class RecursiveTreeIndexer {
 
 		} catch (InterruptedException e) {
 			log.warn("Indexing of {} was interrupted", updateRequest.getPid().getPid());
+			return;
+		} catch (UnsupportedContentModelException e) {
+			log.error("Invalid content model on object {}, skipping its children", pid.getPid(), e);
+			return;
+		} catch (OrphanedObjectException e) {
+			log.error("Object {} was orphaned, skipping its children", pid.getPid(), e);
 			return;
 		} catch (IndexingException e) {
 			log.warn("Failed to index {}", pid.getPid(), e);

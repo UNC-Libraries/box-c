@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.exception.OrphanedObjectException;
+import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -36,11 +37,11 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  * incidental fields that affect the hierarchy representation or are determined from it, including the parent
  * collection, rollup identifier, and content models. It uses either the objects FOXML and its previously cached parent
  * history (in the case of recursive reindexing) or queries the path information.
- * 
+ *
  * Sets: ancestorPath, ancestorNames, parentCollection, rollup, contentModel, label, resourceType
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class SetPathFilter extends AbstractIndexDocumentFilter {
 	protected static final Logger log = LoggerFactory.getLogger(SetPathFilter.class);
@@ -99,7 +100,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		}
 		if (orphaned && !collectionsPid.getPid().equals(dip.getPid()))
 			throw new OrphanedObjectException("Object " + dip.getPid() + " is orphaned");
-		
+
 		// Sort the path nodes since they aren't guaranteed to be in order
 		this.sortPathNodes(dip.getPid().getPid(), pathNodes);
 		// Move the currentNode pointer to the last item in the sorted list
@@ -162,10 +163,10 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		dip.setResourceType(currentNode.resourceType);
 		dip.setLabel(currentNode.label);
 	}
-	
+
 	/**
 	 * Performs an in-place selection sort of the nodes, sorting by child to parent relationship
-	 *  
+	 *
 	 * @param endPID The pid for the node at the end of the chain
 	 * @param pathNodes
 	 */
@@ -198,11 +199,8 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 					+ " did not contain ancestor information for object " + dip.getPid().getPid());
 		}
 
-		Map<String, List<String>> triples = dip.getTriples();
-		if (triples == null) {
-			dip.setTriples(tsqs.fetchAllTriples(dip.getPid()));
-			triples = dip.getTriples();
-		}
+		Map<String, List<String>> triples = retrieveTriples(dip);
+
 		// Retrieve and store content models, either from rels-ext or stored
 		List<String> cmResults = triples.get(ContentModelHelper.FedoraProperty.hasModel.toString());
 		if (cmResults != null) {
@@ -213,6 +211,9 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 		// Store the resourceType for this object
 		ResourceType resourceType = ResourceType.getResourceTypeByContentModels(idb.getContentModel());
+		if (resourceType == null)
+			throw new UnsupportedContentModelException("Cannot build path for object " + dip.getPid().getPid()
+					+ " because it did not have a valid content model assigned.");
 		idb.setResourceType(resourceType.name());
 		dip.setResourceType(resourceType);
 		idb.setResourceTypeSort(resourceType.getDisplayOrder());
@@ -230,7 +231,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 			this.buildAncestorNames(ancestorNames, dip.getLabel());
 		}
 		idb.setAncestorNames(ancestorNames.toString());
-		
+
 		// If the parent has a rollup other than its own id, that means its nested inside an aggregate, so it inherits
 		if (!parentDIP.getPid().getPid().equals(parentDIP.getDocument().getRollup())) {
 			if (parentDIP.getDocument().getRollup() == null) {
