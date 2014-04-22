@@ -5,9 +5,6 @@ import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,8 +14,10 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.io.IOUtils;
+import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
@@ -33,16 +32,18 @@ import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobStatus;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
- * Constructed with deposit directory and deposit ID. 
- * Facilitates event logging with standard success/failure states.
- *
+ * Constructed with deposit directory and deposit ID. Facilitates event logging
+ * with standard success/failure states.
+ * 
  * @author count0
  * 
  */
 public abstract class AbstractDepositJob {
-	private static final Logger log = LoggerFactory.getLogger(AbstractDepositJob.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(AbstractDepositJob.class);
 	public static final String DEPOSIT_QUEUE = "Deposit";
 	private static final int joinPollingSeconds = 5;
 
@@ -68,10 +69,10 @@ public abstract class AbstractDepositJob {
 	// Directory for local data files
 	private File dataDirectory;
 
-	private final PremisEventLogger eventLog = new PremisEventLogger(this.getClass().getName());
-	// PREMIS events file for the deposit
-	private File eventsFile;
-	// Directory containing PREMIS event files for individual objects in this deposit
+	private final PremisEventLogger eventLog = new PremisEventLogger(this
+			.getClass().getName());
+	// Directory containing PREMIS event files for individual objects in this
+	// deposit
 	private File eventsDirectory;
 
 	public AbstractDepositJob() {
@@ -86,9 +87,10 @@ public abstract class AbstractDepositJob {
 	@PostConstruct
 	public void init() {
 		this.depositDirectory = new File(depositsDirectory, depositUUID);
-		this.dataDirectory = new File(depositDirectory, DepositConstants.DATA_DIR);
-		this.eventsDirectory = new File(depositDirectory, DepositConstants.EVENTS_DIR);
-		this.eventsFile = new File(depositDirectory, DepositConstants.EVENTS_FILE);
+		this.dataDirectory = new File(depositDirectory,
+				DepositConstants.DATA_DIR);
+		this.eventsDirectory = new File(depositDirectory,
+				DepositConstants.EVENTS_DIR);
 	}
 
 	public String getDepositUUID() {
@@ -123,12 +125,14 @@ public abstract class AbstractDepositJob {
 		return depositStatusFactory;
 	}
 
-	public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
+	public void setDepositStatusFactory(
+			DepositStatusFactory depositStatusFactory) {
 		this.depositStatusFactory = depositStatusFactory;
 	}
 
 	public Map<String, String> getDepositStatus() {
-		Map<String, String> result = this.getDepositStatusFactory().get(depositUUID);
+		Map<String, String> result = this.getDepositStatusFactory().get(
+				depositUUID);
 		return Collections.unmodifiableMap(result);
 	}
 
@@ -152,76 +156,70 @@ public abstract class AbstractDepositJob {
 		return eventLog;
 	}
 
-	public File getEventsFile() {
-		return eventsFile;
-	}
-
 	public File getEventsDirectory() {
 		return eventsDirectory;
 	}
 
-	public void recordDepositEvent(Type type, String messageformat, Object... args) {
+	public void recordDepositEvent(Type type, String messageformat,
+			Object... args) {
 		String message = MessageFormat.format(messageformat, args);
-		log.debug("event recorded: {}", message);
-		Element event = getEventLog().logEvent(type, message, this.getDepositPID());
-		appendDepositEvent(event);
+		Element event = getEventLog().logEvent(type, message,
+				this.getDepositPID());
+		log.debug("event recorded: {}", event);
+		appendDepositEvent(getDepositPID(), event);
 	}
 
 	public void failJob(Type type, String message, String details) {
 		log.debug("failed deposit: {}", message);
-		Element event = getEventLog().logEvent(type, message, this.getDepositPID());
-		event = PremisEventLogger.addDetailedOutcome(event, "failed", details, null);
-		appendDepositEvent(event);
+		Element event = getEventLog().logEvent(type, message,
+				this.getDepositPID());
+		event = PremisEventLogger.addDetailedOutcome(event, "failed", details,
+				null);
+		appendDepositEvent(getDepositPID(), event);
 		throw new JobFailedException(message);
 	}
 
-	public void failJob(Throwable throwable, Type type, String messageformat, Object... args) {
+	public void failJob(Throwable throwable, Type type, String messageformat,
+			Object... args) {
 		String message = MessageFormat.format(messageformat, args);
 		log.debug("failed deposit: {}", message);
 		Element event = getEventLog().logException(message, throwable);
-		event = PremisEventLogger.addLinkingAgentIdentifier(event, "SIP Processing Job", this.getClass().getName(), "Software");
-		appendDepositEvent(event);
+		event = PremisEventLogger.addLinkingAgentIdentifier(event,
+				"SIP Processing Job", this.getClass().getName(), "Software");
+		appendDepositEvent(getDepositPID(), event);
 		throw new JobFailedException(message, throwable);
 	}
 
-	protected void appendDepositEvent(Element event) {
-		File file = new File(depositDirectory, DepositConstants.EVENTS_FILE);
-		FileLock lock = null;
-		FileOutputStream out = null;
+	protected void appendDepositEvent(PID pid, Element event) {
+		File file = new File(depositDirectory, DepositConstants.EVENTS_DIR
+				+ "/" + pid.getUUID() + ".xml");
 		try {
-			file.createNewFile();
-			@SuppressWarnings("resource")
-			FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
-			// Get an exclusive lock on the whole file
-			lock = channel.lock();
-			out = new FileOutputStream(file, true);
-			out.write("\n".getBytes());
-			new XMLOutputter(Format.getPrettyFormat()).output(event, out);
-			out.close();
-		} catch (IOException e) {
-			throw new Error(e);
-		} finally {
-			IOUtils.closeQuietly(out);
-			try {
-				lock.release();
-			} catch (IOException e) {
-				throw new Error(e);
+			Document dom;
+			if (!file.exists()) {
+				file.getParentFile().mkdirs();
+				file.createNewFile();
+				dom = new Document();
+				Element premis = new Element("premis",
+						JDOMNamespaceUtil.PREMIS_V2_NS).addContent(PremisEventLogger.getObjectElement(pid));
+				dom.setRootElement(premis);
+			} else {
+				dom = new SAXBuilder().build(file);
 			}
+			dom.getRootElement().addContent(event.detach());
+			try (FileOutputStream out = new FileOutputStream(file, false)) {
+				new XMLOutputter(Format.getPrettyFormat()).output(dom, out);
+			}
+		} catch (JDOMException | IOException e1) {
+			throw new Error("Unexpected problem with deposit events file", e1);
 		}
 	}
 
 	protected void saveModel(Model model, String filepath) {
 		File arrangementFile = new File(this.getDepositDirectory(), filepath);
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(arrangementFile);
+		try(FileOutputStream fos = new FileOutputStream(arrangementFile)) {
 			model.write(fos, "N-TRIPLE");
-		} catch(IOException e) {
-			throw new Error("Cannot open file "+arrangementFile, e);
-		} finally {
-			try {
-				fos.close();
-			} catch (IOException ignored) {}
+		} catch (IOException e) {
+			throw new Error("Cannot open file " + arrangementFile, e);
 		}
 	}
 
@@ -234,48 +232,58 @@ public abstract class AbstractDepositJob {
 	}
 
 	/**
-	 * Pauses the current thread while polling Redis until the listed jobs
-	 * are completed, failed or killed.
+	 * Pauses the current thread while polling Redis until the listed jobs are
+	 * completed, failed or killed.
+	 * 
 	 * @param jobUUIDs
-	 * @return true if all jobs completed successfully, false if any did not or on timeout.
+	 * @return true if all jobs completed successfully, false if any did not or
+	 *         on timeout.
 	 * @throws InterruptedException
 	 */
-	public boolean joinAfterExecute(int maxSeconds, boolean failFast, String... jobUUIDs) {
+	public boolean joinAfterExecute(int maxSeconds, boolean failFast,
+			String... jobUUIDs) {
 		log.debug("job {} waiting for completion of {}", getJobUUID(), jobUUIDs);
 		boolean allSuccess = true;
 		Set<String> jobsRemaining = new HashSet<String>(Arrays.asList(jobUUIDs));
 		long start = System.currentTimeMillis();
 		sleep: do {
-			if(System.currentTimeMillis() - start > maxSeconds*1000) {
-				log.debug("job {} joining after timeout of {}", getJobUUID(), maxSeconds);
+			if (System.currentTimeMillis() - start > maxSeconds * 1000) {
+				log.debug("job {} joining after timeout of {}", getJobUUID(),
+						maxSeconds);
 				allSuccess = false;
 				break sleep;
 			}
 			try {
-				Thread.sleep(1000*joinPollingSeconds);
+				Thread.sleep(1000 * joinPollingSeconds);
 			} catch (InterruptedException expected) {
 			}
 			Set<String> done = new HashSet<String>();
-			for(String uuid : jobsRemaining) {
+			for (String uuid : jobsRemaining) {
 				String state = getJobStatusFactory().getJobState(uuid);
-				if(state == null) continue; // job state not posted yet
-				if(JobStatus.queued.name().equals(state)) continue;
-				if(JobStatus.working.name().equals(state)) continue;
+				if (state == null)
+					continue; // job state not posted yet
+				if (JobStatus.queued.name().equals(state))
+					continue;
+				if (JobStatus.working.name().equals(state))
+					continue;
 				done.add(uuid);
-				if(JobStatus.failed.name().equals(state) || JobStatus.killed.name().equals(state)) {
+				if (JobStatus.failed.name().equals(state)
+						|| JobStatus.killed.name().equals(state)) {
 					allSuccess = false;
-					if(failFast) {
-						log.debug("job {} will join after fast fail of {}", getJobUUID(), uuid);
+					if (failFast) {
+						log.debug("job {} will join after fast fail of {}",
+								getJobUUID(), uuid);
 						break sleep;
 					}
 				}
 			}
 			jobsRemaining.removeAll(done);
-		} while(jobsRemaining.size() > 0);
-		log.debug("job {} joining after completion of {}", getJobUUID(), jobUUIDs);
+		} while (jobsRemaining.size() > 0);
+		log.debug("job {} joining after completion of {}", getJobUUID(),
+				jobUUIDs);
 		return allSuccess;
 	}
-	
+
 	public File getSubdir(String subpath) {
 		return new File(getDepositDirectory(), subpath);
 	}

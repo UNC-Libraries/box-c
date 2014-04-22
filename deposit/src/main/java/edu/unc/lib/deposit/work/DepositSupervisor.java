@@ -120,7 +120,7 @@ public class DepositSupervisor implements WorkerListener {
 		this.timer.cancel();
 	}
 	
-	public Job makeJob(Class jobClass, String depositUUID) {
+	public Job makeJob(@SuppressWarnings("rawtypes") Class jobClass, String depositUUID) {
 		String uuid = UUID.randomUUID().toString();
 		return new Job(jobClass.getName(), uuid, depositUUID);
 	}

@@ -13,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jdom.Document;
@@ -44,9 +45,15 @@ import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DepositConstants;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
 
+/**
+ * Creates the Fedora Object XML files required for ingest into a Fedora 3.x repository.
+ * @author count0
+ *
+ */
 public class MakeFOXML extends AbstractDepositJob implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(MakeFOXML.class);
 	
@@ -78,10 +85,12 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 		
 		// establish task size
 		List<Resource> topDownObjects = DepositGraphUtils.getObjectsBreadthFirst(m, getDepositPID());
-		setTotalClicks(topDownObjects.size());
+		setTotalClicks(topDownObjects.size()+1);
 		
 		Resource deposit = m.getResource(this.getDepositPID().getURI());
 
+		writeDepositRecord(deposit);
+		
 		for(Resource o : topDownObjects) {
 			PID p = new PID(o.getURI());
 			log.debug("making FOXML for: {}", p);
@@ -145,28 +154,10 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 			}
 			
 			// add RELS-EXT
-			try {
-				ByteArrayOutputStream os = new ByteArrayOutputStream();
-				relsExt.write(os, "RDF/XML");
-				os.flush();
-				ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
-				Element relsEl = new SAXBuilder().build(is).detachRootElement(); 
-				FOXMLJDOMUtil.setInlineXMLDatastreamContent(foxml, "RELS-EXT", "Relationship Metadata", relsEl, false);
-			} catch(IOException e) {
-				log.error("trouble making RELS-EXT", e);
-			} catch (JDOMException e) {
-				log.error("trouble making RELS-EXT", e);
-			}
+			saveRELSEXTtoFOXMl(relsExt, foxml);
 			
 			// add MD_EVENTS
-			File events = new File(getSubdir(DepositConstants.EVENTS_DIR), p.getUUID()+".xml");
-			if(events.exists()) {
-				Element el = FOXMLJDOMUtil.makeLocatorDatastream(ContentModelHelper.Datastream.MD_EVENTS.getName(),
-						"M",
-						events.getAbsoluteFile().toURI().toString(),
-						"text/xml", "URL", ContentModelHelper.Datastream.MD_EVENTS.getLabel(), false, null);
-				foxml.getRootElement().addContent(el);
-			}
+			addEventsDS(p, foxml);
 			
 			// add MD_DESCRIPTIVE
 			File mods = new File(getSubdir(DepositConstants.DESCRIPTION_DIR), p.getUUID()+".xml");
@@ -188,18 +179,104 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 				foxml.getRootElement().addContent(el);
 			}
 			
-			// save foxml to file
-			File foxmlFile = new File(getSubdir(DepositConstants.FOXML_DIR), p.getUUID()+".xml");
-			
-			try(FileOutputStream fos = new FileOutputStream(foxmlFile)) {
-				new XMLOutputter(Format.getPrettyFormat()).output(foxml, fos);
-			} catch (FileNotFoundException e) {
-				throw new Error("Unexpected error creating foxml file.", e);
-			} catch (IOException e) {
-				throw new Error("Unexpected error creating foxml file.", e);
-			}
+			writeFOXML(p, foxml);
 			addClicks(1);
 		}
+	}
+
+	/**
+	 * save foxml to file
+	 * @param p
+	 * @param foxml
+	 */
+	private void writeFOXML(PID p, Document foxml) {
+		File foxmlFile = new File(getSubdir(DepositConstants.FOXML_DIR), p.getUUID()+".xml");
+		try(FileOutputStream fos = new FileOutputStream(foxmlFile)) {
+			new XMLOutputter(Format.getPrettyFormat()).output(foxml, fos);
+		} catch (FileNotFoundException e) {
+			throw new Error("Unexpected error creating foxml file.", e);
+		} catch (IOException e) {
+			throw new Error("Unexpected error creating foxml file.", e);
+		}
+	}
+
+	private void addEventsDS(PID p, Document foxml) {
+		File events = new File(getSubdir(DepositConstants.EVENTS_DIR), p.getUUID()+".xml");
+		if(events.exists()) {
+			Element el = FOXMLJDOMUtil.makeLocatorDatastream(ContentModelHelper.Datastream.MD_EVENTS.getName(),
+					"M",
+					events.getAbsoluteFile().toURI().toString(),
+					"text/xml", "URL", ContentModelHelper.Datastream.MD_EVENTS.getLabel(), false, null);
+			foxml.getRootElement().addContent(el);
+		}
+	}
+
+	private void saveRELSEXTtoFOXMl(Model relsExt, Document foxml) {
+		try {
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			relsExt.write(os, "RDF/XML");
+			os.flush();
+			ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
+			Element relsEl = new SAXBuilder().build(is).detachRootElement(); 
+			FOXMLJDOMUtil.setInlineXMLDatastreamContent(foxml, "RELS-EXT", "Relationship Metadata", relsEl, false);
+		} catch(IOException e) {
+			log.error("trouble making RELS-EXT", e);
+		} catch (JDOMException e) {
+			log.error("trouble making RELS-EXT", e);
+		}
+	}
+
+	private void writeDepositRecord(Resource deposit) {
+		Model m = deposit.getModel();
+		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(getDepositPID().getPid());
+		FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.state, "A");
+		Statement lstmt = deposit.getProperty(dprop(m, DepositRelationship.label));
+		if(lstmt != null) {
+			FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.label, lstmt.getString());
+		}
+		
+		// add manifest DS
+		File mets = getMETSFile();
+		if(mets.exists()) {
+			String dsLabel = ContentModelHelper.Datastream.DATA_MANIFEST.getLabel();
+			Element el = FOXMLJDOMUtil.makeLocatorDatastream(ContentModelHelper.Datastream.DATA_MANIFEST.getName(),
+					"M", mets.getAbsoluteFile().toURI().toString(), "text/xml", "URL", dsLabel,
+					false, null);
+			foxml.getRootElement().addContent(el);
+		}
+		
+		addEventsDS(getDepositPID(), foxml);
+		
+		// add RELS
+		Map<String, String> status = getDepositStatus();
+		Model rels = ModelFactory.createDefaultModel();
+		Resource d = rels.createResource(deposit.getURI());
+		rels.add(d, fprop(m, FedoraProperty.hasModel), cmodel(m, ContentModelHelper.Model.DEPOSIT_RECORD));
+		String depositPackageType = status.get(DepositField.packagingType.name());
+		if(depositPackageType != null) {
+			Resource t = rels.getResource(depositPackageType);
+			rels.add(d, cdrprop(rels, ContentModelHelper.CDRProperty.depositPackageType), t);
+		}
+		String method = status.get(DepositField.depositMethod.name());
+		if(method != null) {
+			rels.add(d, cdrprop(rels, ContentModelHelper.CDRProperty.depositMethod), method);
+		}
+		String by = status.get(DepositField.depositorName.name());
+		if(by != null) {
+			rels.add(d, cdrprop(rels, ContentModelHelper.CDRProperty.depositedOnBehalfOf), by);
+		}
+		saveRELSEXTtoFOXMl(rels, foxml);
+		writeFOXML(getDepositPID(), foxml);
+	}
+	
+	protected File getMETSFile() {
+		File result = new File(getDepositDirectory(), "mets.xml");
+		if(!result.exists()) {
+			result = new File(getDepositDirectory(), "METS.xml");
+		} else if(!result.exists()) {
+			result = new File(getDepositDirectory(), "METS.XML");
+		}
+		return result;
 	}
 
 }
