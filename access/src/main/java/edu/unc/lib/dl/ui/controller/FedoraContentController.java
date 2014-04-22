@@ -21,11 +21,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
@@ -35,7 +36,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 /**
  * Controller which handles requests for specific content datastreams from Fedora and streams the results back as the
  * response.
- * 
+ *
  * @author bbpennel
  */
 @Controller
@@ -45,44 +46,52 @@ public class FedoraContentController {
 
 	@RequestMapping("/indexablecontent/{pid}")
 	public void getDefaultIndexableContent(@PathVariable("pid") String pid,
-			@RequestParam(value = "dl", defaultValue = "false") boolean download, HttpServletRequest request,
-			HttpServletResponse response) {
-		fedoraContentService.streamData(pid, ContentModelHelper.Datastream.DATA_FILE.getName(), download, response);
+			@RequestParam(value = "dl", defaultValue = "false") boolean download,
+			@CookieValue(value = "_ga", required = false) String gaCid,
+			HttpServletRequest request, HttpServletResponse response) {
+		fedoraContentService
+				.streamData(pid, ContentModelHelper.Datastream.DATA_FILE.getName(), download, gaCid, response);
 	}
 
 	@RequestMapping("/indexablecontent/{pid}/{datastream}")
 	public void getIndexableContent(@PathVariable("pid") String pid, @PathVariable("datastream") String datastream,
-			@RequestParam(value = "dl", defaultValue = "false") boolean download, HttpServletRequest request,
-			HttpServletResponse response) {
-		fedoraContentService.streamData(pid, datastream, download, response);
+			@RequestParam(value = "dl", defaultValue = "false") boolean download,
+			@CookieValue(value = "_ga", required = false) String gaCid,
+			HttpServletRequest request, HttpServletResponse response) {
+		fedoraContentService.streamData(pid, datastream, download, gaCid, response);
 	}
 
 	@RequestMapping("/indexablecontent")
 	public void getIndexableContentByParameters(@RequestParam("id") String id, @RequestParam("ds") String datastream,
-			@RequestParam(value = "dl", defaultValue = "false") boolean download, HttpServletRequest request,
-			HttpServletResponse response) {
-		fedoraContentService.streamData(id, datastream, download, response);
+			@RequestParam(value = "dl", defaultValue = "false") boolean download,
+			@CookieValue(value = "_ga", required = false) String gaCid,
+			HttpServletRequest request, HttpServletResponse response) {
+		fedoraContentService.streamData(id, datastream, download, gaCid, response);
 	}
 
 	@RequestMapping("/content/{pid}")
 	public void getDefaultDatastream(@PathVariable("pid") String pid,
-			@RequestParam(value = "dl", defaultValue = "false") boolean download, HttpServletRequest request,
-			HttpServletResponse response) {
-		fedoraContentService.streamData(pid, ContentModelHelper.Datastream.DATA_FILE.getName(), download, response);
+			@RequestParam(value = "dl", defaultValue = "false") boolean download,
+			@CookieValue(value = "_ga", required = false) String gaCid,
+			HttpServletRequest request, HttpServletResponse response) {
+		fedoraContentService
+				.streamData(pid, ContentModelHelper.Datastream.DATA_FILE.getName(), download, gaCid, response);
 	}
 
 	@RequestMapping("/content/{pid}/{datastream}")
 	public void getDatastream(@PathVariable("pid") String pid, @PathVariable("datastream") String datastream,
-			@RequestParam(value = "dl", defaultValue = "false") boolean download, HttpServletRequest request,
-			HttpServletResponse response) {
-		fedoraContentService.streamData(pid, datastream, download, response);
+			@RequestParam(value = "dl", defaultValue = "false") boolean download,
+			@CookieValue(value = "_ga", required = false) String gaCid,
+			HttpServletRequest request, HttpServletResponse response) {
+		fedoraContentService.streamData(pid, datastream, download, gaCid, response);
 	}
 
 	@RequestMapping("/content")
 	public void getDatastreamByParameters(@RequestParam("id") String id, @RequestParam("ds") String datastream,
-			@RequestParam(value = "dl", defaultValue = "false") boolean download, HttpServletRequest request,
-			HttpServletResponse response) {
-		fedoraContentService.streamData(id, datastream, download, response);
+			@RequestParam(value = "dl", defaultValue = "false") boolean download,
+			@CookieValue(value = "_ga", required = false) String gaCid,
+			HttpServletRequest request, HttpServletResponse response) {
+		fedoraContentService.streamData(id, datastream, download, gaCid, response);
 	}
 
 	@ResponseStatus(value = HttpStatus.NOT_FOUND)
