@@ -38,6 +38,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
@@ -122,7 +123,9 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 			permGroups = StringUtils.join(GroupsThreadStore.getGroups(), ',');
 		}
 		status.put(DepositField.permissionGroups.name(), permGroups);
-		status.put(DepositField.state.name(), DepositState.registered.name());
+
+		status.put(DepositField.state.name(), DepositState.unregistered.name());
+		status.put(DepositField.actionRequest.name(), DepositAction.register.name());
 		Set<String> nulls = new HashSet<String>();
 		for(String key : status.keySet()) {
 			if(status.get(key) == null) nulls.add(key);

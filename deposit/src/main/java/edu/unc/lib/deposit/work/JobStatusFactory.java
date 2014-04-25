@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import edu.unc.lib.dl.util.RedisWorkerConstants;
@@ -16,6 +18,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobStatus;
 
 public class JobStatusFactory {
+	@Autowired
 	private JedisPool jedisPool;
 
 	public JedisPool getJedisPool() {

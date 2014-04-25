@@ -6,11 +6,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -31,7 +28,6 @@ import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
-import edu.unc.lib.dl.util.RedisWorkerConstants.JobStatus;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**

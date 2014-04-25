@@ -379,7 +379,6 @@
 				<entry key="cdr-services:name=solrUpdateConductor" value-ref="solrUpdateConductor" />
 				<entry key="cdr-services:name=fedoraDataService" value-ref="fedoraDataService" />
 				<entry key="cdr-services:name=catchUpService" value-ref="catchUpService" />
-				<entry key="cdr-services:name=batchIngestService" value-ref="batchIngestService" />
 				<entry key="cdr-services:name=technicalMetadataEnhancementService" value-ref="technicalMetadataEnhancementService" />
 				<entry key="cdr-services:name=thumbnailEnhancementService" value-ref="thumbnailEnhancementService" />
 				<entry key="cdr-services:name=solrUpdateEnhancementService" value-ref="solrUpdateEnhancementService" />
@@ -394,55 +393,6 @@
 	<!-- Logging MBean -->
 	<!-- http://code.google.com/p/logging-jmx-service/wiki/Tutorial -->
 	<bean id="loggingMBean" class="de.stefanheintz.log.jmxservice.LoggingConfigImpl">
-	</bean>
-	
-	<!-- Batch Ingest Service -->
-	<bean id="batchIngestService" class="edu.unc.lib.dl.cdr.services.BatchIngestService" init-method="init" destroy-method="destroy">
-	  <property name="startOnInit" value="true"/>
-		<property name="batchIngestQueue">
-			<bean class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">
-		    <property name="serviceDirectoryPath" value="${batch.ingest.dir}"/>
-	    </bean>
-		</property>
-		<property name="batchIngestTaskFactory" ref="batchIngestTaskFactory"/>
-	</bean>
-	
-  <bean id="batchIngestTaskFactory" class="edu.unc.lib.dl.services.BatchIngestTaskFactory">
-		<lookup-method name="createTask" bean="batchIngestTask"/>
-	</bean>
-	
-	<bean id="batchIngestTask" class="edu.unc.lib.dl.services.BatchIngestTask" scope="prototype">
-		<property name="managementClient" ref="managementClient"/>
-		<property name="accessClient" ref="accessClient"/>
-		<property name="operationsMessageSender" ref="operationsMessageSender"/>
-		<property name="mailNotifier" ref="mailNotifier"/>
-		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
-		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
-	</bean>
-
-	<bean id="mailNotifier" class="edu.unc.lib.bag.clean.MailNotifier">
-		<property name="mailSender" ref="javaMailSender"/>
-		<property name="irBaseUrl"
-			value="http://${repository.host}${repository.port}/${repository.context}"/>
-		<property name="freemarkerConfiguration" ref="freemarkerConfiguration"/>
-		<property name="administratorAddress" value="${administrator.email}"/>
-		<property name="repositoryFromAddress" value="${repository.from.email}"/>
-	</bean>
-
-	<bean id="freemarkerConfiguration" class="freemarker.template.Configuration">
-		<property name="templateLoader">
-			<bean class="freemarker.cache.ClassTemplateLoader">
-				<constructor-arg index="0" type="java.lang.Class"
-					value="edu.unc.lib.bag.clean.MailNotifier"/>
-				<constructor-arg index="1" value=""/>
-			</bean>
-		</property>
-	</bean>
-	
-	<bean id="javaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-		<property name="host" value="${smtp.host}"/>
-		<property name="port" value="${smtp.port}"/>
-		<property name="defaultEncoding" value="UTF-8"/>
 	</bean>
 
 	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">

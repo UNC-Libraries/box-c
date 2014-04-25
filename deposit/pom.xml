@@ -3,6 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
+	<artifactId>deposit</artifactId>
+	<name>deposit</name>
+	<packaging>jar</packaging>
 	<parent>
 		<groupId>edu.unc.lib.cdr</groupId>
 		<artifactId>cdr</artifactId>
@@ -11,6 +14,7 @@
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<commons-daemon.version>1.0.15</commons-daemon.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -81,21 +85,33 @@
 			<artifactId>staging-areas</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>commons-daemon</groupId>
+			<artifactId>commons-daemon</artifactId>
+			<version>${commons-daemon.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jms</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-pool</artifactId>
+			<version>5.5.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>
-		<testResources>
-			<testResource>
-				<filtering>true</filtering>
-				<directory>../etc</directory>
-				<includes>
-					<include>server.properties</include>
-				</includes>
-			</testResource>
-			<testResource>
-				<directory>src/test/resources</directory>
-			</testResource>
-		</testResources>
+		<finalName>${artifactId}</finalName>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>deposit.properties</exclude>
+					<exclude>log4j.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -106,12 +122,76 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
-      		<plugin>
-        		<groupId>org.apache.maven.plugins</groupId>
-        		<artifactId>maven-failsafe-plugin</artifactId>
-      		</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<!-- JAR Plugin to configure JAR generation. -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+						</manifest>
+						<manifestEntries>
+							<Class-Path>.</Class-Path>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<!-- JavaDoc Plugin to generate a JAR containing documentation from the 
+					project. -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.8.1</version>
+				<executions>
+					<execution>
+						<id>attach-javadoc</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!-- Source Plugin to generate a JAR containing source code from the 
+					project. -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.1.2</version>
+				<executions>
+					<execution>
+						<id>attach-source</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!-- Assembly Plugin for the win! -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<descriptors>
+						<descriptor>src/main/assembly/default.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
-	<artifactId>deposit</artifactId>
-	<name>deposit</name>
 </project>

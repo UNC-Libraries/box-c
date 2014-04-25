@@ -114,7 +114,7 @@ public class DepositStatusFactory {
 	public void fail(String depositUUID, Throwable e) {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.state.name(), DepositState.failed.name());
-		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.errorMessage.name(), e.getMessage());
+		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.errorMessage.name(), e.toString()+e.getMessage());
 		getJedisPool().returnResource(jedis);
 	}
 

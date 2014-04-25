@@ -15,8 +15,8 @@ import net.greghaines.jesque.Job;
 import net.greghaines.jesque.client.Client;
 import net.greghaines.jesque.worker.Worker;
 import net.greghaines.jesque.worker.WorkerEvent;
-import net.greghaines.jesque.worker.WorkerEventEmitter;
 import net.greghaines.jesque.worker.WorkerListener;
+import net.greghaines.jesque.worker.WorkerPool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,15 +56,8 @@ public class DepositSupervisor implements WorkerListener {
 	@Autowired
 	private JobStatusFactory jobStatusFactory;
 
-	private WorkerEventEmitter workerEventEmitter;
-
-	public WorkerEventEmitter getWorkerEventEmitter() {
-		return workerEventEmitter;
-	}
-
-	public void setWorkerEventEmitter(WorkerEventEmitter workerEventEmitter) {
-		this.workerEventEmitter = workerEventEmitter;
-	}
+	@Autowired
+	private WorkerPool depositWorkerPool;
 
 	@Autowired
 	private Client jesqueClient;
@@ -77,6 +70,7 @@ public class DepositSupervisor implements WorkerListener {
 	private File depositsDirectory;
 
 	public DepositSupervisor() {
+		id = UUID.randomUUID().toString();
 	}
 
 	private static enum Queue {
@@ -85,9 +79,15 @@ public class DepositSupervisor implements WorkerListener {
 
 	@PostConstruct
 	public void init() {
-		this.workerEventEmitter.addListener(this);
-		id = UUID.randomUUID().toString();
-		timer = new Timer("DepositSupervisor Periodic Checks");
+		log.info("Initializing DepositSupervisor timer and starting Jesque worker pool");
+		depositWorkerPool.getWorkerEventEmitter().addListener(this);
+	}
+
+	public void start() {
+		log.info("Starting deposit checks and worker pool");
+		if (timer != null)
+			return;
+		timer = new Timer("DepositSupervisor " + id);
 		timer.schedule(new TimerTask() {
 
 			@Override
@@ -96,10 +96,11 @@ public class DepositSupervisor implements WorkerListener {
 					if (DepositAction.register.name().equals(
 							fields.get(DepositField.actionRequest.name()))) {
 						String uuid = fields.get(DepositField.uuid.name());
-						log.info("Found request to register a deposit: {}", uuid);
+						log.info("Registering a new deposit: {}", uuid);
 						if (depositStatusFactory.addSupervisorLock(uuid, id)) {
 							try {
-								log.info("Queued first job ({})", uuid);
+								log.info("Queuing first job for deposit {}",
+										uuid);
 								Job job = makeJob(
 										PackageIntegrityCheckJob.class, uuid);
 								jesqueClient.enqueue(Queue.PREPARE.name(), job);
@@ -114,14 +115,66 @@ public class DepositSupervisor implements WorkerListener {
 			}
 
 		}, 1000, 1000);
+		if (depositWorkerPool.isShutdown()) {
+			throw new Error("Cannot start deposit workers, already shutdown.");
+		} else if (depositWorkerPool.isPaused()) {
+			this.depositWorkerPool.togglePause(false);
+		} else {
+			depositWorkerPool.run();
+		}
 	}
-	
+
+	public void stop() {
+		depositWorkerPool.togglePause(true);
+		if (timer != null) {
+			this.timer.cancel();
+			this.timer.purge();
+			this.timer = null;
+		}
+		// FIXME cancel running jobs
+	}
+
+	public DepositStatusFactory getDepositStatusFactory() {
+		return depositStatusFactory;
+	}
+
+	public void setDepositStatusFactory(
+			DepositStatusFactory depositStatusFactory) {
+		this.depositStatusFactory = depositStatusFactory;
+	}
+
+	public JobStatusFactory getJobStatusFactory() {
+		return jobStatusFactory;
+	}
+
+	public void setJobStatusFactory(JobStatusFactory jobStatusFactory) {
+		this.jobStatusFactory = jobStatusFactory;
+	}
+
+	public Client getJesqueClient() {
+		return jesqueClient;
+	}
+
+	public void setJesqueClient(Client jesqueClient) {
+		this.jesqueClient = jesqueClient;
+	}
+
+	public File getDepositsDirectory() {
+		return depositsDirectory;
+	}
+
+	public void setDepositsDirectory(File depositsDirectory) {
+		this.depositsDirectory = depositsDirectory;
+	}
+
 	@PreDestroy
-	public void destroy() {
-		this.timer.cancel();
+	public void shutdown() {
+		stop();
+		depositWorkerPool.end(true);
 	}
-	
-	public Job makeJob(@SuppressWarnings("rawtypes") Class jobClass, String depositUUID) {
+
+	public Job makeJob(@SuppressWarnings("rawtypes") Class jobClass,
+			String depositUUID) {
 		String uuid = UUID.randomUUID().toString();
 		return new Job(jobClass.getName(), uuid, depositUUID);
 	}
@@ -210,11 +263,12 @@ public class DepositSupervisor implements WorkerListener {
 
 		// Package integrity check
 		if (status.get(DepositField.depositMd5.name()) != null) {
-			if (!successfulJobs.contains(PackageIntegrityCheckJob.class.getName())) {
+			if (!successfulJobs.contains(PackageIntegrityCheckJob.class
+					.getName())) {
 				return makeJob(PackageIntegrityCheckJob.class, depositUUID);
 			}
 		}
-		
+
 		// Package may be unpacked
 		String filename = status.get(DepositField.fileName.name());
 		if (filename != null && filename.toLowerCase().endsWith(".zip")) {
@@ -229,12 +283,12 @@ public class DepositSupervisor implements WorkerListener {
 			Job conversion = null;
 			// we need to add N3 packaging to this bag
 			if (packagingType.equals(PackagingType.METS_CDR.getUri())) {
-					conversion = makeJob(CDRMETS2N3BagJob.class, depositUUID);
+				conversion = makeJob(CDRMETS2N3BagJob.class, depositUUID);
 			} else if (packagingType.equals(PackagingType.METS_DSPACE_SIP_1
 					.getUri())
 					|| packagingType.equals(PackagingType.METS_DSPACE_SIP_2
 							.getUri())) {
-					conversion = makeJob(DSPACEMETS2N3BagJob.class, depositUUID);
+				conversion = makeJob(DSPACEMETS2N3BagJob.class, depositUUID);
 			}
 			if (conversion == null) {
 				String msg = MessageFormat
@@ -268,14 +322,14 @@ public class DepositSupervisor implements WorkerListener {
 		if (!successfulJobs.contains(VirusScanJob.class.getName())) {
 			return makeJob(VirusScanJob.class, depositUUID);
 		}
-		
+
 		// Make FOXML
 		if (!successfulJobs.contains(MakeFOXML.class.getName())) {
 			return makeJob(MakeFOXML.class, depositUUID);
 		}
 
 		// TODO RDF Graph Validation
-		
+
 		// Ingest
 		if (!successfulJobs.contains(IngestDeposit.class.getName())) {
 			return makeJob(IngestDeposit.class, depositUUID);

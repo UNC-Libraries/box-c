@@ -49,8 +49,8 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 		// write deposit file to data directory
 		if (deposit.getFile() != null) {
 			File dataDir = new File(dir, "data");
+			dataDir.mkdir();
 			File depositFile = new File(dataDir, deposit.getFilename());
-			depositFile.mkdirs();
 			try {
 				FileUtils.renameOrMoveTo(deposit.getFile(), depositFile);
 			} catch (IOException e) {
