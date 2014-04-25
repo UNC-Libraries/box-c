@@ -60,40 +60,12 @@
 	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
 		<property name="jmsTemplate" ref="jmsTemplate" />
 	</bean>
-
-	<bean id="mailNotifier" class="edu.unc.lib.bag.clean.MailNotifier">
-		<property name="mailSender">
-			<bean class="org.springframework.mail.javamail.JavaMailSenderImpl">
-				<property name="host" value="${smtp.host}" />
-				<property name="port" value="${smtp.port}" />
-				<property name="defaultEncoding" value="UTF-8" />
-			</bean>
-		</property>
-		<property name="irBaseUrl"
-			value="https://${repository.host}${repository.port}/${admin.webapp.name}/" />
-		<property name="freemarkerConfiguration" ref="freemarkerConfiguration" />
-		<property name="administratorAddress" value="${administrator.email}" />
-		<property name="repositoryFromAddress" value="${repository.from.email}" />
-	</bean>
-
-	<bean id="freemarkerConfiguration" class="freemarker.template.Configuration">
-		<property name="templateLoader">
-			<bean class="freemarker.cache.ClassTemplateLoader">
-				<constructor-arg index="0" type="java.lang.Class"
-					value="edu.unc.lib.bag.clean.MailNotifier" />
-				<constructor-arg index="1" value="" />
-			</bean>
-		</property>
-	</bean>
 	
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
 		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="accessClient" ref="accessClient"/>
-		<property name="aipIngestPipeline" ref="aipIngestPipeline"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="sipProcessorFactory" ref="sipProcessorFactory"/>
-		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="schematronValidator" ref="schematronValidator"/>
 		<property name="available" value="true"/>
 		<property name="collectionsPid" ref="collectionsPid"/>
@@ -118,20 +90,6 @@
 		init-method="init">
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 		<property name="verifyUnique" value="false" />
-	</bean>
-
-	<bean id="metsPackageSIPProcessor" class="edu.unc.lib.dl.ingest.sip.METSPackageSIPProcessor">
-		<property name="schematronValidator" ref="schematronValidator" />
-		<property name="metsPackageFileValidator">
-			<bean class="edu.unc.lib.dl.ingest.sip.METSPackageFileValidator" />
-		</property>
-		<property name="pidGenerator" ref="pidGenerator" />
-		<property name="acceptedProfiles">
-			<list>
-				<value>#{T(edu.unc.lib.dl.xml.METSProfile).CDR_SIMPLE.name}</value>
-				<value>#{T(edu.unc.lib.dl.xml.METSProfile).DSPACE_SIP.name}</value>
-			</list>
-		</property>
 	</bean>
 	
 	<!-- Update processing -->
@@ -169,7 +127,7 @@
 		<property name="authType" value="Basic"/>
 		<property name="swordPath" ref="swordPath"/>
 		<property name="basePath" value="${repository.protocol}://${repository.host}${repository.port}/${repository.context}"/>
-		<property name="tempDirectory" value="${sword.temp.dir}"/>
+		<property name="tempDirectory" value="${initial.batch.ingest.dir}"/>
 		<property name="swordVersion" value="${sword.version}"/>
 		<property name="generatorVersion" value="${cdr.version}"/>
 		<property name="generator" value="${repository.protocol}://${repository.host}"/>
@@ -213,6 +171,20 @@
 		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
 		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
 	</util:map>
+	
+	<bean id="depositsDirectory" class="java.io.File">
+		<constructor-arg value="${batch.ingest.dir}" />
+	</bean>
+
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool" scope="singleton"
+		destroy-method="destroy">
+		<constructor-arg type="String" value="${redis.host:localhost}"/>
+		<constructor-arg type="int" value="${redis.port:6379}"/>
+	</bean>
+	
+	<bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
+		<property name="jedisPool" ref="jedisPool" />
+	</bean>
 	
 	<bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl"
 		init-method="init">

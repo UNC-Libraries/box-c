@@ -22,8 +22,7 @@ public class PackageIntegrityCheckJob extends AbstractDepositJob implements Runn
 	/**
 	 * Verifies the integrity of the deposit file received from SWORD.
 	 * @param uuid
-	 * @param bagDirectory
-	 * @param depositId
+	 * @param depositUUID
 	 */
 	public PackageIntegrityCheckJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);

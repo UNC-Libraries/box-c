@@ -9,6 +9,7 @@ import java.util.Set;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
@@ -82,7 +83,7 @@ public class DepositStatusFactory {
 	public DepositState getState(String depositUUID) {
 		DepositState result = null;
 		Jedis jedis = getJedisPool().getResource();
-		String state = jedis.hget(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.status.name());
+		String state = jedis.hget(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.state.name());
 		try {
 			result = DepositState.valueOf(state);
 		} catch(NullPointerException e) {
@@ -94,7 +95,7 @@ public class DepositStatusFactory {
 	
 	public void setState(String depositUUID, DepositState state) {
 		Jedis jedis = getJedisPool().getResource();
-		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.status.name(), state.name());
+		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.state.name(), state.name());
 		getJedisPool().returnResource(jedis);
 	}
 	
@@ -112,8 +113,8 @@ public class DepositStatusFactory {
 
 	public void fail(String depositUUID, Throwable e) {
 		Jedis jedis = getJedisPool().getResource();
-		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.status.name(), DepositState.failed.name());
-		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.errorMessage.name(), e.getMessage());
+		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.state.name(), DepositState.failed.name());
+		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.errorMessage.name(), e.toString()+e.getMessage());
 		getJedisPool().returnResource(jedis);
 	}
 
@@ -124,6 +125,12 @@ public class DepositStatusFactory {
 	public void delete(String depositUUID) {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.del(DEPOSIT_STATUS_PREFIX+depositUUID);
+		getJedisPool().returnResource(jedis);
+	}
+
+	public void requestAction(String depositUUID, DepositAction action) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.actionRequest.name(), action.name());
 		getJedisPool().returnResource(jedis);
 	}
 }

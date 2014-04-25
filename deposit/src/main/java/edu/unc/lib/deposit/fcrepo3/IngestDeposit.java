@@ -62,6 +62,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 	private static long COMPLETE_CHECK_DELAY = 500L;
 
 	private JobForwardingJMSListener listener;
+	
 	@Autowired
 	private ManagementClient client;
 
@@ -92,8 +93,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 	 * Listener event fired when an object has been ingested. If the ingested object belonged to this job, then mark that
 	 * ingest as completed
 	 *
-	 * @param pid
-	 * @param action
+	 * @param message Fedora APIM message
 	 */
 	@Override
 	public void onEvent(Document message) {

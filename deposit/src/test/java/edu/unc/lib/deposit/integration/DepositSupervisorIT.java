@@ -1,6 +1,6 @@
 package edu.unc.lib.deposit.integration;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +11,7 @@ import java.util.Map;
 import org.jdom.Document;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.deposit.DepositTestUtils;
+import edu.unc.lib.deposit.work.DepositSupervisor;
 import edu.unc.lib.deposit.work.JobStatusFactory;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.FileUtils;
@@ -29,6 +31,8 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 @DirtiesContext
 public class DepositSupervisorIT {
 	
+	private static boolean started = false;
+	
 	@Autowired
 	File depositsDirectory;
 	
@@ -38,7 +42,18 @@ public class DepositSupervisorIT {
 	@Autowired
 	JobStatusFactory jobStatusFactory;
 	
+	@Autowired
+	DepositSupervisor depositSupervisor;
+	
 	// TODO test a pile of deposits at once
+	
+	@Before
+	public void setup() {
+		if(!started) {
+			depositSupervisor.start();
+			started = true;
+		}
+	}
 	
 	@Test
 	public void testWorkbenchZIP() throws ClassNotFoundException, InterruptedException {
@@ -50,7 +65,8 @@ public class DepositSupervisorIT {
 		status.put("metsProfile", "http://cdr.unc.edu/METS/profiles/Simple");
 		status.put("createTime", "2009-07-16T22:56:00-05:00");
 		status.put("depositMd5", "4554cedb53c8fa58cbbea52691085b88");
-		status.put("status","registered");
+		status.put("state","unregistered");
+		status.put("actionRequest", "register");
 		status.put("submitTime","1395158020363");
 		status.put("permissionGroups","");
 		status.put("depositorEmail","test-owner@email.unc.edu");
@@ -76,7 +92,8 @@ public class DepositSupervisorIT {
 		status.put("metsProfile", "http://cdr.unc.edu/METS/profiles/Simple");
 		status.put("createTime", "2009-07-16T22:56:00-05:00");
 		status.put("depositMd5", "c949138500f67e8617ac9968d2632d4e");
-		status.put("status","registered");
+		status.put("state","unregistered");
+		status.put("actionRequest", "register");
 		status.put("submitTime","1395158020363");
 		status.put("permissionGroups","classpath:server.properties,https://localhost/services/sword");
 		status.put("depositorEmail","test-owner@email.unc.edu");
@@ -106,7 +123,8 @@ public class DepositSupervisorIT {
 		Map<String, String> status = new HashMap<String, String>();
 		status.put("metsProfile", "http://cdr.unc.edu/METS/profiles/Simple");
 		status.put("createTime", "2009-07-16T22:56:00-05:00");
-		status.put("status","registered");
+		status.put("state","unregistered");
+		status.put("actionRequest", "register");
 		status.put("submitTime","1395158020363");
 		status.put("permissionGroups","classpath:server.properties,https://localhost/services/sword");
 		status.put("depositorEmail","test-owner@email.unc.edu");

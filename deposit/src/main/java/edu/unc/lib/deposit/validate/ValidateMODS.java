@@ -80,16 +80,22 @@ public class ValidateMODS extends AbstractDepositJob implements Runnable {
 			try {
 				// XSD validation
 				getModsSchema().newValidator().validate(new StreamSource(f));
+				PremisEventLogger.addDetailedOutcome(
+						xsdEvent,
+						"MODS is valid with respect to the schema (XSD)",
+						null, null);
 			} catch (SAXException e) {
 				invalidXSD++;
 				PremisEventLogger.addDetailedOutcome(
 						xsdEvent,
-						"MODS is not valid",
+						"MODS is not valid with respect to the schema (XSD)",
 						e.getMessage(), null);
+				
 				continue;
 			} catch (IOException unexpected) {
 				throw new Error(unexpected);
 			}
+			appendDepositEvent(p, xsdEvent);
 			// Schematron validation
 			String message = "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)";
 			Element event = getEventLog().logEvent(Type.VALIDATION, message, p, "MD_DESCRIPTIVE");
@@ -98,17 +104,18 @@ public class ValidateMODS extends AbstractDepositJob implements Runnable {
 			if (!this.getSchematronValidator().hasFailedAssertions(svrl)) {
 				PremisEventLogger.addDetailedOutcome(
 								event,
-								"MODS is valid",
+								"MODS is valid with respect to local conventions (Schematron rules)",
 								"The supplied MODS metadata meets CDR vocabulary requirements.",
 								null);
 			} else {
 				PremisEventLogger.addDetailedOutcome(
 								event,
-								"MODS is not valid",
+								"MODS is not valid with respect to local conventions (Schematron rules)",
 								"The supplied MODS metadata does not meet CDR vocabulary requirements.",
 								svrl.detachRootElement());
 				invalidVocab++;
 			}
+			appendDepositEvent(p, event);
 			addClicks(1);
 		}
 		
