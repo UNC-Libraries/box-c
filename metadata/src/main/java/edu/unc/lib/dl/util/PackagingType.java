@@ -25,7 +25,8 @@ public enum PackagingType {
 	METS_DSPACE_SIP_1("http://purl.org/net/sword-types/METSDSpaceSIP"),
 	SIMPLE_ZIP("http://purl.org/net/sword/terms/SimpleZip"),
 	ATOM("http://purl.org/net/sword/terms/Atom"),
-	BAG_WITH_N3("http://cdr.unc.edu/BAGIT/profiles/N3");
+	BAG_WITH_N3("http://cdr.unc.edu/BAGIT/profiles/N3"),
+	PROQUEST_ETD("http://proquest.com");
 	
 	private String uri;
 	
