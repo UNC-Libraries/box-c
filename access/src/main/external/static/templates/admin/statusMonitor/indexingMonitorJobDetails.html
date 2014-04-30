@@ -1,18 +1,36 @@
 <div>
-	<p><span>Ingest ID:</span> <%= data.id %></p>
-	<p><span>Last refreshed:</span> <%= moment().format('YYYY-MM-DD h:mm:ssa') %></p>
-	<p><span>Status:</span> <%= data.status %></p>
-	<p><span>Label:</span> <%= data.targetLabel %></p>
-	<p><span>Target:</span> <%= data.targetPID %></p>
-	<p><span>Queued:</span><%= dateFormat(data.queuedTimestamp) %>
-		
-	<% if (data.parent != null && data.parent.label != "SOLR_UPDATE:ROOT"){ %>
-		<p><span>Parent Operation:</span><%= data.parent.label %></p>
+	<h3>Details for action <%= data.action.label %></h3> (<span class="<%= data.status.toLowerCase() %>"><%= data.status %></span>, refreshed <%= moment().format('h:mm:ssa') %>)
+	
+	<% if (data.topChildren) { %>
+		<p><label>Destination:</label> <span class="target_label"><%= data.targetLabel %></span><br/><%= data.targetPID %></p>
+	<% } else { %>
+		<p><label>Indexing object:</label> <span class="target_label"><%= data.targetLabel %></span><br/><%= data.targetPID %></p>
+	<% } %>
+	
+	<% if (data.status == "FINISHED") { %>
+		<p><label>Completed in:</label><%= (data.duration / 1000) %> seconds</p>
 	<% } %>
 	
 	<% if (data.childrenPending > 0) { %>
-		<p><span>Progress:</span><%= data.childrenProcessed + "/" + data.childrenPending %></p>
+		<p><label>Progress:</label><%= data.childrenProcessed + "/" + data.childrenPending %></p>
 	<% } %>
 	
-	<p><span>Action:</span> <%= data.action.label %></p>
+	<% if (data.topChildren) { %>
+		<p>
+		<% if (data.action.name == "MOVE") { %>
+			<label>Moved objects (top level only)</label><br/>
+		<% } else { %>
+			<label>Top Level Children Objects</label><br/>
+		<% } %>
+			<ul>
+				<% for (var i in data.topChildren) { %>
+					<li><%= data.topChildren[i] %></li>
+				<% } %>
+			</ul>
+		</p>
+	<% } %>
+	
+	<p><label>Message ID:</label>  <%= data.id %></p>
+	<p><label>Queued:</label><%= dateFormat(data.queuedTimestamp) %></p>
+	<p><label>Started Processing:</label><%= dateFormat(data.timeStarted) %></p>
 </div>

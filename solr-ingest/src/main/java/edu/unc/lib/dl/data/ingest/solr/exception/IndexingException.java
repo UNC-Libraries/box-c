@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.exception;
 
-public class IndexingException extends RuntimeException {
+public class IndexingException extends Exception {
 	private static final long serialVersionUID = 1L;
 	private String body;
 
@@ -23,7 +23,7 @@ public class IndexingException extends RuntimeException {
 		super(message, cause);
 		this.body = body;
 	}
-	
+
 	public IndexingException(String message, Throwable cause) {
 		super(message, cause);
 	}

@@ -210,6 +210,8 @@ public class ObjectAccessControlsBean {
 					this.activeEmbargoes.add(DateTimeUtil.parsePartialUTCToDate(embargo));
 				} catch (ParseException e) {
 					LOG.warn("Failed to parse embargo " + embargo, e);
+				} catch (IllegalArgumentException e) {
+					LOG.warn("Failed to parse embargo " + embargo, e);
 				}
 			}
 		}

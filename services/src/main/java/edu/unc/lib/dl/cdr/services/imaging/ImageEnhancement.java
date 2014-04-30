@@ -27,14 +27,15 @@ import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.cdr.services.Enhancement;
+import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancement;
+import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -45,105 +46,88 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * 
  * @author bbpennel
  */
-public class ImageEnhancement extends Enhancement<Element> {
+public class ImageEnhancement extends AbstractFedoraEnhancement {
 	private static final Logger LOG = LoggerFactory.getLogger(ImageEnhancement.class);
-
-	private ImageEnhancementService service = null;
 
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
-		LOG.debug("Called image enhancement service for " + pid);
+		LOG.debug("Called image enhancement service for {}", pid);
 
-		Document foxml = null;
 		String dsid = null;
 		try {
+			Document foxml = this.retrieveFoxml();
 			// get sourceData data stream IDs
-			List<String> srcDSURIs = this.service.getTripleStoreQueryService().getSourceData(pid);
-
-			foxml = service.getManagementClient().getObjectXML(pid);
-			String mimetype = service.getTripleStoreQueryService().lookupSourceMimeType(pid);
+			List<String> srcDSURIs = this.getSourceData(foxml);
 
 			// get current DS version paths in iRODS
 			for (String srcURI : srcDSURIs) {
 				dsid = srcURI.substring(srcURI.lastIndexOf("/") + 1);
 
+				Element newestSourceDS = FOXMLJDOMUtil.getMostRecentDatastream(
+						ContentModelHelper.Datastream.getDatastream(dsid), foxml);
+				
+				if (newestSourceDS == null)
+					throw new EnhancementException("Specified source datastream " + srcURI + " was not found, the object "
+							+ this.pid.getPid() + " is most likely invalid", Severity.UNRECOVERABLE);
+
 				String dsLocation = null;
 				String dsIrodsPath = null;
-				String vid = null;
 
-				Datastream ds = service.getManagementClient().getDatastream(pid, dsid, "");
-				vid = ds.getVersionID();
+				dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS).getAttributeValue(
+						"REF");
 
-				// Only need to process image datastreams.
-				if (mimetype.indexOf("image/") != -1) {
-					LOG.debug("Image DS found: " + dsid + ", " + mimetype);
+				LOG.debug("Image DS location: {}", dsLocation);
+				if (dsLocation != null) {
+					dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
+					// Ask irods to make the jp2 object
+					LOG.debug("Convert to JP2");
+					String convertResultPath = runConvertJP2(dsIrodsPath);
 
-					Element dsEl = FOXMLJDOMUtil.getDatastream(foxml, dsid);
-					for (Object o : dsEl.getChildren("datastreamVersion", JDOMNamespaceUtil.FOXML_NS)) {
-						if (o instanceof Element) {
-							Element dsvEl = (Element) o;
-							if (vid.equals(dsvEl.getAttributeValue("ID"))) {
-								dsLocation = dsvEl.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
-										.getAttributeValue("REF");
-								break;
-							}
-						}
+					String convertResultURI = ((AbstractIrodsObjectEnhancementService) service)
+							.makeIrodsURIFromPath(convertResultPath);
+					LOG.debug("attempting to ingest conversion result: " + convertResultPath);
+
+					if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.IMAGE_JP2000.getName()) == null) {
+						// Add the datastream for the new derived jp2
+						LOG.debug("Adding managed datastream for JP2");
+						String message = "Adding derived JP2000 image datastream.";
+						service.getManagementClient().addManagedDatastream(pid,
+								ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
+								new ArrayList<String>(), "Derived JP2000 image", false, "image/jp2", convertResultURI);
+					} else {
+						LOG.debug("Replacing managed datastream for JP2");
+						String message = "Replacing derived JP2000 image datastream.";
+						service.getManagementClient().modifyDatastreamByReference(pid,
+								ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
+								new ArrayList<String>(), "Derived JP2000 image", "image/jp2", null, null, convertResultURI);
 					}
-					LOG.debug("Image DS location: " + dsLocation);
-					if (dsLocation != null) {
-						dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
-						// Ask irods to make the jp2 object
-						LOG.debug("Convert to JP2");
-						String convertResultPath = runConvertJP2(dsIrodsPath);
 
-						String convertResultURI = service.makeIrodsURIFromPath(convertResultPath);
-						LOG.debug("attempting to ingest conversion result: " + convertResultPath);
+					// Add DATA_JP2, cdr-base:derivedJP2 relation triple
+					LOG.debug("Adding JP2 relationship");
+					PID newDSPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.IMAGE_JP2000.getName());
+					Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid);
 
-						if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.IMAGE_JP2000.getName()) == null) {
-							// Add the datastream for the new derived jp2
-							LOG.debug("Adding managed datastream for JP2");
-							String message = "Adding derived JP2000 image datastream.";
-							service.getManagementClient().addManagedDatastream(pid,
-									ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
-									new ArrayList<String>(), "Derived JP2000 image", false, "image/jp2", convertResultURI);
-						} else {
-							LOG.debug("Replacing managed datastream for JP2");
-							String message = "Replacing derived JP2000 image datastream.";
-							service.getManagementClient().modifyDatastreamByReference(pid,
-									ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
-									new ArrayList<String>(), "Derived JP2000 image", "image/jp2", null, null,
-									convertResultURI);
-						}
-
-						// Add DATA_JP2, cdr-base:derivedJP2 relation triple
-						LOG.debug("Adding JP2 relationship");
-						PID newDSPID = new PID(pid.getPid() + "/"
-								+ ContentModelHelper.Datastream.IMAGE_JP2000.getName());
-						Map<String, List<String>> rels = service.getTripleStoreQueryService()
-								.fetchAllTriples(pid);
-
-						List<String> jp2rel = rels.get(ContentModelHelper.CDRProperty.derivedJP2.toString());
-						if (jp2rel == null || !jp2rel.contains(newDSPID.getURI())) {
-							service.getManagementClient().addObjectRelationship(pid,
-									ContentModelHelper.CDRProperty.derivedJP2.toString(), newDSPID);
-						}
-
-						// add object model
-						List<String> models = rels.get(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
-						if (models == null
-								|| !models.contains(ContentModelHelper.Model.JP2DERIVEDIMAGE.getPID().getURI().toString())) {
-							LOG.debug("Adding JP2DerivedImage content model relationship");
-							service.getManagementClient().addObjectRelationship(pid,
-									ContentModelHelper.FedoraProperty.hasModel.toString(),
-									ContentModelHelper.Model.JP2DERIVEDIMAGE.getPID());
-						}
-
-						// Clean up the temporary irods file
-						LOG.debug("Deleting temporary jp2 Irods file");
-						service.deleteIRODSFile(convertResultPath);
-						LOG.debug("Finished JP2 processing");
+					List<String> jp2rel = rels.get(ContentModelHelper.CDRProperty.derivedJP2.toString());
+					if (jp2rel == null || !jp2rel.contains(newDSPID.getURI())) {
+						service.getManagementClient().addObjectRelationship(pid,
+								ContentModelHelper.CDRProperty.derivedJP2.toString(), newDSPID);
 					}
+
+					// add object model
+					List<String> models = rels.get(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
+					if (models == null
+							|| !models.contains(ContentModelHelper.Model.JP2DERIVEDIMAGE.getPID().getURI().toString())) {
+						LOG.debug("Adding JP2DerivedImage content model relationship");
+						service.getManagementClient().addObjectRelationship(pid,
+								ContentModelHelper.FedoraProperty.hasModel.toString(),
+								ContentModelHelper.Model.JP2DERIVEDIMAGE.getPID());
+					}
+
+					// Clean up the temporary irods file
+					LOG.debug("Deleting temporary jp2 Irods file");
+					((AbstractIrodsObjectEnhancementService) service).deleteIRODSFile(convertResultPath);
+					LOG.debug("Finished JP2 processing");
 				}
 			}
 		} catch (FileSystemException e) {
@@ -160,9 +144,10 @@ public class ImageEnhancement extends Enhancement<Element> {
 	}
 
 	private String runConvertJP2(String dsIrodsPath) throws Exception {
-		LOG.debug("Run (image magick) convertjp2 " + dsIrodsPath);
+		LOG.debug("Run (image magick) convertjp2 {}", dsIrodsPath);
 		// execute irods image magick rule
-		InputStream response = service.remoteExecuteWithPhysicalLocation("convertjp2", dsIrodsPath);
+		InputStream response = ((AbstractIrodsObjectEnhancementService) service).remoteExecuteWithPhysicalLocation(
+				"convertjp2", dsIrodsPath);
 		BufferedReader r = new BufferedReader(new InputStreamReader(response));
 		try {
 			return r.readLine().trim();
@@ -176,8 +161,7 @@ public class ImageEnhancement extends Enhancement<Element> {
 		}
 	}
 
-	public ImageEnhancement(ImageEnhancementService service, PID pid) {
-		super(pid);
-		this.service = service;
+	public ImageEnhancement(ImageEnhancementService service, EnhancementMessage message) {
+		super(service, message);
 	}
 }

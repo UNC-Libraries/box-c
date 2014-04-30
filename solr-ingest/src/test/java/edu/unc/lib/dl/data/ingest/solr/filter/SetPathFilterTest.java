@@ -15,16 +15,17 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.jdom.Document;
-import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,12 +36,11 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.ResourceType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import static org.mockito.Mockito.*;
 
 public class SetPathFilterTest extends Assert {
 
 	@Test
-	public void fromQueryFileTest() {
+	public void fromQueryFileTest() throws Exception {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
@@ -89,7 +89,7 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test
-	public void fromQueryAggregateTest() {
+	public void fromQueryAggregateTest() throws Exception {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
@@ -163,7 +163,7 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test
-	public void fromQueryAggregateChildTest() {
+	public void fromQueryAggregateChildTest() throws Exception {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
@@ -217,12 +217,12 @@ public class SetPathFilterTest extends Assert {
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection,collection"));
 		assertTrue(idb.getAncestorPath().contains("3,uuid:aggregate,aggregate"));
 		assertFalse(idb.getAncestorPath().contains("4,uuid:File,child.pdf"));
-		
+
 		assertEquals(3, idb.getResourceTypeSort().intValue());
 	}
-	
+
 	@Test
-	public void fromQueryOutofOrderFileTest() {
+	public void fromQueryOutofOrderFileTest() throws Exception {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
@@ -234,14 +234,14 @@ public class SetPathFilterTest extends Assert {
 				"info:fedora/cdr-model:Container"));
 		results.add(Arrays.asList("info:fedora/uuid:Collections", "info:fedora/uuid:collection", "collection",
 				"info:fedora/cdr-model:Collection"));
-		
+
 		results.add(Arrays.asList("repo", "info:fedora/uuid:Collections", "Collections",
 				"info:fedora/cdr-model:PreservedObject"));
 		results.add(Arrays.asList("repo", "info:fedora/uuid:Collections", "Collections",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
 		results.add(Arrays.asList("repo", "info:fedora/uuid:Collections", "Collections",
 				"info:fedora/cdr-model:Container"));
-		
+
 		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
 				"info:fedora/cdr-model:Simple"));
 		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File", "File.jpg",
@@ -274,7 +274,7 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test
-	public void fromQueryContainerTest() {
+	public void fromQueryContainerTest() throws Exception {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
@@ -318,12 +318,12 @@ public class SetPathFilterTest extends Assert {
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection,collection"));
 		assertFalse(idb.getAncestorPath().contains("3,uuid:folder,folder"));
 		assertEquals(3, idb.getContentModel().size());
-		
+
 		assertEquals(2, idb.getResourceTypeSort().intValue());
 	}
 
 	@Test
-	public void fromQueryOrderTest() {
+	public void fromQueryOrderTest() throws Exception {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
@@ -374,7 +374,7 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test
-	public void fromQueryNoCollectionTest() {
+	public void fromQueryNoCollectionTest() throws Exception {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
@@ -417,7 +417,7 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test(expected = IndexingException.class)
-	public void fromQueryNoResults() {
+	public void fromQueryNoResults() throws Exception {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 
@@ -453,7 +453,7 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test
-	public void fromParentsAggregateTest() throws FileNotFoundException, JDOMException, IOException {
+	public void fromParentsAggregateTest() throws Exception {
 		DocumentIndexingPackage parentFolder = getParentFolderWithCollection();
 
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:aggregate");
@@ -486,7 +486,7 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test
-	public void fromParentsFileTest() throws FileNotFoundException, JDOMException, IOException {
+	public void fromParentsFileTest() throws Exception {
 		DocumentIndexingPackage parentFolder = getParentFolderWithCollection();
 
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
@@ -515,7 +515,7 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test
-	public void fromParentsNoCollectionTest() throws FileNotFoundException, JDOMException, IOException {
+	public void fromParentsNoCollectionTest() throws Exception {
 		DocumentIndexingPackage parentFolder = new DocumentIndexingPackage("info:fedora/uuid:folder");
 		parentFolder.getDocument().setRollup("uuid:folder");
 		parentFolder.setResourceType(ResourceType.Folder);
@@ -547,7 +547,7 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test
-	public void fromParentsAggregateChildTest() throws FileNotFoundException, JDOMException, IOException {
+	public void fromParentsAggregateChildTest() throws Exception {
 		DocumentIndexingPackage parentCollection = new DocumentIndexingPackage("info:fedora/uuid:collection");
 		parentCollection.getDocument().setRollup("uuid:collection");
 		parentCollection.setResourceType(ResourceType.Collection);
@@ -589,7 +589,7 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test(expected = IndexingException.class)
-	public void fromParentsNoAncestorsTest() throws FileNotFoundException, JDOMException, IOException {
+	public void fromParentsNoAncestorsTest() throws Exception {
 		DocumentIndexingPackage parentFolder = new DocumentIndexingPackage("info:fedora/uuid:folder");
 		parentFolder.setResourceType(ResourceType.Folder);
 		parentFolder.setLabel("folder");
@@ -608,7 +608,7 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test
-	public void fromParentsImmediateChildOfCollections() throws FileNotFoundException, JDOMException, IOException {
+	public void fromParentsImmediateChildOfCollections() throws Exception {
 		DocumentIndexingPackage parentCollections = new DocumentIndexingPackage("info:fedora/uuid:Collections");
 		parentCollections.setResourceType(ResourceType.Collection);
 		parentCollections.setLabel("Collections");
@@ -632,7 +632,7 @@ public class SetPathFilterTest extends Assert {
 	}
 
 	@Test(expected = IndexingException.class)
-	public void orphanedTest() {
+	public void orphanedTest() throws Exception {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		List<List<String>> results = new ArrayList<List<String>>();
 

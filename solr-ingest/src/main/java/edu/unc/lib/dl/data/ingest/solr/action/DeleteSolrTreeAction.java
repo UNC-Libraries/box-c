@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
@@ -36,7 +36,7 @@ public class DeleteSolrTreeAction extends AbstractIndexingAction {
 			return;
 		}
 
-		BriefObjectMetadataBean ancestorPathBean = getRootAncestorPath(updateRequest);
+		BriefObjectMetadata ancestorPathBean = getRootAncestorPath(updateRequest);
 		if (ancestorPathBean == null) {
 			LOG.debug("Root object " + updateRequest.getTargetID() + " was not found while attempting to delete tree.");
 			return;
@@ -47,14 +47,16 @@ public class DeleteSolrTreeAction extends AbstractIndexingAction {
 				|| ancestorPathBean.getResourceType().equals(searchSettings.getResourceTypeFolder())) {
 			// Deleting a folder or collection, so perform a full path delete.
 
+			// Delete the container itself
 			solrUpdateDriver.deleteByQuery(
-					solrSearchService.getSolrSettings().getFieldName(SearchFieldKeys.ID.name()) + ":"
+					solrSettings.getFieldName(SearchFieldKeys.ID.name()) + ":"
 							+ SolrSettings.sanitize(updateRequest.getTargetID()));
 
+			// Delete the containers contents
 			solrUpdateDriver.deleteByQuery(
-					solrSearchService.getSolrSettings().getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())
+					solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())
 							+ ":" + SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue())
-							+ searchSettings.getFacetSubfieldDelimiter() + "*");
+							+ ",*");
 		} else {
 			// Targeting an individual file, just delete it.
 			solrUpdateDriver.delete(updateRequest.getTargetID());

@@ -10,14 +10,23 @@
 		<%
 		if (type.name == "failed") {
 			var out = "";
-			for (failedService in data.failedServices){
-				className = data.failedServices[failedService];
-				lastIndex = className.lastIndexOf(".");
+			for (var failedService in data.failedServices){
+				var className = data.failedServices[failedService];
+				var lastIndex = className.lastIndexOf(".");
 				if (lastIndex != -1)
 					className = className.substring(lastIndex+1);
 				out += "<li>" + className + "</li>";
 			}
 			%><%= out %><%
+		} else if (data.completedServices || data.activeServiceName) {
+			for (var key in data.completedServices) {
+				if (data.completedServices.hasOwnProperty(key)) { %>
+						<li><%= data.completedServices[key] %></li>
+				<% }
+			}
+			if (data.activeServiceName) {
+				%><li class="active_service"><%= data.activeServiceName %></li><%
+			}
 		} else {
 			for (var key in data.filteredServices) {
 				if (data.filteredServices.hasOwnProperty(key)) { %>

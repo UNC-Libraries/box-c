@@ -90,7 +90,7 @@ public class TechnicalMetadataEnhancementService extends AbstractDatastreamEnhan
 	 */
 	@Override
 	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
-		return new TechnicalMetadataEnhancement(this, message.getPid());
+		return new TechnicalMetadataEnhancement(this, message);
 	}
 
 	@Override

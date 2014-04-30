@@ -142,17 +142,27 @@
 
 .status_details p {
 	color: #000;
+	text-indent : -20px;
+	padding-left: 20px;
 }
 
-.status_details p > span {
+.status_details p > label {
 	font-weight: bold;
-	color: #666666;
+	color: #444;
 	padding-right: 8px;
 }
 
 .status_details a {
 	text-decoration: underline;
 }
+
+.status_details h3 {
+	font-size: 1.1em;
+	display: inline-block;
+	color: #222;
+}
+
+
 
 /** Jobs table */
 
@@ -192,20 +202,24 @@
 	background-color: #ddffdd;
 }
 
-.status_monitor_jobs .monitor_job.active td:first-child {
+.status_monitor_jobs .monitor_job.active td:first-child, .status_details .active {
 	color: #000000;
+	text-transform: lowercase;
 }
 
-.status_monitor_jobs .monitor_job.queued td:first-child {
+.status_monitor_jobs .monitor_job.queued td:first-child, .status_details .queued {
 	color: #888888;
+	text-transform: lowercase;
 }
 
-.status_monitor_jobs .monitor_job.finished td:first-child {
+.status_monitor_jobs .monitor_job.finished td:first-child, .status_details .finished {
 	color: #00AA00;
+	text-transform: lowercase;
 }
 
-.status_monitor_jobs .monitor_job.failed td:first-child {
+.status_monitor_jobs .monitor_job.failed td:first-child, .status_details .failed {
 	color: #DD0000;
+	text-transform: lowercase;
 }
 
 .status_monitor_jobs .col_Status {
@@ -307,4 +321,8 @@
 
 #enhancement_monitor_jobs td {
 	border-bottom: 1px solid #f5f5ff;
+}
+
+#enhancement_monitor_jobs .active_service {
+	font-weight: bold;
 }

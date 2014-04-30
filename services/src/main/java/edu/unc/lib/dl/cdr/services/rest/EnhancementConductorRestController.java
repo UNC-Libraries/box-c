@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -159,7 +160,7 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 			@RequestParam(value = "end", required = false) Integer end) {
 		if (begin == null)
 			begin = 0;
-		
+
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		List<Map<String, Object>> jobs = new ArrayList<Map<String, Object>>();
@@ -167,10 +168,10 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 
 		FailedEnhancementMap failedList = this.enhancementConductor.getFailedPids();
 		result.put("count", failedList.size());
-		
+
 		Iterator<String> pidIt = failedList.getPidToService().keySet().iterator();
 		int cnt = 0;
-		//LOG.debug("Failed PIDS: " + failedList.getPidToService().keySet());
+		// LOG.debug("Failed PIDS: " + failedList.getPidToService().keySet());
 		LOG.debug("Returning results " + begin + " to " + end);
 		while (pidIt.hasNext()) {
 			String pid = pidIt.next();
@@ -178,33 +179,33 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 				break;
 			if (cnt++ < begin)
 				continue;
-			//LOG.debug("Picking up " + pid);
-			
+			// LOG.debug("Picking up " + pid);
+
 			Map<String, Object> failedEntry = new HashMap<String, Object>();
 			jobs.add(failedEntry);
 			failedEntry.put("targetPID", pid);
-			
+
 			Map<String, Object> failedServices = new HashMap<String, Object>();
 			failedEntry.put("failedServices", failedServices);
-			
+
 			// Get the list of failed enhancements for this pid
 			List<FailedEnhancementEntry> entryList = failedList.get(pid);
-			// Store a representative label from the first message 
+			// Store a representative label from the first message
 			if (entryList.size() > 0) {
 				this.populateLabel(entryList.get(0));
 				failedEntry.put("targetLabel", entryList.get(0).getTargetLabel());
 			} else {
 				continue;
 			}
-			
+
 			Map<String, Object> uris = new HashMap<String, Object>();
 			failedEntry.put("uris", uris);
 			uris.put("jobInfo", BASE_PATH + FAILED_PATH + "/job/" + pid);
-			
-			for (FailedEnhancementEntry entry: entryList) {
+
+			for (FailedEnhancementEntry entry : entryList) {
 				failedServices.put(entry.serviceName, this.serviceNameLookup.get(entry.serviceName));
 			}
-			
+
 		}
 
 		return result;
@@ -215,27 +216,27 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 	Map<String, ? extends Object> getFailedMessageInfo(@PathVariable("pid") String pid) {
 		if (pid == null || pid.length() == 0)
 			return null;
-		
+
 		FailedEnhancementMap failedList = this.enhancementConductor.getFailedPids();
 		List<FailedEnhancementEntry> entryList = failedList.get(pid);
 		if (entryList.size() == 0)
 			return null;
-		
+
 		Map<String, Object> failedEntry = new HashMap<String, Object>();
 		failedEntry.put("type", "failed");
 		this.populateLabel(entryList.get(0));
 		failedEntry.put("targetLabel", entryList.get(0).getTargetLabel());
 		failedEntry.put("targetPID", pid);
-		
+
 		Map<String, Object> failedServices = new HashMap<String, Object>();
 		failedEntry.put("failedServices", failedServices);
-		for (FailedEnhancementEntry entry: entryList) {
+		for (FailedEnhancementEntry entry : entryList) {
 			Map<String, Object> failedService = getJobFullInfo(entry.message, FAILED_PATH);
 			failedServices.put(entry.serviceName, failedService);
 			failedService.put("stackTrace", entry.stackTrace);
 			failedService.put("timeFailed", entry.timeFailed);
 		}
-		
+
 		return failedEntry;
 	}
 
@@ -334,29 +335,22 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		job.put("id", message.getMessageID());
 		job.put("targetPID", message.getTargetID());
 		job.put("targetLabel", message.getTargetLabel());
-		addJobPropertyIfNotEmpty("depositID", message.getDepositID(), job);
 		addJobPropertyIfNotEmpty("action", message.getQualifiedAction(), job);
 		addJobPropertyIfNotEmpty("serviceName", message.getServiceName(), job);
-		addJobPropertyIfNotEmpty("activeService", message.getActiveService(), job);
 
-		if (message instanceof FedoraEventMessage) {
-			FedoraEventMessage fMessage = (FedoraEventMessage) message;
-			addJobPropertyIfNotEmpty("dataStream", fMessage.getDatastream(), job);
-			addJobPropertyIfNotEmpty("relation", fMessage.getRelationPredicate(), job);
-			addJobPropertyIfNotEmpty("generatedTimestamp", fMessage.getEventTimestamp(), job);
-		} else if (message instanceof CDREventMessage) {
-			CDREventMessage cdrMessage = (CDREventMessage) message;
-			addJobPropertyIfNotEmpty("mode", cdrMessage.getMode(), job);
-			addJobPropertyIfNotEmpty("targetParent", cdrMessage.getParent(), job);
+		if (message.getActiveService() != null) {
+			job.put("activeService", message.getActiveService());
+			job.put("activeServiceName", this.serviceNameLookup.get(message.getActiveService()));
 		}
-
-		job.put("queuedTimestamp", formatISO8601.format(message.getTimeCreated()));
-		if (message.getTimeFinished() > 0) {
-			job.put("finishedTimestamp", formatISO8601.format(message.getTimeFinished()));
-		}
-
-		if (message.getFilteredServices() != null) {
-			Map<String, String> filteredServices = new HashMap<String, String>();
+		
+		if (message.getCompletedServices() != null && message.getCompletedServices().size() > 0) {
+			Map<String, String> successfulServices = new LinkedHashMap<String, String>();
+			for (String service : message.getCompletedServices()) {
+				successfulServices.put(service, this.serviceNameLookup.get(service));
+			}
+			job.put("completedServices", successfulServices);
+		} else if (message.getFilteredServices() != null) {
+			Map<String, String> filteredServices = new LinkedHashMap<String, String>();
 			for (String filteredService : message.getFilteredServices()) {
 				filteredServices.put(filteredService, this.serviceNameLookup.get(filteredService));
 			}
@@ -387,7 +381,6 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		addJobPropertyIfNotEmpty("depositID", message.getDepositID(), job);
 		addJobPropertyIfNotEmpty("action", message.getQualifiedAction(), job);
 		addJobPropertyIfNotEmpty("serviceName", message.getServiceName(), job);
-		addJobPropertyIfNotEmpty("activeService", message.getActiveService(), job);
 
 		if (message instanceof FedoraEventMessage) {
 			FedoraEventMessage fMessage = (FedoraEventMessage) message;
@@ -408,13 +401,26 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		if (message.getTimeFinished() > 0) {
 			job.put("finishedTimestamp", formatISO8601.format(message.getTimeFinished()));
 		}
+		
+		if (message.getActiveService() != null) {
+			job.put("activeService", message.getActiveService());
+			job.put("activeServiceName", this.serviceNameLookup.get(message.getActiveService()));
+		}
 
 		if (message.getFilteredServices() != null) {
-			Map<String, String> filteredServices = new HashMap<String, String>();
+			Map<String, String> filteredServices = new LinkedHashMap<String, String>();
 			for (String filteredService : message.getFilteredServices()) {
 				filteredServices.put(filteredService, this.serviceNameLookup.get(filteredService));
 			}
 			job.put("filteredServices", filteredServices);
+		}
+
+		if (message.getCompletedServices() != null) {
+			Map<String, String> successfulServices = new LinkedHashMap<String, String>();
+			for (String service : message.getCompletedServices()) {
+				successfulServices.put(service, this.serviceNameLookup.get(service));
+			}
+			job.put("completedServices", successfulServices);
 		}
 
 		Map<String, Object> uris = new HashMap<String, Object>();
@@ -454,9 +460,10 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 		PrintWriter pr = response.getWriter();
 		pr.write(getJobXML(id, new ArrayList<ActionMessage>(this.enhancementConductor.getFinishedMessages())));
 	}
-	
+
 	@RequestMapping(value = { FAILED_PATH + "/job/{id}/{service}/xml" }, method = RequestMethod.GET)
-	public void getFailedJobXML(HttpServletResponse response, @PathVariable("id") String id, @PathVariable("service") String service) throws IOException {
+	public void getFailedJobXML(HttpServletResponse response, @PathVariable("id") String id,
+			@PathVariable("service") String service) throws IOException {
 		response.setContentType("application/xml");
 		PrintWriter pr = response.getWriter();
 		FailedEnhancementEntry entry = this.enhancementConductor.getFailedPids().get(id, service);
@@ -467,10 +474,10 @@ public class EnhancementConductorRestController extends AbstractServiceConductor
 
 	private String getJobXML(String id, List<ActionMessage> messages) {
 		ActionMessage aMessage = lookupJobInfo(id, messages);
-		
+
 		return getJobXML(aMessage);
 	}
-	
+
 	private String getJobXML(ActionMessage aMessage) {
 		if (!(aMessage instanceof AbstractXMLEventMessage))
 			return null;

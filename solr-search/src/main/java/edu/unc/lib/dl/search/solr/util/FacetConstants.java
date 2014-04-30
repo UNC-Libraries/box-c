@@ -13,30 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.data.ingest.solr;
+package edu.unc.lib.dl.search.solr.util;
 
-public class ExecutionTimer {
-	private long start;
-	private long end;
+public class FacetConstants {
 
-	public ExecutionTimer() {
-		reset();
-	}
-
-	public void start() {
-		start = System.currentTimeMillis();
-	}
-
-	public void end() {
-		end = System.currentTimeMillis();
-	}
-
-	public long duration() {
-		return (end - start);
-	}
-
-	public void reset() {
-		start = 0;
-		end = 0;
-	}
+	public static final String CONTENT_NOT_DESCRIBED = "Not Described";
+	public static final String CONTENT_DESCRIBED = "Described";
+	
+	public static final String CONTENT_DEFAULT_OBJECT = "Default Access Object Assigned";
+	public static final String CONTENT_NO_DEFAULT_OBJECT = "No Default Access Object";
 }

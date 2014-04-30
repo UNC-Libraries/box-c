@@ -21,7 +21,6 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,14 +36,16 @@ import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.cdr.services.Enhancement;
+import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancement;
+import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancementService;
+import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -55,13 +56,12 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author Gregory Jansen
  * 
  */
-public class TechnicalMetadataEnhancement extends Enhancement<Element> {
+public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
+
 	Namespace ns = JDOMNamespaceUtil.FITS_NS;
 
 	private static final Logger LOG = LoggerFactory.getLogger(TechnicalMetadataEnhancement.class);
 	private static final int MAX_EXTENSION_LENGTH = 8;
-
-	private TechnicalMetadataEnhancementService service = null;
 
 	/*
 	 * (non-Javadoc)
@@ -73,41 +73,37 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 		Element result = null;
 		// check to see if the service is still active
 		if (!this.service.isActive()) {
-			LOG.debug(this.getClass().getName() + " call method exited, service is not active.");
+			LOG.debug("{} call method exited, service is not active.", this.getClass().getName());
 			return null;
 		}
 
-		// get sourceData data stream IDs
-		List<String> srcDSURIs = this.service.getTripleStoreQueryService().getSourceData(pid);
-		Map<String, String> sourceMimetype = new HashMap<String, String>(srcDSURIs.size());
-
 		Map<String, Document> ds2FitsDoc = new HashMap<String, Document>();
 		try {
-			Document foxml = service.getManagementClient().getObjectXML(pid);
+			Document foxml = this.retrieveFoxml();
+			// get sourceData data stream IDs
+			List<String> srcDSURIs = this.getSourceData(foxml);
+			Map<String, String> sourceMimetype = new HashMap<String, String>(srcDSURIs.size());
 
 			for (String srcURI : srcDSURIs) { // for each source datastream
-				LOG.debug("source data URI: " + srcURI);
+				LOG.debug("source data URI: {}", srcURI);
 				String dsid = srcURI.substring(srcURI.lastIndexOf("/") + 1);
-				LOG.debug("datastream ID: " + dsid);
+				LOG.debug("datastream ID: {}", dsid);
 
 				// get current datastream version ID
 				String dsLocation = null;
 				String dsIrodsPath = null;
 				String dsAltIds = null;
-				Datastream ds = service.getManagementClient().getDatastream(pid, dsid, "");
-				String vid = ds.getVersionID();
-				Element dsEl = FOXMLJDOMUtil.getDatastream(foxml, dsid);
-				for (Object o : dsEl.getChildren("datastreamVersion", JDOMNamespaceUtil.FOXML_NS)) {
-					if (o instanceof Element) {
-						Element dsvEl = (Element) o;
-						if (vid.equals(dsvEl.getAttributeValue("ID"))) {
-							sourceMimetype.put(dsid, dsvEl.getAttributeValue("MIMETYPE"));
-							dsLocation = dsvEl.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
-									.getAttributeValue("REF");
-							dsAltIds = dsvEl.getAttributeValue("ALT_IDS");
-							break;
-						}
-					}
+
+				Element newestSourceDS = FOXMLJDOMUtil.getMostRecentDatastream(
+						ContentModelHelper.Datastream.getDatastream(dsid), foxml);
+				if (newestSourceDS != null) {
+					sourceMimetype.put(dsid, newestSourceDS.getAttributeValue("MIMETYPE"));
+					dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS).getAttributeValue(
+							"REF");
+					dsAltIds = newestSourceDS.getAttributeValue("ALT_IDS");
+				} else {
+					throw new EnhancementException("Specified source datastream " + srcURI + " was not found, the object "
+							+ this.pid.getPid() + " is most likely invalid", Severity.UNRECOVERABLE);
 				}
 
 				// get logical iRODS path for datastream version
@@ -161,7 +157,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 					format = trustedIdentity.getAttributeValue("format");
 				} else {
 					format = "Unknown";
-					LOG.warn("FITS unable to conclusively identify file: " + pid + "/" + dsid);
+					LOG.warn("FITS unable to conclusively identify file: {}/{}", pid, dsid);
 					LOG.info(new XMLOutputter().outputString(fits));
 				}
 
@@ -174,17 +170,19 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 
 				if ("DATA_FILE".equals(dsid)) {
 					if (fitsMimetype != null) {
-						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.toString(),
-								fitsMimetype, null);
+						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.getPredicate(),
+								ContentModelHelper.CDRProperty.hasSourceMimeType.getNamespace(), fitsMimetype, null, foxml);
 					} else { // application/octet-stream
-						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.toString(),
-								"application/octet-stream", null);
+						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.getPredicate(),
+								ContentModelHelper.CDRProperty.hasSourceMimeType.getNamespace(), "application/octet-stream",
+								null, foxml);
 					}
 
 					try {
 						Long.parseLong(size);
-						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceFileSize.toString(), size,
-								"http://www.w3.org/2001/XMLSchema#long");
+						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceFileSize.getPredicate(),
+								ContentModelHelper.CDRProperty.hasSourceFileSize.getNamespace(), size,
+								"http://www.w3.org/2001/XMLSchema#long", foxml);
 					} catch (NumberFormatException e) {
 						LOG.error("FITS produced a non-integer value for size: " + size);
 					}
@@ -241,7 +239,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 						ContentModelHelper.CDRProperty.techData.toString(), newDSPID);
 			}
 
-			LOG.debug("Finished MD_TECHNICAL updating for " + pid.getPid());
+			LOG.debug("Finished MD_TECHNICAL updating for {}", pid.getPid());
 		} catch (FileSystemException e) {
 			throw new EnhancementException(e, Severity.FATAL);
 		} catch (NotFoundException e) {
@@ -250,34 +248,6 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 			throw new EnhancementException(e, Severity.RECOVERABLE);
 		}
 		return result;
-	}
-
-	/**
-	 * Set a single value for a given predicate and pid.
-	 * 
-	 * @param pid
-	 * @param predicate
-	 * @param newExclusiveValue
-	 * @throws FedoraException
-	 */
-	private void setExclusiveTripleValue(PID pid, String predicate, String newExclusiveValue, String datatype)
-			throws FedoraException {
-		List<String> rel = service.getTripleStoreQueryService().fetchAllTriples(pid).get(predicate);
-		if (rel != null) {
-			if (rel.contains(newExclusiveValue)) {
-				rel.remove(newExclusiveValue);
-			} else {
-				// add missing rel
-				service.getManagementClient().addLiteralStatement(pid, predicate, newExclusiveValue, datatype);
-			}
-			// remove any other same predicate triples
-			for (String oldValue : rel) {
-				service.getManagementClient().purgeLiteralStatement(pid, predicate, oldValue, datatype);
-			}
-		} else {
-			// add missing rel
-			service.getManagementClient().addLiteralStatement(pid, predicate, newExclusiveValue, datatype);
-		}
 	}
 
 	/**
@@ -311,17 +281,19 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 		}
 
 		// execute FITS
-		LOG.debug("Run fits for " + dsIrodsPath);
+		LOG.debug("Run fits for {}", dsIrodsPath);
 		BufferedReader reader = null;
 		String xmlstr = null;
 		String errstr = null;
 		try {
 			if (filename == null) {
-				reader = new BufferedReader(new InputStreamReader(service.remoteExecuteWithPhysicalLocation("fitsextract",
-						dsIrodsPath)));
+				reader = new BufferedReader(new InputStreamReader(
+						((AbstractIrodsObjectEnhancementService) service).remoteExecuteWithPhysicalLocation("fitsextract",
+								dsIrodsPath)));
 			} else {
-				reader = new BufferedReader(new InputStreamReader(service.remoteExecuteWithPhysicalLocation("fitsextract",
-						"'" + filename + "'", dsIrodsPath)));
+				reader = new BufferedReader(new InputStreamReader(
+						((AbstractIrodsObjectEnhancementService) service).remoteExecuteWithPhysicalLocation("fitsextract",
+								"'" + filename + "'", dsIrodsPath)));
 			}
 			StringBuilder xml = new StringBuilder();
 			StringBuilder err = new StringBuilder();
@@ -357,9 +329,7 @@ public class TechnicalMetadataEnhancement extends Enhancement<Element> {
 		}
 	}
 
-	public TechnicalMetadataEnhancement(TechnicalMetadataEnhancementService technicalMetadataEnhancementService, PID pid) {
-		super(pid);
-		this.service = technicalMetadataEnhancementService;
+	public TechnicalMetadataEnhancement(AbstractFedoraEnhancementService service, EnhancementMessage message) {
+		super(service, message);
 	}
-
 }

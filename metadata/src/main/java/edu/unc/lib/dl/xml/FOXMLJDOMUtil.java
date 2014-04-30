@@ -18,8 +18,10 @@ package edu.unc.lib.dl.xml;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.jdom.Document;
@@ -27,6 +29,8 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Namespace;
 import org.jdom.xpath.XPath;
+
+import edu.unc.lib.dl.util.ContentModelHelper;
 
 public class FOXMLJDOMUtil {
 	public static enum ObjectProperty {
@@ -332,5 +336,150 @@ public class FOXMLJDOMUtil {
 		newProp.setAttribute("VALUE", value);
 		props.addContent(newProp);
 		return;
+	}
+	
+	/**
+	 * Returns the content of an internal datastream from the given foxml. If the datastream is versionable, then the
+	 * most recent version of the datastream is returned.
+	 * 
+	 * @param datastream
+	 * @param foxml
+	 * @return
+	 */
+	public static Element getDatastreamContent(ContentModelHelper.Datastream datastream, Document foxml) {
+		Element dsVersion;
+		// if (datastreams == null) {
+		Element datastreamEl = JDOMQueryUtil.getChildByAttribute(foxml.getRootElement(), "datastream",
+				JDOMNamespaceUtil.FOXML_NS, "ID", datastream.getName());
+
+		if (datastream.isVersionable()) {
+			dsVersion = FOXMLJDOMUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
+					JDOMNamespaceUtil.FOXML_NS));
+		} else {
+			dsVersion = (Element) datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
+		}
+
+		return (Element) dsVersion.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS).getChildren().get(0);
+	}
+
+	/**
+	 * Returns a map of all of the most recent versions of datastreams listed in the given FOXML document
+	 * 
+	 * @param foxml
+	 * @return
+	 */
+	public static Map<String, Element> getMostRecentDatastreamMap(Document foxml) {
+		Map<String, Element> datastreams = new HashMap<String, Element>();
+		List<?> datastreamList = foxml.getRootElement().getChildren("datastream", JDOMNamespaceUtil.FOXML_NS);
+		for (Object datastreamObject : datastreamList) {
+			Element datastreamEl = (Element) datastreamObject;
+			String datastreamName = datastreamEl.getAttributeValue("ID");
+			if (datastreamName != null) {
+				ContentModelHelper.Datastream datastreamClass = ContentModelHelper.Datastream.getDatastream(datastreamName);
+				Element dsVersion;
+				if (datastreamClass.isVersionable()) {
+					dsVersion = FOXMLJDOMUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
+							JDOMNamespaceUtil.FOXML_NS));
+				} else {
+					dsVersion = (Element) datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
+				}
+				datastreams.put(datastreamName, dsVersion);
+			}
+		}
+
+		return datastreams;
+	}
+	
+	public static Element getMostRecentDatastream(ContentModelHelper.Datastream datastream, Document foxml) {
+		List<?> datastreamList = foxml.getRootElement().getChildren("datastream", JDOMNamespaceUtil.FOXML_NS);
+		
+		for (Object datastreamObject : datastreamList) {
+			Element datastreamEl = (Element) datastreamObject;
+			String datastreamName = datastreamEl.getAttributeValue("ID");
+			if (datastreamName != null && datastreamName.equals(datastream.getName())) {
+				Element dsVersion;
+				if (datastream.isVersionable()) {
+					dsVersion = FOXMLJDOMUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
+							JDOMNamespaceUtil.FOXML_NS));
+				} else {
+					dsVersion = (Element) datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
+				}
+				return dsVersion;
+			}
+		}
+		
+		return null;
+	}
+
+	/**
+	 * Returns the most recent version of a datastream from the given set of datastream elements
+	 * 
+	 * @param elements
+	 * @return
+	 */
+	public static Element getMostRecentDatastreamVersion(List<?> elements) {
+		if (elements == null || elements.size() == 0)
+			return null;
+		if (elements.size() == 1)
+			return (Element) elements.get(0);
+
+		String mostRecentDate = "";
+		Element mostRecent = null;
+		for (Object datastreamVersionObj : elements) {
+			Element datastreamVersion = (Element) datastreamVersionObj;
+			String created = datastreamVersion.getAttributeValue("CREATED");
+			if (mostRecentDate.compareTo(created) < 0) {
+				mostRecentDate = created;
+				mostRecent = datastreamVersion;
+			}
+		}
+		if (mostRecent != null)
+			return mostRecent;
+		return (Element) elements.get(0);
+	}
+
+	/**
+	 * Returns the object of the relationship specified from the provided RELS-EXT datastream. Only returns the first
+	 * value if the relation occurs multiple times
+	 * 
+	 * @param relationName
+	 * @param relationNS
+	 * @param relsExt
+	 * @return
+	 */
+	public static String getRelationValue(String relationName, Namespace relationNS, Element relsExt) {
+		Element relationEl = relsExt.getChild(relationName, relationNS);
+		if (relationEl != null) {
+			String value = relationEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS);
+			if (value == null)
+				value = relationEl.getText();
+			return value;
+		}
+		return null;
+	}
+
+	public static List<String> getRelationValues(String relationName, Namespace relationNS, Element relsExt) {
+		List<?> relationEls = relsExt.getChildren(relationName, relationNS);
+		if (relationEls != null) {
+			List<String> values = new ArrayList<String>(relationEls.size());
+			for (Object relationObj : relationEls) {
+				values.add(((Element) relationObj).getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
+			}
+			return values;
+		}
+		return null;
+	}
+
+	public static Element getObjectProperties(Document foxml) {
+		// /foxml:digitalObject/foxml:objectProperties
+		return foxml.getRootElement().getChild("objectProperties", JDOMNamespaceUtil.FOXML_NS);
+	}
+
+	public static Element getRelsExt(Document foxml) {
+		Element relsExt = getDatastreamContent(ContentModelHelper.Datastream.RELS_EXT, foxml);
+		if ("RDF".equals(relsExt.getName()) && JDOMNamespaceUtil.RDF_NS.equals(relsExt.getNamespace())) {
+			return (Element) relsExt.getChildren().get(0);
+		}
+		return relsExt;
 	}
 }

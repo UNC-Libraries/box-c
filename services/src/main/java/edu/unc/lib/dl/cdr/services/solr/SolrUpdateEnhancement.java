@@ -21,8 +21,12 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
+import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
+import edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -33,20 +37,33 @@ import edu.unc.lib.dl.util.IndexingActionType;
 public class SolrUpdateEnhancement extends Enhancement<Element> {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateEnhancement.class);
 	SolrUpdateEnhancementService service = null;
+	EnhancementMessage message;
 
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
 		LOG.debug("Called Solr update service for " + pid.getPid());
 		
+		IndexingActionType action = IndexingActionType.ADD;
+		
 		//Perform a single item update
-		service.getMessageDirector().direct(new SolrUpdateRequest(pid.getPid(), IndexingActionType.ADD));
+		if (message.getCompletedServices().contains(FullTextEnhancementService.class.getName())) {
+			action = IndexingActionType.UPDATE_FULL_TEXT;
+		} else if (message.getCompletedServices().contains(TechnicalMetadataEnhancementService.class.getName())
+				|| message.getCompletedServices().contains(ImageEnhancementService.class.getName())
+				|| message.getCompletedServices().contains(ThumbnailEnhancementService.class.getName())) {
+			action = IndexingActionType.UPDATE_DATASTREAMS;
+		}
+		
+		SolrUpdateRequest updateRequest = new SolrUpdateRequest(pid.getPid(), action);
+		service.getMessageDirector().direct(updateRequest);
 		
 		return result;
 	}
 
-	public SolrUpdateEnhancement(SolrUpdateEnhancementService service, PID pid) {
-		super(pid);
+	public SolrUpdateEnhancement(SolrUpdateEnhancementService service, EnhancementMessage message) {
+		super(message.getPid());
 		this.service = service;
+		this.message = message;
 	}
 }

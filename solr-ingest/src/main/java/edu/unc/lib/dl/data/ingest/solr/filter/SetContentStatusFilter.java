@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
@@ -44,8 +45,7 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 
 		dip.getDocument().setContentStatus(contentStatus);
 		
-		if (log.isDebugEnabled())
-			log.debug("Content status for {} set to {}", dip.getPid().getPid(), contentStatus);
+		log.debug("Content status for {} set to {}", dip.getPid().getPid(), contentStatus);
 	}
 
 	private void setContentStatus(DocumentIndexingPackage dip, Map<String, List<String>> triples, List<String> status) {
@@ -54,9 +54,9 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 			String mdDescriptive = dip.getPid().getURI() + "/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName();
 			boolean described = datastreams.contains(mdDescriptive);
 			if (described)
-				status.add("Described");
+				status.add(FacetConstants.CONTENT_DESCRIBED);
 			else
-				status.add("Not Described");
+				status.add(FacetConstants.CONTENT_NOT_DESCRIBED);
 		}
 
 		// Valid/Not Valid content according to FITS
@@ -65,9 +65,9 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 		List<String> contentModels = triples.get(ContentModelHelper.FedoraProperty.hasModel.toString());
 		if (contentModels != null && contentModels.contains(ContentModelHelper.Model.AGGREGATE_WORK.toString())) {
 			if (triples.containsKey(ContentModelHelper.CDRProperty.defaultWebObject.toString())) {
-				status.add("Default Access Object Assigned");
+				status.add(FacetConstants.CONTENT_DEFAULT_OBJECT);
 			} else {
-				status.add("No Default Access Object");
+				status.add(FacetConstants.CONTENT_NO_DEFAULT_OBJECT);
 			}
 		}
 	}

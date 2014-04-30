@@ -18,6 +18,8 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
@@ -31,26 +33,35 @@ import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
+import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 public abstract class AbstractIndexingAction implements IndexingAction {
 	protected DocumentIndexingPipeline pipeline;
+	@Autowired
 	protected SolrUpdateService solrUpdateService;
+	@Autowired
 	protected DocumentIndexingPackageFactory dipFactory;
+	@Autowired
 	protected SolrUpdateDriver solrUpdateDriver;
+	@Autowired
 	protected SolrSearchService solrSearchService;
 	protected PID collectionsPid;
+	@Autowired
 	protected SearchSettings searchSettings;
 	protected AccessGroupSet accessGroups;
-	
+	@Autowired
+	protected SolrSettings solrSettings;
+	protected boolean addDocumentMode = true;
+
 	public static final String TARGET_ALL = "fullIndex";
 
 	/**
 	 * Gets the ancestor path facet value for
-	 * 
+	 *
 	 * @param updateRequest
 	 * @return
 	 */
-	protected BriefObjectMetadataBean getRootAncestorPath(SolrUpdateRequest updateRequest) {
+	protected BriefObjectMetadataBean getRootAncestorPath(SolrUpdateRequest updateRequest) throws IndexingException {
 		List<String> resultFields = new ArrayList<String>();
 		resultFields.add(SearchFieldKeys.ID.name());
 		resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
@@ -65,9 +76,17 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 			throw new IndexingException("Failed to retrieve ancestors for " + updateRequest.getTargetID(), e);
 		}
 	}
-	
+
 	public void setPipeline(DocumentIndexingPipeline pipeline) {
 		this.pipeline = pipeline;
+	}
+
+	public DocumentIndexingPipeline getPipeline() {
+		return pipeline;
+	}
+
+	public SolrUpdateService getSolrUpdateService() {
+		return solrUpdateService;
 	}
 
 	public void setSolrUpdateService(SolrUpdateService solrUpdateService) {
@@ -82,6 +101,10 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 		this.solrUpdateDriver = solrUpdateDriver;
 	}
 
+	public SolrUpdateDriver getSolrUpdateDriver() {
+		return this.solrUpdateDriver;
+	}
+
 	public void setSolrSearchService(SolrSearchService solrSearchService) {
 		this.solrSearchService = solrSearchService;
 	}
@@ -94,7 +117,19 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 		this.searchSettings = searchSettings;
 	}
 
+	public void setSolrSettings(SolrSettings solrSettings) {
+		this.solrSettings = solrSettings;
+	}
+
 	public void setAccessGroups(AccessGroupSet accessGroups) {
 		this.accessGroups = accessGroups;
+	}
+
+	public boolean isAddDocumentMode() {
+		return addDocumentMode;
+	}
+
+	public void setAddDocumentMode(boolean addDocumentMode) {
+		this.addDocumentMode = addDocumentMode;
 	}
 }

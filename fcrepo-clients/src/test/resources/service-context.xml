@@ -21,7 +21,7 @@
 		<property name="name" value="${fedora.admin.username}"/>
 		<property name="pass" value="${fedora.admin.password}"/>
 	</bean>	
-	<bean id="managementClient" scope="prototype" class="edu.unc.lib.dl.fedora.ManagementClient" init-method="init">
+	<bean id="managementClient" scope="prototype" class="edu.unc.lib.dl.fedora.ManagementClient" init-method="init" destroy-method="destroy">
 		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
 		<property name="username" value="${fedora.admin.username}" />
 		<property name="password" value="${fedora.admin.password}" />
