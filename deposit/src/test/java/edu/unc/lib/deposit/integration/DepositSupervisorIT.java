@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,23 +31,23 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 @ContextConfiguration(locations = { "/service-context.xml" })
 @DirtiesContext
 public class DepositSupervisorIT {
-	
+
 	private static boolean started = false;
-	
+
 	@Autowired
 	File depositsDirectory;
-	
+
 	@Autowired
 	DepositStatusFactory depositStatusFactory;
-	
+
 	@Autowired
 	JobStatusFactory jobStatusFactory;
-	
+
 	@Autowired
 	DepositSupervisor depositSupervisor;
-	
+
 	// TODO test a pile of deposits at once
-	
+
 	@Before
 	public void setup() {
 		if(!started) {
@@ -54,7 +55,7 @@ public class DepositSupervisorIT {
 			started = true;
 		}
 	}
-	
+
 	@Test
 	public void testWorkbenchZIP() throws ClassNotFoundException, InterruptedException {
 		DepositTestUtils.makeTestDir(depositsDirectory, "84f69180-3e40-4152-be80-a30c60c3f846", new File("src/test/resources/workbench.zip"));
@@ -81,7 +82,7 @@ public class DepositSupervisorIT {
 		depositStatusFactory.save(depositUUID, status);
 		Thread.sleep(1000*30);
 	}
-	
+
 	@Test
 	public void testCDRMETS() throws ClassNotFoundException, InterruptedException {
 		DepositTestUtils.makeTestDir(depositsDirectory, "bd5ff703-9c2e-466b-b4cc-15bbfd03c8ae", new File("src/test/resources/depositFileZipped.zip"));
@@ -108,7 +109,7 @@ public class DepositSupervisorIT {
 		depositStatusFactory.save(depositUUID, status);
 		Thread.sleep(1000*30);
 	}
-	
+
 	@Test
 	public void testCDRMETSwACL() throws ClassNotFoundException, InterruptedException, IOException, JDOMException {
 		File workingDir = new File(depositsDirectory, "fooff703-9c2e-466b-b4cc-15bbfd03c8ae");
@@ -116,7 +117,7 @@ public class DepositSupervisorIT {
 		workingDir.mkdirs();
 		File testMETS = new File("src/test/resources/accessControlsTest.cdr.xml");
 		File mets = new File(workingDir, "METS.xml");
-		FileUtils.copyFile(testMETS, mets);
+		Files.copy(testMETS.toPath(), mets.toPath());
 		String depositUUID = "fooff703-9c2e-466b-b4cc-15bbfd03c8ae";
 		depositStatusFactory.delete(depositUUID);
 		jobStatusFactory.deleteAll(depositUUID);
@@ -137,12 +138,12 @@ public class DepositSupervisorIT {
 		status.put("containerId","uuid:destination");
 		depositStatusFactory.save(depositUUID, status);
 		Thread.sleep(1000*30);
-		
+
 		File depositevents = new File(workingDir, "events/"+depositUUID+".xml");
 		Document doc = new SAXBuilder().build(depositevents);
 		@SuppressWarnings("rawtypes")
 		List events = doc.getRootElement().getChildren("event", JDOMNamespaceUtil.PREMIS_V2_NS);
 		assertEquals("Expected 5 PREMIS events for this ingest", 5, events.size());
 	}
-	
+
 }
