@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 
 import javax.xml.transform.Transformer;
@@ -30,7 +31,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositConstants;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.METSProfile;
@@ -38,7 +38,7 @@ import edu.unc.lib.dl.xml.METSProfile;
 public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnable {
 
 	private static final Logger log = LoggerFactory.getLogger(DSPACEMETS2N3BagJob.class);
-	
+
 	private Transformer epdcx2modsTransformer = null;
 
 	public Transformer getEpdcx2modsTransformer() {
@@ -52,12 +52,13 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnab
 	public DSPACEMETS2N3BagJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
 	}
-	
+
+	@Override
 	public void run() {
 		// copy DSPACE METS into place.
 		try {
 			File payloadMets = new File(getDepositDirectory(), "data/mets.xml");
-			FileUtils.copyFile(payloadMets, new File(getDepositDirectory(), "mets.xml"));
+			Files.copy(payloadMets.toPath(), new File(getDepositDirectory(), "mets.xml").toPath());
 		} catch (IOException e) {
 			throw new Error(e);
 		}
@@ -66,10 +67,10 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnab
 		Document mets = loadMETS();
 		assignPIDs(mets); // assign any missing PIDs
 		saveMETS(mets); // manifest updated to have record of all PIDs
-		
+
 		Model model = ModelFactory.createDefaultModel();
 		METSHelper helper = new METSHelper(mets);
-		
+
 		// deposit RDF bag
 		Bag top = model.createBag(getDepositPID().getURI().toString());
 		// add aggregate work bag
@@ -81,7 +82,7 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnab
 		model.add(aggregate, hasModel, model.createResource(ContentModelHelper.Model.AGGREGATE_WORK.getURI().toString()));
 		Resource simple = model.createResource(ContentModelHelper.Model.SIMPLE.getURI().toString());
 		@SuppressWarnings("unchecked")
-		List<Element> topchildren = (List<Element>) aggregateEl.getChildren(
+		List<Element> topchildren = aggregateEl.getChildren(
 				"div", METS_NS);
 		for (Element childEl : topchildren) {
 			Resource child = model.createResource(METSHelper.getPIDURI(childEl));
@@ -90,7 +91,7 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnab
 		}
 		helper.addFileAssociations(model, true);
 		saveModel(model, DepositConstants.MODEL_FILE);
-		
+
 		// extract EPDCX from mets
 		FileOutputStream fos = null;
 		try {

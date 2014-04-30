@@ -23,6 +23,7 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -66,7 +67,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 public class DigitalObjectManagerImplTest {
 
 	@Resource
-	private DigitalObjectManagerImpl digitalObjectManagerImpl = null;
+	private final DigitalObjectManagerImpl digitalObjectManagerImpl = null;
 
 	@Resource
 	ManagementClient managementClient = null;
@@ -107,6 +108,10 @@ public class DigitalObjectManagerImplTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
+		reset(managementClient);
+		reset(accessClient);
+		reset(tripleStoreQueryService);
+
 		this.getDigitalObjectManagerImpl().setAvailable(true, "available");
 		// setup default MD_CONTENTS stream
 		MIMETypedStream mts = mock(MIMETypedStream.class);
