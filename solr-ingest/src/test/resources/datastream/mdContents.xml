@@ -1,0 +1,9 @@
+<m:structMap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:m="http://www.loc.gov/METS/">
+	<m:div TYPE="Container">
+		<m:div ID="uuid:4" ORDER="1"></m:div>
+		<m:div ID="uuid:5" ORDER="2"></m:div>
+		<m:div ID="uuid:6" ORDER="3"></m:div>
+		<m:div ID="uuid:7" ORDER="4"></m:div>
+	</m:div>
+</m:structMap>

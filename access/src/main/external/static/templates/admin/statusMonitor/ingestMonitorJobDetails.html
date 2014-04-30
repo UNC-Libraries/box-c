@@ -1,40 +1,29 @@
-<div class="<%= data.status %>">
-	<p><span>Ingest ID:</span> <%= data.id %></p>
-	<% if (data.depositId) { %>
-		<p><span>Deposit ID:</span> <%= data.depositId %></p>
-	<% } %>
-	<p><span>Last refreshed:</span> <%= moment().format('YYYY-MM-DD h:mm:ssa') %></p>
-	<p><span>Status:</span> <%= data.status %></p>
-	<p><span>Submitter:</span> <%= data.submitter %></p>
+<div>
+	<h3>Details for ingest</h3> (<span class="<%= data.status.toLowerCase() %>"><%= data.status %></span>, refreshed <%= moment().format('h:mm:ssa') %>)
+	
+	<p><label>Submitter:</label> <%= data.submitter %></p>
 	<% if (data.containerPlacements && data.containerPlacements.length > 0) { %>
-		<p><span>First Object:</span> <%= data.containerPlacements[0].submittedLabel %></p>
-		<% if (data.containerPlacements[0].submittedPID) { %>
-			<p><span>PID:</span> <%= data.containerPlacements[0].submittedPID %></p>
-		<% } %>
-		<p><span>Destination PID:</span> <%= data.containerPlacements[0].containerPID %></p>
+		<p>
+			<label>First Object:</label> <%= data.containerPlacements[0].submittedLabel %>
+			<% if (data.containerPlacements[0].submittedPID) { %>
+				<br/><%= data.containerPlacements[0].submittedPID %>
+			<% } %>
+		</p>
+		<p><label>Destination:</label> <%= data.containerPlacements[0].containerPID %></p>
 	<% } %>
-	<p><span>Ingested:</span> <%= data.worked %>/<%= data.size %></p>
-	<% if (data.startTime) { %>
-		<p><span>Started:</span> <%= dateFormat(new Date(data.startTime)) %></p>
-	<% } 
-	if (data.failedTime) { %>
-		<p><span>Failed:</span> <%= dateFormat(new Date(data.failedTime)) %></p>
-	<% } 
-	if (data.finishedTime) { %>
-		<p><span>Finished:</span> <%= dateFormat(new Date(data.finishedTime)) %></p>
-	<% }
-	if (data.startTime) {
+	<p><label>Ingest Progress:</label> <%= data.worked %>/<%= data.size %></p>
+	<% if (data.startTime) {
 		if (data.finishedTime) { %>
-			<p><span>Elapsed:</span> <%= (data.finishedTime-data.startTime)/1000 %> seconds</p>
+			<p><label>Elapsed:</label> <%= (data.finishedTime-data.startTime)/1000 %> seconds</p>
 		<% } else if (data.failedTime != null) { %>
-			<p><span>Elapsed:</span> <%= (data.failedTime-data.startTime)/1000 %> seconds</p>
+			<p><label>Elapsed:</label> <%= (data.failedTime-data.startTime)/1000 %> seconds</p>
 		<% } else { %>
-			<p><span>Elapsed:</span> <%= (Date.now()-data.startTime)/1000 %> seconds</p>
+			<p><label>Elapsed:</label> <%= (Date.now()-data.startTime)/1000 %> seconds</p>
 		<% }
 	}
 	
 	if (data.ingestedFiles) { %>
-		<p><span>Ingested Files</span>
+		<p><label>Ingested Files</label>
 			<ul class="ingested_files">
 		<% for (var i = data.ingestedFiles.length - 1; i >= 0; i--) {
 			var ingestedFile = data.ingestedFiles[i];
@@ -47,9 +36,25 @@
 			}
 		} %>
 			</ul>
-		</p><%
-	}
-	if (data.error) { %>
+		</p>
+	<% } %>
+	
+	<p><label>Ingest ID:</label> <%= data.id %></p>
+	<% if (data.depositId) { %>
+		<p><label>Deposit ID:</label> <%= data.depositId %></p>
+	<% } %>
+	
+	<% if (data.startTime) { %>
+		<p><label>Started:</label> <%= dateFormat(new Date(data.startTime)) %></p>
+	<% } 
+	if (data.failedTime) { %>
+		<p><label>Failed:</label> <%= dateFormat(new Date(data.failedTime)) %></p>
+	<% } 
+	if (data.finishedTime) { %>
+		<p><label>Finished:</label> <%= dateFormat(new Date(data.finishedTime)) %></p>
+	<% } %>
+	
+	<% if (data.error) { %>
 		<h3>Error Log</h3><pre class='stacktrace'> <%= data.error %></pre>
 	<% } %>
 </div>

@@ -15,26 +15,29 @@
  */
 package edu.unc.lib.dl.data.ingest.solr;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
 
-/**
- * Message which blocks until its parent message has finished
- * @author bbpennel
- *
- */
-public class BlockUntilTargetCompleteRequest extends SolrUpdateRequest {
+public class ChildSetRequest extends SolrUpdateRequest {
 	private static final long serialVersionUID = 1L;
-	private UpdateNodeRequest targetRequest;
+	private List<PID> children;
 	
-	public BlockUntilTargetCompleteRequest(String pid, IndexingActionType action, String messageID,
-			UpdateNodeRequest parent, UpdateNodeRequest target) {
-		super(pid, action, messageID, parent);
-		this.targetRequest = target;
+	public ChildSetRequest(String newParent, List<String> children, IndexingActionType action) {
+		super(newParent, action);
+		this.children = new ArrayList<PID>(children.size());
+		for (String childString : children) {
+			this.children.add(new PID(childString));
+		}
 	}
 
-	@Override
-	public boolean isBlocked() {
-		return !this.targetRequest.getStatus().equals(ProcessingStatus.FINISHED)
-				&& !this.targetRequest.getStatus().equals(ProcessingStatus.FAILED);
+	public List<PID> getChildren() {
+		return children;
+	}
+
+	public void setChlidren(List<PID> children) {
+		this.children = children;
 	}
 }

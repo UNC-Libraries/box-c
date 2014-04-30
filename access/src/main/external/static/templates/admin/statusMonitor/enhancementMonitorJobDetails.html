@@ -1,30 +1,40 @@
 <div>
-	<% if (data.id) { %>
-		<p><span>Ingest ID:</span> <%= data.id %></p>
-	<% } %>
-	<p><span>Last refreshed:</span> <%= moment().format('YYYY-MM-DD h:mm:ssa') %></p>
-	<p><span>Status:</span> <%= data.type %></p>
-	<p><span>Label:</span> <%= data.targetLabel %></p>
-	<p><span>Target:</span> <%= data.targetPID %></p>
-	<p><span>Queued:</span><%= dateFormat(data.queuedTimestamp) %>
+	<h3>Details for action <%= data.action? data.action.substring(data.action.lastIndexOf("/") + 1) : "" %></h3> (<span class="<%= data.type.toLowerCase() %>"><%= data.type %></span>, refreshed <%= moment().format('h:mm:ssa') %>)
+	
+	<p><label>Target:</label> <%= data.targetLabel %>
+		<br/><%= data.targetPID %>
+	</p>
+	<p><label>Queued:</label><%= dateFormat(data.queuedTimestamp) %>
 
 	<% if ("finishedTimestamp" in data) { %>
-		<p><span>Finished Timestamp:</span><%= dateFormat(data.finishedTimestamp) %></p>
+		<p><label>Finished Timestamp:</label><%= dateFormat(data.finishedTimestamp) %></p>
 	<% } %>
 	
-	<p><span>Action:</span> <%= data.action %></p>
 	<% if (data.serviceName){ %>
-		<p><span>Specified service:</span><%= data.serviceName %></p>
+		<p><label>Specified service:</label><%= data.serviceName %></p>
 	<% } %>
 	<% if ("activeService" in data && data.activeService){ %>
-		<p><span>Active service:</span><%= data.activeName %></p>
+		<p><label>Active service:</label><%= data.activeName %></p>
 	<% } %>
 	
 	<%
 	if (data.filteredServices && !jQuery.isEmptyObject(data.filteredServices)) {
-		var details = "<p><span>Filtered service(s):</span><ul>";
+		var details = "<p><label>Filtered service(s):</label><ul>";
 		for (serviceIndex in data.filteredServices) {
-			details += "<li>" + data.filteredServices[serviceIndex] + "</li>";
+			details += "<li";
+			if (data.activeService == serviceIndex) {
+				details += " class='active_service'";
+			}
+			details += ">" + data.filteredServices[serviceIndex] + "</li>";
+		}
+		details += "</ul></p>";
+		%><%= details %><%
+	}
+	
+	if (data.type != "ACTIVE" && data.completedServices && !jQuery.isEmptyObject(data.completedServices)) {
+		var details = "<p><label>Completed service(s):</label><ul>";
+		for (serviceIndex in data.completedServices) {
+			details += "<li>" + data.completedServices[serviceIndex] + "</li>";
 		}
 		details += "</ul></p>";
 		%><%= details %><%
@@ -33,26 +43,28 @@
 	if (data.type == "failed") {
 		$.each(data.failedServices, function(serviceName, serviceInfo){ %>
 			<hr/>
-			<p><span>Queued:</span><%= dateFormat(serviceInfo.queuedTimestamp) %></p>
-			<p><span>Failed Timestamp:</span><%= dateFormat(serviceInfo.timeFailed) %></p>
-			<p><span>Action:</span><%= serviceInfo.action %></p>
-			<p><span>Specified service:</span><%= serviceInfo.serviceName %></p>
+			<p><label>Queued:</label><%= dateFormat(serviceInfo.queuedTimestamp) %></p>
+			<p><label>Failed Timestamp:</label><%= dateFormat(serviceInfo.timeFailed) %></p>
+			<p><label>Action:</label><%= serviceInfo.action %></p>
+			<p><label>Specified service:</label><%= serviceInfo.serviceName %></p>
 		
 			<% if ("stackTrace" in serviceInfo) { %>
-				<p><span>Stack trace:</span>
+				<p><label>Stack trace:</label>
 					<pre><%=  serviceInfo.stackTrace %></pre>
 				</p>
 			<% }
 			
 			if (serviceInfo.uris && "xml" in serviceInfo.uris) { %>
-				<p><span>Original message:</span><a href="/services<%= serviceInfo.uris.xml %>">Message body</a></p>
+				<p><label>Original message:</label><a href="/services<%= serviceInfo.uris.xml %>">Message body</a></p>
 			<% }
 		});
-	}
+	} %>
 	
-	if (data.uris && "xml" in data.uris) {
-		%><p><span>Original message:</span><a href="/services<%= data.uris.xml %>">Message body</a></p><%
-	}
+	<% if (data.id) { %>
+		<p><label>Ingest ID:</label> <%= data.id %></p>
+	<% } %>
 	
-	%>
+	<% if (data.uris && "xml" in data.uris) { %>
+		<p><label>Original message:</label><a href="/services<%= data.uris.xml %>">Message body</a></p>
+	<% } %>
 </div>

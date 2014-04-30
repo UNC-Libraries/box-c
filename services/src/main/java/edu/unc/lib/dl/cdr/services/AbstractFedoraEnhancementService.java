@@ -15,14 +15,13 @@
  */
 package edu.unc.lib.dl.cdr.services;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -71,6 +70,7 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 		this.active = active;
 	}
 
+	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
@@ -94,7 +94,7 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 	public void setManagementClient(ManagementClient managementClient) {
 		this.managementClient = managementClient;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
@@ -144,12 +144,12 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 					return results;
 			}
 		}
-		
+
 		if (count)
 			return resultCount;
 		return results;
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected Object executeCandidateQuery(String query, boolean countQuery) {
 		String format = "json";//((countQuery) ? "count/json" : "json");
@@ -175,7 +175,7 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 			return result;
 		}
 	}
-	
+
 	@Override
 	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
 		// Automatically isApplicable if the message is specifically asking for this service.
@@ -183,17 +183,17 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 		if ((JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(action) || JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(action))
 				&& this.getClass().getName().equals(message.getServiceName()))
 			return true;
-		
+
 		return askQueries(this.isApplicableQueries, message);
 	}
-	
+
 	protected boolean askQueries(List<String> queries, EnhancementMessage message) {
 		for (String query: queries)
 			if (askQuery(query, message))
 				return true;
 		return false;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	protected boolean askQuery(String query, EnhancementMessage message) {
 		query = String.format(query,
@@ -207,23 +207,9 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 	 *           name of file to open. The file can reside anywhere in the classpath
 	 */
 	protected String readFileAsString(String filePath) throws java.io.IOException {
-		StringBuffer fileData = new StringBuffer(1000);
-		java.io.InputStream inStream = this.getClass().getResourceAsStream(filePath);
-		java.io.InputStreamReader inStreamReader = new InputStreamReader(inStream);
-		BufferedReader reader = new BufferedReader(inStreamReader);
-		char[] buf = new char[1024];
-		int numRead = 0;
-		while ((numRead = reader.read(buf)) != -1) {
-			String readData = String.valueOf(buf, 0, numRead);
-			fileData.append(readData);
-			buf = new char[1024];
-		}
-		reader.close();
-		inStreamReader.close();
-		inStream.close();
-		return fileData.toString();
+		return IOUtils.toString(this.getClass().getResourceAsStream(filePath), "UTF-8");
 	}
-	
+
 	protected class MaxSizeList<E> extends ArrayList<E> {
 		private static final long serialVersionUID = 1L;
 		private int limit = 10;
@@ -231,7 +217,7 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 		public MaxSizeList(int limit) {
 			this.limit = limit;
 		}
-		
+
 		@Override
 		public boolean add(E element) {
 			if (this.size() >= limit) return true;

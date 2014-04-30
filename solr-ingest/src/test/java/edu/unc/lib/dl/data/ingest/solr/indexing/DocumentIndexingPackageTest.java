@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
 public class DocumentIndexingPackageTest extends Assert {
 
@@ -38,7 +39,7 @@ public class DocumentIndexingPackageTest extends Assert {
 				"src/test/resources/foxml/aggregateSplitDepartments.xml")));
 		dip.setFoxml(foxml);
 		
-		Map<String,Element> datastreams = dip.getMostRecentDatastreamMap();
+		Map<String,Element> datastreams = FOXMLJDOMUtil.getMostRecentDatastreamMap(dip.getFoxml());
 		assertEquals(6, datastreams.size());
 		assertTrue(datastreams.containsKey(ContentModelHelper.Datastream.DC.name()));
 		assertTrue(datastreams.containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.name()));

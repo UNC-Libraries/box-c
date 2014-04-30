@@ -86,7 +86,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	/**
 	 * Used to get an attribute. If one of those values isn't being asked for, or if the types are wrong, then an empty
 	 * bag is returned.
-	 * 
+	 *
 	 * @param attributeType
 	 *           the datatype of the attributes to find, which must be time, date, or dateTime for this module to resolve
 	 *           a value
@@ -110,7 +110,6 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 		long startTime = System.currentTimeMillis();
 
 		String resourceId = context.getResourceId().encode();
-		String datastreamId = getDatastreamID(context);
 		if (log.isDebugEnabled()) {
 			log.debug("CdrRIAttributeFinder: [" + attributeType.toString() + "] " + attributeId + ", rid=" + resourceId);
 		}
@@ -142,11 +141,9 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 			return new EvaluationResult(BagAttribute.createEmptyBag(attributeType));
 		}
 
-		Set<String> groups = getShibbolethGroups(context);
-
 		EvaluationResult result = null;
 		try {
-			result = getEvaluationResult(resourceId, attributeId, datastreamId, designatorType, attributeType, groups);
+			result = getEvaluationResult(resourceId, attributeId, context, designatorType, attributeType);
 		} catch (Exception e) {
 			log.error("Error finding attribute: " + e.getMessage(), e);
 			return new EvaluationResult(BagAttribute.createEmptyBag(attributeType));
@@ -204,7 +201,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param resourceID
 	 *           - the hierarchical XACML resource ID
 	 * @param attribute
@@ -213,8 +210,8 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	 * @return
 	 * @throws AttributeFinderException
 	 */
-	private EvaluationResult getEvaluationResult(String resourceID, URI attribute, String datastreamId,
-			int designatorType, URI type, Set<String> groups) throws AttributeFinderException {
+	private EvaluationResult getEvaluationResult(String resourceID, URI attribute, EvaluationCtx context,
+			int designatorType, URI type) throws AttributeFinderException {
 
 		// split up the path of the hierarchical resource id
 		// either the last part is the pid, or the last-but one is the pid and
@@ -240,24 +237,26 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 		log.debug("Getting attribute {} for resource {}", attribute, pid);
 
 		if (userRole.equals(attribute)) {
+			Set<String> groups = getShibbolethGroups(context);
 			Set<String> roles = accessControlUtils.getRolesForGroups(groups, new PID(pid));
 			return makeStringBagResult(roles, type);
 		} else if (embargoUntil.equals(attribute)) {
 			List<String> embargoes = getAccessControlUtils().getAllEmbargoes(new PID(pid));
 			return makeStringBagResult(embargoes, type);
 		} else if (dataAccessCategory.equals(attribute)) {
+			String datastreamId = getDatastreamID(context);
 			if (datastreamId == null) {
 				return new EvaluationResult(BagAttribute.createEmptyBag(type));
 			} else {
 				List<String> categories = getAccessControlUtils().getDatastreamCategories(datastreamId);
 				return makeStringBagResult(categories, type);
 			}
-			
+
 		} else if (isPublished.equals(attribute)) {
 			List<String> statuses = new ArrayList<String>(1);
 			statuses.add(Boolean.toString(accessControlUtils.isPublished(new PID(pid))));
 			return makeStringBagResult(statuses, type);
-			
+
 		} else if (isActive.equals(attribute)) {
 			List<String> statuses = new ArrayList<String>(1);
 			statuses.add(Boolean.toString(accessControlUtils.isActive(new PID(pid))));

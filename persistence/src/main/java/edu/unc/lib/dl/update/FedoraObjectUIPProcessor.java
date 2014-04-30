@@ -95,10 +95,9 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 		if (fuip.getModifiedData().size() == 0)
 			return null;
 		Collection<IndexingActionType> actionTypes = new HashSet<IndexingActionType>(fuip.getModifiedData().size());
+		// Only detecting ACL changes this way for now as it would otherwise be unidentifiable from other RELS_EXT updates
 		if (fuip.getIncomingData().containsKey("ACL") && fuip.getModifiedData().containsKey(Datastream.RELS_EXT.getName())) {
 			actionTypes.add(IndexingActionType.UPDATE_ACCESS);
-		} else {
-			actionTypes.add(IndexingActionType.ADD);
 		}
 		return actionTypes;
 	}

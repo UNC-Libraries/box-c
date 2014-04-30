@@ -16,9 +16,9 @@
 package edu.unc.lib.dl.data.ingest.solr;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -36,7 +36,7 @@ import edu.unc.lib.dl.util.IndexingActionType;
 /**
  * Service which handles ingest and update of a solr index via threaded processors which read from a queue of ordered
  * update requests.
- * 
+ *
  * @author bbpennel
  */
 public class SolrUpdateService {
@@ -57,8 +57,6 @@ public class SolrUpdateService {
 	protected int finishedQueueSize = 1000;
 	protected boolean isPaused = false;
 
-	protected UpdateNodeRequest root;
-
 	public SolrUpdateService() {
 		pidQueue = new LinkedBlockingQueue<SolrUpdateRequest>();
 		lockedPids = Collections.synchronizedSet(new HashSet<String>());
@@ -66,8 +64,6 @@ public class SolrUpdateService {
 		activeMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		failedMessages = Collections.synchronizedList(new ArrayList<SolrUpdateRequest>());
 		finishedMessages = Collections.synchronizedList(new LimitedQueue<SolrUpdateRequest>(this.finishedQueueSize));
-		
-		root = new UpdateNodeWithManagedChildrenRequest(identifier + ":ROOT", null);
 	}
 
 	public void init() {
@@ -97,11 +93,11 @@ public class SolrUpdateService {
 	}
 
 	public void offer(String pid, IndexingActionType action) {
-		offer(new SolrUpdateRequest(pid, action, nextMessageID(), root));
+		offer(new SolrUpdateRequest(pid, action, nextMessageID()));
 	}
 
 	public void offer(String pid) {
-		offer(new SolrUpdateRequest(pid, IndexingActionType.ADD, nextMessageID(), root));
+		offer(new SolrUpdateRequest(pid, IndexingActionType.ADD, nextMessageID()));
 	}
 
 	public void offer(SolrUpdateRequest ingestRequest) {
@@ -111,10 +107,6 @@ public class SolrUpdateService {
 		if (ingestRequest.getMessageID() == null) {
 			ingestRequest.setMessageID(nextMessageID());
 		}
-
-		// If no parent is provided, then this is a root node
-		if (ingestRequest.getParent() == null)
-			ingestRequest.setParent(root);
 
 		synchronized (pidQueue) {
 			if (executor.isTerminating() || executor.isShutdown() || executor.isTerminated())
@@ -168,10 +160,6 @@ public class SolrUpdateService {
 		return failedMessages;
 	}
 
-	public UpdateNodeRequest getRoot() {
-		return root;
-	}
-
 	public boolean isAutoCommit() {
 		return autoCommit;
 	}
@@ -199,7 +187,7 @@ public class SolrUpdateService {
 	public int activeThreadsCount() {
 		return executor.getActiveCount();
 	}
-	
+
 	public boolean isPaused() {
 		return this.isPaused;
 	}
@@ -216,10 +204,10 @@ public class SolrUpdateService {
 				.append("\nLocked Pids: ").append(lockedPids.size()).append("(" + lockedPids + ")");
 		return status.toString();
 	}
-	
+
 	public class LimitedQueue<E> extends LinkedList<E> {
 		private static final long serialVersionUID = 1L;
-		private int limit;
+		private final int limit;
 
 	    public LimitedQueue(int limit) {
 	        this.limit = limit;

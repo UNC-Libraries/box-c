@@ -1,0 +1,16 @@
+PREFIX fedora-view: <info:fedora/fedora-system:def/view#> 
+PREFIX fedora-model: <info:fedora/fedora-system:def/model#> 
+PREFIX cdr-base: <http://cdr.unc.edu/definitions/1.0/base-model.xml#> 
+ASK
+FROM <%1$s>
+WHERE { 
+    ?pid <info:fedora/fedora-system:def/model#hasModel> <info:fedora/cdr-model:Simple> .
+    ?pid cdr-base:sourceData ?srcDS .
+    ?pid cdr-base:hasSourceMimeType ?srcMime .
+    OPTIONAL { ?pid cdr-base:fullText ?textDS . }
+    FILTER (
+      ?pid = <%2$s>
+      && regex( str(?srcMime), '(text/|application/pdf|application/msword|application/vnd\\.|application/rtf|application/powerpoint|application/postscript)')
+      && !bound(?textDS)
+    ) 
+}

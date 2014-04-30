@@ -35,21 +35,21 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.util.JDOMQueryUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.util.ContentCategory;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Extracts datastreams from an object and sets related properties concerning the default datastream for the object,
  * including the mimetype and extension into the content type hierarchical facet.
- * 
+ *
  * Sets datastream, contentType, filesizeTotal, filesizeSort
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDatastreamContentFilter.class);
@@ -120,7 +120,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 							defaultWebData.setMimetype(mimetype);
 					}
 				}
-				
+
 				// If the filesize on the datastream is not set (due to old version of fedora creating it), then grab it from rels-ext
 				if (defaultWebData.getFilesize() < 0) {
 					String sourceFileSize = relsExt.getChildText(ContentModelHelper.CDRProperty.hasSourceFileSize.name(), JDOMNamespaceUtil.CDR_NS);
@@ -138,7 +138,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		} catch (JDOMException e) {
 			throw new IndexingException("Failed to extract default web data for " + dip.getPid().getPid(), e);
 		}
-		
+
 		long totalSize = 0;
 		List<String> datastreamList = new ArrayList<String>(datastreams.size());
 		dip.getDocument().setDatastream(datastreamList);
@@ -154,7 +154,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	/**
 	 * Extracts a list of datastreams from a FOXML documents, including the datastream's name, file type, file size and
 	 * backing enumeration.
-	 * 
+	 *
 	 * @param dip
 	 * @param datastreams
 	 *           List of datastreams to add to
@@ -165,7 +165,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		Datastream currentDS = null;
 		long filesize = 0;
 
-		Map<String, Element> datastreamMap = dip.getMostRecentDatastreamMap();
+		Map<String, Element> datastreamMap = FOXMLJDOMUtil.getMostRecentDatastreamMap(dip.getFoxml());
 		Iterator<Entry<String, Element>> it = datastreamMap.entrySet().iterator();
 		while (it.hasNext()) {
 			Entry<String, Element> dsEntry = it.next();
@@ -194,8 +194,8 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		}
 	}
 
-	private DocumentIndexingPackage getDefaultWebObject(Element relsExt) throws JDOMException {
-		String defaultWebObject = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebObject.name(),
+	private DocumentIndexingPackage getDefaultWebObject(Element relsExt) throws IndexingException, JDOMException {
+		String defaultWebObject = FOXMLJDOMUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebObject.name(),
 				JDOMNamespaceUtil.CDR_NS, relsExt);
 		if (defaultWebObject == null)
 			return null;
@@ -209,12 +209,12 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	private Datastream getDefaultWebData(DocumentIndexingPackage dip, List<Datastream> datastreams) throws JDOMException {
 		PID owner = null;
 		Element relsExt = dip.getRelsExt();
-		String defaultWebData = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
+		String defaultWebData = FOXMLJDOMUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
 				JDOMNamespaceUtil.CDR_NS, relsExt);
 
 		// If this object does not have a defaultWebData but its defaultWebObject does, then use that instead.
 		if (defaultWebData == null && dip.getDefaultWebObject() != null) {
-			defaultWebData = JDOMQueryUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
+			defaultWebData = FOXMLJDOMUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
 					JDOMNamespaceUtil.CDR_NS, dip.getDefaultWebObject().getRelsExt());
 			owner = dip.getDefaultWebObject().getPid();
 		}
@@ -284,7 +284,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 			if (mimetypeType.equals("audio"))
 				return ContentCategory.audio;
 		}
-		
+
 		String contentCategory = (String)this.contentTypeProperties.get("mime." + mimetype);
 		if (contentCategory == null)
 			contentCategory = (String)this.contentTypeProperties.get("ext." + extension);
