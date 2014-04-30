@@ -25,6 +25,7 @@ import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.sourceMetadata;
 import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_SOURCE;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.hasDatastream;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.label;
+import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.mimetype;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
 import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
@@ -252,6 +253,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 		model.add(sourceMDResource, dprop(model, stagingLocation), DepositConstants.DATA_DIR + "/"
 				+ dataFile.getName());
 		model.add(primaryResource, cdrprop(model, hasSourceMetadataProfile), "proquest");
+		model.add(sourceMDResource, dprop(model, mimetype), "text/xml");
 	}
 
 	private void setEmbargoUntil(Model model, Resource primaryResource, Element dataRoot) {

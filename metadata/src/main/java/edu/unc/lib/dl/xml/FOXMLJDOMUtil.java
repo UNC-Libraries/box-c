@@ -218,8 +218,10 @@ public class FOXMLJDOMUtil {
 		Element dcDSV = new Element("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
 		dcDS.addContent(dcDSV);
 		dcDSV.setAttribute("ID", id + ".0");
-		dcDSV.setAttribute("MIMETYPE", mimeType);
-		dcDSV.setAttribute("LABEL", label);
+		if (mimeType != null)
+			dcDSV.setAttribute("MIMETYPE", mimeType);
+		if (label != null)
+			dcDSV.setAttribute("LABEL", label);
 		Element contentDigest = new Element("contentDigest", JDOMNamespaceUtil.FOXML_NS);
 		contentDigest.setAttribute("TYPE", "MD5");
 		if (md5checksum != null) {
