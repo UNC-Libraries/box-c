@@ -30,6 +30,7 @@ import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.staging
 import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
+import static edu.unc.lib.dl.util.MetadataProfileConstants.PROQUEST_ETD;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -252,7 +253,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 
 		model.add(sourceMDResource, dprop(model, stagingLocation), DepositConstants.DATA_DIR + "/"
 				+ dataFile.getName());
-		model.add(primaryResource, cdrprop(model, hasSourceMetadataProfile), "proquest");
+		model.add(primaryResource, cdrprop(model, hasSourceMetadataProfile), PROQUEST_ETD);
 		model.add(sourceMDResource, dprop(model, mimetype), "text/xml");
 	}
 

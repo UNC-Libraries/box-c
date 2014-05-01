@@ -27,6 +27,7 @@ import edu.unc.lib.deposit.fcrepo3.MakeFOXML;
 import edu.unc.lib.deposit.normalize.BioMedCentralExtrasJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
 import edu.unc.lib.deposit.normalize.DSPACEMETS2N3BagJob;
+import edu.unc.lib.deposit.normalize.Proquest2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
 import edu.unc.lib.deposit.validate.ValidateMODS;
@@ -42,9 +43,9 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
  * Coordinates work on deposits via Redis and Resque. Responsible for putting
  * all work onto the queues. Coordinates with outside world via deposit status
  * keys.
- * 
+ *
  * @author count0
- * 
+ *
  */
 public class DepositSupervisor implements WorkerListener {
 	private static final Logger log = LoggerFactory
@@ -64,7 +65,7 @@ public class DepositSupervisor implements WorkerListener {
 
 	private Timer timer;
 
-	private String id;
+	private final String id;
 
 	@Autowired
 	private File depositsDirectory;
@@ -181,7 +182,7 @@ public class DepositSupervisor implements WorkerListener {
 
 	/*
 	 * Respond to job success with more job scheduling or finish
-	 * 
+	 *
 	 * @see
 	 * net.greghaines.jesque.worker.WorkerListener#onEvent(net.greghaines.jesque
 	 * .worker.WorkerEvent, net.greghaines.jesque.worker.Worker,
@@ -284,12 +285,13 @@ public class DepositSupervisor implements WorkerListener {
 			// we need to add N3 packaging to this bag
 			if (packagingType.equals(PackagingType.METS_CDR.getUri())) {
 				conversion = makeJob(CDRMETS2N3BagJob.class, depositUUID);
-			} else if (packagingType.equals(PackagingType.METS_DSPACE_SIP_1
-					.getUri())
-					|| packagingType.equals(PackagingType.METS_DSPACE_SIP_2
-							.getUri())) {
+			} else if (packagingType.equals(PackagingType.METS_DSPACE_SIP_1.getUri())
+					|| packagingType.equals(PackagingType.METS_DSPACE_SIP_2.getUri())) {
 				conversion = makeJob(DSPACEMETS2N3BagJob.class, depositUUID);
+			} else if (packagingType.equals(PackagingType.PROQUEST_ETD)) {
+				conversion = makeJob(Proquest2N3BagJob.class, depositUUID);
 			}
+
 			if (conversion == null) {
 				String msg = MessageFormat
 						.format("Cannot convert deposit package to N3 BagIt. No converter for this packaging type(s): {}",
