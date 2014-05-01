@@ -44,9 +44,9 @@ public class ContentModelHelper {
 
 	/**
 	 * These are the properties that the repository manages in the rels-ext datastream.
-	 * 
+	 *
 	 * @author count0
-	 * 
+	 *
 	 */
 	public static enum CDRProperty {
 		allowIndexing("allowIndexing"), defaultWebData("defaultWebData"), defaultWebObject("defaultWebObject"), sourceData(
@@ -56,8 +56,10 @@ public class ContentModelHelper {
 				"depositedOnBehalfOf"), depositMethod("depositMethod"), depositPackageType("depositPackageType"), depositPackageSubType(
 				"depositPackageSubType"), inheritPermissions("inheritPermissions", JDOMNamespaceUtil.CDR_ACL_NS), embargoUntil(
 				"embargo-until", JDOMNamespaceUtil.CDR_ACL_NS), dataAccessCategory("data-access-category",
-						JDOMNamespaceUtil.CDR_ACL_NS), userRole("user-role", JDOMNamespaceUtil.CDR_ACL_NS), isPublished(
-				"isPublished"), isActive("isActive", JDOMNamespaceUtil.CDR_ACL_NS);
+				JDOMNamespaceUtil.CDR_ACL_NS), userRole("user-role", JDOMNamespaceUtil.CDR_ACL_NS), isPublished("isPublished"),
+				isActive("isActive", JDOMNamespaceUtil.CDR_ACL_NS), sourceMetadata("sourceMetadata"), hasSourceMetadataProfile(
+						"hasSourceMetadataProfile");
+
 		private URI uri;
 		private String predicate;
 		private Namespace namespace;
@@ -110,9 +112,9 @@ public class ContentModelHelper {
 
 	/**
 	 * These are the entailed relationships that the repository infers between objects.
-	 * 
+	 *
 	 * @author count0
-	 * 
+	 *
 	 */
 	public static enum EntailedRelationship {
 		isMemberOfCollection(JDOMNamespaceUtil.RELSEXT_NS, "isMemberOfCollection");
@@ -165,9 +167,9 @@ public class ContentModelHelper {
 
 	/**
 	 * These are the properties that the repository manages in the rels-ext datastream.
-	 * 
+	 *
 	 * @author count0
-	 * 
+	 *
 	 */
 	public static enum FedoraProperty {
 		Active(JDOMNamespaceUtil.FEDORA_MODEL_NS, "Active"), hasModel(JDOMNamespaceUtil.FEDORA_MODEL_NS, "hasModel"), label(
@@ -209,9 +211,9 @@ public class ContentModelHelper {
 
 	/**
 	 * These are the content model object types that the repository code has to be able to identify and reference.
-	 * 
+	 *
 	 * @author count0
-	 * 
+	 *
 	 */
 	public static enum Model {
 		COLLECTION("Collection"), CONTAINER("Container"), GROUPAGENT("GroupAgent"), PERSONAGENT("PersonAgent"), SIMPLE(
@@ -260,9 +262,9 @@ public class ContentModelHelper {
 
 	/**
 	 * These are the relationships that the repository manages between objects.
-	 * 
+	 *
 	 * @author count0
-	 * 
+	 *
 	 */
 	public static enum Relationship {
 		contains(JDOMNamespaceUtil.CDR_NS, "contains"), member(JDOMNamespaceUtil.CDR_NS, "member"), owner(
@@ -285,7 +287,7 @@ public class ContentModelHelper {
 		public URI getURI() {
 			return this.uri;
 		}
-		
+
 		public Namespace getNamespace() {
 			return namespace;
 		}
@@ -336,7 +338,8 @@ public class ContentModelHelper {
 				"THUMB_LARGE", ControlGroup.MANAGED, false, "Thumbnail Image", DatastreamCategory.DERIVATIVE), MD_CONTENTS(
 				"MD_CONTENTS", ControlGroup.INTERNAL, false, "List of Contents", DatastreamCategory.METADATA), AUDIT(
 				"AUDIT", ControlGroup.INTERNAL, false, "Audit Trail for this object", DatastreamCategory.METADATA), DATA_MANIFEST(
-				"DATA_MANIFEST", ControlGroup.MANAGED, false, "Deposit Manifest", DatastreamCategory.METADATA);
+				"DATA_MANIFEST", ControlGroup.MANAGED, false, "Deposit Manifest", DatastreamCategory.METADATA), MD_SOURCE(
+				"MD_SOURCE", ControlGroup.MANAGED, false, "Source Metadata", DatastreamCategory.ADMINISTRATIVE);
 
 		private String name;
 		private ControlGroup controlGroup;
@@ -411,16 +414,16 @@ public class ContentModelHelper {
 			return this.name;
 		}
 	}
-	
+
 	/**
 	 * These are the relationships used within CDR N3 submission packages.
-	 * 
+	 *
 	 * @author count0
-	 * 
+	 *
 	 */
 	public static enum DepositRelationship {
-		stagingLocation, mimetype, md5sum, size, createTime, label, originalLocation;
-		
+		stagingLocation, mimetype, md5sum, size, createTime, label, originalLocation, hasDatastream;
+
 		DepositRelationship() {
 			try {
 				this.uri = new URI(JDOMNamespaceUtil.DEPOSIT_NS.getURI() + name());
@@ -428,7 +431,7 @@ public class ContentModelHelper {
 				throw new Error(e);
 			}
 		}
-		
+
 		private URI uri;
 
 		public URI getURI() {

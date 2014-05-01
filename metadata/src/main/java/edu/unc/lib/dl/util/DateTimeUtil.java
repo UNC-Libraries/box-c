@@ -19,7 +19,6 @@
 package edu.unc.lib.dl.util;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.joda.time.DateTime;
@@ -71,34 +70,41 @@ public class DateTimeUtil {
 		result = isoDT.withZoneRetainFields(DateTimeZone.forID("Etc/UTC"));
 		return result;
 	}
-	
-	private final static DateTimeFormatter utcFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(DateTimeZone.UTC);
-	private final static DateTimeFormatter utcYFormatter = DateTimeFormat.forPattern("yyyy").withZone(DateTimeZone.UTC);
-	private final static DateTimeFormatter utcYMDFormatter = DateTimeFormat.forPattern("yyyy-MM-dd").withZone(DateTimeZone.UTC);
-	private final static DateTimeFormatter utcYMDHMSFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(DateTimeZone.UTC);
-	
+
+	public final static DateTimeFormatter utcFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+			.withZone(DateTimeZone.UTC);
+	public final static DateTimeFormatter utcYFormatter = DateTimeFormat.forPattern("yyyy").withZone(DateTimeZone.UTC);
+	public final static DateTimeFormatter utcYMDFormatter = DateTimeFormat.forPattern("yyyy-MM-dd").withZone(
+			DateTimeZone.UTC);
+	public final static DateTimeFormatter utcYMDHMSFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss")
+			.withZone(DateTimeZone.UTC);
+
 	public static Date parseUTCToDate(String utcDate) throws ParseException {
 		DateTime dateTime = utcFormatter.parseDateTime(utcDate);
 		return dateTime.toDate();
 	}
-	
+
 	public static Date parsePartialUTCToDate(String utcDate) throws ParseException {
+		return parsePartialUTCToDateTime(utcDate).toDate();
+	}
+
+	public static DateTime parsePartialUTCToDateTime(String utcDate) throws ParseException {
 		if (utcDate.length() == 4) {
 			DateTime dateTime = utcYFormatter.parseDateTime(utcDate);
-			return dateTime.toDate();
+			return dateTime;
 		}
 		if (utcDate.length() == 10) {
 			DateTime dateTime = utcYMDFormatter.parseDateTime(utcDate);
-			return dateTime.toDate();
+			return dateTime;
 		}
 		if (utcDate.length() == 19) {
 			DateTime dateTime = utcYMDHMSFormatter.parseDateTime(utcDate);
-			return dateTime.toDate();
+			return dateTime;
 		}
 		DateTime dateTime = utcFormatter.parseDateTime(utcDate);
-		return dateTime.toDate();
+		return dateTime;
 	}
-	
+
 	public static String formatDateToUTC(Date date) throws ParseException {
 		DateTime dateTime = new DateTime(date);
 		return utcFormatter.print(dateTime);
