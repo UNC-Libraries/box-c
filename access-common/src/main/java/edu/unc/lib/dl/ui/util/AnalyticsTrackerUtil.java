@@ -16,7 +16,10 @@
 package edu.unc.lib.dl.ui.util;
 
 import javax.annotation.PreDestroy;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -34,7 +37,7 @@ public class AnalyticsTrackerUtil {
 	private static final Logger log = LoggerFactory.getLogger(AnalyticsTrackerUtil.class);
 
 	// Made up CID to use if the request does not include one, such as from a API request
-	private final String DEFAULT_CID = "35009a79-1a05-49d7-b876-2b884d0f825b";
+	private static final String DEFAULT_CID = "35009a79-1a05-49d7-b876-2b884d0f825b";
 	// Google analytics measurement API url
 	private final String GA_URL = "http://www.google-analytics.com/collect";
 
@@ -66,11 +69,45 @@ public class AnalyticsTrackerUtil {
 
 		// Use a default customer ID if none was provided, since it is required
 		if (cid == null)
-			cid = DEFAULT_CID;
+			return;
 
 		// Perform the analytics tracking event asynchronously
 		Thread trackerThread = new Thread(new EventTrackerRunnable(cid, category, action, label, value));
 		trackerThread.start();
+	}
+
+	/**
+	 * Get the user's CID or generate a value from the remote client's information
+	 *
+	 * @param request
+	 * @return
+	 */
+	public static String getCID(HttpServletRequest request) {
+
+		// Use the _ga cookie if it is provided
+		Cookie cookies[] = request.getCookies();
+		for (Cookie cookie : cookies) {
+			if ("_ga".equals(cookie.getName())) {
+				return cookie.getValue();
+			}
+		}
+
+		try {
+			// Generate a CID from the remote client's information
+			String cid = "";
+			if (request.getRemoteUser() != null) {
+				cid = Integer.toHexString(request.getRemoteAddr().hashCode());
+			}
+			cid += Integer.toHexString(request.getRemoteAddr().hashCode());
+
+			cid = DigestUtils.md5Hex(cid);
+
+			return cid.substring(0, 8) + "-" + cid.substring(0, 4) + "-" + cid.substring(0, 4) + "-" + cid.substring(0, 4)
+					+ "-" + cid.substring(0, 12);
+		} catch (Exception e) {
+			// Fallback to the default CID if any errors occur while generating one
+			return DEFAULT_CID;
+		}
 	}
 
 	private class EventTrackerRunnable implements Runnable {
