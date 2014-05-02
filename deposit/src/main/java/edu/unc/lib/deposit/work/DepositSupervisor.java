@@ -238,10 +238,13 @@ public class DepositSupervisor implements WorkerListener {
 		}
 
 		// Deposit-level actions
+		Map<String, String> status = this.depositStatusFactory.get(depositUUID);
+		Set<String> successfulJobs = this.jobStatusFactory
+				.getSuccessfulJobNames(depositUUID);
 		switch (event) {
 		case JOB_SUCCESS:
 			try {
-				Job nextJob = getNextJob(job, depositUUID);
+				Job nextJob = getNextJob(job, depositUUID, status, successfulJobs);
 				if (nextJob != null) {
 					jesqueClient.enqueue(Queue.PREPARE.name(), nextJob);
 				}
@@ -251,17 +254,20 @@ public class DepositSupervisor implements WorkerListener {
 			break;
 		case JOB_FAILURE:
 			depositStatusFactory.fail(depositUUID, ex);
-			// TODO send deposit failure notice
+			// send deposit failure notice
+			if(!SendDepositorEmailJob.class.getName().equals(job.getClassName())) {
+				if (status.containsKey(DepositField.depositorEmail.name())) {
+					Job emailJob = makeJob(SendDepositorEmailJob.class, depositUUID);
+					jesqueClient.enqueue(Queue.PREPARE.name(), emailJob);
+				}
+			}
 		default:
 			break;
 		}
 	}
 
-	private Job getNextJob(Job job, String depositUUID)
+	private Job getNextJob(Job job, String depositUUID, Map<String, String> status, Set<String> successfulJobs)
 			throws DepositFailedException {
-		Map<String, String> status = this.depositStatusFactory.get(depositUUID);
-		Set<String> successfulJobs = this.jobStatusFactory
-				.getSuccessfulJobNames(depositUUID);
 		log.debug("Got completed job names: {}", successfulJobs);
 
 		// Package integrity check

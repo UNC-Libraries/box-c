@@ -7,9 +7,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.UUID;
 
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
 import net.greghaines.jesque.Job;
@@ -48,34 +51,42 @@ public class SendDepositorEmailJobTest {
 	@Mock
 	private DepositStatusFactory depositStatusFactory;
 	
-	@Spy
+	@Mock
+	private JavaMailSender mockSender;
+	
 	@Autowired
-	private JavaMailSender mailSender;
+	private JavaMailSender xxmailSender;
+	
 	
 	@Before
 	public void setup() {
 	    // Initialize mocks created above
 	    MockitoAnnotations.initMocks(this);
 	    
-	    Mockito.doAnswer(new Answer<Object>() {
-      public Object answer(InvocationOnMock invocation) {
-          Object[] args = invocation.getArguments();
-          MimeMessage msg = (MimeMessage)args[0];
-          LOG.info("Mock got message:\n{}", msg);
-          try(InputStream is = msg.getInputStream()) {
-        	  IOUtils.copy(is, System.out);
-          } catch (IOException | MessagingException e) {
-			throw new Error(e);
-		}
-          return null;
-      }}).when(mailSender).send(any(MimeMessage.class));
+	    Mockito.doAnswer(new Answer<MimeMessage>() {
+			@Override
+			public MimeMessage answer(InvocationOnMock invocation)
+					throws Throwable {
+				return xxmailSender.createMimeMessage();
+			}}).when(mockSender).createMimeMessage();
+	    
+	    Mockito.doAnswer(new Answer() {
+
+			@Override
+			public Object answer(InvocationOnMock invocation) throws Throwable {
+				MimeMessage msg = (MimeMessage)invocation.getArguments()[0];
+				try(InputStream is = msg.getInputStream()) {
+					IOUtils.copy(is, System.out);
+				}
+				return null;
+			}}).when(mockSender).send(any(MimeMessage.class));
 	}
 	
 	@Autowired
 	SpringJobFactory springJobFactory = null;
 	
 	@Test
-	public void testDepositSuccessful() throws ClassNotFoundException {
+	public void testDepositSuccessful() throws ClassNotFoundException, MessagingException {
 		String depositUUID = "bd5ff703-9c2e-466b-b4cc-15bbfd03c8ae";
 		DepositTestUtils.makeTestDir(
 				depositsDirectory,
@@ -83,7 +94,7 @@ public class SendDepositorEmailJobTest {
 		Job job = new Job("SendDepositorEmailJob", UUID.randomUUID().toString(), depositUUID);
 		Object j = springJobFactory.materializeJob(job);
 		SendDepositorEmailJob aj = (SendDepositorEmailJob)j;
-		aj.setMailSender(mailSender);
+		aj.setMailSender(mockSender);
 		
 		HashMap<String, String> status = new HashMap<String, String>();
 		status.put(DepositField.depositMd5.name(), "c949138500f67e8617ac9968d2632d4e");
@@ -92,11 +103,13 @@ public class SendDepositorEmailJobTest {
 		status.put(DepositField.depositorEmail.name(), "joe.depositor@example.com");
 		status.put(DepositField.depositorName.name(), "Joe Depositor");
 		status.put(DepositField.ingestedObjects.name(), "75");
+		status.put(DepositField.excludeDepositRecord.name(), "true");
 		Mockito.when(depositStatusFactory.get(anyString())).thenReturn(status);
 		aj.setDepositStatusFactory(depositStatusFactory);
 		
 		Runnable r = (Runnable)j;
 		r.run();
+		
 	}
 	
 	@Test
@@ -108,7 +121,7 @@ public class SendDepositorEmailJobTest {
 		Job job = new Job("SendDepositorEmailJob", UUID.randomUUID().toString(), depositUUID);
 		Object j = springJobFactory.materializeJob(job);
 		SendDepositorEmailJob aj = (SendDepositorEmailJob)j;
-		aj.setMailSender(mailSender);
+		aj.setMailSender(mockSender);
 		
 		HashMap<String, String> status = new HashMap<String, String>();
 		status.put(DepositField.depositMd5.name(), "c949138500f67e8617ac9968d2632d4e");
@@ -118,7 +131,6 @@ public class SendDepositorEmailJobTest {
 		status.put(DepositField.depositorName.name(), "Joe Depositor");
 		status.put(DepositField.ingestedObjects.name(), "75");
 		status.put(DepositField.errorMessage.name(), "MODS Validation failed");
-		status.put(DepositField.excludeDepositRecord.name(), "true");
 		Mockito.when(depositStatusFactory.get(anyString())).thenReturn(status);
 		aj.setDepositStatusFactory(depositStatusFactory);
 		

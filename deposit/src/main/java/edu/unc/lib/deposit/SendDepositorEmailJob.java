@@ -76,11 +76,8 @@ public class SendDepositorEmailJob extends AbstractDepositJob implements Runnabl
 		if(!status.containsKey(DepositField.depositorEmail.name())) return;
 		data.putAll(status);
 		data.put("baseUrl", this.getBaseUrl());
-		if(status.containsKey(DepositField.errorMessage.name())) {
-			data.put("error", Boolean.TRUE);
-		} else {
-			data.put("error", Boolean.FALSE);
-		}
+		boolean error = status.containsKey(DepositField.errorMessage.name());
+		data.put("error", Boolean.valueOf(error));
 		
 		// execute template, address and send
 		String html = htmlTemplate.execute(data);
@@ -90,7 +87,11 @@ public class SendDepositorEmailJob extends AbstractDepositJob implements Runnabl
 			MimeMessageHelper message = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
 			String addy = status.get(DepositField.depositorEmail.name());
 			message.addTo(addy);
-			message.setSubject("CDR deposit complete");
+			if(error) {
+				message.setSubject("CDR deposit error");
+			} else {
+				message.setSubject("CDR deposit complete");
+			}
 			message.setFrom(getFromAddress());
 			message.setText(text, html);
 			this.mailSender.send(mimeMessage);

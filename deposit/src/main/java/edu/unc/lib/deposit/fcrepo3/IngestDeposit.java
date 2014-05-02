@@ -61,6 +61,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 
 	private static long COMPLETE_CHECK_DELAY = 500L;
 
+	@Autowired
 	private JobForwardingJMSListener listener;
 	
 	@Autowired
