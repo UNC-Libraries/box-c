@@ -19,7 +19,6 @@ import javax.annotation.PreDestroy;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -77,8 +76,8 @@ public class AnalyticsTrackerUtil {
 	}
 
 	/**
-	 * Get the user's CID or generate a value from the remote client's information
-	 *
+	 * Get the user's CID or a generated value if not available
+	 * 
 	 * @param request
 	 * @return
 	 */
@@ -92,22 +91,7 @@ public class AnalyticsTrackerUtil {
 			}
 		}
 
-		try {
-			// Generate a CID from the remote client's information
-			String cid = "";
-			if (request.getRemoteUser() != null) {
-				cid = Integer.toHexString(request.getRemoteAddr().hashCode());
-			}
-			cid += Integer.toHexString(request.getRemoteAddr().hashCode());
-
-			cid = DigestUtils.md5Hex(cid);
-
-			return cid.substring(0, 8) + "-" + cid.substring(0, 4) + "-" + cid.substring(0, 4) + "-" + cid.substring(0, 4)
-					+ "-" + cid.substring(0, 12);
-		} catch (Exception e) {
-			// Fallback to the default CID if any errors occur while generating one
-			return DEFAULT_CID;
-		}
+		return DEFAULT_CID;
 	}
 
 	private class EventTrackerRunnable implements Runnable {
