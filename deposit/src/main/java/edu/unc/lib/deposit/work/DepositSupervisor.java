@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.deposit.SendDepositorEmailJob;
 import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
 import edu.unc.lib.deposit.fcrepo3.MakeFOXML;
 import edu.unc.lib.deposit.normalize.BioMedCentralExtrasJob;
@@ -250,6 +251,7 @@ public class DepositSupervisor implements WorkerListener {
 			break;
 		case JOB_FAILURE:
 			depositStatusFactory.fail(depositUUID, ex);
+			// TODO send deposit failure notice
 		default:
 			break;
 		}
@@ -335,6 +337,12 @@ public class DepositSupervisor implements WorkerListener {
 		// Ingest
 		if (!successfulJobs.contains(IngestDeposit.class.getName())) {
 			return makeJob(IngestDeposit.class, depositUUID);
+		}
+		
+		// Email the depositor
+		if (status.containsKey(DepositField.depositorEmail.name())
+				&& !successfulJobs.contains(SendDepositorEmailJob.class.getName())) {
+			return makeJob(SendDepositorEmailJob.class, depositUUID);
 		}
 
 		return null;
