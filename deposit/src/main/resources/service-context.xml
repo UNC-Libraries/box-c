@@ -102,19 +102,17 @@
 			</list>
 		</property>
 	</bean>
-	
-	<!-- <bean id="tripleStoreQueryService"
-		class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl" destroy-method="destroy">
-		<property name="itqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService"/>
-		<property name="sparqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/sparql/"/>
-		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#"/>
-	</bean> -->
 
-	<!-- <bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient" init-method="init">
-		<property name="fedoraContextUrl" value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fedora}" />
-		<property name="username" value="${fedora.admin.username}" />
-		<property name="password" value="${fedora.admin.password}" />
-	</bean> -->
+	<!-- <bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl" 
+		destroy-method="destroy"> <property name="itqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService"/> 
+		<property name="sparqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/sparql/"/> 
+		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#"/> 
+		</bean> -->
+
+	<!-- <bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient" 
+		init-method="init"> <property name="fedoraContextUrl" value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fedora}" 
+		/> <property name="username" value="${fedora.admin.username}" /> <property 
+		name="password" value="${fedora.admin.password}" /> </bean> -->
 
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
 		init-method="loadSchemas">
@@ -164,9 +162,9 @@
 	</bean>
 
 	<bean id="transformerFactory" class="javax.xml.transform.TransformerFactory"
-		factory-method="newInstance" >
+		factory-method="newInstance">
 		<property name="uRIResolver">
-			<bean class="edu.unc.lib.dl.xml.ClasspathURIResolver"/>
+			<bean class="edu.unc.lib.dl.xml.ClasspathURIResolver" />
 		</property>
 	</bean>
 
@@ -289,7 +287,7 @@
 		</property>
 		<property name="destinationName" value="fedora.apim.update" />
 		<property name="pubSubDomain" value="true" />
-		<property name="messageListener" ref="jobForwardingJMSListener"/>
+		<property name="messageListener" ref="jobForwardingJMSListener" />
 		<property name="sessionTransacted" value="true" />
 	</bean>
 
@@ -297,5 +295,39 @@
 
 	<bean id="IngestDeposit" class="edu.unc.lib.deposit.fcrepo3.IngestDeposit"
 		scope="prototype">
+	</bean>
+
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${smtp.host:localhost}" />
+		<property name="port" value="${smtp.port:25}" />
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+	
+	<bean id="mustacheCompiler" class="com.samskivert.mustache.Mustache" factory-method="compiler"/>
+
+	<bean id="htmlTemplate" factory-bean="mustacheCompiler"
+		factory-method="compile">
+		<constructor-arg>
+			<bean class="java.io.FileReader">
+				<constructor-arg type="java.io.File" value="classpath:email_html.txt" />
+			</bean>
+		</constructor-arg>
+	</bean>
+	<bean id="textTemplate" factory-bean="mustacheCompiler"
+		factory-method="compile">
+		<constructor-arg>
+			<bean class="java.io.FileReader">
+				<constructor-arg type="java.io.File" value="${deposit.email.template:classpath:email_text.txt}" />
+			</bean>
+		</constructor-arg>
+	</bean>
+
+	<bean id="SendDepositorEmailJob" class="edu.unc.lib.deposit.SendDepositorEmailJob"
+		scope="prototype">
+		<property name="baseUrl" value="${baseUrl:https://www.example.com}" />
+		<property name="mailSender" ref="mailSender" />
+		<property name="fromAddress" value="${from.email:no-reply@example.com}" />
+		<property name="htmlTemplate" ref="htmlTemplate" />
+		<property name="textTemplate" ref="textTemplate" />
 	</bean>
 </beans>
