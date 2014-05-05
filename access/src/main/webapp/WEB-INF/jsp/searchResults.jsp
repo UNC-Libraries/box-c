@@ -115,6 +115,15 @@
 							<c:set var="metadata" value="${resultResponse.selectedContainer}" scope="request"/>
 							<c:import url="searchResults/selectedContainerEntry.jsp">
 							</c:import>
+							
+							<c:set var="collectionName"><c:out value='${metadata.parentCollectionObject.displayValue}' /></c:set>
+							<c:if test="${empty collectionName && metadata.resourceType == 'Collection'}">
+								<c:set var="collectionName"><c:out value='${metadata.title}' /></c:set>
+							</c:if>
+							<c:if test="${empty collectionName}">
+								<c:set var="collectionName" value="(no collection)" />
+							</c:if>
+							<c:set var="gaCommands" scope="request">${gaCommands} ga('send', 'event', '${collectionName}', 'list', '<c:out value="${metadata.title}|${metadata.pid}" />');</c:set>
 						</c:if>
 						<c:forEach items="${resultResponse.resultList}" var="metadataEntry" varStatus="status">
 							<c:set var="metadata" scope="request" value="${metadataEntry}"/>

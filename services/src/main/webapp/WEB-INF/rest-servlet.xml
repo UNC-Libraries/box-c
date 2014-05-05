@@ -66,6 +66,15 @@
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
 	</bean>
 	
+	<bean id="gaTrackingID" class="java.lang.String">
+		<constructor-arg
+			value="${google.trackingId}" />
+	</bean>
+	
+	<bean id="analyticsTracker" class="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil">
+		<property name="gaTrackingID" ref="gaTrackingID" />
+	</bean>
+	
 	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
 		<property name="accessClient" ref="accessClient" />
 		<property name="fedoraUtil" ref="fedoraUtil" />

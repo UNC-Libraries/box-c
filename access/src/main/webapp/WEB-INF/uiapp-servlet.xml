@@ -66,6 +66,11 @@
 		<constructor-arg
 			value="${external.base.url}" />
 	</bean>
+	
+	<bean id="gaTrackingID" class="java.lang.String">
+		<constructor-arg
+			value="${google.trackingId}" />
+	</bean>
 
 	<!-- Properties objects -->
 	<util:properties id="externalContentProperties"
@@ -166,6 +171,7 @@
 				<value>externalContentSettings</value>
 				<value>fedoraUtil</value>
 				<value>accessGroupConstants</value>
+				<value>gaTrackingID</value>
 			</list>
 		</property>
 		<property name="viewClass"
