@@ -69,7 +69,7 @@ public class FedoraContentService {
 	@Autowired
 	protected SolrQueryLayerService queryLayer;
 
-	@Autowired
+	@Autowired(required = false)
 	protected AnalyticsTrackerUtil analyticsTracker;
 
 	private final int numberOfRetries = 1;
@@ -112,7 +112,7 @@ public class FedoraContentService {
 				throw new ResourceNotFoundException("Datastream " + datastream + " was not found on object " + pid);
 
 			// Track the download event if the request is for the original content
-			if (datastreamResult.getDatastreamCategory() != null
+			if (analyticsTracker != null && datastreamResult.getDatastreamCategory() != null
 					&& datastreamResult.getDatastreamCategory().equals(DatastreamCategory.ORIGINAL)) {
 				analyticsTracker.trackEvent(gaCid, briefObject.getParentCollectionObject() == null ?
 						"(no collection)" : briefObject.getParentCollectionObject().getDisplayValue(),
@@ -247,5 +247,9 @@ public class FedoraContentService {
 
 	public void setQueryLayer(SolrQueryLayerService queryLayer) {
 		this.queryLayer = queryLayer;
+	}
+
+	public void setAnalyticsTracker(AnalyticsTrackerUtil analyticsTracker) {
+		this.analyticsTracker = analyticsTracker;
 	}
 }
