@@ -38,6 +38,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 import javax.xml.transform.Transformer;
@@ -58,9 +61,9 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
-import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.JobStatusFactory;
 import edu.unc.lib.dl.fedora.PID;
@@ -117,20 +120,25 @@ public class Proquest2N3BagJobTest {
 
 	@Test
 	public void testNoAttachments() {
-		DepositTestUtils.makeTestDir(job.getDepositDirectory(), "data", new File(
-				"src/test/resources/proquest-noattach.zip"));
+		copyTestPackage("src/test/resources/proquest-noattach.zip");
 
 		job.run();
 
 		Model model = getModel(job);
 		assertFalse("Model was empty", model.isEmpty());
 
-		Property stagingLoc = dprop(model, stagingLocation);
-
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 		assertNotNull("Deposit object not found", depositBag);
 
 		Resource primaryResource = (Resource) depositBag.iterator().next();
+
+		testNoAttachments(model, primaryResource);
+
+	}
+
+	public void testNoAttachments(Model model, Resource primaryResource) {
+		Property stagingLoc = dprop(model, stagingLocation);
+
 		assertNotNull("Main object from the deposit not found", primaryResource);
 
 		// Check that the main content file is assigned to the primary resource
@@ -145,22 +153,25 @@ public class Proquest2N3BagJobTest {
 
 	@Test
 	public void testWithAttachments() {
-		DepositTestUtils.makeTestDir(job.getDepositDirectory(), "data",
-				new File(
-				"src/test/resources/proquest-attach.zip"));
+		copyTestPackage("src/test/resources/proquest-attach.zip");
 
 		job.run();
 
 		Model model = getModel(job);
 		assertFalse("Model was empty", model.isEmpty());
 
+		Bag depositBag = model.getBag(job.getDepositPID().getURI());
+
+		Resource primaryResource = (Resource) depositBag.iterator().next();
+
+		testWithAttachments(model, primaryResource);
+	}
+
+	private void testWithAttachments(Model model, Resource primaryResource) {
 		Property stagingLoc = dprop(model, stagingLocation);
 		Property hasContentModel = fprop(model, hasModel);
 		Property labelProperty = dprop(model, label);
 
-		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-
-		Resource primaryResource = (Resource) depositBag.iterator().next();
 		Bag primaryBag = model.getBag(primaryResource);
 
 		assertNotNull("Main object from the deposit not found", primaryResource);
@@ -228,8 +239,7 @@ public class Proquest2N3BagJobTest {
 		DateTime newTime = new DateTime(2014, 5, 5, 0, 0, 0, 0);
 		DateTimeUtils.setCurrentMillisFixed(newTime.getMillis());
 
-		DepositTestUtils.makeTestDir(job.getDepositDirectory(), "data", new File(
-				"src/test/resources/proquest-embargo.zip"));
+		copyTestPackage("src/test/resources/proquest-embargo.zip");
 
 		job.run();
 
@@ -254,8 +264,7 @@ public class Proquest2N3BagJobTest {
 		DateTime newTime = new DateTime(2015, 1, 1, 0, 0, 0, 0);
 		DateTimeUtils.setCurrentMillisFixed(newTime.getMillis());
 
-		DepositTestUtils.makeTestDir(job.getDepositDirectory(), "data", new File(
-				"src/test/resources/proquest-embargo.zip"));
+		copyTestPackage("src/test/resources/proquest-embargo.zip");
 
 		job.run();
 
@@ -280,8 +289,7 @@ public class Proquest2N3BagJobTest {
 		DateTime newTime = new DateTime(2016, 1, 1, 0, 0, 0, 0);
 		DateTimeUtils.setCurrentMillisFixed(newTime.getMillis());
 
-		DepositTestUtils.makeTestDir(job.getDepositDirectory(), "data", new File(
-				"src/test/resources/proquest-embargo.zip"));
+		copyTestPackage("src/test/resources/proquest-embargo.zip");
 
 		job.run();
 
@@ -320,6 +328,39 @@ public class Proquest2N3BagJobTest {
 				sourceMDDatastream);
 	}
 
+	@Test
+	public void testMultiplePackages() {
+		copyTestPackage("src/test/resources/proquest-noattach.zip");
+		copyTestPackage("src/test/resources/proquest-attach.zip");
+
+		job.run();
+
+		Model model = getModel(job);
+		assertFalse("Model was empty", model.isEmpty());
+
+		Bag depositBag = model.getBag(job.getDepositPID().getURI());
+		assertNotNull("Deposit object not found", depositBag);
+
+		Property labelProperty = dprop(model, label);
+
+		int childCount = 0;
+		NodeIterator primaryIt = depositBag.iterator();
+		while (primaryIt.hasNext()) {
+			childCount++;
+
+			Resource primaryResource = (Resource) primaryIt.next();
+
+			Statement labelStatement = primaryResource.getProperty(labelProperty);
+			if (labelStatement != null && labelStatement.getString().contains("noattach")) {
+				this.testNoAttachments(model, primaryResource);
+			} else {
+				this.testWithAttachments(model, primaryResource);
+			}
+		}
+
+		assertEquals("Incorrect number of objects in the deposit", 2, childCount);
+	}
+
 	private File verifyStagingLocationExists(Resource resource, Property stagingLoc, File depositDirectory,
 			String fileLabel) {
 		String filePath = resource.getProperty(stagingLoc).getLiteral().getString();
@@ -335,5 +376,14 @@ public class Proquest2N3BagJobTest {
 		model.read(modelFile.toURI().toString());
 
 		return model;
+	}
+
+	private void copyTestPackage(String filename) {
+		job.getDataDirectory().mkdir();
+		Path packagePath = Paths.get(filename);
+		try {
+			Files.copy(packagePath, job.getDataDirectory().toPath().resolve(packagePath.getFileName()));
+		} catch (Exception e) {
+		}
 	}
 }
