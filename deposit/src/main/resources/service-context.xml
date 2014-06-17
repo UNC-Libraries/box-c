@@ -330,4 +330,8 @@
 		<property name="htmlTemplate" ref="htmlTemplate" />
 		<property name="textTemplate" ref="textTemplate" />
 	</bean>
+	
+	<bean id="depositBinCollector" class="edu.unc.lib.deposit.collect.DepositBinCollector" >
+		<property name="configPath" value="${bin.collector.config}" />
+	</bean>
 </beans>
