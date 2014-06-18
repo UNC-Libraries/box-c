@@ -80,14 +80,12 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnab
 		Property hasModel = model.createProperty(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
 		model.add(aggregate, hasModel, model.createResource(ContentModelHelper.Model.CONTAINER.getURI().toString()));
 		model.add(aggregate, hasModel, model.createResource(ContentModelHelper.Model.AGGREGATE_WORK.getURI().toString()));
-		Resource simple = model.createResource(ContentModelHelper.Model.SIMPLE.getURI().toString());
 		@SuppressWarnings("unchecked")
 		List<Element> topchildren = aggregateEl.getChildren(
 				"div", METS_NS);
 		for (Element childEl : topchildren) {
 			Resource child = model.createResource(METSHelper.getPIDURI(childEl));
 			aggregate.add(child);
-			model.add(child, hasModel, simple);
 		}
 		helper.addFileAssociations(model, true);
 		saveModel(model, DepositConstants.MODEL_FILE);
