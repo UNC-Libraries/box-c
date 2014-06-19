@@ -8,18 +8,15 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_SOURCE;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.hasDatastream;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.mimetype;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
+import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.label;
 import static edu.unc.lib.dl.util.MetadataProfileConstants.BIOMED_ARTICLE;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.filter.Filter;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
@@ -127,37 +124,21 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob implements Runnab
 				sb.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
 				sb.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 
-				Document articleDocument = sb.build(articleXMLFile);
-				BioMedArticleHelper biohelper = new BioMedArticleHelper();
-				Document mods = biohelper.extractMODS(articleDocument);
-				Map<String, String> fileLC2supplementLabels = biohelper.getFilesLC2SupplementLabels(articleDocument);
-
-				// Move all elements from the original MODS except names into the new document
+				Document existingModsDocument = null;
+				// Start from an existing MODS document if there is one
 				if (modsFile.exists()) {
-					Document existingMODSDocument = sb.build(modsFile);
-
-					List<Element> moving = new ArrayList<Element>();
-					for (Object o : existingMODSDocument.getRootElement().getContent(new Filter() {
-						private static final long serialVersionUID = 1L;
-
-						@Override
-						public boolean matches(Object obj) {
-							if (!(obj instanceof Element))
-								return false;
-							return !"name".equals(((Element) obj).getName());
-						}
-					})) {
-						moving.add((Element) o);
-					}
-
-					Element modsRoot = mods.getRootElement();
-					for (Element el : moving)
-						modsRoot.addContent(el.detach());
+					existingModsDocument = sb.build(modsFile);
 				} else {
+					// Make sure the description directory exists since there was no MODS doc
 					File descriptionDir = new File(getDepositDirectory(), DepositConstants.DESCRIPTION_DIR);
 					if (!descriptionDir.exists())
 						descriptionDir.mkdir();
 				}
+
+				Document articleDocument = sb.build(articleXMLFile);
+				BioMedArticleHelper biohelper = new BioMedArticleHelper();
+				Document mods = biohelper.extractMODS(articleDocument, existingModsDocument);
+				Map<String, String> fileLC2supplementLabels = biohelper.getFilesLC2SupplementLabels(articleDocument);
 
 				// Output the new MODS file, overwriting the existing one if it was present
 				try (FileOutputStream out = new FileOutputStream(modsFile, false)) {
@@ -166,13 +147,14 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob implements Runnab
 
 				// Label the supplemental files with values from the article xml
 				if (fileLC2supplementLabels != null) {
+					Property labelP = model.createProperty(label.getURI().toString());
+
 					for (NodeIterator children = aggregate.iterator(); children.hasNext();) {
 						Resource child = children.nextNode().asResource();
 						String location = child.getProperty(fileLocation).getString();
 						String filename = location.substring("data/".length()).toLowerCase();
 						if (fileLC2supplementLabels.containsKey(filename)) {
-							Property label = model.createProperty(ContentModelHelper.FedoraProperty.label.getURI().toString());
-							model.add(child, label, fileLC2supplementLabels.get(filename));
+							model.add(child, labelP, fileLC2supplementLabels.get(filename));
 						}
 					}
 				}

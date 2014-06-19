@@ -31,6 +31,8 @@ import javax.xml.validation.Schema;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -52,6 +54,8 @@ import edu.unc.lib.dl.util.DepositConstants;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/dspacemets-context.xml" })
 public class DSPACEMETS2N3BagJobTest extends AbstractNormalizationJobTest {
+
+	private static final Logger log = LoggerFactory.getLogger(DSPACEMETS2N3BagJobTest.class);
 
 	@Autowired
 	private Transformer epdcx2modsTransformer;
@@ -82,7 +86,9 @@ public class DSPACEMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 		String workDir = DepositTestUtils.makeTestDir(depositsDirectory, job.getDepositUUID(),
 				new File("src/test/resources/biomedDspaceMETS.zip"));
 
+		long start = System.currentTimeMillis();
 		job.run();
+		log.info("Run dspace mets: {}", (System.currentTimeMillis() - start));
 
 		File modelFile = new File(workDir, DepositConstants.MODEL_FILE);
 		assertTrue("N3 model file must exist after conversion", modelFile.exists());
