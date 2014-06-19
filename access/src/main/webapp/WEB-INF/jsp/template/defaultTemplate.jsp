@@ -30,6 +30,7 @@
 	</title>
 </head>
 <body>
+<c:set var="gaCommands" value="" scope="request" />
 <div id="pagewrap">
 	<div id="pagewrap_inside">
 		<c:import url="common/header.jsp" />
@@ -46,6 +47,6 @@
 		<c:import url="common/footer.jsp"/>
 	</div>
 </div>
-<%@ include file="../../html/googleAnalytics.html"%>
+<c:import url="googleAnalytics.jsp" />
 </body>
 </html>
