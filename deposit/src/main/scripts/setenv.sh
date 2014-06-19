@@ -1,20 +1,20 @@
 #!/bin/bash
 
 JSVC_EXECUTABLE="$( which jsvc )"
-JSVC_PID_FILE=/tmp/deposit-daemon.pid
+JSVC_PID_FILE=/var/run/deposit-daemon.pid
 
 if [ -z "$JSVC_USER" ]; then
 	JSVC_USER="$USER"
 fi
 
-DIST_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
+DIST_DIR=/opt/deposit
 LIB_DIR="$DIST_DIR/lib"
 CONF_DIR="$DIST_DIR/conf"
 
 JAVA_EXEC="$( which java )"
 JAVA_CLASSPATH="$CONF_DIR:$LIB_DIR/commons-daemon-${commons-daemon.version}.jar:$LIB_DIR/${project.build.finalName}-${project.version}.${project.packaging}"
 JAVA_MAIN_CLASS="edu.unc.lib.deposit.DepositDaemon"
-JAVA_OPTS="-Ddistribution.dir=$DIST_DIR"
+JAVA_OPTS="-Ddistribution.dir=$DIST_DIR -Ddeposit.properties.uri=file:$CONF_DIR/deposit.properties"
 
 if [ -z "$JAVA_HOME" ]; then
 	export JAVA_HOME="$( $JAVA_EXEC -cp "$JAVA_CLASSPATH" -server \

@@ -4,7 +4,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 
-	<id>default</id>
+	<id>dist</id>
 
 	<formats>
 		<format>tar.gz</format>
@@ -43,18 +43,15 @@
 			<!-- Configuration files to be placed in conf/ -->
 			<directory>src/main/resources</directory>
 			<outputDirectory>conf</outputDirectory>
-			<includes>
-				<include>deposit.properties</include>
-				<include>log4j.properties</include>
-			</includes>
 		</fileSet>
 		<fileSet>
-			<!-- Configuration files to be placed in conf/ -->
-			<directory>src/main/resources</directory>
-			<outputDirectory>logs</outputDirectory>
+			<!-- Log folder -->
+			<directory>src/main/assembly</directory>
+			<outputDirectory></outputDirectory>
 			<directoryMode>0755</directoryMode>
 			<fileMode>0755</fileMode>
 			<includes>
+				<include>logs</include>
 			</includes>
 		</fileSet>
 	</fileSets>

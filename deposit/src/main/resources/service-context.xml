@@ -23,9 +23,6 @@
 	<bean name="propertiesURI" class="java.lang.System"
 		factory-method="getProperty">
 		<constructor-arg index="0" value="deposit.properties.uri" />
-		<!-- property name for properties URI location -->
-		<constructor-arg index="1" value="classpath:deposit.properties" />
-		<!-- default location for testing -->
 	</bean>
 	<bean id="serverProperties"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -164,7 +161,8 @@
 	<bean id="transformerFactory" class="javax.xml.transform.TransformerFactory"
 		factory-method="newInstance">
 		<property name="uRIResolver">
-			<bean class="edu.unc.lib.dl.xml.ClasspathURIResolver" />
+			<bean class="edu.unc.lib.dl.xml.ClasspathURIResolver">
+			</bean>
 		</property>
 	</bean>
 
@@ -184,7 +182,7 @@
 		<constructor-arg>
 			<bean class="org.springframework.xml.transform.ResourceSource">
 				<constructor-arg>
-					<value>classpath:proquest/proquest-to-mods.xsl</value>
+					<value>classpath:proquest-to-mods.xsl</value>
 				</constructor-arg>
 			</bean>
 		</constructor-arg>
@@ -279,13 +277,13 @@
 				<property name="connectionFactory">
 					<bean class="org.apache.activemq.ActiveMQConnectionFactory">
 						<property name="brokerURL">
-							<value>tcp://${jms.host:localhost}:${jms.port:61616}</value>
+							<value>tcp://${jms.host:localhost}:${jms.port:61617}</value>
 						</property>
 					</bean>
 				</property>
 			</bean>
 		</property>
-		<property name="destinationName" value="fedora.apim.update" />
+		<property name="destinationName" value="repository.updates" />
 		<property name="pubSubDomain" value="true" />
 		<property name="messageListener" ref="jobForwardingJMSListener" />
 		<property name="sessionTransacted" value="true" />

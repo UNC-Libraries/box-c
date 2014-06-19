@@ -32,6 +32,8 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamSource;
 
+import net.sf.saxon.TransformerFactoryImpl;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
@@ -146,7 +148,7 @@ public class SchematronValidator {
 	}
 	TransformerFactory factory = null;
 	try {
-	    factory = TransformerFactory.newInstance();
+	    factory = new TransformerFactoryImpl();
 	    // enable relative classpath-based URIs
 	    factory.setURIResolver(new URIResolver() {
 		public Source resolve(String href, String base) throws TransformerException {
