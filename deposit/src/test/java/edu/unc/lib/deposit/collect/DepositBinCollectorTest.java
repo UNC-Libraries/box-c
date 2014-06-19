@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -57,8 +58,6 @@ import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import edu.unc.lib.deposit.collect.DepositBinCollector;
-import edu.unc.lib.deposit.collect.DepositBinConfiguration;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
 
@@ -70,7 +69,7 @@ import edu.unc.lib.dl.util.PackagingType;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ FileUtils.class, Files.class, DepositBinCollector.class })
-public class DepositBinManagerTest {
+public class DepositBinCollectorTest {
 
 	@Rule
 	public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -95,6 +94,7 @@ public class DepositBinManagerTest {
 
 		List<Path> binPaths = Arrays.asList(binDirectory.toPath());
 		when(config.getBinPaths()).thenReturn(binPaths);
+		when(config.getKeyLock()).thenReturn(new ReentrantLock());
 
 		Map<String, DepositBinConfiguration> configs = new HashMap<>();
 		configs.put("etd", config);
@@ -115,6 +115,7 @@ public class DepositBinManagerTest {
 
 		assertNotNull("Configuration was not loaded", etdConfig);
 
+		assertEquals("Config name not assigned", "ETDs", etdConfig.getName());
 		assertNotNull("File name pattern not assigned", etdConfig.getFilePattern());
 		assertEquals("Packaging type was incorrect", PackagingType.PROQUEST_ETD.getUri(), etdConfig.getPackageType());
 
@@ -168,7 +169,7 @@ public class DepositBinManagerTest {
 	public void listFilesExcludeFileSizeTest() throws Exception {
 		addBinFiles();
 
-		when(config.getMaxSize()).thenReturn(1024L);
+		when(config.getMaxBytesPerFilee()).thenReturn(1024L);
 		when(config.hasFileFilters()).thenReturn(true);
 
 		List<String> filePaths = manager.listFiles("etd");

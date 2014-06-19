@@ -51,7 +51,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 /**
  * Collects files deposit bins on the file system and adds them to the ingest queue. Bins are defined by a configuration
  * file, which describes source directories, deposit destinations and file filters.
- * 
+ *
  * @author bbpennel
  * @date Jun 13, 2014
  */
@@ -61,7 +61,7 @@ public class DepositBinCollector {
 
 	public static final String EXTRA_PERMISSION_GROUPS = "permissionGroups";
 	public static final String EXTRA_DEPOSITOR_NAME = "depositorName";
-	public static final String EXTRA_OWNER_NAME = "depositorName";
+	public static final String EXTRA_OWNER_NAME = "ownerName";
 	public static final String EXTRA_DEPOSITOR_EMAIL = "depositorEmail";
 
 	private Map<String, DepositBinConfiguration> configs;
@@ -141,41 +141,47 @@ public class DepositBinCollector {
 			return;
 		}
 
-		List<Path> filePaths;
-		// Use the provided list of file paths or the list of all applicable paths
-		if (filePathStrings != null) {
-			filePaths = new ArrayList<>(filePathStrings.size());
+		try {
+			config.getKeyLock().lock();
 
-			// Verify that all targets are valid
-			for (String filePathString : filePathStrings) {
-				File file = new File(filePathString);
-				Path filePath = file.toPath();
+			List<Path> filePaths;
+			// Use the provided list of file paths or the list of all applicable paths
+			if (filePathStrings != null) {
+				filePaths = new ArrayList<>(filePathStrings.size());
 
-				if (!(file.exists() && applicableFile(file, config) && pathInBins(filePath, config.getBinPaths()))) {
-					throw new IOException("Specified file was not a valid target for bin " + config.getName() + ": "
-							+ file.getAbsolutePath());
+				// Verify that all targets are valid
+				for (String filePathString : filePathStrings) {
+					File file = new File(filePathString);
+					Path filePath = file.toPath();
+
+					if (!(file.exists() && applicableFile(file, config) && pathInBins(filePath, config.getBinPaths()))) {
+						throw new IOException("Specified file was not a valid target for bin " + config.getName() + ": "
+								+ file.getAbsolutePath());
+					}
+
+					filePaths.add(filePath);
 				}
+			} else {
+				// Use the list of all applicable files in the bin
+				List<String> fileList = this.listFiles(binKey);
+				filePaths = new ArrayList<>(fileList.size());
 
-				filePaths.add(filePath);
+				for (String filePathString : fileList) {
+					filePaths.add(Paths.get(filePathString));
+				}
 			}
-		} else {
-			// Use the list of all applicable files in the bin
-			List<String> fileList = this.listFiles(binKey);
-			filePaths = new ArrayList<>(fileList.size());
 
-			for (String filePathString : fileList) {
-				filePaths.add(Paths.get(filePathString));
-			}
+			// Create deposit directory
+			DepositInfo info = makeDeposit();
+
+			// Move the files for ingest into the deposit directory
+			moveFiles(filePaths, info, config);
+
+			// Inform ingest queue that the files are ready for ingest
+			registerDeposit(info, config, extras);
+		} finally {
+			config.getKeyLock().unlock();
 		}
-
-		// Create deposit directory
-		DepositInfo info = makeDeposit();
-
-		// Move the files for ingest into the deposit directory
-		moveFiles(filePaths, info, config);
-
-		// Inform ingest queue that the files are ready for ingest
-		registerDeposit(info, config, extras);
 	}
 
 	private DepositInfo makeDeposit() {
@@ -276,10 +282,19 @@ public class DepositBinCollector {
 		if (!config.hasFileFilters())
 			return true;
 
-		if (config.getFilePattern() != null && !config.getFilePattern().matcher(file.getName()).matches())
-			return false;
+		// Check that the file name is acceptable
+		boolean answer = config.getFilePattern() == null || config.getFilePattern().matcher(file.getName()).matches();
 
-		return config.getMaxSize() == null || config.getMaxSize() == 0 || file.length() <= config.getMaxSize();
+		// Check that the file is not too big
+		answer = answer
+				&& (config.getMaxBytesPerFilee() == null || config.getMaxBytesPerFilee() == 0 || file.length() <= config
+						.getMaxBytesPerFilee());
+
+		if (answer)
+			return true;
+
+		log.warn("Non-applicable file {} found in bin {}", file.getAbsolutePath(), config.getName());
+		return false;
 	}
 
 	public void setConfigPath(String configPath) {
