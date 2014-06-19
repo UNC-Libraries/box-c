@@ -30,11 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -46,13 +46,15 @@ import edu.unc.lib.dl.ui.exception.ClientAbortException;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.AccessUtil;
+import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil;
 import edu.unc.lib.dl.ui.util.FedoraUtil;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 
 /**
  * Connects to and streams datastreams from Fedora.
- * 
+ *
  * @author bbpennel
  */
 public class FedoraContentService {
@@ -67,16 +69,22 @@ public class FedoraContentService {
 	@Autowired
 	protected SolrQueryLayerService queryLayer;
 
+	@Autowired(required = false)
+	protected AnalyticsTrackerUtil analyticsTracker;
+
+	private final int numberOfRetries = 1;
+
 	private static List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name(),
 			SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.RELATIONS.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
-			SearchFieldKeys.ROLE_GROUP.name());
+			SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.PARENT_COLLECTION.name(),
+			SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.TITLE.name());
 
-	public void streamData(String pid, String datastream, boolean download, HttpServletResponse response) {
+	public void streamData(String pid, String datastream, boolean download, String gaCid, HttpServletResponse response) {
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
 		// Default datastream is DATA_FILE
 		if (datastream == null) {
-			datastream = edu.unc.lib.dl.util.ContentModelHelper.Datastream.DATA_FILE.toString();
+			datastream = ContentModelHelper.Datastream.DATA_FILE.toString();
 		}
 
 		// Use solr to check if the user is allowed to view this item.
@@ -102,7 +110,16 @@ public class FedoraContentService {
 			edu.unc.lib.dl.search.solr.model.Datastream datastreamResult = briefObject.getDatastreamObject(datastream);
 			if (datastreamResult == null)
 				throw new ResourceNotFoundException("Datastream " + datastream + " was not found on object " + pid);
-			this.streamData(pid, datastreamResult, slug, response, download);
+
+			// Track the download event if the request is for the original content
+			if (analyticsTracker != null && datastreamResult.getDatastreamCategory() != null
+					&& datastreamResult.getDatastreamCategory().equals(DatastreamCategory.ORIGINAL)) {
+				analyticsTracker.trackEvent(gaCid, briefObject.getParentCollectionObject() == null ?
+						"(no collection)" : briefObject.getParentCollectionObject().getDisplayValue(),
+						"download", briefObject.getTitle() + "|" + pid, null);
+			}
+
+			this.streamData(pid, datastreamResult, slug, response, download, numberOfRetries);
 		} catch (AuthorizationException e) {
 			throw new InvalidRecordRequestException(e);
 		} catch (ResourceNotFoundException e) {
@@ -114,12 +131,7 @@ public class FedoraContentService {
 		}
 	}
 
-	public void streamData(String simplepid, Datastream datastream, String slug, HttpServletResponse response,
-			boolean asAttachment) throws FedoraException, IOException {
-		this.streamData(simplepid, datastream, slug, response, asAttachment, 1);
-	}
-
-	public void streamData(String simplepid, Datastream datastream, String slug, HttpServletResponse response,
+	private void streamData(String simplepid, Datastream datastream, String slug, HttpServletResponse response,
 			boolean asAttachment, int retryServerError) throws FedoraException, IOException {
 		OutputStream outStream = response.getOutputStream();
 
@@ -235,5 +247,9 @@ public class FedoraContentService {
 
 	public void setQueryLayer(SolrQueryLayerService queryLayer) {
 		this.queryLayer = queryLayer;
+	}
+
+	public void setAnalyticsTracker(AnalyticsTrackerUtil analyticsTracker) {
+		this.analyticsTracker = analyticsTracker;
 	}
 }

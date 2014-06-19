@@ -52,9 +52,12 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
 		StreamSource modsSource = new StreamSource(getClass().getResourceAsStream("/schemas/mods-3-4.xsd"));
+		StreamSource xmlSource = new StreamSource(getClass().getResourceAsStream("/schemas/xml.xsd"));
+		StreamSource xlinkSource = new StreamSource(getClass().getResourceAsStream("/schemas/xlink.xsd"));
+    
 		Schema modsSchema;
 		try {
-			modsSchema = sf.newSchema(modsSource);
+			modsSchema = sf.newSchema(new StreamSource[] { xmlSource, xlinkSource, modsSource });
 		} catch (SAXException e) {
 			throw new RuntimeException("Initialization of MODS UIP Filter ran into an unexpected exception", e);
 		}

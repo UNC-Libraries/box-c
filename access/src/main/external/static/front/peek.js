@@ -467,7 +467,7 @@ Column.prototype.shift = function() {
     
     for (var i = 0; i < this.items.length; i++) {
       if (this.getItemMeasurements(i).middle + offset > 0) {
-        this.setLayout({ top: Math.min(i + 1, this.items.length - 1), prune: Math.max(0, i + 1) });
+        this.setLayout({ top: Math.min(i + 1, this.items.length - 1), prune: i });
         break;
       }
     }

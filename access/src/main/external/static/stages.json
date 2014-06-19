@@ -18,7 +18,7 @@
             "file:/Volume/projects",
             "file:/mnt/projects"
         ],
-        "confirmFile":"CDR/tag_lib_projects",
+        "confirmFile":"cdr/tag_lib_projects",
         "ingestCleanupPolicy":"DO_NOTHING",
         "readOnly":"true"
     }

@@ -43,3 +43,12 @@
 	</c:when>
 </c:choose>
 </div>
+<%-- Add record visit event to the google analytics commands to be run later --%>
+<c:set var="collectionName"><c:out value='${briefObject.parentCollectionObject.displayValue}' /></c:set>
+<c:if test="${empty collectionName && briefObject.resourceType == 'Collection'}">
+	<c:set var="collectionName"><c:out value='${briefObject.title}' /></c:set>
+</c:if>
+<c:if test="${empty collectionName}">
+	<c:set var="collectionName" value="(no collection)" />
+</c:if>
+<c:set var="gaCommands" scope="request">${gaCommands} ga('send', 'event', '${collectionName}', 'record', '<c:out value="${briefObject.title}|${briefObject.pid}" />');</c:set>
