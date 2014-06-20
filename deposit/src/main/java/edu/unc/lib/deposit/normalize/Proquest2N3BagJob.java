@@ -35,6 +35,7 @@ import static edu.unc.lib.dl.util.MetadataProfileConstants.PROQUEST_ETD;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -64,6 +65,7 @@ import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.dl.util.ZipFileUtil;
 
 /**
  * Normalizes a Proquest ETD deposit object into an N3 deposit structure.
@@ -83,9 +85,24 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 	@Override
 	public void run() {
 
+		unzipPackages();
+
 		// deposit RDF bag
 		Model model = ModelFactory.createDefaultModel();
 		Bag depositBag = model.createBag(getDepositPID().getURI().toString());
+
+		File[] packageDirs = this.getDataDirectory().listFiles();
+		for (File packageDir : packageDirs) {
+			if (packageDir.isDirectory())
+				normalizePackage(packageDir, model, depositBag);
+		}
+
+		// Add normalization event to deposit record
+		recordDepositEvent(Type.NORMALIZATION, "Normalized deposit package from {0} to {1}",
+				PackagingType.PROQUEST_ETD.getUri(), PackagingType.BAG_WITH_N3.getUri());
+	}
+
+	private void normalizePackage(File packageDir, Model model, Bag depositBag) {
 
 		// Generate a uuid for the main object
 		PID primaryPID = new PID("uuid:" + UUID.randomUUID());
@@ -93,7 +110,8 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 
 		// Identify the important files from the deposit
 		File dataFile = null, contentFile = null, attachmentDir = null;
-		File[] files = this.getDataDirectory().listFiles();
+
+		File[] files = packageDir.listFiles();
 		for (File file : files) {
 			if (file.isDirectory()) {
 				attachmentDir = file;
@@ -120,8 +138,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 		}
 
 		// Detect if there are any attachments
-		List<?> attachmentElements = dataRoot.getChild("DISS_content")
-				.getChildren("DISS_attachment");
+		List<?> attachmentElements = dataRoot.getChild("DISS_content").getChildren("DISS_attachment");
 
 		if (attachmentElements == null || attachmentElements.size() == 0) {
 
@@ -144,10 +161,26 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 
 		// Save the model to the n3 file
 		saveModel(model, DepositConstants.MODEL_FILE);
+	}
 
-		// Add normalization event to deposit record
-		recordDepositEvent(Type.NORMALIZATION, "Normalized deposit package from {0} to {1}",
-				PackagingType.PROQUEST_ETD.getUri(), PackagingType.BAG_WITH_N3.getUri());
+	private void unzipPackages() {
+		File dataDirectory = this.getDataDirectory();
+		File zipFiles[] = dataDirectory.listFiles(new FilenameFilter() {
+			@Override
+			public boolean accept(File directory, String fileName) {
+				return fileName.endsWith(".zip");
+			}
+		});
+
+		for (File packageFile : zipFiles) {
+			try {
+				String packageDir = packageFile.getName();
+				packageDir = packageDir.substring(0, packageDir.length() - 4);
+				ZipFileUtil.unzipToDir(packageFile, new File(dataDirectory, packageDir));
+			} catch (IOException e) {
+				throw new Error("Unable to unpack your deposit: " + getDepositPID().getUUID(), e);
+			}
+		}
 	}
 
 	/**
@@ -188,7 +221,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 		model.add(primaryResource, dprop(model, label), contentFile.getName());
 
 		// Reference the content file as the data file
-		model.add(primaryResource, dprop(model, stagingLocation), DepositConstants.DATA_DIR + "/" + contentFile.getName());
+		model.add(primaryResource, dprop(model, stagingLocation), getRelativePath(contentFile));
 
 		return primaryResource;
 	}
@@ -214,7 +247,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 
 		// Store the main content on the child
 		model.add(defaultObjectResource, labelP, contentFile.getName());
-		model.add(defaultObjectResource, fileLocation, DepositConstants.DATA_DIR + "/" + contentFile.getName());
+		model.add(defaultObjectResource, fileLocation, getRelativePath(contentFile));
 
 		// Store reference to content as the default web object
 		model.add(primaryBag, defaultWebObjectP, defaultObjectResource);
@@ -238,7 +271,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 				model.add(child, labelP, filename);
 
 			// Link the file to the child entry
-			model.add(child, fileLocation, DepositConstants.DATA_DIR + "/" + attachmentDir.getName() + "/" + filename);
+			model.add(child, fileLocation, getRelativePath(new File(attachmentDir, filename)));
 		}
 
 		return primaryBag;
@@ -251,8 +284,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 		model.add(primaryResource, dprop(model, hasDatastream), sourceMDResource);
 		model.add(primaryResource, cdrprop(model, sourceMetadata), sourceMDResource);
 
-		model.add(sourceMDResource, dprop(model, stagingLocation), DepositConstants.DATA_DIR + "/"
-				+ dataFile.getName());
+		model.add(sourceMDResource, dprop(model, stagingLocation), getRelativePath(dataFile));
 		model.add(primaryResource, cdrprop(model, hasSourceMetadataProfile), PROQUEST_ETD);
 		model.add(sourceMDResource, dprop(model, mimetype), "text/xml");
 	}
@@ -292,6 +324,10 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 						XSDDatatype.XSDdateTime);
 			}
 		}
+	}
+
+	private String getRelativePath(File file) {
+		return file.getAbsolutePath().substring(getDepositDirectory().getAbsolutePath().length() + 1);
 	}
 
 	public void setProquest2ModsTransformer(Transformer proquest2ModsTransformer) {

@@ -1,0 +1,18 @@
+{
+  "etd" : {
+    "name" : "ETDs",
+    "paths" : ["/path/to/unc_ed", "/path/to/unc_grad"],
+    "filePattern" : "etdadmin_upload_\\d+\\.zip",
+    "maxBytesPerFile" : 1000000,
+    "packageType" : "http://proquest.com",
+    "destination" : "uuid:etd-dest"
+  },
+  "stuff" : {
+    "name" : "Other Stuff",
+    "paths" : ["/path/to/stuff"],
+    "filePattern" : ".+\\.zip",
+    "maxBytesPerFile" : 1000000,
+    "packageType" : "stuff",
+    "destination" : "uuid:stuff-dest"
+  }
+}
