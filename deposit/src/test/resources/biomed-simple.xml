@@ -1,0 +1,58 @@
+<!DOCTYPE art SYSTEM 'http://www.biomedcentral.com/xml/article.dtd'>
+<art><ui>1122</ui><ji>1111</ji><fm>
+<dochead>Research article</dochead>
+<bibl>
+<title>
+<p>Overly long supplemental titles</p>
+</title>
+<aug>
+<au ca="yes" id="A1"><snm>Wik</snm><mi>I</mi><fnm>Pedia</fnm><insr iid="I1"/><email>wikipedia@wikipedia.org</email></au>
+</aug>
+<insg>
+<ins id="I1"><p>Wikipedia</p></ins>
+<ins id="I2"><p>Another Place</p></ins>
+</insg>
+<source>BMC Public Health</source>
+<issn>1221</issn>
+<pubdate>2011</pubdate>
+<volume>11</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>16</lpage>
+<url>http://en.wikipedia.org/wiki/Lorem_ipsum</url>
+<xrefbib><pubidlist><pubid idtype="doi">doi-1234</pubid><pubid idtype="pmpid">pmpid-1234</pubid></pubidlist></xrefbib>
+</bibl>
+</fm>
+<bdy>
+<sec>
+  Body goes here
+</sec>
+<suppl id="S1">
+<title>
+<p>Long.</p>
+</title>
+<text>
+<p>
+In publishing and graphic design, lorem ipsum is a filler text commonly used to demonstrate the graphic elements of a document or visual presentation. Replacing meaningful content that could be distracting with placeholder text may allow viewers to focus on graphic aspects such as font, typography, and page layout.</p>
+</text>
+<file name="long.txt">
+   <p>Click here for file</p>
+</file>
+</suppl>
+<suppl id="S1">
+<title>
+<p>Short.</p>
+</title>
+<text>
+<p>
+Short</p>
+</text>
+<file name="short.txt">
+   <p>Click here for file</p>
+</file>
+</suppl>
+</bdy><bm>
+<ack>
+</ack>
+<refgrp></refgrp>
+</bm></art>

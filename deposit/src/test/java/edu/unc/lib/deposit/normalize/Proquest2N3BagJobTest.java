@@ -15,33 +15,23 @@
  */
 package edu.unc.lib.deposit.normalize;
 
+import static edu.unc.lib.deposit.normalize.Proquest2N3BagJob.DATA_SUFFIX;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.cdrprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.defaultWebObject;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.embargoUntil;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.hasSourceMetadataProfile;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.sourceMetadata;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.hasDatastream;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.label;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
-import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
+import static edu.unc.lib.dl.util.MetadataProfileConstants.PROQUEST_ETD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -50,41 +40,22 @@ import javax.xml.transform.stream.StreamSource;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 
-import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.deposit.work.JobStatusFactory;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.DepositConstants;
-import edu.unc.lib.dl.util.DepositStatusFactory;
 
 /**
  * @author bbpennel
  * @date Apr 25, 2014
  */
-public class Proquest2N3BagJobTest {
-
-	@Rule
-	public final TemporaryFolder tmpFolder = new TemporaryFolder();
-
-	@Mock
-	private JobStatusFactory jobStatusFactory;
-	@Mock
-	private DepositStatusFactory depositStatusFactory;
-
-	private File depositsDirectory;
+public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	private Transformer proquest2ModsTransformer;
 
@@ -92,14 +63,6 @@ public class Proquest2N3BagJobTest {
 
 	@Before
 	public void setup() throws Exception {
-
-		initMocks(this);
-
-		depositsDirectory = tmpFolder.newFolder("deposits");
-
-		String depositUUID = UUID.randomUUID().toString();
-		File depositDir = new File(depositsDirectory, depositUUID);
-		depositDir.mkdir();
 
 		TransformerFactory factory = TransformerFactory.newInstance();
 		URL xslURL = this.getClass().getResource("/proquest/proquest-to-mods.xsl");
@@ -120,7 +83,7 @@ public class Proquest2N3BagJobTest {
 
 	@Test
 	public void testNoAttachments() {
-		copyTestPackage("src/test/resources/proquest-noattach.zip");
+		copyTestPackage("src/test/resources/proquest-noattach.zip", job);
 
 		job.run();
 
@@ -144,7 +107,7 @@ public class Proquest2N3BagJobTest {
 		// Check that the main content file is assigned to the primary resource
 		verifyStagingLocationExists(primaryResource, stagingLoc, job.getDepositDirectory(), "Content");
 
-		verifyMetadataSourceAssigned(model, primaryResource, job.getDepositDirectory());
+		verifyMetadataSourceAssigned(model, primaryResource, job.getDepositDirectory(), PROQUEST_ETD, DATA_SUFFIX);
 
 		// Verify that the MODS was created
 		File descriptionFile = new File(job.getDescriptionDir(), new PID(primaryResource.getURI()).getUUID() + ".xml");
@@ -153,7 +116,7 @@ public class Proquest2N3BagJobTest {
 
 	@Test
 	public void testWithAttachments() {
-		copyTestPackage("src/test/resources/proquest-attach.zip");
+		copyTestPackage("src/test/resources/proquest-attach.zip", job);
 
 		job.run();
 
@@ -169,33 +132,21 @@ public class Proquest2N3BagJobTest {
 
 	private void testWithAttachments(Model model, Resource primaryResource) {
 		Property stagingLoc = dprop(model, stagingLocation);
-		Property hasContentModel = fprop(model, hasModel);
+
 		Property labelProperty = dprop(model, label);
 
 		Bag primaryBag = model.getBag(primaryResource);
 
 		assertNotNull("Main object from the deposit not found", primaryResource);
 
-		verifyMetadataSourceAssigned(model, primaryResource, job.getDepositDirectory());
+		verifyMetadataSourceAssigned(model, primaryResource, job.getDepositDirectory(), PROQUEST_ETD, DATA_SUFFIX);
 
 		// Verify that the MODS was created
 		File descriptionFile = new File(job.getDescriptionDir(), new PID(primaryResource.getURI()).getUUID() + ".xml");
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 
-		// Make sure the object is an aggregate
-		StmtIterator cmIt = primaryResource.listProperties(hasContentModel);
-		boolean isAggregate = false, isContainer = false;
-		while (cmIt.hasNext()) {
-			String cmValue = cmIt.next().getResource().getURI();
-			if (AGGREGATE_WORK.equals(cmValue)) {
-				isAggregate = true;
-			}
-			if (CONTAINER.equals(cmValue)) {
-				isContainer = true;
-			}
-		}
-		assertTrue("Primary resource was not assigned aggregate content model", isAggregate);
-		assertTrue("Primary resource was not assigned container content model", isContainer);
+		assertTrue("Primary resource was not assigned content models to be an aggregate",
+				isAggregate(primaryResource, model));
 
 		// Check for default web object
 		Resource dwo = primaryResource.getProperty(model.createProperty(defaultWebObject.toString())).getResource();
@@ -239,7 +190,7 @@ public class Proquest2N3BagJobTest {
 		DateTime newTime = new DateTime(2014, 5, 5, 0, 0, 0, 0);
 		DateTimeUtils.setCurrentMillisFixed(newTime.getMillis());
 
-		copyTestPackage("src/test/resources/proquest-embargo.zip");
+		copyTestPackage("src/test/resources/proquest-embargo.zip", job);
 
 		job.run();
 
@@ -264,7 +215,7 @@ public class Proquest2N3BagJobTest {
 		DateTime newTime = new DateTime(2015, 1, 1, 0, 0, 0, 0);
 		DateTimeUtils.setCurrentMillisFixed(newTime.getMillis());
 
-		copyTestPackage("src/test/resources/proquest-embargo.zip");
+		copyTestPackage("src/test/resources/proquest-embargo.zip", job);
 
 		job.run();
 
@@ -289,7 +240,7 @@ public class Proquest2N3BagJobTest {
 		DateTime newTime = new DateTime(2016, 1, 1, 0, 0, 0, 0);
 		DateTimeUtils.setCurrentMillisFixed(newTime.getMillis());
 
-		copyTestPackage("src/test/resources/proquest-embargo.zip");
+		copyTestPackage("src/test/resources/proquest-embargo.zip", job);
 
 		job.run();
 
@@ -304,34 +255,10 @@ public class Proquest2N3BagJobTest {
 		DateTimeUtils.setCurrentMillisSystem();
 	}
 
-	private void verifyMetadataSourceAssigned(Model model, Resource primaryResource, File depositDirectory) {
-		Property stagingLoc = dprop(model, stagingLocation);
-		Property hasSourceMetadata = cdrprop(model, hasSourceMetadataProfile);
-		Property sourceMD = cdrprop(model, sourceMetadata);
-		Property hasDS = dprop(model, hasDatastream);
-
-		assertEquals("Did not have metadata source type", "proquest", primaryResource.getProperty(hasSourceMetadata)
-				.getLiteral().getString());
-
-		// Verify that the metadata source attribute is present and transitively points to the file
-		Resource sourceMDResource = primaryResource.getProperty(sourceMD).getResource();
-		assertNotNull("Source metdata was not assigned to main resource", sourceMDResource);
-
-		File sourceMDFile = verifyStagingLocationExists(sourceMDResource, stagingLoc, depositDirectory,
-				"Original metadata");
-		assertTrue("Original metadata file did not have the correct suffix, most likely the wrong file",
-				sourceMDFile.getName().endsWith(Proquest2N3BagJob.DATA_SUFFIX));
-
-		// Verify that the extra datastream being added is the same as the source metadata
-		String sourceMDDatastream = primaryResource.getProperty(hasDS).getResource().getURI();
-		assertEquals("Source datastream path did not match the sourceMetadata", sourceMDResource.getURI(),
-				sourceMDDatastream);
-	}
-
 	@Test
 	public void testMultiplePackages() {
-		copyTestPackage("src/test/resources/proquest-noattach.zip");
-		copyTestPackage("src/test/resources/proquest-attach.zip");
+		copyTestPackage("src/test/resources/proquest-noattach.zip", job);
+		copyTestPackage("src/test/resources/proquest-attach.zip", job);
 
 		job.run();
 
@@ -361,29 +288,5 @@ public class Proquest2N3BagJobTest {
 		assertEquals("Incorrect number of objects in the deposit", 2, childCount);
 	}
 
-	private File verifyStagingLocationExists(Resource resource, Property stagingLoc, File depositDirectory,
-			String fileLabel) {
-		String filePath = resource.getProperty(stagingLoc).getLiteral().getString();
-		File file = new File(depositDirectory, filePath);
-		assertTrue(fileLabel + " file did not exist", file.exists());
 
-		return file;
-	}
-
-	private Model getModel(AbstractDepositJob job) {
-		File modelFile = new File(job.getDepositDirectory(), DepositConstants.MODEL_FILE);
-		Model model = ModelFactory.createDefaultModel();
-		model.read(modelFile.toURI().toString());
-
-		return model;
-	}
-
-	private void copyTestPackage(String filename) {
-		job.getDataDirectory().mkdir();
-		Path packagePath = Paths.get(filename);
-		try {
-			Files.copy(packagePath, job.getDataDirectory().toPath().resolve(packagePath.getFileName()));
-		} catch (Exception e) {
-		}
-	}
 }
