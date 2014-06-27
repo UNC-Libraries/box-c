@@ -16,10 +16,13 @@ JAVA_CLASSPATH="$CONF_DIR:$LIB_DIR/commons-daemon-${commons-daemon.version}.jar:
 JAVA_MAIN_CLASS="edu.unc.lib.deposit.DepositDaemon"
 JAVA_OPTS="-Ddistribution.dir=$DIST_DIR -Ddeposit.properties.uri=file:$CONF_DIR/deposit.properties"
 
+# uncomment the following line to enable a JDWP debugger on port 8001 
+JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,address=8001,server=y,suspend=n $JAVA_OPTS"
+
 if [ -z "$JAVA_HOME" ]; then
-	export JAVA_HOME="$( $JAVA_EXEC -cp "$JAVA_CLASSPATH" -server \
+	JAVA_HOME="$( $JAVA_EXEC -cp "$JAVA_CLASSPATH" -server \
 		edu.unc.lib.deposit.GetProperty java.home )"
 fi
 
-export JSVC_EXECUTABLE JSVC_PID_FIL JSVC_USER DIST_DIR CONF_DIR JAVA_EXEC \
+export JSVC_EXECUTABLE JSVC_PID_FIL JSVC_USER DIST_DIR JAVA_OPTS CONF_DIR JAVA_EXEC \
 	JAVA_CLASSPATH JAVA_MAIN_CLASS JAVA_HOME

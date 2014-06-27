@@ -28,6 +28,8 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.JobForwardingJMSListener;
@@ -82,6 +84,8 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 
 	private File foxmlDirectory;
 
+	private Map<String, String> depositStatus;
+
 	public IngestDeposit() {
 		super();
 	}
@@ -122,7 +126,6 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 		// Store reference to the foxml directory
 		foxmlDirectory = new File(getDepositDirectory(), DepositConstants.FOXML_DIR);
 
-		Map<String, String> depositStatus = getDepositStatus();
 		// Retrieve the pid of the container this object is being ingested to
 		destinationPID = new PID(depositStatus.get(DepositField.containerId.name()));
 
@@ -163,7 +166,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 	@Override
 	public void run() {
 
-		// TODO resume deposit from the point it last left off at
+		depositStatus = getDepositStatus();
 
 		// Extract information about structure of the deposit
 		processDepositStructure();
@@ -172,14 +175,21 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 			// Register this job with the JMS listener prior to doing work
 			listener.registerListener(this);
 
+			// set up permission groups for forwarding
+			String groups = depositStatus.get(DepositField.permissionGroups.name());
+			AccessGroupSet ags = new AccessGroupSet(groups);
+			GroupsThreadStore.storeGroups(ags);
+			GroupsThreadStore.storeUsername(depositStatus.get(DepositField.depositorName.name()));
+			
 			// Begin ingest of individual objects in the deposit
 			String ingestPid = null;
 			try {
 
 				// Ingest all deposit objects and record, start listening for them
 				while ((ingestPid = ingestPids.poll()) != null) {
-					addTopLevelToContainer(ingestPid);
 
+					addTopLevelToContainer(ingestPid);
+					
 					// Register pid as needing ingest confirmation
 					ingestsAwaitingConfirmation.add(ingestPid);
 
@@ -199,12 +209,14 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 				log.info("Interrupted ingest of job {}", this.getJobUUID());
 				return;
 			}
+
+			updateDestinationEvents();
 		} finally {
+			GroupsThreadStore.clearGroups();
+			GroupsThreadStore.clearUsername();
 			// Unregister self from the jms listener
 			listener.unregisterListener(this);
 		}
-
-		updateDestinationEvents();
 
 	}
 
@@ -219,8 +231,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 			return;
 
 		try {
-			client.addObjectRelationship(destinationPID,
-					Relationship.contains.getURI().toString(), new PID(pid));
+			client.addObjectRelationship(destinationPID, Relationship.contains.getURI().toString(), new PID(pid));
 		} catch (FedoraException e) {
 			throw new DepositException("Failed to add object " + pid + " to destination " + destinationPID.getPid(), e);
 		}

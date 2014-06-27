@@ -217,8 +217,11 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 		String href = dsResource.getProperty(fileLocation).getString();
 
 		String mimeType = null;
-		if (dsResource.hasProperty(mimetype))
+		if (dsResource.hasProperty(mimetype)) {
 			mimeType = dsResource.getProperty(mimetype).getString();
+		} else {
+			mimeType = "application/octet-stream";
+		}
 		String md5checksum = null;
 		if (dsResource.hasProperty(md5sum)) {
 			md5checksum = dsResource.getProperty(md5sum).getString();

@@ -51,7 +51,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 	private DepositStatusFactory depositStatusFactory;
 	@Autowired
 	private File depositsDirectory;
-	@Autowired
+
 	private Collection<String> overridePermissionGroups = null;
 	
 	public DepositStatusFactory getDepositStatusFactory() {
@@ -118,9 +118,9 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 		status.put(DepositField.depositSlug.name(), deposit.getSlug());
 		String permGroups = null;
 		if (this.getOverridePermissionGroups() != null) {
-			permGroups = StringUtils.join(this.getOverridePermissionGroups(), ',');
+			permGroups = StringUtils.join(this.getOverridePermissionGroups(), ';');
 		} else {
-			permGroups = StringUtils.join(GroupsThreadStore.getGroups(), ',');
+			permGroups = StringUtils.join(GroupsThreadStore.getGroups(), ';');
 		}
 		status.put(DepositField.permissionGroups.name(), permGroups);
 

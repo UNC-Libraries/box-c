@@ -1,4 +1,4 @@
-<#--
+{{!
 
     Copyright 2008 The University of North Carolina at Chapel Hill
 
@@ -14,7 +14,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 
--->
+}}
 {{^error}}{{ingestedObjects}} item(s) successfully deposited.{{/error}}
 {{#error}}
 There was an error processing your deposit:

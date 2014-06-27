@@ -29,6 +29,7 @@ import edu.unc.lib.deposit.normalize.BioMedCentralExtrasJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
 import edu.unc.lib.deposit.normalize.DSPACEMETS2N3BagJob;
 import edu.unc.lib.deposit.normalize.Proquest2N3BagJob;
+import edu.unc.lib.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
 import edu.unc.lib.deposit.validate.ValidateMODS;
@@ -49,7 +50,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
  *
  */
 public class DepositSupervisor implements WorkerListener {
-	private static final Logger log = LoggerFactory
+	private static final Logger LOG = LoggerFactory
 			.getLogger(DepositSupervisor.class);
 
 	@Autowired
@@ -60,9 +61,22 @@ public class DepositSupervisor implements WorkerListener {
 
 	@Autowired
 	private WorkerPool depositWorkerPool;
+	
+	public net.greghaines.jesque.Config getJesqueConfig() {
+		return jesqueConfig;
+	}
+
+	public void setJesqueConfig(net.greghaines.jesque.Config jesqueConfig) {
+		this.jesqueConfig = jesqueConfig;
+	}
+	
+	private Client makeJesqueClient() {
+		Client result = new net.greghaines.jesque.client.ClientImpl(getJesqueConfig());
+		return result;
+	}
 
 	@Autowired
-	private Client jesqueClient;
+	private net.greghaines.jesque.Config jesqueConfig;
 
 	private Timer timer;
 
@@ -81,12 +95,12 @@ public class DepositSupervisor implements WorkerListener {
 
 	@PostConstruct
 	public void init() {
-		log.info("Initializing DepositSupervisor timer and starting Jesque worker pool");
+		LOG.info("Initializing DepositSupervisor timer and starting Jesque worker pool");
 		depositWorkerPool.getWorkerEventEmitter().addListener(this);
 	}
 
 	public void start() {
-		log.info("Starting deposit checks and worker pool");
+		LOG.info("Starting deposit checks and worker pool");
 		if (timer != null)
 			return;
 		timer = new Timer("DepositSupervisor " + id);
@@ -98,16 +112,19 @@ public class DepositSupervisor implements WorkerListener {
 					if (DepositAction.register.name().equals(
 							fields.get(DepositField.actionRequest.name()))) {
 						String uuid = fields.get(DepositField.uuid.name());
-						log.info("Registering a new deposit: {}", uuid);
+						LOG.info("Registering a new deposit: {}", uuid);
 						if (depositStatusFactory.addSupervisorLock(uuid, id)) {
 							try {
-								log.info("Queuing first job for deposit {}",
+								LOG.info("Queuing first job for deposit {}",
 										uuid);
 								Job job = makeJob(
 										PackageIntegrityCheckJob.class, uuid);
-								jesqueClient.enqueue(Queue.PREPARE.name(), job);
 								depositStatusFactory.setState(uuid,
 										DepositState.queued);
+								depositStatusFactory.clearActionRequest(uuid);
+								Client c = makeJesqueClient();
+								c.enqueue(Queue.PREPARE.name(), job);
+								c.end();
 							} finally {
 								depositStatusFactory.removeSupervisorLock(uuid);
 							}
@@ -120,13 +137,16 @@ public class DepositSupervisor implements WorkerListener {
 		if (depositWorkerPool.isShutdown()) {
 			throw new Error("Cannot start deposit workers, already shutdown.");
 		} else if (depositWorkerPool.isPaused()) {
+			LOG.info("Unpausing deposit workers");
 			this.depositWorkerPool.togglePause(false);
 		} else {
+			LOG.info("Starting deposit workers");
 			depositWorkerPool.run();
 		}
 	}
 
 	public void stop() {
+		LOG.info("Stopping the Deposit Supervisor");
 		depositWorkerPool.togglePause(true);
 		if (timer != null) {
 			this.timer.cancel();
@@ -134,6 +154,7 @@ public class DepositSupervisor implements WorkerListener {
 			this.timer = null;
 		}
 		// FIXME cancel running jobs
+		LOG.info("Stopped the Deposit Supervisor");
 	}
 
 	public DepositStatusFactory getDepositStatusFactory() {
@@ -151,14 +172,6 @@ public class DepositSupervisor implements WorkerListener {
 
 	public void setJobStatusFactory(JobStatusFactory jobStatusFactory) {
 		this.jobStatusFactory = jobStatusFactory;
-	}
-
-	public Client getJesqueClient() {
-		return jesqueClient;
-	}
-
-	public void setJesqueClient(Client jesqueClient) {
-		this.jesqueClient = jesqueClient;
 	}
 
 	public File getDepositsDirectory() {
@@ -194,7 +207,7 @@ public class DepositSupervisor implements WorkerListener {
 	public void onEvent(WorkerEvent event, Worker worker, String queue,
 			Job job, Object runner, Object result, Exception ex) {
 		if (WorkerEvent.WORKER_POLL != event)
-			log.debug("WorkerEvent {}, {}, {}, {}, {}, {}, {}", new Object[] {
+			LOG.debug("WorkerEvent {}, {}, {}, {}, {}, {}, {}", new Object[] {
 					event, worker, queue, job, runner, result, ex });
 
 		String depositUUID;
@@ -203,7 +216,7 @@ public class DepositSupervisor implements WorkerListener {
 		// Job-level status logging
 		switch (event) {
 		case WORKER_ERROR:
-			log.error("Worker threw an error: {}", ex);
+			LOG.error("Worker threw an error: {}", ex);
 		case WORKER_START:
 		case WORKER_STOP:
 		case WORKER_POLL:
@@ -222,6 +235,7 @@ public class DepositSupervisor implements WorkerListener {
 		case JOB_SUCCESS:
 			jobStatusFactory.completed(j);
 			break;
+		case WORKER_ERROR:
 		case JOB_FAILURE:
 			if (j != null) {
 				if (ex != null) {
@@ -230,7 +244,7 @@ public class DepositSupervisor implements WorkerListener {
 					jobStatusFactory.failed(j);
 				}
 			} else {
-				log.error("Job failure", ex);
+				LOG.error("Job failure", ex);
 			}
 			break;
 		default:
@@ -246,21 +260,26 @@ public class DepositSupervisor implements WorkerListener {
 			try {
 				Job nextJob = getNextJob(job, depositUUID, status, successfulJobs);
 				if (nextJob != null) {
-					jesqueClient.enqueue(Queue.PREPARE.name(), nextJob);
+					Client c = makeJesqueClient();
+					c.enqueue(Queue.PREPARE.name(), nextJob);
+					c.end();
 				}
 			} catch (DepositFailedException e) {
 				depositStatusFactory.fail(depositUUID, e);
 			}
 			break;
+		case WORKER_ERROR:
 		case JOB_FAILURE:
 			depositStatusFactory.fail(depositUUID, ex);
 			// send deposit failure notice
-			if(!SendDepositorEmailJob.class.getName().equals(job.getClassName())) {
+			/*if(!SendDepositorEmailJob.class.getName().equals(job.getClassName())) {
 				if (status.containsKey(DepositField.depositorEmail.name())) {
 					Job emailJob = makeJob(SendDepositorEmailJob.class, depositUUID);
-					jesqueClient.enqueue(Queue.PREPARE.name(), emailJob);
+					Client c = makeJesqueClient();
+					c.enqueue(Queue.PREPARE.name(), emailJob);
+					c.end();
 				}
-			}
+			}*/
 		default:
 			break;
 		}
@@ -268,7 +287,7 @@ public class DepositSupervisor implements WorkerListener {
 
 	private Job getNextJob(Job job, String depositUUID, Map<String, String> status, Set<String> successfulJobs)
 			throws DepositFailedException {
-		log.debug("Got completed job names: {}", successfulJobs);
+		LOG.debug("Got completed job names: {}", successfulJobs);
 
 		// Package integrity check
 		if (status.get(DepositField.depositMd5.name()) != null) {
@@ -280,14 +299,15 @@ public class DepositSupervisor implements WorkerListener {
 
 		// Package may be unpacked
 		String filename = status.get(DepositField.fileName.name());
-		if (filename != null && filename.toLowerCase().endsWith(".zip")) {
+		String packagingType = status.get(DepositField.packagingType.name());
+		if (filename != null && filename.toLowerCase().endsWith(".zip") &&
+				!PackagingType.SIMPLE_OBJECT.getUri().equals(packagingType)) {
 			if (!successfulJobs.contains(UnpackDepositJob.class.getName())) {
 				return makeJob(UnpackDepositJob.class, depositUUID);
 			}
 		}
 
 		// Deposit package type may be converted to N3
-		String packagingType = status.get(DepositField.packagingType.name());
 		if (!packagingType.equals(PackagingType.BAG_WITH_N3.getUri())) {
 			Job conversion = null;
 			// we need to add N3 packaging to this bag
@@ -296,10 +316,11 @@ public class DepositSupervisor implements WorkerListener {
 			} else if (packagingType.equals(PackagingType.METS_DSPACE_SIP_1.getUri())
 					|| packagingType.equals(PackagingType.METS_DSPACE_SIP_2.getUri())) {
 				conversion = makeJob(DSPACEMETS2N3BagJob.class, depositUUID);
-			} else if (packagingType.equals(PackagingType.PROQUEST_ETD)) {
+			} else if (packagingType.equals(PackagingType.PROQUEST_ETD.getUri())) {
 				conversion = makeJob(Proquest2N3BagJob.class, depositUUID);
+			} else if (packagingType.equals(PackagingType.SIMPLE_OBJECT.getUri())) {
+				conversion = makeJob(Simple2N3BagJob.class, depositUUID);
 			}
-
 			if (conversion == null) {
 				String msg = MessageFormat
 						.format("Cannot convert deposit package to N3 BagIt. No converter for this packaging type(s): {}",
@@ -345,7 +366,7 @@ public class DepositSupervisor implements WorkerListener {
 			return makeJob(IngestDeposit.class, depositUUID);
 		}
 		
-		// Email the depositor
+		// Email the depositor, do not reattempt the email.
 		if (status.containsKey(DepositField.depositorEmail.name())
 				&& !successfulJobs.contains(SendDepositorEmailJob.class.getName())) {
 			return makeJob(SendDepositorEmailJob.class, depositUUID);

@@ -20,7 +20,7 @@ LOG_ERR=$DIST_DIR/logs/deposit-jsvc.err
 jsvc_exec()
 {  
     cd $DIST_DIR
-    $JSVC_EXECUTABLE -server -cp "$JAVA_CLASSPATH" -user $JSVC_USER -outfile $LOG_OUT -errfile $LOG_ERR -pidfile $JSVC_PID_FILE $JAVA_OPTS $JAVA_MAIN_CLASS $ARGS
+    $JSVC_EXECUTABLE $STOP -server -cp "$JAVA_CLASSPATH" -wait 10 -user $JSVC_USER -outfile $LOG_OUT -errfile $LOG_ERR -pidfile $JSVC_PID_FILE $JAVA_OPTS $JAVA_MAIN_CLASS $ARGS
 }
 
 case "$1" in
@@ -36,7 +36,8 @@ case "$1" in
         echo "Stopping the $DESC..."
        
         # Stop the service
-        jsvc_exec "-stop"      
+        STOP="-stop"
+        jsvc_exec      
        
         echo "The $DESC has stopped."
     ;;
