@@ -34,21 +34,40 @@ public class Datastream {
 		
 		String[] dsParts = datastream.split("\\|");
 		
-		this.name = dsParts[0];
-		
-		if (dsParts.length < 2)
-			return;
-		
-		this.mimetype = dsParts[1];
-		this.extension = dsParts[2];
-		try {
-			this.filesize = new Long(dsParts[3]);
-		} catch (NumberFormatException e) {
-			this.filesize = new Long(0);
+		if (dsParts.length > 0 && dsParts[0].length() > 0) {
+			this.name = dsParts[0];
+		} else {
+			this.name = null;
 		}
-		if (dsParts.length > 4 && dsParts[4].length() > 0)
+
+		if (dsParts.length > 1 && dsParts[1].length() > 0) {
+			this.mimetype = dsParts[1];
+		} else {
+			this.mimetype = null;
+		}
+
+		if (dsParts.length > 2 && dsParts[2].length() > 0) {
+			this.extension = dsParts[2];
+		} else {
+			this.extension = null;
+		}
+
+		if (dsParts.length > 3 && dsParts[3].length() > 0) {
+			try {
+				this.filesize = new Long(dsParts[3]);
+			} catch (NumberFormatException e) {
+				this.filesize = null;
+			}
+		} else {
+			this.filesize = null;
+		}
+		
+		if (dsParts.length > 4 && dsParts[4].length() > 0) {
 			this.checksum = dsParts[4];
-		else this.checksum = null;
+		} else {
+			this.checksum = null;
+		}
+		
 		if (dsParts.length > 5 && dsParts[5].length() > 0) {
 			this.owner = new PID(dsParts[5]);
 		} else {
@@ -58,16 +77,30 @@ public class Datastream {
 	
 	public String toString() {
 		//DS name|mimetype|extension|filesize|checksum|owner
-		StringBuilder sb = new StringBuilder(name);
-		sb.append('|').append(mimetype).append('|');
-		if (extension != null)
-			sb.append(extension);
-		sb.append('|').append(filesize).append('|');
-		if (this.checksum != null)
-			sb.append(checksum);
+		StringBuilder sb = new StringBuilder();
+		if (name != null) {
+			sb.append(name);
+		}
 		sb.append('|');
-		if (owner != null)
+		if (mimetype != null) {
+			sb.append(mimetype);
+		}
+		sb.append('|');
+		if (extension != null) {
+			sb.append(extension);
+		}
+		sb.append('|');
+		if (filesize != null) {
+			sb.append(filesize);
+		}
+		sb.append('|');
+		if (checksum != null) {
+			sb.append(checksum);
+		}
+		sb.append('|');
+		if (owner != null) {
 			sb.append(owner.getPid());
+		}
 		return sb.toString();
 	}
 	
