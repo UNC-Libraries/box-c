@@ -31,6 +31,7 @@ import edu.unc.lib.deposit.normalize.DSPACEMETS2N3BagJob;
 import edu.unc.lib.deposit.normalize.Proquest2N3BagJob;
 import edu.unc.lib.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
+import edu.unc.lib.deposit.normalize.VocabularyEnforcementJob;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
 import edu.unc.lib.deposit.validate.ValidateMODS;
 import edu.unc.lib.deposit.validate.VirusScanJob;
@@ -61,7 +62,7 @@ public class DepositSupervisor implements WorkerListener {
 
 	@Autowired
 	private WorkerPool depositWorkerPool;
-	
+
 	public net.greghaines.jesque.Config getJesqueConfig() {
 		return jesqueConfig;
 	}
@@ -69,7 +70,7 @@ public class DepositSupervisor implements WorkerListener {
 	public void setJesqueConfig(net.greghaines.jesque.Config jesqueConfig) {
 		this.jesqueConfig = jesqueConfig;
 	}
-	
+
 	private Client makeJesqueClient() {
 		Client result = new net.greghaines.jesque.client.ClientImpl(getJesqueConfig());
 		return result;
@@ -331,13 +332,18 @@ public class DepositSupervisor implements WorkerListener {
 			}
 		}
 
+		boolean isBiomedDeposit = "BioMed Central".equals(status.get(DepositField.intSenderDescription.name()));
 		// BioMedCentral metadata may be extracted (if applicable)
-		if ("BioMed Central".equals(status
-				.get(DepositField.intSenderDescription.name()))) {
+		if (isBiomedDeposit) {
 			if (!successfulJobs
 					.contains(BioMedCentralExtrasJob.class.getName())) {
 				return makeJob(BioMedCentralExtrasJob.class, depositUUID);
 			}
+		}
+
+		// Perform vocabulary enforcement for package types that retain the original metadata
+		if (isBiomedDeposit || packagingType.equals(PackagingType.PROQUEST_ETD.getUri())) {
+			return makeJob(VocabularyEnforcementJob.class, depositUUID);
 		}
 
 		// MODS validation
@@ -365,7 +371,7 @@ public class DepositSupervisor implements WorkerListener {
 		if (!successfulJobs.contains(IngestDeposit.class.getName())) {
 			return makeJob(IngestDeposit.class, depositUUID);
 		}
-		
+
 		// Email the depositor, do not reattempt the email.
 		if (status.containsKey(DepositField.depositorEmail.name())
 				&& !successfulJobs.contains(SendDepositorEmailJob.class.getName())) {

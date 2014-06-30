@@ -272,6 +272,14 @@
 	<bean id="MakeFOXML" class="edu.unc.lib.deposit.fcrepo3.MakeFOXML"
 		scope="prototype">
 	</bean>
+	
+	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil">
+		<property name="ontologyPath" value="${vocab.departments}" />
+	</bean>
+	
+	<bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"
+		scope="prototype">
+	</bean>
 
 	<bean id="jmsContainer"
 		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
