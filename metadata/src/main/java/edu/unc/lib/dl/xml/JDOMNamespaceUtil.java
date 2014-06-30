@@ -17,8 +17,8 @@ package edu.unc.lib.dl.xml;
 
 import static edu.unc.lib.dl.xml.NamespaceConstants.ATOM_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.ATOM_URI;
-import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_PREFIX;
-import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_URI;
+import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_MESSAGE_PREFIX;
+import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_MESSAGE_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.DCTERMS_PREFIX;
@@ -29,6 +29,8 @@ import static edu.unc.lib.dl.xml.NamespaceConstants.FEDORA_MODEL_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.FEDORA_MODEL_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.FEDORA_VIEW_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.FEDORA_VIEW_URI;
+import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_PREFIX;
+import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.FOXML_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.LOCAL_RELS_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.LOCAL_RELS_URI;
@@ -49,8 +51,6 @@ import static edu.unc.lib.dl.xml.NamespaceConstants.SCHEMATRON_VALIDATION_REPORT
 import static edu.unc.lib.dl.xml.NamespaceConstants.SCHEMATRON_VALIDATION_REPORT_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.XLINK_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.XLINK_URI;
-import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_MESSAGE_PREFIX;
-import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_MESSAGE_URI;
 
 import javax.xml.XMLConstants;
 
@@ -110,7 +110,7 @@ public class JDOMNamespaceUtil {
      * Fedora content view namespace with standard prefix.
      */
     public static final Namespace FEDORA_VIEW_NS = Namespace.getNamespace(FEDORA_VIEW_PREFIX, FEDORA_VIEW_URI);
-    
+
     /**
      * Fedora Object XML namespace (no prefix).
      */
@@ -190,18 +190,21 @@ public class JDOMNamespaceUtil {
      * @see javax.xml.XMLConstants#W3C_XML_SCHEMA_INSTANCE_NS_URI
      */
     public static final Namespace XSI_NS = Namespace.getNamespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
-    
+
     /**
      * CDR user roles namespace.
      */
     public static final Namespace CDR_ROLE_NS = Namespace.getNamespace(NamespaceConstants.CDR_ROLES_PREFIX, NamespaceConstants.CDR_ROLE_NS_URI);
-    
+
     public static final Namespace CDR_ACL_NS = Namespace.getNamespace(NamespaceConstants.CDR_ACL_PREFIX, NamespaceConstants.CDR_ACL_NS_URI);
 
     public static final Namespace EPDCX_NS = Namespace.getNamespace(NamespaceConstants.EPDCX_PREFIX, NamespaceConstants.EPDCX_URI);
 
 	public static final Namespace DEPOSIT_NS = Namespace.getNamespace(NamespaceConstants.DEPOSIT_PREFIX, NamespaceConstants.DEPOSIT_URI);
-    
+
+	public static final Namespace SKOS_NS = Namespace.getNamespace(NamespaceConstants.SKOS_PREFIX,
+			NamespaceConstants.SKOS_URI);
+
     /**
      * Generates an XPath object from the given query, with the provided namespaces added.
      * @param query
@@ -220,7 +223,7 @@ public class JDOMNamespaceUtil {
  		}
  		return null;
  	}
-    
+
     // private constructor to prevent instantiation.
     private JDOMNamespaceUtil() {
     }

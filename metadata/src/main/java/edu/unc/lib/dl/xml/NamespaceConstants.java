@@ -87,7 +87,7 @@ public final class NamespaceConstants {
      * The Fedora content model namespace prefix.
      */
     public static final String FEDORA_MODEL_PREFIX = "fedModel";
-    
+
     /**
      * The Fedora content model URI.
      */
@@ -229,18 +229,22 @@ public final class NamespaceConstants {
 	public static final String CDR_ROLES_PREFIX = "cdr-role";
 
 	public static final String CDR_ROLE_NS_URI = "http://cdr.unc.edu/definitions/roles#";
-	
+
 	public static final String CDR_ACL_PREFIX = "cdr-acl";
-	
+
 	public static final String CDR_ACL_NS_URI = "http://cdr.unc.edu/definitions/acl#";
-	
+
 	public static final String EPDCX_PREFIX = "epdcx";
-	
+
 	public static final String EPDCX_URI = "http://purl.org/eprint/epdcx/2006-11-16/";
-	
+
 	public static final String DEPOSIT_PREFIX = "deposit";
-	
+
 	public static final String DEPOSIT_URI = "http://cdr.unc.edu/definitions/deposit/";
+
+	public static final String SKOS_PREFIX = "skos";
+
+	public static final String SKOS_URI = "http://www.w3.org/2004/02/skos/core#";
 
     // Prevent instantiation.
     private NamespaceConstants() {
