@@ -45,7 +45,7 @@ public class SetDatastreamContentFilterTest extends Assert {
 
 		assertEquals(9, idb.getDatastream().size());
 		assertTrue(idb.getDatastream().contains("DATA_FILE|image/jpeg|jpg|3645539|1adeece64580be3b9a185e8f12e8653b|"));
-		assertTrue(idb.getDatastream().contains("AUDIT|text/xml|xml|0||"));
+		assertTrue(idb.getDatastream().contains("AUDIT|text/xml|xml|||"));
 		assertTrue(idb.getDatastream().contains("DC|text/xml|xml|417|c177272d23b874fdcfd4fe8d6626c853|"));
 		assertTrue(idb.getDatastream().contains("RELS-EXT|text/xml|xml|2128|4ac9a05bbcc2828354d6811723e641ab|"));
 		assertTrue(idb.getDatastream().contains("IMAGE_JP2000|image/jp2|jp2|4893818|2eef5ccd78d8e1f2854d8c5cb533f427|"));
@@ -173,7 +173,7 @@ public class SetDatastreamContentFilterTest extends Assert {
 		assertEquals(6, idb.getDatastream().size());
 		assertTrue(idb.getDatastream().contains(
 				"DATA_FILE|application/vnd.oasis.opendocument.text|xlsx|6347|512f07d916af6984d46fd310204ec3ad|"));
-		assertTrue(idb.getDatastream().contains("AUDIT|text/xml|xml|0||"));
+		assertTrue(idb.getDatastream().contains("AUDIT|text/xml|xml|||"));
 		assertTrue(idb.getDatastream().contains("DC|text/xml|xml|403|b410382ce2ce61c7f266ceac530cc770|"));
 
 		assertEquals(2, idb.getContentType().size());
