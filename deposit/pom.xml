@@ -134,6 +134,11 @@
 			<artifactId>mail</artifactId>
 			<version>1.4.7</version>
 		</dependency>
+		<dependency>
+			<groupId>net.sf.saxon</groupId>
+			<artifactId>saxon</artifactId>
+			<version>8.7</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -214,7 +219,7 @@
 				<version>2.3</version>
 				<configuration>
 					<descriptors>
-						<descriptor>src/main/assembly/default.xml</descriptor>
+						<descriptor>src/main/assembly/dist.xml</descriptor>
 					</descriptors>
 				</configuration>
 				<executions>

@@ -12,6 +12,7 @@ require.config({
 		'StatusMonitorManager' : 'cdr-admin',
 		'AbstractStatusMonitor' : 'cdr-admin',
 		'IngestMonitor' : 'cdr-admin',
+		'DepositMonitor' : 'cdr-admin',
 		'IndexingMonitor' : 'cdr-admin',
 		'EnhancementMonitor' : 'cdr-admin',
 		'URLUtilities' : 'cdr-admin',

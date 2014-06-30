@@ -37,8 +37,10 @@ public class DepositStatusFactory {
 		Set<Map<String, String>> result = new HashSet<Map<String, String>>();
 		Jedis jedis = getJedisPool().getResource();
 		Set<String> deposits = jedis.smembers(DEPOSIT_SET);
-		for(String uuid : deposits) {
-			result.add(jedis.hgetAll(DEPOSIT_STATUS_PREFIX+uuid));
+		if(deposits != null) {
+			for(String uuid : deposits) {
+				result.add(jedis.hgetAll(DEPOSIT_STATUS_PREFIX+uuid));
+			}
 		}
 		getJedisPool().returnResource(jedis);
 		return result;
@@ -131,6 +133,12 @@ public class DepositStatusFactory {
 	public void requestAction(String depositUUID, DepositAction action) {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.actionRequest.name(), action.name());
+		getJedisPool().returnResource(jedis);
+	}
+
+	public void clearActionRequest(String depositUUID) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hdel(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.actionRequest.name());
 		getJedisPool().returnResource(jedis);
 	}
 }

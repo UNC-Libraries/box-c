@@ -23,9 +23,6 @@
 	<bean name="propertiesURI" class="java.lang.System"
 		factory-method="getProperty">
 		<constructor-arg index="0" value="deposit.properties.uri" />
-		<!-- property name for properties URI location -->
-		<constructor-arg index="1" value="classpath:deposit.properties" />
-		<!-- default location for testing -->
 	</bean>
 	<bean id="serverProperties"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -58,10 +55,10 @@
 		<constructor-arg value="0" />
 	</bean>
 
-	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl"
+<!-- 	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl"
 		scope="prototype">
 		<constructor-arg ref="jesqueConfig" />
-	</bean>
+	</bean> -->
 
 	<bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
 		<constructor-arg name="workerFactory">
@@ -78,7 +75,9 @@
 		<constructor-arg name="numWorkers" value="5" />
 	</bean>
 
-	<bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor" />
+	<bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor">
+		<property name="jesqueConfig" ref="jesqueConfig"/>
+	</bean>
 
 	<bean id="jobFactory" class="edu.unc.lib.deposit.work.SpringJobFactory" />
 
@@ -164,7 +163,8 @@
 	<bean id="transformerFactory" class="javax.xml.transform.TransformerFactory"
 		factory-method="newInstance">
 		<property name="uRIResolver">
-			<bean class="edu.unc.lib.dl.xml.ClasspathURIResolver" />
+			<bean class="edu.unc.lib.dl.xml.ClasspathURIResolver">
+			</bean>
 		</property>
 	</bean>
 
@@ -184,7 +184,7 @@
 		<constructor-arg>
 			<bean class="org.springframework.xml.transform.ResourceSource">
 				<constructor-arg>
-					<value>classpath:proquest/proquest-to-mods.xsl</value>
+					<value>classpath:proquest-to-mods.xsl</value>
 				</constructor-arg>
 			</bean>
 		</constructor-arg>
@@ -215,7 +215,10 @@
 		<property name="metsSipSchema" ref="metsSipSchema" />
 		<property name="epdcx2modsTransformer" ref="epdcx2modsTransformer" />
 	</bean>
-	
+
+	<bean id="Simple2N3BagJob" class="edu.unc.lib.deposit.normalize.Simple2N3BagJob"
+		scope="prototype"/>
+		
 	<bean id="Proquest2N3BagJob" class="edu.unc.lib.deposit.normalize.Proquest2N3BagJob"
 		scope="prototype">
 		<property name="proquest2ModsTransformer" ref="proquest2ModsTransformer" />
@@ -279,13 +282,13 @@
 				<property name="connectionFactory">
 					<bean class="org.apache.activemq.ActiveMQConnectionFactory">
 						<property name="brokerURL">
-							<value>tcp://${jms.host:localhost}:${jms.port:61616}</value>
+							<value>tcp://${jms.host:localhost}:${jms.port:61617}</value>
 						</property>
 					</bean>
 				</property>
 			</bean>
 		</property>
-		<property name="destinationName" value="fedora.apim.update" />
+		<property name="destinationName" value="repository.updates" />
 		<property name="pubSubDomain" value="true" />
 		<property name="messageListener" ref="jobForwardingJMSListener" />
 		<property name="sessionTransacted" value="true" />
