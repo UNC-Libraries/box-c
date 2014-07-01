@@ -274,7 +274,7 @@
 	</bean>
 	
 	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil">
-		<property name="ontologyPath" value="${vocab.departments}" />
+		<property name="ontologyPath" value="${distribution.dir}/conf/departments.xml" />
 	</bean>
 	
 	<bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"
@@ -343,6 +343,6 @@
 	</bean>
 	
 	<bean id="depositBinCollector" class="edu.unc.lib.deposit.collect.DepositBinCollector" >
-		<property name="configPath" value="${bin.collector.config}" />
+		<property name="configPath" value="${distribution.dir}/conf/collector.json" />
 	</bean>
 </beans>

@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Utility for looking up department name hierarchies using an index constructed from a SKOS ontology
- * 
+ *
  * @author bbpennel
  * @date Jun 23, 2014
  */
@@ -55,6 +55,9 @@ public class DepartmentOntologyUtil {
 	private final Pattern trimLeading;
 	private final Pattern trimTrailing;
 	private final Pattern deptSplitPlural;
+	private final Pattern trimSuffix;
+	private final Pattern trimUNC;
+	private final Pattern splitSimple;
 
 	public DepartmentOntologyUtil() {
 		addressPattern = Pattern.compile("([^,]+,)+\\s*[a-zA-Z ]*\\d+[a-zA-Z]*\\s*[^\\n]*");
@@ -63,6 +66,9 @@ public class DepartmentOntologyUtil {
 		trimTrailing = Pattern.compile("([.?;:*&^%$#@!\\-]|the |at |\\s)+$");
 		deptSplitPlural = Pattern
 				.compile("(and the |and (the )?(dep(t\\.?|artment(s)?)|school|division|section(s)?|program in|center for)( of)?|and )");
+		trimSuffix = Pattern.compile("\\s*(department|doctoral|masters)$");
+		trimUNC = Pattern.compile("\\b(unc|carolina)\\s+");
+		splitSimple = Pattern.compile("(\\s*[:()]\\s*)+");
 	}
 
 	public void init() {
@@ -112,7 +118,7 @@ public class DepartmentOntologyUtil {
 				cleanAffil = cleanAffil.replaceAll("[.,']+", "");
 
 				// Clean it up and start
-				String[] affilParts = cleanAffil.split("(\\s*[:()]\\s*)+");
+				String[] affilParts = splitSimple.split(cleanAffil);
 				for (int i = affilParts.length - 1; i >= 0; i--) {
 					String affilPart = affilParts[i];
 
@@ -153,14 +159,14 @@ public class DepartmentOntologyUtil {
 		}
 
 		// Attempt without superfluous UNC's
-		affilPart = affilPart.replaceFirst("unc\\s+", "");
+		affilPart = trimUNC.matcher(affilPart).replaceFirst("");
 		dept = departments.get(affilPart);
 		if (dept != null) {
 			return buildHierarchy(dept);
 		}
 
 		// Handle inverted departments and slash/and mixups
-		affilPart = affilPart.replaceAll("\\s*department$", "").replaceAll("\\s*/\\s*", " and ");
+		affilPart = trimSuffix.matcher(affilPart).replaceAll("").replaceAll("\\s*/\\s*", " and ");
 		dept = departments.get(affilPart);
 		if (dept != null) {
 			return buildHierarchy(dept);
