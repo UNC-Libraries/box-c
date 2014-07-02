@@ -83,10 +83,10 @@ public class RecursiveTreeIndexer {
 			log.warn("Indexing of {} was interrupted", updateRequest.getPid().getPid());
 			return;
 		} catch (UnsupportedContentModelException e) {
-			log.error("Invalid content model on object {}, skipping its children", pid.getPid(), e);
+			log.info("Invalid content model on object {}, skipping its children", pid.getPid(), e);
 			return;
 		} catch (OrphanedObjectException e) {
-			log.error("Object {} was orphaned, skipping its children", pid.getPid(), e);
+			log.info("Object {} was orphaned, skipping its children", pid.getPid(), e);
 			return;
 		} catch (IndexingException e) {
 			log.warn("Failed to index {}", pid.getPid(), e);

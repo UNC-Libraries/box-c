@@ -48,7 +48,8 @@ public class SolrUpdateMessageFilter implements MessageFilter {
 		}
 		if (!(message instanceof FedoraEventMessage))
 			return false;
-		if (JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)
+		if (JMSMessageUtil.FedoraActions.INGEST.equals(action)
+				|| JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)
 				|| JMSMessageUtil.FedoraActions.MODIFY_OBJECT.equals(action))
 			return true;
 		String datastream = ((FedoraEventMessage) message).getDatastream();

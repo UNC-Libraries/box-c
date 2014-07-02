@@ -105,7 +105,7 @@ public class VocabularyEnforcementJob extends AbstractDepositJob implements Runn
 						}
 					}
 				} catch (JDOMException | IOException e) {
-					log.error("Failed to parse description file {}", e, modsFile.getAbsolutePath());
+					log.error("Failed to parse description file {}", modsFile.getAbsolutePath(), e);
 				}
 			}
 		}
@@ -196,7 +196,7 @@ public class VocabularyEnforcementJob extends AbstractDepositJob implements Runn
 
 	/**
 	 * Add the given department to the parent element as an affiliation if it is not already present
-	 * 
+	 *
 	 * @param dept
 	 * @param parentEl
 	 * @param affilIndex
