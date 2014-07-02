@@ -52,6 +52,7 @@ public class DepartmentOntologyUtil {
 
 	private final Pattern addressPattern;
 	private final Pattern addressTrailingPattern;
+	private final Pattern addressSplit;
 	private final Pattern trimLeading;
 	private final Pattern trimTrailing;
 	private final Pattern deptSplitPlural;
@@ -62,6 +63,9 @@ public class DepartmentOntologyUtil {
 	public DepartmentOntologyUtil() {
 		addressPattern = Pattern.compile("([^,]+,)+\\s*[a-zA-Z ]*\\d+[a-zA-Z]*\\s*[^\\n]*");
 		addressTrailingPattern = Pattern.compile("([^,]+,){2,}\\s*([a-zA-Z]+ ?){1,2}\\s*");
+		addressSplit = Pattern.compile(
+				"(,? *(?=dep(t\\.?|artment(s)?)|school|division|section(s)?|program in|center for|university)(?= of)?)",
+				Pattern.CASE_INSENSITIVE);
 		trimLeading = Pattern.compile("^([.?;:*&^%$#@!\\-]|the |at |and |\\s)+");
 		trimTrailing = Pattern.compile("([.?;:*&^%$#@!\\-]|the |at |\\s)+$");
 		deptSplitPlural = Pattern
@@ -98,21 +102,17 @@ public class DepartmentOntologyUtil {
 		AffiliationStyle style = this.determineStyle(cleanAffil);
 		switch (style) {
 			case notApplicable:
-				log.debug("Affiliation {} was determined to not be applicable", affiliation);
+				// log.debug("Affiliation {} was determined to not be applicable", affiliation);
 				return null;
 
 			case address:
 				// Affiliation is in address format, so split it into components by commas
-				String[] addressParts = cleanAffil.split("\\s*,\\s*");
+				List<List<String>> resultDepts = getAddressDepartment(addressSplit.split(cleanAffil));
 
-				for (int i = 0; i < addressParts.length; i++) {
-					String addressPart = addressParts[i];
+				if (resultDepts != null)
+					return resultDepts;
 
-					List<List<String>> result = getDepartment(addressPart);
-					if (result != null)
-						return result;
-				}
-				break;
+				return getAddressDepartment(cleanAffil.split("\\s*,\\s*"));
 
 			case simple:
 				cleanAffil = cleanAffil.replaceAll("[.,']+", "");
@@ -132,6 +132,18 @@ public class DepartmentOntologyUtil {
 		return null;
 	}
 
+	private List<List<String>> getAddressDepartment(String[] addressParts) {
+		for (int i = 0; i < addressParts.length; i++) {
+			String addressPart = addressParts[i];
+
+			List<List<String>> result = getDepartment(addressPart);
+			if (result != null)
+				return result;
+		}
+
+		return null;
+	}
+
 	/**
 	 * Attempt to normalize and generate variations on the given affiliation, and return the first matching dept
 	 * hierarchy
@@ -140,6 +152,9 @@ public class DepartmentOntologyUtil {
 	 * @return
 	 */
 	private List<List<String>> getDepartment(String affiliation) {
+		if (affiliation == null || affiliation.length() == 0)
+			return null;
+
 		String affilPart = affiliation;
 
 		int index = affilPart.indexOf(UNC_NAME);
@@ -244,10 +259,12 @@ public class DepartmentOntologyUtil {
 	private AffiliationStyle determineStyle(String affiliation) {
 		String department = affiliation.trim();
 		int indexUNC = department.indexOf(UNC_NAME);
+		if (indexUNC == -1)
+			indexUNC = department.indexOf("unc");
 		boolean isUNC = indexUNC != -1;
 
 		if (isUNC) {
-			String afterUNC = department.substring(indexUNC + UNC_NAME.length());
+			String afterUNC = department.substring(indexUNC);
 			if (afterUNC.trim().length() > 0 && !afterUNC.contains("chapel hill")) {
 				// Skip, university is not Chapel Hill
 				return AffiliationStyle.notApplicable;
