@@ -47,6 +47,7 @@ import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil;
+import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil.AnalyticsUserData;
 import edu.unc.lib.dl.ui.util.FedoraUtil;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -79,7 +80,8 @@ public class FedoraContentService {
 			SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.PARENT_COLLECTION.name(),
 			SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.TITLE.name());
 
-	public void streamData(String pid, String datastream, boolean download, String gaCid, HttpServletResponse response) {
+	public void streamData(String pid, String datastream, boolean download, AnalyticsUserData userData,
+			HttpServletResponse response) {
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
 		// Default datastream is DATA_FILE
@@ -114,7 +116,7 @@ public class FedoraContentService {
 			// Track the download event if the request is for the original content
 			if (analyticsTracker != null && datastreamResult.getDatastreamCategory() != null
 					&& datastreamResult.getDatastreamCategory().equals(DatastreamCategory.ORIGINAL)) {
-				analyticsTracker.trackEvent(gaCid, briefObject.getParentCollectionObject() == null ?
+				analyticsTracker.trackEvent(userData, briefObject.getParentCollectionObject() == null ?
 						"(no collection)" : briefObject.getParentCollectionObject().getDisplayValue(),
 						"download", briefObject.getTitle() + "|" + pid, null);
 			}
