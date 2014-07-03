@@ -64,7 +64,7 @@ public class DepartmentOntologyUtil {
 		addressPattern = Pattern.compile("([^,]+,)+\\s*[a-zA-Z ]*\\d+[a-zA-Z]*\\s*[^\\n]*");
 		addressTrailingPattern = Pattern.compile("([^,]+,){2,}\\s*([a-zA-Z]+ ?){1,2}\\s*");
 		addressSplit = Pattern.compile(
-				"(,? *(?=dep(t\\.?|artment(s)?)|school|division|section(s)?|program in|center for|university)(?= of)?)",
+						"(,? *(and *)?(?=dep(t\\.?|artment(s)?)|school|division|section(s)?|program in|center for|university)(?= of)?)",
 				Pattern.CASE_INSENSITIVE);
 		trimLeading = Pattern.compile("^([.?;:*&^%$#@!\\-]|the |at |and |\\s)+");
 		trimTrailing = Pattern.compile("([.?;:*&^%$#@!\\-]|the |at |\\s)+$");
@@ -91,7 +91,7 @@ public class DepartmentOntologyUtil {
 	 */
 	public List<List<String>> getAuthoritativeDepartment(String affiliation) {
 
-		String cleanAffil = affiliation.toLowerCase().replaceAll("&amp;", "and").replace("&", "and");
+		String cleanAffil = cleanLabel(affiliation).replaceAll("&amp;", "and").replace("&", "");
 
 		// First, check to see if the department matches verbatim.
 		DepartmentConcept dept = departments.get(cleanAffil);
@@ -115,7 +115,7 @@ public class DepartmentOntologyUtil {
 				return getAddressDepartment(cleanAffil.split("\\s*,\\s*"));
 
 			case simple:
-				cleanAffil = cleanAffil.replaceAll("[.,']+", "");
+				cleanAffil = cleanAffil.replace(",", "");
 
 				// Clean it up and start
 				String[] affilParts = splitSimple.split(cleanAffil);
@@ -133,12 +133,45 @@ public class DepartmentOntologyUtil {
 	}
 
 	private List<List<String>> getAddressDepartment(String[] addressParts) {
+		List<List<String>> allResults = new ArrayList<List<String>>();
+
 		for (int i = 0; i < addressParts.length; i++) {
 			String addressPart = addressParts[i];
 
 			List<List<String>> result = getDepartment(addressPart);
-			if (result != null)
-				return result;
+			if (result != null) {
+				allResults.addAll(result);
+			}
+		}
+
+		// Deduplicate the path and remove other entries which are subsets are a more exact path
+		if (allResults.size() > 0) {
+			Iterator<List<String>> resultsIt = allResults.iterator();
+			while (resultsIt.hasNext()) {
+				List<String> result = resultsIt.next();
+				boolean removePath = false;
+
+				for (List<String> otherResult : allResults) {
+					if (otherResult != result && result.size() <= otherResult.size()) {
+						boolean containsPath = true;
+						for (String dept : result) {
+							if (!otherResult.contains(dept)) {
+								containsPath = false;
+								break;
+							}
+						}
+						if (containsPath) {
+							removePath = true;
+							break;
+						}
+					}
+				}
+
+				if (removePath)
+					resultsIt.remove();
+			}
+
+			return allResults;
 		}
 
 		return null;
@@ -259,30 +292,30 @@ public class DepartmentOntologyUtil {
 	private AffiliationStyle determineStyle(String affiliation) {
 		String department = affiliation.trim();
 		int indexUNC = department.indexOf(UNC_NAME);
-		if (indexUNC == -1)
-			indexUNC = department.indexOf("unc");
-		boolean isUNC = indexUNC != -1;
-
-		if (isUNC) {
+		if (indexUNC != -1) {
 			String afterUNC = department.substring(indexUNC);
+			// make sure it is UNC chapel hill
 			if (afterUNC.trim().length() > 0 && !afterUNC.contains("chapel hill")) {
-				// Skip, university is not Chapel Hill
 				return AffiliationStyle.notApplicable;
 			} else {
 				// since it contains the university name, it is most likely an address
 				return AffiliationStyle.address;
 			}
+		}
+
+		if (department.contains("university")) {
+			// From another University, skip
+			return AffiliationStyle.notApplicable;
+		}
+
+		if (addressPattern.matcher(department).matches() || addressTrailingPattern.matcher(department).matches()) {
+			// If the address is located in chapel hill, it is worth further processing
+			if (department.contains("chapel hill")) {
+				return AffiliationStyle.address;
+			}
+			return AffiliationStyle.notApplicable;
 		} else {
-			if (department.contains("university")) {
-				// From another University, skip
-				return AffiliationStyle.notApplicable;
-			}
-			// Does this look like an address? If so, and its not a UNC address, toss it
-			if (addressPattern.matcher(department).matches() || addressTrailingPattern.matcher(department).matches()) {
-				return AffiliationStyle.notApplicable;
-			} else {
-				return AffiliationStyle.simple;
-			}
+			return AffiliationStyle.simple;
 		}
 	}
 
@@ -308,7 +341,7 @@ public class DepartmentOntologyUtil {
 		Map<String, DepartmentConcept> tempDepts = new HashMap<String, DepartmentConcept>(concepts.size());
 		for (Object conceptObj : concepts) {
 			DepartmentConcept dept = new DepartmentConcept((Element) conceptObj);
-			tempDepts.put(dept.getIdentifier().toLowerCase(), dept);
+			tempDepts.put(cleanLabel(dept.getIdentifier()), dept);
 		}
 
 		// Expand out all the alternative labels into an index and resolve references
@@ -336,7 +369,7 @@ public class DepartmentOntologyUtil {
 				continue;
 			}
 
-			String identifier = dept.identifier.toLowerCase();
+			String identifier = cleanLabel(dept.identifier);
 			if (departments.containsKey(identifier) && dept.identifier.equals(departments.get(identifier).identifier)) {
 				log.error("Illegal state, multiple concepts share the identifier {}, ignoring duplicate", identifier);
 			} else {
@@ -345,6 +378,10 @@ public class DepartmentOntologyUtil {
 
 			addLabels(dept);
 		}
+	}
+
+	private static String cleanLabel(String label) {
+		return label.toLowerCase().replaceAll("[.']+", "");
 	}
 
 	/**
@@ -402,7 +439,7 @@ public class DepartmentOntologyUtil {
 
 			this.prefLabel = conceptEl.getChildText("prefLabel", SKOS_NS);
 			if (this.prefLabel != null)
-				this.prefLabel = this.prefLabel.toLowerCase();
+				this.prefLabel = cleanLabel(this.prefLabel);
 
 			this.otherLabels = new ArrayList<String>();
 			addLabelsFromElements(conceptEl.getChildren("altLabel", SKOS_NS));
@@ -412,7 +449,7 @@ public class DepartmentOntologyUtil {
 		public void merge(DepartmentConcept incoming) {
 			if (incoming.broader != null) {
 				for (String newBroader : incoming.broader) {
-					String lower = newBroader.toLowerCase();
+					String lower = cleanLabel(newBroader);
 					if (!this.broader.contains(lower))
 						this.broader.add(lower);
 				}
@@ -420,7 +457,7 @@ public class DepartmentOntologyUtil {
 
 			if (incoming.otherLabels != null) {
 				for (String newLabel : incoming.otherLabels) {
-					String lower = newLabel.toLowerCase();
+					String lower = cleanLabel(newLabel);
 					if (!this.otherLabels.contains(lower))
 						this.otherLabels.add(lower);
 				}
@@ -433,7 +470,7 @@ public class DepartmentOntologyUtil {
 			}
 
 			for (Object labelEl : labelEls) {
-				otherLabels.add(((Element) labelEl).getTextNormalize().toLowerCase());
+				otherLabels.add(cleanLabel(((Element) labelEl).getTextNormalize()));
 			}
 		}
 
