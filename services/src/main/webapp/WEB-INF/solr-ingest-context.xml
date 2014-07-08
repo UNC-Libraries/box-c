@@ -103,6 +103,10 @@
 	<bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
 		<property name="collectionFilters" value="${services.indexing.collectionFilters}" />
 	</bean>
+	
+	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil">
+		<property name="ontologyPath" value="${vocab.dir}/departments.xml" />
+	</bean>
 
 	<!-- Ingest pipeline -->
 	<bean id="solrFullUpdatePipeline"

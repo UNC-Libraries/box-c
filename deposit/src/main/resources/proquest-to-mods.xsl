@@ -4,6 +4,8 @@
     -->
 	<xsl:include href="iso-639-1-to-639-2b.xsl"/>
 	
+	<xsl:param name="graduationSemester" />
+	
 	<xsl:variable name="smallcase" select="'abcdefghijklmnopqrstuvwxyz'" />
 	<xsl:variable name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'" />
 	
@@ -118,14 +120,11 @@
 						</mods:dateCreate>
 					</mods:originInfo>		
 		</xsl:for-each>-->
-		<xsl:for-each select="/DISS_submission/DISS_description/DISS_dates/DISS_accept_date">
+		<mods:note type="thesis" displayLabel="Graduated"><xsl:value-of select="$graduationSemester"/></mods:note>
+		<xsl:for-each select="/DISS_submission/DISS_description/DISS_dates/DISS_comp_date">
 			<mods:originInfo>
 				<mods:dateIssued encoding="iso8601">
-					<xsl:variable name="acceptDate" select="/DISS_submission/DISS_description/DISS_dates/DISS_accept_date"/>
-					<xsl:value-of select="concat(
-					            substring($acceptDate,7,4),'-',
-					            substring($acceptDate,1,2),'-',
-					            substring($acceptDate,4,2))"/>
+					<xsl:value-of select="/DISS_submission/DISS_description/DISS_dates/DISS_comp_date"/>
 				</mods:dateIssued>
 				<xsl:for-each select="/DISS_submission/DISS_description/DISS_institution/DISS_inst_name">
 					<mods:publisher>

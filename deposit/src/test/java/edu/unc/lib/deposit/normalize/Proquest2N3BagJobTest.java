@@ -37,6 +37,9 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.junit.Before;
@@ -65,7 +68,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 	public void setup() throws Exception {
 
 		TransformerFactory factory = TransformerFactory.newInstance();
-		URL xslURL = this.getClass().getResource("/proquest/proquest-to-mods.xsl");
+		URL xslURL = this.getClass().getResource("/proquest-to-mods.xsl");
 		StreamSource xslStream = new StreamSource();
 		xslStream.setSystemId(xslURL.toExternalForm());
 		proquest2ModsTransformer = factory.newTransformer(xslStream);
@@ -82,7 +85,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 	}
 
 	@Test
-	public void testNoAttachments() {
+	public void testNoAttachments() throws Exception {
 		copyTestPackage("src/test/resources/proquest-noattach.zip", job);
 
 		job.run();
@@ -99,7 +102,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	}
 
-	public void testNoAttachments(Model model, Resource primaryResource) {
+	public void testNoAttachments(Model model, Resource primaryResource) throws Exception {
 		Property stagingLoc = dprop(model, stagingLocation);
 
 		assertNotNull("Main object from the deposit not found", primaryResource);
@@ -112,6 +115,15 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 		// Verify that the MODS was created
 		File descriptionFile = new File(job.getDescriptionDir(), new PID(primaryResource.getURI()).getUUID() + ".xml");
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
+
+		SAXBuilder sb = new SAXBuilder(false);
+		Document modsDoc = sb.build(descriptionFile);
+
+		Element semesterEl = element("/mods:mods/mods:note[@type='thesis']", modsDoc);
+		assertEquals("Graduation semester was not correctly set", "Spring 2011", semesterEl.getText());
+
+		Element pubDateEl = element("/mods:mods/mods:originInfo/mods:dateIssued", modsDoc);
+		assertEquals("Publication date was not correctly set", "2013", pubDateEl.getText());
 	}
 
 	@Test
@@ -256,7 +268,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 	}
 
 	@Test
-	public void testMultiplePackages() {
+	public void testMultiplePackages() throws Exception {
 		copyTestPackage("src/test/resources/proquest-noattach.zip", job);
 		copyTestPackage("src/test/resources/proquest-attach.zip", job);
 

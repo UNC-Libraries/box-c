@@ -15,73 +15,47 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.JDOMQueryUtil;
 
 /**
- * Filter which sets descriptive metadata information, generally pulled from MODS 
- * 
+ * Filter which sets descriptive metadata information, generally pulled from MODS
+ *
  * @author bbpennel
  *
  */
 public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDescriptiveMetadataFilter.class);
 
-	private Properties languageCodeMap;
-	private Set<String> departmentVocab;
-	
-	private Pattern addressPattern;
-	private Pattern addressTrailingPattern;
-	private Pattern deptTrimLeading;
-	private Pattern deptTrimTrailing;
-	private Pattern deptTrimLeadingColon;
-	private Pattern deptSplitPlural;
-	private Pattern deptSplit;
-	private Pattern deptStripUnitPrefix;
-	private Pattern deptHasDeptPrefix;
-	
+	private final Properties languageCodeMap;
+
+	@Autowired
+	private DepartmentOntologyUtil deptUtil;
+
 	public SetDescriptiveMetadataFilter() {
-		addressPattern = Pattern.compile("([^,]+,)+\\s*[a-zA-Z ]*\\d+[a-zA-Z]*\\s*[^\\n]*");
-		addressTrailingPattern = Pattern.compile("([^,]+,){2,}\\s*([a-zA-Z]+ ?){1,2}\\s*");
-		deptTrimLeading = Pattern.compile("^([.,?;:*&^%$#@!\\-]|[tT]he |at |[aA]nd |\\s)+");
-		deptTrimTrailing = Pattern.compile("([.,?;:*&^%$#@!\\-]|[tT]he |at |\\s)+$");
-		deptTrimLeadingColon = Pattern.compile("^[^:]*:");
-		deptSplitPlural = Pattern.compile("(and the |and (the )?(?=[dD]ep(t\\.?|artment(s)?)|[sS]chool|[dD]ivision|[sS]ection(s)?|[pP]rogram in|[cC]enter for)( of)?|and )");
-		deptSplit = Pattern.compile("(and the |and (the )?(?=[dD]ep(t\\.?|artment(s)?)|[sS]chool|[dD]ivision|[sS]ection(s)?|[pP]rogram in|[cC]enter for)(?= of)?)");
-		deptStripUnitPrefix = Pattern.compile("^\\s*([^,]+,)?\\s*([dD]ep(t\\.?|artment(s)?)|[sS]chools?|[dD]ivision|[sS]ections?|[pP]rogram in)( of)?\\s*");
-		deptHasDeptPrefix =  Pattern.compile("^\\s*[dD]ep(t\\.?|artment(s)?).+");
-		
 		languageCodeMap = new Properties();
 		try {
 			languageCodeMap.load(new InputStreamReader(this.getClass().getResourceAsStream(
 					"iso639LangMappings.txt")));
-			BufferedReader br = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(
-					"department_vocab.txt")));
-			departmentVocab = new HashSet<String>();
-			String line;
-			while ((line = br.readLine()) != null) {
-				departmentVocab.add(line);
-			}
 		} catch (IOException e) {
 			log.error("Failed to load code language mappings", e);
 		}
@@ -91,7 +65,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();
 		Element mods = dip.getMods();
-		
+
 		idb.setKeyword(new ArrayList<String>());
 		if (mods != null) {
 			try {
@@ -104,14 +78,14 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 				this.extractIdentifiers(mods, idb);
 				this.extractCitation(mods, idb);
 				this.extractKeywords(mods, idb);
-				
+
 			} catch (JDOMException e) {
 				throw new IndexingException("Failed to extract MODS data", e);
 			}
 		} else {
 			// TODO basic DC mappings
 		}
-		
+
 		if (dip.getDocument().getTitle() == null) {
 			idb.setTitle(dip.getLabel());
 		}
@@ -181,8 +155,8 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			}
 			if (nameValue != null) {
 				contributors.add(nameValue);
-				
-				
+
+
 				List<?> roles = nameEl.getChildren("role", JDOMNamespaceUtil.MODS_V3_NS);
 				// Person is automatically a creator if no role is provided.
 				boolean isCreator = roles.size() == 0;
@@ -200,40 +174,58 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 						}
 					}
 				}
-				
+
 				if (isCreator) {
 					creators.add(nameValue);
 				}
-				
+
 				List<?> affiliations = nameEl.getChildren("affiliation", JDOMNamespaceUtil.MODS_V3_NS);
 
 				for (Object affilObj : affiliations) {
 					String affiliation = ((Element) affilObj).getValue();
+
 					if (affiliation != null && affiliation.trim().length() > 0) {
-						List<String> individualDepartments = this.splitDepartment(affiliation);
-						if (individualDepartments != null && individualDepartments.size() > 0)
-							departments.addAll(individualDepartments);
+						departments.add(affiliation);
 					}
 				}
 			}
 		}
-		
+
 		if (contributors.size() > 0)
 			idb.setContributor(contributors);
 		if (creators.size() > 0) {
 			idb.setCreator(creators);
 			idb.setCreatorSort(creators.get(0));
 		}
-		if (departments.size() > 0)
-			idb.setDepartment(new ArrayList<String>(departments));
+
+		if (departments.size() > 0) {
+			// Filter the affiliations against the vocabulary and get the full department paths
+			List<List<String>> expandedDepts = new ArrayList<List<String>>(departments.size());
+			for (String affiliation : departments) {
+				List<List<String>> results = deptUtil.getAuthoritativeDepartment(affiliation);
+				if (results != null) {
+					expandedDepts.addAll(results);
+				}
+			}
+
+			// Remove any duplication between paths
+			DepartmentOntologyUtil.collapsePaths(expandedDepts);
+
+			// Make the departments for the whole document into a form solr can take
+			List<String> flattened = new ArrayList<String>();
+			for (List<String> path: expandedDepts) {
+				flattened.addAll(path);
+			}
+			idb.setDepartment(flattened);
+		}
 	}
-	
+
 	private void extractAbstract(Element mods, IndexDocumentBean idb) throws JDOMException {
 		String abstractText = mods.getChildText("abstract", JDOMNamespaceUtil.MODS_V3_NS);
 		if (abstractText != null)
 			idb.setAbstractText(abstractText.trim());
 	}
-	
+
 	private void extractSubjects(Element mods, IndexDocumentBean idb) {
 		List<?> subjectEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
 		if (subjectEls.size() > 0) {
@@ -250,9 +242,9 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			if (subjects.size() > 0)
 				idb.setSubject(subjects);
 		}
-		
+
 	}
-	
+
 	private void extractLanguages(Element mods, IndexDocumentBean idb){
 		List<?> languageEls = mods.getChildren("language", JDOMNamespaceUtil.MODS_V3_NS);
 		if (languageEls.size() > 0) {
@@ -271,7 +263,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 				idb.setLanguage(languages);
 		}
 	}
-	
+
 	private void extractDateCreated(Element mods, IndexDocumentBean idb){
 		List<?> originInfoEls = mods.getChildren("originInfo", JDOMNamespaceUtil.MODS_V3_NS);
 		Date dateCreated = null;
@@ -292,9 +284,9 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			}
 		}
 	}
-	
 
-	
+
+
 	private void extractIdentifiers(Element mods, IndexDocumentBean idb){
 		List<?> identifierEls = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
 		List<String> identifiers = new ArrayList<String>();
@@ -310,13 +302,13 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			}
 			String idValue = identifierEl.getValue();
 			identifierBuilder.append('|').append(idValue);
-			
+
 			identifiers.add(identifierBuilder.toString());
 			idb.getKeyword().add(idValue);
 		}
 		idb.setIdentifier(identifiers);
 	}
-	
+
 	private void extractKeywords(Element mods, IndexDocumentBean idb) {
 		this.addValuesToList(idb.getKeyword(), mods.getChildren("genre", JDOMNamespaceUtil.MODS_V3_NS));
 		this.addValuesToList(idb.getKeyword(), mods.getChildren("typeOfResource", JDOMNamespaceUtil.MODS_V3_NS));
@@ -333,7 +325,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			}
 		}
 	}
-	
+
 	private void addValuesToList(List<String> values, List<?> elements) {
 		if (elements == null)
 			return;
@@ -343,80 +335,11 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 				values.add(value);
 		}
 	}
-	
+
 	private void extractCitation(Element mods, IndexDocumentBean idb) {
 		Element citationEl = JDOMQueryUtil.getChildByAttribute(mods, "note", JDOMNamespaceUtil.MODS_V3_NS, "type", "citation/reference");
 		if (citationEl != null) {
 			idb.setCitation(citationEl.getValue().trim());
 		}
-	}
-	
-	private final String UNC_NAME = "University of North Carolina";
-	
-	public boolean departmentInVocabulary(String department) {
-		return this.departmentVocab.contains(department);
-	}
-	
-	public List<String> splitDepartment(String department) {
-		department = department.trim();
-		int indexUNC = department.indexOf(UNC_NAME);
-		boolean isUNC = indexUNC != -1;
-		
-		if (isUNC) {
-			String afterUNC = department.substring(indexUNC + UNC_NAME.length());
-			if (afterUNC.trim().length() > 0 && !afterUNC.contains("Chapel Hill")){
-				// Skip, university is not Chapel Hill
-				return null;
-			}
-			// Strip off UNC
-			if (indexUNC == 0)
-				department = afterUNC;
-			else department = department.substring(0, indexUNC);
-			department = deptTrimTrailing.matcher(deptTrimLeading.matcher(department).replaceAll("")).replaceAll("");
-		} else {
-			if (department.contains("University")){
-				// From another University, skip
-				return null;
-			}
-			// Does this look like an address?  If so, and its not a UNC address, toss it
-			if (addressPattern.matcher(department).matches() || addressTrailingPattern.matcher(department).matches()){
-				return null;
-			}
-		}
-		
-		List<String> deptList = new ArrayList<String>();
-		
-		// Remove extraneous UNC's
-		department = deptTrimLeadingColon.matcher(department.replace("UNC", "").replace("Chapel Hill", "").replace("&", "and")).replaceAll("");
-		
-		String[] departments;
-		if (department.startsWith("Departments")) {
-			departments = deptSplitPlural.split(department);
-		} else {
-			departments = deptSplit.split(department);
-		}
-		for (String dept: departments) {
-			String[] deptSegments = dept.split(",");
-			String preferredDept = null;
-			for (String deptSegment: deptSegments) {
-				if (deptSegment.trim().length() > 0) {
-					String strippedDept = deptStripUnitPrefix.matcher(deptSegment).replaceAll("");
-					// Department actually begins with the prefix "Department", so use this as the preferred value for this entry.
-					if (deptHasDeptPrefix.matcher(deptSegment).matches()) {
-						preferredDept = strippedDept;
-						break;
-					} else {
-						preferredDept = strippedDept;
-					}
-				}
-			}
-			if (preferredDept != null) {
-				preferredDept = deptTrimTrailing.matcher(deptTrimLeading.matcher(preferredDept).replaceAll("")).replaceAll("");
-				deptList.add(preferredDept.trim());
-			}
-				
-			
-		}
-		return deptList;
 	}
 }

@@ -25,6 +25,7 @@ import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.staging
 import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -34,8 +35,11 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
+import org.jdom.Element;
+import org.jdom.xpath.XPath;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -152,5 +156,15 @@ public abstract class AbstractNormalizationJobTest {
 		}
 
 		return isAggregate && isContainer;
+	}
+
+	protected Element element(String xpathString, Object xmlObject) throws Exception {
+		return (Element) xpath(xpathString, xmlObject).get(0);
+	}
+
+	protected List<?> xpath(String xpath, Object xmlObject) throws Exception {
+		XPath namePath = XPath.newInstance(xpath);
+		namePath.addNamespace("mods", MODS_V3_NS.getURI());
+		return namePath.selectNodes(xmlObject);
 	}
 }

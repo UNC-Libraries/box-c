@@ -58,7 +58,7 @@ public class ContentModelHelper {
 				"embargo-until", JDOMNamespaceUtil.CDR_ACL_NS), dataAccessCategory("data-access-category",
 				JDOMNamespaceUtil.CDR_ACL_NS), userRole("user-role", JDOMNamespaceUtil.CDR_ACL_NS), isPublished("isPublished"),
 				isActive("isActive", JDOMNamespaceUtil.CDR_ACL_NS), sourceMetadata("sourceMetadata"), hasSourceMetadataProfile(
-				"hasSourceMetadataProfile"), invalidAffiliationTerm("invalidAffiliationTerm");
+				"hasSourceMetadataProfile"), invalidAffiliationTerm("invalidAffiliationTerm"), dateCreated("dateCreated");
 
 		private URI uri;
 		private String predicate;
