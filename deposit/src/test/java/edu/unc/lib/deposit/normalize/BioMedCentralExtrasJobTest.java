@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
-import org.jdom.xpath.XPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -47,7 +46,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositConstants;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * @author bbpennel
@@ -150,11 +148,5 @@ public class BioMedCentralExtrasJobTest extends AbstractNormalizationJobTest {
 
 		List<?> languageTerms = xpath("//mods:languageTerm", modsDoc);
 		assertEquals("Original language should have been retained", 1, languageTerms.size());
-	}
-
-	private List<?> xpath(String xpath, Object xmlObject) throws Exception {
-		XPath namePath = XPath.newInstance(xpath);
-		namePath.addNamespace("mods", JDOMNamespaceUtil.MODS_V3_NS.getURI());
-		return namePath.selectNodes(xmlObject);
 	}
 }
