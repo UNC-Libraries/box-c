@@ -146,30 +146,7 @@ public class DepartmentOntologyUtil {
 
 		// Deduplicate the path and remove other entries which are subsets are a more exact path
 		if (allResults.size() > 0) {
-			Iterator<List<String>> resultsIt = allResults.iterator();
-			while (resultsIt.hasNext()) {
-				List<String> result = resultsIt.next();
-				boolean removePath = false;
-
-				for (List<String> otherResult : allResults) {
-					if (otherResult != result && result.size() <= otherResult.size()) {
-						boolean containsPath = true;
-						for (String dept : result) {
-							if (!otherResult.contains(dept)) {
-								containsPath = false;
-								break;
-							}
-						}
-						if (containsPath) {
-							removePath = true;
-							break;
-						}
-					}
-				}
-
-				if (removePath)
-					resultsIt.remove();
-			}
+			collapsePaths(allResults);
 
 			return allResults;
 		}
@@ -377,6 +354,38 @@ public class DepartmentOntologyUtil {
 			}
 
 			addLabels(dept);
+		}
+	}
+
+	/**
+	 * Deduplicate the given set of paths and remove entries which are subsets of more exact paths
+	 *
+	 * @param paths
+	 */
+	public static void collapsePaths(List<List<String>> paths) {
+		Iterator<List<String>> resultsIt = paths.iterator();
+		while (resultsIt.hasNext()) {
+			List<String> result = resultsIt.next();
+			boolean removePath = false;
+
+			for (List<String> otherResult : paths) {
+				if (otherResult != result && result.size() <= otherResult.size()) {
+					boolean containsPath = true;
+					for (String dept : result) {
+						if (!otherResult.contains(dept)) {
+							containsPath = false;
+							break;
+						}
+					}
+					if (containsPath) {
+						removePath = true;
+						break;
+					}
+				}
+			}
+
+			if (removePath)
+				resultsIt.remove();
 		}
 	}
 
