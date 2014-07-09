@@ -148,13 +148,13 @@ public class DepositSupervisor implements WorkerListener {
 
 	public void stop() {
 		LOG.info("Stopping the Deposit Supervisor");
-		depositWorkerPool.togglePause(true);
-		if (timer != null) {
+		depositWorkerPool.togglePause(true); // take no new jobs
+		if (timer != null) { // stop registering new deposits
 			this.timer.cancel();
 			this.timer.purge();
 			this.timer = null;
 		}
-		// FIXME cancel running jobs
+		depositWorkerPool.end(false); // cancel running jobs without interrupting
 		LOG.info("Stopped the Deposit Supervisor");
 	}
 
@@ -186,7 +186,6 @@ public class DepositSupervisor implements WorkerListener {
 	@PreDestroy
 	public void shutdown() {
 		stop();
-		depositWorkerPool.end(true);
 	}
 
 	public Job makeJob(@SuppressWarnings("rawtypes") Class jobClass,
@@ -257,6 +256,10 @@ public class DepositSupervisor implements WorkerListener {
 		Set<String> successfulJobs = this.jobStatusFactory
 				.getSuccessfulJobNames(depositUUID);
 		switch (event) {
+		case JOB_EXECUTE:
+			if(!DepositState.running.name().equals(status.get(DepositField.state.name()))) {
+				depositStatusFactory.setState(depositUUID, DepositState.running);
+			}
 		case JOB_SUCCESS:
 			try {
 				Job nextJob = getNextJob(job, depositUUID, status, successfulJobs);
@@ -264,6 +267,8 @@ public class DepositSupervisor implements WorkerListener {
 					Client c = makeJesqueClient();
 					c.enqueue(Queue.PREPARE.name(), nextJob);
 					c.end();
+				} else {
+					depositStatusFactory.setState(depositUUID, DepositState.finished);
 				}
 			} catch (DepositFailedException e) {
 				depositStatusFactory.fail(depositUUID, e);
@@ -378,6 +383,8 @@ public class DepositSupervisor implements WorkerListener {
 				&& !successfulJobs.contains(SendDepositorEmailJob.class.getName())) {
 			return makeJob(SendDepositorEmailJob.class, depositUUID);
 		}
+		
+		// TODO schedule cleaning jobs
 
 		return null;
 	}

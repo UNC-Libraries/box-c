@@ -177,7 +177,7 @@ public abstract class AbstractDepositJob {
 	public void failJob(Throwable throwable, Type type, String messageformat,
 			Object... args) {
 		String message = MessageFormat.format(messageformat, args);
-		log.debug("failed deposit: {}", message);
+		log.debug("failed deposit: {}", message, throwable);
 		Element event = getEventLog().logException(message, throwable);
 		event = PremisEventLogger.addLinkingAgentIdentifier(event,
 				"SIP Processing Job", this.getClass().getName(), "Software");
