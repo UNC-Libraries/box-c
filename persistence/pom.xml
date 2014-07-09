@@ -183,5 +183,10 @@
 			<artifactId>jackson-core-asl</artifactId>
 			<version>1.9.2</version>
 		</dependency>
+		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>staging-areas</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>

@@ -429,6 +429,18 @@
 		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
+		<property name="stages" ref="stages"/>
+	</bean>
+	
+	<bean id="stages" class="edu.unc.lib.staging.Stages">
+		<constructor-arg type="java.lang.String">
+			<bean class="org.apache.commons.io.FileUtils" factory-method="readFileToString"> 
+				<constructor-arg value="${fedora.stagesConfiguration}"/>
+			</bean>
+		</constructor-arg>
+		<constructor-arg>
+			<bean class="edu.unc.lib.FileResolver"/>
+		</constructor-arg>
 	</bean>
 
 	<bean id="mailNotifier" class="edu.unc.lib.dl.services.MailNotifier">

@@ -68,6 +68,8 @@ import edu.unc.lib.dl.util.IngestProperties;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.staging.SharedStagingArea;
+import edu.unc.lib.staging.Stages;
 
 /**
  * @author Gregory Jansen
@@ -80,7 +82,7 @@ public class BatchIngestTask implements Runnable {
 	 *
 	 */
 	public enum STATE {
-		INIT, CHECK, INGEST, INGEST_WAIT, INGEST_VERIFY_CHECKSUMS, CONTAINER_UPDATES, SEND_MESSAGES, CLEANUP, FINISHED
+		INIT, CHECK, CHECK_STAGING, INGEST, INGEST_WAIT, INGEST_VERIFY_CHECKSUMS, CONTAINER_UPDATES, SEND_MESSAGES, CLEANUP, FINISHED;
 	}
 
 	private static final Log log = LogFactory.getLog(BatchIngestTask.class);
@@ -95,6 +97,16 @@ public class BatchIngestTask implements Runnable {
 	private STATE state = STATE.INIT;
 
 	private BatchIngestQueue batchIngestQueue = null;
+	
+	private Stages stages = null;
+
+	public Stages getStages() {
+		return stages;
+	}
+
+	public void setStages(Stages stages) {
+		this.stages = stages;
+	}
 
 	/**
 	 * Marks this tasks as halting. (Another task may resume ingest later.)
@@ -541,6 +553,9 @@ public class BatchIngestTask implements Runnable {
 						case CHECK:
 							checkDestination();
 							break;
+						case CHECK_STAGING:
+							checkStagingAccess();
+							break;
 						case INGEST: // ingest the next foxml file, until none left
 							ingestNextObject();
 							break;
@@ -577,6 +592,42 @@ public class BatchIngestTask implements Runnable {
 		}
 	}
 
+	private void checkStagingAccess() throws BatchFailedException {
+		// find file refs in FOXML that uses a tag: URI, check staging area connection.
+		for (int i = 0; i < foxmlFiles.length; i++) {
+			Document doc = getFOXMLDocument(foxmlFiles[i]);
+			for (Element cLocation : FOXMLJDOMUtil.getFileLocators(doc)) {
+				String ref = cLocation.getAttributeValue("REF");
+				if(ref.startsWith("tag:")) {
+					URI stageRef = null;
+					try {
+						stageRef = new URI(ref);
+					} catch (URISyntaxException e) {
+						fail("Bad URI in FOXML: "+ref, e);
+					}
+					SharedStagingArea s = this.getStages().findMatchingArea(stageRef);
+					if(s == null) {
+						fail("Tag URI for staged file cannot be matched with staging area: "+stageRef.toString());
+					}
+					if (!s.isConnected()) {
+						this.stages.connect(s.getURI());
+						// we wait and try again (CIFS is wonky on RHEL 5)
+						try {
+							Thread.sleep(5*1000);
+						} catch (InterruptedException ignored) {							
+						}
+						this.stages.connect(s.getURI());
+						if (!s.isConnected()) {
+							fail("Cannot connect to staging area: "
+									+ s.getURI());
+						}
+					}
+				}
+			}
+		}
+		this.state = STATE.INGEST;
+	}
+
 	/**
 	 * @throws BatchFailedException
 	 *
@@ -601,7 +652,7 @@ public class BatchIngestTask implements Runnable {
 			log.debug("halting task due to interrupt", e);
 			this.halting = true;
 		}
-		this.state = STATE.INGEST;
+		this.state = STATE.CHECK_STAGING;
 	}
 
 	/**
