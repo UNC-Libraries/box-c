@@ -110,6 +110,10 @@ public class AnalyticsTrackerUtil {
 				}
 			}
 
+			if (cid == null) {
+				cid = DEFAULT_CID;
+			}
+
 		}
 	}
 
