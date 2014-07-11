@@ -75,27 +75,6 @@ public class AnalyticsTrackerUtil {
 		trackerThread.start();
 	}
 
-	/**
-	 * Get the user's CID or a generated value if not available
-	 *
-	 * @param request
-	 * @return
-	 */
-	public static String getCID(HttpServletRequest request) {
-
-		// Use the _ga cookie if it is provided
-		Cookie cookies[] = request.getCookies();
-		if (cookies != null) {
-			for (Cookie cookie : cookies) {
-				if ("_ga".equals(cookie.getName())) {
-					return cookie.getValue();
-				}
-			}
-		}
-
-		return DEFAULT_CID;
-	}
-
 	public static class AnalyticsUserData {
 		public String uip;
 		public String cid;
