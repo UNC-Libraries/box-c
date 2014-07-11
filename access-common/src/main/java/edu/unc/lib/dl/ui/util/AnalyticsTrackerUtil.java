@@ -64,66 +64,84 @@ public class AnalyticsTrackerUtil {
 		this.gaTrackingID = trackingID;
 	}
 
-	public void trackEvent(String cid, String category, String action, String label, Integer value) {
+	public void trackEvent(AnalyticsUserData userData, String category, String action, String label, Integer value) {
 
 		// Use a default customer ID if none was provided, since it is required
-		if (cid == null)
+		if (userData == null)
 			return;
 
 		// Perform the analytics tracking event asynchronously
-		Thread trackerThread = new Thread(new EventTrackerRunnable(cid, category, action, label, value));
+		Thread trackerThread = new Thread(new EventTrackerRunnable(userData, category, action, label, value));
 		trackerThread.start();
 	}
 
-	/**
-	 * Get the user's CID or a generated value if not available
-	 * 
-	 * @param request
-	 * @return
-	 */
-	public static String getCID(HttpServletRequest request) {
+	public static class AnalyticsUserData {
+		public String uip;
+		public String cid;
 
-		// Use the _ga cookie if it is provided
-		Cookie cookies[] = request.getCookies();
-		if (cookies != null) {
-			for (Cookie cookie : cookies) {
-				if ("_ga".equals(cookie.getName())) {
-					return cookie.getValue();
+		public AnalyticsUserData(HttpServletRequest request) {
+
+			// Get the user's IP address, either from proxy headers or request
+			uip = request.getHeader("X-Forwarded-For");
+			if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+				uip = request.getHeader("Proxy-Client-IP");
+			}
+			if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+				uip = request.getHeader("WL-Proxy-Client-IP");
+			}
+			if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+				uip = request.getHeader("HTTP_CLIENT_IP");
+			}
+			if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+				uip = request.getHeader("HTTP_X_FORWARDED_FOR");
+			}
+			if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+				uip = request.getRemoteAddr();
+			}
+
+			// Store the CID from _ga cookie if it is present
+			Cookie cookies[] = request.getCookies();
+			if (cookies != null) {
+				for (Cookie cookie : cookies) {
+					if ("_ga".equals(cookie.getName())) {
+						cid = cookie.getValue();
+						break;
+					}
 				}
 			}
-		}
 
-		return DEFAULT_CID;
+		}
 	}
 
 	private class EventTrackerRunnable implements Runnable {
 
+		private final AnalyticsUserData userData;
 		private final String category;
 		private final String action;
 		private final String label;
 		private final Integer value;
-		private final String cid;
 
-		public EventTrackerRunnable(String cid, String category, String action, String label,
+		public EventTrackerRunnable(AnalyticsUserData userData, String category, String action, String label,
 				Integer value) {
 			this.category = category;
 			this.action = action;
 			this.label = label;
 			this.value = value;
-			this.cid = cid;
+			this.userData = userData;
 		}
 
 		@Override
 		public void run() {
 			if (log.isDebugEnabled())
 				log.debug("Tracking user {} with event {} in category {} with label {}",
-						new String[] { cid, action, category, label });
+						new String[] { userData.cid, action, category, label });
 
 			PostMethod method = new PostMethod(GA_URL);
 			method.setParameter("v", "1");
 			method.setParameter("tid", gaTrackingID);
-			method.setParameter("cid", cid);
+			method.setParameter("cid", userData.cid);
 			method.setParameter("t", "event");
+			method.setParameter("uip", userData.uip);
 
 			if (category != null)
 				method.setParameter("ec", category);
@@ -137,7 +155,7 @@ public class AnalyticsTrackerUtil {
 			try {
 				httpClient.executeMethod(method);
 			} catch (Exception e) {
-				log.warn("Failed to issue tracking event for cid {}", e, cid);
+				log.warn("Failed to issue tracking event for cid {}", e, userData.cid);
 			} finally {
 				method.releaseConnection();
 			}

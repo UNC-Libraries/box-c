@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.unc.lib.dl.ui.service.FedoraContentService;
-import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil;
+import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil.AnalyticsUserData;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 @Controller
@@ -37,14 +37,14 @@ public class DatastreamRestController {
 	public void getDatastream(@PathVariable("pid") String pid,
 			@RequestParam(value = "dl", defaultValue = "false") boolean download,
 			HttpServletRequest request, HttpServletResponse response) {
-		fedoraContentService.streamData(pid, null, download, AnalyticsTrackerUtil.getCID(request), response);
+		fedoraContentService.streamData(pid, null, download, new AnalyticsUserData(request), response);
 	}
 
 	@RequestMapping("/file/{pid}/{datastream}")
 	public void getDatastream(@PathVariable("pid") String pid, @PathVariable("datastream") String datastream,
 			@RequestParam(value = "dl", defaultValue = "false") boolean download,
 			HttpServletRequest request, HttpServletResponse response) {
-		fedoraContentService.streamData(pid, datastream, download, AnalyticsTrackerUtil.getCID(request), response);
+		fedoraContentService.streamData(pid, datastream, download, new AnalyticsUserData(request), response);
 	}
 
 	@RequestMapping("/thumb/{pid}")
