@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.deposit.collect;
+package edu.unc.lib.dl.admin.collect;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
@@ -32,7 +29,6 @@ public class DepositBinConfiguration {
 
 	private String name;
 	private List<String> paths;
-	private List<Path> binPaths;
 	private Pattern filePattern;
 	private Long maxBytesPerFile;
 	private String packageType;
@@ -69,22 +65,7 @@ public class DepositBinConfiguration {
 	}
 
 	/**
-	 *
-	 * @return a list of {@link Path}s for the directories where files will be pulled from
-	 */
-	public List<Path> getBinPaths() {
-		if (binPaths == null) {
-			binPaths = new ArrayList<Path>(paths.size());
-			for (String path : paths) {
-				binPaths.add(Paths.get(path));
-			}
-		}
-
-		return binPaths;
-	}
-
-	/**
-	 *
+	 * 
 	 * @return regular expression which determines names of files allowed in this collection. If not set, then file names
 	 *         are not restricted
 	 */

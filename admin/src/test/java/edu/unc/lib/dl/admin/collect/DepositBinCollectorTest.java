@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.deposit.collect;
+package edu.unc.lib.dl.admin.collect;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
@@ -28,7 +28,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.powermock.api.mockito.PowerMockito.doThrow;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
@@ -36,8 +35,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,6 +55,7 @@ import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import edu.unc.lib.dl.admin.collect.DepositBinCollector.ListFilesResult;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
 
@@ -68,7 +66,7 @@ import edu.unc.lib.dl.util.PackagingType;
  * @date Jun 13, 2014
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ FileUtils.class, Files.class, DepositBinCollector.class })
+@PrepareForTest({ FileUtils.class, DepositBinCollector.class })
 public class DepositBinCollectorTest {
 
 	@Rule
@@ -92,11 +90,11 @@ public class DepositBinCollectorTest {
 		depositsDirectory = tmpFolder.newFolder("deposits");
 		binDirectory = tmpFolder.newFolder("bin");
 
-		List<Path> binPaths = Arrays.asList(binDirectory.toPath());
-		when(config.getBinPaths()).thenReturn(binPaths);
+		List<String> binPaths = Arrays.asList(binDirectory.getAbsolutePath());
+		when(config.getPaths()).thenReturn(binPaths);
 		when(config.getKeyLock()).thenReturn(new ReentrantLock());
 
-		Map<String, DepositBinConfiguration> configs = new HashMap<>();
+		Map<String, DepositBinConfiguration> configs = new HashMap<String, DepositBinConfiguration>();
 		configs.put("etd", config);
 
 		manager = new DepositBinCollector();
@@ -108,7 +106,7 @@ public class DepositBinCollectorTest {
 	@Test
 	public void configTest() throws Exception {
 
-		manager.setConfigPath("/depositBinConfig.json");
+		manager.setConfigPath("src/test/resources/depositBinConfig.json");
 		manager.init();
 
 		DepositBinConfiguration etdConfig = manager.getConfiguration("etd");
@@ -135,17 +133,18 @@ public class DepositBinCollectorTest {
 
 		when(config.hasFileFilters()).thenReturn(false);
 
-		List<String> filePaths = manager.listFiles("etd");
-		Collections.sort(filePaths);
+		ListFilesResult files = manager.listFiles("etd");
+		List<File> appFiles = files.applicable;
+		Collections.sort(appFiles);
 
-		assertNotNull("Must return a list of files", filePaths);
-		assertEquals("Incorrect number of files return", 3, filePaths.size());
-		assertEquals("Expected filed was not returned", binDirectory.getAbsolutePath() + "/testPackage1",
-				filePaths.get(1));
-		assertEquals("Expected filed was not returned", binDirectory.getAbsolutePath() + "/test2Package",
-				filePaths.get(0));
-		assertEquals("Expected filed was not returned", binDirectory.getAbsolutePath() + "/testPackage3",
-				filePaths.get(2));
+		assertNotNull("Must return a list of files", files);
+		assertEquals("Incorrect number of files return", 3, appFiles.size());
+		assertEquals("Expected file was not returned", binDirectory.getAbsolutePath() + "/testPackage1", appFiles.get(1)
+				.getAbsolutePath());
+		assertEquals("Expected file was not returned", binDirectory.getAbsolutePath() + "/test2Package", appFiles.get(0)
+				.getAbsolutePath());
+		assertEquals("Expected file was not returned", binDirectory.getAbsolutePath() + "/testPackage3", appFiles.get(2)
+				.getAbsolutePath());
 	}
 
 	@Test
@@ -155,14 +154,19 @@ public class DepositBinCollectorTest {
 		when(config.getFilePattern()).thenReturn(Pattern.compile("testPackage\\d+$"));
 		when(config.hasFileFilters()).thenReturn(true);
 
-		List<String> filePaths = manager.listFiles("etd");
-		Collections.sort(filePaths);
+		ListFilesResult files = manager.listFiles("etd");
+		List<File> appFiles = files.applicable;
+		Collections.sort(appFiles);
 
-		assertEquals("Incorrect number of files return", 2, filePaths.size());
-		assertEquals("Expected filed was not returned", binDirectory.getAbsolutePath() + "/testPackage1",
-				filePaths.get(0));
-		assertEquals("Expected filed was not returned", binDirectory.getAbsolutePath() + "/testPackage3",
-				filePaths.get(1));
+		assertEquals("Incorrect number of files return", 2, appFiles.size());
+		assertEquals("Expected file was not returned", binDirectory.getAbsolutePath() + "/testPackage1", appFiles.get(0)
+				.getAbsolutePath());
+		assertEquals("Expected file was not returned", binDirectory.getAbsolutePath() + "/testPackage3", appFiles.get(1)
+				.getAbsolutePath());
+
+		assertEquals("Incorrect number of files return", 1, files.nonapplicable.size());
+		assertEquals("Expected nonapplicable file was not returned", binDirectory.getAbsolutePath() + "/test2Package",
+				files.nonapplicable.get(0).getAbsolutePath());
 	}
 
 	@Test
@@ -172,14 +176,15 @@ public class DepositBinCollectorTest {
 		when(config.getMaxBytesPerFilee()).thenReturn(1024L);
 		when(config.hasFileFilters()).thenReturn(true);
 
-		List<String> filePaths = manager.listFiles("etd");
-		Collections.sort(filePaths);
+		ListFilesResult files = manager.listFiles("etd");
+		List<File> appFiles = files.applicable;
+		Collections.sort(appFiles);
 
-		assertEquals("Incorrect number of files return", 2, filePaths.size());
-		assertEquals("Expected filed was not returned", binDirectory.getAbsolutePath() + "/testPackage1",
-				filePaths.get(1));
-		assertEquals("Expected filed was not returned", binDirectory.getAbsolutePath() + "/test2Package",
-				filePaths.get(0));
+		assertEquals("Incorrect number of files return", 2, appFiles.size());
+		assertEquals("Expected filed was not returned", binDirectory.getAbsolutePath() + "/testPackage1", appFiles.get(1)
+				.getAbsolutePath());
+		assertEquals("Expected filed was not returned", binDirectory.getAbsolutePath() + "/test2Package", appFiles.get(0)
+				.getAbsolutePath());
 	}
 
 	@Test
@@ -187,10 +192,10 @@ public class DepositBinCollectorTest {
 
 		binDirectory.delete();
 
-		List<String> filePaths = manager.listFiles("etd");
+		ListFilesResult files = manager.listFiles("etd");
 
-		verify(config).getBinPaths();
-		assertNull("Non-existent bin directory should return null", filePaths);
+		verify(config).getPaths();
+		assertNull("Non-existent bin directory should return null", files);
 	}
 
 	@Test
@@ -237,7 +242,7 @@ public class DepositBinCollectorTest {
 		addBinFiles();
 
 		File binFiles[] = binDirectory.listFiles();
-		List<String> targetFiles = new ArrayList<>();
+		List<String> targetFiles = new ArrayList<String>();
 		for (File binFile : binFiles) {
 			if (!"testPackage3".equals(binFile.getName())) {
 				targetFiles.add(binFile.getAbsolutePath());
@@ -261,7 +266,7 @@ public class DepositBinCollectorTest {
 		addBinFiles();
 
 		File binFiles[] = binDirectory.listFiles();
-		List<String> targetFiles = new ArrayList<>();
+		List<String> targetFiles = new ArrayList<String>();
 		for (File binFile : binFiles) {
 			targetFiles.add(binFile.getAbsolutePath());
 		}
@@ -286,7 +291,7 @@ public class DepositBinCollectorTest {
 		addBinFiles();
 
 		File binFiles[] = binDirectory.listFiles();
-		List<String> targetFiles = new ArrayList<>();
+		List<String> targetFiles = new ArrayList<String>();
 		for (File binFile : binFiles) {
 			targetFiles.add(binFile.getAbsolutePath());
 		}
@@ -308,7 +313,7 @@ public class DepositBinCollectorTest {
 		addBinFiles();
 
 		File binFiles[] = binDirectory.listFiles();
-		List<String> targetFiles = new ArrayList<>();
+		List<String> targetFiles = new ArrayList<String>();
 		for (File binFile : binFiles) {
 			targetFiles.add(binFile.getAbsolutePath());
 		}
@@ -348,28 +353,6 @@ public class DepositBinCollectorTest {
 		}
 	}
 
-	@Test(expected = IOException.class)
-	public void collectDeleteFailureTest() throws Exception {
-		addBinFiles();
-
-		mockStatic(Files.class);
-
-		doThrow(new IOException()).when(Files.class);
-		Files.delete(any(Path.class));
-
-		manager.collect(null, "etd", new HashMap<String, String>());
-
-		File dataDir = new File(depositsDirectory.listFiles()[0], "data");
-
-		assertEquals("All files should have copied data dir", 3, dataDir.list().length);
-
-		verifyStatic();
-		Files.delete(any(Path.class));
-
-		verify(depositStatusFactory).save(anyString(), anyMapOf(String.class, String.class));
-
-	}
-
 	private void addBinFiles() throws Exception {
 		File packageFile = new File(binDirectory, "testPackage1");
 		populateFile(packageFile, 1000);
@@ -387,7 +370,9 @@ public class DepositBinCollectorTest {
 		Random random = new Random();
 		long bytesRemaining = numberBytes;
 
-		try (OutputStream fos = new FileOutputStream(file)) {
+		OutputStream fos = null;
+		try {
+			fos = new FileOutputStream(file);
 			for (; bytesRemaining > byteLength; bytesRemaining = bytesRemaining - byteLength) {
 				byte bytes[] = new byte[byteLength];
 				random.nextBytes(bytes);
@@ -399,6 +384,8 @@ public class DepositBinCollectorTest {
 				random.nextBytes(bytes);
 				fos.write(bytes);
 			}
+		} finally {
+			fos.close();
 		}
 	}
 }

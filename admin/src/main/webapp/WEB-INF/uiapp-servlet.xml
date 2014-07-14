@@ -96,6 +96,25 @@
 		<property name="forwardRequest" value="true"/>
 	</bean>
 	
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool" scope="singleton"
+		destroy-method="destroy">
+		<constructor-arg type="String" value="${redis.host:localhost}"/>
+		<constructor-arg type="int" value="${redis.port:6379}"/>
+	</bean>
+	
+	<bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
+		<property name="jedisPool" ref="jedisPool" />
+	</bean>
+	
+	<bean id="depositsDirectory" class="java.io.File">
+		<constructor-arg value="${batch.ingest.dir}" />
+	</bean>
+	
+	<bean id="depositBinCollector" class="edu.unc.lib.dl.admin.collect.DepositBinCollector"
+			init-method="init">
+		<property name="configPath" value="${repo.dir}/collector.json" />
+	</bean>
+	
 	<!-- JMX -->
 	<bean id="loggingExporter" class="org.springframework.jmx.export.MBeanExporter"
 		lazy-init="false">

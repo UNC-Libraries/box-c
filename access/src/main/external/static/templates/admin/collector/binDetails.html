@@ -1,0 +1,53 @@
+<div id="bin_details" class="contentarea">
+	<h1 class="left"><%= data.name %> <%= formatCounts(data.applicableFiles.length, data.nonapplicableFiles.length) %></h1>
+	<span class="collect_action" data-binkey="<%= data.key %>">Collect new items</span>
+	
+	<div class="clear" />
+	
+	<% if (mostRecent) { %>
+		<p>Most recent: <%= moment(mostRecent).format() %></p>
+	<% } %>
+	
+	<% if (data.nonapplicableFiles && data.nonapplicableFiles.length > 0) { %>
+		<h2>Unexpected Files</h2>
+		<table class="file_list">
+			<tr>
+				<th class="check_col"></th>
+				<th class="sortable">Name</th>
+				<th class="size_col sortable numeric">Size</th>
+				<th class="date_col sortable numeric">Date</th>
+			</tr>
+			<% _.each(data.nonapplicableFiles, function(info) { %>
+				<tr>
+					<td class="check_col"></td>
+					<td data-sort="<%= info.path %>"><%= info.path %></td>
+					<td class="size_col" data-sort="<%= info.size %>"><%= bytesToSize(info.size) %></td>
+					<td class="date_col" data-sort="<%= info.time %>"><%= formatDate(info.time) %></td>
+				</tr>
+			<% }); %>	
+		</table>
+	<% } %>
+	<% if (data.applicableFiles && data.applicableFiles.length > 0) { %>
+		<h2>New files to collect</h2>
+		<table class="file_list checkable">
+			<thead>
+				<tr>
+					<th class="check_col"><input type="checkbox" id="check_all" checked /></th>
+					<th class="sortable">Name</th>
+					<th class="size_col sortable numeric">Size</th>
+					<th class="date_col sortable numeric">Date</th>
+				</tr>
+			</thead>
+			<tbody>
+				<% _.each(data.applicableFiles, function(info) { %>
+					<tr>
+						<td class="check_col"><input type="checkbox" name="files" checked value="<%= info.path %>"/></td>
+						<td data-sort="<%= info.path %>"><%= info.path %></td>
+						<td class="size_col" data-sort="<%= info.size %>"><%= bytesToSize(info.size) %></td>
+						<td class="date_col" data-sort="<%= info.time %>"><%= formatDate(info.time) %></td>
+					</tr>
+				<% }); %>	
+			</tbody>
+		</table>
+	<% } %>
+</div>

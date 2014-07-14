@@ -21,6 +21,7 @@ build-admin:
 		access/src/main/external/static/css/admin/cdradmin.css \
 		access/src/main/external/static/css/admin/search_results.css \
 		access/src/main/external/static/css/admin/admin_forms.css \
+		access/src/main/external/static/css/admin/collector.css \
 		access/src/main/external/static/css/structure_browse.css \
 		> access/src/main/external/static/css/cdr_admin.css
 	

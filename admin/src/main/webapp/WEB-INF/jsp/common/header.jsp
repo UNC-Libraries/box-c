@@ -36,6 +36,10 @@
 					<c:set var="tabClass"><c:if test="${contentPage == 'report/statusMonitor.jsp'}">active</c:if></c:set>
 					<a href="statusMonitor" id="menu_status_monitor" class="${tabClass}">Status Monitor</a>
 				</li>
+				<li>
+					<c:set var="tabClass"><c:if test="${contentPage == 'collector/listBins.jsp'}">active</c:if></c:set>
+					<a href="collector" class="${tabClass}">Deposit Collectors</a>
+				</li>
 			</ul>
 			<ul class="secondarymenu">
 				<li>
