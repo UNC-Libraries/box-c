@@ -104,7 +104,7 @@
 		<property name="collectionFilters" value="${services.indexing.collectionFilters}" />
 	</bean>
 	
-	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil">
+	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil" init-method="init">
 		<property name="ontologyPath" value="${vocab.dir}/departments.xml" />
 	</bean>
 

@@ -342,7 +342,8 @@ public class DepositSupervisor implements WorkerListener {
 		}
 
 		// Perform vocabulary enforcement for package types that retain the original metadata
-		if (isBiomedDeposit || packagingType.equals(PackagingType.PROQUEST_ETD.getUri())) {
+		if ((isBiomedDeposit || packagingType.equals(PackagingType.PROQUEST_ETD.getUri()))
+				&& !successfulJobs.contains(VocabularyEnforcementJob.class.getName())) {
 			return makeJob(VocabularyEnforcementJob.class, depositUUID);
 		}
 

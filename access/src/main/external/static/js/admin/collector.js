@@ -28,7 +28,7 @@ define('collector', ['jquery', 'moment', 'ConfirmationDialog', 'tpl!../templates
 	// Trigger collection of the new applicable files
 	function collectFiles() {
 		var allVals = [];
-		$('.file_list :checked').each(function() {
+		$('.file_list tbody :checked').each(function() {
 			allVals.push($(this).val());
 		});
 		

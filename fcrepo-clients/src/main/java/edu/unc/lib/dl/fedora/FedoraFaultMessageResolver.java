@@ -19,7 +19,7 @@ import org.springframework.ws.soap.client.SoapFaultClientException;
 
 /**
  * @author Gregory Jansen
- * 
+ *
  */
 public class FedoraFaultMessageResolver {
 
@@ -27,7 +27,8 @@ public class FedoraFaultMessageResolver {
 		if (e.getFaultStringOrReason() != null) {
 			String r = e.getFaultStringOrReason();
 			if (r.contains("ObjectNotFoundException") || r.contains("ObjectNotInLowlevelStorageException")
-					|| r.contains("DatastreamNotFoundException") || r.contains("no path in db registry")) {
+					|| r.contains("DatastreamNotFoundException") || r.contains("no path in db registry")
+					|| r.contains("[DefaulAccess] No datastream could be returned")) {
 				throw new NotFoundException(e);
 			} else if (r.contains("ObjectExistsException")) {
 				throw new ObjectExistsException(e);

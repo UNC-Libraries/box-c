@@ -32,6 +32,7 @@ import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.MetadataProfileConstants.PROQUEST_ETD;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -89,6 +90,13 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 	public static final String DATA_SUFFIX = "_DATA.xml";
 
 	private Transformer proquest2ModsTransformer = null;
+
+	public Proquest2N3BagJob() {
+	}
+
+	public Proquest2N3BagJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
+	}
 
 	@Override
 	public void run() {
@@ -150,13 +158,14 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 		// Deserialize the data document
 		SAXBuilder builder = new SAXBuilder();
 		Element dataRoot = null;
+		Document mods = null;
 		try {
 
 			Document dataDocument = builder.build(dataFile);
 			dataRoot = dataDocument.getRootElement();
 
 			// Transform the data into MODS and store it to its final resting place
-			extractMods(primaryPID, dataRoot, modified);
+			mods = extractMods(primaryPID, dataRoot, modified);
 		} catch (TransformerException e) {
 			failJob(e, Type.NORMALIZATION, "Failed to transform metadata to MODS");
 		} catch (Exception e) {
@@ -171,9 +180,10 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 			// Simple object with the content as its source data
 			primaryResource = populateSimple(model, primaryPID, contentFile);
 		} else {
+			String title = mods.getRootElement().getChild("titleInfo", MODS_V3_NS).getChildText("title", MODS_V3_NS);
 
 			// Has attachments, so it is an aggregate
-			primaryResource = populateAggregate(model, primaryPID, attachmentElements, attachmentDir, contentFile);
+			primaryResource = populateAggregate(model, primaryPID, attachmentElements, attachmentDir, contentFile, title);
 		}
 
 		// Store primary resource as child of the deposit
@@ -223,7 +233,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private void extractMods(PID primaryPID, Element dataRoot, DateTime modified) throws TransformerException,
+	private Document extractMods(PID primaryPID, Element dataRoot, DateTime modified) throws TransformerException,
 			FileNotFoundException,
 			IOException {
 
@@ -254,6 +264,8 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 		try (FileOutputStream fos = new FileOutputStream(modsFile)) {
 			new XMLOutputter(Format.getPrettyFormat()).output(mods.getDocument(), fos);
 		}
+
+		return mods.getDocument();
 	}
 
 	private Resource populateSimple(Model model, PID primaryPID, File contentFile) {
@@ -271,7 +283,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 	}
 
 	private Resource populateAggregate(Model model, PID primaryPID, List<?> attachmentElements, File attachmentDir,
-			File contentFile) {
+			File contentFile, String title) {
 
 		Property labelP = dprop(model, label);
 		Property fileLocation = dprop(model, stagingLocation);
@@ -283,6 +295,11 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 
 		model.add(primaryBag, hasModelP, model.createResource(CONTAINER.getURI().toString()));
 		model.add(primaryBag, hasModelP, model.createResource(AGGREGATE_WORK.getURI().toString()));
+		// Assign title to the main object as a label
+		if (title.length() > 128)
+			model.add(primaryBag, labelP, title.substring(0, 128));
+		else
+			model.add(primaryBag, labelP, title);
 
 		// Create default web object child entry for the main document
 		PID defaultObjectPID = new PID("uuid:" + UUID.randomUUID());

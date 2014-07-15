@@ -278,7 +278,6 @@ public class DepositBinCollector {
 		if (answer)
 			return true;
 
-		log.warn("Non-applicable file {} found in bin {}", file.getAbsolutePath(), config.getName());
 		return false;
 	}
 

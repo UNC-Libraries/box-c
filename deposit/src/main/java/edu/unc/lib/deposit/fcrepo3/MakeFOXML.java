@@ -4,6 +4,8 @@ import static edu.unc.lib.deposit.work.DepositGraphUtils.cdrprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.cmodel;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.DC;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_DESCRIPTIVE;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.DEPOSIT_RECORD;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.PRESERVEDOBJECT;
@@ -177,18 +179,29 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 			// add MD_DESCRIPTIVE
 			File mods = new File(getSubdir(DepositConstants.DESCRIPTION_DIR), p.getUUID() + ".xml");
 			if (mods.exists()) {
-				Element el = FOXMLJDOMUtil.makeLocatorDatastream(Datastream.MD_DESCRIPTIVE.getName(), "M",
-						DepositConstants.DESCRIPTION_DIR + "/" + mods.getName(), "text/xml", "URL",
-						Datastream.MD_DESCRIPTIVE.getLabel(), false, null);
-				foxml.getRootElement().addContent(el);
+				SAXBuilder sb = new SAXBuilder(false);
+				Document modsDoc;
+				try {
+					modsDoc = sb.build(mods);
+					Element el = FOXMLJDOMUtil.makeInlineXMLDatastreamElement(MD_DESCRIPTIVE.getName(),
+							MD_DESCRIPTIVE.getLabel(), modsDoc.detachRootElement(), MD_DESCRIPTIVE.isVersionable());
+					foxml.getRootElement().addContent(el);
+				} catch (JDOMException | IOException e) {
+					log.error("Failed to add MODS datastream from {}", mods.getAbsolutePath(), e);
+				}
+
+//				Element el = FOXMLJDOMUtil.makeLocatorDatastream(MD_DESCRIPTIVE.getName(), MD_DESCRIPTIVE.getControlGroup()
+//						.getAttributeValue(),
+//						DepositConstants.DESCRIPTION_DIR + "/" + mods.getName(), "text/xml", "URL",
+//						MD_DESCRIPTIVE.getLabel(), MD_DESCRIPTIVE.isVersionable(), null);
 			}
 
 			// add DC
 			File dc = new File(getSubdir(DepositConstants.DUBLINCORE_DIR), p.getUUID() + ".xml");
 			if (dc.exists()) {
-				Element el = FOXMLJDOMUtil.makeLocatorDatastream(Datastream.DC.getName(), "M",
-						DepositConstants.DUBLINCORE_DIR + "/" + dc.getName(), "text/xml", "URL", Datastream.DC.getLabel(),
-						false, null);
+				Element el = FOXMLJDOMUtil.makeLocatorDatastream(DC.getName(), DC.getControlGroup().getAttributeValue(),
+						DepositConstants.DUBLINCORE_DIR + "/" + dc.getName(), "text/xml", "URL", DC.getLabel(),
+						DC.isVersionable(), null);
 				foxml.getRootElement().addContent(el);
 			}
 

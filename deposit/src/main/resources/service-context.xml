@@ -273,7 +273,7 @@
 		scope="prototype">
 	</bean>
 	
-	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil">
+	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil" init-method="init">
 		<property name="ontologyPath" value="${distribution.dir}/conf/departments.xml" />
 	</bean>
 	

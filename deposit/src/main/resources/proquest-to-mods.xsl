@@ -200,9 +200,9 @@
 			<xsl:for-each select="DISS_institution">
 				<xsl:if test="DISS_inst_name">
 					<mods:name type="corporate">
-						<mods:NamePart>
+						<mods:namePart>
 							<xsl:value-of select="DISS_inst_name"/>
-						</mods:NamePart>
+						</mods:namePart>
 						<mods:role>
 							<mods:roleTerm authority="marcrelator" type="text">Degree grantor</mods:roleTerm>
 						</mods:role>
@@ -239,7 +239,7 @@
 						<xsl:value-of select="DISS_surname"/>
 					</mods:namePart>
 					<mods:role>
-						<mods:roleTerm displayLabel="Thesis Committee Member" authority="marcrelator" type="text">Thesis advisor</mods:roleTerm>
+						<mods:roleTerm authority="marcrelator" type="text">Thesis advisor</mods:roleTerm>
 					</mods:role>
 				</mods:name>
 			</xsl:for-each>
@@ -250,7 +250,7 @@
 			<mods:form authority="marcform">electronic</mods:form>
 			<mods:internetMediaType>application/pdf</mods:internetMediaType>
 			<xsl:for-each select="DISS_description/@page_count">
-				<mods:extent unit="page">
+				<mods:extent>
 					<xsl:value-of select="."/>
 				</mods:extent>
 			</xsl:for-each>
