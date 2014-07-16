@@ -15,6 +15,13 @@
  */
 package edu.unc.lib.dl.cdr.services.solr;
 
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.defaultWebObject;
+import static edu.unc.lib.dl.util.IndexingActionType.ADD;
+import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_DATASTREAMS;
+import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_FULL_TEXT;
+
+import java.util.List;
+
 import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +34,13 @@ import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  * Enhancement issues solr update messages for items that have been modified by the service stack.
- * 
- * @author bbpennel 
+ *
+ * @author bbpennel
  */
 public class SolrUpdateEnhancement extends Enhancement<Element> {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateEnhancement.class);
@@ -42,22 +50,34 @@ public class SolrUpdateEnhancement extends Enhancement<Element> {
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
-		LOG.debug("Called Solr update service for " + pid.getPid());
-		
-		IndexingActionType action = IndexingActionType.ADD;
-		
+		LOG.debug("Called Solr update service for {}", pid.getPid());
+
+		IndexingActionType action = ADD;
+
+		List<String> completedServices = message.getCompletedServices();
 		//Perform a single item update
-		if (message.getCompletedServices().contains(FullTextEnhancementService.class.getName())) {
-			action = IndexingActionType.UPDATE_FULL_TEXT;
-		} else if (message.getCompletedServices().contains(TechnicalMetadataEnhancementService.class.getName())
-				|| message.getCompletedServices().contains(ImageEnhancementService.class.getName())
-				|| message.getCompletedServices().contains(ThumbnailEnhancementService.class.getName())) {
-			action = IndexingActionType.UPDATE_DATASTREAMS;
+		if (completedServices.contains(FullTextEnhancementService.class.getName())) {
+			action = UPDATE_FULL_TEXT;
+		} else if (completedServices.contains(TechnicalMetadataEnhancementService.class.getName())
+				|| completedServices.contains(ImageEnhancementService.class.getName())
+				|| completedServices.contains(ThumbnailEnhancementService.class.getName())) {
+
+			action = UPDATE_DATASTREAMS;
+
+			// Check if this object is the default web object for another item, and update that item's datastreams if so
+			List<PID> dwoFor = service.getTripleStoreQueryService().
+					fetchByPredicateAndLiteral(defaultWebObject.toString(), pid);
+			if (dwoFor != null && dwoFor.size() > 0) {
+				for (PID dwoPID : dwoFor) {
+					service.getMessageDirector().direct(
+							new SolrUpdateRequest(dwoPID.getPid(), UPDATE_DATASTREAMS));
+				}
+			}
 		}
-		
+
 		SolrUpdateRequest updateRequest = new SolrUpdateRequest(pid.getPid(), action);
 		service.getMessageDirector().direct(updateRequest);
-		
+
 		return result;
 	}
 
