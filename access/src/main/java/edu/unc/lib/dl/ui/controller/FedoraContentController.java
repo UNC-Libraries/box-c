@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.service.FedoraContentService;
-import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil;
+import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil.AnalyticsUserData;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
@@ -49,21 +49,21 @@ public class FedoraContentController {
 			@RequestParam(value = "dl", defaultValue = "false") boolean download,
 			HttpServletRequest request, HttpServletResponse response) {
 		fedoraContentService.streamData(pid, ContentModelHelper.Datastream.DATA_FILE.getName(), download,
-				AnalyticsTrackerUtil.getCID(request), response);
+				new AnalyticsUserData(request), response);
 	}
 
 	@RequestMapping("/indexablecontent/{pid}/{datastream}")
 	public void getIndexableContent(@PathVariable("pid") String pid, @PathVariable("datastream") String datastream,
 			@RequestParam(value = "dl", defaultValue = "false") boolean download,
 			HttpServletRequest request, HttpServletResponse response) {
-		fedoraContentService.streamData(pid, datastream, download, AnalyticsTrackerUtil.getCID(request), response);
+		fedoraContentService.streamData(pid, datastream, download, new AnalyticsUserData(request), response);
 	}
 
 	@RequestMapping("/indexablecontent")
 	public void getIndexableContentByParameters(@RequestParam("id") String id, @RequestParam("ds") String datastream,
 			@RequestParam(value = "dl", defaultValue = "false") boolean download,
 			HttpServletRequest request, HttpServletResponse response) {
-		fedoraContentService.streamData(id, datastream, download, AnalyticsTrackerUtil.getCID(request), response);
+		fedoraContentService.streamData(id, datastream, download, new AnalyticsUserData(request), response);
 	}
 
 	@RequestMapping("/content/{pid}")
@@ -71,21 +71,21 @@ public class FedoraContentController {
 			@RequestParam(value = "dl", defaultValue = "false") boolean download,
 			HttpServletRequest request, HttpServletResponse response) {
 		fedoraContentService.streamData(pid, ContentModelHelper.Datastream.DATA_FILE.getName(), download,
-				AnalyticsTrackerUtil.getCID(request), response);
+				new AnalyticsUserData(request), response);
 	}
 
 	@RequestMapping("/content/{pid}/{datastream}")
 	public void getDatastream(@PathVariable("pid") String pid, @PathVariable("datastream") String datastream,
 			@RequestParam(value = "dl", defaultValue = "false") boolean download,
 			HttpServletRequest request, HttpServletResponse response) {
-		fedoraContentService.streamData(pid, datastream, download, AnalyticsTrackerUtil.getCID(request), response);
+		fedoraContentService.streamData(pid, datastream, download, new AnalyticsUserData(request), response);
 	}
 
 	@RequestMapping("/content")
 	public void getDatastreamByParameters(@RequestParam("id") String id, @RequestParam("ds") String datastream,
 			@RequestParam(value = "dl", defaultValue = "false") boolean download,
 			HttpServletRequest request, HttpServletResponse response) {
-		fedoraContentService.streamData(id, datastream, download, AnalyticsTrackerUtil.getCID(request), response);
+		fedoraContentService.streamData(id, datastream, download, new AnalyticsUserData(request), response);
 	}
 
 	@ResponseStatus(value = HttpStatus.NOT_FOUND)

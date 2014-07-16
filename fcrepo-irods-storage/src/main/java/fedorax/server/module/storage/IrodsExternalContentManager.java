@@ -330,7 +330,7 @@ public class IrodsExternalContentManager extends Module implements
 				}
 			}
 			return new MIMETypedStream(mimeType, result,
-					getPropertyArray(mimeType));
+					getPropertyArray(mimeType), file.length());
 			/*
 			 * } catch (AuthzException ae) { LOG.error(ae.getMessage(), ae);
 			 * throw new
