@@ -19,6 +19,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.Tag;
+import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
 public class DescriptiveTagProvider implements TagProvider {
 
@@ -27,6 +28,11 @@ public class DescriptiveTagProvider implements TagProvider {
 		Datastream descr = record.getDatastreamObject("MD_DESCRIPTIVE");
 		if(descr != null) {
 			record.addTag(new Tag("described", "This object has descriptive metadata."));
+		}
+
+		if (record.getContentStatus().contains(FacetConstants.INVALID_VOCAB_TERM)) {
+			record.addTag(new Tag("invalid term",
+					"There is one or more invalid vocabulary term in this object's description."));
 		}
 	}
 

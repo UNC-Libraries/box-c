@@ -29,9 +29,9 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
  * Sets content related status tags
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetContentStatusFilter.class);
@@ -44,7 +44,7 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 		setContentStatus(dip, triples, contentStatus);
 
 		dip.getDocument().setContentStatus(contentStatus);
-		
+
 		log.debug("Content status for {} set to {}", dip.getPid().getPid(), contentStatus);
 	}
 
@@ -60,6 +60,10 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 		}
 
 		// Valid/Not Valid content according to FITS
+
+		// Vocabulary validation
+		if (triples.containsKey(ContentModelHelper.CDRProperty.invalidAffiliationTerm.toString()))
+			status.add(FacetConstants.INVALID_VOCAB_TERM);
 
 		// If its an aggregate, indicate if it has a default web object
 		List<String> contentModels = triples.get(ContentModelHelper.FedoraProperty.hasModel.toString());

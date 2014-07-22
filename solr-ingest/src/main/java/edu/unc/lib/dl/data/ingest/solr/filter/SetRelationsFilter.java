@@ -81,6 +81,11 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 			if (embargoUntil != null)
 				relations.add(ContentModelHelper.CDRProperty.embargoUntil.getPredicate() + "|" + embargoUntil.get(0));
 
+			List<String> invalidAffil = triples.get(ContentModelHelper.CDRProperty.invalidAffiliationTerm.toString());
+			if (invalidAffil != null)
+				relations.add(ContentModelHelper.CDRProperty.invalidAffiliationTerm.getPredicate() + "|"
+						+ invalidAffil.get(0));
+
 			dip.getDocument().setRelations(relations);
 		} catch (JDOMException e) {
 			throw new IndexingException("Failed to set relations for " + dip.getPid(), e);
