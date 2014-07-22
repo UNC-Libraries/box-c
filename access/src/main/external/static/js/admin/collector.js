@@ -1,34 +1,34 @@
 require.config({
 	urlArgs: "v=3.4-SNAPSHOT",
-	baseUrl: '/static/js/',
+	baseUrl: "/static/js/",
 	paths: {
-		'jquery' : 'cdr-admin',
-		'jquery-ui' : 'cdr-admin',
-		'text' : 'lib/text',
-		'underscore' : 'lib/underscore',
-		'tpl' : 'lib/tpl',
-		'qtip' : 'lib/jquery.qtip.min',
-		'moment' : 'cdr-admin',
+		"jquery" : "cdr-admin",
+		"jquery-ui" : "cdr-admin",
+		"text" : "lib/text",
+		"underscore" : "lib/underscore",
+		"tpl" : "lib/tpl",
+		"qtip" : "lib/jquery.qtip.min",
+		"moment" : "cdr-admin",
 		
-		'PID' : 'cdr-admin',
-		'RemoteStateChangeMonitor' : 'cdr-admin',
-		'ConfirmationDialog' : 'cdr-admin'
+		"PID" : "cdr-admin",
+		"RemoteStateChangeMonitor" : "cdr-admin",
+		"ConfirmationDialog" : "cdr-admin"
 	},
 	shim: {
-		'qtip' : ['jquery'],
-		'underscore': {
-			exports: '_'
+		"qtip" : ["jquery"],
+		"underscore": {
+			exports: "_"
 		}
 	}
 });
 
-define('collector', ['jquery', 'moment', 'ConfirmationDialog', 'tpl!../templates/admin/collector/binList', 'tpl!../templates/admin/collector/binDetails', 'tpl!../templates/admin/collector/confirm'], 
+define("collector", ["jquery", "moment", "ConfirmationDialog", "tpl!../templates/admin/collector/binList", "tpl!../templates/admin/collector/binDetails", "tpl!../templates/admin/collector/confirm"], 
 		function($, moment, ConfirmationDialog, binListTemplate, binDetailsTemplate, confirmTemplate) {
 	
 	// Trigger collection of the new applicable files
 	function collectFiles() {
 		var allVals = [];
-		$('.file_list tbody :checked').each(function() {
+		$(".file_list tbody :checked").each(function() {
 			allVals.push($(this).val());
 		});
 		
@@ -38,7 +38,7 @@ define('collector', ['jquery', 'moment', 'ConfirmationDialog', 'tpl!../templates
 	}
 	
 	function confirmCollection(binKey, numFiles) {
-		var numFilesText = numFiles + " new item" + (numFiles != 1? "s" :"");
+		var numFilesText = numFiles + " new item" + (numFiles != 1? "s" : "");
 		
 		new ConfirmationDialog({
 				promptText : "Are you sure you want collect " + numFilesText + "?",
@@ -46,7 +46,7 @@ define('collector', ['jquery', 'moment', 'ConfirmationDialog', 'tpl!../templates
 				confirmTarget : {binKey : binKey},
 				autoOpen : true,
 				dialogOptions : {
-					width : 'auto',
+					width : "auto",
 					modal : true,
 					position : { my: "center", at: "center", of: window }
 				}
@@ -54,31 +54,28 @@ define('collector', ['jquery', 'moment', 'ConfirmationDialog', 'tpl!../templates
 	}
 	
 	function formatCounts(applicable, nonapplicable) {
-		if (applicable) {
-			if (nonapplicable) {
-				return "(" + applicable + " new item" + (applicable != 1? "s" : "")
-						+ ", " + nonapplicable + " unexpected item" + (nonapplicable != 1? "s" : "") + ")";
-			} else {
-				return "(" + applicable + " new item" + (applicable != 1? "s" : "") + ")";
-			}
-		} else {
-			if (nonapplicable) {
-				return "(" + nonapplicable + " unexpected item" + (nonapplicable != 1? "s" : "") + ")";
-			} else {
-				return "(no new items)";
-			}
+		
+		var text = [];
+		if (applicable > 0) {
+			text.push(applicable + " new item" + (applicable != 1? "s" : ""));
 		}
+			
+		if (nonapplicable > 0) {
+			text.push(nonapplicable + " unexpected item" + (nonapplicable != 1? "s" : ""));
+		}
+		
+		return "(" + (text.length == 0? "no new items" : text.join(", ")) + ")";
 	}
 	
 	function bytesToSize(bytes) {
-		if (bytes == 0) return '0 B';
+		if (bytes == 0) return "0 B";
 		var k = 1024;
-		var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+		var sizes = ["B", "KB", "MB", "GB", "TB", "PB"];
 		var i = Math.floor(Math.log(bytes) / Math.log(k));
 		var val = (bytes / Math.pow(k, i)).toFixed(1);
 		if (val - Math.floor(val) == 0)
-			return Math.floor(val) + ' ' + sizes[i];
-		return val + ' ' + sizes[i];
+			return Math.floor(val) + " " + sizes[i];
+		return val + " " + sizes[i];
 	}
 	
 	function formatDate(timestamp) {
@@ -94,7 +91,7 @@ define('collector', ['jquery', 'moment', 'ConfirmationDialog', 'tpl!../templates
 		if ($(event.target).is("input"))
 			return true;
 		var checkbox = $(this).closest("tr").find("input");
-		checkbox.prop('checked', !checkbox.prop('checked'));
+		checkbox.prop("checked", !checkbox.prop("checked"));
 	});
 	
 	// Sorting by column
@@ -148,16 +145,16 @@ define('collector', ['jquery', 'moment', 'ConfirmationDialog', 'tpl!../templates
 					formatDate : formatDate, bytesToSize : bytesToSize}));
 					
 			$("#bin_details .collect_action").click(function(event) {
-				confirmCollection(binKey, $('.file_list tbody :checked').length);
+				confirmCollection(binKey, $(".file_list tbody :checked").length);
 			});
 					
 			$("#check_all").change(function(event) {
 				var $this = $(this);
 
 				if ($this.is(":checked")) {
-					$this.closest(".file_list").find("td input").prop('checked', true);
+					$this.closest(".file_list").find("td input").prop("checked", true);
 				} else {
-					$this.closest(".file_list").find("td input").prop('checked', false);
+					$this.closest(".file_list").find("td input").prop("checked", false);
 				}
 			});
 		});

@@ -3384,12 +3384,14 @@ h1 {
 /** Create simple object */
 .create_simple_object_form label {
 	width: 70px;
-}#collector h2 {
+}/** Deposit Bin Collector */
+
+#collector h2 {
 	color: #000;
 	margin: 20px 0 5px 0;
 }
 
-.collect_action {
+#collector .collect_action {
 	float: right;
 	background-color: #E5EFFF;
 	border: 1px solid #CCD;
@@ -3401,15 +3403,15 @@ h1 {
 	cursor: pointer;
 }
 
-.file_list {
+#collector .file_list {
 	width: 100%;
 }
 
-.file_list tr:not(:first-child):hover {
+#collector .file_list tr:not(:first-child):hover {
 	background-color: #f8f8ff;
 }
 
-.file_list th {
+#collector .file_list th {
 	box-shadow: 0 4px 6px -6px #AAAAFF;
 	margin: 1em;
 	border-bottom: 1px solid #C8D8E0;
@@ -3418,27 +3420,27 @@ h1 {
 	font-weight: bold;
 }
 
-.file_list .sortable:hover {
+#collector .file_list .sortable:hover {
 	cursor: pointer;
 }
 
-.file_list td {
+#collector .file_list td {
 	padding: 6px 3em 4px 4px;
 }
 
-.file_list td:last-child {
+#collector .file_list td:last-child {
 	padding-right: 0;
 }
 
-.file_list .size_col {
+#collector .file_list .size_col {
 	width: 7em;
 }
 
-.file_list .date_col {
+#collector .file_list .date_col {
 	width: 10em;
 }
 
-.file_list .check_col {
+#collector .file_list .check_col {
 	width: 16px;
 	margin: 0;
 	padding: 6px 4px;
