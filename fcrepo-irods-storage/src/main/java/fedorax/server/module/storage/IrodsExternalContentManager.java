@@ -432,9 +432,7 @@ public class IrodsExternalContentManager extends Module implements
 		LOG.debug("in getFile(), url=" + uri);
 
 		try {
-			URL fileUri = new URL(URLDecoder.decode(uri.toString(), "utf-8"));
-			String path = fileUri.getPath();
-			File cFile = new File(path).getCanonicalFile();
+			File cFile = new File(uri.getPath()).getCanonicalFile();
 
 			// security check, staged files are in known locations
 			if (!staged) {
