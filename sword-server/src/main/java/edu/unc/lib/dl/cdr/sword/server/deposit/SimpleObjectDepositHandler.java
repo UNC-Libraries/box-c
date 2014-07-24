@@ -17,7 +17,8 @@ package edu.unc.lib.dl.cdr.sword.server.deposit;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -28,6 +29,7 @@ import org.swordapp.server.SwordConfiguration;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 	private static Logger log = Logger
@@ -58,8 +60,12 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 			}
 		}
 
+		// Skip deposit record for this tiny ingest
+		Map<String, String> options = new HashMap<String, String>();
+		options.put(DepositField.excludeDepositRecord.name(), "true");
+
 		registerDeposit(depositPID, destination, deposit,
-				type, depositor, owner, Collections.<String, String> emptyMap());
+				type, depositor, owner, options);
 		return buildReceipt(depositPID, config);
 	}
 }

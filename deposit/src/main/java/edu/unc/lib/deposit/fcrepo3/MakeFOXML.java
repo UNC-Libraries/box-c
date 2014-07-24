@@ -90,14 +90,19 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 		File modelFile = new File(getDepositDirectory(), DepositConstants.MODEL_FILE);
 		m.read(modelFile.toURI().toString());
 
+		Map<String, String> status = getDepositStatus();
+		boolean excludeDepositRecord = Boolean.parseBoolean(status.get(DepositField.excludeDepositRecord.name()));
+
 		// establish task size
 		List<Resource> topDownObjects = DepositGraphUtils.getObjectsBreadthFirst(m, getDepositPID());
-		setTotalClicks(topDownObjects.size()+1);
+		setTotalClicks(topDownObjects.size() + (excludeDepositRecord ? 0 : 1));
 
 		Resource deposit = m.getResource(this.getDepositPID().getURI());
 
-		writeDepositRecord(deposit);
-		addClicks(1);
+		if (!excludeDepositRecord) {
+			writeDepositRecord(deposit);
+			addClicks(1);
+		}
 
 		Property hasModelP = fprop(m, FedoraProperty.hasModel);
 
@@ -143,7 +148,8 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 			}
 
 			// deposit link
-			relsExt.add(o, cdrprop(m, Relationship.originalDeposit), deposit);
+			if (!excludeDepositRecord)
+				relsExt.add(o, cdrprop(m, Relationship.originalDeposit), deposit);
 
 			// TODO translate default web object, already copied, check it
 
