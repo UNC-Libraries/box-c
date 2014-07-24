@@ -17,7 +17,6 @@ package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidAffiliationTerm;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -38,7 +37,6 @@ import java.util.List;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
-import org.jdom.xpath.XPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -303,28 +301,18 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		assertEquals("Incorrect number of affiliations on third name", 2, thirdNameAffils.size());
 	}
 
-	private Document getMODSDocument(String uuid) throws Exception {
-		File modsFile = new File(job.getDescriptionDir(), uuid + ".xml");
-
-		SAXBuilder sb = new SAXBuilder(false);
-		return sb.build(modsFile);
-	}
-
-	private Element element(String xpathString, Object xmlObject) throws Exception {
-		return (Element) xpath(xpathString, xmlObject).get(0);
-	}
-
-	private List<?> xpath(String xpath, Object xmlObject) throws Exception {
-		XPath namePath = XPath.newInstance(xpath);
-		namePath.addNamespace("mods", MODS_V3_NS.getURI());
-		return namePath.selectNodes(xmlObject);
-	}
-
 	private List<String> stringList(List<?> elements) {
 		List<String> values = new ArrayList<>(elements.size());
 		for (Object elObj : elements) {
 			values.add(((Element) elObj).getText());
 		}
 		return values;
+	}
+
+	private Document getMODSDocument(String uuid) throws Exception {
+		File modsFile = new File(job.getDescriptionDir(), uuid + ".xml");
+
+		SAXBuilder sb = new SAXBuilder(false);
+		return sb.build(modsFile);
 	}
 }

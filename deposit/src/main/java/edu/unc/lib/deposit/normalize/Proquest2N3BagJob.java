@@ -18,6 +18,7 @@ package edu.unc.lib.deposit.normalize;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.cdrprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.dateCreated;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.defaultWebObject;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.embargoUntil;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.hasSourceMetadataProfile;
@@ -31,6 +32,7 @@ import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.MetadataProfileConstants.PROQUEST_ETD;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -43,6 +45,8 @@ import java.util.UUID;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -51,6 +55,9 @@ import org.jdom.output.XMLOutputter;
 import org.jdom.transform.JDOMResult;
 import org.jdom.transform.JDOMSource;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.rdf.model.Bag;
@@ -78,9 +85,18 @@ import edu.unc.lib.dl.util.ZipFileUtil;
  */
 public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 
+	private static final Logger log = LoggerFactory.getLogger(Proquest2N3BagJob.class);
+
 	public static final String DATA_SUFFIX = "_DATA.xml";
 
 	private Transformer proquest2ModsTransformer = null;
+
+	public Proquest2N3BagJob() {
+	}
+
+	public Proquest2N3BagJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
+	}
 
 	@Override
 	public void run() {
@@ -93,8 +109,9 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 
 		File[] packageDirs = this.getDataDirectory().listFiles();
 		for (File packageDir : packageDirs) {
-			if (packageDir.isDirectory())
+			if (packageDir.isDirectory()) {
 				normalizePackage(packageDir, model, depositBag);
+			}
 		}
 
 		// Add normalization event to deposit record
@@ -111,6 +128,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 		// Identify the important files from the deposit
 		File dataFile = null, contentFile = null, attachmentDir = null;
 
+
 		File[] files = packageDir.listFiles();
 		for (File file : files) {
 			if (file.isDirectory()) {
@@ -122,15 +140,32 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 			}
 		}
 
+		long lastModified = -1;
+		File zipFile = new File(packageDir.getAbsolutePath() + ".zip");
+		try (ZipFile zip = new ZipFile(zipFile)) {
+			ZipArchiveEntry entry = zip.getEntry(contentFile.getName());
+			lastModified = entry.getTime();
+		} catch (IOException e) {
+			log.error("Failed to read zip file located at {}.zip", packageDir.getAbsolutePath(), e);
+		}
+
+		if (lastModified == -1) {
+			lastModified = zipFile.lastModified();
+		}
+
+		DateTime modified = new DateTime(lastModified, DateTimeZone.UTC);
+
 		// Deserialize the data document
 		SAXBuilder builder = new SAXBuilder();
 		Element dataRoot = null;
+		Document mods = null;
 		try {
+
 			Document dataDocument = builder.build(dataFile);
 			dataRoot = dataDocument.getRootElement();
 
 			// Transform the data into MODS and store it to its final resting place
-			extractMods(primaryPID, dataRoot);
+			mods = extractMods(primaryPID, dataRoot, modified);
 		} catch (TransformerException e) {
 			failJob(e, Type.NORMALIZATION, "Failed to transform metadata to MODS");
 		} catch (Exception e) {
@@ -145,9 +180,10 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 			// Simple object with the content as its source data
 			primaryResource = populateSimple(model, primaryPID, contentFile);
 		} else {
+			String title = mods.getRootElement().getChild("titleInfo", MODS_V3_NS).getChildText("title", MODS_V3_NS);
 
 			// Has attachments, so it is an aggregate
-			primaryResource = populateAggregate(model, primaryPID, attachmentElements, attachmentDir, contentFile);
+			primaryResource = populateAggregate(model, primaryPID, attachmentElements, attachmentDir, contentFile, title);
 		}
 
 		// Store primary resource as child of the deposit
@@ -158,6 +194,9 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 
 		// Capture other metadata, like embargoes
 		setEmbargoUntil(model, primaryResource, dataRoot);
+
+		// Creation date for the content file
+		model.add(primaryResource, cdrprop(model, dateCreated), modified.toString(), XSDDatatype.XSDdateTime);
 
 		// Save the model to the n3 file
 		saveModel(model, DepositConstants.MODEL_FILE);
@@ -189,15 +228,30 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 	 *
 	 * @param primaryPID
 	 * @param dataRoot
+	 * @param modified
 	 * @throws TransformerException
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private void extractMods(PID primaryPID, Element dataRoot) throws TransformerException, FileNotFoundException,
+	private Document extractMods(PID primaryPID, Element dataRoot, DateTime modified) throws TransformerException,
+			FileNotFoundException,
 			IOException {
+
+		int month = modified.getMonthOfYear();
+		String gradSemester;
+
+		if (month >= 2 && month <= 6) {
+			gradSemester = "Spring";
+		} else if (month >= 7 && month <= 9) {
+			gradSemester = "Summer";
+		} else {
+			gradSemester = "Winter";
+		}
+
 		JDOMResult mods = new JDOMResult();
 		// Transform the metadata into MODS
 		synchronized (proquest2ModsTransformer) {
+			proquest2ModsTransformer.setParameter("graduationSemester", gradSemester + " " + modified.getYear());
 			proquest2ModsTransformer.transform(new JDOMSource(dataRoot), mods);
 		}
 
@@ -210,6 +264,8 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 		try (FileOutputStream fos = new FileOutputStream(modsFile)) {
 			new XMLOutputter(Format.getPrettyFormat()).output(mods.getDocument(), fos);
 		}
+
+		return mods.getDocument();
 	}
 
 	private Resource populateSimple(Model model, PID primaryPID, File contentFile) {
@@ -227,7 +283,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 	}
 
 	private Resource populateAggregate(Model model, PID primaryPID, List<?> attachmentElements, File attachmentDir,
-			File contentFile) {
+			File contentFile, String title) {
 
 		Property labelP = dprop(model, label);
 		Property fileLocation = dprop(model, stagingLocation);
@@ -239,6 +295,11 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 
 		model.add(primaryBag, hasModelP, model.createResource(CONTAINER.getURI().toString()));
 		model.add(primaryBag, hasModelP, model.createResource(AGGREGATE_WORK.getURI().toString()));
+		// Assign title to the main object as a label
+		if (title.length() > 128)
+			model.add(primaryBag, labelP, title.substring(0, 128));
+		else
+			model.add(primaryBag, labelP, title);
 
 		// Create default web object child entry for the main document
 		PID defaultObjectPID = new PID("uuid:" + UUID.randomUUID());

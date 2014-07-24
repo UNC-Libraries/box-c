@@ -65,6 +65,15 @@ public class VocabularyEnforcementJob extends AbstractDepositJob implements Runn
 	private XPath namePath;
 
 	public VocabularyEnforcementJob() {
+		initialize();
+	}
+
+	public VocabularyEnforcementJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
+		initialize();
+	}
+
+	private void initialize() {
 		try {
 			namePath = XPath.newInstance("//mods:name");
 			namePath.addNamespace("mods", MODS_V3_NS.getURI());

@@ -1,0 +1,61 @@
+/** Deposit Bin Collector */
+
+#collector h2 {
+	color: #000;
+	margin: 20px 0 5px 0;
+}
+
+#collector .collect_action {
+	float: right;
+	background-color: #E5EFFF;
+	border: 1px solid #CCD;
+	border-radius: 6px;
+	font-size: 16px;
+	color: #559;
+	padding: 8px 8px;
+	box-shadow: 0px 0px 7px -3px #428bca;
+	cursor: pointer;
+}
+
+#collector .file_list {
+	width: 100%;
+}
+
+#collector .file_list tr:not(:first-child):hover {
+	background-color: #f8f8ff;
+}
+
+#collector .file_list th {
+	box-shadow: 0 4px 6px -6px #AAAAFF;
+	margin: 1em;
+	border-bottom: 1px solid #C8D8E0;
+	padding: 6px 3em 4px 4px;
+	color: #1A698C;
+	font-weight: bold;
+}
+
+#collector .file_list .sortable:hover {
+	cursor: pointer;
+}
+
+#collector .file_list td {
+	padding: 6px 3em 4px 4px;
+}
+
+#collector .file_list td:last-child {
+	padding-right: 0;
+}
+
+#collector .file_list .size_col {
+	width: 7em;
+}
+
+#collector .file_list .date_col {
+	width: 10em;
+}
+
+#collector .file_list .check_col {
+	width: 16px;
+	margin: 0;
+	padding: 6px 4px;
+}

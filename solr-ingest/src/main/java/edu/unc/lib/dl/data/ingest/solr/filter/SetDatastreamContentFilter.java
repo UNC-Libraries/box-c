@@ -122,7 +122,7 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 				}
 
 				// If the filesize on the datastream is not set (due to old version of fedora creating it), then grab it from rels-ext
-				if (defaultWebData.getFilesize() < 0) {
+				if (defaultWebData.getFilesize() == null || defaultWebData.getFilesize() < 0) {
 					String sourceFileSize = relsExt.getChildText(ContentModelHelper.CDRProperty.hasSourceFileSize.name(), JDOMNamespaceUtil.CDR_NS);
 					if (sourceFileSize != null) {
 						defaultWebData.setFilesize(Long.parseLong(sourceFileSize));
@@ -144,8 +144,8 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		dip.getDocument().setDatastream(datastreamList);
 		for (Datastream ds : datastreams) {
 			datastreamList.add(ds.toString());
-			// Only add the filesize for datastreams directly belonging to this object to the filesize total
-			if (ds.getOwner() == null)
+			// Only add the filesize for datastreams directly belonging to this object to the filesize total, and only if there is a filesize present.
+			if (ds.getOwner() == null && ds.getFilesize() != null)
 				totalSize += ds.getFilesize();
 		}
 		dip.getDocument().setFilesizeTotal(totalSize);
@@ -162,25 +162,24 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	 *           If true, then the PID of the provided DIP will be listed as the owner of the datastream
 	 */
 	private void extractDatastreams(DocumentIndexingPackage dip, List<Datastream> datastreams, boolean includePIDAsOwner) {
-		Datastream currentDS = null;
-		long filesize = 0;
-
 		Map<String, Element> datastreamMap = FOXMLJDOMUtil.getMostRecentDatastreamMap(dip.getFoxml());
 		Iterator<Entry<String, Element>> it = datastreamMap.entrySet().iterator();
 		while (it.hasNext()) {
 			Entry<String, Element> dsEntry = it.next();
 			String dsName = dsEntry.getKey();
 			Element datastreamVersion = dsEntry.getValue();
+			Datastream currentDS = new Datastream(dsName);
 
-			try {
-				filesize = Long.parseLong(datastreamVersion.getAttributeValue("SIZE"));
-			} catch (NumberFormatException numE) {
-				filesize = 0;
+			// Set the datastream's filesize if the SIZE attribute is present and valid
+			if (datastreamVersion.getAttributeValue("SIZE") != null) {
+				try {
+					long size = Long.parseLong(datastreamVersion.getAttributeValue("SIZE"));
+					currentDS.setFilesize(size);
+				} catch (NumberFormatException numE) {
+				}
 			}
 
-			currentDS = new Datastream(dsName);
 			currentDS.setMimetype(datastreamVersion.getAttributeValue("MIMETYPE"));
-			currentDS.setFilesize(filesize);
 			currentDS.setExtension(this.getExtension(datastreamVersion.getAttributeValue("ALT_IDS"),
 					currentDS.getMimetype()));
 			if (includePIDAsOwner) {

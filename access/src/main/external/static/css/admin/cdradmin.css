@@ -17,7 +17,9 @@ html {
 }
 
 h1 {
-	color: #666677;
+	color: #000;
+	font-size: 20px;
+	padding: 0 0 1em 0;
 }
 
 /** Search form */
@@ -86,7 +88,7 @@ h1 {
 }
 
 .descriptivearea h1 {
-	font-size: 145%;
+	color: #666677;
 	font-weight: bold;
 	padding: .5em 0 .5em 0;
 }
@@ -161,7 +163,6 @@ h1 {
 	border-top: 1px solid #eee;
 	padding: 20px 0px;
 }
-
 
 .browseitem > h2 {
 	margin-bottom: 15px;

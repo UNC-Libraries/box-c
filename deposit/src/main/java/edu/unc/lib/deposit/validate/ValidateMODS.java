@@ -57,6 +57,7 @@ public class ValidateMODS extends AbstractDepositJob implements Runnable {
 		super(uuid, depositUUID);
 	}
 
+	@Override
 	public void run() {
 		int count = 0;
 		int invalidXSD = 0;
@@ -84,18 +85,21 @@ public class ValidateMODS extends AbstractDepositJob implements Runnable {
 						xsdEvent,
 						"MODS is valid with respect to the schema (XSD)",
 						null, null);
+
+				appendDepositEvent(p, xsdEvent);
 			} catch (SAXException e) {
 				invalidXSD++;
 				PremisEventLogger.addDetailedOutcome(
 						xsdEvent,
 						"MODS is not valid with respect to the schema (XSD)",
 						e.getMessage(), null);
-				
+
+				appendDepositEvent(p, xsdEvent);
 				continue;
 			} catch (IOException unexpected) {
 				throw new Error(unexpected);
 			}
-			appendDepositEvent(p, xsdEvent);
+
 			// Schematron validation
 			String message = "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)";
 			Element event = getEventLog().logEvent(Type.VALIDATION, message, p, "MD_DESCRIPTIVE");
@@ -118,7 +122,7 @@ public class ValidateMODS extends AbstractDepositJob implements Runnable {
 			appendDepositEvent(p, event);
 			addClicks(1);
 		}
-		
+
 		if((invalidVocab + invalidXSD) > 0) {
 			String message = MessageFormat.format("{0} invalid against XSD; {1} invalid against vocabularies", invalidXSD, invalidVocab);
 			failJob(Type.VALIDATION, "Some descriptive metadata (MODS) did not meet requirements.", message);

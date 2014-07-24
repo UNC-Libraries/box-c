@@ -13,17 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.deposit.collect;
-
-import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
-import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
+package edu.unc.lib.dl.admin.collect;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,11 +69,15 @@ public class DepositBinCollector {
 		ObjectMapper mapper = new ObjectMapper();
 		MapType mapType = mapper.getTypeFactory()
 				.constructMapType(Map.class, String.class, DepositBinConfiguration.class);
-		configs = mapper.readValue(this.getClass().getResourceAsStream(configPath), mapType);
+		configs = mapper.readValue(new File(configPath), mapType);
 	}
 
 	public DepositBinConfiguration getConfiguration(String binKey) {
 		return configs.get(binKey);
+	}
+
+	public Map<String, DepositBinConfiguration> getBinConfigurations() {
+		return configs;
 	}
 
 	/**
@@ -89,41 +86,35 @@ public class DepositBinCollector {
 	 * @param binKey
 	 * @return
 	 */
-	public List<String> listFiles(String binKey) {
+	public ListFilesResult listFiles(String binKey) {
 
 		final DepositBinConfiguration config = getConfiguration(binKey);
 		if (config == null)
 			return null;
 
-		List<String> files = new ArrayList<>();
+		ListFilesResult result = new ListFilesResult();
 
-		for (Path binPath : config.getBinPaths()) {
-			File binDirectory = binPath.toFile();
+		for (String binPath : config.getPaths()) {
+			File binDirectory = new File(binPath);
 			if (!binDirectory.exists() || !binDirectory.isDirectory()) {
 				log.warn("Bin configuration for {} references an invalid directory path {}", binKey, binDirectory);
 				return null;
 			}
 
-			File listedFiles[];
-			// Add all files to the list when no file filter is configured
-			if (!config.hasFileFilters()) {
-				listedFiles = binDirectory.listFiles();
-			} else {
-				// Filter files
-				listedFiles = binDirectory.listFiles(new FilenameFilter() {
-					@Override
-					public boolean accept(File directory, String fileName) {
-						return applicableFile(new File(directory, fileName), config);
-					}
-				});
+			// Add files to lists for applicable or non-applicable files
+			boolean hasFileFilters = config.hasFileFilters();
+			File listedFiles[] = binDirectory.listFiles();
+			for (File listedFile : listedFiles) {
+				if (hasFileFilters && !applicableFile(listedFile, config)) {
+					result.nonapplicable.add(listedFile);
+				} else {
+					result.applicable.add(listedFile);
+				}
 			}
 
-			for (File listedFile : listedFiles) {
-				files.add(listedFile.getAbsolutePath());
-			}
 		}
 
-		return files;
+		return result;
 	}
 
 	/**
@@ -144,38 +135,33 @@ public class DepositBinCollector {
 		try {
 			config.getKeyLock().lock();
 
-			List<Path> filePaths;
+			List<File> targetFiles;
 			// Use the provided list of file paths or the list of all applicable paths
 			if (filePathStrings != null) {
-				filePaths = new ArrayList<>(filePathStrings.size());
+				targetFiles = new ArrayList<File>(filePathStrings.size());
 
 				// Verify that all targets are valid
 				for (String filePathString : filePathStrings) {
 					File file = new File(filePathString);
-					Path filePath = file.toPath();
 
-					if (!(file.exists() && applicableFile(file, config) && pathInBins(filePath, config.getBinPaths()))) {
+					if (!(file.exists() && applicableFile(file, config) && pathInBins(file, config.getPaths()))) {
 						throw new IOException("Specified file was not a valid target for bin " + config.getName() + ": "
 								+ file.getAbsolutePath());
 					}
 
-					filePaths.add(filePath);
+					targetFiles.add(file);
 				}
 			} else {
 				// Use the list of all applicable files in the bin
-				List<String> fileList = this.listFiles(binKey);
-				filePaths = new ArrayList<>(fileList.size());
-
-				for (String filePathString : fileList) {
-					filePaths.add(Paths.get(filePathString));
-				}
+				ListFilesResult fileList = this.listFiles(binKey);
+				targetFiles = new ArrayList<File>(fileList.applicable);
 			}
 
 			// Create deposit directory
 			DepositInfo info = makeDeposit();
 
 			// Move the files for ingest into the deposit directory
-			moveFiles(filePaths, info, config);
+			moveFiles(targetFiles, info, config);
 
 			// Inform ingest queue that the files are ready for ingest
 			registerDeposit(info, config, extras);
@@ -232,27 +218,26 @@ public class DepositBinCollector {
 	/**
 	 * Moves a list of files to a destination location after verifying that they were safely copied
 	 *
-	 * @param filePaths
+	 * @param targetFiles
 	 * @param destination
 	 * @throws IOException
 	 */
-	private void moveFiles(List<Path> filePaths, DepositInfo depositInfo, DepositBinConfiguration config)
+	private void moveFiles(List<File> targetFiles, DepositInfo depositInfo, DepositBinConfiguration config)
 			throws IOException {
 
-		Path destination = depositInfo.dataDir.toPath();
 		try {
 			// Copy the specified files into the destination path
-			for (Path filePath : filePaths) {
-				Files.copy(filePath, destination.resolve(filePath.getFileName()), COPY_ATTRIBUTES, NOFOLLOW_LINKS);
+			for (File file : targetFiles) {
+				FileUtils.copyFileToDirectory(file, depositInfo.dataDir, true);
 			}
 
 			// Verify that the original files all copied over to the destination
-			for (Path filePath : filePaths) {
-				File destinationFile = destination.resolve(filePath.getFileName()).toFile();
+			for (File file : targetFiles) {
+				File destinationFile = new File(depositInfo.dataDir, file.getName());
 
-				if (!FileUtils.contentEquals(filePath.toFile(), destinationFile)) {
+				if (!FileUtils.contentEquals(file, destinationFile)) {
 					throw new IOException("Copied file " + destinationFile.toString() + " did not match the original file "
-							+ filePath.toString());
+							+ file.getAbsolutePath());
 				}
 			}
 		} catch (Exception e) {
@@ -260,18 +245,18 @@ public class DepositBinCollector {
 			throw new IOException("Failed to copy bin files to deposit directory, aborting and cleaning up", e);
 		}
 
-		try {
-			// Clean up the original copies of the files
-			for (Path filePath : filePaths) {
-				Files.delete(filePath);
+		// Clean up the original copies of the files
+		for (File file : targetFiles) {
+			boolean success = file.delete();
+			if (!success) {
+				log.warn("Failed to cleanup file {}", file.getAbsolutePath());
 			}
-		} catch (IOException e) {
-			log.warn("Failed to clean up files moved from bin directory {}", e, config.getName());
 		}
 	}
 
-	private boolean pathInBins(Path path, List<Path> binPaths) {
-		for (Path binPath : binPaths) {
+	private boolean pathInBins(File file, List<String> binPaths) {
+		String path = file.getAbsolutePath();
+		for (String binPath : binPaths) {
 			if (path.startsWith(binPath))
 				return true;
 		}
@@ -293,7 +278,6 @@ public class DepositBinCollector {
 		if (answer)
 			return true;
 
-		log.warn("Non-applicable file {} found in bin {}", file.getAbsolutePath(), config.getName());
 		return false;
 	}
 
@@ -305,5 +289,10 @@ public class DepositBinCollector {
 		public PID depositPID;
 		public File depositDir;
 		public File dataDir;
+	}
+
+	public class ListFilesResult {
+		public List<File> applicable = new ArrayList<File>();
+		public List<File> nonapplicable = new ArrayList<File>();
 	}
 }

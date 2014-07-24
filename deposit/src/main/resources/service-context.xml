@@ -273,7 +273,7 @@
 		scope="prototype">
 	</bean>
 	
-	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil">
+	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil" init-method="init">
 		<property name="ontologyPath" value="${distribution.dir}/conf/departments.xml" />
 	</bean>
 	
@@ -340,9 +340,5 @@
 		<property name="fromAddress" value="${from.email:no-reply@example.com}" />
 		<property name="htmlTemplate" ref="htmlTemplate" />
 		<property name="textTemplate" ref="textTemplate" />
-	</bean>
-	
-	<bean id="depositBinCollector" class="edu.unc.lib.deposit.collect.DepositBinCollector" >
-		<property name="configPath" value="${distribution.dir}/conf/collector.json" />
 	</bean>
 </beans>
