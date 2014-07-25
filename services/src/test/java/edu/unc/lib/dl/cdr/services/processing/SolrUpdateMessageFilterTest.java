@@ -87,7 +87,7 @@ public class SolrUpdateMessageFilterTest extends Assert {
 	public void fedoraMessages() throws Exception{
 		Document doc = readFileAsString("ingestMessage.xml");
 		FedoraEventMessage message = new FedoraEventMessage(doc);
-		assertFalse(solrUpdateMessageFilter.filter(message));
+		assertTrue(solrUpdateMessageFilter.filter(message));
 		
 		//Purge object passes
 		message.setAction(JMSMessageUtil.FedoraActions.PURGE_OBJECT.getName());

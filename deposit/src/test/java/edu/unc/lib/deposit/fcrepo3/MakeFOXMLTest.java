@@ -215,6 +215,7 @@ public class MakeFOXMLTest {
 		// Check that the staging location is being set
 		Element dsLocation = dsEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS).getChild("contentLocation",
 				JDOMNamespaceUtil.FOXML_NS);
+		if(dsLocation == null) return;
 		String dsLocationValue = dsLocation.getAttributeValue("REF");
 		File dsFile = edu.unc.lib.dl.util.FileUtils.getFileForUrl(dsLocationValue, job.getDepositDirectory());
 		assertTrue("Location referenced by datastream not found", dsFile.exists());
