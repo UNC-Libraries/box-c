@@ -418,7 +418,7 @@
 		<property name="batchIngestTaskFactory" ref="batchIngestTaskFactory"/>
 	</bean>
 	
-  <bean id="batchIngestTaskFactory" class="edu.unc.lib.dl.services.BatchIngestTaskFactory">
+    <bean id="batchIngestTaskFactory" class="edu.unc.lib.dl.services.BatchIngestTaskFactory">
 		<lookup-method name="createTask" bean="batchIngestTask"/>
 	</bean>
 	
@@ -429,6 +429,7 @@
 		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
+		<property name="stagesConfiguration" value="${fedora.stagesConfiguration}"/>
 	</bean>
 
 	<bean id="mailNotifier" class="edu.unc.lib.dl.services.MailNotifier">
