@@ -141,6 +141,7 @@
 		<property name="mailNotifier" ref="mailNotifier"/>
 		<property name="ingestPollingTimeoutSeconds" value="${ingest.polling.timeout.seconds}"/>
 		<property name="ingestPollingDelaySeconds" value="${ingest.polling.delay.seconds}"/>
+		<property name="stagesConfiguration" value="${fedora.stagesConfiguration}"/>
 	</bean>
 
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
