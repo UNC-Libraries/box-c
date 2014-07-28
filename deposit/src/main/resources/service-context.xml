@@ -62,10 +62,10 @@
 		<constructor-arg value="0" />
 	</bean>
 
-<!-- 	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl"
+	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl"
 		scope="prototype">
 		<constructor-arg ref="jesqueConfig" />
-	</bean> -->
+	</bean>
 
 	<bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
 		<constructor-arg name="workerFactory">
@@ -108,17 +108,6 @@
 			</list>
 		</property>
 	</bean>
-
-	<!-- <bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl" 
-		destroy-method="destroy"> <property name="itqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService"/> 
-		<property name="sparqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/sparql/"/> 
-		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#"/> 
-		</bean> -->
-
-	<!-- <bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient" 
-		init-method="init"> <property name="fedoraContextUrl" value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fedora}" 
-		/> <property name="username" value="${fedora.admin.username}" /> <property 
-		name="password" value="${fedora.admin.password}" /> </bean> -->
 
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
 		init-method="loadSchemas">
@@ -281,7 +270,7 @@
 	</bean>
 	
 	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil" init-method="init">
-		<property name="ontologyPath" value="${distribution.dir}/conf/departments.xml" />
+		<property name="ontologyURL" value="${departments.skos.url}" />
 	</bean>
 	
 	<bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"
