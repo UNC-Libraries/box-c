@@ -18,7 +18,7 @@ package edu.unc.lib.dl.xml;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.RDF_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.SKOS_NS;
 
-import java.io.File;
+import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 public class DepartmentOntologyUtil {
 	private static final Logger log = LoggerFactory.getLogger(DepartmentOntologyUtil.class);
 
-	private String ontologyPath;
+	private String ontologyURL;
 
 	// Index of terms and labels mapped to authoritative department names pull from the ontology
 	private Map<String, DepartmentConcept> departments;
@@ -77,9 +77,9 @@ public class DepartmentOntologyUtil {
 
 	public void init() {
 		try {
-			parseVocabulary(ontologyPath);
+			parseVocabulary(ontologyURL);
 		} catch (Exception e) {
-			log.error("Failed to parse department ontology at path {}", e, ontologyPath);
+			log.error("Failed to parse department ontology at path {}", e, ontologyURL);
 		}
 	}
 
@@ -296,22 +296,22 @@ public class DepartmentOntologyUtil {
 		}
 	}
 
-	public void setOntologyPath(String ontologyPath) {
-		this.ontologyPath = ontologyPath;
+	public void setOntologyURL(String ontologyURL) {
+		this.ontologyURL = ontologyURL;
 	}
 
 	/**
 	 * Parses a SKOS XML vocabulary located at filePath and populates a lookup index labels and alternative labels
 	 * referencing the authoritative version.
 	 *
-	 * @param filePath
+	 * @param ontologyURL
 	 * @throws Exception
 	 */
-	private void parseVocabulary(String filePath) throws Exception {
+	private void parseVocabulary(String ontologyURL) throws Exception {
 		departments = new HashMap<String, DepartmentConcept>();
 
 		SAXBuilder sb = new SAXBuilder(false);
-		Document skosDoc = sb.build(new File(filePath));
+		Document skosDoc = sb.build(new URL(ontologyURL));
 
 		// Extract all of the concepts and store them to an index
 		List<?> concepts = skosDoc.getRootElement().getChildren("Concept", SKOS_NS);

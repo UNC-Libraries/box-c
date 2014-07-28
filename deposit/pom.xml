@@ -139,7 +139,7 @@
 			<artifactId>saxon</artifactId>
 			<version>8.7</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-compress</artifactId>
@@ -149,15 +149,6 @@
 
 	<build>
 		<finalName>${artifactId}</finalName>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<excludes>
-					<exclude>deposit.properties</exclude>
-					<exclude>log4j.properties</exclude>
-				</excludes>
-			</resource>
-		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -166,6 +157,16 @@
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<systemPropertyVariables>
+						<deposit.properties.uri>classpath:deposit.properties</deposit.properties.uri>
+					</systemPropertyVariables>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -204,8 +205,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<!-- Source Plugin to generate a JAR containing source code from the 
-					project. -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
 				<version>2.1.2</version>
@@ -219,14 +218,18 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<!-- Assembly Plugin for the win! -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.3</version>
 				<configuration>
-					<descriptors>
-						<descriptor>src/main/assembly/dist.xml</descriptor>
-					</descriptors>
+					<archive>
+      					<manifest>
+        					<mainClass>edu.unc.lib.deposit.DepositDaemon</mainClass>
+      					</manifest>
+    				</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
 				</configuration>
 				<executions>
 					<execution>
