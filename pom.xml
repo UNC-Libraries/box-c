@@ -348,7 +348,7 @@
 			<url>https://m2.duraspace.org/content/repositories/releases/</url>
 		</repository>
 		<repository>
-			<id>maven2-repository.dev.java.net</id>
+			<id>java-net-maven2-repository</id>
 			<name>Java.net Maven 2 Repository</name>
 			<url>http://download.java.net/maven/2</url>
 		</repository>
@@ -381,16 +381,10 @@
 
 	<pluginRepositories>
 		<pluginRepository>
-			<id>maven2-repository.dev.java.net</id>
+			<id>java-net-maven2-repository</id>
 			<name>Java.net Maven 2 Repository</name>
 			<url>http://download.java.net/maven/2</url>
 		</pluginRepository>
-		<!-- <pluginRepository>
-			<id>maven-repository.dev.java.net</id>
-			<name>Java.net Maven 1 Repository (legacy)</name>
-			<url>http://download.java.net/maven/1</url> 
-			<layout>legacy</layout>
-		</pluginRepository> -->
 	</pluginRepositories>
 
 	<dependencyManagement>
@@ -399,11 +393,6 @@
 				<groupId>net.greghaines</groupId>
 				<artifactId>jesque</artifactId>
 				<version>2.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>gov.loc</groupId>
-				<artifactId>bagit</artifactId>
-				<version>4.8</version>
 			</dependency>
 			<dependency>
 				<groupId>edu.unc.lib.cdr</groupId>
@@ -466,6 +455,11 @@
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-jms</artifactId>
 				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context-support</artifactId>
+				<version>3.0.6.RELEASE</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
