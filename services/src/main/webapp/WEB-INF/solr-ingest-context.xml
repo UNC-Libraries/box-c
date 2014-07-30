@@ -105,7 +105,7 @@
 	</bean>
 	
 	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil" init-method="init">
-		<property name="ontologyPath" value="${vocab.dir}/departments.xml" />
+		<property name="ontologyURL" value="${departments.skos.url}" />
 	</bean>
 
 	<!-- Ingest pipeline -->
