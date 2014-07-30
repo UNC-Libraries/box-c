@@ -16,11 +16,13 @@ NAME="deposit"
 DESC="Deposit Worker Daemon"
 LOG_OUT=$DIST_DIR/logs/deposit-jsvc.out
 LOG_ERR=$DIST_DIR/logs/deposit-jsvc.err
+red='\e[0;31m'
+NC='\e[0m' # No Color
 
 jsvc_exec()
 {  
     cd $DIST_DIR
-    $JSVC_EXECUTABLE $STOP -server -cp "$JAVA_CLASSPATH" -wait 10 -user $JSVC_USER -outfile $LOG_OUT -errfile $LOG_ERR -pidfile $JSVC_PID_FILE $JAVA_OPTS $JAVA_MAIN_CLASS $ARGS
+    $JSVC_EXECUTABLE $STOP -server -cp "$JAVA_CLASSPATH" -wait 30 -user $JSVC_USER -outfile $LOG_OUT -errfile $LOG_ERR -pidfile $JSVC_PID_FILE $JAVA_OPTS $JAVA_MAIN_CLASS $ARGS
 }
 
 case "$1" in
@@ -29,17 +31,28 @@ case "$1" in
        
         # Start the service
         jsvc_exec
+        RETVAL=$?
        
-        echo "The $DESC has started."
+        [ $RETVAL -eq 0 ] && echo "The $DESC has started."
+        [ $RETVAL -ne 0 ] && echo -e "${red}The $DESC failed to start.${NC}" >&2
+        exit $RETVAL
     ;;
     stop)
         echo "Stopping the $DESC..."
+        if [ -f "$JSVC_PID_FILE" ]; then
        
-        # Stop the service
-        STOP="-stop"
-        jsvc_exec      
+        	# Stop the service
+        	STOP="-stop"
+        	jsvc_exec
+        	RETVAL=$?      
        
-        echo "The $DESC has stopped."
+        	[ $RETVAL -eq 0 ] && echo "The $DESC has stopped."
+        	[ $RETVAL -ne 0 ] && echo -e "${red}The $DESC failed to stop.${NC}" >&2
+        	exit $RETVAL
+        else
+            echo "Daemon not running, no action taken"
+            exit 1
+        fi
     ;;
     restart)
         if [ -f "$JSVC_PID_FILE" ]; then
@@ -48,11 +61,14 @@ case "$1" in
            
             # Stop the service
             jsvc_exec "-stop"
-           
+            
             # Start the service
             jsvc_exec
+            RETVAL=$?
            
-            echo "The $DESC has restarted."
+            [ $RETVAL -eq 0 ] && echo "The $DESC has restarted."
+        	[ $RETVAL -ne 0 ] && echo -e "${red}The $DESC failed to restart.${NC}" >&2
+            exit $RETVAL
         else
             echo "Daemon not running, no action taken"
             exit 1

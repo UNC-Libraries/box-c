@@ -194,6 +194,8 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 					ingestsAwaitingConfirmation.add(ingestPid);
 
 					ingestObject(ingestPid);
+
+					getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
 				}
 			} catch (DepositException e) {
 				failJob(e, Type.INGESTION, "Ingest of object {0} failed", ingestPid);
@@ -277,6 +279,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 		} catch (Exception e) {
 			throw new DepositException("Failed to ingest object " + pid.getPid() + " into Fedora.", e);
 		}
+		// TODO increment ingestedOctets
 
 	}
 

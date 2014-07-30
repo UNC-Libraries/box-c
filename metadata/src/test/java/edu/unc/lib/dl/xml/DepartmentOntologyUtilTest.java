@@ -34,7 +34,7 @@ public class DepartmentOntologyUtilTest {
 	@Before
 	public void init() {
 		job = new DepartmentOntologyUtil();
-		job.setOntologyPath("src/test/resources/samples/dept-ontology.xml");
+		job.setOntologyURL("file:src/test/resources/samples/dept-ontology.xml");
 		job.init();
 	}
 

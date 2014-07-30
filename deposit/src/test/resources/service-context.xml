@@ -23,9 +23,6 @@
 	<bean name="propertiesURI" class="java.lang.System"
 		factory-method="getProperty">
 		<constructor-arg index="0" value="deposit.properties.uri" />
-		<!-- property name for properties URI location -->
-		<constructor-arg index="1" value="classpath:deposit.properties" />
-		<!-- default location for testing -->
 	</bean>
 	<bean id="serverProperties"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -43,8 +40,15 @@
 
 	<bean id="jedisPool" class="redis.clients.jedis.JedisPool"
 		destroy-method="destroy">
+		<constructor-arg ref="poolConfig"/>
 		<constructor-arg type="String" value="${redis.host:localhost}" />
 		<constructor-arg type="int" value="${redis.port:6379}" />
+	</bean>
+	
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxIdle" value="15"/>
+		<property name="minIdle" value="2"/>
+		<property name="maxActive" value="25"/>
 	</bean>
 
 	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
@@ -78,7 +82,9 @@
 		<constructor-arg name="numWorkers" value="5" />
 	</bean>
 
-	<bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor" />
+	<bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor">
+		<property name="jesqueConfig" ref="jesqueConfig"/>
+	</bean>
 
 	<bean id="jobFactory" class="edu.unc.lib.deposit.work.SpringJobFactory" />
 
@@ -92,16 +98,6 @@
 		factory-method="mock">
 		<constructor-arg index="0"
 			value="edu.unc.lib.dl.fedora.ManagementClient" />
-	</bean>
-
-	<bean id="accessClient" class="org.mockito.Mockito"
-		factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.fedora.AccessClient" />
-	</bean>
-
-	<bean id="tripleStoreQueryService" class="org.mockito.Mockito"
-		factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.util.TripleStoreQueryService" />
 	</bean>
 
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
@@ -152,7 +148,12 @@
 	</bean>
 
 	<bean id="transformerFactory" class="javax.xml.transform.TransformerFactory"
-		factory-method="newInstance" />
+		factory-method="newInstance">
+		<property name="uRIResolver">
+			<bean class="edu.unc.lib.dl.xml.ClasspathURIResolver">
+			</bean>
+		</property>
+	</bean>
 
 	<bean id="epdcx2modsTransformer" factory-bean="transformerFactory"
 		factory-method="newTransformer">
@@ -160,6 +161,17 @@
 			<bean class="org.springframework.xml.transform.ResourceSource">
 				<constructor-arg>
 					<value>classpath:epdcx2mods.xsl</value>
+				</constructor-arg>
+			</bean>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="proquest2ModsTransformer" factory-bean="transformerFactory"
+		factory-method="newTransformer">
+		<constructor-arg>
+			<bean class="org.springframework.xml.transform.ResourceSource">
+				<constructor-arg>
+					<value>classpath:proquest-to-mods.xsl</value>
 				</constructor-arg>
 			</bean>
 		</constructor-arg>
@@ -189,6 +201,14 @@
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />
 		<property name="epdcx2modsTransformer" ref="epdcx2modsTransformer" />
+	</bean>
+
+	<bean id="Simple2N3BagJob" class="edu.unc.lib.deposit.normalize.Simple2N3BagJob"
+		scope="prototype"/>
+		
+	<bean id="Proquest2N3BagJob" class="edu.unc.lib.deposit.normalize.Proquest2N3BagJob"
+		scope="prototype">
+		<property name="proquest2ModsTransformer" ref="proquest2ModsTransformer" />
 	</bean>
 
 	<bean id="BioMedCentralExtrasJob" class="edu.unc.lib.deposit.normalize.BioMedCentralExtrasJob"
@@ -239,6 +259,14 @@
 	<bean id="MakeFOXML" class="edu.unc.lib.deposit.fcrepo3.MakeFOXML"
 		scope="prototype">
 	</bean>
+	
+	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil" init-method="init">
+		<property name="ontologyURL" value="${departments.skos.url}" />
+	</bean>
+	
+	<bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"
+		scope="prototype">
+	</bean>
 
 	<bean id="jmsContainer"
 		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
@@ -249,13 +277,13 @@
 				<property name="connectionFactory">
 					<bean class="org.apache.activemq.ActiveMQConnectionFactory">
 						<property name="brokerURL">
-							<value>tcp://${jms.host:localhost}:${jms.port:61616}</value>
+							<value>tcp://${jms.host:localhost}:${jms.port:61617}</value>
 						</property>
 					</bean>
 				</property>
 			</bean>
 		</property>
-		<property name="destinationName" value="fedora.apim.update" />
+		<property name="destinationName" value="repository.updates" />
 		<property name="pubSubDomain" value="true" />
 		<property name="messageListener" ref="jobForwardingJMSListener" />
 		<property name="sessionTransacted" value="true" />

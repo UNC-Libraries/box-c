@@ -104,6 +104,7 @@ public class IngestDepositTest {
 
 		depositStatus = new HashMap<>();
 		when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
+		depositStatus.put(DepositField.permissionGroups.name(), "group");
 
 		when(client.upload(any(Document.class))).thenReturn("uploadpath");
 		when(client.upload(any(File.class))).thenReturn("uploadpath");

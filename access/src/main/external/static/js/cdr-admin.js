@@ -4522,20 +4522,22 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	var defaultOptions = {
 		name : "deposit",
 		jobConfig : {
-			url : "/services/api/status/deposit/{name}/",
+			url : "/services/api/status/deposit/{name}",
 			template : depositMonitorJobTemplate,
-			detailsUrl : "/services/api/status/deposit/{id}/jobs",
+			detailsUrl : "/services/api/status/deposit/{id}",
 			detailsTemplate : depositMonitorDetailsTemplate,
 			fields : ["Status", "Submitter", "Submit time", "Ingested", "First object", "Note"],
 			jobTypes : [
-				{name : "active", refresh : 5000, detailsRefresh : 1000},
+				{name : "running", refresh : 5000, detailsRefresh : 1000},
 				{name : "queued", refresh : 10000},
+				{name : "paused", refresh : 10000},
 				{name : "finished", refresh : 10000},
+				{name : "cancelled", refresh : 10000},
 				{name : "failed", refresh : 10000}
 			]
 		},
 		overviewConfig : {
-			url : "/services/api/status/deposit/"
+			url : "/services/api/status/deposit"
 		}
 	};
 			
@@ -4641,8 +4643,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	IngestMonitor.prototype = Object.create( AbstractStatusMonitor.prototype );
 	
 	return IngestMonitor;
-});define('StatusMonitorManager', [ 'jquery', 'jquery-ui', 'underscore', 'IngestMonitor', 'DepositMonitor', 'IndexingMonitor', 'EnhancementMonitor'],
-		function($, ui, _, IngestMonitor, DepositMonitor, IndexingMonitor, EnhancementMonitor) {
+});define('StatusMonitorManager', [ 'jquery', 'jquery-ui', 'underscore', 'DepositMonitor', 'IndexingMonitor', 'EnhancementMonitor'],
+		function($, ui, _, DepositMonitor, IndexingMonitor, EnhancementMonitor) {
 			
 	function StatusMonitorManager(element, options) {
 		this.element = element;
@@ -4677,7 +4679,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	StatusMonitorManager.prototype.addMonitors = function() {
-		this.addMonitor(new IngestMonitor());
 		this.addMonitor(new DepositMonitor());
 		this.addMonitor(new IndexingMonitor());
 		this.addMonitor(new EnhancementMonitor());

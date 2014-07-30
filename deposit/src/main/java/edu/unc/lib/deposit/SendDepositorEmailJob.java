@@ -78,6 +78,9 @@ public class SendDepositorEmailJob extends AbstractDepositJob implements Runnabl
 		data.put("baseUrl", this.getBaseUrl());
 		boolean error = status.containsKey(DepositField.errorMessage.name());
 		data.put("error", Boolean.valueOf(error));
+		if(error) data.put("errorMessage", status.get(DepositField.errorMessage.name()));
+		data.put("ingestedObjects", status.get(DepositField.ingestedObjects.name()));
+		data.put("uuid", status.get(DepositField.uuid.name()));
 		
 		// execute template, address and send
 		String html = htmlTemplate.execute(data);
