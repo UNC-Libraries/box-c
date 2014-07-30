@@ -260,6 +260,7 @@ public class DepositSupervisor implements WorkerListener {
 			if(!DepositState.running.name().equals(status.get(DepositField.state.name()))) {
 				depositStatusFactory.setState(depositUUID, DepositState.running);
 			}
+			break;
 		case JOB_SUCCESS:
 			try {
 				Job nextJob = getNextJob(job, depositUUID, status, successfulJobs);
@@ -383,7 +384,7 @@ public class DepositSupervisor implements WorkerListener {
 				&& !successfulJobs.contains(SendDepositorEmailJob.class.getName())) {
 			return makeJob(SendDepositorEmailJob.class, depositUUID);
 		}
-		
+
 		// TODO schedule cleaning jobs
 
 		return null;
