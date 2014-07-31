@@ -309,7 +309,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 						}
 
 						if (!file.exists()) {
-							throw new IOException("File not found");
+							throw new IOException("File not found: " + ref);
 						}
 
 						log.debug("uploading " + file.getPath());
