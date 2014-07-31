@@ -53,6 +53,7 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.JobStatusFactory;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 
@@ -132,30 +133,45 @@ public abstract class AbstractNormalizationJobTest {
 	}
 
 	protected void copyTestPackage(String filename, AbstractDepositJob job) {
+		copyTestPackage(filename, null, job);
+	}
+
+	protected void copyTestPackage(String filename, String destFilename, AbstractDepositJob job) {
 		job.getDataDirectory().mkdir();
 		Path packagePath = Paths.get(filename);
 		try {
-			Files.copy(packagePath, job.getDataDirectory().toPath().resolve(packagePath.getFileName()));
+			Path destPath;
+			if (destFilename == null) {
+				destPath = job.getDataDirectory().toPath().resolve(packagePath.getFileName());
+			} else {
+				destPath = job.getDataDirectory().toPath().resolve(destFilename);
+			}
+			Files.copy(packagePath, destPath);
 		} catch (Exception e) {
 		}
 	}
 
 	protected boolean isAggregate(Resource resource, Model model) {
+		return isContainerType(resource, AGGREGATE_WORK, model);
+	}
+
+	protected boolean isContainerType(Resource resource, ContentModelHelper.Model containerType, Model model) {
 		Property hasContentModel = fprop(model, hasModel);
 
 		StmtIterator cmIt = resource.listProperties(hasContentModel);
-		boolean isAggregate = false, isContainer = false;
+		boolean isSpecialized = false;
+		boolean isContainer = false;
 		while (cmIt.hasNext()) {
 			String cmValue = cmIt.next().getResource().getURI();
-			if (AGGREGATE_WORK.equals(cmValue)) {
-				isAggregate = true;
+			if (containerType.equals(cmValue)) {
+				isSpecialized = true;
 			}
 			if (CONTAINER.equals(cmValue)) {
 				isContainer = true;
 			}
 		}
 
-		return isAggregate && isContainer;
+		return isSpecialized && isContainer;
 	}
 
 	protected Element element(String xpathString, Object xmlObject) throws Exception {

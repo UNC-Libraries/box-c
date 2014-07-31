@@ -41,7 +41,6 @@ import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositException;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.JMSMessageUtil.FedoraActions;
 import edu.unc.lib.dl.util.PremisEventLogger;
@@ -65,7 +64,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 
 	@Autowired
 	private JobForwardingJMSListener listener;
-	
+
 	@Autowired
 	private ManagementClient client;
 
@@ -180,7 +179,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 			AccessGroupSet ags = new AccessGroupSet(groups);
 			GroupsThreadStore.storeGroups(ags);
 			GroupsThreadStore.storeUsername(depositStatus.get(DepositField.depositorName.name()));
-			
+
 			// Begin ingest of individual objects in the deposit
 			String ingestPid = null;
 			try {
@@ -189,7 +188,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 				while ((ingestPid = ingestPids.poll()) != null) {
 
 					addTopLevelToContainer(ingestPid);
-					
+
 					// Register pid as needing ingest confirmation
 					ingestsAwaitingConfirmation.add(ingestPid);
 
@@ -301,8 +300,17 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 				// Upload local file reference
 				if (uri.getScheme() == null || uri.getScheme().contains("file")) {
 					try {
-						// Attempt to find the file within the deposit directory
-						File file = FileUtils.getFileForUrl(ref, this.getDepositDirectory());
+						String path = uri.getPath();
+						File file = getDepositDirectory().toPath().resolve(path).toFile();
+
+						// Make sure the file was inside the deposit directory
+						if (!file.toPath().toAbsolutePath().startsWith(getDepositDirectory().toPath().toAbsolutePath())) {
+							throw new ServiceException("File path was outside the deposit directory");
+						}
+
+						if (!file.exists()) {
+							throw new IOException("File not found: " + ref);
+						}
 
 						log.debug("uploading " + file.getPath());
 						newref = client.upload(file);

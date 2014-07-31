@@ -39,6 +39,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,6 +59,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.util.UriUtils;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.rdf.model.Bag;
@@ -388,7 +390,13 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 	}
 
 	private String getRelativePath(File file) {
-		return file.getAbsolutePath().substring(getDepositDirectory().getAbsolutePath().length() + 1);
+		try {
+			return UriUtils.encodeUri(
+					file.getAbsolutePath().substring(getDepositDirectory().getAbsolutePath().length() + 1), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			log.error("Failed to encode file path", e);
+			return null;
+		}
 	}
 
 	public void setProquest2ModsTransformer(Transformer proquest2ModsTransformer) {
