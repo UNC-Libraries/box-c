@@ -27,12 +27,14 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.util.UriUtils;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -119,7 +121,13 @@ public class Simple2N3BagJob extends AbstractDepositJob implements Runnable {
 		model.add(primaryResource, dprop(model, label), alabel);
 
 		// Reference the content file as the data file
-		model.add(primaryResource, dprop(model, stagingLocation), DepositConstants.DATA_DIR + "/" + contentFile.getName());
+		try {
+
+			model.add(primaryResource, dprop(model, stagingLocation),
+					DepositConstants.DATA_DIR + "/" + UriUtils.encodeUri(contentFile.getName(), "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			log.error("fail to encode filepath {}", contentFile.getName(), e);
+		}
 	}
 
 	private Resource populateContainer(Model model, Resource primaryResource, PID primaryPID, String alabel,

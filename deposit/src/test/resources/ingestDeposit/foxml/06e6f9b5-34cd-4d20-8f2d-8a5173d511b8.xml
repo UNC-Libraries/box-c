@@ -12,7 +12,7 @@
 		<datastreamVersion ID="DATA_FILE.0" MIMETYPE="text/plain"
 			LABEL="test.txt">
 			<contentDigest TYPE="MD5" DIGEST="none" />
-			<contentLocation REF="test.txt"
+			<contentLocation REF="data/file%20with%20spaces.txt"
 				TYPE="URL" />
 		</datastreamVersion>
 	</datastream>
