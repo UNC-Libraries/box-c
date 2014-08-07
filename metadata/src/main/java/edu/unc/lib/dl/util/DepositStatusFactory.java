@@ -2,6 +2,8 @@ package edu.unc.lib.dl.util;
 
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_SET;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_STATUS_PREFIX;
+import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_CONFIRMED_PREFIX;
+import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_UPLOADED_PREFIX;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -15,7 +17,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 public class DepositStatusFactory {
 	JedisPool jedisPool;
-	
+
 	public JedisPool getJedisPool() {
 		return jedisPool;
 	}
@@ -25,14 +27,14 @@ public class DepositStatusFactory {
 	}
 
 	public DepositStatusFactory() {}
-	
+
 	public Map<String, String> get(String depositUUID) {
 		Jedis jedis = getJedisPool().getResource();
 		Map<String, String> result = jedis.hgetAll(DEPOSIT_STATUS_PREFIX+depositUUID);
 		getJedisPool().returnResource(jedis);
 		return result;
 	}
-	
+
 	public Set<Map<String, String>> getAll() {
 		Set<Map<String, String>> result = new HashSet<Map<String, String>>();
 		Jedis jedis = getJedisPool().getResource();
@@ -56,7 +58,7 @@ public class DepositStatusFactory {
 		jedis.sadd(DEPOSIT_SET, depositUUID);
 		getJedisPool().returnResource(jedis);
 	}
-	
+
 	/**
 	 * Locks the given deposit for a designated supervisor. These
 	 * are short term locks and should be released after every
@@ -71,7 +73,7 @@ public class DepositStatusFactory {
 		getJedisPool().returnResource(jedis);
 		return result == 1;
 	}
-	
+
 	/**
 	 * Unlocks the given deposit, allowing a new supervisor to manage it.
 	 * @param depositUUID
@@ -81,7 +83,7 @@ public class DepositStatusFactory {
 		jedis.hdel(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.lock.name());
 		getJedisPool().returnResource(jedis);
 	}
-	
+
 	public DepositState getState(String depositUUID) {
 		DepositState result = null;
 		Jedis jedis = getJedisPool().getResource();
@@ -94,19 +96,60 @@ public class DepositStatusFactory {
 		getJedisPool().returnResource(jedis);
 		return result;
 	}
-	
+
+	public boolean isResumedDeposit(String depositUUID) {
+		Jedis jedis = getJedisPool().getResource();
+		try {
+			return jedis.exists(INGESTS_UPLOADED_PREFIX + depositUUID);
+		} finally {
+			getJedisPool().returnResource(jedis);
+		}
+	}
+
+	public Set<String> getUnconfirmedUploads(String depositUUID) {
+		Jedis jedis = getJedisPool().getResource();
+		Set<String> result = jedis.sdiff(INGESTS_UPLOADED_PREFIX + depositUUID, INGESTS_CONFIRMED_PREFIX + depositUUID);
+		getJedisPool().returnResource(jedis);
+		return result;
+	}
+
+	public Set<String> getConfirmedUploads(String depositUUID) {
+		Jedis jedis = getJedisPool().getResource();
+		Set<String> result = jedis.smembers(INGESTS_CONFIRMED_PREFIX + depositUUID);
+		getJedisPool().returnResource(jedis);
+		return result;
+	}
+
+	public void addUploadedPID(String depositUUID, String pid) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.sadd(INGESTS_UPLOADED_PREFIX + depositUUID, pid);
+		getJedisPool().returnResource(jedis);
+	}
+
+	public void addConfirmedPID(String depositUUID, String pid) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.sadd(INGESTS_CONFIRMED_PREFIX + depositUUID, pid);
+		getJedisPool().returnResource(jedis);
+	}
+
 	public void setState(String depositUUID, DepositState state) {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.state.name(), state.name());
 		getJedisPool().returnResource(jedis);
 	}
-	
+
+	public void setActionRequest(String depositUUID, DepositAction action) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.actionRequest.name(), action.name());
+		getJedisPool().returnResource(jedis);
+	}
+
 	public void incrIngestedOctets(String depositUUID, int amount) {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.hincrBy(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.ingestedOctets.name(), amount);
 		getJedisPool().returnResource(jedis);
 	}
-	
+
 	public void incrIngestedObjects(String depositUUID, int amount) {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.hincrBy(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.ingestedObjects.name(), amount);
@@ -128,6 +171,15 @@ public class DepositStatusFactory {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.del(DEPOSIT_STATUS_PREFIX+depositUUID);
 		getJedisPool().returnResource(jedis);
+	}
+
+	public void deleteField(String depositUUID, DepositField field) {
+		Jedis jedis = getJedisPool().getResource();
+		try {
+			jedis.hdel(DEPOSIT_STATUS_PREFIX + depositUUID, field.name());
+		} finally {
+			getJedisPool().returnResource(jedis);
+		}
 	}
 
 	public void requestAction(String depositUUID, DepositAction action) {

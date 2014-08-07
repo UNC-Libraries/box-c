@@ -26,6 +26,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
@@ -53,6 +54,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -61,7 +63,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * @author Gregory Jansen
- * 
+ *
  */
 @Controller
 @RequestMapping(value = { "/status/deposit*", "/status/deposit" })
@@ -77,14 +79,17 @@ public class DepositController {
 	private DepositStatusFactory depositStatusFactory;
 
 	@Resource
+	private JobStatusFactory jobStatusFactory;
+
+	@Resource
 	private File batchIngestFolder;
-	
+
 	class MutableInt {
 		  int value = 0;
 		  public void increment () { ++value;      }
 		  public int  get ()       { return value; }
 	}
-	
+
 	@PostConstruct
 	public void init() {
 	}
@@ -94,8 +99,7 @@ public class DepositController {
 	Map<String, ? extends Object> getInfo() {
 		LOG.debug("getInfo() called");
 		Map<String, Object> result = new HashMap<String, Object>();
-		//Map<String, Map<String, String>> deposits = fetchDepositMap();
-		
+
 		Map<String, MutableInt> counts = countWorkerStates();
 		Map<String, MutableInt> countDepositStates = countDepositStates();
 		int active = counts.get("active").get();
@@ -120,7 +124,7 @@ public class DepositController {
 
 		return result;
 	}
-	
+
 	public @ResponseBody
 	Map<String, MutableInt> countDepositStates() {
 		Map<String, MutableInt> result = new HashMap<String, MutableInt>();
@@ -134,40 +138,44 @@ public class DepositController {
 		LOG.debug("count deposit states");
 		Map<String, Map<String, String>> deposits = fetchDepositMap();
 		for (Map<String, String> deposit : deposits.values()) {
-				String state = (String) deposit.get(DepositField.state.name());
+			String state = deposit.get(DepositField.state.name());
 				MutableInt it = result.get(state);
 				if(it != null) it.increment();
 		}
 		return result;
 	}
-	
+
 	private Map<String, MutableInt> countWorkerStates() {
 		Jedis jedis = getJedisPool().getResource();
-		Map<String, MutableInt> result = new HashMap<String, MutableInt>();
-		result.put("idle", new MutableInt());
-		result.put("paused", new MutableInt());
-		result.put("active", new MutableInt());
-        final Set<String> workerNames = jedis.smembers("resque:workers");
-        for (final String workerName : workerNames) {
-        	final String statusPayload = jedis.get("resque:worker:"+workerName);
-        	if(statusPayload == null) { // no payload key for works that just started
-        		result.get("idle").increment();
-        	} else {
-        		try {
-					JsonNode w = new ObjectMapper().readTree(statusPayload.getBytes());
-					if(w.get("paused").asBoolean()) {
-		        		result.get("paused").increment();
-					} else {
-		        		result.get("active").increment();
+		try {
+			Map<String, MutableInt> result = new HashMap<String, MutableInt>();
+			result.put("idle", new MutableInt());
+			result.put("paused", new MutableInt());
+			result.put("active", new MutableInt());
+			final Set<String> workerNames = jedis.smembers("resque:workers");
+			for (final String workerName : workerNames) {
+				final String statusPayload = jedis.get("resque:worker:" + workerName);
+				if (statusPayload == null) { // no payload key for works that just started
+					result.get("idle").increment();
+				} else {
+					try {
+						JsonNode w = new ObjectMapper().readTree(statusPayload.getBytes());
+						if (w.get("paused").asBoolean()) {
+							result.get("paused").increment();
+						} else {
+							result.get("active").increment();
+						}
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
 					}
-				} catch (JsonProcessingException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
 				}
-        	}
-        }
-        return result;
+			}
+			return result;
+		} finally {
+			getJedisPool().returnResource(jedis);
+		}
 	}
 
 	private Map<String, Map<String, String>> fetchDepositMap() {
@@ -178,48 +186,81 @@ public class DepositController {
 		}
 		return result;
 	}
-	
-	public @ResponseBody
-	Map<String, Object> getByState(DepositState state) {
+
+	public Map<String, Object> getByState(DepositState state) {
 		LOG.debug("get by state: {}", state.name());
 		Map<String, Object> result = new HashMap<String, Object>();
 		Map<String, Map<String, String>> deposits = fetchDepositMap();
+
+		boolean isRunning = state.equals(DepositState.running);
+
 		for (Map<String, String> deposit : deposits.values()) {
-			if (state.equals(deposit.get(DepositField.state.name()))) {
-				String uuid = (String) deposit.get(DepositField.uuid.name());
-				result.put(uuid, deposit);
+			if (state.name().equals(deposit.get(DepositField.state.name()))) {
+				Map<String, Object> depositResult = new HashMap<String, Object>();
+				String uuid = deposit.get(DepositField.uuid.name());
+
+				for (Entry<String, String> field : deposit.entrySet()) {
+					depositResult.put(field.getKey(), field.getValue());
+				}
+
+				if (isRunning) {
+					String jobUUID = jobStatusFactory.getWorkingJob(uuid);
+					if (jobUUID != null) {
+						Map<String, String> jobStatus = jobStatusFactory.get(jobUUID);
+
+						depositResult.put("currentJob", jobStatus);
+					}
+				}
+
+				result.put(uuid, depositResult);
 			}
 		}
 		return result;
 	}
 
-	@RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.GET)
+	private Map<String, Object> getDetails(String depositUUID) {
+		Map<String, String> status = depositStatusFactory.get(depositUUID);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		for (Entry<String, String> field : status.entrySet()) {
+			result.put(field.getKey(), field.getValue());
+		}
+
+		Map<String, Map<String, String>> jobStatuses = jobStatusFactory.getAllJobs(depositUUID);
+		result.put("jobs", jobStatuses);
+
+		String state = status.get(DepositField.state.name());
+		if (DepositState.running.name().equals(state)) {
+			String jobUUID = jobStatusFactory.getWorkingJob(depositUUID);
+			result.put("currentJobUUID", jobUUID);
+		}
+
+		result.put("jobsURI", "/api/status/deposit/" + depositUUID + "/jobs");
+		result.put("eventsURI", "/api/status/deposit/" + depositUUID + "/eventsXML");
+
+		return result;
+	}
+
+	@RequestMapping(value = { "{stateOrUUID}", "/{stateOrUUID}" }, method = RequestMethod.GET)
 	public @ResponseBody
-	Map<String, Object> get(@PathVariable String uuid) {
-		DepositState state = null;
+	Map<String, Object> get(@PathVariable String stateOrUUID) {
+		DepositState depositState = null;
 		try {
-			state = DepositState.valueOf(uuid);
+			depositState = DepositState.valueOf(stateOrUUID);
 		} catch(IllegalArgumentException ignore) {}
-		if (state != null) {
-			return getByState(state);
+
+		// Request was for a state, get all jobs in that state
+		if (depositState != null) {
+			return getByState(depositState);
 		} else {
-			Map<String, Object> result = new HashMap<String, Object>();
-			Jedis jedis = getJedisPool().getResource();
-			Map<String, String> status = jedis.hgetAll(uuid);
-			getJedisPool().returnResource(jedis);
-			for(Entry<String, String> field : status.entrySet()) {
-				result.put(field.getKey(), field.getValue());
-			}			
-			result.put("jobsURI", "/api/status/deposit/" + uuid + "/jobs");
-			result.put("eventsURI", "/api/status/deposit/" + uuid + "/eventsXML");
-			
-			return result;
+			// Request was for a specific job
+			return getDetails(stateOrUUID);
 		}
 	}
 
 	/**
 	 * Aborts the deposit, reversing any ingests and scheduling a cleanup job.
-	 * 
+	 *
 	 * @param depositUUID
 	 */
 	@RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.DELETE)
@@ -229,21 +270,19 @@ public class DepositController {
 	}
 
 	/**
-	 * Request to pause, resume, cancel or destroy a deposit. The deposit cancel
-	 * action will stop the deposit, purge any ingested objects and schedule
-	 * deposit destroy in the future. The deposit pause action halts work on a
-	 * deposit such that it can be resumed later. The deposit destroy action
-	 * cleans up the submitted deposit package, leaving staged files alone.
-	 * 
+	 * Request to pause, resume, cancel or destroy a deposit. The deposit cancel action will stop the deposit, purge any
+	 * ingested objects and schedule deposit destroy in the future. The deposit pause action halts work on a deposit such
+	 * that it can be resumed later. The deposit destroy action cleans up the submitted deposit package, leaving staged
+	 * files alone.
+	 *
 	 * @param depositUUID
-	 *            the unique identifier of the deposit
+	 *           the unique identifier of the deposit
 	 * @param action
-	 *            the action to take on the deposit (pause, resume, cancel,
-	 *            destroy)
+	 *           the action to take on the deposit (pause, resume, cancel, destroy)
 	 */
 	@RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.POST)
-	public void update(@PathVariable String uuid,
-			@RequestParam(required = true) String action) {
+	public void update(@PathVariable String uuid, @RequestParam(required = true) String action,
+			HttpServletResponse response) {
 		DepositAction actionRequested = DepositAction.valueOf(action);
 		if (actionRequested == null) {
 			throw new IllegalArgumentException(
@@ -252,46 +291,42 @@ public class DepositController {
 		Map<String, String> status = depositStatusFactory.get(uuid);
 		String state = status.get(DepositField.state.name());
 		switch (actionRequested) {
-		case pause:
-			if (DepositState.finished.name().equals(state)) {
-				throw new IllegalArgumentException(
-						"That deposit has already finished");
-			} else if (DepositState.failed.name().equals(state)) {
-				throw new IllegalArgumentException(
-						"That deposit has already failed");
-			} else {
-				depositStatusFactory.requestAction(uuid, DepositAction.pause);
-			}
-			break;
-		case resume:
-			if (!DepositState.paused.name().equals(state)) {
-				throw new IllegalArgumentException(
-						"The deposit must be paused before you can resume");
-			} else {
-				depositStatusFactory.requestAction(uuid, DepositAction.resume);
-			}
-			break;
-		case cancel:
-			if (DepositState.finished.name().equals(state)) {
-				throw new IllegalArgumentException(
-						"That deposit has already finished");
-			} else {
-				depositStatusFactory.requestAction(uuid, DepositAction.cancel);
-			}
-			break;
-		case destroy:
-			if (DepositState.cancelled.name().equals(state)
-					|| DepositState.finished.name().equals(state)) {
-				depositStatusFactory.requestAction(uuid, DepositAction.destroy);
-			} else {
-				throw new IllegalArgumentException(
-						"The deposit must be finished or cancelled before it is destroyed");
-			}
-			break;
-		default:
-			throw new IllegalArgumentException(
-					"The requested deposit action is not implemented: "
-							+ action);
+			case pause:
+				if (DepositState.finished.name().equals(state)) {
+					throw new IllegalArgumentException("That deposit has already finished");
+				} else if (DepositState.failed.name().equals(state)) {
+					throw new IllegalArgumentException("That deposit has already failed");
+				} else {
+					depositStatusFactory.requestAction(uuid, DepositAction.pause);
+					response.setStatus(204);
+				}
+				break;
+			case resume:
+				if (!DepositState.paused.name().equals(state) && !DepositState.failed.name().equals(state)) {
+					throw new IllegalArgumentException("The deposit must be paused or failed before you can resume");
+				} else {
+					depositStatusFactory.requestAction(uuid, DepositAction.resume);
+					response.setStatus(204);
+				}
+				break;
+			case cancel:
+				if (DepositState.finished.name().equals(state)) {
+					throw new IllegalArgumentException("That deposit has already finished");
+				} else {
+					depositStatusFactory.requestAction(uuid, DepositAction.cancel);
+					response.setStatus(204);
+				}
+				break;
+			case destroy:
+				if (DepositState.cancelled.name().equals(state) || DepositState.finished.name().equals(state)) {
+					depositStatusFactory.requestAction(uuid, DepositAction.destroy);
+					response.setStatus(204);
+				} else {
+					throw new IllegalArgumentException("The deposit must be finished or cancelled before it is destroyed");
+				}
+				break;
+			default:
+				throw new IllegalArgumentException("The requested deposit action is not implemented: " + action);
 		}
 	}
 
@@ -316,7 +351,7 @@ public class DepositController {
 		return jedisPool;
 	}
 
-	@RequestMapping(value = { "{uuid}/events", "/{uuid}/events" }, method = RequestMethod.GET)
+	@RequestMapping(value = { "{uuid}/events" }, method = RequestMethod.GET)
 	public @ResponseBody
 	Document getEvents(@PathVariable String uuid) throws Exception {
 		LOG.debug("getEvents( {} )", uuid);

@@ -32,6 +32,7 @@ define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 			this.jobConfig.jobTypes[index] = jobType;
 		}
 		this.createDetailsView();
+		
 		return this;
 	};
 	
@@ -175,9 +176,10 @@ define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 	// Default job type rendering, calls the job type's template for each job result
 	AbstractStatusMonitor.prototype.renderJobType = function(typeConfig) {
 		$(".monitor_job." + typeConfig.name).remove();
-		for (var index in typeConfig.results.jobs) {
-			var selected = this.detailsType && typeConfig.results.jobs[index].id == this.detailsType.id;
-			typeConfig.placeholder.after(typeConfig.template({data : typeConfig.results.jobs[index], type : typeConfig, dateFormat : this.dateFormat, selected : selected}));
+		var jobs = typeConfig.results.jobs;
+		for (var index in jobs) {
+			var selected = this.detailsType && jobs[index].id == this.detailsType.id;
+			typeConfig.placeholder.after(typeConfig.template({data : jobs[index], type : typeConfig, dateFormat : this.dateFormat, selected : selected}));
 		}
 	};
 	

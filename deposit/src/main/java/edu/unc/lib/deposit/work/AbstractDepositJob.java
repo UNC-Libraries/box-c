@@ -26,6 +26,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -33,9 +34,9 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 /**
  * Constructed with deposit directory and deposit ID. Facilitates event logging
  * with standard success/failure states.
- * 
+ *
  * @author count0
- * 
+ *
  */
 public abstract class AbstractDepositJob {
 	private static final Logger log = LoggerFactory
@@ -219,11 +220,11 @@ public abstract class AbstractDepositJob {
 	}
 
 	protected void setTotalClicks(int totalClicks) {
-		getJobStatusFactory().setTotalCompletion(this, totalClicks);
+		getJobStatusFactory().setTotalCompletion(getJobUUID(), totalClicks);
 	}
 
 	protected void addClicks(int clicks) {
-		getJobStatusFactory().incrCompletion(this, clicks);
+		getJobStatusFactory().incrCompletion(getJobUUID(), clicks);
 	}
 
 	public File getSubdir(String subpath) {

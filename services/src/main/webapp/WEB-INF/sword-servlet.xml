@@ -186,6 +186,10 @@
 		<property name="jedisPool" ref="jedisPool" />
 	</bean>
 	
+	<bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory">
+		<property name="jedisPool" ref="jedisPool" />
+	</bean>
+	
 	<bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl"
 		init-method="init">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>

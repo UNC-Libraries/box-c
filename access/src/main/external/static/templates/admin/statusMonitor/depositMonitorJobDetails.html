@@ -1,28 +1,31 @@
 <div>
-	<h3>Details for ingest</h3> (<span class="<%= data.status.toLowerCase() %>"><%= data.status %></span>, refreshed <%= moment().format('h:mm:ssa') %>)
+	<h3>Details for ingest</h3> (<span class="<%= data.state.toLowerCase() %>"><%= data.state %></span>, refreshed <%= moment().format('h:mm:ssa') %>)
 	
-	<p><label>Submitter:</label> <%= data.submitter %></p>
-	<% if (data.containerPlacements && data.containerPlacements.length > 0) { %>
-		<p>
-			<label>First Object:</label> <%= data.containerPlacements[0].submittedLabel %>
-			<% if (data.containerPlacements[0].submittedPID) { %>
-				<br/><%= data.containerPlacements[0].submittedPID %>
-			<% } %>
-		</p>
-		<p><label>Destination:</label> <%= data.containerPlacements[0].containerPID %></p>
+	<% if (data.state == "failed" || data.state == "paused") { %>
+		<p><a href="/services/api/status/deposit/<%= data.uuid %>?action=resume" class="monitor_action">Resume</a></p>
 	<% } %>
-	<p><label>Ingest Progress:</label> <%= data.worked %>/<%= data.size %></p>
-	<% if (data.startTime) {
-		if (data.finishedTime) { %>
-			<p><label>Elapsed:</label> <%= (data.finishedTime-data.startTime)/1000 %> seconds</p>
-		<% } else if (data.failedTime != null) { %>
-			<p><label>Elapsed:</label> <%= (data.failedTime-data.startTime)/1000 %> seconds</p>
-		<% } else { %>
-			<p><label>Elapsed:</label> <%= (Date.now()-data.startTime)/1000 %> seconds</p>
-		<% }
-	}
 	
-	if (data.ingestedFiles) { %>
+	<% if (data.state == "running") { %>
+		<p><a href="/services/api/status/deposit/<%= data.uuid %>?action=pause" class="monitor_action">Pause</a></p>
+	<% } %>
+	
+	<p><label>Submitter:</label> <%= data.depositorName %></p>
+	
+	<p><label>Destination:</label> <a href="/admin/list/<%= data.containerId %>"><%= data.containerId %></a></p>
+	
+	<% if (data.jobs) { %>
+		<p><label>Progress</label>
+			<ul class="ingested_files">
+		<% for (var i in data.jobs) {
+			var job = data.jobs[i];
+			%>
+			<li><span title="<%- job.shortName %>"><%= job.shortName %></span> <%= job.status %> <%= job.completion %></li>
+		<% } %>
+			</ul>
+		</p>
+	<% } %>
+	
+	<% if (data.ingestedFiles) { %>
 		<p><label>Ingested Files</label>
 			<ul class="ingested_files">
 		<% for (var i = data.ingestedFiles.length - 1; i >= 0; i--) {
@@ -39,13 +42,10 @@
 		</p>
 	<% } %>
 	
-	<p><label>Ingest ID:</label> <%= data.id %></p>
-	<% if (data.depositId) { %>
-		<p><label>Deposit ID:</label> <%= data.depositId %></p>
-	<% } %>
+	<p><label>Deposit ID:</label> <%= data.uuid %></p>
 	
-	<% if (data.startTime) { %>
-		<p><label>Started:</label> <%= dateFormat(new Date(data.startTime)) %></p>
+	<% if (data.submitTime) { %>
+		<p><label>Started:</label> <%= dateFormat(data.submitTime) %></p>
 	<% } 
 	if (data.failedTime) { %>
 		<p><label>Failed:</label> <%= dateFormat(new Date(data.failedTime)) %></p>
@@ -54,7 +54,7 @@
 		<p><label>Finished:</label> <%= dateFormat(new Date(data.finishedTime)) %></p>
 	<% } %>
 	
-	<% if (data.error) { %>
-		<h3>Error Log</h3><pre class='stacktrace'> <%= data.error %></pre>
+	<% if (data.errorMessage) { %>
+		<h3>Error Log</h3><pre class='stacktrace'> <%= data.errorMessage %></pre>
 	<% } %>
 </div>

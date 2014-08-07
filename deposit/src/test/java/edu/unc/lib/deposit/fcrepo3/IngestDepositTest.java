@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,6 +32,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -43,12 +45,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
+import org.mockito.internal.util.collections.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
-import edu.unc.lib.deposit.work.JobStatusFactory;
+import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.JobForwardingJMSListener;
@@ -56,8 +58,11 @@ import edu.unc.lib.dl.fedora.ListenerJob;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.types.ObjectProfile;
 import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
  * @author bbpennel
@@ -78,6 +83,8 @@ public class IngestDepositTest {
 	private DepositStatusFactory depositStatusFactory;
 	@Mock
 	private ManagementClient client;
+	@Mock
+	private AccessClient accessClient;
 
 	private Map<String, String> depositStatus;
 
@@ -104,6 +111,7 @@ public class IngestDepositTest {
 
 		depositStatus = new HashMap<>();
 		when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
+		when(depositStatusFactory.getState(anyString())).thenReturn(DepositState.running);
 		depositStatus.put(DepositField.permissionGroups.name(), "group");
 
 		when(client.upload(any(Document.class))).thenReturn("uploadpath");
@@ -130,6 +138,7 @@ public class IngestDepositTest {
 		setField(job, "jobStatusFactory", jobStatusFactory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "client", client);
+		setField(job, "accessClient", accessClient);
 
 		depositStatus.put(DepositField.containerId.name(), "uuid:destination");
 		depositStatus.put(DepositField.excludeDepositRecord.name(), "false");
@@ -160,7 +169,7 @@ public class IngestDepositTest {
 
 		verify(ingestsAwaitingConfirmation).remove(any(String.class));
 
-		verify(jobStatusFactory, never()).incrCompletion(any(AbstractDepositJob.class), eq(1));
+		verify(jobStatusFactory, never()).incrCompletion(anyString(), eq(1));
 	}
 
 	@Test
@@ -185,7 +194,7 @@ public class IngestDepositTest {
 		assertEquals("Incorrect number of objects extracted", 9, job.getIngestObjectCount());
 
 		// Clicks should have been registered
-		verify(jobStatusFactory, times(job.getIngestObjectCount() + 1)).incrCompletion(eq(job), eq(1));
+		verify(jobStatusFactory, times(job.getIngestObjectCount() + 1)).incrCompletion(eq(job.getJobUUID()), eq(1));
 
 		verify(client, times(job.getTopLevelPids().size()))
 				.addObjectRelationship(any(PID.class), anyString(), any(PID.class));
@@ -269,7 +278,7 @@ public class IngestDepositTest {
 		finishThread.join(5000L);
 
 		// All ingests, including the timed out object, should have registered as a click
-		verify(jobStatusFactory, times(job.getIngestObjectCount() + 1)).incrCompletion(eq(job), eq(1));
+		verify(jobStatusFactory, times(job.getIngestObjectCount() + 1)).incrCompletion(eq(job.getJobUUID()), eq(1));
 
 		// All objects should have been ingested despite the timeout
 		verify(client, times(job.getIngestObjectCount() + 1))
@@ -304,7 +313,7 @@ public class IngestDepositTest {
 		assertEquals("Incorrect number of objects extracted", 9, job.getIngestObjectCount());
 
 		// Clicks should have been registered
-		verify(jobStatusFactory, times(job.getIngestObjectCount())).incrCompletion(eq(job), eq(1));
+		verify(jobStatusFactory, times(job.getIngestObjectCount())).incrCompletion(eq(job.getJobUUID()), eq(1));
 
 		verify(client, times(job.getTopLevelPids().size())).addObjectRelationship(any(PID.class), anyString(),
 				any(PID.class));
@@ -316,6 +325,79 @@ public class IngestDepositTest {
 
 		// All objects have premis
 		verify(client, times(job.getIngestObjectCount())).upload(any(Document.class));
+
+	}
+
+	@Test
+	public void testResume() throws Exception {
+
+		when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
+		when(depositStatusFactory.getUnconfirmedUploads(anyString())).thenReturn(new HashSet<String>());
+		when(depositStatusFactory.getConfirmedUploads(anyString())).thenReturn(
+				Sets.newSet("uuid:2a5d0363-899b-402d-981b-392a553e17a1", "uuid:7dd57979-084c-4b5a-acc0-a0eed25d2b33"));
+
+		Thread jobThread = new Thread(job);
+		Thread finishThread = new Thread(jmsListener);
+
+		jobThread.start();
+		finishThread.start();
+
+		// Start processing with a timelimit to prevent infinite wait in case of failure
+		jobThread.join(5000L);
+		finishThread.join(5000L);
+
+		assertTrue("Job must have been registered", jmsListener.registeredJob);
+		assertTrue("Job must be unregistered", jmsListener.unregisteredJob);
+
+		assertEquals("All ingest pids should have been removed", 0, job.getIngestPids().size());
+
+		assertEquals("Ingest count must exclude the already completed items", 7, job.getIngestObjectCount());
+
+		// Clicks should have been registered
+		verify(jobStatusFactory, times(job.getIngestObjectCount() + 1)).incrCompletion(eq(job.getJobUUID()), eq(1));
+
+		verify(client, times(job.getTopLevelPids().size())).addObjectRelationship(any(PID.class), anyString(),
+				any(PID.class));
+
+		verify(client, times(job.getIngestObjectCount() + 1))
+				.ingestRaw(any(byte[].class), any(Format.class), anyString());
+
+	}
+
+	@Test
+	public void testResumeUnconfirmed() throws Exception {
+
+		when(accessClient.getObjectProfile(any(PID.class), anyString()))
+				.thenReturn(mock(ObjectProfile.class)).thenThrow(new FedoraException(""));
+
+		when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
+		when(depositStatusFactory.getUnconfirmedUploads(anyString())).thenReturn(
+				Sets.newSet("uuid:3a8650f6-5de6-41b5-8ea1-42ac5e9a9687", "uuid:0a83ed37-6179-4fef-90cb-6e2374179d13"));
+		when(depositStatusFactory.getConfirmedUploads(anyString())).thenReturn(
+				Sets.newSet("uuid:2a5d0363-899b-402d-981b-392a553e17a1", "uuid:7dd57979-084c-4b5a-acc0-a0eed25d2b33"));
+
+		Thread jobThread = new Thread(job);
+		Thread finishThread = new Thread(jmsListener);
+
+		jobThread.start();
+		finishThread.start();
+
+		// Start processing with a timelimit to prevent infinite wait in case of failure
+		jobThread.join(5000L);
+		finishThread.join(5000L);
+
+		assertTrue("Job must have been registered", jmsListener.registeredJob);
+		assertTrue("Job must be unregistered", jmsListener.unregisteredJob);
+
+		assertEquals("All ingest pids should have been removed", 0, job.getIngestPids().size());
+
+		assertEquals("Ingest count must exclude the already completed items", 6, job.getIngestObjectCount());
+
+		// Click for newly run ingests and the one unregistered previously completed ingest
+		verify(jobStatusFactory, times(job.getIngestObjectCount() + 2)).incrCompletion(eq(job.getJobUUID()), eq(1));
+
+		verify(client, times(job.getTopLevelPids().size())).addObjectRelationship(any(PID.class), anyString(),
+				any(PID.class));
 
 	}
 

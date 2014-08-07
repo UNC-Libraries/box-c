@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -61,11 +61,11 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.deposit.work.JobStatusFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -203,8 +203,8 @@ public class MakeFOXMLTest {
 		assertTrue("Default web object foxml did not exist", dwoFile.exists());
 
 		// Check that the right number of clicks were registered
-		verify(jobStatusFactory).setTotalCompletion(any(AbstractDepositJob.class), eq(5));
-		verify(jobStatusFactory, times(5)).incrCompletion(any(AbstractDepositJob.class), eq(1));
+		verify(jobStatusFactory).setTotalCompletion(anyString(), eq(5));
+		verify(jobStatusFactory, times(5)).incrCompletion(anyString(), eq(1));
 	}
 
 	private void verifyDatastreamExists(Document foxml, ContentModelHelper.Datastream datastream, AbstractDepositJob job)

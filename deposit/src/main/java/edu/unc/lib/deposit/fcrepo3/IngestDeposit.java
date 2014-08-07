@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -28,8 +29,10 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
+import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.JobForwardingJMSListener;
@@ -41,11 +44,13 @@ import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositException;
+import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.JMSMessageUtil.FedoraActions;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
 /**
@@ -67,6 +72,9 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 
 	@Autowired
 	private ManagementClient client;
+
+	@Autowired
+	private AccessClient accessClient;
 
 	private int ingestObjectCount;
 
@@ -111,6 +119,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 		boolean result = ingestsAwaitingConfirmation.remove(pid.getURI());
 		if (result) {
 			addClicks(1);
+			getDepositStatusFactory().addConfirmedPID(getDepositUUID(), pid.getPid());
 			log.debug("Notified that {} has finished ingesting as part of deposit {}",
 					pid.getPid(), this.getDepositUUID());
 		}
@@ -144,6 +153,12 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 		// Capture number of objects and depth first list of pids for individual objects to be ingested
 		DepositGraphUtils.walkChildrenDepthFirst(depositBag, ingestPids, true);
 
+		// Deposit is restarting from part way through, reduce set of items for ingest
+		boolean resuming = getDepositStatusFactory().isResumedDeposit(getDepositUUID());
+		if (resuming) {
+			removeAlreadyIngested();
+		}
+
 		// Store the number of objects being ingested now before it starts changing
 		ingestObjectCount = ingestPids.size();
 
@@ -158,8 +173,39 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 		// TODO capture structure for ordered sequences instead of just bags
 
 		// Number of actions is the number of ingest objects plus deposit record
-		setTotalClicks(ingestPids.size());
+		if (!resuming) {
+			setTotalClicks(ingestPids.size());
+		}
 
+	}
+
+	/**
+	 * Removes any pids confirmed or uploaded and present in fedora from the list of pids for ingest
+	 */
+	private void removeAlreadyIngested() {
+		// Prevent reingest of all items already confirmed to have been ingested.
+		Set<String> confirmedSet = getDepositStatusFactory().getConfirmedUploads(getDepositUUID());
+		for (String confirmed : confirmedSet) {
+			ingestPids.remove(new PID(confirmed).getURI());
+		}
+
+		// Check for any items that were uploaded but not confirmed, and check to see if they made it in
+		Set<String> unconfirmedSet = getDepositStatusFactory().getUnconfirmedUploads(getDepositUUID());
+		for (String unconfirmed : unconfirmedSet) {
+			PID unconfirmedPID = new PID(unconfirmed);
+			try {
+				if (accessClient.getObjectProfile(unconfirmedPID, null) != null) {
+					ingestPids.remove(unconfirmedPID.getURI());
+					// Update status to indicate this item was actually confirmed
+					addClicks(1);
+					getDepositStatusFactory().addConfirmedPID(getDepositUUID(), unconfirmedPID.getPid());
+				}
+			} catch (FedoraException e) {
+				// Object wasn't found, so ingest must have failed. Should be retained for ingest
+			} catch (ServiceException e) {
+				log.debug("Unexpected failure while checking for ingest of {}", unconfirmedPID, e);
+			}
+		}
 	}
 
 	@Override
@@ -173,6 +219,8 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 		try {
 			// Register this job with the JMS listener prior to doing work
 			listener.registerListener(this);
+
+			DepositStatusFactory statusFactory = getDepositStatusFactory();
 
 			// set up permission groups for forwarding
 			String groups = depositStatus.get(DepositField.permissionGroups.name());
@@ -194,7 +242,15 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 
 					ingestObject(ingestPid);
 
-					getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
+					statusFactory.addUploadedPID(getDepositUUID(), ingestPid);
+					statusFactory.incrIngestedObjects(getDepositUUID(), 1);
+
+					// Verify that the job has not been interrupted before continuing
+					DepositState state = statusFactory.getState(getDepositUUID());
+					if (!DepositState.running.equals(state)) {
+						throw new JobInterruptedException("State for job " + getDepositUUID()
+								+ " is no longer running, interrupting");
+					}
 				}
 			} catch (DepositException e) {
 				failJob(e, Type.INGESTION, "Ingest of object {0} failed", ingestPid);
@@ -206,6 +262,8 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 				while (ingestsAwaitingConfirmation.size() > 0) {
 					Thread.sleep(COMPLETE_CHECK_DELAY);
 				}
+
+				log.debug("Finished waiting for children of {} to be ingested", this.getDepositUUID());
 			} catch (InterruptedException e) {
 				log.info("Interrupted ingest of job {}", this.getJobUUID());
 				return;

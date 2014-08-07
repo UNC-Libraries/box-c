@@ -52,10 +52,10 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.deposit.work.JobStatusFactory;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.JobStatusFactory;
 
 /**
  * @author bbpennel
