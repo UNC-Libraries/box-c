@@ -234,6 +234,7 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 		Property md5sum = dprop(m, DepositRelationship.md5sum);
 
 		String href = dsResource.getProperty(fileLocation).getString();
+		// FIXME if href starts with "data/" then it needs more path/URI
 
 		String mimeType = null;
 		if (dsResource.hasProperty(mimetype)) {

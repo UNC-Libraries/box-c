@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.deposit.CleanupDepositJob;
 import edu.unc.lib.deposit.SendDepositorEmailJob;
 import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
 import edu.unc.lib.deposit.fcrepo3.MakeFOXML;
@@ -85,6 +86,16 @@ public class DepositSupervisor implements WorkerListener {
 
 	@Autowired
 	private File depositsDirectory;
+	
+	private int cleanupDelaySeconds;
+
+	public int getCleanupDelaySeconds() {
+		return cleanupDelaySeconds;
+	}
+
+	public void setCleanupDelaySeconds(int cleanupDelaySeconds) {
+		this.cleanupDelaySeconds = cleanupDelaySeconds;
+	}
 
 	public DepositSupervisor() {
 		id = UUID.randomUUID().toString();
@@ -263,6 +274,7 @@ public class DepositSupervisor implements WorkerListener {
 			break;
 		case JOB_SUCCESS:
 			try {
+				if(CleanupDepositJob.class.getName().equals(job.getClassName())) break;
 				Job nextJob = getNextJob(job, depositUUID, status, successfulJobs);
 				if (nextJob != null) {
 					Client c = makeJesqueClient();
@@ -270,6 +282,10 @@ public class DepositSupervisor implements WorkerListener {
 					c.end();
 				} else {
 					depositStatusFactory.setState(depositUUID, DepositState.finished);
+					Client c = makeJesqueClient();
+					// schedule cleanup job after two days
+					long schedule = System.currentTimeMillis() + 1000 * this.getCleanupDelaySeconds();
+					c.delayedEnqueue(Queue.PREPARE.name(), makeJob(CleanupDepositJob.class, depositUUID), schedule);
 				}
 			} catch (DepositFailedException e) {
 				depositStatusFactory.fail(depositUUID, e);
@@ -384,9 +400,7 @@ public class DepositSupervisor implements WorkerListener {
 				&& !successfulJobs.contains(SendDepositorEmailJob.class.getName())) {
 			return makeJob(SendDepositorEmailJob.class, depositUUID);
 		}
-
-		// TODO schedule cleaning jobs
-
+		
 		return null;
 	}
 

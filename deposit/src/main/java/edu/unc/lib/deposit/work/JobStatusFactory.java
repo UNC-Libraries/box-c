@@ -152,4 +152,25 @@ public class JobStatusFactory {
 		}
 	}
 
+	/**
+	 * Expire all the job keys associated with this deposit in X seconds.
+	 * @param depositUUID
+	 * @param statusKeysExpireSeconds time until expire
+	 */
+	public void expireKeys(String depositUUID, int seconds) {
+		Jedis jedis = getJedisPool().getResource();
+		try {
+			Set<String> jobUUIDs = jedis
+					.smembers(RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX
+							+ depositUUID);
+			for (String jobUUID : jobUUIDs) {
+				jedis.expire(RedisWorkerConstants.JOB_STATUS_PREFIX+jobUUID, seconds);
+			}
+			jedis.expire(RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX
+					+ depositUUID, seconds);
+		} finally {
+			getJedisPool().returnResource(jedis);
+		}
+	}
+
 }
