@@ -127,10 +127,10 @@ public class DepositSupervisor implements WorkerListener {
 						LOG.info("Registering a new deposit: {}", uuid);
 						if (depositStatusFactory.addSupervisorLock(uuid, id)) {
 							try {
-								LOG.info("Queuing first job for deposit {}",
-										uuid);
 								Job job = makeJob(
 										PackageIntegrityCheckJob.class, uuid);
+								LOG.info("Queuing {} for deposit {}",
+										job.getClassName(), uuid);
 								depositStatusFactory.setState(uuid,
 										DepositState.queued);
 								depositStatusFactory.clearActionRequest(uuid);
@@ -278,6 +278,8 @@ public class DepositSupervisor implements WorkerListener {
 				Job nextJob = getNextJob(job, depositUUID, status, successfulJobs);
 				if (nextJob != null) {
 					Client c = makeJesqueClient();
+					LOG.info("Queuing {} for deposit {}",
+							job.getClassName(), depositUUID);
 					c.enqueue(Queue.PREPARE.name(), nextJob);
 					c.end();
 				} else {
@@ -285,7 +287,10 @@ public class DepositSupervisor implements WorkerListener {
 					Client c = makeJesqueClient();
 					// schedule cleanup job after the configured delay
 					long schedule = System.currentTimeMillis() + 1000 * this.getCleanupDelaySeconds();
-					c.delayedEnqueue(Queue.PREPARE.name(), makeJob(CleanupDepositJob.class, depositUUID), schedule);
+					Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
+					LOG.info("Queuing {} for deposit {}",
+							cleanJob.getClassName(), depositUUID);
+					c.delayedEnqueue(Queue.PREPARE.name(), cleanJob, schedule);
 				}
 			} catch (DepositFailedException e) {
 				depositStatusFactory.fail(depositUUID, e);
