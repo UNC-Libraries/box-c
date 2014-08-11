@@ -30,6 +30,7 @@ import edu.unc.lib.staging.FileResolver;
 import edu.unc.lib.staging.SharedStagingArea;
 import edu.unc.lib.staging.Stages;
 import edu.unc.lib.staging.StagingException;
+import edu.unc.lib.staging.TagURIPattern;
 
 /**
  * This job deletes the deposit's processing folder and sets all 
@@ -62,14 +63,11 @@ public class CleanupDepositJob extends AbstractDepositJob implements Runnable {
 	 */
 	private File deleteFile(URI uri) {
 		File parent = null;
-		URL fileUri;
 		try {
-			fileUri = new URL(URLDecoder.decode(uri.toString(), "utf-8"));
-			String path = fileUri.getPath();
-			File cFile = new File(path).getCanonicalFile();
+			File cFile = new File(uri.getPath()).getCanonicalFile();
 			parent = cFile.getParentFile();
 			cFile.delete();
-			LOG.debug("deleted {}", path);
+			LOG.debug("deleted {}", cFile);
 		} catch (IOException e) {
 			LOG.error("Cannot delete a staged file: " + uri.toString(), e);
 		}
@@ -104,14 +102,19 @@ public class CleanupDepositJob extends AbstractDepositJob implements Runnable {
 				DepositConstants.MODEL_FILE);
 		m.read(modelFile.toURI().toString());
 
-		// FIXME add a check that the staging area is a tag: area
 		// clean up staged files according to staging area policy
+		TagURIPattern tagPattern = new TagURIPattern();
 		Property fileLocation = dprop(m, DepositRelationship.stagingLocation);
 		NodeIterator ni = m.listObjectsOfProperty(fileLocation);
 		while (ni.hasNext()) {
 			RDFNode n = ni.nextNode();
 			String stagingLoc = n.asLiteral().getString();
 			URI stagingUri = URI.create(stagingLoc);
+			
+			// skip any staged files that are not tag: URIs
+			// these may be local deposit processing folder files or
+			// other files that we cannot handle.
+			if(!tagPattern.matches(stagingUri)) continue;
 
 			SharedStagingArea area = stages.findMatchingArea(stagingUri);
 			if (area == null) {

@@ -75,7 +75,10 @@ public class CDRMETSGraphExtractor {
 		while(i.hasNext()) {
 			Element e = (Element)i.next();
 			String loc = e.getTextTrim();
-			if(loc.length() > 0) result = loc;
+			if(loc.length() > 0) { 
+				result = loc;
+				break;
+			}
 		}
 		return result;
 	}
