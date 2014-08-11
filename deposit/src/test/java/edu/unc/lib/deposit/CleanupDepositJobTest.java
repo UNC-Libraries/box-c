@@ -29,7 +29,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.FileResolver;
 import edu.unc.lib.staging.Stages;
 
-public class CleanupDepositJobTest extends AbstractResqueIT {
+public class CleanupDepositJobTest {
 
 	private static final URI CLEAN_DEPOSITS_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/clean_deposits_stage/");
 	private static final URI CLEAN_FOLDERS_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/clean_folders_stage/");
