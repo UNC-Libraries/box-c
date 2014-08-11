@@ -175,7 +175,7 @@
 				<version>2.5</version>
 				<configuration>
 					<systemPropertyVariables>
-						<deposit.properties.uri>classpath:deposit.properties</deposit.properties.uri>
+						<deposit.properties.uri>file:${project.basedir}/src/test/resources/deposit.properties</deposit.properties.uri>
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>

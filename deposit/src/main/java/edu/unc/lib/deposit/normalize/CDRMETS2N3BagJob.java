@@ -1,6 +1,8 @@
 package edu.unc.lib.deposit.normalize;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Map;
 
 import org.jdom.Document;
 
@@ -11,6 +13,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.METSProfile;
 
 public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnable {
@@ -35,6 +38,12 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnable 
 		extractor.helper.addFileAssociations(model, false);
 		extractor.addAccessControls(model);
 		saveModel(model, DepositConstants.MODEL_FILE);
+		
+		// add staging location to deposit status, if available
+		String loc = extractor.getStagingLocation();
+		if(loc != null) {
+			getDepositStatusFactory().set(getDepositUUID(), DepositField.stagingFolderURI, loc);
+		}
 		
 		final File modsFolder = getDescriptionDir();
 		modsFolder.mkdir();

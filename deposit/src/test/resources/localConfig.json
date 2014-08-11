@@ -1,23 +1,4 @@
-{
-	"stagingAreas":{
-		"tag:count0.irods.grid,2013:/irodsStaging/":{
-			"name":"Personal iRODS Stage",
-			"mappings":[
-			    "irods:cdr-stage.lib.unc.edu:5555/stagingZone/home/count0"
-			],
-			"ingestCleanupPolicy":"DELETE_INGESTED_FILES"
-		},
-	    "irods://cdr-stage.lib.unc.edu:3333/stagingZone/projects/":{
-	        "name":"My Override iRODS Stage for Projects",
-	        "ingestCleanupPolicy":"DELETE_INGESTED_FILES"
-	    },
-	    "data/":{
-	        "name":"Local BagIt Data Folder"
-	    }
+{	
 	},
-    "customMappings" :{
-    	"tag:cdr.lib.unc.edu,2013:/storhouse_shc/":"file:/Z:/in_process/",
-    	"tag:cdr.lib.unc.edu,2013:/digitalarchive/":"file:/H:/"
-    },
-    "repositoryConfigurations": ["file:src/test/resources/stages.json"]
+    "repositoryConfigurations": []
 }

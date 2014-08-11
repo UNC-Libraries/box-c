@@ -23,6 +23,7 @@
 	<bean name="propertiesURI" class="java.lang.System"
 		factory-method="getProperty">
 		<constructor-arg index="0" value="deposit.properties.uri" />
+		<constructor-arg index="1" value="classpath:/deposit.properties" />
 	</bean>
 	<bean id="serverProperties"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -84,11 +85,14 @@
 
 	<bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor">
 		<property name="jesqueConfig" ref="jesqueConfig"/>
+		<property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>
 	</bean>
 
 	<bean id="jobFactory" class="edu.unc.lib.deposit.work.SpringJobFactory" />
 
-	<bean id="jobStatusFactory" class="edu.unc.lib.deposit.work.JobStatusFactory" />
+	<bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory" >
+		<property name="jedisPool" ref="jedisPool" />
+	</bean>
 
 	<bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
 		<property name="jedisPool" ref="jedisPool" />
@@ -283,7 +287,7 @@
 				</property>
 			</bean>
 		</property>
-		<property name="destinationName" value="repository.updates" />
+		<property name="destinationName" value="fedora.apim.update" />
 		<property name="pubSubDomain" value="true" />
 		<property name="messageListener" ref="jobForwardingJMSListener" />
 		<property name="sessionTransacted" value="true" />
@@ -328,4 +332,11 @@
 		<property name="htmlTemplate" ref="htmlTemplate" />
 		<property name="textTemplate" ref="textTemplate" />
 	</bean>
+	
+	<bean id="CleanupDepositJob" class="edu.unc.lib.deposit.CleanupDepositJob"
+		scope="prototype">
+		<property name="stagesConfiguration" value="${fedora.stagesConfiguration}"/>
+		<property name="statusKeysExpireSeconds" value="${status.keys.expire.seconds:3600}"/>
+	</bean>	
+	
 </beans>

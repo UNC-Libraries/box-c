@@ -196,6 +196,26 @@ public class JobStatusFactory {
 		return null;
 	}
 
+	/**
+	 * Expire all the job keys associated with this deposit in X seconds.
+	 * @param depositUUID
+	 * @param statusKeysExpireSeconds time until expire
+	 */
+	public void expireKeys(String depositUUID, int seconds) {
+		Jedis jedis = getJedisPool().getResource();
+		try {
+			List<String> jobUUIDs = jedis.lrange(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, -1);
+
+			for (String jobUUID : jobUUIDs) {
+				jedis.expire(RedisWorkerConstants.JOB_STATUS_PREFIX+jobUUID, seconds);
+			}
+			jedis.expire(RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX
+					+ depositUUID, seconds);
+		} finally {
+			getJedisPool().returnResource(jedis);
+		}
+	}
+
 	public Map<String, Map<String, String>> getAllJobs(String depositUUID) {
 		Map<String, Map<String, String>> results = new LinkedHashMap<String, Map<String, String>>();
 

@@ -205,6 +205,9 @@ public class JDOMNamespaceUtil {
 	public static final Namespace SKOS_NS = Namespace.getNamespace(NamespaceConstants.SKOS_PREFIX,
 			NamespaceConstants.SKOS_URI);
 
+	public static final Namespace SIMPLE_METS_PROFILE_NS = Namespace.getNamespace(NamespaceConstants.SIMPLE_METS_PROFILE_PREFIX,
+			NamespaceConstants.SIMPLE_METS_PROFILE_URI);
+
     /**
      * Generates an XPath object from the given query, with the provided namespaces added.
      * @param query

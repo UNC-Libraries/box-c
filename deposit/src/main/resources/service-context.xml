@@ -84,6 +84,7 @@
 
 	<bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor">
 		<property name="jesqueConfig" ref="jesqueConfig"/>
+		<property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>
 	</bean>
 
 	<bean id="jobFactory" class="edu.unc.lib.deposit.work.SpringJobFactory" />
@@ -346,4 +347,11 @@
 		<property name="htmlTemplate" ref="htmlTemplate" />
 		<property name="textTemplate" ref="textTemplate" />
 	</bean>
+	
+	<bean id="CleanupDepositJob" class="edu.unc.lib.deposit.CleanupDepositJob"
+		scope="prototype">
+		<property name="stagesConfiguration" value="${fedora.stagesConfiguration}"/>
+		<property name="statusKeysExpireSeconds" value="${status.keys.expire.seconds:3600}"/>
+	</bean>	
+	
 </beans>
