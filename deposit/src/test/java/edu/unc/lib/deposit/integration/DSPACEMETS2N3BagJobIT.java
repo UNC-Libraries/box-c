@@ -1,6 +1,6 @@
 package edu.unc.lib.deposit.integration;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.UUID;
