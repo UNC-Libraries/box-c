@@ -16,6 +16,7 @@ import java.util.Map;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.jdom.filter.ElementFilter;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
@@ -29,6 +30,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public class CDRMETSGraphExtractor {
@@ -60,6 +62,22 @@ public class CDRMETSGraphExtractor {
 		addDivProperties(m);
 		addStructLinkProperties(m);
 		addContainerTriples(m);
+	}
+	
+	/**
+	 * Extract the deposit's staging location from the METS amdSec, if available.
+	 * @return staging URI or null
+	 */
+	protected String getStagingLocation() {
+		String result = null;
+		@SuppressWarnings("rawtypes")
+		Iterator i = mets.getDescendants(new ElementFilter("stagingLocation", JDOMNamespaceUtil.SIMPLE_METS_PROFILE_NS));
+		while(i.hasNext()) {
+			Element e = (Element)i.next();
+			String loc = e.getTextTrim();
+			if(loc.length() > 0) result = loc;
+		}
+		return result;
 	}
 
 	private void addDivProperties(Model m) {

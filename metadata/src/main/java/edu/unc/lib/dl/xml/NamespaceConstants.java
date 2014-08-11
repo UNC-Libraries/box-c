@@ -246,6 +246,10 @@ public final class NamespaceConstants {
 
 	public static final String SKOS_URI = "http://www.w3.org/2004/02/skos/core#";
 
+	public static final String SIMPLE_METS_PROFILE_URI = "http://cdr.unc.edu/METS/profiles/Simple";
+
+	public static final String SIMPLE_METS_PROFILE_PREFIX = "simple";
+
     // Prevent instantiation.
     private NamespaceConstants() {
     }

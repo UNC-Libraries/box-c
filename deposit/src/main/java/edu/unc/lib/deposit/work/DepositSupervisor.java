@@ -283,7 +283,7 @@ public class DepositSupervisor implements WorkerListener {
 				} else {
 					depositStatusFactory.setState(depositUUID, DepositState.finished);
 					Client c = makeJesqueClient();
-					// schedule cleanup job after two days
+					// schedule cleanup job after the configured delay
 					long schedule = System.currentTimeMillis() + 1000 * this.getCleanupDelaySeconds();
 					c.delayedEnqueue(Queue.PREPARE.name(), makeJob(CleanupDepositJob.class, depositUUID), schedule);
 				}

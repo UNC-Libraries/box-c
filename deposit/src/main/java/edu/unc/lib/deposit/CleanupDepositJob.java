@@ -34,7 +34,7 @@ import edu.unc.lib.staging.StagingException;
 /**
  * This job deletes the deposit's processing folder and sets all 
  * Redis keys to expire after a configurable delay. It also may delete 
- * staging files, surrounding folders, or high-level deposit staging folders
+ * staged files, surrounding folders, and/or high-level deposit staging folders
  * according to a policy specific to the staging area. 
  * 
  * @author count0
