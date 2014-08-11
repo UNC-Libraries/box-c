@@ -58,6 +58,16 @@ public class DepositStatusFactory {
 	}
 	
 	/**
+	 * Set a single deposit field.
+	 * @param status
+	 */
+	public void set(String depositUUID, DepositField field, String value) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, field.name(), value);
+		getJedisPool().returnResource(jedis);
+	}
+	
+	/**
 	 * Locks the given deposit for a designated supervisor. These
 	 * are short term locks and should be released after every
 	 * set of jobs are queued.
@@ -139,6 +149,17 @@ public class DepositStatusFactory {
 	public void clearActionRequest(String depositUUID) {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.hdel(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.actionRequest.name());
+		getJedisPool().returnResource(jedis);
+	}
+
+	/**
+	 * Expire the deposit status key after given interval.
+	 * @param depositUUID
+	 * @param seconds time until expire
+	 */
+	public void expireKeys(String depositUUID, int seconds) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.expire(DEPOSIT_STATUS_PREFIX+depositUUID, seconds);
 		getJedisPool().returnResource(jedis);
 	}
 }

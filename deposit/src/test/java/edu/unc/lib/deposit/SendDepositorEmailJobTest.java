@@ -4,15 +4,11 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.UUID;
 
 import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
 import net.greghaines.jesque.Job;
@@ -24,7 +20,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;

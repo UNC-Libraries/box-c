@@ -1,0 +1,18 @@
+{
+    "tag:cdr.lib.unc.edu,2013:/clean_deposits_stage/":{
+        "name":"A staging area in which whole deposit folders are deleted",
+        "ingestCleanupPolicy":"DELETE_INGESTED_DEPOSIT_FOLDERS"
+    },
+    "tag:cdr.lib.unc.edu,2013:/clean_folders_stage/":{
+        "name":"A staging area on a shared drive",
+        "ingestCleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS"
+    },
+    "tag:cdr.lib.unc.edu,2013:/clean_files_stage/":{
+        "name":"A staging area used only for ingests",
+        "ingestCleanupPolicy":"DELETE_INGESTED_FILES"
+    },
+    "tag:cdr.lib.unc.edu,2013:/noop_stage/":{
+        "name":"A staging area with no cleanup",
+        "ingestCleanupPolicy":"DO_NOTHING"
+    }
+}
