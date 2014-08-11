@@ -23,88 +23,70 @@
 
 package gov.lanl.adore.djatoka.io.writer;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Iterator;
+import java.util.Properties;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+
 import gov.lanl.adore.djatoka.io.FormatIOException;
 import gov.lanl.adore.djatoka.io.IWriter;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 
-import com.sun.image.codec.jpeg.ImageFormatException;
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGEncodeParam;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
-import com.sun.media.jai.codec.ImageCodec;
-import com.sun.media.jai.codec.ImageEncoder;
-
 /**
- * JPG File Writer. Uses JAI to write BufferedImage as JPG
+ * JPG File Writer. Uses ImageIO to write BufferedImage as JPG
+ * 
  * @author Ryan Chute
- *
+ * @author Kevin S. Clarke &lt;<a href="mailto:ksclarke@gmail.com">ksclarke@gmail.com</a>&gt;
  */
 public class JPGWriter implements IWriter {
 	static Logger logger = Logger.getLogger(JPGWriter.class);
+	
 	public static final int DEFAULT_QUALITY_LEVEL = 85;
 	private int q = DEFAULT_QUALITY_LEVEL;
 	
-	/**
-	 * Write a BufferedImage instance using implementation to the 
-	 * provided OutputStream.
-	 * @param bi a BufferedImage instance to be serialized
-	 * @param os OutputStream to output the image to
-	 * @throws FormatIOException
-	 */
-	public void write(BufferedImage bi, OutputStream os) throws FormatIOException {
-		writeUsingJAI(bi, os);
-	}
-	
-	/* the JAI implementation is a bit faster */
-	private void writeUsingJavaAPI(BufferedImage bi, OutputStream os) throws FormatIOException {
-		if (bi != null) {
-			BufferedOutputStream bos = null;
-			bos = new BufferedOutputStream(os);
-		    JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(bos);
-            JPEGEncodeParam param = encoder.getDefaultJPEGEncodeParam(bi);
-            param.setQuality((float)(q/100.0), true);
-            try {
-				encoder.encode(bi, param);
-			} catch (ImageFormatException e) {
-				logger.error(e);
-				throw new FormatIOException(e);
-			} catch (IOException e) {
-				logger.error(e);
-				throw new FormatIOException(e);
-			}
-		}
-	}
-	
-	private void writeUsingJAI(BufferedImage bi, OutputStream os) throws FormatIOException {
-		if (bi != null) {
-			BufferedOutputStream bos = null;
-			try {
-				bos = new BufferedOutputStream(os);
-				com.sun.media.jai.codec.JPEGEncodeParam param = new com.sun.media.jai.codec.JPEGEncodeParam();
-				param.setQuality((float)(q/100.0));
-				ImageEncoder enc = ImageCodec.createImageEncoder("jpeg", bos, param);
-				enc.encode(bi);
-			} catch (IOException e) {
-				logger.error(e);
-			}
-		}
-	}
+    /**
+     * Write a BufferedImage instance using implementation to the provided OutputStream.
+     * 
+     * @param aImage BufferedImage instance to be serialized
+     * @param aOutStream OutputStream to output the image to
+     * @throws FormatIOException
+     */
+    @Override
+    public void write(final BufferedImage aImage, final OutputStream aOutStream) throws FormatIOException {
+        final Iterator<ImageWriter> iterator = ImageIO.getImageWritersByFormatName("jpeg");
 
-	/**
-	 * Set the Writer Implementations Serialization properties. Only JPGWriter.quality_level
-	 * is supported in this implementation.
-	 * @param props writer serialization properties
-	 */
-	public void setWriterProperties(Properties props) {
-		if (props.containsKey("JPGWriter.quality_level")) {
-			q = Integer.parseInt((String)props.get("JPGWriter.quality_level"));
-		}
-	}
+        try {
+            final ImageWriter jpgWriter = iterator.next();
+            final ImageWriteParam iwp = jpgWriter.getDefaultWriteParam();
+
+            iwp.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            iwp.setCompressionQuality((float) (q / 100.0));
+
+            jpgWriter.setOutput(ImageIO.createImageOutputStream(aOutStream));
+            jpgWriter.write(null, new IIOImage(aImage, null, null), iwp);
+            jpgWriter.dispose();
+        } catch (final IOException details) {
+            throw new FormatIOException(details);
+        }
+    }
+
+    /**
+     * Set the Writer Implementations Serialization properties. Only JPGWriter.quality_level is supported in this
+     * implementation.
+     * 
+     * @param aProps writer serialization properties
+     */
+    @Override
+    public void setWriterProperties(final Properties aProps) {
+        if (aProps.containsKey("JPGWriter.quality_level")) {
+            q = Integer.parseInt((String) aProps.get("JPGWriter.quality_level"));
+        }
+    }
 }
