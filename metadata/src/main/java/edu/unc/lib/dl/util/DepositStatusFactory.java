@@ -68,7 +68,7 @@ public class DepositStatusFactory {
 		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, field.name(), value);
 		getJedisPool().returnResource(jedis);
 	}
-	
+
 	/**
 	 * Locks the given deposit for a designated supervisor. These
 	 * are short term locks and should be released after every
@@ -211,7 +211,10 @@ public class DepositStatusFactory {
 	 */
 	public void expireKeys(String depositUUID, int seconds) {
 		Jedis jedis = getJedisPool().getResource();
-		jedis.expire(DEPOSIT_STATUS_PREFIX+depositUUID, seconds);
+		jedis.expire(DEPOSIT_STATUS_PREFIX + depositUUID, seconds);
+		jedis.expire(INGESTS_CONFIRMED_PREFIX + depositUUID, seconds);
+		jedis.expire(INGESTS_UPLOADED_PREFIX + depositUUID, seconds);
+
 		getJedisPool().returnResource(jedis);
 	}
 }
