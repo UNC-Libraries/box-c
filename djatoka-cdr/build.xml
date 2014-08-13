@@ -65,7 +65,7 @@
   <target name="compile" depends="prepare" description="Compile Java source files">
     <javac srcdir="${src.dir}"
            destdir="${build.dir}/classes"
-           source="1.6"
+           source="1.7"
            optimize="${optimize}"
            nowarn="${nowarn}"
            debug="${debug}">
