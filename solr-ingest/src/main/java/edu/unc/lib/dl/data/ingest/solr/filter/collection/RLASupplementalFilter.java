@@ -38,7 +38,7 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 	private static final String SITE_CODE_LABEL = "RLA Site Code";
 	private static final String SITE_CODE_FIELD = "rla_site_code_d";
 	
-	private static final String CONTEXT_1_LABEL = "Context1";
+	private static final String CONTEXT_1_LABEL = "Primary Context";
 	private static final String CONTEXT_1_FIELD = "rla_context_1_d";
 	
 	@Override
