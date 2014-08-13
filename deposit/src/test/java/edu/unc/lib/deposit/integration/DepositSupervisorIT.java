@@ -22,9 +22,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.deposit.work.DepositSupervisor;
-import edu.unc.lib.deposit.work.JobStatusFactory;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.FileUtils;
+import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 @RunWith(SpringJUnit4ClassRunner.class)

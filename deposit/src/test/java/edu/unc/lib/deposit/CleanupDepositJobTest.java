@@ -22,9 +22,9 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import edu.unc.lib.deposit.work.JobStatusFactory;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.FileResolver;
 import edu.unc.lib.staging.Stages;

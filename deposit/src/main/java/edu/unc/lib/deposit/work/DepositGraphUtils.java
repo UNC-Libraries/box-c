@@ -74,10 +74,10 @@ public class DepositGraphUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * Walk the children of the given bag in depth first order, storing children
 	 * in the given pids collection
-	 * 
+	 *
 	 * @param bag bag to retrieve children from
 	 * @param pids collection to store bag children into, in depth first ordering
 	 * @param recursive if false, then only the first tier of children will be
@@ -93,6 +93,23 @@ public class DepositGraphUtils {
 				Bag childBag = childResource.getModel().getBag(childResource);
 				walkChildrenDepthFirst(childBag, pids, recursive);
 			}
+		}
+	}
+
+	/**
+	 * Walk the children in depth first order, returning each as a resource
+	 *
+	 * @param bag
+	 * @param children
+	 */
+	public static void walkObjectsDepthFirst(Bag bag, Collection<Resource> children) {
+		NodeIterator childIt = bag.iterator();
+		while (childIt.hasNext()) {
+			Resource childResource = (Resource) childIt.next();
+			children.add(childResource);
+
+			Bag childBag = childResource.getModel().getBag(childResource);
+			walkObjectsDepthFirst(childBag, children);
 		}
 	}
 }

@@ -2,6 +2,7 @@ package edu.unc.lib.deposit.work;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
@@ -38,6 +39,7 @@ import edu.unc.lib.deposit.validate.ValidateMODS;
 import edu.unc.lib.deposit.validate.VirusScanJob;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -120,32 +122,50 @@ public class DepositSupervisor implements WorkerListener {
 
 			@Override
 			public void run() {
-				for (Map<String, String> fields : depositStatusFactory.getAll()) {
-					if (DepositAction.register.name().equals(
-							fields.get(DepositField.actionRequest.name()))) {
-						String uuid = fields.get(DepositField.uuid.name());
-						LOG.info("Registering a new deposit: {}", uuid);
-						if (depositStatusFactory.addSupervisorLock(uuid, id)) {
-							try {
-								Job job = makeJob(
-										PackageIntegrityCheckJob.class, uuid);
-								LOG.info("Queuing {} for deposit {}",
-										job.getClassName(), uuid);
-								depositStatusFactory.setState(uuid,
-										DepositState.queued);
-								depositStatusFactory.clearActionRequest(uuid);
-								Client c = makeJesqueClient();
-								c.enqueue(Queue.PREPARE.name(), job);
-								c.end();
-							} finally {
-								depositStatusFactory.removeSupervisorLock(uuid);
+
+				try {
+					// Scan for actions and trigger them
+					for (Map<String, String> fields : depositStatusFactory.getAll()) {
+
+						if (DepositAction.register.name().equals(fields.get(DepositField.actionRequest.name()))) {
+							String uuid = fields.get(DepositField.uuid.name());
+							if (depositStatusFactory.addSupervisorLock(uuid, id)) {
+								try {
+									queueNewDeposit(uuid);
+								} finally {
+									depositStatusFactory.removeSupervisorLock(uuid);
+								}
+							}
+
+						} else if (DepositAction.pause.name().equals(fields.get(DepositField.actionRequest.name()))) {
+
+							String uuid = fields.get(DepositField.uuid.name());
+							LOG.info("Pausing job {}", uuid);
+
+							depositStatusFactory.setState(uuid, DepositState.paused);
+							depositStatusFactory.clearActionRequest(uuid);
+
+						} else if (DepositAction.resume.name().equals(fields.get(DepositField.actionRequest.name()))) {
+
+							String uuid = fields.get(DepositField.uuid.name());
+							LOG.info("Resuming job {}", uuid);
+
+							if (depositStatusFactory.addSupervisorLock(uuid, id)) {
+								try {
+									resumeDeposit(uuid, fields);
+								} finally {
+									depositStatusFactory.removeSupervisorLock(uuid);
+								}
 							}
 						}
 					}
+				} catch (Throwable t) {
+					LOG.error("Encountered an exception while checking for action requests", t);
 				}
 			}
 
 		}, 1000, 1000);
+
 		if (depositWorkerPool.isShutdown()) {
 			throw new Error("Cannot start deposit workers, already shutdown.");
 		} else if (depositWorkerPool.isPaused()) {
@@ -154,6 +174,41 @@ public class DepositSupervisor implements WorkerListener {
 		} else {
 			LOG.info("Starting deposit workers");
 			depositWorkerPool.run();
+		}
+
+		// Repopulate the queue
+		requeueAll();
+	}
+
+	/**
+	 * Add jobs previously running or queued back to the queue
+	 */
+	private void requeueAll() {
+		Set<Map<String, String>> depositStatuses = depositStatusFactory.getAll();
+
+		LOG.info("Repopulating the deposit queue, {} items in backlog", depositStatuses.size());
+
+		// Requeue the previously running jobs from where they left off first
+		for (Map<String, String> fields : depositStatuses) {
+			if (DepositState.running.name().equals(fields.get(DepositField.state.name()))) {
+				String uuid = fields.get(DepositField.uuid.name());
+
+				// Job may have been locked to a particular supervisor depend on when it was interrupted
+				depositStatusFactory.removeSupervisorLock(uuid);
+				// Inform supervisor to resume this deposit from where it left off
+				depositStatusFactory.setActionRequest(uuid, DepositAction.resume);
+			}
+		}
+
+		// Requeue the "queued" jobs next
+		for (Map<String, String> fields : depositStatuses) {
+			if (DepositState.queued.name().equals(fields.get(DepositField.state.name()))) {
+				String uuid = fields.get(DepositField.uuid.name());
+
+				depositStatusFactory.removeSupervisorLock(uuid);
+				// Re-register as a new deposit
+				depositStatusFactory.setActionRequest(uuid, DepositAction.register);
+			}
 		}
 	}
 
@@ -226,94 +281,83 @@ public class DepositSupervisor implements WorkerListener {
 
 		// Job-level status logging
 		switch (event) {
-		case WORKER_ERROR:
-			LOG.error("Worker threw an error: {}", ex);
-		case WORKER_START:
-		case WORKER_STOP:
-		case WORKER_POLL:
-		case JOB_PROCESS:
-			return;
-		default:
+			case WORKER_ERROR:
+				LOG.error("Worker threw an error: {}", ex);
+			case WORKER_START:
+			case WORKER_STOP:
+			case WORKER_POLL:
+			case JOB_PROCESS:
+				return;
+			default:
 		}
 
 		depositUUID = (String) job.getArgs()[1];
+		Map<String, String> status = this.depositStatusFactory.get(depositUUID);
+
 		j = (AbstractDepositJob) runner;
 
 		switch (event) {
-		case JOB_EXECUTE:
-			jobStatusFactory.started(j);
-			break;
-		case JOB_SUCCESS:
-			jobStatusFactory.completed(j);
-			break;
-		case WORKER_ERROR:
-		case JOB_FAILURE:
-			if (j != null) {
-				if (ex != null) {
-					jobStatusFactory.failed(j, ex.getLocalizedMessage());
-				} else {
-					jobStatusFactory.failed(j);
+			case JOB_EXECUTE:
+				jobStatusFactory.started(j.getJobUUID(), j.getDepositUUID(), j.getClass());
+				break;
+			case JOB_SUCCESS:
+				jobStatusFactory.completed(j.getJobUUID());
+				LOG.debug("Registering {} as completed for {}", j.getClass().getName(), depositUUID);
+				break;
+			case WORKER_ERROR:
+			case JOB_FAILURE:
+				if (ex != null && ex instanceof JobInterruptedException) {
+					LOG.debug("Job {} was interrupted, ending without failure", depositUUID);
+					return;
 				}
-			} else {
-				LOG.error("Job failure", ex);
-			}
-			break;
-		default:
-			break;
+
+				if (j != null) {
+					LOG.warn("Job failed with this exception", ex);
+					if (ex != null) {
+						jobStatusFactory.failed(j.getJobUUID(), ex.getLocalizedMessage());
+					} else {
+						jobStatusFactory.failed(j.getJobUUID());
+					}
+				} else {
+					LOG.error("Job failure", ex);
+				}
+
+				depositStatusFactory.fail(depositUUID, ex);
+				return;
+			default:
+				break;
+		}
+
+		// Now that state from the previous job is recorded, prevent further processing if interrupted
+		if (isJobPaused(status)) {
+			LOG.debug("Job {} has been paused", depositUUID);
+			return;
 		}
 
 		// Deposit-level actions
-		Map<String, String> status = this.depositStatusFactory.get(depositUUID);
-		Set<String> successfulJobs = this.jobStatusFactory
+		List<String> successfulJobs = this.jobStatusFactory
 				.getSuccessfulJobNames(depositUUID);
 		switch (event) {
-		case JOB_EXECUTE:
-			if(!DepositState.running.name().equals(status.get(DepositField.state.name()))) {
-				depositStatusFactory.setState(depositUUID, DepositState.running);
-			}
-			break;
-		case JOB_SUCCESS:
-			try {
+			case JOB_EXECUTE:
+				if (!DepositState.running.name().equals(status.get(DepositField.state.name()))) {
+					depositStatusFactory.setState(depositUUID, DepositState.running);
+				}
+				break;
+			case JOB_SUCCESS:
 				if(CleanupDepositJob.class.getName().equals(job.getClassName())) break;
-				Job nextJob = getNextJob(job, depositUUID, status, successfulJobs);
-				if (nextJob != null) {
-					Client c = makeJesqueClient();
-					LOG.info("Queuing {} for deposit {}",
-							job.getClassName(), depositUUID);
-					c.enqueue(Queue.PREPARE.name(), nextJob);
-					c.end();
-				} else {
-					depositStatusFactory.setState(depositUUID, DepositState.finished);
-					Client c = makeJesqueClient();
-					// schedule cleanup job after the configured delay
-					long schedule = System.currentTimeMillis() + 1000 * this.getCleanupDelaySeconds();
-					Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
-					LOG.info("Queuing {} for deposit {}",
-							cleanJob.getClassName(), depositUUID);
-					c.delayedEnqueue(Queue.PREPARE.name(), cleanJob, schedule);
+				
+				try {
+					queueNextJob(job, depositUUID, status, successfulJobs);
+				} catch (DepositFailedException e) {
+					depositStatusFactory.fail(depositUUID, e);
 				}
-			} catch (DepositFailedException e) {
-				depositStatusFactory.fail(depositUUID, e);
-			}
-			break;
-		case WORKER_ERROR:
-		case JOB_FAILURE:
-			depositStatusFactory.fail(depositUUID, ex);
-			// send deposit failure notice
-			/*if(!SendDepositorEmailJob.class.getName().equals(job.getClassName())) {
-				if (status.containsKey(DepositField.depositorEmail.name())) {
-					Job emailJob = makeJob(SendDepositorEmailJob.class, depositUUID);
-					Client c = makeJesqueClient();
-					c.enqueue(Queue.PREPARE.name(), emailJob);
-					c.end();
-				}
-			}*/
-		default:
-			break;
+				break;
+			default:
+				break;
 		}
 	}
 
-	private Job getNextJob(Job job, String depositUUID, Map<String, String> status, Set<String> successfulJobs)
+	private Job getNextJob(Job job, String depositUUID, Map<String, String> status, List<String> successfulJobs)
 			throws DepositFailedException {
 		LOG.debug("Got completed job names: {}", successfulJobs);
 
@@ -407,6 +451,61 @@ public class DepositSupervisor implements WorkerListener {
 		}
 		
 		return null;
+	}
+
+	private boolean isJobPaused(Map<String, String> status) {
+		return DepositState.paused.name().equals(status.get(DepositField.state.name()));
+	}
+
+	private void queueNextJob(Job job, String depositUUID, Map<String, String> status, List<String> successfulJobs)
+			throws DepositFailedException {
+		Job nextJob = getNextJob(job, depositUUID, status, successfulJobs);
+		if (nextJob != null) {
+			LOG.debug("Queuing next job {} for deposit {}", nextJob.getClassName(), depositUUID);
+			Client c = makeJesqueClient();
+			c.enqueue(Queue.PREPARE.name(), nextJob);
+			c.end();
+		} else {
+			depositStatusFactory.setState(depositUUID, DepositState.finished);
+			
+			Client c = makeJesqueClient();
+			// schedule cleanup job after the configured delay
+			long schedule = System.currentTimeMillis() + 1000 * this.getCleanupDelaySeconds();
+			Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
+			LOG.info("Queuing {} for deposit {}",
+					cleanJob.getClassName(), depositUUID);
+			c.delayedEnqueue(Queue.PREPARE.name(), cleanJob, schedule);
+		}
+	}
+
+	private void queueNewDeposit(String uuid) {
+		LOG.info("Queuing first job for deposit {}", uuid);
+
+		Job job = makeJob(PackageIntegrityCheckJob.class, uuid);
+
+		depositStatusFactory.setState(uuid, DepositState.queued);
+		depositStatusFactory.clearActionRequest(uuid);
+
+		Client c = makeJesqueClient();
+		c.enqueue(Queue.PREPARE.name(), job);
+		c.end();
+	}
+
+	private void resumeDeposit(String uuid, Map<String, String> status) {
+		try {
+			depositStatusFactory.clearActionRequest(uuid);
+
+			// Clear out the previous failed job if there was one
+			jobStatusFactory.clearFailed(uuid);
+			depositStatusFactory.deleteField(uuid, DepositField.errorMessage);
+
+			List<String> successfulJobs = jobStatusFactory.getSuccessfulJobNames(uuid);
+			queueNextJob(null, uuid, status, successfulJobs);
+
+			depositStatusFactory.setState(uuid, DepositState.queued);
+		} catch (DepositFailedException e) {
+			depositStatusFactory.fail(uuid, e);
+		}
 	}
 
 }

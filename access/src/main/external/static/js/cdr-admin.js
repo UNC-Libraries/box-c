@@ -4334,6 +4334,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			this.jobConfig.jobTypes[index] = jobType;
 		}
 		this.createDetailsView();
+		
 		return this;
 	};
 	
@@ -4477,9 +4478,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	// Default job type rendering, calls the job type's template for each job result
 	AbstractStatusMonitor.prototype.renderJobType = function(typeConfig) {
 		$(".monitor_job." + typeConfig.name).remove();
-		for (var index in typeConfig.results.jobs) {
-			var selected = this.detailsType && typeConfig.results.jobs[index].id == this.detailsType.id;
-			typeConfig.placeholder.after(typeConfig.template({data : typeConfig.results.jobs[index], type : typeConfig, dateFormat : this.dateFormat, selected : selected}));
+		var jobs = typeConfig.results.jobs;
+		for (var index in jobs) {
+			var selected = this.detailsType && jobs[index].id == this.detailsType.id;
+			typeConfig.placeholder.after(typeConfig.template({data : jobs[index], type : typeConfig, dateFormat : this.dateFormat, selected : selected}));
 		}
 	};
 	
@@ -4526,9 +4528,9 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			template : depositMonitorJobTemplate,
 			detailsUrl : "/services/api/status/deposit/{id}",
 			detailsTemplate : depositMonitorDetailsTemplate,
-			fields : ["Status", "Submitter", "Submit time", "Ingested", "First object", "Note"],
+			fields : ["Status", "Submitter", "Submit time", "Progress", "First object", "Note"],
 			jobTypes : [
-				{name : "running", refresh : 5000, detailsRefresh : 1000},
+				{name : "running", refresh : 1000, detailsRefresh : 1000},
 				{name : "queued", refresh : 10000},
 				{name : "paused", refresh : 10000},
 				{name : "finished", refresh : 10000},
@@ -4547,6 +4549,76 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	
 	DepositMonitor.prototype.constructor = DepositMonitor;
 	DepositMonitor.prototype = Object.create( AbstractStatusMonitor.prototype );
+	
+	DepositMonitor.prototype.init = function() {
+		AbstractStatusMonitor.prototype.init.call(this);
+		
+		$(this.element).on("click", ".monitor_action", function(){
+			var $this = $(this);
+			$this.text($this.text() + "...");
+			$this.addClass("disabled");
+			
+			$.post($this.attr("href"), function(){
+				
+			});
+			return false;
+		});
+	};
+	
+	DepositMonitor.prototype.renderJobType = function(typeConfig) {
+		$(".monitor_job." + typeConfig.name).remove();
+		var results = typeConfig.results;
+		for (var index in results) {
+			var selected = this.detailsType && results[index].uuid == this.detailsType.id;
+			var result = results[index];
+			if ("currentJob" in result) {
+				var currentJob = result.currentJob;
+				
+				var jobName = currentJob.name.substring(currentJob.name.lastIndexOf(".") + 1);
+				result["shortName"] = jobName;
+				
+				if (jobName == "IngestDeposit" && "total" in currentJob) {
+					var completion = result.ingestedObjects? result.ingestedObjects : 0;
+					completion += " / " + currentJob.total;
+					result["completion"] = completion;
+				}
+			}
+			
+			if (result.state == "finished") {
+				result["completion"] = result.ingestedObjects + " / " + result.ingestedObjects;
+			}
+			typeConfig.placeholder.after(typeConfig.template({data : result, type : typeConfig, dateFormat : this.dateFormat, selected : selected}));
+		}
+	};
+		
+	DepositMonitor.prototype.renderJobDetails = function(typeConfig) {
+		var results = typeConfig.results;
+		
+		if ("currentJob" in results) {
+			var currentJob = results.jobs[results.currentJob];
+		}
+		
+		if ("jobs" in results) {
+			for (var index in results.jobs) {
+				var job = results.jobs[index];
+				var jobName = job.name.substring(job.name.lastIndexOf(".") + 1);
+				
+				job["shortName"] = jobName;
+				
+				if (jobName == "IngestDeposit" && "total" in job) {
+					var completion = results.ingestedObjects? results.ingestedObjects : 0;
+					completion += " / " + job.total;
+					job["completion"] = completion;
+				}
+			}
+		}
+		
+		this.detailsContent.html(typeConfig.template({data : typeConfig.results, type : typeConfig, dateFormat : this.dateFormat}));
+	};
+		
+	DepositMonitor.prototype.dateFormat = function(dateObject) {
+		return moment(parseInt(dateObject)).format("MM/DD/YYYY h:mma");
+	};
 	
 	return DepositMonitor;
 });define('EnhancementMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'tpl!../templates/admin/statusMonitor/enhancementMonitorJob', 'tpl!../templates/admin/statusMonitor/enhancementMonitorJobDetails'],

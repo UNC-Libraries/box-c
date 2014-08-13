@@ -90,7 +90,9 @@
 
 	<bean id="jobFactory" class="edu.unc.lib.deposit.work.SpringJobFactory" />
 
-	<bean id="jobStatusFactory" class="edu.unc.lib.deposit.work.JobStatusFactory" />
+	<bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory" >
+		<property name="jedisPool" ref="jedisPool" />
+	</bean>
 
 	<bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
 		<property name="jedisPool" ref="jedisPool" />
@@ -285,7 +287,7 @@
 				</property>
 			</bean>
 		</property>
-		<property name="destinationName" value="repository.updates" />
+		<property name="destinationName" value="fedora.apim.update" />
 		<property name="pubSubDomain" value="true" />
 		<property name="messageListener" ref="jobForwardingJMSListener" />
 		<property name="sessionTransacted" value="true" />

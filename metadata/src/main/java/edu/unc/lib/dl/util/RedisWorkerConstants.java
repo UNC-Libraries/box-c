@@ -3,6 +3,8 @@ package edu.unc.lib.dl.util;
 public class RedisWorkerConstants {
 	public static final String DEPOSIT_SET = "deposits";
 	public static final String DEPOSIT_STATUS_PREFIX = "deposit-status:";
+	public static final String INGESTS_CONFIRMED_PREFIX = "ingests-confirmed:";
+	public static final String INGESTS_UPLOADED_PREFIX = "ingests-uploaded:";
 	public static final String DEPOSIT_TO_JOBS_PREFIX = "deposit-to-jobs:";
 	public static final String JOB_STATUS_PREFIX = "job-status:";
 
@@ -25,7 +27,7 @@ public class RedisWorkerConstants {
 	public static enum DepositState {
 		unregistered, queued, running, paused, finished, cancelled, failed;
 	}
-	
+
 	/**
 	 * Deposit-level instructions that can be executed by a deposit supervisor.
 	 * @author count0

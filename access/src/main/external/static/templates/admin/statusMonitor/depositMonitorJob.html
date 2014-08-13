@@ -1,20 +1,24 @@
-<tr class="parent monitor_job <%= type.name %> detailsLink<%= selected? " selected" : "" %>" data-id="<%= data.id %>">
+<tr class="parent monitor_job <%= data.state %> detailsLink<%= selected? " selected" : "" %>" data-id="<%= data.uuid %>">
 	<td>
-		<%= type.name %>
+		<%= data.state %>
 	</td>
 	<td>
-		<%= data.submitter %>
+		<%= data.depositorName %>
 	</td>
 	<td>
-		<%= dateFormat(data.submissionTime) %>
+		<%= dateFormat(data.submitTime) %>
 	</td>
 	<td>
-		<%= data.worked %>/<%= data.size %>
+		<% if (data.completion) {%>
+			<%= data.completion %>
+		<% } else if (data.shortName) { %>
+			<%= data.shortName %>
+		<% } %>
 	</td>
 	<td>
-		<%= data.containerPlacements[0].submittedLabel %>
+		<%= data.fileName || data.depositSlug || data.uuid %>
 	</td>
 	<td>
-		<%= data.message %>
+		<%= data.message || data.depositMethod %>
 	</td>
 </tr>
