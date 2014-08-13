@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.jdom.Attribute;
-import org.jdom.Element;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Attribute;
+import org.jdom2.Element;
+import org.jdom2.output.XMLOutputter;
 
 import edu.unc.lib.dl.util.RDFUtil;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
@@ -122,14 +122,14 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
 		}
 	}
 
-	protected void outputDatastreams(Map<String, org.jdom.Element> datastreamMap) throws IOException {
+	protected void outputDatastreams(Map<String, org.jdom2.Element> datastreamMap) throws IOException {
 		if (datastreamMap == null)
 			return;
 		XMLOutputter outputter = new XMLOutputter();
-		java.util.Iterator<java.util.Map.Entry<String, org.jdom.Element>> it = datastreamMap.entrySet().iterator();
+		java.util.Iterator<java.util.Map.Entry<String, org.jdom2.Element>> it = datastreamMap.entrySet().iterator();
 
 		while (it.hasNext()) {
-			java.util.Map.Entry<String, org.jdom.Element> element = it.next();
+			java.util.Map.Entry<String, org.jdom2.Element> element = it.next();
 			if (element.getValue() == null) {
 				System.out.println(element.getKey() + ": null");
 				continue;

@@ -36,11 +36,12 @@ import net.sf.saxon.TransformerFactoryImpl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.filter.Filter;
-import org.jdom.transform.JDOMResult;
-import org.jdom.transform.JDOMSource;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.filter.ElementFilter;
+import org.jdom2.filter.Filter;
+import org.jdom2.transform.JDOMResult;
+import org.jdom2.transform.JDOMSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -59,19 +60,7 @@ public class SchematronValidator {
     private Map<String, Resource> schemas = new HashMap<String, Resource>();
     private Map<String, Templates> templates = null;
 
-	private static Filter failedAsserts = new Filter() {
-		private static final long serialVersionUID = 1965854034232575078L;
-
-		public boolean matches(Object obj) {
-			if (obj instanceof Element) {
-				Element e = (Element) obj;
-				if ("failed-assert".equals(e.getName())) {
-					return true;
-				}
-			}
-			return false;
-		}
-	};
+	private static Filter<Element> failedAsserts = new ElementFilter("failed-assert");
 	
     public SchematronValidator() {
     }

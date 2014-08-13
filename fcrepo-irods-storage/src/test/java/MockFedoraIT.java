@@ -53,15 +53,15 @@ public class MockFedoraIT extends Assert {
 		File junk = null;
 		try {
 			junk = File.createTempFile("test", "junk");
-			OutputStream out = new FileOutputStream(junk);
-			byte[] buffer = new byte[4096];
-			for (int i = 0; i < buffer.length; i++) {
-				buffer[i] = 'C';
+			try (OutputStream out = new FileOutputStream(junk)) {
+				byte[] buffer = new byte[4096];
+				for (int i = 0; i < buffer.length; i++) {
+					buffer[i] = 'C';
+				}
+				for (int i = 0; i * 4 < kbytes; i++) {
+					out.write(buffer);
+				}
 			}
-			for (int i = 0; i * 4 < kbytes; i++) {
-				out.write(buffer);
-			}
-			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -203,9 +203,7 @@ public class MockFedoraIT extends Assert {
 			String outputPath) throws LowlevelStorageException {
 		InputStream is = module.read(new File(testPath));
 		// initialize sax for this parse
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(new File(outputPath));
+		try (FileOutputStream fos = new FileOutputStream(new File(outputPath))) {
 			// byte[] buffer = new byte[10];
 			for (int num = is.read(); num != -1; num = is.read()) {
 				fos.write(num);
@@ -213,14 +211,6 @@ public class MockFedoraIT extends Assert {
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException("Error", e);
-		} finally {
-			if (fos != null) {
-				try {
-					fos.close();
-				} catch (IOException e) {
-				}
-			}
-
 		}
 
 	}

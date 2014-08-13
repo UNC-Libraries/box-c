@@ -6,11 +6,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.reset;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -24,7 +28,6 @@ import org.swordapp.server.SwordError;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -38,6 +41,9 @@ public class CDRMETSDepositHandlerTest {
 	    MockitoAnnotations.initMocks(this);
 	}
 	
+	@Rule
+	public TemporaryFolder tmpDir = new TemporaryFolder();
+	
 	@InjectMocks
 	@Autowired
 	private CDRMETSDepositHandler metsDepositHandler;
@@ -47,10 +53,11 @@ public class CDRMETSDepositHandlerTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testDoDepositBagit() throws SwordError {
+	public void testDoDepositBagit() throws SwordError, IOException {
 		Deposit d = new Deposit();
-		File testFile = FileUtils.tempCopy(new File("src/test/resources/simple.zip"));
-		d.setFile(testFile);
+		File testPayload = tmpDir.newFile("simple.zip");
+		FileUtils.copyFile(new File("src/test/resources/simple.zip"), testPayload);
+		d.setFile(testPayload);
 		d.setMd5("d2b88d292e2c47943231205ed36f6c94");
 		d.setFilename("simple.zip");
 		d.setMimeType("application/zip");
@@ -70,10 +77,11 @@ public class CDRMETSDepositHandlerTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testDoDepositMETSXML() throws SwordError {
+	public void testDoDepositMETSXML() throws SwordError, IOException {
 		Deposit d = new Deposit();
-		File testMETS = FileUtils.tempCopy(new File("src/test/resources/METS.xml"));
-		d.setFile(testMETS);
+		File testPayload = tmpDir.newFile("METS.xml");
+		FileUtils.copyFile(new File("src/test/resources/METS.xml"), testPayload);
+		d.setFile(testPayload);
 		d.setMd5("d2b88d292e2c47943231205ed36f6c94");
 		d.setFilename("METS.xml");
 		d.setMimeType("application/xml");

@@ -51,12 +51,12 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.DOMBuilder;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.DOMBuilder;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.XMLOutputter;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.NodeList;
 
@@ -450,9 +450,9 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		try {
 			sr = new StringReader(response);
 			r = new SAXBuilder().build(sr);
-			result = extracted(r.getRootElement()
+			result = r.getRootElement()
 					.getChild("query", JDOMNamespaceUtil.MULGARA_TQL_NS)
-					.getChildren("solution", JDOMNamespaceUtil.MULGARA_TQL_NS));
+					.getChildren("solution", JDOMNamespaceUtil.MULGARA_TQL_NS);
 			return result;
 		} catch (IOException e) {
 			log.error(response);
@@ -467,11 +467,6 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 				sr.close();
 			}
 		}
-	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private List<Element> extracted(List children) {
-		return children;
 	}
 
 	public String getResourceIndexModelUri() {
@@ -784,7 +779,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 				if (log.isDebugEnabled()) {
 					// log the full soap body response
 					DOMBuilder builder = new DOMBuilder();
-					org.jdom.Document jdomDoc = builder.build(reply
+					org.jdom2.Document jdomDoc = builder.build(reply
 							.getSOAPBody().getOwnerDocument());
 					log.debug(new XMLOutputter().outputString(jdomDoc));
 				}
@@ -899,14 +894,13 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		String result = null;
 		String response = this.sendTQL(query);
 		if (response != null) {
-			StringReader sr = new StringReader(response);
 			XMLInputFactory factory = XMLInputFactory.newInstance();
 			factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
-			XMLEventReader r = null;
-			try {
+			try(
+					StringReader sr = new StringReader(response)) {
+				XMLEventReader r = factory.createXMLEventReader(sr);
 				boolean inMessage = false;
 				StringBuffer message = new StringBuffer();
-				r = factory.createXMLEventReader(sr);
 				while (r.hasNext()) {
 					XMLEvent e = r.nextEvent();
 					if (e.isStartElement()) {
@@ -923,20 +917,11 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 						message.append(e.asCharacters().getData());
 					}
 				}
+				r.close();
 				result = message.toString();
 			} catch (XMLStreamException e) {
 				e.printStackTrace();
-			} finally {
-				if (r != null) {
-					try {
-						r.close();
-					} catch (Exception ignored) {
-						log.error(ignored);
-					}
-				}
-
 			}
-			sr.close();
 		}
 		return result;
 	}

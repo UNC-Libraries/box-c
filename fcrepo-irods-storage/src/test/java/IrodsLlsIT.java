@@ -42,127 +42,138 @@ import fedorax.server.module.storage.lowlevel.irods.IrodsIFileSystem;
 @ContextConfiguration(locations = { "/spring-context-IT.xml" })
 public class IrodsLlsIT extends Assert {
 
-    @Autowired
-    private IRODSAccount account = null;
-    private int bufferSize = 32768;
+	@Autowired
+	private IRODSAccount account = null;
+	private int bufferSize = 32768;
 
-    public int getBufferSize() {
-	return bufferSize;
-    }
-
-    public void setBufferSize(int bufferSize) {
-	this.bufferSize = bufferSize;
-    }
-
-    public IRODSAccount getAccount() {
-	return account;
-    }
-
-    public void setAccount(IRODSAccount account) {
-	this.account = account;
-    }
-
-    private IrodsIFileSystem getModule() {
-	IrodsIFileSystem result = null;
-	try {
-	    IRODSFileSystem irodsFileSystem = IRODSFileSystem.instance();
-	    result = new IrodsIFileSystem(this.bufferSize, irodsFileSystem, this.account);
-	    System.out.println("module loaded");
-	    return result;
-	} catch (Exception e) {
-	    throw new Error("got an exception creating module", e);
+	public int getBufferSize() {
+		return bufferSize;
 	}
-    }
 
-    private String getTestPath() {
-	return this.account.getHomeDirectory() + "/IrodsLLSTests/";
-    }
+	public void setBufferSize(int bufferSize) {
+		this.bufferSize = bufferSize;
+	}
 
-    @Test
-    public void writeParseDeleteXML() {
-	IrodsIFileSystem module = this.getModule();
-	String filename = "BigFOXML.xml";
-	try {
-	    InputStream content = this.getClass().getResourceAsStream(filename);
+	public IRODSAccount getAccount() {
+		return account;
+	}
 
-	    // make sure it parses locally first
-	    SAXParserFactory spf = SAXParserFactory.newInstance();
-	    SAXParser localparser = spf.newSAXParser();
-	    localparser.parse(content, new DefaultHandler());
-	    content.close();
+	public void setAccount(IRODSAccount account) {
+		this.account = account;
+	}
 
-	    // write to irods
-	    content = this.getClass().getResourceAsStream(filename);
-	    File testFile = new File(this.getTestPath() + filename);
-	    module.write(testFile, content);
-	    System.out.println("copied big XML into test location");
-
-	    // read/parse test file
-	    InputStream read = module.read(testFile);
-	    SAXParser irodsparser = spf.newSAXParser();
-	    irodsparser.parse(read, new DefaultHandler());
-	    System.err.println("parsed");
-
-	    // delete test file
-	    module.delete(testFile);
-
-	    IRODSSession irodsSession = null;
-	    try {
-		IRODSFileFactory ff = IRODSFileSystem.instance().getIRODSFileFactory(account);
-		IRODSFile ifile = ff.instanceIRODSFile(this.getTestPath() + filename);
-		assertTrue(!ifile.exists());
-	    } catch (JargonException e) {
-		throw new LowlevelStorageException(true, "Problem deleting iRODS file", e);
-	    } finally {
-		if (irodsSession != null) {
-		    try {
-			irodsSession.closeSession();
-		    } catch (JargonException ignored) {
-		    }
+	private IrodsIFileSystem getModule() {
+		IrodsIFileSystem result = null;
+		try {
+			IRODSFileSystem irodsFileSystem = IRODSFileSystem.instance();
+			result = new IrodsIFileSystem(this.bufferSize, irodsFileSystem,
+					this.account);
+			System.out.println("module loaded");
+			return result;
+		} catch (Exception e) {
+			throw new Error("got an exception creating module", e);
 		}
-	    }
-	} catch (Exception e) {
-	    e.printStackTrace();
-	    fail(e.getMessage());
 	}
-    }
 
-    @Test
-    public void largeFileWriteReadDelete() {
-	IrodsIFileSystem module = this.getModule();
-	String filename = "65MB.dat";
-	try {
-	    InputStream content = this.getClass().getResourceAsStream(filename);
-	    File testFile = new File(this.getTestPath() + filename);
-	    module.write(testFile, content);
-	    System.out.println("copied big XML into test location");
+	private String getTestPath() {
+		return this.account.getHomeDirectory() + "/IrodsLLSTests/";
+	}
 
-	    InputStream read = module.read(testFile);
+	@Test
+	public void writeParseDeleteXML() {
+		IrodsIFileSystem module = this.getModule();
+		String filename = "BigFOXML.xml";
+		try {
+			SAXParserFactory spf = SAXParserFactory.newInstance();
+			try (InputStream content = this.getClass().getResourceAsStream(
+					filename)) {
 
-	    System.out.println("reading supposedly buffered stream byte by byte");
-	    while (read.read() != -1) {
-		continue;
-	    }
-	    module.delete(testFile);
+				// make sure it parses locally first
+				SAXParser localparser = spf.newSAXParser();
+				localparser.parse(content, new DefaultHandler());
+			}
 
-	    IRODSSession irodsSession = null;
-	    try {
-		IRODSFileFactory ff = IRODSFileSystem.instance().getIRODSFileFactory(account);
-		IRODSFile ifile = ff.instanceIRODSFile(this.getTestPath() + filename);
-		assertTrue(!ifile.exists());
-	    } catch (JargonException e) {
-		throw new LowlevelStorageException(true, "Problem deleting iRODS file", e);
-	    } finally {
-		if (irodsSession != null) {
-		    try {
-			irodsSession.closeSession();
-		    } catch (JargonException ignored) {
-		    }
+			// write to irods
+			File testFile = new File(this.getTestPath() + filename);
+			try (InputStream content = this.getClass().getResourceAsStream(
+					filename)) {
+				module.write(testFile, content);
+			}
+			System.out.println("copied big XML into test location");
+
+			// read/parse test file
+			InputStream read = module.read(testFile);
+			SAXParser irodsparser = spf.newSAXParser();
+			irodsparser.parse(read, new DefaultHandler());
+			System.err.println("parsed");
+
+			// delete test file
+			module.delete(testFile);
+
+			IRODSSession irodsSession = null;
+			try {
+				IRODSFileFactory ff = IRODSFileSystem.instance()
+						.getIRODSFileFactory(account);
+				IRODSFile ifile = ff.instanceIRODSFile(this.getTestPath()
+						+ filename);
+				assertTrue(!ifile.exists());
+			} catch (JargonException e) {
+				throw new LowlevelStorageException(true,
+						"Problem deleting iRODS file", e);
+			} finally {
+				if (irodsSession != null) {
+					try {
+						irodsSession.closeSession();
+					} catch (JargonException ignored) {
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
 		}
-	    }
-	} catch (Exception e) {
-	    e.printStackTrace();
-	    fail(e.getMessage());
 	}
-    }
+
+	@Test
+	public void largeFileWriteReadDelete() {
+		IrodsIFileSystem module = this.getModule();
+		String filename = "65MB.dat";
+		try {
+			InputStream content = this.getClass().getResourceAsStream(filename);
+			File testFile = new File(this.getTestPath() + filename);
+			module.write(testFile, content);
+			System.out.println("copied big XML into test location");
+
+			InputStream read = module.read(testFile);
+
+			System.out
+					.println("reading supposedly buffered stream byte by byte");
+			while (read.read() != -1) {
+				continue;
+			}
+			module.delete(testFile);
+
+			IRODSSession irodsSession = null;
+			try {
+				IRODSFileFactory ff = IRODSFileSystem.instance()
+						.getIRODSFileFactory(account);
+				IRODSFile ifile = ff.instanceIRODSFile(this.getTestPath()
+						+ filename);
+				assertTrue(!ifile.exists());
+			} catch (JargonException e) {
+				throw new LowlevelStorageException(true,
+						"Problem deleting iRODS file", e);
+			} finally {
+				if (irodsSession != null) {
+					try {
+						irodsSession.closeSession();
+					} catch (JargonException ignored) {
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
 }

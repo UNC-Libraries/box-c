@@ -35,7 +35,7 @@ import java.util.UUID;
 
 import javax.annotation.Resource;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -173,6 +173,7 @@ public class DigitalObjectManagerImplTest {
 	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#delete(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.agents.Agent, java.lang.String)}
 	 * .
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testDelete() throws Exception {
 		// verify works with references internal to delete contents
@@ -228,6 +229,7 @@ public class DigitalObjectManagerImplTest {
 	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#delete(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.agents.Agent, java.lang.String)}
 	 * .
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testDeleteForFedoraFault() throws Exception {
 		// verify works with references internal to delete contents
@@ -278,6 +280,7 @@ public class DigitalObjectManagerImplTest {
 	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#delete(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.agents.Agent, java.lang.String)}
 	 * .
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testDeleteForFedoraGone() throws Exception {
 		// verify works with references internal to delete contents

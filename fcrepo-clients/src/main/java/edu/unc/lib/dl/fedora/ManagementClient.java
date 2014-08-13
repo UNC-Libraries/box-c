@@ -40,12 +40,13 @@ import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jdom.Document;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Document;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.XMLOutputter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.WebServiceFaultException;
@@ -94,7 +95,6 @@ import edu.unc.lib.dl.fedora.types.SetDatastreamVersionable;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionableResponse;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -698,24 +698,12 @@ public class ManagementClient extends WebServiceTemplate {
 			post.setRequestEntity(new MultipartRequestEntity(parts, post.getParams()));
 			int status = httpClient.executeMethod(post);
 
-			InputStream in = post.getResponseBodyAsStream();
 			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			int b;
-			try {
+			try(InputStream in = post.getResponseBodyAsStream();
+					PrintWriter pw = new PrintWriter(sw)) {
+				int b;
 				while ((b = in.read()) != -1) {
 					pw.write(b);
-				}
-			} finally {
-				if (pw != null) {
-					pw.flush();
-					pw.close();
-				}
-				if (in != null) {
-					try {
-						in.close();
-					} catch (IOException ignored) {
-					}
 				}
 			}
 
@@ -758,20 +746,13 @@ public class ManagementClient extends WebServiceTemplate {
 
 	public String upload(Document xml) {
 		// write the document to a byte array
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		XMLOutputter out = new XMLOutputter();
-		try {
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			out.output(xml, baos);
+			return this.upload(baos.toByteArray(), "md_events.xml");
 		} catch (IOException e) {
 			throw new ServiceException("Unexpected error writing to byte array output stream", e);
-		} finally {
-			try {
-				baos.close();
-			} catch (IOException ignored) {
-			}
 		}
-
-		return this.upload(baos.toByteArray(), "md_events.xml");
 	}
 
 	public String upload(byte[] bytes, String fileName) {
@@ -789,24 +770,14 @@ public class ManagementClient extends WebServiceTemplate {
 
 			int status = httpClient.executeMethod(post);
 
-			InputStream in = post.getResponseBodyAsStream();
 			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			int b;
-			try {
+			try(
+					InputStream in = post.getResponseBodyAsStream();
+					PrintWriter pw = new PrintWriter(sw)
+					) {
+				int b;
 				while ((b = in.read()) != -1) {
 					pw.write(b);
-				}
-			} finally {
-				if (pw != null) {
-					pw.flush();
-					pw.close();
-				}
-				if (in != null) {
-					try {
-						in.close();
-					} catch (IOException ignored) {
-					}
 				}
 			}
 			if (status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED || status == HttpStatus.SC_ACCEPTED) {
@@ -908,10 +879,8 @@ public class ManagementClient extends WebServiceTemplate {
 	public String writePremisEventsToFedoraObject(PremisEventLogger eventLogger, PID pid) throws FedoraException {
 		Document dom = null;
 		MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(pid, "MD_EVENTS", null);
-		ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
-		try {
+		try(ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
 			dom = new SAXBuilder().build(bais);
-			bais.close();
 		} catch (JDOMException e) {
 			throw new IllegalRepositoryStateException("Cannot parse MD_EVENTS: " + pid, e);
 		} catch (IOException e) {

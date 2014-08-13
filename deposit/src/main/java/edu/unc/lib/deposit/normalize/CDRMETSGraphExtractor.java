@@ -13,14 +13,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.filter.ElementFilter;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.filter.ElementFilter;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.rdf.model.Bag;
@@ -174,8 +174,7 @@ public class CDRMETSGraphExtractor {
 			topContainer = firstdiv;
 		}
 		Bag top = m.createBag(depositId.getURI());
-		@SuppressWarnings("unchecked")
-		List<Element> topchildren = (List<Element>) topContainer.getChildren(
+		List<Element> topchildren = topContainer.getChildren(
 				"div", METS_NS);
 		for (Element childEl : topchildren) {
 			Resource child = m.createResource(METSHelper.getPIDURI(childEl));
@@ -190,8 +189,7 @@ public class CDRMETSGraphExtractor {
 			if (type != null && "bag".equals(type.toLowerCase())) {
 				continue;
 			}
-			@SuppressWarnings("unchecked")
-			List<Element> children = (List<Element>) div.getChildren("div",
+			List<Element> children = div.getChildren("div",
 					METS_NS);
 
 			if (type == null) {

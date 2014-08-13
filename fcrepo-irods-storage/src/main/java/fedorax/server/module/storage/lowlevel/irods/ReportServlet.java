@@ -34,8 +34,8 @@ import org.fcrepo.server.errors.InitializationException;
 import org.fcrepo.server.errors.ObjectNotFoundException;
 import org.fcrepo.server.errors.servletExceptionExtensions.InternalError500Exception;
 import org.fcrepo.server.errors.servletExceptionExtensions.NotFound404Exception;
-import org.jdom.Document;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Document;
+import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,10 +77,9 @@ public class ReportServlet extends HttpServlet implements Constants {
 
 			response.setContentType("text/xml; charset=UTF-8");
 
-			PrintWriter out = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
-			new XMLOutputter().output(report, out);
-			out.flush();
-			out.close();
+			try(PrintWriter out = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), "UTF-8"))) {
+				new XMLOutputter().output(report, out);
+			}
 		} catch (Throwable th) {
 			throw new InternalError500Exception("", th, request, ACTION_LABEL, "", new String[0]);
 		}

@@ -19,8 +19,8 @@ import java.io.InputStreamReader;
 
 import javax.annotation.Resource;
 
-import org.jdom.Document;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Document;
+import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

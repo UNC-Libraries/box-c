@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.apache.commons.io.IOUtils;
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

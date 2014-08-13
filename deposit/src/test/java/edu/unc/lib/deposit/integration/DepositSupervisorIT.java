@@ -9,9 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom.Document;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
+import org.apache.commons.io.FileUtils;
+import org.jdom2.Document;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +24,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.deposit.work.DepositSupervisor;
 import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -113,7 +113,7 @@ public class DepositSupervisorIT {
 	@Test
 	public void testCDRMETSwACL() throws ClassNotFoundException, InterruptedException, IOException, JDOMException {
 		File workingDir = new File(depositsDirectory, "fooff703-9c2e-466b-b4cc-15bbfd03c8ae");
-		if(workingDir.exists()) FileUtils.deleteDir(workingDir);
+		if(workingDir.exists()) FileUtils.deleteDirectory(workingDir);
 		workingDir.mkdirs();
 		File testMETS = new File("src/test/resources/accessControlsTest.cdr.xml");
 		File mets = new File(workingDir, "METS.xml");

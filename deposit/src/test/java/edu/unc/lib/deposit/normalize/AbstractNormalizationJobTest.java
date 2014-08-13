@@ -38,22 +38,20 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
-import org.jdom.Element;
-import org.jdom.xpath.XPath;
+import org.jdom2.Element;
+import org.jdom2.xpath.XPath;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 

@@ -17,24 +17,14 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.jdom.Element;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancementService;
-import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
-import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedEnhancementMap;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 
 public class EnhancementConductorInterruptTest extends Assert {

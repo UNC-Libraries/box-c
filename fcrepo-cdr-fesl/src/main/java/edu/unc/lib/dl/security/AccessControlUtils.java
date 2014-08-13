@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.fcrepo.server.errors.ObjectNotFoundException;
-import org.jdom.Content;
-import org.jdom.Element;
+import org.jdom2.Content;
+import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

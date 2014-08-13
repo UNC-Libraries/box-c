@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.writer.Writer;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
@@ -32,7 +33,6 @@ import org.swordapp.server.UriRegistry;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
 
 /**
@@ -77,22 +77,14 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 		// write SWORD Atom entry to file
 		File atomFile = new File(dir, "atom.xml");
 		Abdera abdera = new Abdera();
-		FileOutputStream fos = null;
-		try {
+		
+		try(FileOutputStream fos = new FileOutputStream(atomFile)) {
 			Writer writer = abdera.getWriterFactory().getWriter("prettyxml");
-			fos = new FileOutputStream(atomFile);
 			writer.writeTo(deposit.getSwordEntry().getEntry(), fos);
 		} catch (IOException e) {
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400,
 					"Unable to unpack your deposit: " + deposit.getFilename(),
 					e);
-		} finally {
-			if (fos != null) {
-				try {
-					fos.close();
-				} catch (IOException ignored) {
-				}
-			}
 		}
 
 		// write deposit file to data directory
@@ -101,7 +93,7 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 			dataDir.mkdirs();
 			File depositFile = new File(dataDir, deposit.getFilename());
 			try {
-				FileUtils.renameOrMoveTo(deposit.getFile(), depositFile);
+				FileUtils.moveFile(deposit.getFile(), depositFile);
 			} catch (IOException e) {
 				throw new Error(e);
 			}

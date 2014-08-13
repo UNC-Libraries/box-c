@@ -91,7 +91,6 @@
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>fcrepo-clients</artifactId>
-			<version>${cdr.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework</groupId>

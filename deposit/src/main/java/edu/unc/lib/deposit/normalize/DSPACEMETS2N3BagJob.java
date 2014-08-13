@@ -13,12 +13,12 @@ import java.util.List;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
-import org.jdom.transform.JDOMResult;
-import org.jdom.transform.JDOMSource;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.jdom2.transform.JDOMResult;
+import org.jdom2.transform.JDOMSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +79,6 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		Property hasModel = model.createProperty(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
 		model.add(aggregate, hasModel, model.createResource(ContentModelHelper.Model.CONTAINER.getURI().toString()));
 		model.add(aggregate, hasModel, model.createResource(ContentModelHelper.Model.AGGREGATE_WORK.getURI().toString()));
-		@SuppressWarnings("unchecked")
 		List<Element> topchildren = aggregateEl.getChildren(
 				"div", METS_NS);
 		for (Element childEl : topchildren) {

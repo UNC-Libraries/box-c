@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;

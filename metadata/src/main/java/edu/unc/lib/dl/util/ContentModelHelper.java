@@ -18,7 +18,7 @@ package edu.unc.lib.dl.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.jdom.Namespace;
+import org.jdom2.Namespace;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;

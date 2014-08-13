@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.swordapp.server.Deposit;
@@ -30,11 +31,9 @@ import org.swordapp.server.SwordError;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.MetsHeaderScanner;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.dl.util.ZipFileUtil;
 
 public class CDRMETSDepositHandler extends AbstractDepositHandler {
 	private static Logger log = Logger.getLogger(CDRMETSDepositHandler.class);
@@ -66,7 +65,7 @@ public class CDRMETSDepositHandler extends AbstractDepositHandler {
 		try {
 			File data = new File(dir, "data");
 			data.mkdir();
-			FileUtils.renameOrMoveTo(deposit.getFile(), new File(data, deposit.getFilename()));
+			FileUtils.moveFile(deposit.getFile(), new File(data, deposit.getFilename()));
 		} catch (IOException e) {
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to create your deposit bag: "+depositPID.getPid(), e);
 		}

@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -25,10 +26,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Arrays;
 
-import junit.framework.Assert;
-
-import org.jdom.Document;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Document;
+import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -38,7 +37,7 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
 
-public class SetDescriptiveMetadataFilterTest extends Assert {
+public class SetDescriptiveMetadataFilterTest {
 
 	@Mock
 	private DepartmentOntologyUtil deptUtil;
@@ -53,7 +52,6 @@ public class SetDescriptiveMetadataFilterTest extends Assert {
 		setField(filter, "deptUtil", deptUtil);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void extractMODS() throws Exception {
 		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:aggregate");

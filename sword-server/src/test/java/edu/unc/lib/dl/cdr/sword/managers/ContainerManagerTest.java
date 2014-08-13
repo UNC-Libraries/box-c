@@ -15,9 +15,17 @@
  */
 package edu.unc.lib.dl.cdr.sword.managers;
 
-import java.io.RandomAccessFile;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.swordapp.server.AuthCredentials;
@@ -38,9 +46,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
 
 public class ContainerManagerTest extends Assert {
 
@@ -71,9 +76,8 @@ public class ContainerManagerTest extends Assert {
 		
 		when(tripleStoreQueryService.fetchDisseminatorMimetypes(any(PID.class))).thenReturn(disseminations);
 		
-		RandomAccessFile modsFile = new RandomAccessFile("src/test/resources/modsDocument.xml", "r");
-		byte[] modsBytes = new byte[(int)modsFile.length()];
-		modsFile.read(modsBytes);
+		File modsFile = new File("src/test/resources/modsDocument.xml");
+		byte[] modsBytes = FileUtils.readFileToByteArray(modsFile);
 		MIMETypedStream mimeStream = new MIMETypedStream();
 		mimeStream.setStream(modsBytes);
 		
@@ -112,7 +116,6 @@ public class ContainerManagerTest extends Assert {
 		} catch (SwordError e){
 			//pass
 		}
-		modsFile.close();
 		GroupsThreadStore.clearGroups();
 	}
 }

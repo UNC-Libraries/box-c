@@ -66,20 +66,16 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-jms</artifactId>
-			<version>${spring.version}</version>
 			<type>pom</type>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-			<version>${spring.version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context-support</artifactId>
-			<version>${spring.version}</version>
 		</dependency>
 		
 		<!-- XML -->
@@ -105,9 +101,6 @@
 		<dependency>
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom</artifactId>
-			<version>1.1.2</version>
-			<type>jar</type>
-			<scope>compile</scope>
 		</dependency>
 		
 		<!-- Email -->
@@ -127,7 +120,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -152,7 +144,6 @@
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>fcrepo-clients</artifactId>
-			<version>${cdr.version}</version>
 		</dependency>
 	</dependencies>
 </project>

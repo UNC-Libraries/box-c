@@ -27,13 +27,13 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamSource;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
-import org.jdom.transform.JDOMResult;
-import org.jdom.transform.JDOMSource;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.jdom2.transform.JDOMResult;
+import org.jdom2.transform.JDOMSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -49,8 +49,8 @@ import org.springframework.core.io.Resource;
  */
 public class UpdateDocTransformer {
 	private static final Logger LOG = LoggerFactory.getLogger(UpdateDocTransformer.class);
-	private List<Object> addDocElements;
-	private List<Object> synchronizedAddDocElements;
+	private List<Element> addDocElements;
+	private List<Element> synchronizedAddDocElements;
 	private String xslName = "generateAddDoc.xsl";
 	private Transformer transformer;
 	private List<Namespace> namespaces;
@@ -58,7 +58,7 @@ public class UpdateDocTransformer {
 	
 	public UpdateDocTransformer() {
 		
-		addDocElements = new ArrayList<Object>();
+		addDocElements = new ArrayList<Element>();
 		synchronizedAddDocElements = Collections.synchronizedList(addDocElements);
 		namespaces = new ArrayList<Namespace>();
 		namespaces.add(Namespace.getNamespace("dc", "http://purl.org/dc/elements/1.1/"));

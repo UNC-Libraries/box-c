@@ -54,23 +54,15 @@ public class InfoRestController implements ServletContextAware {
 		Map<String, Object> data = new HashMap<String, Object>();
 		serviceInfo.put("serviceInfo", data);
 		// add POM properties to serviceInfo
-		Properties pomProperties = null;
-		java.io.InputStream in = servletContext.getResourceAsStream(
-				"META-INF/maven/edu.unc.lib.cdr/services/pom.properties");
-		pomProperties = new Properties();
-		try {
+		Properties pomProperties = new Properties();
+		try(java.io.InputStream in = servletContext.getResourceAsStream(
+				"META-INF/maven/edu.unc.lib.cdr/services/pom.properties")) {
 			pomProperties.load(in);
 			data.put("version", pomProperties.get("version"));
 			data.put("groupId", pomProperties.get("groupId"));
 			data.put("artifactId", pomProperties.get("artifactId"));
 		} catch (IOException e) {
 			LOG.warn("REST service cannot load pom.properties", e);
-		} finally {
-			if(in != null) {
-				try {
-					in.close();
-				} catch(IOException ignored) {}
-			}
 		}
 		// add urls to serviceInfo
 		Map<String, Object> uris = new HashMap<String, Object>();

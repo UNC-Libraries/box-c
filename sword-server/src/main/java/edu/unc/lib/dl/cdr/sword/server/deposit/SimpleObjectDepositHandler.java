@@ -21,13 +21,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordConfiguration;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
@@ -54,7 +54,7 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 			dataDir.mkdir();
 			File depositFile = new File(dataDir, deposit.getFilename());
 			try {
-				FileUtils.renameOrMoveTo(deposit.getFile(), depositFile);
+				FileUtils.moveFile(deposit.getFile(), depositFile);
 			} catch (IOException e) {
 				throw new Error(e);
 			}

@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
-
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -58,8 +56,6 @@ public class UUIDPIDGenerator implements PIDGenerator {
 	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
 		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
-
-	private static final Logger logger = Logger.getLogger(UUIDPIDGenerator.class.getName());
 
 	public UUIDPIDGenerator() {
 	}

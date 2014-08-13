@@ -22,7 +22,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -22,14 +22,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
-import java.util.SortedSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.filter.Filters;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -65,7 +64,7 @@ public class ContainerContentsHelper {
 
 		// first build a list of existing pid order in the container
 		Element parentDiv = result.getRootElement().getChild("div", JDOMNamespaceUtil.METS_NS);
-		List<Element> childDivs = parentDiv.getChildren();
+		List<Element> childDivs = parentDiv.getContent(Filters.element());
 		int maxExistingOrder = 5;
 		if (childDivs.size() > 0) {
 			maxExistingOrder = Integer.parseInt(childDivs.get(childDivs.size() - 1).getAttributeValue("ORDER"));
@@ -199,18 +198,6 @@ public class ContainerContentsHelper {
 		}
 		parentDiv.removeContent(remove);
 		return oldXML;
-	}
-
-	private static void replaceContent(Document result, SortedSet<String[]> records) {
-		Element parentDiv = result.getRootElement().getChild("div", JDOMNamespaceUtil.METS_NS);
-		parentDiv.removeContent();
-		int ord = 1;
-		for (String[] record : records) {
-			Element el = new Element("div", parentDiv.getNamespace()).setAttribute("ID", record[0]).setAttribute("ORDER",
-					String.valueOf(ord));
-			ord++;
-			parentDiv.addContent(el);
-		}
 	}
 
 	/**

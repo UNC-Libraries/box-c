@@ -64,10 +64,9 @@ public class IrodsStorageLocationServlet extends HttpServlet implements Constant
 		path = irodslls.getFOXMLIrodsPath(pid);
 	    }
 	    response.setContentType("text/xml; charset=UTF-8");
-	    PrintWriter out = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
-	    out.append(path);
-	    out.flush();
-	    out.close();
+	    try(PrintWriter out = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), "UTF-8"))) {
+	    	out.append(path);
+	    }
 	} catch (Throwable th) {
 	    throw new InternalError500Exception("", th, request, ACTION_LABEL, "", new String[0]);
 	}

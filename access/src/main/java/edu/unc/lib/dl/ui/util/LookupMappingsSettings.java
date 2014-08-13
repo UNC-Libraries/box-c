@@ -20,10 +20,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom.Attribute;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.xpath.XPath;
+import org.jdom2.Attribute;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.filter.Filters;
+import org.jdom2.xpath.XPathBuilder;
+import org.jdom2.xpath.XPathExpression;
+import org.jdom2.xpath.XPathFactory;
 
 import edu.unc.lib.dl.ui.service.XMLRetrievalService;
 
@@ -71,9 +74,9 @@ public class LookupMappingsSettings {
 		for (String sourcePath: sourcePaths){
 			try {
 				Document document = XMLRetrievalService.getXMLDocument(sourcePath);
-				XPath xpath = XPath.newInstance("/mappings/mapping");
-				@SuppressWarnings("unchecked")
-				List<Element> nodes = xpath.selectNodes(document);
+				XPathFactory xpf = XPathFactory.instance();
+				XPathExpression<Element> xpath = new XPathBuilder<Element>("/mappings/mapping", Filters.element()).compileWith(xpf);
+				List<Element> nodes = xpath.evaluate(document);
 				for (Element node: nodes){
 					Map<String,String> mapping;
 					Attribute mappingKey = node.getAttribute("key");
@@ -88,9 +91,8 @@ public class LookupMappingsSettings {
 					}
 					mappings.put(mappingKey.getValue(), mapping);
 					
-					xpath = XPath.newInstance("pair");
-					@SuppressWarnings("unchecked")
-					List<Element> pairNodes = xpath.selectNodes(node);
+					XPathExpression<Element> xpathPair = new XPathBuilder<Element>("pair", Filters.element()).compileWith(xpf);
+					List<Element> pairNodes = xpathPair.evaluate(node);
 					for (Element pairNode: pairNodes){
 						Attribute key = pairNode.getAttribute("key");
 						if (key != null){

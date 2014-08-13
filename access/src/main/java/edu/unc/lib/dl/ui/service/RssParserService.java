@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.ui.service;
 
-import org.jdom.Document;
-import org.jdom.Element;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +73,7 @@ public class RssParserService extends XMLRetrievalService {
 		return (rssFeed);
 	}
 
-	private static RssFeedBean getHeader(org.jdom.Element channelElement) {
+	private static RssFeedBean getHeader(org.jdom2.Element channelElement) {
 		// Sets the RSS feed heder information to the
 		// RssFeedBean object
 		RssFeedBean rssFeed = new RssFeedBean();

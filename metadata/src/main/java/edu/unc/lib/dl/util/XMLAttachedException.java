@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.util;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 
 /**
  * @author Gregory Jansen

@@ -17,7 +17,7 @@ package edu.unc.lib.dl.util;
 
 import java.util.List;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -90,7 +90,6 @@ public class RDFUtil {
 		}
 
 		// Clone all the child elements of the incoming rdf:Description tag
-		@SuppressWarnings("unchecked")
 		List<Element> incomingElements = (List<Element>) incomingDescription.getChildren();
 		// Add all the incoming element children to the base modified object
 		for (Element incomingElement : incomingElements) {

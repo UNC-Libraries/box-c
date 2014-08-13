@@ -65,7 +65,6 @@ public class UpdateChildSetActionTest {
 
 	private ChildSetRequest request;
 
-	@SuppressWarnings("unchecked")
 	@Before
 	public void setup() throws SolrServerException, IOException {
 		initMocks(this);

@@ -26,7 +26,6 @@ import org.apache.cxf.binding.soap.SoapFault;
 import org.fcrepo.common.Constants;
 import org.fcrepo.server.security.xacml.pep.ContextHandler;
 import org.fcrepo.server.security.xacml.pep.PEPException;
-import org.fcrepo.server.security.xacml.pep.ResourceAttributes;
 import org.fcrepo.server.security.xacml.pep.ws.operations.AbstractOperationHandler;
 import org.fcrepo.server.security.xacml.pep.ws.operations.OperationHandlerException;
 import org.fcrepo.server.security.xacml.util.LogUtil;

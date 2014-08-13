@@ -12,11 +12,11 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.filter.Filter;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.filter.ElementFilter;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +28,8 @@ import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.METSParseException;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.METSProfile;
-import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 
@@ -81,27 +81,13 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 
 	protected void assignPIDs(Document mets) {
 		int count = 0;
-		@SuppressWarnings("unchecked")
-		Iterator<Element> divs = (Iterator<Element>)mets.getDescendants(new Filter() {
-			private static final long serialVersionUID = 691336623641275783L;
-			@Override
-			public boolean matches(Object obj) {
-				if(!Element.class.isInstance(obj)) return false;
-				Element e = (Element)obj;
-				if(NamespaceConstants.METS_URI.equals(e.getNamespaceURI()) && "div".equals(e.getName())) {
-					String cids = e.getAttributeValue("CONTENTIDS");
-					if(cids == null) return true;
-					if(!cids.contains("info:fedora/")) return true;
-					return false;
-				}
-				return false;
-			}
-		});
+		Iterator<Element> divs = mets.getDescendants(new ElementFilter("div", JDOMNamespaceUtil.METS_NS));
 		while(divs.hasNext()) {
-			UUID uuid = UUID.randomUUID();
-			PID pid = new PID("uuid:"+uuid.toString());
 			Element div = (Element)divs.next();
 			String cids = div.getAttributeValue("CONTENTIDS");
+			if(cids != null && cids.contains("info:fedora/")) continue;
+			UUID uuid = UUID.randomUUID();
+			PID pid = new PID("uuid:"+uuid.toString());
 			if(cids == null) {
 				div.setAttribute("CONTENTIDS", pid.getURI());
 			} else {

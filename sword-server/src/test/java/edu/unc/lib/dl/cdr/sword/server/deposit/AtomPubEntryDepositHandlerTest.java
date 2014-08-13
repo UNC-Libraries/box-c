@@ -1,14 +1,17 @@
 package edu.unc.lib.dl.cdr.sword.server.deposit;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -25,7 +28,6 @@ import org.swordapp.server.SwordError;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -39,6 +41,9 @@ public class AtomPubEntryDepositHandlerTest {
 	    MockitoAnnotations.initMocks(this);
 	}
 	
+	@Rule
+	public TemporaryFolder tmpDir = new TemporaryFolder();
+	
 	@InjectMocks
 	@Autowired
 	private AtomPubEntryDepositHandler atomPubEntryDepositHandler;
@@ -48,8 +53,9 @@ public class AtomPubEntryDepositHandlerTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testDoDepositBagit() throws SwordError, FileNotFoundException {
-		File testPayload = FileUtils.tempCopy(new File("src/test/resources/dcDocument.xml"));
+	public void testDoDepositBagit() throws SwordError, IOException {
+		File testPayload = tmpDir.newFile("dcDocument.xml");
+		FileUtils.copyFile(new File("src/test/resources/dcDocument.xml"), testPayload);
 		Deposit d = new Deposit();
 		d.setFile(testPayload);
 		d.setMd5("ce812d38aec998c6f3a163994b81bb3a");

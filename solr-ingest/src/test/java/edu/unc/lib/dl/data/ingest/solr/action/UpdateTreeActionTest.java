@@ -63,7 +63,6 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 
 	protected UpdateTreeAction action;
 
-	@SuppressWarnings("unchecked")
 	@Before
 	public void setup() throws Exception {
 		initMocks(this);

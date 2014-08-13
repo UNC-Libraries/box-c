@@ -21,8 +21,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jdom.Document;
-import org.jdom.Element;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,8 +131,7 @@ public class FullTextEnhancement extends AbstractFedoraEnhancement {
 		LOG.debug("Run irods script to perform text extraction on {} ", dsIrodsPath);
 		InputStream response = ((AbstractIrodsObjectEnhancementService) service).remoteExecuteWithPhysicalLocation(
 				"textextract", dsIrodsPath);
-		BufferedReader r = new BufferedReader(new InputStreamReader(response));
-		try {
+		try(BufferedReader r = new BufferedReader(new InputStreamReader(response))) {
 			StringBuilder text = new StringBuilder();
 			String line;
 			while ((line = r.readLine()) != null) {
@@ -141,11 +140,6 @@ public class FullTextEnhancement extends AbstractFedoraEnhancement {
 			return text.toString().trim();
 		} catch (Exception e) {
 			throw e;
-		} finally {
-			try {
-				r.close();
-			} catch (Exception ignored) {
-			}
 		}
 	}
 }

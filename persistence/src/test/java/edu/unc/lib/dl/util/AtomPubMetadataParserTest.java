@@ -25,7 +25,7 @@ import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.output.XMLOutputter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -40,11 +40,11 @@ public class AtomPubMetadataParserTest extends Assert {
 		Parser parser = abdera.getParser();
 		Document<Entry> entryDoc = parser.parse(entryPart);
 		Entry entry = entryDoc.getRoot();
-		Map<String,org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		Map<String,org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 		
-		org.jdom.Element dcDS = datastreamMap.get(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM);
-		org.jdom.Element modsDS = datastreamMap.get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName());
-		org.jdom.Element relsExtDS = datastreamMap.get(ContentModelHelper.Datastream.RELS_EXT.getName());
+		org.jdom2.Element dcDS = datastreamMap.get(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM);
+		org.jdom2.Element modsDS = datastreamMap.get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName());
+		org.jdom2.Element relsExtDS = datastreamMap.get(ContentModelHelper.Datastream.RELS_EXT.getName());
 		assertNotNull(modsDS);
 		assertNotNull(dcDS);
 		assertNotNull(relsExtDS);
@@ -64,11 +64,11 @@ public class AtomPubMetadataParserTest extends Assert {
 		Parser parser = abdera.getParser();
 		Document<Entry> entryDoc = parser.parse(entryPart);
 		Entry entry = entryDoc.getRoot();
-		Map<String,org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		Map<String,org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 		
-		org.jdom.Element dcDS = datastreamMap.get(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM);
-		org.jdom.Element modsDS = datastreamMap.get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName());
-		org.jdom.Element relsExtDS = datastreamMap.get(ContentModelHelper.Datastream.RELS_EXT.getName());
+		org.jdom2.Element dcDS = datastreamMap.get(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM);
+		org.jdom2.Element modsDS = datastreamMap.get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName());
+		org.jdom2.Element relsExtDS = datastreamMap.get(ContentModelHelper.Datastream.RELS_EXT.getName());
 		//Atom DC should be set
 		assertNotNull(dcDS);
 		assertNull(relsExtDS);
@@ -80,12 +80,12 @@ public class AtomPubMetadataParserTest extends Assert {
 		assertTrue(dcDS.getName().equals("dc"));
 	}
 	
-	private void outputDatastreams(Map<String,org.jdom.Element> datastreamMap) throws IOException {
+	private void outputDatastreams(Map<String,org.jdom2.Element> datastreamMap) throws IOException {
 		XMLOutputter outputter = new XMLOutputter();
-		java.util.Iterator<java.util.Map.Entry<String,org.jdom.Element>> it = datastreamMap.entrySet().iterator();
+		java.util.Iterator<java.util.Map.Entry<String,org.jdom2.Element>> it = datastreamMap.entrySet().iterator();
 		
 		while (it.hasNext()){
-			java.util.Map.Entry<String,org.jdom.Element> element = it.next();
+			java.util.Map.Entry<String,org.jdom2.Element> element = it.next();
 			System.out.println(element.getKey() + ":\n");
 			outputter.output(element.getValue(), System.out);
 		}
@@ -98,10 +98,10 @@ public class AtomPubMetadataParserTest extends Assert {
 		Parser parser = abdera.getParser();
 		Document<Entry> entryDoc = parser.parse(entryPart);
 		Entry entry = entryDoc.getRoot();
-		Map<String,org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		Map<String,org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 		
-		org.jdom.Element relsExtDS = datastreamMap.get(ContentModelHelper.Datastream.RELS_EXT.getName());
-		org.jdom.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+		org.jdom2.Element relsExtDS = datastreamMap.get(ContentModelHelper.Datastream.RELS_EXT.getName());
+		org.jdom2.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
 		
 		assertEquals(4, description.getChildren().size());
 		assertEquals(4, description.getChildren(ContentModelHelper.FedoraProperty.hasModel.name(), JDOMNamespaceUtil.FEDORA_MODEL_NS).size());
@@ -117,7 +117,7 @@ public class AtomPubMetadataParserTest extends Assert {
 		Parser parser = abdera.getParser();
 		Document<Entry> entryDoc = parser.parse(entryPart);
 		Entry entry = entryDoc.getRoot();
-		Map<String,org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		Map<String,org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 		
 		assertTrue(datastreamMap.containsKey(ContentModelHelper.Datastream.RELS_EXT.getName()));
 		assertNull(datastreamMap.get(ContentModelHelper.Datastream.RELS_EXT.getName()));

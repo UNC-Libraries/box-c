@@ -24,9 +24,9 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.apache.log4j.Logger;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.transform.JDOMSource;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.transform.JDOMSource;
 import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.schematron.SchematronValidator;

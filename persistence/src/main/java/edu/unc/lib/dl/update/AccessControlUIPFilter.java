@@ -17,7 +17,7 @@ package edu.unc.lib.dl.update;
 
 import java.util.Iterator;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 
 import edu.unc.lib.dl.acl.util.AccessControlTransformationUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;

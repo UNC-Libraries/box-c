@@ -30,8 +30,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import org.jdom.Document;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Document;
+import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;

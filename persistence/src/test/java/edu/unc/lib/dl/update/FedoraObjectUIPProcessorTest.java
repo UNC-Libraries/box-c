@@ -34,7 +34,7 @@ import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -103,25 +103,25 @@ public class FedoraObjectUIPProcessorTest extends Assert {
 		Parser parser = abdera.getParser();
 		Document<Entry> entryDoc = parser.parse(entryPart);
 		Entry entry = entryDoc.getRoot();
-		Map<String, org.jdom.Element> originalMap = new HashMap<String, org.jdom.Element>();
-		org.jdom.Element rdfElement = new org.jdom.Element("RDF", JDOMNamespaceUtil.RDF_NS);
-		org.jdom.Element descElement = new org.jdom.Element("Description", JDOMNamespaceUtil.RDF_NS);
+		Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
+		org.jdom2.Element rdfElement = new org.jdom2.Element("RDF", JDOMNamespaceUtil.RDF_NS);
+		org.jdom2.Element descElement = new org.jdom2.Element("Description", JDOMNamespaceUtil.RDF_NS);
 		rdfElement.addContent(descElement);
-		org.jdom.Element relElement = new org.jdom.Element(ContentModelHelper.CDRProperty.isPublished.getPredicate(),
+		org.jdom2.Element relElement = new org.jdom2.Element(ContentModelHelper.CDRProperty.isPublished.getPredicate(),
 				JDOMNamespaceUtil.CDR_NS);
 		relElement.setText("yes");
 		descElement.addContent(relElement);
-		relElement = new org.jdom.Element(ContentModelHelper.CDRProperty.embargoUntil.getPredicate(),
+		relElement = new org.jdom2.Element(ContentModelHelper.CDRProperty.embargoUntil.getPredicate(),
 				JDOMNamespaceUtil.CDR_ACL_NS);
 		relElement.setText("2013-02-01");
 		descElement.addContent(relElement);
-		relElement = new org.jdom.Element(ContentModelHelper.FedoraProperty.hasModel.name(),
+		relElement = new org.jdom2.Element(ContentModelHelper.FedoraProperty.hasModel.name(),
 				JDOMNamespaceUtil.FEDORA_MODEL_NS);
 		relElement.setText(ContentModelHelper.Model.SIMPLE.name());
 		descElement.addContent(relElement);
 
 		originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), rdfElement);
-		Map<String, org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 
 		MetadataUIP uip = mock(MetadataUIP.class);
 		when(uip.getPID()).thenReturn(new PID("uuid:test/ACL"));
@@ -142,7 +142,7 @@ public class FedoraObjectUIPProcessorTest extends Assert {
 		processor.process(uip);
 	}
 	
-	public Map<String, File> getModifiedFiles(Map<String, org.jdom.Element> modifiedData) {
+	public Map<String, File> getModifiedFiles(Map<String, org.jdom2.Element> modifiedData) {
 		Map<String, File> modifiedFiles = new HashMap<String, File>();
 		for (java.util.Map.Entry<String, ?> modified : modifiedData.entrySet()) {
 			Element modifiedElement = (Element)modified.getValue();

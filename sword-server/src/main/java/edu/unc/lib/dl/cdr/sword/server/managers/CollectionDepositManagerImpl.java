@@ -18,7 +18,7 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.jdom.JDOMException;
+import org.jdom2.JDOMException;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.CollectionDepositManager;
 import org.swordapp.server.Deposit;

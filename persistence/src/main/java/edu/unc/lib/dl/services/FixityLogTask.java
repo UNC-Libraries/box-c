@@ -54,7 +54,7 @@ import org.irods.jargon.core.query.RodsGenQueryEnum;
 import org.irods.jargon.core.rule.IRODSRuleExecResult;
 import org.irods.jargon.core.rule.IRODSRuleExecResultOutputParameter;
 import org.irods.jargon.core.rule.IRODSRuleParameter;
-import org.jdom.Element;
+import org.jdom2.Element;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -134,11 +134,7 @@ public class FixityLogTask implements Runnable {
 
 	public void run() {
 		
-		FileOutputStream fixityLogOutput = null;
-		
-		try {
-			
-			fixityLogOutput = new FileOutputStream(fixityLogPath, true);
+		try(FileOutputStream fixityLogOutput = new FileOutputStream(fixityLogPath, true)) {
 
 			// Check that all resources are available
 	
@@ -176,22 +172,10 @@ public class FixityLogTask implements Runnable {
 			}
 			
 		} catch (IOException e) {
-			
 			LOG.error(e);
 			throw new Error(e);
-			
 		} finally {
-			
-			if (fixityLogOutput != null) {
-				try {
-					fixityLogOutput.close();
-				} catch (IOException e) {
-					throw new Error(e);
-				}
-			}
-			
-			irodsFileSystem.closeAndEatExceptions();
-			
+			irodsFileSystem.closeAndEatExceptions();			
 		}
 
 	}

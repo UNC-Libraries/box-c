@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -168,6 +168,7 @@ public class PremisEventLogger {
 	 * @return the modified xml element
 	 */
 	public Element appendLogEvents(PID pid, Element eventsElement) {
+		@SuppressWarnings("rawtypes")
 		List children = this.pid2EventList.get(pid).cloneContent();// .getChildren("event", NS);
 		for (Object child : children) {
 			if (child instanceof Element) {
@@ -402,7 +403,7 @@ public class PremisEventLogger {
 		e.printStackTrace(new PrintWriter(sw));
 
 		// add event outcome
-		this.addDetailedOutcome(event, e.getLocalizedMessage(), sw.toString(), detailExtension);
+		PremisEventLogger.addDetailedOutcome(event, e.getLocalizedMessage(), sw.toString(), detailExtension);
 
 		// push the event into the root element
 		this.exceptionEvents.add(event);

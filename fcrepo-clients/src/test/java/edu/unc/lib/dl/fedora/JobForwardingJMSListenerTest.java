@@ -29,7 +29,7 @@ import javax.jms.Message;
 import javax.jms.TextMessage;
 
 import org.apache.commons.io.IOUtils;
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
