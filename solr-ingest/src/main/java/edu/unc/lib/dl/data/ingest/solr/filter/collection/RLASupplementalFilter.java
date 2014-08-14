@@ -32,13 +32,13 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 public class RLASupplementalFilter extends CollectionSupplementalInformationFilter {
 	private static final Logger log = LoggerFactory.getLogger(RLASupplementalFilter.class);
 	
-	private static final String CATALOG_LABEL = "RLA Catalog Number";
+	private static final String CATALOG_ID = "rla_catalog_number";
 	private static final String CATALOG_FIELD = "rla_catalog_number_d";
 	
-	private static final String SITE_CODE_LABEL = "RLA Site Code";
+	private static final String SITE_CODE_ID = "rla_site_code";
 	private static final String SITE_CODE_FIELD = "rla_site_code_d";
 	
-	private static final String CONTEXT_1_LABEL = "Primary Context";
+	private static final String CONTEXT_1_ID = "rla_context_1";
 	private static final String CONTEXT_1_FIELD = "rla_context_1_d";
 	
 	@Override
@@ -68,16 +68,16 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 			Element element = (Element) elementObject;
 			
 			if ("identifier".equals(element.getName())) {
-				if (CATALOG_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
+				if (CATALOG_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
 					idb.getDynamicFields().put(CATALOG_FIELD, element.getTextTrim());
 				}
 			} else if ("subject".equals(element.getName())) {
-				if (SITE_CODE_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
+				if (SITE_CODE_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
 					Element geographicEl = element.getChild("geographic", JDOMNamespaceUtil.MODS_V3_NS);
 					idb.getDynamicFields().put(SITE_CODE_FIELD, geographicEl.getTextTrim());
 				}
 			} else if ("note".equals(element.getName())) {
-				if (CONTEXT_1_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
+				if (CONTEXT_1_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
 					idb.getDynamicFields().put(CONTEXT_1_FIELD, element.getTextTrim());
 				}
 			}
