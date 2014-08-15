@@ -22,6 +22,7 @@ import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ws.client.WebServiceTransportException;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -153,13 +154,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 		// Capture number of objects and depth first list of pids for individual objects to be ingested
 		DepositGraphUtils.walkChildrenDepthFirst(depositBag, ingestPids, true);
 
-		// Deposit is restarting from part way through, reduce set of items for ingest
-		boolean resuming = getDepositStatusFactory().isResumedDeposit(getDepositUUID());
-		if (resuming) {
-			removeAlreadyIngested();
-		}
-
-		// Store the number of objects being ingested now before it starts changing
+		// Store the number of objects being ingested, excluding the deposit record
 		ingestObjectCount = ingestPids.size();
 
 		// Add the deposit pid to the list
@@ -167,26 +162,32 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 			ingestPids.add(depositPid);
 		}
 
+		// Number of actions is the number of ingest objects plus deposit record
+		setTotalClicks(ingestPids.size());
+
+		// Deposit is restarting from part way through, reduce set of items for ingest
+		boolean resuming = getDepositStatusFactory().isResumedDeposit(getDepositUUID());
+		if (resuming) {
+			ingestObjectCount -= removeAlreadyIngested();
+		}
+
 		// Capture the top level pids
 		DepositGraphUtils.walkChildrenDepthFirst(depositBag, topLevelPids, false);
 
 		// TODO capture structure for ordered sequences instead of just bags
-
-		// Number of actions is the number of ingest objects plus deposit record
-		if (!resuming) {
-			setTotalClicks(ingestPids.size());
-		}
-
 	}
 
 	/**
 	 * Removes any pids confirmed or uploaded and present in fedora from the list of pids for ingest
 	 */
-	private void removeAlreadyIngested() {
+	private int removeAlreadyIngested() {
+		int numberRemoved = 0;
+
 		// Prevent reingest of all items already confirmed to have been ingested.
 		Set<String> confirmedSet = getDepositStatusFactory().getConfirmedUploads(getDepositUUID());
 		for (String confirmed : confirmedSet) {
 			ingestPids.remove(new PID(confirmed).getURI());
+			numberRemoved++;
 		}
 
 		// Check for any items that were uploaded but not confirmed, and check to see if they made it in
@@ -199,6 +200,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 					// Update status to indicate this item was actually confirmed
 					addClicks(1);
 					getDepositStatusFactory().addConfirmedPID(getDepositUUID(), unconfirmedPID.getPid());
+					numberRemoved++;
 				}
 			} catch (FedoraException e) {
 				// Object wasn't found, so ingest must have failed. Should be retained for ingest
@@ -206,6 +208,8 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 				log.debug("Unexpected failure while checking for ingest of {}", unconfirmedPID, e);
 			}
 		}
+
+		return numberRemoved;
 	}
 
 	@Override
@@ -213,20 +217,20 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 
 		depositStatus = getDepositStatus();
 
-		// Extract information about structure of the deposit
-		processDepositStructure();
-
 		try {
-			// Register this job with the JMS listener prior to doing work
-			listener.registerListener(this);
-
-			DepositStatusFactory statusFactory = getDepositStatusFactory();
-
 			// set up permission groups for forwarding
 			String groups = depositStatus.get(DepositField.permissionGroups.name());
 			AccessGroupSet ags = new AccessGroupSet(groups);
 			GroupsThreadStore.storeGroups(ags);
 			GroupsThreadStore.storeUsername(depositStatus.get(DepositField.depositorName.name()));
+
+			// Extract information about structure of the deposit
+			processDepositStructure();
+
+			// Register this job with the JMS listener prior to doing work
+			listener.registerListener(this);
+
+			DepositStatusFactory statusFactory = getDepositStatusFactory();
 
 			// Begin ingest of individual objects in the deposit
 			String ingestPid = null;
@@ -242,7 +246,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 
 					ingestObject(ingestPid);
 
-					statusFactory.addUploadedPID(getDepositUUID(), ingestPid);
+					statusFactory.addUploadedPID(getDepositUUID(), new PID(ingestPid).getPid());
 					statusFactory.incrIngestedObjects(getDepositUUID(), 1);
 
 					// Verify that the job has not been interrupted before continuing
@@ -291,8 +295,21 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 
 		try {
 			client.addObjectRelationship(destinationPID, Relationship.contains.getURI().toString(), new PID(pid));
+		} catch (FedoraTimeoutException e) {
+			throw e;
 		} catch (FedoraException e) {
 			throw new DepositException("Failed to add object " + pid + " to destination " + destinationPID.getPid(), e);
+		} catch (ServiceException e) {
+			// If there was a web service transport error, make sure Fedora is still available
+			if (e.getCause() instanceof Exception && ((Exception) e.getCause()) instanceof WebServiceTransportException) {
+				if (!client.isRepositoryAvailable()) {
+					// Exception was because Fedora became unavailable, so rethrow as a timeout exception
+					throw new FedoraTimeoutException("Failed to connect to Fedora while adding object " + pid
+							+ " to its parent");
+				}
+			}
+
+			throw e;
 		}
 	}
 
@@ -372,7 +389,11 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 
 						log.debug("uploading " + file.getPath());
 						newref = client.upload(file);
+
 						cLocation.setAttribute("REF", newref);
+					} catch (FedoraTimeoutException e) {
+						log.warn("Connection to Fedora lost while ingesting {}, halting ingest", ref);
+						throw e;
 					} catch (IOException e) {
 						throw new DepositException("Data file missing: " + ref, e);
 					} catch (ServiceException e) {

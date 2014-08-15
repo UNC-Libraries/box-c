@@ -20,11 +20,32 @@ import org.springframework.ws.soap.client.SoapFaultClientException;
 public class AuthorizationException extends FedoraException {
 	private static final long serialVersionUID = 2177327948413175683L;
 
+	private AuthorizationErrorType type = AuthorizationErrorType.DENIED;
+
 	public AuthorizationException(String message) {
 		super(message);
 	}
-	
+
 	public AuthorizationException(SoapFaultClientException e) {
 		super(e);
+
+		String reason = e.getFaultStringOrReason();
+		if (reason.contains("NotApplicable")) {
+			type = AuthorizationErrorType.NOT_APPLICABLE;
+		} else if (reason.contains("Indeterminate")) {
+			type = AuthorizationErrorType.INDETERMINATE;
+		}
+	}
+
+	public AuthorizationErrorType getType() {
+		return type;
+	}
+
+	public void setType(AuthorizationErrorType type) {
+		this.type = type;
+	}
+
+	public static enum AuthorizationErrorType {
+		NOT_APPLICABLE, DENIED, INDETERMINATE
 	}
 }

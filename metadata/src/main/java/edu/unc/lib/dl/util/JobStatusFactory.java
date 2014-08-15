@@ -43,11 +43,17 @@ public class JobStatusFactory {
 
 	public void failed(String jobUUID) {
 		Jedis jedis = getJedisPool().getResource();
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID,
-				JobField.status.name(), JobStatus.failed.name());
+		jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.status.name(), JobStatus.failed.name());
 		jedis.hset(JOB_STATUS_PREFIX + jobUUID,
 				JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.status.name(), JobStatus.failed.name());
+		getJedisPool().returnResource(jedis);
+	}
+
+	public void interrupted(String jobUUID) {
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.status.name(), JobStatus.queued.name());
+		jedis.hset(JOB_STATUS_PREFIX + jobUUID,
+				JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));
 		getJedisPool().returnResource(jedis);
 	}
 
@@ -62,20 +68,26 @@ public class JobStatusFactory {
 	}
 
 	/**
-	 * Removes the first failed job from the specified deposit
-	 *
+	 * Removes the all leftover partially completed jobs from the deposit
+	 * 
 	 * @param depositUUID
 	 */
-	public void clearFailed(String depositUUID) {
+	public void clearStale(String depositUUID) {
 
-		String uuid = getJobByStatus(depositUUID, JobStatus.failed);
-		if (uuid == null)
-			return;
+		List<String> failed = getJobsByStatus(depositUUID, JobStatus.failed);
+		List<String> queued = getJobsByStatus(depositUUID, JobStatus.queued);
+		List<String> working = getJobsByStatus(depositUUID, JobStatus.working);
+
+		List<String> uuids = new ArrayList<String>(failed);
+		uuids.addAll(queued);
+		uuids.addAll(working);
 
 		Jedis jedis = getJedisPool().getResource();
 		try {
-			jedis.del(JOB_STATUS_PREFIX + uuid);
-			jedis.lrem(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, uuid);
+			for (String uuid : uuids) {
+				jedis.del(JOB_STATUS_PREFIX + uuid);
+				jedis.lrem(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, uuid);
+			}
 		} finally {
 			getJedisPool().returnResource(jedis);
 		}
@@ -194,6 +206,27 @@ public class JobStatusFactory {
 		}
 
 		return null;
+	}
+
+	public List<String> getJobsByStatus(String depositUUID, JobStatus status) {
+		Jedis jedis = getJedisPool().getResource();
+
+		List<String> result = new ArrayList<String>();
+		try {
+			List<String> jobUUIDs = jedis.lrange(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, -1);
+
+			for (String jobUUID : jobUUIDs) {
+				String statusValue = jedis.hget(JOB_STATUS_PREFIX + jobUUID, JobField.status.name());
+
+				if (status.name().equals(statusValue)) {
+					result.add(jobUUID);
+				}
+			}
+		} finally {
+			getJedisPool().returnResource(jedis);
+		}
+
+		return result;
 	}
 
 	/**

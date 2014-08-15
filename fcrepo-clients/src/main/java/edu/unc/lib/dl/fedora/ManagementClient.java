@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.fedora;
 
+import static edu.unc.lib.dl.util.ContentModelHelper.Administrative_PID.REPOSITORY;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -57,6 +59,7 @@ import org.springframework.ws.transport.http.CommonsHttpMessageSender;
 import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.fedora.AuthorizationException.AuthorizationErrorType;
 import edu.unc.lib.dl.fedora.types.AddDatastream;
 import edu.unc.lib.dl.fedora.types.AddDatastreamResponse;
 import edu.unc.lib.dl.fedora.types.AddRelationship;
@@ -117,6 +120,7 @@ public class ManagementClient extends WebServiceTemplate {
 
 		WebServiceMessageCallback callback() {
 			return new WebServiceMessageCallback() {
+				@Override
 				public void doWithMessage(WebServiceMessage message) {
 					((SoapMessage) message).setSoapAction(uri);
 				}
@@ -263,7 +267,7 @@ public class ManagementClient extends WebServiceTemplate {
 	 * modifications to the datastream replace the current datastream contents and no versioning history is preserved. To
 	 * put it another way: No new datastream versions will be made, but all the existing versions will be retained. All
 	 * changes to the datastream will be to the current version.
-	 * 
+	 *
 	 * @param pid
 	 *           The PID of the object.
 	 * @param dsid
@@ -332,6 +336,10 @@ public class ManagementClient extends WebServiceTemplate {
 	}
 
 	private Object callService(Object request, Action action) throws FedoraException {
+		return callService(request, action, true);
+	}
+
+	private Object callService(Object request, Action action, boolean retry) throws FedoraException {
 		Object response = null;
 		try {
 			response = this.marshalSendAndReceive(request, action.callback());
@@ -347,7 +355,22 @@ public class ManagementClient extends WebServiceTemplate {
 			}
 		} catch (SoapFaultClientException e) {
 			log.debug("GOT SoapFaultClientException", e);
-			FedoraFaultMessageResolver.resolveFault(e);
+			try {
+				FedoraFaultMessageResolver.resolveFault(e);
+			} catch (AuthorizationException ae) {
+				if (retry && AuthorizationErrorType.NOT_APPLICABLE.equals(ae.getType())) {
+					log.warn("Authorization was not applicable, attempting to reestablish connection to Fedora.");
+					try {
+						this.initializeConnections();
+					} catch (Exception e1) {
+						log.error("Failed to reestablish connection to Fedora", e);
+						throw ae;
+					}
+					return callService(request, action, false);
+				}
+
+				throw ae;
+			}
 		} catch (WebServiceFaultException e) {
 			throw new ServiceException("Failed to call service", e);
 		}
@@ -427,6 +450,13 @@ public class ManagementClient extends WebServiceTemplate {
 	}
 
 	public void init() throws Exception {
+		this.httpManager = new MultiThreadedHttpConnectionManager();
+		this.httpManager.getParams().setConnectionTimeout(5000);
+
+		initializeConnections();
+	}
+
+	private void initializeConnections() throws Exception {
 		SaajSoapMessageFactory msgFactory = new SaajSoapMessageFactory();
 		msgFactory.afterPropertiesSet();
 		this.setMessageFactory(msgFactory);
@@ -448,10 +478,8 @@ public class ManagementClient extends WebServiceTemplate {
 		this.setDefaultUri(this.getFedoraContextUrl() + "/services/management");
 		this.afterPropertiesSet();
 
-		this.httpManager = new MultiThreadedHttpConnectionManager();
 		this.httpClient = HttpClientUtil.getAuthenticatedClient(this.getFedoraContextUrl(), this.getUsername(),
 				this.getPassword(), this.httpManager);
-		this.httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
 	}
 
 	public void destroy() {
@@ -654,6 +682,10 @@ public class ManagementClient extends WebServiceTemplate {
 	}
 
 	public String upload(File file) {
+		return upload(file, true);
+	}
+
+	public String upload(File file, boolean retry) {
 		String result = null;
 		String uploadURL = this.getFedoraContextUrl() + "/upload";
 		PostMethod post = new PostMethod(uploadURL);
@@ -687,13 +719,31 @@ public class ManagementClient extends WebServiceTemplate {
 				}
 			}
 
-			if (status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED || status == HttpStatus.SC_ACCEPTED) {
-				result = sw.toString().trim();
-				log.info("Upload complete, response=" + result);
-			} else {
-				log.warn("Upload failed, response=" + HttpStatus.getStatusText(status));
-				log.debug(sw.toString().trim());
+			switch (status) {
+				case HttpStatus.SC_OK:
+				case HttpStatus.SC_CREATED:
+				case HttpStatus.SC_ACCEPTED:
+					result = sw.toString().trim();
+					log.info("Upload complete, response=" + result);
+					break;
+				case HttpStatus.SC_FORBIDDEN:
+					log.warn("Authorization to Fedora failed, attempting to reestablish connection.");
+					try {
+						this.initializeConnections();
+						return upload(file, false);
+					} catch (Exception e) {
+						log.error("Failed to reestablish connection to Fedora", e);
+					}
+					break;
+				case HttpStatus.SC_SERVICE_UNAVAILABLE:
+					throw new FedoraTimeoutException("Fedora service unavailable, upload failed");
+				default:
+					log.warn("Upload failed, response=" + HttpStatus.getStatusText(status));
+					log.debug(sw.toString().trim());
+					break;
 			}
+		} catch (ServiceException ex) {
+			throw ex;
 		} catch (Exception ex) {
 			throw new ServiceException(ex);
 		} finally {
@@ -805,7 +855,7 @@ public class ManagementClient extends WebServiceTemplate {
 	/**
 	 * Poll Fedora until the PID is found or timeout. This method will blocking until at most the specified timeout plus
 	 * the timeout of the underlying HTTP connection.
-	 * 
+	 *
 	 * @param pid
 	 *           the PID to look for
 	 * @param delay
@@ -835,6 +885,23 @@ public class ManagementClient extends WebServiceTemplate {
 			log.info(pid + " not found, waiting " + delay + " seconds..");
 			Thread.sleep(delay * 1000);
 		}
+		return false;
+	}
+
+	/**
+	 * Returns true if the repository is available for connections
+	 *
+	 * @return
+	 */
+	public boolean isRepositoryAvailable() {
+
+		try {
+			ObjectProfile doc = this.getAccessClient().getObjectProfile(REPOSITORY.getPID(), null);
+			return doc != null;
+		} catch (Exception e) {
+			// If an exception occurs, then the repository is not reachable
+		}
+
 		return false;
 	}
 
