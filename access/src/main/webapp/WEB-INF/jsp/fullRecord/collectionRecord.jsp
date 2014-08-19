@@ -18,7 +18,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 
 <c:choose>
@@ -56,6 +57,12 @@
 						<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">, </c:if>
 					</c:forEach>
 				</p>
+			</c:if>
+			<c:if test="${not empty embargoDate}">
+				<ul class="pipe_list smaller">
+					<li><span class="bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li>
+				</ul>
+				<br class="clear" />
 			</c:if>
 			<c:if test="${briefObject['abstractText'] != null}">
 					<p class="clear">

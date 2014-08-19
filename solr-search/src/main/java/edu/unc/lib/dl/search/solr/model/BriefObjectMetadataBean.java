@@ -217,6 +217,8 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	}
 	
 	public List<String> getRelation(String relationName) {
+		if (this.relationsMap == null)
+			return null;
 		return this.relationsMap.get(relationName);
 	}
 	

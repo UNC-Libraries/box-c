@@ -15,26 +15,12 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.fedora.AuthorizationException;
-import edu.unc.lib.dl.fedora.FedoraDataService;
-import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.NotFoundException;
-import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
-import edu.unc.lib.dl.ui.exception.RenderViewException;
-import edu.unc.lib.dl.ui.model.RecordNavigationState;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.ui.view.XSLViewResolver;
-import edu.unc.lib.dl.util.ContentModelHelper;
 
 import org.jdom.Document;
 import org.slf4j.Logger;
@@ -50,10 +36,29 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.fedora.AuthorizationException;
+import edu.unc.lib.dl.fedora.FedoraDataService;
+import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
+import edu.unc.lib.dl.ui.exception.RenderViewException;
+import edu.unc.lib.dl.ui.model.RecordNavigationState;
+import edu.unc.lib.dl.ui.util.AccessUtil;
+import edu.unc.lib.dl.ui.view.XSLViewResolver;
+import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.DateTimeUtil;
+
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
  * according to the specifics of the object being retrieved.
- * 
+ *
  * @author bbpennel
  */
 @Controller
@@ -65,23 +70,23 @@ public class FullRecordController extends AbstractSolrSearchController {
 	private XSLViewResolver xslViewResolver;
 	@Autowired
 	private FedoraDataService fedoraDataService;
-	
+
 	private static final int MAX_FOXML_TRIES = 2;
 
 	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
 	public String handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
 		return getFullRecord(pid, model, request);
 	}
-	
+
 	@RequestMapping(method = RequestMethod.GET)
 	public String handleOldRequest(@RequestParam("id") String id, Model model, HttpServletRequest request) {
 		return getFullRecord(id, model, request);
 	}
-	
+
 	public String getFullRecord(String pid, Model model, HttpServletRequest request) {
-		
+
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-		
+
 		// Retrieve the objects record from Solr
 		SimpleIdRequest idRequest = new SimpleIdRequest(pid, accessGroups);
 		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
@@ -89,32 +94,57 @@ public class FullRecordController extends AbstractSolrSearchController {
 			throw new InvalidRecordRequestException();
 		}
 		model.addAttribute("briefObject", briefObject);
-		
+
+		boolean listAccess = AccessUtil.hasListAccessOnly(accessGroups, briefObject);
+
+		List<String> embargoUntil = briefObject.getRelation(CDRProperty.embargoUntil.getPredicate());
+		if (embargoUntil != null) {
+			Date result = null;
+			Date dateNow = new Date();
+			for (String embargo : embargoUntil) {
+				Date embargoDate;
+				try {
+					embargoDate = DateTimeUtil.parsePartialUTCToDate(embargo);
+					if (embargoDate.after(dateNow)) {
+						if (result == null || embargoDate.after(result)) {
+							result = embargoDate;
+						}
+					}
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			model.addAttribute("embargoDate", result);
+		}
+
 		// Retrieve the objects description from Fedora
 		String fullObjectView = null;
 		boolean containsContent = false;
-		try {
-			Document foxmlView;
-			int retries = MAX_FOXML_TRIES;
-			do {
-				foxmlView = fedoraDataService.getFoxmlViewXML(idRequest.getId());
-				containsContent = foxmlView.getRootElement().getContent().size() > 0;
-			} while (--retries > 0 && !containsContent);
-			
-			if (containsContent) {
-				fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
-			} else {
-				throw new InvalidRecordRequestException("Failed to retrieve FOXML for object " + idRequest.getId());
+		if (!listAccess) {
+			try {
+				Document foxmlView;
+				int retries = MAX_FOXML_TRIES;
+				do {
+					foxmlView = fedoraDataService.getFoxmlViewXML(idRequest.getId());
+					containsContent = foxmlView.getRootElement().getContent().size() > 0;
+				} while (--retries > 0 && !containsContent);
+
+				if (containsContent) {
+					fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
+				} else {
+					throw new InvalidRecordRequestException("Failed to retrieve FOXML for object " + idRequest.getId());
+				}
+			} catch (AuthorizationException e) {
+				LOG.debug("Access to the full record was denied, user has list only access");
+				listAccess = true;
+			} catch (NotFoundException e) {
+				throw new InvalidRecordRequestException(e);
+			} catch (FedoraException e) {
+				LOG.error("Failed to render full record view for " + idRequest.getId(), e);
+			} catch (RenderViewException e) {
+				LOG.error("Failed to render full record view for " + idRequest.getId(), e);
 			}
-		} catch (AuthorizationException e) {
-			LOG.debug("Access to the full record was denied, user has list only access");
-			model.addAttribute("listAccess", true);
-		} catch (NotFoundException e) {
-			throw new InvalidRecordRequestException(e);
-		} catch (FedoraException e) {
-			LOG.error("Failed to render full record view for " + idRequest.getId(), e);
-		} catch (RenderViewException e) {
-			LOG.error("Failed to render full record view for " + idRequest.getId(), e);
 		}
 
 		// Get additional information depending on the type of object since the user has access
@@ -145,7 +175,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 
 			model.addAttribute("fullObjectView", fullObjectView);
 		}
-		
+
 		if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
 				briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
 			List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
@@ -164,6 +194,8 @@ public class FullRecordController extends AbstractSolrSearchController {
 				request.getSession().setAttribute("recordNavigationState", recordNavigationState);
 			}
 		}
+
+		model.addAttribute("listAccess", listAccess);
 
 		model.addAttribute("pageSubtitle", briefObject.getTitle());
 		return "fullRecord";

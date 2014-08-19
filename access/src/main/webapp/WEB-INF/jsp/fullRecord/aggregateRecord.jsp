@@ -130,20 +130,22 @@
 				</c:when>
 			</c:choose>
 			<div class="clear"></div>
-			<p class="smaller">
-				<c:choose>
-					<c:when test="${not empty briefObject.contentTypeFacet[0].displayValue}">
-						<span class="bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" />
-						<c:if test="${briefObject.filesizeSort != -1}">  | <span class="bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if>
-					</c:when>
-					<c:otherwise>
-						<span>Contains:</span> ${childCount} item<c:if test="${childCount != 1}">s</c:if>
-					</c:otherwise>
-				</c:choose>
-				<c:if test="${not empty briefObject.dateAdded}">  | <span class="bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></c:if>
-				<c:if test="${not empty briefObject.dateCreated}">  | <span class="bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></c:if>
-			</p>
-			
+			<ul class="pipe_list smaller">
+				<li>
+					<c:choose>
+						<c:when test="${not empty briefObject.contentTypeFacet[0].displayValue}">
+							<span class="bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" />
+							<c:if test="${briefObject.filesizeSort != -1}">  | <span class="bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if>
+						</c:when>
+						<c:otherwise>
+							<span>Contains:</span> ${childCount} item<c:if test="${childCount != 1}">s</c:if>
+						</c:otherwise>
+					</c:choose>
+				</li>
+				<c:if test="${not empty briefObject.dateAdded}"><li><span class="bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></li></c:if>
+				<c:if test="${not empty briefObject.dateCreated}"><li><span class="bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></li></c:if>
+				<c:if test="${not empty embargoDate}"><li><span class="bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
+			</ul>
 		</div>
 	</div>
 </div>
