@@ -230,10 +230,11 @@ public class ObjectAccessControlsBean {
 	private Map<UserRole, Set<String>> getMergedRoleGroups() {
 		boolean removePatrons = !this.isPublished() || !this.isActive();
 
+		boolean listPatrons = false;
 		if (!removePatrons) {
 			// Check to see if there are active embargoes, and if there are that their window has not passed
 			Date lastActiveEmbargo = getLastActiveEmbargoUntilDate();
-			removePatrons = lastActiveEmbargo != null;
+			listPatrons = lastActiveEmbargo != null;
 		}
 
 		// Patrons were blocked, remove groups granted to non-admin user rules
@@ -243,6 +244,26 @@ public class ObjectAccessControlsBean {
 				for (Map.Entry<UserRole, Set<String>> roleGroups : this.baseRoleGroups.entrySet())
 					if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI))
 						activeRoleGroups.put(roleGroups.getKey(), roleGroups.getValue());
+		} else if (listPatrons) {
+			activeRoleGroups = new HashMap<UserRole, Set<String>>();
+
+			if (this.baseRoleGroups != null) {
+				Set<String> listGroups = baseRoleGroups.get(UserRole.list);
+				if (listGroups == null) {
+					listGroups = new HashSet<String>();
+				}
+
+				for (Map.Entry<UserRole, Set<String>> roleGroups : this.baseRoleGroups.entrySet()) {
+					if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI))
+						activeRoleGroups.put(roleGroups.getKey(), roleGroups.getValue());
+					else {
+						listGroups.addAll(roleGroups.getValue());
+					}
+				}
+
+				if (listGroups.size() > 0)
+					activeRoleGroups.put(UserRole.list, listGroups);
+			}
 		} else {
 			// Patrons not blocked, return all the grants plus the global roles.
 			activeRoleGroups = new HashMap<UserRole, Set<String>>(this.baseRoleGroups);

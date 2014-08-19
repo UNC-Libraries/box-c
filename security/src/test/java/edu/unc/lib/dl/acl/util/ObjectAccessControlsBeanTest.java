@@ -28,9 +28,9 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class ObjectAccessControlsBeanTest extends Assert {
 
@@ -72,6 +72,12 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		assertTrue(aclBean.getActiveRoleGroups().containsKey(UserRole.curator));
 		assertFalse(aclBean.getActiveRoleGroups().containsKey(UserRole.patron));
 		assertFalse(aclBean.getActiveRoleGroups().containsKey(UserRole.metadataPatron));
+
+		// All groups previously assigned to patron roles should have been grouped into the list permission
+		Set<String> listRoles = aclBean.getActiveRoleGroups().get(UserRole.list);
+		assertTrue(listRoles.contains("unc:app:lib:cdr:patron"));
+		assertTrue(listRoles.contains("public"));
+		assertTrue(listRoles.contains("authenticated"));
 
 		assertTrue(aclBean.hasPermission(new AccessGroupSet("unc:app:lib:cdr:curator"), Permission.viewDescription));
 		assertFalse(aclBean.hasPermission(new AccessGroupSet("unc:app:lib:cdr:patron"), Permission.viewDescription));
