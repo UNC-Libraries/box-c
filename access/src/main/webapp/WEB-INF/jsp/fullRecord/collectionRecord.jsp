@@ -77,6 +77,7 @@
 				<input type="hidden" name="container" 
 					value='${briefObject.id}'/>
 			</form>
+			
 			<div class="clear"></div>
 			<p class="full_record_browse">
 				<c:url var="collectionResultsUrl" scope="page" value='list/${briefObject.id}'></c:url>

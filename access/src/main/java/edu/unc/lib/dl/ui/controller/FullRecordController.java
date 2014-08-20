@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -52,8 +51,6 @@ import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
-import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -97,25 +94,9 @@ public class FullRecordController extends AbstractSolrSearchController {
 
 		boolean listAccess = AccessUtil.hasListAccessOnly(accessGroups, briefObject);
 
-		List<String> embargoUntil = briefObject.getRelation(CDRProperty.embargoUntil.getPredicate());
+		Date embargoUntil = briefObject.getActiveEmbargo();
 		if (embargoUntil != null) {
-			Date result = null;
-			Date dateNow = new Date();
-			for (String embargo : embargoUntil) {
-				Date embargoDate;
-				try {
-					embargoDate = DateTimeUtil.parsePartialUTCToDate(embargo);
-					if (embargoDate.after(dateNow)) {
-						if (result == null || embargoDate.after(result)) {
-							result = embargoDate;
-						}
-					}
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			model.addAttribute("embargoDate", result);
+			model.addAttribute("embargoDate", embargoUntil);
 		}
 
 		// Retrieve the objects description from Fedora

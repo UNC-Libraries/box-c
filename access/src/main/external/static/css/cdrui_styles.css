@@ -93,7 +93,7 @@ div#username_wrap {
 .large.thumb_container {
 	position: relative;
 	width: 128px;
-	max-height: 128px;
+	height: 128px;
 	float: left;
 	margin: 0 20px 20px 0;
 	text-align: center;
@@ -174,11 +174,9 @@ div#username_wrap {
 
 .containerinfo ul {
 	text-align: right;
-	direction: rtl;
 }
 
 .containerinfo ul li {
-	padding-right: 14px;
 	font-size: 11px;
 	margin-bottom: 2px;
 }

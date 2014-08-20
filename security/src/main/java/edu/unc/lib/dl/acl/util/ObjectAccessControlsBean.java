@@ -24,8 +24,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,13 +37,13 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Encapsulates the complete set of access controls that apply to a particular object.
- * 
+ *
  * @author count0
- * 
+ *
  */
 public class ObjectAccessControlsBean {
 	private static final Logger LOG = LoggerFactory.getLogger(ObjectAccessControlsBean.class);
-	
+
 	private static final String ACTIVE_STATE = ContentModelHelper.FedoraProperty.Active.toString();
 
 	PID object = null;
@@ -68,7 +68,7 @@ public class ObjectAccessControlsBean {
 	/**
 	 * Constructs a new ObjectAccessControlsBean object from a collection of pipe delimited role uri/group pairings,
 	 * representing all role/group relationships assigned to this object
-	 * 
+	 *
 	 * @param pid
 	 * @param roleGroups
 	 */
@@ -97,7 +97,7 @@ public class ObjectAccessControlsBean {
 
 	/**
 	 * Constructs a new ObjectAccessControlsBean object from a map of role/group relations and active embargoes
-	 * 
+	 *
 	 * @param pid
 	 * @param roles
 	 * @param embargoes
@@ -125,7 +125,7 @@ public class ObjectAccessControlsBean {
 	/**
 	 * Construct a new access control bean by applying triples from an item on top of an existing access control bean as
 	 * if it were the parent for the new object
-	 * 
+	 *
 	 * @param baseAcls
 	 *           parent objects access control information
 	 * @param pid
@@ -196,7 +196,7 @@ public class ObjectAccessControlsBean {
 			Map.Entry<String, Collection<String>> entry = (Map.Entry<String, Collection<String>>) roleIt.next();
 			UserRole userRole = UserRole.getUserRole(entry.getKey());
 			if (userRole != null) {
-				Set<String> groups = new HashSet<String>((Collection<String>) entry.getValue());
+				Set<String> groups = new HashSet<String>(entry.getValue());
 				destination.put(userRole, groups);
 			}
 		}
@@ -224,17 +224,17 @@ public class ObjectAccessControlsBean {
 	/**
 	 * Generates a new role/group mapping by filtering out role mappings that do not have administrative viewing rights.
 	 * This is based on if there are any active embargoes, the object is unpublished or not active.
-	 * 
+	 *
 	 * @return
 	 */
 	private Map<UserRole, Set<String>> getMergedRoleGroups() {
 		boolean removePatrons = !this.isPublished() || !this.isActive();
 
-		boolean listPatrons = false;
+		boolean metadataPatrons = false;
 		if (!removePatrons) {
 			// Check to see if there are active embargoes, and if there are that their window has not passed
 			Date lastActiveEmbargo = getLastActiveEmbargoUntilDate();
-			listPatrons = lastActiveEmbargo != null;
+			metadataPatrons = lastActiveEmbargo != null;
 		}
 
 		// Patrons were blocked, remove groups granted to non-admin user rules
@@ -244,25 +244,25 @@ public class ObjectAccessControlsBean {
 				for (Map.Entry<UserRole, Set<String>> roleGroups : this.baseRoleGroups.entrySet())
 					if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI))
 						activeRoleGroups.put(roleGroups.getKey(), roleGroups.getValue());
-		} else if (listPatrons) {
+		} else if (metadataPatrons) {
 			activeRoleGroups = new HashMap<UserRole, Set<String>>();
 
 			if (this.baseRoleGroups != null) {
-				Set<String> listGroups = baseRoleGroups.get(UserRole.list);
-				if (listGroups == null) {
-					listGroups = new HashSet<String>();
+				Set<String> metadataGroups = baseRoleGroups.get(UserRole.metadataPatron);
+				if (metadataGroups == null) {
+					metadataGroups = new HashSet<String>();
 				}
 
 				for (Map.Entry<UserRole, Set<String>> roleGroups : this.baseRoleGroups.entrySet()) {
 					if (roleGroups.getKey().getPermissions().contains(Permission.viewAdminUI))
 						activeRoleGroups.put(roleGroups.getKey(), roleGroups.getValue());
 					else {
-						listGroups.addAll(roleGroups.getValue());
+						metadataGroups.addAll(roleGroups.getValue());
 					}
 				}
 
-				if (listGroups.size() > 0)
-					activeRoleGroups.put(UserRole.list, listGroups);
+				if (metadataGroups.size() > 0)
+					activeRoleGroups.put(UserRole.metadataPatron, metadataGroups);
 			}
 		} else {
 			// Patrons not blocked, return all the grants plus the global roles.
@@ -281,7 +281,7 @@ public class ObjectAccessControlsBean {
 
 	/**
 	 * Find the last active embargo date, if applicable
-	 * 
+	 *
 	 * @return the embargo date or null
 	 */
 	public Date getLastActiveEmbargoUntilDate() {
@@ -299,6 +299,7 @@ public class ObjectAccessControlsBean {
 		return result;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		result.append("Object Access Controls (").append(object.getPid()).append(")")
@@ -328,7 +329,7 @@ public class ObjectAccessControlsBean {
 
 	/**
 	 * Builds a set of all the active user roles granted to the given groups.
-	 * 
+	 *
 	 * @param groups
 	 * @return
 	 */
@@ -342,7 +343,7 @@ public class ObjectAccessControlsBean {
 
 	/**
 	 * Builds a set of all the user roles granted to the given groups.
-	 * 
+	 *
 	 * @param groups
 	 * @param roleGroups
 	 * @return
@@ -381,7 +382,7 @@ public class ObjectAccessControlsBean {
 
 	/**
 	 * Determines if this access object contains roles matching any of the groups in the supplied access group set
-	 * 
+	 *
 	 * @param groups
 	 *           group membershps
 	 * @return true if any of the groups are associated with a role for this object
@@ -400,7 +401,7 @@ public class ObjectAccessControlsBean {
 
 	/**
 	 * Determines if a user has a specific type of permission on this object, given a set of groups.
-	 * 
+	 *
 	 * @param groups
 	 *           user memberships
 	 * @param permission
@@ -422,7 +423,7 @@ public class ObjectAccessControlsBean {
 
 	/**
 	 * Determines if a user has a specific type of permission on this object, given a set of groups.
-	 * 
+	 *
 	 * @param groups
 	 *           user memberships
 	 * @param permission
@@ -440,7 +441,7 @@ public class ObjectAccessControlsBean {
 
 	/**
 	 * Retrieves the set of all permissions granted to a set of access groups
-	 * 
+	 *
 	 * @param groups
 	 * @return
 	 */
@@ -457,7 +458,7 @@ public class ObjectAccessControlsBean {
 
 	/**
 	 * Returns all groups assigned to this object that possess the given permission
-	 * 
+	 *
 	 * @param permission
 	 * @return
 	 */
@@ -473,7 +474,7 @@ public class ObjectAccessControlsBean {
 
 	/**
 	 * Returns all groups assigned to the given role
-	 * 
+	 *
 	 * @param userRole
 	 * @return
 	 */
@@ -484,7 +485,7 @@ public class ObjectAccessControlsBean {
 	/**
 	 * Returns a list where each entry contains a single role uri + group pairing assigned to this object. Values are
 	 * pipe delimited
-	 * 
+	 *
 	 * @return
 	 */
 	public List<String> roleGroupsToList() {
@@ -517,7 +518,7 @@ public class ObjectAccessControlsBean {
 	public void setAncestorsPublished(boolean ancestorsPublished) {
 		this.ancestorsPublished = ancestorsPublished;
 	}
-	
+
 	public boolean isActive() {
 		return this.ancestorsActive && (isActive == null || isActive);
 	}
@@ -529,7 +530,7 @@ public class ObjectAccessControlsBean {
 	public void setIsActive(Boolean isActive) {
 		this.isActive = isActive;
 	}
-	
+
 	public boolean isAncestorsActive() {
 		return ancestorsActive;
 	}

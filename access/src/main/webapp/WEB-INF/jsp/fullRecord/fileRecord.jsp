@@ -44,7 +44,7 @@
 			</c:choose>
 		</c:set>
 		
-		<a href="${thumbUrl}" class="thumb_link">
+		<a href="${thumbUrl}" class="thumb_link large thumb_container">
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject)}">
 					<div class="large thumb_container">
@@ -58,6 +58,9 @@
 					</div>
 				</c:otherwise>
 			</c:choose>
+			<c:if test="${not empty embargoDate}">
+				<span><img src="/static/images/lockedstate_large.gif"/></span>
+			</c:if>
 		</a>
 		<div class="collinfo">
 			<div class="collinfo_metadata">
@@ -84,6 +87,11 @@
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<div class="actionlink left download">
 						<a href="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}?dl=true">Download</a>
+					</div>
+				</c:when>
+				<c:when test="${not empty embargoDate}">
+					<div class="actionlink left">
+						<a href="/requestAccess/${briefObject.pid.pid}">Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/> </a>
 					</div>
 				</c:when>
 			</c:choose>
