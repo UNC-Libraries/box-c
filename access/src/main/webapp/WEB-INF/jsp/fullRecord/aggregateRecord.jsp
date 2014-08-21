@@ -31,6 +31,8 @@
 	</c:otherwise>
 </c:choose>
 
+<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}</c:set>
+
 <div class="onecol full_record_top">
 	<div class="contentarea">
 		<c:set var="thumbUrl">
@@ -40,40 +42,39 @@
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<c:choose>
 						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
-							${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}
+							${dataFileUrl}
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
 						</c:when>
 						<c:otherwise>
-							${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}
+							${dataFileUrl}
 						</c:otherwise>
 					</c:choose>
 				</c:when>
 			</c:choose>
 		</c:set>
 		
-		<a href="${thumbUrl}" class="thumb_link">
+		<a href="${thumbUrl}" class="thumb_link large thumb_container">
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject)}">
-					<div class="large thumb_container">
-						<img id="thumb_main" class="largethumb ph_large_${briefObject.contentTypeFacet[0].searchKey}" 
+					<img id="thumb_main" class="largethumb ph_large_${briefObject.contentTypeFacet[0].searchKey}" 
 								src="${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}"/>
 					</div>
 				</c:when>
 				<c:when test="${not empty briefObject.contentTypeFacet[0].searchKey}">
-					<div class="large thumb_container">
-						<img id="thumb_main" class="largethumb ph_large_default" src="/static/images/placeholder/large/${briefObject.contentTypeFacet[0].searchKey}.png"/>
-					</div>
+					<img id="thumb_main" class="largethumb ph_large_default" src="/static/images/placeholder/large/${briefObject.contentTypeFacet[0].searchKey}.png"/>
 				</c:when>
 				<c:otherwise>
-					<div class="large thumb_container">
-						<img id="thumb_main" class="largethumb ph_large_default" src="/static/images/placeholder/large/default.png"/>
-					</div>
+					<img id="thumb_main" class="largethumb ph_large_default" src="/static/images/placeholder/large/default.png"/>
 				</c:otherwise>
 			</c:choose>
+			<c:if test="${not empty embargoDate}">
+				<span><img src="/static/images/lockedstate_large.gif"/></span>
+			</c:if>
 		</a>
+
 		<div class="collinfo">
 			<h2><c:out value="${briefObject.title}" /></h2>
 			<c:if test="${not empty briefObject.creator}">
@@ -86,7 +87,12 @@
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<div class="actionlink left download">
-						<a href="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}?dl=true">Download</a>
+						<a href="${dataFileUrl}?dl=true">Download</a>
+					</div>
+				</c:when>
+				<c:when test="${not empty embargoDate && not empty dataFileUrl}">
+					<div class="actionlink left">
+						<a href="/requestAccess/${briefObject.pid.pid}">Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/> </a>
 					</div>
 				</c:when>
 			</c:choose>
@@ -103,7 +109,7 @@
 					<c:choose>
 						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							<div class="actionlink left">
-								<a href="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}">View</a>
+								<a href="${dataFileUrl}">View</a>
 							</div>
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
@@ -111,7 +117,7 @@
 								<a href="" class="inline_viewer_link audio_player_link">Listen</a>
 							</div>
 							<div class="clear_space"></div>
-							<audio class="audio_player inline_viewer" src="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}">
+							<audio class="audio_player inline_viewer" src="${dataFileUrl}">
 							</audio>
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
@@ -122,7 +128,7 @@
 							<link rel="stylesheet" type="text/css" href="/static/plugins/flowplayer/skin/minimalist.css">
 							<div class="video_player inline_viewer">
 								<video>
-									<source type="video/mp4" src="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}"></source>
+									<source type="video/mp4" src="${dataFileUrl}"></source>
 								</video>
 							</div>
 						</c:when>
@@ -130,20 +136,22 @@
 				</c:when>
 			</c:choose>
 			<div class="clear"></div>
-			<p class="smaller">
-				<c:choose>
-					<c:when test="${not empty briefObject.contentTypeFacet[0].displayValue}">
-						<span class="bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" />
-						<c:if test="${briefObject.filesizeSort != -1}">  | <span class="bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if>
-					</c:when>
-					<c:otherwise>
-						<span>Contains:</span> ${childCount} item<c:if test="${childCount != 1}">s</c:if>
-					</c:otherwise>
-				</c:choose>
-				<c:if test="${not empty briefObject.dateAdded}">  | <span class="bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></c:if>
-				<c:if test="${not empty briefObject.dateCreated}">  | <span class="bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></c:if>
-			</p>
-			
+			<ul class="pipe_list smaller">
+				<li>
+					<c:choose>
+						<c:when test="${not empty briefObject.contentTypeFacet[0].displayValue}">
+							<span class="bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" />
+							<c:if test="${briefObject.filesizeSort != -1}">  | <span class="bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if>
+						</c:when>
+						<c:otherwise>
+							<span>Contains:</span> ${childCount} item<c:if test="${childCount != 1}">s</c:if>
+						</c:otherwise>
+					</c:choose>
+				</li>
+				<c:if test="${not empty briefObject.dateAdded}"><li><span class="bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></li></c:if>
+				<c:if test="${not empty briefObject.dateCreated}"><li><span class="bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></li></c:if>
+				<c:if test="${not empty embargoDate}"><li><span class="bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
+			</ul>
 		</div>
 	</div>
 </div>

@@ -15,9 +15,11 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,16 +31,18 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  * Stores a single Solr tuple representing an object from a search result. Can be populated directly by Solrj's
  * queryResponse.getBeans.
- * 
+ *
  * @author bbpennel
  */
 public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefObjectMetadata {
-	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(BriefObjectMetadataBean.class);
+
 	protected CutoffFacet ancestorPathFacet;
 	protected CutoffFacet path;
 	protected List<MultivaluedHierarchicalFacet> contentTypeFacet;
@@ -64,14 +68,16 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		return id;
 	}
 
+	@Override
 	public CutoffFacet getAncestorPathFacet() {
 		return ancestorPathFacet;
 	}
-	
+
 	public void setAncestorPathFacet(CutoffFacet ancestorPathFacet) {
 		this.ancestorPathFacet = ancestorPathFacet;
 	}
 
+	@Override
 	@Field
 	public void setAncestorPath(List<String> ancestorPaths) {
 		super.setAncestorPath(ancestorPaths);
@@ -80,7 +86,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
 	/**
 	 * Returns a HierarchicalFacet of the full path for this object, including the ancestor path and itself.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override
@@ -113,12 +119,12 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	public List<Datastream> getDatastreamObjects() {
 		return datastreamObjects;
 	}
-	
+
 	@Override
 	public Datastream getDatastreamObject(String datastreamName) {
 		if (datastreamName == null || this.datastreamObjects == null)
 			return null;
-		
+
 		String[] datastreamParts = datastreamName.split("/", 2);
 		String pid;
 		if (datastreamParts.length > 1) {
@@ -130,7 +136,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		} else {
 			pid = null;
 		}
-		
+
 		for (Datastream datastream: this.datastreamObjects) {
 			if (datastream.equals(datastreamName) && (pid == null || pid.equals(datastream.getOwner().getPid())))
 				return datastream;
@@ -138,6 +144,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		return null;
 	}
 
+	@Override
 	@Field
 	public void setDatastream(List<String> datastream) {
 		super.setDatastream(datastream);
@@ -183,7 +190,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	public Map<String, Collection<String>> getGroupRoleMap() {
 		return groupRoleMap;
 	}
-	
+
 	public void setAccessControlBean(ObjectAccessControlsBean aclBean) {
 		this.accessControlBean = aclBean;
 	}
@@ -195,18 +202,18 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		}
 		return this.accessControlBean;
 	}
-	
+
 	@Override
 	@Field
 	public void setRelations(List<String> relations) {
 		super.setRelations(relations);
-		
+
 		this.relationsMap = new HashMap<String, List<String>>(this.relations.size());
 		for (String relation: this.relations) {
 			if (relation == null)
 				continue;
 			String[] rdfParts = relation.split("\\|");
-			
+
 			List<String> values = this.relationsMap.get(rdfParts[0]);
 			if (values == null) {
 				values = new ArrayList<String>();
@@ -215,11 +222,13 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 			values.add(rdfParts[1]);
 		}
 	}
-	
+
 	public List<String> getRelation(String relationName) {
+		if (this.relationsMap == null)
+			return null;
 		return this.relationsMap.get(relationName);
 	}
-	
+
 	@Override
 	public Datastream getDefaultWebData() {
 		if (this.relationsMap == null)
@@ -233,6 +242,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		return this.getDatastreamObject(defaultWebData);
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("id: " + id + "\n");
@@ -268,6 +278,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		return this.countMap;
 	}
 
+	@Override
 	public void setCountMap(Map<String, Long> countMap) {
 		this.countMap = countMap;
 	}
@@ -284,5 +295,29 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		if (this.tags == null)
 			this.tags = new ArrayList<Tag>();
 		this.tags.add(t);
+	}
+
+	@Override
+	public Date getActiveEmbargo() {
+		List<String> embargoUntil = getRelation(CDRProperty.embargoUntil.getPredicate());
+		if (embargoUntil != null) {
+			Date result = null;
+			Date dateNow = new Date();
+			for (String embargo : embargoUntil) {
+				Date embargoDate;
+				try {
+					embargoDate = DateTimeUtil.parsePartialUTCToDate(embargo);
+					if (embargoDate.after(dateNow)) {
+						if (result == null || embargoDate.after(result)) {
+							result = embargoDate;
+						}
+					}
+				} catch (ParseException e) {
+					LOG.error("Failed to parse embargo", e);
+				}
+			}
+			return result;
+		}
+		return null;
 	}
 }
