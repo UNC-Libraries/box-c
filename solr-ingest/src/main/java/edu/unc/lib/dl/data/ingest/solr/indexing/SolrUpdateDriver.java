@@ -27,10 +27,12 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
@@ -43,7 +45,11 @@ public class SolrUpdateDriver {
 	private static final Logger log = LoggerFactory.getLogger(SolrUpdateDriver.class);
 
 	private SolrServer solrServer;
+	private SolrServer updateSolrServer;
 	private SolrSettings solrSettings;
+
+	@Autowired
+	private SolrSearchService searchService;
 
 	private int autoPushCount;
 	private int updateThreads;
@@ -55,6 +61,7 @@ public class SolrUpdateDriver {
 	public void init() {
 		log.debug("Instantiating concurrent udpate solr server for " + solrSettings.getUrl());
 		solrServer = new ConcurrentUpdateSolrServer(solrSettings.getUrl(), autoPushCount, updateThreads);
+		updateSolrServer = new ConcurrentUpdateSolrServer(solrSettings.getUrl(), autoPushCount, updateThreads);
 	}
 
 	public void addDocument(IndexDocumentBean idb) throws IndexingException {
@@ -77,7 +84,7 @@ public class SolrUpdateDriver {
 	 */
 	public void updateDocument(String operation, IndexDocumentBean idb) throws IndexingException {
 		try {
-			SolrInputDocument sid = solrServer.getBinder().toSolrInputDocument(idb);
+			SolrInputDocument sid = updateSolrServer.getBinder().toSolrInputDocument(idb);
 			for (String fieldName : sid.getFieldNames()) {
 				if (!ID_FIELD.equals(fieldName)) {
 					SolrInputField inputField = sid.getField(fieldName);
@@ -92,7 +99,7 @@ public class SolrUpdateDriver {
 			}
 			if (log.isDebugEnabled())
 				log.debug("Performing partial update:\n{}", ClientUtils.toXML(sid));
-			solrServer.add(sid);
+			updateSolrServer.add(sid);
 		} catch (IOException e) {
 			throw new IndexingException("Failed to add document to solr", e);
 		} catch (SolrServerException e) {
@@ -130,6 +137,7 @@ public class SolrUpdateDriver {
 	public void commit() throws IndexingException {
 		try {
 			solrServer.commit();
+			updateSolrServer.commit();
 		} catch (SolrServerException e) {
 			throw new IndexingException("Failed to commit changes to solr", e);
 		} catch (IOException e) {
