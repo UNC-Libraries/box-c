@@ -165,6 +165,10 @@ public class SolrUpdateDriver {
 		this.solrServer = solrServer;
 	}
 
+	public void setUpdateSolrServer(SolrServer solrServer) {
+		this.updateSolrServer = solrServer;
+	}
+
 	public void setSolrSettings(SolrSettings solrSettings) {
 		this.solrSettings = solrSettings;
 	}

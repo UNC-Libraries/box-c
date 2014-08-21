@@ -37,12 +37,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
@@ -61,7 +61,7 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
  * Performs CDR specific Solr search tasks, using solrj for connecting to the solr instance.
- * 
+ *
  * @author bbpennel
  */
 public class SolrSearchService {
@@ -87,7 +87,7 @@ public class SolrSearchService {
 
 	/**
 	 * Retrieves the Solr tuple representing the object identified by id.
-	 * 
+	 *
 	 * @param id
 	 *           identifier (uuid) of the object to retrieve.
 	 * @param userAccessGroups
@@ -192,7 +192,7 @@ public class SolrSearchService {
 
 	/**
 	 * Retrieves search results as a SearchResultResponse. Will not return the solr query use for the request.
-	 * 
+	 *
 	 * @param searchRequest
 	 * @return
 	 */
@@ -203,7 +203,7 @@ public class SolrSearchService {
 	/**
 	 * Generates a solr query from the search state specified in searchRequest and executes it, returning a result set of
 	 * BriefObjectMetadataBeans and, optionally, the SolrQuery generated for this request.
-	 * 
+	 *
 	 * @param searchRequest
 	 * @param returnQuery
 	 * @return
@@ -244,7 +244,7 @@ public class SolrSearchService {
 	 * Adds access restrictions to the provided query string buffer. If there are no access groups in the provided group
 	 * set, then an AccessRestrictionException is thrown as it is invalid for a user to have no permissions. If the user
 	 * is an admin, then do not restrict access
-	 * 
+	 *
 	 * @param query
 	 *           string buffer containing the query to append access groups to.
 	 * @param accessGroups
@@ -284,7 +284,7 @@ public class SolrSearchService {
 	/**
 	 * Attempts to retrieve the hierarchical facet from the facet field corresponding to fieldKey that matches the value
 	 * of searchValue. Retrieves and populates all tiers leading up to the tier number given in searchValue.
-	 * 
+	 *
 	 * @param fieldKey
 	 *           Key of the facet field to search for the facet within.
 	 * @param searchValue
@@ -332,7 +332,7 @@ public class SolrSearchService {
 
 	/**
 	 * Gets the ancestor path facet for the provided pid, given the access groups provided.
-	 * 
+	 *
 	 * @param pid
 	 * @param accessGroups
 	 * @return
@@ -399,7 +399,7 @@ public class SolrSearchService {
 
 	/**
 	 * Wrapper method for executing a solr query.
-	 * 
+	 *
 	 * @param query
 	 * @return
 	 * @throws SolrServerException
@@ -411,13 +411,13 @@ public class SolrSearchService {
 	/**
 	 * Constructs a SolrQuery object from the search state specified within a SearchRequest object. The request may
 	 * optionally request to retrieve facet results in addition to search results.
-	 * 
+	 *
 	 * @param searchRequest
 	 * @param isRetrieveFacetsRequest
 	 * @return
 	 */
 	protected SolrQuery generateSearch(SearchRequest searchRequest) {
-		SearchState searchState = (SearchState) searchRequest.getSearchState();
+		SearchState searchState = searchRequest.getSearchState();
 		SolrQuery solrQuery = new SolrQuery();
 		StringBuilder termQuery = new StringBuilder();
 
@@ -461,7 +461,7 @@ public class SolrSearchService {
 				solrQuery.set(GroupParams.GROUP_FIELD, solrSettings.getFieldName(SearchFieldKeys.ROLLUP_ID.name()));
 			else
 				solrQuery.set(GroupParams.GROUP_FIELD, solrSettings.getFieldName(searchState.getRollupField()));
-			
+
 			solrQuery.set(GroupParams.GROUP_TOTAL_COUNT, true);
 			if (searchState.getFacetsToRetrieve() != null && searchState.getFacetsToRetrieve().size() > 0) {
 				solrQuery.set(GroupParams.GROUP_FACET, true);
@@ -561,7 +561,7 @@ public class SolrSearchService {
 
 	/**
 	 * Add search fields from a search state to the given termQuery
-	 * 
+	 *
 	 * @param searchState
 	 * @param termQuery
 	 */
@@ -652,7 +652,7 @@ public class SolrSearchService {
 
 	/**
 	 * Executes a SolrQuery based off of a search state and stores the results as BriefObjectMetadataBeans.
-	 * 
+	 *
 	 * @param query
 	 *           the solr query to be executed
 	 * @param searchState
@@ -718,7 +718,7 @@ public class SolrSearchService {
 
 	/**
 	 * Generates a solr query style string to add a resource type filter for the given list of resources types.
-	 * 
+	 *
 	 * @param resourceTypes
 	 * @return
 	 */
@@ -742,7 +742,7 @@ public class SolrSearchService {
 
 	/**
 	 * Returns the value of a single field from the object identified by pid.
-	 * 
+	 *
 	 * @param pid
 	 * @param field
 	 * @return The value of the specified field or null if it wasn't found.
@@ -765,7 +765,7 @@ public class SolrSearchService {
 	/**
 	 * Returns a combined set of distinct field values for one or more fields, limited by the set of access groups
 	 * provided
-	 * 
+	 *
 	 * @param fields
 	 *           Solr field names to retrieve distinct values for
 	 * @param maxValuesPerField
@@ -799,6 +799,25 @@ public class SolrSearchService {
 				fieldValues.add(count.getName());
 
 		return fieldValues;
+	}
+
+	/**
+	 * Verifies that a record exists for the given pid
+	 *
+	 * @param pid
+	 * @return
+	 * @throws SolrServerException
+	 */
+	public boolean exists(String pid) throws SolrServerException {
+		QueryResponse queryResponse = null;
+
+		SolrQuery solrQuery = new SolrQuery();
+		solrQuery.setQuery("id:" + SolrSettings.sanitize(pid));
+		solrQuery.setRows(0);
+
+		queryResponse = server.query(solrQuery);
+
+		return queryResponse.getResults().getNumFound() > 0;
 	}
 
 	public SolrSettings getSolrSettings() {
