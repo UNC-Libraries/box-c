@@ -424,6 +424,9 @@ public class SolrSearchService {
 		// Generate search term query string
 		addSearchFields(searchState, termQuery);
 
+		// Add any raw fields
+		addRawFields(searchState, termQuery);
+
 		// Add range Fields to the query
 		addRangeFields(searchState, termQuery);
 
@@ -597,6 +600,28 @@ public class SolrSearchService {
 					}
 					termQuery.append(')');
 				}
+			}
+		}
+	}
+
+	private void addRawFields(SearchState searchState, StringBuilder termQuery) {
+		// Generate search term query string
+		String searchType = null;
+		Map<String, String> searchFields = searchState.getRawFields();
+		if (searchFields != null) {
+			Iterator<String> searchTypeIt = searchFields.keySet().iterator();
+			while (searchTypeIt.hasNext()) {
+				searchType = searchTypeIt.next();
+				String fieldValue = searchFields.get(searchType);
+
+				String fieldName = solrSettings.getFieldName(searchType);
+				if (fieldName == null)
+					continue;
+
+				if (termQuery.length() > 0)
+					termQuery.append(" AND ");
+
+				termQuery.append(fieldName).append(':').append(fieldValue);
 			}
 		}
 	}

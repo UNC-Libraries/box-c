@@ -23,11 +23,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
+import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 @Controller
 public class ReviewController extends AbstractSearchController {
@@ -53,12 +56,17 @@ public class ReviewController extends AbstractSearchController {
 
 	private void doReviewList(SearchRequest searchRequest, Model model, HttpServletRequest request) {
 		SearchState responseState = (SearchState) searchRequest.getSearchState().clone();
-		
+
 		searchRequest.setApplyCutoffs(false);
-		SearchState searchState = (SearchState) searchRequest.getSearchState();
-		
+
+		SearchState searchState = searchRequest.getSearchState();
+		searchState.setResultFields(resultsFieldList);
+
 		GenericFacet facet = new GenericFacet("STATUS", "Unpublished");
 		searchState.getFacets().put("STATUS", facet);
+
+		searchState.getRawFields().put(SearchFieldKeys.ROLE_GROUP.name(),
+				SolrQueryLayerService.getWriteRoleFilter(GroupsThreadStore.getGroups()));
 
 		SearchResultResponse resultResponse = getSearchResults(searchRequest);
 

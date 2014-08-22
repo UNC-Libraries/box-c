@@ -79,7 +79,12 @@ public class ObjectAccessControlsBean {
 			LOG.debug("roleGroup: " + roleGroup);
 			String[] roleGroupArray = roleGroup.split("\\|");
 			if (roleGroupArray.length == 2) {
-				UserRole userRole = UserRole.getUserRole(roleGroupArray[0]);
+				String role = roleGroupArray[0];
+				if (role.indexOf('#') == -1) {
+					role = JDOMNamespaceUtil.CDR_ROLE_NS.getURI() + role;
+				}
+
+				UserRole userRole = UserRole.getUserRole(role);
 				if (userRole == null) {
 					continue;
 				}

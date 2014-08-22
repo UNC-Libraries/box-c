@@ -1093,7 +1093,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	public boolean hasRole(AccessGroupSet accessGroups, UserRole userRole) {
 		StringBuilder query = new StringBuilder();
-		String joinedGroups = accessGroups.joinAccessGroups(" OR ", userRole.toString() + "|", true);
+		String joinedGroups = accessGroups.joinAccessGroups(" OR ", userRole.getPredicate() + "|", true);
 		query.append("roleGroup:(").append(joinedGroups).append(')');
 
 		SolrQuery solrQuery = new SolrQuery();
@@ -1280,6 +1280,23 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		return counts;
 
+	}
+
+	public static String getWriteRoleFilter(AccessGroupSet groups) {
+		StringBuilder roleString = new StringBuilder();
+
+		roleString.append('(');
+
+		for (String group : groups) {
+			String saneGroup = SolrSettings.sanitize(group);
+			roleString.append(UserRole.processor.getPredicate()).append('|').append(saneGroup).append(' ');
+			roleString.append(UserRole.curator.getPredicate()).append('|').append(saneGroup).append(' ');
+			roleString.append(UserRole.administrator.getPredicate()).append('|').append(saneGroup).append(' ');
+		}
+
+		roleString.append(')');
+
+		return roleString.toString();
 	}
 
 }

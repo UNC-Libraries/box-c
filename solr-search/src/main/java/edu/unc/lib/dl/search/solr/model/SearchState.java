@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Object representing the state of a search query, containing all of the search related parameters for specifying
  * terms, facets, page/facet sizes, sorts, and filters.
- * 
+ *
  * @author bbpennel
  */
 public class SearchState implements Serializable, Cloneable {
@@ -40,6 +40,7 @@ public class SearchState implements Serializable, Cloneable {
 
 	private Map<String, String> searchFields;
 	private Map<String, RangePair> rangeFields;
+	private Map<String, String> rawFields;
 	private Map<String, Object> facets;
 	private Map<String, Integer> facetLimits;
 	private Map<String, String> facetSorts;
@@ -60,6 +61,7 @@ public class SearchState implements Serializable, Cloneable {
 		LOG.debug("Instantiating new SearchState");
 		searchFields = new HashMap<String, String>();
 		rangeFields = new HashMap<String, RangePair>();
+		rawFields = new HashMap<String, String>();
 		facets = new HashMap<String, Object>();
 		facetLimits = new HashMap<String, Integer>();
 		facetSorts = new HashMap<String, String>();
@@ -74,6 +76,9 @@ public class SearchState implements Serializable, Cloneable {
 		if (searchState.getSearchFields() != null) {
 			this.searchFields = new HashMap<String, String>(searchState.getSearchFields());
 		}
+		if (searchState.getRawFields() != null) {
+			this.rawFields = new HashMap<String, String>(searchState.getRawFields());
+		}
 		if (searchState.getRangeFields() != null) {
 			rangeFields = new HashMap<String, RangePair>();
 			for (Entry<String, RangePair> item : searchState.getRangeFields().entrySet()) {
@@ -86,7 +91,7 @@ public class SearchState implements Serializable, Cloneable {
 				if (item.getValue() instanceof edu.unc.lib.dl.search.solr.model.GenericFacet) {
 					facets.put(item.getKey(), ((GenericFacet)item.getValue()).clone());
 				} else {
-					facets.put(item.getKey(), (String) item.getValue());
+					facets.put(item.getKey(), item.getValue());
 				}
 			}
 		}
@@ -123,6 +128,14 @@ public class SearchState implements Serializable, Cloneable {
 
 	public void setSearchFields(Map<String, String> searchFields) {
 		this.searchFields = searchFields;
+	}
+
+	public Map<String, String> getRawFields() {
+		return rawFields;
+	}
+
+	public void setRawFields(Map<String, String> rawFields) {
+		this.rawFields = rawFields;
 	}
 
 	public Map<String, Object> getFacets() {
@@ -177,7 +190,7 @@ public class SearchState implements Serializable, Cloneable {
 	/**
 	 * Retrieves all the search term fragments contained in the selected field. Fragments are either single words
 	 * separated by non-alphanumeric characters, or phrases encapsulated by quotes.
-	 * 
+	 *
 	 * @param fieldType
 	 *           field type of the search term string to retrieve fragments of.
 	 * @return An arraylist of strings containing all of the word fragments in the selected search term field.
@@ -224,7 +237,7 @@ public class SearchState implements Serializable, Cloneable {
 				this.rightHand = pairParts[1];
 			else this.rightHand = null;
 		}
-		
+
 		public RangePair(String leftHand, String rightHand) {
 			this.leftHand = leftHand;
 			this.rightHand = rightHand;
@@ -251,6 +264,7 @@ public class SearchState implements Serializable, Cloneable {
 			this.rightHand = rightHand;
 		}
 
+		@Override
 		public String toString() {
 			if (leftHand == null) {
 				if (rightHand == null)
@@ -349,7 +363,7 @@ public class SearchState implements Serializable, Cloneable {
 
 	/**
 	 * Returns if any search fields that would indicate search-like behavior have been populated
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isPopulatedSearch() {
