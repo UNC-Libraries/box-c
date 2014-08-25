@@ -79,7 +79,12 @@ public class ObjectAccessControlsBean {
 			LOG.debug("roleGroup: " + roleGroup);
 			String[] roleGroupArray = roleGroup.split("\\|");
 			if (roleGroupArray.length == 2) {
-				UserRole userRole = UserRole.getUserRole(roleGroupArray[0]);
+				String role = roleGroupArray[0];
+				if (role.indexOf('#') == -1) {
+					role = JDOMNamespaceUtil.CDR_ROLE_NS.getURI() + role;
+				}
+
+				UserRole userRole = UserRole.getUserRole(role);
 				if (userRole == null) {
 					continue;
 				}
@@ -492,6 +497,23 @@ public class ObjectAccessControlsBean {
 		List<String> result = new ArrayList<String>();
 		for (Map.Entry<UserRole, Set<String>> r2g : this.activeRoleGroups.entrySet()) {
 			String roleName = r2g.getKey().getURI().toString();
+			for (String group : r2g.getValue()) {
+				result.add(roleName + "|" + group);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Returns a list where each entry contains a single role name + group pairing assigned to this object. Values are
+	 * pipe delimited
+	 * 
+	 * @return
+	 */
+	public List<String> roleGroupsToUnprefixedList() {
+		List<String> result = new ArrayList<String>();
+		for (Map.Entry<UserRole, Set<String>> r2g : this.activeRoleGroups.entrySet()) {
+			String roleName = r2g.getKey().getPredicate().toString();
 			for (String group : r2g.getValue()) {
 				result.add(roleName + "|" + group);
 			}

@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.search.solr.validator;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -81,12 +80,6 @@ public class SearchStateValidator {
 					facetIt.remove();
 				}
 			}
-		}
-		
-		//Validate access control restriction filter
-		if (searchState.getAccessTypeFilter() != null 
-				&& !searchSettings.accessFilterableFields.contains(searchState.getAccessTypeFilter())){
-			searchState.setAccessTypeFilter(null);
 		}
 		
 		//Validate start row number
