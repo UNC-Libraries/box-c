@@ -889,8 +889,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 			try {
 				// If anything that constituted a search is in the request then trim out possible empty folders
-				if (browseState.getFacets().size() > 1 || browseState.getRangeFields().size() > 0
-						|| browseState.getSearchFields().size() > 0 || browseState.getAccessTypeFilter() != null) {
+				if (browseState.isPopulatedSearch()) {
 					// Get the list of any direct matches for the current query
 					browseResults.setMatchingContainerPids(this.getDirectContainerMatches(browseState, accessGroups));
 					// Remove all containers that are not direct matches for the user's query and have 0 children

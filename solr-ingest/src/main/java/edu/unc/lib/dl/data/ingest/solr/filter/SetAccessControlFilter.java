@@ -92,14 +92,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 			dip.getDocument().setAdminGroup(new ArrayList<String>(adminGroups));
 
 		// Add in flattened role group mappings
-		List<String> flatRoles = new ArrayList<String>();
-		for (Map.Entry<UserRole, Set<String>> r2g : aclBean.getActiveRoleGroups().entrySet()) {
-			String roleName = r2g.getKey().getPredicate();
-			for (String group : r2g.getValue()) {
-				flatRoles.add(roleName + "|" + group);
-			}
-		}
-		dip.getDocument().setRoleGroup(flatRoles);
+		dip.getDocument().setRoleGroup(aclBean.roleGroupsToUnprefixedList());
 		if (log.isDebugEnabled())
 			log.debug("Role groups: {}", dip.getDocument().getRoleGroup());
 		dip.setAclBean(aclBean);

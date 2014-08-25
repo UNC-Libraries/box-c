@@ -504,6 +504,23 @@ public class ObjectAccessControlsBean {
 		return result;
 	}
 
+	/**
+	 * Returns a list where each entry contains a single role name + group pairing assigned to this object. Values are
+	 * pipe delimited
+	 * 
+	 * @return
+	 */
+	public List<String> roleGroupsToUnprefixedList() {
+		List<String> result = new ArrayList<String>();
+		for (Map.Entry<UserRole, Set<String>> r2g : this.activeRoleGroups.entrySet()) {
+			String roleName = r2g.getKey().getPredicate().toString();
+			for (String group : r2g.getValue()) {
+				result.add(roleName + "|" + group);
+			}
+		}
+		return result;
+	}
+
 	public boolean isPublished() {
 		return this.ancestorsPublished && (isPublished == null || isPublished);
 	}

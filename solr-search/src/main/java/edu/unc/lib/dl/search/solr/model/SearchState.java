@@ -28,6 +28,8 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.util.Permission;
+
 /**
  * Object representing the state of a search query, containing all of the search related parameters for specifying
  * terms, facets, page/facet sizes, sorts, and filters.
@@ -40,13 +42,12 @@ public class SearchState implements Serializable, Cloneable {
 
 	private Map<String, String> searchFields;
 	private Map<String, RangePair> rangeFields;
-	private Map<String, String> rawFields;
 	private Map<String, Object> facets;
 	private Map<String, Integer> facetLimits;
 	private Map<String, String> facetSorts;
 	private Collection<String> facetsToRetrieve;
+	private Collection<Permission> permissionLimits;
 	private Integer baseFacetLimit;
-	private String accessTypeFilter;
 	private Integer startRow;
 	private Integer rowsPerPage;
 	private String sortType;
@@ -61,7 +62,7 @@ public class SearchState implements Serializable, Cloneable {
 		LOG.debug("Instantiating new SearchState");
 		searchFields = new HashMap<String, String>();
 		rangeFields = new HashMap<String, RangePair>();
-		rawFields = new HashMap<String, String>();
+		permissionLimits = null;
 		facets = new HashMap<String, Object>();
 		facetLimits = new HashMap<String, Integer>();
 		facetSorts = new HashMap<String, String>();
@@ -75,9 +76,6 @@ public class SearchState implements Serializable, Cloneable {
 	public SearchState(SearchState searchState) {
 		if (searchState.getSearchFields() != null) {
 			this.searchFields = new HashMap<String, String>(searchState.getSearchFields());
-		}
-		if (searchState.getRawFields() != null) {
-			this.rawFields = new HashMap<String, String>(searchState.getRawFields());
 		}
 		if (searchState.getRangeFields() != null) {
 			rangeFields = new HashMap<String, RangePair>();
@@ -110,9 +108,11 @@ public class SearchState implements Serializable, Cloneable {
 		if (searchState.getFacetsToRetrieve() != null) {
 			this.facetsToRetrieve = new ArrayList<String>(searchState.getFacetsToRetrieve());
 		}
+		if (searchState.getPermissionLimits() != null) {
+			permissionLimits = new ArrayList<Permission>(searchState.getPermissionLimits());
+		}
 
 		baseFacetLimit = searchState.getBaseFacetLimit();
-		accessTypeFilter = searchState.getAccessTypeFilter();
 		startRow = searchState.getStartRow();
 		rowsPerPage = searchState.getRowsPerPage();
 		sortType = searchState.getSortType();
@@ -128,14 +128,6 @@ public class SearchState implements Serializable, Cloneable {
 
 	public void setSearchFields(Map<String, String> searchFields) {
 		this.searchFields = searchFields;
-	}
-
-	public Map<String, String> getRawFields() {
-		return rawFields;
-	}
-
-	public void setRawFields(Map<String, String> rawFields) {
-		this.rawFields = rawFields;
 	}
 
 	public Map<String, Object> getFacets() {
@@ -277,12 +269,12 @@ public class SearchState implements Serializable, Cloneable {
 		}
 	}
 
-	public String getAccessTypeFilter() {
-		return accessTypeFilter;
+	public Collection<Permission> getPermissionLimits() {
+		return permissionLimits;
 	}
 
-	public void setAccessTypeFilter(String accessTypeFilter) {
-		this.accessTypeFilter = accessTypeFilter;
+	public void setPermissionLimits(Collection<Permission> permissionLimits) {
+		this.permissionLimits = permissionLimits;
 	}
 
 	public List<String> getResourceTypes() {
@@ -368,11 +360,12 @@ public class SearchState implements Serializable, Cloneable {
 	 */
 	public boolean isPopulatedSearch() {
 		return this.getFacets().size() > 0 || this.getRangeFields().size() > 0 || this.getSearchFields().size() > 0
-				|| this.getAccessTypeFilter() != null;
+				|| (permissionLimits != null && permissionLimits.size() > 0);
 	}
 
 	@Override
 	public Object clone() {
 		return new SearchState(this);
 	}
+
 }

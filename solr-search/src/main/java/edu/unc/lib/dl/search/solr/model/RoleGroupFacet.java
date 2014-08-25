@@ -57,7 +57,7 @@ public class RoleGroupFacet extends GenericFacet {
 				throw new InvalidFacetException("Facet value " + value + " was invalid, it must contain a role URI and a group.");
 
 			this.roleName = components[0];
-			this.roleUri = JDOMNamespaceUtil.CDR_ROLE_NS.getURI() + value;
+			this.roleUri = JDOMNamespaceUtil.CDR_ROLE_NS.getURI() + this.roleName;
 
 			this.groupName = components[1];
 			this.displayValue = this.groupName + " as " + this.roleName;
