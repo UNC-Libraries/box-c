@@ -38,7 +38,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  * collection, rollup identifier, and content models. It uses either the objects FOXML and its previously cached parent
  * history (in the case of recursive reindexing) or queries the path information.
  *
- * Sets: ancestorPath, ancestorNames, parentCollection, rollup, contentModel, label, resourceType
+ * Sets: ancestorPath, ancestorNames, parentCollection, rollup, isPart, contentModel, label, resourceType
  *
  * @author bbpennel
  *
@@ -143,9 +143,11 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		// If this item is in an aggregate object then it should rollup as part of its parent
 		if (firstAggregate != null) {
 			idb.setRollup(firstAggregate.pid.getPid());
+			idb.setIsPart(Boolean.TRUE);
 			log.debug("From query, parent is in an aggregate: " + idb.getRollup());
 		} else {
 			idb.setRollup(idb.getId());
+			idb.setIsPart(Boolean.FALSE);
 			log.debug("From query, normal rollup: " + idb.getRollup());
 		}
 
@@ -236,18 +238,22 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		if (!parentDIP.getPid().getPid().equals(parentDIP.getDocument().getRollup())) {
 			if (parentDIP.getDocument().getRollup() == null) {
 				idb.setRollup(idb.getId());
+				idb.setIsPart(Boolean.FALSE);
 				log.debug("From parent, parent rollup is null: " + idb.getRollup());
 			} else {
 				idb.setRollup(parentDIP.getDocument().getRollup());
+				idb.setIsPart(Boolean.TRUE);
 				log.debug("From parent, parent is in an aggregate: " + idb.getRollup());
 			}
 		} else {
 			// If the immediate parent was an aggregate, use its ID as this items rollup
 			if (ResourceType.Aggregate.equals(parentDIP.getResourceType())) {
 				idb.setRollup(parentDIP.getPid().getPid());
+				idb.setIsPart(Boolean.TRUE);
 				log.debug("From parent, parent is an aggregate: " + idb.getRollup());
 			} else {
 				idb.setRollup(idb.getId());
+				idb.setIsPart(Boolean.FALSE);
 				log.debug("From parent, normal rollup: " + idb.getRollup());
 			}
 		}

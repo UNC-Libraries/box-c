@@ -34,6 +34,7 @@ public class IndexDocumentBean {
 	
 	protected List<String> scope;
 	protected String rollup;
+	protected Boolean isPart;
 	protected Long _version_;
 	
 	protected List<String> datastream;
@@ -142,6 +143,15 @@ public class IndexDocumentBean {
 	@Field
 	public void setRollup(String rollup) {
 		this.rollup = rollup;
+	}
+	
+	public boolean getIsPart() {
+		return isPart;
+	}
+
+	@Field
+	public void setIsPart(Boolean b) {
+		this.isPart = b;
 	}
 
 	public Long get_version_() {
