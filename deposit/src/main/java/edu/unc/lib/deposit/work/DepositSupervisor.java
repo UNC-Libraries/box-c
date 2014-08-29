@@ -37,6 +37,7 @@ import edu.unc.lib.deposit.normalize.VocabularyEnforcementJob;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
 import edu.unc.lib.deposit.validate.ValidateMODS;
 import edu.unc.lib.deposit.validate.VirusScanJob;
+import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
@@ -88,8 +89,10 @@ public class DepositSupervisor implements WorkerListener {
 
 	@Autowired
 	private File depositsDirectory;
-	
+
 	private int cleanupDelaySeconds;
+
+	private int unavailableDelaySeconds;
 
 	public int getCleanupDelaySeconds() {
 		return cleanupDelaySeconds;
@@ -99,12 +102,20 @@ public class DepositSupervisor implements WorkerListener {
 		this.cleanupDelaySeconds = cleanupDelaySeconds;
 	}
 
+	public int getUnavailableDelaySeconds() {
+		return unavailableDelaySeconds;
+	}
+
+	public void setUnavailableDelaySeconds(int unavailableDelaySeconds) {
+		this.unavailableDelaySeconds = unavailableDelaySeconds;
+	}
+
 	public DepositSupervisor() {
 		id = UUID.randomUUID().toString();
 	}
 
 	private static enum Queue {
-		PREPARE;
+		PREPARE, DELAYED_PREPARE;
 	}
 
 	@PostConstruct
@@ -306,20 +317,30 @@ public class DepositSupervisor implements WorkerListener {
 				break;
 			case WORKER_ERROR:
 			case JOB_FAILURE:
+				String jobUUID = (String) job.getArgs()[0];
+				if (j != null) {
+					jobUUID = j.getJobUUID();
+				}
+
 				if (ex != null && ex instanceof JobInterruptedException) {
 					LOG.debug("Job {} was interrupted, ending without failure", depositUUID);
+					jobStatusFactory.interrupted(jobUUID);
 					return;
 				}
 
-				if (j != null) {
-					LOG.warn("Job failed with this exception", ex);
-					if (ex != null) {
-						jobStatusFactory.failed(j.getJobUUID(), ex.getLocalizedMessage());
+				if (ex != null) {
+					jobStatusFactory.failed(jobUUID, ex.getLocalizedMessage());
+
+					if (ex instanceof FedoraTimeoutException) {
+						LOG.warn("Connection to Fedora has timed out during deposit {}, requeue the task on a delay",
+								depositUUID);
+						resumeDeposit(depositUUID, status, getUnavailableDelaySeconds() * 1000);
+						return;
 					} else {
-						jobStatusFactory.failed(j.getJobUUID());
+						LOG.warn("Job failed with this exception", ex);
 					}
 				} else {
-					LOG.error("Job failure", ex);
+					jobStatusFactory.failed(jobUUID);
 				}
 
 				depositStatusFactory.fail(depositUUID, ex);
@@ -345,7 +366,7 @@ public class DepositSupervisor implements WorkerListener {
 				break;
 			case JOB_SUCCESS:
 				if(CleanupDepositJob.class.getName().equals(job.getClassName())) break;
-				
+
 				try {
 					queueNextJob(job, depositUUID, status, successfulJobs);
 				} catch (DepositFailedException e) {
@@ -449,7 +470,7 @@ public class DepositSupervisor implements WorkerListener {
 				&& !successfulJobs.contains(SendDepositorEmailJob.class.getName())) {
 			return makeJob(SendDepositorEmailJob.class, depositUUID);
 		}
-		
+
 		return null;
 	}
 
@@ -459,22 +480,32 @@ public class DepositSupervisor implements WorkerListener {
 
 	private void queueNextJob(Job job, String depositUUID, Map<String, String> status, List<String> successfulJobs)
 			throws DepositFailedException {
+		queueNextJob(job, depositUUID, status, successfulJobs, 0);
+	}
+
+	private void queueNextJob(Job job, String depositUUID, Map<String, String> status, List<String> successfulJobs,
+			long delay)
+			throws DepositFailedException {
 		Job nextJob = getNextJob(job, depositUUID, status, successfulJobs);
 		if (nextJob != null) {
-			LOG.debug("Queuing next job {} for deposit {}", nextJob.getClassName(), depositUUID);
+			LOG.info("Queuing next job {} for deposit {}", nextJob.getClassName(), depositUUID);
 			Client c = makeJesqueClient();
-			c.enqueue(Queue.PREPARE.name(), nextJob);
+			if (delay > 0)
+				c.delayedEnqueue(Queue.DELAYED_PREPARE.name(), nextJob, System.currentTimeMillis() + delay);
+			else {
+				c.enqueue(Queue.PREPARE.name(), nextJob);
+			}
 			c.end();
 		} else {
 			depositStatusFactory.setState(depositUUID, DepositState.finished);
-			
+
 			Client c = makeJesqueClient();
 			// schedule cleanup job after the configured delay
 			long schedule = System.currentTimeMillis() + 1000 * this.getCleanupDelaySeconds();
 			Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
 			LOG.info("Queuing {} for deposit {}",
 					cleanJob.getClassName(), depositUUID);
-			c.delayedEnqueue(Queue.PREPARE.name(), cleanJob, schedule);
+			c.delayedEnqueue(Queue.DELAYED_PREPARE.name(), cleanJob, schedule);
 		}
 	}
 
@@ -492,20 +523,23 @@ public class DepositSupervisor implements WorkerListener {
 	}
 
 	private void resumeDeposit(String uuid, Map<String, String> status) {
+		resumeDeposit(uuid, status, 0);
+	}
+
+	private void resumeDeposit(String uuid, Map<String, String> status, long delay) {
 		try {
 			depositStatusFactory.clearActionRequest(uuid);
 
 			// Clear out the previous failed job if there was one
-			jobStatusFactory.clearFailed(uuid);
+			jobStatusFactory.clearStale(uuid);
 			depositStatusFactory.deleteField(uuid, DepositField.errorMessage);
 
 			List<String> successfulJobs = jobStatusFactory.getSuccessfulJobNames(uuid);
-			queueNextJob(null, uuid, status, successfulJobs);
+			queueNextJob(null, uuid, status, successfulJobs, delay);
 
 			depositStatusFactory.setState(uuid, DepositState.queued);
 		} catch (DepositFailedException e) {
 			depositStatusFactory.fail(uuid, e);
 		}
 	}
-
 }

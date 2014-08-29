@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.fedora;
 
+import static edu.unc.lib.dl.fedora.AuthorizationException.AuthorizationErrorType.INDETERMINATE;
+import static edu.unc.lib.dl.fedora.AuthorizationException.AuthorizationErrorType.NOT_APPLICABLE;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,16 +57,16 @@ import edu.unc.lib.dl.fedora.types.ObjectProfile;
  * For Fedora 3.0 API documentation, please consult the <a
  * href="https://fedora-commons.org/confluence/display/FCR30/API-A">wiki</a>.
  * </p>
- * 
+ *
  * @author count0
- * 
+ *
  */
 public class AccessClient extends WebServiceTemplate {
 	/**
 	 * These are the actions support by the Fedora API-A service.
-	 * 
+	 *
 	 * @author count0
-	 * 
+	 *
 	 */
 	private enum Action {
 		describeRepository("describeRepository"), findObjects("findObjects"), getDatastreamDissemination(
@@ -76,6 +79,7 @@ public class AccessClient extends WebServiceTemplate {
 
 		WebServiceMessageCallback callback() {
 			return new WebServiceMessageCallback() {
+				@Override
 				public void doWithMessage(WebServiceMessage message) {
 					((SoapMessage) message).setSoapAction(uri);
 				}
@@ -90,7 +94,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Encapsulates all marshalled web service calls.
-	 * 
+	 *
 	 * @param request
 	 *           a marshalled request object
 	 * @param action
@@ -98,6 +102,10 @@ public class AccessClient extends WebServiceTemplate {
 	 * @return an unmarshalled response object
 	 */
 	private Object callService(Object request, Action action) throws FedoraException {
+		return callService(request, action, true);
+	}
+
+	private Object callService(Object request, Action action, boolean retry) throws FedoraException {
 		Object response = null;
 		try {
 			response = this.marshalSendAndReceive(request, action.callback());
@@ -110,8 +118,22 @@ public class AccessClient extends WebServiceTemplate {
 				throw new ServiceException(e);
 			}
 		} catch (SoapFaultClientException e) {
-			FedoraFaultMessageResolver.resolveFault(e);
-			log.debug("GOT SoapFaultClientException", e);
+			try {
+				FedoraFaultMessageResolver.resolveFault(e);
+			} catch (AuthorizationException ae) {
+				if (retry && (NOT_APPLICABLE.equals(ae.getType()) || INDETERMINATE.equals(ae.getType()))) {
+					log.warn("Authorization failed, attempting to reestablish connection to Fedora.");
+					try {
+						this.init();
+					} catch (Exception e1) {
+						log.error("Failed to reestablish connection to Fedora", e);
+						throw ae;
+					}
+					return callService(request, action, false);
+				}
+
+				throw ae;
+			}
 		} catch (WebServiceFaultException e) {
 			throw new ServiceException(e);
 		}
@@ -166,7 +188,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Get the Fedora base URL.
-	 * 
+	 *
 	 * @return Fedora base URL
 	 */
 	public String getFedoraContextUrl() {
@@ -175,7 +197,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Get the Fedora password.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getPassword() {
@@ -184,7 +206,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Get the Fedora username
-	 * 
+	 *
 	 * @return
 	 */
 	public String getUsername() {
@@ -193,7 +215,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Initializes this client bean, calling the initializers of dependencies.
-	 * 
+	 *
 	 * @throws Exception
 	 *            when initialization fails
 	 */
@@ -221,7 +243,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Set the Fedora base URL.
-	 * 
+	 *
 	 * @param fedoraUrl
 	 */
 	public void setFedoraContextUrl(String fedoraContextUrl) {
@@ -230,7 +252,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Set the Fedora password.
-	 * 
+	 *
 	 * @param password
 	 */
 	public void setPassword(String password) {
@@ -239,7 +261,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	/**
 	 * Set the Fedora username
-	 * 
+	 *
 	 * @param username
 	 */
 	public void setUsername(String username) {

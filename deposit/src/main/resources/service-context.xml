@@ -74,6 +74,7 @@
 				<constructor-arg name="queues">
 					<util:list>
 						<value>PREPARE</value>
+						<value>DELAYED_PREPARE</value>
 					</util:list>
 				</constructor-arg>
 				<constructor-arg ref="jobFactory" />
@@ -85,6 +86,7 @@
 	<bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor">
 		<property name="jesqueConfig" ref="jesqueConfig"/>
 		<property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>
+		<property name="unavailableDelaySeconds" value="${unavailable.delay.seconds:60}"/>
 	</bean>
 
 	<bean id="jobFactory" class="edu.unc.lib.deposit.work.SpringJobFactory" />
@@ -102,6 +104,11 @@
 			value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fedora}" />
 		<property name="username" value="${fedora.username}" />
 		<property name="password" value="${fedora.password}" />
+		<property name="interceptors">
+			<list>
+				<bean class="edu.unc.lib.dl.acl.filter.GroupsToHttpHeaderInterceptor" />
+			</list>
+		</property>
 	</bean>
 
 	<bean id="forwardedManagementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
