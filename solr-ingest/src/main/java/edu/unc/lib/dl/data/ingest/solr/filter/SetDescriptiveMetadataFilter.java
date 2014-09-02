@@ -169,6 +169,10 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 								isCreator = true;
 								break;
 							}
+							if ("author".equalsIgnoreCase(((Element)roleTerm).getValue())){
+								isCreator = true;
+								break;
+							}
 							if (isCreator)
 								break;
 						}
