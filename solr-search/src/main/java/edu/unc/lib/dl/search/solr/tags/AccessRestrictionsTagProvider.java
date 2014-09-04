@@ -15,54 +15,83 @@
  */
 package edu.unc.lib.dl.search.solr.tags;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Tag;
 
 public class AccessRestrictionsTagProvider implements TagProvider {
+	private static final Logger LOG = LoggerFactory.getLogger(AccessRestrictionsTagProvider.class);
+
 	private static final String[] PUBLIC = new String[] { "public" };
 
 	@Override
 	public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
+
+		ObjectAccessControlsBean acls = record.getAccessControlBean();
+		if (acls == null)
+			return;
+
 		// public
-		Set<UserRole> publicRoles = record.getAccessControlBean().getRoles(PUBLIC);
+		Set<UserRole> publicRoles = acls.getRoles(PUBLIC);
 		if (publicRoles.contains(UserRole.patron)) {
-			record.addTag(new Tag("public", "The public has access to this object."));
+			record.addTag(new Tag("public", "patron"));
 		} else if (publicRoles.contains(UserRole.metadataPatron)) {
-			record.addTag(new Tag("public", "The public has access to this object's metadata."));
+			record.addTag(new Tag("public", "metadata"));
 		} else if (publicRoles.contains(UserRole.accessCopiesPatron)) {
-			record.addTag(new Tag("public", "This public has access to this object's metadata and access copies."));
+			record.addTag(new Tag("public", "accessCopies"));
 		}
+
+		List<String> status = record.getStatus();
 
 		// unpublished
-		if (record.getStatus().contains("Unpublished")) {
-			record.addTag(new Tag("unpublished", "This object is not published."));
-		}
-		
-		if (record.getStatus().contains("Deleted")) {
-			record.addTag(new Tag("deleted", "This object is in the trash and marked for deletion"));
-		}
-		
-		if (record.getStatus().contains("Embargoed")) {
-			record.addTag(new Tag("embargoed", "This object is under an active embargo"));
+		if (status.contains("Unpublished")) {
+			record.addTag(new Tag("unpublished"));
 		}
 
-		if (accessGroups != null) {
-			Set<UserRole> myRoles = record.getAccessControlBean().getRoles(accessGroups);
+		if (status.contains("Deleted")) {
+			record.addTag(new Tag("deleted"));
+		}
 
-			// view only, meaning observer but no editing permissions
-			if (myRoles.contains(UserRole.observer)
-					&& !record.getAccessControlBean().hasPermission(accessGroups, Permission.editDescription)) {
-				record.addTag(new Tag("view only", "You are an observer of this object."));
+		if (status.contains("Embargoed")) {
+			Tag tag = new Tag("embargoed");
+			record.addTag(tag);
+
+			Date embargo = acls.getLastActiveEmbargoUntilDate();
+			if (embargo != null) {
+				tag.addDetail(Long.toString(embargo.getTime()));
 			}
 		}
 
-		if (record.getStatus().contains("Roles Assigned")) {
-			record.addTag(new Tag("roles", "This object has roles directly assigned."));
+		if (accessGroups != null) {
+			Set<UserRole> myRoles = acls.getRoles(accessGroups);
+
+			// view only, meaning observer but no editing permissions
+			if (myRoles.contains(UserRole.observer)
+					&& !acls.hasPermission(accessGroups, Permission.editDescription)) {
+				record.addTag(new Tag("view only"));
+			}
+		}
+
+		if (status.contains("Roles Assigned")) {
+			Tag tag = new Tag("roles");
+
+			for (UserRole role : UserRole.values()) {
+				List<String> groups = record.getRelation(role.getPredicate());
+				if (groups != null) {
+					for (String group : groups) {
+						tag.addDetail(role.getPredicate() + " " + group);
+					}
+				}
+			}
+
+			record.addTag(tag);
 		}
 	}
 }

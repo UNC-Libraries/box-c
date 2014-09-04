@@ -15,11 +15,14 @@
  */
 package edu.unc.lib.dl.search.solr.tags;
 
+import java.util.List;
+
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.Tag;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
+import edu.unc.lib.dl.util.ContentModelHelper;
 
 public class DescriptiveTagProvider implements TagProvider {
 
@@ -27,12 +30,19 @@ public class DescriptiveTagProvider implements TagProvider {
 	public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
 		Datastream descr = record.getDatastreamObject("MD_DESCRIPTIVE");
 		if(descr != null) {
-			record.addTag(new Tag("described", "This object has descriptive metadata."));
+			record.addTag(new Tag("described"));
 		}
 
+		// Invalid vocabulary terms
 		if (record.getContentStatus().contains(FacetConstants.INVALID_VOCAB_TERM)) {
-			record.addTag(new Tag("invalid term",
-					"There is one or more invalid vocabulary term in this object's description."));
+			Tag tag = new Tag("invalid affiliation");
+
+			List<String> terms = record.getRelation(ContentModelHelper.CDRProperty.invalidAffiliationTerm.getPredicate());
+
+			for (String term : terms) {
+				tag.addDetail(term);
+			}
+			record.addTag(tag);
 		}
 	}
 

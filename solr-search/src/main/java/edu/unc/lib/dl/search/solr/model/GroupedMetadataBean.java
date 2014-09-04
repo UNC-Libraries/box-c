@@ -177,6 +177,11 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	}
 
 	@Override
+	public List<String> getRelation(String relationName) {
+		return this.representative.getRelation(relationName);
+	}
+
+	@Override
 	public Datastream getDefaultWebData() {
 		return this.representative.getDefaultWebData();
 	}
