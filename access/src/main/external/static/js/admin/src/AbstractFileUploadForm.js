@@ -2,7 +2,7 @@
  * Implements functionality and UI for the generic Ingest Package form
  */
 define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 
-		'ModalLoadingOverlay', 'ConfirmationDialog'], 
+		'ModalLoadingOverlay', 'ConfirmationDialog', 'AlertHandler'], 
 		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay, ConfirmationDialog) {
 	
 	var defaultOptions = {

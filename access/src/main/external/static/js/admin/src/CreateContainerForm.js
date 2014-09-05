@@ -1,5 +1,5 @@
 define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/createContainerForm', 
-		'ModalLoadingOverlay', 'AbstractFileUploadForm'], 
+		'ModalLoadingOverlay', 'AbstractFileUploadForm', 'AlertHandler'], 
 		function($, ui, _, RemoteStateChangeMonitor, createContainerForm, ModalLoadingOverlay, AbstractFileUploadForm) {
 	
 	var defaultOptions = {

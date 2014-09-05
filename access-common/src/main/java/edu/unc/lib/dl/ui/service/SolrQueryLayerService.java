@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.service;
 
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidAffiliationTerm;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1200,6 +1202,25 @@ public class SolrQueryLayerService extends SolrSearchService {
 		try {
 			response = this.executeQuery(query);
 			return response.getFacetField("department").getValueCount();
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+		}
+
+		return -1;
+
+	}
+
+	public long getInvalidVocabularyCount(SearchRequest searchRequest) {
+
+		SolrQuery query = generateSearch(searchRequest);
+
+		query.setQuery(query.getQuery() + " AND " + solrSettings.getFieldName(SearchFieldKeys.RELATIONS.name()) + ":"
+				+ invalidAffiliationTerm.getPredicate() + "|*");
+		query.setRows(0);
+
+		try {
+			QueryResponse response = this.executeQuery(query);
+			return response.getResults().getNumFound();
 		} catch (SolrServerException e) {
 			LOG.error("Error retrieving Solr object request: " + e);
 		}
