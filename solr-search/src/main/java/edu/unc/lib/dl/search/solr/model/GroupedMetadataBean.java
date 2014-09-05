@@ -24,10 +24,10 @@ import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.PID;
 
 public class GroupedMetadataBean implements BriefObjectMetadata {
-	private List<BriefObjectMetadataBean> items;
-	private BriefObjectMetadataBean representative; 
-	private Long itemCount;
-	private String groupId;
+	private final List<BriefObjectMetadataBean> items;
+	private BriefObjectMetadataBean representative;
+	private final Long itemCount;
+	private final String groupId;
 
 	public GroupedMetadataBean(String groupId, List<BriefObjectMetadataBean> items, Long itemCount) {
 		this.items = items;
@@ -41,7 +41,7 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 				}
 			}
 		}
-		
+
 		if (this.representative == null && items.size() > 0)
 			this.representative = items.get(0);
 	}
@@ -70,7 +70,7 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	public CutoffFacet getAncestorPathFacet() {
 		return this.representative.getAncestorPathFacet();
 	}
-	
+
 	@Override
 	public CutoffFacet getPath() {
 		return this.representative.getPath();
@@ -85,7 +85,7 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	public List<Datastream> getDatastreamObjects() {
 		return this.representative.getDatastreamObjects();
 	}
-	
+
 	@Override
 	public Datastream getDatastreamObject(String datastreamName) {
 		return this.representative.getDatastreamObject(datastreamName);
@@ -95,7 +95,7 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	public Map<String, Collection<String>> getGroupRoleMap() {
 		return this.representative.getGroupRoleMap();
 	}
-	
+
 	@Override
 	public ObjectAccessControlsBean getAccessControlBean() {
 		return this.representative.getAccessControlBean();
@@ -106,10 +106,11 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 		return this.representative.getParentCollectionObject();
 	}
 
+	@Override
 	public void setCountMap(Map<String,Long> countMap) {
 		this.representative.setCountMap(countMap);
 	}
-	
+
 	@Override
 	public Map<String,Long> getCountMap() {
 		return this.representative.getCountMap();
@@ -119,7 +120,7 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	public String getId() {
 		return this.representative.getId();
 	}
-	
+
 	@Override
 	public PID getPid() {
 		return this.representative.getPid();
@@ -174,7 +175,7 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	public List<String> getRelations() {
 		return this.representative.getRelations();
 	}
-	
+
 	@Override
 	public Datastream getDefaultWebData() {
 		return this.representative.getDefaultWebData();
@@ -319,7 +320,7 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	public String getFullText() {
 		return this.representative.getFullText();
 	}
-	
+
 	@Override
 	public List<Tag> getTags() {
 		return this.representative.getTags();
@@ -329,9 +330,14 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	public void addTag(Tag t) {
 		this.representative.addTag(t);
 	}
-	
+
 	@Override
 	public Map<String, Object> getDynamicFields() {
 		return this.representative.getDynamicFields();
+	}
+
+	@Override
+	public Date getActiveEmbargo() {
+		return representative.getActiveEmbargo();
 	}
 }

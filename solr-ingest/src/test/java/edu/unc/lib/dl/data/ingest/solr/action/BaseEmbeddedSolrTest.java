@@ -54,6 +54,7 @@ public class BaseEmbeddedSolrTest extends Assert {
 
 		driver = new SolrUpdateDriver();
 		driver.setSolrServer(server);
+		driver.setUpdateSolrServer(server);
 	}
 
 	protected SolrDocumentList getDocumentList(String query, String fieldList) throws SolrServerException {

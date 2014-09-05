@@ -22,6 +22,13 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <c:set var="defaultWebData" value="${briefObject.defaultWebData}"/>
+<c:set var="defaultWebObjectID">
+	<c:forEach items="${briefObject.datastreamObjects}" var="datastream">
+		<c:if test="${datastream.name == 'DATA_FILE'}">
+			<c:out value="${datastream.owner.pid}"/>
+		</c:if>
+	</c:forEach>
+</c:set>
 
 <div class="onecol full_record_top">
 	<div class="contentarea">
@@ -37,12 +44,14 @@
 				<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection}">
 					/static/images/placeholder/large/collection.png
 				</c:when>
-				<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile 
-						|| (briefObject.resourceType == searchSettings.resourceTypeAggregate && defaultWebData != null)}">
+				<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile}">
 					/static/images/placeholder/large/${defaultWebData.extension}.png
 				</c:when>
+				<c:when test="${briefObject.resourceType == searchSettings.resourceTypeAggregate && briefObject.contentTypeFacet[0].displayValue != null}">
+					/static/images/placeholder/large/${briefObject.contentTypeFacet[0].displayValue}.png
+				</c:when>
 				<c:otherwise>
-					/static/images/placeholder/large/blank.png
+					/static/images/placeholder/large/default.png
 				</c:otherwise>
 			</c:choose>
 		</c:set>
@@ -65,7 +74,8 @@
 			<ul class="pipe_list smaller">
 				<c:if test="${defaultWebData != null}">
 					<li><span class="bold">File Type:</span> <c:out value="${defaultWebData.extension}" /></li>
-					<li><c:if test="${defaultWebData.filesize != null && defaultWebData.filesize != -1}"><span class="bold">Filesize:</span> <c:out value="${defaultWebData.filesize}"/></c:if></li>
+					<li><c:if test="${briefObject.filesizeSort != -1}">  | <span class="bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if></li>
+					
 				</c:if>
 				<c:if test="${not empty briefObject.dateAdded}"><li><span class="bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></li></c:if>
 				<c:if test="${not empty briefObject.dateCreated}"><li><span class="bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></li></c:if>
@@ -81,7 +91,15 @@
 				</c:import>
 			</p>
 			
-			<c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
+			<jsp:useBean id="now" class="java.util.Date" />
+			<c:choose>
+				<c:when test="${not empty embargoDate}">
+					<div class="actionlink left">
+						<a href="/requestAccess/${briefObject.pid.pid}">Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/> </a>
+					</div>
+				</c:when>
+				<c:otherwise>
+					<c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
 				<c:param name="target" value="${currentAbsoluteUrl}" />
 			</c:url>
 			<c:if test="${empty pageContext.request.remoteUser}">
@@ -89,9 +107,11 @@
 					<a href="<c:out value='${loginUrl}' />">Log in</a>
 				</div>
 			</c:if>
-			<div class="actionlink left">
-				<a href="/requestAccess/${briefObject.pid.pid}">Request Access</a>
-			</div>
+					<div class="actionlink left">
+						<a href="/requestAccess/${briefObject.pid.pid}">Request Access</a>
+					</div>
+				</c:otherwise>
+			</c:choose>
 			
 			<c:if test="${briefObject['abstractText'] != null}">
 				<p class="clear">

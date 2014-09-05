@@ -378,6 +378,9 @@ public class FOXMLJDOMUtil {
 			String datastreamName = datastreamEl.getAttributeValue("ID");
 			if (datastreamName != null) {
 				ContentModelHelper.Datastream datastreamClass = ContentModelHelper.Datastream.getDatastream(datastreamName);
+				if (datastreamClass == null)
+					continue;
+				
 				Element dsVersion;
 				if (datastreamClass.isVersionable()) {
 					dsVersion = FOXMLJDOMUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",

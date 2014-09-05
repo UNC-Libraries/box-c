@@ -25,8 +25,10 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,6 +70,10 @@ import edu.unc.lib.dl.util.IngestProperties;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.staging.FileResolver;
+import edu.unc.lib.staging.SharedStagingArea;
+import edu.unc.lib.staging.Stages;
+import edu.unc.lib.staging.StagingException;
 
 /**
  * @author Gregory Jansen
@@ -80,7 +86,7 @@ public class BatchIngestTask implements Runnable {
 	 *
 	 */
 	public enum STATE {
-		INIT, CHECK, INGEST, INGEST_WAIT, INGEST_VERIFY_CHECKSUMS, CONTAINER_UPDATES, SEND_MESSAGES, CLEANUP, FINISHED
+		INIT, CHECK, CHECK_STAGING, INGEST, INGEST_WAIT, INGEST_VERIFY_CHECKSUMS, CONTAINER_UPDATES, SEND_MESSAGES, CLEANUP, FINISHED;
 	}
 
 	private static final Log log = LogFactory.getLog(BatchIngestTask.class);
@@ -258,6 +264,12 @@ public class BatchIngestTask implements Runnable {
 		this.state = STATE.FINISHED;
 		File failLog = new File(this.getBaseDir(), FAIL_LOG);
 		PrintWriter w = null;
+		BatchFailedException result = null;
+		if(e == null) {
+			result = new BatchFailedException(message);
+		} else {
+			result = new BatchFailedException(e.getMessage(), e);
+		}
 		try {
 			failLog.createNewFile();
 			w = new PrintWriter(new FileOutputStream(failLog));
@@ -267,7 +279,7 @@ public class BatchIngestTask implements Runnable {
 			}
 			// send failure email
 			if (this.sendEmailMessages && this.mailNotifier != null) {
-				this.mailNotifier.sendIngestFailureNotice(e, ingestProperties);
+				this.mailNotifier.sendIngestFailureNotice(result, ingestProperties);
 				w.println("\nEMAIL NOTICE SENT TO ADMINS AND THESE OTHERS:");
 				if (this.ingestProperties != null && this.ingestProperties.getEmailRecipients() != null)
 					for (String addy : this.ingestProperties.getEmailRecipients()) {
@@ -296,13 +308,11 @@ public class BatchIngestTask implements Runnable {
 				FileUtils.deleteDir(this.baseDir);
 			}
 		} catch (IOException ioe) {
-			throw new Error("Unexpected IO error on moving completed ingest batch.", ioe);
+			throw new Error(
+					"Unexpected IO error on moving completed ingest batch.",
+					ioe);
 		}
-		if (e != null) {
-			return new BatchFailedException(message, e);
-		} else {
-			return new BatchFailedException(message);
-		}
+		return result;
 	}
 
 	public Document getFOXMLDocument(File foxmlFile) {
@@ -539,6 +549,9 @@ public class BatchIngestTask implements Runnable {
 						case CHECK:
 							checkDestination();
 							break;
+						case CHECK_STAGING:
+							checkStagingAccess();
+							break;
 						case INGEST: // ingest the next foxml file, until none left
 							ingestNextObject();
 							break;
@@ -575,6 +588,71 @@ public class BatchIngestTask implements Runnable {
 		}
 	}
 
+	private void checkStagingAccess() throws BatchFailedException {
+		// find file refs in FOXML that uses a tag: URI, check staging area
+		// connection.
+		if(this.stagesConfiguration == null) {
+			log.debug("Skipping staging areas check, no stages configured");
+			this.state = STATE.INGEST;
+			return;
+		}
+		// load a Stages object
+		Stages stages = null;
+		try {
+			URL cURL = new URL(this.stagesConfiguration);
+			File cFile = org.apache.commons.io.FileUtils.toFile(cURL);
+			String config = org.apache.commons.io.FileUtils
+					.readFileToString(cFile);
+			stages = new Stages(config, new FileResolver());
+		} catch (MalformedURLException e) {
+			throw fail("Error setting up staging configuration for checks", e);
+		} catch (IOException e) {
+			throw fail("Error setting up staging configuration for checks", e);
+		} catch (StagingException e) {
+			throw fail("Error setting up staging configuration for checks", e);
+		}
+		
+		log.debug("Staging areas are configured for checks: "+this.stagesConfiguration);
+
+		for (int i = 0; i < foxmlFiles.length; i++) {
+			Document doc = getFOXMLDocument(foxmlFiles[i]);
+			for (Element cLocation : FOXMLJDOMUtil.getFileLocators(doc)) {
+				String ref = cLocation.getAttributeValue("REF");
+				if (ref.startsWith("tag:")) {
+					log.debug("Checking for connected staging location on: "+ref);
+					URI stageRef = null;
+					try {
+						stageRef = new URI(ref);
+					} catch (URISyntaxException e) {
+						throw fail("Bad URI in FOXML: " + ref, e);
+					}
+					SharedStagingArea s = stages.findMatchingArea(stageRef);
+
+					log.debug("Found matching staging area: "+s);
+					if (s == null) {
+						throw fail("Tag URI for staged file cannot be matched with staging area: "
+								+ stageRef.toString());
+					}
+					log.debug("Found matching staging area with URI: "+s.getURI());
+					if (!s.isConnected()) {
+						stages.connect(s.getURI());
+						// we wait and try again (CIFS is wonky on RHEL 5)
+						try {
+							Thread.sleep(5 * 1000);
+						} catch (InterruptedException ignored) {
+						}
+						stages.connect(s.getURI());
+						if (!s.isConnected()) {
+							throw fail("Cannot connect to staging area: "
+									+ s.getURI());
+						}
+					}
+				}
+			}
+		}
+		this.state = STATE.INGEST;
+	}
+
 	/**
 	 * @throws BatchFailedException
 	 *
@@ -599,7 +677,7 @@ public class BatchIngestTask implements Runnable {
 			log.debug("halting task due to interrupt", e);
 			this.halting = true;
 		}
-		this.state = STATE.INGEST;
+		this.state = STATE.CHECK_STAGING;
 	}
 
 	/**

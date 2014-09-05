@@ -28,10 +28,12 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.util.Permission;
+
 /**
  * Object representing the state of a search query, containing all of the search related parameters for specifying
  * terms, facets, page/facet sizes, sorts, and filters.
- * 
+ *
  * @author bbpennel
  */
 public class SearchState implements Serializable, Cloneable {
@@ -44,8 +46,8 @@ public class SearchState implements Serializable, Cloneable {
 	private Map<String, Integer> facetLimits;
 	private Map<String, String> facetSorts;
 	private Collection<String> facetsToRetrieve;
+	private Collection<Permission> permissionLimits;
 	private Integer baseFacetLimit;
-	private String accessTypeFilter;
 	private Integer startRow;
 	private Integer rowsPerPage;
 	private String sortType;
@@ -60,6 +62,7 @@ public class SearchState implements Serializable, Cloneable {
 		LOG.debug("Instantiating new SearchState");
 		searchFields = new HashMap<String, String>();
 		rangeFields = new HashMap<String, RangePair>();
+		permissionLimits = null;
 		facets = new HashMap<String, Object>();
 		facetLimits = new HashMap<String, Integer>();
 		facetSorts = new HashMap<String, String>();
@@ -86,7 +89,7 @@ public class SearchState implements Serializable, Cloneable {
 				if (item.getValue() instanceof edu.unc.lib.dl.search.solr.model.GenericFacet) {
 					facets.put(item.getKey(), ((GenericFacet)item.getValue()).clone());
 				} else {
-					facets.put(item.getKey(), (String) item.getValue());
+					facets.put(item.getKey(), item.getValue());
 				}
 			}
 		}
@@ -105,9 +108,11 @@ public class SearchState implements Serializable, Cloneable {
 		if (searchState.getFacetsToRetrieve() != null) {
 			this.facetsToRetrieve = new ArrayList<String>(searchState.getFacetsToRetrieve());
 		}
+		if (searchState.getPermissionLimits() != null) {
+			permissionLimits = new ArrayList<Permission>(searchState.getPermissionLimits());
+		}
 
 		baseFacetLimit = searchState.getBaseFacetLimit();
-		accessTypeFilter = searchState.getAccessTypeFilter();
 		startRow = searchState.getStartRow();
 		rowsPerPage = searchState.getRowsPerPage();
 		sortType = searchState.getSortType();
@@ -177,7 +182,7 @@ public class SearchState implements Serializable, Cloneable {
 	/**
 	 * Retrieves all the search term fragments contained in the selected field. Fragments are either single words
 	 * separated by non-alphanumeric characters, or phrases encapsulated by quotes.
-	 * 
+	 *
 	 * @param fieldType
 	 *           field type of the search term string to retrieve fragments of.
 	 * @return An arraylist of strings containing all of the word fragments in the selected search term field.
@@ -224,7 +229,7 @@ public class SearchState implements Serializable, Cloneable {
 				this.rightHand = pairParts[1];
 			else this.rightHand = null;
 		}
-		
+
 		public RangePair(String leftHand, String rightHand) {
 			this.leftHand = leftHand;
 			this.rightHand = rightHand;
@@ -251,6 +256,7 @@ public class SearchState implements Serializable, Cloneable {
 			this.rightHand = rightHand;
 		}
 
+		@Override
 		public String toString() {
 			if (leftHand == null) {
 				if (rightHand == null)
@@ -263,12 +269,12 @@ public class SearchState implements Serializable, Cloneable {
 		}
 	}
 
-	public String getAccessTypeFilter() {
-		return accessTypeFilter;
+	public Collection<Permission> getPermissionLimits() {
+		return permissionLimits;
 	}
 
-	public void setAccessTypeFilter(String accessTypeFilter) {
-		this.accessTypeFilter = accessTypeFilter;
+	public void setPermissionLimits(Collection<Permission> permissionLimits) {
+		this.permissionLimits = permissionLimits;
 	}
 
 	public List<String> getResourceTypes() {
@@ -349,16 +355,17 @@ public class SearchState implements Serializable, Cloneable {
 
 	/**
 	 * Returns if any search fields that would indicate search-like behavior have been populated
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isPopulatedSearch() {
 		return this.getFacets().size() > 0 || this.getRangeFields().size() > 0 || this.getSearchFields().size() > 0
-				|| this.getAccessTypeFilter() != null;
+				|| (permissionLimits != null && permissionLimits.size() > 0);
 	}
 
 	@Override
 	public Object clone() {
 		return new SearchState(this);
 	}
+
 }

@@ -87,8 +87,9 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		Element relsExt = dip.getRelsExt();
 
 		// Generate a defaultWebObject datastreams and add them to the list
+		DocumentIndexingPackage dwoDIP = null;
 		try {
-			DocumentIndexingPackage dwoDIP = this.getDefaultWebObject(relsExt);
+			dwoDIP = this.getDefaultWebObject(relsExt);
 			dip.setAttemptedToRetrieveDefaultWebObject(true);
 			if (dwoDIP != null) {
 				dip.setDefaultWebObject(dwoDIP);
@@ -109,6 +110,13 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 				// better one and use it instead
 				if (defaultWebData.getMimetype() != null && defaultWebData.getMimetype().endsWith("/octet-stream")) {
 					String sourceDataMimetype = relsExt.getChildText("hasSourceMimeType", JDOMNamespaceUtil.CDR_NS);
+
+					if (sourceDataMimetype == null && dwoDIP != null) {
+						// Use the default web objects source mimetype
+						sourceDataMimetype = FOXMLJDOMUtil.getRelationValue("hasSourceMimeType", JDOMNamespaceUtil.CDR_NS,
+								FOXMLJDOMUtil.getRelsExt(dwoDIP.getFoxml()));
+					}
+
 					if (sourceDataMimetype != null) {
 						defaultWebData.setMimetype(sourceDataMimetype);
 						// Use the extension if you've got it.  if not, get it

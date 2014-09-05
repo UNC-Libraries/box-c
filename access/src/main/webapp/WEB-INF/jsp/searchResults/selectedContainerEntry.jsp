@@ -81,6 +81,8 @@
 				</p>
 			</c:if>
 			<p>${searchSettings.searchFieldLabels['DATE_UPDATED']}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}"/></p>
+			<c:set var="embargoDate" value="${metadata.activeEmbargo}"/>
+			<c:if test="${not empty embargoDate}"><p>Embargoed Until: <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></p></c:if>
 			
 			<c:if test="${not empty metadata['abstractText']}">
 				<c:set var="truncatedAbstract" value="${cdr:truncateText(metadata.abstractText, 250)}"/>
