@@ -15,9 +15,11 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  * Stores a single Solr tuple representing an object from a search result. Can be populated directly by Solrj's
@@ -37,8 +41,8 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  * @author bbpennel
  */
 public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefObjectMetadata {
-	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(BriefObjectMetadataBean.class);
+
 	protected CutoffFacet ancestorPathFacet;
 	protected CutoffFacet path;
 	protected List<MultivaluedHierarchicalFacet> contentTypeFacet;
@@ -291,5 +295,29 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		if (this.tags == null)
 			this.tags = new ArrayList<Tag>();
 		this.tags.add(t);
+	}
+
+	@Override
+	public Date getActiveEmbargo() {
+		List<String> embargoUntil = getRelation(CDRProperty.embargoUntil.getPredicate());
+		if (embargoUntil != null) {
+			Date result = null;
+			Date dateNow = new Date();
+			for (String embargo : embargoUntil) {
+				Date embargoDate;
+				try {
+					embargoDate = DateTimeUtil.parsePartialUTCToDate(embargo);
+					if (embargoDate.after(dateNow)) {
+						if (result == null || embargoDate.after(result)) {
+							result = embargoDate;
+						}
+					}
+				} catch (ParseException e) {
+					LOG.error("Failed to parse embargo", e);
+				}
+			}
+			return result;
+		}
+		return null;
 	}
 }

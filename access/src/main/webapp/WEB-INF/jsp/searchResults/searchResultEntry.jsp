@@ -43,6 +43,7 @@
 	</c:otherwise>
 </c:choose>
 <c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, metadata)}"/>
+<c:set var="embargoDate" value="${metadata.activeEmbargo}"/>
 <div id="entry${metadata.id}" class="searchitem ${isDeleted}">
 	<div class="contentarea">
 		<%-- Link to full record of the current item --%>
@@ -99,7 +100,7 @@
 			</c:choose>
 		</c:set>
 		<c:choose>
-			<c:when test="${hasListAccessOnly}">
+			<c:when test="${hasListAccessOnly || not empty embargoDate}">
 				<a>
 					<div class="small thumb_container">
 						${iconContent}
@@ -212,6 +213,7 @@
 								</c:choose>
 							</p>
 						</c:if>
+						<c:if test="${not empty embargoDate}"><p>Embargoed Until: <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></p></c:if>
 					</div>
 				</c:when>
 			</c:choose>
@@ -262,6 +264,16 @@
 						<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'SURROGATE', metadata)}">
 							<div class="actionlink right download">
 								<a href="${cdr:getDatastreamUrl(metadata, 'SURROGATE', fedoraUtil)}">Preview</a>
+							</div>
+						</c:when>
+						<c:when test="${not empty embargoDate}">
+							<div class="containerinfo">
+								<ul>
+									<li>
+										<a href="/requestAccess/${metadata.pid.pid}" 
+												title="Contact us to request access to this item">Available after<br/><fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/></a>
+									</li>
+								</ul>
 							</div>
 						</c:when>
 						<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile}">

@@ -188,5 +188,10 @@
 			<artifactId>jesque-spring</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>staging-areas</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>

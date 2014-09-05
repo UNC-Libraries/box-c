@@ -17,6 +17,7 @@ package edu.unc.lib.dl.acl.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -56,7 +57,7 @@ public enum UserRole {
 			throw x;
 		}
 	}
-	
+
 	public static boolean matchesMemberURI(String test) {
 		for(UserRole r : UserRole.values()) {
 			if(r.getURI().toString().equals(test)) {
@@ -65,7 +66,7 @@ public enum UserRole {
 		}
 		return false;
 	}
-	
+
 	public static UserRole getUserRole(String roleUri) {
 		for(UserRole r : UserRole.values()) {
 			if(r.getURI().toString().equals(roleUri)) {
@@ -75,10 +76,27 @@ public enum UserRole {
 		return null;
 	}
 
+	/**
+	 * Return a list of all user roles which have the specified permission
+	 *
+	 * @param permission
+	 * @return
+	 */
+	public static Set<UserRole> getUserRoles(Collection<Permission> inPermissions) {
+
+		Set<UserRole> roles = new HashSet<UserRole>();
+		for (UserRole r : UserRole.values()) {
+			if (r.permissions.containsAll(inPermissions)) {
+				roles.add(r);
+			}
+		}
+		return roles;
+	}
+
 	public URI getURI() {
 		return this.uri;
 	}
-	
+
 	public Set<Permission> getPermissions() {
 		return permissions;
 	}

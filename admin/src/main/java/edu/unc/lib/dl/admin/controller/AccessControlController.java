@@ -67,10 +67,10 @@ public class AccessControlController extends AbstractSwordController {
 	@Autowired
 	private String swordPassword;
 
-	private List<String> targetResultFields = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
+	private final List<String> targetResultFields = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
 			SearchFieldKeys.STATUS.name(), SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.ANCESTOR_PATH.name());
 
-	private List<String> parentResultFields = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.STATUS.name(),
+	private final List<String> parentResultFields = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.STATUS.name(),
 			SearchFieldKeys.ROLE_GROUP.name());
 	
 	private String[] accessGroupFields;
@@ -161,7 +161,6 @@ public class AccessControlController extends AbstractSwordController {
 				if (roleParts.length < 2)
 					continue;
 				String role = roleParts[0];
-				role = role.split("#")[1];
 	
 				List<RoleGrant> groupList = rolesGranted.get(role);
 				if (groupList == null) {

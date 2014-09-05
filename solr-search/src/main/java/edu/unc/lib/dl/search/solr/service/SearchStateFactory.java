@@ -67,7 +67,6 @@ public class SearchStateFactory {
 		searchState.setStartRow(0);
 		searchState.setSortType("default");
 		searchState.setSortNormalOrder(true);
-		searchState.setAccessTypeFilter(null);
 		return searchState;
 	}
 	
@@ -134,7 +133,6 @@ public class SearchStateFactory {
 		searchState.setRowsPerPage(searchSettings.defaultPerPage);
 		searchState.setFacetsToRetrieve(null);
 		searchState.setStartRow(0);
-		searchState.setAccessTypeFilter(null);
 		return searchState;
 	}
 	
@@ -238,7 +236,6 @@ public class SearchStateFactory {
 		searchState.setResourceTypes(searchSettings.defaultResourceTypes);
 		searchState.setRowsPerPage(0);
 		searchState.setStartRow(0);
-		searchState.setAccessTypeFilter(null);
 		
 		ArrayList<String> facetList = new ArrayList<String>();
 		facetList.add(facetField);

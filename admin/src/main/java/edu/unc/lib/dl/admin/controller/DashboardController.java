@@ -22,7 +22,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
@@ -30,6 +29,8 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
+import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 @Controller
 @RequestMapping(value = {"/", ""})
@@ -42,20 +43,25 @@ public class DashboardController extends AbstractSolrSearchController {
 		CutoffFacet depthFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
 		depthFacet.setCutoff(2);
 		collectionsState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), depthFacet);
-		
+
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 		SearchRequest searchRequest = new SearchRequest();
 		searchRequest.setAccessGroups(accessGroups);
 		searchRequest.setSearchState(collectionsState);
-		
+
 		SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
 		// Get children counts
 		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
+
 		// Get unpublished counts
-		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups(), "unpublished", "status:Unpublished", null);
+		StringBuilder reviewFilter = new StringBuilder("status:Unpublished AND roleGroup:");
+		reviewFilter.append(SolrQueryLayerService.getWriteRoleFilter(GroupsThreadStore.getGroups()));
+
+		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups(), "unpublished",
+				reviewFilter.toString(), null);
 
 		model.addAttribute("resultResponse", resultResponse);
-		
+
 		return "dashboard/reviewer";
 	}
 }
