@@ -119,6 +119,7 @@
 		<module>admin</module>
 		<module>access-common</module>
 		<module>deposit</module>
+		<module>staging-areas</module>
 	</modules>
 
 	<reporting>

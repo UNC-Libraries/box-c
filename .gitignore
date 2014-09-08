@@ -10,3 +10,5 @@
 /.settings
 /*/src/jaxb
 .DS_Store
+/ssh_config
+/static.tar.gz
