@@ -153,7 +153,18 @@ public class ObjectAccessControlsBean {
 				this.baseRoleGroups.remove(UserRole.list);
 		} else {
 			this.baseRoleGroups = new HashMap<UserRole, Set<String>>();
+
+			// Turn all roles into list roles
+			if (baseAcls.getMergedRoleGroups() != null) {
+				Set<String> listGroups = new HashSet<String>();
+				for (Entry<UserRole, Set<String>> roleGroups : baseAcls.getMergedRoleGroups().entrySet()) {
+					if (!roleGroups.getKey().equals(UserRole.list))
+						listGroups.addAll(roleGroups.getValue());
+				}
+				this.baseRoleGroups.put(UserRole.list, listGroups);
+			}
 		}
+
 		if (baseAcls.globalRoleGroups != null)
 			this.globalRoleGroups = new HashMap<UserRole, Set<String>>(baseAcls.globalRoleGroups);
 
@@ -507,7 +518,7 @@ public class ObjectAccessControlsBean {
 	/**
 	 * Returns a list where each entry contains a single role name + group pairing assigned to this object. Values are
 	 * pipe delimited
-	 * 
+	 *
 	 * @return
 	 */
 	public List<String> roleGroupsToUnprefixedList() {
