@@ -1,0 +1,15 @@
+#!/bin/sh
+# This script takes a single file as input and returns the FITS output document to stdout.
+FITS_HOME="/opt/fits"
+FITS_CMD=$FITS_HOME/fits.sh
+export FITS_HOME
+if [ "$#" -lt 2 ]
+then 
+  $FITS_CMD -i ${1}
+else
+# original file name supplied, using a symlink
+  tmpDir=`mktemp -d`
+  ln -s ${1} $tmpDir/"${2}"
+  $FITS_CMD -i $tmpDir/${2}
+  rm -rf --preserve-root $tmpDir
+fi

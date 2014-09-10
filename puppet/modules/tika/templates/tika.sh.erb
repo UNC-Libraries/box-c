@@ -1,0 +1,77 @@
+#!/bin/sh
+#
+# tika:      Apache Tika Server Daemon
+#
+# chkconfig: 35 98 02
+#
+# description: Starts and stops the Apache Tika Simple Server
+#
+# processname: tika-app
+# pidfile: /var/run/tika.pid
+#
+
+TIKA_HOME=/opt/tika/
+
+progname=tika
+
+start() {
+	echo "Starting Apache Tika Server"
+	cd $TIKA_HOME
+	runuser <%= @user %> -c "java -jar tika-app-1.4.jar --server <%= @port %> -t &"
+	ret=$?
+	sleep 1
+	pgrep -f "tika-app" > /var/run/$progname.pid
+	if [ $ret -eq 0 ]; then
+		echo "Tika server startup complete"
+	else
+		echo "Tika server failed to start"
+	fi
+	return $?
+}
+
+stop() {
+	echo "Stopping Apache Tika Server"
+	
+	kill -TERM `cat /var/run/$progname.pid`
+	ret=$?
+	sleep 0.5
+	if [ $ret -eq 0 ]; then
+		echo "Tika server has shutdown"
+		rm /var/run/$progname.pid
+	else
+		echo "Tika server failed to shutdown"
+	fi
+	return $?
+}
+
+status() {
+	if [ ! -f /var/run/tika.pid ]; then
+		echo "Tika server is not running"
+		return 1
+	fi
+	echo "Tika server is running"
+	return 0
+}
+
+
+### main logic ###
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status
+        ;;
+  restart|reload|condrestart)
+        stop
+        start
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|reload|status}"
+        exit 1
+esac
+
+exit 0

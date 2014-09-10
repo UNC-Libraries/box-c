@@ -42,57 +42,84 @@ file "static.tar.gz" do |t|
   sh "tar -cvzf #{t.name} -C access/src/main/external/static ."
 end
 
-namespace :update do
+namespace :deploy do
 
-  task :static => "static.tar.gz" do |t|
-    tarball = t.prerequisites.first
-    on roles(:all) do
-      execute :mkdir, "-p", "/tmp/deploy"
-      upload! tarball, "/tmp/deploy"
-      as :tomcat do
-        execute :tar, "-xzf", "/tmp/deploy/static.tar.gz", "-C /var/www/html/static/"
-      end
-    end
-  end
-  
-  task :webapps => WEBAPPS do |t|
-    on roles(:all) do
-      t.prerequisites.each do |p|
-        upload_as! p, "/opt/repository/tomcat/webapps/", :tomcat
-      end
-    end
-  end
-  
-  task :tomcat_libs => TOMCAT_LIBS do |t|
-    on roles(:all) do
-      t.prerequisites.each do |p|
-        upload_as! p, "/opt/repository/tomcat/lib/", :tomcat
-      end
-    end
-  end
-  
-  task :fedora_libs => FEDORA_LIBS do |t|
-    on roles(:all) do
-      t.prerequisites.each do |p|
-        upload_as! p, "/opt/repository/tomcat/webapps/fedora/WEB-INF/lib/", :tomcat
-      end
-    end
-  end
-  
-  task :libs => [:tomcat_libs, :fedora_libs]
+  namespace :update do
 
+    task :static => "static.tar.gz" do |t|
+      tarball = t.prerequisites.first
+      on roles(:all) do
+        execute :mkdir, "-p", "/tmp/deploy"
+        upload! tarball, "/tmp/deploy"
+        as :tomcat do
+          execute :tar, "-xzf", "/tmp/deploy/static.tar.gz", "-C /var/www/html/static/"
+        end
+      end
+    end
+  
+    task :webapps => WEBAPPS do |t|
+      on roles(:all) do
+        t.prerequisites.each do |p|
+          upload_as! p, "/opt/repository/tomcat/webapps/", :tomcat
+        end
+      end
+    end
+  
+    task :tomcat_libs => TOMCAT_LIBS do |t|
+      on roles(:all) do
+        t.prerequisites.each do |p|
+          upload_as! p, "/opt/repository/tomcat/lib/", :tomcat
+        end
+      end
+    end
+  
+    task :fedora_libs => FEDORA_LIBS do |t|
+      on roles(:all) do
+        t.prerequisites.each do |p|
+          upload_as! p, "/opt/repository/tomcat/webapps/fedora/WEB-INF/lib/", :tomcat
+        end
+      end
+    end
+  
+    task :libs => [:tomcat_libs, :fedora_libs]
+    
+    task :config do
+      run_locally do
+        execute :tar, "-czf", "puppet.tar.gz", "-C puppet", "."
+      end
+  
+      on roles(:all) do
+        execute :mkdir, "-p", "/tmp/deploy"
+        upload! "puppet.tar.gz", "/tmp/deploy"
+    
+        as :root do
+          execute :rm, "-rf", "/etc/puppet/environments/cdr"
+          execute :mkdir, "-p", "/etc/puppet/environments/cdr"
+          execute :tar, "-xzf", "/tmp/deploy/puppet.tar.gz", "-C /etc/puppet/environments/cdr"
+        end
+      end
+    end
+
+  end
+  
+  task :update do
+    invoke "deploy:update:static"
+    invoke "deploy:update:webapps"
+    invoke "deploy:update:libs"
+    invoke "deploy:update:config"
+  end
+  
+  task :apply do
+    on roles(:all) do
+      as :root do
+        execute :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr"
+      end
+    end
+  end
+  
 end
 
-task :update do
-  invoke "update:static"
-  invoke "update:webapps"
-  invoke "update:libs"
-end
-
-task :restart do
-  on roles(:all) do
-    as :root do
-      execute :service, :tomcat, :restart
-    end
-  end
+task :deploy do
+  invoke "deploy:update"
+  invoke "deploy:apply"
 end

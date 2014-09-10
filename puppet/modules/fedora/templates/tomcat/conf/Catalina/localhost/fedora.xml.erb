@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Context>
+    <!-- Try to set the fedora home in one place -->
+    <Parameter name="fedora.home" value="/opt/repository/fedora" override="false"/>
+    
+    <!-- Restrict access to this on CDR servers -->
+    <Valve className="org.apache.catalina.valves.RemoteAddrValve" allow="<%= @remote_addr_valve_allow %>"/>  
+</Context>
