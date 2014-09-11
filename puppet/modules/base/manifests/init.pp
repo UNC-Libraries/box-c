@@ -2,7 +2,8 @@ class base(
   $ssl_cert,
   $ssl_key,
   $package_repo_baseurl,
-){
+  $apache_servername
+) {
 
   # Packages
 
@@ -49,8 +50,8 @@ class base(
 
   apache::mod { "proxy_ajp": }
 
-  apache::vhost { "localhost:80":
-    servername => "localhost",
+  apache::vhost { "${apache_servername}:80":
+    servername => $apache_servername,
     docroot => "/var/www/html",
     port => "80",
     rewrites => [
@@ -68,8 +69,8 @@ class base(
     ],
   }
 
-  apache::vhost { "localhost:443":
-    servername => "localhost",
+  apache::vhost { "${apache_servername}:443":
+    servername => $apache_servername,
     port => "443",
     docroot => "/var/www/html",
     ssl => true,

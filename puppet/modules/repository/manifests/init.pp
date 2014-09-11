@@ -28,6 +28,7 @@ class repository(
   $mulgara_protocol,
   $mulgara_host,
   $mulgara_port,
+  $mulgara_model_uri,
   $irods_host,
   $irods_port,
   $irods_zone,
