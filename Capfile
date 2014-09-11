@@ -109,6 +109,18 @@ namespace :deploy do
     invoke "deploy:update:config"
   end
   
+  namespace :apply do
+  
+    task :noop do
+      on roles(:all) do
+        as :root do
+          execute :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr", "--noop"
+        end
+      end
+    end
+    
+  end
+  
   task :apply do
     on roles(:all) do
       as :root do
