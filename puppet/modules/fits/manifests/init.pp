@@ -1,6 +1,6 @@
 class fits {
   
-  package { ["java-1.6.0-openjdk", "perl"]:
+  package { ["perl"]:
     ensure => installed,
   }
 
@@ -9,6 +9,7 @@ class fits {
     require => [
       User["irods"],
       Yumrepo["cdr-packages"],
+      Package["java-1.7.0-openjdk"],
     ],
   }
 
