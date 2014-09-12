@@ -15,8 +15,11 @@
  */
 package edu.unc.lib.dl.update;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import javax.annotation.Resource;
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -29,24 +32,36 @@ import org.jdom2.Element;
 import org.jdom2.transform.JDOMSource;
 import org.xml.sax.SAXException;
 
+import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.ManagementClient;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schematron.SchematronValidator;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Filter which performs update operations on an MD_DESCRIPTIVE MODS datastream and validates it.
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class MODSUIPFilter extends MetadataUIPFilter {
 	private static Logger log = Logger.getLogger(MODSUIPFilter.class);
 
 	private final String datastreamName = Datastream.MD_DESCRIPTIVE.getName();
 	private SchematronValidator schematronValidator;
-	private Validator modsValidator;
+	private final Validator modsValidator;
+
+	@Resource
+	private DepartmentOntologyUtil deptUtil;
+	private ManagementClient managementClient;
+	@Resource
+	private TripleStoreQueryService queryService;
 
 	public MODSUIPFilter() {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -54,7 +69,7 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 		StreamSource modsSource = new StreamSource(getClass().getResourceAsStream("/schemas/mods-3-4.xsd"));
 		StreamSource xmlSource = new StreamSource(getClass().getResourceAsStream("/schemas/xml.xsd"));
 		StreamSource xlinkSource = new StreamSource(getClass().getResourceAsStream("/schemas/xlink.xsd"));
-    
+
 		Schema modsSchema;
 		try {
 			modsSchema = sf.newSchema(new StreamSource[] { xmlSource, xlinkSource, modsSource });
@@ -125,6 +140,12 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 		}
 		try {
 			modsValidator.validate(new JDOMSource(mods));
+
+			// Refresh the invalid affiliations relations
+			Set<String> invalid = deptUtil.getInvalidAffiliations(mods);
+			if (invalid != null)
+				updateInvalidTermRelations(uip.getPID(), invalid);
+
 		} catch (SAXException e) {
 			throw new UIPException("MODS failed to validate to schema:" + e.getMessage(), e);
 		} catch (Exception e) {
@@ -132,7 +153,49 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 		}
 	}
 
+	protected void updateInvalidTermRelations(PID pid, Set<String> invalidTerms) throws FedoraException {
+
+		String predicateUri = ContentModelHelper.CDRProperty.invalidAffiliationTerm.toString();
+		List<String> rel = queryService.fetchBySubjectAndPredicate(pid, predicateUri);
+
+		// No changes to be made
+		if (rel != null && invalidTerms.size() == rel.size() && invalidTerms.containsAll(rel)) {
+			return;
+		}
+
+		if (rel != null) {
+			// Remove any terms which are no longer present
+			List<String> removeTerms = new ArrayList<String>(rel);
+			removeTerms.removeAll(invalidTerms);
+
+			for (String term : removeTerms) {
+				managementClient.purgeLiteralStatement(pid, predicateUri, term, null);
+			}
+
+			// Calculate the set of newly invalid terms which need to be added
+			invalidTerms.removeAll(rel);
+		}
+
+		if (invalidTerms.size() > 0) {
+			for (String term : invalidTerms) {
+				managementClient.addLiteralStatement(pid, predicateUri, term, null);
+			}
+		}
+	}
+
 	public void setSchematronValidator(SchematronValidator schematronValidator) {
 		this.schematronValidator = schematronValidator;
+	}
+
+	public void setDeptUtil(DepartmentOntologyUtil deptUtil) {
+		this.deptUtil = deptUtil;
+	}
+
+	public void setManagementClient(ManagementClient managementClient) {
+		this.managementClient = managementClient;
+	}
+
+	public void setQueryService(TripleStoreQueryService queryService) {
+		this.queryService = queryService;
 	}
 }

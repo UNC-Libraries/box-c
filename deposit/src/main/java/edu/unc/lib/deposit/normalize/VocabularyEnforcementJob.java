@@ -60,24 +60,11 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 	@Autowired
 	private DepartmentOntologyUtil deptUtil;
 
-	private XPath namePath;
-
 	public VocabularyEnforcementJob() {
-		initialize();
 	}
 
 	public VocabularyEnforcementJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
-		initialize();
-	}
-
-	private void initialize() {
-		try {
-			namePath = XPath.newInstance("//mods:name");
-			namePath.addNamespace("mods", MODS_V3_NS.getURI());
-		} catch (JDOMException e) {
-			log.error("Failed to initialize xpath", e);
-		}
 	}
 
 	@Override
@@ -100,7 +87,7 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 				try {
 					Document modsDoc = sb.build(modsFile);
 
-					boolean modified = filterAffiliation(modsDoc, pid, model);
+					boolean modified = filterAffiliation(modsDoc);
 
 					// Update the mods document if it was changed
 					if (modified) {
@@ -108,6 +95,10 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 							new XMLOutputter(Format.getPrettyFormat()).output(modsDoc.getDocument(), fos);
 						}
 					}
+
+					// Capture any invalid affiliations as relations
+					addInvalidAffiliations(modsDoc, pid, model);
+
 				} catch (JDOMException | IOException e) {
 					log.error("Failed to parse description file {}", modsFile.getAbsolutePath(), e);
 				}
@@ -116,21 +107,16 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 	}
 
 	/**
-	 * Compares the affiliation values in the given MODS document against the ontology. If an affiliation term is not
-	 * found, a invalid term warning is added. If a preferred term(s) is found, then it will replace the original.
+	 * Compares the affiliation values in the given MODS document against the ontology. If a preferred term(s) is found,
+	 * then it will replace the original.
 	 *
 	 * @param modsDoc
-	 * @param pid
-	 * @param model
-	 * @return Returns true if the mods document was modified
+	 * @return Returns true if the mods document was modified by adding or changing affiliations
 	 * @throws JDOMException
 	 */
-	private boolean filterAffiliation(Document modsDoc, PID pid, Model model) throws JDOMException {
-		List<?> nameObjs = namePath.selectNodes(modsDoc);
+	private boolean filterAffiliation(Document modsDoc) throws JDOMException {
+		List<?> nameObjs = deptUtil.getNamePath().selectNodes(modsDoc);
 		boolean modified = false;
-
-		Set<String> invalidTerms = new HashSet<>();
-		Property invalidTerm = model.createProperty(invalidAffiliationTerm.getURI().toString());
 
 		for (Object nameObj : nameObjs) {
 			Element nameEl = (Element) nameObj;
@@ -178,12 +164,25 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 					if (removeOriginal)
 						parentEl.removeContent(affiliationEl);
 
-				} else {
-					// Affiliation was not found in the ontology, make a validation warning
-					invalidTerms.add(affiliation);
 				}
 			}
 		}
+
+		return modified;
+	}
+
+	/**
+	 * Checks affiliations in the given document against the departmental vocabulary. If an affiliation term is not
+	 * found, a invalid term warning is added.
+	 *
+	 * @param modsDoc
+	 * @param pid
+	 * @param model
+	 * @throws JDOMException
+	 */
+	private void addInvalidAffiliations(Document modsDoc, PID pid, Model model) throws JDOMException {
+		Set<String> invalidTerms = deptUtil.getInvalidAffiliations(modsDoc.getRootElement());
+		Property invalidTerm = model.createProperty(invalidAffiliationTerm.getURI().toString());
 
 		// Persist the list of invalid vocab terms out to the model
 		if (invalidTerms.size() > 0) {
@@ -192,8 +191,6 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 				model.addLiteral(resource, invalidTerm, model.createLiteral(invalid));
 			}
 		}
-
-		return modified;
 	}
 
 	/**

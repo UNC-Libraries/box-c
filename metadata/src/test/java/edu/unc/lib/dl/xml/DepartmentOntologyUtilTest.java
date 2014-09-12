@@ -18,8 +18,15 @@ package edu.unc.lib.dl.xml;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -270,5 +277,18 @@ public class DepartmentOntologyUtilTest {
 		assertEquals("College of Arts and Sciences", result.get(0).get(0));
 		assertEquals("Department of Music", result.get(1).get(1));
 
+	}
+
+	@Test
+	public void getInvalidTermsTest() throws Exception {
+		SAXBuilder builder = new SAXBuilder();
+
+		InputStream modsStream = new FileInputStream(new File("src/test/resources/samples/mods.xml"));
+		Document modsDoc = builder.build(modsStream);
+		Element modsElement = modsDoc.detachRootElement();
+
+		Set<String> invalids = job.getInvalidAffiliations(modsElement);
+
+		assertEquals("Did not detect invalid affiliation", 1, invalids.size());
 	}
 }

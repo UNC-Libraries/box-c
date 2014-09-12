@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.jdom2.Document;
@@ -73,6 +75,10 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "deptUtil", deptUtil);
 
+		DepartmentOntologyUtil realDeptUtil = new DepartmentOntologyUtil();
+
+		when(deptUtil.getNamePath()).thenReturn(realDeptUtil.getNamePath());
+
 		job.getDescriptionDir().mkdir();
 
 		Model model = job.getModel();
@@ -87,6 +93,8 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 	public void noMatchingDeptTest() throws Exception {
 		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"),
 				job.getDescriptionDir().toPath().resolve(MAIN_UUID + ".xml"));
+
+		when(deptUtil.getInvalidAffiliations(any(Element.class))).thenReturn(new HashSet<String>(Arrays.asList("dept1")));
 
 		job.run();
 
@@ -258,6 +266,9 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 	public void multipleInvalidTermsTest() throws Exception {
 		Files.copy(Paths.get("src/test/resources/mods/multipleNameAffiliationsMods.xml"), job.getDescriptionDir()
 				.toPath().resolve(MAIN_UUID + ".xml"));
+
+		when(deptUtil.getInvalidAffiliations(any(Element.class)))
+				.thenReturn(new HashSet<String>(Arrays.asList("dept1", "dept2")));
 
 		job.run();
 

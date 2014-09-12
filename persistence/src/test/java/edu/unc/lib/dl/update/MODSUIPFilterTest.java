@@ -22,12 +22,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import org.apache.abdera.Abdera;
@@ -41,16 +41,21 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
@@ -61,14 +66,24 @@ public class MODSUIPFilterTest extends Assert {
 	private SchematronValidator schematronValidator;
 	private MODSUIPFilter filter;
 
-	public MODSUIPFilterTest() {
+	@Mock
+	private DepartmentOntologyUtil deptUtil;
+	@Mock
+	private ManagementClient managementClient;
+	@Mock
+	private TripleStoreQueryService queryService;
+
+	@Before
+	public void init() {
+		initMocks(this);
+
 		filter = new MODSUIPFilter();
 
-	}
-
-	@PostConstruct
-	public void init() {
 		filter.setSchematronValidator(schematronValidator);
+
+		filter.setDeptUtil(deptUtil);
+		filter.setManagementClient(managementClient);
+		filter.setQueryService(queryService);
 	}
 
 	@Test

@@ -1229,6 +1229,23 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	}
 
+	public SearchResultResponse getRelationSet(SearchRequest searchRequest, String relationName) {
+
+		SolrQuery query = generateSearch(searchRequest);
+
+		query.setQuery(query.getQuery() + " AND " + solrSettings.getFieldName(SearchFieldKeys.RELATIONS.name()) + ":"
+				+ relationName + "|*");
+		query.setRows(1000);
+
+		try {
+			return executeSearch(query, searchRequest.getSearchState(), false, false);
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+		}
+
+		return null;
+	}
+
 	/**
 	 * Get the total number of collections
 	 *

@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.xml;
 
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.RDF_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.SKOS_NS;
 
@@ -22,10 +23,12 @@ import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.jdom2.Document;
@@ -60,6 +63,8 @@ public class DepartmentOntologyUtil {
 	private final Pattern trimUNC;
 	private final Pattern splitSimple;
 
+	private XPath namePath;
+
 	public DepartmentOntologyUtil() {
 		addressPattern = Pattern.compile("([^,]+,)+\\s*[a-zA-Z ]*\\d+[a-zA-Z]*\\s*[^\\n]*");
 		addressTrailingPattern = Pattern.compile("([^,]+,){2,}\\s*([a-zA-Z]+ ?){1,2}\\s*");
@@ -73,6 +78,13 @@ public class DepartmentOntologyUtil {
 		trimSuffix = Pattern.compile("\\s*(department|doctoral|masters)$");
 		trimUNC = Pattern.compile("\\b(unc|carolina)\\s+");
 		splitSimple = Pattern.compile("(\\s*[:()]\\s*)+");
+
+		try {
+			namePath = XPath.newInstance("mods:name");
+			namePath.addNamespace("mods", MODS_V3_NS.getURI());
+		} catch (Exception e) {
+			log.error("Failed to construct xpath", e);
+		}
 	}
 
 	public void init() {
@@ -414,6 +426,47 @@ public class DepartmentOntologyUtil {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Returns a set of invalid department affiliation names found in the given MODS document
+	 *
+	 * @param modsDoc
+	 * @return
+	 * @throws JDOMException
+	 */
+	public Set<String> getInvalidAffiliations(Element modsRoot) throws JDOMException {
+		List<?> nameObjs = namePath.selectNodes(modsRoot);
+
+		Set<String> invalidTerms = new HashSet<String>();
+
+		for (Object nameObj : nameObjs) {
+			Element nameEl = (Element) nameObj;
+
+			List<?> affiliationObjs = nameEl.getChildren("affiliation", MODS_V3_NS);
+			if (affiliationObjs.size() == 0)
+				continue;
+
+			// Make a snapshot of the list of affiliations so that the original can be modified
+			List<?> affilList = new ArrayList<Object>(affiliationObjs);
+			// Get the authoritative department path for each affiliation and overwrite the original
+			for (Object affiliationObj : affilList) {
+				Element affiliationEl = (Element) affiliationObj;
+				String affiliation = affiliationEl.getTextNormalize();
+
+				List<List<String>> departments = getAuthoritativeDepartment(affiliation);
+				if (departments == null || departments.size() == 0) {
+					// Affiliation was not found in the ontology
+					invalidTerms.add(affiliation);
+				}
+			}
+		}
+
+		return invalidTerms;
+	}
+
+	public XPath getNamePath() {
+		return namePath;
 	}
 
 	public Map<String, DepartmentConcept> getDepartments() {

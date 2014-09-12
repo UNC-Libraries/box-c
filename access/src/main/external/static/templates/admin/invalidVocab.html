@@ -1,0 +1,15 @@
+<% _.each(groupedTypes, function(termsList, category) { %>
+	<h1>Invalid <%= category %> terms</h1>
+	<ul class="term_list">
+		<% _.each(termsList, function(results, vocabTerm) { %>
+			<li class="vocab_term"><h3><%= vocabTerm %></h3></li>
+			<li class="vocab_results">
+				<table>
+						<% _.each(results, function(entry) { %>
+							<tr><td class="title_col"><%= entry.title %></td><td><a href="/admin/describe/<%= entry.id %>" target="_blank">Edit description</a></td></tr>
+						<% }); %>
+				</table>
+			</li>
+		<% }); %>
+	</ul>
+<% }); %>

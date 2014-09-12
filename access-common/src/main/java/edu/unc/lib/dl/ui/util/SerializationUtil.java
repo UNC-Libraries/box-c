@@ -91,6 +91,16 @@ public class SerializationUtil {
 		return result.toString();
 	}
 
+	public static List<Map<String, Object>> resultsToList(SearchResultResponse resultResponse, AccessGroupSet groups) {
+		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>(resultResponse.getResultList().size());
+
+		for (BriefObjectMetadata metadata : resultResponse.getResultList()) {
+			result.add(metadataToMap(metadata, groups));
+		}
+
+		return result;
+	}
+
 	public static Map<String, Object> metadataToMap(BriefObjectMetadata metadata, AccessGroupSet groups) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		if (metadata.getId() != null)
@@ -122,10 +132,10 @@ public class SerializationUtil {
 
 		if (metadata.getIdentifier() != null)
 			result.put("identifier", metadata.getIdentifier());
-		
+
 		if (metadata.getAncestorPathFacet() != null)
 			result.put("ancestorPath", cutoffFacetToMap(metadata.getAncestorPathFacet()));
-		
+
 		if (metadata.getAncestorNames() != null)
 			result.put("ancestorNames", metadata.getAncestorNames());
 
@@ -147,7 +157,7 @@ public class SerializationUtil {
 		} catch (ParseException e) {
 			log.debug("Failed to parse date field for " + metadata.getId(), e);
 		}
-		
+
 		if (metadata.getDateCreated() != null)
 			result.put("created", metadata.getDateCreated());
 
@@ -168,7 +178,7 @@ public class SerializationUtil {
 
 		return result;
 	}
-	
+
 	private static Object cutoffFacetToMap(CutoffFacet facet) {
 		List<Map<String, String>> result = new ArrayList<Map<String,String>>(facet.getFacetNodes().size());
 		for (HierarchicalFacetNode node : facet.getFacetNodes()) {
@@ -205,7 +215,7 @@ public class SerializationUtil {
 		}
 		return "";
 	}
-	
+
 	public static void injectSettings(SearchSettings searchSettings, SolrSettings solrSettings) {
 		SerializationUtil.searchSettings = searchSettings;
 		SerializationUtil.solrSettings = solrSettings;
