@@ -114,7 +114,7 @@ namespace :deploy do
   
     task :noop do
       on roles(:all) do
-        sudo :sudo, :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr", "--noop"
+        sudo :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr", "--noop"
       end
     end
     
