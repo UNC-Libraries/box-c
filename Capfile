@@ -42,18 +42,21 @@ file "static.tar.gz" do |t|
   sh "tar -cvzf #{t.name} -C access/src/main/external/static ."
 end
 
+file "puppet.tar.gz" do |t|
+  sh "tar -cvzf #{t.name} -C puppet ."
+end
+
 namespace :deploy do
 
   namespace :update do
 
     task :static => "static.tar.gz" do |t|
       tarball = t.prerequisites.first
+      
       on roles(:all) do
         execute :mkdir, "-p", "/tmp/deploy"
         upload! tarball, "/tmp/deploy"
-        as :tomcat do
-          execute :tar, "-xzf", "/tmp/deploy/static.tar.gz", "-C /var/www/html/static/"
-        end
+        sudo :tar, "-xzf", File.join("/tmp/deploy", File.basename(tarball)), "-C /var/www/html/static/"
       end
     end
   
@@ -83,18 +86,16 @@ namespace :deploy do
   
     task :libs => [:tomcat_libs, :fedora_libs]
     
-    task :config do
-      run_locally do
-        execute :tar, "-czf", "puppet.tar.gz", "-C puppet", "."
-      end
-  
+    task :config => "puppet.tar.gz" do |t|
+      tarball = t.prerequisites.first
+      
       on roles(:all) do
         execute :mkdir, "-p", "/tmp/deploy"
-        upload! "puppet.tar.gz", "/tmp/deploy"
+        upload! tarball, "/tmp/deploy"
     
         sudo :rm, "-rf", "/etc/puppet/environments/cdr"
         sudo :mkdir, "-p", "/etc/puppet/environments/cdr"
-        sudo :tar, "-xzf", "/tmp/deploy/puppet.tar.gz", "-C /etc/puppet/environments/cdr"
+        sudo :tar, "-xzf", File.join("/tmp/deploy", File.basename(tarball)), "-C /etc/puppet/environments/cdr"
       end
     end
 
