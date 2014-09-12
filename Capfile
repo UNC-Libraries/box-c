@@ -103,13 +103,6 @@ namespace :deploy do
 
   end
   
-  task :update do
-    invoke "deploy:update:static"
-    invoke "deploy:update:webapps"
-    invoke "deploy:update:libs"
-    invoke "deploy:update:config"
-  end
-  
   namespace :apply do
   
     task :noop do
@@ -129,6 +122,9 @@ namespace :deploy do
 end
 
 task :deploy do
-  invoke "deploy:update"
+  invoke "deploy:update:config"
   invoke "deploy:apply"
+  invoke "deploy:update:static"
+  invoke "deploy:update:webapps"
+  invoke "deploy:update:libs"
 end
