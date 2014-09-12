@@ -92,11 +92,9 @@ namespace :deploy do
         execute :mkdir, "-p", "/tmp/deploy"
         upload! "puppet.tar.gz", "/tmp/deploy"
     
-        as :root do
-          execute :rm, "-rf", "/etc/puppet/environments/cdr"
-          execute :mkdir, "-p", "/etc/puppet/environments/cdr"
-          execute :tar, "-xzf", "/tmp/deploy/puppet.tar.gz", "-C /etc/puppet/environments/cdr"
-        end
+        sudo :rm, "-rf", "/etc/puppet/environments/cdr"
+        sudo :mkdir, "-p", "/etc/puppet/environments/cdr"
+        sudo :tar, "-xzf", "/tmp/deploy/puppet.tar.gz", "-C /etc/puppet/environments/cdr"
       end
     end
 
@@ -113,9 +111,7 @@ namespace :deploy do
   
     task :noop do
       on roles(:all) do
-        as :root do
-          execute :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr", "--noop"
-        end
+        sudo :sudo, :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr", "--noop"
       end
     end
     
@@ -123,9 +119,7 @@ namespace :deploy do
   
   task :apply do
     on roles(:all) do
-      as :root do
-        execute :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr"
-      end
+      sudo :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr"
     end
   end
   
