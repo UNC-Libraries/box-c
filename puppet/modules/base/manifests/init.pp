@@ -82,13 +82,6 @@ class base(
     ],
   }
 
-  file { "/var/www/html/static":
-    ensure => "directory",
-    owner => "tomcat",
-    group => "tomcat",
-    require => User["tomcat"],
-  }
-
 
   # Classes as defined in modules/
 

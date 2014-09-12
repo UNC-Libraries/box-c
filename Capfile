@@ -56,6 +56,8 @@ namespace :deploy do
       on roles(:all) do
         execute :mkdir, "-p", "/tmp/deploy"
         upload! tarball, "/tmp/deploy"
+
+        sudo :mkdir, "-p", "/var/www/html/static"
         sudo :tar, "--warning=no-unknown-keyword", "-xzf", File.join("/tmp/deploy", File.basename(tarball)), "-C /var/www/html/static"
       end
     end
