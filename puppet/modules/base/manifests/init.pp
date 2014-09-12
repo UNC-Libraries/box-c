@@ -82,18 +82,4 @@ class base(
     ],
   }
 
-
-  # Classes as defined in modules/
-
-  class { "clamav": }
-  class { "fits": }
-  class { "repository": }
-  class { "djatoka": }
-  class { "solr": }
-  class { "fedora": }
-  class { "mulgara": }
-  class { "tomcat": }
-  class { "irods": }
-  class { "tika": }
-
 }
