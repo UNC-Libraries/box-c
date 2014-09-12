@@ -38,11 +38,11 @@ FEDORA_LIBS = FileList[
   "staging-areas/target/staging-areas-0.0.1-SNAPSHOT.jar"
 ]
 
-file "static.tar.gz" do |t|
+file "static.tar.gz" => FileList["access/src/main/external/static/**/*"] do |t|
   sh "tar -cvzf #{t.name} -C access/src/main/external/static ."
 end
 
-file "puppet.tar.gz" do |t|
+file "puppet.tar.gz" => FileList["puppet/**/*"] do |t|
   sh "tar -cvzf #{t.name} -C puppet ."
 end
 
