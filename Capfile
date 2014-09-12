@@ -49,7 +49,8 @@ end
 namespace :deploy do
 
   namespace :update do
-
+  
+    desc "Update static files"
     task :static => "static.tar.gz" do |t|
       tarball = t.prerequisites.first
       
@@ -62,6 +63,7 @@ namespace :deploy do
       end
     end
   
+    desc "Update webapps"
     task :webapps => WEBAPPS do |t|
       on roles(:all) do
         t.prerequisites.each do |p|
@@ -70,6 +72,7 @@ namespace :deploy do
       end
     end
   
+    desc "Update Tomcat libraries"
     task :tomcat_libs => TOMCAT_LIBS do |t|
       on roles(:all) do
         t.prerequisites.each do |p|
@@ -78,6 +81,7 @@ namespace :deploy do
       end
     end
   
+    desc "Update Fedora libraries"
     task :fedora_libs => FEDORA_LIBS do |t|
       on roles(:all) do
         t.prerequisites.each do |p|
@@ -86,8 +90,10 @@ namespace :deploy do
       end
     end
   
+    desc "Update Tomcat and Fedora libraries"
     task :libs => [:tomcat_libs, :fedora_libs]
     
+    desc "Update the Puppet configuration"
     task :config => "puppet.tar.gz" do |t|
       tarball = t.prerequisites.first
       
@@ -105,6 +111,7 @@ namespace :deploy do
   
   namespace :apply do
   
+    desc "Apply the Puppet configuration in no-op mode"
     task :noop do
       on roles(:all) do
         sudo :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr", "--noop"
@@ -113,6 +120,7 @@ namespace :deploy do
     
   end
   
+  desc "Apply the Puppet configuration"
   task :apply do
     on roles(:all) do
       sudo :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr"
@@ -121,6 +129,7 @@ namespace :deploy do
   
 end
 
+desc "Update the configuration, apply the configuration, and then update everything else"
 task :deploy do
   invoke "deploy:update:config"
   invoke "deploy:apply"
