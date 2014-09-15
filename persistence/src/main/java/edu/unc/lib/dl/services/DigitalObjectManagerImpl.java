@@ -26,19 +26,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.AccessClient;
@@ -66,17 +70,17 @@ import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.ModsXmlHelper;
 
 /**
  * This class orchestrates the transactions that modify repository objects and update ancillary services.
- * 
+ *
  * @author count0
- * 
+ *
  */
 public class DigitalObjectManagerImpl implements DigitalObjectManager {
-	private static final Log log = LogFactory.getLog(DigitalObjectManagerImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(DigitalObjectManagerImpl.class);
+
 	private boolean available = false;
 	private String availableMessage = "The repository manager is not available yet.";
 	private AccessClient accessClient = null;
@@ -91,6 +95,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private MailNotifier mailNotifier;
 	private String submitterGroupsOverride = null;
 	private PID collectionsPid = null;
+
+	private final Map<String, Lock> pidLocks;
 
 	public String getSubmitterGroupsOverride() {
 		return submitterGroupsOverride;
@@ -125,8 +131,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	}
 
 	public DigitalObjectManagerImpl() {
+		pidLocks = new ConcurrentHashMap<String, Lock>();
 	}
 
+	@Override
 	public IngestResult addToIngestQueue(SubmissionInformationPackage sip, DepositRecord record) throws IngestException {
 		IngestResult result = new IngestResult();
 		ArchivalInformationPackage aip = null;
@@ -158,7 +166,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			} catch (URISyntaxException e) {
 				log.error("Invalid onyen, cannot create email URI", e);
 			}
-			
+
 			// Add ingestor groups to the AIP for group forwarding
 			if (this.getSubmitterGroupsOverride() != null) {
 				aip.setSubmitterGroups(this.getSubmitterGroupsOverride());
@@ -204,6 +212,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		log.error(sb.toString());
 	}
 
+	@Override
 	public void addRelationship(PID subject, ContentModelHelper.Relationship rel, PID object) throws NotFoundException,
 			IngestException {
 		try {
@@ -221,7 +230,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	/**
 	 * This method destroys a set of objects in Fedora, leaving no preservation data. It will update any ancillary
 	 * services and log delete events.
-	 * 
+	 *
 	 * @param pids
 	 *           the PIDs of the objects to purge
 	 * @param message
@@ -229,6 +238,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @return a list of PIDs that were purged
 	 * @see edu.unc.lib.dl.services.DigitalObjectManager.purge()
 	 */
+	@Override
 	public List<PID> delete(PID pid, String user, String message) throws IngestException, NotFoundException {
 		availableCheck();
 
@@ -329,7 +339,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	/**
 	 * Generates a list of referring object PIDs. Dependent objects are currently defined as those objects that refer to
 	 * the specified pid in RELS-EXT other than it's container.
-	 * 
+	 *
 	 * @param pid
 	 *           the object depended upon
 	 * @return a list of dependent object PIDs
@@ -360,6 +370,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		// throw a runtime exception?
 	}
 
+	@Override
 	public void purgeRelationship(PID subject, ContentModelHelper.Relationship rel, PID object)
 			throws NotFoundException, IngestException {
 		try {
@@ -377,7 +388,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	/**
 	 * Just removes object from container, does not log this event. MUST finish operation or dump rollback info and
 	 * rethrow exception.
-	 * 
+	 *
 	 * @param pid
 	 *           the PID of the object to remove
 	 * @return the PID of the old container
@@ -394,6 +405,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 		log.debug("removeFromContainer called on PID: " + parent.getPid());
 		try {
+			// Lock the parent being removed from
+			obtainWriteLock(parent);
+
 			// remove ir:contains statement to RELS-EXT
 			relsextDone = this.getManagementClient().purgeObjectRelationship(parent,
 					ContentModelHelper.Relationship.contains.getURI().toString(), pid);
@@ -421,10 +435,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		} catch (JDOMException e) {
 			IllegalRepositoryStateException irs = new IllegalRepositoryStateException(
 					"Invalid XML for container MD_CONTENTS: " + parent.getPid(), parent, e);
-			log.error(irs);
+			log.error("Failed to parse XML", irs);
 			throw irs;
 		} catch (IOException e) {
 			throw new Error("Should not get IOException for reading byte array input", e);
+		} finally {
+			releaseWriteLock(pid);
 		}
 		return parent;
 	}
@@ -697,6 +713,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		List<PID> oldParents = new ArrayList<PID>();
 		List<PID> reordered = new ArrayList<PID>();
 		try {
+			obtainWriteLock(destination);
+
 			// remove pids from old containers, add to new, log
 			for (PID pid : moving) {
 				PID oldParent = this.removeFromContainer(pid);
@@ -709,7 +727,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 			// edit Contents XML of new parent container to append/insert
 			Document newXML;
-			Document oldXML;
+			Document oldXML = null;
 			boolean exists = true;
 			try {
 				MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(destination, "MD_CONTENTS", null);
@@ -723,21 +741,14 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					throw new Error(e);
 				}
 			} catch (NotFoundException e) {
-				oldXML = new Document();
-				Element structMap = new Element("structMap", JDOMNamespaceUtil.METS_NS).addContent(new Element("div",
-						JDOMNamespaceUtil.METS_NS).setAttribute("TYPE", "Container"));
-				oldXML.setRootElement(structMap);
 				exists = false;
 			}
-			newXML = ContainerContentsHelper.addChildContentListInCustomOrder(oldXML, destination, moving, reordered);
+
 			if (exists) {
+				newXML = ContainerContentsHelper.addChildContentListInCustomOrder(oldXML, destination, moving, reordered);
 				this.getManagementClient().modifyInlineXMLDatastream(destination, "MD_CONTENTS", false,
 						"adding " + moving.size() + " child resources to container", new ArrayList<String>(),
 						"List of Contents", newXML);
-			} else {
-				this.getManagementClient().addInlineXMLDatastream(destination, "MD_CONTENTS", false,
-						"added " + moving.size() + " child resources to container", new ArrayList<String>(),
-						"List of Contents", false, newXML);
 			}
 			destContentInventoryUpdated = true;
 			// write the log events
@@ -749,11 +760,14 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			if (this.getOperationsMessageSender() != null) {
 				this.getOperationsMessageSender().sendMoveOperation(user, oldParents, destination, moving, reordered);
 			}
+
 		} catch (FedoraException e) {
 			thrown = e;
 		} catch (RuntimeException e) {
 			thrown = e;
 		} finally {
+			releaseWriteLock(destination);
+
 			if (thrown != null) {
 				// some stuff failed to move, log it
 				StringBuffer sb = new StringBuffer();
@@ -769,7 +783,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see edu.unc.lib.dl.services.DigitalObjectManager#isAvailable()
 	 */
 	@Override
@@ -802,7 +816,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			aip = this.getAipIngestPipeline().processAIP(aip);
 
 			// no emails for blocking ingests
-			aip.setEmailRecipients(null); 
+			aip.setEmailRecipients(null);
 
 			if (this.getSubmitterGroupsOverride() != null) {
 				aip.setSubmitterGroups(this.getSubmitterGroupsOverride());
@@ -831,7 +845,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see edu.unc.lib.dl.services.BatchIngestServiceInterface#ingestBatchNow(java.io.File)
 	 */
 	public void ingestBatchNow(File prepDir) throws IngestException {
@@ -847,6 +861,44 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 		task.run();
 		task = null;
+	}
+
+	/**
+	 * Obtain a lock on a particular pid for write operations through the object manager. If a lock can't be obtained the
+	 * thread will wait.
+	 *
+	 * @param pid
+	 *           pid of the object to lock
+	 */
+	public void obtainWriteLock(PID pid) {
+		String pidString = pid.getPid();
+		Lock lock = null;
+		synchronized (pidLocks) {
+			lock = pidLocks.get(pidString);
+			if (lock == null) {
+				lock = new ReentrantLock();
+				pidLocks.put(pidString, lock);
+			}
+		}
+
+		log.debug("Acquiring lock on {} for thread {}", pid.getPid(), Thread.currentThread().getName());
+		lock.lock();
+		log.debug("Acquired lock on {} for thread {}", pid.getPid(), Thread.currentThread().getName());
+	}
+
+	/**
+	 * Release a write lock for the specified pid
+	 *
+	 * @param pid
+	 */
+	public void releaseWriteLock(PID pid) {
+		String pidString = pid.getPid();
+		Lock lock = pidLocks.get(pidString);
+		log.debug("Releasing lock on {} from thread {}", pid.getPid(), Thread.currentThread().getName());
+		if (lock != null) {
+			lock.unlock();
+			log.debug("Released lock on {} from thread {}", pid.getPid(), Thread.currentThread().getName());
+		}
 	}
 
 	public BatchIngestQueue getBatchIngestQueue() {
