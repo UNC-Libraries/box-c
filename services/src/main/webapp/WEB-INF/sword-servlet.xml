@@ -61,6 +61,9 @@
 		<property name="jmsTemplate" ref="jmsTemplate" />
 	</bean>
 	
+	<bean id="pidWriteLock" class="edu.unc.lib.dl.util.PIDLock">
+	</bean>
+	
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
 		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="accessClient" ref="accessClient"/>
@@ -69,6 +72,7 @@
 		<property name="schematronValidator" ref="schematronValidator"/>
 		<property name="available" value="true"/>
 		<property name="collectionsPid" ref="collectionsPid"/>
+		<property name="pidLock" ref="pidWriteLock"/>
 	</bean>
 
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"

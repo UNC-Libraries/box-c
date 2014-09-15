@@ -26,12 +26,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -66,6 +62,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
+import edu.unc.lib.dl.util.PIDLock;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -92,7 +89,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private SchematronValidator schematronValidator = null;
 	private PID collectionsPid = null;
 
-	private final Map<String, Lock> pidLocks;
+	private PIDLock pidLock;
 
 	public synchronized void setAvailable(boolean available, String message) {
 		this.available = available;
@@ -112,7 +109,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	}
 
 	public DigitalObjectManagerImpl() {
-		pidLocks = new ConcurrentHashMap<String, Lock>();
 	}
 
 	private void availableCheck() throws IngestException {
@@ -204,9 +200,14 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		Throwable thrown = null;
 		List<PID> removed = new ArrayList<PID>();
 		removed.add(pid);
+
+		PID parent = null;
 		try {
 			// update container
-			this.removeFromContainer(pid);
+			parent = this.removeFromContainer(pid);
+
+			pidLock.lock(parent);
+
 			Element event = logger.logEvent(PremisEventLogger.Type.DELETION, "Deleted " + deleted.size()
 					+ "contained object(s).", container);
 			PremisEventLogger.addDetailedOutcome(event, "success", "Message: " + message, null);
@@ -215,10 +216,14 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			// delete object and all of its children
 			for (PID obj : toDelete) {
 				try {
+					pidLock.lock(obj);
+
 					this.getManagementClient().purgeObject(obj, message, false);
 					deleted.add(obj);
 				} catch (NotFoundException e) {
 					log.error("Delete set referenced an object that didn't exist: " + pid.getPid(), e);
+				} finally {
+					pidLock.unlock(obj);
 				}
 			}
 			// Send message to message queue informing it of the deletion(s)
@@ -233,6 +238,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			log.error("Fedora threw an unexpected runtime exception while deleting " + pid.getPid(), e);
 			thrown = e;
 		} finally {
+			pidLock.unlock(parent);
+
 			if (thrown != null && toDelete.size() > deleted.size()) {
 				// some objects not deleted
 				List<PID> missed = new ArrayList<PID>();
@@ -322,7 +329,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		log.debug("removeFromContainer called on PID: " + parent.getPid());
 		try {
 			// Lock the parent being removed from
-			obtainWriteLock(parent);
+			pidLock.lock(parent);
 
 			// remove ir:contains statement to RELS-EXT
 			relsextDone = this.getManagementClient().purgeObjectRelationship(parent,
@@ -356,7 +363,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		} catch (IOException e) {
 			throw new Error("Should not get IOException for reading byte array input", e);
 		} finally {
-			releaseWriteLock(pid);
+			pidLock.unlock(parent);
 		}
 		return parent;
 	}
@@ -429,6 +436,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		// compare checksum if one is supplied
 		if (checksum != null) {
 			try {
+				pidLock.lock(pid);
+
 				String sum = new Checksum().getChecksum(newMODSFile);
 				if (!checksum.trim().toLowerCase().equals(sum.toLowerCase())) {
 					throw new IngestException("MD5 calculated for file (" + sum + ") does not match supplied checksum ("
@@ -441,6 +450,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				throw new IngestException("New MODS file not found", e1);
 			} catch (IOException e1) {
 				throw new IngestException("There was a problem reading the new MODS file", e1);
+			} finally {
+				pidLock.unlock(pid);
 			}
 		}
 
@@ -621,7 +632,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		List<PID> oldParents = new ArrayList<PID>();
 		List<PID> reordered = new ArrayList<PID>();
 		try {
-			obtainWriteLock(destination);
+			pidLock.lock(destination);
 
 			// remove pids from old containers, add to new, log
 			for (PID pid : moving) {
@@ -672,7 +683,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		} catch (RuntimeException e) {
 			thrown = e;
 		} finally {
-			releaseWriteLock(destination);
+			pidLock.unlock(destination);
 
 			if (thrown != null) {
 				// some stuff failed to move, log it
@@ -822,42 +833,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		return containerPid;
 	}
 
-	/**
-	 * Obtain a lock on a particular pid for write operations through the object manager. If a lock can't be obtained the
-	 * thread will wait.
-	 *
-	 * @param pid
-	 *           pid of the object to lock
-	 */
-	public void obtainWriteLock(PID pid) {
-		String pidString = pid.getPid();
-		Lock lock = null;
-		synchronized (pidLocks) {
-			lock = pidLocks.get(pidString);
-			if (lock == null) {
-				lock = new ReentrantLock();
-				pidLocks.put(pidString, lock);
-			}
-		}
-
-		log.debug("Acquiring lock on {} for thread {}", pid.getPid(), Thread.currentThread().getName());
-		lock.lock();
-		log.debug("Acquired lock on {} for thread {}", pid.getPid(), Thread.currentThread().getName());
-	}
-
-	/**
-	 * Release a write lock for the specified pid
-	 *
-	 * @param pid
-	 */
-	public void releaseWriteLock(PID pid) {
-		String pidString = pid.getPid();
-		Lock lock = pidLocks.get(pidString);
-		log.debug("Releasing lock on {} from thread {}", pid.getPid(), Thread.currentThread().getName());
-		if (lock != null) {
-			lock.unlock();
-			log.debug("Released lock on {} from thread {}", pid.getPid(), Thread.currentThread().getName());
-		}
+	public void setPidLock(PIDLock pidLock) {
+		this.pidLock = pidLock;
 	}
 
 	public void setCollectionsPid(PID collectionsPid) {
