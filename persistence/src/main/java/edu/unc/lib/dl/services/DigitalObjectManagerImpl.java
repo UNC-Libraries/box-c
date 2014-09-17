@@ -762,10 +762,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 						"List of Contents", newXML);
 			}
 			destContentInventoryUpdated = true;
+
 			// write the log events
-			for (PID pid : moving) {
-				this.managementClient.writePremisEventsToFedoraObject(logger, pid);
-			}
+			managementClient.writePremisEventsToFedoraObject(logger, moving);
 
 			// send message for the operation
 			if (this.getOperationsMessageSender() != null) {
