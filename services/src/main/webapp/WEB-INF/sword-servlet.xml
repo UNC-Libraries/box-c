@@ -110,7 +110,7 @@
 		</property>
 	</bean>
 	
-	<bean id="pidWriteLock" class="edu.unc.lib.dl.util.PIDLock">
+	<bean id="pidWriteLock" class="edu.unc.lib.dl.util.PIDLocker">
 	</bean>
 	
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">

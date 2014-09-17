@@ -63,7 +63,7 @@ import edu.unc.lib.dl.util.ContainerContentsHelper;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
-import edu.unc.lib.dl.util.PIDLock;
+import edu.unc.lib.dl.util.PIDLocker;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -93,7 +93,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private String submitterGroupsOverride = null;
 	private PID collectionsPid = null;
 
-	private PIDLock pidLock;
+	private PIDLocker pidLock;
 
 	public String getSubmitterGroupsOverride() {
 		return submitterGroupsOverride;
@@ -873,7 +873,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		task = null;
 	}
 
-	public void setPidLock(PIDLock pidLock) {
+	public void setPidLock(PIDLocker pidLock) {
 		this.pidLock = pidLock;
 	}
 

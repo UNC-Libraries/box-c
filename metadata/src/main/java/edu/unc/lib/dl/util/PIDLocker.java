@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.util;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -26,16 +24,21 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
+ * Lock which allows for locking on individual PIDs. Implemented as a stripe lock
+ *
  * @author bbpennel
  * @date Sep 15, 2014
  */
-public class PIDLock {
-	private static final Logger log = LoggerFactory.getLogger(PIDLock.class);
+public class PIDLocker {
+	private static final Logger log = LoggerFactory.getLogger(PIDLocker.class);
 
-	private final Map<String, Lock> pidLocks;
+	private final Lock[] pidLocks;
 
-	public PIDLock() {
-		pidLocks = new ConcurrentHashMap<String, Lock>();
+	public PIDLocker() {
+		pidLocks = new Lock[128];
+		for (int i = 0; i < pidLocks.length; i++) {
+			pidLocks[i] = new ReentrantLock();
+		}
 	}
 
 	/**
@@ -45,18 +48,8 @@ public class PIDLock {
 	 *           pid of the object to lock
 	 */
 	public void lock(PID pid) {
-		String pidString = pid.getPid();
-		Lock lock = null;
-		synchronized (pidLocks) {
-			lock = pidLocks.get(pidString);
-			if (lock == null) {
-				lock = new ReentrantLock();
-				pidLocks.put(pidString, lock);
-			}
-		}
-
 		log.debug("Acquiring lock on {} for thread {}", pid.getPid(), Thread.currentThread().getName());
-		lock.lock();
+		getLock(pid).lock();
 		log.debug("Acquired lock on {} for thread {}", pid.getPid(), Thread.currentThread().getName());
 	}
 
@@ -66,12 +59,12 @@ public class PIDLock {
 	 * @param pid
 	 */
 	public void unlock(PID pid) {
-		String pidString = pid.getPid();
-		Lock lock = pidLocks.get(pidString);
 		log.debug("Releasing lock on {} from thread {}", pid.getPid(), Thread.currentThread().getName());
-		if (lock != null) {
-			lock.unlock();
-			log.debug("Released lock on {} from thread {}", pid.getPid(), Thread.currentThread().getName());
-		}
+		getLock(pid).unlock();
+		log.debug("Released lock on {} from thread {}", pid.getPid(), Thread.currentThread().getName());
+	}
+
+	private Lock getLock(PID pid) {
+		return pidLocks[Math.abs(pid.getPid().hashCode()) % pidLocks.length];
 	}
 }

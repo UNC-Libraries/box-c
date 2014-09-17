@@ -96,7 +96,7 @@ import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
-import edu.unc.lib.dl.util.PIDLock;
+import edu.unc.lib.dl.util.PIDLocker;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -195,7 +195,7 @@ public class ManagementClient extends WebServiceTemplate {
 	private String username;
 
 	@Autowired(required = false)
-	private PIDLock pidWriteLock;
+	private PIDLocker pidWriteLock;
 
 	public String addManagedDatastream(PID pid, String dsid, boolean force, String message, List<String> altids,
 			String label, boolean versionable, String mimetype, String locationURI) throws FedoraException {
@@ -924,7 +924,7 @@ public class ManagementClient extends WebServiceTemplate {
 	// }
 	// }
 
-	public void setPidWriteLock(PIDLock pidLock) {
+	public void setPidWriteLock(PIDLocker pidLock) {
 		this.pidWriteLock = pidLock;
 	}
 
