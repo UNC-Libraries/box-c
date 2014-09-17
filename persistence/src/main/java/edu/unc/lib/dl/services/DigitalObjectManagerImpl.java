@@ -62,7 +62,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
-import edu.unc.lib.dl.util.PIDLock;
+import edu.unc.lib.dl.util.PIDLocker;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -89,7 +89,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private SchematronValidator schematronValidator = null;
 	private PID collectionsPid = null;
 
-	private PIDLock pidLock;
+	private PIDLocker pidLock;
 
 	public synchronized void setAvailable(boolean available, String message) {
 		this.available = available;
@@ -832,7 +832,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		return containerPid;
 	}
 
-	public void setPidLock(PIDLock pidLock) {
+	public void setPidLock(PIDLocker pidLock) {
 		this.pidLock = pidLock;
 	}
 
