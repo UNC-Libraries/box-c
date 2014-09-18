@@ -110,6 +110,9 @@
 		</property>
 	</bean>
 	
+	<bean id="pidWriteLock" class="edu.unc.lib.dl.util.PIDLocker">
+	</bean>
+	
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
 		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="accessClient" ref="accessClient"/>
@@ -123,6 +126,7 @@
 		<property name="batchIngestTaskFactory" ref="batchIngestTaskFactory"/>	
 		<property name="available" value="true"/>
 		<property name="collectionsPid" ref="collectionsPid"/>
+		<property name="pidLock" ref="pidWriteLock"/>
 	</bean>
 	
 	<bean id="batchIngestQueue" class="edu.unc.lib.dl.services.BatchIngestQueue" init-method="init">

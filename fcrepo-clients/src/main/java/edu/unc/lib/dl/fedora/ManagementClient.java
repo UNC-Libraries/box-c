@@ -25,6 +25,7 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -38,12 +39,13 @@ import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.WebServiceFaultException;
@@ -56,6 +58,7 @@ import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
 import org.springframework.ws.transport.http.CommonsHttpMessageSender;
 import org.xml.sax.SAXException;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.types.AddDatastream;
 import edu.unc.lib.dl.fedora.types.AddDatastreamResponse;
@@ -93,6 +96,7 @@ import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
+import edu.unc.lib.dl.util.PIDLocker;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -117,6 +121,7 @@ public class ManagementClient extends WebServiceTemplate {
 
 		WebServiceMessageCallback callback() {
 			return new WebServiceMessageCallback() {
+				@Override
 				public void doWithMessage(WebServiceMessage message) {
 					((SoapMessage) message).setSoapAction(uri);
 				}
@@ -181,13 +186,16 @@ public class ManagementClient extends WebServiceTemplate {
 		}
 	}
 
-	private static final Log log = LogFactory.getLog(ManagementClient.class);
+	private static final Logger log = LoggerFactory.getLogger(ManagementClient.class);
 
 	private String fedoraContextUrl;
 
 	private String password;
 
 	private String username;
+
+	@Autowired(required = false)
+	private PIDLocker pidWriteLock;
 
 	public String addManagedDatastream(PID pid, String dsid, boolean force, String message, List<String> altids,
 			String label, boolean versionable, String mimetype, String locationURI) throws FedoraException {
@@ -263,7 +271,7 @@ public class ManagementClient extends WebServiceTemplate {
 	 * modifications to the datastream replace the current datastream contents and no versioning history is preserved. To
 	 * put it another way: No new datastream versions will be made, but all the existing versions will be retained. All
 	 * changes to the datastream will be to the current version.
-	 * 
+	 *
 	 * @param pid
 	 *           The PID of the object.
 	 * @param dsid
@@ -326,7 +334,7 @@ public class ManagementClient extends WebServiceTemplate {
 			AddRelationshipResponse resp = (AddRelationshipResponse) this.callService(req, Action.addRelationship);
 			return resp.isAdded();
 		} catch (SoapFaultClientException e) {
-			log.debug(e);
+			log.debug("Soap exception", e);
 			throw new NotFoundException(e);
 		}
 	}
@@ -805,7 +813,7 @@ public class ManagementClient extends WebServiceTemplate {
 	/**
 	 * Poll Fedora until the PID is found or timeout. This method will blocking until at most the specified timeout plus
 	 * the timeout of the underlying HTTP connection.
-	 * 
+	 *
 	 * @param pid
 	 *           the PID to look for
 	 * @param delay
@@ -840,21 +848,53 @@ public class ManagementClient extends WebServiceTemplate {
 
 	public String writePremisEventsToFedoraObject(PremisEventLogger eventLogger, PID pid) throws FedoraException {
 		Document dom = null;
-		MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(pid, "MD_EVENTS", null);
-		ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
 		try {
-			dom = new SAXBuilder().build(bais);
-			bais.close();
-		} catch (JDOMException e) {
-			throw new IllegalRepositoryStateException("Cannot parse MD_EVENTS: " + pid, e);
-		} catch (IOException e) {
-			throw new Error(e);
+			pidWriteLock.lock(pid);
+
+			MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(pid, "MD_EVENTS", null);
+			ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
+			try {
+				dom = new SAXBuilder().build(bais);
+				bais.close();
+			} catch (JDOMException e) {
+				throw new IllegalRepositoryStateException("Cannot parse MD_EVENTS: " + pid, e);
+			} catch (IOException e) {
+				throw new Error(e);
+			}
+			eventLogger.appendLogEvents(pid, dom.getRootElement());
+			String eventsLoc = this.upload(dom);
+			String logTimestamp = this.modifyDatastreamByReference(pid, "MD_EVENTS", false, "adding PREMIS events",
+					new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, eventsLoc);
+			return logTimestamp;
+		} finally {
+			pidWriteLock.unlock(pid);
 		}
-		eventLogger.appendLogEvents(pid, dom.getRootElement());
-		String eventsLoc = this.upload(dom);
-		String logTimestamp = this.modifyDatastreamByReference(pid, "MD_EVENTS", false, "adding PREMIS events",
-				new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, eventsLoc);
-		return logTimestamp;
+	}
+
+	public void writePremisEventsToFedoraObject(final PremisEventLogger eventLogger, final Collection<PID> pids) {
+		final AccessGroupSet groups = GroupsThreadStore.getGroups();
+
+		Runnable premisRunnable = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					GroupsThreadStore.storeGroups(groups);
+
+					for (PID pid : pids) {
+						try {
+							writePremisEventsToFedoraObject(eventLogger, pid);
+						} catch (FedoraException e) {
+							log.error("Failed to update premis for {}", pid, e);
+						}
+					}
+				} finally {
+					GroupsThreadStore.clearGroups();
+				}
+			}
+		};
+
+		Thread thread = new Thread(premisRunnable);
+		thread.start();
 	}
 
 	// @Override
@@ -883,6 +923,10 @@ public class ManagementClient extends WebServiceTemplate {
 	// TransportContextHolder.setTransportContext(previousTransportContext);
 	// }
 	// }
+
+	public void setPidWriteLock(PIDLocker pidLock) {
+		this.pidWriteLock = pidLock;
+	}
 
 	/**
 	 * @param accessClient
