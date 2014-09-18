@@ -69,7 +69,7 @@
 
 	<bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
 		<constructor-arg name="workerFactory">
-			<bean id="workerFactory" class="net.greghaines.jesque.worker.WorkerImplFactory">
+			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
 				<constructor-arg name="config" ref="jesqueConfig" />
 				<constructor-arg name="queues">
 					<util:list>
@@ -80,7 +80,22 @@
 				<constructor-arg ref="jobFactory" />
 			</bean>
 		</constructor-arg>
-		<constructor-arg name="numWorkers" value="5" />
+		<constructor-arg name="numWorkers" value="4" />
+	</bean>
+	
+	<bean id="cdrMetsDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+		<constructor-arg name="workerFactory">
+			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+				<constructor-arg name="config" ref="jesqueConfig" />
+				<constructor-arg name="queues">
+					<util:list>
+						<value>CDRMETSCONVERT</value>
+					</util:list>
+				</constructor-arg>
+				<constructor-arg ref="jobFactory" />
+			</bean>
+		</constructor-arg>
+		<constructor-arg name="numWorkers" value="1" />
 	</bean>
 
 	<bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor">
@@ -357,7 +372,7 @@
 	
 	<bean id="CleanupDepositJob" class="edu.unc.lib.deposit.CleanupDepositJob"
 		scope="prototype">
-		<property name="stagesConfiguration" value="${fedora.stagesConfiguration}"/>
+		<property name="stageConfigURL" value="${fedora.stagesConfiguration}"/>
 		<property name="statusKeysExpireSeconds" value="${status.keys.expire.seconds:3600}"/>
 	</bean>	
 	

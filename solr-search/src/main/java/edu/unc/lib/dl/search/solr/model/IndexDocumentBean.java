@@ -34,7 +34,7 @@ public class IndexDocumentBean {
 	
 	protected List<String> scope;
 	protected String rollup;
-	protected Boolean isPart;
+	protected Boolean isPart = Boolean.FALSE;
 	protected Long _version_;
 	
 	protected List<String> datastream;

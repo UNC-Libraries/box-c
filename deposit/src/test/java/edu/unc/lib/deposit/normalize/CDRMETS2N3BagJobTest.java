@@ -37,8 +37,8 @@ public class CDRMETS2N3BagJobTest {
 		Runnable r = (Runnable)j;
 		r.run();
 		
-		File modelFile = new File(workDir, DepositConstants.MODEL_FILE);
-		assertTrue("N3 model file must exist after conversion", modelFile.exists());
+		File modelFile = new File(workDir, DepositConstants.JENA_TDB_DIR);
+		assertTrue("Jena model must exist after conversion", modelFile.exists());
 	}
 	
 	@Test
@@ -52,7 +52,7 @@ public class CDRMETS2N3BagJobTest {
 		Runnable r = (Runnable)j;
 		r.run();
 
-		File modelFile = new File(workDir, DepositConstants.MODEL_FILE);
+		File modelFile = new File(workDir, DepositConstants.JENA_TDB_DIR);
 		assertTrue("N3 model file must exist after conversion", modelFile.exists());
 	}
 
@@ -71,7 +71,7 @@ public class CDRMETS2N3BagJobTest {
 		Runnable r = (Runnable)j;
 		r.run();
 
-		File modelFile = new File(workDir, DepositConstants.MODEL_FILE);
+		File modelFile = new File(workDir, DepositConstants.JENA_TDB_DIR);
 		assertTrue("N3 model file must exist after conversion", modelFile.exists());
 	}
 }

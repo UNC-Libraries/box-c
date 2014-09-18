@@ -61,7 +61,7 @@ import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
  * @author count0
  *
  */
-public class MakeFOXML extends AbstractDepositJob implements Runnable {
+public class MakeFOXML extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(MakeFOXML.class);
 
 	private static Set<String> copyPropertyURIs = null;
@@ -83,12 +83,10 @@ public class MakeFOXML extends AbstractDepositJob implements Runnable {
 	public MakeFOXML() {}
 
 	@Override
-	public void run() {
+	public void runJob() {
 		getSubdir(DepositConstants.FOXML_DIR).mkdir();
 
-		Model m = ModelFactory.createDefaultModel();
-		File modelFile = new File(getDepositDirectory(), DepositConstants.MODEL_FILE);
-		m.read(modelFile.toURI().toString());
+		Model m = getModel();
 
 		Map<String, String> status = getDepositStatus();
 		boolean excludeDepositRecord = Boolean.parseBoolean(status.get(DepositField.excludeDepositRecord.name()));

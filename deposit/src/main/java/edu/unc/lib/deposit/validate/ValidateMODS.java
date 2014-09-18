@@ -27,7 +27,7 @@ import edu.unc.lib.dl.util.PremisEventLogger.Type;
  * @author count0
  *
  */
-public class ValidateMODS extends AbstractDepositJob implements Runnable {
+public class ValidateMODS extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(ValidateMODS.class);
 
 	private SchematronValidator schematronValidator = null;
@@ -58,7 +58,7 @@ public class ValidateMODS extends AbstractDepositJob implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public void runJob() {
 		int count = 0;
 		int invalidXSD = 0;
 		int invalidVocab = 0;

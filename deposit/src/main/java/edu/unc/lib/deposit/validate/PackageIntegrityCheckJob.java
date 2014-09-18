@@ -17,7 +17,7 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
-public class PackageIntegrityCheckJob extends AbstractDepositJob implements Runnable {
+public class PackageIntegrityCheckJob extends AbstractDepositJob {
 
 	/**
 	 * Verifies the integrity of the deposit file received from SWORD.
@@ -32,7 +32,7 @@ public class PackageIntegrityCheckJob extends AbstractDepositJob implements Runn
 		super();
 	};
 
-	public void run() {
+	public void runJob() {
 		Map<String, String> status = getDepositStatus();
 		String md5 = status.get(DepositField.depositMd5.name());
 		String file = status.get(DepositField.fileName.name());

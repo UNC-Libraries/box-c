@@ -26,7 +26,6 @@ import org.springframework.ws.client.WebServiceTransportException;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
@@ -62,7 +61,7 @@ import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
  * @author count0
  *
  */
-public class IngestDeposit extends AbstractDepositJob implements Runnable, ListenerJob {
+public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 	private static final Logger log = LoggerFactory.getLogger(IngestDeposit.class);
 
@@ -140,9 +139,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 
 		excludeDepositRecord = Boolean.parseBoolean(depositStatus.get(DepositField.excludeDepositRecord.name()));
 
-		Model model = ModelFactory.createDefaultModel();
-		File modelFile = new File(getDepositDirectory(), DepositConstants.MODEL_FILE);
-		model.read(modelFile.toURI().toString());
+		Model model = getModel();
 
 		ingestPids = new ArrayDeque<String>();
 		topLevelPids = new ArrayList<String>();
@@ -213,7 +210,7 @@ public class IngestDeposit extends AbstractDepositJob implements Runnable, Liste
 	}
 
 	@Override
-	public void run() {
+	public void runJob() {
 
 		depositStatus = getDepositStatus();
 

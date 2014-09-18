@@ -14,7 +14,7 @@ import com.samskivert.mustache.Template;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
-public class SendDepositorEmailJob extends AbstractDepositJob implements Runnable {
+public class SendDepositorEmailJob extends AbstractDepositJob {
 	private String baseUrl;
 	private JavaMailSender mailSender = null;
 	private String fromAddress = null;
@@ -69,7 +69,7 @@ public class SendDepositorEmailJob extends AbstractDepositJob implements Runnabl
 	}
 
 	@Override
-	public void run() {
+	public void runJob() {
 		// prepare template data
 		Map<String, Object> data = new HashMap<String, Object>();
 		Map<String, String> status = this.getDepositStatus();

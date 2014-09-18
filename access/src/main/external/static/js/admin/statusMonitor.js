@@ -25,7 +25,11 @@ require.config({
 	}
 });
 
-define('statusMonitor', ['jquery', 'StatusMonitorManager'], function($, StatusMonitorManager) {
-	var statusMonitorManager = new StatusMonitorManager($("#status_monitor"));
+define('statusMonitor', ['module', 'jquery', 'StatusMonitorManager'], function(module, $, StatusMonitorManager) {
+	var options = {
+			username : module.config().username,
+			isAdmin : module.config().isAdmin
+		};
+	var statusMonitorManager = new StatusMonitorManager($("#status_monitor"), options);
 	statusMonitorManager.activate();
 });

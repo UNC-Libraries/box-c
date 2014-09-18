@@ -37,8 +37,8 @@ public class DSPACEMETS2N3BagJobIT {
 		Runnable r = (Runnable)j;
 		r.run();
 		
-		File modelFile = new File(workDir, DepositConstants.MODEL_FILE);
-		assertTrue("N3 model file must exist after conversion", modelFile.exists());
+		File modelFile = new File(workDir, DepositConstants.JENA_TDB_DIR);
+		assertTrue("jena model dir must exist after conversion", modelFile.exists());
 	}
 
 }

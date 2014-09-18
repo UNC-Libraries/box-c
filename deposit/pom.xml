@@ -155,6 +155,30 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
 		</dependency>
+		<dependency>
+			<groupId>net.java.dev.stax-utils</groupId>
+			<artifactId>stax-utils</artifactId>
+			<version>20070216</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>jsr173-ri</artifactId>
+					<groupId>com.bea.xml</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>de.sven-jacobs</groupId>
+			<artifactId>loremipsum</artifactId>
+			<version>1.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.3.2</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -19,6 +19,8 @@ import org.jdom.Namespace;
 import org.jdom.filter.ElementFilter;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.rdf.model.Bag;
@@ -34,6 +36,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public class CDRMETSGraphExtractor {
+	public static final Logger LOG = LoggerFactory.getLogger(CDRMETSGraphExtractor.class);
 	public static final Namespace METS_ACL_NS = Namespace.getNamespace("acl", "http://cdr.unc.edu/definitions/acl");
 	
 	private static Map<String, URI> containerTypes = new HashMap<String, URI>();
@@ -60,7 +63,9 @@ public class CDRMETSGraphExtractor {
 
 	public void addArrangement(Model m) {
 		addDivProperties(m);
+		LOG.info("Added DIV properties");
 		addStructLinkProperties(m);
+		LOG.info("Added struct link properties");
 		addContainerTriples(m);
 	}
 	

@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.file.Files;
 
 import org.apache.commons.io.FileUtils;
@@ -15,14 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.CleanupPolicy;
@@ -41,7 +38,7 @@ import edu.unc.lib.staging.TagURIPattern;
  * @author count0
  *
  */
-public class CleanupDepositJob extends AbstractDepositJob implements Runnable {
+public class CleanupDepositJob extends AbstractDepositJob {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(CleanupDepositJob.class);
 
@@ -83,7 +80,7 @@ public class CleanupDepositJob extends AbstractDepositJob implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public void runJob() {
 		// load a Stages object
 		Stages stages = null;
 		try {
@@ -97,10 +94,7 @@ public class CleanupDepositJob extends AbstractDepositJob implements Runnable {
 					"Failed to read staging areas configuration");
 		}
 
-		Model m = ModelFactory.createDefaultModel();
-		File modelFile = new File(getDepositDirectory(),
-				DepositConstants.MODEL_FILE);
-		m.read(modelFile.toURI().toString());
+		Model m = getModel();
 
 		// clean up staged files according to staging area policy
 		TagURIPattern tagPattern = new TagURIPattern();

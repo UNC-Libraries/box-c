@@ -27,6 +27,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.METSParseException;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.METSProfile;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
@@ -56,11 +57,16 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 	}
 
 	protected File getMETSFile() {
-		File result = new File(getDepositDirectory(), "mets.xml");
+		File dataDir = new File(getDepositDirectory(), "data");
+		File result = new File(dataDir, "mets.xml");
 		if(!result.exists()) {
-			result = new File(getDepositDirectory(), "METS.xml");
-		} else if(!result.exists()) {
-			result = new File(getDepositDirectory(), "METS.XML");
+			result = new File(dataDir, "METS.xml");
+		}
+		if(!result.exists()) {
+			result = new File(dataDir, "METS.XML");
+		}
+		if(!result.exists()) {
+			result = new File(dataDir, getDepositStatus().get(DepositField.fileName.name()));
 		}
 		return result;
 	}

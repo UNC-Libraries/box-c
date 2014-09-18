@@ -71,7 +71,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DateTimeUtil;
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.ZipFileUtil;
@@ -85,7 +84,7 @@ import edu.unc.lib.dl.util.ZipFileUtil;
  * @author bbpennel
  * @date Apr 23, 2014
  */
-public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
+public class Proquest2N3BagJob extends AbstractDepositJob {
 
 	private static final Logger log = LoggerFactory.getLogger(Proquest2N3BagJob.class);
 
@@ -101,7 +100,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public void runJob() {
 
 		unzipPackages();
 
@@ -199,9 +198,6 @@ public class Proquest2N3BagJob extends AbstractDepositJob implements Runnable {
 
 		// Creation date for the content file
 		model.add(primaryResource, cdrprop(model, dateCreated), modified.toString(), XSDDatatype.XSDdateTime);
-
-		// Save the model to the n3 file
-		saveModel(model, DepositConstants.MODEL_FILE);
 	}
 
 	private void unzipPackages() {

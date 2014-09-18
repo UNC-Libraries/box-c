@@ -1,12 +1,14 @@
 <div>
 	<h3>Details for ingest</h3> (<span class="<%= data.state.toLowerCase() %>"><%= data.state %></span>, refreshed <%= moment().format('h:mm:ssa') %>)
-	
+
+	<% if (isAdmin || data.depositorName == username) { %>
 	<% if (data.state == "failed" || data.state == "paused") { %>
-		<p><a href="/services/api/status/deposit/<%= data.uuid %>?action=resume" class="monitor_action">Resume</a></p>
+		<p><a href="/services/api/edit/deposit/<%= data.uuid %>?action=resume" class="monitor_action">Resume</a></p>
 	<% } %>
 	
 	<% if (data.state == "running") { %>
-		<p><a href="/services/api/status/deposit/<%= data.uuid %>?action=pause" class="monitor_action">Pause</a></p>
+		<p><a href="/services/api/edit/deposit/<%= data.uuid %>?action=pause" class="monitor_action">Pause</a></p>
+	<% } %>
 	<% } %>
 	
 	<p><label>Submitter:</label> <%= data.depositorName %></p>
@@ -19,12 +21,12 @@
 		<% for (var i in data.jobs) {
 			var job = data.jobs[i];
 			%>
-			<li><span title="<%- job.shortName %>"><%= job.shortName %></span> <%= job.status %> <%= job.completion %></li>
+			<li><span title="<%- job.shortName %>"><%= job.shortName %></span> <%= job.status %> <%= job.completion %> <%= job.time %></li>
 		<% } %>
 			</ul>
 		</p>
 	<% } %>
-	
+		
 	<% if (data.ingestedFiles) { %>
 		<p><label>Ingested Files</label>
 			<ul class="ingested_files">

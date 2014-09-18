@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -24,7 +23,6 @@ import com.philvarner.clamavj.ScanResult;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
@@ -38,7 +36,7 @@ import edu.unc.lib.staging.StagingException;
  * @author count0
  *
  */
-public class VirusScanJob extends AbstractDepositJob implements Runnable {
+public class VirusScanJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory
 			.getLogger(VirusScanJob.class);
 	private ClamScan clamScan;
@@ -68,7 +66,7 @@ public class VirusScanJob extends AbstractDepositJob implements Runnable {
 		super(uuid, depositUUID);
 	}
 
-	public void run() {
+	public void runJob() {
 		log.debug("Running virus checks on : {}", getDepositDirectory());
 		
 		// get ClamScan software and database versions
@@ -78,9 +76,7 @@ public class VirusScanJob extends AbstractDepositJob implements Runnable {
 
 		Map<String, String> failures = new HashMap<String, String>();
 
-		Model model = ModelFactory.createDefaultModel();
-		File modelFile = new File(getDepositDirectory(), DepositConstants.MODEL_FILE);
-		model.read(modelFile.toURI().toString());
+		Model model = getModel();
 		Property fileLocation = model
 				.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
 		StmtIterator i = model.listStatements(new SimpleSelector((Resource)null, fileLocation, (RDFNode)null));

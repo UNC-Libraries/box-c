@@ -4524,9 +4524,9 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	var defaultOptions = {
 		name : "deposit",
 		jobConfig : {
-			url : "/services/api/status/deposit/{name}",
+			url : "/services/api/edit/deposit/{name}",
 			template : depositMonitorJobTemplate,
-			detailsUrl : "/services/api/status/deposit/{id}",
+			detailsUrl : "/services/api/edit/deposit/{id}",
 			detailsTemplate : depositMonitorDetailsTemplate,
 			fields : ["Status", "Submitter", "Submit time", "Progress", "First object", "Note"],
 			jobTypes : [
@@ -4539,7 +4539,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			]
 		},
 		overviewConfig : {
-			url : "/services/api/status/deposit"
+			url : "/services/api/edit/deposit"
 		}
 	};
 			
@@ -4610,10 +4610,12 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					completion += " / " + job.total;
 					job["completion"] = completion;
 				}
+				var etime = job.endtime? (job.endtime - job.starttime) : 0;
+				if(etime != 0 ) job["time"] = etime + "ms";
 			}
 		}
 		
-		this.detailsContent.html(typeConfig.template({data : typeConfig.results, type : typeConfig, dateFormat : this.dateFormat}));
+		this.detailsContent.html(typeConfig.template({data : typeConfig.results, type : typeConfig, dateFormat : this.dateFormat, username : this.options.username, isAdmin : this.options.isAdmin}));
 	};
 		
 	DepositMonitor.prototype.dateFormat = function(dateObject) {
@@ -4720,6 +4722,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			
 	function StatusMonitorManager(element, options) {
 		this.element = element;
+		this.options = options;
 		this.tabList = $("<ul/>").attr("id", "status_monitor_tabs").appendTo(this.element);
 		this.monitors = [];
 		this.addMonitors();
@@ -4751,7 +4754,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	StatusMonitorManager.prototype.addMonitors = function() {
-		this.addMonitor(new DepositMonitor());
+		this.addMonitor(new DepositMonitor(this.options));
 		this.addMonitor(new IndexingMonitor());
 		this.addMonitor(new EnhancementMonitor());
 	};

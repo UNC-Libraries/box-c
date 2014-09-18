@@ -12,13 +12,13 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
  * @author count0
  *
  */
-public class UnpackDepositJob extends AbstractDepositJob implements Runnable {
+public class UnpackDepositJob extends AbstractDepositJob {
 
 	public UnpackDepositJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
 	}
 
-	public void run() {
+	public void runJob() {
 		// unzip deposit file to directory
 		String filename = getDepositStatus().get(DepositField.fileName.name());
 		if (filename.toLowerCase().endsWith(".zip")) {

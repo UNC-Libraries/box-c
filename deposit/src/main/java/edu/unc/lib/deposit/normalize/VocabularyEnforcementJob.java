@@ -40,13 +40,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
 
 /**
@@ -56,7 +54,7 @@ import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
  * @author bbpennel
  * @date Jun 26, 2014
  */
-public class VocabularyEnforcementJob extends AbstractDepositJob implements Runnable {
+public class VocabularyEnforcementJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(VocabularyEnforcementJob.class);
 
 	@Autowired
@@ -83,11 +81,8 @@ public class VocabularyEnforcementJob extends AbstractDepositJob implements Runn
 	}
 
 	@Override
-	public void run() {
-
-		Model model = ModelFactory.createDefaultModel();
-		File modelFile = new File(getDepositDirectory(), DepositConstants.MODEL_FILE);
-		model.read(modelFile.toURI().toString());
+	public void runJob() {
+		Model model = getModel();
 
 		// Get the list of all objects being ingested in this job
 		List<String> resourcePIDs = new ArrayList<>();
@@ -118,7 +113,6 @@ public class VocabularyEnforcementJob extends AbstractDepositJob implements Runn
 				}
 			}
 		}
-
 	}
 
 	/**
@@ -197,7 +191,6 @@ public class VocabularyEnforcementJob extends AbstractDepositJob implements Runn
 			for (String invalid : invalidTerms) {
 				model.addLiteral(resource, invalidTerm, model.createLiteral(invalid));
 			}
-			saveModel(model, DepositConstants.MODEL_FILE);
 		}
 
 		return modified;
