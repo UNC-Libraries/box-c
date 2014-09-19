@@ -1,5 +1,16 @@
 require "capistrano/setup"
 
+def upload_and_expand!(tarball, dir)
+  temp_dir = capture(:mktemp, "-d")
+  execute :chmod, "a+rx", temp_dir
+
+  tarball_basename = File.basename(tarball)
+  upload_path = File.join(temp_dir, tarball_basename)
+
+  upload! tarball, upload_path
+  execute :tar, "--warning=no-unknown-keyword", "-xzf", upload_path, "-C", dir
+end
+
 def upload_as!(local, remote, user, options = {})
   temp_dir = capture(:mktemp, "-d")
   execute :chmod, "a+rx", temp_dir
@@ -24,26 +35,21 @@ WEBAPPS = FileList[
   "services/target/services.war"
 ]
 
-TOMCAT_LIBS = FileList[
-  "metadata/target/cdr-metadata.jar",
-  "security/target/security-3.4-SNAPSHOT.jar"
-]
-
-FEDORA_LIBS = FileList[
+LIB = FileList[
+  "fcrepo-cdr-fesl/target/fcrepo-cdr-fesl-3.4-SNAPSHOT.jar",
+  "fcrepo-clients/target/fcrepo-clients-3.4-SNAPSHOT.jar",
   "fcrepo-irods-storage/target/fcrepo-irods-storage-3.4-SNAPSHOT.jar",
   "metadata/target/cdr-metadata.jar",
   "security/target/security-3.4-SNAPSHOT.jar",
-  "fcrepo-cdr-fesl/target/fcrepo-cdr-fesl-3.4-SNAPSHOT.jar",
-  "fcrepo-clients/target/fcrepo-clients-3.4-SNAPSHOT.jar",
   "staging-areas/target/staging-areas-0.0.1-SNAPSHOT.jar"
 ]
 
 file "static.tar.gz" => FileList["access/src/main/external/static/**/*"] do |t|
-  sh "tar -cvzf #{t.name} -C access/src/main/external/static ."
+  sh "tar --disable-copyfile -cvzf #{t.name} -C access/src/main/external/static ."
 end
 
 file "puppet.tar.gz" => FileList["puppet/**/*"] do |t|
-  sh "tar -cvzf #{t.name} -C puppet ."
+  sh "tar --disable-copyfile -cvzf #{t.name} -C puppet ."
 end
 
 namespace :deploy do
@@ -55,11 +61,10 @@ namespace :deploy do
       tarball = t.prerequisites.first
       
       on roles(:all) do
-        execute :mkdir, "-p", "/tmp/deploy"
-        upload! tarball, "/tmp/deploy"
-
-        sudo :mkdir, "-p", "/var/www/html/static"
-        sudo :tar, "--warning=no-unknown-keyword", "-xzf", File.join("/tmp/deploy", File.basename(tarball)), "-C /var/www/html/static"
+        execute :rm, "-rf", "/opt/deploy/static"
+        execute :mkdir, "-p", "/opt/deploy/static"
+        
+        upload_and_expand!(tarball, "/opt/deploy/static")
       end
     end
   
@@ -67,46 +72,42 @@ namespace :deploy do
     task :webapps => WEBAPPS do |t|
       on roles(:all) do
         t.prerequisites.each do |p|
-          upload_as! p, "/opt/repository/tomcat/webapps/", :tomcat
+          upload_as! p, "/opt/repository/tomcat/webapps", :tomcat
         end
       end
     end
   
-    desc "Update Tomcat libraries"
-    task :tomcat_libs => TOMCAT_LIBS do |t|
+    desc "Update libraries"
+    task :lib => LIB do |t|
       on roles(:all) do
+        execute :rm, "-rf", "/opt/deploy/lib"
+        execute :mkdir, "-p", "/opt/deploy/lib"
+        
         t.prerequisites.each do |p|
-          upload_as! p, "/opt/repository/tomcat/lib/", :tomcat
+          upload! p, "/opt/deploy/lib"
         end
       end
     end
-  
-    desc "Update Fedora libraries"
-    task :fedora_libs => FEDORA_LIBS do |t|
-      on roles(:all) do
-        t.prerequisites.each do |p|
-          upload_as! p, "/opt/repository/tomcat/webapps/fedora/WEB-INF/lib/", :tomcat
-        end
-      end
-    end
-  
-    desc "Update Tomcat and Fedora libraries"
-    task :libs => [:tomcat_libs, :fedora_libs]
     
     desc "Update the Puppet configuration"
     task :config => "puppet.tar.gz" do |t|
       tarball = t.prerequisites.first
       
       on roles(:all) do
-        execute :mkdir, "-p", "/tmp/deploy"
-        upload! tarball, "/tmp/deploy"
-    
-        sudo :rm, "-rf", "/etc/puppet/environments/cdr"
-        sudo :mkdir, "-p", "/etc/puppet/environments/cdr"
-        sudo :tar, "--warning=no-unknown-keyword", "-xzf", File.join("/tmp/deploy", File.basename(tarball)), "-C /etc/puppet/environments/cdr"
+        execute :rm, "-rf", "/opt/deploy/puppet"
+        execute :mkdir, "-p", "/opt/deploy/puppet"
+        
+        upload_and_expand!(tarball, "/opt/deploy/puppet")
       end
     end
 
+  end
+  
+  task :update do
+    invoke "deploy:update:config"
+    invoke "deploy:update:static"
+    invoke "deploy:update:webapps"
+    invoke "deploy:update:lib"
   end
   
   namespace :apply do
@@ -131,9 +132,9 @@ end
 
 desc "Update the configuration, apply the configuration, and then update everything else"
 task :deploy do
-  invoke "deploy:update:config"
-  invoke "deploy:apply"
-  invoke "deploy:update:static"
-  invoke "deploy:update:webapps"
-  invoke "deploy:update:libs"
+    invoke "deploy:update:config"
+    invoke "deploy:update:static"
+    invoke "deploy:update:lib"
+    invoke "deploy:apply"
+    invoke "deploy:update:webapps"
 end

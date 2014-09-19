@@ -39,8 +39,9 @@ class fedora(
   
   file { "/opt/repository/fedora":
     source => "puppet:///modules/fedora/home",
-    recurse => remote,
+    recurse => true,
     purge => false,
+    replace => true,
     owner => "tomcat",
     group => "tomcat",
     require => Package["cdr-fedora"],

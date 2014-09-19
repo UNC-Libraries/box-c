@@ -81,5 +81,13 @@ class base(
       { "path" => "/", "url" => "ajp://localhost:8009/" },
     ],
   }
+  
+  # Symlink to deploy
+  
+  file { "/var/www/html/static":
+    ensure => "link",
+    target => "/opt/deploy/static",
+    force => true,
+  }
 
 }

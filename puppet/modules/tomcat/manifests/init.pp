@@ -38,10 +38,14 @@ class tomcat(
     ],
   }
   
-  file { "/opt/repository/tomcat":
-    source => "puppet:///modules/tomcat/home",
-    recurse => remote,
-    purge => false,
+  file { [
+    "/opt/repository/tomcat/conf",
+    "/opt/repository/tomcat/conf/Catalina",
+    "/opt/repository/tomcat/conf/Catalina/localhost",
+    "/opt/repository/tomcat/shared",
+    "/opt/repository/tomcat/webapps",
+  ]:
+    ensure => "directory",
     owner => "tomcat",
     group => "tomcat",
     require => [
@@ -50,8 +54,30 @@ class tomcat(
     ],
   }
   
-  file { ["/opt/repository/tomcat/conf", "/opt/repository/tomcat/conf/Catalina", "/opt/repository/tomcat/conf/Catalina/localhost"]:
-    ensure => "directory",
+  # Symlink to deploy
+  
+  file { "/opt/repository/tomcat/shared/lib":
+    ensure => "link",
+    target => "/opt/deploy/lib",
+    force => true,
+  }
+  
+  # The following implicitly require /opt/repository/tomcat/conf
+  
+  file { "/opt/repository/tomcat/conf/catalina.properties":
+    source => "puppet:///modules/tomcat/home/conf/catalina.properties",
+    owner => "tomcat",
+    group => "tomcat",
+  }
+  
+  file { "/opt/repository/tomcat/conf/context.xml":
+    source => "puppet:///modules/tomcat/home/conf/context.xml",
+    owner => "tomcat",
+    group => "tomcat",
+  }
+  
+  file { "/opt/repository/tomcat/conf/logging.properties":
+    source => "puppet:///modules/tomcat/home/conf/logging.properties",
     owner => "tomcat",
     group => "tomcat",
   }
@@ -60,35 +86,30 @@ class tomcat(
     content => template("tomcat/home/conf/Catalina/localhost/manager.xml.erb"),
     owner => "tomcat",
     group => "tomcat",
-    require => File["/opt/repository/tomcat"],
   }
   
   file { "/opt/repository/tomcat/conf/jmxremote.access":
     content => template("tomcat/home/conf/jmxremote.access.erb"),
     owner => "tomcat",
     group => "tomcat",
-    require => File["/opt/repository/tomcat"],
   }
   
   file { "/opt/repository/tomcat/conf/jmxremote.password":
     content => template("tomcat/home/conf/jmxremote.password.erb"),
     owner => "tomcat",
     group => "tomcat",
-    require => File["/opt/repository/tomcat"],
   }
   
   file { "/opt/repository/tomcat/conf/server.xml":
     content => template("tomcat/home/conf/server.xml.erb"),
     owner => "tomcat",
     group => "tomcat",
-    require => File["/opt/repository/tomcat"],
   }
   
   file { "/opt/repository/tomcat/conf/tomcat-users.xml":
     content => template("tomcat/home/conf/tomcat-users.xml.erb"),
     owner => "tomcat",
     group => "tomcat",
-    require => File["/opt/repository/tomcat"],
   }
   
   file { "/etc/init.d/tomcat":

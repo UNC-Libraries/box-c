@@ -77,7 +77,6 @@ class repository(
     group => "tomcat",
     require => [
       User["tomcat"],
-      Package["cdr-tomcat"],
     ],
   }
   

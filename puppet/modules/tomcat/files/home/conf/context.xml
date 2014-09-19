@@ -31,5 +31,7 @@
     <!--
     <Valve className="org.apache.catalina.valves.CometConnectionManagerValve" />
     -->
+    
+    <Loader className="org.apache.catalina.loader.VirtualWebappLoader" virtualClasspath="${catalina.home}/shared/lib;${catalina.home}/shared/lib/*.jar" />
 
 </Context>
