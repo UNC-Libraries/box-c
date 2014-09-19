@@ -58,7 +58,7 @@ class irods(
   }
   
   package { "cdr-irods":
-    ensure => "3.2-2",
+    ensure => "3.2-3",
     require => [
       User["irods"],
       Package[$packages],
@@ -92,13 +92,6 @@ class irods(
     owner => "irods",
     group => "irods",
     require => Package["cdr-irods"],
-  }
-  
-  file { "/opt/iRODS/.odbc.ini":
-    content => "",
-    owner => "irods",
-    group => "irods",
-    require => File["/opt/iRODS"],
   }
   
   file { "/opt/iRODS/config/irods.config":
