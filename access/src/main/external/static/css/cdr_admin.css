@@ -2580,11 +2580,12 @@ h1 {
 	margin-bottom: 0;
 	text-indent: 0;
 	margin-left: 0;
+	table-layout: fixed;
 }
 
 @media (min-width: 1024px) {
 	.vocab_results table {
-		width: 600px;
+		width: 900px;
 	}
 }
 
@@ -2594,17 +2595,13 @@ h1 {
 }
 
 .vocab_results table tr {
-	border-top: 1px solid #EEEEEE;
+	border-bottom: 1px solid #EEEEEE;
 }
 
 .vocab_results table .title_col {
-	width: -webkit-calc(100% - 150px);
-	width: calc(100% - 150px);
+	width: -webkit-calc(50% - 150px);
+	width: calc(50% - 150px);
 	text-align: right;
-}
-
-.term_list {
-	padding-left: 15px;
 }/** Search Menu */
 .search_menu {
 	width: 300px;
@@ -3022,6 +3019,17 @@ h1 {
 .itemdetails > div > .status {
 	font-size: 0.7em;
 	color: #444;
+}
+
+
+.itemdetails > div > .warning_symbol {
+	border-radius: 8px;
+	background-color: #faebcc;
+	padding: 0px 7px;
+	font-weight: bold;
+	font-size: .9em;
+	margin-right: 2px;
+	border: 1px solid #F1DEB7;
 }
 
 .res_entry > .creator > div {

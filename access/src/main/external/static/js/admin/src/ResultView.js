@@ -1,5 +1,5 @@
 define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
-		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ResultTableView', 'SearchMenu', 'detachplus'], 
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'], 
 		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu) {
 	$.widget("cdr.resultView", {
 		options : {
@@ -133,6 +133,17 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					alertHandler : this.$alertHandler
 				});
 			}
+			
+			$(document).on('mouseover', '.warning_symbol', function(event) {
+				// Bind the qTip within the event handler
+				$(this).qtip({
+					overwrite: false,
+					show: {
+						event: event.type,
+						ready: true
+					}
+				}, event);
+			})
 		
 			this.resizeResults();
 			this.$window.resize($.proxy(this.resizeResults, this));

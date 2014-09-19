@@ -37,7 +37,10 @@
 			 } %>
 			<% if ("DATA_FILE" in metadata.datastream) { %>
 				&nbsp;<a target="_preview" href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}" class="preview">(preview ${metadata.getDatastreamObject("DATA_FILE").extension})</a>
-			<% } %>	
+			<% }
+			if (validationProblem) { %>
+				<a class="status warning_symbol" title="<%= validationProblem %>">!</a>
+			<% } %>
 			<% for (var i in metadata.tags) { 
 				var tag = metadata.tags[i];
 				%>

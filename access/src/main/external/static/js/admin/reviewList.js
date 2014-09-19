@@ -54,7 +54,7 @@ require.config({
 	}
 });
 
-define("reviewList", ["module", "jquery", "ResultView"], function(module, $) {
+define("reviewList", ["module", "jquery", "ResultView", "qtip"], function(module, $) {
 
 	$(".result_page").resultView({
 		metadataObjects : module.config().metadataObjects,

@@ -417,6 +417,17 @@
 	color: #444;
 }
 
+
+.itemdetails > div > .warning_symbol {
+	border-radius: 8px;
+	background-color: #faebcc;
+	padding: 0px 7px;
+	font-weight: bold;
+	font-size: .9em;
+	margin-right: 2px;
+	border: 1px solid #F1DEB7;
+}
+
 .res_entry > .creator > div {
 	font-size: 70%;
 	text-overflow: ellipsis;

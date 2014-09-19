@@ -2,7 +2,7 @@
 <div class="result_header">
 	<% if (invalidVocabCount) { %>
 		<div class="result_warning">
-			<span class="warning_symbol">&#9888;</span> Warning: <%= invalidVocabCount %> item(s) in this result have vocabulary problems.  <a href="">View invalid vocabulary terms</a>
+			<span class="warning_symbol">&#9888;</span> Warning: <%= invalidVocabCount %> item(s) in this result have vocabulary problems.  <a href="invalidVocab/<%= container.id %>">View invalid vocabulary terms</a>
 		</div>
 	<% } %>
 	<div class="result_header_top">

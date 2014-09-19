@@ -20,7 +20,31 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 		this.pid = metadata.id;
 		this.isContainer = this.metadata.type != "File";
 		this.isDeleted = $.inArray("Active", this.metadata.status) == -1;
-		var newElement = $(this.options.template({metadata : metadata, isContainer : this.isContainer, isDeleted : this.isDeleted}));
+
+		var validationProblem = "";
+		if (this.metadata.tags) {
+			var tagIndex = -1;
+			for (var index in this.metadata.tags) {
+				if (this.metadata.tags[index].label == "invalid affiliation") {
+					tagIndex = index;
+					break;
+				}
+			}
+			
+			if (tagIndex != -1) {
+				validationProblem = "Description contains invalid affiliation terms:";
+				
+				var details = this.metadata.tags[tagIndex].details;
+				for (var index in details) {
+					validationProblem +=  "<br/>&nbsp;&middot;&nbsp;" + details[index];
+				}
+				
+				delete this.metadata.tags[tagIndex];
+			}
+		}
+		
+		var newElement = $(this.options.template({metadata : metadata, isContainer : this.isContainer, 
+				isDeleted : this.isDeleted, validationProblem : validationProblem}));
 		this.checkbox = null;
 		if (this.element) {
 			if (this.actionMenu)

@@ -2181,7 +2181,31 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		this.pid = metadata.id;
 		this.isContainer = this.metadata.type != "File";
 		this.isDeleted = $.inArray("Active", this.metadata.status) == -1;
-		var newElement = $(this.options.template({metadata : metadata, isContainer : this.isContainer, isDeleted : this.isDeleted}));
+
+		var validationProblem = "";
+		if (this.metadata.tags) {
+			var tagIndex = -1;
+			for (var index in this.metadata.tags) {
+				if (this.metadata.tags[index].label == "invalid affiliation") {
+					tagIndex = index;
+					break;
+				}
+			}
+			
+			if (tagIndex != -1) {
+				validationProblem = "Description contains invalid affiliation terms:";
+				
+				var details = this.metadata.tags[tagIndex].details;
+				for (var index in details) {
+					validationProblem +=  "<br/>&nbsp;&middot;&nbsp;" + details[index];
+				}
+				
+				delete this.metadata.tags[tagIndex];
+			}
+		}
+		
+		var newElement = $(this.options.template({metadata : metadata, isContainer : this.isContainer, 
+				isDeleted : this.isDeleted, validationProblem : validationProblem}));
 		this.checkbox = null;
 		if (this.element) {
 			if (this.actionMenu)
@@ -3262,7 +3286,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	});
 });
 	define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
-		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ResultTableView', 'SearchMenu', 'detachplus'], 
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'], 
 		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu) {
 	$.widget("cdr.resultView", {
 		options : {
@@ -3396,6 +3420,17 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					alertHandler : this.$alertHandler
 				});
 			}
+			
+			$(document).on('mouseover', '.warning_symbol', function(event) {
+				// Bind the qTip within the event handler
+				$(this).qtip({
+					overwrite: false,
+					show: {
+						event: event.type,
+						ready: true
+					}
+				}, event);
+			})
 		
 			this.resizeResults();
 			this.$window.resize($.proxy(this.resizeResults, this));
