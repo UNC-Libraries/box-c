@@ -101,7 +101,6 @@ class fedora(
   java_ks { "localhost:/opt/repository/fedora/server/truststore":
     ensure => latest,
     certificate => $ssl_cert,
-    private_key => $ssl_key,
     password => "tomcat",
     require => File["/opt/repository/fedora"],
   }

@@ -25,7 +25,6 @@ class base(
   java_ks { "localhost:/usr/lib/jvm/java/jre/lib/security/cacerts":
     ensure => latest,
     certificate => $ssl_cert,
-    private_key => $ssl_key,
     password => "changeit",
     require => Package["java-1.7.0-openjdk-devel"],
   }
