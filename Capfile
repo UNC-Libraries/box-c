@@ -71,8 +71,10 @@ namespace :deploy do
     desc "Update webapps"
     task :webapps => WEBAPPS do |t|
       on roles(:all) do
+        execute :mkdir, "-p", "/opt/deploy/webapps"
+
         t.prerequisites.each do |p|
-          upload_as! p, "/opt/repository/tomcat/webapps", :tomcat
+          upload! p, "/opt/deploy/webapps"
         end
       end
     end
@@ -132,9 +134,6 @@ end
 
 desc "Update the configuration, apply the configuration, and then update everything else"
 task :deploy do
-    invoke "deploy:update:config"
-    invoke "deploy:update:static"
-    invoke "deploy:update:lib"
-    invoke "deploy:apply"
-    invoke "deploy:update:webapps"
+  invoke "deploy:update"
+  invoke "deploy:apply"
 end

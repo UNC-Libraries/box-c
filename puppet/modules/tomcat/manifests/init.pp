@@ -54,12 +54,27 @@ class tomcat(
     ],
   }
   
-  # Symlink to deploy
+  # Symlinks to deploy
   
   file { "/opt/repository/tomcat/shared/lib":
     ensure => "link",
     target => "/opt/deploy/lib",
     force => true,
+  }
+  
+  file { "/opt/repository/tomcat/webapps/ROOT.war":
+    ensure => "link",
+    target => "/opt/deploy/webapps/ROOT.war",
+  }
+  
+  file { "/opt/repository/tomcat/webapps/admin.war":
+    ensure => "link",
+    target => "/opt/deploy/webapps/admin.war",
+  }
+  
+  file { "/opt/repository/tomcat/webapps/services.war":
+    ensure => "link",
+    target => "/opt/deploy/webapps/services.war",
   }
   
   # The following implicitly require /opt/repository/tomcat/conf
