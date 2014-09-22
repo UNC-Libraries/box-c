@@ -1,0 +1,96 @@
+#!/bin/bash
+#
+# deposit:      Deposit Daemon
+#
+# chkconfig: 35 99 01
+#
+# description: Starts and stops the Deposit Daemon service
+#
+# processname: deposit
+# pidfile: /var/run/deposit-daemon.pid
+#
+
+NAME="deposit"
+DESC="Deposit Worker Daemon"
+JSVC_PID_FILE=/var/run/deposit-daemon.pid
+
+LOG_OUT=/opt/data/logs/deposit-jsvc.out
+LOG_ERR=/opt/data/logs/deposit-jsvc.err
+red='\e[0;31m'
+NC='\e[0m' # No Color
+
+JSVC_USER=<%= @user %>
+JAVA_HOME=/usr/lib/jvm/java
+export JAVA_HOME
+JSVC_EXECUTABLE="$( which jsvc )"
+
+DIST_DIR=/opt/deposit
+
+JAVA_CLASSPATH="$DIST_DIR/deposit.jar"
+JAVA_MAIN_CLASS="edu.unc.lib.deposit.DepositDaemon"
+JAVA_OPTS="-Ddistribution.dir=$DIST_DIR -Ddeposit.properties.uri=file:$DIST_DIR/deposit.properties -Dlog4j.configuration=file:$DIST_DIR/log4j.properties  -Xmx256M"
+
+<% if @enable_debug %>
+JAVA_OPTS="-Xrunjdwp:transport=dt_socket,address=8001,server=y,suspend=n $JAVA_OPTS"
+<% end %>
+
+jsvc_exec()
+{  
+    cd $DIST_DIR
+    $JSVC_EXECUTABLE $STOP -jvm server -cp "$JAVA_CLASSPATH" -wait 30 -user $JSVC_USER -outfile $LOG_OUT -errfile $LOG_ERR -pidfile $JSVC_PID_FILE $JAVA_OPTS $JAVA_MAIN_CLASS $ARGS
+}
+
+case "$1" in
+    start) 
+        echo "Starting the $DESC..."       
+       
+        # Start the service
+        jsvc_exec
+        RETVAL=$?
+       
+        [ $RETVAL -eq 0 ] && echo "The $DESC has started."
+        [ $RETVAL -ne 0 ] && echo -e "${red}The $DESC failed to start.${NC}" >&2
+        exit $RETVAL
+    ;;
+    stop)
+        echo "Stopping the $DESC..."
+        if [ -f "$JSVC_PID_FILE" ]; then
+       
+        	# Stop the service
+        	STOP="-stop"
+        	jsvc_exec
+        	RETVAL=$?      
+       
+        	[ $RETVAL -eq 0 ] && echo "The $DESC has stopped."
+        	[ $RETVAL -ne 0 ] && echo -e "${red}The $DESC failed to stop.${NC}" >&2
+        	exit $RETVAL
+        else
+            echo "Daemon not running, no action taken"
+            exit 1
+        fi
+    ;;
+    restart)
+        if [ -f "$JSVC_PID_FILE" ]; then
+           
+            echo "Restarting the $DESC..."
+           
+            # Stop the service
+            jsvc_exec "-stop"
+            
+            # Start the service
+            jsvc_exec
+            RETVAL=$?
+           
+            [ $RETVAL -eq 0 ] && echo "The $DESC has restarted."
+        	[ $RETVAL -ne 0 ] && echo -e "${red}The $DESC failed to restart.${NC}" >&2
+            exit $RETVAL
+        else
+            echo "Daemon not running, no action taken"
+            exit 1
+        fi
+    ;;
+    *)
+    echo "Usage: /etc/init.d/$NAME {start|stop|restart}" >&2
+    exit 3
+    ;;
+esac

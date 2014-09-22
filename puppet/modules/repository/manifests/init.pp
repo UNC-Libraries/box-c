@@ -1,6 +1,7 @@
 class repository(
   $user,
   $staging,
+  $collector,
   $collection_indexing,
   $activemq_connector_uri,
   $enable_debug,
@@ -59,6 +60,8 @@ class repository(
   $forms_maxuploadsize,
   $forms_external_dir,
   $forms_external_uri_base,
+  $redis_host,
+  $redis_port,
   $fixity_resource_names,
   $fixity_polling_interval_seconds,
   $fixity_stale_interval_seconds,
@@ -69,6 +72,7 @@ class repository(
   $recaptcha_private_key,
   $recaptcha_public_key,
   $google_tracking_id,
+  $etd_set_query,
 ) {
 
   file { "/opt/repository":
@@ -115,9 +119,17 @@ class repository(
     group => "tomcat",
     require => File["/opt/repository"],
   }
+  
+  file { "/opt/repository/collector.json":
+    content => inline_template("<%= @collector.to_json %>"),
+    owner => "tomcat",
+    group => "tomcat",
+    require => File["/opt/repository"],
+  }
 
   $data_directories = [
     "/opt/data",
+    "/opt/data/batch-ingests",
     "/opt/data/enhance",
     "/opt/data/enhance/failed",
     "/opt/data/fedora-policy-db",

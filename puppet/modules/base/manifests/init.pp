@@ -18,7 +18,8 @@ class base(
   # Java
 
   package { ["java-1.7.0-openjdk",
-             "java-1.7.0-openjdk-devel"]:
+             "java-1.7.0-openjdk-devel",
+             "jakarta-commons-daemon-jsvc"]:
     ensure => installed,
   }
 
@@ -27,6 +28,21 @@ class base(
     certificate => $ssl_cert,
     password => "changeit",
     require => Package["java-1.7.0-openjdk-devel"],
+  }
+  
+  
+  # Redis
+  
+  package { "redis":
+    ensure => installed,
+  }
+  
+  service { "redis":
+    ensure => true,
+    enable => true,
+    hasrestart => true,
+    hasstatus => true,
+    require => Package["redis"],
   }
 
 

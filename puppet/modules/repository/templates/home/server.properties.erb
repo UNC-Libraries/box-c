@@ -1,7 +1,7 @@
 # SERVER PROPERTIES CONFIGURATION
 
 # Repository Web Server (http, yourrepository.org, 80, blank context)
-repository.protocol=<%= @web_prototcol %>
+repository.protocol=<%= @web_protocol %>
 repository.host=<%= @web_host %>
 repository.port=<%= @web_port %>
 repository.context=<%= @web_context %>
@@ -110,6 +110,8 @@ forms.external.dir=<%= @forms_external_dir %>
 forms.external.uriBase=<%= @forms_external_uri_base %>
 
 # ingest service settings
+redis.host=<%= @redis_host %>
+redis.port=<%= @redis_port %>
 auto.initialize.repo=no
 initial.batch.ingest.dir=/opt/repository/tomcat/temp/
 batch.ingest.dir=/opt/data/batch-ingests
@@ -143,3 +145,7 @@ recaptcha.public.key=<%= @recaptcha_public_key %>
 
 #google analytics
 google.trackingId=<%= @google_tracking_id %>
+
+data.dir=/opt/data/
+repo.dir=/opt/repository/
+departments.skos.url=file:/opt/deposit/departments.xml

@@ -91,6 +91,16 @@ namespace :deploy do
       end
     end
     
+    desc "Update deposit service"
+    task :deposit => "deposit/target/deposit.jar" do |t|
+      on roles(:all) do
+        execute :rm, "-rf", "/opt/deploy/deposit"
+        execute :mkdir, "-p", "/opt/deploy/deposit"
+        
+        upload! t.prerequisites.first, "/opt/deploy/deposit"
+      end
+    end
+    
     desc "Update the Puppet configuration"
     task :config => "puppet.tar.gz" do |t|
       tarball = t.prerequisites.first
@@ -110,6 +120,7 @@ namespace :deploy do
     invoke "deploy:update:static"
     invoke "deploy:update:webapps"
     invoke "deploy:update:lib"
+    invoke "deploy:update:deposit"
   end
   
   namespace :apply do

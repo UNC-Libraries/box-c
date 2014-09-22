@@ -1,0 +1,33 @@
+# Deposit Configuration
+# optional properties shown in comments with their defaults
+
+# Folder where deposits are stored at submission time
+deposits.dir=/opt/data/batch-ingests
+
+departments.skos.url=file:/opt/deposit/departments.xml
+
+# redis.host=localhost
+# redis.port=6379
+
+# fedora.protocol=https
+# fedora.host=localhost
+# fedora.port=443
+# fedora.context=fedora
+fedora.username=<%= @fedora_username %>
+fedora.password=<%= @fedora_password %>
+
+# ClamAV Daemon (uses streaming API)
+# clamd.host=localhost
+# clamd.port=3310
+# clamd.timeout=60000 # milliseconds
+
+# JMS broker for APIM messages
+jms.host=<%= @jms_host %>
+jms.port=<%= @jms_port %>
+
+# smtp.host=localhost
+# smtp.port=25
+# from.email=no-reply@example.com
+# baseUrl=https://www.example.com
+
+fedora.stagesConfiguration=file:/opt/repository/stagesConfig.json
