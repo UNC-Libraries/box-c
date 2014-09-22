@@ -31,6 +31,8 @@ import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 
+import com.hp.hpl.jena.reasoner.rulesys.builtins.UriConcat;
+
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
@@ -41,6 +43,7 @@ import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
+import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public abstract class AbstractDepositHandler implements DepositHandler {
 	private static final Logger log = LoggerFactory.getLogger(AbstractDepositHandler.class);
@@ -100,7 +103,10 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 	}
 	
 	protected void registerDeposit(PID depositPid, PID destination, Deposit deposit,
-			PackagingType type, String depositor, String owner, Map<String, String> extras) {
+			PackagingType type, String depositor, String owner, Map<String, String> extras) throws SwordError {
+		Map<String, String> chkstatus = this.depositStatusFactory.get(depositPid.getUUID());
+		if(chkstatus != null && !chkstatus.isEmpty()) throw new SwordError("http://cdr.lib.unc.edu/sword/error/duplicateDeposit", 400, "Duplicate request, repository already has deposit "+depositPid);
+		
 		Map<String, String> status = new HashMap<String, String>();
 		status.putAll(extras);
 		

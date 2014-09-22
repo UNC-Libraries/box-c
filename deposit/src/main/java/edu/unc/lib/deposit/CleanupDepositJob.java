@@ -42,7 +42,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(CleanupDepositJob.class);
 
-	private String stageConfigURL = null;
+	private String stagesConfiguration = null;
 
 	private int statusKeysExpireSeconds;
 
@@ -71,8 +71,8 @@ public class CleanupDepositJob extends AbstractDepositJob {
 		return parent;
 	}
 
-	public String getStageConfigURL() {
-		return this.stageConfigURL;
+	public String getStagesConfiguration() {
+		return this.stagesConfiguration;
 	}
 
 	public int getStatusKeysExpireSeconds() {
@@ -84,7 +84,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 		// load a Stages object
 		Stages stages = null;
 		try {
-			URL cURL = new URL(this.stageConfigURL);
+			URL cURL = new URL(this.stagesConfiguration);
 			File cFile = org.apache.commons.io.FileUtils.toFile(cURL);
 			String config = org.apache.commons.io.FileUtils
 					.readFileToString(cFile);
@@ -202,8 +202,8 @@ public class CleanupDepositJob extends AbstractDepositJob {
 				this.getStatusKeysExpireSeconds());
 	}
 
-	public void setStageConfigURL(String stageConfigURL) {
-		this.stageConfigURL = stageConfigURL;
+	public void setStagesConfiguration(String stagesConfiguration) {
+		this.stagesConfiguration = stagesConfiguration;
 	}
 
 	public void setStatusKeysExpireSeconds(int seconds) {
