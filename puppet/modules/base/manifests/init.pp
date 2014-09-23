@@ -18,8 +18,7 @@ class base(
   # Java
 
   package { ["java-1.7.0-openjdk",
-             "java-1.7.0-openjdk-devel",
-             "jakarta-commons-daemon-jsvc"]:
+             "java-1.7.0-openjdk-devel"]:
     ensure => installed,
   }
 
@@ -28,6 +27,15 @@ class base(
     certificate => $ssl_cert,
     password => "changeit",
     require => Package["java-1.7.0-openjdk-devel"],
+  }
+  
+  package { "cdr-commons-daemon":
+    ensure => "1.0.15-1",
+    require => [
+      User["tomcat"],
+      Package["java-1.7.0-openjdk-devel"],
+      Yumrepo["cdr-packages"]
+    ],
   }
   
   
