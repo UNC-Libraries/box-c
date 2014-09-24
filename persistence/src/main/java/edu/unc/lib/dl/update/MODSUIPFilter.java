@@ -17,6 +17,7 @@ package edu.unc.lib.dl.update;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -62,6 +63,8 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 	private ManagementClient managementClient;
 	@Resource
 	private TripleStoreQueryService queryService;
+
+	private Map<String, Set<String>> vocabularyToCollectionMap;
 
 	public MODSUIPFilter() {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -144,7 +147,8 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 			// Refresh the invalid affiliations relations
 			Set<String> invalid = deptUtil.getInvalidAffiliations(mods);
 			if (invalid != null)
-				updateInvalidTermRelations(uip.getPID(), invalid);
+				updateVocabularyRelation(uip.getPID(), invalid, "affiliation",
+						ContentModelHelper.CDRProperty.invalidAffiliationTerm.toString());
 
 		} catch (SAXException e) {
 			throw new UIPException("MODS failed to validate to schema:" + e.getMessage(), e);
@@ -153,10 +157,18 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 		}
 	}
 
-	protected void updateInvalidTermRelations(PID pid, Set<String> invalidTerms) throws FedoraException {
+	protected void updateVocabularyRelation(PID pid, Set<String> invalidTerms, String vocabalaryName,
+			String relationPredicate) throws FedoraException {
+		if (vocabularyToCollectionMap.containsKey(vocabalaryName)) {
+			PID parentCollection = queryService.fetchParentCollection(pid);
 
-		String predicateUri = ContentModelHelper.CDRProperty.invalidAffiliationTerm.toString();
-		List<String> rel = queryService.fetchBySubjectAndPredicate(pid, predicateUri);
+			Set<String> collections = vocabularyToCollectionMap.get(vocabalaryName);
+			if (!collections.contains(parentCollection.getPid())) {
+				return;
+			}
+		}
+
+		List<String> rel = queryService.fetchBySubjectAndPredicate(pid, relationPredicate);
 
 		// No changes to be made
 		if (rel != null && invalidTerms.size() == rel.size() && invalidTerms.containsAll(rel)) {
@@ -169,7 +181,7 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 			removeTerms.removeAll(invalidTerms);
 
 			for (String term : removeTerms) {
-				managementClient.purgeLiteralStatement(pid, predicateUri, term, null);
+				managementClient.purgeLiteralStatement(pid, relationPredicate, term, null);
 			}
 
 			// Calculate the set of newly invalid terms which need to be added
@@ -178,7 +190,7 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 
 		if (invalidTerms.size() > 0) {
 			for (String term : invalidTerms) {
-				managementClient.addLiteralStatement(pid, predicateUri, term, null);
+				managementClient.addLiteralStatement(pid, relationPredicate, term, null);
 			}
 		}
 	}

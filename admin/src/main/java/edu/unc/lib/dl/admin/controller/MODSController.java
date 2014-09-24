@@ -16,7 +16,9 @@
 package edu.unc.lib.dl.admin.controller;
 
 import java.io.IOException;
+import java.util.List;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -39,6 +41,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.tags.TagProvider;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
@@ -57,9 +60,12 @@ public class MODSController extends AbstractSwordController {
 	@Autowired
 	private TripleStoreQueryService tripleStoreQueryService;
 
+	protected @Resource(name = "tagProviders")
+	List<TagProvider> tagProviders;
+
 	/**
 	 * Forwards user to the MODS editor page with the
-	 * 
+	 *
 	 * @param idPrefix
 	 * @param id
 	 * @param model
@@ -77,6 +83,11 @@ public class MODSController extends AbstractSwordController {
 		if (resultObject == null) {
 			throw new InvalidRecordRequestException();
 		}
+
+		for (TagProvider provider : tagProviders) {
+			provider.addTags(resultObject, accessGroups);
+		}
+
 		model.addAttribute("resultObject", resultObject);
 
 		return "edit/description";
@@ -85,7 +96,7 @@ public class MODSController extends AbstractSwordController {
 	/**
 	 * Retrieves the MD_DESCRIPTIVE datastream, containing MODS, for this item if one is present. If it is not present,
 	 * then returns a blank MODS document.
-	 * 
+	 *
 	 * @param idPrefix
 	 * @param id
 	 * @return
@@ -137,7 +148,7 @@ public class MODSController extends AbstractSwordController {
 
 	/**
 	 * Pushes a MODS document to the target object
-	 * 
+	 *
 	 * @param idPrefix
 	 * @param id
 	 * @param model

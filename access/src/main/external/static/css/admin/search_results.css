@@ -417,15 +417,18 @@
 	color: #444;
 }
 
-
-.itemdetails > div > .warning_symbol {
+.warning_symbol {
 	border-radius: 8px;
-	background-color: #faebcc;
+	background-color: #ffc500;
 	padding: 0px 7px;
 	font-weight: bold;
-	font-size: .9em;
 	margin-right: 2px;
-	border: 1px solid #F1DEB7;
+	vertical-align: middle;
+	font-size: 130%;
+}
+
+.itemdetails > div > .warning_symbol {
+	font-size: 110%;
 }
 
 .res_entry > .creator > div {
@@ -471,12 +474,6 @@
 	border: 1px solid #faebcc;
 	margin: 0px 0 5px;
 	display: block;
-}
-
-.result_warning .warning_symbol {
-	color: red;
-	font-size: 150%;
-	vertical-align: middle;
 }
 
 /** Batch operations */
@@ -686,4 +683,26 @@
 
 .item_title.ui-state-disabled {
 	opacity: 1;
+}
+
+.validity_tip {
+	padding: 10px;
+}
+
+.edit_desc_page .warning_symbol {
+	font-size: 100%;
+	margin-right: 5px;
+}
+
+.edit_desc_page h3 {
+	margin: 0 0 5px 0;
+}
+
+.edit_desc_page #vocab_issues {
+	border-radius: 10px;
+	background-color: #fcf8e3;
+	padding: 4px;
+	border: 1px solid #faebcc;
+	margin: 5px 0 5px;
+	display: inline-block;
 }

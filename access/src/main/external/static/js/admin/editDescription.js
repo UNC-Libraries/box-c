@@ -21,6 +21,24 @@ require.config({
 
 define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'], function(module, $, ui, ace) {
 	var resultObject = module.config().resultObject;
+	
+	var tags = resultObject.tags;
+	if (tags) {
+		var validationProblem = "";
+		for (var index in tags) {
+			if (tags[index].label == "invalid affiliation") {
+				var details = tags[index].details;
+				for (var index in details) {
+					validationProblem +=  "<li><span class='warning_symbol'>!</span>" + details[index] + "</li>";
+				}
+			}
+		}
+		
+		if (validationProblem) {
+			$(".edit_desc_page .results_header_hierarchy_path").after("<div id='vocab_issues'><h3>Invalid affiliation terms</h3><ul>" + validationProblem + "</ul></div>");
+		}
+	}
+	
 	var originalUrl = module.config().originalUrl;
 	var menuEntries = (originalUrl)? [{
 		insertPath : ["View"],

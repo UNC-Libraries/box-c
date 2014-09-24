@@ -3425,6 +3425,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				// Bind the qTip within the event handler
 				$(this).qtip({
 					overwrite: false,
+					style: { classes: 'validity_tip' },
 					show: {
 						event: event.type,
 						ready: true
