@@ -27,7 +27,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -43,13 +42,11 @@ import org.mockito.Mock;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
 
 /**
@@ -78,15 +75,12 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
 		job.getDescriptionDir().mkdir();
 
-		Model model = ModelFactory.createDefaultModel();
+		Model model = job.getModel();
 		Bag depositBag = model.createBag(job.getDepositPID().getURI());
 		Resource mainResource = model.createResource(MAIN_RESOURCE);
 		depositBag.add(mainResource);
-
-		File modelFile = new File(job.getDepositDirectory(), DepositConstants.MODEL_FILE);
-		try (FileOutputStream fos = new FileOutputStream(modelFile)) {
-			model.write(fos, "N-TRIPLE");
-		}
+		job.commitModel();
+		job.closeModel();
 	}
 
 	@Test
@@ -102,7 +96,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Element affiliation = element("/mods:mods/mods:name/mods:affiliation", modsDoc);
 		assertEquals("Affiliation should not have been changed", "dept1", affiliation.getText());
 
-		Model model = this.getModel(job);
+		Model model = job.getModel();
 		Resource mainResource = model.getResource(MAIN_RESOURCE);
 		Property invalidTerm = model.createProperty(invalidAffiliationTerm.getURI().toString());
 		Statement invalidStatement = model.getProperty(mainResource, invalidTerm);
@@ -124,7 +118,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Element affiliation = element("/mods:mods/mods:name/mods:affiliation", modsDoc);
 		assertEquals("Affiliation was not changed", "dept2", affiliation.getText());
 
-		Model model = this.getModel(job);
+		Model model = job.getModel();
 		Resource mainResource = model.getResource(MAIN_RESOURCE);
 		Property invalidTerm = model.createProperty(invalidAffiliationTerm.getURI().toString());
 		Statement invalidStatement = model.getProperty(mainResource, invalidTerm);
@@ -269,7 +263,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
 		verify(deptUtil, times(3)).getAuthoritativeDepartment(anyString());
 
-		Model model = this.getModel(job);
+		Model model = job.getModel();
 		Resource mainResource = model.getResource(MAIN_RESOURCE);
 		Property invalidTerm = model.createProperty(invalidAffiliationTerm.getURI().toString());
 		StmtIterator stmtIt = mainResource.listProperties(invalidTerm);

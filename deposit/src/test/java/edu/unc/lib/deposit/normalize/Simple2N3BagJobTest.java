@@ -79,7 +79,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		job.run();
 
-		Model model = getModel(job);
+		Model model = job.getModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 
@@ -100,7 +100,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		job.run();
 
-		Model model = getModel(job);
+		Model model = job.getModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 
@@ -124,7 +124,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		job.run();
 
-		Model model = getModel(job);
+		Model model = job.getModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 
@@ -144,7 +144,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		job.run();
 
-		Model model = getModel(job);
+		Model model = job.getModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 

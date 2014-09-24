@@ -66,6 +66,9 @@ public class DepositSupervisor implements WorkerListener {
 
 	@Autowired
 	private WorkerPool depositWorkerPool;
+	
+	@Autowired
+	private WorkerPool cdrMetsDepositWorkerPool;
 
 	public net.greghaines.jesque.Config getJesqueConfig() {
 		return jesqueConfig;
@@ -115,13 +118,14 @@ public class DepositSupervisor implements WorkerListener {
 	}
 
 	private static enum Queue {
-		PREPARE, DELAYED_PREPARE;
+		PREPARE, DELAYED_PREPARE, CDRMETSCONVERT;
 	}
 
 	@PostConstruct
 	public void init() {
 		LOG.info("Initializing DepositSupervisor timer and starting Jesque worker pool");
 		depositWorkerPool.getWorkerEventEmitter().addListener(this);
+		cdrMetsDepositWorkerPool.getWorkerEventEmitter().addListener(this);
 	}
 
 	public void start() {
@@ -185,6 +189,16 @@ public class DepositSupervisor implements WorkerListener {
 		} else {
 			LOG.info("Starting deposit workers");
 			depositWorkerPool.run();
+		}
+		
+		if (cdrMetsDepositWorkerPool.isShutdown()) {
+			throw new Error("Cannot start deposit workers, already shutdown.");
+		} else if (cdrMetsDepositWorkerPool.isPaused()) {
+			LOG.info("Unpausing deposit workers");
+			this.cdrMetsDepositWorkerPool.togglePause(false);
+		} else {
+			LOG.info("Starting deposit workers");
+			cdrMetsDepositWorkerPool.run();
 		}
 
 		// Repopulate the queue
@@ -493,7 +507,11 @@ public class DepositSupervisor implements WorkerListener {
 			if (delay > 0)
 				c.delayedEnqueue(Queue.DELAYED_PREPARE.name(), nextJob, System.currentTimeMillis() + delay);
 			else {
-				c.enqueue(Queue.PREPARE.name(), nextJob);
+				if(CDRMETS2N3BagJob.class.getName().equals(nextJob.getClassName())) {
+					c.enqueue(Queue.CDRMETSCONVERT.name(), nextJob);
+				} else {
+					c.enqueue(Queue.PREPARE.name(), nextJob);
+				}
 			}
 			c.end();
 		} else {

@@ -52,6 +52,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
@@ -66,11 +69,11 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  *
  */
 @Controller
-@RequestMapping(value = { "/status/deposit*", "/status/deposit" })
+@RequestMapping(value = { "/edit/deposit*", "/edit/deposit" })
 public class DepositController {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(DepositController.class);
-	public static final String BASE_PATH = "/api/status/deposit/";
+	public static final String BASE_PATH = "/api/edit/deposit/";
 
 	@Resource
 	protected JedisPool jedisPool;
@@ -288,7 +291,16 @@ public class DepositController {
 			throw new IllegalArgumentException(
 					"The deposit action is not recognized: " + action);
 		}
+		// permission check, admin group or depositor required
+		AccessGroupSet groups = GroupsThreadStore.getGroups();
+		String username = GroupsThreadStore.getUsername();
 		Map<String, String> status = depositStatusFactory.get(uuid);
+		if(!groups.contains(AccessGroupConstants.ADMIN_GROUP)) {
+			if(username == null ||  !username.equals(status.get(DepositField.depositorName))) {
+				response.setStatus(403);
+				return;	
+			}
+		}
 		String state = status.get(DepositField.state.name());
 		switch (actionRequested) {
 			case pause:

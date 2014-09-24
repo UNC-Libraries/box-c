@@ -124,14 +124,6 @@ public abstract class AbstractNormalizationJobTest {
 				sourceMDDatastream);
 	}
 
-	protected Model getModel(AbstractDepositJob job) {
-		File modelFile = new File(job.getDepositDirectory(), DepositConstants.MODEL_FILE);
-		Model model = ModelFactory.createDefaultModel();
-		model.read(modelFile.toURI().toString());
-
-		return model;
-	}
-
 	protected void copyTestPackage(String filename, AbstractDepositJob job) {
 		copyTestPackage(filename, null, job);
 	}

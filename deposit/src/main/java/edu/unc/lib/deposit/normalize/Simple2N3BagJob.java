@@ -38,7 +38,6 @@ import org.springframework.web.util.UriUtils;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
@@ -56,7 +55,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
  * @author count0
  * @date Jun 20, 2014
  */
-public class Simple2N3BagJob extends AbstractDepositJob implements Runnable {
+public class Simple2N3BagJob extends AbstractDepositJob {
 
 	private static final Logger log = LoggerFactory.getLogger(Simple2N3BagJob.class);
 
@@ -69,10 +68,10 @@ public class Simple2N3BagJob extends AbstractDepositJob implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public void runJob() {
 
 		// deposit RDF bag
-		Model model = ModelFactory.createDefaultModel();
+		Model model = getModel();
 		Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 
 		// Generate a uuid for the main object
@@ -101,9 +100,6 @@ public class Simple2N3BagJob extends AbstractDepositJob implements Runnable {
 			log.info("Creating deposit dir {}", this.getDepositDirectory().getAbsolutePath());
 			this.getDepositDirectory().mkdir();
 		}
-
-		// Save the model to the n3 file
-		saveModel(model, DepositConstants.MODEL_FILE);
 
 		// Add normalization event to deposit record
 		recordDepositEvent(Type.NORMALIZATION, "Normalized deposit package from {0} to {1}",

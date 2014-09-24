@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -45,7 +44,7 @@ import edu.unc.lib.dl.util.PremisEventLogger.Type;
  * @author bbpennel
  * @date Jun 18, 2014
  */
-public class BioMedCentralExtrasJob extends AbstractDepositJob implements Runnable {
+public class BioMedCentralExtrasJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(BioMedCentralExtrasJob.class);
 
 	public BioMedCentralExtrasJob() {
@@ -56,12 +55,9 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob implements Runnab
 	}
 
 	@Override
-	public void run() {
+	public void runJob() {
 		log.debug("starting on {}", getDepositDirectory());
-		Model model = ModelFactory.createDefaultModel();
-		File modelFile = new File(getDepositDirectory(), DepositConstants.MODEL_FILE);
-		model.read(modelFile.toURI().toString());
-		log.debug("loaded RDF model {}", modelFile);
+		Model model = getModel();
 
 		// top level object must be aggregate
 		Bag deposit = model.getBag(getDepositPID().getURI());
@@ -163,7 +159,6 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob implements Runnab
 			}
 		}
 
-		saveModel(model, DepositConstants.MODEL_FILE);
 		recordDepositEvent(Type.NORMALIZATION, "Normalized BioMed Central article as aggregate with extracted description");
 	}
 

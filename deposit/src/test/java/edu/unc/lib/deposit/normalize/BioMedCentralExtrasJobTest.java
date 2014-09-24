@@ -45,7 +45,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.DepositConstants;
 
 /**
  * @author bbpennel
@@ -77,16 +76,19 @@ public class BioMedCentralExtrasJobTest extends AbstractNormalizationJobTest {
 		DepositTestUtils.makeTestDir(depositsDirectory, job.getDepositUUID(), new File(
 				"src/test/resources/biomedDspaceMETS.zip"));
 
-		File everythingFile = new File(job.getDepositDirectory(), DepositConstants.MODEL_FILE);
-		Files.copy(Paths.get("src/test/resources/aggregate-deposit.n3"), everythingFile.toPath());
-
+		Model m = job.getModel();
+		File testModel = new File("src/test/resources/aggregate-deposit.n3");
+		m.read(testModel.toURI().toURL().toString());
+		job.commitModel();
+		job.closeModel();
+		
 		long start = System.currentTimeMillis();
 		job.run();
 		log.info("Successful: {}", (System.currentTimeMillis() - start));
 
-		assertTrue("N3 model file must exist after conversion", everythingFile.exists());
+		//assertTrue("N3 model file must exist after conversion", everythingFile.exists());
 
-		Model model = getModel(job);
+		Model model = job.getModel();
 		assertFalse("Model was empty", model.isEmpty());
 
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
@@ -124,8 +126,11 @@ public class BioMedCentralExtrasJobTest extends AbstractNormalizationJobTest {
 		DepositTestUtils.makeTestDir(depositsDirectory, job.getDepositUUID(), new File(
 				"src/test/resources/biomedDspaceMETS.zip"));
 
-		File everythingFile = new File(job.getDepositDirectory(), DepositConstants.MODEL_FILE);
-		Files.copy(Paths.get("src/test/resources/aggregate-deposit.n3"), everythingFile.toPath());
+		Model m = job.getModel();
+		File testModel = new File("src/test/resources/aggregate-deposit.n3");
+		m.read(testModel.toURI().toURL().toString());
+		job.commitModel();
+		job.closeModel();
 
 		job.getDescriptionDir().mkdir();
 		File descriptionFile = new File(job.getDescriptionDir(), "c647de74-bf11-41fd-acf1-9da03dc9e6ad.xml");

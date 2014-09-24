@@ -106,7 +106,7 @@ public class CleanupDepositJobTest {
 		FileUtils.copyDirectory(originalDepositDirectory, depositFolder);
 		
 		job = new CleanupDepositJob("jobuuid", depositUuid);
-		job.setStageConfigURL(this.modifiedStagesConfig.toURI().toString());
+		job.setStagesConfiguration(this.modifiedStagesConfig.toURI().toString());
 		// job.setDepositDirectory(depositFolder);
 		
 		setField(job, "depositsDirectory", depositsDir);

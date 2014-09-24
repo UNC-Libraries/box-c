@@ -30,6 +30,7 @@ public class SerializationUtilTest extends Assert {
 		BriefObjectMetadataBean md = new BriefObjectMetadataBean();
 		md.setId("uuid:test");
 		md.setTitle("Test Item");
+		md.setIsPart(Boolean.FALSE);
 		md.setDatastream(Arrays.asList("DATA_FILE|image/jpeg|orig|582753|]"));
 
 		System.out.print(SerializationUtil.objectToJSON(md));
@@ -40,11 +41,13 @@ public class SerializationUtilTest extends Assert {
 		BriefObjectMetadataBean md = new BriefObjectMetadataBean();
 		md.setId("uuid:test");
 		md.setTitle("Test Item");
+		md.setIsPart(Boolean.FALSE);
 		md.setDatastream(Arrays.asList("DATA_FILE|image/jpeg|orig|582753|]"));
 
 		BriefObjectMetadataBean md2 = new BriefObjectMetadataBean();
 		md2.setId("uuid:test2");
 		md2.setTitle("Test Item 2");
+		md.setIsPart(Boolean.FALSE);
 		md2.setDatastream(Arrays.asList("DATA_FILE|application/msword|orig|596318|",
 				"NORM_FILE|application/pdf|deriv|290733|", "MD_TECHNICAL|text/xml|admin|6406|",
 				"AUDIT|text/xml|admin|405|", "RELS-EXT|text/xml|admin|1042|", "MD_DESCRIPTIVE|text/xml|meta|2301|",

@@ -90,10 +90,10 @@ public class DSPACEMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 		job.run();
 		log.info("Run dspace mets: {}", (System.currentTimeMillis() - start));
 
-		File modelFile = new File(workDir, DepositConstants.MODEL_FILE);
+		File modelFile = new File(workDir, DepositConstants.JENA_TDB_DIR);
 		assertTrue("N3 model file must exist after conversion", modelFile.exists());
 
-		Model model = getModel(job);
+		Model model = job.getModel();
 		assertFalse("Model was empty", model.isEmpty());
 
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());

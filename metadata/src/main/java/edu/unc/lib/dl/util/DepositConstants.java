@@ -4,7 +4,7 @@ import edu.unc.lib.dl.fedora.PID;
 
 public class DepositConstants {
 	public static final String DESCRIPTION_DIR = "description";
-	public static final String MODEL_FILE = "everything.n3";
+	public static final String JENA_TDB_DIR = "jena-tdb-model";
 	public static final String EVENTS_FILE = "events.xml";
 	public static final String EVENTS_DIR = "events";
 	public static final String DUBLINCORE_DIR = "dc";

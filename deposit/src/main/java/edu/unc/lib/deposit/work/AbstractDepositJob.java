@@ -1,6 +1,7 @@
 package edu.unc.lib.deposit.work;
 
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
+import static edu.unc.lib.dl.util.DepositConstants.JENA_TDB_DIR;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,7 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.query.ReadWrite;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -38,7 +42,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author count0
  *
  */
-public abstract class AbstractDepositJob {
+public abstract class AbstractDepositJob implements Runnable {
 	private static final Logger log = LoggerFactory
 			.getLogger(AbstractDepositJob.class);
 	public static final String DEPOSIT_QUEUE = "Deposit";
@@ -70,6 +74,8 @@ public abstract class AbstractDepositJob {
 	// Directory containing PREMIS event files for individual objects in this
 	// deposit
 	private File eventsDirectory;
+	
+	private Dataset dataset;
 
 	public AbstractDepositJob() {
 	}
@@ -88,6 +94,17 @@ public abstract class AbstractDepositJob {
 		this.eventsDirectory = new File(depositDirectory,
 				DepositConstants.EVENTS_DIR);
 	}
+	
+	public final void run() {
+		try {
+			runJob();
+			commitModel();
+		} finally {
+			closeModel();
+		}
+	}
+	
+	public abstract void runJob();
 
 	public String getDepositUUID() {
 		return depositUUID;
@@ -209,13 +226,27 @@ public abstract class AbstractDepositJob {
 			throw new Error("Unexpected problem with deposit events file", e1);
 		}
 	}
-
-	protected void saveModel(Model model, String filepath) {
-		File arrangementFile = new File(this.getDepositDirectory(), filepath);
-		try(FileOutputStream fos = new FileOutputStream(arrangementFile)) {
-			model.write(fos, "N-TRIPLE");
-		} catch (IOException e) {
-			throw new Error("Cannot open file " + arrangementFile, e);
+	
+	public Model getModel() {
+		if(this.dataset == null) {
+			String directory = new File(getDepositDirectory(), JENA_TDB_DIR).getAbsolutePath();
+			this.dataset = TDBFactory.createDataset(directory);
+			this.dataset.begin(ReadWrite.WRITE);
+		}
+		return this.dataset.getDefaultModel();
+	}
+	
+	public void commitModel() {
+		if(this.dataset != null) {
+			this.dataset.commit();
+		}
+	}
+	
+	public void closeModel() {
+		if(this.dataset != null) {
+			this.dataset.end();
+			this.dataset.close();
+			this.dataset = null;
 		}
 	}
 

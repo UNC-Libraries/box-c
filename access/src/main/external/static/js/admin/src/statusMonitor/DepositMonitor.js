@@ -4,9 +4,9 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 	var defaultOptions = {
 		name : "deposit",
 		jobConfig : {
-			url : "/services/api/status/deposit/{name}",
+			url : "/services/api/edit/deposit/{name}",
 			template : depositMonitorJobTemplate,
-			detailsUrl : "/services/api/status/deposit/{id}",
+			detailsUrl : "/services/api/edit/deposit/{id}",
 			detailsTemplate : depositMonitorDetailsTemplate,
 			fields : ["Status", "Submitter", "Submit time", "Progress", "First object", "Note"],
 			jobTypes : [
@@ -19,7 +19,7 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 			]
 		},
 		overviewConfig : {
-			url : "/services/api/status/deposit"
+			url : "/services/api/edit/deposit"
 		}
 	};
 			
@@ -90,10 +90,12 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 					completion += " / " + job.total;
 					job["completion"] = completion;
 				}
+				var etime = job.endtime? (job.endtime - job.starttime) : 0;
+				if(etime != 0 ) job["time"] = etime + "ms";
 			}
 		}
 		
-		this.detailsContent.html(typeConfig.template({data : typeConfig.results, type : typeConfig, dateFormat : this.dateFormat}));
+		this.detailsContent.html(typeConfig.template({data : typeConfig.results, type : typeConfig, dateFormat : this.dateFormat, username : this.options.username, isAdmin : this.options.isAdmin}));
 	};
 		
 	DepositMonitor.prototype.dateFormat = function(dateObject) {

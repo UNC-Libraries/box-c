@@ -30,12 +30,11 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.xml.METSProfile;
 
-public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnable {
+public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 
 	private static final Logger log = LoggerFactory.getLogger(DSPACEMETS2N3BagJob.class);
 
@@ -54,7 +53,7 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnab
 	}
 
 	@Override
-	public void run() {
+	public void runJob() {
 		// copy DSPACE METS into place.
 		try {
 			File payloadMets = new File(getDepositDirectory(), "data/mets.xml");
@@ -88,7 +87,6 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob implements Runnab
 			aggregate.add(child);
 		}
 		helper.addFileAssociations(model, true);
-		saveModel(model, DepositConstants.MODEL_FILE);
 
 		// extract EPDCX from mets
 		FileOutputStream fos = null;

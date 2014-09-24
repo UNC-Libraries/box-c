@@ -226,11 +226,7 @@ public class MakeFOXMLTest {
 	}
 
 	private Model getModel(AbstractDepositJob job) {
-		File modelFile = new File(job.getDepositDirectory(), DepositConstants.MODEL_FILE);
-		Model model = ModelFactory.createDefaultModel();
-		model.read(modelFile.toURI().toString());
-
-		return model;
+		return job.getModel();
 	}
 
 	private Document deserializeFOXML(File foxml) {
