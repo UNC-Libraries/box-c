@@ -148,3 +148,29 @@ task :deploy do
   invoke "deploy:update"
   invoke "deploy:apply"
 end
+
+namespace :service do
+  
+  namespace :tomcat do
+    
+    desc "Restart the tomcat service"
+    task :restart do
+      on roles(:all) do
+        sudo :service, :tomcat, :restart
+      end
+    end
+    
+  end
+  
+  namespace :deposit do
+    
+    desc "Restart the deposit service"
+    task :restart do
+      on roles(:all) do
+        sudo :service, :deposit, :restart
+      end
+    end
+    
+  end
+  
+end
