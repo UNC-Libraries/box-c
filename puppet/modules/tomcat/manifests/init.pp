@@ -62,19 +62,24 @@ class tomcat(
     force => true,
   }
   
-  file { "/opt/repository/tomcat/webapps/ROOT.war":
-    ensure => "link",
-    target => "/opt/deploy/webapps/ROOT.war",
+  # Contexts for webapps
+  
+  file { "/opt/repository/tomcat/conf/Catalina/localhost/ROOT.xml":
+    source => "puppet:///modules/tomcat/home/conf/Catalina/localhost/ROOT.xml",
+    owner => "tomcat",
+    group => "tomcat",
   }
   
-  file { "/opt/repository/tomcat/webapps/admin.war":
-    ensure => "link",
-    target => "/opt/deploy/webapps/admin.war",
+  file { "/opt/repository/tomcat/conf/Catalina/localhost/admin.xml":
+    source => "puppet:///modules/tomcat/home/conf/Catalina/localhost/admin.xml",
+    owner => "tomcat",
+    group => "tomcat",
   }
   
-  file { "/opt/repository/tomcat/webapps/services.war":
-    ensure => "link",
-    target => "/opt/deploy/webapps/services.war",
+  file { "/opt/repository/tomcat/conf/Catalina/localhost/services.xml":
+    source => "puppet:///modules/tomcat/home/conf/Catalina/localhost/services.xml",
+    owner => "tomcat",
+    group => "tomcat",
   }
   
   # The following implicitly require /opt/repository/tomcat/conf
