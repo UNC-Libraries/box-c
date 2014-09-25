@@ -20,7 +20,7 @@ class fedora(
     ensure => "3.6.2-3",
     require => [
       Class["tomcat"],
-      Yumrepo["cdr-packages"]
+      Yumrepo["cdr-server"]
     ],
   }
 

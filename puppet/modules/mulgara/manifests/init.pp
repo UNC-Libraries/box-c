@@ -10,7 +10,7 @@ class mulgara(
     require => [
       User["tomcat"],
       Class["repository"],
-      Yumrepo["cdr-packages"]
+      Yumrepo["cdr-server"]
     ],
   }
   

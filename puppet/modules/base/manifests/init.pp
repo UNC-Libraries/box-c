@@ -2,16 +2,18 @@ class base(
   $ssl_cert,
   $ssl_key,
   $package_repo_baseurl,
+  $package_gpgkey,
   $apache_servername
 ) {
 
   # Packages
 
-  yumrepo { "cdr-packages":
+  yumrepo { "cdr-server":
     baseurl => $package_repo_baseurl,
-    descr => "CDR Packages",
+    descr => "Carolina Digital Repository Packages - Server",
     enabled => 1,
-    gpgcheck => 0
+    gpgcheck => 1,
+    gpgkey => $package_gpgkey,
   }
 
 
@@ -34,7 +36,7 @@ class base(
     require => [
       User["tomcat"],
       Package["java-1.7.0-openjdk-devel"],
-      Yumrepo["cdr-packages"]
+      Yumrepo["cdr-server"]
     ],
   }
   

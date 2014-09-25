@@ -34,7 +34,7 @@ class tomcat(
     require => [
       User["tomcat"],
       Package[$packages],
-      Yumrepo["cdr-packages"]
+      Yumrepo["cdr-server"]
     ],
   }
   

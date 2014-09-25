@@ -11,7 +11,7 @@ class tika(
     require => [
       Package["nc"],
       User["irods"],
-      Yumrepo["cdr-packages"]
+      Yumrepo["cdr-server"]
     ],
   }
   

@@ -62,7 +62,7 @@ class irods(
     require => [
       User["irods"],
       Package[$packages],
-      Yumrepo["cdr-packages"]
+      Yumrepo["cdr-server"]
     ],
   }
   

@@ -6,7 +6,7 @@ class solr(
     ensure => "4.3.0-2",
     require => [
       Class["tomcat"],
-      Yumrepo["cdr-packages"]
+      Yumrepo["cdr-server"]
     ]
   }
   
