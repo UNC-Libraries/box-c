@@ -69,7 +69,9 @@ public class DepositGenerator {
 	}
 
 	public static void main(String[] args) throws IOException {
-		generate(2, 3, 5, "tag:count@cdr.lib.unc.edu,2014:/vagrant/"
+		// TODO make mintPIDs optional
+		// map arguments to a instance, then run that..
+		generate(2, 3, 5, "tag:vagrant@localhost,2014:/vagrant/"
 				+ testPatternTif.getName(), testPatternTif, true);
 	}
 

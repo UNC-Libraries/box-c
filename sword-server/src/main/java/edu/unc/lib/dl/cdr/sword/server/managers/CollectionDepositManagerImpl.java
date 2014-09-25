@@ -83,6 +83,8 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
 					"An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type "
 							+ deposit.getPackaging(), e);
+		} catch (SwordError e) {
+			throw e;
 		} catch (Exception e) {
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
 					"Unexpected exception occurred while attempting to perform a METS deposit", e);
