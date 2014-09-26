@@ -1,7 +1,6 @@
 class fedora(
   $ssl_cert,
   $ssl_key,
-  $tomcat_user,
   $trust_store_password,
   $remote_broker_uri,
   $users,
