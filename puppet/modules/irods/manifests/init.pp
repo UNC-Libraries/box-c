@@ -1,5 +1,4 @@
 class irods(
-  $user,
   $tika_host,
   $tika_port,
   $zone_name,

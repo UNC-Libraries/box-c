@@ -23,7 +23,7 @@ RETVAL=0
 
 # Start the service iRODS
 start() {
-        runuser <%= @user %> -l -c "$IRODS_HOME/scripts/runperl --dir $IRODS_HOME --script $IRODS_HOME/scripts/perl/irodsctl.pl start"
+        runuser irods -l -c "$IRODS_HOME/scripts/runperl --dir $IRODS_HOME --script $IRODS_HOME/scripts/perl/irodsctl.pl start"
                 ret=$?
                         sleep 2
                                 pidofproc $prog > /var/run/$progname.pid
