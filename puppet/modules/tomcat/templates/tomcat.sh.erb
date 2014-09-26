@@ -26,7 +26,7 @@ start() {
 # 	next line removed by Greg as redundant
 #	export JAVA_OPTS="-Xms128m -Xmx1024m"
 	echo "Starting CDR Tomcat Server: "
-        runuser <%= @user %> -p -c "$CATALINA_HOME/bin/startup.sh"
+        runuser tomcat -p -c "$CATALINA_HOME/bin/startup.sh"
         ret=$?
 
         if [ $ret -eq 0 ]; then

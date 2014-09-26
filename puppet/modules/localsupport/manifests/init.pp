@@ -5,13 +5,11 @@ class localsupport(
   $apache_servername,
   $apache_docroot,
   
-  $fedora_user,
   $fedora_database_present,
   $fedora_database_name,
   $fedora_database_user,
   $fedora_database_password,
   
-  $irods_user,
   $irods_database_present,
   $irods_database_name,
   $irods_database_user,
@@ -43,10 +41,10 @@ class localsupport(
       password => postgresql_password($fedora_database_user, $fedora_database_password),
     }
 
-    postgresql::server::pg_hba_rule { "allow password authentication for $fedora_user on localhost":
+    postgresql::server::pg_hba_rule { "allow password authentication for tomcat on localhost":
       type => "host",
       database => $fedora_database_name,
-      user => $fedora_user,
+      user => "tomcat",
       address => "127.0.0.1/32",
       auth_method => "md5",
     }
@@ -63,10 +61,10 @@ class localsupport(
       password => postgresql_password($irods_database_user, $irods_database_password),
     }
 
-    postgresql::server::pg_hba_rule { "allow password authentication for $irods_user on localhost":
+    postgresql::server::pg_hba_rule { "allow password authentication for irods on localhost":
       type => "host",
       database => $irods_database_name,
-      user => $irods_user,
+      user => "irods",
       address => "127.0.0.1/32",
       auth_method => "md5",
     }

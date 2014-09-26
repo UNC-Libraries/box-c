@@ -1,5 +1,4 @@
 class mulgara(
-  $user,
   $host,
   $port,
   $rmi_port,

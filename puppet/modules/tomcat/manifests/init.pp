@@ -1,5 +1,4 @@
 class tomcat(
-  $user,
   $roles,
   $users,
   $enable_spoof,
@@ -16,7 +15,7 @@ class tomcat(
     ensure => "installed",
   }
   
-  user { $user:
+  user { "tomcat":
     ensure => present,
     comment => "Tomcat",
     expiry => "absent",

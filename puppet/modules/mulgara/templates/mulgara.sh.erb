@@ -43,7 +43,7 @@ RETVAL=0
 start() {
 	echo -n "Starting CDR Mulgara Jetty Server: "
 	cd $MULGARA_HOME
-        runuser <%= @user %> -c "$JAVA_HOME/bin/java -Xms128m -Xmx1024m -Djetty.home=$JETTY_HOME -Djava.io.tmpdir=/opt/data/mulgara-tmp -Djava.security.policy=$MULGARA_HOME/mulgara-rmi.policy -jar $MULGARA_HOME/mulgara-2.1.13.jar --logconfig file:$MULGARA_HOME/log4j-mulgara.xml --serverconfig file:$MULGARA_HOME/mulgara-config.xml &"
+        runuser tomcat -c "$JAVA_HOME/bin/java -Xms128m -Xmx1024m -Djetty.home=$JETTY_HOME -Djava.io.tmpdir=/opt/data/mulgara-tmp -Djava.security.policy=$MULGARA_HOME/mulgara-rmi.policy -jar $MULGARA_HOME/mulgara-2.1.13.jar --logconfig file:$MULGARA_HOME/log4j-mulgara.xml --serverconfig file:$MULGARA_HOME/mulgara-config.xml &"
         ret=$?
         sleep 15
         pidofproc $prog > /var/run/$progname.pid

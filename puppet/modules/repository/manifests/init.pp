@@ -1,5 +1,4 @@
 class repository(
-  $user,
   $staging,
   $collector,
   $collection_indexing,

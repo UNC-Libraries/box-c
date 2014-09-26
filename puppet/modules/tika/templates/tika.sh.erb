@@ -17,7 +17,7 @@ progname=tika
 start() {
 	echo "Starting Apache Tika Server"
 	cd $TIKA_HOME
-	runuser <%= @user %> -c "java -jar tika-app-1.4.jar --server <%= @port %> -t &"
+	runuser irods -c "java -jar tika-app-1.4.jar --server <%= @port %> -t &"
 	ret=$?
 	sleep 1
 	pgrep -f "tika-app" > /var/run/$progname.pid

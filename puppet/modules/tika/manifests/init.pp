@@ -1,5 +1,4 @@
 class tika(
-  $user,
   $port,
 ) {
   
