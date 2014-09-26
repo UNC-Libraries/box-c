@@ -1,5 +1,4 @@
 class deposit(
-  $user,
   $enable_debug,
   $fedora_username,
   $fedora_password,
@@ -31,8 +30,9 @@ class deposit(
     source => "puppet:///modules/deposit/home",
     recurse => remote,
     purge => false,
-    owner => $user,
-    group => $user,
+    owner => "tomcat",
+    group => "tomcat",
+    require => User["tomcat"],
   }
   
   file { "/opt/deposit/deposit.jar":
@@ -42,14 +42,15 @@ class deposit(
   
   file { "/opt/deposit/deposit.properties":
     content => template("deposit/home/deposit.properties.erb"),
-    owner => $user,
-    group => $user,
-    require => File["/opt/deposit"],
+    owner => "tomcat",
+    group => "tomcat",
+    require => User["tomcat"],
   }
   
   file { "/etc/init.d/deposit":
     content => template("deposit/deposit.sh.erb"),
     mode => "a+x",
+    require => User["tomcat"],
   }
   
   exec { "/sbin/chkconfig --add deposit":
