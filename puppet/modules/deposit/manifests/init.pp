@@ -20,9 +20,8 @@ class deposit(
   }
   
   package { "cdr-commons-daemon":
-    ensure => "1.0.15-1",
+    ensure => "1.0.15-2",
     require => [
-      User["tomcat"],
       Package["java-1.7.0-openjdk-devel"],
       Yumrepo["cdr-server"]
     ],
