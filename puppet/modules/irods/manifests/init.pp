@@ -66,19 +66,6 @@ class irods(
     ],
   }
   
-  postgresql::server::db { $database_name:
-    user => $database_admin_name,
-    password => postgresql_password($database_admin_name, $database_admin_password),
-  }
-
-  postgresql::server::pg_hba_rule { "allow password authentication for irods user on localhost":
-    type => "host",
-    database => $database_name,
-    user => $user,
-    address => "127.0.0.1/32",
-    auth_method => "md5",
-  }
-  
   file { $resource_dir:
     ensure => "directory",
     owner => "irods",

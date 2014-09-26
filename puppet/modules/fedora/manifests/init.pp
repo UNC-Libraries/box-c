@@ -23,19 +23,6 @@ class fedora(
       Yumrepo["cdr-server"]
     ],
   }
-
-  postgresql::server::db { $postgresql_db_name:
-    user => $postgresql_db_username,
-    password => postgresql_password($postgresql_db_username, $postgresql_db_password),
-  }
-
-  postgresql::server::pg_hba_rule { "allow password authentication for tomcat user on localhost":
-    type => "host",
-    database => $postgresql_db_name,
-    user => $tomcat_user,
-    address => "127.0.0.1/32",
-    auth_method => "md5",
-  }
   
   file { "/opt/repository/fedora":
     source => "puppet:///modules/fedora/home",

@@ -7,6 +7,27 @@ class deposit(
   $jms_port,
 ) {
   
+  package { "redis":
+    ensure => installed,
+  }
+  
+  service { "redis":
+    ensure => true,
+    enable => true,
+    hasrestart => true,
+    hasstatus => true,
+    require => Package["redis"],
+  }
+  
+  package { "cdr-commons-daemon":
+    ensure => "1.0.15-1",
+    require => [
+      User["tomcat"],
+      Package["java-1.7.0-openjdk-devel"],
+      Yumrepo["cdr-server"]
+    ],
+  }
+  
   file { "/opt/deposit":
     source => "puppet:///modules/deposit/home",
     recurse => remote,
