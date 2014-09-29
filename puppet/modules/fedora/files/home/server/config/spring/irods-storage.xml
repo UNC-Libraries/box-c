@@ -17,13 +17,13 @@
 	</bean>
 
 	<bean id="fedoraIrodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">
-		<constructor-arg value="${fedora.irods.host}"/>
-		<constructor-arg value="${fedora.irods.port}" type="int"/>
-		<constructor-arg value="${fedora.irods.username}"/>
-		<constructor-arg value="${fedora.irods.password}"/>
-		<constructor-arg value="/${fedora.irods.zone}/home/${fedora.irods.username}"/>
-		<constructor-arg value="${fedora.irods.zone}"/>
-		<constructor-arg value="${fedora.irods.default.resc}"/>
+		<constructor-arg index="0" value="${fedora.irods.host}"/>
+		<constructor-arg index="1" value="${fedora.irods.port}" type="int"/>
+		<constructor-arg index="2" value="${fedora.irods.username}"/>
+		<constructor-arg index="3" value="${fedora.irods.password}"/>
+		<constructor-arg index="4" value="/${fedora.irods.zone}/home/${fedora.irods.username}"/>
+		<constructor-arg index="5" value="${fedora.irods.zone}"/>
+		<constructor-arg index="6" value="${fedora.irods.default.resc}"/>
 	</bean>
 	
 	<bean id="irodsFileSystem" class="org.irods.jargon.core.pub.IRODSFileSystem" factory-method="instance"/>
