@@ -433,7 +433,7 @@
     <comment>Fedora's Java Messaging Service (JMS) Module</comment>
     <param name="enabled" value="true"/>
     <param name="java.naming.factory.initial" value="org.apache.activemq.jndi.ActiveMQInitialContextFactory"/>
-    <param name="java.naming.provider.url" value="<%= @jms_java_naming_provider_url %>"/>
+    <param name="java.naming.provider.url" value="vm://localhost?brokerConfig=xbean:file:/opt/repository/fedora/server/config/activemq.xml"/>
     <param name="datastore1" value="apimUpdateMessages">
       <comment>A datastore representing a JMS Destination for APIM events which update the repository</comment>
     </param>

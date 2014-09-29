@@ -5,7 +5,6 @@ class fedora(
   $remote_broker_uri,
   $users,
   $admin_email_list,
-  $jms_java_naming_provider_url,
   $postgresql_db_username,
   $postgresql_db_password,
   $postgresql_db_name,
