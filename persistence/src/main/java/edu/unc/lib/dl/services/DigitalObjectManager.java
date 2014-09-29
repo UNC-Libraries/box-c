@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.services;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.List;
 
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -25,6 +24,7 @@ import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
 public interface DigitalObjectManager {
 
@@ -154,13 +154,13 @@ public interface DigitalObjectManager {
 	 * Adds a container to the specified parent container.
 	 * @param name container name
 	 * @param parent parent pid
-	 * @param isCollection true if this is a collection container
+	 * @param extraModel an additional Model beyond Container or null
 	 * @param user depositor username
-	 * @param mods optional MODS XML stream
+	 * @param mods optional MODS XML as byte array
 	 * @return PID of the new container
 	 */
-	public abstract PID createContainer(String name, PID parent, boolean isCollection,
-			String user, InputStream mods) throws IngestException;
+	public abstract PID createContainer(String name, PID parent, Model extraModel, String user,
+			byte[] mods) throws IngestException;
 	
 
 }

@@ -753,7 +753,7 @@ public class ManagementClient extends WebServiceTemplate {
 	}
 
 	public String upload(String content) {
-		return this.uploadBytes(content.getBytes(), "tmp_" + System.nanoTime());
+		return this.upload(content.getBytes(), "tmp_" + System.nanoTime());
 	}
 
 	public String upload(Document xml) {
@@ -771,10 +771,10 @@ public class ManagementClient extends WebServiceTemplate {
 			}
 		}
 
-		return this.uploadBytes(baos.toByteArray(), "md_events.xml");
+		return this.upload(baos.toByteArray(), "md_events.xml");
 	}
 
-	private String uploadBytes(byte[] bytes, String fileName) {
+	public String upload(byte[] bytes, String fileName) {
 		String result = null;
 		// construct a post request to Fedora upload service
 		String uploadURL = this.getFedoraContextUrl() + "/upload";
