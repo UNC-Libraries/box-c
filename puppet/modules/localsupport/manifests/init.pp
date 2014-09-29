@@ -106,8 +106,8 @@ class localsupport(
       port => "443",
       docroot => $apache_docroot,
       ssl => true,
-      ssl_cert => $ssl_cert,
-      ssl_key => $ssl_key,
+      ssl_cert => $apache_ssl_cert,
+      ssl_key => $apache_ssl_key,
       proxy_pass => [
         { "path" => "/static", "url" => "!" },
         { "path" => "/", "url" => "ajp://localhost:8009/" },
