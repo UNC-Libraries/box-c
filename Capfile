@@ -60,7 +60,7 @@ namespace :deploy do
     task :static => "static.tar.gz" do |t|
       tarball = t.prerequisites.first
       
-      on roles(:all) do
+      on roles(:web) do
         execute :rm, "-rf", "/opt/deploy/static"
         execute :mkdir, "-p", "/opt/deploy/static"
         
@@ -70,7 +70,7 @@ namespace :deploy do
   
     desc "Update webapps"
     task :webapps => WEBAPPS do |t|
-      on roles(:all) do
+      on roles(:web) do
         execute :mkdir, "-p", "/opt/deploy/webapps"
 
         t.prerequisites.each do |p|
@@ -81,7 +81,7 @@ namespace :deploy do
   
     desc "Update libraries"
     task :lib => LIB do |t|
-      on roles(:all) do
+      on roles(:web) do
         execute :rm, "-rf", "/opt/deploy/lib"
         execute :mkdir, "-p", "/opt/deploy/lib"
         
@@ -93,7 +93,7 @@ namespace :deploy do
     
     desc "Update deposit service"
     task :deposit => "deposit/target/deposit.jar" do |t|
-      on roles(:all) do
+      on roles(:web) do
         execute :rm, "-rf", "/opt/deploy/deposit"
         execute :mkdir, "-p", "/opt/deploy/deposit"
         
@@ -155,7 +155,7 @@ namespace :service do
     
     desc "Restart the tomcat service"
     task :restart do
-      on roles(:all) do
+      on roles(:web) do
         sudo :service, :tomcat, :restart
       end
     end
@@ -166,7 +166,7 @@ namespace :service do
     
     desc "Restart the deposit service"
     task :restart do
-      on roles(:all) do
+      on roles(:web) do
         sudo :service, :deposit, :restart
       end
     end
