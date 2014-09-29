@@ -4,7 +4,7 @@ class repository(
   $collection_indexing,
   $activemq_connector_uri,
   $enable_debug,
-  $web_prototcol,
+  $web_protocol,
   $web_host,
   $web_port,
   $web_context,
