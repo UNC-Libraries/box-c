@@ -20,13 +20,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -38,12 +39,14 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.jdom.output.XMLOutputter;
 import org.joda.time.DateTime;
 
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
+import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.ManagementClient.State;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
@@ -53,12 +56,16 @@ import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.Checksum;
 import edu.unc.lib.dl.util.ContainerContentsHelper;
+import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.ContentModelHelper.Model;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.ModsXmlHelper;
 
@@ -690,9 +697,87 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	}
 
 	@Override
-	public PID createContainer(String name, PID parent, boolean isCollection,
-			String user, InputStream mods) throws IngestException {
-		// TODO Auto-generated method stub
-		return null;
+	public PID createContainer(String name, PID parent, Model extraModel,
+			String user, byte[] mods) throws IngestException {
+		PID containerPid = new PID("uuid:"+UUID.randomUUID());
+		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(containerPid.getPid());
+		FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.label, name);
+		
+		// MODS
+		if (mods != null) {
+			String modsUpload = managementClient.upload(mods, "mods.xml");
+			Element modsEl = FOXMLJDOMUtil.makeLocatorDatastream(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(),
+					"M", modsUpload, "text/xml", "URL",
+					ContentModelHelper.Datastream.MD_DESCRIPTIVE.getLabel(),
+					true, null);
+			foxml.getRootElement().addContent(modsEl);
+		}
+		
+		// RELS
+		Element rdfElement = new Element("RDF", JDOMNamespaceUtil.RDF_NS);
+		Element descrElement = new Element("Description", JDOMNamespaceUtil.RDF_NS);
+		descrElement.setAttribute("about", containerPid.getURI(), JDOMNamespaceUtil.RDF_NS);
+		rdfElement.addContent(descrElement);
+		descrElement.addContent(
+				new Element("hasModel", JDOMNamespaceUtil.FEDORA_MODEL_NS).setAttribute(
+						"resource",
+						ContentModelHelper.Model.CONTAINER.getURI().toString(),
+						JDOMNamespaceUtil.RDF_NS));
+		descrElement.addContent(
+				new Element("hasModel", JDOMNamespaceUtil.FEDORA_MODEL_NS).setAttribute(
+						"resource",
+						ContentModelHelper.Model.PRESERVEDOBJECT.getURI().toString(),
+						JDOMNamespaceUtil.RDF_NS));
+		if(extraModel != null) {
+			descrElement.addContent(
+					new Element("hasModel", JDOMNamespaceUtil.FEDORA_MODEL_NS).setAttribute(
+							"resource",
+							extraModel.getURI().toString(),
+							JDOMNamespaceUtil.RDF_NS));
+		}
+		Element relsEl = FOXMLJDOMUtil.makeXMLManagedDatastreamElement(
+				ContentModelHelper.Datastream.RELS_EXT.getName(),
+				ContentModelHelper.Datastream.RELS_EXT.getLabel(),
+				ContentModelHelper.Datastream.RELS_EXT.getName()+"1.0",
+				rdfElement,
+				ContentModelHelper.Datastream.RELS_EXT.isVersionable());
+		foxml.getRootElement().addContent(relsEl);
+		
+
+		if(log.isDebugEnabled()) {
+			log.debug(new XMLOutputter().outputString(foxml));
+		}
+		
+		// TODO get a PIDLocker.lock(parent)
+		try {
+			// Container update
+			this.getManagementClient().addObjectRelationship(parent,
+					ContentModelHelper.Relationship.contains.getURI().toString(), containerPid);
+			try {
+				MIMETypedStream mts = this.accessClient.getDatastreamDissemination(parent, Datastream.MD_CONTENTS.getName(), null);
+				List<PID> reordered = new ArrayList<PID>();
+				try(ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
+					Document oldContents = new SAXBuilder().build(bais);
+					ContainerPlacement cp = new ContainerPlacement();
+					cp.label = name;
+					cp.parentPID = parent;
+					cp.pid = containerPid;
+					Collection<ContainerPlacement> placements = Collections.singleton(cp);
+					Document newContents = ContainerContentsHelper.addChildContentAIPInCustomOrder(oldContents, parent, placements, reordered);
+					this.getManagementClient().modifyInlineXMLDatastream(parent, Datastream.MD_CONTENTS.getName(), false,
+							"adding child resource to container", new ArrayList<String>(), Datastream.MD_CONTENTS.getLabel(), newContents);
+				} catch (JDOMException e) {
+					throw new IngestException("MD_CONTENTS is bad", e);
+				} catch (IOException e) {
+					throw new IngestException(e.getMessage(), e);
+				}
+			} catch(NotFoundException e) {
+				// no MD_CONTENTS to update, skip it
+			}
+			managementClient.ingest(foxml, Format.FOXML_1_1, "Container created via Admin UI");
+		} catch (FedoraException e) {
+			throw new IngestException("Failed to ingest container object", e);
+		}
+		return containerPid;
 	}
 }
