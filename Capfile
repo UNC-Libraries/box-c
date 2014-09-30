@@ -52,6 +52,11 @@ file "puppet.tar.gz" => FileList["puppet/**/*"] do |t|
   exec({"COPYFILE_DISABLE" => "1"}, "tar -cvzf #{t.name} -C puppet .")
 end
 
+task :clean do
+  rm_f "static.tar.gz"
+  rm_f "puppet.tar.gz"
+end
+
 namespace :deploy do
 
   namespace :update do
