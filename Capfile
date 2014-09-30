@@ -45,11 +45,11 @@ LIB = FileList[
 ]
 
 file "static.tar.gz" => FileList["access/src/main/external/static/**/*"] do |t|
-  sh "tar --disable-copyfile -cvzf #{t.name} -C access/src/main/external/static ."
+  exec({"COPYFILE_DISABLE" => "1"}, "tar -cvzf #{t.name} -C access/src/main/external/static .")
 end
 
 file "puppet.tar.gz" => FileList["puppet/**/*"] do |t|
-  sh "tar --disable-copyfile -cvzf #{t.name} -C puppet ."
+  exec({"COPYFILE_DISABLE" => "1"}, "tar -cvzf #{t.name} -C puppet .")
 end
 
 namespace :deploy do
