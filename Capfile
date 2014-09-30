@@ -1,5 +1,6 @@
 require "capistrano/setup"
 
+# Upload the tarball to a temporary directory, chdir to the specified directory, and expand
 def upload_and_expand!(tarball, dir)
   temp_dir = capture(:mktemp, "-d")
   execute :chmod, "a+rx", temp_dir
@@ -9,24 +10,6 @@ def upload_and_expand!(tarball, dir)
 
   upload! tarball, upload_path
   execute :tar, "--warning=no-unknown-keyword", "-xzf", upload_path, "-C", dir
-end
-
-def upload_as!(local, remote, user, options = {})
-  temp_dir = capture(:mktemp, "-d")
-  execute :chmod, "a+rx", temp_dir
-
-  local_basename = File.basename(local)
-  upload_path = File.join(temp_dir, local_basename)
-
-  upload! local, upload_path, options
-
-  as user do
-    if options[:recursive]
-      execute :cp, "-R", upload_path, remote
-    else
-      execute :cp, upload_path, remote
-    end
-  end
 end
 
 WEBAPPS = FileList[
