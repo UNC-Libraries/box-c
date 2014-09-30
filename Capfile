@@ -52,6 +52,7 @@ file "puppet.tar.gz" => FileList["puppet/**/*"] do |t|
   exec({"COPYFILE_DISABLE" => "1"}, "tar -cvzf #{t.name} -C puppet .")
 end
 
+desc "Remove temporary files"
 task :clean do
   rm_f "static.tar.gz"
   rm_f "puppet.tar.gz"
