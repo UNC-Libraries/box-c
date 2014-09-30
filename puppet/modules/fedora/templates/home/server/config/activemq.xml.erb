@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:amq="http://activemq.apache.org/schema/core"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+    http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+    <bean id="serverProperties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<!-- Set by CDR server properties -->
+				<value>#{systemProperties['server.properties.uri']}</value>
+			</list>
+		</property>
+		<property name="ignoreResourceNotFound" value="false"/>
+	</bean>
+    <amq:broker id="broker" useShutdownHook="false">
+        
+        <amq:managementContext>
+            <amq:managementContext connectorPort="1093" createConnector="false"/>
+        </amq:managementContext>
+        
+        <!-- Your remote broker, configured with failover -->
+        <amq:networkConnectors>
+            <amq:networkConnector name="fedorabridge" dynamicOnly="true" uri="static:(failover:(<%= @remote_broker_uri %>))"/>
+        </amq:networkConnectors>
+        
+        <amq:persistenceAdapter>
+            <amq:amqPersistenceAdapter directory="file:${fedora.activemq.data}"/>
+        </amq:persistenceAdapter>
+        
+    </amq:broker>
+    
+    <!-- Set this to prevent objects from being serialized when
+        passed along to your embedded broker;  saves some overhead processing -->
+    <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="objectMessageSerializationDefered" value="false"/>        
+    </bean>
+    
+</beans>

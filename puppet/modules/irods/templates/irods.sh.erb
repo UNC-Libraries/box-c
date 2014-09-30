@@ -1,0 +1,75 @@
+#!/bin/sh
+#
+# irods:	iRODS Daemon
+#
+# chkconfig: 35 97 02
+#
+# description: Starts and stops the iRODS service
+#
+# processname: irods
+# pidfile: /var/run/irods.pid
+#
+# Sanity checks.
+IRODS_HOME=/opt/iRODS
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# so we can rearrange this easily
+prog=irodsServer
+progname=irods
+
+RETVAL=0
+
+# Start the service iRODS
+start() {
+        runuser irods -l -c "$IRODS_HOME/scripts/runperl --dir $IRODS_HOME --script $IRODS_HOME/scripts/perl/irodsctl.pl start"
+                ret=$?
+                        sleep 2
+                                pidofproc $prog > /var/run/$progname.pid
+                                
+                                        if [ $ret -eq 0 ]; then
+       action $"Starting $progname: " /bin/true
+   touch /var/lock/subsys/$progname
+           else
+        action $"Starting $progname: " /bin/false
+ fi
+ 	return $?
+ 	}
+ 	
+ 	stop() {
+ 	        runuser <%= @user %> -c "$IRODS_HOME/scripts/runperl --dir $IRODS_HOME --script $IRODS_HOME/scripts/perl/irodsctl.pl stop"
+ 	        	ret=$?
+ 	        		sleep 2
+ 	        			if [ $ret -eq 0 ]; then
+ 	        			           action $"Stopping $progname: " /bin/true
+ 	        			       rm /var/lock/subsys/$progname
+ 	        			       	   rm /var/run/$progname.pid
+ 	        			       	           else
+ 	        			       	        action $"Stopping $progname: " /bin/false
+ 	        			       	 fi
+ 	        			       	 	return $?
+ 	        			       	 	}
+ 	        			       	 	
+ 	        			       	 	### main logic ###
+ 	        			       	 	case "$1" in
+ 	        			       	 	  start)
+ 	        			       	 	          start
+ 	        			       	 	   ;;
+ 	        			       	 	     stop)
+ 	        			       	 	             stop
+ 	        			       	 	      ;;
+ 	        			       	 	        status)
+ 	        			       	 	 status irods
+ 	        			       	 	         ;;
+ 	        			       	 	           restart|reload|condrestart)
+ 	        			       	 	    stop
+ 	        			       	 	            start
+ 	        			       	 	     ;;
+ 	        			       	 	       *)
+ 	        			       	 	echo $"Usage: $0 {start|stop|restart|status}"
+ 	        			       	 	        exit 1
+ 	        			       	 	        esac
+ 	        			       	 	        
+ 	        			       	 	        exit 0
+ 	        			       	 	        

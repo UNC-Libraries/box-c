@@ -1,0 +1,98 @@
+#!/bin/sh
+#
+# mulgara:	Mulgara Daemon
+#
+# chkconfig: 35 98 02
+#
+# description: Starts and stops the Mulgara (Jetty) service
+#
+# processname: mulgara
+# pidfile: /var/run/mulgara.pid
+#
+
+# Sanity checks.
+REPO_DIR=/opt/repository
+if [ -x $REPO_DIR/cdr-env.sh ]; then
+	. $REPO_DIR/cdr-env.sh
+else
+	echo "CDR environment script missing from REPO_DIR: ${REPO_DIR}/cdr-env.sh"
+	exit 0;
+fi
+
+if [ ! -r $MULGARA_HOME ]; then
+	echo "MULGARA_HOME is not readable."
+	exit 0;
+fi
+
+if [ ! -d $MULGARA_HOME ]; then
+	echo "MULGARA_HOME is not a directory."
+	exit 0;
+fi
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+
+# so we can rearrange this easily
+prog=java
+progname=mulgara
+
+RETVAL=0
+
+# Start the service FOO
+start() {
+	echo -n "Starting CDR Mulgara Jetty Server: "
+	cd $MULGARA_HOME
+        runuser tomcat -c "$JAVA_HOME/bin/java -Xms128m -Xmx1024m -Djetty.home=$JETTY_HOME -Djava.io.tmpdir=/opt/data/mulgara-tmp -Djava.security.policy=$MULGARA_HOME/mulgara-rmi.policy -jar $MULGARA_HOME/mulgara-2.1.13.jar --logconfig file:$MULGARA_HOME/log4j-mulgara.xml --serverconfig file:$MULGARA_HOME/mulgara-config.xml &"
+        ret=$?
+        sleep 15
+        pidofproc $prog > /var/run/$progname.pid
+
+        # kick mulgara awake (It times out on the first web request)
+        curl --max-time 2 --silent --retry 3 --retry-delay 1 http://localhost:8080 > /dev/null
+
+        if [ $ret -eq 0 ]; then
+            action $"Starting $progname: " /bin/true
+           touch /var/lock/subsys/$progname
+        else
+            action $"Starting $progname: " /bin/false
+        fi
+	return $?
+}
+
+stop() {
+	echo -n "Stopping CDR Mulgara Jetty Server: "
+	kill -TERM `cat /var/run/$progname.pid`
+	ret=$?
+	sleep 2
+	if [ $ret -eq 0 ]; then
+           action $"Stopping $progname: " /bin/true
+           rm /var/lock/subsys/$progname
+	   rm /var/run/$progname.pid
+        else
+            action $"Stopping $progname: " /bin/false
+        fi
+	return $?
+}
+
+### main logic ###
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status FOO
+        ;;
+  restart|reload|condrestart)
+        stop
+        start
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|reload|status}"
+        exit 1
+esac
+
+exit 0

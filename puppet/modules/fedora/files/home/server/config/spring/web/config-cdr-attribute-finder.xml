@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-2.5.xsd">
+	<bean id="serverProperties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<!-- Set by CDR server properties -->
+				<value>#{systemProperties['server.properties.uri']}</value>
+			</list>
+		</property>
+		<property name="ignoreResourceNotFound" value="false" />
+	</bean>
+
+	<!-- Used to provide beans to legacy fedora-configured modules. -->
+	<bean id="springApplicationContext" class="edu.unc.lib.dl.security.SpringApplicationContext" />
+
+	<bean id="CDRAttributeFinder" class="edu.unc.lib.dl.security.CdrRIAttributeFinder" init-method="init">
+		<property name="accessControlUtils" ref="accessControlUtils"/>
+		<property name="subjectAttributes">
+			<map>
+				<!-- subject role property -->
+				<entry key="http://cdr.unc.edu/definitions/acl#user-role">
+					<bean class="org.fcrepo.server.security.xacml.util.Attribute" />
+				</entry>
+			</map>
+		</property>
+		<property name="resourceAttributes">
+			<map>
+				<entry key="http://cdr.unc.edu/definitions/acl#embargo-until">
+					<bean class="org.fcrepo.server.security.xacml.util.Attribute" />
+				</entry>
+				<entry key="http://cdr.unc.edu/definitions/acl#data-access-category">
+					<bean class="org.fcrepo.server.security.xacml.util.Attribute" />
+				</entry>
+				<entry key="http://cdr.unc.edu/definitions/1.0/base-model.xml#isPublished">
+					<bean class="org.fcrepo.server.security.xacml.util.Attribute" />
+				</entry>
+				<entry key="http://cdr.unc.edu/definitions/acl#isActive">
+					<bean class="org.fcrepo.server.security.xacml.util.Attribute" />
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+	<bean name="accessControlUtils" class="edu.unc.lib.dl.security.AccessControlUtils">
+		<property name="embargoFactory" ref="embargoFactory" />
+		<property name="groupRolesFactory" ref="groupRolesFactory" />
+		<property name="ancestorFactory" ref="ancestorFactory" />
+		<property name="patronAccessFactory" ref="patronAccessFactory" />
+		<property name="adminGroup" value="${fedora.fracas.adminGroup}" />
+		<property name="curatorGroup" value="${fedora.fracas.curatorGroup}" />
+	</bean>
+
+	<bean id="ancestorFactory" class="edu.unc.lib.dl.security.AncestorFactory">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+	<bean id="embargoFactory" class="edu.unc.lib.dl.security.EmbargoFactory">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+	<bean id="groupRolesFactory" class="edu.unc.lib.dl.security.GroupRolesFactory">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+	<bean id="patronAccessFactory" class="edu.unc.lib.dl.security.PatronAccessFactory">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+
+	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl"
+		destroy-method="destroy">
+		<property name="itqlEndpointURL"
+			value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService" />
+		<property name="sparqlEndpointURL"
+			value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/sparql/" />
+		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#" />
+	</bean>
+</beans>

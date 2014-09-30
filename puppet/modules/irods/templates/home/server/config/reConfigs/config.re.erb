@@ -1,0 +1,18 @@
+cdrConfigReplicationScheduleInterval { 60 }
+cdrConfigReplicationObjectLimit { 16384 }
+cdrConfigReplicationDestResc { "" }
+cdrConfigReplicationLogPath { "/<%= @zone_name %>/home/fedora/replication/error.log" }
+cdrConfigReplicationEmailToAddr { "<%= @replication_email_address %>" }
+
+cdrShouldVerifyOrReplicate(*path) {
+  *answer = false
+  
+  # include
+  if (*path like "/<%= @zone_name %>/home/fedora/objects/*") { *answer = true }
+  if (*path like "/<%= @zone_name %>/home/fedora/datastreams/*") { *answer = true }
+  
+  # exclude
+  if (*path like regex "\.+\\.(temp|old)\\.[0-9]\*$") { *answer = false }
+  
+  *answer
+}

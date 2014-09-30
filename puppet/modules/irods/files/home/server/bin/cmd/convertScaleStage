@@ -1,0 +1,22 @@
+#!/bin/sh
+# This script takes a single image file as input
+# It converts the image to PNG and scales it to supplied dimensions
+# The resulting PNG binary is streamed to stdout.
+#
+# First argument is pixel geometry as [width]x[height]
+# Second argument is path to the image file.
+STAGING_PATH=/$spClientRodsZone/home/$spClientUser/staging
+tmpFile=`mktemp -q`.${2}
+convert ${1} -strip -resize ${3}x${4} ${2}:$tmpFile
+if [ "$?" -ne "0" ]; then
+  echo "ERROR: There was a problem converting the image."
+  exit 1
+fi
+iput $tmpFile $STAGING_PATH/`basename $tmpFile`
+if [ "$?" -ne "0" ]; then
+  echo "ERROR: There was a problem putting image into iRODS staging."
+  rm $tmpFile
+  exit 2
+fi
+rm $tmpFile
+echo "$STAGING_PATH/`basename $tmpFile`"
