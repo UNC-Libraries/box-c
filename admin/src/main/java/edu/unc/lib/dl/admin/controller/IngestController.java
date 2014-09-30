@@ -104,7 +104,7 @@ public class IngestController {
 			} else if (method.getStatusCode() == 401) {
 				// Unauthorized
 				result.put("error", "Not authorized to ingest to container " + pid);
-			} else if (method.getStatusCode() >= 500) {
+			} else if (method.getStatusCode() == 400 || method.getStatusCode() >= 500) {
 				// Server error, report it to the client
 				result.put("error", "A server error occurred while attempting to ingest \"" + ingestFile.getName()
 						+ "\" to " + pid);

@@ -98,7 +98,10 @@ public abstract class AbstractDepositJob implements Runnable {
 	public final void run() {
 		try {
 			runJob();
-			commitModel();
+			commitModelChanges();
+		} catch(Throwable e) {
+			abortModelChanges();
+			throw e;
 		} finally {
 			closeModel();
 		}
@@ -236,9 +239,15 @@ public abstract class AbstractDepositJob implements Runnable {
 		return this.dataset.getDefaultModel();
 	}
 	
-	public void commitModel() {
+	public void commitModelChanges() {
 		if(this.dataset != null) {
 			this.dataset.commit();
+		}
+	}
+	
+	public void abortModelChanges() {
+		if(this.dataset != null) {
+			this.dataset.abort();
 		}
 	}
 	

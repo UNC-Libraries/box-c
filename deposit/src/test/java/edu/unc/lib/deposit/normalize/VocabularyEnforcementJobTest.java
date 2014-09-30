@@ -79,7 +79,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Bag depositBag = model.createBag(job.getDepositPID().getURI());
 		Resource mainResource = model.createResource(MAIN_RESOURCE);
 		depositBag.add(mainResource);
-		job.commitModel();
+		job.commitModelChanges();
 		job.closeModel();
 	}
 

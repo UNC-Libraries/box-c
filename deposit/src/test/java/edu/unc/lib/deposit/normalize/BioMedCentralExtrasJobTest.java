@@ -79,7 +79,7 @@ public class BioMedCentralExtrasJobTest extends AbstractNormalizationJobTest {
 		Model m = job.getModel();
 		File testModel = new File("src/test/resources/aggregate-deposit.n3");
 		m.read(testModel.toURI().toURL().toString());
-		job.commitModel();
+		job.commitModelChanges();
 		job.closeModel();
 		
 		long start = System.currentTimeMillis();
@@ -129,7 +129,7 @@ public class BioMedCentralExtrasJobTest extends AbstractNormalizationJobTest {
 		Model m = job.getModel();
 		File testModel = new File("src/test/resources/aggregate-deposit.n3");
 		m.read(testModel.toURI().toURL().toString());
-		job.commitModel();
+		job.commitModelChanges();
 		job.closeModel();
 
 		job.getDescriptionDir().mkdir();
