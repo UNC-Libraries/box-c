@@ -29,7 +29,7 @@ class tomcat(
   }
   
   package { "cdr-tomcat":
-    ensure => "7.0.22-2",
+    ensure => "7.0.22-3",
     require => [
       User["tomcat"],
       Package[$packages],
