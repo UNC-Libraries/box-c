@@ -52,6 +52,10 @@
 					<groupId>commons-fileupload</groupId>
 					<artifactId>commons-fileupload</artifactId>
 				</exclusion>
+				<exclusion>
+					<artifactId>servlet-api</artifactId>
+					<groupId>javax.servlet</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
