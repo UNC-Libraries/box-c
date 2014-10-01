@@ -739,7 +739,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 	}
 
 	private void reportSOAPFault(SOAPMessage reply) throws SOAPException {
-		String error = reply.getSOAPBody().getFirstChild().getTextContent();
+		String error = reply.getSOAPBody().getFirstChild().getFirstChild().getNodeValue();
 		throw new RuntimeException("There was a SOAP Fault from Mulgara: "
 				+ error);
 	}
@@ -796,7 +796,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 						.getElementsByTagNameNS("*",
 								"executeQueryToStringReturn");
 				if (nl.getLength() > 0) {
-					result = nl.item(0).getTextContent();
+					result = nl.item(0).getFirstChild().getNodeValue();
 				}
 				log.debug(result);
 			}

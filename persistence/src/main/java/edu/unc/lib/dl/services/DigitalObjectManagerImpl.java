@@ -40,6 +40,7 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
+import org.jdom.transform.JDOMSource;
 import org.joda.time.DateTime;
 
 import edu.unc.lib.dl.fedora.AccessClient;
@@ -702,15 +703,34 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		PID containerPid = new PID("uuid:"+UUID.randomUUID());
 		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(containerPid.getPid());
 		FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.label, name);
+		PremisEventLogger logger = new PremisEventLogger(user);
 		
 		// MODS
 		if (mods != null) {
-			String modsUpload = managementClient.upload(mods, "mods.xml");
-			Element modsEl = FOXMLJDOMUtil.makeLocatorDatastream(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(),
-					"M", modsUpload, "text/xml", "URL",
-					ContentModelHelper.Datastream.MD_DESCRIPTIVE.getLabel(),
-					true, null);
-			foxml.getRootElement().addContent(modsEl);
+			try(ByteArrayInputStream bais = new ByteArrayInputStream(mods)) {
+				Document modsDoc = new SAXBuilder().build(bais);
+				if(!this.getSchematronValidator().isValid(
+						new JDOMSource(modsDoc), "vocabularies-mods")) {
+					throw new IngestException("MODS was invalid against vocabularies");
+				} else {
+					Element event = logger.logEvent(Type.VALIDATION,
+							"Validation of Controlled Vocabularies in Descriptive Metadata (MODS)",
+							containerPid,
+							"MD_DESCRIPTIVE");
+					PremisEventLogger.addDetailedOutcome(event, "MODS is valid",
+							"The supplied MODS metadata meets all CDR vocabulary requirements.", null);
+				}
+				Element modsEl = FOXMLJDOMUtil.makeXMLManagedDatastreamElement(
+						ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(),
+						ContentModelHelper.Datastream.MD_DESCRIPTIVE.getLabel(),
+						ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()+"1.0",
+						modsDoc.detachRootElement(), true);
+				foxml.getRootElement().addContent(modsEl);
+			} catch (IOException e) {
+				throw new Error(e);
+			} catch (JDOMException e) {
+				throw new IngestException("MODS records did not parse", e);
+			}
 		}
 		
 		// RELS
@@ -743,6 +763,18 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				ContentModelHelper.Datastream.RELS_EXT.isVersionable());
 		foxml.getRootElement().addContent(relsEl);
 		
+		// PREMIS
+		Element premisEl = new Element("premis", JDOMNamespaceUtil.PREMIS_V2_NS)
+				.addContent(PremisEventLogger.getObjectElement(containerPid));
+		logger.logEvent(Type.CREATION,
+				"Container created", containerPid);
+		logger.appendLogEvents(containerPid, premisEl);
+		Element premisDSEl = FOXMLJDOMUtil.makeXMLManagedDatastreamElement(
+				ContentModelHelper.Datastream.MD_EVENTS.getName(),
+				ContentModelHelper.Datastream.MD_EVENTS.getLabel(),
+				ContentModelHelper.Datastream.MD_EVENTS.getName()+"1.0",
+				premisEl, true);
+		foxml.getRootElement().addContent(premisDSEl);
 
 		if(log.isDebugEnabled()) {
 			log.debug(new XMLOutputter().outputString(foxml));
