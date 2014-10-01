@@ -28,11 +28,11 @@ LIB = FileList[
 ]
 
 file "static.tar.gz" => FileList["access/src/main/external/static/**/*"] do |t|
-  sh "COPYFILE_DISABLE=1 tar -cvzf #{t.name} -C access/src/main/external/static ."
+  sh "export COPYFILE_DISABLE=1; tar -cvzf #{t.name} -C access/src/main/external/static ."
 end
 
 file "puppet.tar.gz" => FileList["puppet/**/*"] do |t|
-  sh "COPYFILE_DISABLE=1 tar -cvzf #{t.name} -C puppet ."
+  sh "export COPYFILE_DISABLE=1; tar -cvzf #{t.name} -C puppet ."
 end
 
 desc "Remove temporary files"
