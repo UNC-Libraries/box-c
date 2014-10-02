@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ OAI4Solr exposes your Solr indexes by adding a OAI2 protocol handler.
+  ~
+  ~     Copyright (c) 2011-2014  International Institute of Social History
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU General Public License as published by
+  ~     the Free Software Foundation, either version 3 of the License, or
+  ~     (at your option) any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU General Public License
+  ~     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                version="1.0">
+
+    <xsl:import href="oai.xsl"/>
+
+    <xsl:template name="header">
+        <header>
+            <identifier>oai:<%= @oai_web_host %>:<xsl:value-of select="$doc//str[@name='id']"/></identifier>
+            <datestamp><xsl:value-of select="$doc//date[@name='dateAdded']"/></datestamp>
+            <xsl:for-each select="$doc//arr[@name='theme']/str">
+                <setSpec>
+                    <xsl:value-of select="."/>
+                </setSpec>
+            </xsl:for-each>
+        </header>
+    </xsl:template>
+
+    <xsl:template name="metadata">
+        <metadata>
+            <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+                       xmlns:dc="http://purl.org/dc/elements/1.1/">
+               <dc:identifier><%= @oai_web_protocol %>://<%= @oai_web_host %>/record/<xsl:value-of select="$doc//str[@name='id']"/></dc:identifier>
+               <dc:title><xsl:value-of select="$doc//str[@name='title']"/></dc:title>
+             <xsl:choose>
+              <xsl:when test="$doc//str[@name='dateCreated']">
+               <dc:date><xsl:value-of select="$doc//date[@name='dateCreated']"/></dc:date>
+              </xsl:when>
+              <xsl:otherwise>
+               <dc:date><xsl:value-of select="substring-before($doc//date[@name='dateAdded'], 'T')"/></dc:date>
+              </xsl:otherwise>
+             </xsl:choose>
+             <xsl:for-each select="$doc//arr[@name='contentType']/str">
+              <xsl:if test="contains(., 'Text')">
+               <dc:type>Text</dc:type>
+              </xsl:if>
+             </xsl:for-each>
+             <xsl:for-each select="$doc//arr[@name='contentType']/str[1]">
+               <dc:format><xsl:value-of select="substring-after(., ',')"/></dc:format>
+             </xsl:for-each>
+             <xsl:if test="$doc//str[@name='language']">
+               <dc:language><xsl:value-of select="$doc//str[@name='language']"/></dc:language>
+             </xsl:if>
+             <xsl:if test="$doc//str[@name='abstract']">
+               <dc:description><xsl:value-of select="$doc//str[@name='abstract']"/></dc:description>
+             </xsl:if>
+             <xsl:for-each select="$doc//arr[@name='subject']/str">
+               <dc:subject><xsl:value-of select="."/></dc:subject>
+             </xsl:for-each>
+
+             <xsl:for-each select="$doc//arr[@name='creator']/str">
+               <dc:creator><xsl:value-of select="."/></dc:creator>
+             </xsl:for-each>
+             <xsl:for-each select="$doc//arr[@name='contributor']/str">
+               <dc:contributor><xsl:value-of select="."/></dc:contributor>
+             </xsl:for-each>
+             <xsl:if test="$doc//arr[@name='department']">
+               <dc:contributor><xsl:for-each select="$doc//arr[@name='department']/str"><xsl:value-of select="."/><xsl:if test="position() != last()">, </xsl:if></xsl:for-each></dc:contributor>
+             </xsl:if>
+            </oai_dc:dc>
+
+            <!-- These fields not yet implemented
+               <dc:rights><xsl:value-of select="."/></dc:rights>
+               <dc:coverage><xsl:value-of select="."/></dc:coverage>
+               <dc:relation><xsl:value-of select="."/></dc:relation>
+               <dc:source><xsl:value-of select="."/></dc:source>
+               <dc:publisher><xsl:value-of select="."/></dc:publisher> -->
+        </metadata>
+    </xsl:template>
+
+    <xsl:template name="about"/>
+
+</xsl:stylesheet>
