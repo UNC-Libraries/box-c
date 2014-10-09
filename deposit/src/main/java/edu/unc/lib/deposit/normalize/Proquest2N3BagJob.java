@@ -64,7 +64,6 @@ import org.springframework.web.util.UriUtils;
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -105,7 +104,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 		unzipPackages();
 
 		// deposit RDF bag
-		Model model = ModelFactory.createDefaultModel();
+		Model model = getModel();
 		Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 
 		File[] packageDirs = this.getDataDirectory().listFiles();

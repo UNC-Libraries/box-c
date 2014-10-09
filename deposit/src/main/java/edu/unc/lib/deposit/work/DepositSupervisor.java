@@ -368,10 +368,16 @@ public class DepositSupervisor implements WorkerListener {
 			LOG.debug("Job {} has been paused", depositUUID);
 			return;
 		}
+		
+		if(CleanupDepositJob.class.getName().equals(job.getClassName())) {
+			LOG.debug("Job {} is cleanup job, deposit state will expire", depositUUID);
+			return;
+		}
 
 		// Deposit-level actions
 		List<String> successfulJobs = this.jobStatusFactory
 				.getSuccessfulJobNames(depositUUID);
+
 		switch (event) {
 			case JOB_EXECUTE:
 				if (!DepositState.running.name().equals(status.get(DepositField.state.name()))) {
@@ -379,8 +385,6 @@ public class DepositSupervisor implements WorkerListener {
 				}
 				break;
 			case JOB_SUCCESS:
-				if(CleanupDepositJob.class.getName().equals(job.getClassName())) break;
-
 				try {
 					queueNextJob(job, depositUUID, status, successfulJobs);
 				} catch (DepositFailedException e) {
