@@ -2,7 +2,6 @@ class irods(
   $tika_host,
   $tika_port,
   $zone_name,
-  $replication_email_address,
   $resource_name,
   $hosts,
   $port,
@@ -18,6 +17,10 @@ class irods(
   $database_password,
   $database_name,
   $database_key,
+  $replication_email_address,
+  $replication_dest_resc,
+  $resc_scheme_for_create,
+  $resc_scheme_for_repl,
 ) {
   
   $packages = [

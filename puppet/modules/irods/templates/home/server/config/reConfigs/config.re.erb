@@ -1,6 +1,6 @@
 cdrConfigReplicationScheduleInterval { 60 }
 cdrConfigReplicationObjectLimit { 16384 }
-cdrConfigReplicationDestResc { "" }
+cdrConfigReplicationDestResc { "<%= @replication_dest_resc %>" }
 cdrConfigReplicationLogPath { "/<%= @zone_name %>/home/fedora/replication/error.log" }
 cdrConfigReplicationEmailToAddr { "<%= @replication_email_address %>" }
 
