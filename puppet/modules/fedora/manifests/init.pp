@@ -6,7 +6,6 @@ class fedora(
   $admin_email_list,
   $postgresql_db_username,
   $postgresql_db_password,
-  $postgresql_db_name,
   $postgresql_jdbc_url,
   $mulgara_host,
   $mulgara_port,
