@@ -30,10 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
-import org.apache.commons.io.IOUtils;
-import org.jdom.Document;
-import org.jdom.Element;
 import org.jdom2.Content;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.jdom2.input.StAXStreamBuilder;
 import org.jdom2.input.stax.DefaultStAXFilter;
 import org.slf4j.Logger;
@@ -381,18 +380,14 @@ public class DepositController {
 		Element events = new Element("events", JDOMNamespaceUtil.PREMIS_V2_NS);
 		Document result = new Document(events);
 		XMLInputFactory factory = XMLInputFactory.newInstance();
-		FileInputStream fis = null;
-		try {
-			fis = new FileInputStream(eventsFile);
+		try(FileInputStream fis = new FileInputStream(eventsFile)) {
 			XMLStreamReader reader = factory.createXMLStreamReader(fis);
 			StAXStreamBuilder builder = new StAXStreamBuilder();
 			List<Content> list = builder.buildFragments(reader,
 					new DefaultStAXFilter());
 			events.addContent(list);
-		} finally {
-			IOUtils.closeQuietly(fis);
+			return result;
 		}
-		return result;
 	}
 
 }

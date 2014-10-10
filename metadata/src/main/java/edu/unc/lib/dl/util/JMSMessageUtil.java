@@ -19,8 +19,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import org.jdom.Document;
-import org.jdom.Element;
+import org.jdom2.Document;
+import org.jdom2.Element;
 
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -235,7 +235,6 @@ public class JMSMessageUtil {
 	public static String getCategoryByScheme(Document message, String scheme){
 		if (message == null)
 			return null;
-	 	@SuppressWarnings("unchecked")
 		List<Element> categories = message.getRootElement().getChildren("category", JDOMNamespaceUtil.ATOM_NS);
 	 	for (Element category: categories){
 	 		String schemeValue = category.getAttributeValue("scheme");

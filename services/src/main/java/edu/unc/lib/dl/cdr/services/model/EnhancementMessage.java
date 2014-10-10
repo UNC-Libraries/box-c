@@ -17,7 +17,7 @@ package edu.unc.lib.dl.cdr.services.model;
 
 import java.util.List;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.message.ActionMessage;

@@ -18,12 +18,15 @@ package edu.unc.lib.dl.update;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -33,10 +36,11 @@ import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.jdom.Element;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Element;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -143,9 +147,8 @@ public class AtomDCToMODSFilterTest extends Assert {
 		AccessClient accessClient = mock(AccessClient.class);
 		
 		MIMETypedStream modsStream = new MIMETypedStream();
-		RandomAccessFile raf = new RandomAccessFile("src/test/resources/testmods.xml", "r");
-		byte[] bytes = new byte[(int) raf.length()];
-		raf.read(bytes);
+		File raf = new File("src/test/resources/testmods.xml");
+		byte[] bytes = FileUtils.readFileToByteArray(raf);
 		modsStream.setStream(bytes);
 		modsStream.setMIMEType("text/xml");
 		when(
@@ -175,7 +178,6 @@ public class AtomDCToMODSFilterTest extends Assert {
 		assertEquals(1, uip.getOriginalData().size());
 		assertEquals(1, uip.getModifiedData().size());
 		assertEquals(2, uip.getIncomingData().size());
-		raf.close();
 	}
 	
 	@Test

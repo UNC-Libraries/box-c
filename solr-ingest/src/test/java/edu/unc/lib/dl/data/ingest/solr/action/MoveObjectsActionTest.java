@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,7 +68,6 @@ public class MoveObjectsActionTest extends Assert {
 
 	private MoveObjectsAction action;
 
-	@SuppressWarnings("unchecked")
 	@Before
 	public void setup() throws Exception {
 		initMocks(this);

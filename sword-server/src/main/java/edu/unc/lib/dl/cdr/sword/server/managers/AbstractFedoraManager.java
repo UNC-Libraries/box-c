@@ -15,21 +15,19 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.swordapp.server.AuthCredentials;
 
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.DatastreamPID;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -57,19 +55,9 @@ public abstract class AbstractFedoraManager {
 
 	protected String readFileAsString(String filePath) throws java.io.IOException {
 		LOG.debug("Loading path file " + filePath);
-		StringBuffer fileData = new StringBuffer(1000);
-		java.io.InputStream inStream = this.getClass().getResourceAsStream(filePath);
-		java.io.InputStreamReader inStreamReader = new InputStreamReader(inStream);
-		BufferedReader reader = new BufferedReader(inStreamReader);
-		char[] buf = new char[1024];
-		int numRead = 0;
-		while ((numRead = reader.read(buf)) != -1) {
-			String readData = String.valueOf(buf, 0, numRead);
-			fileData.append(readData);
-			buf = new char[1024];
+		try(java.io.InputStream inStream = this.getClass().getResourceAsStream(filePath)) {
+			return IOUtils.toString(inStream);
 		}
-		reader.close();
-		return fileData.toString();
 	}
 
 	protected PID extractPID(String uri, String basePath) {

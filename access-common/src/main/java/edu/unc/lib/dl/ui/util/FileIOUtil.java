@@ -34,23 +34,23 @@ import edu.unc.lib.dl.ui.exception.ClientAbortException;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 
 public class FileIOUtil {
-	
-	public static void stream(OutputStream outStream, HttpMethodBase method) throws IOException{
-		InputStream in = method.getResponseBodyAsStream();
-		BufferedInputStream reader = null;
-		try {
-			reader = new BufferedInputStream(in);
+
+	public static void stream(OutputStream outStream, HttpMethodBase method)
+			throws IOException {
+		try (InputStream in = method.getResponseBodyAsStream();
+				BufferedInputStream reader = new BufferedInputStream(in)) {
 			byte[] buffer = new byte[4096];
 			int count = 0;
 			int length = 0;
 			while ((length = reader.read(buffer)) >= 0) {
 				try {
 					outStream.write(buffer, 0, length);
-					if (count++ % 5 == 0){
+					if (count++ % 5 == 0) {
 						outStream.flush();
 					}
 				} catch (IOException e) {
-					// Differentiate between socket being closed when writing vs reading
+					// Differentiate between socket being closed when writing vs
+					// reading
 					throw new ClientAbortException(e);
 				}
 			}
@@ -59,35 +59,32 @@ public class FileIOUtil {
 			} catch (IOException e) {
 				throw new ClientAbortException(e);
 			}
-		} finally {
-			if (reader != null)
-				reader.close();
-			if (in != null)
-				in.close();
 		}
 	}
-	
-	public static String postImport(HttpServletRequest request, String url){
+
+	public static String postImport(HttpServletRequest request, String url) {
 		Map<String, String[]> parameters = request.getParameterMap();
 		HttpClientParams params = new HttpClientParams();
 		params.setContentCharset("UTF-8");
 		HttpClient client = new HttpClient();
 		client.setParams(params);
-		
+
 		PostMethod post = new PostMethod(url);
-		Iterator<Entry<String,String[]>> parameterIt = parameters.entrySet().iterator();
-		while (parameterIt.hasNext()){
-			Entry<String,String[]> parameter = parameterIt.next();
-			for (String parameterValue: parameter.getValue()){
+		Iterator<Entry<String, String[]>> parameterIt = parameters.entrySet()
+				.iterator();
+		while (parameterIt.hasNext()) {
+			Entry<String, String[]> parameter = parameterIt.next();
+			for (String parameterValue : parameter.getValue()) {
 				post.addParameter(parameter.getKey(), parameterValue);
 			}
 		}
-		
+
 		try {
 			client.executeMethod(post);
 			return post.getResponseBodyAsString();
 		} catch (Exception e) {
-			throw new ResourceNotFoundException("Failed to retrieve POST import request for " + url, e);
+			throw new ResourceNotFoundException(
+					"Failed to retrieve POST import request for " + url, e);
 		} finally {
 			post.releaseConnection();
 		}

@@ -71,13 +71,8 @@ public class IngestProperties {
 			log.debug("loading ingest properties from " + this.propFile.getAbsolutePath());
 		}
 		Properties props = new Properties();
-		FileInputStream in = new FileInputStream(propFile); 
-		try {
+		try(FileInputStream in = new FileInputStream(propFile)) {
 			props.load(in);
-		} finally {
-			try {
-				in.close();
-			} catch(IOException ignored) {}
 		}
 		this.submitter = props.getProperty("submitter");
 		String submitterGroups = props.getProperty("submitterGroups");

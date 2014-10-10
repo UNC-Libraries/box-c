@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.data.ingest.solr.action.AbstractIndexingAction;
 import edu.unc.lib.dl.util.IndexingActionType;
 

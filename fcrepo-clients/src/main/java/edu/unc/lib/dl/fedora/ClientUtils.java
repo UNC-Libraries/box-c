@@ -32,13 +32,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.SAXOutputter;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.SAXOutputter;
+import org.jdom2.output.XMLOutputter;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -103,16 +103,14 @@ public class ClientUtils {
 		}
 		byte[] result = baos.toByteArray();
 		if (log.isDebugEnabled()) {
-			try {
-				StringWriter sw = new StringWriter();
-				ByteArrayInputStream is = new ByteArrayInputStream(result);
+			try(
+					StringWriter sw = new StringWriter();
+					ByteArrayInputStream is = new ByteArrayInputStream(result);
+					) {
 				for (int f = is.read(); f != -1; f = is.read()) {
 					sw.write(f);
 				}
-				is.close();
-				sw.flush();
 				log.debug(sw.toString());
-				sw.close();
 			} catch (IOException e) {
 				throw new ServiceException(e);
 			}
@@ -126,31 +124,20 @@ public class ClientUtils {
 	 * @return
 	 */
 	public static byte[] serializeXML(Element element) {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		Writer pw;
-		try {
-			pw = new OutputStreamWriter(baos, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new ServiceException("UTF-8 character encoding support is required", e);
-		}
-		
 		Format format = Format.getPrettyFormat();
 		XMLOutputter outputter = new XMLOutputter(format);
-		
-		try {
+		try(
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				Writer pw = new OutputStreamWriter(baos, "UTF-8");
+				) {
 			outputter.output(element, pw);
 			pw.flush();
 			byte[] result = baos.toByteArray();
 			return result;
+		} catch (UnsupportedEncodingException e) {
+			throw new ServiceException("UTF-8 character encoding support is required", e);
 		} catch (IOException e) {
 			log.error("Failed to serialize element", e);
-		} finally {
-			try {
-				pw.close();
-				baos.close();
-			} catch (IOException e) {
-				log.error("Could not close streams", e);
-			}
 		}
 		return null;
 	}
@@ -163,20 +150,10 @@ public class ClientUtils {
 	public static File writeXMLToTempFile(Element element) throws IOException {
 		Format format = Format.getPrettyFormat();
 		XMLOutputter outputter = new XMLOutputter(format);
-		BufferedWriter writer = null;
-		try {
-			File result = File.createTempFile("ClientUtils-", ".xml");
-			writer = new BufferedWriter(new FileWriter(result));
+		File result = File.createTempFile("ClientUtils-", ".xml");
+		try(BufferedWriter writer = new BufferedWriter(new FileWriter(result))) {
 			outputter.output(element, writer);
 			return result;
-		} finally {
-			if (writer != null){
-				try {
-					writer.close();
-				} catch (IOException e) {
-					log.error("Failed to close temp file", e);
-				}
-			}
 		}
 	}
 
@@ -189,11 +166,17 @@ public class ClientUtils {
 	 * @return a byte array serialization of the Document
 	 */
 	public static File writeXMLToTempFile(Document doc) {
-		PrintWriter pw = null;
+
+		File result;
 		try {
-			File result = File.createTempFile("ClientUtils-", ".xml");
-			FileOutputStream baos = new FileOutputStream(result);
-			pw = new PrintWriter(baos);
+			result = File.createTempFile("ClientUtils-", ".xml");
+		} catch (IOException e1) {
+			throw new ServiceException("Could not create temp file.", e1);
+		}
+		try(
+				FileOutputStream baos = new FileOutputStream(result);
+				PrintWriter pw = new PrintWriter(baos);				
+				) {
 			// Filtering SAX Events before serializing.
 			// This ensures that any XML datastreams have locally
 			// declared namespaces, which is a Fedora ingest
@@ -210,16 +193,11 @@ public class ClientUtils {
 			SAXOutputter sax = new SAXOutputter();
 			sax.setContentHandler(filter);
 			sax.output(doc);
-			pw.flush();
 			return result;
 		} catch (JDOMException e) {
 			throw new ServiceException("Could not generate SAX events from JDOM.", e);
 		} catch (IOException e) {
 			throw new ServiceException("Could not obtain a content handler for the appropriate format and writer.", e);
-		} finally {
-			if (pw != null) {
-				pw.close();
-			}
 		}
 	}
 

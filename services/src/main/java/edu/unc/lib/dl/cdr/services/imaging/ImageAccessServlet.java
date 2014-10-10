@@ -62,17 +62,16 @@ public class ImageAccessServlet extends HttpServlet {
 		dp("format", req);
 		dp("comment", req);
 		ImageAccessService service = (ImageAccessService) getServletContext().getAttribute("imageAccessService");
-		try {
+		try (
 			InputStream in = service.get(pid, dsid, w, h, format, comment);
-			OutputStream out = resp.getOutputStream();
+			OutputStream out = resp.getOutputStream()
+					) {
 			byte[] buf = new byte[32 * 1024]; // 32k buffer
 			int nRead = 0;
 			while ((nRead = in.read(buf)) != -1) {
 				out.write(buf, 0, nRead);
 			}
 			out.flush();
-			out.close();
-			in.close();
 		} catch (Exception e){
 			
 		}

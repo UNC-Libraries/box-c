@@ -98,8 +98,7 @@ public class MetsDirDiff {
 	}
 
 	System.out.println("Unmatched file pointers in " + metsFile.getPath() + ":");
-	try {
-	    LineNumberReader fr = new LineNumberReader(new FileReader(metsFile));
+	try(LineNumberReader fr = new LineNumberReader(new FileReader(metsFile))) {
 	    for (String line = fr.readLine(); line != null; line = fr.readLine()) {
 		Matcher grabbed = hrefGrabber.matcher(line);
 		String path = null;

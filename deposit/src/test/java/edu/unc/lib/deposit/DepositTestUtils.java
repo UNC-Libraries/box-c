@@ -3,7 +3,8 @@ package edu.unc.lib.deposit;
 import java.io.File;
 import java.io.IOException;
 
-import edu.unc.lib.dl.util.FileUtils;
+import org.apache.commons.io.FileUtils;
+
 import edu.unc.lib.dl.util.ZipFileUtil;
 
 public class DepositTestUtils {
@@ -12,7 +13,7 @@ public class DepositTestUtils {
 		File workingDir = new File(parent, dirName);
 		try {
 			if (workingDir.exists()) {
-				FileUtils.deleteDir(workingDir);
+				FileUtils.deleteDirectory(workingDir);
 			}
 			ZipFileUtil.unzipToDir(zippedContent, workingDir);
 		} catch (IOException e) {

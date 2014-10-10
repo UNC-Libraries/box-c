@@ -16,12 +16,7 @@
 package edu.unc.lib.dl.security.access.test;
 
 
-import junit.framework.Assert;
-
 import org.junit.Test;
-import org.springframework.mock.web.MockFilterChain;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 public class UserSecurityProfileFilterTest {
 

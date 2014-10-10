@@ -18,8 +18,8 @@ package edu.unc.lib.dl.cdr.services.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jdom.Document;
-import org.jdom.Element;
+import org.jdom2.Document;
+import org.jdom2.Element;
 
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -59,8 +59,7 @@ public class CDREventMessage extends AbstractXMLEventMessage {
 	}
 	
 	private List<String> populateList(String field, Element contentBody){
-		@SuppressWarnings("unchecked")
-		List<Element> children = (List<Element>)contentBody.getChildren(field, JDOMNamespaceUtil.CDR_MESSAGE_NS);
+		List<Element> children = contentBody.getChildren(field, JDOMNamespaceUtil.CDR_MESSAGE_NS);
 		if (children == null || children.size() == 0)
 			return null;
 		List<String> list = new ArrayList<String>();

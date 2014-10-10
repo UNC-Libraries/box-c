@@ -463,6 +463,11 @@
 				<artifactId>spring-context-support</artifactId>
 				<version>3.0.6.RELEASE</version>
 			</dependency>
+			<dependency>
+				<groupId>org.jdom</groupId>
+				<artifactId>jdom</artifactId>
+				<version>2.0.2</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 </project>

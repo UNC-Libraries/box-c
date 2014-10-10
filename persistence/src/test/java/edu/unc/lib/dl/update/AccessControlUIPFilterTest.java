@@ -38,9 +38,9 @@ import static org.mockito.Mockito.*;
 
 public class AccessControlUIPFilterTest extends Assert {
 
-	private org.jdom.Element getEmptyRDF() {
-		org.jdom.Element rdfElement = new org.jdom.Element("RDF", JDOMNamespaceUtil.RDF_NS);
-		org.jdom.Element descElement = new org.jdom.Element("Description", JDOMNamespaceUtil.RDF_NS);
+	private org.jdom2.Element getEmptyRDF() {
+		org.jdom2.Element rdfElement = new org.jdom2.Element("RDF", JDOMNamespaceUtil.RDF_NS);
+		org.jdom2.Element descElement = new org.jdom2.Element("Description", JDOMNamespaceUtil.RDF_NS);
 		rdfElement.addContent(descElement);
 		return rdfElement;
 	}
@@ -52,9 +52,9 @@ public class AccessControlUIPFilterTest extends Assert {
 		Parser parser = abdera.getParser();
 		Document<Entry> entryDoc = parser.parse(entryPart);
 		Entry entry = entryDoc.getRoot();
-		Map<String, org.jdom.Element> originalMap = new HashMap<String, org.jdom.Element>();
+		Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
 		originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), getEmptyRDF());
-		Map<String, org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 
 		MetadataUIP uip = mock(MetadataUIP.class);
 		when(uip.getPID()).thenReturn(new PID("test"));
@@ -66,8 +66,8 @@ public class AccessControlUIPFilterTest extends Assert {
 		AccessControlUIPFilter filter = new AccessControlUIPFilter();
 		filter.doFilter(uip);
 
-		org.jdom.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
-		org.jdom.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+		org.jdom2.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
+		org.jdom2.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
 
 		assertEquals("no", description.getChildText(ContentModelHelper.CDRProperty.isPublished.getPredicate(),
 				JDOMNamespaceUtil.CDR_NS));
@@ -85,9 +85,9 @@ public class AccessControlUIPFilterTest extends Assert {
 		Parser parser = abdera.getParser();
 		Document<Entry> entryDoc = parser.parse(entryPart);
 		Entry entry = entryDoc.getRoot();
-		Map<String, org.jdom.Element> originalMap = new HashMap<String, org.jdom.Element>();
+		Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
 		originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), getEmptyRDF());
-		Map<String, org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 
 		MetadataUIP uip = mock(MetadataUIP.class);
 		when(uip.getPID()).thenReturn(new PID("test"));
@@ -99,8 +99,8 @@ public class AccessControlUIPFilterTest extends Assert {
 		AccessControlUIPFilter filter = new AccessControlUIPFilter();
 		filter.doFilter(uip);
 
-		org.jdom.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
-		org.jdom.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+		org.jdom2.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
+		org.jdom2.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
 
 		assertEquals("no", description.getChildText(ContentModelHelper.CDRProperty.isPublished.getPredicate(),
 				JDOMNamespaceUtil.CDR_NS));
@@ -118,9 +118,9 @@ public class AccessControlUIPFilterTest extends Assert {
 		Parser parser = abdera.getParser();
 		Document<Entry> entryDoc = parser.parse(entryPart);
 		Entry entry = entryDoc.getRoot();
-		Map<String, org.jdom.Element> originalMap = new HashMap<String, org.jdom.Element>();
+		Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
 		originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), getEmptyRDF());
-		Map<String, org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 
 		MetadataUIP uip = mock(MetadataUIP.class);
 		when(uip.getPID()).thenReturn(new PID("test"));
@@ -132,8 +132,8 @@ public class AccessControlUIPFilterTest extends Assert {
 		AccessControlUIPFilter filter = new AccessControlUIPFilter();
 		filter.doFilter(uip);
 
-		org.jdom.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
-		org.jdom.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+		org.jdom2.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
+		org.jdom2.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
 
 		assertEquals(0, description.getChildren().size());
 	}
@@ -154,9 +154,9 @@ public class AccessControlUIPFilterTest extends Assert {
 		Parser parser = abdera.getParser();
 		Document<Entry> entryDoc = parser.parse(entryPart);
 		Entry entry = entryDoc.getRoot();
-		Map<String, org.jdom.Element> originalMap = new HashMap<String, org.jdom.Element>();
+		Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
 		originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), getEmptyRDF());
-		Map<String, org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 
 		MetadataUIP uip = mock(MetadataUIP.class);
 		when(uip.getPID()).thenReturn(new PID("test"));
@@ -171,8 +171,8 @@ public class AccessControlUIPFilterTest extends Assert {
 		AccessControlUIPFilter filter = new AccessControlUIPFilter();
 		filter.doFilter(uip);
 
-		org.jdom.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
-		org.jdom.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+		org.jdom2.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
+		org.jdom2.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
 
 		assertEquals(5, description.getChildren().size());
 		assertEquals("no", description.getChildText(ContentModelHelper.CDRProperty.isPublished.getPredicate(),
@@ -185,7 +185,7 @@ public class AccessControlUIPFilterTest extends Assert {
 
 	@Test
 	public void replacePartialMatch() throws Exception {
-		org.jdom.Element description = this.replacePartialMatch(UpdateOperation.REPLACE);
+		org.jdom2.Element description = this.replacePartialMatch(UpdateOperation.REPLACE);
 
 		assertEquals(2, description.getChildren().size());
 		assertEquals("no", description.getChildText(ContentModelHelper.CDRProperty.isPublished.getPredicate(),
@@ -200,7 +200,7 @@ public class AccessControlUIPFilterTest extends Assert {
 
 	@Test
 	public void updatePartialMatch() throws Exception {
-		org.jdom.Element description = this.replacePartialMatch(UpdateOperation.UPDATE);
+		org.jdom2.Element description = this.replacePartialMatch(UpdateOperation.UPDATE);
 
 		assertEquals(3, description.getChildren().size());
 		assertEquals("no", description.getChildText(ContentModelHelper.CDRProperty.isPublished.getPredicate(),
@@ -213,32 +213,32 @@ public class AccessControlUIPFilterTest extends Assert {
 						JDOMNamespaceUtil.FEDORA_MODEL_NS).size());
 	}
 
-	public org.jdom.Element replacePartialMatch(UpdateOperation operation) throws Exception {
+	public org.jdom2.Element replacePartialMatch(UpdateOperation operation) throws Exception {
 		InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataUnpublish.xml"));
 		Abdera abdera = new Abdera();
 		Parser parser = abdera.getParser();
 		Document<Entry> entryDoc = parser.parse(entryPart);
 		Entry entry = entryDoc.getRoot();
-		Map<String, org.jdom.Element> originalMap = new HashMap<String, org.jdom.Element>();
+		Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
 
-		org.jdom.Element rdfElement = new org.jdom.Element("RDF", JDOMNamespaceUtil.RDF_NS);
-		org.jdom.Element descElement = new org.jdom.Element("Description", JDOMNamespaceUtil.RDF_NS);
+		org.jdom2.Element rdfElement = new org.jdom2.Element("RDF", JDOMNamespaceUtil.RDF_NS);
+		org.jdom2.Element descElement = new org.jdom2.Element("Description", JDOMNamespaceUtil.RDF_NS);
 		rdfElement.addContent(descElement);
-		org.jdom.Element relElement = new org.jdom.Element(ContentModelHelper.CDRProperty.isPublished.getPredicate(),
+		org.jdom2.Element relElement = new org.jdom2.Element(ContentModelHelper.CDRProperty.isPublished.getPredicate(),
 				JDOMNamespaceUtil.CDR_NS);
 		relElement.setText("yes");
 		descElement.addContent(relElement);
-		relElement = new org.jdom.Element(ContentModelHelper.CDRProperty.embargoUntil.getPredicate(),
+		relElement = new org.jdom2.Element(ContentModelHelper.CDRProperty.embargoUntil.getPredicate(),
 				JDOMNamespaceUtil.CDR_ACL_NS);
 		relElement.setText("2013-02-01");
 		descElement.addContent(relElement);
-		relElement = new org.jdom.Element(ContentModelHelper.FedoraProperty.hasModel.name(),
+		relElement = new org.jdom2.Element(ContentModelHelper.FedoraProperty.hasModel.name(),
 				JDOMNamespaceUtil.FEDORA_MODEL_NS);
 		relElement.setText(ContentModelHelper.Model.SIMPLE.name());
 		descElement.addContent(relElement);
 
 		originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), rdfElement);
-		Map<String, org.jdom.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+		Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 
 		MetadataUIP uip = mock(MetadataUIP.class);
 		when(uip.getPID()).thenReturn(new PID("test"));
@@ -250,8 +250,8 @@ public class AccessControlUIPFilterTest extends Assert {
 		AccessControlUIPFilter filter = new AccessControlUIPFilter();
 		filter.doFilter(uip);
 
-		org.jdom.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
-		org.jdom.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+		org.jdom2.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
+		org.jdom2.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
 
 		return description;
 	}

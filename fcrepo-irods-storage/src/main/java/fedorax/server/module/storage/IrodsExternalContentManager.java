@@ -22,9 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -35,6 +33,7 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
 import org.apache.commons.httpclient.Header;
+
 import org.fcrepo.common.http.HttpInputStream;
 import org.fcrepo.common.http.WebClient;
 import org.fcrepo.server.Module;
@@ -54,6 +53,7 @@ import org.fcrepo.server.storage.types.MIMETypedStream;
 import org.fcrepo.server.storage.types.Property;
 import org.fcrepo.server.utilities.ServerUtility;
 import org.fcrepo.server.validation.ValidationUtility;
+
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSFileSystem;
@@ -169,16 +169,11 @@ public class IrodsExternalContentManager extends Module implements
 			m_http = new WebClient();
 
 			StringBuilder sb = new StringBuilder();
-			BufferedReader r = null;
-			try {
-				r = new BufferedReader(new FileReader(this.stagesConfiguration));
+			try(BufferedReader r = new BufferedReader(new FileReader(this.stagesConfiguration))) {
 				for (String line = r.readLine(); line != null; line = r
 						.readLine()) {
 					sb.append(line).append('\n');
 				}
-			} finally {
-				if (r != null)
-					r.close();
 			}
 			LOG.debug("local staging config:\n"+sb.toString());
 			this.stages = new Stages(sb.toString(), new IRODSStageResolver(irodsAccount));
@@ -208,6 +203,7 @@ public class IrodsExternalContentManager extends Module implements
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private MBeanServer getMBeanServer() {
 		MBeanServer mbserver = null;
 		ArrayList<MBeanServer> mbservers = MBeanServerFactory

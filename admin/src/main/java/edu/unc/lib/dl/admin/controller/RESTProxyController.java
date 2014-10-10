@@ -36,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
@@ -69,7 +68,6 @@ public class RESTProxyController {
 		OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream());
 		HttpClient client = new HttpClient();
 		HttpMethod method = null;
-		InputStream responseStream = null;
 		try {
 			log.debug("Proxying ajax request to services REST api via " + request.getMethod());
 			// Split this according to the type of request
@@ -102,10 +100,11 @@ public class RESTProxyController {
 					response.setContentType(header.getValue());
 				}
 			}
-			responseStream = method.getResponseBodyAsStream();
-			int b;
-			while ((b = responseStream.read()) != -1) {
-				response.getOutputStream().write(b);
+			try (InputStream responseStream = method.getResponseBodyAsStream()) {
+				int b;
+				while ((b = responseStream.read()) != -1) {
+					response.getOutputStream().write(b);
+				}
 			}
 			response.getOutputStream().flush();
 		} catch (HttpException e) {
@@ -118,8 +117,6 @@ public class RESTProxyController {
 		} finally {
 			if (method != null)
 				method.releaseConnection();
-			if (responseStream != null)
-				responseStream.close();
 		}
 	}
 }

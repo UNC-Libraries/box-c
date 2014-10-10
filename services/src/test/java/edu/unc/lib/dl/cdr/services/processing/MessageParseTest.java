@@ -17,8 +17,8 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import java.io.InputStreamReader;
 
-import org.jdom.Document;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Document;
+import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

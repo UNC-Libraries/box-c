@@ -37,8 +37,6 @@ import org.mockito.stubbing.Answer;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService;
-import edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService;
-import edu.unc.lib.dl.cdr.services.model.CDREventMessage;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FailedEnhancementMap;
 import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
@@ -144,7 +142,7 @@ public class CatchUpServiceTest extends Assert {
 	public void failTest() throws Exception {
 		String baseFolderPath = "target/catchupTest";
 		File baseFolder = new File(baseFolderPath);
-		boolean madeDir = baseFolder.mkdir();
+		baseFolder.mkdir();
 		
 //		Trying to figure out why catchup is simply looping forever through results
 //		it is most likely not detecting when something is failed, but i'm not sure why yet

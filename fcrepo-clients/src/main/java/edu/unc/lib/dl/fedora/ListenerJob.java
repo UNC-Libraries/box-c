@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.fedora;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 
 /**
  * @author bbpennel

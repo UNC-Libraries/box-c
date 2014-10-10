@@ -17,7 +17,7 @@ package edu.unc.lib.dl.cdr.services;
 
 import java.util.List;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;

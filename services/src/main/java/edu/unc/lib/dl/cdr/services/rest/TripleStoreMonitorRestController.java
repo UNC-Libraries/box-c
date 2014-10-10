@@ -15,12 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
-import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.ServletContext;
@@ -91,6 +87,8 @@ public class TripleStoreMonitorRestController implements ServletContextAware {
 	}
 	
 	static class MulgaraDown extends Exception {
+		private static final long serialVersionUID = 7354966480980839751L;
+
 		MulgaraDown(String msg) {
 			super(msg);
 		}

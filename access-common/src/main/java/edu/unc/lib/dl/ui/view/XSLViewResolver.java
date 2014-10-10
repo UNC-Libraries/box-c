@@ -20,7 +20,7 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

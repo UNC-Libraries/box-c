@@ -30,9 +30,9 @@ import java.util.concurrent.TimeoutException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.jdom.Content;
-import org.jdom.Document;
-import org.jdom.Element;
+import org.jdom2.Content;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;

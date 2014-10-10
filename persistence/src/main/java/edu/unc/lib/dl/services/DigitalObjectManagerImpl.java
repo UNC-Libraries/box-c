@@ -35,12 +35,12 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
-import org.jdom.transform.JDOMSource;
+import org.jdom2.output.XMLOutputter;
+import org.jdom2.transform.JDOMSource;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
 import org.joda.time.DateTime;
 
 import edu.unc.lib.dl.fedora.AccessClient;
@@ -324,9 +324,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					Document newXML;
 					Document oldXML;
 					MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(parent, "MD_CONTENTS", null);
-					ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
-					oldXML = new SAXBuilder().build(bais);
-					bais.close();
+					try(ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
+						oldXML = new SAXBuilder().build(bais);
+					}
 					newXML = ContainerContentsHelper.remove(oldXML, pid);
 					this.getManagementClient().modifyInlineXMLDatastream(parent, "MD_CONTENTS", false,
 							"removing child object from this container", new ArrayList<String>(), "List of Contents", newXML);
@@ -621,10 +621,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			boolean exists = true;
 			try {
 				MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(destination, "MD_CONTENTS", null);
-				ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
-				try {
+				try(ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
 					oldXML = new SAXBuilder().build(bais);
-					bais.close();
 				} catch (JDOMException e) {
 					throw new IllegalRepositoryStateException("Cannot parse MD_CONTENTS: " + destination);
 				} catch (IOException e) {

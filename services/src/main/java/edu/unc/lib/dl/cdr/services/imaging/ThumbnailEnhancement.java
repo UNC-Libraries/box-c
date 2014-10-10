@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.jdom.Document;
-import org.jdom.Element;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,16 +170,10 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 		StringBuilder arguments = new StringBuilder().append(format).append(" ").append(width).append(" ").append(height);
 		InputStream response = ((AbstractIrodsObjectEnhancementService) service).remoteExecuteWithPhysicalLocation(
 				"convertScaleStage", arguments.toString(), dsIrodsPath);
-		BufferedReader r = new BufferedReader(new InputStreamReader(response));
-		try {
+		try(BufferedReader r = new BufferedReader(new InputStreamReader(response))) {
 			return r.readLine().trim();
 		} catch (Exception e) {
 			throw e;
-		} finally {
-			try {
-				r.close();
-			} catch (Exception ignored) {
-			}
 		}
 	}
 

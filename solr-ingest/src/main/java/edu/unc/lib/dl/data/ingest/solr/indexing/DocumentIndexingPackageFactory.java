@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

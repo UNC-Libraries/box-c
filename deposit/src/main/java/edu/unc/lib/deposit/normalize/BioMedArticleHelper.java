@@ -7,11 +7,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom.Attribute;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.xpath.XPath;
+import org.jdom2.Attribute;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.xpath.XPath;
 
 public class BioMedArticleHelper {
 
@@ -66,7 +66,7 @@ public class BioMedArticleHelper {
 
 		//Add identifiers
 		@SuppressWarnings("unchecked")
-		List<Element> elements = this.identifierXPath.selectNodes(bibRoot);
+		List<Element> elements = (List<Element>) this.identifierXPath.selectNodes(bibRoot);
 		if (elements != null){
 			for (Element identifier: elements){
 				String idType = identifier.getAttributeValue("idtype");
@@ -152,7 +152,7 @@ public class BioMedArticleHelper {
 		Map<String, String> result = new HashMap<String, String>();
 		//Set titles for supplements
 		@SuppressWarnings("unchecked")
-		List<Element> elements = this.supplementXPath.selectNodes(articleDocument);
+		List<Element> elements = (List<Element>) this.supplementXPath.selectNodes(articleDocument);
 		if (elements != null){
 			for (Element supplement: elements){
 				String supplementFileName = ((Attribute)this.supplementFileNameXPath.selectSingleNode(supplement)).getValue();
@@ -184,7 +184,7 @@ public class BioMedArticleHelper {
 	@SuppressWarnings("unchecked")
 	private void addAuthorsAndAffiliations(Element bibRoot, Element modsContent) throws JDOMException{
 		//Extract affiliations
-		List<Element> elements = this.affiliationXPath.selectNodes(bibRoot);
+		List<Element> elements = (List<Element>) this.affiliationXPath.selectNodes(bibRoot);
 		Map<String,String> affiliationMap = new HashMap<String,String>();
 		if (elements != null){
 			for (Element element: elements){
@@ -194,7 +194,7 @@ public class BioMedArticleHelper {
 		}
 
 		//Extract author names, then create name attributes with affiliations
-		elements = this.authorXPath.selectNodes(bibRoot);
+		elements = (List<Element>) this.authorXPath.selectNodes(bibRoot);
 		if (elements != null){
 			for (Element element: elements){
 				String surname = element.getChildText("snm");

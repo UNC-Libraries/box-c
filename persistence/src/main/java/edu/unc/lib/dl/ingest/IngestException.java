@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.ingest;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 
 import edu.unc.lib.dl.util.XMLAttachedException;
 

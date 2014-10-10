@@ -13,8 +13,6 @@ import edu.unc.lib.deposit.work.DepositSupervisor;
 public class DepositDaemon implements Daemon {
 	private static final Logger LOG = LoggerFactory.getLogger(DepositDaemon.class);
 	private AbstractApplicationContext appContext;
-	private DaemonContext daemonContext;
-
 	public DepositDaemon() {
 	}
 
@@ -27,7 +25,6 @@ public class DepositDaemon implements Daemon {
 
 	@Override
 	public void init(DaemonContext daemonContext) throws DaemonInitException, Exception {
-		this.daemonContext = daemonContext;
 	}
 
 	@Override

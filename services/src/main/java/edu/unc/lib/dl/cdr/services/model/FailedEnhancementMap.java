@@ -225,9 +225,7 @@ public class FailedEnhancementMap {
 		File stackFile = new File(pidFolder, ERROR_FILE_PREFIX + serviceName);
 		entry.timeFailed = stackFile.lastModified();
 		if (stackFile.exists()) {
-			BufferedReader reader = null;
-			try {
-				reader = new BufferedReader(new FileReader(stackFile));
+			try(BufferedReader reader = new BufferedReader(new FileReader(stackFile))) {
 				StringBuilder content = new StringBuilder((int) stackFile.length());
 				String line = null;
 				while ((line = reader.readLine()) != null) {
@@ -236,25 +234,18 @@ public class FailedEnhancementMap {
 				entry.stackTrace = content.toString();
 			} catch (FileNotFoundException e) {
 				return null;
-			} finally {
-				if (reader != null) {
-					reader.close();
-				}
 			}
 		}
 
 		File messageFile = new File(pidFolder, MESSAGE_FILE_PREFIX + serviceName);
 		if (messageFile.exists()) {
-			ObjectInputStream objectInputStream = null;
-			try {
-				FileInputStream fileInputStream = new FileInputStream(messageFile);
-				objectInputStream = new ObjectInputStream(fileInputStream);
+			try(
+					FileInputStream fileInputStream = new FileInputStream(messageFile);
+					ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)) {
 				Object obj = objectInputStream.readObject();
 				entry.message = (ActionMessage) obj;
 			} catch (ClassNotFoundException e) {
 				log.error("Failed to deserialize message object for " + pid + " " + serviceName, e);
-			} finally {
-				objectInputStream.close();
 			}
 		}
 
@@ -299,17 +290,12 @@ public class FailedEnhancementMap {
 
 		if (message != null) {
 			File messageFile = new File(pidFolder, MESSAGE_FILE_PREFIX + serviceName);
-			FileOutputStream fileOutputStream = null;
-			ObjectOutputStream objectOutputStream = null;
-			try {
-				fileOutputStream = new FileOutputStream(messageFile);
-				objectOutputStream = new ObjectOutputStream(fileOutputStream);
+			try(
+					FileOutputStream fileOutputStream = new FileOutputStream(messageFile);
+					ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
 				objectOutputStream.writeObject(message);
 			} catch (FileNotFoundException e) {
 				throw new IOException("Failed to serialize message for " + pid, e);
-			} finally {
-				if (objectOutputStream != null)
-					objectOutputStream.close();
 			}
 		}
 	}

@@ -27,132 +27,133 @@ import java.security.NoSuchAlgorithmException;
 import org.apache.commons.codec.binary.Hex;
 
 /**
- * A class to compute checksums. Expected usage: Use the default algorithm of MD5
- * or set a different algorithm (must be supported by
+ * A class to compute checksums. Expected usage: Use the default algorithm of
+ * MD5 or set a different algorithm (must be supported by
  * java.security.MessageDigest). Then one can repeatedly call the various
  * "getChecksumFrom..." methods to get checksums.
- *
+ * 
  */
 public class Checksum {
-    private String algorithm = "MD5";
-    private MessageDigest messageDigest = null;
+	private String algorithm = "MD5";
+	private MessageDigest messageDigest = null;
 
-    /**
-     * Constructor for Checksum class
-     */
-    public Checksum() {
-	try {
-	    initializeMessageDigest();
-	} catch (NoSuchAlgorithmException e) {
-	    throw new Error("The default algorithm should be available.");
+	/**
+	 * Constructor for Checksum class
+	 */
+	public Checksum() {
+		try {
+			initializeMessageDigest();
+		} catch (NoSuchAlgorithmException e) {
+			throw new Error("The default algorithm should be available.");
+		}
 	}
-    }
 
-    public static void main(String[] args) {
-	for (int i = 0; i < args.length; i++) {
-	    File file = new File(args[i]);
-	    Checksum checker = new Checksum();
-	    System.out.print(args[i]);
-	    System.out.print(":");
-	    try {
-		System.out.print(checker.getChecksum(file));
-	    } catch (IOException e) {
-		System.out.print(e.getMessage());
-	    }
+	public static void main(String[] args) {
+		for (int i = 0; i < args.length; i++) {
+			File file = new File(args[i]);
+			Checksum checker = new Checksum();
+			System.out.print(args[i]);
+			System.out.print(":");
+			try {
+				System.out.print(checker.getChecksum(file));
+			} catch (IOException e) {
+				System.out.print(e.getMessage());
+			}
 
+		}
 	}
-    }
 
-    /**
-     * Initialize the internal message digest object if it is null
-     */
-    private void initializeMessageDigest() throws NoSuchAlgorithmException {
-	    messageDigest = MessageDigest.getInstance(algorithm);
-    }
+	/**
+	 * Initialize the internal message digest object if it is null
+	 */
+	private void initializeMessageDigest() throws NoSuchAlgorithmException {
+		messageDigest = MessageDigest.getInstance(algorithm);
+	}
 
-    /**
-     * Get the checksum for the passed in file
-     *
-     * @param file
-     *                must not be null
-     * @return byte array containing checksum
-     * @throws IOException
-     * @throws FileNotFoundException
-     */
-    public String getChecksum(File file) throws IOException, FileNotFoundException {
-	InputStream inputStream = new FileInputStream(file);
-	return getChecksum(inputStream);
-    }
+	/**
+	 * Get the checksum for the passed in file
+	 * 
+	 * @param file
+	 *            must not be null
+	 * @return byte array containing checksum
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 */
+	public String getChecksum(File file) throws IOException,
+			FileNotFoundException {
+		InputStream inputStream = new FileInputStream(file);
+		return getChecksum(inputStream);
+	}
 
-    /**
-     * Get the checksum for the passed in String
-     *
-     * @param string
-     *                must not be null
-     * @return byte array containing checksum
-     */
-    public String getChecksum(String string) {
-	return getChecksum(string.getBytes());
-    }
+	/**
+	 * Get the checksum for the passed in String
+	 * 
+	 * @param string
+	 *            must not be null
+	 * @return byte array containing checksum
+	 */
+	public String getChecksum(String string) {
+		return getChecksum(string.getBytes());
+	}
 
-    /**
-     * Get the checksum for the passed in byte array
-     *
-     * @param byteArray
-     *                must not be null
-     * @return byte array containing checksum
-     */
-    public String getChecksum(byte[] byteArray) {
-	messageDigest.reset();
-	messageDigest.update(byteArray);
-	Hex hex = new Hex();
-	return new String(hex.encode(messageDigest.digest()));
-    }
+	/**
+	 * Get the checksum for the passed in byte array
+	 * 
+	 * @param byteArray
+	 *            must not be null
+	 * @return byte array containing checksum
+	 */
+	public String getChecksum(byte[] byteArray) {
+		messageDigest.reset();
+		messageDigest.update(byteArray);
+		Hex hex = new Hex();
+		return new String(hex.encode(messageDigest.digest()));
+	}
 
-    /**
-     * Get the checksum for the passed in byte array
-     *
-     * @param byteArray
-     *                must not be null
-     * @return byte array containing checksum
-     */
-    public String getChecksum(InputStream in) throws IOException {
-	messageDigest.reset();
-	BufferedInputStream bis = new BufferedInputStream(in, 1024);
-	byte[] buffer = new byte[1024];
-	int numRead;
-	do {
-	    numRead = bis.read(buffer);
-	    if (numRead > 0) {
-		messageDigest.update(buffer, 0, numRead);
-	    }
-	} while (numRead != -1);
-	bis.close();
-	Hex hex = new Hex();
-	return new String(hex.encode(messageDigest.digest()));
-    }
+	/**
+	 * Get the checksum for the passed in byte array
+	 * 
+	 * @param byteArray
+	 *            must not be null
+	 * @return byte array containing checksum
+	 */
+	public String getChecksum(InputStream in) throws IOException {
+		messageDigest.reset();
+		try (BufferedInputStream bis = new BufferedInputStream(in, 1024)) {
+			byte[] buffer = new byte[1024];
+			int numRead;
+			do {
+				numRead = bis.read(buffer);
+				if (numRead > 0) {
+					messageDigest.update(buffer, 0, numRead);
+				}
+			} while (numRead != -1);
+		}
+		Hex hex = new Hex();
+		return new String(hex.encode(messageDigest.digest()));
+	}
 
-    /**
-     * Get the message digest algorithm. Defaults to MD5.
-     *
-     * @return The message digest algorithm
-     */
-    public String getAlgorithm() {
-	return algorithm;
-    }
+	/**
+	 * Get the message digest algorithm. Defaults to MD5.
+	 * 
+	 * @return The message digest algorithm
+	 */
+	public String getAlgorithm() {
+		return algorithm;
+	}
 
-    /**
-     * Set the message digest algorithm and reset the internal message digest
-     * object. Algorithm must be set to one of the valid algorithms supported by
-     * java.security.MessageDigest . Calling this method will reset the internal
-     * message digest object, which is not safe to do if on another thread this
-     * same Checksum object is computing a checksum.
-     *
-     * @param algorithm
-     *                The message digest algorithm
-     */
-    public void setAlgorithm(String algorithm) throws NoSuchAlgorithmException {
-	this.algorithm = algorithm;
-	initializeMessageDigest();
-    }
+	/**
+	 * Set the message digest algorithm and reset the internal message digest
+	 * object. Algorithm must be set to one of the valid algorithms supported by
+	 * java.security.MessageDigest . Calling this method will reset the internal
+	 * message digest object, which is not safe to do if on another thread this
+	 * same Checksum object is computing a checksum.
+	 * 
+	 * @param algorithm
+	 *            The message digest algorithm
+	 */
+	public void setAlgorithm(String algorithm) throws NoSuchAlgorithmException {
+		this.algorithm = algorithm;
+		initializeMessageDigest();
+	}
 }

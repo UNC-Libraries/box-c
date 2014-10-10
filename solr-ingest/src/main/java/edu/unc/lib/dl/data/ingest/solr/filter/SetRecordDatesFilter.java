@@ -20,11 +20,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom.Attribute;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.jdom.xpath.XPath;
+import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +28,6 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
-import edu.unc.lib.dl.xml.NamespaceConstants;
 
 /**
  * Indexing filter which extracts Fedora generated dates about the creation and modification state of the object
@@ -67,8 +62,7 @@ public class SetRecordDatesFilter extends AbstractIndexDocumentFilter {
 	private void filterFromFOXML(DocumentIndexingPackage dip) throws IndexingException {
 		Element objectProperties = dip.getObjectProperties();
 		try {
-			for (Object propertyObj: objectProperties.getChildren("property", JDOMNamespaceUtil.FOXML_NS)){
-				Element propertyEl = (Element)propertyObj;
+			for (Element propertyEl: objectProperties.getChildren("property", JDOMNamespaceUtil.FOXML_NS)){
 				String propertyName = propertyEl.getAttributeValue("NAME");
 				if ("info:fedora/fedora-system:def/model#createdDate".equals(propertyName)) {
 					dip.getDocument().setDateAdded(propertyEl.getAttributeValue("VALUE"));

@@ -5,11 +5,15 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -23,7 +27,6 @@ import org.swordapp.server.SwordError;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.FileUtils;
 import edu.unc.lib.dl.util.PackagingType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -37,6 +40,9 @@ public class DSPACEMETSDepositHandlerTest {
 	    MockitoAnnotations.initMocks(this);
 	}
 	
+	@Rule
+	public TemporaryFolder tmpDir = new TemporaryFolder();
+	
 	@InjectMocks
 	@Autowired
 	private DSPACEMETSDepositHandler metsDepositHandler;
@@ -45,10 +51,11 @@ public class DSPACEMETSDepositHandlerTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testDoDepositMETSBiomed() throws SwordError {
+	public void testDoDepositMETSBiomed() throws SwordError, IOException {
 		Deposit d = new Deposit();
-		File test = FileUtils.tempCopy(new File("src/test/resources/biomedWithSupplements.zip"));
-		d.setFile(test);
+		File testPayload = tmpDir.newFile("biomedWithSupplements.zip");
+		FileUtils.copyFile(new File("src/test/resources/biomedWithSupplements.zip"), testPayload);
+		d.setFile(testPayload);
 		d.setMd5("7ca5899e938e385c4ad61087bd834a0e");
 		d.setFilename("biomedWithSupplements.zip");
 		d.setMimeType("application/zip");

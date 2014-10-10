@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.filter.Filter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.filter.ElementFilter;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -17,7 +17,7 @@ import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.xml.NamespaceConstants;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class METSHelper {
 
@@ -62,16 +62,8 @@ public class METSHelper {
 
 	protected void initIdMap() {
 		elementsById = new HashMap<String, Element>();
-		@SuppressWarnings("unchecked")
 		Iterator<Element> els = (Iterator<Element>) mets.getRootElement()
-				.getDescendants(new Filter() {
-					private static final long serialVersionUID = 1L;
-
-					@Override
-					public boolean matches(Object obj) {
-						return Element.class.isInstance(obj);
-					}
-				});
+				.getDescendants(new ElementFilter());
 		while (els.hasNext()) {
 			Element el = els.next();
 			String id = el.getAttributeValue("ID");
@@ -93,31 +85,16 @@ public class METSHelper {
 				&& "Bag".equals(firstdiv.getAttributeValue("TYPE"))) {
 			topContainer = firstdiv;
 		}
-		@SuppressWarnings("unchecked")
 		Iterator<Element> divs = (Iterator<Element>) topContainer
-				.getDescendants(new MetsDivFilter());
+				.getDescendants(new ElementFilter("div", JDOMNamespaceUtil.METS_NS));
 		return divs;
 	}
 
 	protected Iterator<Element> getFptrs() {
-		@SuppressWarnings("unchecked")
 		Iterator<Element> fptrs = (Iterator<Element>) mets.getRootElement()
 				.getChild("structMap", METS_NS)
-				.getDescendants(new MetsFptrFilter());
+				.getDescendants(new ElementFilter("fptr", JDOMNamespaceUtil.METS_NS));
 		return fptrs;
-	}
-
-	protected static class MetsDivFilter implements Filter {
-		private static final long serialVersionUID = 7056520458827673597L;
-
-		@Override
-		public boolean matches(Object obj) {
-			if (!Element.class.isInstance(obj))
-				return false;
-			Element e = (Element) obj;
-			return (NamespaceConstants.METS_URI.equals(e.getNamespaceURI()) && "div"
-					.equals(e.getName()));
-		}
 	}
 
 	protected String getPIDURI(String id) {
@@ -173,19 +150,6 @@ public class METSHelper {
 				m.add(object, hasCreated, fileEl.getAttributeValue("CREATED"), XSDDatatype.XSDdateTime);
 			}
 				
-		}
-	}
-
-	protected static class MetsFptrFilter implements Filter {
-		private static final long serialVersionUID = 1964347591122579007L;
-
-		@Override
-		public boolean matches(Object obj) {
-			if (!Element.class.isInstance(obj))
-				return false;
-			Element e = (Element) obj;
-			return (NamespaceConstants.METS_URI.equals(e.getNamespaceURI()) && "fptr"
-					.equals(e.getName()));
 		}
 	}
 

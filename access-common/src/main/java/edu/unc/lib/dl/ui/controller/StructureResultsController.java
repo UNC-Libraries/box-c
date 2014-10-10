@@ -18,8 +18,6 @@ package edu.unc.lib.dl.ui.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,8 +27,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
+import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
@@ -41,8 +39,6 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
  */
 @Controller
 public class StructureResultsController extends AbstractStructureResultsController {
-	private static final Logger LOG = LoggerFactory.getLogger(StructureResultsController.class);
-	
 	@RequestMapping("/structure/json")
 	public @ResponseBody
 	String getStructureJSON(@RequestParam(value = "files", required = false) String includeFiles, Model model,

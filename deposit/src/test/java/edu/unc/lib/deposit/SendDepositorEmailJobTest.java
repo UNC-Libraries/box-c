@@ -22,8 +22,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
@@ -36,7 +34,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class SendDepositorEmailJobTest {
-	private static final Logger LOG = LoggerFactory.getLogger(SendDepositorEmailJobTest.class);
+	
 	
 	// FIXME make sure the job can also run on failed deposits
 
@@ -65,7 +63,7 @@ public class SendDepositorEmailJobTest {
 				return xxmailSender.createMimeMessage();
 			}}).when(mockSender).createMimeMessage();
 	    
-	    Mockito.doAnswer(new Answer() {
+	    Mockito.doAnswer(new Answer<Object>() {
 
 			@Override
 			public Object answer(InvocationOnMock invocation) throws Throwable {

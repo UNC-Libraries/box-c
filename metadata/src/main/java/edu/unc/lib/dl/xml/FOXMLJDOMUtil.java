@@ -24,11 +24,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.jdom.xpath.XPath;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
+import org.jdom2.xpath.XPath;
 
 import edu.unc.lib.dl.util.ContentModelHelper;
 
@@ -101,7 +101,7 @@ public class FOXMLJDOMUtil {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static List<Element> extracted(List selectNodes) {
+	private static List<Element> extracted(@SuppressWarnings("rawtypes") List selectNodes) {
 		return selectNodes;
 	}
 
@@ -324,7 +324,6 @@ public class FOXMLJDOMUtil {
 			props = new Element("objectProperties", JDOMNamespaceUtil.FOXML_NS);
 			doc.getRootElement().addContent(1, props);
 		} else {
-			@SuppressWarnings("unchecked")
 			Iterator<Element> childIt = props.getChildren().iterator();
 			while (childIt.hasNext()){
 				Element el = childIt.next();

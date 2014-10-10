@@ -54,11 +54,7 @@ import static edu.unc.lib.dl.xml.NamespaceConstants.XLINK_URI;
 
 import javax.xml.XMLConstants;
 
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.jdom.xpath.XPath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jdom2.Namespace;
 
 /**
  * <strong>* EXPERIMENTAL *</strong> Utility class that contains JDOM
@@ -71,10 +67,9 @@ import org.slf4j.LoggerFactory;
  * @author adamc, $LastChangedBy$
  * @version $LastChangedRevision$
  * @see NamespaceConstants
- * @see org.jdom.Namespace
+ * @see org.jdom2.Namespace
  */
 public class JDOMNamespaceUtil {
-	private static final Logger log = LoggerFactory.getLogger(JDOMNamespaceUtil.class);
 
     /**
      * CDR namespace with "cdr" prefix.
@@ -207,25 +202,6 @@ public class JDOMNamespaceUtil {
 
 	public static final Namespace SIMPLE_METS_PROFILE_NS = Namespace.getNamespace(NamespaceConstants.SIMPLE_METS_PROFILE_PREFIX,
 			NamespaceConstants.SIMPLE_METS_PROFILE_URI);
-
-    /**
-     * Generates an XPath object from the given query, with the provided namespaces added.
-     * @param query
-     * @param namespaces
-     * @return
-     */
-    public static XPath instantiateXPath(String query, Namespace[] namespaces) {
- 		try {
- 			XPath xpath = XPath.newInstance(query);
- 			for (Namespace namespace : namespaces) {
- 				xpath.addNamespace(namespace);
- 			}
- 			return xpath;
- 		} catch (JDOMException e) {
- 			log.error("Failed to instantiate xpath: " + query, e);
- 		}
- 		return null;
- 	}
 
     // private constructor to prevent instantiation.
     private JDOMNamespaceUtil() {

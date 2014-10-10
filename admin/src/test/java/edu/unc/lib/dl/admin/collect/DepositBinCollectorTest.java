@@ -370,9 +370,7 @@ public class DepositBinCollectorTest {
 		Random random = new Random();
 		long bytesRemaining = numberBytes;
 
-		OutputStream fos = null;
-		try {
-			fos = new FileOutputStream(file);
+		try(OutputStream fos = new FileOutputStream(file)) {
 			for (; bytesRemaining > byteLength; bytesRemaining = bytesRemaining - byteLength) {
 				byte bytes[] = new byte[byteLength];
 				random.nextBytes(bytes);
@@ -384,8 +382,6 @@ public class DepositBinCollectorTest {
 				random.nextBytes(bytes);
 				fos.write(bytes);
 			}
-		} finally {
-			fos.close();
 		}
 	}
 }

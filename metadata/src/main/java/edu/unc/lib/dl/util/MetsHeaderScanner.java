@@ -129,6 +129,7 @@ public class MetsHeaderScanner extends DefaultHandler {
 	}
 
 	public void scan(File f) throws Exception {
+		@SuppressWarnings("resource")
 		InputStream toParse = null;
 		try {
 			if (f.getName().endsWith(".zip")) {

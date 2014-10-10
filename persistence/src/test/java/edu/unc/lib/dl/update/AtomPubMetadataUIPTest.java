@@ -15,15 +15,21 @@
  */
 package edu.unc.lib.dl.update;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,8 +37,6 @@ import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.util.ContentModelHelper;
-
-import static org.mockito.Mockito.*;
 
 public class AtomPubMetadataUIPTest extends Assert {
 
@@ -73,9 +77,8 @@ public class AtomPubMetadataUIPTest extends Assert {
 		
 		AccessClient accessClient = mock(AccessClient.class);
 		MIMETypedStream modsStream = new MIMETypedStream();
-		RandomAccessFile raf = new RandomAccessFile("src/test/resources/testmods.xml", "r");
-		byte[] bytes = new byte[(int)raf.length()];
-		raf.read(bytes);
+		File raf = new File("src/test/resources/testmods.xml");
+		byte[] bytes = FileUtils.readFileToByteArray(raf);
 		modsStream.setStream(bytes);
 		modsStream.setMIMEType("text/xml");
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()), anyString())).thenReturn(modsStream);
@@ -91,6 +94,5 @@ public class AtomPubMetadataUIPTest extends Assert {
 		assertEquals(1, uip.getOriginalData().size());
 		assertEquals(3, uip.getIncomingData().size());
 		assertEquals(0, uip.getModifiedData().size());
-		raf.close();
 	}
 }

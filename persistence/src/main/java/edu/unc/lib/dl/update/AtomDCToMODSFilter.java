@@ -18,7 +18,7 @@ package edu.unc.lib.dl.update;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
-import org.jdom.Element;
+import org.jdom2.Element;
 
 import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;

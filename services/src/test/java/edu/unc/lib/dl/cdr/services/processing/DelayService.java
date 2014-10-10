@@ -18,7 +18,7 @@ package edu.unc.lib.dl.cdr.services.processing;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 
 import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;

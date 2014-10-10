@@ -165,7 +165,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 						Node attrIdNode = attributeNode.getAttributes().getNamedItem("AttributeId");
 						if (attrIdNode != null && fedoraSubjectRoleAttribute.toString().equals(attrIdNode.getNodeValue())) {
 							// this is the attribute we need
-							String groupName = attributeNode.getFirstChild().getTextContent();
+							String groupName = attributeNode.getFirstChild().getFirstChild().getNodeValue();
 							log.debug("Found group name: {}", groupName);
 							result.add(groupName);
 						}
@@ -188,7 +188,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 						Node attrIdNode = attributeNode.getAttributes().getNamedItem("AttributeId");
 						if (attrIdNode != null && datastreamIdAttribute.toString().equals(attrIdNode.getNodeValue())) {
 							// this is the attribute we need
-							String dsId = attributeNode.getFirstChild().getTextContent();
+							String dsId = attributeNode.getFirstChild().getFirstChild().getNodeValue();
 							log.debug("Found datastream ID: {}", dsId);
 							result = dsId;
 							break big;

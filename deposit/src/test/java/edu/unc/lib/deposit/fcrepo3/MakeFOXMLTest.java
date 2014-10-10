@@ -41,12 +41,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,7 +58,6 @@ import org.mockito.Mock;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -217,7 +219,7 @@ public class MakeFOXMLTest {
 				JDOMNamespaceUtil.FOXML_NS);
 		if(dsLocation == null) return;
 		String dsLocationValue = dsLocation.getAttributeValue("REF");
-		File dsFile = edu.unc.lib.dl.util.FileUtils.getFileForUrl(dsLocationValue, job.getDepositDirectory());
+		File dsFile = getFileForUrl(dsLocationValue, job.getDepositDirectory());
 		assertTrue("Location referenced by datastream not found", dsFile.exists());
 	}
 
@@ -237,5 +239,43 @@ public class MakeFOXMLTest {
 		} catch (Exception e) {
 		}
 		return null;
+	}
+	
+	private static Pattern filePathPattern = null;
+
+	static {
+		filePathPattern = Pattern.compile("^(file:)?([/\\\\]{0,3})?(.+)$");
+	}
+
+	/**
+	 * Safely returns a File object for a "file:" URL. The base and root directories are both considered to be the dir.
+	 * URLs that point outside of that directory will throw an IOException.
+	 *
+	 * @param url
+	 *           the URL
+	 * @param dir
+	 *           the directory within which to resolve the "file:" URL.
+	 * @return a File object
+	 * @throws IOException
+	 *            when URL improperly formatted or points outside of the dir.
+	 */
+	public static File getFileForUrl(String url, File dir) throws IOException {
+		File result = null;
+
+		// remove any file: prefix and beginning slashes or backslashes
+		Matcher m = filePathPattern.matcher(url);
+
+		if (m.find()) {
+			String path = m.group(3); // grab the path group
+			path = path.replaceAll("\\\\", File.pathSeparator);
+			result = new File(dir, path);
+			if (result.getCanonicalPath().startsWith(dir.getCanonicalPath())) {
+				return result;
+			} else {
+				throw new IOException("Bad locator for a file in SIP:" + url);
+			}
+		} else {
+			throw new IOException("Bad locator for a file in SIP:" + url);
+		}
 	}
 }

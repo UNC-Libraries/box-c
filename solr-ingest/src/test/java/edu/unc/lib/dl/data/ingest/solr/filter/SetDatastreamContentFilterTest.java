@@ -18,8 +18,8 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import java.io.File;
 import java.io.FileInputStream;
 
-import org.jdom.Document;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Document;
+import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 

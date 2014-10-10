@@ -18,7 +18,7 @@ package edu.unc.lib.dl.cdr.services.text;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 
 import edu.unc.lib.dl.cdr.services.AbstractDatastreamEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;

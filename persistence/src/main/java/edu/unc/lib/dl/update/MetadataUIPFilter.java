@@ -18,7 +18,7 @@ package edu.unc.lib.dl.update;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.jdom.Element;
+import org.jdom2.Element;
 
 public abstract class MetadataUIPFilter implements UIPUpdateFilter {
 	private static Logger log = Logger.getLogger(MetadataUIPFilter.class);
@@ -79,7 +79,6 @@ public abstract class MetadataUIPFilter implements UIPUpdateFilter {
 			return null;
 
 		// Clone all the child elements of the incoming metadata
-		@SuppressWarnings("unchecked")
 		List<Element> incomingElements = (List<Element>) incoming.getChildren();
 		// Add all the incoming element children to the base modified object
 		for (Element incomingElement : incomingElements) {

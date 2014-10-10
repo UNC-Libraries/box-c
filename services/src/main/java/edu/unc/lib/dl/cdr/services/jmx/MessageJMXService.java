@@ -18,7 +18,7 @@ package edu.unc.lib.dl.cdr.services.jmx;
 
 import java.util.List;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
