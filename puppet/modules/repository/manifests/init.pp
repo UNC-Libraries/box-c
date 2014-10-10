@@ -71,7 +71,6 @@ class repository(
   $recaptcha_private_key,
   $recaptcha_public_key,
   $google_tracking_id,
-  $etd_set_query,
 ) {
 
   file { "/opt/repository":

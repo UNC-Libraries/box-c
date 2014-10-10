@@ -27,6 +27,10 @@ LIB = FileList[
   "staging-areas/target/staging-areas-0.0.1-SNAPSHOT.jar"
 ]
 
+SOLRLIB = FileList[
+  "oai4solr/oai2-plugin/target/oai2-plugin-4.1.jar"
+]
+
 file "static.tar.gz" => FileList["access/src/main/external/static/**/*"] do |t|
   sh "export COPYFILE_DISABLE=1; tar -cvzf #{t.name} -C access/src/main/external/static ."
 end
@@ -80,6 +84,18 @@ namespace :deploy do
       end
     end
     
+    desc "Update Solr libraries"
+    task :solrlib => SOLRLIB do |t|
+      on roles(:web) do
+        execute :rm, "-rf", "/opt/deploy/solrlib"
+        execute :mkdir, "-p", "/opt/deploy/solrlib"
+        
+        t.prerequisites.each do |p|
+          upload! p, "/opt/deploy/solrlib"
+        end
+      end
+    end
+    
     desc "Update deposit service"
     task :deposit => "deposit/target/deposit.jar" do |t|
       on roles(:web) do
@@ -109,6 +125,7 @@ namespace :deploy do
     invoke "deploy:update:static"
     invoke "deploy:update:webapps"
     invoke "deploy:update:lib"
+    invoke "deploy:update:solrlib"
     invoke "deploy:update:deposit"
   end
   

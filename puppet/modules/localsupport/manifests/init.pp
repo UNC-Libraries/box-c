@@ -110,6 +110,7 @@ class localsupport(
       ssl_key => $apache_ssl_key,
       proxy_pass => [
         { "path" => "/static", "url" => "!" },
+        { "path" => "/oai", "url" => "ajp://localhost:8009/solr/access-master/oai" },
         { "path" => "/", "url" => "ajp://localhost:8009/" },
       ],
     }
