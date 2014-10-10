@@ -16,7 +16,7 @@
     class="org.fcrepo.server.security.xacml.pdp.data.FilePolicyIndex"
     autowire-candidate="true" init-method="init">
     <constructor-arg ref="PolicyReader" />
-    <property name="policyDirectoryPath" value="/../../../../data/fedora-policy-db" />
+    <property name="policyDirectoryPath" value="/../../../data/fedora-policy-db" />
     <property name="subjectAttributes" ref="org.fcrepo.server.security.xacml.pdp.data.subjectAttributes" />
     <property name="resourceAttributes" ref="org.fcrepo.server.security.xacml.pdp.data.resourceAttributes" />
     <property name="actionAttributes" ref="org.fcrepo.server.security.xacml.pdp.data.actionAttributes" />

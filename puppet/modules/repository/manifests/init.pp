@@ -135,8 +135,6 @@ class repository(
     "/opt/data/mulgara-tmp",
     "/opt/data/forms-stash",
     "/opt/data/staging",
-    "/data",
-    "/data/djatoka-temp",
   ]
 
   file { $data_directories:
