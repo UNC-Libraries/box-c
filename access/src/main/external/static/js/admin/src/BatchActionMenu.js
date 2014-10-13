@@ -49,6 +49,7 @@ define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 					items["editAccess"] = {name : 'Edit Access'};
 				if ($.inArray('editDescription', metadata.permissions) != -1)
 					items["editDescription"] = {name : 'Edit Description'};
+					items["manifest"] = {name : 'Download Manifest'};
 				if ($.inArray('purgeForever', metadata.permissions) != -1) {
 					items["sepadmin"] = "";
 					items["reindex"] = {name : 'Reindex'};
@@ -113,6 +114,9 @@ define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 									target : resultObject,
 									confirmAnchor : options.$trigger
 								});
+								break;
+							case "manifest" :
+								document.location.href = serverUrl + "services/api/edit/manifest-csv/" + metadata.id;
 								break;
 						}
 					},
