@@ -119,7 +119,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 			items["editAccess"] = {name : 'Edit Access'};
 		if ($.inArray('editDescription', metadata.permissions) != -1)
 			items["editDescription"] = {name : 'Edit Description'};
-			items["manifest"] = {name : 'Download Manifest'};
+			items["manifest"] = {name : 'Download CSV Manifest'};
+			items["fileinfo"] = {name : 'Download CSV File List'};
 		if ($.inArray('purgeForever', metadata.permissions) != -1) {
 			items["sepadmin"] = "";
 			items["reindex"] = {name : 'Reindex'};
@@ -187,6 +188,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 						break;
 					case "manifest" :
 						document.location.href = serverUrl + "services/api/edit/manifest-csv/" + metadata.id;
+						break;
+					case "fileinfo" :
+						document.location.href = serverUrl + "services/api/edit/fileinfo/" + metadata.id;
 						break;
 				}
 			},

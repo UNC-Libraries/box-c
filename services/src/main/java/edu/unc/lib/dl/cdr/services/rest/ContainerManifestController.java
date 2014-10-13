@@ -46,8 +46,8 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 @Controller
-public class CollectionManifestController {
-	private static final Logger LOG = LoggerFactory.getLogger(CollectionManifestController.class);
+public class ContainerManifestController {
+	private static final Logger LOG = LoggerFactory.getLogger(ContainerManifestController.class);
 		
 	private HttpSolrServer server;
 	
@@ -63,7 +63,7 @@ public class CollectionManifestController {
 	
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/edit/manifest/{pid}")
-	public @ResponseBody Map<String, Object> list(@PathVariable("pid") String pid) throws SolrServerException {
+	public @ResponseBody Map<String, Object> getJSON(@PathVariable("pid") String pid) throws SolrServerException {
 		if(server == null) initializeSolrServer();
 		SolrQuery parameters = new SolrQuery();
 		parameters.setQuery("ancestorPath:*"+ClientUtils.escapeQueryChars(","+pid+",")+"*");
@@ -128,8 +128,8 @@ public class CollectionManifestController {
 	
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/edit/manifest-csv/{pid}")
-	public void get(@PathVariable("pid") String pid, HttpServletResponse response) throws SolrServerException, IOException {
-		Map<String, Object> map = this.list(pid);
+	public void downloadCSV(@PathVariable("pid") String pid, HttpServletResponse response) throws SolrServerException, IOException {
+		Map<String, Object> map = this.getJSON(pid);
 		String id = ((String)map.get("pid")).replace(":", "_");
 		response.addHeader("Content-Disposition", "attachment; filename=\""+id+"-manifest.csv\"");
 		try(ServletOutputStream out = response.getOutputStream()) {
@@ -138,12 +138,12 @@ public class CollectionManifestController {
 			out.print("pid");
 			out.print(',');
 			out.println("title");
-			output(map, out, 1);
+			outputCSV(map, out, 1);
 		}
 		
 	}
 
-	private void output(Map<String, Object> map,
+	private void outputCSV(Map<String, Object> map,
 			ServletOutputStream out, int depth) throws IOException {
 		out.print(depth);
 		out.print(',');
@@ -158,7 +158,7 @@ public class CollectionManifestController {
 		if(map.containsKey("children")) {
 			List<Map<String, Object>> children = (List<Map<String,Object>>)map.get("children");
 			for(Map<String, Object> child : children) {
-				output(child, out, depth+1);
+				outputCSV(child, out, depth+1);
 			}
 		}
 	}
