@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -67,7 +66,7 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		assignPIDs(mets); // assign any missing PIDs
 		saveMETS(mets); // manifest updated to have record of all PIDs
 
-		Model model = ModelFactory.createDefaultModel();
+		Model model = getModel();
 		METSHelper helper = new METSHelper(mets);
 
 		// deposit RDF bag
