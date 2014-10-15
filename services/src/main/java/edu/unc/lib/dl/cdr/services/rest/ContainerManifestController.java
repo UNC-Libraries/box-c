@@ -62,12 +62,14 @@ public class ContainerManifestController {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value = "/edit/manifest/{pid}")
+	@RequestMapping(value = "/edit/manifest-json/{pid}")
 	public @ResponseBody Map<String, Object> getJSON(@PathVariable("pid") String pid) throws SolrServerException {
 		if(server == null) initializeSolrServer();
 		SolrQuery parameters = new SolrQuery();
 		parameters.setQuery("ancestorPath:*"+ClientUtils.escapeQueryChars(","+pid+",")+"*");
-		parameters.addSort("ancestorNames", ORDER.desc);
+		parameters.addSort("ancestorNames", ORDER.asc);
+		parameters.addSort("isPart", ORDER.asc);
+		parameters.addSort("displayOrder", ORDER.asc);
 		parameters.addField("ancestorNames");
 		parameters.addField("ancestorPath");
 		parameters.addField("id");
@@ -126,11 +128,21 @@ public class ContainerManifestController {
 		return coll;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/edit/manifest-csv/{pid}")
 	public void downloadCSV(@PathVariable("pid") String pid, HttpServletResponse response) throws SolrServerException, IOException {
-		Map<String, Object> map = this.getJSON(pid);
-		String id = ((String)map.get("pid")).replace(":", "_");
+		if(server == null) initializeSolrServer();
+		SolrQuery parameters = new SolrQuery();
+		parameters.setQuery("ancestorPath:*"+ClientUtils.escapeQueryChars(","+pid+",")+"*");
+		parameters.addSort("ancestorNames", ORDER.asc);
+		parameters.addSort("isPart", ORDER.asc);
+		parameters.addSort("displayOrder", ORDER.asc);
+		parameters.addField("ancestorPath");
+		parameters.addField("ancestorNames");
+		parameters.addField("id");
+		parameters.addField("title");
+		QueryResponse solrResponse = server.query(parameters);
+		
+		String id = pid.replace(":", "_");
 		response.addHeader("Content-Disposition", "attachment; filename=\""+id+"-manifest.csv\"");
 		try(ServletOutputStream out = response.getOutputStream()) {
 			out.print("depth");
@@ -138,28 +150,25 @@ public class ContainerManifestController {
 			out.print("pid");
 			out.print(',');
 			out.println("title");
-			outputCSV(map, out, 1);
+			for(SolrDocument doc : solrResponse.getResults()) {
+				String title = (String) doc.getFieldValue("title");
+				String p = (String) doc.getFieldValue("id");
+				String anc = (String) doc.getFieldValue("ancestorNames");
+				int depth = doc.getFieldValues("ancestorPath").size();
+				outputCSV(p, title, depth, anc, out);
+			}
 		}
-		
 	}
 
-	private void outputCSV(Map<String, Object> map,
-			ServletOutputStream out, int depth) throws IOException {
+	private void outputCSV(String pid, String title, int depth, String anc, ServletOutputStream out) throws IOException {
 		out.print(depth);
 		out.print(',');
 		out.print("info:fedora/");
-		out.print((String) map.get("pid"));
+		out.print(pid);
 		out.print(',');
 		out.print('"');
-		String title = (String) map.get("title");
 		title = title.replaceAll(Pattern.quote("\""), Matcher.quoteReplacement("\\\""));
 		out.print(title);
 		out.println('"');
-		if(map.containsKey("children")) {
-			List<Map<String, Object>> children = (List<Map<String,Object>>)map.get("children");
-			for(Map<String, Object> child : children) {
-				outputCSV(child, out, depth+1);
-			}
-		}
 	}
 }
