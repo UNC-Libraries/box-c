@@ -73,6 +73,7 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 	var $tableActionMenu;
 	var $resultHeader;
 	var $resultTable;
+	var $resultArea;
 	var $window = $(window);
 	var menuOffset = 360;
 	
@@ -85,6 +86,7 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 		$resultTable.width(wWidth - menuOffset);
 		$columnHeaders.width(wWidth - menuOffset);
 		$containerEntry.css('max-width', (wWidth - $tableActionMenu.width() - menuOffset - 105));
+		$resultArea.css('margin-left', (menuOffset - 45) + "px");
 	};
 	
 	var pageNavigation = {
@@ -113,6 +115,7 @@ define('resultList', ['module', 'jquery', "tpl!../templates/admin/resultTableHea
 		$resultTable = $('.result_table');
 		$containerEntry = $('.container_header > span > h2');
 		$tableActionMenu = $('.result_table_action_menu');
+		$resultArea = $('.result_area');
 		
 		// Keep result area the right size when the menu is resized
 		var searchMenu = $("#search_menu").searchMenu({
