@@ -117,10 +117,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
 		if ($.inArray('editAccessControl', metadata.permissions) != -1) 
 			items["editAccess"] = {name : 'Edit Access'};
-		if ($.inArray('editDescription', metadata.permissions) != -1)
+		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
-			items["manifest"] = {name : 'Download CSV Manifest'};
-			items["fileinfo"] = {name : 'Download CSV File List'};
+		    if($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
+		    	items["manifest"] = {name : 'Download CSV Manifest'};
+				items["fileinfo"] = {name : 'Download CSV File List'};
+		    }
+		}
+	    items["copyid"] = {name : 'Copy PID to Clipboard'};
 		if ($.inArray('purgeForever', metadata.permissions) != -1) {
 			items["sepadmin"] = "";
 			items["reindex"] = {name : 'Reindex'};
@@ -191,6 +195,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 						break;
 					case "fileinfo" :
 						document.location.href = serverUrl + "services/api/edit/fileinfo/" + metadata.id;
+						break;
+					case "copyid" :
+						window.prompt("Copy to clipboard: Ctrl+C, Enter", metadata.id);
 						break;
 				}
 			},
