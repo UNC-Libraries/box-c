@@ -98,6 +98,7 @@ class localsupport(
       proxy_pass => [
         { "path" => "/services", "url" => "ajp://localhost:8009/services" },
         { "path" => "/solr", "url" => "ajp://localhost:8009/solr" },
+        { "path" => "/fedora", "url" => "ajp://localhost:8009/fedora" },
       ],
     }
 
