@@ -797,10 +797,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		if(log.isDebugEnabled()) {
 			log.debug(new XMLOutputter().outputString(foxml));
 		}
-		
-		// TODO get a PIDLocker.lock(parent)
 
 		try {
+			this.pidLock.lock(parent);
 			// Container update
 			this.getManagementClient().addObjectRelationship(parent,
 					ContentModelHelper.Relationship.contains.getURI().toString(), containerPid);
@@ -828,7 +827,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			managementClient.ingest(foxml, Format.FOXML_1_1, "Container created via Admin UI");
 		} catch (FedoraException e) {
 			throw new IngestException("Failed to ingest container object", e);
+		} finally {
+			this.pidLock.unlock(parent);
 		}
+		
 		return containerPid;
 	}
 
