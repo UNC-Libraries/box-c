@@ -41,6 +41,9 @@
 		<property name="jmsTemplate" ref="jmsTemplate"/>
 	</bean>
 	<!-- END OF REMOTE BEANS -->
+	
+	<bean id="pidWriteLock" class="edu.unc.lib.dl.util.PIDLocker">
+	</bean>
 
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
 		<property name="managementClient" ref="managementClient"/>
@@ -49,6 +52,7 @@
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="schematronValidator" ref="schematronValidator"/>
 		<property name="available" value="true"/>
+		<property name="pidLock" ref="pidWriteLock"/>
 	</bean>
 
 	<bean class="edu.unc.lib.dl.pidgen.UUIDPIDGenerator" id="pidGenerator" init-method="init">
