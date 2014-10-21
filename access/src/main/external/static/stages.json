@@ -1,8 +1,4 @@
 {
-    "irods://cdr-stage.lib.unc.edu:3333/stagingZone/projects/":{
-        "name":"Shared iRODS Staging Area",
-        "ingestCleanupPolicy":"DELETE_INGESTED_FILES"
-    },
     "tag:cdr.lib.unc.edu,2013:/cdr_projects/":{
         "name":"CDR Projects",
         "mappings":[
