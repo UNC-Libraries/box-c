@@ -30,14 +30,14 @@ import edu.unc.lib.staging.Stages;
 import edu.unc.lib.staging.StagingArea;
 import fedorax.server.module.storage.IrodsExternalContentManager;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+// XXX @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-context.xml" })
 public class StagingExternalContentManagerTest {
 
 	@Autowired
 	IrodsExternalContentManager externalContentManager;
 	
-	@Test
+	// XXX @Test
 	public void testTagLocally() throws ServerException {
 		Stages stages = externalContentManager.getStages();
 		StagingArea shc = stages.getAllAreas().get(URI.create("tag:cdr.lib.unc.edu,2013:/storhouse_shc/"));
