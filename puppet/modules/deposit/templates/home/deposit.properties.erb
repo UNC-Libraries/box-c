@@ -31,3 +31,9 @@ jms.port=<%= @jms_port %>
 # baseUrl=https://www.example.com
 
 fedora.stagesConfiguration=file:/opt/repository/stagesConfig.json
+
+# delay after which the clean up job runs
+cleanup.delay.seconds=172800
+
+# delay after clean up job when deposit status keys expire (172800 is 2 days)
+status.keys.expire.seconds=172800
