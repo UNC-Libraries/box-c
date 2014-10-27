@@ -738,7 +738,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					PremisEventLogger.addDetailedOutcome(event, "MODS is valid",
 							"The supplied MODS metadata meets all CDR vocabulary requirements.", null);
 				}
-				Element modsEl = FOXMLJDOMUtil.makeXMLManagedDatastreamElement(
+				Element modsEl = FOXMLJDOMUtil.makeInlineXMLDatastreamElement(
 						ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(),
 						ContentModelHelper.Datastream.MD_DESCRIPTIVE.getLabel(),
 						ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()+"1.0",
@@ -773,7 +773,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 							extraModel.getURI().toString(),
 							JDOMNamespaceUtil.RDF_NS));
 		}
-		Element relsEl = FOXMLJDOMUtil.makeXMLManagedDatastreamElement(
+		Element relsEl = FOXMLJDOMUtil.makeInlineXMLDatastreamElement(
 				ContentModelHelper.Datastream.RELS_EXT.getName(),
 				ContentModelHelper.Datastream.RELS_EXT.getLabel(),
 				ContentModelHelper.Datastream.RELS_EXT.getName()+"1.0",
@@ -787,11 +787,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		logger.logEvent(Type.CREATION,
 				"Container created", containerPid);
 		logger.appendLogEvents(containerPid, premisEl);
-		Element premisDSEl = FOXMLJDOMUtil.makeXMLManagedDatastreamElement(
-				ContentModelHelper.Datastream.MD_EVENTS.getName(),
-				ContentModelHelper.Datastream.MD_EVENTS.getLabel(),
-				ContentModelHelper.Datastream.MD_EVENTS.getName()+"1.0",
-				premisEl, true);
+		String premisLoc = managementClient.upload(new Document(premisEl));
+		Element premisDSEl = FOXMLJDOMUtil.makeLocatorDatastream(
+				ContentModelHelper.Datastream.MD_EVENTS.getName(), "M", premisLoc, "text/xml", "URL",
+				ContentModelHelper.Datastream.MD_EVENTS.getLabel(), false, null);
 		foxml.getRootElement().addContent(premisDSEl);
 
 		if(log.isDebugEnabled()) {

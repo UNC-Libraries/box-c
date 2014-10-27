@@ -263,28 +263,6 @@ public class FOXMLJDOMUtil {
 		return dcDS;
 	}
 
-	public static Element makeXMLManagedDatastreamElement(String id, String label, String versionId, Element xmlData,
-			boolean versioned) {
-		Element dcDS = new Element("datastream", JDOMNamespaceUtil.FOXML_NS);
-		dcDS.setAttribute("ID", id);
-		dcDS.setAttribute("CONTROL_GROUP", "M");
-		dcDS.setAttribute("STATE", "A");
-		dcDS.setAttribute("VERSIONABLE", versioned ? "true" : "false");
-		Element dcDSV = new Element("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
-		dcDS.addContent(dcDSV);
-		dcDSV.setAttribute("ID", versionId);
-		dcDSV.setAttribute("MIMETYPE", "text/xml");
-		dcDSV.setAttribute("LABEL", label);
-		Element contentDigest = new Element("contentDigest", JDOMNamespaceUtil.FOXML_NS);
-		contentDigest.setAttribute("TYPE", "MD5");
-		contentDigest.setAttribute("DIGEST", "none");
-		dcDSV.addContent(contentDigest);
-		Element xmlContent = new Element("xmlContent", JDOMNamespaceUtil.FOXML_NS);
-		dcDSV.addContent(xmlContent);
-		xmlContent.addContent(xmlData);
-		return dcDS;
-	}
-
 	/**
 	 * Sets the content of the datastream, creating it if it doesn't exist.
 	 *
