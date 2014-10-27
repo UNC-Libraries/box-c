@@ -72,7 +72,8 @@ public class ContainerDataFileChecksumsController {
 			if (server == null)
 				initializeSolrServer();
 			SolrQuery parameters = new SolrQuery();
-			parameters.setQuery("datastream:DATA_FILE|* "+"ancestorPath:*"+ClientUtils.escapeQueryChars(","+pid+",")+"*");
+			parameters.setQuery("contentModel:"+ClientUtils.escapeQueryChars("info:fedora/cdr-model:Simple")
+					+" ancestorPath:*"+ClientUtils.escapeQueryChars(","+pid+",")+"*");
 			parameters.addSort("filesizeTotal", ORDER.desc);
 			parameters.addField("title");
 			parameters.addField("id");
@@ -104,7 +105,7 @@ public class ContainerDataFileChecksumsController {
 		// title, pid, mimetype, length, checksum
 		String title = (String) map.get("title");
 		title = title.replaceAll(Pattern.quote("\""),
-				Matcher.quoteReplacement("\\\""));
+				Matcher.quoteReplacement("\"\""));
 		out.print('"');
 		out.print(title);
 		out.print('"');

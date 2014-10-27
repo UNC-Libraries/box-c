@@ -1178,7 +1178,7 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 								document.location.href = serverUrl + "services/api/edit/fileinfo/" + metadata.id;
 								break;
 							case "copyid" :
-								window.prompt("Copy to clipboard: Ctrl+C, Enter", metadata.id);
+								window.prompt("Copy PID to clipboard", metadata.id);
 								break;
 						}
 					},
@@ -2545,7 +2545,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 						document.location.href = serverUrl + "services/api/edit/fileinfo/" + metadata.id;
 						break;
 					case "copyid" :
-						window.prompt("Copy to clipboard: Ctrl+C, Enter", metadata.id);
+						window.prompt("Copy PID to clipboard", metadata.id);
 						break;
 				}
 			},

@@ -197,7 +197,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 						document.location.href = serverUrl + "services/api/edit/fileinfo/" + metadata.id;
 						break;
 					case "copyid" :
-						window.prompt("Copy to clipboard: Ctrl+C, Enter", metadata.id);
+						window.prompt("Copy PID to clipboard", metadata.id);
 						break;
 				}
 			},

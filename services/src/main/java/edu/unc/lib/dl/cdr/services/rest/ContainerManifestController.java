@@ -167,7 +167,7 @@ public class ContainerManifestController {
 		out.print(pid);
 		out.print(',');
 		out.print('"');
-		title = title.replaceAll(Pattern.quote("\""), Matcher.quoteReplacement("\\\""));
+		title = title.replaceAll(Pattern.quote("\""), Matcher.quoteReplacement("\"\""));
 		out.print(title);
 		out.println('"');
 	}
