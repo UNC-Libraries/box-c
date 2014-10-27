@@ -111,7 +111,7 @@
 		<module>fcrepo-clients</module>
 		<module>fcrepo-irods-storage</module>
 		<module>metadata</module>
-		<module>oai4solr</module>
+		<module>oai4solr/oai2-plugin</module>
 		<module>persistence</module>
 		<module>services</module>
 		<module>solr-ingest</module>
