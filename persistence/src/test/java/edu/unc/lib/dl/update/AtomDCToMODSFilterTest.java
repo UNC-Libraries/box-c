@@ -22,7 +22,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;to.MockitoAnnotations.initMocks;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -77,7 +78,7 @@ public class AtomDCToMODSFilterTest extends Assert {
 		filter.setSchematronValidator(schematronValidator);
 		filter.setDeptUtil(deptUtil);
 
-		when(deptUtil.getInvalidAffiliations(any(Element.class))).thenReturn(null);
+		when(deptUtil.getInvalidTerms(any(Element.class))).thenReturn(null);
 	}
 
 	@Test

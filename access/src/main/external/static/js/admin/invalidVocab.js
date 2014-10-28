@@ -26,7 +26,7 @@ define("invalidVocab", ["jquery", "tpl!../templates/admin/invalidVocab"], functi
 	pathname = pathname.substring(pathname.indexOf("/", pathname.indexOf("invalidVocab")) + 1);
 	
 	$.get("/admin/getInvalidVocab/" + pathname, function(response){
-		var vocabTypes = response;
+		var vocabTypes = response.vocabTypes;
 		
 		var groupedTypes = {};
 		
@@ -67,6 +67,6 @@ define("invalidVocab", ["jquery", "tpl!../templates/admin/invalidVocab"], functi
 			}
 		}
 		
-		$("#invalid_vocab").html($(vocabTemplate({"groupedTypes" : groupedTypes})));
+		$("#invalid_vocab").html($(vocabTemplate({"groupedTypes" : groupedTypes, "container" : response.container})));
 	});
 });

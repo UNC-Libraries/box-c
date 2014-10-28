@@ -16,7 +16,12 @@
 package edu.unc.lib.dl.admin.controller;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +51,8 @@ import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.util.VocabularyHelperManager;
+import edu.unc.lib.dl.xml.VocabularyHelper;
 
 @Controller
 public class MODSController extends AbstractSwordController {
@@ -59,6 +66,12 @@ public class MODSController extends AbstractSwordController {
 	private String swordPassword;
 	@Autowired
 	private TripleStoreQueryService tripleStoreQueryService;
+
+	@Autowired
+	private VocabularyHelperManager vocabularies;
+
+	@Autowired
+	private PID collectionsPid;
 
 	protected @Resource(name = "tagProviders")
 	List<TagProvider> tagProviders;
@@ -75,6 +88,16 @@ public class MODSController extends AbstractSwordController {
 	@RequestMapping(value = "describe/{pid}", method = RequestMethod.GET)
 	public String editDescription(@PathVariable("pid") String pid, Model model,
 			HttpServletRequest request) {
+		return "edit/description";
+	}
+
+	@RequestMapping(value = "describeInfo/{pid}", method = RequestMethod.GET)
+	public @ResponseBody
+	Map<String, Object> editDescription(@PathVariable("pid") String pid, HttpServletResponse response) {
+		response.setContentType("application/json");
+
+		Map<String, Object> results = new LinkedHashMap<String, Object>();
+
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
 		// Retrieve the record for the container being reviewed
@@ -88,9 +111,23 @@ public class MODSController extends AbstractSwordController {
 			provider.addTags(resultObject, accessGroups);
 		}
 
-		model.addAttribute("resultObject", resultObject);
+		results.put("resultObject", resultObject);
 
-		return "edit/description";
+		Map<String, Collection<String>> terms = new HashMap<>();
+		String parentCollection = resultObject.getParentCollection();
+		if (parentCollection == null) {
+			parentCollection = collectionsPid.getPid();
+		}
+		Set<VocabularyHelper> helpers = vocabularies.getHelpers(new PID(parentCollection));
+		if (helpers != null) {
+			for (VocabularyHelper helper : helpers) {
+				terms.put(helper.getVocabularyURI(), helper.getVocabularyTerms());
+			}
+		}
+
+		results.put("vocabTerms", terms);
+
+		return results;
 	}
 
 	/**

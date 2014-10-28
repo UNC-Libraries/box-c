@@ -149,3 +149,8 @@
 .create_simple_object_form label {
 	width: 70px;
 }
+
+.ui-autocomplete {
+	max-height: 7em;
+	overflow-y: auto;
+}

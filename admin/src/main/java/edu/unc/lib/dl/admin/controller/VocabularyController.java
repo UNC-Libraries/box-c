@@ -15,15 +15,16 @@
  */
 package edu.unc.lib.dl.admin.controller;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidAffiliationTerm;
-
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +38,8 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.tags.TagProvider;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
+import edu.unc.lib.dl.util.VocabularyHelperManager;
+import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
  * @author bbpennel
@@ -44,6 +47,9 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
  */
 @Controller
 public class VocabularyController extends AbstractSearchController {
+
+	@Autowired
+	private VocabularyHelperManager vocabularies;
 
 	@RequestMapping(value = { "invalidVocab", "invalidVocab/{pid}" }, method = RequestMethod.GET)
 	public String invalidVocab() {
@@ -61,20 +67,32 @@ public class VocabularyController extends AbstractSearchController {
 
 		AccessGroupSet groups = GroupsThreadStore.getGroups();
 
+		BriefObjectMetadata selectedContainer =
+				queryLayer.addSelectedContainer(searchRequest.getRootPid(), searchRequest.getSearchState(), false);
+
 		Map<String, Object> results = new LinkedHashMap<String, Object>();
 
-		SearchResultResponse resultResponse = queryLayer.getRelationSet(searchRequest,
-				invalidAffiliationTerm.getPredicate());
+		Map<String, Object> vocabResults = new HashMap<>();
 
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-		for (BriefObjectMetadata record : resultResponse.getResultList()) {
-			for (TagProvider provider : this.tagProviders) {
-				provider.addTags(record, accessGroups);
+		Set<VocabularyHelper> helpers = vocabularies.getHelpers(collectionsPid);
+		if (helpers != null) {
+			for (VocabularyHelper helper : helpers) {
+				SearchResultResponse resultResponse = queryLayer.getRelationSet(searchRequest,
+						helper.getInvalidTermPredicate());
+
+				for (BriefObjectMetadata record : resultResponse.getResultList()) {
+					for (TagProvider provider : this.tagProviders) {
+						provider.addTags(record, groups);
+					}
+				}
+
+				List<Map<String, Object>> vocabTypeResults = SerializationUtil.resultsToList(resultResponse, groups);
+				vocabResults.put(helper.getVocabularyURI(), vocabTypeResults);
 			}
 		}
 
-		List<Map<String, Object>> vocabTypeResults = SerializationUtil.resultsToList(resultResponse, groups);
-		results.put("departments", vocabTypeResults);
+		results.put("vocabTypes", vocabResults);
+		results.put("container", SerializationUtil.metadataToMap(selectedContainer, groups));
 
 		return results;
 	}

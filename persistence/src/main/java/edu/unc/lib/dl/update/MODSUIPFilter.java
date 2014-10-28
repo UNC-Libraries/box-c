@@ -18,6 +18,7 @@ package edu.unc.lib.dl.update;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -31,19 +32,21 @@ import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.transform.JDOMSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schematron.SchematronValidator;
-import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.util.VocabularyHelperManager;
 import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
  * Filter which performs update operations on an MD_DESCRIPTIVE MODS datastream and validates it.
@@ -58,13 +61,13 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 	private SchematronValidator schematronValidator;
 	private final Validator modsValidator;
 
-	@Resource
-	private DepartmentOntologyUtil deptUtil;
+	@Autowired
+	private VocabularyHelperManager vocabManager;
+
 	private ManagementClient managementClient;
 	@Resource
 	private TripleStoreQueryService queryService;
 
-	private Map<String, Set<String>> vocabularyToCollectionMap;
 
 	public MODSUIPFilter() {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -144,11 +147,19 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 		try {
 			modsValidator.validate(new JDOMSource(mods));
 
-			// Refresh the invalid affiliations relations
-			Set<String> invalid = deptUtil.getInvalidAffiliations(mods);
-			if (invalid != null)
-				updateVocabularyRelation(uip.getPID(), invalid, "affiliation",
-						ContentModelHelper.CDRProperty.invalidAffiliationTerm.toString());
+			// Refresh the invalid terms relations
+			Map<String, Set<String>> invalidTermsMap = vocabManager.getInvalidTerms(uip.getPID(), mods);
+			if (invalidTermsMap != null) {
+				for (Entry<String, Set<String>> termEntry : invalidTermsMap.entrySet()) {
+					VocabularyHelper helper = vocabManager.getHelper(termEntry.getKey());
+					updateVocabularyRelation(uip.getPID(), termEntry.getValue(), helper.getInvalidTermPredicate());
+				}
+			}
+
+			// Set<String> invalid = deptUtil.getInvalidAffiliations(mods);
+			// if (invalid != null)
+			// updateVocabularyRelation(uip.getPID(), invalid, "affiliation",
+			// ContentModelHelper.CDRProperty.invalidAffiliationTerm.toString());
 
 		} catch (SAXException e) {
 			throw new UIPException("MODS failed to validate to schema:" + e.getMessage(), e);
@@ -157,16 +168,8 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 		}
 	}
 
-	protected void updateVocabularyRelation(PID pid, Set<String> invalidTerms, String vocabalaryName,
+	protected void updateVocabularyRelation(PID pid, Set<String> invalidTerms,
 			String relationPredicate) throws FedoraException {
-		if (vocabularyToCollectionMap.containsKey(vocabalaryName)) {
-			PID parentCollection = queryService.fetchParentCollection(pid);
-
-			Set<String> collections = vocabularyToCollectionMap.get(vocabalaryName);
-			if (!collections.contains(parentCollection.getPid())) {
-				return;
-			}
-		}
 
 		List<String> rel = queryService.fetchBySubjectAndPredicate(pid, relationPredicate);
 
@@ -200,7 +203,7 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 	}
 
 	public void setDeptUtil(DepartmentOntologyUtil deptUtil) {
-		this.deptUtil = deptUtil;
+		// this.deptUtil = deptUtil;
 	}
 
 	public void setManagementClient(ManagementClient managementClient) {

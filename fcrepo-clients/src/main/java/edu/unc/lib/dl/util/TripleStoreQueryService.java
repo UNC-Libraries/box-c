@@ -72,7 +72,7 @@ public interface TripleStoreQueryService {
 	 * @return the list of contained objects
 	 */
 	public abstract List<PID> fetchAllContents(PID key);
-	
+
 	/**
 	 * Retrieves a list of PID for the children of the supplied container PID.
 	 *
@@ -118,7 +118,7 @@ public interface TripleStoreQueryService {
 	 * @return a list of object IDs the include repository paths and PIDs
 	 */
 	public abstract List<PID> fetchByPredicateAndLiteral(String predicateURI, String literal);
-	
+
 	public abstract List<PID> fetchByPredicateAndLiteral(String predicateURI, PID pidLiteral);
 
 	/**
@@ -155,7 +155,7 @@ public interface TripleStoreQueryService {
 	 * @return
 	 */
 	public boolean isOrphaned(PID key);
-	
+
 	/**
 	 * Retrieves the nearest collection that directly or indirectly contains the specified object.
 	 *
@@ -201,7 +201,7 @@ public interface TripleStoreQueryService {
 	/**
 	 * Retrieves the path of the Item within the repository, from the first step above the repository root through the
 	 * Item itself.
-	 * 
+	 *
 	 * @param key
 	 *           the object ID to lookup
 	 * @return the repository path string, starting from the first object after the REPOSITORY object. Returns "/" if
@@ -212,7 +212,7 @@ public interface TripleStoreQueryService {
 	/**
 	 * Generates a list containing PathInfo objects for each hierarchical step in the path beginning with the repository
 	 * root leading up to and including PID pid.
-	 * 
+	 *
 	 * @param key
 	 *           the pid for the object of interest
 	 * @return an ordered list of PathInfo objects starting from the REPOSITORY object or an empty list if the object is
@@ -228,7 +228,7 @@ public interface TripleStoreQueryService {
 	 * @return a map of child pids strings to their parent bonds.
 	 */
 	public abstract Map<PID, ParentBond> lookupRepositoryAncestorInheritance(PID pid);
-	
+
 	/**
 	 * Gathers each parent container in turn along with whether or not roles are inherited.
 	 *
@@ -267,7 +267,7 @@ public interface TripleStoreQueryService {
 	 * @return a map keyed by permission property with values including the set of subjects with that permission.
 	 */
 	public abstract Set<String[]> lookupGroupRoles(PID pid);
-	
+
 	/**
 	 * Returns all the embargoes still active by pid.
 	 *
@@ -306,8 +306,8 @@ public interface TripleStoreQueryService {
 	 * @return a list of datastream URI strings
 	 */
 	public abstract List<String> getSourceData(PID pid);
-	
-	
+
+
 	/**
 	 * Lists all disseminators for the pid.
 	 * @param pid
@@ -355,7 +355,7 @@ public interface TripleStoreQueryService {
 	 * @return
 	 */
 	public abstract String lookupLabel(PID pid);
-	
+
 	public abstract String lookupLabel(String pid);
 
 	/**
@@ -403,4 +403,18 @@ public interface TripleStoreQueryService {
 	String fetchState(PID pid);
 
 	Map<String, String> fetchDisseminatorMimetypes(PID pid);
+
+	/**
+	 * Retrieve a list of vocabulary objects and their associated metadata
+	 *
+	 * @return
+	 */
+	public Map<String, Map<String, String>> fetchVocabularyInfo();
+
+	/**
+	 * Retrieves a mapping of objects to their mapped vocabularies
+	 *
+	 * @return
+	 */
+	public Map<String, Map<String, Set<String>>> fetchVocabularyMapping();
 }

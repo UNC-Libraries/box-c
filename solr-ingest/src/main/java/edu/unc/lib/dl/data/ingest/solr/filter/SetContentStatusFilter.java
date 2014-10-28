@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_URI;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +64,12 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 		// Valid/Not Valid content according to FITS
 
 		// Vocabulary validation
-		if (triples.containsKey(ContentModelHelper.CDRProperty.invalidAffiliationTerm.toString()))
-			status.add(FacetConstants.INVALID_VOCAB_TERM);
+		for (String relation : triples.keySet()) {
+			if (relation.startsWith(CDR_URI + "invalidTerm")) {
+				status.add(FacetConstants.INVALID_VOCAB_TERM);
+				break;
+			}
+		}
 
 		// If its an aggregate, indicate if it has a default web object
 		List<String> contentModels = triples.get(ContentModelHelper.FedoraProperty.hasModel.toString());

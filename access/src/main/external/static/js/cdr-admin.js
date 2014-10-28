@@ -2186,14 +2186,14 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		if (this.metadata.tags) {
 			var tagIndex = -1;
 			for (var index in this.metadata.tags) {
-				if (this.metadata.tags[index].label == "invalid affiliation") {
+				if (this.metadata.tags[index].label.indexOf("invalid term") == 0) {
 					tagIndex = index;
 					break;
 				}
 			}
 			
 			if (tagIndex != -1) {
-				validationProblem = "Description contains invalid affiliation terms:";
+				validationProblem += "<br/>Description contains invalid terms:";
 				
 				var details = this.metadata.tags[tagIndex].details;
 				for (var index in details) {

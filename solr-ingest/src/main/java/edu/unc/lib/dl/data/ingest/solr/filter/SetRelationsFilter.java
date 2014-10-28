@@ -18,6 +18,7 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jdom2.JDOMException;
 import org.slf4j.Logger;
@@ -81,10 +82,11 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 			if (embargoUntil != null)
 				relations.add(ContentModelHelper.CDRProperty.embargoUntil.getPredicate() + "|" + embargoUntil.get(0));
 
-			List<String> invalidAffil = triples.get(ContentModelHelper.CDRProperty.invalidAffiliationTerm.toString());
-			if (invalidAffil != null) {
-				for (String term : invalidAffil) {
-					relations.add(ContentModelHelper.CDRProperty.invalidAffiliationTerm.getPredicate() + "|" + term);
+			for (Entry<String, List<String>> tripleEntry : triples.entrySet()) {
+				if (tripleEntry.getKey().startsWith(ContentModelHelper.CDRProperty.invalidTerm.toString())) {
+					for (String term : tripleEntry.getValue()) {
+						relations.add(tripleEntry.getKey() + "|" + term);
+					}
 				}
 			}
 

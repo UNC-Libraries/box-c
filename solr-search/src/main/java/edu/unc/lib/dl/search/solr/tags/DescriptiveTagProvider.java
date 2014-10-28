@@ -15,14 +15,16 @@
  */
 package edu.unc.lib.dl.search.solr.tags;
 
-import java.util.List;
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.Tag;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
-import edu.unc.lib.dl.util.ContentModelHelper;
 
 public class DescriptiveTagProvider implements TagProvider {
 
@@ -35,14 +37,23 @@ public class DescriptiveTagProvider implements TagProvider {
 
 		// Invalid vocabulary terms
 		if (record.getContentStatus().contains(FacetConstants.INVALID_VOCAB_TERM)) {
-			Tag tag = new Tag("invalid affiliation");
+			Map<String, Tag> tags = new HashMap<>();
 
-			List<String> terms = record.getRelation(ContentModelHelper.CDRProperty.invalidAffiliationTerm.getPredicate());
+			for (String relation : record.getRelations()) {
+				if (relation.startsWith(invalidTerm.toString())) {
+					String type = relation.substring(invalidTerm.toString().length());
+					String[] parts = type.split("\\|");
+					type = parts[0];
 
-			for (String term : terms) {
-				tag.addDetail(term);
+					Tag tag = tags.get(relation);
+					if (tag == null) {
+						tag = new Tag("invalid term " + type);
+						record.addTag(tag);
+					}
+
+					tag.addDetail(parts[1]);
+				}
 			}
-			record.addTag(tag);
 		}
 	}
 

@@ -16,15 +16,14 @@
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.deposit.work.DepositGraphUtils.walkChildrenDepthFirst;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidAffiliationTerm;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jdom2.Document;
@@ -33,7 +32,6 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.jdom2.xpath.XPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +43,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.VocabularyHelperManager;
+import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
  * Examines the descriptive metadata for this ingest and determines if it is valid according to the given vocabularies.
@@ -58,7 +58,7 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(VocabularyEnforcementJob.class);
 
 	@Autowired
-	private DepartmentOntologyUtil deptUtil;
+	VocabularyHelperManager vocabManager;
 
 	public VocabularyEnforcementJob() {
 	}
@@ -78,6 +78,9 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 
 		SAXBuilder sb = new SAXBuilder(false);
 
+		// Vocabulary mappings need to be resolved against the destination since they are not in the hierarchy yet
+		PID destinationPID = new PID(getDepositStatus().get(DepositField.containerId.name()));
+
 		for (String resourcePID : resourcePIDs) {
 			PID pid = new PID(resourcePID);
 			File modsFile = new File(getDescriptionDir(), pid.getUUID() + ".xml");
@@ -87,7 +90,8 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 				try {
 					Document modsDoc = sb.build(modsFile);
 
-					boolean modified = filterAffiliation(modsDoc);
+					// Update the MODS document to use approved terms when possible if the vocabularies support remapping
+					boolean modified = updateDocumentTerms(destinationPID, modsDoc.getRootElement());
 
 					// Update the mods document if it was changed
 					if (modified) {
@@ -97,7 +101,7 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 					}
 
 					// Capture any invalid affiliations as relations
-					addInvalidAffiliations(modsDoc, pid, model);
+					addInvalidTerms(pid, destinationPID, modsDoc.getRootElement(), model);
 
 				} catch (JDOMException | IOException e) {
 					log.error("Failed to parse description file {}", modsFile.getAbsolutePath(), e);
@@ -106,121 +110,47 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 		}
 	}
 
-	/**
-	 * Compares the affiliation values in the given MODS document against the ontology. If a preferred term(s) is found,
-	 * then it will replace the original.
-	 *
-	 * @param modsDoc
-	 * @return Returns true if the mods document was modified by adding or changing affiliations
-	 * @throws JDOMException
-	 */
-	private boolean filterAffiliation(Document modsDoc) throws JDOMException {
-		List<?> nameObjs = deptUtil.getNamePath().selectNodes(modsDoc);
-		boolean modified = false;
+	private boolean updateDocumentTerms(PID pid, Element doc) throws JDOMException {
+		boolean result = false;
 
-		for (Object nameObj : nameObjs) {
-			Element nameEl = (Element) nameObj;
-
-			List<?> affiliationObjs = nameEl.getChildren("affiliation", MODS_V3_NS);
-			if (affiliationObjs.size() == 0)
-				continue;
-
-			// Collect the set of all affiliations for this name so that it can be used to detect duplicates
-			Set<String> affiliationSet = new HashSet<>();
-			for (Object affiliationObj : affiliationObjs) {
-				Element affiliationEl = (Element) affiliationObj;
-
-				affiliationSet.add(affiliationEl.getTextNormalize());
-			}
-
-			// Make a snapshot of the list of affiliations so that the original can be modified
-			List<?> affilList = new ArrayList<>(affiliationObjs);
-			// Get the authoritative department path for each affiliation and overwrite the original
-			for (Object affiliationObj : affilList) {
-				Element affiliationEl = (Element) affiliationObj;
-				String affiliation = affiliationEl.getTextNormalize();
-
-				List<List<String>> departments = deptUtil.getAuthoritativeDepartment(affiliation);
-				if (departments != null && departments.size() > 0) {
-
-					Element parentEl = affiliationEl.getParentElement();
-					int affilIndex = parentEl.indexOf(affiliationEl);
-
-					boolean removeOriginal = true;
-					// Add each path that matched the affiliation. There can be multiple if there were multiple parents
-					for (List<String> deptPath : departments) {
-						String baseDept = deptPath.size() > 1 ? deptPath.get(0) : null;
-						String topDept = deptPath.get(deptPath.size() - 1);
-
-						// No need to remove the original if it is in the set of departments being added
-						if (affiliation.equals(topDept))
-							removeOriginal = false;
-
-						modified = addAffiliation(baseDept, parentEl, affilIndex, affiliationSet) || modified;
-						modified = addAffiliation(topDept, parentEl, affilIndex, affiliationSet) || modified;
-					}
-
-					// Remove the old affiliation unless it was already in the vocabulary
-					if (removeOriginal)
-						parentEl.removeContent(affiliationEl);
-
-				}
+		Set<VocabularyHelper> helpers = vocabManager.getRemappingHelpers(pid);
+		if (helpers != null) {
+			for (VocabularyHelper helper : helpers) {
+				result = helper.updateDocumentTerms(doc) || result;
 			}
 		}
 
-		return modified;
+		return result;
 	}
 
 	/**
-	 * Checks affiliations in the given document against the departmental vocabulary. If an affiliation term is not
-	 * found, a invalid term warning is added.
+	 * Adds invalid terms from applicable controlled vocabularies to the specified object as relationships.
 	 *
-	 * @param modsDoc
 	 * @param pid
+	 * @param destination
+	 * @param doc
 	 * @param model
 	 * @throws JDOMException
 	 */
-	private void addInvalidAffiliations(Document modsDoc, PID pid, Model model) throws JDOMException {
-		Set<String> invalidTerms = deptUtil.getInvalidAffiliations(modsDoc.getRootElement());
-		Property invalidTerm = model.createProperty(invalidAffiliationTerm.getURI().toString());
+	private void addInvalidTerms(PID pid, PID destination, Element doc, Model model) throws JDOMException {
+		Map<String, Set<String>> invalidTermMap = vocabManager.getInvalidTerms(destination, doc);
+		if (invalidTermMap == null)
+			return;
 
-		// Persist the list of invalid vocab terms out to the model
-		if (invalidTerms.size() > 0) {
-			Resource resource = model.getResource(pid.getURI());
-			for (String invalid : invalidTerms) {
-				model.addLiteral(resource, invalidTerm, model.createLiteral(invalid));
+		for (Entry<String, Set<String>> invalidTermEntry : invalidTermMap.entrySet()) {
+			String predicate = vocabManager.getInvalidTermPredicate(invalidTermEntry.getKey());
+			Property invalidTermPredicate = model.createProperty(predicate);
+
+			Set<String> invalidTerms = invalidTermEntry.getValue();
+
+			// Persist the list of invalid vocab terms out to the model
+			if (invalidTerms.size() > 0) {
+				Resource resource = model.getResource(pid.getURI());
+				for (String invalid : invalidTerms) {
+					model.addLiteral(resource, invalidTermPredicate, model.createLiteral(invalid));
+				}
 			}
 		}
-	}
-
-	/**
-	 * Add the given department to the parent element as an affiliation if it is not already present
-	 *
-	 * @param dept
-	 * @param parentEl
-	 * @param affilIndex
-	 * @param affiliationSet
-	 * @return True if an affiliation was added
-	 */
-	private boolean addAffiliation(String dept, Element parentEl, int affilIndex,
-			Set<String> affiliationSet) {
-
-		// Prevent duplicate departments from being added
-		if (dept != null && !affiliationSet.contains(dept)) {
-			Element newAffilEl = new Element("affiliation", parentEl.getNamespace());
-			newAffilEl.setText(dept);
-			// Insert the new element near where the original was
-			try {
-				parentEl.addContent(affilIndex, newAffilEl);
-			} catch (IndexOutOfBoundsException e) {
-				parentEl.addContent(newAffilEl);
-			}
-			affiliationSet.add(dept);
-
-			return true;
-		}
-
-		return false;
 	}
 
 }

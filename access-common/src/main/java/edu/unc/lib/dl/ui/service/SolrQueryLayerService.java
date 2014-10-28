@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.ui.service;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidAffiliationTerm;
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1215,7 +1215,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		SolrQuery query = generateSearch(searchRequest);
 
 		query.setQuery(query.getQuery() + " AND " + solrSettings.getFieldName(SearchFieldKeys.RELATIONS.name()) + ":"
-				+ invalidAffiliationTerm.getPredicate() + "|*");
+				+ invalidTerm.getPredicate() + "*");
 		query.setRows(0);
 
 		try {

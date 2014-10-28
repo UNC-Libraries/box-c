@@ -58,7 +58,9 @@ public class ContentModelHelper {
 				"embargo-until", JDOMNamespaceUtil.CDR_ACL_NS), dataAccessCategory("data-access-category",
 				JDOMNamespaceUtil.CDR_ACL_NS), userRole("user-role", JDOMNamespaceUtil.CDR_ACL_NS), isPublished("isPublished"),
 				isActive("isActive", JDOMNamespaceUtil.CDR_ACL_NS), sourceMetadata("sourceMetadata"), hasSourceMetadataProfile(
-				"hasSourceMetadataProfile"), invalidAffiliationTerm("invalidAffiliationTerm"), dateCreated("dateCreated");
+				"hasSourceMetadataProfile"), invalidTerm("invalidTerm"), dateCreated("dateCreated"),
+				hasVocabulary("hasVocabulary"), warnInvalidTerms("warnInvalidTerms"), replaceInvalidTerms("replaceInvalidTerms"),
+				vocabularyType("vocabularyType"), vocabularyUri("vocabularyUri"), vocabularySelector("vocabularySelector");
 
 		private URI uri;
 		private String predicate;
@@ -218,7 +220,7 @@ public class ContentModelHelper {
 	public static enum Model {
 		COLLECTION("Collection"), CONTAINER("Container"), GROUPAGENT("GroupAgent"), PERSONAGENT("PersonAgent"), SIMPLE(
 				"Simple"), SOFTWAREAGENT("SoftwareAgent"), PRESERVEDOBJECT("PreservedObject"), JP2DERIVEDIMAGE(
-				"JP2DerivedImage"), AGGREGATE_WORK("AggregateWork"), DEPOSIT_RECORD("DepositRecord");
+				"JP2DerivedImage"), AGGREGATE_WORK("AggregateWork"), DEPOSIT_RECORD("DepositRecord"), VOCABULARY("Vocabulary");
 
 		private URI uri;
 		private PID pid;

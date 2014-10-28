@@ -60,9 +60,9 @@ public class SetDescriptiveMetadataFilterTest {
 				"src/test/resources/foxml/aggregateSplitDepartments.xml")));
 		dip.setFoxml(foxml);
 
-		when(deptUtil.getAuthoritativeDepartment(anyString())).thenReturn(null);
+		when(deptUtil.getAuthoritativeForm(anyString())).thenReturn(null);
 
-		when(deptUtil.getAuthoritativeDepartment(eq("Dept of Biostatistics University of North Carolina, Chapel Hill")))
+		when(deptUtil.getAuthoritativeForm(eq("Dept of Biostatistics University of North Carolina, Chapel Hill")))
 				.thenReturn(Arrays.asList(Arrays.asList("Department of Biostatistics")));
 
 		filter.filter(dip);

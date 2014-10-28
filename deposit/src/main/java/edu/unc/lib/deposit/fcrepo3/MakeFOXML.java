@@ -175,6 +175,17 @@ public class MakeFOXML extends AbstractDepositJob {
 				}
 			}
 
+			// Add in invalid term triples
+			String invalidTermPrefix = CDRProperty.invalidTerm.toString();
+			StmtIterator props = o.listProperties();
+			while (props.hasNext()) {
+				Statement prop = props.next();
+				String predicate = prop.getPredicate().toString();
+				if (predicate.startsWith(invalidTermPrefix)) {
+					relsExt.add(o, m.getProperty(predicate), prop.getLiteral());
+				}
+			}
+
 			// add RELS-EXT
 			saveRELSEXTtoFOXMl(relsExt, foxml);
 

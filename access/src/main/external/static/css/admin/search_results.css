@@ -467,15 +467,6 @@
 	padding: .5em;
 }
 
-.result_warning {
-	border-radius: 10px;
-	background-color: #fcf8e3;
-	padding: 4px;
-	border: 1px solid #faebcc;
-	margin: 0px 0 5px;
-	display: block;
-}
-
 /** Batch operations */
 .batch_actions p {
 	display: inline;

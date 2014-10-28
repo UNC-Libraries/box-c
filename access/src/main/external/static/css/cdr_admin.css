@@ -884,7 +884,6 @@ button.ui-button::-moz-focus-inner {
 .ui-menu .ui-menu-item a.ui-state-focus,
 .ui-menu .ui-menu-item a.ui-state-active {
 	font-weight: normal;
-	margin: -1px;
 }
 
 .ui-menu .ui-state-disabled {
@@ -2590,7 +2589,7 @@ h1 {
 }
 
 .vocab_results table td {
-	width: 150px;
+	width: 170px;
 	padding: 6px 8px 5px 2em;
 }
 
@@ -2599,9 +2598,30 @@ h1 {
 }
 
 .vocab_results table .title_col {
-	width: -webkit-calc(50% - 150px);
-	width: calc(50% - 150px);
+	width: -webkit-calc(50% - 170px);
+	width: calc(50% - 170px);
 	text-align: right;
+}
+
+.vocab_results table a {
+	padding-right: 12px;
+}
+
+.result_warning {
+	border-radius: 10px;
+	background-color: #fcf8e3;
+	padding: 4px 8px;
+	border: 1px solid #faebcc;
+	margin: 0 0 5px;
+	display: inline-block;
+}
+
+.result_warning a {
+	text-decoration: underline;
+}
+
+.edit_desc_page .result_warning {
+	margin-top: 8px;
 }/** Search Menu */
 .search_menu {
 	width: 300px;
@@ -3071,15 +3091,6 @@ h1 {
 	padding: .5em;
 }
 
-.result_warning {
-	border-radius: 10px;
-	background-color: #fcf8e3;
-	padding: 4px;
-	border: 1px solid #faebcc;
-	margin: 0px 0 5px;
-	display: block;
-}
-
 /** Batch operations */
 .batch_actions p {
 	display: inline;
@@ -3459,6 +3470,11 @@ h1 {
 /** Create simple object */
 .create_simple_object_form label {
 	width: 70px;
+}
+
+.ui-autocomplete {
+	max-height: 7em;
+	overflow-y: auto;
 }/** Deposit Bin Collector */
 
 #collector h2 {
