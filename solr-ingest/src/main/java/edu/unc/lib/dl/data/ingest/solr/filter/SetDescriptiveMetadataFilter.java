@@ -46,6 +46,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDescriptiveMetadataFilter.class);
 
 	private final Properties languageCodeMap;
+	public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
 
 	@Autowired
 	private VocabularyHelperManager vocabManager;
@@ -193,7 +194,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 
 		Map<String, List<String>> authTerms = vocabManager.getAuthoritativeForms(idb.getPid(), mods);
 		if (authTerms != null) {
-			List<String> affiliationTerms = authTerms.get("http://cdr.unc.edu/vocabulary/Affiliation");
+			List<String> affiliationTerms = authTerms.get(AFFIL_URI);
 
 			if (affiliationTerms != null && affiliationTerms.size() > 0) {
 				idb.setDepartment(affiliationTerms);

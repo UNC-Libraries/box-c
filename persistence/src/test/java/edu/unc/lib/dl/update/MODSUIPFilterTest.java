@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.update;
 
+import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -55,7 +56,7 @@ import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
+import edu.unc.lib.dl.util.VocabularyHelperManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
@@ -67,7 +68,7 @@ public class MODSUIPFilterTest extends Assert {
 	private MODSUIPFilter filter;
 
 	@Mock
-	private DepartmentOntologyUtil deptUtil;
+	private VocabularyHelperManager vocabManager;
 	@Mock
 	private ManagementClient managementClient;
 	@Mock
@@ -81,7 +82,7 @@ public class MODSUIPFilterTest extends Assert {
 
 		filter.setSchematronValidator(schematronValidator);
 
-		filter.setDeptUtil(deptUtil);
+		setField(filter, "vocabManager", vocabManager);
 		filter.setManagementClient(managementClient);
 		filter.setQueryService(queryService);
 	}

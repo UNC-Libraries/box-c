@@ -91,6 +91,7 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 					Document modsDoc = sb.build(modsFile);
 
 					// Update the MODS document to use approved terms when possible if the vocabularies support remapping
+					log.debug("Updating document terms for {} within destination {}", pid, destinationPID);
 					boolean modified = updateDocumentTerms(destinationPID, modsDoc.getRootElement());
 
 					// Update the mods document if it was changed
@@ -101,6 +102,7 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 					}
 
 					// Capture any invalid affiliations as relations
+					log.debug("Adding invalid terms for {} within destination {}", pid, destinationPID);
 					addInvalidTerms(pid, destinationPID, modsDoc.getRootElement(), model);
 
 				} catch (JDOMException | IOException e) {

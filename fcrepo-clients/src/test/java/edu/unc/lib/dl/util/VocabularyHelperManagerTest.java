@@ -76,6 +76,8 @@ public class VocabularyHelperManagerTest {
 	private static String VOCAB_URI = "http://example/vocab";
 	private static String VOCAB_TYPE = "vocab";
 
+	private static PID collectionsPID = new PID("cdr:collections");
+
 	@Before
 	public void init() throws Exception {
 		initMocks(this);
@@ -84,6 +86,7 @@ public class VocabularyHelperManagerTest {
 		setField(manager, "queryService", queryService);
 		setField(manager, "managementClient", managementClient);
 		setField(manager, "accessClient", accessClient);
+		setField(manager, "collectionsPID", collectionsPID);
 
 		Map<String, Map<String, String>> vocabInfo = new HashMap<>();
 		Map<String, String> entryMap = new HashMap<>();

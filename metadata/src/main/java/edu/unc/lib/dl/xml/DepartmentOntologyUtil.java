@@ -629,7 +629,11 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 	 */
 	@Override
 	public Collection<String> getVocabularyTerms() {
-		return departments.keySet();
+		Set<String> deptNames = new HashSet<>();
+		for (DepartmentConcept dept : departments.values()) {
+			deptNames.add(dept.getPrefLabel());
+		}
+		return deptNames;
 	}
 
 	/*

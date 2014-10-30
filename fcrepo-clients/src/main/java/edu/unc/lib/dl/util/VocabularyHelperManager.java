@@ -79,9 +79,12 @@ public class VocabularyHelperManager {
 	@Autowired
 	private AccessClient accessClient;
 
-	private boolean initialized = false;
+	private Boolean initialized = false;
 
-	public void init() {
+	public synchronized void init() {
+		log.debug("Initializing vocabulary helpers");
+		initialized = true;
+
 		// Scan fedora for objects with the vocabulary content model
 		vocabInfoMap = queryService.fetchVocabularyInfo();
 
@@ -110,6 +113,15 @@ public class VocabularyHelperManager {
 				}
 			} while (tries > 0);
 		}
+
+		if (log.isDebugEnabled()) {
+			for (Entry<String, Map<String, Set<String>>> pidEntry : pidToVocabApplication.entrySet()) {
+				log.debug("Vocabularies bound to {}", pidEntry.getKey());
+				for (Entry<String, Set<String>> vocabEntry : pidEntry.getValue().entrySet()) {
+					log.debug("  {}: {}", vocabEntry.getKey(), vocabEntry.getValue());
+				}
+			}
+		}
 	}
 
 	private void instantiateVocabularyHelpers() {
@@ -136,7 +148,6 @@ public class VocabularyHelperManager {
 				log.error("Failed to instantiate vocabulary helper class for {}", info.get("vocabURI"), e);
 			}
 		}
-		initialized = true;
 	}
 
 	private void linkHelpersToPIDs() {
@@ -152,6 +163,7 @@ public class VocabularyHelperManager {
 			String pid = entry.getKey();
 			Set<VocabularyHelper> helpers = new HashSet<>();
 			pidToHelpers.put(pid, helpers);
+			log.debug("Storing pidtohelper {}", pid);
 			for (String vocabUri : entry.getValue().keySet()) {
 				helpers.add(vocabHelperMap.get(vocabUri));
 
@@ -161,8 +173,11 @@ public class VocabularyHelperManager {
 					vocabURIToPID.put(vocabUri, linkedPIDs);
 				}
 				linkedPIDs.add(pid);
+				log.debug("Vocab {} has {}", vocabUri, linkedPIDs);
 			}
+			log.debug("Helpers so far: {}", helpers);
 		}
+		log.debug("pidtohelpers: {}", pidToHelpers);
 	}
 
 	public void updateInvalidTerms(PID pid, Element docElement) throws FedoraException {
@@ -267,8 +282,10 @@ public class VocabularyHelperManager {
 	}
 
 	private Set<VocabularyHelper> getHelpers(PID pid, CDRProperty appLevel) {
-		if (!initialized)
-			init();
+		synchronized (initialized) {
+			if (!initialized)
+				init();
+		}
 
 		PID parentCollectionPID = queryService.fetchParentCollection(pid);
 		if (parentCollectionPID == null) {
@@ -279,20 +296,27 @@ public class VocabularyHelperManager {
 		}
 
 		// Start helpers from the set of globals assigned to the collections object
-		Set<VocabularyHelper> helpers = pidToHelpers.get(collectionsPID.getURI());
+		Set<VocabularyHelper> helpers = new HashSet<>();
+		Set<VocabularyHelper> rootHelpers = pidToHelpers.get(collectionsPID.getURI());
+		if (rootHelpers != null)
+			helpers.addAll(rootHelpers);
+
+		log.debug("Pid helpers {}", pidToHelpers);
+		log.debug("{} {}", collectionsPID, pid);
+		log.debug("Helpers root for {}: {}", collectionsPID, helpers);
 		if (parentCollectionPID != null) {
 			Set<VocabularyHelper> parentHelpers = pidToHelpers.get(parentCollectionPID.getURI());
+			log.debug("Helpers for {}: {}", parentCollectionPID, parentHelpers);
 			if (parentHelpers != null) {
-				if (helpers == null) {
-					helpers = parentHelpers;
-				} else {
-					helpers.addAll(parentHelpers);
-				}
+				helpers.addAll(parentHelpers);
 			}
 		}
 
 		if (appLevel != null && helpers != null)
 			filterHelperSet(parentCollectionPID, helpers, appLevel);
+
+		if (log.isDebugEnabled())
+			log.debug("Helpers found for {} with {}: {}", new Object[] { pid, appLevel, helpers });
 
 		return helpers;
 	}
@@ -303,12 +327,18 @@ public class VocabularyHelperManager {
 
 		Map<String, Set<String>> appLevelMap = pidToVocabApplication.get(collectionsPID.getURI());
 		if (pid != null) {
-			if (appLevelMap == null) {
-				appLevelMap = pidToVocabApplication.get(pid.getURI());
-			} else {
-				appLevelMap.putAll(pidToVocabApplication.get(pid.getURI()));
+			Map<String, Set<String>> collectionLevel = pidToVocabApplication.get(pid.getURI());
+			if (collectionLevel != null) {
+				if (appLevelMap == null) {
+					appLevelMap = collectionLevel;
+				} else {
+					appLevelMap.putAll(collectionLevel);
+				}
 			}
 		}
+
+		if (appLevelMap == null)
+			return;
 
 		Iterator<VocabularyHelper> helperIt = helpers.iterator();
 		while (helperIt.hasNext()) {
