@@ -77,6 +77,30 @@ public class CDRMETSDepositHandlerTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
+	public void testDoDepositBagitFilename() throws SwordError, IOException {
+		Deposit d = new Deposit();
+		File testPayload = tmpDir.newFile("simple.tmp");
+		FileUtils.copyFile(new File("src/test/resources/simple.zip"), testPayload);
+		d.setFile(testPayload);
+		d.setMd5("d2b88d292e2c47943231205ed36f6c94");
+		d.setFilename("simple.zip");
+		d.setMimeType("application/zip");
+		d.setSlug("metsbagittest");
+		d.setPackaging(PackagingType.METS_CDR.getUri());
+		Entry entry = Abdera.getInstance().getFactory().newEntry();
+		d.setEntry(entry);
+		
+		reset(depositStatusFactory);
+		
+		PID dest = new PID("uuid:destination");
+		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_CDR, swordConfiguration,
+				"test-depositor", "test-owner");
+
+		verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
 	public void testDoDepositMETSXML() throws SwordError, IOException {
 		Deposit d = new Deposit();
 		File testPayload = tmpDir.newFile("METS.xml");

@@ -22,10 +22,9 @@ public class UnpackDepositJob extends AbstractDepositJob {
 		// unzip deposit file to directory
 		String filename = getDepositStatus().get(DepositField.fileName.name());
 		if (filename.toLowerCase().endsWith(".zip")) {
-			File depositFile = new File(getDepositDirectory(), "data/"
-					+ filename);
+			File depositFile = new File(getDataDirectory(), filename);
 			try {
-				ZipFileUtil.unzipToDir(depositFile, getDepositDirectory());
+				ZipFileUtil.unzipToDir(depositFile, getDataDirectory());
 			} catch (IOException e) {
 				throw new Error("Unable to unpack your deposit: " + getDepositPID().getUUID(), e);
 			}

@@ -128,11 +128,11 @@ public class MetsHeaderScanner extends DefaultHandler {
 		super.endElement(uri, localName, qName);
 	}
 
-	public void scan(File f) throws Exception {
+	public void scan(File f, String filename) throws Exception {
 		@SuppressWarnings("resource")
 		InputStream toParse = null;
 		try {
-			if (f.getName().endsWith(".zip")) {
+			if (filename.endsWith(".zip")) {
 				log.debug("scanning for METS within a zip file");
 				@SuppressWarnings("resource")
 				ZipArchiveInputStream zis = new ZipArchiveInputStream(

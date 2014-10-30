@@ -114,7 +114,7 @@ public class METSHelper {
 			String use = fileEl.getAttributeValue("USE"); // may be null
 			Element flocat = fileEl.getChild("FLocat", METS_NS);
 			String href = flocat.getAttributeValue("href", XLINK_NS);
-			if(prependDataPath) {
+			if(prependDataPath && !href.contains(":")) {
 				href = "data/"+href;
 			}
 			Resource object = m.createResource(pid);
