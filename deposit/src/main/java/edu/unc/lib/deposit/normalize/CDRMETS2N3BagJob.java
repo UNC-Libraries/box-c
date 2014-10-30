@@ -41,7 +41,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		LOG.info("Extractor initialized");
 		extractor.addArrangement(model);
 		LOG.info("Extractor arrangement added");
-		extractor.helper.addFileAssociations(model, false);
+		extractor.helper.addFileAssociations(model, true);
 		LOG.info("Extractor file associations added");
 		extractor.addAccessControls(model);
 		LOG.info("Extractor access controls added");

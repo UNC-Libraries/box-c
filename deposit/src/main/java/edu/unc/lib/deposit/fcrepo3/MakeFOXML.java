@@ -54,6 +54,7 @@ import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
 
 /**
@@ -254,7 +255,7 @@ public class MakeFOXML extends AbstractDepositJob {
 		// Add ALT_IDS - original location URI
 		Statement origLoc = dsResource.getProperty(dprop(m, DepositRelationship.originalLocation));
 		if (origLoc != null) {
-			el.setAttribute("ALT_IDS", origLoc.getResource().getURI());
+			el.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS).setAttribute("ALT_IDS", origLoc.getResource().getURI());
 		}
 
 		// TODO add create time RDF dateTime property

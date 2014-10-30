@@ -49,7 +49,7 @@ public class CDRMETSDepositHandler extends AbstractDepositHandler {
 		// extract info from METS header
 		MetsHeaderScanner scanner = new MetsHeaderScanner();
 		try {
-			scanner.scan(deposit.getFile());
+			scanner.scan(deposit.getFile(), deposit.getFilename());
 		} catch (Exception e1) {
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400, "Unable to parse your METS file: "+deposit.getFilename(), e1);
 		}

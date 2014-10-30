@@ -54,12 +54,12 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 	@Override
 	public void runJob() {
 		// copy DSPACE METS into place.
-		try {
-			File payloadMets = new File(getDepositDirectory(), "data/mets.xml");
-			Files.copy(payloadMets.toPath(), new File(getDepositDirectory(), "mets.xml").toPath());
-		} catch (IOException e) {
-			throw new Error(e);
-		}
+//		try {
+//			File payloadMets = new File(getDepositDirectory(), "data/mets.xml");
+//			Files.copy(payloadMets.toPath(), new File(getDepositDirectory(), "mets.xml").toPath());
+//		} catch (IOException e) {
+//			throw new Error(e);
+//		}
 		validateMETS();
 		validateProfile(METSProfile.DSPACE_SIP);
 		Document mets = loadMETS();

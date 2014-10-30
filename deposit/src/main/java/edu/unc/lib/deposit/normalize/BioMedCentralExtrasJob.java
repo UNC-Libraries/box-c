@@ -34,6 +34,7 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositConstants;
+import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 
 /**
@@ -143,14 +144,12 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob {
 
 				// Label the supplemental files with values from the article xml
 				if (fileLC2supplementLabels != null) {
-					Property labelP = model.createProperty(label.getURI().toString());
-
 					for (NodeIterator children = aggregate.iterator(); children.hasNext();) {
 						Resource child = children.nextNode().asResource();
 						String location = child.getProperty(fileLocation).getString();
 						String filename = location.substring("data/".length()).toLowerCase();
 						if (fileLC2supplementLabels.containsKey(filename)) {
-							model.add(child, labelP, fileLC2supplementLabels.get(filename));
+							model.add(child, dprop(model, DepositRelationship.label), fileLC2supplementLabels.get(filename));
 						}
 					}
 				}
