@@ -1,0 +1,11 @@
+{
+    "tag:cdr.lib.unc.edu,2013:/test-stage/":{
+        "name":"CDR Test Stage",
+        "ingestCleanupPolicy":"DELETE_INGESTED_DEPOSIT_FOLDERS"
+    },
+    "tag:cdr.lib.unc.edu,2013:/test-prestage/":{
+        "name":"CDR Test Prestage",
+        "ingestCleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS",
+        "readOnly":"true"
+    }
+}
