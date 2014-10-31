@@ -3394,6 +3394,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			this.$containerEntry = $('.container_header > span > h2', this.element);
 			this.$tableActionMenu = $('.result_table_action_menu', this.element);
 			this.$resultTableWrap = $('.result_table_wrap', this.element);
+			this.$resultArea = $('.result_area', this.element);
 			
 			var container = this.options.container;
 		
@@ -3405,10 +3406,12 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				resultUrl : this.options.resultUrl,
 				resultTableView : $(".result_area > div"),
 				selectedId : container && /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? container.id : false,
-			}).on("resize", function(){
-				menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
-				resizeResults.call();
 			});
+
+			searchMenu.on("resize", $.proxy(function() {
+				this.menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
+				this.resizeResults();
+			}, this));
 		
 			if (container) {
 				var containerObject = new ParentResultObject({metadata : container, 
@@ -3448,6 +3451,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					.css('top', headerHeight);
 			this.$resultTableWrap.css('padding-top', headerHeight + 20);
 			this.$containerEntry.css('max-width', (wWidth - this.$tableActionMenu.width() - this.menuOffset - 105));
+			this.$resultArea.css('margin-left', (this.menuOffset - 45) + "px");
 		}
 	});
 });define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], function(
