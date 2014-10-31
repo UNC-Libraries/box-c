@@ -16,6 +16,13 @@ departments.skos.url=file:/opt/deposit/departments.xml
 fedora.username=<%= @fedora_username %>
 fedora.password=<%= @fedora_password %>
 
+# Mulgara Triple Store (localhost, 8080, blank context)
+mulgara.protocol=<%= @mulgara_protocol %>
+mulgara.host=<%= @mulgara_host %>
+mulgara.port=<%= @mulgara_port %>
+mulgara.context=webservices
+mulgara.model.uri=<%= @mulgara_model_uri %>
+
 # ClamAV Daemon (uses streaming API)
 # clamd.host=localhost
 # clamd.port=3310

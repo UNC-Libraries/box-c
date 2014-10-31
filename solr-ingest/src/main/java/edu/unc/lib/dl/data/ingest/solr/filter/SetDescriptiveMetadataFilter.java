@@ -19,10 +19,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -33,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
+import edu.unc.lib.dl.util.VocabularyHelperManager;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.JDOMQueryUtil;
 
@@ -47,9 +46,10 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDescriptiveMetadataFilter.class);
 
 	private final Properties languageCodeMap;
+	public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
 
 	@Autowired
-	private DepartmentOntologyUtil deptUtil;
+	private VocabularyHelperManager vocabManager;
 
 	public SetDescriptiveMetadataFilter() {
 		languageCodeMap = new Properties();
@@ -116,7 +116,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		List<?> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
 		List<String> creators = new ArrayList<String>();
 		List<String> contributors = new ArrayList<String>();
-		Set<String> departments = new HashSet<String>();
+
 		Element nameEl;
 		for (Object nameObj : names) {
 			nameEl = (Element) nameObj;
@@ -182,16 +182,6 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 				if (isCreator) {
 					creators.add(nameValue);
 				}
-
-				List<?> affiliations = nameEl.getChildren("affiliation", JDOMNamespaceUtil.MODS_V3_NS);
-
-				for (Object affilObj : affiliations) {
-					String affiliation = ((Element) affilObj).getValue();
-
-					if (affiliation != null && affiliation.trim().length() > 0) {
-						departments.add(affiliation);
-					}
-				}
 			}
 		}
 
@@ -202,25 +192,21 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			idb.setCreatorSort(creators.get(0));
 		}
 
-		if (departments.size() > 0) {
-			// Filter the affiliations against the vocabulary and get the full department paths
-			List<List<String>> expandedDepts = new ArrayList<List<String>>(departments.size());
-			for (String affiliation : departments) {
-				List<List<String>> results = deptUtil.getAuthoritativeDepartment(affiliation);
-				if (results != null) {
-					expandedDepts.addAll(results);
+		Map<String, List<List<String>>> authTerms = vocabManager.getAuthoritativeForms(idb.getPid(), mods);
+		if (authTerms != null) {
+			List<List<String>> affiliationTerms = authTerms.get(AFFIL_URI);
+
+			if (affiliationTerms != null) {
+			// Make the departments for the whole document into a form solr can take
+				List<String> flattened = new ArrayList<String>();
+				for (List<String> path : affiliationTerms) {
+					flattened.addAll(path);
+				}
+
+				if (affiliationTerms != null && affiliationTerms.size() > 0) {
+					idb.setDepartment(flattened);
 				}
 			}
-
-			// Remove any duplication between paths
-			DepartmentOntologyUtil.collapsePaths(expandedDepts);
-
-			// Make the departments for the whole document into a form solr can take
-			List<String> flattened = new ArrayList<String>();
-			for (List<String> path: expandedDepts) {
-				flattened.addAll(path);
-			}
-			idb.setDepartment(flattened);
 		}
 	}
 

@@ -4,6 +4,10 @@ class deposit(
   $fedora_password,
   $jms_host,
   $jms_port,
+  $mulgara_protocol,
+  $mulgara_host,
+  $mulgara_port,
+  $mulgara_model_uri,
 ) {
   
   package { "redis":

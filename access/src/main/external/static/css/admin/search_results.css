@@ -1,21 +1,21 @@
 /** Search Menu */
-#search_menu {
+.search_menu {
 	width: 300px;
 	float : left;
 	margin-right: 15px;
 	visibility: hidden;
 }
 
-#search_menu .ui-accordion > div {
+.search_menu .ui-accordion > div {
 	margin-top: 2px;
 }
 
-#search_menu .ui-accordion .ui-accordion-content {
+.search_menu .ui-accordion .ui-accordion-content {
 	background-color: #FBFBFE;
 	padding: 0.5em;
 }
 
-#search_menu .ui-accordion .ui-accordion-header.ui-accordion-header-active {
+.search_menu .ui-accordion .ui-accordion-header.ui-accordion-header-active {
 	background-color: #DDF0FA;
 	background: -webkit-linear-gradient(top, #DDF0FA, #F5F9FE);
 	background: -webkit-gradient(linear, left top, left bottom, #DDF0FA, #F5F9FE); /* Chrome,Safari4+ */
@@ -23,7 +23,7 @@
 	color: #0A5274;
 }
 
-#search_menu .ui-accordion .ui-accordion-header {
+.search_menu .ui-accordion .ui-accordion-header {
 	border: 0;
 	background-color: #DDF0FA;
 	background-image: none;
@@ -31,23 +31,23 @@
 	color: #0C7889
 }
 
-#search_menu .ui-accordion .ui-accordion-content {
+.search_menu .ui-accordion .ui-accordion-content {
 	border: 0;
 	background-color: #F5F9FE;
 	background-image: none;
 }
 
-#search_menu:hover .ui-resizable-e, .ui-resizable-e:hover {
+.search_menu:hover .ui-resizable-e, .ui-resizable-e:hover {
 	border-right: 2px solid #DDF0FA;
 }
 
-#search_menu .structure.facet .structure_content {
+.search_menu .structure.facet .structure_content {
 	max-height: none;
 }
 
 /** Query panel */
 
-#search_menu_form {
+.search_menu_form {
 	font-size: 11px;
 }
 
@@ -417,6 +417,20 @@
 	color: #444;
 }
 
+.warning_symbol {
+	border-radius: 8px;
+	background-color: #ffc500;
+	padding: 0px 7px;
+	font-weight: bold;
+	margin-right: 2px;
+	vertical-align: middle;
+	font-size: 130%;
+}
+
+.itemdetails > div > .warning_symbol {
+	font-size: 110%;
+}
+
 .res_entry > .creator > div {
 	font-size: 70%;
 	text-overflow: ellipsis;
@@ -660,4 +674,26 @@
 
 .item_title.ui-state-disabled {
 	opacity: 1;
+}
+
+.validity_tip {
+	padding: 10px;
+}
+
+.edit_desc_page .warning_symbol {
+	font-size: 100%;
+	margin-right: 5px;
+}
+
+.edit_desc_page h3 {
+	margin: 0 0 5px 0;
+}
+
+.edit_desc_page #vocab_issues {
+	border-radius: 10px;
+	background-color: #fcf8e3;
+	padding: 4px;
+	border: 1px solid #faebcc;
+	margin: 5px 0 5px;
+	display: inline-block;
 }

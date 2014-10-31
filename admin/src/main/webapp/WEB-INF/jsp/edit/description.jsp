@@ -25,8 +25,6 @@
 	var require = {
 		config: {
 			'editDescription' : {
-				'resultObject': ${cdr:objectToJSON(resultObject)},
-				'originalUrl' : '${cdr:getDatastreamUrl(resultObject, "DATA_FILE", fedoraUtil)}'
 			}
 		}
 	};
@@ -35,7 +33,7 @@
 
 <div class="edit_desc_page contentarea">
 	<div>
-		<h2>Reviewing items</h2>
+		<h2>Editing Description</h2>
 		<c:set var="facetNodes" scope="request" value="${resultObject.path.facetNodes}"/>
 		<div class="results_header_hierarchy_path">
 			<c:import url="/jsp/util/pathTrail.jsp">

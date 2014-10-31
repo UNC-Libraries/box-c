@@ -16,11 +16,12 @@
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidAffiliationTerm;
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.jdom2.Document;
@@ -73,6 +75,10 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "deptUtil", deptUtil);
 
+		DepartmentOntologyUtil realDeptUtil = new DepartmentOntologyUtil();
+
+		when(deptUtil.getNamePath()).thenReturn(realDeptUtil.getNamePath());
+
 		job.getDescriptionDir().mkdir();
 
 		Model model = job.getModel();
@@ -88,9 +94,11 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"),
 				job.getDescriptionDir().toPath().resolve(MAIN_UUID + ".xml"));
 
+		when(deptUtil.getInvalidTerms(any(Element.class))).thenReturn(new HashSet<String>(Arrays.asList("dept1")));
+
 		job.run();
 
-		verify(deptUtil).getAuthoritativeDepartment(anyString());
+		verify(deptUtil).getAuthoritativeForm(anyString());
 
 		Document modsDoc = getMODSDocument(MAIN_UUID);
 		Element affiliation = element("/mods:mods/mods:name/mods:affiliation", modsDoc);
@@ -98,8 +106,8 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
 		Model model = job.getModel();
 		Resource mainResource = model.getResource(MAIN_RESOURCE);
-		Property invalidTerm = model.createProperty(invalidAffiliationTerm.getURI().toString());
-		Statement invalidStatement = model.getProperty(mainResource, invalidTerm);
+		Property invalidTermP = model.createProperty(invalidTerm.getURI().toString());
+		Statement invalidStatement = model.getProperty(mainResource, invalidTermP);
 		assertEquals("Department was not logged as being incorrect", "dept1", invalidStatement.getString());
 	}
 
@@ -108,11 +116,11 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"),
 				job.getDescriptionDir().toPath().resolve(MAIN_UUID + ".xml"));
 
-		when(deptUtil.getAuthoritativeDepartment("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept2")));
+		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept2")));
 
 		job.run();
 
-		verify(deptUtil).getAuthoritativeDepartment(anyString());
+		verify(deptUtil).getAuthoritativeForm(anyString());
 
 		Document modsDoc = getMODSDocument(MAIN_UUID);
 		Element affiliation = element("/mods:mods/mods:name/mods:affiliation", modsDoc);
@@ -120,8 +128,8 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
 		Model model = job.getModel();
 		Resource mainResource = model.getResource(MAIN_RESOURCE);
-		Property invalidTerm = model.createProperty(invalidAffiliationTerm.getURI().toString());
-		Statement invalidStatement = model.getProperty(mainResource, invalidTerm);
+		Property invalidTermP = model.createProperty(invalidTerm.getURI().toString());
+		Statement invalidStatement = model.getProperty(mainResource, invalidTermP);
 		assertNull("Successful lookup should not create invalid term statement", invalidStatement);
 	}
 
@@ -130,12 +138,12 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), job.getDescriptionDir().toPath()
 				.resolve(MAIN_UUID + ".xml"));
 
-		when(deptUtil.getAuthoritativeDepartment("dept1")).thenReturn(
+		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(
 				Arrays.asList(Arrays.asList("dept2", "dept3", "dept4", "dept5")));
 
 		job.run();
 
-		verify(deptUtil).getAuthoritativeDepartment(anyString());
+		verify(deptUtil).getAuthoritativeForm(anyString());
 
 		Document modsDoc = getMODSDocument(MAIN_UUID);
 		List<String> affiliations = stringList(xpath("/mods:mods/mods:name/mods:affiliation", modsDoc));
@@ -151,12 +159,12 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), job.getDescriptionDir().toPath()
 				.resolve(MAIN_UUID + ".xml"));
 
-		when(deptUtil.getAuthoritativeDepartment("dept1")).thenReturn(
+		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(
 				Arrays.asList(Arrays.asList("dept2", "dept3"), Arrays.asList("dept2", "dept5")));
 
 		job.run();
 
-		verify(deptUtil).getAuthoritativeDepartment(anyString());
+		verify(deptUtil).getAuthoritativeForm(anyString());
 
 		Document modsDoc = getMODSDocument(MAIN_UUID);
 		List<String> affiliations = stringList(xpath("/mods:mods/mods:name/mods:affiliation", modsDoc));
@@ -172,12 +180,12 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), job.getDescriptionDir().toPath()
 				.resolve(MAIN_UUID + ".xml"));
 
-		when(deptUtil.getAuthoritativeDepartment("dept1")).thenReturn(
+		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(
 				Arrays.asList(Arrays.asList("dept5", "dept2"), Arrays.asList("dept3", "dept4", "dept2")));
 
 		job.run();
 
-		verify(deptUtil).getAuthoritativeDepartment(anyString());
+		verify(deptUtil).getAuthoritativeForm(anyString());
 
 		Document modsDoc = getMODSDocument(MAIN_UUID);
 		List<String> affiliations = stringList(xpath("/mods:mods/mods:name/mods:affiliation", modsDoc));
@@ -193,11 +201,11 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), job.getDescriptionDir().toPath()
 				.resolve(MAIN_UUID + ".xml"));
 
-		when(deptUtil.getAuthoritativeDepartment("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept1")));
+		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept1")));
 
 		job.run();
 
-		verify(deptUtil).getAuthoritativeDepartment(anyString());
+		verify(deptUtil).getAuthoritativeForm(anyString());
 
 		Document modsDoc = getMODSDocument(MAIN_UUID);
 		List<String> affiliations = stringList(xpath("/mods:mods/mods:name/mods:affiliation", modsDoc));
@@ -211,12 +219,12 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Files.copy(Paths.get("src/test/resources/mods/multipleNameAffiliationsMods.xml"), job.getDescriptionDir()
 				.toPath().resolve(MAIN_UUID + ".xml"));
 
-		when(deptUtil.getAuthoritativeDepartment("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept3", "dept1")));
-		when(deptUtil.getAuthoritativeDepartment("dept2")).thenReturn(Arrays.asList(Arrays.asList("dept5", "dept4")));
+		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept3", "dept1")));
+		when(deptUtil.getAuthoritativeForm("dept2")).thenReturn(Arrays.asList(Arrays.asList("dept5", "dept4")));
 
 		job.run();
 
-		verify(deptUtil, times(3)).getAuthoritativeDepartment(anyString());
+		verify(deptUtil, times(3)).getAuthoritativeForm(anyString());
 
 		Document modsDoc = getMODSDocument(MAIN_UUID);
 		// System.out.println(new XMLOutputter(Format.getPrettyFormat()).outputString(modsDoc));
@@ -242,8 +250,8 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Files.copy(Paths.get("src/test/resources/mods/multipleNameAffiliationsMods.xml"), job.getDescriptionDir()
 				.toPath().resolve(MAIN_UUID + ".xml"));
 
-		when(deptUtil.getAuthoritativeDepartment("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept3")));
-		when(deptUtil.getAuthoritativeDepartment("dept2")).thenReturn(Arrays.asList(Arrays.asList("dept3")));
+		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept3")));
+		when(deptUtil.getAuthoritativeForm("dept2")).thenReturn(Arrays.asList(Arrays.asList("dept3")));
 
 		job.run();
 
@@ -259,14 +267,17 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Files.copy(Paths.get("src/test/resources/mods/multipleNameAffiliationsMods.xml"), job.getDescriptionDir()
 				.toPath().resolve(MAIN_UUID + ".xml"));
 
+		when(deptUtil.getInvalidTerms(any(Element.class)))
+				.thenReturn(new HashSet<String>(Arrays.asList("dept1", "dept2")));
+
 		job.run();
 
-		verify(deptUtil, times(3)).getAuthoritativeDepartment(anyString());
+		verify(deptUtil, times(3)).getAuthoritativeForm(anyString());
 
 		Model model = job.getModel();
 		Resource mainResource = model.getResource(MAIN_RESOURCE);
-		Property invalidTerm = model.createProperty(invalidAffiliationTerm.getURI().toString());
-		StmtIterator stmtIt = mainResource.listProperties(invalidTerm);
+		Property invalidTermP = model.createProperty(invalidTerm.getURI().toString());
+		StmtIterator stmtIt = mainResource.listProperties(invalidTermP);
 		List<String> invalidTerms = new ArrayList<>();
 		while (stmtIt.hasNext()) {
 			invalidTerms.add(stmtIt.next().getString());
@@ -282,8 +293,8 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		Files.copy(Paths.get("src/test/resources/mods/multipleNameAffiliationsMods.xml"), job.getDescriptionDir()
 				.toPath().resolve(MAIN_UUID + ".xml"));
 
-		when(deptUtil.getAuthoritativeDepartment("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept1")));
-		when(deptUtil.getAuthoritativeDepartment("dept2")).thenReturn(Arrays.asList(Arrays.asList("dept1", "dept2")));
+		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept1")));
+		when(deptUtil.getAuthoritativeForm("dept2")).thenReturn(Arrays.asList(Arrays.asList("dept1", "dept2")));
 
 		job.run();
 

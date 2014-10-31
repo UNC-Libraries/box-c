@@ -15,10 +15,16 @@
  */
 package edu.unc.lib.dl.search.solr.tags;
 
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.Tag;
+import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
 public class DescriptiveTagProvider implements TagProvider {
 
@@ -26,7 +32,28 @@ public class DescriptiveTagProvider implements TagProvider {
 	public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
 		Datastream descr = record.getDatastreamObject("MD_DESCRIPTIVE");
 		if(descr != null) {
-			record.addTag(new Tag("described", "This object has descriptive metadata."));
+			record.addTag(new Tag("described"));
+		}
+
+		// Invalid vocabulary terms
+		if (record.getContentStatus() != null && record.getContentStatus().contains(FacetConstants.INVALID_VOCAB_TERM)) {
+			Map<String, Tag> tags = new HashMap<>();
+
+			for (String relation : record.getRelations()) {
+				if (relation.startsWith(invalidTerm.getPredicate())) {
+					String type = relation.substring(invalidTerm.getPredicate().length());
+					String[] parts = type.split("\\|");
+					type = parts[0];
+
+					Tag tag = tags.get(relation);
+					if (tag == null) {
+						tag = new Tag("invalid term " + type);
+						record.addTag(tag);
+					}
+
+					tag.addDetail(parts[1]);
+				}
+			}
 		}
 	}
 

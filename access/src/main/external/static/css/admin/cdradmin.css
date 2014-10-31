@@ -389,3 +389,54 @@ h1 {
 	font-size: 14px;
 	background-color: #fff;
 }
+
+/* Invalid vocab */
+.vocab_results table {
+	width: 100%;
+	margin-bottom: 0;
+	text-indent: 0;
+	margin-left: 0;
+	table-layout: fixed;
+}
+
+@media (min-width: 1024px) {
+	.vocab_results table {
+		width: 900px;
+	}
+}
+
+.vocab_results table td {
+	width: 200px;
+	padding: 6px 8px 5px 2em;
+}
+
+.vocab_results table tr {
+	border-bottom: 1px solid #EEEEEE;
+}
+
+.vocab_results table .title_col {
+	width: -webkit-calc(50% - 170px);
+	width: calc(50% - 200px);
+	text-align: right;
+}
+
+.vocab_results table a {
+	padding-right: 12px;
+}
+
+.result_warning {
+	border-radius: 10px;
+	background-color: #fcf8e3;
+	padding: 4px 8px;
+	border: 1px solid #faebcc;
+	margin: 0 0 5px;
+	display: inline-block;
+}
+
+.result_warning a {
+	text-decoration: underline;
+}
+
+.edit_desc_page .result_warning {
+	margin-top: 8px;
+}

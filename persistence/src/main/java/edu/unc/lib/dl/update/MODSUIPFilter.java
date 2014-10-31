@@ -17,6 +17,7 @@ package edu.unc.lib.dl.update;
 
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -27,26 +28,37 @@ import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.transform.JDOMSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.util.VocabularyHelperManager;
+import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Filter which performs update operations on an MD_DESCRIPTIVE MODS datastream and validates it.
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class MODSUIPFilter extends MetadataUIPFilter {
 	private static Logger log = Logger.getLogger(MODSUIPFilter.class);
 
 	private final String datastreamName = Datastream.MD_DESCRIPTIVE.getName();
 	private SchematronValidator schematronValidator;
-	private Validator modsValidator;
+	private final Validator modsValidator;
+
+	@Autowired
+	private VocabularyHelperManager vocabManager;
+
+	@Resource
+	private TripleStoreQueryService queryService;
+
 
 	public MODSUIPFilter() {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -54,7 +66,7 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 		StreamSource modsSource = new StreamSource(getClass().getResourceAsStream("/schemas/mods-3-4.xsd"));
 		StreamSource xmlSource = new StreamSource(getClass().getResourceAsStream("/schemas/xml.xsd"));
 		StreamSource xlinkSource = new StreamSource(getClass().getResourceAsStream("/schemas/xlink.xsd"));
-    
+
 		Schema modsSchema;
 		try {
 			modsSchema = sf.newSchema(new StreamSource[] { xmlSource, xlinkSource, modsSource });
@@ -125,6 +137,8 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 		}
 		try {
 			modsValidator.validate(new JDOMSource(mods));
+
+			vocabManager.updateInvalidTermsRelations(uip.getPID(), mods);
 		} catch (SAXException e) {
 			throw new UIPException("MODS failed to validate to schema:" + e.getMessage(), e);
 		} catch (Exception e) {
@@ -134,5 +148,13 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 
 	public void setSchematronValidator(SchematronValidator schematronValidator) {
 		this.schematronValidator = schematronValidator;
+	}
+
+	public void setDeptUtil(DepartmentOntologyUtil deptUtil) {
+		// this.deptUtil = deptUtil;
+	}
+
+	public void setQueryService(TripleStoreQueryService queryService) {
+		this.queryService = queryService;
 	}
 }

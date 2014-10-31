@@ -1,49 +1,73 @@
 require.config({
 	urlArgs: "v=3.4-SNAPSHOT",
-	baseUrl: '/static/js/',
+	baseUrl: "/static/js/",
 	paths: {
-		'jquery' : 'jquery.min',
-		'jquery-ui' : 'jquery-ui.min',
-		'qtip' : 'jquery.qtip.min',
-		'jquery.preload': 'jquery.preload-1.0.8-unc',
-		'thumbnail' : 'thumbnail',
-		'adminCommon' : 'admin/adminCommon',
-		'PID' : 'admin/src/PID',
-		'MetadataObject' : 'admin/src/MetadataObject',
-		'AjaxCallbackButton' : 'admin/src/AjaxCallbackButton',
-		'PublishObjectButton' : 'admin/src/PublishObjectButton',
-		'DeleteObjectButton' : 'admin/src/DeleteObjectButton',
-		'ResultObject' : 'admin/src/ResultObject',
-		'ResultObjectList' : 'admin/src/ResultObjectList',
-		'BatchCallbackButton' : 'admin/src/BatchCallbackButton',
-		'UnpublishBatchButton' : 'admin/src/UnpublishBatchButton',
-		'PublishBatchButton' : 'admin/src/PublishBatchButton',
-		'DestroyBatchButton' : 'admin/src/DestroyBatchButton'
+		"jquery" : "cdr-admin",
+		"jquery-ui" : "cdr-admin",
+		"text" : "lib/text",
+		"underscore" : "lib/underscore",
+		"tpl" : "lib/tpl",
+		"qtip" : "lib/jquery.qtip.min",
+		"PID" : "cdr-admin",
+		"AjaxCallbackButton" : "cdr-admin",
+		"ResultObject" : "cdr-admin",
+		"ResultObjectList" : "cdr-admin",
+		"ParentResultObject" : "cdr-admin",
+		"BatchCallbackButton" : "cdr-admin",
+		"UnpublishBatchButton" : "cdr-admin",
+		"PublishBatchButton" : "cdr-admin",
+		"DestroyBatchButton" : "cdr-admin",
+		"ModalLoadingOverlay" : "cdr-admin",
+		"EditAccessControlForm" : "cdr-admin",
+		"RemoteStateChangeMonitor" : "cdr-admin",
+		"ConfirmationDialog" : "cdr-admin",
+		"AlertHandler" : "cdr-admin",
+		"SearchMenu" : "cdr-admin",
+		"ResultTableActionMenu" : "cdr-admin",
+		"ResultTableView" : "cdr-admin",
+		"ResultView" : "admin/src/ResultView",
+		"MoveDropLocation" : "cdr-admin",
+		"CreateContainerForm" : "cdr-admin",
+		"AbstractFileUploadForm" : "cdr-admin",
+		"IngestPackageForm" : "cdr-admin",
+		"CreateSimpleObjectForm" : "cdr-admin",
+		"ResultObjectActionMenu" : "cdr-admin",
+		"ActionEventHandler" : "cdr-admin",
+		"AddMenu" : "cdr-admin",
+		"contextMenu" : "admin/lib/jquery.contextMenu",
+		"detachplus" : "cdr-admin",
+		
+		"StructureEntry" : "cdr-admin",
+		"StructureView" : "cdr-admin",
+		"URLUtilities" : "cdr-admin",
+		
+		"editable" : "admin/lib/jqueryui-editable.min",
+		"moment" : "cdr-admin"
 	},
 	shim: {
-		'jquery-ui' : ['jquery'],
-		'jquery.preload' : ['jquery'],
-		'thumbnail' : ['jquery'],
-		'qtip' : ['jquery'],
-		'adminCommon' : ['jquery']
+		"jquery-ui" : ["jquery"],
+		"qtip" : ["jquery"],
+		"contextMenu" : ["jquery", "jquery-ui"],
+		"underscore": {
+			exports: "_"
+		}
 	}
 });
 
-define('reviewList', ['module', 'jquery', 'ResultObjectList', 'PublishBatchButton', 'UnpublishBatchButton', 'DestroyBatchButton'], function(module, $, ResultObjectList) {
-	$("#select_all").click(function(){
-		$(".browseitem input[type='checkbox']").prop("checked", true);
-		$(".browseitem").addClass("selected");
+define("reviewList", ["module", "jquery", "ResultView", "qtip"], function(module, $) {
+
+	$(".result_page").resultView({
+		metadataObjects : module.config().metadataObjects,
+		container : module.config().container,
+		containerPath : module.config().containerPath,
+		resultUrl : module.config().resultUrl,
+		filterParams : module.config().filterParams,
+		queryPath : "review",
+		pagingActive : module.config().pagingActive,
+		pageStart : module.config().pageStart,
+		pageRows : module.config().pageRows,
+		resultCount : module.config().resultCount,
+		resultTableHeaderTemplate : "tpl!../templates/admin/reviewTableHeader",
+		invalidVocabCount : module.config().invalidVocabCount
 	});
-	
-	$("#deselect_all").click(function(){
-		$(".browseitem input[type='checkbox']").prop("checked", false);
-		$(".browseitem").removeClass("selected");
-	});
-	
-	var resultObjectList = new ResultObjectList({'metadataObjects' : module.config().metadataObjects});
-	
-	
-	$("#publish_selected").publishBatchButton({'resultObjectList' : resultObjectList});
-	$("#unpublish_selected").unpublishBatchButton({'resultObjectList' : resultObjectList});
-	$("#delete_selected").deleteBatchButton({'resultObjectList' : resultObjectList});
 });

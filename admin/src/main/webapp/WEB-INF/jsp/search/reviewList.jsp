@@ -17,107 +17,36 @@
 --%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
-<div class="review_page contentarea">
-	<div class="contentarea">
-		<c:choose>
-			<c:when test="${sessionScope.resultOperation == 'review'}">
-				<h2>Reviewing items</h2>
-			</c:when>
-			<c:otherwise>
-				<h2>Listing contents</h2>
-			</c:otherwise>
-		</c:choose>
-		<c:set var="facetNodes" scope="request" value="${containerBean.path.facetNodes}"/>
-		<div class="results_header_hierarchy_path">
-			<c:import url="/jsp/util/pathTrail.jsp">
-				<c:param name="displayHome">false</c:param>
-				<c:param name="resultOperation">${sessionScope.resultOperation}</c:param>
-			</c:import>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ page trimDirectiveWhitespaces="true" %>
+<div class="result_page contentarea">
+	<div class="search_menu"></div>
+
+	<div class="result_area">
+		<div>
 		</div>
 	</div>
-	
-	<div id="results_list_actions">
-		<div class="left"><p><a id="select_all">Select All</a></p> <p><a id="deselect_all">Deselect All</a></p></div>
-		<div class="right"><input id="delete_selected" type="Button" value="Delete"/>&nbsp;&nbsp;<input id="publish_selected" type="Button" value="Publish Selected"/><input id="unpublish_selected" type="Button" value="Unpublish Selected"/></div>
-	</div>
-	
-	<div>
-		<c:forEach items="${resultResponse.resultList}" var="metadata" varStatus="status">
-			<c:set var="publicationStatus"> <c:if test="${!metadata.status.contains('Published')}">un</c:if>published</c:set>
-			<div id="entry_${metadata.id}" class="browseitem ${publicationStatus}">
-				<div class="contentarea">
-					<div class="left">
-						<input type="checkbox"/>
-					</div>
-					<ul class="itemnavigation">
-						<li><a href="#" class="publish_link">
-							<c:choose>
-								<c:when test="${metadata.status.contains('Unpublished')}">Publish</c:when>
-								<c:otherwise>Unpublish</c:otherwise>
-							</c:choose>
-						</a></li>
-						<li><a href="describe/${metadata.pid.path}">
-							<c:choose>
-								<c:when test="${metadata.datastreamObjects.contains('MD_DESCRIPTIVE')}">
-									Edit Description
-								</c:when>
-								<c:otherwise>
-									Add Description
-								</c:otherwise>
-							</c:choose>
-						</a></li>
-						<li><a href="#" class="delete_link">Delete</a></li>
-					</ul>
-	
-					<div class="itemdetails">
-						<h2>
-							<c:choose>
-								<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile}">
-									<a href="/record/${metadata.id}" target="_new" class="has_tooltip"
-										title="View details for <c:out value='${metadata.title}'/>."><c:out value='${metadata.title}'/></a>
-								</c:when>
-								<c:otherwise>
-									<a href="list/${metadata.pid.path}" class="has_tooltip"
-										title="View contents of <c:out value='${metadata.title}'/>."><c:out value='${metadata.title}'/></a>
-									<c:set var="childCount" value="${metadata.countMap.child}"/>
-									<span class="searchitem_container_count">
-										<c:choose>
-											<c:when test="${not empty childCount}">
-												(${childCount} item<c:if test="${childCount != 1}">s</c:if>)
-											</c:when>
-											<c:otherwise>(0 items)</c:otherwise>
-										</c:choose>
-									</span>
-								</c:otherwise>
-							</c:choose>
-							<c:if test="${metadata.datastreamObjects.contains('DATA_FILE')}">
-								&nbsp;<a target="_preview" href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}" class="preview">(preview ${metadata.getDatastreamObject("DATA_FILE").extension})</a>
-							</c:if>						
-						</h2>
-						
-						<p>Added: <c:out value='${metadata.dateAdded}'/></p>
-						<c:if test="${not empty metadata.creator}">
-							<p>Creator: 
-								<c:forEach var="creatorObject" items="${metadata.creator}" varStatus="creatorStatus">
-									<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
-								</c:forEach>
-							</p>
-						</c:if>
-					</div>
-					<div class="clear"></div>
-				</div>
-			</div>
-		</c:forEach>
-		<div class="clear"></div>
-	</div>
 </div>
+
 <script>
+	//console.log("Starting " + (new Date()).getTime());
 	var require = {
 		config: {
 			'reviewList' : {
-				'metadataObjects': ${cdr:objectToJSON(resultResponse.resultList)}
-			}
+				'metadataObjects': ${cdr:resultsToJSON(resultResponse, accessGroupSet)},
+				'pageStart' : ${resultResponse.searchState.startRow},
+				'pageRows' : ${resultResponse.searchState.rowsPerPage},
+				'resultCount' : ${resultResponse.resultCount},
+				'resultUrl' : '${currentRelativeUrl}',
+				'invalidVocabCount' : ${invalidVocabCount},
+				'filterParams' : '${cdr:urlEncode(searchQueryUrl)}'
+				<c:if test="${not empty resultResponse.selectedContainer}">
+					, 'container' : ${cdr:metadataToJSON(resultResponse.selectedContainer, accessGroupSet)}
+				</c:if>
+			},
 		}
 	};
+	//console.log("Loaded in " + ((new Date()).getTime() - startTimer));
 </script>
 <script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/admin/reviewList"></script>

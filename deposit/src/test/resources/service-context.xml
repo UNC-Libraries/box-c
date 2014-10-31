@@ -264,8 +264,7 @@
 		scope="prototype">
 	</bean>
 	
-	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil" init-method="init">
-		<property name="ontologyURL" value="${departments.skos.url}" />
+	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil">
 	</bean>
 	
 	<bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"

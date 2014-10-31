@@ -21,7 +21,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page trimDirectiveWhitespaces="true" %>
 <div class="result_page contentarea">
-	<c:import url="search/searchMenu.jsp"/>
+	<div class="search_menu"></div>
 
 	<div class="result_area">
 		<div>

@@ -114,6 +114,12 @@
 			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>metadata</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.fcrepo</groupId>
 			<artifactId>sunxacml</artifactId>
 			<version>1.2-PATCHED</version>

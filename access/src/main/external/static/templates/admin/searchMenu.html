@@ -1,0 +1,61 @@
+<div class="query_menu">
+	<div>
+		<h3>Search</h3>
+		<div>
+			<form id="search_menu_form" method="get" action="doSearch<%= container? "/" + container.id : "" %>">
+				<div class="search_inputwrap">
+					<input name="query" class="search_text" type="text" placeholder="Search"/>
+					<select name="queryType" class="index_select">
+						<option value="anywhere">Anywhere</option>
+						<option value="titleIndex">Title</option>
+						<option value="contributorIndex">Contributor</option>
+						<option value="subjectIndex">Subject</option>
+					</select>
+				</div>
+				<% if (container) { %>
+					<input type="hidden" name="container" value="<%= container.id %>"/>
+				<% } %>
+				<input type="hidden" name="within" value="<%= resultUrl %>"/>
+				<input type="submit" value="Go" class="search_submit"/>
+				<p class="search_within">
+					<input type="radio" value="" name="searchType" value=""/>Everything
+					<% if (container) { %>
+						<input type="radio" checked="checked" name="searchType" value="container"/>Current folder
+					<% } %>
+					<input type="radio" name="searchType" value="within"/>Within results
+				</p>
+			</form>
+			<% if (containerPath) { %>
+				<div class="results_header_hierarchy_path">
+					<%= containerPath %>
+				</div>
+			<% } %>
+		</div>
+	</div>
+</div>
+<div class="filter_menu">
+	<div>
+		<h3>Structure</h3>
+		<div data-href="structure/<%= container? container.id + "/" : "" %>collection<%= filterParams? "?" + filterParams : "" %>" id="structure_facet">
+			<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
+		</div>
+	</div>
+	<div>
+		<h3>Descriptive</h3>
+		<div data-href="facets/<%= container? container.id + "/" : "" %>?facetSelect=collection,dept,language,subject<%= filterParams? "&" + filterParams : "" %>">
+			<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
+		</div>
+	</div>
+	<div>
+		<h3>Access Control</h3>
+		<div data-href="facets/<%= container? container.id + "/" : "" %>?facetSelect=role,status<%= filterParams? "&" + filterParams : "" %>">
+			<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
+		</div>
+	</div>
+	<div>
+		<h3>Content</h3>
+		<div data-href="facets/<%= container? container.id + "/" : "" %>?facetSelect=format,type,model,contentStatus<%= filterParams? "&" + filterParams : "" %>">
+			<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
+		</div>
+	</div>
+</div>

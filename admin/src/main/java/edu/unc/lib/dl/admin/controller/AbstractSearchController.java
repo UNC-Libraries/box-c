@@ -44,8 +44,10 @@ public class AbstractSearchController extends AbstractSolrSearchController {
 			SearchFieldKeys.TITLE.name(), SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(),
 			SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
 			SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.VERSION.name(),
-			SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name(), SearchFieldKeys.CONTENT_TYPE.name());
+			SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name(), SearchFieldKeys.CONTENT_TYPE.name(),
+			SearchFieldKeys.CONTENT_STATUS.name());
 
+	@Override
 	protected SearchResultResponse getSearchResults(SearchRequest searchRequest) {
 		return this.getSearchResults(searchRequest, resultsFieldList);
 	}

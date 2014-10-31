@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_URI;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +31,9 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
  * Sets content related status tags
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetContentStatusFilter.class);
@@ -44,7 +46,7 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 		setContentStatus(dip, triples, contentStatus);
 
 		dip.getDocument().setContentStatus(contentStatus);
-		
+
 		log.debug("Content status for {} set to {}", dip.getPid().getPid(), contentStatus);
 	}
 
@@ -60,6 +62,14 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 		}
 
 		// Valid/Not Valid content according to FITS
+
+		// Vocabulary validation
+		for (String relation : triples.keySet()) {
+			if (relation.startsWith(CDR_URI + "invalidTerm")) {
+				status.add(FacetConstants.INVALID_VOCAB_TERM);
+				break;
+			}
+		}
 
 		// If its an aggregate, indicate if it has a default web object
 		List<String> contentModels = triples.get(ContentModelHelper.FedoraProperty.hasModel.toString());

@@ -41,7 +41,7 @@ public class ReviewController extends AbstractSearchController {
 		searchRequest.setRootPid(collectionsPid.getPid());
 		doReviewList(searchRequest, model, request);
 
-		return "search/resultList";
+		return "search/reviewList";
 	}
 
 	@RequestMapping(value = "review/{pid}", method = RequestMethod.GET)
@@ -51,7 +51,7 @@ public class ReviewController extends AbstractSearchController {
 
 		doReviewList(searchRequest, model, request);
 
-		return "search/resultList";
+		return "search/reviewList";
 	}
 
 	private void doReviewList(SearchRequest searchRequest, Model model, HttpServletRequest request) {
@@ -60,7 +60,6 @@ public class ReviewController extends AbstractSearchController {
 		searchRequest.setApplyCutoffs(false);
 
 		SearchState searchState = searchRequest.getSearchState();
-		searchState.setResultFields(resultsFieldList);
 
 		GenericFacet facet = new GenericFacet("STATUS", "Unpublished");
 		searchState.getFacets().put("STATUS", facet);
@@ -69,10 +68,13 @@ public class ReviewController extends AbstractSearchController {
 
 		SearchResultResponse resultResponse = getSearchResults(searchRequest);
 
+		long invalidVocabCount = queryLayer.getInvalidVocabularyCount(searchRequest);
+
 		String searchStateUrl = SearchStateUtil.generateStateParameterString(responseState);
 		model.addAttribute("searchStateUrl", searchStateUrl);
 		model.addAttribute("resultResponse", resultResponse);
 		model.addAttribute("queryMethod", "review");
+		model.addAttribute("invalidVocabCount", invalidVocabCount);
 		request.getSession().setAttribute("resultOperation", "review");
 	}
 }

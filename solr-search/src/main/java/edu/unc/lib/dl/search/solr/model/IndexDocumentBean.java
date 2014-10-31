@@ -145,7 +145,7 @@ public class IndexDocumentBean {
 		this.rollup = rollup;
 	}
 	
-	public boolean getIsPart() {
+	public Boolean getIsPart() {
 		return isPart;
 	}
 

@@ -103,10 +103,6 @@
 	<bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
 		<property name="collectionFilters" value="${services.indexing.collectionFilters}" />
 	</bean>
-	
-	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil" init-method="init">
-		<property name="ontologyURL" value="${departments.skos.url}" />
-	</bean>
 
 	<!-- Ingest pipeline -->
 	<bean id="solrFullUpdatePipeline"
@@ -154,6 +150,7 @@
 			<list>
 				<ref bean="setDescriptiveMetadataFilter" />
 				<ref bean="setContentStatusFilter" />
+				<ref bean="setRelationsFilter" />
 			</list>
 		</property>
 	</bean>

@@ -68,6 +68,8 @@ public interface BriefObjectMetadata {
 
 	public List<String> getRelations();
 
+	public List<String> getRelation(String relationName);
+
 	public Datastream getDefaultWebData();
 
 	public List<String> getContentModel();
@@ -95,6 +97,8 @@ public interface BriefObjectMetadata {
 	public List<String> getAdminGroup();
 
 	public List<String> getStatus();
+
+	public List<String> getContentStatus();
 
 	public List<String> getIdentifier();
 

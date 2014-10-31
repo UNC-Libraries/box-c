@@ -42,7 +42,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				self.element.append(self.$resultView);
 			
 				if (self.options.postRender)
-					self.options.postRender(self);
+					self.options.postRender.call();
 			
 				self.resultUrl = self.options.resultUrl;
 			

@@ -465,7 +465,7 @@ define('detachplus', [ 'jquery'], function($) {
  * Implements functionality and UI for the generic Ingest Package form
  */
 define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 
-		'ModalLoadingOverlay', 'ConfirmationDialog'], 
+		'ModalLoadingOverlay', 'ConfirmationDialog', 'AlertHandler'], 
 		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay, ConfirmationDialog) {
 	
 	var defaultOptions = {
@@ -1405,7 +1405,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 	});
 	return ConfirmationDialog;
 });define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/createContainerForm', 
-		'ModalLoadingOverlay', 'AbstractFileUploadForm'], 
+		'ModalLoadingOverlay', 'AbstractFileUploadForm', 'AlertHandler'], 
 		function($, ui, _, RemoteStateChangeMonitor, createContainerForm, ModalLoadingOverlay, AbstractFileUploadForm) {
 	
 	var defaultOptions = {
@@ -2181,7 +2181,31 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		this.pid = metadata.id;
 		this.isContainer = this.metadata.type != "File";
 		this.isDeleted = $.inArray("Active", this.metadata.status) == -1;
-		var newElement = $(this.options.template({metadata : metadata, isContainer : this.isContainer, isDeleted : this.isDeleted}));
+
+		var validationProblem = "";
+		if (this.metadata.tags) {
+			var tagIndex = -1;
+			for (var index in this.metadata.tags) {
+				if (this.metadata.tags[index].label.indexOf("invalid term") == 0) {
+					tagIndex = index;
+					break;
+				}
+			}
+			
+			if (tagIndex != -1) {
+				validationProblem += "<br/>Description contains invalid terms:";
+				
+				var details = this.metadata.tags[tagIndex].details;
+				for (var index in details) {
+					validationProblem +=  "<br/>&nbsp;&middot;&nbsp;" + details[index];
+				}
+				
+				delete this.metadata.tags[tagIndex];
+			}
+		}
+		
+		var newElement = $(this.options.template({metadata : metadata, isContainer : this.isContainer, 
+				isDeleted : this.isDeleted, validationProblem : validationProblem}));
 		this.checkbox = null;
 		if (this.element) {
 			if (this.actionMenu)
@@ -2843,7 +2867,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				self.element.append(self.$resultView);
 			
 				if (self.options.postRender)
-					self.options.postRender(self);
+					self.options.postRender.call();
 			
 				self.resultUrl = self.options.resultUrl;
 			
@@ -3261,82 +3285,260 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		}
 	});
 });
-	define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], function(
-		$, ui, URLUtilities) {
-	$.widget("cdr.searchMenu", {
+	define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'], 
+		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu) {
+	$.widget("cdr.resultView", {
 		options : {
+			container : null,
+			containerPath : null,
 			filterParams : '',
+			resultUrl : null, 
 			selectedId : false,
-			queryPath : 'list'
+			queryPath : 'list',
+			
+			metadataObjects : undefined,
+			
+			resultTableTemplate : "tpl!../templates/admin/resultTableView",
+			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
+			resultTableHeaderTemplate : "tpl!../templates/admin/resultTableHeader",
+			searchMenuTemplate : "tpl!../templates/admin/searchMenu",
+			navBarTemplate : "tpl!../templates/admin/navigationBar",
+			pathTrailTemplate : "tpl!../templates/admin/pathTrail"
 		},
 		
 		_create : function() {
 			var self = this;
-			this.element.children('.query_menu').accordion({
-				header: "> div > h3",
-				heightStyle: "content",
-				collapsible: true
+			
+			this.$resultPage = this.element;
+			this.$resultView;
+			this.$columnHeaders;
+			this.$containerEntry;
+			this.$tableActionMenu;
+			this.$resultHeader;
+			this.$resultTable;
+			this.$resultTableWrap;
+			this.$window = $(window);
+			this.menuOffset = 360;
+			
+			this.$alertHandler = $("<div id='alertHandler'></div>");
+			this.$alertHandler.alertHandler().appendTo(document.body).hide();
+			
+			this._render();
+		},
+		
+		_render : function() {
+			var self = this;
+			
+			var actionHandler = new ActionEventHandler();
+			
+			var pageNavigation = {
+				resultUrl : this.options.resultUrl,
+				filterParams : this.options.filterParams,
+				pagingActive : this.options.pagingActive,
+				pageStart : this.options.pageStart,
+				pageRows : this.options.pageRows,
+				resultCount : this.options.resultCount
+			};
+			
+			require([this.options.resultTableTemplate, this.options.resultEntryTemplate, this.options.resultTableHeaderTemplate, this.options.searchMenuTemplate, this.options.navBarTemplate, this.options.pathTrailTemplate], function(resultTableTemplate, resultEntryTemplate, resultTableHeaderTemplate, searchMenuTemplate, navigationBarTemplate, pathTrailTemplate){
+			
+				var container = self.options.container;
+				var navigationBar = navigationBarTemplate({pageNavigation : pageNavigation, container : container, URLUtilities : URLUtilities});
+				var containerPath = null;
+				if (container)
+					containerPath = pathTrailTemplate({ancestorPath : container.ancestorPath, queryMethod : 'list', filterParams : self.options.filterParams, skipLast : true});
+				var resultTableHeader = resultTableHeaderTemplate({container : container, navigationBar : navigationBar, containerPath : containerPath, invalidVocabCount : self.options.invalidVocabCount})
+			
+				// Setup the result table component
+				$(".result_area > div", self.element).resultTableView({
+					metadataObjects : self.options.metadataObjects,
+					container : container,
+					alertHandler : this.$alertHandler,
+					resultUrl : self.options.resultUrl,
+					resultFields : {
+						"select" : {name : "", colClass : "narrow", dataType : "index", sortField : "collection"},
+						"resourceType" : {name : "", colClass : "narrow", sortField : "resourceType"},
+						"title" : {name : "Title", colClass : "itemdetails", dataType : "title", sortField : "title"},
+						"creator" : {name : "Creator", colClass : "creator", sortField : "creator"},
+						"dateAdded" : {name : "Added", colClass : "date_added", sortField : "dateAdded"},
+						"dateModified" : {name : "Modified", colClass : "date_added", sortField : "dateUpdated"},
+						"actionMenu" : {name : "", colClass : "narrow"}
+					},
+					resultHeader : resultTableHeader,
+					postRender : $.proxy(self.postRender, self),
+					postInit : $.proxy(self.resizeResults, self),
+					actionHandler : actionHandler,
+					resultActions : [
+						{
+							actions : [
+								{action : 'PublishBatch', label : 'Publish'},
+								{action : 'UnpublishBatch', label : 'Unpublish'}
+							]
+						}, {
+							actions : [
+								{action : 'RestoreBatch', label : 'Restore'},
+								{action : 'DeleteBatch', label : 'Delete'}
+							]
+						}
+					]
+				});
 			});
-			this.element.children('.filter_menu').accordion({
-				header: "> div > h3",
-				heightStyle: "content",
-				collapsible: true,
-				active: false,
-				beforeActivate: function(event, ui) {
-					if (ui.newPanel.attr('data-href') != null && !ui.newPanel.data('contentLoaded')) {
-						var isStructureBrowse = (ui.newPanel.attr('id') == "structure_facet");
-						$.ajax({
-							url : URLUtilities.uriEncodeParameters(ui.newPanel.attr('data-href')),
-							dataType : isStructureBrowse? 'json' : null,
-							success : function(data) {
-								if (isStructureBrowse) {
-									var $structureView = $('<div/>').html(data);
-									$structureView.structureView({
-										rootNode : data.root,
-										showResourceIcons : true,
-										showParentLink : true,
-										queryPath : self.options.queryPath,
-										filterParams : self.options.filterParams,
-										selectedId : self.options.selectedId,
-										onChangeEvent : $.proxy(self._adjustHeight, self)
-									});
-									$structureView.addClass('inset facet');
-									// Inform the result view that the structure browse is ready for move purposes
-									if (self.options.resultTableView) {
-										self.options.resultTableView.resultTableView('addMoveDropLocation', 
-											$structureView.find(".structure_content"),
-											'.entry > .primary_action', 
-											function($dropTarget){
-												var dropObject = $dropTarget.closest(".entry_wrap").data("structureEntry");
-												// Needs to be a valid container with sufficient perms
-												if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
-													return false;
-												return dropObject.metadata;
-										});
-										data = $structureView;
-									}
-								}
-								ui.newPanel.html(data);
-								ui.newPanel.data('contentLoaded', true);
-								self._adjustHeight();
-							},
-							error : function() {
-								ui.newPanel.html("");
-							}
-						});
+		},
+		
+		postRender : function (resultTable) {
+			this.$resultView = $('#result_view');
+			this.$columnHeaders = $('.column_headers', this.element);
+			this.$resultHeader = $('.result_header', this.element);
+			this.$resultTable = $('.result_table', this.element);
+			this.$containerEntry = $('.container_header > span > h2', this.element);
+			this.$tableActionMenu = $('.result_table_action_menu', this.element);
+			this.$resultTableWrap = $('.result_table_wrap', this.element);
+			
+			var container = this.options.container;
+		
+			// Keep result area the right size when the menu is resized
+			var searchMenu = $(".search_menu", this.element).searchMenu({
+				filterParams : this.options.filterParams,
+				container : container,
+				containerPath : this.options.containerPath,
+				resultUrl : this.options.resultUrl,
+				resultTableView : $(".result_area > div"),
+				selectedId : container && /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? container.id : false,
+			}).on("resize", function(){
+				menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
+				resizeResults.call();
+			});
+		
+			if (container) {
+				var containerObject = new ParentResultObject({metadata : container, 
+						element : $(".container_entry")});
+		
+				new AddMenu({
+					container : container,
+					selector : "#add_menu",
+					alertHandler : this.$alertHandler
+				});
+			}
+			
+			$(document).on('mouseover', '.warning_symbol', function(event) {
+				// Bind the qTip within the event handler
+				$(this).qtip({
+					overwrite: false,
+					style: { classes: 'validity_tip' },
+					show: {
+						event: event.type,
+						ready: true
 					}
-				},
-				activate : $.proxy(self._adjustHeight, self)
-			}).accordion('option', 'active', 0);
+				}, event);
+			})
+		
+			this.resizeResults();
+			this.$window.resize($.proxy(this.resizeResults, this));
+		},
+		
+		resizeResults : function() {
+			var wHeight = this.$window.height(), wWidth = this.$window.width();
+			var headerHeight = this.$resultHeader.outerHeight();
+			this.$resultPage.height(wHeight - 105);
+			this.$resultView.height(wHeight - 105);
+			this.$resultHeader.width(wWidth - this.menuOffset);
+			this.$resultTable.width(wWidth - this.menuOffset);
+			this.$columnHeaders.width(wWidth - this.menuOffset)
+					.css('top', headerHeight);
+			this.$resultTableWrap.css('padding-top', headerHeight + 20);
+			this.$containerEntry.css('max-width', (wWidth - this.$tableActionMenu.width() - this.menuOffset - 105));
+		}
+	});
+});define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], function(
+		$, ui, URLUtilities) {
+	$.widget("cdr.searchMenu", {
+		options : {
+			container : null,
+			containerPath : null,
+			filterParams : '',
+			resultUrl : null, 
+			selectedId : false,
+			queryPath : 'list',
+			template : "tpl!../templates/admin/searchMenu"
+		},
+		
+		_create : function() {
+			var self = this;
 			
-			this.element.resizable({
-				handles: 'e',
-				alsoResize : ".structure.inset.facet",
-				minWidth: 300,
-				maxWidth: 600
-			}).css('visibility', 'visible');
+			require([this.options.template], function(template){
+				
+				self.$contents = $(template({container : self.options.container, filterParams : self.options.filterParams,
+					containerPath : self.options.containerPath, resultUrl : self.options.resultUrl}));
+				
+				self.element.append(self.$contents);
+				
+				self.element.children('.query_menu').accordion({
+					header: "> div > h3",
+					heightStyle: "content",
+					collapsible: true
+				});
+				self.element.children('.filter_menu').accordion({
+					header: "> div > h3",
+					heightStyle: "content",
+					collapsible: true,
+					active: false,
+					beforeActivate: function(event, ui) {
+						if (ui.newPanel.attr('data-href') != null && !ui.newPanel.data('contentLoaded')) {
+							var isStructureBrowse = (ui.newPanel.attr('id') == "structure_facet");
+							$.ajax({
+								url : URLUtilities.uriEncodeParameters(ui.newPanel.attr('data-href')),
+								dataType : isStructureBrowse? 'json' : null,
+								success : function(data) {
+									if (isStructureBrowse) {
+										var $structureView = $('<div/>').html(data);
+										$structureView.structureView({
+											rootNode : data.root,
+											showResourceIcons : true,
+											showParentLink : true,
+											queryPath : self.options.queryPath,
+											filterParams : self.options.filterParams,
+											selectedId : self.options.selectedId,
+											onChangeEvent : $.proxy(self._adjustHeight, self)
+										});
+										$structureView.addClass('inset facet');
+										// Inform the result view that the structure browse is ready for move purposes
+										if (self.options.resultTableView) {
+											self.options.resultTableView.resultTableView('addMoveDropLocation', 
+												$structureView.find(".structure_content"),
+												'.entry > .primary_action', 
+												function($dropTarget){
+													var dropObject = $dropTarget.closest(".entry_wrap").data("structureEntry");
+													// Needs to be a valid container with sufficient perms
+													if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
+														return false;
+													return dropObject.metadata;
+											});
+											data = $structureView;
+										}
+									}
+									ui.newPanel.html(data);
+									ui.newPanel.data('contentLoaded', true);
+									self._adjustHeight();
+								},
+								error : function() {
+									ui.newPanel.html("");
+								}
+							});
+						}
+					},
+					activate : $.proxy(self._adjustHeight, self)
+				}).accordion('option', 'active', 0);
 			
-			$(window).resize($.proxy(self._adjustHeight, self));
+				self.element.resizable({
+					handles: 'e',
+					alsoResize : ".structure.inset.facet",
+					minWidth: 300,
+					maxWidth: 600
+				}).css('visibility', 'visible');
+			
+				$(window).resize($.proxy(self._adjustHeight, self));
+			});
 		},
 		
 		_adjustHeight : function () {

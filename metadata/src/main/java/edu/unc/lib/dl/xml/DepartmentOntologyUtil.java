@@ -15,22 +15,30 @@
  */
 package edu.unc.lib.dl.xml;
 
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.RDF_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.SKOS_NS;
 
-import java.net.URL;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.xpath.XPathExpression;
+import org.jdom2.xpath.XPathFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,10 +48,8 @@ import org.slf4j.LoggerFactory;
  * @author bbpennel
  * @date Jun 23, 2014
  */
-public class DepartmentOntologyUtil {
+public class DepartmentOntologyUtil implements VocabularyHelper {
 	private static final Logger log = LoggerFactory.getLogger(DepartmentOntologyUtil.class);
-
-	private String ontologyURL;
 
 	// Index of terms and labels mapped to authoritative department names pull from the ontology
 	private Map<String, DepartmentConcept> departments;
@@ -60,6 +66,10 @@ public class DepartmentOntologyUtil {
 	private final Pattern trimUNC;
 	private final Pattern splitSimple;
 
+	private XPathExpression<Element> namePath;
+
+	private String vocabularyURI;
+
 	public DepartmentOntologyUtil() {
 		addressPattern = Pattern.compile("([^,]+,)+\\s*[a-zA-Z ]*\\d+[a-zA-Z]*\\s*[^\\n]*");
 		addressTrailingPattern = Pattern.compile("([^,]+,){2,}\\s*([a-zA-Z]+ ?){1,2}\\s*");
@@ -73,23 +83,22 @@ public class DepartmentOntologyUtil {
 		trimSuffix = Pattern.compile("\\s*(department|doctoral|masters)$");
 		trimUNC = Pattern.compile("\\b(unc|carolina)\\s+");
 		splitSimple = Pattern.compile("(\\s*[:()]\\s*)+");
-	}
 
-	public void init() {
 		try {
-			parseVocabulary(ontologyURL);
+			XPathFactory xFactory = XPathFactory.instance();
+			namePath = xFactory.compile("mods:name", Filters.element(MODS_V3_NS), null, MODS_V3_NS);
 		} catch (Exception e) {
-			log.error("Failed to parse department ontology at path {}", e, ontologyURL);
+			log.error("Failed to construct xpath", e);
 		}
 	}
 
 	/**
-	 * Returns the authoritative department name that best matches the affiliation provided using the ontology
-	 *
-	 * @param affiliation
-	 * @return
+	 * Returns the authoritative department name that best matches the affiliation provided using the ontology. Since
+	 * there can be multiple hierarchies for a single term, the outer list of the result separates between multiple
+	 * paths, while the inner list contains the individual steps within the same hierarchy
 	 */
-	public List<List<String>> getAuthoritativeDepartment(String affiliation) {
+	@Override
+	public List<List<String>> getAuthoritativeForm(String affiliation) {
 
 		String cleanAffil = cleanLabel(affiliation).replaceAll("&amp;", "and").replace("&", "");
 
@@ -130,6 +139,139 @@ public class DepartmentOntologyUtil {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns a list of authoritative terms for the affiliation field in the given document.
+	 */
+	@Override
+	public List<List<String>> getAuthoritativeForms(Element docElement) throws JDOMException {
+
+		Set<String> terms = new HashSet<String>();
+
+		List<?> names = docElement.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
+		Element nameEl;
+		for (Object nameObj : names) {
+			nameEl = (Element) nameObj;
+			List<?> affiliations = nameEl.getChildren("affiliation", JDOMNamespaceUtil.MODS_V3_NS);
+
+			for (Object affilObj : affiliations) {
+				String affiliation = ((Element) affilObj).getValue();
+
+				if (affiliation != null && affiliation.trim().length() > 0) {
+					terms.add(affiliation);
+				}
+			}
+		}
+
+		List<List<String>> expandedDepts = new ArrayList<List<String>>(terms.size());
+		for (String affiliation : terms) {
+			List<List<String>> results = getAuthoritativeForm(affiliation);
+			if (results != null) {
+				expandedDepts.addAll(results);
+			}
+		}
+
+		// Remove any duplication between paths
+		collapsePaths(expandedDepts);
+
+		return expandedDepts;
+	}
+
+	/**
+	 * Compares the affiliation values in the given MODS document against the ontology. If a preferred term(s) is found,
+	 * then it will replace the original. Only the first and last terms in a single hierarchy are kept if there are more
+	 * than two levels
+	 *
+	 * @param modsDoc
+	 * @return Returns true if the mods document was modified by adding or changing affiliations
+	 * @throws JDOMException
+	 */
+	@Override
+	public boolean updateDocumentTerms(Element docElement) throws JDOMException {
+		List<?> nameObjs = namePath.evaluate(docElement);
+		boolean modified = false;
+
+		for (Object nameObj : nameObjs) {
+			Element nameEl = (Element) nameObj;
+
+			List<?> affiliationObjs = nameEl.getChildren("affiliation", MODS_V3_NS);
+			if (affiliationObjs.size() == 0)
+				continue;
+
+			// Collect the set of all affiliations for this name so that it can be used to detect duplicates
+			Set<String> affiliationSet = new HashSet<>();
+			for (Object affiliationObj : affiliationObjs) {
+				Element affiliationEl = (Element) affiliationObj;
+
+				affiliationSet.add(affiliationEl.getTextNormalize());
+			}
+
+			// Make a snapshot of the list of affiliations so that the original can be modified
+			List<?> affilList = new ArrayList<>(affiliationObjs);
+			// Get the authoritative department path for each affiliation and overwrite the original
+			for (Object affiliationObj : affilList) {
+				Element affiliationEl = (Element) affiliationObj;
+				String affiliation = affiliationEl.getTextNormalize();
+
+				List<List<String>> departments = getAuthoritativeForm(affiliation);
+				if (departments != null && departments.size() > 0) {
+
+					Element parentEl = affiliationEl.getParentElement();
+					int affilIndex = parentEl.indexOf(affiliationEl);
+
+					boolean removeOriginal = true;
+					// Add each path that matched the affiliation. There can be multiple if there were multiple parents
+					for (List<String> deptPath : departments) {
+						String baseDept = deptPath.size() > 1 ? deptPath.get(0) : null;
+						String topDept = deptPath.get(deptPath.size() - 1);
+
+						// No need to remove the original if it is in the set of departments being added
+						if (affiliation.equals(topDept))
+							removeOriginal = false;
+
+						modified = addAffiliation(baseDept, parentEl, affilIndex, affiliationSet) || modified;
+						modified = addAffiliation(topDept, parentEl, affilIndex, affiliationSet) || modified;
+					}
+
+					// Remove the old affiliation unless it was already in the vocabulary
+					if (removeOriginal)
+						parentEl.removeContent(affiliationEl);
+
+				}
+			}
+		}
+
+		return modified;
+	}
+
+	/**
+	 * Add the given department to the parent element as an affiliation if it is not already present
+	 *
+	 * @param dept
+	 * @param parentEl
+	 * @param affilIndex
+	 * @param affiliationSet
+	 * @return True if an affiliation was added
+	 */
+	private boolean addAffiliation(String dept, Element parentEl, int affilIndex, Set<String> affiliationSet) {
+
+		// Prevent duplicate departments from being added
+		if (dept != null && !affiliationSet.contains(dept)) {
+			Element newAffilEl = new Element("affiliation", parentEl.getNamespace());
+			newAffilEl.setText(dept);
+			// Insert the new element near where the original was
+			try {
+				parentEl.addContent(affilIndex, newAffilEl);
+			} catch (IndexOutOfBoundsException e) {
+				parentEl.addContent(newAffilEl);
+			}
+			affiliationSet.add(dept);
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private List<List<String>> getAddressDepartment(String[] addressParts) {
@@ -296,10 +438,6 @@ public class DepartmentOntologyUtil {
 		}
 	}
 
-	public void setOntologyURL(String ontologyURL) {
-		this.ontologyURL = ontologyURL;
-	}
-
 	/**
 	 * Parses a SKOS XML vocabulary located at filePath and populates a lookup index labels and alternative labels
 	 * referencing the authoritative version.
@@ -307,11 +445,13 @@ public class DepartmentOntologyUtil {
 	 * @param ontologyURL
 	 * @throws Exception
 	 */
-	private void parseVocabulary(String ontologyURL) throws Exception {
+	private void parseVocabulary(byte[] content) throws Exception {
 		departments = new HashMap<String, DepartmentConcept>();
 
+		log.debug("Parsing and building Department vocabulary from {}", getVocabularyURI());
+
 		SAXBuilder sb = new SAXBuilder(false);
-		Document skosDoc = sb.build(new URL(ontologyURL));
+		Document skosDoc = sb.build(new ByteArrayInputStream(content));
 
 		// Extract all of the concepts and store them to an index
 		List<?> concepts = skosDoc.getRootElement().getChildren("Concept", SKOS_NS);
@@ -416,8 +556,87 @@ public class DepartmentOntologyUtil {
 		}
 	}
 
+	/**
+	 * Returns a set of invalid department affiliation names found in the given MODS document
+	 */
+	@Override
+	public Set<String> getInvalidTerms(Element modsRoot) throws JDOMException {
+		List<?> nameObjs = namePath.evaluate(modsRoot);
+
+		Set<String> invalidTerms = new HashSet<String>();
+
+		for (Object nameObj : nameObjs) {
+			Element nameEl = (Element) nameObj;
+
+			List<?> affiliationObjs = nameEl.getChildren("affiliation", MODS_V3_NS);
+			if (affiliationObjs.size() == 0)
+				continue;
+
+			// Make a snapshot of the list of affiliations so that the original can be modified
+			List<?> affilList = new ArrayList<Object>(affiliationObjs);
+			// Get the authoritative department path for each affiliation and overwrite the original
+			for (Object affiliationObj : affilList) {
+				Element affiliationEl = (Element) affiliationObj;
+				String affiliation = affiliationEl.getTextNormalize();
+
+				List<List<String>> departments = getAuthoritativeForm(affiliation);
+				if (departments == null || departments.size() == 0) {
+					// Affiliation was not found in the ontology
+					invalidTerms.add(affiliation);
+				}
+			}
+		}
+
+		return invalidTerms;
+	}
+
 	public Map<String, DepartmentConcept> getDepartments() {
 		return departments;
+	}
+
+	/**
+	 * Selectors are not currently used for this helper
+	 */
+	@Override
+	public void setSelector(String selector) {
+	}
+
+	public XPathExpression<Element> getNamePath() {
+		return namePath;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see edu.unc.lib.dl.xml.VocabularyHelper#getVocabularyTerms()
+	 */
+	@Override
+	public Collection<String> getVocabularyTerms() {
+		Set<String> deptNames = new HashSet<>();
+		for (DepartmentConcept dept : departments.values()) {
+			deptNames.add(dept.getIdentifier());
+		}
+		return deptNames;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see edu.unc.lib.dl.xml.VocabularyHelper#getInvalidTermPredicate()
+	 */
+	@Override
+	public String getInvalidTermPredicate() {
+		return JDOMNamespaceUtil.CDR_NS.getURI() + "invalidTermAffiliation";
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see edu.unc.lib.dl.xml.VocabularyHelper#setContent(byte[])
+	 */
+	@Override
+	public void setContent(byte[] content) throws Exception {
+		parseVocabulary(content);
 	}
 
 	public static enum AffiliationStyle {
@@ -503,4 +722,20 @@ public class DepartmentOntologyUtil {
 		}
 
 	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see edu.unc.lib.dl.xml.VocabularyHelper#getVocabularyURI()
+	 */
+	@Override
+	public String getVocabularyURI() {
+		return vocabularyURI;
+	}
+
+	@Override
+	public void setVocabularyURI(String vocabularyURI) {
+		this.vocabularyURI = vocabularyURI;
+	}
+
 }

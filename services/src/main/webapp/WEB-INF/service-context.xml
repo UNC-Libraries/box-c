@@ -450,5 +450,12 @@
 		<property name="fixityLogPath" value="${log.dir}/fixity.log"/>
 	</bean>
 	
+	<util:map id="vocabHelperClassMap">
+		<entry key="Affiliation" value="edu.unc.lib.dl.xml.DepartmentOntologyUtil"/>
+	</util:map>
 	
+	<bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
+		<property name="helperClasses" ref="vocabHelperClassMap" />
+		<property name="collectionsPID" ref="collectionsPid" />
+	</bean>
 </beans>

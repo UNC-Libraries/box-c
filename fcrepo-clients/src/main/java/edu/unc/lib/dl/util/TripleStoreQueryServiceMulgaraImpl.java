@@ -66,9 +66,9 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Provides an adapter for querying and modifying the triple store.
- * 
+ *
  * @author count0
- * 
+ *
  */
 public class TripleStoreQueryServiceMulgaraImpl implements
 		TripleStoreQueryService {
@@ -88,7 +88,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 	private ObjectMapper mapper;
 	private PID collections;
 
-	private MultiThreadedHttpConnectionManager multiThreadedHttpConnectionManager;
+	private final MultiThreadedHttpConnectionManager multiThreadedHttpConnectionManager;
 
 	public TripleStoreQueryServiceMulgaraImpl() {
 		this.multiThreadedHttpConnectionManager = new MultiThreadedHttpConnectionManager();
@@ -106,11 +106,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.services.TripleStoreService#fetchAllContents(edu.unc.lib
 	 * .dl.services.PID)
 	 */
+	@Override
 	public List<PID> fetchAllContents(PID key) {
 		String query = String
 				.format("select $desc from <%1$s> where walk( <%3$s> <%2$s> $child and $child <%2$s> $desc);",
@@ -119,7 +120,8 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 						key.getURI());
 		return this.lookupDigitalObjects(query);
 	}
-	
+
+	@Override
 	public List<PID> fetchChildren(PID key) {
 		String query = String
 				.format("select $child from <%1$s> where <%2$s> <%3$s> $child;",
@@ -131,11 +133,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.services.TripleStoreService#fetchAllContents(edu.unc.lib
 	 * .dl.services.PID)
 	 */
+	@Override
 	public Map<String, PID> fetchChildSlugs(PID parent) {
 		Map<String, PID> result = new HashMap<String, PID>();
 		String query = String
@@ -152,11 +155,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.services.TripleStoreService#fetchByPredicateAndLiteral
 	 * (java.lang.String, java.lang.String)
 	 */
+	@Override
 	public List<PID> fetchByPredicateAndLiteral(String predicateURI,
 			String literal) {
 		String query = String.format(
@@ -165,6 +169,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		return this.lookupDigitalObjects(query);
 	}
 
+	@Override
 	public List<PID> fetchByPredicateAndLiteral(String predicateURI,
 			PID pidLiteral) {
 		String query = String.format(
@@ -205,11 +210,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.services.TripleStoreService#fetchByRepositoryPath(java
 	 * .lang.String)
 	 */
+	@Override
 	public PID fetchByRepositoryPath(String path) {
 		// TODO needs many CDRs one Fedora fix
 		PID result = null;
@@ -278,7 +284,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.services.TripleStoreService#fetchCollection(edu.unc.lib
 	 * .dl.services.PID)
@@ -303,6 +309,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		return result;
 	}
 
+	@Override
 	public PID fetchContainer(PID child) {
 		String query = String.format(
 				"select $pid from <%1$s> where $pid <%2$s> <%3$s>;",
@@ -320,6 +327,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		}
 	}
 
+	@Override
 	public List<PID> lookupAllContainersAbove(PID pid) {
 		List<PID> result = new ArrayList<PID>();
 
@@ -391,11 +399,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/**
 	 * Fetches a list of PIDs that depend on this object or it's descendants.
-	 * 
+	 *
 	 * @param pid
 	 *            the PID of the object
 	 * @return a list of dependent object PIDs
 	 */
+	@Override
 	public List<PID> fetchObjectReferences(PID pid) {
 		List<PID> result = null;
 		// fetch references to this pid
@@ -469,6 +478,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		}
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private List<Element> extracted(List children) {
+		return children;
+	}
+
+	@Override
 	public String getResourceIndexModelUri() {
 		return resourceIndexModelUri;
 	}
@@ -479,10 +494,11 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see edu.unc.lib.dl.services.TripleStoreService#isContainer(edu.unc
 	 * .lib.dl.services.PID)
 	 */
+	@Override
 	public boolean isContainer(PID key) {
 		String query = String
 				.format("select $keypid from <%1$s> where $keypid <%2$s> <%3$s> and $keypid <http://mulgara.org/mulgara#is> <%4$s>;",
@@ -502,11 +518,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.services.TripleStoreService#lookupContentModel(edu.unc
 	 * .lib.dl.services.PID)
 	 */
+	@Override
 	public List<URI> lookupContentModels(PID key) {
 		List<URI> result = null;
 		String query = String
@@ -530,7 +547,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 	/**
 	 * Lookup a list of digital object ids. The query must return pairs of $pid
 	 * and $repositoryPath.
-	 * 
+	 *
 	 * @param query
 	 *            a query that returns resource values, one per row
 	 * @return a list of the URIs found
@@ -554,7 +571,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.services.TripleStoreService#lookupRepositoryPath(edu.unc
 	 * .lib.dl.services.PID)
@@ -729,6 +746,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		return null;
 	}
 
+	@Override
 	public List<List<String>> queryResourceIndex(String query) {
 		return this.lookupStrings(query);
 	}
@@ -928,11 +946,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.services.TripleStoreService#fetch(edu.unc.lib.dl.services
 	 * .PID)
 	 */
+	@Override
 	public PID verify(PID key) {
 		PID result = null;
 		String query = null;
@@ -954,6 +973,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		return result;
 	}
 
+	@Override
 	public boolean isSourceData(PID pid, String datastreamID) {
 		String query = String.format("select $pid $ds from <%1$s>"
 				+ " where $pid <%3$s> $ds"
@@ -969,6 +989,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		return false;
 	}
 
+	@Override
 	public boolean allowIndexing(PID pid) {
 		String query = String.format("select ?pid from <%1$s> where {"
 				+ "?pid <%2$s> 'yes' " + "filter (?pid = <%3$s>) }",
@@ -985,6 +1006,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		return false;
 	}
 
+	@Override
 	public List<PID> fetchChildContainers(PID key) {
 		String query = String
 				.format("select $child from <%1$s> where ( <%3$s> <%2$s> $child and $child <%4$s> <%5$s>);",
@@ -996,6 +1018,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		return this.lookupDigitalObjects(query);
 	}
 
+	@Override
 	public List<String> fetchAllCollectionPaths() {
 		// TODO needs many CDRs one Fedora fix
 		List<String> result = new ArrayList<String>(256);
@@ -1049,16 +1072,18 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		return result;
 	}
 
+	@Override
 	public String lookupLabel(String pid) {
 		return lookupLabel(new PID(pid));
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.util.TripleStoreQueryService#lookupLabels(java.util.List)
 	 */
+	@Override
 	public String lookupLabel(PID pid) {
 		String result = null;
 		List<List<String>> label = this.queryResourceIndex(String.format(
@@ -1073,11 +1098,12 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.util.TripleStoreQueryService#lookupSlug(edu.unc.lib.dl
 	 * .fedora.PID)
 	 */
+	@Override
 	public String lookupSlug(PID pid) {
 		String result = null;
 		List<List<String>> res = this.queryResourceIndex(String.format(
@@ -1105,7 +1131,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.util.TripleStoreQueryService#fetchChildPathInfo(edu.unc
 	 * .lib.dl.fedora.PID)
@@ -1141,7 +1167,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#lookupPermissions
 	 * (edu.unc.lib.dl.fedora.PID)
 	 */
@@ -1181,7 +1207,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#fetchAllTriples(PID pid)
 	 * (edu.unc.lib.dl.fedora.PID)
 	 */
@@ -1212,7 +1238,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#lookupSinglePermission
 	 * (edu.unc.lib.dl.fedora.PID, String)
 	 */
@@ -1294,7 +1320,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.util.TripleStoreQueryService#getSourceData(edu.unc.lib
 	 * .dl.fedora.PID)
@@ -1370,11 +1396,11 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.util.TripleStoreQueryService#fetchParentCollection(edu
 	 * .unc.lib.dl.fedora.PID)
-	 * 
+	 *
 	 * select $p from <#ri> where walk( $p
 	 * <http://cdr.unc.edu/definitions/1.0/base-model.xml#contains>
 	 * <info:fedora/uuid:4e349cbf-dda4-4d14-94eb-c2c27a59c06a> and $p
@@ -1405,7 +1431,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.util.TripleStoreQueryService#getSurrogateData(edu.unc.
 	 * lib.dl.fedora.PID)
@@ -1433,7 +1459,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * edu.unc.lib.dl.util.TripleStoreQueryService#fetchPIDsSurrogateFor(edu
 	 * .unc.lib.dl.fedora.PID)
@@ -1458,7 +1484,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#
 	 * lookupRepositoryAncestorInheritance(edu.unc.lib.dl.fedora.PID)
 	 */
@@ -1514,6 +1540,80 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 				result.put(new PID(row.get(0)), row.get(1));
 			}
 		}
+		return result;
+	}
+
+	@Override
+	public Map<String, Map<String, String>> fetchVocabularyInfo() {
+		Map<String, Map<String, String>> result = new HashMap<>();
+
+		StringBuilder query = new StringBuilder();
+		query.append("select $vocabPID $vocabURI $vocabType from <%1$s>").append(
+				" where $vocabPID <%2$s> <%3$s> and $vocabPID <%4$s> $vocabURI and $vocabPID <%5$s> $vocabType;");
+
+		String q = String.format(query.toString(), this.getResourceIndexModelUri(),
+				ContentModelHelper.FedoraProperty.hasModel.getURI(), ContentModelHelper.Model.VOCABULARY,
+				ContentModelHelper.CDRProperty.vocabularyUri.getURI(),
+				ContentModelHelper.CDRProperty.vocabularyType.getURI());
+
+		List<List<String>> response = this.lookupStrings(q);
+
+		if (!response.isEmpty()) {
+			for (List<String> row : response) {
+				Map<String, String> values = new HashMap<>();
+				values.put("vocabURI", row.get(1));
+				values.put("vocabType", row.get(2));
+
+				result.put(row.get(0), values);
+			}
+		}
+
+		return result;
+	}
+
+	@Override
+	public Map<String, Map<String, Set<String>>> fetchVocabularyMapping() {
+		StringBuilder query = new StringBuilder();
+		query.append("select $container $predicate $vocabUri from <%1$s>")
+				.append(" where ($container <%2$s> $vocabUri")
+				.append(" or $container <%3$s> $vocabUri or $container <%4$s> $vocabUri)")
+				.append(" and $container $predicate $vocabPID;");
+
+		String q = String.format(query.toString(), this.getResourceIndexModelUri(),
+				ContentModelHelper.CDRProperty.indexValidTerms.getURI(),
+				ContentModelHelper.CDRProperty.warnInvalidTerms.getURI(),
+				ContentModelHelper.CDRProperty.replaceInvalidTerms.getURI());
+
+		List<List<String>> response = this.lookupStrings(q);
+		Map<String, Map<String, Set<String>>> result = new HashMap<>();
+
+		// Store as collection > vocab > properties
+		if (!response.isEmpty()) {
+			for (List<String> row : response) {
+				String containerPID = row.get(0);
+				String predicate = row.get(1);
+				String vocabURI = row.get(2);
+
+				Map<String, Set<String>> vocabMap = result.get(containerPID);
+				if (vocabMap == null) {
+					vocabMap = new HashMap<>();
+					result.put(containerPID, vocabMap);
+				}
+
+				Set<String> collectionConfig = vocabMap.get(vocabURI);
+				if (collectionConfig == null) {
+					collectionConfig = new HashSet<>();
+					vocabMap.put(vocabURI, collectionConfig);
+				}
+
+				// Filter results down to just the vocabulary application level triples
+				if (ContentModelHelper.CDRProperty.indexValidTerms.equals(predicate)
+						|| ContentModelHelper.CDRProperty.warnInvalidTerms.equals(predicate)
+						|| ContentModelHelper.CDRProperty.replaceInvalidTerms.equals(predicate))
+					collectionConfig.add(predicate);
+			}
+		}
+
 		return result;
 	}
 }

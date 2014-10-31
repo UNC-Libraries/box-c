@@ -92,6 +92,9 @@ public class MakeFOXML extends AbstractDepositJob {
 		Map<String, String> status = getDepositStatus();
 		boolean excludeDepositRecord = Boolean.parseBoolean(status.get(DepositField.excludeDepositRecord.name()));
 
+		boolean publishObjects = Boolean.parseBoolean(status.get(DepositField.publishObjects.name()));
+		Property publishedProperty = cdrprop(m, CDRProperty.isPublished);
+
 		// establish task size
 		List<Resource> topDownObjects = DepositGraphUtils.getObjectsBreadthFirst(m, getDepositPID());
 		setTotalClicks(topDownObjects.size() + (excludeDepositRecord ? 0 : 1));
@@ -173,6 +176,22 @@ public class MakeFOXML extends AbstractDepositJob {
 					Statement dsStmt = dsIt.next();
 					addDatastream(m, dsStmt.getResource(), foxml);
 				}
+			}
+
+			// Add in invalid term triples
+			String invalidTermPrefix = CDRProperty.invalidTerm.toString();
+			StmtIterator props = o.listProperties();
+			while (props.hasNext()) {
+				Statement prop = props.next();
+				String predicate = prop.getPredicate().toString();
+				if (predicate.startsWith(invalidTermPrefix)) {
+					relsExt.add(o, m.getProperty(predicate), prop.getLiteral());
+				}
+			}
+
+			// Mark all objects being ingested as unpublished
+			if (!publishObjects) {
+				relsExt.add(o, publishedProperty, "no");
 			}
 
 			// add RELS-EXT

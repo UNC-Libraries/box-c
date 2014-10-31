@@ -255,6 +255,10 @@
 	<bean id="BioMedCentralExtrasJob" class="edu.unc.lib.deposit.normalize.BioMedCentralExtrasJob"
 		scope="prototype">
 	</bean>
+	
+	<bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"
+		scope="prototype">
+	</bean>
 
 	<bean id="VirusScanJob" class="edu.unc.lib.deposit.validate.VirusScanJob"
 		scope="prototype">
@@ -301,12 +305,35 @@
 		scope="prototype">
 	</bean>
 	
-	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil" init-method="init">
-		<property name="ontologyURL" value="${departments.skos.url}" />
+	<bean id="tripleStoreQueryService"
+		class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl" destroy-method="destroy">
+		<property name="itqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService"/>
+		<property name="sparqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/sparql/"/>
+		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#"/>
 	</bean>
 	
-	<bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"
-		scope="prototype">
+	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject">
+			<ref local="tripleStoreQueryService" />
+		</property>
+		<property name="targetMethod">
+			<value>fetchByRepositoryPath</value>
+		</property>
+		<property name="arguments">
+			<list>
+				<value>/Collections</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Mapping of vocabulary types to helper classes -->
+	<util:map id="vocabHelperClassMap">
+		<entry key="Affiliation" value="edu.unc.lib.dl.xml.DepartmentOntologyUtil"/>
+	</util:map>
+	
+	<bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager" init-method="init">
+		<property name="helperClasses" ref="vocabHelperClassMap" />
+		<property name="collectionsPID" ref="collectionsPid" />
 	</bean>
 
 	<bean id="jmsContainer"

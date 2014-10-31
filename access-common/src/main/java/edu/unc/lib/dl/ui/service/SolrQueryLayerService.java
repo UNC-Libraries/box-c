@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.service;
 
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1206,6 +1208,47 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		return -1;
 
+	}
+
+	public long getInvalidVocabularyCount(SearchRequest searchRequest) {
+
+		if (searchRequest.getRootPid() != null) {
+			addSelectedContainer(searchRequest.getRootPid(), searchRequest.getSearchState(),
+					searchRequest.isApplyCutoffs());
+		}
+
+		SolrQuery query = generateSearch(searchRequest);
+
+		query.setQuery(query.getQuery() + " AND " + solrSettings.getFieldName(SearchFieldKeys.RELATIONS.name()) + ":"
+				+ invalidTerm.getPredicate() + "*");
+		query.setRows(0);
+
+		try {
+			QueryResponse response = this.executeQuery(query);
+			return response.getResults().getNumFound();
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+		}
+
+		return -1;
+
+	}
+
+	public SearchResultResponse getRelationSet(SearchRequest searchRequest, String relationName) {
+
+		SolrQuery query = generateSearch(searchRequest);
+
+		query.setQuery(query.getQuery() + " AND " + solrSettings.getFieldName(SearchFieldKeys.RELATIONS.name()) + ":"
+				+ SolrSettings.sanitize(relationName) + "|*");
+		query.setRows(1000);
+
+		try {
+			return executeSearch(query, searchRequest.getSearchState(), false, false);
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Solr object request: " + e);
+		}
+
+		return null;
 	}
 
 	/**

@@ -32,18 +32,20 @@ define("collector", ["jquery", "moment", "ConfirmationDialog", "tpl!../templates
 			allVals.push($(this).val());
 		});
 		
+		var collectionPID = this.collectionPID;
 		$.post("collector/bin/" + this.binKey, {"files" : allVals}, function(data){
+			data.collectionPID = collectionPID;
 			$("#collector").html(confirmTemplate(data));
 		});
 	}
 	
-	function confirmCollection(binKey, numFiles) {
+	function confirmCollection(binKey, numFiles, collectionPID) {
 		var numFilesText = numFiles + " new item" + (numFiles != 1? "s" : "");
 		
 		new ConfirmationDialog({
 				promptText : "Are you sure you want collect " + numFilesText + "?",
 				confirmFunction : collectFiles,
-				confirmTarget : {binKey : binKey},
+				confirmTarget : {binKey : binKey, collectionPID : collectionPID},
 				autoOpen : true,
 				dialogOptions : {
 					width : "auto",
@@ -128,7 +130,7 @@ define("collector", ["jquery", "moment", "ConfirmationDialog", "tpl!../templates
 		table[0].appendChild(tableBody);
 	});
 	
-	function binDetailsView(binKey, url) {
+	function binDetailsView(binKey, collectionPID, url) {
 		$.getJSON("collector/bin/" + binKey, function(response) {
 			if (window.history && url) {
 				window.history.pushState("Collector bin details", null, url);
@@ -145,7 +147,7 @@ define("collector", ["jquery", "moment", "ConfirmationDialog", "tpl!../templates
 					formatDate : formatDate, bytesToSize : bytesToSize}));
 					
 			$("#bin_details .collect_action").click(function(event) {
-				confirmCollection(binKey, $(".file_list tbody :checked").length);
+				confirmCollection(binKey, $(".file_list tbody :checked").length, collectionPID);
 			});
 					
 			$("#check_all").change(function(event) {
@@ -165,15 +167,17 @@ define("collector", ["jquery", "moment", "ConfirmationDialog", "tpl!../templates
 			$("#collector").html(binListTemplate({collectorList : response, formatCounts : formatCounts}));
 			
 			$("#bin_list").on("click", ".collect_action", function(event) {
-				confirmCollection(this.parentNode.getAttribute("data-binkey"), $(this).attr("data-numfiles"));
+				confirmCollection(this.parentNode.getAttribute("data-binkey"), $(this).attr("data-numfiles"), this.parentNode.getAttribute("data-collection"));
 			});
 			
 			$("#collector").on("click", ".collect_details_link", function(event) {
 				if (!window.history) {
 					return true;
 				}
-				var binKey = $(this).closest(".browseitem").attr("data-binkey");
-				binDetailsView(binKey, this.getAttribute("href"));
+				var browseItem = $(this).closest(".browseitem");
+				var binKey = browseItem.attr("data-binkey");
+				var collectionPID = browseItem.attr("data-collection");
+				binDetailsView(binKey, collectionPID, this.getAttribute("href"));
 		
 				return false;
 			});
@@ -186,11 +190,16 @@ define("collector", ["jquery", "moment", "ConfirmationDialog", "tpl!../templates
 	};
 	
 	function binCollectorController() {
-		var location = document.location;
-		
 		var detailsBin = document.location.toString().match(detailsRegex);
 		if (detailsBin) {
-			binDetailsView(detailsBin[1])
+			$.getJSON("collector/list", function(collectorList) {
+				var collectionPID;
+				for (var index in collectorList) {
+					if (collectorList[index].key == detailsBin[1])
+						collectionPID = collectorList[index].destPID;
+				}
+				binDetailsView(detailsBin[1], collectionPID, document.location.toString());
+			});
 		} else {
 			binListView();
 		}

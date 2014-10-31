@@ -16,7 +16,14 @@
 package edu.unc.lib.dl.admin.controller;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -39,10 +46,13 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.tags.TagProvider;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.util.VocabularyHelperManager;
+import edu.unc.lib.dl.xml.VocabularyHelper;
 
 @Controller
 public class MODSController extends AbstractSwordController {
@@ -57,9 +67,15 @@ public class MODSController extends AbstractSwordController {
 	@Autowired
 	private TripleStoreQueryService tripleStoreQueryService;
 
+	@Autowired
+	private VocabularyHelperManager vocabularies;
+
+	protected @Resource(name = "tagProviders")
+	List<TagProvider> tagProviders;
+
 	/**
 	 * Forwards user to the MODS editor page with the
-	 * 
+	 *
 	 * @param idPrefix
 	 * @param id
 	 * @param model
@@ -69,23 +85,58 @@ public class MODSController extends AbstractSwordController {
 	@RequestMapping(value = "describe/{pid}", method = RequestMethod.GET)
 	public String editDescription(@PathVariable("pid") String pid, Model model,
 			HttpServletRequest request) {
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
-		// Retrieve the record for the container being reviewed
+		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+		// Retrieve the record for the object being edited
 		SimpleIdRequest objectRequest = new SimpleIdRequest(pid, accessGroups);
 		BriefObjectMetadataBean resultObject = queryLayer.getObjectById(objectRequest);
 		if (resultObject == null) {
 			throw new InvalidRecordRequestException();
 		}
-		model.addAttribute("resultObject", resultObject);
 
+		model.addAttribute("resultObject", resultObject);
 		return "edit/description";
+	}
+
+	@RequestMapping(value = "describeInfo/{pid}", method = RequestMethod.GET)
+	public @ResponseBody
+	Map<String, Object> editDescription(@PathVariable("pid") String pid, HttpServletResponse response) {
+		response.setContentType("application/json");
+
+		Map<String, Object> results = new LinkedHashMap<String, Object>();
+
+		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+
+		// Retrieve the record for the object being edited
+		SimpleIdRequest objectRequest = new SimpleIdRequest(pid, accessGroups);
+		BriefObjectMetadataBean resultObject = queryLayer.getObjectById(objectRequest);
+		if (resultObject == null) {
+			throw new InvalidRecordRequestException();
+		}
+
+		for (TagProvider provider : tagProviders) {
+			provider.addTags(resultObject, accessGroups);
+		}
+
+		results.put("resultObject", resultObject);
+
+		Map<String, Collection<String>> terms = new HashMap<>();
+		Set<VocabularyHelper> helpers = vocabularies.getHelpers(new PID(pid));
+		if (helpers != null) {
+			for (VocabularyHelper helper : helpers) {
+				terms.put(helper.getVocabularyURI(), helper.getVocabularyTerms());
+			}
+		}
+
+		results.put("vocabTerms", terms);
+
+		return results;
 	}
 
 	/**
 	 * Retrieves the MD_DESCRIPTIVE datastream, containing MODS, for this item if one is present. If it is not present,
 	 * then returns a blank MODS document.
-	 * 
+	 *
 	 * @param idPrefix
 	 * @param id
 	 * @return
@@ -137,7 +188,7 @@ public class MODSController extends AbstractSwordController {
 
 	/**
 	 * Pushes a MODS document to the target object
-	 * 
+	 *
 	 * @param idPrefix
 	 * @param id
 	 * @param model

@@ -15,32 +15,40 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter.AFFIL_URI;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.DateTimeUtil;
-import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
+import edu.unc.lib.dl.util.VocabularyHelperManager;
 
 public class SetDescriptiveMetadataFilterTest {
 
 	@Mock
-	private DepartmentOntologyUtil deptUtil;
+	private VocabularyHelperManager vocabManager;
 
 	private SetDescriptiveMetadataFilter filter;
 
@@ -49,7 +57,7 @@ public class SetDescriptiveMetadataFilterTest {
 		initMocks(this);
 
 		filter = new SetDescriptiveMetadataFilter();
-		setField(filter, "deptUtil", deptUtil);
+		setField(filter, "vocabManager", vocabManager);
 	}
 
 	@Test
@@ -60,10 +68,9 @@ public class SetDescriptiveMetadataFilterTest {
 				"src/test/resources/foxml/aggregateSplitDepartments.xml")));
 		dip.setFoxml(foxml);
 
-		when(deptUtil.getAuthoritativeDepartment(anyString())).thenReturn(null);
-
-		when(deptUtil.getAuthoritativeDepartment(eq("Dept of Biostatistics University of North Carolina, Chapel Hill")))
-				.thenReturn(Arrays.asList(Arrays.asList("Department of Biostatistics")));
+		Map<String, List<List<String>>> terms = new HashMap<>();
+		terms.put(AFFIL_URI, Arrays.asList(Arrays.asList("Department of Biostatistics")));
+		when(vocabManager.getAuthoritativeForms(any(PID.class), any(Element.class))).thenReturn(terms);
 
 		filter.filter(dip);
 		IndexDocumentBean idb = dip.getDocument();
