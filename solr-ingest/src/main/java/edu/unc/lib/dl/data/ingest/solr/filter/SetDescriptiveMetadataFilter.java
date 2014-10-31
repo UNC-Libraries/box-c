@@ -192,12 +192,20 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			idb.setCreatorSort(creators.get(0));
 		}
 
-		Map<String, List<String>> authTerms = vocabManager.getAuthoritativeForms(idb.getPid(), mods);
+		Map<String, List<List<String>>> authTerms = vocabManager.getAuthoritativeForms(idb.getPid(), mods);
 		if (authTerms != null) {
-			List<String> affiliationTerms = authTerms.get(AFFIL_URI);
+			List<List<String>> affiliationTerms = authTerms.get(AFFIL_URI);
 
-			if (affiliationTerms != null && affiliationTerms.size() > 0) {
-				idb.setDepartment(affiliationTerms);
+			if (affiliationTerms != null) {
+			// Make the departments for the whole document into a form solr can take
+				List<String> flattened = new ArrayList<String>();
+				for (List<String> path : affiliationTerms) {
+					flattened.addAll(path);
+				}
+
+				if (affiliationTerms != null && affiliationTerms.size() > 0) {
+					idb.setDepartment(flattened);
+				}
 			}
 		}
 	}

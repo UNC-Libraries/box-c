@@ -93,7 +93,9 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 	}
 
 	/**
-	 * Returns the authoritative department name that best matches the affiliation provided using the ontology
+	 * Returns the authoritative department name that best matches the affiliation provided using the ontology. Since
+	 * there can be multiple hierarchies for a single term, the outer list of the result separates between multiple
+	 * paths, while the inner list contains the individual steps within the same hierarchy
 	 */
 	@Override
 	public List<List<String>> getAuthoritativeForm(String affiliation) {
@@ -139,8 +141,11 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 		return null;
 	}
 
+	/**
+	 * Returns a list of authoritative terms for the affiliation field in the given document.
+	 */
 	@Override
-	public List<String> getAuthoritativeForms(Element docElement) throws JDOMException {
+	public List<List<String>> getAuthoritativeForms(Element docElement) throws JDOMException {
 
 		Set<String> terms = new HashSet<String>();
 
@@ -168,40 +173,15 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 		}
 
 		// Remove any duplication between paths
-		DepartmentOntologyUtil.collapsePaths(expandedDepts);
+		collapsePaths(expandedDepts);
 
-		// Make the departments for the whole document into a form solr can take
-		List<String> flattened = new ArrayList<String>();
-		for (List<String> path : expandedDepts) {
-			flattened.addAll(path);
-		}
-
-		return flattened;
-	}
-
-	public void getExistingTerms(Document modsDoc) throws JDOMException {
-		List<?> nameObjs = namePath.evaluate(modsDoc);
-
-		for (Object nameObj : nameObjs) {
-			Element nameEl = (Element) nameObj;
-
-			List<?> affiliationObjs = nameEl.getChildren("affiliation", MODS_V3_NS);
-			if (affiliationObjs.size() == 0)
-				continue;
-
-			// Collect the set of all affiliations for this name so that it can be used to detect duplicates
-			Set<String> affiliationSet = new HashSet<>();
-			for (Object affiliationObj : affiliationObjs) {
-				Element affiliationEl = (Element) affiliationObj;
-
-				affiliationSet.add(affiliationEl.getTextNormalize());
-			}
-		}
+		return expandedDepts;
 	}
 
 	/**
 	 * Compares the affiliation values in the given MODS document against the ontology. If a preferred term(s) is found,
-	 * then it will replace the original.
+	 * then it will replace the original. Only the first and last terms in a single hierarchy are kept if there are more
+	 * than two levels
 	 *
 	 * @param modsDoc
 	 * @return Returns true if the mods document was modified by adding or changing affiliations
@@ -614,6 +594,9 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 		return departments;
 	}
 
+	/**
+	 * Selectors are not currently used for this helper
+	 */
 	@Override
 	public void setSelector(String selector) {
 	}

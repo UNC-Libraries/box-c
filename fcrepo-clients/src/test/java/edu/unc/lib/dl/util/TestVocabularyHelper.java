@@ -78,7 +78,7 @@ public class TestVocabularyHelper implements VocabularyHelper {
 	}
 
 	@Override
-	public List<String> getAuthoritativeForms(Element docElement) throws JDOMException {
+	public List<List<String>> getAuthoritativeForms(Element docElement) throws JDOMException {
 		return null;
 	}
 

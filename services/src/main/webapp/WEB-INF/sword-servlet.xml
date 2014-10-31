@@ -102,11 +102,9 @@
 			<list>
 				<bean class="edu.unc.lib.dl.update.AtomDCToMODSFilter">
 					<property name="schematronValidator" ref="schematronValidator" />
-					<property name="managementClient" ref="forwardedManagementClient" />
 				</bean>
 				<bean class="edu.unc.lib.dl.update.MODSUIPFilter">
 					<property name="schematronValidator" ref="schematronValidator" />
-					<property name="managementClient" ref="forwardedManagementClient" />
 				</bean>
 				<bean class="edu.unc.lib.dl.update.RELSEXTUIPFilter"/>
 				<bean class="edu.unc.lib.dl.update.AccessControlUIPFilter"/>

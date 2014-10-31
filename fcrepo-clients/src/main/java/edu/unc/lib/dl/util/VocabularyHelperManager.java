@@ -44,6 +44,11 @@ import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
+ * Manages and initializes a set of vocabulary helper classes from a mapping of vocabulary types to helper classes.
+ * Associates configuration of vocabularies with the original vocabulary content and application levels for specific
+ * collections in the repository. Provides helper methods for determining which helpers are applicable and for
+ * performing operations over all applicable helpers.
+ *
  * @author bbpennel
  * @date Sep 30, 2014
  */
@@ -51,10 +56,10 @@ public class VocabularyHelperManager {
 
 	private static final Logger log = LoggerFactory.getLogger(VocabularyHelperManager.class);
 
-	// Map of vocabulary keys to helper classes, vocab URI to helper
+	// Map of vocabulary type to helper classes
 	private Map<String, Class<?>> helperClassMap;
 
-	// Map of vocabulary keys to helper objects
+	// Map of vocabulary type to helper objects
 	private Map<String, VocabularyHelper> vocabHelperMap;
 
 	// Map of collection pids to applicable vocabularies
@@ -68,7 +73,6 @@ public class VocabularyHelperManager {
 
 	// Configuration info per vocabulary, uri to properties map
 	private Map<String, Map<String, String>> vocabInfoMap;
-
 
 	private PID collectionsPID;
 
@@ -98,20 +102,17 @@ public class VocabularyHelperManager {
 
 		// Load the contents of the vocabularies
 		for (String vocabPID : vocabInfoMap.keySet()) {
-			int tries = -1;
-			do {
-				try {
-					byte[] stream = accessClient.getDatastreamDissemination(new PID(vocabPID),
-							ContentModelHelper.Datastream.DATA_FILE.getName(), null).getStream();
+			try {
+				byte[] stream = accessClient.getDatastreamDissemination(new PID(vocabPID),
+						ContentModelHelper.Datastream.DATA_FILE.getName(), null).getStream();
 
-					if (vocabInfoMap.containsKey(vocabPID)) {
-						String vocabURI = vocabInfoMap.get(vocabPID).get("vocabURI");
-						vocabHelperMap.get(vocabURI).setContent(stream);
-					}
-				} catch (Exception e) {
-					log.error("Failed to load vocabulary content for {}", vocabPID, e);
+				if (vocabInfoMap.containsKey(vocabPID)) {
+					String vocabURI = vocabInfoMap.get(vocabPID).get("vocabURI");
+					vocabHelperMap.get(vocabURI).setContent(stream);
 				}
-			} while (tries > 0);
+			} catch (Exception e) {
+				log.error("Failed to load vocabulary content for {}", vocabPID, e);
+			}
 		}
 
 		if (log.isDebugEnabled()) {
@@ -180,7 +181,14 @@ public class VocabularyHelperManager {
 		log.debug("pidtohelpers: {}", pidToHelpers);
 	}
 
-	public void updateInvalidTerms(PID pid, Element docElement) throws FedoraException {
+	/**
+	 * Updates an object's invalid term state in Fedora based on any invalid terms found in the given document
+	 *
+	 * @param pid
+	 * @param docElement
+	 * @throws FedoraException
+	 */
+	public void updateInvalidTermsRelations(PID pid, Element docElement) throws FedoraException {
 		Set<VocabularyHelper> helpers = getHelpers(pid);
 		if (helpers == null)
 			return;
@@ -224,6 +232,13 @@ public class VocabularyHelperManager {
 		}
 	}
 
+	/**
+	 * Returns a map of invalid terms per vocabulary URI
+	 *
+	 * @param pid
+	 * @param docElement
+	 * @return
+	 */
 	public Map<String, Set<String>> getInvalidTerms(PID pid, Element docElement) {
 
 		Set<VocabularyHelper> helpers = getHelpers(pid);
@@ -301,12 +316,8 @@ public class VocabularyHelperManager {
 		if (rootHelpers != null)
 			helpers.addAll(rootHelpers);
 
-		log.debug("Pid helpers {}", pidToHelpers);
-		log.debug("{} {}", collectionsPID, pid);
-		log.debug("Helpers root for {}: {}", collectionsPID, helpers);
 		if (parentCollectionPID != null) {
 			Set<VocabularyHelper> parentHelpers = pidToHelpers.get(parentCollectionPID.getURI());
-			log.debug("Helpers for {}: {}", parentCollectionPID, parentHelpers);
 			if (parentHelpers != null) {
 				helpers.addAll(parentHelpers);
 			}
@@ -355,6 +366,11 @@ public class VocabularyHelperManager {
 		return this.vocabHelperMap.get(vocabURI);
 	}
 
+	/**
+	 * Sets the map of helper classes and generates the mapping of vocabulary types to instances of helpers
+	 *
+	 * @param helperClasses
+	 */
 	public void setHelperClasses(Map<String, String> helperClasses) {
 		this.helperClassMap = new HashMap<>(helperClasses.size());
 
@@ -367,19 +383,27 @@ public class VocabularyHelperManager {
 		}
 	}
 
-	public Map<String, List<String>> getAuthoritativeForms(PID pid, Document doc) {
+	/**
+	 * Returns the authoritative vocabulary forms for selected fields from the given document using all applicable
+	 * helpers for the specified object. Terms are grouped by vocabulary URI.
+	 *
+	 * @param pid
+	 * @param doc
+	 * @return
+	 */
+	public Map<String, List<List<String>>> getAuthoritativeForms(PID pid, Document doc) {
 		return getAuthoritativeForms(pid, doc.getRootElement());
 	}
 
-	public Map<String, List<String>> getAuthoritativeForms(PID pid, Element docElement) {
+	public Map<String, List<List<String>>> getAuthoritativeForms(PID pid, Element docElement) {
 		Set<VocabularyHelper> helpers = getHelpers(pid);
 		if (helpers == null)
 			return null;
 
-		Map<String, List<String>> results = new HashMap<>();
+		Map<String, List<List<String>>> results = new HashMap<>();
 		for (VocabularyHelper helper : helpers) {
 			try {
-				List<String> terms = helper.getAuthoritativeForms(docElement);
+				List<List<String>> terms = helper.getAuthoritativeForms(docElement);
 				if (terms != null && terms.size() > 0)
 					results.put(helper.getVocabularyURI(), terms);
 			} catch (JDOMException e) {

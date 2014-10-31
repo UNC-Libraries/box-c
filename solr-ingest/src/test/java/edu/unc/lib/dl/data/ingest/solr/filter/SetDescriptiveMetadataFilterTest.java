@@ -68,8 +68,8 @@ public class SetDescriptiveMetadataFilterTest {
 				"src/test/resources/foxml/aggregateSplitDepartments.xml")));
 		dip.setFoxml(foxml);
 
-		Map<String, List<String>> terms = new HashMap<>();
-		terms.put(AFFIL_URI, Arrays.asList("Department of Biostatistics"));
+		Map<String, List<List<String>>> terms = new HashMap<>();
+		terms.put(AFFIL_URI, Arrays.asList(Arrays.asList("Department of Biostatistics")));
 		when(vocabManager.getAuthoritativeForms(any(PID.class), any(Element.class))).thenReturn(terms);
 
 		filter.filter(dip);

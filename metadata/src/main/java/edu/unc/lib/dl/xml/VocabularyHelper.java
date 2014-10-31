@@ -44,11 +44,11 @@ public interface VocabularyHelper {
 	 * @return
 	 * @throws JDOMException
 	 */
-	public List<String> getAuthoritativeForms(Element docElement) throws JDOMException;
+	public List<List<String>> getAuthoritativeForms(Element docElement) throws JDOMException;
 
 	/**
 	 * Determines a set of invalid terms in the provided xml document root element.
-	 * 
+	 *
 	 * @param docElement
 	 * @return
 	 * @throws JDOMException

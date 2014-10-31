@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.util;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.hasVocabulary;
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.indexValidTerms;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.replaceInvalidTerms;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.warnInvalidTerms;
 import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.DATA_FILE;
@@ -98,7 +98,7 @@ public class VocabularyHelperManagerTest {
 
 		Map<String, Map<String, Set<String>>> vocabMapping = new HashMap<>();
 		Map<String, Set<String>> collMapping = new HashMap<>();
-		Set<String> levels = new HashSet<>(Arrays.asList(hasVocabulary.toString(), warnInvalidTerms.toString(),
+		Set<String> levels = new HashSet<>(Arrays.asList(indexValidTerms.toString(), warnInvalidTerms.toString(),
 				replaceInvalidTerms.toString()));
 		collMapping.put(VOCAB_URI, levels);
 		vocabMapping.put(COLL_PID, collMapping);
@@ -152,7 +152,7 @@ public class VocabularyHelperManagerTest {
 		when(queryService.fetchBySubjectAndPredicate(any(PID.class), anyString())).thenReturn(Arrays.asList("term"));
 
 		Element doc = mock(Element.class);
-		manager.updateInvalidTerms(new PID(ITEM_PID), doc);
+		manager.updateInvalidTermsRelations(new PID(ITEM_PID), doc);
 
 		verify(managementClient, never()).purgeLiteralStatement(any(PID.class), anyString(), anyString(), anyString());
 

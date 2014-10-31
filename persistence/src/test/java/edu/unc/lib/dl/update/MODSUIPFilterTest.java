@@ -50,7 +50,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.fedora.AccessClient;
-import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.schematron.SchematronValidator;
@@ -70,8 +69,6 @@ public class MODSUIPFilterTest extends Assert {
 	@Mock
 	private VocabularyHelperManager vocabManager;
 	@Mock
-	private ManagementClient managementClient;
-	@Mock
 	private TripleStoreQueryService queryService;
 
 	@Before
@@ -83,7 +80,6 @@ public class MODSUIPFilterTest extends Assert {
 		filter.setSchematronValidator(schematronValidator);
 
 		setField(filter, "vocabManager", vocabManager);
-		filter.setManagementClient(managementClient);
 		filter.setQueryService(queryService);
 	}
 

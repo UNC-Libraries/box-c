@@ -1580,7 +1580,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 				.append(" and $container $predicate $vocabPID;");
 
 		String q = String.format(query.toString(), this.getResourceIndexModelUri(),
-				ContentModelHelper.CDRProperty.hasVocabulary.getURI(),
+				ContentModelHelper.CDRProperty.indexValidTerms.getURI(),
 				ContentModelHelper.CDRProperty.warnInvalidTerms.getURI(),
 				ContentModelHelper.CDRProperty.replaceInvalidTerms.getURI());
 
@@ -1607,7 +1607,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 				}
 
 				// Filter results down to just the vocabulary application level triples
-				if (ContentModelHelper.CDRProperty.hasVocabulary.equals(predicate)
+				if (ContentModelHelper.CDRProperty.indexValidTerms.equals(predicate)
 						|| ContentModelHelper.CDRProperty.warnInvalidTerms.equals(predicate)
 						|| ContentModelHelper.CDRProperty.replaceInvalidTerms.equals(predicate))
 					collectionConfig.add(predicate);

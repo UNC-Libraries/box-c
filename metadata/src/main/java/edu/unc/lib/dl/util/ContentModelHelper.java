@@ -59,7 +59,7 @@ public class ContentModelHelper {
 				JDOMNamespaceUtil.CDR_ACL_NS), userRole("user-role", JDOMNamespaceUtil.CDR_ACL_NS), isPublished("isPublished"),
 				isActive("isActive", JDOMNamespaceUtil.CDR_ACL_NS), sourceMetadata("sourceMetadata"), hasSourceMetadataProfile(
 				"hasSourceMetadataProfile"), invalidTerm("invalidTerm"), dateCreated("dateCreated"),
-				hasVocabulary("hasVocabulary"), warnInvalidTerms("warnInvalidTerms"), replaceInvalidTerms("replaceInvalidTerms"),
+				indexValidTerms("indexValidTerms"), warnInvalidTerms("warnInvalidTerms"), replaceInvalidTerms("replaceInvalidTerms"),
 				vocabularyType("vocabularyType"), vocabularyUri("vocabularyUri"), vocabularySelector("vocabularySelector");
 
 		private URI uri;
