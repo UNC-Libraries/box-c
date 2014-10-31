@@ -199,6 +199,7 @@ public class DepositBinCollector {
 		status.put(DepositField.depositorEmail.name(), depositorEmail != null ? depositorEmail : owner + "@email.unc.edu");
 		status.put(DepositField.containerId.name(), config.getDestination());
 		status.put(DepositField.depositMethod.name(), DepositMethod.CDRCollector.getLabel());
+		status.put(DepositField.publishObjects.name(), Boolean.toString(config.isPublishObjects()));
 
 		status.put(DepositField.permissionGroups.name(), extras.get(EXTRA_PERMISSION_GROUPS));
 

@@ -33,6 +33,7 @@ public class DepositBinConfiguration {
 	private Long maxBytesPerFile;
 	private String packageType;
 	private String destination;
+	private boolean publishObjects = true;
 
 	private final ReentrantLock keyLock;
 
@@ -65,7 +66,7 @@ public class DepositBinConfiguration {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return regular expression which determines names of files allowed in this collection. If not set, then file names
 	 *         are not restricted
 	 */
@@ -126,6 +127,19 @@ public class DepositBinConfiguration {
 	 */
 	public boolean hasFileFilters() {
 		return maxBytesPerFile != null || filePattern != null;
+	}
+
+	/**
+	 * If true, then packages ingested through the collector should be marked as published immediately
+	 *
+	 * @return
+	 */
+	public boolean isPublishObjects() {
+		return publishObjects;
+	}
+
+	public void setPublishObjects(boolean publishObjects) {
+		this.publishObjects = publishObjects;
 	}
 
 	public ReentrantLock getKeyLock() {
