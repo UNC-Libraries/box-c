@@ -631,7 +631,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 	public Collection<String> getVocabularyTerms() {
 		Set<String> deptNames = new HashSet<>();
 		for (DepartmentConcept dept : departments.values()) {
-			deptNames.add(dept.getPrefLabel());
+			deptNames.add(dept.getIdentifier());
 		}
 		return deptNames;
 	}

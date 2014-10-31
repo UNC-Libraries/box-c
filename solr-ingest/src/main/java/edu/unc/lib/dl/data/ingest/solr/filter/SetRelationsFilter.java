@@ -85,7 +85,9 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 			for (Entry<String, List<String>> tripleEntry : triples.entrySet()) {
 				if (tripleEntry.getKey().startsWith(ContentModelHelper.CDRProperty.invalidTerm.toString())) {
 					for (String term : tripleEntry.getValue()) {
-						relations.add(tripleEntry.getKey() + "|" + term);
+						String predicate = tripleEntry.getKey();
+						predicate = predicate.substring(predicate.indexOf('#') + 1);
+						relations.add(predicate + "|" + term);
 					}
 				}
 			}

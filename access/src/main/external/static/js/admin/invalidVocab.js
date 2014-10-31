@@ -23,7 +23,12 @@ require.config({
 define("invalidVocab", ["jquery", "tpl!../templates/admin/invalidVocab"], function($, vocabTemplate) {
 	
 	var pathname = window.location.pathname;
-	pathname = pathname.substring(pathname.indexOf("/", pathname.indexOf("invalidVocab")) + 1);
+	pathname = pathname.substring(pathname.indexOf("invalidVocab"));
+	if (pathname.indexOf("/") > 0) {
+		pathname = pathname.substring(pathname.indexOf("/", pathname) + 1);
+	} else {
+		pathname = "";
+	}
 	
 	$.get("/admin/getInvalidVocab/" + pathname, function(response){
 		var vocabTypes = response.vocabTypes;
@@ -45,24 +50,36 @@ define("invalidVocab", ["jquery", "tpl!../templates/admin/invalidVocab"], functi
 					}
 				}
 				
-				if (affilTag) {
-					var groupedResults = groupedTypes["affiliation"];
-					if (!groupedResults) {
-						groupedResults = {};
-						groupedTypes["affiliation"] = groupedResults;
+				var vocabMap = {};
+				var tags = vocabResult.tags;
+				for (var index in tags) {
+					if (tags[index].label.indexOf("invalid term ") == 0) {
+						var vocabName = tags[index].label.substring("invalid term ".length);
+						vocabMap[vocabName] = tags[index].details;
 					}
-					
-					for (var index in affilTag.details) {
-						var detail = affilTag.details[index];
-						var vocabResults = groupedResults[detail];
-						if (!vocabResults) {
-							vocabResults = [];
-							groupedResults[detail] = vocabResults;
+				}
+				
+				if (!$.isEmptyObject(vocabMap)) {
+					for (var vocabName in vocabMap) {
+						var vocabDetails = vocabMap[vocabName];
+						
+						var groupedResults = groupedTypes[vocabName];
+						if (!groupedResults) {
+							groupedResults = {};
+							groupedTypes[vocabName] = groupedResults;
 						}
 						
-						vocabResults.push(vocabResult);
+						for (var detailsIndex in vocabDetails) {
+							var detail = vocabDetails[detailsIndex];
+							var vocabResults = groupedResults[detail];
+							if (!vocabResults) {
+								vocabResults = [];
+								groupedResults[detail] = vocabResults;
+							}
+						
+							vocabResults.push(vocabResult);
+						}
 					}
-					
 				}
 			}
 		}

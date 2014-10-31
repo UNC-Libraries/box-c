@@ -70,9 +70,6 @@ public class MODSController extends AbstractSwordController {
 	@Autowired
 	private VocabularyHelperManager vocabularies;
 
-	@Autowired
-	private PID collectionsPid;
-
 	protected @Resource(name = "tagProviders")
 	List<TagProvider> tagProviders;
 
@@ -88,6 +85,16 @@ public class MODSController extends AbstractSwordController {
 	@RequestMapping(value = "describe/{pid}", method = RequestMethod.GET)
 	public String editDescription(@PathVariable("pid") String pid, Model model,
 			HttpServletRequest request) {
+
+		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+		// Retrieve the record for the object being edited
+		SimpleIdRequest objectRequest = new SimpleIdRequest(pid, accessGroups);
+		BriefObjectMetadataBean resultObject = queryLayer.getObjectById(objectRequest);
+		if (resultObject == null) {
+			throw new InvalidRecordRequestException();
+		}
+
+		model.addAttribute("resultObject", resultObject);
 		return "edit/description";
 	}
 
@@ -100,7 +107,7 @@ public class MODSController extends AbstractSwordController {
 
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
-		// Retrieve the record for the container being reviewed
+		// Retrieve the record for the object being edited
 		SimpleIdRequest objectRequest = new SimpleIdRequest(pid, accessGroups);
 		BriefObjectMetadataBean resultObject = queryLayer.getObjectById(objectRequest);
 		if (resultObject == null) {
@@ -114,11 +121,7 @@ public class MODSController extends AbstractSwordController {
 		results.put("resultObject", resultObject);
 
 		Map<String, Collection<String>> terms = new HashMap<>();
-		String parentCollection = resultObject.getParentCollection();
-		if (parentCollection == null) {
-			parentCollection = collectionsPid.getPid();
-		}
-		Set<VocabularyHelper> helpers = vocabularies.getHelpers(new PID(parentCollection));
+		Set<VocabularyHelper> helpers = vocabularies.getHelpers(new PID(pid));
 		if (helpers != null) {
 			for (VocabularyHelper helper : helpers) {
 				terms.put(helper.getVocabularyURI(), helper.getVocabularyTerms());

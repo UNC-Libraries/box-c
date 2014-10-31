@@ -1212,6 +1212,11 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 	public long getInvalidVocabularyCount(SearchRequest searchRequest) {
 
+		if (searchRequest.getRootPid() != null) {
+			addSelectedContainer(searchRequest.getRootPid(), searchRequest.getSearchState(),
+					searchRequest.isApplyCutoffs());
+		}
+
 		SolrQuery query = generateSearch(searchRequest);
 
 		query.setQuery(query.getQuery() + " AND " + solrSettings.getFieldName(SearchFieldKeys.RELATIONS.name()) + ":"
@@ -1234,7 +1239,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		SolrQuery query = generateSearch(searchRequest);
 
 		query.setQuery(query.getQuery() + " AND " + solrSettings.getFieldName(SearchFieldKeys.RELATIONS.name()) + ":"
-				+ relationName + "|*");
+				+ SolrSettings.sanitize(relationName) + "|*");
 		query.setRows(1000);
 
 		try {

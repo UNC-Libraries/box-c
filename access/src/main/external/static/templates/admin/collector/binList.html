@@ -27,7 +27,7 @@
 							<%= formatCounts(info.applicableCount, info.nonapplicableCount) %>
 						</span>
 					</h2>
-					<p>View deposit destination: <a href=""><%= info.destTitle %></a></p>
+					<p>View deposit destination: <a href="list/<%= info.destPID %>"><%= info.destTitle %></a></p>
 					<% if (info.collectionTitle) {%>
 						<p>Contained in collection: <%= info.collectionTitle %></p>
 					<% } %>

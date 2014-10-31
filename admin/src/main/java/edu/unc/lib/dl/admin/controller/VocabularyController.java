@@ -56,6 +56,15 @@ public class VocabularyController extends AbstractSearchController {
 		return "report/invalidVocabulary";
 	}
 
+	@RequestMapping(value = { "getInvalidVocab", "getInvalidVocab/" }, method = RequestMethod.GET)
+	public @ResponseBody
+	Map<String, Object> getInvalidVocab(HttpServletRequest request, HttpServletResponse response) {
+		SearchRequest searchRequest = generateSearchRequest(request);
+		searchRequest.setRootPid(collectionsPid.getPid());
+
+		return getInvalidVocab(searchRequest);
+	}
+
 	@RequestMapping(value = "getInvalidVocab/{pid}", method = RequestMethod.GET)
 	public @ResponseBody
 	Map<String, Object> getInvalidVocab(@PathVariable("pid") String pid, HttpServletRequest request,
@@ -63,8 +72,12 @@ public class VocabularyController extends AbstractSearchController {
 		response.setContentType("application/json");
 
 		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(collectionsPid.getPid());
+		searchRequest.setRootPid(pid);
 
+		return getInvalidVocab(searchRequest);
+	}
+
+	public Map<String, Object> getInvalidVocab(SearchRequest searchRequest) {
 		AccessGroupSet groups = GroupsThreadStore.getGroups();
 
 		BriefObjectMetadata selectedContainer =
@@ -77,8 +90,9 @@ public class VocabularyController extends AbstractSearchController {
 		Set<VocabularyHelper> helpers = vocabularies.getHelpers(collectionsPid);
 		if (helpers != null) {
 			for (VocabularyHelper helper : helpers) {
-				SearchResultResponse resultResponse = queryLayer.getRelationSet(searchRequest,
-						helper.getInvalidTermPredicate());
+				String predicate = helper.getInvalidTermPredicate();
+				predicate = predicate.substring(predicate.indexOf("#") + 1);
+				SearchResultResponse resultResponse = queryLayer.getRelationSet(searchRequest, predicate);
 
 				for (BriefObjectMetadata record : resultResponse.getResultList()) {
 					for (TagProvider provider : this.tagProviders) {

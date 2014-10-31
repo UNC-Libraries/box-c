@@ -36,12 +36,12 @@ public class DescriptiveTagProvider implements TagProvider {
 		}
 
 		// Invalid vocabulary terms
-		if (record.getContentStatus().contains(FacetConstants.INVALID_VOCAB_TERM)) {
+		if (record.getContentStatus() != null && record.getContentStatus().contains(FacetConstants.INVALID_VOCAB_TERM)) {
 			Map<String, Tag> tags = new HashMap<>();
 
 			for (String relation : record.getRelations()) {
-				if (relation.startsWith(invalidTerm.toString())) {
-					String type = relation.substring(invalidTerm.toString().length());
+				if (relation.startsWith(invalidTerm.getPredicate())) {
+					String type = relation.substring(invalidTerm.getPredicate().length());
 					String[] parts = type.split("\\|");
 					type = parts[0];
 
