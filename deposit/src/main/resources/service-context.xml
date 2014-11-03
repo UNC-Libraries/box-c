@@ -264,9 +264,9 @@
 		scope="prototype">
 		<property name="clamScan">
 			<bean class="com.philvarner.clamavj.ClamScan">
-				<constructor-arg type="String" value="${clamd.host:localhost}" />
-				<constructor-arg type="int" value="${clamd.port:3310}" />
-				<constructor-arg type="int" value="${clamd.timeout:60000}" />
+				<constructor-arg type="String" value="${clamd.host:localhost}" index="0" />
+				<constructor-arg type="int" value="${clamd.port:3310}" index="1" />
+				<constructor-arg type="int" value="${clamd.timeout:60000}" index="2" />
 			</bean>
 		</property>
 	</bean>
