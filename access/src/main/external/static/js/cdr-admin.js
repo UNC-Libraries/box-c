@@ -2186,20 +2186,20 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		if (this.metadata.tags) {
 			var tagIndex = -1;
 			for (var index in this.metadata.tags) {
-				if (this.metadata.tags[index].label.indexOf("invalid term") == 0) {
+				var tag = this.metadata.tags[index];
+				if (tag.label == "invalid term") {
+					var details =tag.details;
+					for (var detailsIndex in details) {
+						var detailParts = details[detailsIndex].split("|");
+						validationProblem +=  "<br/>&nbsp;&middot;&nbsp;" + detailParts[0] + ": " + detailParts[1];
+					}
+					
 					tagIndex = index;
 					break;
 				}
 			}
 			
 			if (tagIndex != -1) {
-				validationProblem += "<br/>Description contains invalid terms:";
-				
-				var details = this.metadata.tags[tagIndex].details;
-				for (var index in details) {
-					validationProblem +=  "<br/>&nbsp;&middot;&nbsp;" + details[index];
-				}
-				
 				delete this.metadata.tags[tagIndex];
 			}
 		}

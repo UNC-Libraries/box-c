@@ -37,6 +37,7 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaderSAX2Factory;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 import org.slf4j.Logger;
@@ -450,7 +451,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 
 		log.debug("Parsing and building Department vocabulary from {}", getVocabularyURI());
 
-		SAXBuilder sb = new SAXBuilder(false);
+		SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
 		Document skosDoc = sb.build(new ByteArrayInputStream(content));
 
 		// Extract all of the concepts and store them to an index
@@ -561,6 +562,15 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 	 */
 	@Override
 	public Set<String> getInvalidTerms(Element modsRoot) throws JDOMException {
+		return getInvalidTerms(modsRoot, false);
+	}
+
+	@Override
+	public Set<String> getInvalidTermsWithPrefix(Element modsRoot) throws JDOMException {
+		return getInvalidTerms(modsRoot, true);
+	}
+
+	public Set<String> getInvalidTerms(Element modsRoot, boolean includePrefix) throws JDOMException {
 		List<?> nameObjs = namePath.evaluate(modsRoot);
 
 		Set<String> invalidTerms = new HashSet<String>();
@@ -581,7 +591,9 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 
 				List<List<String>> departments = getAuthoritativeForm(affiliation);
 				if (departments == null || departments.size() == 0) {
-					// Affiliation was not found in the ontology
+					// Affiliation was not found in the ontology, add it to result set
+					if (includePrefix)
+						affiliation = getInvalidTermPrefix() + "|" + affiliation;
 					invalidTerms.add(affiliation);
 				}
 			}
@@ -619,14 +631,9 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 		return deptNames;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see edu.unc.lib.dl.xml.VocabularyHelper#getInvalidTermPredicate()
-	 */
 	@Override
-	public String getInvalidTermPredicate() {
-		return JDOMNamespaceUtil.CDR_NS.getURI() + "invalidTermAffiliation";
+	public String getInvalidTermPrefix() {
+		return "affiliation";
 	}
 
 	/*

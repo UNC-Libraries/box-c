@@ -16,24 +16,22 @@
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -41,15 +39,17 @@ import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 
-import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.VocabularyHelperManager;
+import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
  * @author bbpennel
@@ -57,13 +57,20 @@ import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
  */
 public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
-	@Mock
-	private DepartmentOntologyUtil deptUtil;
-
 	private VocabularyEnforcementJob job;
+
+	private Map<String, String> depositStatus;
+
+	@Mock
+	private VocabularyHelperManager vocabManager;
+
+	@Mock
+	private VocabularyHelper mockHelper;
 
 	private static final String MAIN_RESOURCE = "info:fedora/uuid:resource";
 	private static final String MAIN_UUID = "resource";
+
+	private static final String CONTAINER_PID = "info:fedora/container";
 
 	@Before
 	public void setup() throws Exception {
@@ -73,11 +80,11 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "jobStatusFactory", jobStatusFactory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
-		setField(job, "deptUtil", deptUtil);
+		setField(job, "vocabManager", vocabManager);
 
-		DepartmentOntologyUtil realDeptUtil = new DepartmentOntologyUtil();
-
-		when(deptUtil.getNamePath()).thenReturn(realDeptUtil.getNamePath());
+		depositStatus = new HashMap<>();
+		depositStatus.put(DepositField.containerId.name(), CONTAINER_PID);
+		when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
 
 		job.getDescriptionDir().mkdir();
 
@@ -90,228 +97,48 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 	}
 
 	@Test
-	public void noMatchingDeptTest() throws Exception {
+	public void rewriteMODSTest() throws Exception {
 		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"),
 				job.getDescriptionDir().toPath().resolve(MAIN_UUID + ".xml"));
 
-		when(deptUtil.getInvalidTerms(any(Element.class))).thenReturn(new HashSet<String>(Arrays.asList("dept1")));
+		Set<VocabularyHelper> helpers = new HashSet<>(Arrays.asList(mockHelper));
+		when(vocabManager.getRemappingHelpers(any(PID.class))).thenReturn(helpers);
+
+		doAnswer(new Answer<Boolean>() {
+			@Override
+			public Boolean answer(InvocationOnMock invocation) throws Throwable {
+				Element doc = (Element) invocation.getArguments()[0];
+				doc.addContent(new Element("testElement"));
+				return true;
+			}
+
+		}).when(mockHelper).updateDocumentTerms(any(Element.class));
 
 		job.run();
 
-		verify(deptUtil).getAuthoritativeForm(anyString());
+		verify(mockHelper).updateDocumentTerms(any(Element.class));
 
 		Document modsDoc = getMODSDocument(MAIN_UUID);
-		Element affiliation = element("/mods:mods/mods:name/mods:affiliation", modsDoc);
-		assertEquals("Affiliation should not have been changed", "dept1", affiliation.getText());
-
-		Model model = job.getModel();
-		Resource mainResource = model.getResource(MAIN_RESOURCE);
-		Property invalidTermP = model.createProperty(invalidTerm.getURI().toString());
-		Statement invalidStatement = model.getProperty(mainResource, invalidTermP);
-		assertEquals("Department was not logged as being incorrect", "dept1", invalidStatement.getString());
+		Element testElement = element("/mods:mods/testElement", modsDoc);
+		assertTrue("Document was not modified", testElement != null);
 	}
 
 	@Test
-	public void singleAffiliationTest() throws Exception {
-		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"),
-				job.getDescriptionDir().toPath().resolve(MAIN_UUID + ".xml"));
+	public void noRewriteMODSTest() throws Exception {
+		Path path = job.getDescriptionDir().toPath().resolve(MAIN_UUID + ".xml");
+		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), path);
+		long modified = path.toFile().lastModified();
 
-		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept2")));
+		Set<VocabularyHelper> helpers = new HashSet<>(Arrays.asList(mockHelper));
+		when(vocabManager.getRemappingHelpers(any(PID.class))).thenReturn(helpers);
+		when(mockHelper.updateDocumentTerms(any(Element.class))).thenReturn(false);
 
-		job.run();
-
-		verify(deptUtil).getAuthoritativeForm(anyString());
-
-		Document modsDoc = getMODSDocument(MAIN_UUID);
-		Element affiliation = element("/mods:mods/mods:name/mods:affiliation", modsDoc);
-		assertEquals("Affiliation was not changed", "dept2", affiliation.getText());
-
-		Model model = job.getModel();
-		Resource mainResource = model.getResource(MAIN_RESOURCE);
-		Property invalidTermP = model.createProperty(invalidTerm.getURI().toString());
-		Statement invalidStatement = model.getProperty(mainResource, invalidTermP);
-		assertNull("Successful lookup should not create invalid term statement", invalidStatement);
-	}
-
-	@Test
-	public void deptPathTest() throws Exception {
-		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), job.getDescriptionDir().toPath()
-				.resolve(MAIN_UUID + ".xml"));
-
-		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(
-				Arrays.asList(Arrays.asList("dept2", "dept3", "dept4", "dept5")));
+		Thread.sleep(100L);
 
 		job.run();
 
-		verify(deptUtil).getAuthoritativeForm(anyString());
-
-		Document modsDoc = getMODSDocument(MAIN_UUID);
-		List<String> affiliations = stringList(xpath("/mods:mods/mods:name/mods:affiliation", modsDoc));
-		assertTrue("Lowest level department was not added", affiliations.contains("dept2"));
-		assertTrue("Highest level department was not added", affiliations.contains("dept5"));
-
-		assertFalse("Intermediate department should not be included in MODS", affiliations.contains("dept3"));
-		assertEquals("Only two tiers of the department path should have been added", 2, affiliations.size());
-	}
-
-	@Test
-	public void deptMultiplePathsTest() throws Exception {
-		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), job.getDescriptionDir().toPath()
-				.resolve(MAIN_UUID + ".xml"));
-
-		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(
-				Arrays.asList(Arrays.asList("dept2", "dept3"), Arrays.asList("dept2", "dept5")));
-
-		job.run();
-
-		verify(deptUtil).getAuthoritativeForm(anyString());
-
-		Document modsDoc = getMODSDocument(MAIN_UUID);
-		List<String> affiliations = stringList(xpath("/mods:mods/mods:name/mods:affiliation", modsDoc));
-		assertTrue("Lowest level department was not added", affiliations.contains("dept2"));
-		assertTrue("Highest level department from first path not added", affiliations.contains("dept3"));
-		assertTrue("Highest level department from second path was not added", affiliations.contains("dept5"));
-
-		assertEquals("Tiers from both paths should have been added", 3, affiliations.size());
-	}
-
-	@Test
-	public void deptMultipleBaseTest() throws Exception {
-		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), job.getDescriptionDir().toPath()
-				.resolve(MAIN_UUID + ".xml"));
-
-		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(
-				Arrays.asList(Arrays.asList("dept5", "dept2"), Arrays.asList("dept3", "dept4", "dept2")));
-
-		job.run();
-
-		verify(deptUtil).getAuthoritativeForm(anyString());
-
-		Document modsDoc = getMODSDocument(MAIN_UUID);
-		List<String> affiliations = stringList(xpath("/mods:mods/mods:name/mods:affiliation", modsDoc));
-		assertTrue("Shared top tier not added", affiliations.contains("dept2"));
-		assertTrue("Base tier not added", affiliations.contains("dept3"));
-		assertTrue("Base tier not added", affiliations.contains("dept5"));
-
-		assertEquals("Incorrect number of affiliations", 3, affiliations.size());
-	}
-
-	@Test
-	public void deptCorrectTest() throws Exception {
-		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), job.getDescriptionDir().toPath()
-				.resolve(MAIN_UUID + ".xml"));
-
-		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept1")));
-
-		job.run();
-
-		verify(deptUtil).getAuthoritativeForm(anyString());
-
-		Document modsDoc = getMODSDocument(MAIN_UUID);
-		List<String> affiliations = stringList(xpath("/mods:mods/mods:name/mods:affiliation", modsDoc));
-		assertTrue("Starting dept should still be present", affiliations.contains("dept1"));
-
-		assertEquals("Only the original dept should be present", 1, affiliations.size());
-	}
-
-	@Test
-	public void multipleNamesTest() throws Exception {
-		Files.copy(Paths.get("src/test/resources/mods/multipleNameAffiliationsMods.xml"), job.getDescriptionDir()
-				.toPath().resolve(MAIN_UUID + ".xml"));
-
-		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept3", "dept1")));
-		when(deptUtil.getAuthoritativeForm("dept2")).thenReturn(Arrays.asList(Arrays.asList("dept5", "dept4")));
-
-		job.run();
-
-		verify(deptUtil, times(3)).getAuthoritativeForm(anyString());
-
-		Document modsDoc = getMODSDocument(MAIN_UUID);
-		// System.out.println(new XMLOutputter(Format.getPrettyFormat()).outputString(modsDoc));
-
-		List<String> firstNameAffils = stringList(xpath("/mods:mods/mods:name[1]/mods:affiliation", modsDoc));
-		assertTrue("Original department not present", firstNameAffils.contains("dept1"));
-		assertTrue("Expanded dept not present", firstNameAffils.contains("dept3"));
-		assertEquals("Incorrect number of affiliations on first name", 2, firstNameAffils.size());
-
-		List<String> secondNameAffils = stringList(xpath("/mods:mods/mods:name[2]/mods:affiliation", modsDoc));
-		assertEquals("No affiliations should be added to second name", 0, secondNameAffils.size());
-
-		List<String> thirdNameAffils = stringList(xpath("/mods:mods/mods:name[3]/mods:affiliation", modsDoc));
-		assertTrue("Original department not present", thirdNameAffils.contains("dept1"));
-		assertTrue("Expanded dept not present", thirdNameAffils.contains("dept3"));
-		assertTrue("Expanded dept not present", thirdNameAffils.contains("dept4"));
-		assertTrue("Expanded dept not present", thirdNameAffils.contains("dept5"));
-		assertEquals("Incorrect number of affiliations on third name", 4, thirdNameAffils.size());
-	}
-
-	@Test
-	public void duplicateLookupTest() throws Exception {
-		Files.copy(Paths.get("src/test/resources/mods/multipleNameAffiliationsMods.xml"), job.getDescriptionDir()
-				.toPath().resolve(MAIN_UUID + ".xml"));
-
-		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept3")));
-		when(deptUtil.getAuthoritativeForm("dept2")).thenReturn(Arrays.asList(Arrays.asList("dept3")));
-
-		job.run();
-
-		Document modsDoc = getMODSDocument(MAIN_UUID);
-
-		List<String> thirdNameAffils = stringList(xpath("/mods:mods/mods:name[3]/mods:affiliation", modsDoc));
-		assertTrue("Mapped department not found", thirdNameAffils.contains("dept3"));
-		assertEquals("Incorrect number of affiliations on third name", 1, thirdNameAffils.size());
-	}
-
-	@Test
-	public void multipleInvalidTermsTest() throws Exception {
-		Files.copy(Paths.get("src/test/resources/mods/multipleNameAffiliationsMods.xml"), job.getDescriptionDir()
-				.toPath().resolve(MAIN_UUID + ".xml"));
-
-		when(deptUtil.getInvalidTerms(any(Element.class)))
-				.thenReturn(new HashSet<String>(Arrays.asList("dept1", "dept2")));
-
-		job.run();
-
-		verify(deptUtil, times(3)).getAuthoritativeForm(anyString());
-
-		Model model = job.getModel();
-		Resource mainResource = model.getResource(MAIN_RESOURCE);
-		Property invalidTermP = model.createProperty(invalidTerm.getURI().toString());
-		StmtIterator stmtIt = mainResource.listProperties(invalidTermP);
-		List<String> invalidTerms = new ArrayList<>();
-		while (stmtIt.hasNext()) {
-			invalidTerms.add(stmtIt.next().getString());
-		}
-
-		assertTrue("Property indicating invalid affiliation was not added", invalidTerms.contains("dept1"));
-		assertTrue("Property indicating invalid affiliation was not added", invalidTerms.contains("dept2"));
-		assertEquals("Incorrect number of invalid affiliations logged", 2, invalidTerms.size());
-	}
-
-	@Test
-	public void parentDuplicateTest() throws Exception {
-		Files.copy(Paths.get("src/test/resources/mods/multipleNameAffiliationsMods.xml"), job.getDescriptionDir()
-				.toPath().resolve(MAIN_UUID + ".xml"));
-
-		when(deptUtil.getAuthoritativeForm("dept1")).thenReturn(Arrays.asList(Arrays.asList("dept1")));
-		when(deptUtil.getAuthoritativeForm("dept2")).thenReturn(Arrays.asList(Arrays.asList("dept1", "dept2")));
-
-		job.run();
-
-		Document modsDoc = getMODSDocument(MAIN_UUID);
-
-		List<String> thirdNameAffils = stringList(xpath("/mods:mods/mods:name[3]/mods:affiliation", modsDoc));
-		assertTrue("Mapped department not found", thirdNameAffils.contains("dept1"));
-		assertTrue("Mapped department not found", thirdNameAffils.contains("dept2"));
-		assertEquals("Incorrect number of affiliations on third name", 2, thirdNameAffils.size());
-	}
-
-	private List<String> stringList(List<?> elements) {
-		List<String> values = new ArrayList<>(elements.size());
-		for (Object elObj : elements) {
-			values.add(((Element) elObj).getText());
-		}
-		return values;
+		verify(mockHelper).updateDocumentTerms(any(Element.class));
+		assertTrue("Timestamp on MODS file changed", modified == path.toFile().lastModified());
 	}
 
 	private Document getMODSDocument(String uuid) throws Exception {

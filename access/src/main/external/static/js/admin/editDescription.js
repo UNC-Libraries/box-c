@@ -33,13 +33,20 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'],
 			var validationProblem = "";
 			var vocabMap = {};
 			for (var index in tags) {
-				if (tags[index].label.indexOf("invalid term") == 0) {
-					var vocabName = tags[index].label.substring("invalid term ".length);
-					vocabMap[vocabName] = "";
+				if (tags[index].label == "invalid term") {
 					var details = tags[index].details;
-					for (var index in details) {
-						vocabMap[vocabName] +=  "<li><span class='warning_symbol'>!</span>" + details[index] + "</li>";
+					for (var detailIndex in details) {
+						var detail = details[detailIndex]
+						var vocabName = detail.substring(0, detail.indexOf("|"));
+						var term = detail.substring(detail.indexOf("|") + 1);
+						
+						if (!(vocabName in vocabMap)) {
+							vocabMap[vocabName] = "";
+						}
+						
+						vocabMap[vocabName] +=  "<li><span class='warning_symbol'>!</span>" + term + "</li>";
 					}
+					break;
 				}
 			}
 		

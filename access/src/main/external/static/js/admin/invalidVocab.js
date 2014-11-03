@@ -35,51 +35,26 @@ define("invalidVocab", ["jquery", "tpl!../templates/admin/invalidVocab"], functi
 		
 		var groupedTypes = {};
 		
+		// Group results around each vocab term within a vocabulary
 		for (var index in vocabTypes) {
-			
 			var vocabTypeList = vocabTypes[index];
+			var groupedResults = {};
+			groupedTypes[index] = groupedResults;
+			
 			for (var resultIndex in vocabTypeList) {
 				var vocabResult = vocabTypeList[resultIndex];
 				
-				var affilTag;
-				for (var tagIndex in vocabResult.tags) {
-					var tag = vocabResult.tags[tagIndex];
-					if (tag.label == "invalid affiliation") {
-						affilTag = tag;
-						break;
+				for (var termIndex in vocabResult.invalidTerms) {
+					var term = vocabResult.invalidTerms[termIndex];
+					
+					var vocabResults = groupedResults[term];
+					
+					if (!vocabResults) {
+						vocabResults = [];
+						groupedResults[term] = vocabResults;
 					}
-				}
 				
-				var vocabMap = {};
-				var tags = vocabResult.tags;
-				for (var index in tags) {
-					if (tags[index].label.indexOf("invalid term ") == 0) {
-						var vocabName = tags[index].label.substring("invalid term ".length);
-						vocabMap[vocabName] = tags[index].details;
-					}
-				}
-				
-				if (!$.isEmptyObject(vocabMap)) {
-					for (var vocabName in vocabMap) {
-						var vocabDetails = vocabMap[vocabName];
-						
-						var groupedResults = groupedTypes[vocabName];
-						if (!groupedResults) {
-							groupedResults = {};
-							groupedTypes[vocabName] = groupedResults;
-						}
-						
-						for (var detailsIndex in vocabDetails) {
-							var detail = vocabDetails[detailsIndex];
-							var vocabResults = groupedResults[detail];
-							if (!vocabResults) {
-								vocabResults = [];
-								groupedResults[detail] = vocabResults;
-							}
-						
-							vocabResults.push(vocabResult);
-						}
-					}
+					vocabResults.push(vocabResult);
 				}
 			}
 		}
