@@ -25,7 +25,7 @@ require.config({
 		"SearchMenu" : "cdr-admin",
 		"ResultTableActionMenu" : "cdr-admin",
 		"ResultTableView" : "cdr-admin",
-		"ResultView" : "admin/src/ResultView",
+		"ResultView" : "cdr-admin",
 		"MoveDropLocation" : "cdr-admin",
 		"CreateContainerForm" : "cdr-admin",
 		"AbstractFileUploadForm" : "cdr-admin",

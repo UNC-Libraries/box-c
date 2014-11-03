@@ -17,7 +17,22 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			resultTableHeaderTemplate : "tpl!../templates/admin/resultTableHeader",
 			searchMenuTemplate : "tpl!../templates/admin/searchMenu",
 			navBarTemplate : "tpl!../templates/admin/navigationBar",
-			pathTrailTemplate : "tpl!../templates/admin/pathTrail"
+			pathTrailTemplate : "tpl!../templates/admin/pathTrail",
+			
+			resultFields : undefined,
+			resultActions : [
+						{
+							actions : [
+								{action : 'PublishBatch', label : 'Publish'},
+								{action : 'UnpublishBatch', label : 'Unpublish'}
+							]
+						}, {
+							actions : [
+								{action : 'RestoreBatch', label : 'Restore'},
+								{action : 'DeleteBatch', label : 'Delete'}
+							]
+						}
+					]
 		},
 		
 		_create : function() {
@@ -36,6 +51,18 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			
 			this.$alertHandler = $("<div id='alertHandler'></div>");
 			this.$alertHandler.alertHandler().appendTo(document.body).hide();
+			
+			if (!this.options.resultFields) {
+				this.options.resultFields = {
+						"select" : {name : "", colClass : "narrow", dataType : "index", sortField : "collection"},
+						"resourceType" : {name : "", colClass : "narrow", sortField : "resourceType"},
+						"title" : {name : "Title", colClass : "itemdetails", dataType : "title", sortField : "title"},
+						"creator" : {name : "Creator", colClass : "creator", sortField : "creator"},
+						"dateAdded" : {name : "Added", colClass : "date_added", sortField : "dateAdded"},
+						"dateModified" : {name : "Modified", colClass : "date_added", sortField : "dateUpdated"},
+						"actionMenu" : {name : "", colClass : "narrow"}
+					};
+			}
 			
 			this._render();
 		},
@@ -69,32 +96,13 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					container : container,
 					alertHandler : this.$alertHandler,
 					resultUrl : self.options.resultUrl,
-					resultFields : {
-						"select" : {name : "", colClass : "narrow", dataType : "index", sortField : "collection"},
-						"resourceType" : {name : "", colClass : "narrow", sortField : "resourceType"},
-						"title" : {name : "Title", colClass : "itemdetails", dataType : "title", sortField : "title"},
-						"creator" : {name : "Creator", colClass : "creator", sortField : "creator"},
-						"dateAdded" : {name : "Added", colClass : "date_added", sortField : "dateAdded"},
-						"dateModified" : {name : "Modified", colClass : "date_added", sortField : "dateUpdated"},
-						"actionMenu" : {name : "", colClass : "narrow"}
-					},
+					resultFields : self.options.resultFields,
 					resultHeader : resultTableHeader,
 					postRender : $.proxy(self.postRender, self),
 					postInit : $.proxy(self.resizeResults, self),
 					actionHandler : actionHandler,
-					resultActions : [
-						{
-							actions : [
-								{action : 'PublishBatch', label : 'Publish'},
-								{action : 'UnpublishBatch', label : 'Unpublish'}
-							]
-						}, {
-							actions : [
-								{action : 'RestoreBatch', label : 'Restore'},
-								{action : 'DeleteBatch', label : 'Delete'}
-							]
-						}
-					]
+					resultActions : self.options.resultActions,
+					resultEntryTemplate : self.options.resultEntryTemplate
 				});
 			});
 		},
