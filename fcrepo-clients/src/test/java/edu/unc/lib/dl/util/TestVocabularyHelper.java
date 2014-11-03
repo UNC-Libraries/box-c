@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.util;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -28,6 +29,7 @@ public class TestVocabularyHelper implements VocabularyHelper {
 
 	private Set<String> invalidTerms;
 	private String vocabURI;
+	private String prefix;
 
 	@Override
 	public List<List<String>> getAuthoritativeForm(String term) {
@@ -41,6 +43,15 @@ public class TestVocabularyHelper implements VocabularyHelper {
 
 	public void setInvalidTerms(Set<String> invalidTerms) {
 		this.invalidTerms = invalidTerms;
+	}
+
+	@Override
+	public Set<String> getInvalidTermsWithPrefix(Element modsRoot) throws JDOMException {
+		Set<String> prefixed = new HashSet<>(invalidTerms.size());
+		for (String term : invalidTerms) {
+			prefixed.add(prefix + "|" + term);
+		}
+		return prefixed;
 	}
 
 	@Override
@@ -59,8 +70,12 @@ public class TestVocabularyHelper implements VocabularyHelper {
 	}
 
 	@Override
-	public String getInvalidTermPredicate() {
-		return null;
+	public String getInvalidTermPrefix() {
+		return prefix;
+	}
+
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
 	}
 
 	@Override
@@ -81,5 +96,4 @@ public class TestVocabularyHelper implements VocabularyHelper {
 	public List<List<String>> getAuthoritativeForms(Element docElement) throws JDOMException {
 		return null;
 	}
-
 }

@@ -147,9 +147,12 @@ public class VocabularyHelperManagerTest {
 		manager.init();
 
 		Set<VocabularyHelper> helpers = manager.getHelpers(new PID(ITEM_PID));
-		((TestVocabularyHelper) helpers.iterator().next()).setInvalidTerms(new HashSet<>(Arrays.asList("term", "term2")));
+		TestVocabularyHelper helper = (TestVocabularyHelper) helpers.iterator().next();
+		helper.setInvalidTerms(new HashSet<>(Arrays.asList("term", "term2")));
+		helper.setPrefix(VOCAB_TYPE);
 
-		when(queryService.fetchBySubjectAndPredicate(any(PID.class), anyString())).thenReturn(Arrays.asList("term"));
+		when(queryService.fetchBySubjectAndPredicate(any(PID.class), anyString())).thenReturn(
+				Arrays.asList(VOCAB_TYPE + "|term"));
 
 		Element doc = mock(Element.class);
 		manager.updateInvalidTermsRelations(new PID(ITEM_PID), doc);

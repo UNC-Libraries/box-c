@@ -55,6 +55,8 @@ public interface VocabularyHelper {
 	 */
 	public Set<String> getInvalidTerms(Element docElement) throws JDOMException;
 
+	public Set<String> getInvalidTermsWithPrefix(Element modsRoot) throws JDOMException;
+
 	/**
 	 * Locates invalid terms in the given document and replaces them with authoritative terms when possible
 	 *
@@ -74,11 +76,11 @@ public interface VocabularyHelper {
 	public void setSelector(String selector);
 
 	/**
-	 * Get the name of the triple predicate used for storing invalid terms from this vocabulary
+	 * Get the name of the triple prefix used for storing invalid terms from this vocabulary
 	 *
 	 * @return
 	 */
-	public String getInvalidTermPredicate();
+	public String getInvalidTermPrefix();
 
 	/**
 	 * Get the URI used to identify this vocabulary

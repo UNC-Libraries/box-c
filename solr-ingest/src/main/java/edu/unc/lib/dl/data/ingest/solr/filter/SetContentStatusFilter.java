@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_URI;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +26,7 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 
 /**
  * Sets content related status tags
@@ -64,11 +63,8 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 		// Valid/Not Valid content according to FITS
 
 		// Vocabulary validation
-		for (String relation : triples.keySet()) {
-			if (relation.startsWith(CDR_URI + "invalidTerm")) {
-				status.add(FacetConstants.INVALID_VOCAB_TERM);
-				break;
-			}
+		if (triples.containsKey(CDRProperty.invalidTerm.toString())) {
+			status.add(FacetConstants.INVALID_VOCAB_TERM);
 		}
 
 		// If its an aggregate, indicate if it has a default web object

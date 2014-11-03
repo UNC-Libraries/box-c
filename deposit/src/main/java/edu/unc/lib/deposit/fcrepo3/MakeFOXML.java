@@ -54,8 +54,8 @@ import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Creates the Fedora Object XML files required for ingest into a Fedora 3.x repository.
@@ -179,13 +179,13 @@ public class MakeFOXML extends AbstractDepositJob {
 			}
 
 			// Add in invalid term triples
-			String invalidTermPrefix = CDRProperty.invalidTerm.toString();
-			StmtIterator props = o.listProperties();
-			while (props.hasNext()) {
-				Statement prop = props.next();
-				String predicate = prop.getPredicate().toString();
-				if (predicate.startsWith(invalidTermPrefix)) {
-					relsExt.add(o, m.getProperty(predicate), prop.getLiteral());
+			Property invalidTermProp = cdrprop(m, CDRProperty.invalidTerm);
+			if (o.hasProperty(invalidTermProp)) {
+				StmtIterator props = o.listProperties(invalidTermProp);
+
+				while (props.hasNext()) {
+					Statement prop = props.next();
+					relsExt.add(o, invalidTermProp, prop.getLiteral());
 				}
 			}
 

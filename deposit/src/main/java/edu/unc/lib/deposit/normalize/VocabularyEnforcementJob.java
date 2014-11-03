@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.normalize;
 
+import static edu.unc.lib.deposit.work.DepositGraphUtils.cdrprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.walkChildrenDepthFirst;
 
 import java.io.File;
@@ -30,6 +31,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaderSAX2Factory;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
@@ -43,6 +45,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
 import edu.unc.lib.dl.xml.VocabularyHelper;
@@ -76,7 +79,7 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 		Bag deposit = model.getBag(getDepositPID().getURI());
 		walkChildrenDepthFirst(deposit, resourcePIDs, true);
 
-		SAXBuilder sb = new SAXBuilder(false);
+		SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
 
 		// Vocabulary mappings need to be resolved against the destination since they are not in the hierarchy yet
 		PID destinationPID = new PID(getDepositStatus().get(DepositField.containerId.name()));
@@ -135,21 +138,19 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 	 * @throws JDOMException
 	 */
 	private void addInvalidTerms(PID pid, PID destination, Element doc, Model model) throws JDOMException {
-		Map<String, Set<String>> invalidTermMap = vocabManager.getInvalidTerms(destination, doc);
+		Map<String, Set<String>> invalidTermMap = vocabManager.getInvalidTermsWithPrefix(destination, doc);
 		if (invalidTermMap == null)
 			return;
 
+		Property invalidTermProp = cdrprop(model, CDRProperty.invalidTerm);
 		for (Entry<String, Set<String>> invalidTermEntry : invalidTermMap.entrySet()) {
-			String predicate = vocabManager.getInvalidTermPredicate(invalidTermEntry.getKey());
-			Property invalidTermPredicate = model.createProperty(predicate);
-
 			Set<String> invalidTerms = invalidTermEntry.getValue();
 
 			// Persist the list of invalid vocab terms out to the model
 			if (invalidTerms.size() > 0) {
 				Resource resource = model.getResource(pid.getURI());
 				for (String invalid : invalidTerms) {
-					model.addLiteral(resource, invalidTermPredicate, model.createLiteral(invalid));
+					model.addLiteral(resource, invalidTermProp, model.createLiteral(invalid));
 				}
 			}
 		}

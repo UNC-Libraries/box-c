@@ -212,7 +212,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		for (String relation: this.relations) {
 			if (relation == null)
 				continue;
-			String[] rdfParts = relation.split("\\|");
+			String[] rdfParts = relation.split("\\|", 2);
 
 			List<String> values = this.relationsMap.get(rdfParts[0]);
 			if (values == null) {
@@ -223,6 +223,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		}
 	}
 
+	@Override
 	public List<String> getRelation(String relationName) {
 		if (relationsMap == null)
 			return null;

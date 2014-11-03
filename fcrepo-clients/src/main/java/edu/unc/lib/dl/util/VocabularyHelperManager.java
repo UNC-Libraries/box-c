@@ -193,14 +193,29 @@ public class VocabularyHelperManager {
 		if (helpers == null)
 			return;
 
-		for (VocabularyHelper helper : helpers) {
-			String relationPredicate = helper.getInvalidTermPredicate();
+		String invalidTermPred = CDRProperty.invalidTerm.toString();
+		List<String> allExistingTerms = queryService.fetchBySubjectAndPredicate(pid, invalidTermPred);
 
-			List<String> existingTerms = queryService.fetchBySubjectAndPredicate(pid, relationPredicate);
+		// Decompose triple values and group terms by vocabulary prefix
+		Map<String, List<String>> termMap = new HashMap<>();
+		for (String term : allExistingTerms) {
+			String parts[] = term.split("\\|", 2);
+
+			List<String> terms = termMap.get(parts[0]);
+			if (terms == null) {
+				terms = new ArrayList<>();
+				termMap.put(parts[0], terms);
+			}
+
+			terms.add(term);
+		}
+
+		for (VocabularyHelper helper : helpers) {
+			List<String> existingTerms = termMap.get(helper.getInvalidTermPrefix());
 
 			Set<String> invalidTerms;
 			try {
-				invalidTerms = helper.getInvalidTerms(docElement);
+				invalidTerms = helper.getInvalidTermsWithPrefix(docElement);
 			} catch (JDOMException e) {
 				log.error("Failed to extract invalid terms from {}", pid.getPid(), e);
 				continue;
@@ -217,7 +232,7 @@ public class VocabularyHelperManager {
 				removeTerms.removeAll(invalidTerms);
 
 				for (String term : removeTerms) {
-					managementClient.purgeLiteralStatement(pid, relationPredicate, term, null);
+					managementClient.purgeLiteralStatement(pid, invalidTermPred, term, null);
 				}
 
 				// Calculate the set of newly invalid terms which need to be added
@@ -226,7 +241,7 @@ public class VocabularyHelperManager {
 
 			if (invalidTerms.size() > 0) {
 				for (String term : invalidTerms) {
-					managementClient.addLiteralStatement(pid, relationPredicate, term, null);
+					managementClient.addLiteralStatement(pid, invalidTermPred, term, null);
 				}
 			}
 		}
@@ -240,6 +255,14 @@ public class VocabularyHelperManager {
 	 * @return
 	 */
 	public Map<String, Set<String>> getInvalidTerms(PID pid, Element docElement) {
+		return getInvalidTerms(pid, docElement, false);
+	}
+
+	public Map<String, Set<String>> getInvalidTermsWithPrefix(PID pid, Element docElement) {
+		return getInvalidTerms(pid, docElement, true);
+	}
+
+	private Map<String, Set<String>> getInvalidTerms(PID pid, Element docElement, boolean includePrefix) {
 
 		Set<VocabularyHelper> helpers = getHelpers(pid);
 		if (helpers == null)
@@ -250,7 +273,13 @@ public class VocabularyHelperManager {
 		for (VocabularyHelper helper : helpers) {
 			if (helper != null) {
 				try {
-					Set<String> invalidTerms = helper.getInvalidTerms(docElement);
+					Set<String> invalidTerms;
+					if (includePrefix) {
+						invalidTerms = helper.getInvalidTermsWithPrefix(docElement);
+					} else {
+						invalidTerms = helper.getInvalidTerms(docElement);
+					}
+
 					if (invalidTerms != null)
 						results.put(helper.getVocabularyURI(), invalidTerms);
 				} catch (JDOMException e) {
@@ -268,11 +297,11 @@ public class VocabularyHelperManager {
 	 * @param vocabKey
 	 * @return
 	 */
-	public String getInvalidTermPredicate(String vocabKey) {
+	public String getInvalidTermPrefix(String vocabKey) {
 		VocabularyHelper helper = vocabHelperMap.get(vocabKey);
 		if (helper == null)
 			return null;
-		return helper.getInvalidTermPredicate();
+		return helper.getInvalidTermPrefix();
 	}
 
 	/**

@@ -17,8 +17,7 @@ package edu.unc.lib.dl.search.solr.tags;
 
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
@@ -37,23 +36,16 @@ public class DescriptiveTagProvider implements TagProvider {
 
 		// Invalid vocabulary terms
 		if (record.getContentStatus() != null && record.getContentStatus().contains(FacetConstants.INVALID_VOCAB_TERM)) {
-			Map<String, Tag> tags = new HashMap<>();
+			Tag invalidTermTag = new Tag("invalid term");
 
-			for (String relation : record.getRelations()) {
-				if (relation.startsWith(invalidTerm.getPredicate())) {
-					String type = relation.substring(invalidTerm.getPredicate().length());
-					String[] parts = type.split("\\|");
-					type = parts[0];
-
-					Tag tag = tags.get(relation);
-					if (tag == null) {
-						tag = new Tag("invalid term " + type);
-						record.addTag(tag);
-					}
-
-					tag.addDetail(parts[1]);
+			List<String> invalidTerms = record.getRelation(invalidTerm.getPredicate());
+			if (invalidTerms != null) {
+				for (String relation : invalidTerms) {
+					invalidTermTag.addDetail(relation);
 				}
 			}
+
+			record.addTag(invalidTermTag);
 		}
 	}
 
