@@ -19,7 +19,7 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <%@ page trimDirectiveWhitespaces="true" %>
 <div class="result_page contentarea">
-	<c:import url="search/searchMenu.jsp"/>
+	<div class="search_menu"></div>
 
 	<div class="result_area">
 		<div>
