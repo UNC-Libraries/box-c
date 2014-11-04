@@ -90,13 +90,16 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'],
 		};
 		
 		if (vocabTerms) {
-			var terms = vocabTerms["http://cdr.unc.edu/vocabulary/Affiliation"].sort();
-			editorOptions["elementUpdated"] = function(event) {
-				if (event.action == 'render' && this.objectType.localName == 'affiliation') {
-					this.textInput.autocomplete({
-						source : terms,
-						minLength : 0
-					});
+			var terms = vocabTerms["http://cdr.unc.edu/vocabulary/Affiliation"];
+			if (terms) {
+				terms = terms.sort();
+				editorOptions["elementUpdated"] = function(event) {
+					if (event.action == 'render' && this.objectType.localName == 'affiliation') {
+						this.textInput.autocomplete({
+							source : terms,
+							minLength : 0
+						});
+					}
 				}
 			}
 		}
