@@ -92,7 +92,8 @@ public class MakeFOXML extends AbstractDepositJob {
 		Map<String, String> status = getDepositStatus();
 		boolean excludeDepositRecord = Boolean.parseBoolean(status.get(DepositField.excludeDepositRecord.name()));
 
-		boolean publishObjects = Boolean.parseBoolean(status.get(DepositField.publishObjects.name()));
+		String publishObjectsValue = status.get(DepositField.publishObjects.name());
+		boolean publishObjects = !"false".equals(publishObjectsValue);
 		Property publishedProperty = cdrprop(m, CDRProperty.isPublished);
 
 		// establish task size
