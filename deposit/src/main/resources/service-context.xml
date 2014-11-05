@@ -80,7 +80,7 @@
 				<constructor-arg ref="jobFactory" />
 			</bean>
 		</constructor-arg>
-		<constructor-arg name="numWorkers" value="4" />
+		<constructor-arg name="numWorkers" value="${workers.num:4}" />
 	</bean>
 	
 	<bean id="cdrMetsDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
@@ -95,7 +95,7 @@
 				<constructor-arg ref="jobFactory" />
 			</bean>
 		</constructor-arg>
-		<constructor-arg name="numWorkers" value="1" />
+		<constructor-arg name="numWorkers" value="${workers.mets.num:1}" />
 	</bean>
 
 	<bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor">
@@ -117,21 +117,16 @@
 	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient" init-method="init">
 		<property name="fedoraContextUrl"
 			value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fedora}" />
-		<property name="username" value="${fedora.username}" />
-		<property name="password" value="${fedora.password}" />
-		<property name="interceptors">
-			<list>
-				<bean class="edu.unc.lib.dl.acl.filter.GroupsToHttpHeaderInterceptor" />
-			</list>
-		</property>
+		<property name="username" value="${fedora.admin.username}" />
+		<property name="password" value="${fedora.admin.password}" />
 	</bean>
 
 	<bean id="forwardedManagementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
 		init-method="init">
 		<property name="fedoraContextUrl"
 			value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fedora}" />
-		<property name="username" value="${fedora.username}" />
-		<property name="password" value="${fedora.password}" />
+		<property name="username" value="${fedora.forwarded.username}" />
+		<property name="password" value="${fedora.forwarded.password}" />
 		<property name="accessClient" ref="accessClient"/>
 		<!-- <property name="tripleStoreQueryService" ref="tripleStoreQueryService"/> -->
 		<property name="interceptors">
