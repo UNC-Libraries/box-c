@@ -88,7 +88,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
 		job.getDescriptionDir().mkdir();
 
-		Model model = job.getModel();
+		Model model = job.getWritableModel();
 		Bag depositBag = model.createBag(job.getDepositPID().getURI());
 		Resource mainResource = model.createResource(MAIN_RESOURCE);
 		depositBag.add(mainResource);

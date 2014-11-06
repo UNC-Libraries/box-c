@@ -104,7 +104,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 		unzipPackages();
 
 		// deposit RDF bag
-		Model model = getModel();
+		Model model = getWritableModel();
 		Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 
 		File[] packageDirs = this.getDataDirectory().listFiles();

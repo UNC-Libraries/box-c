@@ -90,7 +90,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		job.run();
 
-		Model model = job.getModel();
+		Model model = job.getWritableModel();
 		assertFalse("Model was empty", model.isEmpty());
 
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
@@ -132,7 +132,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		job.run();
 
-		Model model = job.getModel();
+		Model model = job.getWritableModel();
 		assertFalse("Model was empty", model.isEmpty());
 
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
@@ -206,7 +206,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		job.run();
 
-		Model model = job.getModel();
+		Model model = job.getWritableModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 
@@ -231,7 +231,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		job.run();
 
-		Model model = job.getModel();
+		Model model = job.getWritableModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 
@@ -256,7 +256,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		job.run();
 
-		Model model = job.getModel();
+		Model model = job.getWritableModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 
@@ -274,7 +274,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		job.run();
 
-		Model model = job.getModel();
+		Model model = job.getWritableModel();
 		assertFalse("Model was empty", model.isEmpty());
 
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());

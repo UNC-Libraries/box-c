@@ -76,7 +76,7 @@ public class BioMedCentralExtrasJobTest extends AbstractNormalizationJobTest {
 		DepositTestUtils.makeTestDir(depositsDirectory, job.getDepositUUID(), new File(
 				"src/test/resources/biomedDspaceMETS.zip"));
 
-		Model m = job.getModel();
+		Model m = job.getWritableModel();
 		File testModel = new File("src/test/resources/aggregate-deposit.n3");
 		m.read(testModel.toURI().toURL().toString());
 		job.commitModelChanges();
@@ -88,7 +88,7 @@ public class BioMedCentralExtrasJobTest extends AbstractNormalizationJobTest {
 
 		//assertTrue("N3 model file must exist after conversion", everythingFile.exists());
 
-		Model model = job.getModel();
+		Model model = job.getWritableModel();
 		assertFalse("Model was empty", model.isEmpty());
 
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
@@ -126,7 +126,7 @@ public class BioMedCentralExtrasJobTest extends AbstractNormalizationJobTest {
 		DepositTestUtils.makeTestDir(depositsDirectory, job.getDepositUUID(), new File(
 				"src/test/resources/biomedDspaceMETS.zip"));
 
-		Model m = job.getModel();
+		Model m = job.getWritableModel();
 		File testModel = new File("src/test/resources/aggregate-deposit.n3");
 		m.read(testModel.toURI().toURL().toString());
 		job.commitModelChanges();

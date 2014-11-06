@@ -72,7 +72,7 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 
 	@Override
 	public void runJob() {
-		Model model = getModel();
+		Model model = getWritableModel();
 
 		// Get the list of all objects being ingested in this job
 		List<String> resourcePIDs = new ArrayList<>();

@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 
 import javax.xml.transform.Transformer;
@@ -66,7 +65,7 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		assignPIDs(mets); // assign any missing PIDs
 		saveMETS(mets); // manifest updated to have record of all PIDs
 
-		Model model = getModel();
+		Model model = getWritableModel();
 		METSHelper helper = new METSHelper(mets);
 
 		// deposit RDF bag

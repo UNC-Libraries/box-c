@@ -94,7 +94,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 					"Failed to read staging areas configuration");
 		}
 
-		Model m = getModel();
+		Model m = getWritableModel();
 
 		// clean up staged files according to staging area policy
 		TagURIPattern tagPattern = new TagURIPattern();

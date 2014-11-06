@@ -93,7 +93,7 @@ public class DSPACEMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 		File modelFile = new File(workDir, DepositConstants.JENA_TDB_DIR);
 		assertTrue("N3 model file must exist after conversion", modelFile.exists());
 
-		Model model = job.getModel();
+		Model model = job.getWritableModel();
 		assertFalse("Model was empty", model.isEmpty());
 
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());

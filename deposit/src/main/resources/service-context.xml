@@ -157,7 +157,7 @@
 	</bean>
 
 	<bean id="schemaFactory" class="javax.xml.validation.SchemaFactory"
-		factory-method="newInstance">
+		factory-method="newInstance" scope="prototype">
 		<constructor-arg value="#{T(javax.xml.XMLConstants).W3C_XML_SCHEMA_NS_URI}" />
 	</bean>
 
@@ -188,7 +188,7 @@
 	</bean>
 
 	<bean id="transformerFactory" class="javax.xml.transform.TransformerFactory"
-		factory-method="newInstance">
+		factory-method="newInstance" scope="prototype">
 		<property name="uRIResolver">
 			<bean class="edu.unc.lib.dl.xml.ClasspathURIResolver">
 			</bean>
@@ -196,7 +196,7 @@
 	</bean>
 
 	<bean id="epdcx2modsTransformer" factory-bean="transformerFactory"
-		factory-method="newTransformer">
+		factory-method="newTransformer" scope="prototype">
 		<constructor-arg>
 			<bean class="org.springframework.xml.transform.ResourceSource">
 				<constructor-arg>
@@ -207,7 +207,7 @@
 	</bean>
 	
 	<bean id="proquest2ModsTransformer" factory-bean="transformerFactory"
-		factory-method="newTransformer">
+		factory-method="newTransformer" scope="prototype">
 		<constructor-arg>
 			<bean class="org.springframework.xml.transform.ResourceSource">
 				<constructor-arg>

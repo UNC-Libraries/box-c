@@ -26,6 +26,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaders;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
@@ -87,7 +88,7 @@ public class MakeFOXML extends AbstractDepositJob {
 	public void runJob() {
 		getSubdir(DepositConstants.FOXML_DIR).mkdir();
 
-		Model m = getModel();
+		Model m = getReadOnlyModel();
 
 		Map<String, String> status = getDepositStatus();
 		boolean excludeDepositRecord = Boolean.parseBoolean(status.get(DepositField.excludeDepositRecord.name()));
@@ -204,7 +205,7 @@ public class MakeFOXML extends AbstractDepositJob {
 			// add MD_DESCRIPTIVE
 			File mods = new File(getSubdir(DepositConstants.DESCRIPTION_DIR), p.getUUID() + ".xml");
 			if (mods.exists()) {
-				SAXBuilder sb = new SAXBuilder(false);
+				SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
 				Document modsDoc;
 				try {
 					modsDoc = sb.build(mods);

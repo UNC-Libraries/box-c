@@ -22,9 +22,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.query.ReadWrite;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -76,6 +76,8 @@ public abstract class AbstractDepositJob implements Runnable {
 	
 	@Autowired
 	private Dataset dataset;
+	
+	private boolean inTDBTransaction = false;
 
 	public AbstractDepositJob() {
 	}
@@ -98,12 +100,12 @@ public abstract class AbstractDepositJob implements Runnable {
 	public final void run() {
 		try {
 			runJob();
-			commitModelChanges();
+			if(inTDBTransaction) this.dataset.commit();
 		} catch(Throwable e) {
-			abortModelChanges();
+			if(inTDBTransaction) this.dataset.abort();
 			throw e;
 		} finally {
-			closeModel();
+			if(inTDBTransaction) this.dataset.end();
 		}
 	}
 	
@@ -230,37 +232,28 @@ public abstract class AbstractDepositJob implements Runnable {
 		}
 	}
 	
-	public Model getModel() {
+	public Model getWritableModel() {
 		String uri = getDepositPID().getURI();
+		this.dataset.begin(ReadWrite.WRITE);
+		this.inTDBTransaction = true;
 		if(!this.dataset.containsNamedModel(uri)) {
 			this.dataset.addNamedModel(uri, ModelFactory.createDefaultModel());
 		}
 		return this.dataset.getNamedModel(uri).begin();
 	}
 	
-	public void commitModelChanges() {
+	public Model getReadOnlyModel() {
 		String uri = getDepositPID().getURI();
-		if(this.dataset.containsNamedModel(uri)) {
-			this.dataset.getNamedModel(uri).commit();
-		}
-	}
-	
-	public void abortModelChanges() {
-		String uri = getDepositPID().getURI();
-		if(this.dataset.containsNamedModel(uri)) {
-			this.dataset.getNamedModel(uri).abort();
-		}
-	}
-	
-	public void closeModel() {
-		String uri = getDepositPID().getURI();
-		if(this.dataset.containsNamedModel(uri)) {
-			this.dataset.getNamedModel(uri).close();
-		}
+		this.dataset.begin(ReadWrite.READ);
+		this.inTDBTransaction = true;
+		return this.dataset.getNamedModel(uri).begin();
 	}
 	
 	public void destroyModel() {
 		String uri = getDepositPID().getURI();
+		if(!inTDBTransaction) {
+			getWritableModel();
+		}
 		if(this.dataset.containsNamedModel(uri)) {
 			this.dataset.removeNamedModel(uri);
 		}

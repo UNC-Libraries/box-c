@@ -8,7 +8,6 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_SOURCE;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.hasDatastream;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.mimetype;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
-import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.label;
 import static edu.unc.lib.dl.util.MetadataProfileConstants.BIOMED_ARTICLE;
 
 import java.io.File;
@@ -18,6 +17,7 @@ import java.util.NoSuchElementException;
 
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaders;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
@@ -33,8 +33,8 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
+import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 
 /**
@@ -58,7 +58,7 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob {
 	@Override
 	public void runJob() {
 		log.debug("starting on {}", getDepositDirectory());
-		Model model = getModel();
+		Model model = getWritableModel();
 
 		// top level object must be aggregate
 		Bag deposit = model.getBag(getDepositPID().getURI());
@@ -115,8 +115,7 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob {
 
 			try {
 				// Disable DTD validation of the article xml
-				SAXBuilder sb = new SAXBuilder(false);
-				sb.setValidation(false);
+				SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
 				sb.setFeature("http://xml.org/sax/features/validation", false);
 				sb.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
 				sb.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);

@@ -52,15 +52,17 @@ public class DepositGraphUtils {
 			iterator = c.getModel().getSeq(c).iterator();
 		}
 		List<Resource> containers = new ArrayList<Resource>();
-		while (iterator.hasNext()) {
-			Resource n = (Resource) iterator.next();
-			result.add(n);
-			if (n.hasProperty(RDF.type, RDF.Bag)
-					|| n.hasProperty(RDF.type, RDF.Seq)) {
-				containers.add(n);
+		if(iterator != null) {
+			while (iterator.hasNext()) {
+				Resource n = (Resource) iterator.next();
+				result.add(n);
+				if (n.hasProperty(RDF.type, RDF.Bag)
+						|| n.hasProperty(RDF.type, RDF.Seq)) {
+					containers.add(n);
+				}
 			}
+			iterator.close();
 		}
-		iterator.close();
 		for (Resource r : containers) {
 			addChildren(r, result);
 		}

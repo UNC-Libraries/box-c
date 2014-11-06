@@ -76,7 +76,7 @@ public class VirusScanJob extends AbstractDepositJob {
 
 		Map<String, String> failures = new HashMap<String, String>();
 
-		Model model = getModel();
+		Model model = getReadOnlyModel();
 		Property fileLocation = model
 				.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
 		StmtIterator i = model.listStatements(new SimpleSelector((Resource)null, fileLocation, (RDFNode)null));
