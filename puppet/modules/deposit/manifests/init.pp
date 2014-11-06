@@ -1,13 +1,17 @@
 class deposit(
   $enable_debug,
-  $fedora_username,
-  $fedora_password,
+  $fedora_admin_username,
+  $fedora_admin_password,
+  $fedora_forwarded_username,
+  $fedora_forwarded_password,
   $jms_host,
   $jms_port,
   $mulgara_protocol,
   $mulgara_host,
   $mulgara_port,
   $mulgara_model_uri,
+  $workers_num,
+  $workers_mets_num,
 ) {
   
   package { "redis":
