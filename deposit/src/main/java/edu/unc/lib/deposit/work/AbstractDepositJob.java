@@ -1,7 +1,6 @@
 package edu.unc.lib.deposit.work;
 
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
-import static edu.unc.lib.dl.util.DepositConstants.JENA_TDB_DIR;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,8 +22,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.query.ReadWrite;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -75,6 +74,7 @@ public abstract class AbstractDepositJob implements Runnable {
 	// deposit
 	private File eventsDirectory;
 	
+	@Autowired
 	private Dataset dataset;
 
 	public AbstractDepositJob() {
@@ -231,31 +231,38 @@ public abstract class AbstractDepositJob implements Runnable {
 	}
 	
 	public Model getModel() {
-		if(this.dataset == null) {
-			String directory = new File(getDepositDirectory(), JENA_TDB_DIR).getAbsolutePath();
-			this.dataset = TDBFactory.createDataset(directory);
-			this.dataset.begin(ReadWrite.WRITE);
+		String uri = getDepositPID().getURI();
+		if(!this.dataset.containsNamedModel(uri)) {
+			this.dataset.addNamedModel(uri, ModelFactory.createDefaultModel());
 		}
-		return this.dataset.getDefaultModel();
+		return this.dataset.getNamedModel(uri).begin();
 	}
 	
 	public void commitModelChanges() {
-		if(this.dataset != null) {
-			this.dataset.commit();
+		String uri = getDepositPID().getURI();
+		if(this.dataset.containsNamedModel(uri)) {
+			this.dataset.getNamedModel(uri).commit();
 		}
 	}
 	
 	public void abortModelChanges() {
-		if(this.dataset != null) {
-			this.dataset.abort();
+		String uri = getDepositPID().getURI();
+		if(this.dataset.containsNamedModel(uri)) {
+			this.dataset.getNamedModel(uri).abort();
 		}
 	}
 	
 	public void closeModel() {
-		if(this.dataset != null) {
-			this.dataset.end();
-			this.dataset.close();
-			this.dataset = null;
+		String uri = getDepositPID().getURI();
+		if(this.dataset.containsNamedModel(uri)) {
+			this.dataset.getNamedModel(uri).close();
+		}
+	}
+	
+	public void destroyModel() {
+		String uri = getDepositPID().getURI();
+		if(this.dataset.containsNamedModel(uri)) {
+			this.dataset.removeNamedModel(uri);
 		}
 	}
 

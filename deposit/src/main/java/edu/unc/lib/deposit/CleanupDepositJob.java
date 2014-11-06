@@ -194,8 +194,11 @@ public class CleanupDepositJob extends AbstractDepositJob {
 			LOG.error("Cannot delete deposit directory: "
 					+ getDepositDirectory().getAbsolutePath(), e);
 		}
+		
+		// destroy the Jena model for this deposit
+		this.destroyModel();
 
-		// expire deposit Redis keys
+		// set this deposit's Redis keys to expire
 		getDepositStatusFactory().expireKeys(getDepositUUID(),
 				this.getStatusKeysExpireSeconds());
 		getJobStatusFactory().expireKeys(getDepositUUID(),
