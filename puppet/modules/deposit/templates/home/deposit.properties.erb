@@ -13,8 +13,10 @@ departments.skos.url=file:/opt/deposit/departments.xml
 # fedora.host=localhost
 # fedora.port=443
 # fedora.context=fedora
-fedora.username=<%= @fedora_username %>
-fedora.password=<%= @fedora_password %>
+fedora.admin.username=<%= @fedora_admin_username %>
+fedora.admin.password=<%= @fedora_admin_password %>
+fedora.forwarded.username=<%= @fedora_forwarded_username %>
+fedora.forwarded.password=<%= @fedora_forwarded_password %>
 
 # Mulgara Triple Store (localhost, 8080, blank context)
 mulgara.protocol=<%= @mulgara_protocol %>
@@ -44,3 +46,6 @@ cleanup.delay.seconds=172800
 
 # delay after clean up job when deposit status keys expire (172800 is 2 days)
 status.keys.expire.seconds=172800
+
+workers.num=<%= @workers_num %>
+workers.mets.num=<%= @workers_mets_num %>
