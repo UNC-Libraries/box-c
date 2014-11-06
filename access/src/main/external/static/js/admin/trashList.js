@@ -70,6 +70,17 @@ define("trashList", ["module", "jquery", "ResultView"],
 				"originalPath" : {name : "Original Path", colClass : "original_path", sortField : "ancestorNames"},
 				"dateModified" : {name : "Modified", colClass : "date_added", sortField : "dateUpdated"},
 			},
+			resultActions : [
+				{
+					actions : [
+						{action : 'RestoreBatch', label : 'Restore'}
+					]
+				}, {
+					actions : [
+						{action : 'DestroyBatch', label : 'Destroy'}
+					]
+				}
+			],
 			resultTableHeaderTemplate : "tpl!../templates/admin/trashTableHeader",
 			resultEntryTemplate : "tpl!../templates/admin/trashResultEntry"
 		});
