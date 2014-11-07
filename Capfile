@@ -54,20 +54,20 @@ namespace :deploy do
       tarball = t.prerequisites.first
       
       on roles(:web) do
-        execute :rm, "-rf", "/opt/deploy/static"
-        execute :mkdir, "-p", "/opt/deploy/static"
+        execute :rm, "-rf", "/var/deploy/static"
+        execute :mkdir, "-p", "/var/deploy/static"
         
-        upload_and_expand!(tarball, "/opt/deploy/static")
+        upload_and_expand!(tarball, "/var/deploy/static")
       end
     end
   
     desc "Update webapps"
     task :webapps => WEBAPPS do |t|
       on roles(:web) do
-        execute :mkdir, "-p", "/opt/deploy/webapps"
+        execute :mkdir, "-p", "/var/deploy/webapps"
 
         t.prerequisites.each do |p|
-          upload! p, "/opt/deploy/webapps"
+          upload! p, "/var/deploy/webapps"
         end
       end
     end
@@ -75,11 +75,11 @@ namespace :deploy do
     desc "Update libraries"
     task :lib => LIB do |t|
       on roles(:web) do
-        execute :rm, "-rf", "/opt/deploy/lib"
-        execute :mkdir, "-p", "/opt/deploy/lib"
+        execute :rm, "-rf", "/var/deploy/lib"
+        execute :mkdir, "-p", "/var/deploy/lib"
         
         t.prerequisites.each do |p|
-          upload! p, "/opt/deploy/lib"
+          upload! p, "/var/deploy/lib"
         end
       end
     end
@@ -87,11 +87,11 @@ namespace :deploy do
     desc "Update Solr libraries"
     task :solrlib => SOLRLIB do |t|
       on roles(:web) do
-        execute :rm, "-rf", "/opt/deploy/solrlib"
-        execute :mkdir, "-p", "/opt/deploy/solrlib"
+        execute :rm, "-rf", "/var/deploy/solrlib"
+        execute :mkdir, "-p", "/var/deploy/solrlib"
         
         t.prerequisites.each do |p|
-          upload! p, "/opt/deploy/solrlib"
+          upload! p, "/var/deploy/solrlib"
         end
       end
     end
@@ -99,10 +99,10 @@ namespace :deploy do
     desc "Update deposit service"
     task :deposit => "deposit/target/deposit.jar" do |t|
       on roles(:web) do
-        execute :rm, "-rf", "/opt/deploy/deposit"
-        execute :mkdir, "-p", "/opt/deploy/deposit"
+        execute :rm, "-rf", "/var/deploy/deposit"
+        execute :mkdir, "-p", "/var/deploy/deposit"
         
-        upload! t.prerequisites.first, "/opt/deploy/deposit"
+        upload! t.prerequisites.first, "/var/deploy/deposit"
       end
     end
     
@@ -111,10 +111,10 @@ namespace :deploy do
       tarball = t.prerequisites.first
       
       on roles(:all) do
-        execute :rm, "-rf", "/opt/deploy/puppet"
-        execute :mkdir, "-p", "/opt/deploy/puppet"
+        execute :rm, "-rf", "/var/deploy/puppet"
+        execute :mkdir, "-p", "/var/deploy/puppet"
         
-        upload_and_expand!(tarball, "/opt/deploy/puppet")
+        upload_and_expand!(tarball, "/var/deploy/puppet")
       end
     end
 
@@ -134,7 +134,7 @@ namespace :deploy do
     desc "Apply the Puppet configuration in no-op mode"
     task :noop do
       on roles(:all) do
-        sudo :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr", "--noop"
+        execute :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr", "--confdir /etc/puppet", "--noop"
       end
     end
     
@@ -143,7 +143,7 @@ namespace :deploy do
   desc "Apply the Puppet configuration"
   task :apply do
     on roles(:all) do
-      sudo :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr"
+      execute :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr", "--confdir /etc/puppet"
     end
   end
   
