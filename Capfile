@@ -129,30 +129,11 @@ namespace :deploy do
     invoke "deploy:update:deposit"
   end
   
-  namespace :apply do
-  
-    desc "Apply the Puppet configuration in no-op mode"
-    task :noop do
-      on roles(:all) do
-        execute :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr", "--confdir /etc/puppet", "--noop"
-      end
-    end
-    
-  end
-  
-  desc "Apply the Puppet configuration"
-  task :apply do
-    on roles(:all) do
-      execute :puppet, :apply, "--execute \"hiera_include(\\\"classes\\\")\"", "--environment cdr", "--confdir /etc/puppet"
-    end
-  end
-  
 end
 
 desc "Update the configuration, apply the configuration, and then update everything else"
 task :deploy do
   invoke "deploy:update"
-  invoke "deploy:apply"
 end
 
 namespace :service do
