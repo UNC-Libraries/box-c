@@ -15,7 +15,8 @@ end
 WEBAPPS = FileList[
   "access/target/ROOT.war",
   "admin/target/admin.war",
-  "services/target/services.war"
+  "services/target/services.war",
+  "djatoka-cdr/dist/djatoka.war"
 ]
 
 LIB = FileList[
