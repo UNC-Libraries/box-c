@@ -1,3 +1,0 @@
-#!/bin/sh
-# This script take a single file as an input and returns the text extracted by Tika via stdout
-nc 127.0.0.1 9997 < ${1}
