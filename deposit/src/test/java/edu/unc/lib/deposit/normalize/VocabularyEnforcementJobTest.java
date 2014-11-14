@@ -42,9 +42,11 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -74,6 +76,8 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
 	@Before
 	public void setup() throws Exception {
+		Dataset dataset = TDBFactory.createDataset();
+
 		job = new VocabularyEnforcementJob();
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
@@ -81,6 +85,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		setField(job, "jobStatusFactory", jobStatusFactory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "vocabManager", vocabManager);
+		setField(job, "dataset", dataset);
 
 		depositStatus = new HashMap<>();
 		depositStatus.put(DepositField.containerId.name(), CONTAINER_PID);
@@ -88,11 +93,10 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
 		job.getDescriptionDir().mkdir();
 
-		Model model = job.getModel();
+		Model model = job.getWritableModel();
 		Bag depositBag = model.createBag(job.getDepositPID().getURI());
 		Resource mainResource = model.createResource(MAIN_RESOURCE);
 		depositBag.add(mainResource);
-		job.commitModelChanges();
 		job.closeModel();
 	}
 

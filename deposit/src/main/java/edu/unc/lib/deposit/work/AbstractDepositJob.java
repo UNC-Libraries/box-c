@@ -1,7 +1,6 @@
 package edu.unc.lib.deposit.work;
 
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
-import static edu.unc.lib.dl.util.DepositConstants.JENA_TDB_DIR;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.ReadWrite;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.tdb.TDBFactory;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -74,7 +73,8 @@ public abstract class AbstractDepositJob implements Runnable {
 	// Directory containing PREMIS event files for individual objects in this
 	// deposit
 	private File eventsDirectory;
-	
+
+	@Autowired
 	private Dataset dataset;
 
 	public AbstractDepositJob() {
@@ -94,19 +94,26 @@ public abstract class AbstractDepositJob implements Runnable {
 		this.eventsDirectory = new File(depositDirectory,
 				DepositConstants.EVENTS_DIR);
 	}
-	
+
+	@Override
 	public final void run() {
 		try {
 			runJob();
-			commitModelChanges();
-		} catch(Throwable e) {
-			abortModelChanges();
+			if (dataset.isInTransaction()) {
+				dataset.commit();
+			}
+		} catch (Throwable e) {
+			if (dataset.isInTransaction()) {
+				dataset.abort();
+			}
 			throw e;
 		} finally {
-			closeModel();
+			if (dataset.isInTransaction()) {
+				dataset.end();
+			}
 		}
 	}
-	
+
 	public abstract void runJob();
 
 	public String getDepositUUID() {
@@ -229,33 +236,36 @@ public abstract class AbstractDepositJob implements Runnable {
 			throw new Error("Unexpected problem with deposit events file", e1);
 		}
 	}
-	
-	public Model getModel() {
-		if(this.dataset == null) {
-			String directory = new File(getDepositDirectory(), JENA_TDB_DIR).getAbsolutePath();
-			this.dataset = TDBFactory.createDataset(directory);
-			this.dataset.begin(ReadWrite.WRITE);
+
+	public Model getWritableModel() {
+		String uri = getDepositPID().getURI();
+		this.dataset.begin(ReadWrite.WRITE);
+		if (!this.dataset.containsNamedModel(uri)) {
+			this.dataset.addNamedModel(uri, ModelFactory.createDefaultModel());
 		}
-		return this.dataset.getDefaultModel();
+		return this.dataset.getNamedModel(uri).begin();
 	}
-	
-	public void commitModelChanges() {
-		if(this.dataset != null) {
-			this.dataset.commit();
-		}
+
+	public Model getReadOnlyModel() {
+		String uri = getDepositPID().getURI();
+		this.dataset.begin(ReadWrite.READ);
+		return this.dataset.getNamedModel(uri).begin();
 	}
-	
-	public void abortModelChanges() {
-		if(this.dataset != null) {
-			this.dataset.abort();
-		}
-	}
-	
+
 	public void closeModel() {
-		if(this.dataset != null) {
-			this.dataset.end();
-			this.dataset.close();
-			this.dataset = null;
+		if (dataset.isInTransaction()) {
+			dataset.commit();
+			dataset.end();
+		}
+	}
+
+	public void destroyModel() {
+		String uri = getDepositPID().getURI();
+		if (!dataset.isInTransaction()) {
+			getWritableModel();
+		}
+		if (this.dataset.containsNamedModel(uri)) {
+			this.dataset.removeNamedModel(uri);
 		}
 	}
 

@@ -36,7 +36,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		saveMETS(mets); // manifest updated to have record of all PIDs
 		LOG.info("METS saved with new PIDs");
 
-		Model model = getModel();
+		Model model = getWritableModel();
 		CDRMETSGraphExtractor extractor = new CDRMETSGraphExtractor(mets, this.getDepositPID());
 		LOG.info("Extractor initialized");
 		extractor.addArrangement(model);

@@ -228,7 +228,7 @@ public class MakeFOXMLTest {
 	}
 
 	private Model getModel(AbstractDepositJob job) {
-		return job.getModel();
+		return job.getWritableModel();
 	}
 
 	private Document deserializeFOXML(File foxml) {

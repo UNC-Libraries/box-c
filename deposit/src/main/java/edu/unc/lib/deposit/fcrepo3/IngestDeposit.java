@@ -139,7 +139,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 		excludeDepositRecord = Boolean.parseBoolean(depositStatus.get(DepositField.excludeDepositRecord.name()));
 
-		Model model = getModel();
+		Model model = getReadOnlyModel();
 
 		ingestPids = new ArrayDeque<String>();
 		topLevelPids = new ArrayList<String>();

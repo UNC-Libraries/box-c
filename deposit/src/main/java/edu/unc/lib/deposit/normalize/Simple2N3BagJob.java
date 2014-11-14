@@ -71,7 +71,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 	public void runJob() {
 
 		// deposit RDF bag
-		Model model = getModel();
+		Model model = getWritableModel();
 		Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 
 		// Generate a uuid for the main object
