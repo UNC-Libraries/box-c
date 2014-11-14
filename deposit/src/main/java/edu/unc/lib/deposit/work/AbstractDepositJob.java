@@ -73,11 +73,9 @@ public abstract class AbstractDepositJob implements Runnable {
 	// Directory containing PREMIS event files for individual objects in this
 	// deposit
 	private File eventsDirectory;
-	
+
 	@Autowired
 	private Dataset dataset;
-	
-	private boolean inTDBTransaction = false;
 
 	public AbstractDepositJob() {
 	}
@@ -96,19 +94,26 @@ public abstract class AbstractDepositJob implements Runnable {
 		this.eventsDirectory = new File(depositDirectory,
 				DepositConstants.EVENTS_DIR);
 	}
-	
+
+	@Override
 	public final void run() {
 		try {
 			runJob();
-			if(inTDBTransaction) this.dataset.commit();
-		} catch(Throwable e) {
-			if(inTDBTransaction) this.dataset.abort();
+			if (dataset.isInTransaction()) {
+				dataset.commit();
+			}
+		} catch (Throwable e) {
+			if (dataset.isInTransaction()) {
+				dataset.abort();
+			}
 			throw e;
 		} finally {
-			if(inTDBTransaction) this.dataset.end();
+			if (dataset.isInTransaction()) {
+				dataset.end();
+			}
 		}
 	}
-	
+
 	public abstract void runJob();
 
 	public String getDepositUUID() {
@@ -231,30 +236,35 @@ public abstract class AbstractDepositJob implements Runnable {
 			throw new Error("Unexpected problem with deposit events file", e1);
 		}
 	}
-	
+
 	public Model getWritableModel() {
 		String uri = getDepositPID().getURI();
 		this.dataset.begin(ReadWrite.WRITE);
-		this.inTDBTransaction = true;
-		if(!this.dataset.containsNamedModel(uri)) {
+		if (!this.dataset.containsNamedModel(uri)) {
 			this.dataset.addNamedModel(uri, ModelFactory.createDefaultModel());
 		}
 		return this.dataset.getNamedModel(uri).begin();
 	}
-	
+
 	public Model getReadOnlyModel() {
 		String uri = getDepositPID().getURI();
 		this.dataset.begin(ReadWrite.READ);
-		this.inTDBTransaction = true;
 		return this.dataset.getNamedModel(uri).begin();
 	}
-	
+
+	public void closeModel() {
+		if (dataset.isInTransaction()) {
+			dataset.commit();
+			dataset.end();
+		}
+	}
+
 	public void destroyModel() {
 		String uri = getDepositPID().getURI();
-		if(!inTDBTransaction) {
+		if (!dataset.isInTransaction()) {
 			getWritableModel();
 		}
-		if(this.dataset.containsNamedModel(uri)) {
+		if (this.dataset.containsNamedModel(uri)) {
 			this.dataset.removeNamedModel(uri);
 		}
 	}
