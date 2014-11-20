@@ -35,7 +35,7 @@
 			value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService" />
 		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#" />
 	</bean>
-	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
+	<bean id="forwardedManagementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
 		init-method="init" destroy-method="destroy">
 		<property name="fedoraContextUrl"
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
@@ -47,7 +47,7 @@
 			</list>
 		</property>
 	</bean>
-	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient"
+	<bean id="forwardedAccessClient" class="edu.unc.lib.dl.fedora.AccessClient"
 		init-method="init">
 		<property name="fedoraContextUrl"
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
@@ -61,8 +61,8 @@
 	</bean>
 	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService"
 		init-method="init" destroy-method="destroy">
-		<property name="accessClient" ref="accessClient" />
-		<property name="managementClient" ref="managementClient" />
+		<property name="accessClient" ref="forwardedAccessClient" />
+		<property name="managementClient" ref="forwardedManagementClient" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 		<property name="maxThreads" value="5" />
 		<property name="threadGroupPrefix" value="Access" />
@@ -77,7 +77,7 @@
 	</bean>
 	
 	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
-		<property name="accessClient" ref="accessClient" />
+		<property name="accessClient" ref="forwardedAccessClient" />
 		<property name="fedoraUtil" ref="fedoraUtil" />
 	</bean>
 	
