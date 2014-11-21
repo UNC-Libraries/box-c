@@ -162,6 +162,10 @@
 	color: #222;
 }
 
+.status_details pre.stacktrace {
+	white-space: pre;
+	font-family: monospace;
+}
 
 
 /** Jobs table */

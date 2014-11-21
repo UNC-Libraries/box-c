@@ -55,8 +55,10 @@
 	if (data.finishedTime) { %>
 		<p><label>Finished:</label> <%= dateFormat(new Date(data.finishedTime)) %></p>
 	<% } %>
-	
+	 
 	<% if (data.errorMessage) { %>
-		<h3>Error Log</h3><pre class='stacktrace'> <%= data.errorMessage %></pre>
+		<h3>Error Log</h3>
+    <p><%= data.errorMessage %></p>
+    <pre class="stacktrace"><%= data.stackTrace %></pre>
 	<% } %>
 </div>
