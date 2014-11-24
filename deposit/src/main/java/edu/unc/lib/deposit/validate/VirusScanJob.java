@@ -96,11 +96,7 @@ public class VirusScanJob extends AbstractDepositJob {
 			URI storageURI = null;
 			try {
 				manifestURI = new URI(href.getValue());
-				if(getStages() != null) {
-					storageURI = getStages().getStorageURI(manifestURI);
-				} else {
-					storageURI = manifestURI;
-				}
+				storageURI = getStages().getStorageURI(manifestURI);
 			} catch (URISyntaxException e) {
 				failJob(e, Type.VIRUS_CHECK, "Unable to parse manifest URI: {0}", href.getValue());
 			} catch (StagingException e) {
