@@ -268,6 +268,7 @@
 				<constructor-arg type="int" value="${clamd.timeout:60000}" index="2" />
 			</bean>
 		</property>
+		<property name="stages" ref="stages" />
 	</bean>
 
 	<bean id="ValidateRdfGraph" class="edu.unc.lib.deposit.validate.ValidateRdfGraph"
@@ -401,8 +402,25 @@
 
 	<bean id="CleanupDepositJob" class="edu.unc.lib.deposit.CleanupDepositJob"
 		scope="prototype">
-		<property name="stagesConfiguration" value="${fedora.stagesConfiguration}"/>
+		<property name="stages" ref="stages" />
 		<property name="statusKeysExpireSeconds" value="${status.keys.expire.seconds:3600}"/>
 	</bean>	
+	
+	<bean id="stagesConfigURI" class="java.net.URL">
+		<constructor-arg value="${fedora.stagesConfiguration}" />
+	</bean>
+	
+	<bean id="stagesConfigFile" class="org.apache.commons.io.FileUtils" factory-method="toFile">
+		<constructor-arg ref="stagesConfigURI" />
+	</bean>
+	
+	<bean id="stagesConfigString" class="org.apache.commons.io.FileUtils" factory-method="readFileToString">
+		<constructor-arg ref="stagesConfigFile" />
+	</bean>
+	
+	<bean id="stages" class="edu.unc.lib.staging.Stages">
+		<constructor-arg ref="stagesConfigString" />
+		<constructor-arg><bean class="edu.unc.lib.staging.FileResolver"/></constructor-arg>
+	</bean>
 	
 </beans>

@@ -66,9 +66,10 @@ public class VirusScanJob extends AbstractDepositJob {
 		super(uuid, depositUUID);
 	}
 
+	@Override
 	public void runJob() {
 		log.debug("Running virus checks on : {}", getDepositDirectory());
-		
+
 		// get ClamScan software and database versions
 		String version = this.clamScan.cmd("nVERSION\n".getBytes()).trim();
 
@@ -86,8 +87,9 @@ public class VirusScanJob extends AbstractDepositJob {
 			String href = s.getObject().asLiteral().getString();
 			hrefs.put(p, href);
 		}
-		
+
 		setTotalClicks(hrefs.size());
+		int scannedObjects = 0;
 
 		for (Entry<PID, String> href : hrefs.entrySet()) {
 			URI manifestURI;
@@ -138,6 +140,7 @@ public class VirusScanJob extends AbstractDepositJob {
 					PremisEventLogger.addDetailedOutcome(ev2, "success", null,
 							null);
 					appendDepositEvent(href.getKey(), ev2);
+						scannedObjects++;
 					break;
 				}
 			}
@@ -150,7 +153,7 @@ public class VirusScanJob extends AbstractDepositJob {
 			}
 			failJob(Type.VIRUS_CHECK, failures.size()+ " virus check(s) failed", sb.toString());
 		} else {
-			recordDepositEvent(Type.VIRUS_CHECK, "{0} files scanned for viruses.", hrefs.size());
+			recordDepositEvent(Type.VIRUS_CHECK, "{0} files scanned for viruses.", scannedObjects);
 		}
 	}
 
