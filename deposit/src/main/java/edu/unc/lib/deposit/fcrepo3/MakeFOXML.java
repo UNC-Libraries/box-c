@@ -299,13 +299,11 @@ public class MakeFOXML extends AbstractDepositJob {
 	}
 
 	private void addEventsDS(PID p, Document foxml) {
-		File events = new File(getSubdir(DepositConstants.EVENTS_DIR), p.getUUID() + ".xml");
-		if (events.exists()) {
-			Element el = FOXMLJDOMUtil.makeLocatorDatastream(Datastream.MD_EVENTS.getName(), "M",
-					DepositConstants.EVENTS_DIR + "/" + events.getName(), "text/xml", "URL",
-					Datastream.MD_EVENTS.getLabel(), false, null);
-			foxml.getRootElement().addContent(el);
-		}
+		// Add locator datastream for events, referencing the events file identified by p
+		File events = getEventsFile(p);
+		Element el = FOXMLJDOMUtil.makeLocatorDatastream(Datastream.MD_EVENTS.getName(), "M", events.getAbsolutePath(),
+				"text/xml", "URL", Datastream.MD_EVENTS.getLabel(), false, null);
+		foxml.getRootElement().addContent(el);
 	}
 
 	private void saveRELSEXTtoFOXMl(Model relsExt, Document foxml) {

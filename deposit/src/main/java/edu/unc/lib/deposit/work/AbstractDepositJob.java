@@ -213,9 +213,36 @@ public abstract class AbstractDepositJob implements Runnable {
 		throw new JobFailedException(message, throwable);
 	}
 
+	/**
+	 * Returns the PREMIS events file for the given PID
+	 *
+	 * @param pid
+	 * @return
+	 */
+	protected File getEventsFile(PID pid) {
+		return createOrAppendToEventsFile(pid, null);
+	}
+
+	/**
+	 * Appends an event to the PREMIS log for the given pid. If the log does not exist, it is created
+	 *
+	 * @param pid
+	 * @param event
+	 */
 	protected void appendDepositEvent(PID pid, Element event) {
-		File file = new File(depositDirectory, DepositConstants.EVENTS_DIR
-				+ "/" + pid.getUUID() + ".xml");
+		createOrAppendToEventsFile(pid, event);
+	}
+
+	/**
+	 * Appends an event to the PREMIS document for the given PID, creating the document if it does not already exist.
+	 * 
+	 * @param pid
+	 * @param event
+	 * @return the premis document file
+	 */
+	private File createOrAppendToEventsFile(PID pid, Element event) {
+		File file = new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".xml");
+
 		try {
 			Document dom;
 			if (!file.exists()) {
@@ -226,12 +253,21 @@ public abstract class AbstractDepositJob implements Runnable {
 						JDOMNamespaceUtil.PREMIS_V2_NS).addContent(PremisEventLogger.getObjectElement(pid));
 				dom.setRootElement(premis);
 			} else {
+				// Not appending anything, so return before attempting to load existing file
+				if (event == null)
+					return file;
+
 				dom = new SAXBuilder().build(file);
 			}
-			dom.getRootElement().addContent(event.detach());
+
+			if (event != null)
+				dom.getRootElement().addContent(event.detach());
+
 			try (FileOutputStream out = new FileOutputStream(file, false)) {
 				new XMLOutputter(Format.getPrettyFormat()).output(dom, out);
 			}
+
+			return file;
 		} catch (JDOMException | IOException e1) {
 			throw new Error("Unexpected problem with deposit events file", e1);
 		}

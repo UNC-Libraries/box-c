@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 
 import org.apache.commons.io.FileUtils;
@@ -20,21 +19,19 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
-import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.CleanupPolicy;
-import edu.unc.lib.staging.FileResolver;
 import edu.unc.lib.staging.SharedStagingArea;
 import edu.unc.lib.staging.Stages;
 import edu.unc.lib.staging.StagingException;
 import edu.unc.lib.staging.TagURIPattern;
 
 /**
- * This job deletes the deposit's processing folder and sets all 
- * Redis keys to expire after a configurable delay. It also may delete 
+ * This job deletes the deposit's processing folder and sets all
+ * Redis keys to expire after a configurable delay. It also may delete
  * staged files, surrounding folders, and/or high-level deposit staging folders
- * according to a policy specific to the staging area. 
- * 
+ * according to a policy specific to the staging area.
+ *
  * @author count0
  *
  */
@@ -42,7 +39,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(CleanupDepositJob.class);
 
-	private String stagesConfiguration = null;
+	private Stages stages;
 
 	private int statusKeysExpireSeconds;
 
@@ -71,10 +68,6 @@ public class CleanupDepositJob extends AbstractDepositJob {
 		return parent;
 	}
 
-	public String getStagesConfiguration() {
-		return this.stagesConfiguration;
-	}
-
 	public int getStatusKeysExpireSeconds() {
 		return this.statusKeysExpireSeconds;
 	}
@@ -82,17 +75,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 	@Override
 	public void runJob() {
 		// load a Stages object
-		Stages stages = null;
-		try {
-			URL cURL = new URL(this.stagesConfiguration);
-			File cFile = org.apache.commons.io.FileUtils.toFile(cURL);
-			String config = org.apache.commons.io.FileUtils
-					.readFileToString(cFile);
-			stages = new Stages(config, new FileResolver());
-		} catch (Exception e) {
-			failJob(e, Type.INGESTION,
-					"Failed to read staging areas configuration");
-		}
+		Stages stages = getStages();
 
 		Model m = getWritableModel();
 
@@ -104,7 +87,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 			RDFNode n = ni.nextNode();
 			String stagingLoc = n.asLiteral().getString();
 			URI stagingUri = URI.create(stagingLoc);
-			
+
 			// skip any staged files that are not tag: URIs
 			// these may be local deposit processing folder files or
 			// other files that we cannot handle.
@@ -194,7 +177,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 			LOG.error("Cannot delete deposit directory: "
 					+ getDepositDirectory().getAbsolutePath(), e);
 		}
-		
+
 		// destroy the Jena model for this deposit
 		this.destroyModel();
 
@@ -205,8 +188,12 @@ public class CleanupDepositJob extends AbstractDepositJob {
 				this.getStatusKeysExpireSeconds());
 	}
 
-	public void setStagesConfiguration(String stagesConfiguration) {
-		this.stagesConfiguration = stagesConfiguration;
+	public Stages getStages() {
+		return stages;
+	}
+
+	public void setStages(Stages stages) {
+		this.stages = stages;
 	}
 
 	public void setStatusKeysExpireSeconds(int seconds) {

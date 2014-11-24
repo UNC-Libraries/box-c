@@ -66,9 +66,10 @@ public class VirusScanJob extends AbstractDepositJob {
 		super(uuid, depositUUID);
 	}
 
+	@Override
 	public void runJob() {
 		log.debug("Running virus checks on : {}", getDepositDirectory());
-		
+
 		// get ClamScan software and database versions
 		String version = this.clamScan.cmd("nVERSION\n".getBytes()).trim();
 
@@ -86,19 +87,16 @@ public class VirusScanJob extends AbstractDepositJob {
 			String href = s.getObject().asLiteral().getString();
 			hrefs.put(p, href);
 		}
-		
+
 		setTotalClicks(hrefs.size());
+		int scannedObjects = 0;
 
 		for (Entry<PID, String> href : hrefs.entrySet()) {
 			URI manifestURI;
 			URI storageURI = null;
 			try {
 				manifestURI = new URI(href.getValue());
-				if(getStages() != null) {
-					storageURI = getStages().getStorageURI(manifestURI);
-				} else {
-					storageURI = manifestURI;
-				}
+				storageURI = getStages().getStorageURI(manifestURI);
 			} catch (URISyntaxException e) {
 				failJob(e, Type.VIRUS_CHECK, "Unable to parse manifest URI: {0}", href.getValue());
 			} catch (StagingException e) {
@@ -138,6 +136,7 @@ public class VirusScanJob extends AbstractDepositJob {
 					PremisEventLogger.addDetailedOutcome(ev2, "success", null,
 							null);
 					appendDepositEvent(href.getKey(), ev2);
+						scannedObjects++;
 					break;
 				}
 			}
@@ -150,7 +149,7 @@ public class VirusScanJob extends AbstractDepositJob {
 			}
 			failJob(Type.VIRUS_CHECK, failures.size()+ " virus check(s) failed", sb.toString());
 		} else {
-			recordDepositEvent(Type.VIRUS_CHECK, "{0} files scanned for viruses.", hrefs.size());
+			recordDepositEvent(Type.VIRUS_CHECK, "{0} files scanned for viruses.", scannedObjects);
 		}
 	}
 
