@@ -220,7 +220,7 @@ public abstract class AbstractDepositJob implements Runnable {
 	 * @return
 	 */
 	protected File getEventsFile(PID pid) {
-		return new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".xml");
+		return createOrAppendToEventsFile(pid, null);
 	}
 
 	/**
@@ -230,29 +230,18 @@ public abstract class AbstractDepositJob implements Runnable {
 	 * @param event
 	 */
 	protected void appendDepositEvent(PID pid, Element event) {
-		getAndAppendToEventsDocument(pid, event);
+		createOrAppendToEventsFile(pid, event);
 	}
 
 	/**
-	 * Returns the document containing the PREMIS event log for the given pid. If it does not exist, it is created
-	 *
-	 * @param pid
-	 * @return
-	 */
-	protected Document getEventsDocument(PID pid) {
-		return getAndAppendToEventsDocument(pid, null);
-	}
-
-	/**
-	 * Gets the event log for the given PID as a XML document. If it does not exist, then a new document is created. If
-	 * an event element is provided, it will be added to the document.
-	 *
+	 * Appends an event to the PREMIS document for the given PID, creating the document if it does not already exist.
+	 * 
 	 * @param pid
 	 * @param event
-	 * @return
+	 * @return the premis document file
 	 */
-	private Document getAndAppendToEventsDocument(PID pid, Element event) {
-		File file = getEventsFile(pid);
+	private File createOrAppendToEventsFile(PID pid, Element event) {
+		File file = new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".xml");
 
 		try {
 			Document dom;
@@ -264,6 +253,10 @@ public abstract class AbstractDepositJob implements Runnable {
 						JDOMNamespaceUtil.PREMIS_V2_NS).addContent(PremisEventLogger.getObjectElement(pid));
 				dom.setRootElement(premis);
 			} else {
+				// Not appending anything, so return before attempting to load existing file
+				if (event == null)
+					return file;
+
 				dom = new SAXBuilder().build(file);
 			}
 
@@ -274,7 +267,7 @@ public abstract class AbstractDepositJob implements Runnable {
 				new XMLOutputter(Format.getPrettyFormat()).output(dom, out);
 			}
 
-			return dom;
+			return file;
 		} catch (JDOMException | IOException e1) {
 			throw new Error("Unexpected problem with deposit events file", e1);
 		}

@@ -301,13 +301,10 @@ public class MakeFOXML extends AbstractDepositJob {
 	private void addEventsDS(PID p, Document foxml) {
 		// Ensure that the event document exists, which should be the case for all objects
 		File events = getEventsFile(p);
-		if (!events.exists()) {
-			getEventsDocument(p);
-		}
 
 		// Add the datastream, referencing the events file identified by p
-		Element el = FOXMLJDOMUtil.makeLocatorDatastream(Datastream.MD_EVENTS.getName(), "M", DepositConstants.EVENTS_DIR
-				+ "/" + p.getUUID() + ".xml", "text/xml", "URL", Datastream.MD_EVENTS.getLabel(), false, null);
+		Element el = FOXMLJDOMUtil.makeLocatorDatastream(Datastream.MD_EVENTS.getName(), "M", events.getAbsolutePath(),
+				"text/xml", "URL", Datastream.MD_EVENTS.getLabel(), false, null);
 		foxml.getRootElement().addContent(el);
 	}
 
