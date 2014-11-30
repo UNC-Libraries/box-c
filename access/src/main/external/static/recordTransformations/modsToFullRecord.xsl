@@ -214,7 +214,7 @@
 			</tr>
 		</xsl:for-each-group>
 	</xsl:template>
-<!-- mods:originInfo mods:originInfo/place-->
+	<!-- mods:originInfo mods:originInfo/place-->
 	<xsl:template name="modsOriginPlaces">
 		<xsl:variable name="place" select="*[local-name() = 'originInfo']/*[local-name() = 'place']"/>
 		<xsl:if test="boolean($place)">
@@ -231,7 +231,7 @@
 			</tr>
 		</xsl:if>
 	</xsl:template>
-<!-- ??? -->	
+	<!-- Template for a simple name / value pair display -->
 	<xsl:template name="modsField">
 		<xsl:param name="label"/>
 		<xsl:param name="field"/>
@@ -365,13 +365,14 @@
 						<br/><xsl:value-of select="$newline"/>
 					</xsl:for-each>
 	
-						<br/><xsl:value-of select="$newline"/>
+					<br/><xsl:value-of select="$newline"/>
 				</td>
 			</tr>
 		
 		</xsl:for-each-group>
 	</xsl:template>
-<!-- mods:language -->
+
+	<!-- mods:language -->
 	<xsl:template name="modsLanguages">
 		<xsl:for-each-group select="*[local-name() = 'language']" group-by="@displayLabel, .[not(@displayLabel)]/@usage, local-name(.[not(@displayLabel) and not(@usage)])[. != '']">
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>
@@ -429,70 +430,71 @@
 	<!-- mods:subject -->
 	<xsl:template name="cartographics">
 		<xsl:value-of select="*[local-name() = 'scale']"/>
-			<xsl:if test="*[local-name() = 'projection']">
-				<xsl:if test="*[local-name() = 'scale']">
-					<xsl:text> ; </xsl:text> 
-				</xsl:if>
-				<xsl:value-of select="*[local-name() = 'projection']"/>
+		<xsl:if test="*[local-name() = 'projection']">
+			<xsl:if test="*[local-name() = 'scale']">
+				<xsl:text> ; </xsl:text> 
 			</xsl:if>
+			<xsl:value-of select="*[local-name() = 'projection']"/>
+		</xsl:if>
 		<xsl:if test="*[local-name() = 'coordinates']">
 			<xsl:text> </xsl:text>
 			(<xsl:value-of select="*[local-name() = 'coordinates']"/>).
 		</xsl:if>
 	</xsl:template>
 	<xsl:template name="modsSubjects">
-			<xsl:for-each-group select="*[local-name() = 'subject']" group-by="@displayLabel, local-name(.[not(@displayLabel)])[. != '']">
-				<xsl:variable name="groupKey" select="current-grouping-key()"/>
-				<tr>
-					<th>
-						<xsl:choose>
-							<xsl:when test="$groupKey = local-name()">
-								<xsl:text>Subject</xsl:text>
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
-							</xsl:otherwise>
-						</xsl:choose>
-					</th><xsl:value-of select="$newline"/>
-					<td>
-						<xsl:for-each select="current-group()">
-							<xsl:for-each select="./*">
-								<br/><xsl:value-of select="$newline"/>
-								<!-- Render the second tier of children based on the element name of the first tier -->
-								<xsl:choose>
-									<xsl:when test="local-name() = 'name' or local-name() = 'titleInfo'">
-										<xsl:apply-templates select="." mode="brief"/>
-									</xsl:when>
-									<xsl:when test="local-name() = 'hierarchicalGeographic'">
-										<xsl:for-each select="./*">
-											<xsl:if test="position() != 1">
-												<xsl:text>, </xsl:text>
-											</xsl:if>
-											<xsl:value-of select="text()"/>
-										</xsl:for-each>			
-									</xsl:when>
-									<xsl:when test="local-name() = 'cartographics'">
-										<xsl:call-template name="cartographics"/>
-									</xsl:when>
-									<xsl:otherwise>
-										<xsl:value-of select="text()"/>
-									</xsl:otherwise>
-								</xsl:choose>
-							</xsl:for-each>
+		<xsl:for-each-group select="*[local-name() = 'subject']" group-by="@displayLabel, local-name(.[not(@displayLabel)])[. != '']">
+			<xsl:variable name="groupKey" select="current-grouping-key()"/>
+			<tr>
+				<th>
+					<xsl:choose>
+						<xsl:when test="$groupKey = local-name()">
+							<xsl:text>Subject</xsl:text>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
+						</xsl:otherwise>
+					</xsl:choose>
+				</th><xsl:value-of select="$newline"/>
+				<td>
+					<xsl:for-each select="current-group()">
+						<xsl:for-each select="./*">
 							<br/><xsl:value-of select="$newline"/>
+							<!-- Render the second tier of children based on the element name of the first tier -->
+							<xsl:choose>
+								<xsl:when test="local-name() = 'name' or local-name() = 'titleInfo'">
+									<xsl:apply-templates select="." mode="brief"/>
+								</xsl:when>
+								<xsl:when test="local-name() = 'hierarchicalGeographic'">
+									<xsl:for-each select="./*">
+										<xsl:if test="position() != 1">
+											<xsl:text>, </xsl:text>
+										</xsl:if>
+										<xsl:value-of select="text()"/>
+									</xsl:for-each>			
+								</xsl:when>
+								<xsl:when test="local-name() = 'cartographics'">
+									<xsl:call-template name="cartographics"/>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of select="text()"/>
+								</xsl:otherwise>
+							</xsl:choose>
 						</xsl:for-each>
-					</td>
-				</tr>
-			</xsl:for-each-group>
-		</xsl:template>
-<!-- mods:abstract -->
+						<br/><xsl:value-of select="$newline"/>
+					</xsl:for-each>
+				</td>
+			</tr>
+		</xsl:for-each-group>
+	</xsl:template>
+
+	<!-- mods:abstract -->
 	<xsl:template name="modsAbstract">
 		<xsl:for-each select="*[local-name() = 'abstract']">
 			<tr>
 				<th>
-						<xsl:if test="@type='Content advice'">
-							<xsl:value-of select="@type"/>
-						</xsl:if>
+					<xsl:if test="@type='Content advice'">
+						<xsl:value-of select="@type"/>
+					</xsl:if>
 				</th><xsl:value-of select="$newline"/>
 				<td>
 					<xsl:if test="@type='Content advice'">
@@ -529,7 +531,8 @@
 			</tr>
 		</xsl:for-each-group>
 	</xsl:template>
-<!-- mods:location -->
+
+	<!-- mods:location -->
 	<xsl:template name="modsLocations">
 		<xsl:for-each-group select="*[local-name() = 'location']" group-by="@displayLabel, local-name(.[not(@displayLabel)])[. != '']">
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>
@@ -572,7 +575,8 @@
 			</tr>
 		</xsl:for-each-group>
 	</xsl:template>
-<!-- mods:physicalDescription -->
+
+	<!-- mods:physicalDescription -->
 	<xsl:template name="modsPhysicalDescription">
 		<xsl:for-each-group select="*[local-name() = 'physicalDescription']/*" group-by="@displayLabel, .[not(@displayLabel)]/@type, local-name(.[not(@displayLabel) and not(@type)])[. != '']">
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>
@@ -617,12 +621,14 @@
 			</tr>
 		</xsl:for-each-group>
 	</xsl:template>
-<!-- mods:part -->
+
+	<!-- mods:part -->
 	<xsl:template name="modsParts">		
 		<xsl:for-each-group select="*[local-name() = 'part']" group-by="@displayLabel, local-name(.[not(@displayLabel)])[. != '']">
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>
 			<tr>
 				<xsl:variable name="partText" select="*[local-name() = 'text']"/>
+				<!-- if part/text is available, show only this subelement.  When @displayLabel is present it overrides "Part" label. -->
 				<th>
 					<xsl:choose>
 						<xsl:when test="boolean($partText)">
@@ -638,7 +644,7 @@
 						</xsl:when>
 						<xsl:otherwise>
 							<xsl:choose>
-								<xsl:when test="$groupKey = name()">
+								<xsl:when test="$groupKey = local-name()">
 									<xsl:text>Part</xsl:text>
 								</xsl:when>
 								<xsl:otherwise>
@@ -648,7 +654,7 @@
 						</xsl:otherwise>
 					</xsl:choose>
 				</th><xsl:value-of select="$newline"/>
-				<!-- Above: if part/text is available, show only this subelement.  When @displayLabel is present it overrides "Part" label.  Below: If part/text is not available, show the rest of the subelements  -->
+				<!-- If part/text is not available, show the rest of the subelements  -->
 				<td>
 					<xsl:choose>
 						<xsl:when test="boolean($partText)">
@@ -679,12 +685,6 @@
 													<xsl:when test="local-name() = 'start' or local-name() = 'end'">
 														<xsl:value-of select="concat(upper-case(substring(local-name(),1,1)), substring(local-name(),2))"/>
 														<xsl:text>: </xsl:text><xsl:value-of select="text()"/>
-														<!-- Commented out by SN, 11/20/2014>
-															<xsl:if test="boolean(../@unit)">
-															<xsl:text> </xsl:text>
-															<xsl:value-of select="../@unit"/>
-															</xsl:if>
-														-->
 													</xsl:when>
 													<xsl:when test="local-name() = 'total'">
 														<xsl:choose>
@@ -693,7 +693,7 @@
 																<xsl:text>: </xsl:text>
 															</xsl:when>
 															<xsl:otherwise>
-																<xsl:value-of select="concat(upper-case(substring(local-name(),1,1)), substring(local-name(),2))"/><!-- Sonoe note, 11/20/2014: I guess I could have also done <xsl:value-of>Total</xsl:value-of> or <xsl:text> -->
+																<xsl:value-of select="concat(upper-case(substring(local-name(),1,1)), substring(local-name(),2))"/>
 																<xsl:text>: </xsl:text>
 															</xsl:otherwise>
 														</xsl:choose>
@@ -704,15 +704,6 @@
 														<xsl:text>List: </xsl:text>
 														<xsl:value-of select="text()"/>
 													</xsl:when>
-													<!--  Original code for displaying list:
-														<xsl:otherwise>
-														<xsl:if test="boolean(../@unit)">
-														<xsl:value-of select="../@unit"/>
-														<xsl:text>: </xsl:text>
-														</xsl:if>
-														<xsl:value-of select="text()"/>
-														</xsl:otherwise>
-													-->
 												</xsl:choose>
 												<br/><xsl:value-of select="$newline"/>
 											</xsl:for-each>
@@ -752,14 +743,6 @@
 												</xsl:otherwise>
 											</xsl:choose>
 										</xsl:when>
-										<!-- Original code for displaying date:
-											<xsl:otherwise>
-											<xsl:value-of select="(@displayLabel,@type,local-name())[1]"/>
-											<xsl:text>: </xsl:text>
-											<xsl:value-of select="text()"/>
-											<br/><xsl:value-of select="$newline"/>
-											</xsl:otherwise>
-										-->
 									</xsl:choose>
 								</xsl:for-each>
 							</xsl:for-each>
@@ -769,7 +752,8 @@
 			</tr>
 		</xsl:for-each-group>
 	</xsl:template>
-<!-- mdos:relatedItem -->	
+	
+	<!-- mods:relatedItem -->	
 	<!-- Related items can contain any kind of item, so just reusing the other templates and nesting in an extra table-->
 	<xsl:template name="modsRelatedItems">
 		<xsl:for-each-group select="*[local-name() = 'relatedItem']" group-by="@displayLabel, .[not(@displayLabel)]/@type, local-name(.[not(@displayLabel) and not(@type)])[. != '']">
@@ -970,12 +954,12 @@
 		
 		<xsl:variable name="tableOfContents" select="*[local-name() = 'tableOfContents']"/>
 		<xsl:if test="boolean($tableOfContents) and not ($tableOfContents[@shareable])">
-				<table>
-					<xsl:call-template name="modsGroupedFieldWithType">
-						<xsl:with-param name="defaultLabel">Table of Contents</xsl:with-param>
-						<xsl:with-param name="field" select="$tableOfContents"/>
-					</xsl:call-template>
-				</table>
+			<table>
+				<xsl:call-template name="modsGroupedFieldWithType">
+					<xsl:with-param name="defaultLabel">Table of Contents</xsl:with-param>
+					<xsl:with-param name="field" select="$tableOfContents"/>
+				</xsl:call-template>
+			</table>
 		</xsl:if>
 		
 		<xsl:variable name="relatedItem" select="*[local-name() = 'relatedItem']"/>
