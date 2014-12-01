@@ -6,7 +6,7 @@
             "file:/mnt/projects/cdr/staging"
         ],
         "confirmFile":"born_digital",
-        "ingestCleanupPolicy":"DELETE_INGESTED_DEPOSIT_FOLDERS"
+        "ingestCleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS"
     },
     "tag:cdr.lib.unc.edu,2013:/lib_projects/":{
         "name":"Library Projects Drive (Pre-staged)",

@@ -331,12 +331,14 @@ public class MakeFOXML extends AbstractDepositJob {
 		}
 
 		// add manifest DS
-		File mets = getMETSFile();
-		if(mets.exists()) {
+		File manifest = getManifestFile();
+		log.info("Adding manifest file to foxml {}", manifest);
+		if (manifest != null && manifest.exists()) {
 			String dsLabel = Datastream.DATA_MANIFEST.getLabel();
 			Element el = FOXMLJDOMUtil.makeLocatorDatastream(Datastream.DATA_MANIFEST.getName(),
-					"M", mets.getName(), "text/xml", "URL", dsLabel, false, null);
+					"M", manifest.getAbsolutePath(), "text/xml", "URL", dsLabel, false, null);
 			foxml.getRootElement().addContent(el);
+			log.info("Manifest file exists and has been added");
 		}
 
 		addEventsDS(getDepositPID(), foxml);
@@ -361,16 +363,6 @@ public class MakeFOXML extends AbstractDepositJob {
 		}
 		saveRELSEXTtoFOXMl(rels, foxml);
 		writeFOXML(getDepositPID(), foxml);
-	}
-
-	protected File getMETSFile() {
-		File result = new File(getDepositDirectory(), "mets.xml");
-		if(!result.exists()) {
-			result = new File(getDepositDirectory(), "METS.xml");
-		} else if(!result.exists()) {
-			result = new File(getDepositDirectory(), "METS.XML");
-		}
-		return result;
 	}
 
 }

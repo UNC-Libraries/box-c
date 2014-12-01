@@ -13,7 +13,7 @@ public class RedisWorkerConstants {
 		fileName, depositMethod, containerId, payLoadOctets, createTime, startTime,
 		endTime, ingestedOctets, ingestedObjects, directory, lock, submitTime, depositorEmail, 
 		packagingType, metsProfile, metsType, permissionGroups, depositMd5, depositSlug, errorMessage, 
-		stackTrace, excludeDepositRecord, stagingFolderURI, publishObjects;
+		stackTrace, excludeDepositRecord, stagingFolderURI, publishObjects, manifestURI;
 	}
 
 	public static enum JobField {
