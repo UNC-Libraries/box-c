@@ -11,7 +11,7 @@
 	 -->
 	<xsl:variable name="newline"><xsl:text>
 </xsl:text></xsl:variable>
-<!-- mods:name -->
+	<!-- mods:name -->
 	<xsl:template match="*[local-name() = 'name']" mode="brief">
 		<xsl:variable name="displayForm" select="./*[local-name() = 'displayForm']"/>
 		<xsl:variable name="givenName" select="./*[local-name() = 'namePart' and @type='given']"/>
@@ -129,7 +129,7 @@
 			</tr><xsl:value-of select="$newline"/>
 		</xsl:for-each-group>
 	</xsl:template>
-<!-- mods:titleInfo -->
+	<!-- mods:titleInfo -->
 	<xsl:template match="*[local-name() = 'titleInfo']" mode="brief">
 		<xsl:variable name="nonSort" select="*[local-name() = 'nonSort']"/>
 		<xsl:if test="boolean($nonSort)">
@@ -490,11 +490,10 @@
 	<!-- mods:abstract -->
 	<xsl:template name="modsAbstract">
 		<xsl:for-each select="*[local-name() = 'abstract']">
+			<xsl:if test="@type='Content advice'">
 			<tr>
 				<th>
-					<xsl:if test="@type='Content advice'">
 						<xsl:value-of select="@type"/>
-					</xsl:if>
 				</th><xsl:value-of select="$newline"/>
 				<td>
 					<xsl:if test="@type='Content advice'">
@@ -502,6 +501,7 @@
 					</xsl:if>
 				</td><xsl:value-of select="$newline"/>
 			</tr>
+			</xsl:if>
 		</xsl:for-each>
 	</xsl:template>
 	<!-- mods:classification -->
@@ -550,7 +550,9 @@
 				<td>
 					<xsl:for-each select="current-group()">
 						<xsl:for-each select="./*[local-name() = 'url']|*[local-name() = 'uri']|./*[local-name() = 'physicalLocation']">
-							<xsl:value-of select="concat(upper-case(substring(@displayLabel,1,1)), substring(@displayLabel,2))"/><xsl:text>: </xsl:text>
+							<xsl:if test="@displayLabel">
+								<xsl:value-of select="concat(upper-case(substring(@displayLabel,1,1)), substring(@displayLabel,2))"/><xsl:text>: </xsl:text>
+							</xsl:if>
 							<xsl:value-of select="text()"/>
 							<xsl:if test="local-name() = 'url'">
 								<xsl:for-each select="@access|@note">
@@ -627,127 +629,127 @@
 		<xsl:for-each-group select="*[local-name() = 'part']" group-by="@displayLabel, local-name(.[not(@displayLabel)])[. != '']">
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>
 			<tr>
-				<xsl:variable name="partText" select="*[local-name() = 'text']"/>
 				<!-- if part/text is available, show only this subelement.  When @displayLabel is present it overrides "Part" label. -->
 				<th>
 					<xsl:choose>
-						<xsl:when test="boolean($partText)">
-							
-							<xsl:choose>
-								<xsl:when test="$partText/@displayLabel">
-									<xsl:value-of select="concat(upper-case(substring($partText/@displayLabel,1,1)), substring($partText/@displayLabel,2))"/>
-								</xsl:when>
-								<xsl:otherwise>
-									<xsl:value-of>Part</xsl:value-of>
-								</xsl:otherwise>
-							</xsl:choose>						
+						<xsl:when test="$groupKey = local-name()">
+							<xsl:text>Part</xsl:text>
 						</xsl:when>
 						<xsl:otherwise>
-							<xsl:choose>
-								<xsl:when test="$groupKey = local-name()">
-									<xsl:text>Part</xsl:text>
-								</xsl:when>
-								<xsl:otherwise>
-									<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
-								</xsl:otherwise>
-							</xsl:choose>
+							<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
 						</xsl:otherwise>
 					</xsl:choose>
 				</th><xsl:value-of select="$newline"/>
 				<!-- If part/text is not available, show the rest of the subelements  -->
 				<td>
-					<xsl:choose>
-						<xsl:when test="boolean($partText)">
-							<xsl:value-of select="$partText/text()"/>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:for-each select="current-group()">
-								<xsl:sort select="@order"/>
-								<xsl:for-each select="./*">
-									<xsl:choose>
-										<xsl:when test="local-name() = 'detail'">
-											<xsl:for-each select="./*">
+					<xsl:for-each select="current-group()">
+						<xsl:sort select="@order"/>
+						<xsl:for-each select="./*">
+								<xsl:choose>
+									<xsl:when test="local-name() = 'detail'">
+										<xsl:for-each select="./*">
+											<xsl:choose>
+												<xsl:when test="local-name() = 'number' and boolean(../@type)">
+													<xsl:value-of select="concat(upper-case(substring(../@type,1,1)), substring(../@type,2))"/><xsl:text>: </xsl:text><xsl:value-of select="text()"/>
+												</xsl:when>
+												<xsl:otherwise>
+													<xsl:value-of select="concat(upper-case(substring(local-name(),1,1)), substring(local-name(),2))"/>
+													<xsl:text>: </xsl:text><xsl:value-of select="text()"/>
+												</xsl:otherwise>
+											</xsl:choose>
+											<br/><xsl:value-of select="$newline"/>
+										</xsl:for-each>
+									</xsl:when>
+									
+									<xsl:when test="local-name() = 'extent'">
+										<xsl:for-each select="./*">
+											<xsl:choose>
+												<xsl:when test="local-name() = 'start' or local-name() = 'end'">
+													<xsl:value-of select="concat(upper-case(substring(local-name(),1,1)), substring(local-name(),2))"/>
+													<xsl:text>: </xsl:text><xsl:value-of select="text()"/>
+												</xsl:when>
+												
+												<xsl:when test="local-name() = 'total'">
+													<xsl:choose>
+														<xsl:when test="../@unit">
+															<xsl:value-of select="concat(upper-case(substring(local-name(),1,1)), substring(local-name(),2)), ../@unit"/>
+															<xsl:text>: </xsl:text>
+														</xsl:when>
+														<xsl:otherwise>
+															<xsl:value-of select="concat(upper-case(substring(local-name(),1,1)), substring(local-name(),2))"/>
+															<xsl:text>: </xsl:text>
+														</xsl:otherwise>
+													</xsl:choose>
+													<xsl:value-of select="text()"/>
+												</xsl:when>
+												<xsl:when test="local-name() = 'list'">
+													<xsl:text>List: </xsl:text>
+													<xsl:value-of select="text()"/>
+												</xsl:when>
+											</xsl:choose>
+											<br/><xsl:value-of select="$newline"/>
+										</xsl:for-each>
+									</xsl:when>
+										
+									<xsl:when test="local-name()='date'">
+										<xsl:choose>
+											<xsl:when test="@point='start'">
+												<xsl:text>Start date: </xsl:text>
+												<xsl:value-of select="text()"/>
+												<xsl:if test="boolean(@qualifier)">
+													<xsl:text> (</xsl:text>
+													<xsl:value-of select="@qualifier"/>
+													<xsl:text>)</xsl:text>
+												</xsl:if>
+												<br/><xsl:value-of select="$newline"/>
+											</xsl:when>
+											<xsl:when test="@point='end'">
+												<xsl:text>End date: </xsl:text>
+												<xsl:value-of select="text()"/>
+												<xsl:if test="boolean(@qualifier)">
+													<xsl:text> (</xsl:text>
+													<xsl:value-of select="@qualifier"/>
+													<xsl:text>)</xsl:text>
+												</xsl:if>
+												<br/><xsl:value-of select="$newline"/>
+											</xsl:when>
+											<xsl:otherwise>
+												<xsl:text>Date: </xsl:text>
+												<xsl:value-of select="text()"/>
+												<xsl:if test="boolean(@qualifier)">
+													<xsl:text> (</xsl:text>
+													<xsl:value-of select="@qualifier"/>
+													<xsl:text>)</xsl:text>
+												</xsl:if>
+												<br/><xsl:value-of select="$newline"/>
+											</xsl:otherwise>
+										</xsl:choose>
+									</xsl:when>
+									
+									<xsl:when test="local-name()= 'text'">
+										<xsl:for-each select="./*"/>
+										<xsl:choose>
+											<xsl:when test="boolean(@type)">
 												<xsl:choose>
-													<xsl:when test="local-name() = 'number' and boolean(../@type)">
-														<xsl:value-of select="concat(upper-case(substring(../@type,1,1)), substring(../@type,2))"/><xsl:text>: </xsl:text><xsl:value-of select="text()"/>
+													<xsl:when test="boolean(@displayLabel)">
+														<xsl:value-of select="concat(upper-case(substring(@displayLabel,1,1)), substring(@displayLabel,2))"/>
+													<xsl:text>: </xsl:text><xsl:value-of select="text()"/>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of select="concat(upper-case(substring(local-name(),1,1)), substring(local-name(),2))"/>
+														<xsl:value-of select="concat(upper-case(substring(@type,1,1)), substring(@type,2))"/>
 														<xsl:text>: </xsl:text><xsl:value-of select="text()"/>
 													</xsl:otherwise>
 												</xsl:choose>
-												<br/><xsl:value-of select="$newline"/>
-											</xsl:for-each>
-										</xsl:when>
-										<xsl:when test="local-name() = 'extent'">
-											<xsl:for-each select="./*">
-												<xsl:choose>
-													<xsl:when test="local-name() = 'start' or local-name() = 'end'">
-														<xsl:value-of select="concat(upper-case(substring(local-name(),1,1)), substring(local-name(),2))"/>
-														<xsl:text>: </xsl:text><xsl:value-of select="text()"/>
-													</xsl:when>
-													<xsl:when test="local-name() = 'total'">
-														<xsl:choose>
-															<xsl:when test="../@unit">
-																<xsl:value-of select="concat(upper-case(substring(local-name(),1,1)), substring(local-name(),2)), ../@unit"/>
-																<xsl:text>: </xsl:text>
-															</xsl:when>
-															<xsl:otherwise>
-																<xsl:value-of select="concat(upper-case(substring(local-name(),1,1)), substring(local-name(),2))"/>
-																<xsl:text>: </xsl:text>
-															</xsl:otherwise>
-														</xsl:choose>
-														<xsl:value-of select="text()"/>
-													</xsl:when>
-													
-													<xsl:when test="local-name() = 'list'">
-														<xsl:text>List: </xsl:text>
-														<xsl:value-of select="text()"/>
-													</xsl:when>
-												</xsl:choose>
-												<br/><xsl:value-of select="$newline"/>
-											</xsl:for-each>
-										</xsl:when>
-										
-										<xsl:when test="local-name()='date'">
-											<xsl:choose>
-												<xsl:when test="@point='start'">
-													<xsl:text>Start date: </xsl:text>
-													<xsl:value-of select="text()"/>
-													<xsl:if test="boolean(@qualifier)">
-														<xsl:text> (</xsl:text>
-														<xsl:value-of select="@qualifier"/>
-														<xsl:text>)</xsl:text>
-													</xsl:if>
-													<br/><xsl:value-of select="$newline"/>
-												</xsl:when>
-												<xsl:when test="@point='end'">
-													<xsl:text>End date: </xsl:text>
-													<xsl:value-of select="text()"/>
-													<xsl:if test="boolean(@qualifier)">
-														<xsl:text> (</xsl:text>
-														<xsl:value-of select="@qualifier"/>
-														<xsl:text>)</xsl:text>
-													</xsl:if>
-													<br/><xsl:value-of select="$newline"/>
-												</xsl:when>
-												<xsl:otherwise>
-													<xsl:text>Date: </xsl:text>
-													<xsl:value-of select="text()"/>
-													<xsl:if test="boolean(@qualifier)">
-														<xsl:text> (</xsl:text>
-														<xsl:value-of select="@qualifier"/>
-														<xsl:text>)</xsl:text>
-													</xsl:if>
-													<br/><xsl:value-of select="$newline"/>
-												</xsl:otherwise>
-											</xsl:choose>
-										</xsl:when>
-									</xsl:choose>
-								</xsl:for-each>
+											</xsl:when>
+											<xsl:otherwise>
+												<xsl:value-of select="text()"/>
+											</xsl:otherwise>
+										</xsl:choose>
+										<br/><xsl:value-of select="$newline"/>
+									</xsl:when>
+								</xsl:choose>
 							</xsl:for-each>
-						</xsl:otherwise>						
-					</xsl:choose>
+						</xsl:for-each>						
 				</td>
 			</tr>
 		</xsl:for-each-group>
