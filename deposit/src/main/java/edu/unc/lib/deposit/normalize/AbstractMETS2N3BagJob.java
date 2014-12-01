@@ -34,7 +34,7 @@ import edu.unc.lib.dl.xml.METSProfile;
 public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMETS2N3BagJob.class);
-	
+
 	@Autowired
 	protected SchematronValidator schematronValidator = null;
 	@Autowired
@@ -83,7 +83,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		int count = 0;
 		Iterator<Element> divs = mets.getDescendants(new ElementFilter("div", JDOMNamespaceUtil.METS_NS));
 		while(divs.hasNext()) {
-			Element div = (Element)divs.next();
+			Element div = divs.next();
 			String cids = div.getAttributeValue("CONTENTIDS");
 			if(cids != null && cids.contains("info:fedora/")) continue;
 			UUID uuid = UUID.randomUUID();
@@ -142,6 +142,15 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 			failJob(e, Type.VALIDATION, "Cannot parse METS file: {0}", getMETSFile());
 		}
 		recordDepositEvent(Type.VALIDATION, "METS schema(s) validated");
+	}
+
+	/**
+	 * Stores a reference to the METS file for this deposit as the manifest
+	 */
+	protected void addManifestURI() {
+		File metsFile = getMETSFile();
+		log.debug("Adding manifest URI referencing {}", metsFile);
+		getDepositStatusFactory().set(getDepositUUID(), DepositField.manifestURI, metsFile.getAbsolutePath());
 	}
 
 	protected void validateProfile(METSProfile profile) {

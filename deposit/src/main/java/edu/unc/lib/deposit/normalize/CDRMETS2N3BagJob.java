@@ -23,9 +23,14 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 	public CDRMETS2N3BagJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
 	}
-	
+
+	@Override
 	public void runJob() {
 		validateMETS();
+
+		// Store a reference to the manifest file
+		addManifestURI();
+
 		LOG.info("METS XML validated");
 		validateProfile(METSProfile.CDR_SIMPLE);
 		LOG.info("METS Schematron validated");
@@ -45,14 +50,14 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		LOG.info("Extractor file associations added");
 		extractor.addAccessControls(model);
 		LOG.info("Extractor access controls added");
-		
+
 		// add staging location to deposit status, if available
 		String loc = extractor.getStagingLocation();
 		if(loc != null) {
 			getDepositStatusFactory().set(getDepositUUID(), DepositField.stagingFolderURI, loc);
 			LOG.info("Staging location saved");
 		}
-		
+
 		final File modsFolder = getDescriptionDir();
 		modsFolder.mkdir();
 		extractor.saveDescriptions(new FilePathFunction() {

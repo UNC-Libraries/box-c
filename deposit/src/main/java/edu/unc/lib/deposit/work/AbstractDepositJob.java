@@ -1,6 +1,7 @@
 package edu.unc.lib.deposit.work;
 
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
+import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositField.manifestURI;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -183,6 +184,18 @@ public abstract class AbstractDepositJob implements Runnable {
 		return eventsDirectory;
 	}
 
+	/**
+	 * Returns the file where the manifest for this deposit is stored. If no manifest was set, then null is returned
+	 *
+	 * @return
+	 */
+	public File getManifestFile() {
+		String path = getDepositStatus().get(manifestURI.name());
+		if (path == null)
+			return null;
+		return new File(path);
+	}
+
 	public void recordDepositEvent(Type type, String messageformat,
 			Object... args) {
 		String message = MessageFormat.format(messageformat, args);
@@ -235,7 +248,7 @@ public abstract class AbstractDepositJob implements Runnable {
 
 	/**
 	 * Appends an event to the PREMIS document for the given PID, creating the document if it does not already exist.
-	 * 
+	 *
 	 * @param pid
 	 * @param event
 	 * @return the premis document file
