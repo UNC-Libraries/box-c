@@ -80,13 +80,14 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'],
 		}]: null;
 		
 		var editorOptions = {
-			schema : "../../static/schemas/mods-3-4/mods.json",
+			schema : "../../static/schemas/mods-3-5/mods.json",
 			ajaxOptions : {
 				xmlRetrievalPath : "/admin/" + resultObject.id + "/mods",
 				xmlUploadPath : "/admin/describe/" + resultObject.id
 			},
 			libPath : "../../static/js/xmleditor/lib/",
-			menuEntries: menuEntries
+			menuEntries: menuEntries,
+			enforceOccurs: false
 		};
 		
 		if (vocabTerms) {

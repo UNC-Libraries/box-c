@@ -178,7 +178,7 @@
 					<constructor-arg type="java.io.InputStream" value="classpath:/premis-v2-0.xsd" />
 				</bean>
 				<bean class="javax.xml.transform.stream.StreamSource">
-					<constructor-arg type="java.io.InputStream" value="classpath:/mods-3-4.xsd" />
+					<constructor-arg type="java.io.InputStream" value="classpath:/mods-3-5.xsd" />
 				</bean>
 				<bean class="javax.xml.transform.stream.StreamSource">
 					<constructor-arg type="java.io.InputStream" value="classpath:/acl.xsd" />
@@ -293,7 +293,7 @@
 						</bean>
 						<bean class="javax.xml.transform.stream.StreamSource">
 							<constructor-arg type="java.io.InputStream"
-								value="classpath:/mods-3-4.xsd" />
+								value="classpath:/mods-3-5.xsd" />
 						</bean>
 					</list>
 				</constructor-arg>
