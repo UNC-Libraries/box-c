@@ -63,7 +63,7 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 	public MODSUIPFilter() {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
-		StreamSource modsSource = new StreamSource(getClass().getResourceAsStream("/schemas/mods-3-4.xsd"));
+		StreamSource modsSource = new StreamSource(getClass().getResourceAsStream("/schemas/mods-3-5.xsd"));
 		StreamSource xmlSource = new StreamSource(getClass().getResourceAsStream("/schemas/xml.xsd"));
 		StreamSource xlinkSource = new StreamSource(getClass().getResourceAsStream("/schemas/xlink.xsd"));
 
