@@ -330,6 +330,11 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 			throw new DepositException("Failed to parse FOXML for object " + pid.getPid(), e);
 		}
 
+		// Add ingestion event to PREMIS log
+		Element ingestEvent = getEventLog().logEvent(PremisEventLogger.Type.INGESTION, "ingested as PID:" + pid.getPid(),
+				pid);
+		appendDepositEvent(pid, ingestEvent);
+
 		// Upload files included in this ingest and updates file references
 		uploadIngestFiles(foxmlDoc, pid);
 
@@ -395,21 +400,6 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 						throw new DepositException("Data file missing: " + ref, e);
 					} catch (ServiceException e) {
 						throw new DepositException("Problem uploading file: " + ref, e);
-					}
-				} else if (uri.getScheme().contains("premisEvents")) {
-					// Upload PREMIS
-					try {
-						File file = new File(getEventsDirectory(), ref.substring(ref.indexOf(":") + 1));
-
-						Document premis = new SAXBuilder().build(file);
-						getEventLog().logEvent(PremisEventLogger.Type.INGESTION, "ingested as PID:" + pid.getPid(), pid);
-						getEventLog().appendLogEvents(pid, premis.getRootElement());
-
-						log.debug("uploading " + file.getPath());
-						newref = client.upload(premis);
-						cLocation.setAttribute("REF", newref);
-					} catch (Exception e) {
-						throw new DepositException("There was a problem uploading ingest events" + ref, e);
 					}
 				} else {
 					continue;
