@@ -37,11 +37,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.dl.schematron.SchematronValidator;
@@ -68,6 +70,8 @@ public class DSPACEMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	@Before
 	public void init() throws Exception {
+		
+		Dataset dataset = TDBFactory.createDataset();
 
 		job = new DSPACEMETS2N3BagJob(jobUUID, depositUUID);
 		job.setEpdcx2modsTransformer(epdcx2modsTransformer);
@@ -75,7 +79,10 @@ public class DSPACEMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 		job.setDepositDirectory(depositDir);
 		job.setMetsSipSchema(metsSipSchema);
 		job.setSchematronValidator(validator);
+		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
+		setField(job, "jobStatusFactory", jobStatusFactory);
+		setField(job, "depositStatusFactory", depositStatusFactory);
 
 		job.init();
 	}
@@ -89,9 +96,6 @@ public class DSPACEMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 		long start = System.currentTimeMillis();
 		job.run();
 		log.info("Run dspace mets: {}", (System.currentTimeMillis() - start));
-
-		File modelFile = new File(workDir, DepositConstants.JENA_TDB_DIR);
-		assertTrue("N3 model file must exist after conversion", modelFile.exists());
 
 		Model model = job.getWritableModel();
 		assertFalse("Model was empty", model.isEmpty());

@@ -62,7 +62,7 @@ public class UnpackDepositJobTest {
 		Runnable r = (Runnable)j;
 		r.run();
 		
-		File metsFile = new File(workDir, "mets.xml");
+		File metsFile = new File(workDir, "data/mets.xml");
 		assertTrue("METS file must exist after unpacking", metsFile.exists());
 	}
 }

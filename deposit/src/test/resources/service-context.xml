@@ -35,9 +35,14 @@
 		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
 
-	<bean id="depositsDirectory" class="java.io.File">
-		<constructor-arg value="${deposits.dir}" />
+	<bean id="depositsDirectoryPath" class="java.nio.file.Files" factory-method="createTempDirectory">
+		<constructor-arg type="String" value="deposits" />
+		<constructor-arg>
+			<list />
+		</constructor-arg>
 	</bean>
+
+	<bean id="depositsDirectory" class="java.io.File" factory-bean="depositsDirectoryPath" factory-method="toFile" />
 
 	<bean id="jedisPool" class="redis.clients.jedis.JedisPool"
 		destroy-method="destroy">
@@ -69,7 +74,7 @@
 	</bean>
 	
 	<bean id="dataSet" class="com.hp.hpl.jena.tdb.TDBFactory" factory-method="createDataset" destroy-method="close">
-		<constructor-arg value="${deposits.dir}/jena-tdb-dataset"/>
+		<constructor-arg value="#{depositsDirectory+'/jena-tdb-dataset'}"/>
 	</bean>
 
 	<bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">

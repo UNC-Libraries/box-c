@@ -56,10 +56,12 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
@@ -102,15 +104,23 @@ public class MakeFOXMLTest {
 	}
 
 	private void initializeJob(String depositUUID, String ingestZipPath) {
-		DepositTestUtils.makeTestDir(depositsDirectory, depositUUID, new File(ingestZipPath));
+		String workDir = DepositTestUtils.makeTestDir(depositsDirectory, depositUUID, new File(ingestZipPath));
+
+		Dataset dataset = TDBFactory.createDataset();
 
 		job = new MakeFOXML();
 		job.setDepositUUID(depositUUID);
+		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "jobStatusFactory", jobStatusFactory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 
 		job.init();
+
+		Model model = job.getWritableModel();
+		model.read(new File(workDir, "everything.n3").getAbsolutePath());
+		job.closeModel();
+
 	}
 
 	@Test
@@ -217,9 +227,13 @@ public class MakeFOXMLTest {
 		// Check that the staging location is being set
 		Element dsLocation = dsEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS).getChild("contentLocation",
 				JDOMNamespaceUtil.FOXML_NS);
-		if(dsLocation == null) return;
+		if (dsLocation == null) {
+			return;
+		}
+		
 		String dsLocationValue = dsLocation.getAttributeValue("REF");
 		File dsFile = getFileForUrl(dsLocationValue, job.getDepositDirectory());
+		
 		assertTrue("Location referenced by datastream not found", dsFile.exists());
 	}
 
