@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -301,7 +303,13 @@ public class MakeFOXML extends AbstractDepositJob {
 	private void addEventsDS(PID p, Document foxml) {
 		// Add locator datastream for events, referencing the events file identified by p
 		File events = getEventsFile(p);
-		Element el = FOXMLJDOMUtil.makeLocatorDatastream(Datastream.MD_EVENTS.getName(), "M", events.getAbsolutePath(),
+		
+		// Use a path relative to the deposit directory
+		Path absolute = Paths.get(events.getAbsolutePath());
+		Path base = Paths.get(getDepositDirectory().getAbsolutePath());
+		Path relative = base.relativize(absolute);
+		
+		Element el = FOXMLJDOMUtil.makeLocatorDatastream(Datastream.MD_EVENTS.getName(), "M", relative.toString(),
 				"text/xml", "URL", Datastream.MD_EVENTS.getLabel(), false, null);
 		foxml.getRootElement().addContent(el);
 	}

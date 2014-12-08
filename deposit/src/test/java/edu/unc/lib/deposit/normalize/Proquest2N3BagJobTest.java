@@ -45,12 +45,14 @@ import org.joda.time.DateTimeUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 
@@ -72,11 +74,14 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 		StreamSource xslStream = new StreamSource();
 		xslStream.setSystemId(xslURL.toExternalForm());
 		proquest2ModsTransformer = factory.newTransformer(xslStream);
+		
+		Dataset dataset = TDBFactory.createDataset();
 
 		job = new Proquest2N3BagJob();
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
 		job.setProquest2ModsTransformer(proquest2ModsTransformer);
+		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "jobStatusFactory", jobStatusFactory);
 		setField(job, "depositStatusFactory", depositStatusFactory);

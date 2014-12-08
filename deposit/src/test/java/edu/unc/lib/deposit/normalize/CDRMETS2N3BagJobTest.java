@@ -36,9 +36,6 @@ public class CDRMETS2N3BagJobTest {
 		Object j = springJobFactory.materializeJob(job);
 		Runnable r = (Runnable)j;
 		r.run();
-		
-		File modelFile = new File(workDir, DepositConstants.JENA_TDB_DIR);
-		assertTrue("Jena model must exist after conversion", modelFile.exists());
 	}
 	
 	@Test
@@ -51,9 +48,6 @@ public class CDRMETS2N3BagJobTest {
 		Object j = springJobFactory.materializeJob(job);
 		Runnable r = (Runnable)j;
 		r.run();
-
-		File modelFile = new File(workDir, DepositConstants.JENA_TDB_DIR);
-		assertTrue("N3 model file must exist after conversion", modelFile.exists());
 	}
 
 	@Test
@@ -62,16 +56,15 @@ public class CDRMETS2N3BagJobTest {
 		File workDir = new File(depositsDirectory, depositUUID);
 		org.apache.commons.io.FileUtils.deleteDirectory(workDir);
 		workDir.mkdirs();
+		File dataDir = new File(workDir, "data");
+		dataDir.mkdirs();
 		File test = new File("src/test/resources/accessControlsTest.cdr.xml");
-		File metsPlace = new File(workDir, "METS.xml");
+		File metsPlace = new File(dataDir, "METS.xml");
 		FileUtils.copyFile(test, metsPlace);
 		
 		Job job = new Job("CDRMETS2N3BagJob", UUID.randomUUID().toString(), depositUUID);
 		Object j = springJobFactory.materializeJob(job);
 		Runnable r = (Runnable)j;
 		r.run();
-
-		File modelFile = new File(workDir, DepositConstants.JENA_TDB_DIR);
-		assertTrue("N3 model file must exist after conversion", modelFile.exists());
 	}
 }

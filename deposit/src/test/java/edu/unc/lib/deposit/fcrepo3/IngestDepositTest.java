@@ -49,6 +49,10 @@ import org.mockito.internal.util.collections.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.tdb.TDBFactory;
+
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -61,6 +65,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.ObjectProfile;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
+import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
@@ -131,9 +136,10 @@ public class IngestDepositTest {
 
 		job = new IngestDeposit("jobuuid", depositUuid);
 		jmsListener = new FinishIngestsMockListener(job);
+		Dataset dataset = TDBFactory.createDataset();
 
 		job.setListener(jmsListener);
-		// job.setDepositDirectory(depositFolder);
+		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "jobStatusFactory", jobStatusFactory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
@@ -144,6 +150,11 @@ public class IngestDepositTest {
 		depositStatus.put(DepositField.excludeDepositRecord.name(), "false");
 
 		job.init();
+		
+		Model model = job.getWritableModel();
+		model.read(new File(depositFolder, "everything.n3").getAbsolutePath());
+		job.closeModel();
+		
 	}
 
 	@Test
@@ -205,8 +216,8 @@ public class IngestDepositTest {
 		// Two of the objects are containers with no data
 		verify(client, times(job.getIngestObjectCount() - 2)).upload(any(File.class));
 
-		// All objects have premis
-		verify(client, times(job.getIngestObjectCount() + 1)).upload(any(Document.class));
+		// PREMIS was written
+		verify(client, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class), eq(new PID(depositStatus.get(DepositField.containerId.name()))));
 
 	}
 
@@ -241,8 +252,8 @@ public class IngestDepositTest {
 		// Only one object with data should have been uploaded
 		verify(client).upload(any(File.class));
 
-		// Failed object's premis should still have been uploaded
-		verify(client, times(3)).upload(any(Document.class));
+		// PREMIS was written
+		verify(client, times(0)).writePremisEventsToFedoraObject(any(PremisEventLogger.class), any(PID.class));
 
 		assertTrue("Job must have been registered", jmsListener.registeredJob);
 		assertTrue("Job must have been unregistered on failure", jmsListener.registeredJob);
@@ -323,8 +334,8 @@ public class IngestDepositTest {
 		// Two of the objects are containers with no data
 		verify(client, times(job.getIngestObjectCount() - 2)).upload(any(File.class));
 
-		// All objects have premis
-		verify(client, times(job.getIngestObjectCount())).upload(any(Document.class));
+		// PREMIS was written
+		verify(client, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class), eq(new PID(depositStatus.get(DepositField.containerId.name()))));
 
 	}
 
