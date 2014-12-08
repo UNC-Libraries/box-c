@@ -7,10 +7,15 @@
 	Transforms a mods record into a table formatted according to the needs of the 
 	full record page in the CDR public UI.  
 	Author: Ben Pennell
-	Edited on 27 November 2014: Sonoe Nakasone
+	Edited on 2 December 2014: Sonoe Nakasone
 	 -->
 	<xsl:variable name="newline"><xsl:text>
-</xsl:text></xsl:variable>
+	</xsl:text></xsl:variable>
+		
+	<xsl:character-map name="angle-brackets">
+			<xsl:output-character character="&lt;" string="&lt;"/>
+			<xsl:output-character character="&gt;" string="&gt;"/>
+		</xsl:character-map>
 	<!-- mods:name -->
 	<xsl:template match="*[local-name() = 'name']" mode="brief">
 		<xsl:variable name="displayForm" select="./*[local-name() = 'displayForm']"/>
@@ -216,6 +221,8 @@
 	</xsl:template>
 	<!-- mods:originInfo mods:originInfo/place-->
 	<xsl:template name="modsOriginPlaces">
+		
+		
 		<xsl:variable name="place" select="*[local-name() = 'originInfo']/*[local-name() = 'place']"/>
 		<xsl:if test="boolean($place)">
 			<tr>
@@ -230,6 +237,8 @@
 				</td>
 			</tr>
 		</xsl:if>
+	
+		
 	</xsl:template>
 	<!-- Template for a simple name / value pair display -->
 	<xsl:template name="modsField">
@@ -277,7 +286,7 @@
 	
 	<xsl:template name="modsGroupedFieldWithType">
 		<xsl:param name="defaultLabel"/>
-		<xsl:param name="field"/>	
+		<xsl:param name="field"/>
 		<xsl:if test="boolean($field)">
 			<xsl:for-each-group select="$field" group-by="@displayLabel, .[not(@displayLabel)]/@type, local-name(.[not(@displayLabel) and not(@type)])[. != '']">
 				<xsl:variable name="groupKey" select="current-grouping-key()"/>
@@ -303,13 +312,20 @@
 						<xsl:for-each select="current-group()">
 							<xsl:choose>
 								<xsl:when test="boolean(text())">
-									<xsl:value-of select="text()"/><br/><xsl:value-of select="$newline"/>
+									<xsl:analyze-string select="$field" regex="\n">
+										<xsl:matching-substring>
+											<br/>
+										</xsl:matching-substring>
+										<xsl:non-matching-substring>
+											<xsl:value-of select="normalize-space(.)"/>
+										</xsl:non-matching-substring>
+									</xsl:analyze-string>
+									<br/><xsl:value-of select="$newline"/>
 								</xsl:when>
 								<xsl:otherwise>
 									<xsl:value-of select="./@*[local-name() = 'href']"/><br/><xsl:value-of select="$newline"/>
 								</xsl:otherwise>
 							</xsl:choose>
-							
 						</xsl:for-each>
 					</td>
 				</tr>
@@ -384,7 +400,7 @@
 						</xsl:when>
 						<xsl:otherwise>
 							<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
-							<xsl:if test="@usage.[not(@displayLabel)]">
+							<xsl:if test="@usage">
 								<xsl:text> language</xsl:text>
 							</xsl:if>
 						</xsl:otherwise>
@@ -727,7 +743,7 @@
 									</xsl:when>
 									
 									<xsl:when test="local-name()= 'text'">
-										<xsl:for-each select="./*"/>
+						
 										<xsl:choose>
 											<xsl:when test="boolean(@type)">
 												<xsl:choose>
@@ -841,7 +857,6 @@
 		</xsl:for-each-group>
 	</xsl:template>
 	
-
 	<xsl:template match="*[local-name() = 'mods']">
 		<xsl:variable name="name" select="*[local-name() = 'name']"/>
 		<xsl:variable name="titleInfo" select="*[local-name() = 'titleInfo']"/>
@@ -954,13 +969,17 @@
 			</table>
 		</xsl:if>
 		
-		<xsl:variable name="tableOfContents" select="*[local-name() = 'tableOfContents']"/>
+		
+		<xsl:variable name="tableOfContents" select="*[local-name() = 'tableOfContents']" />
+			
 		<xsl:if test="boolean($tableOfContents) and not ($tableOfContents[@shareable])">
+	
 			<table>
 				<xsl:call-template name="modsGroupedFieldWithType">
 					<xsl:with-param name="defaultLabel">Table of Contents</xsl:with-param>
 					<xsl:with-param name="field" select="$tableOfContents"/>
 				</xsl:call-template>
+				
 			</table>
 		</xsl:if>
 		
