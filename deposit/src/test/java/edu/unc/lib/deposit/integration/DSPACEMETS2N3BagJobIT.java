@@ -36,9 +36,6 @@ public class DSPACEMETS2N3BagJobIT {
 		Object j = springJobFactory.materializeJob(job);
 		Runnable r = (Runnable)j;
 		r.run();
-		
-		File modelFile = new File(workDir, DepositConstants.JENA_TDB_DIR);
-		assertTrue("jena model dir must exist after conversion", modelFile.exists());
 	}
 
 }
