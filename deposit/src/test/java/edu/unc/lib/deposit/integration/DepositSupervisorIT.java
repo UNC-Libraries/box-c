@@ -50,7 +50,7 @@ public class DepositSupervisorIT {
 
 	@Before
 	public void setup() {
-		if(!started) {
+		if (!started) {
 			depositSupervisor.start();
 			started = true;
 		}
@@ -113,10 +113,14 @@ public class DepositSupervisorIT {
 	@Test
 	public void testCDRMETSwACL() throws ClassNotFoundException, InterruptedException, IOException, JDOMException {
 		File workingDir = new File(depositsDirectory, "fooff703-9c2e-466b-b4cc-15bbfd03c8ae");
-		if(workingDir.exists()) FileUtils.deleteDirectory(workingDir);
+		if (workingDir.exists()) {
+			FileUtils.deleteDirectory(workingDir);
+		}
 		workingDir.mkdirs();
+		File dataDir = new File(workingDir, "data");
+		dataDir.mkdirs();
 		File testMETS = new File("src/test/resources/accessControlsTest.cdr.xml");
-		File mets = new File(workingDir, "METS.xml");
+		File mets = new File(dataDir, "METS.xml");
 		Files.copy(testMETS.toPath(), mets.toPath());
 		String depositUUID = "fooff703-9c2e-466b-b4cc-15bbfd03c8ae";
 		depositStatusFactory.delete(depositUUID);
