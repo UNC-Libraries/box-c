@@ -11,11 +11,7 @@
 	 -->
 	<xsl:variable name="newline"><xsl:text>
 	</xsl:text></xsl:variable>
-		
-	<xsl:character-map name="angle-brackets">
-			<xsl:output-character character="&lt;" string="&lt;"/>
-			<xsl:output-character character="&gt;" string="&gt;"/>
-		</xsl:character-map>
+	
 	<!-- mods:name -->
 	<xsl:template match="*[local-name() = 'name']" mode="brief">
 		<xsl:variable name="displayForm" select="./*[local-name() = 'displayForm']"/>
@@ -229,7 +225,7 @@
 				<th>Place of Publication</th>
 				<td>
 					<xsl:for-each select="$place">
-						<xsl:for-each select="*[local-name() = 'placeTerm' and @type != 'code']">
+						<xsl:for-each select="*[local-name() = 'placeTerm']">
 							<xsl:value-of select="."/><br/><xsl:value-of select="$newline"/>
 						</xsl:for-each>
 						
@@ -312,7 +308,7 @@
 						<xsl:for-each select="current-group()">
 							<xsl:choose>
 								<xsl:when test="boolean(text())">
-									<xsl:analyze-string select="$field" regex="\n">
+									<xsl:analyze-string select="text()" regex="\n">
 										<xsl:matching-substring>
 											<br/>
 										</xsl:matching-substring>
@@ -596,7 +592,7 @@
 
 	<!-- mods:physicalDescription -->
 	<xsl:template name="modsPhysicalDescription">
-		<xsl:for-each-group select="*[local-name() = 'physicalDescription']/*" group-by="@displayLabel, .[not(@displayLabel)]/@type, local-name(.[not(@displayLabel) and not(@type)])[. != '']">
+		<xsl:for-each-group select="*[local-name() = 'physicalDescription']/*" group-by="@displayLabel, .[not(@displayLabel)]/@type, @unit, local-name(.[not(@displayLabel) and not(@type) and not (@unit)])[. != '']">
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>
 			<tr>
 				<th>
@@ -613,7 +609,7 @@
 						<xsl:when test="$groupKey = 'extent'">
 							<xsl:choose>
 								<xsl:when test="@unit">
-									<xsl:value-of select="concat(upper-case(substring(@unit,1,1)), substring(@unit,2))"/>
+									<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
 								</xsl:when>
 								<xsl:otherwise>
 									<xsl:value-of>Extent</xsl:value-of>
