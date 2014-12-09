@@ -1,35 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="xml" omit-xml-declaration="yes" indent="no"/>
-
-	<xsl:template name="getScriptName">
-		<xsl:param name="scriptNodes"/>
-		<xsl:for-each-group select="$scriptNodes" group-by="@type='code', .[not(@type='code')]/@type='text', local-name(.[not(@type='code') and not(@type='text')])[. != '']">
-			<xsl:variable name="groupKey" select="current-grouping-key()"/>
-	
-		<xsl:choose>
-			<xsl:when test="boolean($scriptNodes[@type='text'])">
-				<xsl:for-each select="$scriptNodes[@type='text']">
-					<xsl:if test="position() != 1">
-							<xsl:text>; </xsl:text>
-					</xsl:if>
-					<xsl:value-of select="text()"/>
-				</xsl:for-each>
-			</xsl:when>
-			<xsl:when test="boolean($scriptNodes[@type = 'code' and @authority='iso15924'])">		
-
-					<xsl:call-template name="getISO15924Name">
-						<xsl:with-param name="scriptCode" select="$scriptNodes[@type = 'code' and @authority='iso15924']/text()"/>
-					</xsl:call-template>
-				
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:call-template name="getISO15924Name">
-					<xsl:with-param name="scriptCode" select="$scriptNodes/text()"/>
-				</xsl:call-template>
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:for-each-group>
+    
+    <xsl:template name="getScriptName">
+        <xsl:param name="scriptNodes"/>
+            <xsl:choose>
+                <xsl:when test="boolean($scriptNodes[@type='text'])">
+                    <xsl:for-each select="$scriptNodes[@type='text']">
+                        <xsl:if test="position() != 1">
+                            <xsl:text>; </xsl:text>
+                        </xsl:if>
+                        <xsl:value-of select="text()"/>
+                    </xsl:for-each>
+                </xsl:when>
+                <xsl:when test="boolean($scriptNodes[@type = 'code' and @authority='iso15924'])">
+                    <xsl:call-template name="getISO15924Name">
+                        <xsl:with-param name="scriptCode" select="$scriptNodes[@type = 'code' and @authority='iso15924']/text()"/>
+                    </xsl:call-template>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:call-template name="getISO15924Name">
+                        <xsl:with-param name="scriptCode" select="$scriptNodes/text()"/>
+                    </xsl:call-template>
+                </xsl:otherwise>
+            </xsl:choose>
 	</xsl:template>
 
 	<xsl:template name="getISO15924Name">
