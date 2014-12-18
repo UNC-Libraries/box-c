@@ -27,6 +27,7 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 
 /**
  * Populates the relations field with pertinent triples from RELS-Ext that are primarily intended for post retrieval purposes.
@@ -66,10 +67,12 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 			List<String> sourceData = triples.get(CDRProperty.sourceData.toString());
 			if (sourceData != null)
 				relations.add(CDRProperty.sourceData.getPredicate() + "|" + ((new PID(sourceData.get(0)).getPid())));
-			// Retrieve and store slug
-			List<String> slug = triples.get(CDRProperty.slug.toString());
-			if (slug != null)
-				relations.add(CDRProperty.slug.getPredicate() + "|" + slug.get(0));
+			
+			// Retrieve and store label
+			List<String> label = triples.get(FedoraProperty.label.toString());
+			if (label != null)
+				relations.add(FedoraProperty.label.getFragment() + "|" + label.get(0));
+			
 			// Retrieve the default sort order for a container if specified
 			List<String> defaultSortOrder = triples.get(CDRProperty.sortOrder.toString());
 			if (defaultSortOrder != null){
@@ -77,10 +80,13 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 				sortOrder = sortOrder.substring(sortOrder.indexOf('#') + 1);
 				relations.add(CDRProperty.sortOrder.getPredicate() + "|" + sortOrder);
 			}
+			
+			// Retrieve and store embargo
 			List<String> embargoUntil = triples.get(CDRProperty.embargoUntil.toString());
 			if (embargoUntil != null)
 				relations.add(CDRProperty.embargoUntil.getPredicate() + "|" + embargoUntil.get(0));
-
+			
+			// Retrieve and store invalid terms
 			List<String> invalidTerms = triples.get(CDRProperty.invalidTerm.toString());
 			String invalidTermPred = CDRProperty.invalidTerm.getPredicate();
 			if (invalidTerms != null) {

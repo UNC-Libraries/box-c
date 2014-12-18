@@ -102,11 +102,13 @@ public class FedoraContentService {
 				&& (searchSettings.resourceTypeFile.equals(briefObject.getResourceType()) || searchSettings.resourceTypeAggregate
 						.equals(briefObject.getResourceType())))
 			throw new InvalidRecordRequestException();
-		// Grab out the slug if its available, to be used as the filename.
-		List<String> slugRelations = briefObject.getRelation("slug");
-		String slug = null;
-		if (slugRelations != null && slugRelations.size() > 0)
-			slug = slugRelations.get(0);
+		
+		// If a label is available, use it for the filename
+		List<String> labelRelations = briefObject.getRelation("label");
+		String filename = null;
+		if (labelRelations != null && labelRelations.size() > 0) {
+			filename = labelRelations.get(0);
+		}
 
 		try {
 			edu.unc.lib.dl.search.solr.model.Datastream datastreamResult = briefObject.getDatastreamObject(datastream);
@@ -121,7 +123,7 @@ public class FedoraContentService {
 						"download", briefObject.getTitle() + "|" + pid, null);
 			}
 
-			this.streamData(pid, datastreamResult, slug, response, download, numberOfRetries);
+			this.streamData(pid, datastreamResult, filename, response, download, numberOfRetries);
 		} catch (AuthorizationException e) {
 			throw new InvalidRecordRequestException(e);
 		} catch (ResourceNotFoundException e) {
@@ -133,7 +135,7 @@ public class FedoraContentService {
 		}
 	}
 
-	private void streamData(String simplepid, Datastream datastream, String slug, HttpServletResponse response,
+	private void streamData(String simplepid, Datastream datastream, String filename, HttpServletResponse response,
 			boolean asAttachment, int retryServerError) throws FedoraException, IOException {
 		OutputStream outStream = response.getOutputStream();
 
@@ -186,24 +188,25 @@ public class FedoraContentService {
 					response.setHeader("Content-Type", mimeType);
 
 					// Setting the filename header for the response
-					if (slug == null) {
-						slug = pid.getPid();
+					if (filename == null) {
+						filename = pid.getPid();
 					}
+					
 					// For metadata types files, append the datastream name
 					if (datastream.getDatastreamCategory().equals(DatastreamCategory.METADATA)
 							|| datastream.getDatastreamCategory().equals(DatastreamCategory.ADMINISTRATIVE)) {
-						slug += "_" + datastream.getName();
+						filename += "_" + datastream.getName();
 					}
 					// Add the file extension unless its already in there.
 					if (datastream.getExtension() != null && datastream.getExtension().length() > 0
-							&& !slug.toLowerCase().endsWith("." + datastream.getExtension())
+							&& !filename.toLowerCase().endsWith("." + datastream.getExtension())
 							&& !"unknown".equals(datastream.getExtension())) {
-						slug += "." + datastream.getExtension();
+						filename += "." + datastream.getExtension();
 					}
 					if (asAttachment) {
-						response.setHeader("content-disposition", "attachment; filename=\"" + slug + "\"");
+						response.setHeader("content-disposition", "attachment; filename=\"" + filename + "\"");
 					} else {
-						response.setHeader("content-disposition", "inline; filename=\"" + slug + "\"");
+						response.setHeader("content-disposition", "inline; filename=\"" + filename + "\"");
 					}
 				}
 
@@ -216,7 +219,7 @@ public class FedoraContentService {
 				// Retry server errors
 				if (method.getStatusCode() == 500 && retryServerError > 0) {
 					LOG.warn("Failed to retrieve " + dataUrl + ", retrying.");
-					this.streamData(simplepid, datastream, slug, response, asAttachment, retryServerError - 1);
+					this.streamData(simplepid, datastream, filename, response, asAttachment, retryServerError - 1);
 				} else {
 					throw new ResourceNotFoundException("Failure to stream fedora content due to response of: "
 							+ method.getStatusLine().toString() + "\nPath was: " + dataUrl);
