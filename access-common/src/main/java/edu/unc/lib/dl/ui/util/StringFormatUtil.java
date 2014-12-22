@@ -19,6 +19,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * String manipulation utility methods related to Solr data.
@@ -105,4 +107,30 @@ public class StringFormatUtil {
 			return query.substring(0, index - (isFirstParameter? 1 : 0));
 		return query.substring(0, index) + query.substring(end + (isFirstParameter? 1 : 0));
 	}
+
+	/**
+	 * Given a string as input, convert it to US-ASCII and replace any characters which would
+	 * prevent it from being parsed as a "token" as defined by RFC 1521 and RFC 2045.
+	 * @param input
+	 * @param replacement
+	 * @return
+	 */
+	public static String makeToken(String input, String replacement) {
+		String result = input;
+		
+		// Encode as US-ASCII, replacing malformed or unmappable input
+		result = new String(StandardCharsets.US_ASCII.encode(result).array(), StandardCharsets.US_ASCII);
+		
+		// No space characters (includes newlines, etc. as well as just space and tab)
+		result = result.replaceAll("\\s", replacement);
+		
+		// No control characters
+		result = result.replaceAll("[^\\x20-\\x7f]", replacement);
+		
+		// No "tspecial" characters
+		result = result.replaceAll("[()<>@,;:\\\\\\\"/\\[\\]?=]", replacement);
+		
+		return result;
+	}
+	
 }

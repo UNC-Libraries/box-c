@@ -181,24 +181,32 @@ public class ContentModelHelper {
 				"createdDate");
 		private URI uri;
 		private Namespace namespace;
+		private String fragment;
 
-		FedoraProperty(Namespace ns, String suffix) {
+		FedoraProperty(Namespace ns, String fragment) {
 			try {
-				this.uri = new URI(ns.getURI() + suffix);
+				this.uri = new URI(ns.getURI() + fragment);
 				this.namespace = ns;
+				this.fragment = fragment;
 			} catch (URISyntaxException e) {
 				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
 				x.initCause(e);
 				throw x;
 			}
 		}
+		
+		// FIXME: should other kinds of properties use this fragment/namespace/uri pattern?
 
-		public URI getURI() {
-			return this.uri;
+		public String getFragment() {
+			return this.fragment;
 		}
 
 		public Namespace getNamespace() {
-			return namespace;
+			return this.namespace;
+		}
+
+		public URI getURI() {
+			return this.uri;
 		}
 
 		public boolean equals(String value) {
