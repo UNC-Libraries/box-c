@@ -122,7 +122,7 @@ public class StringFormatUtil {
 		result = new String(StandardCharsets.US_ASCII.encode(result).array(), StandardCharsets.US_ASCII);
 		
 		// No space characters (includes newlines, etc. as well as just space and tab)
-		result = result.replaceAll("\s", replacement);
+		result = result.replaceAll("\\s", replacement);
 		
 		// No control characters
 		result = result.replaceAll("[^\\x20-\\x7f]", replacement);
