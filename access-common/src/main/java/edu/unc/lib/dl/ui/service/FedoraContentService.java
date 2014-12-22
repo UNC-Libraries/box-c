@@ -50,6 +50,7 @@ import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil;
 import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil.AnalyticsUserData;
 import edu.unc.lib.dl.ui.util.FedoraUtil;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
+import edu.unc.lib.dl.ui.util.StringFormatUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 
@@ -188,7 +189,9 @@ public class FedoraContentService {
 					response.setHeader("Content-Type", mimeType);
 
 					// Setting the filename header for the response
-					if (filename == null) {
+					if (filename != null) {
+						filename = StringFormatUtil.makeToken(filename, "_");
+					} else {
 						filename = pid.getPid();
 					}
 					

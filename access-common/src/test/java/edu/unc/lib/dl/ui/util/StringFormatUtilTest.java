@@ -66,4 +66,14 @@ public class StringFormatUtilTest extends Assert {
 			}
 		}
 	}
+
+	@Test
+	public void makeTokenTest() {
+		assertEquals("blah", StringFormatUtil.makeToken("blah", "_"));
+		assertEquals("caf_", StringFormatUtil.makeToken("café", "_"));
+		assertEquals("lorem_ipsum_", StringFormatUtil.makeToken("lorem ipsum?", "_"));
+		assertEquals("lorem__ipsum_", StringFormatUtil.makeToken("lorem? ipsum?", "_"));
+		assertEquals("lorem___ipsum", StringFormatUtil.makeToken("lorem;  ipsum", "_"));
+	}
+	
 }
