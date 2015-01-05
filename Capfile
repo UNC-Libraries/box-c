@@ -128,6 +128,31 @@ namespace :restart do
   
 end
 
+namespace :reload do
+  
+  desc "Reload the access webapp"
+  task :access do
+    on roles(:web) do
+      execute :curl, "--insecure", "--silent", "https://manager:manager@127.0.0.1/manager/text/reload?path=/"
+    end
+  end
+  
+  desc "Reload the admin webapp"
+  task :admin do
+    on roles(:web) do
+      execute :curl, "--insecure", "--silent", "https://manager:manager@127.0.0.1/manager/text/reload?path=/admin"
+    end
+  end
+  
+  desc "Reload the services webapp"
+  task :services do
+    on roles(:web) do
+      execute :curl, "--insecure", "--silent", "https://manager:manager@127.0.0.1/manager/text/reload?path=/services"
+    end
+  end
+  
+end
+
 task :restart do
   invoke "restart:tomcat"
   invoke "restart:deposit"
