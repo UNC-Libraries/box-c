@@ -35,19 +35,10 @@
 	<c:url var="structureUrl" scope="page" value='structure/${briefObject.id}'></c:url>
 
 	<div class="contentarea">
-		<div class="large thumb_container">
-		<c:choose>
-			<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject)}">
-				<img id="thumb_main" class="largethumb" src="${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}"/>
-			</c:when>
-			<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFolder}">
-				<img id="thumb_main" class="largethumb" src="/static/images/placeholder/small/folder.png"/>
-			</c:when>
-			<c:otherwise>
-				<img id="thumb_main" class="largethumb" src="/static/images/placeholder/large/collection.png"/>
-			</c:otherwise>
-		</c:choose>
-		</div>
+		<c:set var="thumbnailObject" value="${briefObject}" scope="request" />
+		<c:import url="common/thumbnail.jsp">
+			<c:param name="size" value="large" />
+		</c:import>
 		
 		<div class="collinfo">
 			<h2><c:out value="${briefObject.title}" /></h2>

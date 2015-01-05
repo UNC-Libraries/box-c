@@ -23,7 +23,7 @@
 		<a href="/record/${metadata.id}" target="_blank">
 			<c:choose>
 				<c:when test="${metadata.datastreamObjects.contains('THUMB_LARGE')}"><img class="largethumb" src="${thumbnailUrl}" /></c:when>
-				<c:otherwise><img class="largethumb" src="/static/images/placeholder/large/oldwell.jpg" /></c:otherwise>
+				<c:otherwise><img class="largethumb" src="/static/images/placeholder/collection-large.png" /></c:otherwise>
 			</c:choose>
 		</a>
 

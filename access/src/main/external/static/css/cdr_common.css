@@ -324,23 +324,17 @@ li {
 
 /** Icons **/
 .resource_icon {
-	background-image: url('/static/images/resource_types.png');
-	height: 18px;
-	width: 18px;
+	background-image: url('/static/images/resource-types.png');
+	height: 16px;
+	width: 16px;
 	display: inline-block;
 }
 
-.resource_icon.Collection {
+.deleted .resource_icon {
+	opacity: 0.3;
 }
 
-.resource_icon.Folder {
-	background-position: -18px 0px;
-}
-
-.resource_icon.Aggregate {
-	background-position: -37px 0px;
-}
-
-.resource_icon.File {
-	background-position: -54px 0px;
-}
+.resource_icon.Collection { background-position: 0px 0px; }
+.resource_icon.Folder { background-position: -16px 0px; }
+.resource_icon.Aggregate { background-position: -32px 0px; }
+.resource_icon.File { background-position: -48px 0px; }

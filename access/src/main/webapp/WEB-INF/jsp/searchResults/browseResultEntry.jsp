@@ -20,6 +20,14 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<c:if test="${cdr:contains(metadata.status, 'Deleted') || cdr:contains(metadata.status, 'Parent Deleted')}">
+	<c:set var="isDeleted" value="deleted" scope="page"/>
+</c:if>
+<c:if test="${not empty metadata && (not cdr:hasPatronRoleForPublicGroup(metadata) || not empty metadata.activeEmbargo)}">
+	<c:set var="isProtected" value="protected" scope="page"/>
+</c:if>
+
 <c:choose>
 	<c:when test="${param.resultNumber % 2 == 0 }">
 		<c:set var="resultEntryClass" value="even" scope="page"/>
@@ -40,7 +48,7 @@
 
 <c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, metadata)}"/>
 
-<div id="entry${metadata.id}" class="browseitem ${resultEntryClass}">
+<div id="entry${metadata.id}" class="browseitem ${resultEntryClass}${' '}${isDeleted}${' '}${isProtected}">
 	<div class="contentarea">
 		<%-- Link to full record of the current item --%>
 		<c:url var="fullRecordUrl" scope="page" value="record/${metadata.id}">
@@ -49,26 +57,12 @@
 		<c:url var="containerResultsUrl" scope="page" value='list/${metadata.id}'></c:url>
 		<c:set var="primaryActionUrl" scope="page" value="${fullRecordUrl}"/>
 		
-		<%-- Display thumbnail or placeholder --%>
-		<c:set var="iconContent">
-			<c:choose>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', metadata)}">
-					<img class="largethumb" src="${cdr:getDatastreamUrl(metadata, 'THUMB_LARGE', fedoraUtil)}"/>
-				</c:when>
-				<c:otherwise>
-					<img id="thumb_${param.resultNumber}" class="largethumb" 
-							src="/static/images/placeholder/large/collection.png"/>
-				</c:otherwise>
-			</c:choose>
-		</c:set>
-		
-		<a class="large thumb_container" href="<c:out value='${primaryActionUrl}' />">
-				${iconContent}
-				<c:if test="${hasListAccessOnly}">
-					<span><img src="/static/images/lockedstate_large.gif"/></span>
-				</c:if>
-		</a>
-		
+		<c:set var="thumbnailObject" value="${metadata}" scope="request" />
+		<c:import url="common/thumbnail.jsp">
+			<c:param name="target" value="record" />
+			<c:param name="size" value="large" />
+		</c:import>
+
 		<h2>
 			<a href="<c:out value='${primaryActionUrl}' />" class="has_tooltip" title="View details for ${metadata.title}."><c:out value="${metadata.title}"/></a>
 			<c:choose>

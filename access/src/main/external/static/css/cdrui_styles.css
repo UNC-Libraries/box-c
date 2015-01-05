@@ -86,20 +86,9 @@ div#username_wrap {
 }
 
 /** Thumbnail styles **/
-.thumb_container {
+
+.thumbnail {
 	display: block;
-}
-
-.large.thumb_container {
-	position: relative;
-	width: 128px;
-	height: 128px;
-	float: left;
-	margin: 0 20px 20px 0;
-	text-align: center;
-}
-
-.small.thumb_container {
 	position:relative;
 	width: 64px;
 	height: 64px;
@@ -108,24 +97,133 @@ div#username_wrap {
 	text-align: center;
 }
 
-.small.thumb_container img {
-	max-width: 64px;
+.thumbnail.thumbnail-size-large {
+	width: 128px;
+	height: 128px;
 }
 
-.small.thumb_container.empty {
+.thumbnail .thumbnail-placeholder {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 64px;
 	height: 64px;
+	opacity: 0;
+	transition: opacity 0.3s;
 }
 
-.thumb_container span {
-	position:absolute;
-	bottom: 2px;
-	right: -2px;
+.thumbnail.thumbnail-size-large .thumbnail-placeholder {
+	width: 128px;
+	height: 128px;
 }
 
-.large.thumb_container span {
-	bottom: -4px;
-	right: -7px;
+.thumbnail.placeholder .thumbnail-placeholder {
+	opacity: 1;
+	transition: opacity 0s;
 }
+
+.thumbnail.thumbnail-resource-type-collection .thumbnail-placeholder {
+	background: url('/static/images/placeholder/collection-small.png');
+}
+
+.thumbnail.thumbnail-resource-type-folder .thumbnail-placeholder {
+	background: url('/static/images/placeholder/folder-small.png');
+}
+
+.thumbnail.thumbnail-resource-type-document .thumbnail-placeholder {
+	background: url('/static/images/placeholder/document-small.png');
+}
+
+.thumbnail.thumbnail-resource-type-collection.thumbnail-size-large .thumbnail-placeholder {
+	background: url('/static/images/placeholder/collection-large.png');
+}
+
+.thumbnail.thumbnail-resource-type-folder.thumbnail-size-large .thumbnail-placeholder {
+	background: url('/static/images/placeholder/folder-large.png');
+}
+
+.thumbnail.thumbnail-resource-type-document.thumbnail-size-large .thumbnail-placeholder {
+	background: url('/static/images/placeholder/document-large.png');
+}
+
+.thumbnail .thumbnail-placeholder .thumbnail-content-type {
+	position: absolute;
+	bottom: 5px;
+	left: 0;
+	width: 64px;
+	color: #fff;
+	text-transform: uppercase;
+	font-size: 85%;
+}
+
+.thumbnail.thumbnail-size-large .thumbnail-placeholder .thumbnail-content-type {
+	bottom: 15px;
+	width: 128px;
+	font-size: 150%;
+}
+
+.thumbnail .thumbnail-preview {
+	opacity: 1;
+	transition: opacity 0.3s;
+}
+
+.thumbnail.placeholder .thumbnail-preview {
+	opacity: 0;
+	transition: opacity 0s;
+}
+
+.thumbnail .thumbnail-preview img {
+	max-width: 64px;
+	max-height: 64px;
+}
+
+.thumbnail.thumbnail-size-large .thumbnail-preview img {
+	max-width: 128px;
+	max-height: 128px;
+}
+
+.thumbnail .thumbnail-badge {
+	position: absolute;
+	font-size: 100%;
+	right: -6px;
+	bottom: -6px;
+}
+
+.thumbnail.thumbnail-size-large .thumbnail-badge {
+	font-size: 200%;
+	right: -12px;
+	bottom: -12px;
+}
+
+.thumbnail-badge .background {
+	color: #333;
+}
+
+.thumbnail-badge .foreground {
+	color: #fff;
+}
+
+.thumbnail.deleted.placeholder .thumbnail-placeholder {
+	opacity: 0.3;
+}
+
+.thumbnail.deleted.placeholder .thumbnail-preview {
+	opacity: 0;
+}
+
+.thumbnail.deleted .thumbnail-preview {
+	opacity: 0.3;
+}
+
+.thumbnail.deleted .thumbnail-badge .background {
+	color: #777;
+}
+
+.thumbnail.deleted .thumbnail-badge .foreground {
+	color: #fff;
+}
+
+
 
 .iteminfo {
 	width: 400px;
@@ -916,37 +1014,21 @@ p.navigation_bar a {
 }
 
 /** Deleted search results */
-.searchitem.deleted {
+.searchitem.deleted, .browseitem.deleted {
 	color: #888;
 }
 
-.deleted .full_record_top h2, .searchitem.deleted h2 > a {
-	color: #aaa;
-	background: url("/static/images/trash_can.png") no-repeat -2px 1px;
-	padding-left: 20px;
+.deleted .full_record_top h2, .searchitem.deleted h2 > a, .browseitem.deleted h2 > a {
+	color: #8CB4C6;
 }
 
-.deleted .full_record_top h2:after {
-	padding-left: 10px;
-}
-
-.deleted .full_record_top h2:after, .searchitem.deleted h2:after {
-	content: "Deleted";
-	font-size: 11px;
-	color: #bbb;
-}
-
-.searchitem.deleted h2 > span, .deleted .full_record_top h2 > span {
+.deleted .full_record_top h2 > span, .searchitem.deleted h2 > span, .browseitem.deleted h2 > span {
 	color: #bbb;
 }
 
 .deleted .actionlink > a {
 	background-color: #567C8D;
 	border-color: #415E6B;
-}
-
-.searchitem.deleted .thumb_container, .deleted .full_record_top .thumb_container {
-	opacity: .5;
 }
 
 .deleted .collinfo {

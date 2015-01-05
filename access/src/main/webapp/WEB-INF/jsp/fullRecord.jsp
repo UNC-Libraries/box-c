@@ -20,10 +20,14 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 
-<c:if test="${not empty briefObject && cdr:contains(briefObject.status, 'Deleted')}">
+<c:if test="${not empty briefObject && cdr:contains(briefObject.status, 'Deleted') || cdr:contains(briefObject.status, 'Parent Deleted')}">
 	<c:set var="isDeleted" value="deleted" scope="page"/>
 </c:if>
-<div class="content-wrap full_record ${isDeleted}">
+<c:if test="${not empty briefObject && (not cdr:hasPatronRoleForPublicGroup(briefObject) || not empty briefObject.activeEmbargo)}">
+	<c:set var="isProtected" value="protected" scope="page"/>
+</c:if>
+
+<div class="content-wrap full_record ${isDeleted}${' '}${isProtected}">
 <c:import url="fullRecord/navigationBar.jsp" />
 <c:choose>
 	<c:when test="${requestScope.listAccess == true}">

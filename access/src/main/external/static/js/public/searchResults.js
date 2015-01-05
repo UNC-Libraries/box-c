@@ -15,14 +15,14 @@ require.config({
 	shim: {
 		'jquery-ui' : ['jquery'],
 		'preload' : ['jquery'],
-		'thumbnails' : ['jquery', 'preload'],
+		'thumbnails' : ['jquery'],
 		'underscore': {
 			exports: '_'
 		}
 	}
 });
 
-define('searchResults', ['module', 'jquery', 'StructureView', 'preload', 'thumbnails'], function(module, $) {
+define('searchResults', ['module', 'jquery', 'StructureView', 'thumbnails'], function(module, $) {
 	$("#sort_select").change(function(){
 		$("#result_sort_form").submit();
 	});

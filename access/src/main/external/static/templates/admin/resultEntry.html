@@ -6,20 +6,7 @@
 		</div>
 	</td>
 	<td class="type">
-		<div>
-			<%
-				var typeName;
-				if (metadata.type == "File")
-					typeName = 'file';
-				else if (metadata.type == "Folder")
-					typeName = 'folder';
-				else if (metadata.type == "Collection")
-					typeName = 'coll';
-				else if (metadata.type == "Aggregate")
-					typeName = 'aggr';
-			%>
-			<img src="/static/images/admin/type_<%= typeName %>.png" />
-		</div>
+		<div class="resource_icon <%= metadata.type %>"></div>
 	</td>
 	<td class="itemdetails">
 		<div>

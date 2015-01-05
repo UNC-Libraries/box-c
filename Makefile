@@ -38,7 +38,6 @@ build-access:
 	cat access/src/main/external/static/js/lib/jquery-ui-access.min.js >> access/src/main/external/static/js/cdr-access.js
 	echo "});" >> access/src/main/external/static/js/cdr-access.js
 	cat \
-		access/src/main/external/static/js/lib/jquery.preload-1.0.8-unc.js \
 		access/src/main/external/static/js/public/src/*.js \
 		>> access/src/main/external/static/js/cdr-access.js
 		
@@ -46,6 +45,7 @@ build-access:
 		access/src/main/external/static/css/cdr_common.css \
 		access/src/main/external/static/css/cdrui_styles.css \
 		access/src/main/external/static/css/fluid_cap.css \
+		access/src/main/external/static/css/font-awesome.min.css \
 		access/src/main/external/static/css/structure_browse.css \
 		access/src/main/external/static/front/front.css \
 		access/src/main/external/static/front/peek.css \

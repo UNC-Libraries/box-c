@@ -10,18 +10,7 @@
 			<% if (container) { %>
 				<span class="container_entry">
 					<h2 class="container_title">
-						<%
-							var typeName;
-							if (containerDeleted)
-								typeName = "trash_can";
-							else if (container.type == "Folder")
-								typeName = 'admin/type_folder';
-							else if (container.type == "Collection")
-								typeName = 'admin/type_coll';
-							else if (container.type == "Aggregate")
-								typeName = 'admin/type_aggr';
-						%>
-						<img src="/static/images/<%= typeName %>.png" />
+						<div class="resource_icon <%= container.type %>"></div>
 						<span class="<%= containerDeleted? "deleted" : "" %>"><%= container.title %></span>
 						<img class="action_gear container_menu" src="/static/images/admin/gear.png">
 					</h2>
