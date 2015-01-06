@@ -99,7 +99,6 @@ import edu.unc.lib.dl.fedora.types.SetDatastreamVersionableResponse;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
-import edu.unc.lib.dl.util.PIDLocker;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -196,9 +195,6 @@ public class ManagementClient extends WebServiceTemplate {
 	private String password;
 
 	private String username;
-
-	@Autowired(required = false)
-	private PIDLocker pidWriteLock;
 
 	public String addManagedDatastream(PID pid, String dsid, boolean force, String message, List<String> altids,
 			String label, boolean versionable, String mimetype, String locationURI) throws FedoraException {
@@ -886,27 +882,21 @@ public class ManagementClient extends WebServiceTemplate {
 	public String writePremisEventsToFedoraObject(PremisEventLogger eventLogger, PID pid) throws FedoraException {
 		Document dom = null;
 
+		MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(pid, "MD_EVENTS", null);
+		ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
 		try {
-			pidWriteLock.lock(pid);
-
-			MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(pid, "MD_EVENTS", null);
-			ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
-			try {
-				dom = new SAXBuilder().build(bais);
-				bais.close();
-			} catch (JDOMException e) {
-				throw new IllegalRepositoryStateException("Cannot parse MD_EVENTS: " + pid, e);
-			} catch (IOException e) {
-				throw new Error(e);
-			}
-			eventLogger.appendLogEvents(pid, dom.getRootElement());
-			String eventsLoc = this.upload(dom);
-			String logTimestamp = this.modifyDatastreamByReference(pid, "MD_EVENTS", false, "adding PREMIS events",
-					new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, eventsLoc);
-			return logTimestamp;
-		} finally {
-			pidWriteLock.unlock(pid);
+			dom = new SAXBuilder().build(bais);
+			bais.close();
+		} catch (JDOMException e) {
+			throw new IllegalRepositoryStateException("Cannot parse MD_EVENTS: " + pid, e);
+		} catch (IOException e) {
+			throw new Error(e);
 		}
+		eventLogger.appendLogEvents(pid, dom.getRootElement());
+		String eventsLoc = this.upload(dom);
+		String logTimestamp = this.modifyDatastreamByReference(pid, "MD_EVENTS", false, "adding PREMIS events",
+				new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, eventsLoc);
+		return logTimestamp;
 	}
 
 	public void writePremisEventsToFedoraObject(final PremisEventLogger eventLogger, final Collection<PID> pids) {
@@ -961,10 +951,6 @@ public class ManagementClient extends WebServiceTemplate {
 	// TransportContextHolder.setTransportContext(previousTransportContext);
 	// }
 	// }
-
-	public void setPidWriteLock(PIDLocker pidLock) {
-		this.pidWriteLock = pidLock;
-	}
 
 	/**
 	 * @param accessClient
