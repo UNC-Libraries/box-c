@@ -93,6 +93,12 @@
 			<groupId>org.fcrepo</groupId>
 			<artifactId>fcrepo-server</artifactId>
 			<version>${fcrepo.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>log4j-over-slf4j</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.irods.jargon</groupId>

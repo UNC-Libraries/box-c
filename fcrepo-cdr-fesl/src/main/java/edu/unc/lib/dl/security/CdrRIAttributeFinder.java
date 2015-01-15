@@ -20,6 +20,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -29,12 +30,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.attr.AttributeFactory;
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.BagAttribute;
-import com.sun.xacml.attr.StandardAttributeFactory;
-import com.sun.xacml.cond.EvaluationResult;
+import org.jboss.security.xacml.sunxacml.EvaluationCtx;
+import org.jboss.security.xacml.sunxacml.attr.AttributeFactory;
+import org.jboss.security.xacml.sunxacml.attr.AttributeValue;
+import org.jboss.security.xacml.sunxacml.attr.BagAttribute;
+import org.jboss.security.xacml.sunxacml.attr.StringAttribute;
+import org.jboss.security.xacml.sunxacml.attr.StandardAttributeFactory;
+import org.jboss.security.xacml.sunxacml.cond.EvaluationResult;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -51,11 +53,13 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	static URI datastreamIdAttribute = null;
 	static URI fedoraSubjectRoleAttribute = null;
 	static URI stringDataType = null;
+	static URI accessSubjectCategory = null;
 	static {
 		try {
 			fedoraSubjectRoleAttribute = new URI("urn:fedora:names:fedora:2.1:subject:role");
 			stringDataType = new URI("http://www.w3.org/2001/XMLSchema#string");
 			datastreamIdAttribute = new URI("urn:fedora:names:fedora:2.1:resource:datastream:id");
+			accessSubjectCategory = new URI("urn:oasis:names:tc:xacml:1.0:subject-category:access-subject");
 		} catch (URISyntaxException e) {
 			throw new Error(e);
 		}
@@ -154,50 +158,79 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	}
 
 	private Set<String> getShibbolethGroups(EvaluationCtx context) {
-		Set<String> result = new HashSet<String>();
-		Node root = context.getRequestRoot();
-		for (int i = 0; i < root.getChildNodes().getLength(); i++) {
-			Node subjectNode = root.getChildNodes().item(i);
-			if ("Subject".equals(subjectNode.getNodeName())) {
-				for (int n = 0; n < subjectNode.getChildNodes().getLength(); n++) {
-					Node attributeNode = subjectNode.getChildNodes().item(n);
-					if ("Attribute".equals(attributeNode.getNodeName())) {
-						Node attrIdNode = attributeNode.getAttributes().getNamedItem("AttributeId");
-						if (attrIdNode != null && fedoraSubjectRoleAttribute.toString().equals(attrIdNode.getNodeValue())) {
-							// this is the attribute we need
-							String groupName = attributeNode.getFirstChild().getFirstChild().getNodeValue();
-							log.debug("Found group name: {}", groupName);
-							result.add(groupName);
-						}
-					}
-				}
+		Set<String> groups = new HashSet<String>();
+		
+		EvaluationResult result = context.getSubjectAttribute(stringDataType, fedoraSubjectRoleAttribute, accessSubjectCategory);
+		
+		if (result.indeterminate()) {
+			return groups;
+		}
+		
+		if (result.getStatus() != null) {
+			return groups;
+		}
+		
+		AttributeValue attributeValue = result.getAttributeValue();
+		
+		if (attributeValue == null) {
+			return groups;
+		}
+		
+		if (!attributeValue.isBag()) {
+			return groups;
+		}
+		
+		BagAttribute bag = (BagAttribute) attributeValue;
+		Iterator iterator = bag.iterator();
+		
+		while (iterator.hasNext()) {
+			Object value = iterator.next();
+			
+			if (value instanceof StringAttribute) {
+				StringAttribute attribute = (StringAttribute) value;
+				logger.debug("adding attribute: {}", attribute);
+				groups.add(attribute.getValue());
 			}
 		}
-		return result;
+		
+		return groups;
 	}
 
 	private String getDatastreamID(EvaluationCtx context) {
-		String result = null;
-		Node root = context.getRequestRoot();
-		big: for (int i = 0; i < root.getChildNodes().getLength(); i++) {
-			Node rescNode = root.getChildNodes().item(i);
-			if ("Resource".equals(rescNode.getNodeName())) {
-				for (int n = 0; n < rescNode.getChildNodes().getLength(); n++) {
-					Node attributeNode = rescNode.getChildNodes().item(n);
-					if ("Attribute".equals(attributeNode.getNodeName())) {
-						Node attrIdNode = attributeNode.getAttributes().getNamedItem("AttributeId");
-						if (attrIdNode != null && datastreamIdAttribute.toString().equals(attrIdNode.getNodeValue())) {
-							// this is the attribute we need
-							String dsId = attributeNode.getFirstChild().getFirstChild().getNodeValue();
-							log.debug("Found datastream ID: {}", dsId);
-							result = dsId;
-							break big;
-						}
-					}
-				}
+		EvaluationResult result = context.getSubjectAttribute(stringDataType, datastreamIdAttribute, null);
+		
+		if (result.indeterminate()) {
+			return null;
+		}
+		
+		if (result.getStatus() != null) {
+			return null;
+		}
+		
+		AttributeValue attributeValue = result.getAttributeValue();
+		
+		if (attributeValue == null) {
+			return null;
+		}
+		
+		if (!attributeValue.isBag()) {
+			return null;
+		}
+		
+		BagAttribute bag = (BagAttribute) attributeValue;
+		Iterator iterator = bag.iterator();
+		
+		while (iterator.hasNext()) {
+			Object value = iterator.next();
+			
+			if (value instanceof StringAttribute) {
+				StringAttribute attribute = (StringAttribute) value;
+				logger.debug("returning attribute: {}", attribute);
+				return attribute.getValue();
 			}
 		}
-		return result;
+		
+		return null;
 	}
 
 	/**

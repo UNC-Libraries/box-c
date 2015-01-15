@@ -32,7 +32,7 @@ import javax.activation.MimetypesFileTypeMap;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
-import org.apache.commons.httpclient.Header;
+import org.apache.http.Header;
 
 import org.fcrepo.common.http.HttpInputStream;
 import org.fcrepo.common.http.WebClient;
