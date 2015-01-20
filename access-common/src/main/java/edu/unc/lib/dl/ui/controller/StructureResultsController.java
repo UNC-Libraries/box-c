@@ -34,7 +34,7 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 /**
  * Handles requests for JSON representations of structural results.
- * 
+ *
  * @author bbpennel
  */
 @Controller
@@ -60,12 +60,8 @@ public class StructureResultsController extends AbstractStructureResultsControll
 		return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
 	}
 
-	/**
-	 * Retrieves a composite strucuture, containing the normal structure results starting at the specified pid, merged
-	 * into a list of all resources in the first tier under the parent collection, linked by any intermediary folders.
-	 */
-	@RequestMapping("/structure/collection")
-	public @ResponseBody String getStructureFromParentCollectionJSON(
+	@RequestMapping("/structure/path")
+	public @ResponseBody String getPathStructure(
 			@RequestParam(value = "files", required = false) String includeFiles, Model model, HttpServletRequest request,
 			HttpServletResponse response) {
 		response.setContentType("application/json");
@@ -74,8 +70,12 @@ public class StructureResultsController extends AbstractStructureResultsControll
 		return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
 	}
 
-	@RequestMapping("/structure/{pid}/collection")
-	public @ResponseBody String getStructureFromParentCollectionJSON(@PathVariable("pid") String pid,
+	/**
+	 * Retrieves the structure path leading up to the specified pid, returning expanded containers starting at the
+	 * collections object up to the selected container
+	 */
+	@RequestMapping("/structure/{pid}/path")
+	public @ResponseBody String getPathStructure(@PathVariable("pid") String pid,
 			@RequestParam(value = "files", required = false) String includeFiles, Model model, HttpServletRequest request,
 			HttpServletResponse response) {
 		response.setContentType("application/json");
@@ -95,8 +95,8 @@ public class StructureResultsController extends AbstractStructureResultsControll
 				tierResultFieldsList));
 		if (selectedContainer == null)
 			throw new ResourceNotFoundException("Object " + pid + " was not found.");
-		
-		
+
+
 		response.setContentType("application/json");
 		HierarchicalBrowseResultResponse result = getStructureResult(selectedContainer.getAncestorPathFacet().getSearchKey(), "true".equals(includeFiles), false, false,
 				request);

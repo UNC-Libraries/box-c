@@ -78,7 +78,7 @@
 			<c:if test="${facetField.name == 'ANCESTOR_PATH'}">
 				<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}_structure" class="hidden">
 					<c:if test="${not empty selectedContainer}"><c:set var="containerPath" value="/${selectedContainer.id}"/></c:if>
-					<c:url var="structureUrl" scope="page" value='structure${containerPath}/collection${searchStateParameters}'>
+					<c:url var="structureUrl" scope="page" value='structure${containerPath}/path${searchStateParameters}'>
 						<c:param name="view" value="facet"/>
 						<c:param name="queryp" value="list"/>
 						<c:param name="files" value="false"/>
@@ -113,7 +113,7 @@
 											</c:url>
 										</c:otherwise>
 									</c:choose>
-									<a href="<c:out value="${facetActionUrl}"/>"><c:out value="${facetValue.displayValue}" /></a> (<c:out value="${facetValue.count}" />)
+									<a class="res_link refresh_facet" href="<c:out value="${facetActionUrl}"/>"><c:out value="${facetValue.displayValue}" /></a> (<c:out value="${facetValue.count}" />)
 								</li>
 							</c:if>
 							<c:if test="${status.last && status.count >= searchSettings.facetsPerGroup && not empty searchState.facetLimits[facetValue.fieldName]}">
