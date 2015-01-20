@@ -64,6 +64,8 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 											});
 											data = $structureView;
 										}
+										
+										self.$structureView = $structureView;
 									}
 									ui.newPanel.html(data);
 									ui.newPanel.data('contentLoaded', true);
@@ -108,6 +110,19 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 			} else {
 				activeMenu.height('auto');
 			}
+		},
+		
+		changeFolder : function(uuid) {
+			if (this.$structureView) {
+				this.$structureView.structureView("changeFolder", uuid);
+			}
+			if (uuid) {
+				$(".search_folder", this.element).removeClass("hidden");
+			} else {
+				$(".search_folder", this.element).addClass("hidden");
+			}
+			
+			$(".container_id", this.element).val(uuid);
 		}
 	});
 });

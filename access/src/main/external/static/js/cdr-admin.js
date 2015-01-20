@@ -182,7 +182,7 @@ define('detachplus', [ 'jquery'], function($) {
 		return count;
 	};
 	
-	StructureEntry.prototype.toggleChildren = function() {
+	StructureEntry.prototype.toggleChildren = function(onlyOpen) {
 		var self = this;
 		var $toggleButton = this.$entry.find('.cont_toggle');
 		var $childrenContainer = this.element.children(".children");
@@ -260,7 +260,7 @@ define('detachplus', [ 'jquery'], function($) {
 					$toggleButton.removeClass('expand').addClass('collapse');
 				}
 			}
-		} else if ($toggleButton.hasClass('collapse')) {
+		} else if (!onlyOpen && $toggleButton.hasClass('collapse')) {
 			if ($childrenContainer.children().length > 0) {
 				$childrenContainer.hide(100, function() {
 					self.element.removeClass("expanded");
@@ -339,6 +339,11 @@ define('detachplus', [ 'jquery'], function($) {
 		this.options.isSelected = true;
 	};
 	
+	StructureEntry.prototype.deselect = function() {
+		this.element.removeClass("selected");
+		this.options.isSelected = false;
+	};
+	
 	StructureEntry.prototype.findEntryById = function(id, childEntries) {
 		if (this.metadata.id == id)
 			return this;
@@ -377,10 +382,6 @@ define('detachplus', [ 'jquery'], function($) {
 			if (!this.options.showResourceIcons)
 				this.element.addClass('no_resource_icons');
 			
-			if (this.options.showParentLink) {
-				this._generateParentLink();
-			}
-			
 			if (this.options.excludeIds) {
 				this.excludeIds = this.options.excludeIds.split(" ");
 			}
@@ -415,44 +416,28 @@ define('detachplus', [ 'jquery'], function($) {
 			});
 		},
 		
-		_generateParentLink : function() {
-			var self = this;
-			var $parentLink = $("<a class='parent_link'>parent</a>");
-			if (this.options.rootNode.isTopLevel)
-				$parentLink.addClass('disabled');
-				
-			$parentLink.click(function(){
-				if ($parentLink.hasClass('disabled'))
-					return false;
-				var $oldRoot = self.$content.children(".entry_wrap");
-				var parentURL = $oldRoot.data("structureEntry").getParentURL();
-				$.ajax({
-					url : parentURL,
-					dataType : 'json',
-					success : function(data) {
-						var newRoot = new StructureEntry({
-							node : data.root,
-							structureView : self,
-							isRoot : true
-						});
-						newRoot.render();
-						// Initialize the new results
-						//$newRoot.find(".entry_wrap").add($newRoot).structureEntry({
-						//	indentSuppressed : self.options.indentSuppressed
-						//});
-						newRoot.insertTree($oldRoot.data('structureEntry'));
-						//$newRoot.structureEntry('insertTree', $oldRoot);
-						self.$content.append(newRoot.element);
-						if (data.root.isTopLevel)
-							$parentLink.addClass('disabled');
-						
-						self.onChangeEvent(newRoot);
-					}
-				});
-				return false;
-			});
+		changeFolder : function(uuid) {
+			if (uuid.indexOf(":") != -1) {
+				uuid = uuid.substring(uuid.indexOf(":") + 1);
+			}
 			
-			this.$content.before($parentLink);
+			this.deselectAll();
+			
+			var entry = $("#str_" + uuid, this.element);
+			if (entry.length == 0) {
+				console.log("Failed to open folder", uuid);
+				return;
+			}
+			
+			entry = entry.data('structureEntry');
+			entry.toggleChildren(true);
+			entry.select();
+		},
+		
+		deselectAll : function() {
+			$(".entry_wrap.selected").each(function(){
+				$(this).data('structureEntry').deselect();
+			});
 		},
 		
 		// Trigger the change event function in case some other part of the code needs to know the view changed sizes
@@ -852,6 +837,7 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 	
 	function AddMenu(options) {
 		this.options = $.extend({}, options);
+		this.container = this.options.container;
 		this.init();
 	};
 	
@@ -863,6 +849,10 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 		items["ingestPackage"] = {name : "Add Ingest Package"};
 		items["simpleObject"] = {name : "Add Simple Object"};
 		return items;
+	};
+	
+	AddMenu.prototype.setContainer = function(container) {
+		this.container = container;
 	};
 	
 	AddMenu.prototype.init = function() {
@@ -881,7 +871,7 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 			alertHandler : this.options.alertHandler
 		});
 		
-		$.contextMenu({
+		this.menu = $.contextMenu({
 			selector: this.options.selector,
 			trigger: 'left',
 			className: 'add_to_container_menu', 
@@ -897,13 +887,13 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 			callback : function(key, options) {
 				switch (key) {
 					case "addContainer" :
-						createContainerForm.open(self.options.container.id);
+						createContainerForm.open(self.container.id);
 						break;
 					case "ingestPackage" :
-						ingestPackageForm.open(self.options.container.id);
+						ingestPackageForm.open(self.container.id);
 						break;
 					case "simpleObject" :
-						simpleObjectForm.open(self.options.container.id);
+						simpleObjectForm.open(self.container.id);
 						break;
 				}
 			},
@@ -2860,13 +2850,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		options : {
 			enableSort : true,
 			ajaxSort : false,
-			metadataObjects : undefined,
 			enableArrange : false,
 			enableMove : false,
-			pagingActive : false,
-			container : undefined,
-			resultTableTemplate : "tpl!../templates/admin/resultTableView",
-			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
 			resultFields : undefined,
 			resultHeader : undefined,
 			postRender : undefined,
@@ -2880,39 +2865,63 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			
 			this.actionHandler = this.options.actionHandler;
 			this.actionHandler.addToBaseContext('resultTable', this);
+		},
+		
+		render : function(data) {
+			var self = this;
 			
-			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
+			require([this.options.resultTableTemplate, this.options.resultEntryTemplate, this.options.resultTableHeaderTemplate, this.options.navBarTemplate, this.options.pathTrailTemplate], function(resultTableTemplate, resultEntryTemplate, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate){
+				
+				data["pagingActive"] = (data.pageStart + data.pageRows) < data.resultCount;
+				
+				var container = data.container;
+			
+				var navigationBar = navigationBarTemplate({
+					pageNavigation : data,
+					URLUtilities : URLUtilities
+				});
+			
+				var containerPath = null;
+				if (container) {
+					containerPath = pathTrailTemplate({
+						ancestorPath : container.ancestorPath,
+						queryMethod : 'list',
+						filterParams : data.searchQueryUrl,
+						skipLast : true
+					});
+				}
+				
+				var resultTableHeader = resultTableHeaderTemplate({
+					data : data,
+					container : container,
+					navigationBar : navigationBar,
+					containerPath : containerPath
+				});
+				
 				var headerHeightClass = self.options.headerHeightClass;
-				if (self.options.container) {
-					if (self.options.container.ancestorPath)
+				if (container) {
+					if (container.ancestorPath)
 						headerHeightClass += " with_path";
 					else
 						headerHeightClass += " with_container";
 				}
 				
-				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container,
-						resultHeader : self.options.resultHeader, headerHeightClass : headerHeightClass}));
+				if (self.$resultView) {
+					self.$resultView.remove();
+				}
+				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : container,
+						resultHeader : resultTableHeader, headerHeightClass : headerHeightClass}));
 				self.$resultTable = self.$resultView.find('.result_table').eq(0);
 				self.$resultHeaderTop = self.$resultView.find('.result_header_top').eq(0);
+				self.$noResults = self.$resultView.find('.no_results').eq(0);
 				self.element.append(self.$resultView);
 			
 				if (self.options.postRender)
-					self.options.postRender.call();
+					self.options.postRender(data);
 			
 				self.resultUrl = self.options.resultUrl;
 			
-				// Generate result entries
-				var fragment = $(document.createDocumentFragment());
-				self.resultObjectList = new ResultObjectList({
-					'metadataObjects' : self.options.metadataObjects, 
-					parent : self.$resultTable.children('tbody'),
-					resultEntryTemplate : self.options.resultEntryTemplate
-				});
-			
-				// No results message
-				if (self.options.metadataObjects.length == 0) {
-					self.$resultTable.after("<div class='no_results'>No matching results</div>");
-				}
+				self.populateResults(data.metadata);
 			
 				// Activate sorting
 				if (self.options.enableSort)
@@ -2943,6 +2952,25 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				self._initMoveLocations();
 				self._initReordering();
 			});
+		},
+		
+		populateResults : function(metadataObjects) {
+
+			this.$resultTable.children('tbody').html("");
+			
+			// Generate result entries
+			this.resultObjectList = new ResultObjectList({
+				metadataObjects : metadataObjects, 
+				parent : this.$resultTable.children('tbody'),
+				resultEntryTemplate : this.options.resultEntryTemplate
+			});
+		
+			// No results message
+			if (metadataObjects.length == 0) {
+				this.$noResults.removeClass("hidden");
+			} else {
+				this.$noResults.addClass("hidden");
+			}
 		},
 		
 		// Initialize sorting headers according to whether or not paging is active
@@ -3165,9 +3193,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				$(this).data('resultObject').toggleSelect();
 				self.selectionUpdated();
 			});
-			this.$resultTable.on('click', ".res_entry a", function(e){
-				e.stopPropagation();
-			});
 		},
 		
 		selectionUpdated : function() {
@@ -3320,14 +3345,12 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu) {
 	$.widget("cdr.resultView", {
 		options : {
+			url : null,
 			container : null,
 			containerPath : null,
 			filterParams : '',
 			resultUrl : null, 
 			selectedId : false,
-			queryPath : 'list',
-			
-			metadataObjects : undefined,
 			
 			resultTableTemplate : "tpl!../templates/admin/resultTableView",
 			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
@@ -3381,50 +3404,79 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					};
 			}
 			
-			this._render();
-		},
-		
-		_render : function() {
-			var self = this;
-			
 			var actionHandler = new ActionEventHandler();
 			
-			var pageNavigation = {
-				resultUrl : this.options.resultUrl,
-				filterParams : this.options.filterParams,
-				pagingActive : this.options.pagingActive,
-				pageStart : this.options.pageStart,
-				pageRows : this.options.pageRows,
-				resultCount : this.options.resultCount
+			// Setup the result table component
+			self.$resultTableView = $(".result_area > div", self.element);
+			self.$resultTableView.resultTableView({
+				alertHandler : this.$alertHandler,
+				resultFields : self.options.resultFields,
+				postRender : $.proxy(self.postRender, self),
+				postInit : $.proxy(self.resizeResults, self),
+				actionHandler : actionHandler,
+				resultActions : self.options.resultActions,
+				resultTableTemplate : self.options.resultTableTemplate,
+				resultEntryTemplate : self.options.resultEntryTemplate,
+				resultTableHeaderTemplate : this.options.resultTableHeaderTemplate,
+				navBarTemplate : this.options.navBarTemplate,
+				pathTrailTemplate : this.options.pathTrailTemplate
+			});
+			
+			self.$resultPage.on("click", ".res_link", function(e){
+				var url = $(this).attr("href");
+				history.pushState({}, "", url);
+				self.changePage(url);
+				e.preventDefault();
+				e.stopPropagation();
+			});
+
+			self.$resultPage.on("submit", "#search_menu_form", function(e){
+				$.ajax({
+					url : $(this).attr('action'),
+					type : $(this).attr('method'),
+					data : $(this).serialize(),
+					dataType : 'text',
+					success : function(url) {
+						console.log("what", url);
+						history.pushState({}, "", url);
+						self.changePage(url);
+					},
+					error : function(xhr, status){
+						console.log("whoa", status);
+					}
+				});
+				e.preventDefault();
+			});
+			
+			window.onpopstate = function(event) {
+				self.changePage(document.location);
 			};
 			
-			require([this.options.resultTableTemplate, this.options.resultEntryTemplate, this.options.resultTableHeaderTemplate, this.options.searchMenuTemplate, this.options.navBarTemplate, this.options.pathTrailTemplate], function(resultTableTemplate, resultEntryTemplate, resultTableHeaderTemplate, searchMenuTemplate, navigationBarTemplate, pathTrailTemplate){
+			this.changePage(this.options.resultUrl);
+		},
+		
+		changePage : function(url) {
+			var self = this;
 			
-				var container = self.options.container;
-				var navigationBar = navigationBarTemplate({pageNavigation : pageNavigation, container : container, URLUtilities : URLUtilities});
-				var containerPath = null;
-				if (container)
-					containerPath = pathTrailTemplate({ancestorPath : container.ancestorPath, queryMethod : 'list', filterParams : self.options.filterParams, skipLast : true});
-				var resultTableHeader = resultTableHeaderTemplate({container : container, navigationBar : navigationBar, containerPath : containerPath, invalidVocabCount : self.options.invalidVocabCount})
-			
-				// Setup the result table component
-				$(".result_area > div", self.element).resultTableView({
-					metadataObjects : self.options.metadataObjects,
-					container : container,
-					alertHandler : this.$alertHandler,
-					resultUrl : self.options.resultUrl,
-					resultFields : self.options.resultFields,
-					resultHeader : resultTableHeader,
-					postRender : $.proxy(self.postRender, self),
-					postInit : $.proxy(self.resizeResults, self),
-					actionHandler : actionHandler,
-					resultActions : self.options.resultActions,
-					resultEntryTemplate : self.options.resultEntryTemplate
-				});
+			$.ajax({
+				url : url,
+				dataType : 'json',
+				success : function(data) {
+					if (this.addMenu) {
+						$("#add_menu").remove();
+					}
+					self.$resultTableView.resultTableView("render", data);
+					if (self.searchMenu) {
+						self.searchMenu.searchMenu("changeFolder", data.container? data.container.id : "");
+					}
+				},
+				error : function(data) {
+					console.error("Failed to load results", data);
+				}
 			});
 		},
 		
-		postRender : function (resultTable) {
+		postRender : function (data) {
 			this.$resultView = $('#result_view');
 			this.$columnHeaders = $('.column_headers', this.element);
 			this.$resultHeader = $('.result_header', this.element);
@@ -3434,32 +3486,38 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			this.$resultTableWrap = $('.result_table_wrap', this.element);
 			this.$resultArea = $('.result_area', this.element);
 			
-			var container = this.options.container;
+			var container = data.container;
 		
-			// Keep result area the right size when the menu is resized
-			var searchMenu = $(".search_menu", this.element).searchMenu({
-				filterParams : this.options.filterParams,
-				container : container,
-				containerPath : this.options.containerPath,
-				resultUrl : this.options.resultUrl,
-				resultTableView : $(".result_area > div"),
-				selectedId : container && /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? container.id : false,
-			});
+			if (!this.searchMenu) {
+				// Keep result area the right size when the menu is resized
+				this.searchMenu = $(".search_menu", this.element).searchMenu({
+					filterParams : this.options.filterParams,
+					container : container,
+					containerPath : this.options.containerPath,
+					resultUrl : this.options.resultUrl,
+					resultTableView : $(".result_area > div"),
+					selectedId : container && /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? container.id : false,
+				});
 
-			searchMenu.on("resize", $.proxy(function() {
-				this.menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
-				this.resizeResults();
-			}, this));
+				this.searchMenu.on("resize", $.proxy(function() {
+					this.menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
+					this.resizeResults();
+				}, this));
+			}
 		
 			if (container) {
 				var containerObject = new ParentResultObject({metadata : container, 
 						element : $(".container_entry")});
 		
-				new AddMenu({
-					container : container,
-					selector : "#add_menu",
-					alertHandler : this.$alertHandler
-				});
+				if (this.addMenu) {
+					this.addMenu.setContainer(container);
+				} else {
+					this.addMenu = new AddMenu({
+						container : container,
+						selector : "#add_menu",
+						alertHandler : this.$alertHandler
+					});
+				}
 			}
 			
 			$(document).on('mouseover', '.warning_symbol', function(event) {
@@ -3558,6 +3616,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 											});
 											data = $structureView;
 										}
+										
+										self.$structureView = $structureView;
 									}
 									ui.newPanel.html(data);
 									ui.newPanel.data('contentLoaded', true);
@@ -3602,6 +3662,19 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			} else {
 				activeMenu.height('auto');
 			}
+		},
+		
+		changeFolder : function(uuid) {
+			if (this.$structureView) {
+				this.$structureView.structureView("changeFolder", uuid);
+			}
+			if (uuid) {
+				$(".search_folder", this.element).removeClass("hidden");
+			} else {
+				$(".search_folder", this.element).addClass("hidden");
+			}
+			
+			$(".container_id", this.element).val(uuid);
 		}
 	});
 });define('URLUtilities', ['jquery'], function($) {

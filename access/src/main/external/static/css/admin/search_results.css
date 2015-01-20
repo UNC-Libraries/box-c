@@ -607,6 +607,10 @@
 	color : #0C7889;
 }
 
+.structure .selected > .entry > .primary_action {
+	font-weight: bold;
+}
+
 .structure .moving .entry > .primary_action {
 	border: 1px dashed #59AACE;
 	background-color: #FBFBFE;

@@ -5,13 +5,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		options : {
 			enableSort : true,
 			ajaxSort : false,
-			metadataObjects : undefined,
 			enableArrange : false,
 			enableMove : false,
-			pagingActive : false,
-			container : undefined,
-			resultTableTemplate : "tpl!../templates/admin/resultTableView",
-			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
 			resultFields : undefined,
 			resultHeader : undefined,
 			postRender : undefined,
@@ -25,39 +20,63 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			
 			this.actionHandler = this.options.actionHandler;
 			this.actionHandler.addToBaseContext('resultTable', this);
+		},
+		
+		render : function(data) {
+			var self = this;
 			
-			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
+			require([this.options.resultTableTemplate, this.options.resultEntryTemplate, this.options.resultTableHeaderTemplate, this.options.navBarTemplate, this.options.pathTrailTemplate], function(resultTableTemplate, resultEntryTemplate, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate){
+				
+				data["pagingActive"] = (data.pageStart + data.pageRows) < data.resultCount;
+				
+				var container = data.container;
+			
+				var navigationBar = navigationBarTemplate({
+					pageNavigation : data,
+					URLUtilities : URLUtilities
+				});
+			
+				var containerPath = null;
+				if (container) {
+					containerPath = pathTrailTemplate({
+						ancestorPath : container.ancestorPath,
+						queryMethod : 'list',
+						filterParams : data.searchQueryUrl,
+						skipLast : true
+					});
+				}
+				
+				var resultTableHeader = resultTableHeaderTemplate({
+					data : data,
+					container : container,
+					navigationBar : navigationBar,
+					containerPath : containerPath
+				});
+				
 				var headerHeightClass = self.options.headerHeightClass;
-				if (self.options.container) {
-					if (self.options.container.ancestorPath)
+				if (container) {
+					if (container.ancestorPath)
 						headerHeightClass += " with_path";
 					else
 						headerHeightClass += " with_container";
 				}
 				
-				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container,
-						resultHeader : self.options.resultHeader, headerHeightClass : headerHeightClass}));
+				if (self.$resultView) {
+					self.$resultView.remove();
+				}
+				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : container,
+						resultHeader : resultTableHeader, headerHeightClass : headerHeightClass}));
 				self.$resultTable = self.$resultView.find('.result_table').eq(0);
 				self.$resultHeaderTop = self.$resultView.find('.result_header_top').eq(0);
+				self.$noResults = self.$resultView.find('.no_results').eq(0);
 				self.element.append(self.$resultView);
 			
 				if (self.options.postRender)
-					self.options.postRender.call();
+					self.options.postRender(data);
 			
 				self.resultUrl = self.options.resultUrl;
 			
-				// Generate result entries
-				var fragment = $(document.createDocumentFragment());
-				self.resultObjectList = new ResultObjectList({
-					'metadataObjects' : self.options.metadataObjects, 
-					parent : self.$resultTable.children('tbody'),
-					resultEntryTemplate : self.options.resultEntryTemplate
-				});
-			
-				// No results message
-				if (self.options.metadataObjects.length == 0) {
-					self.$resultTable.after("<div class='no_results'>No matching results</div>");
-				}
+				self.populateResults(data.metadata);
 			
 				// Activate sorting
 				if (self.options.enableSort)
@@ -88,6 +107,25 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				self._initMoveLocations();
 				self._initReordering();
 			});
+		},
+		
+		populateResults : function(metadataObjects) {
+
+			this.$resultTable.children('tbody').html("");
+			
+			// Generate result entries
+			this.resultObjectList = new ResultObjectList({
+				metadataObjects : metadataObjects, 
+				parent : this.$resultTable.children('tbody'),
+				resultEntryTemplate : this.options.resultEntryTemplate
+			});
+		
+			// No results message
+			if (metadataObjects.length == 0) {
+				this.$noResults.removeClass("hidden");
+			} else {
+				this.$noResults.addClass("hidden");
+			}
 		},
 		
 		// Initialize sorting headers according to whether or not paging is active
@@ -309,9 +347,6 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			$(document).on('click', ".res_entry", function(e){
 				$(this).data('resultObject').toggleSelect();
 				self.selectionUpdated();
-			});
-			this.$resultTable.on('click', ".res_entry a", function(e){
-				e.stopPropagation();
 			});
 		},
 		

@@ -59,19 +59,32 @@ public class SearchController extends AbstractSearchController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "doSearch")
+	@RequestMapping(value = "doSearch", produces = "text/html")
 	public String searchForm(@RequestParam(value = "query", required = false) String query,
 			@RequestParam(value = "queryType", required = false) String queryType,
 			@RequestParam(value = "container", required = false) String container,
 			@RequestParam(value = "within", required = false) String searchWithin,
-			@RequestParam(value = "searchType", required = false) String searchType, Model model,
-			HttpServletRequest request) {
+			@RequestParam(value = "searchType", required = false) String searchType) {
+		return "redirect:" + getSearchString(query, queryType, container, searchWithin, searchType);
+	}
+
+	@RequestMapping(value = "doSearch", produces = "application/json")
+	public @ResponseBody String searchFormJSON(@RequestParam(value = "query", required = false) String query,
+			@RequestParam(value = "queryType", required = false) String queryType,
+			@RequestParam(value = "container", required = false) String container,
+			@RequestParam(value = "within", required = false) String searchWithin,
+			@RequestParam(value = "searchType", required = false) String searchType, HttpServletRequest request) {
+		return request.getContextPath() + getSearchString(query, queryType, container, searchWithin, searchType);
+	}
+
+	public String getSearchString(String query, String queryType, String container, String searchWithin,
+			String searchType) {
 		// Query needs to be encoded before being added into the new url
 		try {
 			query = URLEncoder.encode(query, "UTF-8");
 		} catch (UnsupportedEncodingException e1) {
 		}
-		StringBuilder destination = new StringBuilder("redirect:/search");
+		StringBuilder destination = new StringBuilder("/search");
 		if (!"".equals(searchType) && container != null && container.length() > 0)
 			destination.append('/').append(container);
 

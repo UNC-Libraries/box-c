@@ -57,6 +57,9 @@ require.config({
 define("resultList", ["module", "jquery", "ResultView"], function(module, $) {
 
 	$(".result_page").resultView({
+		resultUrl : module.config().resultUrl
+	});
+	/*$(".result_page").resultView({
 		metadataObjects : module.config().metadataObjects,
 		container : module.config().container,
 		containerPath : module.config().containerPath,
@@ -67,5 +70,5 @@ define("resultList", ["module", "jquery", "ResultView"], function(module, $) {
 		pageStart : module.config().pageStart,
 		pageRows : module.config().pageRows,
 		resultCount : module.config().resultCount
-	});
+	});*/
 });

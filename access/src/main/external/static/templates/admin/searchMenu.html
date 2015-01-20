@@ -12,16 +12,14 @@
 						<option value="subjectIndex">Subject</option>
 					</select>
 				</div>
-				<% if (container) { %>
-					<input type="hidden" name="container" value="<%= container.id %>"/>
-				<% } %>
+				<input type="hidden" name="container" class="container_id" value="<%= container? container.id : "" %>"/>
 				<input type="hidden" name="within" value="<%= resultUrl %>"/>
 				<input type="submit" value="Go" class="search_submit"/>
 				<p class="search_within">
 					<input type="radio" value="" name="searchType" value=""/>Everything
-					<% if (container) { %>
-						<input type="radio" checked="checked" name="searchType" value="container"/>Current folder
-					<% } %>
+					<span class="search_folder<% if (!container) { %> hidden<% } %>">
+						<input type="radio" <% if (container) { %>checked="checked"<% } %> name="searchType" value="container" />Current folder
+					</span>
 					<input type="radio" name="searchType" value="within"/>Within results
 				</p>
 			</form>
@@ -36,7 +34,7 @@
 <div class="filter_menu">
 	<div>
 		<h3>Structure</h3>
-		<div data-href="structure/<%= container? container.id + "/" : "" %>collection<%= filterParams? "?" + filterParams : "" %>" id="structure_facet">
+		<div data-href="structure/<%= container? container.id + "/" : "" %>path<%= filterParams? "?" + filterParams : "" %>" id="structure_facet">
 			<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
 		</div>
 	</div>

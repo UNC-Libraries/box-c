@@ -124,7 +124,7 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 		return count;
 	};
 	
-	StructureEntry.prototype.toggleChildren = function() {
+	StructureEntry.prototype.toggleChildren = function(onlyOpen) {
 		var self = this;
 		var $toggleButton = this.$entry.find('.cont_toggle');
 		var $childrenContainer = this.element.children(".children");
@@ -202,7 +202,7 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 					$toggleButton.removeClass('expand').addClass('collapse');
 				}
 			}
-		} else if ($toggleButton.hasClass('collapse')) {
+		} else if (!onlyOpen && $toggleButton.hasClass('collapse')) {
 			if ($childrenContainer.children().length > 0) {
 				$childrenContainer.hide(100, function() {
 					self.element.removeClass("expanded");
@@ -279,6 +279,11 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 	StructureEntry.prototype.select = function() {
 		this.element.addClass("selected");
 		this.options.isSelected = true;
+	};
+	
+	StructureEntry.prototype.deselect = function() {
+		this.element.removeClass("selected");
+		this.options.isSelected = false;
 	};
 	
 	StructureEntry.prototype.findEntryById = function(id, childEntries) {

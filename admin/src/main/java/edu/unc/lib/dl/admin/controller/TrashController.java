@@ -16,20 +16,26 @@
 package edu.unc.lib.dl.admin.controller;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
+import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 @Controller
 public class TrashController extends AbstractSearchController {
@@ -38,35 +44,64 @@ public class TrashController extends AbstractSearchController {
 			SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.ANCESTOR_PATH.name(),
 			SearchFieldKeys.VERSION.name(), SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name(),
 			SearchFieldKeys.ANCESTOR_NAMES.name());
-	
-	@RequestMapping(value = "trash", method = RequestMethod.GET)
-	public String trashForEverything(Model model, HttpServletRequest request) {
-		SearchRequest searchRequest = generateSearchRequest(request);
 
-		getTrash(searchRequest, model, request);
+	@RequestMapping(value = "trash", produces = "text/html")
+	public String trashForEverything() {
 		return "search/trashList";
 	}
-	
-	@RequestMapping(value = "trash/{pid}", method = RequestMethod.GET)
-	public String trashForContainer(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
+
+	@RequestMapping(value = "trash/{pid}", produces = "text/html")
+	public String trashForContainer() {
+		return "search/trashList";
+	}
+
+	@RequestMapping(value = "trash/{pid}", produces = "application/json")
+	public @ResponseBody Map<String, Object> trashJSON(@PathVariable("pid") String pid, HttpServletRequest request,
+			HttpServletResponse response) {
+		return getResults(getRequest(pid, request));
+	}
+
+	@RequestMapping(value = "trash", produces = "application/json")
+	public @ResponseBody Map<String, Object> trashJSON(HttpServletRequest request, HttpServletResponse response) {
+		return getResults(getRequest(null, request));
+	}
+
+	private SearchRequest getRequest(String pid, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
 		searchRequest.setRootPid(pid);
 
-		getTrash(searchRequest, model, request);
-		return "search/trashList";
+		SearchState state = searchRequest.getSearchState();
+		state.setRowsPerPage(searchSettings.maxPerPage);
+		// Force deleted status into the request
+		state.getFacets().put(SearchFieldKeys.STATUS.name(), "Deleted");
+
+		return searchRequest;
 	}
-	
-	private void getTrash(SearchRequest searchRequest, Model model, HttpServletRequest request) {
+
+	private Map<String, Object> getResults(SearchRequest searchRequest) {
 		searchRequest.getSearchState().setRowsPerPage(searchSettings.maxPerPage);
 		// Force deleted status into the request
 		searchRequest.getSearchState().getFacets().put(SearchFieldKeys.STATUS.name(), "Deleted");
-		
-		SearchResultResponse resultResponse = getSearchResults(searchRequest, resultsFieldList);
 
-		model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(searchRequest.getSearchState()));
-		model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(searchRequest.getSearchState()));
-		model.addAttribute("resultResponse", resultResponse);
-		model.addAttribute("queryMethod", "trash");
-		request.getSession().setAttribute("resultOperation", "trash");
+		SearchResultResponse resp = getSearchResults(searchRequest, resultsFieldList);
+
+		AccessGroupSet groups = GroupsThreadStore.getGroups();
+		List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
+		Map<String, Object> results = new HashMap<>();
+		results.put("metadata", resultList);
+
+		SearchState state = resp.getSearchState();
+		results.put("pageStart", state.getStartRow());
+		results.put("resultCount", resp.getResultCount());
+		results.put("searchStateUrl", SearchStateUtil.generateStateParameterString(state));
+		results.put("searchQueryUrl", SearchStateUtil.generateSearchParameterString(state));
+		results.put("queryMethod", "trash");
+		results.put("resultOperation", "trash");
+
+		if (resp.getSelectedContainer() != null) {
+			results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), groups));
+		}
+
+		return results;
 	}
 }

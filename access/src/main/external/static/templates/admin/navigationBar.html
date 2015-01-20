@@ -2,7 +2,6 @@
 var resultCount = pageNavigation.resultCount;
 var pageRows = pageNavigation.pageRows;
 var pageStart = pageNavigation.pageStart;
-var containerId = container? container.id : "";
 var pageUrl = pageNavigation.resultUrl;
 
 var totalPages = Math.floor(resultCount / pageRows);
@@ -48,7 +47,7 @@ if (resultCount > 1) {
 			} else {
 				var newPageUrl = pageUrl;
 				newPageUrl = URLUtilities.setParameter(newPageUrl, 'start', pageRows * pageNumber);
-				%><a href="<%= newPageUrl %>"><%= pageNumber %></a><%
+				%><a class="res_link" href="<%= newPageUrl %>"><%= pageNumber %></a><%
 			}
 		} %>
 	</span>

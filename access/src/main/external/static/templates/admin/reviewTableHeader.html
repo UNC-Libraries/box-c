@@ -1,6 +1,6 @@
 <% var containerDeleted = container? !_.contains(container.status, 'Active') : false; %>
 <div class="result_header">
-	<% if (invalidVocabCount) { %>
+	<% if (data.invalidVocabCount) { %>
 		<div class="result_warning">
 			<span class="warning_symbol">!</span> Warning: <%= invalidVocabCount %> item(s) in this result have vocabulary problems.  <a href="invalidVocab/<%= container.id %>">View invalid vocabulary terms</a>
 		</div>

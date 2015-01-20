@@ -22,10 +22,6 @@ define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, 
 			if (!this.options.showResourceIcons)
 				this.element.addClass('no_resource_icons');
 			
-			if (this.options.showParentLink) {
-				this._generateParentLink();
-			}
-			
 			if (this.options.excludeIds) {
 				this.excludeIds = this.options.excludeIds.split(" ");
 			}
@@ -60,44 +56,28 @@ define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, 
 			});
 		},
 		
-		_generateParentLink : function() {
-			var self = this;
-			var $parentLink = $("<a class='parent_link'>parent</a>");
-			if (this.options.rootNode.isTopLevel)
-				$parentLink.addClass('disabled');
-				
-			$parentLink.click(function(){
-				if ($parentLink.hasClass('disabled'))
-					return false;
-				var $oldRoot = self.$content.children(".entry_wrap");
-				var parentURL = $oldRoot.data("structureEntry").getParentURL();
-				$.ajax({
-					url : parentURL,
-					dataType : 'json',
-					success : function(data) {
-						var newRoot = new StructureEntry({
-							node : data.root,
-							structureView : self,
-							isRoot : true
-						});
-						newRoot.render();
-						// Initialize the new results
-						//$newRoot.find(".entry_wrap").add($newRoot).structureEntry({
-						//	indentSuppressed : self.options.indentSuppressed
-						//});
-						newRoot.insertTree($oldRoot.data('structureEntry'));
-						//$newRoot.structureEntry('insertTree', $oldRoot);
-						self.$content.append(newRoot.element);
-						if (data.root.isTopLevel)
-							$parentLink.addClass('disabled');
-						
-						self.onChangeEvent(newRoot);
-					}
-				});
-				return false;
-			});
+		changeFolder : function(uuid) {
+			if (uuid.indexOf(":") != -1) {
+				uuid = uuid.substring(uuid.indexOf(":") + 1);
+			}
 			
-			this.$content.before($parentLink);
+			this.deselectAll();
+			
+			var entry = $("#str_" + uuid, this.element);
+			if (entry.length == 0) {
+				console.log("Failed to open folder", uuid);
+				return;
+			}
+			
+			entry = entry.data('structureEntry');
+			entry.toggleChildren(true);
+			entry.select();
+		},
+		
+		deselectAll : function() {
+			$(".entry_wrap.selected").each(function(){
+				$(this).data('structureEntry').deselect();
+			});
 		},
 		
 		// Trigger the change event function in case some other part of the code needs to know the view changed sizes
