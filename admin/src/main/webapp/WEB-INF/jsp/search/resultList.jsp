@@ -25,6 +25,7 @@
 
 	<div class="result_area">
 		<div>
+			Loading... <img src="/static/images/admin/loading_small.gif"/>
 		</div>
 	</div>
 </div>

@@ -95,19 +95,18 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					data : $(this).serialize(),
 					dataType : 'text',
 					success : function(url) {
-						console.log("what", url);
 						history.pushState({}, "", url);
 						self.changePage(url);
 					},
 					error : function(xhr, status){
-						console.log("whoa", status);
+						console.error("Failed to search", status);
 					}
 				});
 				e.preventDefault();
 			});
 			
 			window.onpopstate = function(event) {
-				self.changePage(document.location);
+				self.changePage(document.location.href);
 			};
 			
 			this.changePage(this.options.resultUrl);
@@ -126,6 +125,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					self.$resultTableView.resultTableView("render", data);
 					if (self.searchMenu) {
 						self.searchMenu.searchMenu("changeFolder", data.container? data.container.id : "");
+						self.searchMenu.searchMenu("updateFacets", url);
 					}
 				},
 				error : function(data) {
@@ -135,6 +135,8 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 		},
 		
 		postRender : function (data) {
+			var self = this;
+			
 			this.$resultView = $('#result_view');
 			this.$columnHeaders = $('.column_headers', this.element);
 			this.$resultHeader = $('.result_header', this.element);
@@ -158,7 +160,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 				});
 
 				this.searchMenu.on("resize", $.proxy(function() {
-					this.menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
+					this.menuOffset = self.searchMenu.position().left + self.searchMenu.innerWidth() + 40;
 					this.resizeResults();
 				}, this));
 			}

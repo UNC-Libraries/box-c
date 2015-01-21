@@ -7,15 +7,30 @@
 			</div>
 		<% } %>
 		<div class="container_header">
-			<% if (container) { %>
-				<span class="container_entry">
-					<h2 class="container_title">
-						<div class="resource_icon <%= container.type %>"></div>
-						<span class="<%= containerDeleted? "deleted" : "" %>"><%= container.title %></span>
+			<span class="container_entry">
+				<h2 class="container_title">
+					<% if (queryMethod == "search") { %>
+						<span>Searching<% if (container) { %> in<% } %></span>
+					<% } %>
+					<% if (container) { %>
+						<%
+							var typeName;
+							if (containerDeleted)
+								typeName = "trash_can";
+							else if (container.type == "Folder")
+								typeName = 'admin/type_folder';
+							else if (container.type == "Collection")
+								typeName = 'admin/type_coll';
+							else if (container.type == "Aggregate")
+								typeName = 'admin/type_aggr';
+						%>
+						<img src="/static/images/<%= typeName %>.png" />
+						<span <%= containerDeleted? "class='deleted'" : "" %>><%= container.title %></span>
 						<img class="action_gear container_menu" src="/static/images/admin/gear.png">
-					</h2>
-				</span>
-			<% } %>
+					
+					<% } %>
+				</h2>
+			</span>
 			<%
 			if (container && _.indexOf(container.permissions, "addRemoveContents") != -1 && !containerDeleted) {
 				%><span id="add_menu" class="container_action">+ Add</span><%

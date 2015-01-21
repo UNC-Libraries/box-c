@@ -1,6 +1,5 @@
 <div class="query_menu">
 	<div>
-		<h3>Search</h3>
 		<div>
 			<form id="search_menu_form" method="get" action="doSearch">
 				<div class="search_inputwrap">
@@ -33,27 +32,18 @@
 </div>
 <div class="filter_menu">
 	<div>
+		<h3>Filters</h3>
+		<div class="limits_panel" 
+				 data-facets="collection,dept,language,subject,role,status,format,type,model,contentStatus"
+				 data-href="facets<%= container? "/" + container.id : "" %>?facetSelect=collection,dept,language,subject,role,status,format,type,model,contentStatus<%= filterParams? "&" + filterParams : "" %>">
+			<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
+		</div>
+	</div>
+	<div>
 		<h3>Structure</h3>
-		<div data-href="structure/<%= container? container.id + "/" : "" %>path<%= filterParams? "?" + filterParams : "" %>" id="structure_facet">
+		<div data-href="structure/<%= container? container.id + "/" : "" %>path" id="structure_facet">
 			<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
 		</div>
 	</div>
-	<div>
-		<h3>Descriptive</h3>
-		<div data-href="facets/<%= container? container.id + "/" : "" %>?facetSelect=collection,dept,language,subject<%= filterParams? "&" + filterParams : "" %>">
-			<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
-		</div>
-	</div>
-	<div>
-		<h3>Access Control</h3>
-		<div data-href="facets/<%= container? container.id + "/" : "" %>?facetSelect=role,status<%= filterParams? "&" + filterParams : "" %>">
-			<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
-		</div>
-	</div>
-	<div>
-		<h3>Content</h3>
-		<div data-href="facets/<%= container? container.id + "/" : "" %>?facetSelect=format,type,model,contentStatus<%= filterParams? "&" + filterParams : "" %>">
-			<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
-		</div>
-	</div>
+	
 </div>

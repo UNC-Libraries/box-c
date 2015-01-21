@@ -27,6 +27,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			
 			require([this.options.resultTableTemplate, this.options.resultEntryTemplate, this.options.resultTableHeaderTemplate, this.options.navBarTemplate, this.options.pathTrailTemplate], function(resultTableTemplate, resultEntryTemplate, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate){
 				
+				self.element.html("");
+				
 				data["pagingActive"] = (data.pageStart + data.pageRows) < data.resultCount;
 				
 				var container = data.container;
@@ -50,15 +52,15 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					data : data,
 					container : container,
 					navigationBar : navigationBar,
-					containerPath : containerPath
+					containerPath : containerPath,
+					queryMethod : data.queryMethod
 				});
 				
 				var headerHeightClass = self.options.headerHeightClass;
-				if (container) {
-					if (container.ancestorPath)
-						headerHeightClass += " with_path";
-					else
-						headerHeightClass += " with_container";
+				if (container && container.ancestorPath) {
+					headerHeightClass += " with_path";
+				} else {
+					headerHeightClass += " with_container";
 				}
 				
 				if (self.$resultView) {

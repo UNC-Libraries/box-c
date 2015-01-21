@@ -130,7 +130,7 @@ public class SearchController extends AbstractSearchController {
 	Map<String, Object> searchJSON(@PathVariable("pid") String pid, HttpServletRequest request,
 			HttpServletResponse response) {
 		SearchResultResponse resultResponse = getSearchResults(getSearchRequest(pid, request));
-		return getResults(resultResponse, "list");
+		return getResults(resultResponse, "search");
 	}
 
 	@RequestMapping(value = "search", method = RequestMethod.GET, produces = "application/json")
@@ -176,7 +176,7 @@ public class SearchController extends AbstractSearchController {
 	@RequestMapping(value = "list", method = RequestMethod.GET, produces = "application/json")
 	public @ResponseBody
 	Map<String, Object> listJSON(HttpServletRequest request, HttpServletResponse response) {
-		SearchResultResponse resultResponse = getSearchResults(getListRequest(null, request));
+		SearchResultResponse resultResponse = getSearchResults(getListRequest(collectionsPid.getPid(), request));
 		return getResults(resultResponse, "list");
 	}
 

@@ -2625,6 +2625,12 @@ h1 {
 	visibility: hidden;
 }
 
+.search_menu .query_menu {
+	padding: 10px 4px 1px 9px;
+	background-color: #DDF0FA;
+	border-radius: 6px;
+}
+
 .search_menu .ui-accordion > div {
 	margin-top: 2px;
 }
