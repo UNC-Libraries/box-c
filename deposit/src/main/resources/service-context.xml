@@ -397,9 +397,6 @@
 		<property name="textTemplate" ref="textTemplate" />
 	</bean>
 
-	<bean id="pidWriteLock" class="edu.unc.lib.dl.util.PIDLocker">
-	</bean>
-
 	<bean id="CleanupDepositJob" class="edu.unc.lib.deposit.CleanupDepositJob"
 		scope="prototype">
 		<property name="stages" ref="stages" />

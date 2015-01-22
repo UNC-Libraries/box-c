@@ -62,7 +62,6 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
-import edu.unc.lib.dl.util.PIDLocker;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -88,8 +87,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private TripleStoreQueryService tripleStoreQueryService = null;
 	private SchematronValidator schematronValidator = null;
 	private PID collectionsPid = null;
-
-	private PIDLocker pidLock;
 
 	public synchronized void setAvailable(boolean available, String message) {
 		this.available = available;
@@ -206,8 +203,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			// update container
 			parent = this.removeFromContainer(pid);
 
-			pidLock.lock(parent);
-
 			Element event = logger.logEvent(PremisEventLogger.Type.DELETION, "Deleted " + deleted.size()
 					+ "contained object(s).", container);
 			PremisEventLogger.addDetailedOutcome(event, "success", "Message: " + message, null);
@@ -216,14 +211,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			// delete object and all of its children
 			for (PID obj : toDelete) {
 				try {
-					pidLock.lock(obj);
-
 					this.getManagementClient().purgeObject(obj, message, false);
 					deleted.add(obj);
 				} catch (NotFoundException e) {
 					log.error("Delete set referenced an object that didn't exist: " + pid.getPid(), e);
-				} finally {
-					pidLock.unlock(obj);
 				}
 			}
 			// Send message to message queue informing it of the deletion(s)
@@ -238,8 +229,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			log.error("Fedora threw an unexpected runtime exception while deleting " + pid.getPid(), e);
 			thrown = e;
 		} finally {
-			pidLock.unlock(parent);
-
 			if (thrown != null && toDelete.size() > deleted.size()) {
 				// some objects not deleted
 				List<PID> missed = new ArrayList<PID>();
@@ -328,9 +317,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 		log.debug("removeFromContainer called on PID: " + parent.getPid());
 		try {
-			// Lock the parent being removed from
-			pidLock.lock(parent);
-
 			// remove ir:contains statement to RELS-EXT
 			relsextDone = this.getManagementClient().purgeObjectRelationship(parent,
 					ContentModelHelper.Relationship.contains.getURI().toString(), pid);
@@ -362,8 +348,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			throw irs;
 		} catch (IOException e) {
 			throw new Error("Should not get IOException for reading byte array input", e);
-		} finally {
-			pidLock.unlock(parent);
 		}
 		return parent;
 	}
@@ -436,8 +420,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		// compare checksum if one is supplied
 		if (checksum != null) {
 			try {
-				pidLock.lock(pid);
-
 				String sum = new Checksum().getChecksum(newMODSFile);
 				if (!checksum.trim().toLowerCase().equals(sum.toLowerCase())) {
 					throw new IngestException("MD5 calculated for file (" + sum + ") does not match supplied checksum ("
@@ -450,8 +432,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				throw new IngestException("New MODS file not found", e1);
 			} catch (IOException e1) {
 				throw new IngestException("There was a problem reading the new MODS file", e1);
-			} finally {
-				pidLock.unlock(pid);
 			}
 		}
 
@@ -632,8 +612,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		List<PID> oldParents = new ArrayList<PID>();
 		List<PID> reordered = new ArrayList<PID>();
 		try {
-			pidLock.lock(destination);
-
 			// remove pids from old containers, add to new, log
 			for (PID pid : moving) {
 				PID oldParent = this.removeFromContainer(pid);
@@ -682,8 +660,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		} catch (RuntimeException e) {
 			thrown = e;
 		} finally {
-			pidLock.unlock(destination);
-
 			if (thrown != null) {
 				// some stuff failed to move, log it
 				StringBuffer sb = new StringBuffer();
@@ -798,7 +774,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 
 		try {
-			this.pidLock.lock(parent);
 			// Container update
 			this.getManagementClient().addObjectRelationship(parent,
 					ContentModelHelper.Relationship.contains.getURI().toString(), containerPid);
@@ -826,15 +801,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			managementClient.ingest(foxml, Format.FOXML_1_1, "Container created via Admin UI");
 		} catch (FedoraException e) {
 			throw new IngestException("Failed to ingest container object", e);
-		} finally {
-			this.pidLock.unlock(parent);
 		}
 		
 		return containerPid;
-	}
-
-	public void setPidLock(PIDLocker pidLock) {
-		this.pidLock = pidLock;
 	}
 
 	public void setCollectionsPid(PID collectionsPid) {
