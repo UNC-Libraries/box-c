@@ -82,8 +82,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			
 			self.$resultPage.on("click", ".res_link", function(e){
 				var url = $(this).attr("href");
-				history.pushState({}, "", url);
-				self.changePage(url);
+				self.changePage(url, true);
 				e.preventDefault();
 				e.stopPropagation();
 			});
@@ -95,8 +94,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					data : $(this).serialize(),
 					dataType : 'text',
 					success : function(url) {
-						history.pushState({}, "", url);
-						self.changePage(url);
+						self.changePage(url, true);
 					},
 					error : function(xhr, status){
 						console.error("Failed to search", status);
@@ -112,8 +110,17 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			this.changePage(this.options.resultUrl);
 		},
 		
-		changePage : function(url) {
+		changePage : function(url, updateHistory) {
 			var self = this;
+			var sortData = self.$resultTableView.resultTableView("getCurrentSort");
+			if (sortData["type"]) {
+				var sortParams = sortData.type + "," + (sortData.order? "" : "reverse");
+				url = URLUtilities.setParameter(url, "sort", sortParams);
+			}
+			
+			if (updateHistory) {
+				history.pushState({}, "", url);
+			}
 			
 			$.ajax({
 				url : url,

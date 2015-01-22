@@ -2874,12 +2874,14 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				
 				self.element.html("");
 				
-				data["pagingActive"] = (data.pageStart + data.pageRows) < data.resultCount;
+				self.pagingActive = (data.pageStart + data.pageRows) < data.resultCount;
 				
+				self.resultUrl = document.location.href;
 				var container = data.container;
 			
 				var navigationBar = navigationBarTemplate({
 					pageNavigation : data,
+					resultUrl : self.resultUrl,
 					URLUtilities : URLUtilities
 				});
 			
@@ -2920,8 +2922,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			
 				if (self.options.postRender)
 					self.options.postRender(data);
-			
-				self.resultUrl = self.options.resultUrl;
 			
 				self.populateResults(data.metadata);
 			
@@ -2979,10 +2979,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		_initSort : function() {
 			var $resultTable = this.$resultTable;
 			var self = this;
-			if (this.options.pagingActive) {
-				// Paging active, so need to make server callback to perform sort
-				var sortParam = URLUtilities.getParameter('sort');
+			
+			if (!self.sortType) {
 				var sortOrder = true;
+				var sortParam = URLUtilities.getParameter('sort');
 				if (sortParam != null) {
 					sortParam = sortParam.split(",");
 					if (sortParam.length > 1)
@@ -2990,30 +2990,37 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					if (sortParam.length > 0)
 						sortParam = sortParam[0];
 				}
-				
-				$("th.sort_col", $resultTable).each(function(){
-					var $this = $(this);
-					$this.addClass('sorting');
-					var sortField = $this.attr('data-field');
-					if (sortField) {
-						if (sortParam == sortField) {
-							if (sortOrder) {
-								$this.addClass('asc');
-							} else {
-								$this.addClass('desc');
-							}
+				self.sortType = sortParam;
+				self.sortOrder = sortOrder;
+			}
+			
+			$("th.sort_col", $resultTable).each(function(){
+				var $this = $(this);
+				$this.addClass('sorting');
+				var sortField = $this.attr('data-field');
+				if (sortField) {
+					// If the results are already sorted at init time, make the column reflect that
+					var isCurrentSortField = self.sortType == sortField;
+					if (isCurrentSortField) {
+						if (self.sortOrder) {
+							$this.addClass('asc');
+						} else {
+							$this.addClass('desc');
 						}
-						var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', sortField + (sortOrder? ",reverse" : ""));
-						this.children[0].href = sortUrl;
 					}
-				});
-			} else {
-				// Paging off, perform sorting locally
-				$("th.sort_col", $resultTable).each(function(){
-					var $th = $(this),
-					thIndex = $th.index(),
-					dataType = $th.attr("data-type");
-					$th.addClass('sorting');
+					// Set the sort URL for the column
+					var orderParam = isCurrentSortField && self.sortOrder? ",reverse" : "";
+					var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', sortField + orderParam);
+					this.children[0].href = sortUrl;
+					
+					// If we're in paging mode, make the column link trigger a retrieval from server
+					if (self.pagingActive) {
+						$("a", $this).addClass("res_link");
+					}
+					
+					var $th = $(this);
+					var thIndex = $th.index();
+					var dataType = $th.attr("data-type");
 					
 					$th.click(function(){
 						if (!$th.hasClass('sorting')) return;
@@ -3025,19 +3032,36 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 						else 
 							$th.addClass('desc');
 						
-						// Apply sort function based on data-type
-						if (dataType == 'index') {
-							self._originalOrderSort(inverse);
-						} else if (dataType == 'title') {
-							self._titleSort(inverse);
+						self.sortType = $th.attr("data-field");
+						if (!self.pagingActive) {
+							self.sortOrder = !inverse;
+							
+							var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (self.sortOrder? ",reverse" : ""));
+							history.pushState({}, "", sortUrl);
+					
+							// Apply sort function based on data-type
+							if (dataType == 'index') {
+								self._originalOrderSort(inverse);
+							} else if (dataType == 'title') {
+								self._titleSort(inverse);
+							} else {
+								self._alphabeticSort(thIndex, inverse);
+							}
+							inverse = !inverse;
+							return false;
 						} else {
-							self._alphabeticSort(thIndex, inverse);
+							self.sortOrder = inverse;
 						}
-						inverse = !inverse;
 						//console.timeEnd("Sort total");
 					});
-				});
-			}
+					
+					
+				}
+			});
+		},
+		
+		getCurrentSort : function() {
+			return {type : this.sortType, order : this.sortOrder};
 		},
 		
 		// Base row sorting function
@@ -3426,8 +3450,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			
 			self.$resultPage.on("click", ".res_link", function(e){
 				var url = $(this).attr("href");
-				history.pushState({}, "", url);
-				self.changePage(url);
+				self.changePage(url, true);
 				e.preventDefault();
 				e.stopPropagation();
 			});
@@ -3439,8 +3462,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					data : $(this).serialize(),
 					dataType : 'text',
 					success : function(url) {
-						history.pushState({}, "", url);
-						self.changePage(url);
+						self.changePage(url, true);
 					},
 					error : function(xhr, status){
 						console.error("Failed to search", status);
@@ -3456,8 +3478,17 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			this.changePage(this.options.resultUrl);
 		},
 		
-		changePage : function(url) {
+		changePage : function(url, updateHistory) {
 			var self = this;
+			var sortData = self.$resultTableView.resultTableView("getCurrentSort");
+			if (sortData["type"]) {
+				var sortParams = sortData.type + "," + (sortData.order? "" : "reverse");
+				url = URLUtilities.setParameter(url, "sort", sortParams);
+			}
+			
+			if (updateHistory) {
+				history.pushState({}, "", url);
+			}
 			
 			$.ajax({
 				url : url,
@@ -3721,9 +3752,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		},
 		
 		getParameter : function (name) {
-			return decodeURI(
-					(RegExp(name + '=' + '([^&]*?)(&|$)').exec(location.search)||[,null])[1]
-			);
+			var value = RegExp(name + '=' + '([^&]*?)(&|$)').exec(location.search);
+			if (value == null)
+				return null;
+			return decodeURI(value[1]);
 		},
 		
 		setParameter : function(url, key, paramVal){
