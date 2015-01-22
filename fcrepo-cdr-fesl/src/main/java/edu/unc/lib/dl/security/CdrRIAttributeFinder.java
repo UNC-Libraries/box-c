@@ -188,7 +188,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 			
 			if (value instanceof StringAttribute) {
 				StringAttribute attribute = (StringAttribute) value;
-				logger.debug("adding attribute: {}", attribute);
+				log.debug("adding attribute: {}", attribute);
 				groups.add(attribute.getValue());
 			}
 		}
@@ -225,7 +225,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 			
 			if (value instanceof StringAttribute) {
 				StringAttribute attribute = (StringAttribute) value;
-				logger.debug("returning attribute: {}", attribute);
+				log.debug("returning attribute: {}", attribute);
 				return attribute.getValue();
 			}
 		}
