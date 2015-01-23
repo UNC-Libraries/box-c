@@ -48,7 +48,6 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
-import edu.unc.lib.dl.search.solr.model.CutoffFacetNode;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
@@ -587,89 +586,15 @@ public class SolrQueryLayerService extends SolrSearchService {
 		solrQuery.setFacetMinCount(1);
 		solrQuery.addFacetField(ancestorPathField);
 
-		Integer countPageSize;
-		try {
-			countPageSize = new Integer(searchSettings.getProperty("search.facet.countPageSize"));
-		} catch (NumberFormatException e) {
-			countPageSize = 20;
-		}
-
 		solrQuery.add("f." + ancestorPathField + ".facet.limit", Integer.toString(Integer.MAX_VALUE));
 		// Sort by value rather than count so that earlier tiers will come first in case the result gets cut off
 		solrQuery.setFacetSort("index");
 
-		java.util.Map<Integer, StringBuilder> tierQueryMap = new java.util.HashMap<Integer, StringBuilder>();
-		java.util.Map<Integer, List<BriefObjectMetadata>> containerMap = new java.util.HashMap<Integer, List<BriefObjectMetadata>>();
-
-		// Pare the list of ids we are searching for and assigning counts to down to just containers
-		for (BriefObjectMetadata metadataObject : resultList) {
-			if (metadataObject.getPath() != null && metadataObject.getContentModel() != null
-					&& metadataObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString())) {
-				CutoffFacetNode highestTier = metadataObject.getPath().getHighestTierNode();
-				StringBuilder tierQuery = tierQueryMap.get(highestTier.getTier());
-				List<BriefObjectMetadata> containerObjects = containerMap.get(highestTier.getTier());
-				if (tierQuery == null) {
-					tierQuery = new StringBuilder();
-					tierQueryMap.put(highestTier.getTier(), tierQuery);
-
-					containerObjects = new ArrayList<BriefObjectMetadata>();
-					containerMap.put(highestTier.getTier(), containerObjects);
-				}
-
-				if (tierQuery.length() == 0) {
-					tierQuery.append(ancestorPathField).append(":(");
-				} else {
-					tierQuery.append(" OR ");
-				}
-
-				tierQuery.append(SolrSettings.sanitize(highestTier.getSearchValue())).append(",*");
-				containerObjects.add(metadataObject);
-
-				// If there are a lot of results, then do a partial lookup
-				if (containerObjects.size() >= countPageSize) {
-					tierQuery.append(")");
-					this.executeChildrenCounts(tierQuery, containerObjects, solrQuery, countName, highestTier.getTier());
-					LOG.info("Partial query done at " + System.currentTimeMillis() + " ("
-							+ (System.currentTimeMillis() - startTime) + ")");
-					containerMap.remove(highestTier.getTier());
-					tierQueryMap.remove(highestTier.getTier());
-				}
-			}
-		}
-
-		Iterator<java.util.Map.Entry<Integer, StringBuilder>> queryIt = tierQueryMap.entrySet().iterator();
-		while (queryIt.hasNext()) {
-			java.util.Map.Entry<Integer, StringBuilder> tierQueryEntry = queryIt.next();
-			tierQueryEntry.getValue().append(')');
-			this.executeChildrenCounts(tierQueryEntry.getValue(), containerMap.get(tierQueryEntry.getKey()), solrQuery,
-					countName, tierQueryEntry.getKey());
-		}
-		LOG.info("Child count query done at " + System.currentTimeMillis() + " ("
-				+ (System.currentTimeMillis() - startTime) + ")");
-	}
-
-	private void executeChildrenCounts(StringBuilder query, List<BriefObjectMetadata> containerObjects,
-			SolrQuery solrQuery, String countName, Integer tier) {
-		String ancestorPathField = solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name());
-		// Remove all ancestor path related filter queries or filter queries from previous count executions, so the counts
-		// won't be cut off
-		if (solrQuery.getFilterQueries() != null) {
-			for (String filterQuery : solrQuery.getFilterQueries()) {
-				if (filterQuery.contains(ancestorPathField)) {
-					solrQuery.removeFilterQuery(filterQuery);
-				}
-			}
-		}
-		if (tier != null) {
-			solrQuery.remove("f." + ancestorPathField + ".facet.prefix");
-			solrQuery.add("f." + ancestorPathField + ".facet.prefix", tier + ",");
-		}
-		solrQuery.addFilterQuery(query.toString());
 		try {
-			long startTime = System.currentTimeMillis();
+			startTime = System.currentTimeMillis();
 			QueryResponse queryResponse = this.executeQuery(solrQuery);
 			LOG.info("Query executed in " + (System.currentTimeMillis() - startTime));
-			assignChildrenCounts(queryResponse.getFacetField(ancestorPathField), containerObjects, countName);
+			assignChildrenCounts(queryResponse.getFacetField(ancestorPathField), resultList, countName);
 		} catch (SolrServerException e) {
 			LOG.error("Error retrieving Solr search result request", e);
 		}
@@ -746,7 +671,13 @@ public class SolrQueryLayerService extends SolrSearchService {
 				// Store the previous root node as a child in the current tier
 				ResultNode previousRoot = previousResponse.getRootNode();
 				int childNodeIndex = browseResponse.getChildNodeIndex(previousRoot.getMetadata().getId());
-				browseResponse.getRootNode().getChildren().set(childNodeIndex, previousRoot);
+				if (childNodeIndex != -1) {
+					browseResponse.getRootNode().getChildren().set(childNodeIndex, previousRoot);
+				} else {
+					LOG.warn("Could not locate child entry {} inside of results for {}", previousRoot.getMetadata().getId(),
+							browseResponse.getRootNode().getMetadata().getId());
+				}
+
 			}
 
 			cnt--;

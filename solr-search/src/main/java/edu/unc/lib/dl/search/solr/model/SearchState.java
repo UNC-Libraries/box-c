@@ -359,7 +359,7 @@ public class SearchState implements Serializable, Cloneable {
 	 * @return
 	 */
 	public boolean isPopulatedSearch() {
-		return this.getFacets().size() > 0 || this.getRangeFields().size() > 0 || this.getSearchFields().size() > 0
+		return this.getRangeFields().size() > 0 || this.getSearchFields().size() > 0
 				|| (permissionLimits != null && permissionLimits.size() > 0);
 	}
 

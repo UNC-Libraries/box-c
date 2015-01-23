@@ -15,101 +15,38 @@
  */
 package edu.unc.lib.dl.ui.service;
 
-import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.core.CoreContainer;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse.ResultNode;
 import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
-import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
  * @author bbpennel
  * @date Jan 15, 2015
  */
-public class StructureQueryTest {
+public class StructureQueryTest extends AbstractSolrQueryLayerTest {
 	private static final Logger log = LoggerFactory.getLogger(StructureQueryTest.class);
 
-	protected EmbeddedSolrServer server;
-
-	protected CoreContainer container;
-
-	private SolrQueryLayerService queryLayer;
-
-	private SearchStateFactory stateFactory;
-	private SearchSettings searchSettings;
-	private SolrSettings solrSettings;
-	private FacetFieldUtil facetUtil;
-
-	@Rule
-	public final TemporaryFolder tmpFolder = new TemporaryFolder();
-
-	private final String COLLECTIONS_PID = "uuid:Collections";
-
+	@Override
 	@Before
 	public void setUp() throws Exception {
-		initMocks(this);
+		super.setUp();
 
-		File home = new File("src/test/resources/config");
-		File configFile = new File(home, "solr.xml");
-
-		File dataDir = tmpFolder.newFolder("solrdata");
-		System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
-		container = new CoreContainer("src/test/resources/config", configFile);
-
-		server = new EmbeddedSolrServer(container, "access-master");
 		server.add(populate());
 		server.commit();
-
-		searchSettings = new SearchSettings();
-		Properties properties = new Properties();
-		properties.load(new FileInputStream(new File("src/test/resources/search.properties")));
-		searchSettings.setProperties(properties);
-
-		solrSettings = new SolrSettings();
-		Properties solrProperties = new Properties();
-		solrProperties.load(new FileInputStream(new File("src/test/resources/solr.properties")));
-		solrSettings.setProperties(solrProperties);
-
-		stateFactory = new SearchStateFactory();
-		stateFactory.setSearchSettings(searchSettings);
-
-		facetUtil = new FacetFieldUtil();
-		facetUtil.setSearchSettings(searchSettings);
-		facetUtil.setSolrSettings(solrSettings);
-
-		queryLayer = new SolrQueryLayerService();
-		queryLayer.setCollectionsPid(new PID("cdr:Collections"));
-		queryLayer.setSearchSettings(searchSettings);
-		queryLayer.setSolrSettings(solrSettings);
-		queryLayer.setSearchStateFactory(stateFactory);
-		queryLayer.setFacetFieldUtil(facetUtil);
-		setField(queryLayer, "server", server);
 	}
 
 	@Test
@@ -228,10 +165,5 @@ public class StructureQueryTest {
 		docs.add(newDoc);
 
 		return docs;
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		server.shutdown();
 	}
 }
