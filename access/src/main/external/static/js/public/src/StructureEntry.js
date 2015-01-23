@@ -177,7 +177,6 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 								$childrenContainer.find(".indent").show();
 								$childrenContainer.show(100, function() {
 									self.element.addClass("expanded");
-									self.options.structureView.onChangeEvent(self);
 								});
 							}
 							
@@ -197,7 +196,6 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 					$childrenContainer.find(".indent").show();
 					$childrenContainer.show(100, function() {
 						self.element.addClass("expanded");
-						self.options.structureView.onChangeEvent(self);
 					});
 					$toggleButton.removeClass('expand').addClass('collapse');
 				}
@@ -206,12 +204,10 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 			if ($childrenContainer.children().length > 0) {
 				$childrenContainer.hide(100, function() {
 					self.element.removeClass("expanded");
-					self.options.structureView.onChangeEvent(self);
 				});
 			}
 			$toggleButton.removeClass('collapse').addClass('expand');
 		}
-		self.options.structureView.onChangeEvent(self);
 	};
 	
 	StructureEntry.prototype.refreshIndent = function() {

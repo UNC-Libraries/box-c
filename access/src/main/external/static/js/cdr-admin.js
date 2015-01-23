@@ -235,7 +235,6 @@ define('detachplus', [ 'jquery'], function($) {
 								$childrenContainer.find(".indent").show();
 								$childrenContainer.show(100, function() {
 									self.element.addClass("expanded");
-									self.options.structureView.onChangeEvent(self);
 								});
 							}
 							
@@ -255,7 +254,6 @@ define('detachplus', [ 'jquery'], function($) {
 					$childrenContainer.find(".indent").show();
 					$childrenContainer.show(100, function() {
 						self.element.addClass("expanded");
-						self.options.structureView.onChangeEvent(self);
 					});
 					$toggleButton.removeClass('expand').addClass('collapse');
 				}
@@ -264,12 +262,10 @@ define('detachplus', [ 'jquery'], function($) {
 			if ($childrenContainer.children().length > 0) {
 				$childrenContainer.hide(100, function() {
 					self.element.removeClass("expanded");
-					self.options.structureView.onChangeEvent(self);
 				});
 			}
 			$toggleButton.removeClass('collapse').addClass('expand');
 		}
-		self.options.structureView.onChangeEvent(self);
 	};
 	
 	StructureEntry.prototype.refreshIndent = function() {
@@ -3638,6 +3634,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			if (activeMenu.length == 0) {
 				return;
 			}
+			var self = this;
 			var top = activeMenu.offset().top;
 			var innerHeight = activeMenu.innerHeight();
 			var height = activeMenu.height();
@@ -3649,8 +3646,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			});
 			if ((top + innerHeight + siblingHeight) > windowHeight) {
 				activeMenu.height(windowHeight - top - siblingHeight - verticalPadding);
-			} else {
-				activeMenu.height('auto');
 			}
 		},
 		
@@ -3725,11 +3720,21 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					panel.html(data);
 					panel.data('contentLoaded', true);
 					self._adjustHeight();
+					
+					self.scrollToSelectedContainer();
 				},
 				error : function() {
 					panel.html("");
 				}
 			});
+		},
+		
+		scrollToSelectedContainer : function() {
+			var selectedContainer = $(".entry_wrap .selected", self.element);
+			if (selectedContainer.length > 0) {
+				var parent = this.$structureView.parent();
+				parent.animate({scrollTop: selectedContainer[0].offsetTop - parent[0].offsetTop}, 100)
+			}
 		}
 	});
 });define('URLUtilities', ['jquery'], function($) {

@@ -51,6 +51,7 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 			if (activeMenu.length == 0) {
 				return;
 			}
+			var self = this;
 			var top = activeMenu.offset().top;
 			var innerHeight = activeMenu.innerHeight();
 			var height = activeMenu.height();
@@ -62,8 +63,6 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 			});
 			if ((top + innerHeight + siblingHeight) > windowHeight) {
 				activeMenu.height(windowHeight - top - siblingHeight - verticalPadding);
-			} else {
-				activeMenu.height('auto');
 			}
 		},
 		
@@ -138,11 +137,21 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 					panel.html(data);
 					panel.data('contentLoaded', true);
 					self._adjustHeight();
+					
+					self.scrollToSelectedContainer();
 				},
 				error : function() {
 					panel.html("");
 				}
 			});
+		},
+		
+		scrollToSelectedContainer : function() {
+			var selectedContainer = $(".entry_wrap .selected", self.element);
+			if (selectedContainer.length > 0) {
+				var parent = this.$structureView.parent();
+				parent.animate({scrollTop: selectedContainer[0].offsetTop - parent[0].offsetTop}, 100)
+			}
 		}
 	});
 });
