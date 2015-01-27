@@ -13,7 +13,6 @@ require.config({
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
-		'thumbnails' : ['jquery'],
 		'underscore': {
 			exports: '_'
 		}
