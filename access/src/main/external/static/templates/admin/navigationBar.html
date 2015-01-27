@@ -4,9 +4,7 @@ var pageRows = pageNavigation.pageRows;
 var pageStart = pageNavigation.pageStart;
 var pageUrl = resultUrl;
 
-var totalPages = Math.floor(resultCount / pageRows);
-if (resultCount % pageRows > 0)
-	totalPages++;
+var totalPages = Math.ceil(resultCount / pageRows);
 
 var currentPage = pageStart / pageRows + 1;
 var sideGap = 10 / 2;
@@ -41,12 +39,12 @@ if (resultCount > 1) {
 	<% if (totalPages > 1) { %>
 	<span class="navigation_pages">
 		<%
-		for (var pageNumber = leftGap; pageNumber < rightGap; pageNumber++) { 
+		for (var pageNumber = leftGap; pageNumber <= rightGap; pageNumber++) { 
 			if (pageNumber == currentPage) {
 				%><span class="bold"><%= pageNumber %></span><%
 			} else {
 				var newPageUrl = pageUrl;
-				newPageUrl = URLUtilities.setParameter(newPageUrl, 'start', pageRows * pageNumber);
+				newPageUrl = URLUtilities.setParameter(newPageUrl, 'start', pageRows * (pageNumber - 1));
 				%><a class="res_link" href="<%= newPageUrl %>"><%= pageNumber %></a><%
 			}
 		} %>

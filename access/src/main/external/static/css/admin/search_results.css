@@ -258,6 +258,10 @@
 	text-align: right;
 }
 
+.navigation_pages span, .navigation_pages a {
+	padding-left: 4px;
+}
+
 /** Result table */
 .result_table {
 	font-size: 14px;
