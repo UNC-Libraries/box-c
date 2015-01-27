@@ -23,9 +23,13 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <jsp:useBean id="accessGroupConstants" class="edu.unc.lib.dl.acl.util.AccessGroupConstants" scope="request"/>
 
-<c:if test="${cdr:contains(metadata.status, 'Deleted')}">
+<c:if test="${cdr:contains(metadata.status, 'Deleted') || cdr:contains(metadata.status, 'Parent Deleted')}">
 	<c:set var="isDeleted" value="deleted" scope="page"/>
 </c:if>
+<c:if test="${not empty metadata && (not cdr:hasPatronRoleForPublicGroup(metadata) || not empty metadata.activeEmbargo)}">
+	<c:set var="isProtected" value="protected" scope="page"/>
+</c:if>
+
 <%--<c:choose>
 	<c:when test="${param.resultNumber % 2 == 0 }">
 		<c:set var="resultEntryClass" value="even" scope="page"/>
@@ -44,78 +48,34 @@
 </c:choose>
 <c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, metadata)}"/>
 <c:set var="embargoDate" value="${metadata.activeEmbargo}"/>
-<div id="entry${metadata.id}" class="searchitem ${isDeleted}">
+<div id="entry${metadata.id}" class="searchitem ${isDeleted}${' '}${isProtected}">
 	<div class="contentarea">
 		<%-- Link to full record of the current item --%>
 		<c:url var="fullRecordUrl" scope="page" value="record/${metadata.id}">
 		</c:url>
 		<c:url var="containerResultsUrl" scope="page" value='list/${metadata.id}'></c:url>
+		
 		<%-- Set primary action URL based on content model and container results URL as appropriate --%>
 		<c:choose>
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
 				<c:set var="primaryActionUrl" scope="page" value="${containerResultsUrl}"/>
 				<c:set var="primaryActionTooltip" scope="page" value="View the contents of this folder."/>
+				<c:set var="thumbnailTarget" scope="page" value="list"/>
 			</c:when>
 			<c:otherwise>
 				<c:set var="primaryActionUrl" scope="page" value="${fullRecordUrl}"/>
 				<c:set var="primaryActionTooltip" scope="page" value="View details for ${metadata.title}."/>
+				<c:set var="thumbnailTarget" scope="page" value="record"/>
 			</c:otherwise>
 		</c:choose>
+		
 		<%-- Display thumbnail or placeholder graphic --%>
-		<c:set var="iconContent">
-			<c:choose>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', metadata) 
-						&& (!hasListAccessOnly || (hasListAccessOnly && (metadata.resourceType == searchSettings.resourceTypeFolder || metadata.resourceType == searchSettings.resourceTypeCollection)))}">
-					<div class="small thumb_container">
-						<c:set var="thumbClass"><c:if test="${fn:length(metadata.contentTypeFacet) > 0 && metadata.contentTypeFacet[0].searchKey != null}"> ph_small_${metadata.contentTypeFacet[0].searchKey}</c:if></c:set>
-						<img id="thumb_${param.resultNumber}" class="smallthumb${thumbClass}" 
-								src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
-					</div>
-				</c:when>
-				<c:otherwise>
-					<c:choose>
-						<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
-							<c:choose>
-								<c:when test="${hasListAccessOnly}">
-									<img class="smallthumb" src="/static/images/placeholder/small/folder-grey.png"/>
-								</c:when>
-								<c:otherwise>
-									<img class="smallthumb" src="/static/images/placeholder/small/folder.png"/>
-								</c:otherwise>
-							</c:choose>
-						</c:when>
-						<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
-							<img id="thumb_${param.resultNumber}" class="smallthumb" 
-									src="/static/images/placeholder/small/collection.png"/>
-						</c:when>
-						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && empty metadata.contentTypeFacet[0].searchKey}">
-							<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
-						</c:when>
-						<c:otherwise>
-							<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_default" 
-									src="/static/images/placeholder/small/${metadata.contentTypeFacet[0].searchKey}.png"/>
-						</c:otherwise>
-					</c:choose>
-				</c:otherwise>
-			</c:choose>
-		</c:set>
-		<c:choose>
-			<c:when test="${hasListAccessOnly || not empty embargoDate}">
-				<a>
-					<div class="small thumb_container">
-						${iconContent}
-						<span><img src="/static/images/lockedstate.gif"/></span>
-					</div>
-				</a>
-			</c:when>
-			<c:otherwise>
-				<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip">
-					<div class="small thumb_container">
-						${iconContent}
-					</div>
-				</a>
-			</c:otherwise>
-		</c:choose>
+		<c:set var="thumbnailObject" value="${metadata}" scope="request" />
+		<c:import url="common/thumbnail.jsp">
+			<c:param name="target" value="${thumbnailTarget}" />
+			<c:param name="size" value="small" />
+		</c:import>
+		
 		<%-- Main result entry metadata body --%>
 		<div class="iteminfo">
 			<c:choose>
@@ -124,7 +84,7 @@
 					<h2>
 						<c:choose>
 							<c:when test="${hasListAccessOnly}">
-								<c:out value="${metadata.title}"/>&nbsp;<span class="searchitem_container_count">(access by request)</span>
+								<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>&nbsp;<span class="searchitem_container_count">(access by request)</span>
 							</c:when>
 							<c:otherwise>
 								<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>
@@ -165,7 +125,7 @@
 					<h2>
 						<c:choose>
 							<c:when test="${hasListAccessOnly}">
-								<c:out value="${metadata.title}"/>
+								<a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
 							</c:when>
 							<c:otherwise>
 								<a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>

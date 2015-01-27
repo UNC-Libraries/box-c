@@ -32,34 +32,11 @@
 
 <div class="onecol full_record_top">
 	<div class="contentarea">
-		<c:set var="thumbUrl">
-			<c:choose>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject) && 
-						(briefObject.resourceType == searchSettings.resourceTypeFolder || briefObject.resourceType == searchSettings.resourceTypeCollection)}">
-					${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}
-				</c:when>
-				<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFolder}">
-					/static/images/placeholder/large/folder.png
-				</c:when>
-				<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection}">
-					/static/images/placeholder/large/collection.png
-				</c:when>
-				<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile}">
-					/static/images/placeholder/large/${defaultWebData.extension}.png
-				</c:when>
-				<c:when test="${briefObject.resourceType == searchSettings.resourceTypeAggregate && briefObject.contentTypeFacet[0].displayValue != null}">
-					/static/images/placeholder/large/${briefObject.contentTypeFacet[0].displayValue}.png
-				</c:when>
-				<c:otherwise>
-					/static/images/placeholder/large/default.png
-				</c:otherwise>
-			</c:choose>
-		</c:set>
+		<c:set var="thumbnailObject" value="${briefObject}" scope="request" />
+		<c:import url="common/thumbnail.jsp">
+			<c:param name="size" value="large" />
+		</c:import>
 		
-		<a class="thumb_link large thumb_container">
-			<img id="thumb_main" class="largethumb" src="${thumbUrl}"/>
-			<span><img src="/static/images/lockedstate_large.gif"/></span>
-		</a>
 		<div class="collinfo">
 			<h2><c:out value="${briefObject.title}" /></h2>
 			

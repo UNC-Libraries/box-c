@@ -9,20 +9,17 @@ require.config({
 		'underscore' : 'lib/underscore',
 		'StructureEntry' : 'cdr-access',
 		'StructureView' : 'cdr-access',
-		'preload' : 'cdr-access',
 		'thumbnails' : 'cdr-access'
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
-		'preload' : ['jquery'],
-		'thumbnails' : ['jquery', 'preload'],
 		'underscore': {
 			exports: '_'
 		}
 	}
 });
 
-define('searchResults', ['module', 'jquery', 'StructureView', 'preload', 'thumbnails'], function(module, $) {
+define('searchResults', ['module', 'jquery', 'StructureView', 'thumbnails'], function(module, $) {
 	$("#sort_select").change(function(){
 		$("#result_sort_form").submit();
 	});

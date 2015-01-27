@@ -32,26 +32,11 @@
 			<c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, neighbor)}"/>
 			<div class="relateditem ${currentItemClass}">
 				<div class="relatedthumb">
-					<a href="<c:out value='${fullRecordUrl}' />">
-						<div class="small thumb_container">
-							<c:choose>
-								<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', neighbor)
-										&& (!hasListAccessOnly || (hasListAccessOnly && (neighbor.resourceType == searchSettings.resourceTypeFolder || neighbor.resourceType == searchSettings.resourceTypeCollection)))}">
-									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_${neighbor.contentTypeFacet[0].searchKey}" 
-											src="${cdr:getDatastreamUrl(neighbor, 'THUMB_SMALL', fedoraUtil)}"/>
-								</c:when>
-								<c:when test="${neighbor.resourceType == searchSettings.resourceTypeAggregate && empty neighbor.contentTypeFacet[0].searchKey}">
-									<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
-								</c:when>
-								<c:otherwise>
-									<img id="neighbor_thumb_${status.count}" class="smallthumb ph_small_default" src="/static/images/placeholder/small/${neighbor.contentTypeFacet[0].searchKey}.png"/>
-								</c:otherwise>
-							</c:choose>
-							<c:if test="${hasListAccessOnly}">
-								<span><img src="/static/images/lockedstate.gif"/></span>
-							</c:if>
-						</div>
-					</a>
+					<c:set var="thumbnailObject" value="${neighbor}" scope="request" />
+					<c:import url="common/thumbnail.jsp">
+						<c:param name="target" value="record" />
+						<c:param name="size" value="small" />
+					</c:import>
 				</div>
 				<p><a href="<c:out value='${fullRecordUrl}' />"><c:out value="${cdr:truncateText(neighbor.title, 50)}" /></a></p>
 			</div>

@@ -23,45 +23,12 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <div class="onecol full_record_top">
 	<div class="contentarea">
-		<c:set var="thumbUrl">
-			<c:choose>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
-				</c:when>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
-					<c:choose>
-						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
-							${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}
-						</c:when>
-						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
-						</c:when>
-						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
-						</c:when>
-						<c:otherwise>
-							${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}
-						</c:otherwise>
-					</c:choose>
-				</c:when>
-			</c:choose>
-		</c:set>
+		<c:set var="thumbnailObject" value="${briefObject}" scope="request" />
+		<c:import url="common/thumbnail.jsp">
+			<c:param name="target" value="file" />
+			<c:param name="size" value="large" />
+		</c:import>
 		
-		<a href="${thumbUrl}" class="thumb_link large thumb_container">
-			<c:choose>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', briefObject)}">
-					<div class="large thumb_container">
-						<img id="thumb_main" class="largethumb ph_large_${briefObject.contentTypeFacet[0].searchKey}" 
-								src="${cdr:getDatastreamUrl(briefObject, 'THUMB_LARGE', fedoraUtil)}"/>
-					</div>
-				</c:when>
-				<c:otherwise>
-					<div class="large thumb_container">
-						<img id="thumb_main" class="largethumb ph_large_default" src="/static/images/placeholder/large/${briefObject.contentTypeFacet[0].searchKey}.png"/>
-					</div>
-				</c:otherwise>
-			</c:choose>
-			<c:if test="${not empty embargoDate}">
-				<span><img src="/static/images/lockedstate_large.gif"/></span>
-			</c:if>
-		</a>
 		<div class="collinfo">
 			<div class="collinfo_metadata">
 				<h2><c:out value="${briefObject.title}" /></h2>

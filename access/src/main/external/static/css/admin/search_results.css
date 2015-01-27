@@ -125,6 +125,10 @@
 	display: inline-block;
 }
 
+.container_title .resource_icon {
+	vertical-align: bottom;
+}
+
 .container_title > span {
 	display: inline-block;
 	max-width: 300px;
@@ -392,9 +396,10 @@
 }
 
 .res_entry > .type > div {
-	padding-right: 4px;
-	padding-top: 7px;
-	width: 20px;
+	margin-right: 4px;
+	margin-top: 7px;
+	padding: 0;
+	width: 16px;
 }
 
 /*@media (min-width: 1600px) {

@@ -371,26 +371,21 @@ li {
 
 /** Icons **/
 .resource_icon {
-	background-image: url('/static/images/resource_types.png');
-	height: 18px;
-	width: 18px;
+	background-image: url('/static/images/resource-types.png');
+	height: 16px;
+	width: 16px;
 	display: inline-block;
 }
 
-.resource_icon.Collection {
+.deleted .resource_icon {
+	opacity: 0.3;
 }
 
-.resource_icon.Folder {
-	background-position: -18px 0px;
-}
-
-.resource_icon.Aggregate {
-	background-position: -37px 0px;
-}
-
-.resource_icon.File {
-	background-position: -54px 0px;
-}/*! jQuery UI - v1.10.2 - 2013-03-14
+.resource_icon.Collection { background-position: 0px 0px; }
+.resource_icon.Folder { background-position: -16px 0px; }
+.resource_icon.Aggregate { background-position: -32px 0px; }
+.resource_icon.File { background-position: -48px 0px; }
+/*! jQuery UI - v1.10.2 - 2013-03-14
 * http://jqueryui.com
 * Includes: jquery.ui.core.css, jquery.ui.accordion.css, jquery.ui.autocomplete.css, jquery.ui.button.css, jquery.ui.datepicker.css, jquery.ui.dialog.css, jquery.ui.menu.css, jquery.ui.progressbar.css, jquery.ui.resizable.css, jquery.ui.selectable.css, jquery.ui.slider.css, jquery.ui.spinner.css, jquery.ui.tabs.css, jquery.ui.tooltip.css, jquery.ui.theme.css
 * Copyright 2013 jQuery Foundation and other contributors; Licensed MIT */
@@ -2749,6 +2744,10 @@ h1 {
 	display: inline-block;
 }
 
+.container_title .resource_icon {
+	vertical-align: bottom;
+}
+
 .container_title > span {
 	display: inline-block;
 	max-width: 300px;
@@ -3016,9 +3015,10 @@ h1 {
 }
 
 .res_entry > .type > div {
-	padding-right: 4px;
-	padding-top: 7px;
-	width: 20px;
+	margin-right: 4px;
+	margin-top: 7px;
+	padding: 0;
+	width: 16px;
 }
 
 /*@media (min-width: 1600px) {

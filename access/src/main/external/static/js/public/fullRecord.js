@@ -8,7 +8,6 @@ require.config({
 		'text' : 'lib/text',
 		'tpl' : 'lib/tpl',
 		'underscore' : 'lib/underscore',
-		'preload' : 'cdr-access',
 		'StructureEntry' : 'cdr-access',
 		'StructureView' : 'cdr-access',
 		'JP2Viewer' : 'cdr-access',
@@ -20,7 +19,6 @@ require.config({
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
-		'thumbnails' : ['jquery', 'preload'],
 		'audiojs' : {
 			exports : 'audiojs'
 		},
@@ -72,7 +70,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'VideoPl
 		toggleViewer($audioPlayer, 'audioPlayer', $(".audio_player_link"), 'showAudio', 'Listen');
 	
 	if ($(".inline_viewer_link").length > 0){
-		$(".thumb_link").bind("click", function(){
+		$(".thumbnail").bind("click", function() {
 			$(".inline_viewer_link").trigger("click");
 			return false;
 		});

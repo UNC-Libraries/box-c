@@ -36,30 +36,12 @@
 		</p>
 	</div>
 	<div class="contentarea">
-		<div class="small thumb_container">
-			<c:choose>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', metadata)}">
-					<img id="thumb_${param.resultNumber}" class="smallthumb ph_small_${metadata.contentTypeFacet[0].searchKey}" 
-							src="${cdr:getDatastreamUrl(metadata, 'THUMB_SMALL', fedoraUtil)}"/>
-				</c:when>
-				<c:otherwise>
-					<c:choose>
-						<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
-							<img class="smallthumb" src="/static/images/placeholder/small/folder.png"/>
-						</c:when>
-						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate && not empty metadata.contentTypeFacet[0].searchKey}">
-							<img class="smallthumb" src="/static/images/placeholder/small/${metadata.contentTypeFacet[0].searchKey}.png"/>
-						</c:when>
-						<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate}">
-							<img class="smallthumb" src="/static/images/placeholder/small/default.png"/>
-						</c:when>
-						<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection}">
-							<img class="smallthumb" src="/static/images/placeholder/small/collection.png"/>
-						</c:when>
-					</c:choose>
-				</c:otherwise>
-			</c:choose>
-		</div>
+		<c:set var="thumbnailObject" value="${metadata}" scope="request" />
+		<c:import url="common/thumbnail.jsp">
+			<c:param name="target" value="record" />
+			<c:param name="size" value="small" />
+		</c:import>
+		
 		<c:url var="fullRecordUrl" scope="page" value="record/${metadata.id}">
 		</c:url>
 		<div class="iteminfo">

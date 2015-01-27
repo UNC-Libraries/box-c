@@ -90,4 +90,8 @@ public class AccessUtil {
 		// If the user has view description, the lowest level patron access, then they have more than list
 		return !ObjectAccessControlsBean.hasPermission(groups, Permission.viewDescription, userRoles);
 	}
+
+	public static boolean hasPatronRoleForPublicGroup(BriefObjectMetadata metadata) {
+		return metadata.getAccessControlBean().getRoles(new AccessGroupSet(AccessGroupConstants.PUBLIC_GROUP)).contains(UserRole.patron);
+	}
 }
