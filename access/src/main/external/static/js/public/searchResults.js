@@ -9,12 +9,10 @@ require.config({
 		'underscore' : 'lib/underscore',
 		'StructureEntry' : 'cdr-access',
 		'StructureView' : 'cdr-access',
-		'preload' : 'cdr-access',
 		'thumbnails' : 'cdr-access'
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
-		'preload' : ['jquery'],
 		'thumbnails' : ['jquery'],
 		'underscore': {
 			exports: '_'
