@@ -84,7 +84,7 @@
 					<h2>
 						<c:choose>
 							<c:when test="${hasListAccessOnly}">
-								<c:out value="${metadata.title}"/>&nbsp;<span class="searchitem_container_count">(access by request)</span>
+								<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>&nbsp;<span class="searchitem_container_count">(access by request)</span>
 							</c:when>
 							<c:otherwise>
 								<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>
@@ -125,7 +125,7 @@
 					<h2>
 						<c:choose>
 							<c:when test="${hasListAccessOnly}">
-								<c:out value="${metadata.title}"/>
+								<a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
 							</c:when>
 							<c:otherwise>
 								<a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
