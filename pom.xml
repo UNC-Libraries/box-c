@@ -73,7 +73,7 @@
 	<properties>
 		<cdr.version>3.4-SNAPSHOT</cdr.version>
 		<spring.version>3.0.6.RELEASE</spring.version>
-		<fcrepo.version>3.6.2</fcrepo.version>
+		<fcrepo.version>3.8.0</fcrepo.version>
 		<spring.security.version>3.0.6.RELEASE</spring.security.version>
 		<spring.ws.version>2.0.1.RELEASE</spring.ws.version>
 		<spring.tiger.ws.version>1.5.9</spring.tiger.ws.version>
