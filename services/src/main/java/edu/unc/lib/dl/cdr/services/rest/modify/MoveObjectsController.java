@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
@@ -62,17 +63,15 @@ public class MoveObjectsController {
 			pids.add(new PID(id));
 		PID parent = new PID(moveRequest.getNewParent());
 
-		try {
-			digitalObjectManager.move(pids, parent, GroupsThreadStore.getUsername(), "Moved through API");
-		} catch (IngestException e) {
-			log.error("Failed to move objects to " + parent, e);
-			response.setStatus(500);
-			return "{\"error\": \"An error occurred while attempting to move " + pids.size() + " objects into container "
-					+ parent.getPid() + "\"}";
-		}
+		Thread moveThread = new Thread(new MoveRunnable(pids, parent, GroupsThreadStore.getUsername(),
+				GroupsThreadStore.getGroups()));
+		log.info("User {} is starting move operation of {} objects to destination {}",
+				new Object[] { GroupsThreadStore.getUsername(), pids.size(), parent });
+		moveThread.start();
 
 		response.setStatus(204);
-		return null;
+		return "{\"message\": \"Operation to move " + pids.size() + " objects into container " + parent.getPid()
+				+ " has begun\"}";
 	}
 
 	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
@@ -105,5 +104,36 @@ public class MoveObjectsController {
 		public void setIds(List<String> ids) {
 			this.ids = ids;
 		}
+	}
+
+	public class MoveRunnable implements Runnable {
+
+		private final List<PID> moved;
+		private final PID destination;
+		private final String username;
+		private final AccessGroupSet groups;
+
+		public MoveRunnable(List<PID> moved, PID destination, String username, AccessGroupSet groups) {
+			this.moved = moved;
+			this.destination = destination;
+			this.username = username;
+			this.groups = groups;
+		}
+
+		@Override
+		public void run() {
+			try {
+				GroupsThreadStore.storeGroups(groups);
+				GroupsThreadStore.storeUsername(username);
+				digitalObjectManager.move(moved, destination, username, "Moved through API");
+				log.info("Finished move operation of {} objects to destination {} for user {}", new Object[] {
+						moved.size(), destination, GroupsThreadStore.getUsername() });
+			} catch (IngestException e) {
+				log.error("Failed to move objects to {}", destination, e);
+			} finally {
+				GroupsThreadStore.clearStore();
+			}
+		}
+
 	}
 }
