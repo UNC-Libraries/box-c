@@ -79,7 +79,7 @@ public class ContainerDataFileChecksumsController {
 			parameters.addField("title");
 			parameters.addField("id");
 			parameters.addField("datastream");
-			parameters.setRows(1000);
+			parameters.setRows(2000);
 			QueryResponse solrResponse = server.query(parameters);
 
 			for (SolrDocument doc : solrResponse.getResults()) {
