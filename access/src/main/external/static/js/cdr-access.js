@@ -230,15 +230,9 @@ define("AudioPlayer", [ 'jquery', 'jquery-ui'], function($, ui) {
 		
 		var childrenPresent = this.countChildrenPresent(this);
 		this.hasContent = this.childEntries && this.childEntries.length > 0;
-		this.moreContainersAvailable = (this.metadata.counts && this.metadata.counts.containers > childrenPresent);
 		
 		if (this.hasContent) {
-			if (this.moreContainersAvailable)
-				toggleClass = 'expand';
-			else toggleClass = 'collapse';
-			/*if (this.options.isRoot || !this.options.showingItems)
-				toggleClass = 'collapse';
-			else toggleClass = 'expand';*/
+			toggleClass = 'collapse';
 		} else if ((this.metadata.counts && this.metadata.counts.containers) ||
 				(this.options.structureView.options.retrieveFiles && this.metadata.counts && this.metadata.counts.child)) {
 			toggleClass = 'expand';
@@ -289,12 +283,12 @@ define("AudioPlayer", [ 'jquery', 'jquery-ui'], function($, ui) {
 		return count;
 	};
 	
-	StructureEntry.prototype.toggleChildren = function() {
+	StructureEntry.prototype.toggleChildren = function(onlyOpen) {
 		var self = this;
 		var $toggleButton = this.$entry.find('.cont_toggle');
 		var $childrenContainer = this.element.children(".children");
 		if ($toggleButton.hasClass('expand')) {
-			if ((this.moreContainersAvailable || !this.hasContent) && !this.contentLoaded) {
+			if (!this.hasContent && !this.contentLoaded) {
 				var loadingImage = $("<img src=\"/static/images/ajax_loader.gif\"/>");
 				$toggleButton.after(loadingImage);
 				var childrenUrl = "structure/" + this.metadata.id + "/json";
@@ -342,7 +336,6 @@ define("AudioPlayer", [ 'jquery', 'jquery-ui'], function($, ui) {
 								$childrenContainer.find(".indent").show();
 								$childrenContainer.show(100, function() {
 									self.element.addClass("expanded");
-									self.options.structureView.onChangeEvent(self);
 								});
 							}
 							
@@ -362,21 +355,18 @@ define("AudioPlayer", [ 'jquery', 'jquery-ui'], function($, ui) {
 					$childrenContainer.find(".indent").show();
 					$childrenContainer.show(100, function() {
 						self.element.addClass("expanded");
-						self.options.structureView.onChangeEvent(self);
 					});
 					$toggleButton.removeClass('expand').addClass('collapse');
 				}
 			}
-		} else if ($toggleButton.hasClass('collapse')) {
+		} else if (!onlyOpen && $toggleButton.hasClass('collapse')) {
 			if ($childrenContainer.children().length > 0) {
 				$childrenContainer.hide(100, function() {
 					self.element.removeClass("expanded");
-					self.options.structureView.onChangeEvent(self);
 				});
 			}
 			$toggleButton.removeClass('collapse').addClass('expand');
 		}
-		self.options.structureView.onChangeEvent(self);
 	};
 	
 	StructureEntry.prototype.refreshIndent = function() {
@@ -446,6 +436,11 @@ define("AudioPlayer", [ 'jquery', 'jquery-ui'], function($, ui) {
 		this.options.isSelected = true;
 	};
 	
+	StructureEntry.prototype.deselect = function() {
+		this.element.removeClass("selected");
+		this.options.isSelected = false;
+	};
+	
 	StructureEntry.prototype.findEntryById = function(id, childEntries) {
 		if (this.metadata.id == id)
 			return this;
@@ -484,10 +479,6 @@ define("AudioPlayer", [ 'jquery', 'jquery-ui'], function($, ui) {
 			if (!this.options.showResourceIcons)
 				this.element.addClass('no_resource_icons');
 			
-			if (this.options.showParentLink) {
-				this._generateParentLink();
-			}
-			
 			if (this.options.excludeIds) {
 				this.excludeIds = this.options.excludeIds.split(" ");
 			}
@@ -522,44 +513,28 @@ define("AudioPlayer", [ 'jquery', 'jquery-ui'], function($, ui) {
 			});
 		},
 		
-		_generateParentLink : function() {
-			var self = this;
-			var $parentLink = $("<a class='parent_link'>parent</a>");
-			if (this.options.rootNode.isTopLevel)
-				$parentLink.addClass('disabled');
-				
-			$parentLink.click(function(){
-				if ($parentLink.hasClass('disabled'))
-					return false;
-				var $oldRoot = self.$content.children(".entry_wrap");
-				var parentURL = $oldRoot.data("structureEntry").getParentURL();
-				$.ajax({
-					url : parentURL,
-					dataType : 'json',
-					success : function(data) {
-						var newRoot = new StructureEntry({
-							node : data.root,
-							structureView : self,
-							isRoot : true
-						});
-						newRoot.render();
-						// Initialize the new results
-						//$newRoot.find(".entry_wrap").add($newRoot).structureEntry({
-						//	indentSuppressed : self.options.indentSuppressed
-						//});
-						newRoot.insertTree($oldRoot.data('structureEntry'));
-						//$newRoot.structureEntry('insertTree', $oldRoot);
-						self.$content.append(newRoot.element);
-						if (data.root.isTopLevel)
-							$parentLink.addClass('disabled');
-						
-						self.onChangeEvent(newRoot);
-					}
-				});
-				return false;
-			});
+		changeFolder : function(uuid) {
+			if (uuid.indexOf(":") != -1) {
+				uuid = uuid.substring(uuid.indexOf(":") + 1);
+			}
 			
-			this.$content.before($parentLink);
+			this.deselectAll();
+			
+			var entry = $("#str_" + uuid, this.element);
+			if (entry.length == 0) {
+				console.log("Failed to open folder", uuid);
+				return;
+			}
+			
+			entry = entry.data('structureEntry');
+			entry.toggleChildren(true);
+			entry.select();
+		},
+		
+		deselectAll : function() {
+			$(".entry_wrap.selected").each(function(){
+				$(this).data('structureEntry').deselect();
+			});
 		},
 		
 		// Trigger the change event function in case some other part of the code needs to know the view changed sizes

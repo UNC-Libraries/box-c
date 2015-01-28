@@ -7,20 +7,25 @@
 			</div>
 		<% } %>
 		<div class="container_header">
-			<% if (container) { %>
-				<span class="container_entry">
-					<h2 class="container_title">
+			<span class="container_entry">
+				<h2 class="container_title">
+					<% if (queryMethod == "search") { %>
+						<span>Searching<% if (container) { %> in<% } %></span>
+					<% } %>
+					<% if (container) { %>
 						<div class="resource_icon <%= container.type %>"></div>
-						<span class="<%= containerDeleted? "deleted" : "" %>"><%= container.title %></span>
+						<span <%= containerDeleted? "class='deleted'" : "" %>><%= container.title %></span>
 						<img class="action_gear container_menu" src="/static/images/admin/gear.png">
-					</h2>
-				</span>
-			<% } %>
+					
+					<% } %>
+				</h2>
+			</span>
 			<%
 			if (container && _.indexOf(container.permissions, "addRemoveContents") != -1 && !containerDeleted) {
 				%><span id="add_menu" class="container_action">+ Add</span><%
 			}
 			%>
+			<img id="result_loading_icon" class="hidden" src="/static/images/admin/loading_small.gif"/>
 		</div>
 		<div class="result_table_action_menu">
 		</div>

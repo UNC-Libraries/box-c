@@ -25,27 +25,18 @@
 
 	<div class="result_area">
 		<div>
+			Loading... <img src="/static/images/admin/loading_small.gif"/>
 		</div>
 	</div>
 </div>
 
 <script>
-	//console.log("Starting " + (new Date()).getTime());
 	var require = {
 		config: {
 			'resultList' : {
-				'metadataObjects': ${cdr:resultsToJSON(resultResponse, accessGroupSet)},
-				'pageStart' : ${resultResponse.searchState.startRow},
-				'pageRows' : ${resultResponse.searchState.rowsPerPage},
-				'resultCount' : ${resultResponse.resultCount},
-				'resultUrl' : '${currentRelativeUrl}',
-				'filterParams' : '${cdr:urlEncode(searchQueryUrl)}'
-				<c:if test="${not empty resultResponse.selectedContainer}">
-					, 'container' : ${cdr:metadataToJSON(resultResponse.selectedContainer, accessGroupSet)}
-				</c:if>
-			},
+				'resultUrl' : '${currentRelativeUrl}'
+			}
 		}
 	};
-	//console.log("Loaded in " + ((new Date()).getTime() - startTimer));
 </script>
 <script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/admin/resultList"></script>

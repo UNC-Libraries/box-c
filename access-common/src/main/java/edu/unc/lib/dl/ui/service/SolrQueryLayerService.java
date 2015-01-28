@@ -48,12 +48,12 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
-import edu.unc.lib.dl.search.solr.model.CutoffFacetNode;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
-import edu.unc.lib.dl.search.solr.model.IdListRequest;
+import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse.ResultNode;
+import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -586,89 +586,15 @@ public class SolrQueryLayerService extends SolrSearchService {
 		solrQuery.setFacetMinCount(1);
 		solrQuery.addFacetField(ancestorPathField);
 
-		Integer countPageSize;
-		try {
-			countPageSize = new Integer(searchSettings.getProperty("search.facet.countPageSize"));
-		} catch (NumberFormatException e) {
-			countPageSize = 20;
-		}
-
 		solrQuery.add("f." + ancestorPathField + ".facet.limit", Integer.toString(Integer.MAX_VALUE));
 		// Sort by value rather than count so that earlier tiers will come first in case the result gets cut off
 		solrQuery.setFacetSort("index");
 
-		java.util.Map<Integer, StringBuilder> tierQueryMap = new java.util.HashMap<Integer, StringBuilder>();
-		java.util.Map<Integer, List<BriefObjectMetadata>> containerMap = new java.util.HashMap<Integer, List<BriefObjectMetadata>>();
-
-		// Pare the list of ids we are searching for and assigning counts to down to just containers
-		for (BriefObjectMetadata metadataObject : resultList) {
-			if (metadataObject.getPath() != null && metadataObject.getContentModel() != null
-					&& metadataObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString())) {
-				CutoffFacetNode highestTier = metadataObject.getPath().getHighestTierNode();
-				StringBuilder tierQuery = tierQueryMap.get(highestTier.getTier());
-				List<BriefObjectMetadata> containerObjects = containerMap.get(highestTier.getTier());
-				if (tierQuery == null) {
-					tierQuery = new StringBuilder();
-					tierQueryMap.put(highestTier.getTier(), tierQuery);
-
-					containerObjects = new ArrayList<BriefObjectMetadata>();
-					containerMap.put(highestTier.getTier(), containerObjects);
-				}
-
-				if (tierQuery.length() == 0) {
-					tierQuery.append(ancestorPathField).append(":(");
-				} else {
-					tierQuery.append(" OR ");
-				}
-
-				tierQuery.append(SolrSettings.sanitize(highestTier.getSearchValue())).append(",*");
-				containerObjects.add(metadataObject);
-
-				// If there are a lot of results, then do a partial lookup
-				if (containerObjects.size() >= countPageSize) {
-					tierQuery.append(")");
-					this.executeChildrenCounts(tierQuery, containerObjects, solrQuery, countName, highestTier.getTier());
-					LOG.info("Partial query done at " + System.currentTimeMillis() + " ("
-							+ (System.currentTimeMillis() - startTime) + ")");
-					containerMap.remove(highestTier.getTier());
-					tierQueryMap.remove(highestTier.getTier());
-				}
-			}
-		}
-
-		Iterator<java.util.Map.Entry<Integer, StringBuilder>> queryIt = tierQueryMap.entrySet().iterator();
-		while (queryIt.hasNext()) {
-			java.util.Map.Entry<Integer, StringBuilder> tierQueryEntry = queryIt.next();
-			tierQueryEntry.getValue().append(')');
-			this.executeChildrenCounts(tierQueryEntry.getValue(), containerMap.get(tierQueryEntry.getKey()), solrQuery,
-					countName, tierQueryEntry.getKey());
-		}
-		LOG.info("Child count query done at " + System.currentTimeMillis() + " ("
-				+ (System.currentTimeMillis() - startTime) + ")");
-	}
-
-	private void executeChildrenCounts(StringBuilder query, List<BriefObjectMetadata> containerObjects,
-			SolrQuery solrQuery, String countName, Integer tier) {
-		String ancestorPathField = solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name());
-		// Remove all ancestor path related filter queries or filter queries from previous count executions, so the counts
-		// won't be cut off
-		if (solrQuery.getFilterQueries() != null) {
-			for (String filterQuery : solrQuery.getFilterQueries()) {
-				if (filterQuery.contains(ancestorPathField)) {
-					solrQuery.removeFilterQuery(filterQuery);
-				}
-			}
-		}
-		if (tier != null) {
-			solrQuery.remove("f." + ancestorPathField + ".facet.prefix");
-			solrQuery.add("f." + ancestorPathField + ".facet.prefix", tier + ",");
-		}
-		solrQuery.addFilterQuery(query.toString());
 		try {
-			long startTime = System.currentTimeMillis();
+			startTime = System.currentTimeMillis();
 			QueryResponse queryResponse = this.executeQuery(solrQuery);
 			LOG.info("Query executed in " + (System.currentTimeMillis() - startTime));
-			assignChildrenCounts(queryResponse.getFacetField(ancestorPathField), containerObjects, countName);
+			assignChildrenCounts(queryResponse.getFacetField(ancestorPathField), resultList, countName);
 		} catch (SolrServerException e) {
 			LOG.error("Error retrieving Solr search result request", e);
 		}
@@ -717,80 +643,52 @@ public class SolrQueryLayerService extends SolrSearchService {
 		}
 	}
 
-	public HierarchicalBrowseResultResponse getStructureToParentCollection(HierarchicalBrowseRequest browseRequest) {
-		HierarchicalBrowseResultResponse requestResponse = getHierarchicalBrowseResults(browseRequest);
-		BriefObjectMetadata requestRoot = requestResponse.getRootNode().getMetadata();
+	/**
+	 * Retrieves the tree of partially expanded containers from the Collections object up to the rootPID in the request.
+	 * Only the containers directly in the ancestor path of the starting pid will be expanded
+	 *
+	 * @param browseRequest
+	 * @return
+	 */
+	public HierarchicalBrowseResultResponse getExpandedStructurePath(HierarchicalBrowseRequest browseRequest) {
+		HierarchicalBrowseResultResponse browseResponse = null;
+		HierarchicalBrowseResultResponse previousResponse = null;
 
-		// Tree does not need to be expanded further if the root is a collection, it has no parent collection, or it is
-		// just below the collection root
-		if (requestRoot.getAncestorPath() == null || requestRoot.getAncestorPath().size() <= 1
-				|| requestRoot.getParentCollection() == null
-				|| searchSettings.resourceTypeCollection.equals(requestRoot.getResourceType()))
-			return requestResponse;
+		CutoffFacet path = this.getAncestorPath(browseRequest.getRootPid(), browseRequest.getAccessGroups());
+		String currentPID = browseRequest.getRootPid();
 
-		// Retrieve on tier of structure for the parent collection.
-		HierarchicalBrowseRequest collectionRequest = new HierarchicalBrowseRequest(browseRequest.getSearchState(), 1,
-				browseRequest.getAccessGroups());
-		collectionRequest.setRootPid(requestRoot.getParentCollection());
-		HierarchicalBrowseResultResponse collectionResponse = getHierarchicalBrowseResults(collectionRequest);
+		// Retrieve structure results for each tier in the path, in reverse order
+		List<HierarchicalFacetNode> nodes = path != null ? path.getFacetNodes() : null;
+		int cnt = nodes != null ? nodes.size() : 0;
+		while (cnt >= 0) {
+			// Get the list of objects for the current tier
+			HierarchicalBrowseRequest stepRequest = new HierarchicalBrowseRequest(browseRequest.getSearchState(), 1,
+					browseRequest.getAccessGroups());
+			stepRequest.setRootPid(currentPID);
+			browseResponse = getHierarchicalBrowseResults(stepRequest);
 
-		int parentCollectionTier = requestRoot.getParentCollectionObject().getTier();
-		int collectionToRequestDistance = requestRoot.getAncestorPath().size() - parentCollectionTier;
-		// The requested root is a child of the collection root, so insert the request tree as a child
-		if (collectionToRequestDistance == 0) {
-			int childNodeIndex = collectionResponse.getChildNodeIndex(requestRoot.getPid().getPid());
-			collectionResponse.getRootNode().getChildren().set(childNodeIndex, requestResponse.getRootNode());
-			return collectionResponse;
-		}
+			if (previousResponse != null) {
+				// Store the previous root node as a child in the current tier
+				ResultNode previousRoot = previousResponse.getRootNode();
+				int childNodeIndex = browseResponse.getChildNodeIndex(previousRoot.getMetadata().getId());
+				if (childNodeIndex != -1) {
+					browseResponse.getRootNode().getChildren().set(childNodeIndex, previousRoot);
+				} else {
+					LOG.warn("Could not locate child entry {} inside of results for {}", previousRoot.getMetadata().getId(),
+							browseResponse.getRootNode().getMetadata().getId());
+				}
 
-		// For a distance of 1, the parent collection's children set already contains the only intermediate node so just
-		// add the original tree as its child
-		if (collectionToRequestDistance == 1) {
-			int childNodeIndex = collectionResponse.getChildNodeIndex(requestRoot.getAncestorPathFacet().getSearchKey());
-			collectionResponse.getRootNode().getChildren().get(childNodeIndex).getChildren()
-					.add(requestResponse.getRootNode());
-			return collectionResponse;
-		}
-
-		List<String> idList = new ArrayList<String>();
-		// Get all the intermediate nodes between the parent collection's children and the original root node.
-		// The collection tree contains the next tier after the collection, so we don't need to retrieve that again
-		for (int i = parentCollectionTier + 1; i < requestRoot.getAncestorPath().size(); i++) {
-			idList.add(requestRoot.getAncestorPathFacet().getFacetNodes().get(i).getSearchKey());
-		}
-		List<BriefObjectMetadata> bridgeMetadata = this.getObjectsById(new IdListRequest(idList, null, browseRequest
-				.getAccessGroups()));
-		this.getChildrenCounts(bridgeMetadata, browseRequest.getAccessGroups());
-		this.getChildrenCounts(bridgeMetadata, browseRequest.getAccessGroups(), "containers", "contentModel:"
-				+ SolrSettings.sanitize(ContentModelHelper.Model.CONTAINER.toString()), null);
-
-		// Guarantee sort order of the bridge items by structure depth
-		Collections.sort(bridgeMetadata, new Comparator<BriefObjectMetadata>() {
-			@Override
-			public int compare(BriefObjectMetadata arg0, BriefObjectMetadata arg1) {
-				return arg0.getAncestorPath().size() - arg1.getAncestorPath().size();
 			}
-		});
 
-		// Build tree-line containing all the bridge folders
-		// Set up the root for the bridge by creating a new node from the first of the intermediate metadata objects
-		// retrieved
-		HierarchicalBrowseResultResponse.ResultNode bridgeRoot = new HierarchicalBrowseResultResponse.ResultNode(
-				bridgeMetadata.get(0));
-		HierarchicalBrowseResultResponse.ResultNode currentNode = bridgeRoot;
-		// Add the rest of the bridge metadata nodes into the bridge "tree"
-		for (int i = 1; i < bridgeMetadata.size(); i++)
-			currentNode = currentNode.addChild(bridgeMetadata.get(i));
+			cnt--;
+			if (cnt > -1) {
+				HierarchicalFacetNode node = nodes.get(cnt);
+				currentPID = node.getSearchKey();
+				previousResponse = browseResponse;
+			}
+		}
 
-		// Insert the original tree as a child of the bridge tree
-		currentNode.getChildren().add(requestResponse.getRootNode());
-
-		// Insert the bridge as a child of the appropriate child of the collection
-		int bridgeRootParentIndex = collectionResponse.getChildNodeIndex(bridgeRoot.getMetadata().getAncestorPathFacet()
-				.getSearchKey());
-		collectionResponse.getRootNode().getChildren().get(bridgeRootParentIndex).getChildren().add(bridgeRoot);
-
-		return collectionResponse;
+		return browseResponse;
 	}
 
 	/**
@@ -894,6 +792,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 				if (browseState.isPopulatedSearch()) {
 					// Get the list of any direct matches for the current query
 					browseResults.setMatchingContainerPids(this.getDirectContainerMatches(browseState, accessGroups));
+					browseResults.getMatchingContainerPids().add(browseRequest.getRootPid());
 					// Remove all containers that are not direct matches for the user's query and have 0 children
 					browseResults.removeContainersWithoutContents();
 				}

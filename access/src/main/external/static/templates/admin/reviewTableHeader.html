@@ -1,20 +1,23 @@
 <% var containerDeleted = container? !_.contains(container.status, 'Active') : false; %>
 <div class="result_header">
-	<% if (invalidVocabCount) { %>
+	<% if (data.invalidVocabCount) { %>
 		<div class="result_warning">
 			<span class="warning_symbol">!</span> Warning: <%= invalidVocabCount %> item(s) in this result have vocabulary problems.  <a href="invalidVocab/<%= container.id %>">View invalid vocabulary terms</a>
 		</div>
 	<% } %>
 	<div class="result_header_top">
 		<div class="container_header">
-			<% if (container) { %>
-				<span class="container_entry">
-					<h2 class="container_title">
+			<span class="container_entry">
+				<h2 class="container_title">
+					<% if (container) { %>
 						<span class="<%= containerDeleted? "deleted" : "" %>">Reviewing: <%= container.title %></span>
 						<img class="action_gear container_menu" src="/static/images/admin/gear.png">
-					</h2>
-				</span>
-			<% } %>
+					<% } else { %>
+						<span>Reviewing</span>
+					<% } %>
+				</h2>
+			</span>
+			<img id="result_loading_icon" class="hidden" src="/static/images/admin/loading_small.gif"/>
 		</div>
 		<div class="result_table_action_menu">
 		</div>

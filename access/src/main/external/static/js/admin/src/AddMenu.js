@@ -3,6 +3,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 	
 	function AddMenu(options) {
 		this.options = $.extend({}, options);
+		this.container = this.options.container;
 		this.init();
 	};
 	
@@ -14,6 +15,10 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		items["ingestPackage"] = {name : "Add Ingest Package"};
 		items["simpleObject"] = {name : "Add Simple Object"};
 		return items;
+	};
+	
+	AddMenu.prototype.setContainer = function(container) {
+		this.container = container;
 	};
 	
 	AddMenu.prototype.init = function() {
@@ -32,7 +37,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			alertHandler : this.options.alertHandler
 		});
 		
-		$.contextMenu({
+		this.menu = $.contextMenu({
 			selector: this.options.selector,
 			trigger: 'left',
 			className: 'add_to_container_menu', 
@@ -48,13 +53,13 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			callback : function(key, options) {
 				switch (key) {
 					case "addContainer" :
-						createContainerForm.open(self.options.container.id);
+						createContainerForm.open(self.container.id);
 						break;
 					case "ingestPackage" :
-						ingestPackageForm.open(self.options.container.id);
+						ingestPackageForm.open(self.container.id);
 						break;
 					case "simpleObject" :
-						simpleObjectForm.open(self.options.container.id);
+						simpleObjectForm.open(self.container.id);
 						break;
 				}
 			},

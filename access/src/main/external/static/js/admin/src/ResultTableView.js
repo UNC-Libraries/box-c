@@ -5,13 +5,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		options : {
 			enableSort : true,
 			ajaxSort : false,
-			metadataObjects : undefined,
 			enableArrange : false,
 			enableMove : false,
-			pagingActive : false,
-			container : undefined,
-			resultTableTemplate : "tpl!../templates/admin/resultTableView",
-			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
 			resultFields : undefined,
 			resultHeader : undefined,
 			postRender : undefined,
@@ -25,39 +20,66 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			
 			this.actionHandler = this.options.actionHandler;
 			this.actionHandler.addToBaseContext('resultTable', this);
+			this.firstRender = true;
+		},
+		
+		render : function(data) {
+			var self = this;
 			
-			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
-				var headerHeightClass = self.options.headerHeightClass;
-				if (self.options.container) {
-					if (self.options.container.ancestorPath)
-						headerHeightClass += " with_path";
-					else
-						headerHeightClass += " with_container";
+			require([this.options.resultTableTemplate, this.options.resultEntryTemplate, this.options.resultTableHeaderTemplate, this.options.navBarTemplate, this.options.pathTrailTemplate], function(resultTableTemplate, resultEntryTemplate, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate){
+				
+				self.element.html("");
+				
+				self.pagingActive = data.pageRows < data.resultCount;
+				
+				self.resultUrl = document.location.href;
+				var container = data.container;
+			
+				var navigationBar = navigationBarTemplate({
+					pageNavigation : data,
+					resultUrl : self.resultUrl,
+					URLUtilities : URLUtilities
+				});
+			
+				var containerPath = null;
+				if (container) {
+					containerPath = pathTrailTemplate({
+						ancestorPath : container.ancestorPath,
+						queryMethod : 'list',
+						filterParams : data.searchQueryUrl,
+						skipLast : true
+					});
 				}
 				
-				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container,
-						resultHeader : self.options.resultHeader, headerHeightClass : headerHeightClass}));
+				var resultTableHeader = resultTableHeaderTemplate({
+					data : data,
+					container : container,
+					navigationBar : navigationBar,
+					containerPath : containerPath,
+					queryMethod : data.queryMethod
+				});
+				
+				var headerHeightClass = self.options.headerHeightClass;
+				if (container && container.ancestorPath) {
+					headerHeightClass += " with_path";
+				} else {
+					headerHeightClass += " with_container";
+				}
+				
+				if (self.$resultView) {
+					self.$resultView.remove();
+				}
+				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : container,
+						resultHeader : resultTableHeader, headerHeightClass : headerHeightClass}));
 				self.$resultTable = self.$resultView.find('.result_table').eq(0);
 				self.$resultHeaderTop = self.$resultView.find('.result_header_top').eq(0);
+				self.$noResults = self.$resultView.find('.no_results').eq(0);
 				self.element.append(self.$resultView);
 			
 				if (self.options.postRender)
-					self.options.postRender.call();
+					self.options.postRender(data);
 			
-				self.resultUrl = self.options.resultUrl;
-			
-				// Generate result entries
-				var fragment = $(document.createDocumentFragment());
-				self.resultObjectList = new ResultObjectList({
-					'metadataObjects' : self.options.metadataObjects, 
-					parent : self.$resultTable.children('tbody'),
-					resultEntryTemplate : self.options.resultEntryTemplate
-				});
-			
-				// No results message
-				if (self.options.metadataObjects.length == 0) {
-					self.$resultTable.after("<div class='no_results'>No matching results</div>");
-				}
+				self.populateResults(data.metadata);
 			
 				// Activate sorting
 				if (self.options.enableSort)
@@ -66,7 +88,9 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				// Initialize batch operation buttons
 				self._initBatchOperations();
 			
-				self._initEventHandlers();
+				if (self.firstRender) {
+					self._initEventHandlers();
+				}
 			
 				// Activate the result entry context menus, on the action gear and right clicking
 				self.contextMenus = [new ResultObjectActionMenu({
@@ -87,17 +111,38 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				// Initialize click and drag operations
 				self._initMoveLocations();
 				self._initReordering();
+				
+				self.firstRender = false;
 			});
+		},
+		
+		populateResults : function(metadataObjects) {
+
+			this.$resultTable.children('tbody').html("");
+			
+			// Generate result entries
+			this.resultObjectList = new ResultObjectList({
+				metadataObjects : metadataObjects, 
+				parent : this.$resultTable.children('tbody'),
+				resultEntryTemplate : this.options.resultEntryTemplate
+			});
+		
+			// No results message
+			if (metadataObjects.length == 0) {
+				this.$noResults.removeClass("hidden");
+			} else {
+				this.$noResults.addClass("hidden");
+			}
 		},
 		
 		// Initialize sorting headers according to whether or not paging is active
 		_initSort : function() {
 			var $resultTable = this.$resultTable;
 			var self = this;
-			if (this.options.pagingActive) {
-				// Paging active, so need to make server callback to perform sort
-				var sortParam = URLUtilities.getParameter('sort');
+			
+			if (!self.sortType) {
 				var sortOrder = true;
+				var sortParam = URLUtilities.getParameter('sort');
 				if (sortParam != null) {
 					sortParam = sortParam.split(",");
 					if (sortParam.length > 1)
@@ -105,30 +150,37 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					if (sortParam.length > 0)
 						sortParam = sortParam[0];
 				}
-				
-				$("th.sort_col", $resultTable).each(function(){
-					var $this = $(this);
-					$this.addClass('sorting');
-					var sortField = $this.attr('data-field');
-					if (sortField) {
-						if (sortParam == sortField) {
-							if (sortOrder) {
-								$this.addClass('asc');
-							} else {
-								$this.addClass('desc');
-							}
+				self.sortType = sortParam;
+				self.sortOrder = sortOrder;
+			}
+			
+			$("th.sort_col", $resultTable).each(function(){
+				var $this = $(this);
+				$this.addClass('sorting');
+				var sortField = $this.attr('data-field');
+				if (sortField) {
+					// If the results are already sorted at init time, make the column reflect that
+					var isCurrentSortField = self.sortType == sortField;
+					if (isCurrentSortField) {
+						if (self.sortOrder) {
+							$this.addClass('desc');
+						} else {
+							$this.addClass('asc');
 						}
-						var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', sortField + (sortOrder? ",reverse" : ""));
-						this.children[0].href = sortUrl;
 					}
-				});
-			} else {
-				// Paging off, perform sorting locally
-				$("th.sort_col", $resultTable).each(function(){
-					var $th = $(this),
-					thIndex = $th.index(),
-					dataType = $th.attr("data-type");
-					$th.addClass('sorting');
+					// Set the sort URL for the column
+					var orderParam = isCurrentSortField && self.sortOrder? ",reverse" : "";
+					var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', sortField + orderParam);
+					this.children[0].href = sortUrl;
+					
+					// If we're in paging mode, make the column link trigger a retrieval from server
+					if (self.pagingActive) {
+						$("a", $this).addClass("res_link");
+					}
+					
+					var $th = $(this);
+					var thIndex = $th.index();
+					var dataType = $th.attr("data-type");
 					
 					$th.click(function(){
 						if (!$th.hasClass('sorting')) return;
@@ -140,19 +192,38 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						else 
 							$th.addClass('desc');
 						
-						// Apply sort function based on data-type
-						if (dataType == 'index') {
-							self._originalOrderSort(inverse);
-						} else if (dataType == 'title') {
-							self._titleSort(inverse);
+						self.sortType = $th.attr("data-field");
+						if (!self.pagingActive) {
+							self.sortOrder = !inverse;
+							
+							var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (!self.sortOrder? ",reverse" : ""));
+							if (history.pushState) {
+								history.pushState({}, "", sortUrl);
+							}
+					
+							// Apply sort function based on data-type
+							if (dataType == 'index') {
+								self._originalOrderSort(inverse);
+							} else if (dataType == 'title') {
+								self._titleSort(inverse);
+							} else {
+								self._alphabeticSort(thIndex, inverse);
+							}
+							inverse = !inverse;
+							return false;
 						} else {
-							self._alphabeticSort(thIndex, inverse);
+							self.sortOrder = !inverse;
 						}
-						inverse = !inverse;
 						//console.timeEnd("Sort total");
 					});
-				});
-			}
+					
+					
+				}
+			});
+		},
+		
+		getCurrentSort : function() {
+			return {type : this.sortType, order : this.sortOrder};
 		},
 		
 		// Base row sorting function
@@ -309,9 +380,6 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			$(document).on('click', ".res_entry", function(e){
 				$(this).data('resultObject').toggleSelect();
 				self.selectionUpdated();
-			});
-			this.$resultTable.on('click', ".res_entry a", function(e){
-				e.stopPropagation();
 			});
 		},
 		

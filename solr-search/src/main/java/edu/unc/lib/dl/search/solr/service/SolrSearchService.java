@@ -224,7 +224,7 @@ public class SolrSearchService {
 			if (searchRequest.getSearchState().getRollup() != null && searchRequest.getSearchState().getRollup()
 					&& searchRequest.getSearchState().getRollupField() == null) {
 				for (BriefObjectMetadata item : resultResponse.getResultList()) {
-					if (item.getId() != null && !item.getId().equals(item.getRollup())) {
+					if (item.getId() != null && item.getRollup() != null && !item.getId().equals(item.getRollup())) {
 						BriefObjectMetadataBean representative = this.getObjectById(new SimpleIdRequest(item.getRollup(),
 								searchRequest.getAccessGroups()));
 						if (representative != null) {

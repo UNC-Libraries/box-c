@@ -19,8 +19,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,29 +33,58 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
+import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 @Controller
 public class SearchController extends AbstractSearchController {
 	private static final Logger LOG = LoggerFactory.getLogger(SearchController.class);
 
-	@RequestMapping(value = "doSearch")
+	/**
+	 * Handle the input from the search form and redirect the user to a search result page
+	 *
+	 * @param query
+	 * @param queryType
+	 * @param container
+	 * @param searchWithin
+	 * @param searchType
+	 * @param model
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "doSearch", produces = "text/html")
 	public String searchForm(@RequestParam(value = "query", required = false) String query,
 			@RequestParam(value = "queryType", required = false) String queryType,
 			@RequestParam(value = "container", required = false) String container,
 			@RequestParam(value = "within", required = false) String searchWithin,
-			@RequestParam(value = "searchType", required = false) String searchType, Model model,
-			HttpServletRequest request) {
+			@RequestParam(value = "searchType", required = false) String searchType) {
+		return "redirect:" + getSearchString(query, queryType, container, searchWithin, searchType);
+	}
+
+	@RequestMapping(value = "doSearch", produces = "application/json")
+	public @ResponseBody String searchFormJSON(@RequestParam(value = "query", required = false) String query,
+			@RequestParam(value = "queryType", required = false) String queryType,
+			@RequestParam(value = "container", required = false) String container,
+			@RequestParam(value = "within", required = false) String searchWithin,
+			@RequestParam(value = "searchType", required = false) String searchType, HttpServletRequest request) {
+		return request.getContextPath() + getSearchString(query, queryType, container, searchWithin, searchType);
+	}
+
+	public String getSearchString(String query, String queryType, String container, String searchWithin,
+			String searchType) {
 		// Query needs to be encoded before being added into the new url
 		try {
 			query = URLEncoder.encode(query, "UTF-8");
 		} catch (UnsupportedEncodingException e1) {
 		}
-		StringBuilder destination = new StringBuilder("redirect:/search");
+		StringBuilder destination = new StringBuilder("/search");
 		if (!"".equals(searchType) && container != null && container.length() > 0)
 			destination.append('/').append(container);
 
@@ -85,38 +117,103 @@ public class SearchController extends AbstractSearchController {
 		return destination.toString();
 	}
 
-	@RequestMapping(value = "search", method = RequestMethod.GET)
-	public String search(Model model, HttpServletRequest request) {
-		SearchRequest searchRequest = generateSearchRequest(request);
+	/**
+	 * Retrieve search results, including the recursive children of the currently selected container
+	 *
+	 * @param pid
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping(value = "search/{pid}", method = RequestMethod.GET, produces = "application/json")
+	public @ResponseBody
+	Map<String, Object> searchJSON(@PathVariable("pid") String pid, HttpServletRequest request,
+			HttpServletResponse response) {
+		SearchResultResponse resultResponse = getSearchResults(getSearchRequest(pid, request));
+		return getResults(resultResponse, "search");
+	}
 
-		SearchResultResponse resultResponse = doSearch(searchRequest, model, request);
-		resultResponse.setSelectedContainer(null);
+	@RequestMapping(value = "search", method = RequestMethod.GET, produces = "application/json")
+	public @ResponseBody
+	Map<String, Object> searchJSON(HttpServletRequest request, HttpServletResponse response) {
+		SearchResultResponse resultResponse = getSearchResults(getSearchRequest(null, request));
+		return getResults(resultResponse, "search");
+	}
+
+	@RequestMapping(value = "search", method = RequestMethod.GET)
+	public String searchRoot(Model model, HttpServletRequest request) {
 		return "search/resultList";
 	}
 
 	@RequestMapping(value = "search/{pid}", method = RequestMethod.GET)
-	public String search(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(pid);
-
-		doSearch(searchRequest, model, request);
+	public String search(Model model, HttpServletRequest request) {
 		return "search/resultList";
 	}
 
-	private SearchResultResponse doSearch(SearchRequest searchRequest, Model model, HttpServletRequest request) {
+	private SearchRequest getSearchRequest(String pid, HttpServletRequest request) {
+		SearchRequest searchRequest = generateSearchRequest(request);
+		searchRequest.setRootPid(pid);
 		searchRequest.setApplyCutoffs(false);
+		return searchRequest;
+	}
 
-		SearchResultResponse resultResponse = getSearchResults(searchRequest);
-		
-		if (resultResponse != null) {
-			queryLayer.populateBreadcrumbs(searchRequest, resultResponse);
+	/**
+	 * List search results, limited to the currently selected container
+	 *
+	 * @param pid
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping(value = "list/{pid}", method = RequestMethod.GET, produces = "application/json")
+	public @ResponseBody
+	Map<String, Object> listJSON(@PathVariable("pid") String pid, HttpServletRequest request,
+			HttpServletResponse response) {
+		SearchResultResponse resultResponse = getSearchResults(getListRequest(pid, request));
+		return getResults(resultResponse, "list");
+	}
+
+	@RequestMapping(value = "list", method = RequestMethod.GET, produces = "application/json")
+	public @ResponseBody
+	Map<String, Object> listJSON(HttpServletRequest request, HttpServletResponse response) {
+		SearchResultResponse resultResponse = getSearchResults(getListRequest(collectionsPid.getPid(), request));
+		return getResults(resultResponse, "list");
+	}
+
+	@RequestMapping(value = "list", method = RequestMethod.GET, produces = "text/html")
+	public String listRootContents(Model model, HttpServletRequest request) {
+		return "search/resultList";
+	}
+
+	@RequestMapping(value = "list/{pid}", method = RequestMethod.GET, produces = "text/html")
+	public String list(Model model, HttpServletRequest request) {
+		return "search/resultList";
+	}
+
+	private SearchRequest getListRequest(String pid, HttpServletRequest request) {
+		SearchRequest searchRequest = generateSearchRequest(request);
+		searchRequest.setRootPid(pid);
+		return searchRequest;
+	}
+
+	private Map<String, Object> getResults(SearchResultResponse resp, String queryMethod) {
+		AccessGroupSet groups = GroupsThreadStore.getGroups();
+		List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
+		Map<String, Object> results = new HashMap<>();
+		results.put("metadata", resultList);
+
+		SearchState state = resp.getSearchState();
+		results.put("pageStart", state.getStartRow());
+		results.put("pageRows", state.getRowsPerPage());
+		results.put("resultCount", resp.getResultCount());
+		results.put("searchStateUrl", SearchStateUtil.generateStateParameterString(state));
+		results.put("searchQueryUrl", SearchStateUtil.generateSearchParameterString(state));
+		results.put("queryMethod", queryMethod);
+
+		if (resp.getSelectedContainer() != null) {
+			results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), groups));
 		}
 
-		model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(searchRequest.getSearchState()));
-		model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(searchRequest.getSearchState()));
-		model.addAttribute("resultResponse", resultResponse);
-		model.addAttribute("queryMethod", "search");
-		request.getSession().setAttribute("resultOperation", "search");
-		return resultResponse;
+		return results;
 	}
 }

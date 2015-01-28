@@ -57,15 +57,6 @@ require.config({
 define("resultList", ["module", "jquery", "ResultView"], function(module, $) {
 
 	$(".result_page").resultView({
-		metadataObjects : module.config().metadataObjects,
-		container : module.config().container,
-		containerPath : module.config().containerPath,
-		resultUrl : module.config().resultUrl,
-		filterParams : module.config().filterParams,
-		queryPath : module.config().queryPath,
-		pagingActive : module.config().pagingActive,
-		pageStart : module.config().pageStart,
-		pageRows : module.config().pageRows,
-		resultCount : module.config().resultCount
+		resultUrl : module.config().resultUrl
 	});
 });

@@ -6,6 +6,12 @@
 	visibility: hidden;
 }
 
+.search_menu .query_menu {
+	padding: 10px 4px 1px 9px;
+	background-color: #DDF0FA;
+	border-radius: 6px;
+}
+
 .search_menu .ui-accordion > div {
 	margin-top: 2px;
 }
@@ -250,6 +256,10 @@
 
 .navigation_bar {
 	text-align: right;
+}
+
+.navigation_pages span, .navigation_pages a {
+	padding-left: 4px;
 }
 
 /** Result table */
@@ -605,6 +615,10 @@
 	margin-right: 3px;
 	margin-left: -3px;
 	color : #0C7889;
+}
+
+.structure .selected > .entry > .primary_action {
+	font-weight: bold;
 }
 
 .structure .moving .entry > .primary_action {

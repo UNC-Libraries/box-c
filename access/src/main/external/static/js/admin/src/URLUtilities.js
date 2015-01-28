@@ -18,9 +18,10 @@ define('URLUtilities', ['jquery'], function($) {
 		},
 		
 		getParameter : function (name) {
-			return decodeURI(
-					(RegExp(name + '=' + '([^&]*?)(&|$)').exec(location.search)||[,null])[1]
-			);
+			var value = RegExp(name + '=' + '([^&]*?)(&|$)').exec(location.search);
+			if (value == null)
+				return null;
+			return decodeURI(value[1]);
 		},
 		
 		setParameter : function(url, key, paramVal){

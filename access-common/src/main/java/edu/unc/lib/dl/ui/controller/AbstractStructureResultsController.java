@@ -86,7 +86,7 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
 
 		HierarchicalBrowseResultResponse resultResponse = null;
 		if (collectionMode)
-			resultResponse = queryLayer.getStructureToParentCollection(browseRequest);
+			resultResponse = queryLayer.getExpandedStructurePath(browseRequest);
 		else
 			resultResponse = queryLayer.getHierarchicalBrowseResults(browseRequest);
 

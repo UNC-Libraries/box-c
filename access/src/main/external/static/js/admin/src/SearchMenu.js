@@ -21,11 +21,6 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 				
 				self.element.append(self.$contents);
 				
-				self.element.children('.query_menu').accordion({
-					header: "> div > h3",
-					heightStyle: "content",
-					collapsible: true
-				});
 				self.element.children('.filter_menu').accordion({
 					header: "> div > h3",
 					heightStyle: "content",
@@ -34,49 +29,11 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 					beforeActivate: function(event, ui) {
 						if (ui.newPanel.attr('data-href') != null && !ui.newPanel.data('contentLoaded')) {
 							var isStructureBrowse = (ui.newPanel.attr('id') == "structure_facet");
-							$.ajax({
-								url : URLUtilities.uriEncodeParameters(ui.newPanel.attr('data-href')),
-								dataType : isStructureBrowse? 'json' : null,
-								success : function(data) {
-									if (isStructureBrowse) {
-										var $structureView = $('<div/>').html(data);
-										$structureView.structureView({
-											rootNode : data.root,
-											showResourceIcons : true,
-											showParentLink : true,
-											queryPath : self.options.queryPath,
-											filterParams : self.options.filterParams,
-											selectedId : self.options.selectedId,
-											onChangeEvent : $.proxy(self._adjustHeight, self)
-										});
-										$structureView.addClass('inset facet');
-										// Inform the result view that the structure browse is ready for move purposes
-										if (self.options.resultTableView) {
-											self.options.resultTableView.resultTableView('addMoveDropLocation', 
-												$structureView.find(".structure_content"),
-												'.entry > .primary_action', 
-												function($dropTarget){
-													var dropObject = $dropTarget.closest(".entry_wrap").data("structureEntry");
-													// Needs to be a valid container with sufficient perms
-													if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
-														return false;
-													return dropObject.metadata;
-											});
-											data = $structureView;
-										}
-									}
-									ui.newPanel.html(data);
-									ui.newPanel.data('contentLoaded', true);
-									self._adjustHeight();
-								},
-								error : function() {
-									ui.newPanel.html("");
-								}
-							});
+							self.updatePanel(ui.newPanel, isStructureBrowse);
 						}
 					},
 					activate : $.proxy(self._adjustHeight, self)
-				}).accordion('option', 'active', 0);
+				}).accordion('option', 'active', 1);
 			
 				self.element.resizable({
 					handles: 'e',
@@ -94,19 +51,106 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 			if (activeMenu.length == 0) {
 				return;
 			}
+			var self = this;
 			var top = activeMenu.offset().top;
-			var innerHeight = activeMenu.innerHeight();
-			var height = activeMenu.height();
+			var innerHeight = activeMenu.children().innerHeight();
+			var height = activeMenu.children().height();
 			var verticalPadding = innerHeight - height;
 			var windowHeight = $(window).height();
 			var siblingHeight = 0;
 			activeMenu.parent().nextAll().each(function(){
-				siblingHeight += $(this).outerHeight() + 4;
+				siblingHeight += $(this).outerHeight();
 			});
-			if ((top + innerHeight + siblingHeight) > windowHeight) {
-				activeMenu.height(windowHeight - top - siblingHeight - verticalPadding);
+			activeMenu.height(windowHeight - top - verticalPadding);
+		},
+		
+		changeFolder : function(uuid) {
+			if (this.$structureView) {
+				this.$structureView.structureView("changeFolder", uuid);
+			}
+			if (uuid) {
+				$(".search_folder", this.element).removeClass("hidden");
 			} else {
-				activeMenu.height('auto');
+				$(".search_folder", this.element).addClass("hidden");
+			}
+			
+			$(".container_id", this.element).val(uuid);
+		},
+		
+		updateFacets : function(url, containerId) {
+			var panel = $(".limits_panel", this.element);
+			
+			var filters = "";
+			if (url.indexOf("?") != -1) {
+				filters = url.substring(url.indexOf("?") + 1);
+			}
+			panel.attr('data-href', "facets" + (containerId? "/" + containerId : "") 
+					+ "?facetSelect=" + panel.attr('data-facets') + (filters? "&" + filters : ""));
+			
+			if (panel.hasClass("ui-accordion-content-active")) {
+				this.updatePanel(panel, false);
+			}
+		},
+
+		updatePanel : function(panel, isStructureBrowse) {
+			var self = this;
+			
+			$.ajax({
+				url : URLUtilities.uriEncodeParameters(panel.attr('data-href')),
+				dataType : isStructureBrowse? 'json' : null,
+				success : function(data) {
+					if (isStructureBrowse) {
+						var $structureView = $('<div/>').html(data);
+						$structureView.structureView({
+							rootNode : data.root,
+							showResourceIcons : true,
+							showParentLink : true,
+							queryPath : self.options.queryPath,
+							filterParams : self.options.filterParams,
+							selectedId : self.options.selectedId,
+							onChangeEvent : $.proxy(self._adjustHeight, self)
+						});
+						$structureView.addClass('inset facet');
+						// Inform the result view that the structure browse is ready for move purposes
+						if (self.options.resultTableView) {
+							self.options.resultTableView.resultTableView('addMoveDropLocation', 
+								$structureView.find(".structure_content"),
+								'.entry > .primary_action', 
+								function($dropTarget){
+									var dropObject = $dropTarget.closest(".entry_wrap").data("structureEntry");
+									// Needs to be a valid container with sufficient perms
+									if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
+										return false;
+									return dropObject.metadata;
+							});
+							data = $structureView;
+						}
+						
+						self.$structureView = $structureView;
+						panel.html(data);
+					} else {
+						if ($(".facets", data).length == 0) {
+							data = "No additional filters";
+						}
+						panel.html("<div>" + data + "</div>");
+					}
+					
+					panel.data('contentLoaded', true);
+					self._adjustHeight();
+					
+					self.scrollToSelectedContainer();
+				},
+				error : function() {
+					panel.html("");
+				}
+			});
+		},
+		
+		scrollToSelectedContainer : function() {
+			var selectedContainer = $(".entry_wrap .selected", self.element);
+			if (selectedContainer.length > 0) {
+				var parent = this.$structureView.parent();
+				parent.animate({scrollTop: selectedContainer[0].offsetTop - parent[0].offsetTop}, 100)
 			}
 		}
 	});

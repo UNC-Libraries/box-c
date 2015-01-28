@@ -65,15 +65,9 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 		
 		var childrenPresent = this.countChildrenPresent(this);
 		this.hasContent = this.childEntries && this.childEntries.length > 0;
-		this.moreContainersAvailable = (this.metadata.counts && this.metadata.counts.containers > childrenPresent);
 		
 		if (this.hasContent) {
-			if (this.moreContainersAvailable)
-				toggleClass = 'expand';
-			else toggleClass = 'collapse';
-			/*if (this.options.isRoot || !this.options.showingItems)
-				toggleClass = 'collapse';
-			else toggleClass = 'expand';*/
+			toggleClass = 'collapse';
 		} else if ((this.metadata.counts && this.metadata.counts.containers) ||
 				(this.options.structureView.options.retrieveFiles && this.metadata.counts && this.metadata.counts.child)) {
 			toggleClass = 'expand';
@@ -124,12 +118,12 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 		return count;
 	};
 	
-	StructureEntry.prototype.toggleChildren = function() {
+	StructureEntry.prototype.toggleChildren = function(onlyOpen) {
 		var self = this;
 		var $toggleButton = this.$entry.find('.cont_toggle');
 		var $childrenContainer = this.element.children(".children");
 		if ($toggleButton.hasClass('expand')) {
-			if ((this.moreContainersAvailable || !this.hasContent) && !this.contentLoaded) {
+			if (!this.hasContent && !this.contentLoaded) {
 				var loadingImage = $("<img src=\"/static/images/ajax_loader.gif\"/>");
 				$toggleButton.after(loadingImage);
 				var childrenUrl = "structure/" + this.metadata.id + "/json";
@@ -177,7 +171,6 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 								$childrenContainer.find(".indent").show();
 								$childrenContainer.show(100, function() {
 									self.element.addClass("expanded");
-									self.options.structureView.onChangeEvent(self);
 								});
 							}
 							
@@ -197,21 +190,18 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 					$childrenContainer.find(".indent").show();
 					$childrenContainer.show(100, function() {
 						self.element.addClass("expanded");
-						self.options.structureView.onChangeEvent(self);
 					});
 					$toggleButton.removeClass('expand').addClass('collapse');
 				}
 			}
-		} else if ($toggleButton.hasClass('collapse')) {
+		} else if (!onlyOpen && $toggleButton.hasClass('collapse')) {
 			if ($childrenContainer.children().length > 0) {
 				$childrenContainer.hide(100, function() {
 					self.element.removeClass("expanded");
-					self.options.structureView.onChangeEvent(self);
 				});
 			}
 			$toggleButton.removeClass('collapse').addClass('expand');
 		}
-		self.options.structureView.onChangeEvent(self);
 	};
 	
 	StructureEntry.prototype.refreshIndent = function() {
@@ -279,6 +269,11 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 	StructureEntry.prototype.select = function() {
 		this.element.addClass("selected");
 		this.options.isSelected = true;
+	};
+	
+	StructureEntry.prototype.deselect = function() {
+		this.element.removeClass("selected");
+		this.options.isSelected = false;
 	};
 	
 	StructureEntry.prototype.findEntryById = function(id, childEntries) {

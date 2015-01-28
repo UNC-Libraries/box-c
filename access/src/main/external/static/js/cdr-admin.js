@@ -123,15 +123,9 @@ define('detachplus', [ 'jquery'], function($) {
 		
 		var childrenPresent = this.countChildrenPresent(this);
 		this.hasContent = this.childEntries && this.childEntries.length > 0;
-		this.moreContainersAvailable = (this.metadata.counts && this.metadata.counts.containers > childrenPresent);
 		
 		if (this.hasContent) {
-			if (this.moreContainersAvailable)
-				toggleClass = 'expand';
-			else toggleClass = 'collapse';
-			/*if (this.options.isRoot || !this.options.showingItems)
-				toggleClass = 'collapse';
-			else toggleClass = 'expand';*/
+			toggleClass = 'collapse';
 		} else if ((this.metadata.counts && this.metadata.counts.containers) ||
 				(this.options.structureView.options.retrieveFiles && this.metadata.counts && this.metadata.counts.child)) {
 			toggleClass = 'expand';
@@ -182,12 +176,12 @@ define('detachplus', [ 'jquery'], function($) {
 		return count;
 	};
 	
-	StructureEntry.prototype.toggleChildren = function() {
+	StructureEntry.prototype.toggleChildren = function(onlyOpen) {
 		var self = this;
 		var $toggleButton = this.$entry.find('.cont_toggle');
 		var $childrenContainer = this.element.children(".children");
 		if ($toggleButton.hasClass('expand')) {
-			if ((this.moreContainersAvailable || !this.hasContent) && !this.contentLoaded) {
+			if (!this.hasContent && !this.contentLoaded) {
 				var loadingImage = $("<img src=\"/static/images/ajax_loader.gif\"/>");
 				$toggleButton.after(loadingImage);
 				var childrenUrl = "structure/" + this.metadata.id + "/json";
@@ -235,7 +229,6 @@ define('detachplus', [ 'jquery'], function($) {
 								$childrenContainer.find(".indent").show();
 								$childrenContainer.show(100, function() {
 									self.element.addClass("expanded");
-									self.options.structureView.onChangeEvent(self);
 								});
 							}
 							
@@ -255,21 +248,18 @@ define('detachplus', [ 'jquery'], function($) {
 					$childrenContainer.find(".indent").show();
 					$childrenContainer.show(100, function() {
 						self.element.addClass("expanded");
-						self.options.structureView.onChangeEvent(self);
 					});
 					$toggleButton.removeClass('expand').addClass('collapse');
 				}
 			}
-		} else if ($toggleButton.hasClass('collapse')) {
+		} else if (!onlyOpen && $toggleButton.hasClass('collapse')) {
 			if ($childrenContainer.children().length > 0) {
 				$childrenContainer.hide(100, function() {
 					self.element.removeClass("expanded");
-					self.options.structureView.onChangeEvent(self);
 				});
 			}
 			$toggleButton.removeClass('collapse').addClass('expand');
 		}
-		self.options.structureView.onChangeEvent(self);
 	};
 	
 	StructureEntry.prototype.refreshIndent = function() {
@@ -339,6 +329,11 @@ define('detachplus', [ 'jquery'], function($) {
 		this.options.isSelected = true;
 	};
 	
+	StructureEntry.prototype.deselect = function() {
+		this.element.removeClass("selected");
+		this.options.isSelected = false;
+	};
+	
 	StructureEntry.prototype.findEntryById = function(id, childEntries) {
 		if (this.metadata.id == id)
 			return this;
@@ -377,10 +372,6 @@ define('detachplus', [ 'jquery'], function($) {
 			if (!this.options.showResourceIcons)
 				this.element.addClass('no_resource_icons');
 			
-			if (this.options.showParentLink) {
-				this._generateParentLink();
-			}
-			
 			if (this.options.excludeIds) {
 				this.excludeIds = this.options.excludeIds.split(" ");
 			}
@@ -415,44 +406,28 @@ define('detachplus', [ 'jquery'], function($) {
 			});
 		},
 		
-		_generateParentLink : function() {
-			var self = this;
-			var $parentLink = $("<a class='parent_link'>parent</a>");
-			if (this.options.rootNode.isTopLevel)
-				$parentLink.addClass('disabled');
-				
-			$parentLink.click(function(){
-				if ($parentLink.hasClass('disabled'))
-					return false;
-				var $oldRoot = self.$content.children(".entry_wrap");
-				var parentURL = $oldRoot.data("structureEntry").getParentURL();
-				$.ajax({
-					url : parentURL,
-					dataType : 'json',
-					success : function(data) {
-						var newRoot = new StructureEntry({
-							node : data.root,
-							structureView : self,
-							isRoot : true
-						});
-						newRoot.render();
-						// Initialize the new results
-						//$newRoot.find(".entry_wrap").add($newRoot).structureEntry({
-						//	indentSuppressed : self.options.indentSuppressed
-						//});
-						newRoot.insertTree($oldRoot.data('structureEntry'));
-						//$newRoot.structureEntry('insertTree', $oldRoot);
-						self.$content.append(newRoot.element);
-						if (data.root.isTopLevel)
-							$parentLink.addClass('disabled');
-						
-						self.onChangeEvent(newRoot);
-					}
-				});
-				return false;
-			});
+		changeFolder : function(uuid) {
+			if (uuid.indexOf(":") != -1) {
+				uuid = uuid.substring(uuid.indexOf(":") + 1);
+			}
 			
-			this.$content.before($parentLink);
+			this.deselectAll();
+			
+			var entry = $("#str_" + uuid, this.element);
+			if (entry.length == 0) {
+				console.log("Failed to open folder", uuid);
+				return;
+			}
+			
+			entry = entry.data('structureEntry');
+			entry.toggleChildren(true);
+			entry.select();
+		},
+		
+		deselectAll : function() {
+			$(".entry_wrap.selected").each(function(){
+				$(this).data('structureEntry').deselect();
+			});
 		},
 		
 		// Trigger the change event function in case some other part of the code needs to know the view changed sizes
@@ -852,6 +827,7 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 	
 	function AddMenu(options) {
 		this.options = $.extend({}, options);
+		this.container = this.options.container;
 		this.init();
 	};
 	
@@ -863,6 +839,10 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 		items["ingestPackage"] = {name : "Add Ingest Package"};
 		items["simpleObject"] = {name : "Add Simple Object"};
 		return items;
+	};
+	
+	AddMenu.prototype.setContainer = function(container) {
+		this.container = container;
 	};
 	
 	AddMenu.prototype.init = function() {
@@ -881,7 +861,7 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 			alertHandler : this.options.alertHandler
 		});
 		
-		$.contextMenu({
+		this.menu = $.contextMenu({
 			selector: this.options.selector,
 			trigger: 'left',
 			className: 'add_to_container_menu', 
@@ -897,13 +877,13 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 			callback : function(key, options) {
 				switch (key) {
 					case "addContainer" :
-						createContainerForm.open(self.options.container.id);
+						createContainerForm.open(self.container.id);
 						break;
 					case "ingestPackage" :
-						ingestPackageForm.open(self.options.container.id);
+						ingestPackageForm.open(self.container.id);
 						break;
 					case "simpleObject" :
-						simpleObjectForm.open(self.options.container.id);
+						simpleObjectForm.open(self.container.id);
 						break;
 				}
 			},
@@ -2860,13 +2840,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		options : {
 			enableSort : true,
 			ajaxSort : false,
-			metadataObjects : undefined,
 			enableArrange : false,
 			enableMove : false,
-			pagingActive : false,
-			container : undefined,
-			resultTableTemplate : "tpl!../templates/admin/resultTableView",
-			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
 			resultFields : undefined,
 			resultHeader : undefined,
 			postRender : undefined,
@@ -2880,39 +2855,66 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			
 			this.actionHandler = this.options.actionHandler;
 			this.actionHandler.addToBaseContext('resultTable', this);
+			this.firstRender = true;
+		},
+		
+		render : function(data) {
+			var self = this;
 			
-			require([this.options.resultTableTemplate, this.options.navigationBarTemplate], function(resultTableTemplate, navigationBarTemplate){
-				var headerHeightClass = self.options.headerHeightClass;
-				if (self.options.container) {
-					if (self.options.container.ancestorPath)
-						headerHeightClass += " with_path";
-					else
-						headerHeightClass += " with_container";
+			require([this.options.resultTableTemplate, this.options.resultEntryTemplate, this.options.resultTableHeaderTemplate, this.options.navBarTemplate, this.options.pathTrailTemplate], function(resultTableTemplate, resultEntryTemplate, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate){
+				
+				self.element.html("");
+				
+				self.pagingActive = data.pageRows < data.resultCount;
+				
+				self.resultUrl = document.location.href;
+				var container = data.container;
+			
+				var navigationBar = navigationBarTemplate({
+					pageNavigation : data,
+					resultUrl : self.resultUrl,
+					URLUtilities : URLUtilities
+				});
+			
+				var containerPath = null;
+				if (container) {
+					containerPath = pathTrailTemplate({
+						ancestorPath : container.ancestorPath,
+						queryMethod : 'list',
+						filterParams : data.searchQueryUrl,
+						skipLast : true
+					});
 				}
 				
-				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : self.options.container,
-						resultHeader : self.options.resultHeader, headerHeightClass : headerHeightClass}));
+				var resultTableHeader = resultTableHeaderTemplate({
+					data : data,
+					container : container,
+					navigationBar : navigationBar,
+					containerPath : containerPath,
+					queryMethod : data.queryMethod
+				});
+				
+				var headerHeightClass = self.options.headerHeightClass;
+				if (container && container.ancestorPath) {
+					headerHeightClass += " with_path";
+				} else {
+					headerHeightClass += " with_container";
+				}
+				
+				if (self.$resultView) {
+					self.$resultView.remove();
+				}
+				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : container,
+						resultHeader : resultTableHeader, headerHeightClass : headerHeightClass}));
 				self.$resultTable = self.$resultView.find('.result_table').eq(0);
 				self.$resultHeaderTop = self.$resultView.find('.result_header_top').eq(0);
+				self.$noResults = self.$resultView.find('.no_results').eq(0);
 				self.element.append(self.$resultView);
 			
 				if (self.options.postRender)
-					self.options.postRender.call();
+					self.options.postRender(data);
 			
-				self.resultUrl = self.options.resultUrl;
-			
-				// Generate result entries
-				var fragment = $(document.createDocumentFragment());
-				self.resultObjectList = new ResultObjectList({
-					'metadataObjects' : self.options.metadataObjects, 
-					parent : self.$resultTable.children('tbody'),
-					resultEntryTemplate : self.options.resultEntryTemplate
-				});
-			
-				// No results message
-				if (self.options.metadataObjects.length == 0) {
-					self.$resultTable.after("<div class='no_results'>No matching results</div>");
-				}
+				self.populateResults(data.metadata);
 			
 				// Activate sorting
 				if (self.options.enableSort)
@@ -2921,7 +2923,9 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				// Initialize batch operation buttons
 				self._initBatchOperations();
 			
-				self._initEventHandlers();
+				if (self.firstRender) {
+					self._initEventHandlers();
+				}
 			
 				// Activate the result entry context menus, on the action gear and right clicking
 				self.contextMenus = [new ResultObjectActionMenu({
@@ -2942,17 +2946,38 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				// Initialize click and drag operations
 				self._initMoveLocations();
 				self._initReordering();
+				
+				self.firstRender = false;
 			});
+		},
+		
+		populateResults : function(metadataObjects) {
+
+			this.$resultTable.children('tbody').html("");
+			
+			// Generate result entries
+			this.resultObjectList = new ResultObjectList({
+				metadataObjects : metadataObjects, 
+				parent : this.$resultTable.children('tbody'),
+				resultEntryTemplate : this.options.resultEntryTemplate
+			});
+		
+			// No results message
+			if (metadataObjects.length == 0) {
+				this.$noResults.removeClass("hidden");
+			} else {
+				this.$noResults.addClass("hidden");
+			}
 		},
 		
 		// Initialize sorting headers according to whether or not paging is active
 		_initSort : function() {
 			var $resultTable = this.$resultTable;
 			var self = this;
-			if (this.options.pagingActive) {
-				// Paging active, so need to make server callback to perform sort
-				var sortParam = URLUtilities.getParameter('sort');
+			
+			if (!self.sortType) {
 				var sortOrder = true;
+				var sortParam = URLUtilities.getParameter('sort');
 				if (sortParam != null) {
 					sortParam = sortParam.split(",");
 					if (sortParam.length > 1)
@@ -2960,30 +2985,37 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					if (sortParam.length > 0)
 						sortParam = sortParam[0];
 				}
-				
-				$("th.sort_col", $resultTable).each(function(){
-					var $this = $(this);
-					$this.addClass('sorting');
-					var sortField = $this.attr('data-field');
-					if (sortField) {
-						if (sortParam == sortField) {
-							if (sortOrder) {
-								$this.addClass('asc');
-							} else {
-								$this.addClass('desc');
-							}
+				self.sortType = sortParam;
+				self.sortOrder = sortOrder;
+			}
+			
+			$("th.sort_col", $resultTable).each(function(){
+				var $this = $(this);
+				$this.addClass('sorting');
+				var sortField = $this.attr('data-field');
+				if (sortField) {
+					// If the results are already sorted at init time, make the column reflect that
+					var isCurrentSortField = self.sortType == sortField;
+					if (isCurrentSortField) {
+						if (self.sortOrder) {
+							$this.addClass('desc');
+						} else {
+							$this.addClass('asc');
 						}
-						var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', sortField + (sortOrder? ",reverse" : ""));
-						this.children[0].href = sortUrl;
 					}
-				});
-			} else {
-				// Paging off, perform sorting locally
-				$("th.sort_col", $resultTable).each(function(){
-					var $th = $(this),
-					thIndex = $th.index(),
-					dataType = $th.attr("data-type");
-					$th.addClass('sorting');
+					// Set the sort URL for the column
+					var orderParam = isCurrentSortField && self.sortOrder? ",reverse" : "";
+					var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', sortField + orderParam);
+					this.children[0].href = sortUrl;
+					
+					// If we're in paging mode, make the column link trigger a retrieval from server
+					if (self.pagingActive) {
+						$("a", $this).addClass("res_link");
+					}
+					
+					var $th = $(this);
+					var thIndex = $th.index();
+					var dataType = $th.attr("data-type");
 					
 					$th.click(function(){
 						if (!$th.hasClass('sorting')) return;
@@ -2995,19 +3027,38 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 						else 
 							$th.addClass('desc');
 						
-						// Apply sort function based on data-type
-						if (dataType == 'index') {
-							self._originalOrderSort(inverse);
-						} else if (dataType == 'title') {
-							self._titleSort(inverse);
+						self.sortType = $th.attr("data-field");
+						if (!self.pagingActive) {
+							self.sortOrder = !inverse;
+							
+							var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (!self.sortOrder? ",reverse" : ""));
+							if (history.pushState) {
+								history.pushState({}, "", sortUrl);
+							}
+					
+							// Apply sort function based on data-type
+							if (dataType == 'index') {
+								self._originalOrderSort(inverse);
+							} else if (dataType == 'title') {
+								self._titleSort(inverse);
+							} else {
+								self._alphabeticSort(thIndex, inverse);
+							}
+							inverse = !inverse;
+							return false;
 						} else {
-							self._alphabeticSort(thIndex, inverse);
+							self.sortOrder = !inverse;
 						}
-						inverse = !inverse;
 						//console.timeEnd("Sort total");
 					});
-				});
-			}
+					
+					
+				}
+			});
+		},
+		
+		getCurrentSort : function() {
+			return {type : this.sortType, order : this.sortOrder};
 		},
 		
 		// Base row sorting function
@@ -3165,9 +3216,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				$(this).data('resultObject').toggleSelect();
 				self.selectionUpdated();
 			});
-			this.$resultTable.on('click', ".res_entry a", function(e){
-				e.stopPropagation();
-			});
 		},
 		
 		selectionUpdated : function() {
@@ -3320,14 +3368,12 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu) {
 	$.widget("cdr.resultView", {
 		options : {
+			url : null,
 			container : null,
 			containerPath : null,
 			filterParams : '',
 			resultUrl : null, 
 			selectedId : false,
-			queryPath : 'list',
-			
-			metadataObjects : undefined,
 			
 			resultTableTemplate : "tpl!../templates/admin/resultTableView",
 			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
@@ -3381,50 +3427,93 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					};
 			}
 			
-			this._render();
-		},
-		
-		_render : function() {
-			var self = this;
-			
 			var actionHandler = new ActionEventHandler();
 			
-			var pageNavigation = {
-				resultUrl : this.options.resultUrl,
-				filterParams : this.options.filterParams,
-				pagingActive : this.options.pagingActive,
-				pageStart : this.options.pageStart,
-				pageRows : this.options.pageRows,
-				resultCount : this.options.resultCount
+			// Setup the result table component
+			self.$resultTableView = $(".result_area > div", self.element);
+			self.$resultTableView.resultTableView({
+				alertHandler : this.$alertHandler,
+				resultFields : self.options.resultFields,
+				postRender : $.proxy(self.postRender, self),
+				postInit : $.proxy(self.resizeResults, self),
+				actionHandler : actionHandler,
+				resultActions : self.options.resultActions,
+				resultTableTemplate : self.options.resultTableTemplate,
+				resultEntryTemplate : self.options.resultEntryTemplate,
+				resultTableHeaderTemplate : this.options.resultTableHeaderTemplate,
+				navBarTemplate : this.options.navBarTemplate,
+				pathTrailTemplate : this.options.pathTrailTemplate
+			});
+			
+			self.$resultPage.on("click", ".res_link", function(e){
+				var url = $(this).attr("href");
+				self.changePage(url, true);
+				e.preventDefault();
+				e.stopPropagation();
+			});
+
+			self.$resultPage.on("submit", "#search_menu_form", function(e){
+				$.ajax({
+					url : $(this).attr('action'),
+					type : $(this).attr('method'),
+					data : $(this).serialize(),
+					dataType : 'text',
+					success : function(url) {
+						self.changePage(url, true);
+					},
+					error : function(xhr, status){
+						console.error("Failed to search", status);
+					}
+				});
+				e.preventDefault();
+			});
+			
+			window.onpopstate = function(event) {
+				self.changePage(document.location.href);
 			};
 			
-			require([this.options.resultTableTemplate, this.options.resultEntryTemplate, this.options.resultTableHeaderTemplate, this.options.searchMenuTemplate, this.options.navBarTemplate, this.options.pathTrailTemplate], function(resultTableTemplate, resultEntryTemplate, resultTableHeaderTemplate, searchMenuTemplate, navigationBarTemplate, pathTrailTemplate){
+			this.changePage(this.options.resultUrl);
+		},
+		
+		changePage : function(url, updateHistory) {
+			var self = this;
+			var sortData = self.$resultTableView.resultTableView("getCurrentSort");
+			if (sortData["type"]) {
+				var sortParams = sortData.type + "," + (sortData.order? "" : "reverse");
+				url = URLUtilities.setParameter(url, "sort", sortParams);
+			}
 			
-				var container = self.options.container;
-				var navigationBar = navigationBarTemplate({pageNavigation : pageNavigation, container : container, URLUtilities : URLUtilities});
-				var containerPath = null;
-				if (container)
-					containerPath = pathTrailTemplate({ancestorPath : container.ancestorPath, queryMethod : 'list', filterParams : self.options.filterParams, skipLast : true});
-				var resultTableHeader = resultTableHeaderTemplate({container : container, navigationBar : navigationBar, containerPath : containerPath, invalidVocabCount : self.options.invalidVocabCount})
+			if (updateHistory && history.pushState) {
+				history.pushState({}, "", url);
+			}
 			
-				// Setup the result table component
-				$(".result_area > div", self.element).resultTableView({
-					metadataObjects : self.options.metadataObjects,
-					container : container,
-					alertHandler : this.$alertHandler,
-					resultUrl : self.options.resultUrl,
-					resultFields : self.options.resultFields,
-					resultHeader : resultTableHeader,
-					postRender : $.proxy(self.postRender, self),
-					postInit : $.proxy(self.resizeResults, self),
-					actionHandler : actionHandler,
-					resultActions : self.options.resultActions,
-					resultEntryTemplate : self.options.resultEntryTemplate
-				});
+			$("#result_loading_icon").removeClass("hidden");
+			
+			$.ajax({
+				url : url,
+				dataType : 'json',
+				cache: false,
+				success : function(data) {
+					if (this.addMenu) {
+						$("#add_menu").remove();
+					}
+					self.$resultTableView.resultTableView("render", data);
+					if (self.searchMenu) {
+						self.searchMenu.searchMenu("changeFolder", data.container? data.container.id : "");
+						self.searchMenu.searchMenu("updateFacets", url);
+					}
+					
+					$("#result_loading_icon").addClass("hidden");
+				},
+				error : function(data) {
+					console.error("Failed to load results", data);
+				}
 			});
 		},
 		
-		postRender : function (resultTable) {
+		postRender : function (data) {
+			var self = this;
+			
 			this.$resultView = $('#result_view');
 			this.$columnHeaders = $('.column_headers', this.element);
 			this.$resultHeader = $('.result_header', this.element);
@@ -3434,32 +3523,38 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			this.$resultTableWrap = $('.result_table_wrap', this.element);
 			this.$resultArea = $('.result_area', this.element);
 			
-			var container = this.options.container;
+			var container = data.container;
 		
-			// Keep result area the right size when the menu is resized
-			var searchMenu = $(".search_menu", this.element).searchMenu({
-				filterParams : this.options.filterParams,
-				container : container,
-				containerPath : this.options.containerPath,
-				resultUrl : this.options.resultUrl,
-				resultTableView : $(".result_area > div"),
-				selectedId : container && /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? container.id : false,
-			});
+			if (!this.searchMenu) {
+				// Keep result area the right size when the menu is resized
+				this.searchMenu = $(".search_menu", this.element).searchMenu({
+					filterParams : this.options.filterParams,
+					container : container,
+					containerPath : this.options.containerPath,
+					resultUrl : this.options.resultUrl,
+					resultTableView : $(".result_area > div"),
+					selectedId : container? container.id : false,
+				});
 
-			searchMenu.on("resize", $.proxy(function() {
-				this.menuOffset = searchMenu.position().left + searchMenu.innerWidth() + 40;
-				this.resizeResults();
-			}, this));
+				this.searchMenu.on("resize", $.proxy(function() {
+					this.menuOffset = self.searchMenu.position().left + self.searchMenu.innerWidth() + 40;
+					this.resizeResults();
+				}, this));
+			}
 		
 			if (container) {
 				var containerObject = new ParentResultObject({metadata : container, 
 						element : $(".container_entry")});
 		
-				new AddMenu({
-					container : container,
-					selector : "#add_menu",
-					alertHandler : this.$alertHandler
-				});
+				if (this.addMenu) {
+					this.addMenu.setContainer(container);
+				} else {
+					this.addMenu = new AddMenu({
+						container : container,
+						selector : "#add_menu",
+						alertHandler : this.$alertHandler
+					});
+				}
 			}
 			
 			$(document).on('mouseover', '.warning_symbol', function(event) {
@@ -3515,11 +3610,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				
 				self.element.append(self.$contents);
 				
-				self.element.children('.query_menu').accordion({
-					header: "> div > h3",
-					heightStyle: "content",
-					collapsible: true
-				});
 				self.element.children('.filter_menu').accordion({
 					header: "> div > h3",
 					heightStyle: "content",
@@ -3528,49 +3618,11 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					beforeActivate: function(event, ui) {
 						if (ui.newPanel.attr('data-href') != null && !ui.newPanel.data('contentLoaded')) {
 							var isStructureBrowse = (ui.newPanel.attr('id') == "structure_facet");
-							$.ajax({
-								url : URLUtilities.uriEncodeParameters(ui.newPanel.attr('data-href')),
-								dataType : isStructureBrowse? 'json' : null,
-								success : function(data) {
-									if (isStructureBrowse) {
-										var $structureView = $('<div/>').html(data);
-										$structureView.structureView({
-											rootNode : data.root,
-											showResourceIcons : true,
-											showParentLink : true,
-											queryPath : self.options.queryPath,
-											filterParams : self.options.filterParams,
-											selectedId : self.options.selectedId,
-											onChangeEvent : $.proxy(self._adjustHeight, self)
-										});
-										$structureView.addClass('inset facet');
-										// Inform the result view that the structure browse is ready for move purposes
-										if (self.options.resultTableView) {
-											self.options.resultTableView.resultTableView('addMoveDropLocation', 
-												$structureView.find(".structure_content"),
-												'.entry > .primary_action', 
-												function($dropTarget){
-													var dropObject = $dropTarget.closest(".entry_wrap").data("structureEntry");
-													// Needs to be a valid container with sufficient perms
-													if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
-														return false;
-													return dropObject.metadata;
-											});
-											data = $structureView;
-										}
-									}
-									ui.newPanel.html(data);
-									ui.newPanel.data('contentLoaded', true);
-									self._adjustHeight();
-								},
-								error : function() {
-									ui.newPanel.html("");
-								}
-							});
+							self.updatePanel(ui.newPanel, isStructureBrowse);
 						}
 					},
 					activate : $.proxy(self._adjustHeight, self)
-				}).accordion('option', 'active', 0);
+				}).accordion('option', 'active', 1);
 			
 				self.element.resizable({
 					handles: 'e',
@@ -3588,19 +3640,107 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			if (activeMenu.length == 0) {
 				return;
 			}
+			var self = this;
 			var top = activeMenu.offset().top;
-			var innerHeight = activeMenu.innerHeight();
-			var height = activeMenu.height();
+			var innerHeight = activeMenu.children().innerHeight();
+			var height = activeMenu.children().height();
 			var verticalPadding = innerHeight - height;
 			var windowHeight = $(window).height();
 			var siblingHeight = 0;
 			activeMenu.parent().nextAll().each(function(){
-				siblingHeight += $(this).outerHeight() + 4;
+				siblingHeight += $(this).outerHeight();
 			});
-			if ((top + innerHeight + siblingHeight) > windowHeight) {
-				activeMenu.height(windowHeight - top - siblingHeight - verticalPadding);
+			activeMenu.height(windowHeight - top - verticalPadding);
+			console.log("Adjust it", top, innerHeight, siblingHeight, windowHeight, verticalPadding);
+		},
+		
+		changeFolder : function(uuid) {
+			if (this.$structureView) {
+				this.$structureView.structureView("changeFolder", uuid);
+			}
+			if (uuid) {
+				$(".search_folder", this.element).removeClass("hidden");
 			} else {
-				activeMenu.height('auto');
+				$(".search_folder", this.element).addClass("hidden");
+			}
+			
+			$(".container_id", this.element).val(uuid);
+		},
+		
+		updateFacets : function(url, containerId) {
+			var panel = $(".limits_panel", this.element);
+			
+			var filters = "";
+			if (url.indexOf("?") != -1) {
+				filters = url.substring(url.indexOf("?") + 1);
+			}
+			panel.attr('data-href', "facets" + (containerId? "/" + containerId : "") 
+					+ "?facetSelect=" + panel.attr('data-facets') + (filters? "&" + filters : ""));
+			
+			if (panel.hasClass("ui-accordion-content-active")) {
+				this.updatePanel(panel, false);
+			}
+		},
+
+		updatePanel : function(panel, isStructureBrowse) {
+			var self = this;
+			
+			$.ajax({
+				url : URLUtilities.uriEncodeParameters(panel.attr('data-href')),
+				dataType : isStructureBrowse? 'json' : null,
+				success : function(data) {
+					if (isStructureBrowse) {
+						var $structureView = $('<div/>').html(data);
+						$structureView.structureView({
+							rootNode : data.root,
+							showResourceIcons : true,
+							showParentLink : true,
+							queryPath : self.options.queryPath,
+							filterParams : self.options.filterParams,
+							selectedId : self.options.selectedId,
+							onChangeEvent : $.proxy(self._adjustHeight, self)
+						});
+						$structureView.addClass('inset facet');
+						// Inform the result view that the structure browse is ready for move purposes
+						if (self.options.resultTableView) {
+							self.options.resultTableView.resultTableView('addMoveDropLocation', 
+								$structureView.find(".structure_content"),
+								'.entry > .primary_action', 
+								function($dropTarget){
+									var dropObject = $dropTarget.closest(".entry_wrap").data("structureEntry");
+									// Needs to be a valid container with sufficient perms
+									if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
+										return false;
+									return dropObject.metadata;
+							});
+							data = $structureView;
+						}
+						
+						self.$structureView = $structureView;
+						panel.html(data);
+					} else {
+						if ($(".facets", data).length == 0) {
+							data = "No additional filters";
+						}
+						panel.html("<div>" + data + "</div>");
+					}
+					
+					panel.data('contentLoaded', true);
+					self._adjustHeight();
+					
+					self.scrollToSelectedContainer();
+				},
+				error : function() {
+					panel.html("");
+				}
+			});
+		},
+		
+		scrollToSelectedContainer : function() {
+			var selectedContainer = $(".entry_wrap .selected", self.element);
+			if (selectedContainer.length > 0) {
+				var parent = this.$structureView.parent();
+				parent.animate({scrollTop: selectedContainer[0].offsetTop - parent[0].offsetTop}, 100)
 			}
 		}
 	});
@@ -3624,9 +3764,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		},
 		
 		getParameter : function (name) {
-			return decodeURI(
-					(RegExp(name + '=' + '([^&]*?)(&|$)').exec(location.search)||[,null])[1]
-			);
+			var value = RegExp(name + '=' + '([^&]*?)(&|$)').exec(location.search);
+			if (value == null)
+				return null;
+			return decodeURI(value[1]);
 		},
 		
 		setParameter : function(url, key, paramVal){
