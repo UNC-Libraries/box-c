@@ -192,7 +192,9 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 							self.sortOrder = !inverse;
 							
 							var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (self.sortOrder? ",reverse" : ""));
-							history.pushState({}, "", sortUrl);
+							if (history.pushState) {
+								history.pushState({}, "", sortUrl);
+							}
 					
 							// Apply sort function based on data-type
 							if (dataType == 'index') {

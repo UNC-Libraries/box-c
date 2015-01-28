@@ -230,15 +230,9 @@ define("AudioPlayer", [ 'jquery', 'jquery-ui'], function($, ui) {
 		
 		var childrenPresent = this.countChildrenPresent(this);
 		this.hasContent = this.childEntries && this.childEntries.length > 0;
-		this.moreContainersAvailable = (this.metadata.counts && this.metadata.counts.containers > childrenPresent);
 		
 		if (this.hasContent) {
-			if (this.moreContainersAvailable)
-				toggleClass = 'expand';
-			else toggleClass = 'collapse';
-			/*if (this.options.isRoot || !this.options.showingItems)
-				toggleClass = 'collapse';
-			else toggleClass = 'expand';*/
+			toggleClass = 'collapse';
 		} else if ((this.metadata.counts && this.metadata.counts.containers) ||
 				(this.options.structureView.options.retrieveFiles && this.metadata.counts && this.metadata.counts.child)) {
 			toggleClass = 'expand';
@@ -294,7 +288,7 @@ define("AudioPlayer", [ 'jquery', 'jquery-ui'], function($, ui) {
 		var $toggleButton = this.$entry.find('.cont_toggle');
 		var $childrenContainer = this.element.children(".children");
 		if ($toggleButton.hasClass('expand')) {
-			if ((this.moreContainersAvailable || !this.hasContent) && !this.contentLoaded) {
+			if (!this.hasContent && !this.contentLoaded) {
 				var loadingImage = $("<img src=\"/static/images/ajax_loader.gif\"/>");
 				$toggleButton.after(loadingImage);
 				var childrenUrl = "structure/" + this.metadata.id + "/json";

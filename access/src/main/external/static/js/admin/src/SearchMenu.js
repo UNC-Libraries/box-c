@@ -53,17 +53,16 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 			}
 			var self = this;
 			var top = activeMenu.offset().top;
-			var innerHeight = activeMenu.innerHeight();
-			var height = activeMenu.height();
+			var innerHeight = activeMenu.children().innerHeight();
+			var height = activeMenu.children().height();
 			var verticalPadding = innerHeight - height;
 			var windowHeight = $(window).height();
 			var siblingHeight = 0;
 			activeMenu.parent().nextAll().each(function(){
-				siblingHeight += $(this).outerHeight() + 4;
+				siblingHeight += $(this).outerHeight();
 			});
-			if ((top + innerHeight + siblingHeight) > windowHeight) {
-				activeMenu.height(windowHeight - top - siblingHeight - verticalPadding);
-			}
+			activeMenu.height(windowHeight - top - verticalPadding);
+			console.log("Adjust it", top, innerHeight, siblingHeight, windowHeight, verticalPadding);
 		},
 		
 		changeFolder : function(uuid) {
@@ -129,12 +128,14 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 						}
 						
 						self.$structureView = $structureView;
+						panel.html(data);
 					} else {
 						if ($(".facets", data).length == 0) {
 							data = "No additional filters";
 						}
+						panel.html("<div>" + data + "</div>");
 					}
-					panel.html(data);
+					
 					panel.data('contentLoaded', true);
 					self._adjustHeight();
 					

@@ -7,14 +7,17 @@
 	<% } %>
 	<div class="result_header_top">
 		<div class="container_header">
-			<% if (container) { %>
-				<span class="container_entry">
-					<h2 class="container_title">
+			<span class="container_entry">
+				<h2 class="container_title">
+					<% if (container) { %>
 						<span class="<%= containerDeleted? "deleted" : "" %>">Reviewing: <%= container.title %></span>
 						<img class="action_gear container_menu" src="/static/images/admin/gear.png">
-					</h2>
-				</span>
-			<% } %>
+					<% } else { %>
+						<span>Reviewing</span>
+					<% } %>
+				</h2>
+			</span>
+			<img id="result_loading_icon" class="hidden" src="/static/images/admin/loading_small.gif"/>
 		</div>
 		<div class="result_table_action_menu">
 		</div>

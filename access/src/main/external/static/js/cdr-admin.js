@@ -123,15 +123,9 @@ define('detachplus', [ 'jquery'], function($) {
 		
 		var childrenPresent = this.countChildrenPresent(this);
 		this.hasContent = this.childEntries && this.childEntries.length > 0;
-		this.moreContainersAvailable = (this.metadata.counts && this.metadata.counts.containers > childrenPresent);
 		
 		if (this.hasContent) {
-			if (this.moreContainersAvailable)
-				toggleClass = 'expand';
-			else toggleClass = 'collapse';
-			/*if (this.options.isRoot || !this.options.showingItems)
-				toggleClass = 'collapse';
-			else toggleClass = 'expand';*/
+			toggleClass = 'collapse';
 		} else if ((this.metadata.counts && this.metadata.counts.containers) ||
 				(this.options.structureView.options.retrieveFiles && this.metadata.counts && this.metadata.counts.child)) {
 			toggleClass = 'expand';
@@ -187,7 +181,7 @@ define('detachplus', [ 'jquery'], function($) {
 		var $toggleButton = this.$entry.find('.cont_toggle');
 		var $childrenContainer = this.element.children(".children");
 		if ($toggleButton.hasClass('expand')) {
-			if ((this.moreContainersAvailable || !this.hasContent) && !this.contentLoaded) {
+			if (!this.hasContent && !this.contentLoaded) {
 				var loadingImage = $("<img src=\"/static/images/ajax_loader.gif\"/>");
 				$toggleButton.after(loadingImage);
 				var childrenUrl = "structure/" + this.metadata.id + "/json";
@@ -3033,7 +3027,9 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 							self.sortOrder = !inverse;
 							
 							var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (self.sortOrder? ",reverse" : ""));
-							history.pushState({}, "", sortUrl);
+							if (history.pushState) {
+								history.pushState({}, "", sortUrl);
+							}
 					
 							// Apply sort function based on data-type
 							if (dataType == 'index') {
@@ -3482,13 +3478,16 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				url = URLUtilities.setParameter(url, "sort", sortParams);
 			}
 			
-			if (updateHistory) {
+			if (updateHistory && history.pushState) {
 				history.pushState({}, "", url);
 			}
+			
+			$("#result_loading_icon").removeClass("hidden");
 			
 			$.ajax({
 				url : url,
 				dataType : 'json',
+				cache: false,
 				success : function(data) {
 					if (this.addMenu) {
 						$("#add_menu").remove();
@@ -3498,6 +3497,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 						self.searchMenu.searchMenu("changeFolder", data.container? data.container.id : "");
 						self.searchMenu.searchMenu("updateFacets", url);
 					}
+					
+					$("#result_loading_icon").addClass("hidden");
 				},
 				error : function(data) {
 					console.error("Failed to load results", data);
@@ -3527,7 +3528,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					containerPath : this.options.containerPath,
 					resultUrl : this.options.resultUrl,
 					resultTableView : $(".result_area > div"),
-					selectedId : container && /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? container.id : false,
+					selectedId : container? container.id : false,
 				});
 
 				this.searchMenu.on("resize", $.proxy(function() {
@@ -3636,17 +3637,18 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			}
 			var self = this;
 			var top = activeMenu.offset().top;
-			var innerHeight = activeMenu.innerHeight();
-			var height = activeMenu.height();
+			var innerHeight = activeMenu.children().innerHeight();
+			var height = activeMenu.children().height();
 			var verticalPadding = innerHeight - height;
 			var windowHeight = $(window).height();
 			var siblingHeight = 0;
 			activeMenu.parent().nextAll().each(function(){
-				siblingHeight += $(this).outerHeight() + 4;
+				siblingHeight += $(this).outerHeight();
 			});
-			if ((top + innerHeight + siblingHeight) > windowHeight) {
-				activeMenu.height(windowHeight - top - siblingHeight - verticalPadding);
-			}
+			//if ((top + innerHeight) > windowHeight) {
+				activeMenu.height(windowHeight - top - verticalPadding);
+				//}
+			console.log("Adjust it", top, innerHeight, siblingHeight, windowHeight, verticalPadding);
 		},
 		
 		changeFolder : function(uuid) {
@@ -3712,12 +3714,14 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 						}
 						
 						self.$structureView = $structureView;
+						panel.html(data);
 					} else {
 						if ($(".facets", data).length == 0) {
 							data = "No additional filters";
 						}
+						panel.html("<div>" + data + "</div>");
 					}
-					panel.html(data);
+					
 					panel.data('contentLoaded', true);
 					self._adjustHeight();
 					

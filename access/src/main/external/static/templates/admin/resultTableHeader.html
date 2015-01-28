@@ -13,18 +13,7 @@
 						<span>Searching<% if (container) { %> in<% } %></span>
 					<% } %>
 					<% if (container) { %>
-						<%
-							var typeName;
-							if (containerDeleted)
-								typeName = "trash_can";
-							else if (container.type == "Folder")
-								typeName = 'admin/type_folder';
-							else if (container.type == "Collection")
-								typeName = 'admin/type_coll';
-							else if (container.type == "Aggregate")
-								typeName = 'admin/type_aggr';
-						%>
-						<img src="/static/images/<%= typeName %>.png" />
+						<div class="resource_icon <%= container.type %>"></div>
 						<span <%= containerDeleted? "class='deleted'" : "" %>><%= container.title %></span>
 						<img class="action_gear container_menu" src="/static/images/admin/gear.png">
 					
@@ -36,6 +25,7 @@
 				%><span id="add_menu" class="container_action">+ Add</span><%
 			}
 			%>
+			<img id="result_loading_icon" class="hidden" src="/static/images/admin/loading_small.gif"/>
 		</div>
 		<div class="result_table_action_menu">
 		</div>

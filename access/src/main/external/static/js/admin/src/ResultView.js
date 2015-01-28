@@ -118,13 +118,16 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 				url = URLUtilities.setParameter(url, "sort", sortParams);
 			}
 			
-			if (updateHistory) {
+			if (updateHistory && history.pushState) {
 				history.pushState({}, "", url);
 			}
+			
+			$("#result_loading_icon").removeClass("hidden");
 			
 			$.ajax({
 				url : url,
 				dataType : 'json',
+				cache: false,
 				success : function(data) {
 					if (this.addMenu) {
 						$("#add_menu").remove();
@@ -134,6 +137,8 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						self.searchMenu.searchMenu("changeFolder", data.container? data.container.id : "");
 						self.searchMenu.searchMenu("updateFacets", url);
 					}
+					
+					$("#result_loading_icon").addClass("hidden");
 				},
 				error : function(data) {
 					console.error("Failed to load results", data);
@@ -163,7 +168,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					containerPath : this.options.containerPath,
 					resultUrl : this.options.resultUrl,
 					resultTableView : $(".result_area > div"),
-					selectedId : container && /\w+\/uuid:[0-9a-f\-]+($|\?)/.test(document.URL)? container.id : false,
+					selectedId : container? container.id : false,
 				});
 
 				this.searchMenu.on("resize", $.proxy(function() {
