@@ -58,6 +58,7 @@ public class ContainerDataFileChecksumsController {
 		String fid = pid.replace(":", "_");
 		response.addHeader("Content-Disposition", "attachment; filename=\""
 				+ fid + "-fileinfo.csv\"");
+		response.addHeader("Content-Type", "text/csv");
 		try (ServletOutputStream out = response.getOutputStream()) {
 			out.print("title");
 			out.print(',');
@@ -73,11 +74,12 @@ public class ContainerDataFileChecksumsController {
 				initializeSolrServer();
 			SolrQuery parameters = new SolrQuery();
 			parameters.setQuery("contentModel:"+ClientUtils.escapeQueryChars("info:fedora/cdr-model:Simple")
-					+" ancestorPath:*"+ClientUtils.escapeQueryChars(","+pid+",")+"*");
+					+" AND ancestorPath:*"+ClientUtils.escapeQueryChars(","+pid+",")+"*");
 			parameters.addSort("filesizeTotal", ORDER.desc);
 			parameters.addField("title");
 			parameters.addField("id");
 			parameters.addField("datastream");
+			parameters.setRows(2000);
 			QueryResponse solrResponse = server.query(parameters);
 
 			for (SolrDocument doc : solrResponse.getResults()) {
