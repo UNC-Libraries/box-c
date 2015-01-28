@@ -146,6 +146,7 @@ public class ContainerManifestController {
 		
 		String id = pid.replace(":", "_");
 		response.addHeader("Content-Disposition", "attachment; filename=\""+id+"-manifest.csv\"");
+		response.addHeader("Content-Type", "text/csv");
 		try(ServletOutputStream out = response.getOutputStream()) {
 			out.print("depth");
 			out.print(',');

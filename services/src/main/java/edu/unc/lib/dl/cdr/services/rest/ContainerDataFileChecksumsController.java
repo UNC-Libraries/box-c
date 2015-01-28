@@ -58,6 +58,7 @@ public class ContainerDataFileChecksumsController {
 		String fid = pid.replace(":", "_");
 		response.addHeader("Content-Disposition", "attachment; filename=\""
 				+ fid + "-fileinfo.csv\"");
+		response.addHeader("Content-Type", "text/csv");
 		try (ServletOutputStream out = response.getOutputStream()) {
 			out.print("title");
 			out.print(',');
