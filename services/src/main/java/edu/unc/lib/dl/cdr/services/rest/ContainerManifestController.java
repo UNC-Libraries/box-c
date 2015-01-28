@@ -75,6 +75,7 @@ public class ContainerManifestController {
 		parameters.addField("id");
 		parameters.addField("filesizeTotal");
 		parameters.addField("title");
+		parameters.setRows(1000);
 		QueryResponse solrResponse = server.query(parameters);
 		
 		// objects map is a local index of pid to map
@@ -140,6 +141,7 @@ public class ContainerManifestController {
 		parameters.addField("ancestorNames");
 		parameters.addField("id");
 		parameters.addField("title");
+		parameters.setRows(1000);
 		QueryResponse solrResponse = server.query(parameters);
 		
 		String id = pid.replace(":", "_");
