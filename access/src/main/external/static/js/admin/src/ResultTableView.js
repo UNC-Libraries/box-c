@@ -20,6 +20,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			
 			this.actionHandler = this.options.actionHandler;
 			this.actionHandler.addToBaseContext('resultTable', this);
+			this.firstRender = true;
 		},
 		
 		render : function(data) {
@@ -29,7 +30,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				
 				self.element.html("");
 				
-				self.pagingActive = (data.pageStart + data.pageRows) < data.resultCount;
+				self.pagingActive = data.pageRows < data.resultCount;
 				
 				self.resultUrl = document.location.href;
 				var container = data.container;
@@ -87,7 +88,9 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				// Initialize batch operation buttons
 				self._initBatchOperations();
 			
-				self._initEventHandlers();
+				if (self.firstRender) {
+					self._initEventHandlers();
+				}
 			
 				// Activate the result entry context menus, on the action gear and right clicking
 				self.contextMenus = [new ResultObjectActionMenu({
@@ -108,6 +111,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				// Initialize click and drag operations
 				self._initMoveLocations();
 				self._initReordering();
+				
+				self.firstRender = false;
 			});
 		},
 		
@@ -158,9 +163,9 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					var isCurrentSortField = self.sortType == sortField;
 					if (isCurrentSortField) {
 						if (self.sortOrder) {
-							$this.addClass('asc');
-						} else {
 							$this.addClass('desc');
+						} else {
+							$this.addClass('asc');
 						}
 					}
 					// Set the sort URL for the column
@@ -191,7 +196,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						if (!self.pagingActive) {
 							self.sortOrder = !inverse;
 							
-							var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (self.sortOrder? ",reverse" : ""));
+							var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (!self.sortOrder? ",reverse" : ""));
 							if (history.pushState) {
 								history.pushState({}, "", sortUrl);
 							}
@@ -207,7 +212,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 							inverse = !inverse;
 							return false;
 						} else {
-							self.sortOrder = inverse;
+							self.sortOrder = !inverse;
 						}
 						//console.timeEnd("Sort total");
 					});

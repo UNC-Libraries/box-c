@@ -62,7 +62,6 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 				siblingHeight += $(this).outerHeight();
 			});
 			activeMenu.height(windowHeight - top - verticalPadding);
-			console.log("Adjust it", top, innerHeight, siblingHeight, windowHeight, verticalPadding);
 		},
 		
 		changeFolder : function(uuid) {

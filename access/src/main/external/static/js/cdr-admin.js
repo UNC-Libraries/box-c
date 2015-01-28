@@ -2855,6 +2855,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			
 			this.actionHandler = this.options.actionHandler;
 			this.actionHandler.addToBaseContext('resultTable', this);
+			this.firstRender = true;
 		},
 		
 		render : function(data) {
@@ -2864,7 +2865,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				
 				self.element.html("");
 				
-				self.pagingActive = (data.pageStart + data.pageRows) < data.resultCount;
+				self.pagingActive = data.pageRows < data.resultCount;
 				
 				self.resultUrl = document.location.href;
 				var container = data.container;
@@ -2922,7 +2923,9 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				// Initialize batch operation buttons
 				self._initBatchOperations();
 			
-				self._initEventHandlers();
+				if (self.firstRender) {
+					self._initEventHandlers();
+				}
 			
 				// Activate the result entry context menus, on the action gear and right clicking
 				self.contextMenus = [new ResultObjectActionMenu({
@@ -2943,6 +2946,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				// Initialize click and drag operations
 				self._initMoveLocations();
 				self._initReordering();
+				
+				self.firstRender = false;
 			});
 		},
 		
@@ -2993,9 +2998,9 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					var isCurrentSortField = self.sortType == sortField;
 					if (isCurrentSortField) {
 						if (self.sortOrder) {
-							$this.addClass('asc');
-						} else {
 							$this.addClass('desc');
+						} else {
+							$this.addClass('asc');
 						}
 					}
 					// Set the sort URL for the column
@@ -3026,7 +3031,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 						if (!self.pagingActive) {
 							self.sortOrder = !inverse;
 							
-							var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (self.sortOrder? ",reverse" : ""));
+							var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (!self.sortOrder? ",reverse" : ""));
 							if (history.pushState) {
 								history.pushState({}, "", sortUrl);
 							}
@@ -3042,7 +3047,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 							inverse = !inverse;
 							return false;
 						} else {
-							self.sortOrder = inverse;
+							self.sortOrder = !inverse;
 						}
 						//console.timeEnd("Sort total");
 					});
@@ -3645,9 +3650,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			activeMenu.parent().nextAll().each(function(){
 				siblingHeight += $(this).outerHeight();
 			});
-			//if ((top + innerHeight) > windowHeight) {
-				activeMenu.height(windowHeight - top - verticalPadding);
-				//}
+			activeMenu.height(windowHeight - top - verticalPadding);
 			console.log("Adjust it", top, innerHeight, siblingHeight, windowHeight, verticalPadding);
 		},
 		
