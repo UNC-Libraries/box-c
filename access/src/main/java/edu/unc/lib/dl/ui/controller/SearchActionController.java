@@ -15,30 +15,31 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import java.util.Arrays;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.ui.model.RecordNavigationState;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.ui.Model;
-import javax.servlet.http.HttpServletRequest;
 
-import java.util.Arrays;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.search.solr.model.CutoffFacet;
+import edu.unc.lib.dl.search.solr.model.SearchRequest;
+import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
+import edu.unc.lib.dl.ui.model.RecordNavigationState;
 
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
  * parameters, as well as actions performed on the state, and retrieves search results using it.
- * 
+ *
  * @author bbpennel
  */
 @Controller
@@ -55,7 +56,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 		model.addAttribute("queryMethod", "search");
 		return search(searchRequest, model, request);
 	}
-	
+
 	@RequestMapping("/search")
 	public String search(Model model, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
@@ -66,7 +67,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 		model.addAttribute("queryMethod", "search");
 		return search(searchRequest, model, request);
 	}
-	
+
 	private String search(SearchRequest searchRequest, Model model, HttpServletRequest request) {
 		SearchResultResponse resultResponse = doSearch(searchRequest, model, request);
 		// Setup parameters for full record navigation
@@ -76,13 +77,13 @@ public class SearchActionController extends AbstractSolrSearchController {
 		recordNavigationState.setRecordIdList(resultResponse.getIdList());
 		recordNavigationState.setTotalResults(resultResponse.getResultCount());
 		request.getSession().setAttribute("recordNavigationState", recordNavigationState);
-		
+
 		model.addAttribute("resultType", "searchResults");
 		model.addAttribute("pageSubtitle", "Search Results");
-		
+
 		return "searchResults";
 	}
-	
+
 	@RequestMapping("/list/{pid}")
 	public String list(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
@@ -91,7 +92,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 		model.addAttribute("queryMethod", "list");
 		return search(searchRequest, model, request);
 	}
-	
+
 	@RequestMapping("/list")
 	public String list(Model model, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
@@ -99,35 +100,36 @@ public class SearchActionController extends AbstractSolrSearchController {
 		model.addAttribute("queryMethod", "list");
 		return search(searchRequest, model, request);
 	}
-	
+
 	@RequestMapping("/collections")
 	public String browseCollections(Model model, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(this.collectionsPid.getPid());
+		CutoffFacet cutoff = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*!2");
+		searchRequest.getSearchState().getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), cutoff);
 		searchRequest.setApplyCutoffs(true);
 		SearchState searchState = searchRequest.getSearchState();
 		searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeCollection));
 		searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
-		
+
 		SearchResultResponse result = doSearch(searchRequest, model, request);
 		result.setSelectedContainer(null);
-		
+
 		model.addAttribute("queryMethod", "collections");
 		model.addAttribute("menuId", "browse");
 		model.addAttribute("resultType", "collectionBrowse");
 		model.addAttribute("pageSubtitle", "Browse Collections");
 		return "searchResults";
 	}
-	
+
 	protected SearchResultResponse doSearch(SearchRequest searchRequest, Model model, HttpServletRequest request) {
 		LOG.debug("In handle search actions");
 		searchRequest.setRetrieveFacets(true);
 
 		// Request object for the search
 		SearchState searchState = searchRequest.getSearchState();
-		
+
 		SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-		
+
 		if (resultResponse != null) {
 			if (searchRequest.isRetrieveFacets()) {
 				SearchRequest facetRequest = new SearchRequest(searchState, true);
@@ -137,20 +139,20 @@ public class SearchActionController extends AbstractSolrSearchController {
 					facetState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), resultResponse.getSelectedContainer().getPath());
 					facetRequest.setSearchState(facetState);
 				}
-				
+
 				// Retrieve the facet result set
 				SearchResultResponse resultResponseFacets = queryLayer.getFacetList(facetRequest);
 				resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
 			}
-			
+
 			queryLayer.populateBreadcrumbs(searchRequest, resultResponse);
 		}
-		
+
 		model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(searchState));
 		model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(searchState));
 		model.addAttribute("userAccessGroups", searchRequest.getAccessGroups());
 		model.addAttribute("resultResponse", resultResponse);
-		
+
 		return resultResponse;
 	}
 
