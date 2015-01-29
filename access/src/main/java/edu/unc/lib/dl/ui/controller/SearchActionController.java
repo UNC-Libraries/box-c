@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
@@ -31,6 +32,7 @@ import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.ui.Model;
+
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.Arrays;
@@ -103,7 +105,8 @@ public class SearchActionController extends AbstractSolrSearchController {
 	@RequestMapping("/collections")
 	public String browseCollections(Model model, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(this.collectionsPid.getPid());
+		CutoffFacet cutoff = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*!2");
+		searchRequest.getSearchState().getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), cutoff);
 		searchRequest.setApplyCutoffs(true);
 		SearchState searchState = searchRequest.getSearchState();
 		searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeCollection));
