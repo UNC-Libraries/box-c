@@ -50,14 +50,27 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				
 				// Confirm the move operation before performing it
 				var representative = ui.draggable.data("resultObject");
+				
 				var repTitle = representative.metadata.title;
-				if (repTitle.length > 50) repTitle = repTitle.substring(0, 50) + "...";
+				if (repTitle.length > 50) {
+					repTitle = repTitle.substring(0, 50) + "...";
+				}
+				
 				var destTitle = metadata.title;
-				if (destTitle.length > 50) destTitle = destTitle.substring(0, 50) + "...";
-				var promptText = "Move \"<a class='result_object_link' data-id='" + representative.pid + "'>" + repTitle + "</a>\"";
-				if (self.manager.dragTargets.length > 1)
-					promptText += " and " + (self.manager.dragTargets.length - 1) + " other object" + (self.manager.dragTargets.length - 1 > 1? "s" :"");
-				promptText += " into \"<a class='result_object_link' data-id='" + metadata.id + "'>" + destTitle + "</a>\"?";
+				if (destTitle.length > 50) {
+					destTitle = destTitle.substring(0, 50) + "...";
+				}
+				
+				var promptText = "Move ";
+				
+				if (self.manager.dragTargets.length == 1) {
+					promptText += "&quot;" + repTitle + "&quot;";
+				} else {
+					promptText += self.manager.dragTargets.length + " items";
+				}
+				
+				promptText += " into &quot;" + destTitle + "&quot;?";
+				
 				var confirm = new ConfirmationDialog({
 					promptText : promptText,
 					modal : true,
