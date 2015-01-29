@@ -586,8 +586,9 @@
 	overflow-y: hidden;
 }
 
-.move_helper img {
+.move_helper .resource_icon {
 	vertical-align: bottom;
+	margin-right: 2px;
 }
 
 .result_table.moving .res_entry.container .title {

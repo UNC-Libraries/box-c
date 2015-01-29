@@ -381,10 +381,10 @@ li {
 	opacity: 0.3;
 }
 
-.resource_icon.Collection { background-position: 0px 0px; }
-.resource_icon.Folder { background-position: -16px 0px; }
-.resource_icon.Aggregate { background-position: -32px 0px; }
-.resource_icon.File { background-position: -48px 0px; }
+.resource_icon.collection { background-position: 0px 0px; }
+.resource_icon.folder { background-position: -16px 0px; }
+.resource_icon.aggregate { background-position: -32px 0px; }
+.resource_icon.file { background-position: -48px 0px; }
 /*! jQuery UI - v1.10.2 - 2013-03-14
 * http://jqueryui.com
 * Includes: jquery.ui.core.css, jquery.ui.accordion.css, jquery.ui.autocomplete.css, jquery.ui.button.css, jquery.ui.datepicker.css, jquery.ui.dialog.css, jquery.ui.menu.css, jquery.ui.progressbar.css, jquery.ui.resizable.css, jquery.ui.selectable.css, jquery.ui.slider.css, jquery.ui.spinner.css, jquery.ui.tabs.css, jquery.ui.tooltip.css, jquery.ui.theme.css
@@ -3205,8 +3205,9 @@ h1 {
 	overflow-y: hidden;
 }
 
-.move_helper img {
+.move_helper .resource_icon {
 	vertical-align: bottom;
+	margin-right: 2px;
 }
 
 .result_table.moving .res_entry.container .title {

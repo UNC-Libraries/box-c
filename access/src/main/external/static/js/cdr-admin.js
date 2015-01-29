@@ -3296,11 +3296,16 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					var representative = element.closest(".res_entry").data("resultObject");
 					var metadata = representative.metadata;
 					// Indicate how many extra items are being moved
-					var additionalItemsText = "";
-					if (self.dragTargets.length > 1)
+					var additionalItemsText;
+					if (self.dragTargets.length == 1) {
+						additionalItemsText = "";
+					} else if (self.dragTargets.length == 2) {
+						additionalItemsText = " (and one other)";
+					} else {
 						additionalItemsText = " (and " + (self.dragTargets.length - 1) + " others)";
+					}
 					// Return helper for representative entry
-					var helper = $("<div class='move_helper'><span><img src='/static/images/admin/type_" + metadata.type.toLowerCase() + ".png'/>" + metadata.title + "</span>" + additionalItemsText + "</div>");
+					var helper = $("<div class='move_helper'><span><div class='resource_icon " + metadata.type.toLowerCase() + "'></div>" + metadata.title + "</span>" + additionalItemsText + "</div>");
 					//helper.width(300);
 					return helper;
 				},
