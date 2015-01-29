@@ -197,7 +197,7 @@ public class CdrRIAttributeFinder extends DesignatorAttributeFinderModule {
 	}
 
 	private String getDatastreamID(EvaluationCtx context) {
-		EvaluationResult result = context.getSubjectAttribute(stringDataType, datastreamIdAttribute, null);
+		EvaluationResult result = context.getResourceAttribute(stringDataType, datastreamIdAttribute, null);
 		
 		if (result.indeterminate()) {
 			return null;
