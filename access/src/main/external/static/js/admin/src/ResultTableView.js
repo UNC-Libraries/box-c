@@ -460,12 +460,18 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						setSelected(element);
 					var representative = element.closest(".res_entry").data("resultObject");
 					var metadata = representative.metadata;
-					// Indicate how many extra items are being moved
-					var additionalItemsText = "";
-					if (self.dragTargets.length > 1)
-						additionalItemsText = " (and " + (self.dragTargets.length - 1) + " others)";
+					
+					// Indicate how many items are being moved
+					var howManyItemsText;
+					if (self.dragTargets.length == 1) {
+						howManyItemsText = "";
+					} else {
+						howManyItemsText = " (" + self.dragTargets.length + " items)";
+					}
+					
 					// Return helper for representative entry
-					var helper = $("<div class='move_helper'><span><img src='/static/images/admin/type_" + metadata.type.toLowerCase() + ".png'/>" + metadata.title + "</span>" + additionalItemsText + "</div>");
+					var helper = $("<div class='move_helper'><span><div class='resource_icon " + metadata.type.toLowerCase() + "'></div>" + metadata.title + "</span>" + howManyItemsText + "</div>");
+					
 					//helper.width(300);
 					return helper;
 				},

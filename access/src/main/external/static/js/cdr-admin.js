@@ -1961,14 +1961,27 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 				
 				// Confirm the move operation before performing it
 				var representative = ui.draggable.data("resultObject");
+				
 				var repTitle = representative.metadata.title;
-				if (repTitle.length > 50) repTitle = repTitle.substring(0, 50) + "...";
+				if (repTitle.length > 50) {
+					repTitle = repTitle.substring(0, 50) + "...";
+				}
+				
 				var destTitle = metadata.title;
-				if (destTitle.length > 50) destTitle = destTitle.substring(0, 50) + "...";
-				var promptText = "Move \"<a class='result_object_link' data-id='" + representative.pid + "'>" + repTitle + "</a>\"";
-				if (self.manager.dragTargets.length > 1)
-					promptText += " and " + (self.manager.dragTargets.length - 1) + " other object" + (self.manager.dragTargets.length - 1 > 1? "s" :"");
-				promptText += " into \"<a class='result_object_link' data-id='" + metadata.id + "'>" + destTitle + "</a>\"?";
+				if (destTitle.length > 50) {
+					destTitle = destTitle.substring(0, 50) + "...";
+				}
+				
+				var promptText = "Move ";
+				
+				if (self.manager.dragTargets.length == 1) {
+					promptText += "&quot;" + repTitle + "&quot;";
+				} else {
+					promptText += self.manager.dragTargets.length + " items";
+				}
+				
+				promptText += " into &quot;" + destTitle + "&quot;?";
+				
 				var confirm = new ConfirmationDialog({
 					promptText : promptText,
 					modal : true,
@@ -3295,12 +3308,18 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 						setSelected(element);
 					var representative = element.closest(".res_entry").data("resultObject");
 					var metadata = representative.metadata;
-					// Indicate how many extra items are being moved
-					var additionalItemsText = "";
-					if (self.dragTargets.length > 1)
-						additionalItemsText = " (and " + (self.dragTargets.length - 1) + " others)";
+					
+					// Indicate how many items are being moved
+					var howManyItemsText;
+					if (self.dragTargets.length == 1) {
+						howManyItemsText = "";
+					} else {
+						howManyItemsText = " (" + self.dragTargets.length + " items)";
+					}
+					
 					// Return helper for representative entry
-					var helper = $("<div class='move_helper'><span><img src='/static/images/admin/type_" + metadata.type.toLowerCase() + ".png'/>" + metadata.title + "</span>" + additionalItemsText + "</div>");
+					var helper = $("<div class='move_helper'><span><div class='resource_icon " + metadata.type.toLowerCase() + "'></div>" + metadata.title + "</span>" + howManyItemsText + "</div>");
+					
 					//helper.width(300);
 					return helper;
 				},
