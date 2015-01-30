@@ -43,6 +43,7 @@ import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
@@ -98,9 +99,11 @@ import edu.unc.lib.dl.fedora.types.SetDatastreamVersionable;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionableResponse;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_EVENTS;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class ManagementClient extends WebServiceTemplate {
 	private AccessClient accessClient = null;
@@ -881,21 +884,39 @@ public class ManagementClient extends WebServiceTemplate {
 
 	public String writePremisEventsToFedoraObject(PremisEventLogger eventLogger, PID pid) throws FedoraException {
 		Document dom = null;
+		boolean newDatastream = false;
 
-		MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(pid, "MD_EVENTS", null);
-		ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
 		try {
+			MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(pid, "MD_EVENTS", null);
+			ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream());
 			dom = new SAXBuilder().build(bais);
 			bais.close();
 		} catch (JDOMException e) {
 			throw new IllegalRepositoryStateException("Cannot parse MD_EVENTS: " + pid, e);
 		} catch (IOException e) {
 			throw new Error(e);
+		} catch (NotFoundException e) {
+			log.warn("Could not find MD_EVENTS for {}, creating a new document", pid);
+			
+			dom = new Document();
+			Element premis = new Element("premis",
+					JDOMNamespaceUtil.PREMIS_V2_NS).addContent(PremisEventLogger.getObjectElement(pid));
+			dom.setRootElement(premis);
+			
+			newDatastream = true;
 		}
+		
 		eventLogger.appendLogEvents(pid, dom.getRootElement());
 		String eventsLoc = this.upload(dom);
-		String logTimestamp = this.modifyDatastreamByReference(pid, "MD_EVENTS", false, "adding PREMIS events",
-				new ArrayList<String>(), "PREMIS Events", "text/xml", null, null, eventsLoc);
+		String logTimestamp;
+		if (newDatastream) {
+			logTimestamp = this.addManagedDatastream(pid, MD_EVENTS.getName(), false, "adding PREMIS events",
+					new ArrayList<String>(), MD_EVENTS.getLabel(), MD_EVENTS.isVersionable(), "text/xml", eventsLoc);
+		} else {
+			logTimestamp = this.modifyDatastreamByReference(pid, MD_EVENTS.getName(), false, "adding PREMIS events",
+					new ArrayList<String>(), MD_EVENTS.getLabel(), "text/xml", null, null, eventsLoc);
+		}
+		
 		return logTimestamp;
 	}
 

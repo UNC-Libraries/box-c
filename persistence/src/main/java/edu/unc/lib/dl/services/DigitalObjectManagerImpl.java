@@ -204,7 +204,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			parent = this.removeFromContainer(pid);
 
 			Element event = logger.logEvent(PremisEventLogger.Type.DELETION, "Deleted " + deleted.size()
-					+ "contained object(s).", container);
+					+ " contained object(s).", container);
 			PremisEventLogger.addDetailedOutcome(event, "success", "Message: " + message, null);
 			this.managementClient.writePremisEventsToFedoraObject(logger, container);
 
