@@ -128,34 +128,40 @@ namespace :restart do
   
 end
 
-namespace :reload do
+task :restart do
+  invoke "restart:tomcat"
+  invoke "restart:deposit"
+end
+
+namespace :redeploy do
   
-  desc "Reload the access webapp"
+  desc "Redeploy the access webapp"
   task :access do
     on roles(:web) do
-      execute :curl, "--insecure", "--silent", "https://manager:manager@127.0.0.1/manager/text/reload?path=/"
+      execute :curl, "--insecure", "--silent", "\"https://manager:manager@127.0.0.1/manager/text/deploy?war=file:/var/deploy/webapps/ROOT.war&path=/&update=true\""
     end
   end
   
-  desc "Reload the admin webapp"
+  desc "Redeploy the admin webapp"
   task :admin do
     on roles(:web) do
-      execute :curl, "--insecure", "--silent", "https://manager:manager@127.0.0.1/manager/text/reload?path=/admin"
+      execute :curl, "--insecure", "--silent", "\"https://manager:manager@127.0.0.1/manager/text/deploy?war=file:/var/deploy/webapps/admin.war&path=/admin&update=true\""
     end
   end
   
-  desc "Reload the services webapp"
+  desc "Redeploy the services webapp"
   task :services do
     on roles(:web) do
-      execute :curl, "--insecure", "--silent", "https://manager:manager@127.0.0.1/manager/text/reload?path=/services"
+      execute :curl, "--insecure", "--silent", "\"https://manager:manager@127.0.0.1/manager/text/deploy?war=file:/var/deploy/webapps/services.war&path=/services&update=true\""
     end
   end
   
 end
 
-task :restart do
-  invoke "restart:tomcat"
-  invoke "restart:deposit"
+task :redeploy do
+  invoke "redeploy:access"
+  invoke "redeploy:admin"
+  invoke "redeploy:services"
 end
 
 task :deploy do
