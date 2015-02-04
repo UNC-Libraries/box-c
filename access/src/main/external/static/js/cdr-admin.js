@@ -1080,12 +1080,11 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 					items["editAccess"] = {name : 'Edit Access'};
 				if ($.inArray('editDescription', metadata.permissions) != -1) {
 					items["editDescription"] = {name : 'Edit Description'};
-			    	if($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
-			    		items["manifest"] = {name : 'Download CSV Manifest'};
-						items["fileinfo"] = {name : 'Download CSV File List'};
-			    	}
+					if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
+						items["exportCSV"] = {name : 'Export as CSV'};
+					}
 				}
-			    items["copyid"] = {name : 'Copy PID to Clipboard'};
+				items["copyid"] = {name : 'Copy PID to Clipboard'};
 				if ($.inArray('purgeForever', metadata.permissions) != -1) {
 					items["sepadmin"] = "";
 					items["reindex"] = {name : 'Reindex'};
@@ -1151,11 +1150,8 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 									confirmAnchor : options.$trigger
 								});
 								break;
-							case "manifest" :
-								document.location.href = serverUrl + "services/api/edit/manifest-csv/" + metadata.id;
-								break;
-							case "fileinfo" :
-								document.location.href = serverUrl + "services/api/edit/fileinfo/" + metadata.id;
+							case "exportCSV" :
+								document.location.href = baseUrl + "export/" + metadata.id;
 								break;
 							case "copyid" :
 								window.prompt("Copy PID to clipboard", metadata.id);
@@ -2484,10 +2480,9 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			items["editAccess"] = {name : 'Edit Access'};
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
-		    if($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
-		    	items["manifest"] = {name : 'Download CSV Manifest'};
-				items["fileinfo"] = {name : 'Download CSV File List'};
-		    }
+			if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
+				items["exportCSV"] = {name : 'Export as CSV'};
+			}
 		}
 	    items["copyid"] = {name : 'Copy PID to Clipboard'};
 		if ($.inArray('purgeForever', metadata.permissions) != -1) {
@@ -2555,11 +2550,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 							confirmAnchor : options.$trigger
 						});
 						break;
-					case "manifest" :
-						document.location.href = serverUrl + "services/api/edit/manifest-csv/" + metadata.id;
-						break;
-					case "fileinfo" :
-						document.location.href = serverUrl + "services/api/edit/fileinfo/" + metadata.id;
+					case "exportCSV" :
+						document.location.href = baseUrl + "export/" + metadata.id;
 						break;
 					case "copyid" :
 						window.prompt("Copy PID to clipboard", metadata.id);
