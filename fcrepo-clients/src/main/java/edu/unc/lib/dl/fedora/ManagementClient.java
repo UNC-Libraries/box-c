@@ -34,8 +34,10 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
@@ -49,7 +51,6 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.WebServiceFaultException;
@@ -593,6 +594,40 @@ public class ManagementClient extends WebServiceTemplate {
 		String timestamp = this.modifyDatastreamByValue(pid, dsid, force, message, altids, label, "text/xml", null,
 				ChecksumType.MD5, data);
 		return timestamp;
+	}
+
+	public void modifyDatastream(PID pid, String dsid, String message, List<String> altids,
+			String label, String lastModifiedDate, Document content) throws FedoraException {
+		byte[] dsBytes = ClientUtils.serializeXML(content);
+		modifyDatastream(pid, dsid, message, altids, label, lastModifiedDate, dsBytes);
+	}
+
+	public void modifyDatastream(PID pid, String dsid, String message, List<String> altids,
+			String label, String lastModifiedDate, byte[] content) throws FedoraException {
+
+		PutMethod method = new PutMethod(this.getFedoraContextUrl() + "/objects/" + pid.getPid() + "/datastreams/" + dsid);
+		method.setRequestEntity(new ByteArrayRequestEntity(content));
+
+		HttpMethodParams params = method.getParams();
+		if (message != null) {
+			params.setParameter("logMessage", message);
+		}
+		if (lastModifiedDate != null) {
+			params.setParameter("lastModifiedDate", lastModifiedDate);
+		}
+		if (label != null) {
+			params.setParameter("dsLabel", label);
+		}
+
+		try {
+			int response = httpClient.executeMethod(method);
+			if (response == 409) {
+				throw new OptimisticLockException("Datastream " + dsid + " on object " + pid
+						+ " has been modified more recently than the specified last modified date");
+			}
+		} catch (IOException e) {
+			throw new ServiceException("Failed to modify datastream " + dsid + " on object " + pid, e);
+		}
 	}
 
 	public String modifyObject(PID pid, String label, String ownerid, State state, String message)

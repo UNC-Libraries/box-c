@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.dl.services;
 
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_CONTENTS;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.RELS_EXT;
+import static edu.unc.lib.dl.util.ContentModelHelper.Relationship.contains;
+import static edu.unc.lib.dl.util.ContentModelHelper.Relationship.removedChild;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,8 +29,12 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
@@ -50,7 +59,9 @@ import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.ManagementClient.State;
 import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.schematron.SchematronValidator;
@@ -61,6 +72,7 @@ import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
+import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
@@ -82,6 +94,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private boolean available = false;
 	private String availableMessage = "The repository manager is not available yet.";
 	private AccessClient accessClient = null;
+	private ManagementClient forwardedManagementClient = null;
 	private ManagementClient managementClient = null;
 	private OperationsMessageSender operationsMessageSender = null;
 	private TripleStoreQueryService tripleStoreQueryService = null;
@@ -206,7 +219,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			Element event = logger.logEvent(PremisEventLogger.Type.DELETION, "Deleted " + deleted.size()
 					+ " contained object(s).", container);
 			PremisEventLogger.addDetailedOutcome(event, "success", "Message: " + message, null);
-			this.managementClient.writePremisEventsToFedoraObject(logger, container);
+			this.forwardedManagementClient.writePremisEventsToFedoraObject(logger, container);
 
 			// delete object and all of its children
 			for (PID obj : toDelete) {
@@ -249,7 +262,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	}
 
 	ManagementClient getManagementClient() {
-		return managementClient;
+		return forwardedManagementClient;
 	}
 
 	/**
@@ -356,6 +369,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		this.accessClient = accessClient;
 	}
 
+	public void setForwardedManagementClient(ManagementClient managementClient) {
+		this.forwardedManagementClient = managementClient;
+	}
+
 	public void setManagementClient(ManagementClient managementClient) {
 		this.managementClient = managementClient;
 	}
@@ -403,7 +420,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					mimetype, checksum, ChecksumType.MD5, newref);
 			// update PREMIS log
 			logger.logEvent(PremisEventLogger.Type.INGESTION, message, pid, dsid);
-			this.managementClient.writePremisEventsToFedoraObject(logger, pid);
+			this.forwardedManagementClient.writePremisEventsToFedoraObject(logger, pid);
 		} catch (FedoraException e) {
 			throw new IngestException("Could not update the specified object.", e);
 		}
@@ -516,7 +533,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 		// update PREMIS log
 		try {
-			this.managementClient.writePremisEventsToFedoraObject(logger, pid);
+			this.forwardedManagementClient.writePremisEventsToFedoraObject(logger, pid);
 		} catch (FedoraException e) {
 			log.error("Cannot log PREMIS events for " + pid.getPid(), e);
 		}
@@ -544,23 +561,23 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				// Handle inline datastreams
 				if (datastreamNames.contains(datastreamName)) {
 					log.debug("Replacing preexisting internal datastream " + datastreamName);
-					return this.managementClient.modifyDatastreamByValue(pid, datastream.getName(), false, message,
+					return this.forwardedManagementClient.modifyDatastreamByValue(pid, datastream.getName(), false, message,
 							new ArrayList<String>(), datastream.getLabel(), mimetype, null, null, content);
 				} else {
 					log.debug("Adding internal datastream " + datastreamName);
-					return this.managementClient.addInlineXMLDatastream(pid, datastream.getName(), false, message,
+					return this.forwardedManagementClient.addInlineXMLDatastream(pid, datastream.getName(), false, message,
 							new ArrayList<String>(), datastream.getLabel(), datastream.isVersionable(), content);
 				}
 			} else if (datastream.getControlGroup().equals(ContentModelHelper.ControlGroup.MANAGED)) {
 				// Handle managed datastreams
-				String dsLocation = managementClient.upload(content);
+				String dsLocation = forwardedManagementClient.upload(content);
 				if (datastreamNames.contains(datastreamName)) {
 					log.debug("Replacing preexisting managed datastream " + datastreamName);
-					return managementClient.modifyDatastreamByReference(pid, datastream.getName(), false, message,
+					return forwardedManagementClient.modifyDatastreamByReference(pid, datastream.getName(), false, message,
 							Collections.<String> emptyList(), dsLabel, mimetype, null, null, dsLocation);
 				} else {
 					log.debug("Adding managed datastream " + datastreamName);
-					return managementClient.addManagedDatastream(pid, datastream.getName(), false, message,
+					return forwardedManagementClient.addManagedDatastream(pid, datastream.getName(), false, message,
 							Collections.<String> emptyList(), dsLabel, datastream.isVersionable(), mimetype, dsLocation);
 				}
 			}
@@ -570,8 +587,282 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		return null;
 	}
 
+	/**
+	 * Returns a jdom Document containing the requested datastream if it exists. If it does not exist, then null is
+	 * returned. If the document cannot be parsed
+	 *
+	 * @param pid
+	 * @param datastreamName
+	 * @return
+	 * @throws FedoraException
+	 */
+	private Document getXMLDatastreamIfExists(PID pid, String datastreamName) throws FedoraException {
+
+		if (tripleStoreQueryService.hasDisseminator(pid, datastreamName)) {
+			MIMETypedStream mts = accessClient.getDatastreamDissemination(pid, datastreamName, null);
+
+			try (ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
+				Document dsDoc = new SAXBuilder().build(bais);
+				return dsDoc;
+			} catch (JDOMException | IOException e) {
+				throw new ServiceException("Failed to parse datastream " + datastreamName + " for object " + pid, e);
+			}
+		}
+
+		return null;
+	}
+
 	@Override
 	public void move(List<PID> moving, PID destination, String user, String message) throws IngestException {
+		moveNew(moving, destination, user, message);
+	}
+
+	public void moveNew(List<PID> moving, PID destination, String user, String message) throws IngestException {
+		availableCheck();
+
+		long startTime = System.currentTimeMillis();
+
+		// Verify the destination exists
+		List<PID> destinationPath = this.getTripleStoreQueryService().lookupRepositoryAncestorPids(destination);
+		if (destinationPath == null || destinationPath.size() == 0) {
+			throw new IngestException("Cannot find the destination folder: " + destinationPath);
+		}
+
+		// Verify the destination is a container
+		List<URI> cmtypes = this.getTripleStoreQueryService().lookupContentModels(destination);
+		if (!cmtypes.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
+			throw new IngestException("The destination is not a folder: " + destinationPath + " " + destination.getPid());
+		}
+
+		// Check that none of the items being moved are the destination or one of its ancestors
+		for (PID pid : moving) {
+			if (pid.equals(destination))
+				throw new IngestException("The destination folder and one of the moving objects are the same: " + destination);
+			for (PID destPid : destinationPath) {
+				if (pid.equals(destPid))
+					throw new IngestException("The destination folder is below one of the moving objects: " + destination);
+			}
+		}
+
+		// Determine the set of parents for all of the PIDs to be moved
+		Map<PID, List<PID>> sources = new HashMap<>();
+		for (PID pid : moving) {
+			PID source = this.tripleStoreQueryService.fetchContainer(pid);
+			if (source == null) {
+				log.warn("Attempting to move orphaned object {}", pid);
+			} else {
+				List<PID> moveFromSource = sources.get(source);
+				if (moveFromSource == null) {
+					moveFromSource = new ArrayList<>();
+					sources.put(source, moveFromSource);
+				}
+				moveFromSource.add(pid);
+			}
+		}
+
+		List<PID> reordered = new ArrayList<>();
+		// Get RELS-EXT documents for the set of parents and replace moved children with tombstones
+		try {
+			for (Entry<PID, List<PID>> sourceEntry : sources.entrySet()) {
+				PID sourcePID = sourceEntry.getKey();
+				updateSourceRelsExt: do {
+					// Get the current time before accessing RELS-EXT for use in optimistic locking
+					String captureTime = DateTimeUtil.getCurrentUTCTime();
+					Document relsExt = getXMLDatastreamIfExists(sourceEntry.getKey(), RELS_EXT.getName());
+					if (relsExt == null) {
+						throw new IngestException("Unable to retrieve RELS-EXT for " + sourcePID + ", aborting move operation");
+					}
+
+					try {
+						Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
+						List<Element> containsEls = descriptionEl.getChildren(contains.name(), contains.getNamespace());
+
+						for (Element containsEl : containsEls) {
+							PID childPID = new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
+
+							// Switch the moved children to the tombstone relation
+							if (sourceEntry.getValue().contains(childPID)) {
+								containsEl.setName(removedChild.name());
+							}
+						}
+
+						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+						log.info("{}", outputter.outputString(relsExt));
+
+						managementClient.modifyDatastream(sourcePID, RELS_EXT.getName(),
+								"Removing moved children", null, null, captureTime, relsExt);
+						break updateSourceRelsExt;
+					} catch (OptimisticLockException e) {
+						log.debug("Unable to update RELS-EXT for {}, retrying", sourcePID, e);
+					}
+					// Repeat rels-ext update if the source changed since the datastream was retrieved
+				} while (true);
+
+				// Update source MD_CONTENTS to remove children if it is present
+				updateSourceMDContents: do {
+					try {
+						String captureTimeMDContents = DateTimeUtil.getCurrentUTCTime();
+						Document mdContents = getXMLDatastreamIfExists(sourceEntry.getKey(), MD_CONTENTS.getName());
+
+						if (mdContents != null) {
+							ContainerContentsHelper.remove(mdContents, sourceEntry.getValue());
+
+							XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+							log.info("{}", outputter.outputString(mdContents));
+
+							forwardedManagementClient.modifyDatastream(sourceEntry.getKey(), MD_CONTENTS.getName(),
+									"Removing " + moving.size() + " moved children", null, null, captureTimeMDContents, mdContents);
+						}
+						break updateSourceMDContents;
+					} catch (OptimisticLockException e) {
+						log.debug("Unable to update RELS-EXT for {}, retrying", sourcePID, e);
+					}
+				} while (true);
+			}
+		} catch (Exception e) {
+			log.error("Failed to remove children from sources during move", e);
+			return;
+		}
+
+		// Add the moved children to the destination RELS-EXT
+		try {
+			updateDestinationRelsExt: do {
+				try {
+					// Get the current time before accessing RELS-EXT for use in optimistic locking
+					String captureTime = DateTimeUtil.getCurrentUTCTime();
+					Document relsExt = getXMLDatastreamIfExists(destination, RELS_EXT.getName());
+					if (relsExt == null) {
+						throw new IngestException("Unable to retrieve RELS-EXT for destination " + destination
+								+ ", aborting move operation");
+					}
+
+					Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
+
+					// Get the list of existing contains relations to avoid duplicate relations
+					List<Element> containsEls = descriptionEl.getChildren(contains.name(), contains.getNamespace());
+					Set<PID> existingChildren = new HashSet<>(containsEls.size());
+					for (Element containsEl : containsEls) {
+						existingChildren.add(new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS)));
+					}
+
+					// Add moved children (which are not duplicates) to destination
+					for (PID newChild : moving) {
+						if (!existingChildren.contains(newChild)) {
+							Element newChildEl = new Element(contains.name(), contains.getNamespace());
+							newChildEl.setAttribute("resource", newChild.getURI(), JDOMNamespaceUtil.RDF_NS);
+							descriptionEl.addContent(newChildEl);
+						} else {
+							log.warn("Destination {} already contained moved child {}", destination, newChild);
+						}
+					}
+
+					XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+					log.info("{}", outputter.outputString(relsExt));
+
+					// Push changes out to the destination container
+					managementClient.modifyDatastream(destination, RELS_EXT.getName(), "Adding moved children",
+							null, null,
+							captureTime, relsExt);
+					break updateDestinationRelsExt;
+				} catch (OptimisticLockException e) {
+					log.debug("Unable to update RELS-EXT for {}, retrying", destination, e);
+				}
+			} while (true);
+		} catch (Exception e) {
+			// Unexpected failure during move, need to fail operation and roll back
+			log.error("Failed to remove children from sources during move", e);
+			return;
+		}
+
+		// Update the MD_CONTENTS of the destination to add new children if the DS exists
+		try {
+			updateDestinationMDContents: do {
+				try {
+					// Update MD_CONTENTS to add new children if it is present
+					String captureTime = DateTimeUtil.getCurrentUTCTime();
+					Document mdContents = getXMLDatastreamIfExists(destination, MD_CONTENTS.getName());
+
+					if (mdContents != null) {
+						mdContents = ContainerContentsHelper.addChildContentListInCustomOrder(mdContents, destination,
+								moving, reordered);
+						forwardedManagementClient.modifyDatastream(destination, MD_CONTENTS.getName(),
+								"Adding " + moving.size()
+								+ " moved children", null, null, captureTime, mdContents);
+					}
+					break updateDestinationMDContents;
+				} catch (OptimisticLockException e) {
+					log.debug("Unable to update MD_CONTENTS for {}, retrying", destination, e);
+				}
+			} while (true);
+
+		} catch (Exception e) {
+			log.error("Failed to remove children from sources during move", e);
+			return;
+		}
+
+		// Remove tombstones from source containers
+		try {
+			for (Entry<PID, List<PID>> sourceEntry : sources.entrySet()) {
+				PID sourcePID = sourceEntry.getKey();
+				updateSourceRelsExt: do {
+					// Get the current time before accessing RELS-EXT for use in optimistic locking
+					String captureTime = DateTimeUtil.getCurrentUTCTime();
+					Document relsExt = getXMLDatastreamIfExists(sourceEntry.getKey(), RELS_EXT.getName());
+					if (relsExt == null) {
+						throw new IngestException("Unable to retrieve RELS-EXT for " + sourcePID
+								+ ", aborting move operation");
+					}
+
+					try {
+						Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
+						List<Element> removedEls = descriptionEl
+								.getChildren(removedChild.name(), removedChild.getNamespace());
+
+						Iterator<Element> removedIt = removedEls.iterator();
+						while (removedIt.hasNext()) {
+							Element removedEl = removedIt.next();
+							PID childPID = new PID(removedEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
+
+							// Remove the tombstone if it belongs to this source
+							if (sourceEntry.getValue().contains(childPID)) {
+								removedIt.remove();
+							}
+						}
+
+						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+						log.info("{}", outputter.outputString(relsExt));
+
+						managementClient.modifyDatastream(sourcePID, RELS_EXT.getName(),
+								"Cleaning up moved children", null,
+								null, captureTime, relsExt);
+						break updateSourceRelsExt;
+					} catch (OptimisticLockException e) {
+						log.debug("Unable to update RELS-EXT for {}, retrying", sourcePID, e);
+					}
+					// Repeat rels-ext update if the source changed since the datastream was retrieved
+				} while (true);
+			}
+		} catch (Exception e) {
+			log.error("Failed to cleanup children tombstones from sources during move", e);
+			return;
+		}
+
+		log.info("Move operation of {} items to {} completed in {}ms",
+				new Object[] { moving.size(), destination, (System.currentTimeMillis() - startTime) });
+
+		// Send out notification message that the move has completed
+		if (this.getOperationsMessageSender() != null) {
+			this.getOperationsMessageSender().sendMoveOperation(user, sources.keySet(), destination, moving,
+					Collections.<PID> emptyList());
+		}
+	}
+
+	public void rollbackMove(List<PID> moving, PID source) {
+
+	}
+
+
+	public void moveOld(List<PID> moving, PID destination, String user, String message) throws IngestException {
 		availableCheck();
 		PremisEventLogger logger = new PremisEventLogger(user);
 
@@ -648,7 +939,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			destContentInventoryUpdated = true;
 
 			// write the log events
-			managementClient.writePremisEventsToFedoraObject(logger, moving);
+			forwardedManagementClient.writePremisEventsToFedoraObject(logger, moving);
 
 			// send message for the operation
 			if (this.getOperationsMessageSender() != null) {
@@ -698,7 +989,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(containerPid.getPid());
 		FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.label, name);
 		PremisEventLogger logger = new PremisEventLogger(user);
-		
+
 		// MODS
 		if (mods != null) {
 			try(ByteArrayInputStream bais = new ByteArrayInputStream(mods)) {
@@ -726,7 +1017,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				throw new IngestException("MODS records did not parse", e);
 			}
 		}
-		
+
 		// RELS
 		Element rdfElement = new Element("RDF", JDOMNamespaceUtil.RDF_NS);
 		Element descrElement = new Element("Description", JDOMNamespaceUtil.RDF_NS);
@@ -756,14 +1047,14 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				rdfElement,
 				ContentModelHelper.Datastream.RELS_EXT.isVersionable());
 		foxml.getRootElement().addContent(relsEl);
-		
+
 		// PREMIS
 		Element premisEl = new Element("premis", JDOMNamespaceUtil.PREMIS_V2_NS)
 				.addContent(PremisEventLogger.getObjectElement(containerPid));
 		logger.logEvent(Type.CREATION,
 				"Container created", containerPid);
 		logger.appendLogEvents(containerPid, premisEl);
-		String premisLoc = managementClient.upload(new Document(premisEl));
+		String premisLoc = forwardedManagementClient.upload(new Document(premisEl));
 		Element premisDSEl = FOXMLJDOMUtil.makeLocatorDatastream(
 				ContentModelHelper.Datastream.MD_EVENTS.getName(), "M", premisLoc, "text/xml", "URL",
 				ContentModelHelper.Datastream.MD_EVENTS.getLabel(), false, null);
@@ -798,11 +1089,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			} catch(NotFoundException e) {
 				// no MD_CONTENTS to update, skip it
 			}
-			managementClient.ingest(foxml, Format.FOXML_1_1, "Container created via Admin UI");
+			forwardedManagementClient.ingest(foxml, Format.FOXML_1_1, "Container created via Admin UI");
 		} catch (FedoraException e) {
 			throw new IngestException("Failed to ingest container object", e);
 		}
-		
+
 		return containerPid;
 	}
 

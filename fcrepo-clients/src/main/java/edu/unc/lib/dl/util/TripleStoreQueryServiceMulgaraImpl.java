@@ -1361,6 +1361,23 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 	}
 
 	@Override
+	public boolean hasDisseminator(PID pid, String dsName) {
+		String query = String.format("select $pid from <%1$s>"
+				+ " where $pid <%3$s> <%4$s>"
+				+ " and $pid <http://mulgara.org/mulgara#is> <%2$s>;",
+				this.getResourceIndexModelUri(), pid.getURI(),
+				ContentModelHelper.FedoraProperty.disseminates.getURI(),
+				pid.getURI() + "/" + dsName);
+		List<List<String>> response = this.lookupStrings(query);
+		if (!response.isEmpty()) {
+			if (response.size() > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public Map<String, String> fetchDisseminatorMimetypes(PID pid) {
 		Map<String, String> result = new HashMap<String, String>();
 		String query = String.format("select $ds $mimetype from <%1$s>"

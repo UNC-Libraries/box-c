@@ -316,6 +316,15 @@ public interface TripleStoreQueryService {
 	public abstract List<String> listDisseminators(PID pid);
 
 	/**
+	 * Returns true if the object has the specified disseminator
+	 *
+	 * @param pid
+	 * @param dsName
+	 * @return
+	 */
+	public abstract boolean hasDisseminator(PID pid, String dsName);
+
+	/**
 	 * Gets datastreams that are cdr:sourceData for the object or its surrogate.
 	 *
 	 * @param pid

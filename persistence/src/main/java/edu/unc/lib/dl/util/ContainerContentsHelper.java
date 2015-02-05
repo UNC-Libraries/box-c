@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -36,9 +37,9 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 /**
  * A set of functions that are useful for reading, interpreting and writing the container contents XML stream.
  * (MD_CONTENTS)
- * 
+ *
  * @author count0
- * 
+ *
  */
 public class ContainerContentsHelper {
 	private static final Log log = LogFactory.getLog(ContainerContentsHelper.class);
@@ -46,9 +47,9 @@ public class ContainerContentsHelper {
 	/**
 	 * Adds new children to the content index. If there is an order specified for a new child, then it will insert the
 	 * child at the specified position. Any existing children after the specified position will be shifted if neccessary.
-	 * 
+	 *
 	 * @param reordered
-	 * 
+	 *
 	 * @param oldContents
 	 *           bytes for the old XML CONTENTS stream
 	 * @param topPid
@@ -197,6 +198,23 @@ public class ContainerContentsHelper {
 			}
 		}
 		parentDiv.removeContent(remove);
+		return oldXML;
+	}
+
+	public static Document remove(Document oldXML, Collection<PID> children) {
+		Element parentDiv = oldXML.getRootElement().getChild("div", JDOMNamespaceUtil.METS_NS);
+		List<Element> childDivs = parentDiv.getChildren();
+		Iterator<Element> childIt = childDivs.iterator();
+
+		while (childIt.hasNext()) {
+			Element child = childIt.next();
+			PID childPID = new PID(child.getAttributeValue("ID"));
+
+			if (children.contains(childPID)) {
+				childIt.remove();
+			}
+		}
+
 		return oldXML;
 	}
 
