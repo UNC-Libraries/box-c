@@ -2,6 +2,7 @@ package edu.unc.lib.deposit.work;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.CleanupDepositJob;
+import edu.unc.lib.deposit.PrepareResubmitJob;
 import edu.unc.lib.deposit.SendDepositorEmailJob;
 import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
 import edu.unc.lib.deposit.fcrepo3.MakeFOXML;
@@ -141,9 +143,14 @@ public class DepositSupervisor implements WorkerListener {
 				try {
 					// Scan for actions and trigger them
 					for (Map<String, String> fields : depositStatusFactory.getAll()) {
+						
+						String requestedActionName = fields.get(DepositField.actionRequest.name());
+						String uuid = fields.get(DepositField.uuid.name());
 
-						if (DepositAction.register.name().equals(fields.get(DepositField.actionRequest.name()))) {
-							String uuid = fields.get(DepositField.uuid.name());
+						if (DepositAction.register.name().equals(requestedActionName)) {
+							
+							LOG.info("Registering job {}", uuid);
+							
 							if (depositStatusFactory.addSupervisorLock(uuid, id)) {
 								try {
 									queueNewDeposit(uuid);
@@ -152,17 +159,15 @@ public class DepositSupervisor implements WorkerListener {
 								}
 							}
 
-						} else if (DepositAction.pause.name().equals(fields.get(DepositField.actionRequest.name()))) {
+						} else if (DepositAction.pause.name().equals(requestedActionName)) {
 
-							String uuid = fields.get(DepositField.uuid.name());
 							LOG.info("Pausing job {}", uuid);
 
 							depositStatusFactory.setState(uuid, DepositState.paused);
 							depositStatusFactory.clearActionRequest(uuid);
 
-						} else if (DepositAction.resume.name().equals(fields.get(DepositField.actionRequest.name()))) {
+						} else if (DepositAction.resume.name().equals(requestedActionName)) {
 
-							String uuid = fields.get(DepositField.uuid.name());
 							LOG.info("Resuming job {}", uuid);
 
 							if (depositStatusFactory.addSupervisorLock(uuid, id)) {
@@ -172,7 +177,21 @@ public class DepositSupervisor implements WorkerListener {
 									depositStatusFactory.removeSupervisorLock(uuid);
 								}
 							}
+							
+						} else if (DepositAction.resubmit.name().equals(requestedActionName)) {
+							
+							LOG.info("Resubmitting job {}", uuid);
+							
+							if (depositStatusFactory.addSupervisorLock(uuid, id)) {
+								try {
+									resubmitDeposit(uuid, fields);
+								} finally {
+									depositStatusFactory.removeSupervisorLock(uuid);
+								}
+							}
+							
 						}
+						
 					}
 				} catch (Throwable t) {
 					LOG.error("Encountered an exception while checking for action requests", t);
@@ -399,6 +418,13 @@ public class DepositSupervisor implements WorkerListener {
 	private Job getNextJob(Job job, String depositUUID, Map<String, String> status, List<String> successfulJobs)
 			throws DepositFailedException {
 		LOG.debug("Got completed job names: {}", successfulJobs);
+		
+		// Resubmit deposit
+		if (status.get(DepositField.resubmitFileName.name()) != null) {
+			if (!successfulJobs.contains(PrepareResubmitJob.class.getName())) {
+				return makeJob(PrepareResubmitJob.class, depositUUID);
+			}
+		}
 
 		// Package integrity check
 		if (status.get(DepositField.depositMd5.name()) != null) {
@@ -564,4 +590,25 @@ public class DepositSupervisor implements WorkerListener {
 			depositStatusFactory.fail(uuid, e);
 		}
 	}
+
+	private void resubmitDeposit(String uuid, Map<String, String> status) {
+		try {
+			depositStatusFactory.clearActionRequest(uuid);
+			
+			if (status.get(DepositField.resubmitFileName.name()) == null) {
+				throw new DepositFailedException("Can't resubmit a deposit without a new ingest file.");
+			}
+
+			// Clear out all jobs for this deposit
+			jobStatusFactory.deleteAll(uuid);
+			depositStatusFactory.deleteField(uuid, DepositField.errorMessage);
+
+			queueNextJob(null, uuid, status, Arrays.<String>asList(), new Long(0));
+
+			depositStatusFactory.setState(uuid, DepositState.queued);
+		} catch (DepositFailedException e) {
+			depositStatusFactory.fail(uuid, e);
+		}
+	}
+	
 }

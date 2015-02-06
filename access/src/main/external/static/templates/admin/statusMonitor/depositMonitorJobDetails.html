@@ -2,6 +2,10 @@
 	<h3>Details for ingest</h3> (<span class="<%= data.state.toLowerCase() %>"><%= data.state %></span>, refreshed <%= moment().format('h:mm:ssa') %>)
 
 	<% if (isAdmin || data.depositorName == username) { %>
+	<% if (data.state == "failed") { %>
+		<p><a href="#" class="resubmit_action" data-uuid="<%= data.uuid %>">Resubmit</a></p>
+	<% } %>
+  
 	<% if (data.state == "failed" || data.state == "paused") { %>
 		<p><a href="/services/api/edit/deposit/<%= data.uuid %>?action=resume" class="monitor_action">Resume</a></p>
 	<% } %>

@@ -3411,6 +3411,10 @@ h1 {
 	text-align: left;
 }
 
+.edit_form .error_message {
+	text-align: left;
+}
+
 .edit_form p {
 	padding-top: 7px;
 	text-align: left;

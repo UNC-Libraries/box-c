@@ -1,0 +1,17 @@
+<iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
+<form id="resubmit_package_form" method="post" action="ingest/<%= pid %>/resubmit" enctype="multipart/form-data" target="upload_file_frame" class="edit_form">
+	<h3>Package</h3>
+	<div class="form_field">
+		<label>Package</label>
+		<input type="file" id="resubmit_package_file" name="file"/>
+		<div class="file_info">&nbsp;</div>
+	</div>
+	<div class="update_field">
+		<input type="submit" id="resubmit_package_button" class="update_button" value="Resubmit" />
+	</div>
+	<div class="errors">
+		<h3>Errors</h3>
+		<div class="error_message">
+		</div>
+	</div>
+</form>

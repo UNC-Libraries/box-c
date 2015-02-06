@@ -1,5 +1,5 @@
-define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'tpl!../templates/admin/statusMonitor/depositMonitorJob', 'tpl!../templates/admin/statusMonitor/depositMonitorJobDetails'],
-		function($, ui, _, AbstractStatusMonitor, depositMonitorJobTemplate, depositMonitorDetailsTemplate) {
+define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'tpl!../templates/admin/statusMonitor/depositMonitorJob', 'tpl!../templates/admin/statusMonitor/depositMonitorJobDetails', 'ResubmitPackageForm'],
+		function($, ui, _, AbstractStatusMonitor, depositMonitorJobTemplate, depositMonitorDetailsTemplate, ResubmitPackageForm) {
 			
 	var defaultOptions = {
 		name : "deposit",
@@ -41,6 +41,17 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 			$.post($this.attr("href"), function(){
 				
 			});
+			return false;
+		});
+		
+		var resubmitPackageForm = new ResubmitPackageForm({
+			alertHandler : this.options.alertHandler
+		});
+		
+		$(this.element).on("click", ".resubmit_action", function() {
+			var $this = $(this);
+			// FIXME: prepending "uuid:" is a hack??
+			resubmitPackageForm.open("uuid:" + $this.data("uuid"));
 			return false;
 		});
 	};

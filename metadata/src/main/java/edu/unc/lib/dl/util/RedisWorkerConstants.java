@@ -10,10 +10,10 @@ public class RedisWorkerConstants {
 
 	public static enum DepositField {
 		uuid, state, actionRequest, contactName, depositorName, intSenderIdentifier, intSenderDescription,
-		fileName, depositMethod, containerId, payLoadOctets, createTime, startTime,
-		endTime, ingestedOctets, ingestedObjects, directory, lock, submitTime, depositorEmail, 
-		packagingType, metsProfile, metsType, permissionGroups, depositMd5, depositSlug, errorMessage, 
-		stackTrace, excludeDepositRecord, stagingFolderURI, publishObjects, manifestURI;
+		fileName, resubmitDirName, resubmitFileName, isResubmit, depositMethod, containerId, payLoadOctets,
+		createTime, startTime, endTime, ingestedOctets, ingestedObjects, directory, lock, submitTime,
+		depositorEmail, packagingType, metsProfile, metsType, permissionGroups, depositMd5, depositSlug,
+		errorMessage, stackTrace, excludeDepositRecord, stagingFolderURI, publishObjects, manifestURI;
 	}
 
 	public static enum JobField {
@@ -34,6 +34,6 @@ public class RedisWorkerConstants {
 	 *
 	 */
 	public static enum DepositAction {
-		register, pause, resume, cancel, destroy;
+		register, pause, resume, cancel, destroy, resubmit;
 	}
 }
