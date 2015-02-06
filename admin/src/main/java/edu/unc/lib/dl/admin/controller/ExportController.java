@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Date;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -51,6 +52,8 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 @Controller
 @RequestMapping("export")
 public class ExportController extends AbstractSolrSearchController {
+	
+	protected SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 
 	@RequestMapping(value = "{pid}", method = RequestMethod.GET)
 	public void export(@PathVariable("pid") String pid, HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -61,7 +64,7 @@ public class ExportController extends AbstractSolrSearchController {
 		SearchRequest searchRequest = generateSearchRequest(request, searchStateFactory.createSearchState());
 		
 		SearchState searchState = searchRequest.getSearchState();
-		searchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(), SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_NAMES.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name()));
+		searchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(), SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_NAMES.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name()));
 		searchState.setSortType("export");
 		searchState.setRowsPerPage(2000);
 		
@@ -86,7 +89,7 @@ public class ExportController extends AbstractSolrSearchController {
 	}
 	
 	private void printHeaders(CSVPrinter printer) throws IOException {
-		printer.printRecord("Object Type", "PID", "Title", "Path", "Deleted", "MIME Type", "Checksum", "File Size (bytes)", "Number of Children");
+		printer.printRecord("Object Type", "PID", "Title", "Path", "Deleted", "Date Added", "Date Updated", "MIME Type", "Checksum", "File Size (bytes)", "Number of Children");
 	}
 	
 	private void printObject(CSVPrinter printer, BriefObjectMetadata object) throws IOException {
@@ -101,6 +104,24 @@ public class ExportController extends AbstractSolrSearchController {
 		// Status: deleted
 		
 		printer.print(new Boolean(object.getStatus().contains("Deleted") || object.getStatus().contains("Parent Deleted")));
+		
+		// Dates: added, updated
+		
+		Date added = object.getDateAdded();
+		
+		if (added != null) {
+			printer.print(dateFormat.format(added));
+		} else {
+			printer.print("");
+		}
+		
+		Date updated = object.getDateUpdated();
+		
+		if (updated != null) {
+			printer.print(dateFormat.format(updated));
+		} else {
+			printer.print("");
+		}
 		
 		// DATA_FILE info: mime type, checksum, file size
 		
