@@ -52,7 +52,12 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.AuthorizationException;
+import edu.unc.lib.dl.fedora.FedoraAccessControlService;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.ChecksumType;
@@ -72,7 +77,6 @@ import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
-import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
@@ -96,6 +100,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private AccessClient accessClient = null;
 	private ManagementClient forwardedManagementClient = null;
 	private ManagementClient managementClient = null;
+	private FedoraAccessControlService aclService = null;
 	private OperationsMessageSender operationsMessageSender = null;
 	private TripleStoreQueryService tripleStoreQueryService = null;
 	private SchematronValidator schematronValidator = null;
@@ -587,23 +592,53 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		return null;
 	}
 
+	private class DatastreamDocument {
+		private final Document document;
+		private final String lastModified;
+
+		public DatastreamDocument(Document document, String lastModified) {
+			super();
+			this.document = document;
+			this.lastModified = lastModified;
+		}
+
+		public Document getDocument() {
+			return document;
+		}
+
+		public String getLastModified() {
+			return lastModified;
+		}
+	}
+
+
 	/**
-	 * Returns a jdom Document containing the requested datastream if it exists. If it does not exist, then null is
-	 * returned. If the document cannot be parsed
+	 * Returns response containing the jdom document representing the datastream and the last modified date. If it does
+	 * not exist, then null is returned. If the document cannot be parsed
 	 *
 	 * @param pid
 	 * @param datastreamName
 	 * @return
 	 * @throws FedoraException
 	 */
-	private Document getXMLDatastreamIfExists(PID pid, String datastreamName) throws FedoraException {
+	private DatastreamDocument getXMLDatastreamIfExists(PID pid, String datastreamName) throws FedoraException {
 
 		if (tripleStoreQueryService.hasDisseminator(pid, datastreamName)) {
 			MIMETypedStream mts = accessClient.getDatastreamDissemination(pid, datastreamName, null);
 
+			// Capture the last modified date of the datastream to return with the document
+			// Fri, 06 Feb 2015 14:54:45 GMT
+			String lastModified = null;
+			for (edu.unc.lib.dl.fedora.types.Property header : mts.getHeader().getProperty()) {
+				if ("Last-Modified".equals(header.getName())) {
+					lastModified = header.getValue();
+					break;
+				}
+			}
+
 			try (ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
 				Document dsDoc = new SAXBuilder().build(bais);
-				return dsDoc;
+				return new DatastreamDocument(dsDoc, lastModified);
 			} catch (JDOMException | IOException e) {
 				throw new ServiceException("Failed to parse datastream " + datastreamName + " for object " + pid, e);
 			}
@@ -660,21 +695,32 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			}
 		}
 
+		// Check that the user has permissions to add/remove from all sources and the destination
+		AccessGroupSet groups = GroupsThreadStore.getGroups();
+		List<PID> containerList = new ArrayList<>(sources.keySet());
+		containerList.add(destination);
+		for (PID container : containerList) {
+			if (!aclService.hasAccess(container, groups, Permission.addRemoveContents)) {
+				throw new IngestException("Insufficient permissions to perform move operation",
+						new AuthorizationException("Cannot complete move operation, user " + user
+								+ " does not have permission to modify " + container));
+			}
+		}
+
 		List<PID> reordered = new ArrayList<>();
 		// Get RELS-EXT documents for the set of parents and replace moved children with tombstones
 		try {
 			for (Entry<PID, List<PID>> sourceEntry : sources.entrySet()) {
 				PID sourcePID = sourceEntry.getKey();
 				updateSourceRelsExt: do {
-					// Get the current time before accessing RELS-EXT for use in optimistic locking
-					String captureTime = DateTimeUtil.getCurrentUTCTime();
-					Document relsExt = getXMLDatastreamIfExists(sourceEntry.getKey(), RELS_EXT.getName());
-					if (relsExt == null) {
+					DatastreamDocument relsExtResp = getXMLDatastreamIfExists(sourceEntry.getKey(), RELS_EXT.getName());
+					if (relsExtResp == null) {
 						throw new IngestException("Unable to retrieve RELS-EXT for " + sourcePID + ", aborting move operation");
 					}
+					Document relsExt = relsExtResp.getDocument();
 
 					try {
-						Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
+						Element descriptionEl = relsExt.getDocument().getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
 						List<Element> containsEls = descriptionEl.getChildren(contains.name(), contains.getNamespace());
 
 						for (Element containsEl : containsEls) {
@@ -690,7 +736,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 						log.info("{}", outputter.outputString(relsExt));
 
 						managementClient.modifyDatastream(sourcePID, RELS_EXT.getName(),
-								"Removing moved children", null, null, captureTime, relsExt);
+								"Removing moved children", null, null, relsExtResp.getLastModified(), relsExt);
 						break updateSourceRelsExt;
 					} catch (OptimisticLockException e) {
 						log.debug("Unable to update RELS-EXT for {}, retrying", sourcePID, e);
@@ -701,17 +747,17 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				// Update source MD_CONTENTS to remove children if it is present
 				updateSourceMDContents: do {
 					try {
-						String captureTimeMDContents = DateTimeUtil.getCurrentUTCTime();
-						Document mdContents = getXMLDatastreamIfExists(sourceEntry.getKey(), MD_CONTENTS.getName());
+						DatastreamDocument mdContents = getXMLDatastreamIfExists(sourceEntry.getKey(), MD_CONTENTS.getName());
 
 						if (mdContents != null) {
-							ContainerContentsHelper.remove(mdContents, sourceEntry.getValue());
+							ContainerContentsHelper.remove(mdContents.getDocument(), sourceEntry.getValue());
 
 							XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-							log.info("{}", outputter.outputString(mdContents));
+							log.info("{}", outputter.outputString(mdContents.getDocument()));
 
-							forwardedManagementClient.modifyDatastream(sourceEntry.getKey(), MD_CONTENTS.getName(),
-									"Removing " + moving.size() + " moved children", null, null, captureTimeMDContents, mdContents);
+							managementClient.modifyDatastream(sourceEntry.getKey(), MD_CONTENTS.getName(),
+									"Removing " + moving.size() + " moved children", null, null,
+									mdContents.getLastModified(), mdContents.getDocument());
 						}
 						break updateSourceMDContents;
 					} catch (OptimisticLockException e) {
@@ -728,13 +774,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		try {
 			updateDestinationRelsExt: do {
 				try {
-					// Get the current time before accessing RELS-EXT for use in optimistic locking
-					String captureTime = DateTimeUtil.getCurrentUTCTime();
-					Document relsExt = getXMLDatastreamIfExists(destination, RELS_EXT.getName());
-					if (relsExt == null) {
+					DatastreamDocument relsExtResp = getXMLDatastreamIfExists(destination, RELS_EXT.getName());
+					if (relsExtResp == null) {
 						throw new IngestException("Unable to retrieve RELS-EXT for destination " + destination
 								+ ", aborting move operation");
 					}
+					Document relsExt = relsExtResp.getDocument();
 
 					Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
 
@@ -762,7 +807,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					// Push changes out to the destination container
 					managementClient.modifyDatastream(destination, RELS_EXT.getName(), "Adding moved children",
 							null, null,
-							captureTime, relsExt);
+							relsExtResp.getLastModified(), relsExt);
 					break updateDestinationRelsExt;
 				} catch (OptimisticLockException e) {
 					log.debug("Unable to update RELS-EXT for {}, retrying", destination, e);
@@ -779,15 +824,15 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			updateDestinationMDContents: do {
 				try {
 					// Update MD_CONTENTS to add new children if it is present
-					String captureTime = DateTimeUtil.getCurrentUTCTime();
-					Document mdContents = getXMLDatastreamIfExists(destination, MD_CONTENTS.getName());
+					DatastreamDocument mdContentsResp = getXMLDatastreamIfExists(destination, MD_CONTENTS.getName());
 
-					if (mdContents != null) {
-						mdContents = ContainerContentsHelper.addChildContentListInCustomOrder(mdContents, destination,
-								moving, reordered);
-						forwardedManagementClient.modifyDatastream(destination, MD_CONTENTS.getName(),
+					if (mdContentsResp != null) {
+
+						Document mdContents = ContainerContentsHelper.addChildContentListInCustomOrder(
+								mdContentsResp.getDocument(), destination, moving, reordered);
+						managementClient.modifyDatastream(destination, MD_CONTENTS.getName(),
 								"Adding " + moving.size()
-								+ " moved children", null, null, captureTime, mdContents);
+								+ " moved children", null, null, mdContentsResp.getLastModified(), mdContents);
 					}
 					break updateDestinationMDContents;
 				} catch (OptimisticLockException e) {
@@ -806,12 +851,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				PID sourcePID = sourceEntry.getKey();
 				updateSourceRelsExt: do {
 					// Get the current time before accessing RELS-EXT for use in optimistic locking
-					String captureTime = DateTimeUtil.getCurrentUTCTime();
-					Document relsExt = getXMLDatastreamIfExists(sourceEntry.getKey(), RELS_EXT.getName());
-					if (relsExt == null) {
+					DatastreamDocument relsExtResp = getXMLDatastreamIfExists(sourceEntry.getKey(), RELS_EXT.getName());
+					if (relsExtResp == null) {
 						throw new IngestException("Unable to retrieve RELS-EXT for " + sourcePID
 								+ ", aborting move operation");
 					}
+					Document relsExt = relsExtResp.getDocument();
 
 					try {
 						Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
@@ -834,7 +879,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 						managementClient.modifyDatastream(sourcePID, RELS_EXT.getName(),
 								"Cleaning up moved children", null,
-								null, captureTime, relsExt);
+								null, relsExtResp.getLastModified(), relsExt);
 						break updateSourceRelsExt;
 					} catch (OptimisticLockException e) {
 						log.debug("Unable to update RELS-EXT for {}, retrying", sourcePID, e);
@@ -853,12 +898,50 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		// Send out notification message that the move has completed
 		if (this.getOperationsMessageSender() != null) {
 			this.getOperationsMessageSender().sendMoveOperation(user, sources.keySet(), destination, moving,
-					Collections.<PID> emptyList());
+					reordered);
 		}
 	}
 
-	public void rollbackMove(List<PID> moving, PID source) {
+	public void rollbackMove(List<PID> moving, PID source) throws IngestException {
+		DatastreamDocument sourceRelsExtResp = getXMLDatastreamIfExists(source, RELS_EXT.getName());
+		if (sourceRelsExtResp == null) {
+			log.error("Failed to get source RELS-EXT while attempting to roll back move operating from {}", source);
+			return;
+		}
+		Document sourceRelsExt = sourceRelsExtResp.getDocument();
 
+		updateSourceRelsExt: do {
+			DatastreamDocument relsExtResp = getXMLDatastreamIfExists(source, RELS_EXT.getName());
+			if (relsExtResp == null) {
+				throw new IngestException("Unable to retrieve RELS-EXT for " + source + ", aborting move operation");
+			}
+			Document relsExt = relsExtResp.getDocument();
+
+			try {
+				Element descriptionEl = relsExt.getDocument().getRootElement()
+						.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+				List<Element> containsEls = descriptionEl.getChildren(contains.name(), contains.getNamespace());
+
+				for (Element containsEl : containsEls) {
+					PID childPID = new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
+
+					// Switch the moved children to the tombstone relation
+					if (moving.contains(childPID)) {
+						containsEl.setName(removedChild.name());
+					}
+				}
+
+				XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+				log.info("{}", outputter.outputString(relsExt));
+
+				managementClient.modifyDatastream(source, RELS_EXT.getName(), "Removing moved children", null, null,
+						relsExtResp.getLastModified(), relsExt);
+				break updateSourceRelsExt;
+			} catch (OptimisticLockException e) {
+				log.debug("Unable to update RELS-EXT for {}, retrying", source, e);
+			}
+			// Repeat rels-ext update if the source changed since the datastream was retrieved
+		} while (true);
 	}
 
 
@@ -1099,5 +1182,13 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 	public void setCollectionsPid(PID collectionsPid) {
 		this.collectionsPid = collectionsPid;
+	}
+
+	public FedoraAccessControlService getAclService() {
+		return aclService;
+	}
+
+	public void setAclService(FedoraAccessControlService aclService) {
+		this.aclService = aclService;
 	}
 }

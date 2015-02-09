@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.fedora;
 
 import static edu.unc.lib.dl.util.ContentModelHelper.Administrative_PID.REPOSITORY;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_EVENTS;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -100,7 +101,6 @@ import edu.unc.lib.dl.fedora.types.SetDatastreamVersionable;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionableResponse;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_EVENTS;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -627,6 +627,8 @@ public class ManagementClient extends WebServiceTemplate {
 			}
 		} catch (IOException e) {
 			throw new ServiceException("Failed to modify datastream " + dsid + " on object " + pid, e);
+		} finally {
+			method.releaseConnection();
 		}
 	}
 
@@ -932,15 +934,15 @@ public class ManagementClient extends WebServiceTemplate {
 			throw new Error(e);
 		} catch (NotFoundException e) {
 			log.warn("Could not find MD_EVENTS for {}, creating a new document", pid);
-			
+
 			dom = new Document();
 			Element premis = new Element("premis",
 					JDOMNamespaceUtil.PREMIS_V2_NS).addContent(PremisEventLogger.getObjectElement(pid));
 			dom.setRootElement(premis);
-			
+
 			newDatastream = true;
 		}
-		
+
 		eventLogger.appendLogEvents(pid, dom.getRootElement());
 		String eventsLoc = this.upload(dom);
 		String logTimestamp;
@@ -951,7 +953,7 @@ public class ManagementClient extends WebServiceTemplate {
 			logTimestamp = this.modifyDatastreamByReference(pid, MD_EVENTS.getName(), false, "adding PREMIS events",
 					new ArrayList<String>(), MD_EVENTS.getLabel(), "text/xml", null, null, eventsLoc);
 		}
-		
+
 		return logTimestamp;
 	}
 

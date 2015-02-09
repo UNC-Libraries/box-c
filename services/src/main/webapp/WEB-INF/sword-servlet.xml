@@ -66,6 +66,7 @@
 		<property name="forwardedManagementClient" ref="forwardedManagementClient"/>
 		<property name="accessClient" ref="accessClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
+		<property name="aclService" ref="accessControlService"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="schematronValidator" ref="schematronValidator"/>
 		<property name="available" value="true"/>
