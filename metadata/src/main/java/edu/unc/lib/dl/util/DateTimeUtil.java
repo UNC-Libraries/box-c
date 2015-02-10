@@ -109,10 +109,4 @@ public class DateTimeUtil {
 		DateTime dateTime = new DateTime(date);
 		return utcFormatter.print(dateTime);
 	}
-
-	public static String getCurrentUTCTime() {
-		DateTime now = new DateTime();
-		DateTime utcTime = now.toDateTime(DateTimeZone.UTC);
-		return utcTime.toString();
-	}
 }
