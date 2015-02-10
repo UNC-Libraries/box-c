@@ -23,6 +23,7 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Relationship.removedChild;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
@@ -31,6 +32,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,7 +40,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +47,6 @@ import javax.annotation.Resource;
 
 import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
-import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,9 +69,8 @@ import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream.Header;
 import edu.unc.lib.dl.fedora.types.Property;
 import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.dl.xml.JDOMQueryUtil;
 
 /**
  * @author bbpennel
@@ -220,18 +219,18 @@ public class DigitalObjectManagerMoveTest {
 		List<Document> sourceRelsAnswers = sourceRelsExtUpdateCaptor.getAllValues();
 		// Check the state of the source after removal but before cleanup
 		Document sourceRelsExt = sourceRelsAnswers.get(0);
-		Set<PID> children = getRelationSet(sourceRelsExt.getRootElement(), contains);
+		Set<PID> children = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), contains);
 		assertEquals("Incorrect number of children in source container after move", 10, children.size());
 
-		Set<PID> removed = getRelationSet(sourceRelsExt.getRootElement(), removedChild);
+		Set<PID> removed = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), removedChild);
 		assertEquals("Moved child gravestones not correctly set in source container", 2, removed.size());
 
 		// Check that tombstones were cleaned up by the end of the operation
 		Document cleanRelsExt = sourceRelsAnswers.get(1);
-		children = getRelationSet(cleanRelsExt.getRootElement(), contains);
+		children = JDOMQueryUtil.getRelationSet(cleanRelsExt.getRootElement(), contains);
 		assertEquals("Incorrect number of children in source container after cleanup", 10, children.size());
 
-		removed = getRelationSet(cleanRelsExt.getRootElement(), removedChild);
+		removed = JDOMQueryUtil.getRelationSet(cleanRelsExt.getRootElement(), removedChild);
 		assertEquals("Child tombstones not cleaned up", 0, removed.size());
 
 		// Verify that the destination had the moved children added to it
@@ -242,7 +241,7 @@ public class DigitalObjectManagerMoveTest {
 		assertFalse("Moved children were still present in source", children.containsAll(moving));
 
 		Document destRelsExt = destRelsExtUpdateCaptor.getValue();
-		children = getRelationSet(destRelsExt.getRootElement(), contains);
+		children = JDOMQueryUtil.getRelationSet(destRelsExt.getRootElement(), contains);
 		assertEquals("Incorrect number of children in destination container after moved", 9, children.size());
 		assertTrue("Moved children were not present in destination", children.containsAll(moving));
 	}
@@ -316,18 +315,18 @@ public class DigitalObjectManagerMoveTest {
 
 		// Verify that the initial source RELS-EXT update is repeated after failure
 		Document sourceRelsExt = sourceRelsAnswers.get(0);
-		Set<PID> removed = getRelationSet(sourceRelsExt.getRootElement(), removedChild);
+		Set<PID> removed = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), removedChild);
 		assertEquals("Child tombstones should still be present", 2, removed.size());
 		sourceRelsExt = sourceRelsAnswers.get(1);
-		removed = getRelationSet(sourceRelsExt.getRootElement(), removedChild);
+		removed = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), removedChild);
 		assertEquals("Child tombstones should still be present on second try", 2, removed.size());
 
 		// Check that tombstones were cleaned up by the end of the operation
 		Document cleanRelsExt = sourceRelsAnswers.get(2);
-		Set<PID> children = getRelationSet(cleanRelsExt.getRootElement(), contains);
+		Set<PID> children = JDOMQueryUtil.getRelationSet(cleanRelsExt.getRootElement(), contains);
 		assertEquals("Incorrect number of children in source container after cleanup", 10, children.size());
 
-		removed = getRelationSet(cleanRelsExt.getRootElement(), removedChild);
+		removed = JDOMQueryUtil.getRelationSet(cleanRelsExt.getRootElement(), removedChild);
 		assertEquals("Child tombstones not cleaned up", 0, removed.size());
 
 		// Verify that the destination had the moved children added to it
@@ -336,7 +335,7 @@ public class DigitalObjectManagerMoveTest {
 				anyListOf(String.class), anyString(), anyString(), destRelsExtUpdateCaptor.capture());
 
 		Document destRelsExt = destRelsExtUpdateCaptor.getValue();
-		children = getRelationSet(destRelsExt.getRootElement(), contains);
+		children = JDOMQueryUtil.getRelationSet(destRelsExt.getRootElement(), contains);
 		assertEquals("Incorrect number of children in destination container after moved", 9, children.size());
 		assertTrue("Moved children were not present in destination", children.containsAll(moving));
 
@@ -366,7 +365,7 @@ public class DigitalObjectManagerMoveTest {
 
 		// Check that the first source was updated
 		Document clean1RelsExt = source1RelsExtUpdateCaptor.getValue();
-		Set<PID> children = getRelationSet(clean1RelsExt.getRootElement(), contains);
+		Set<PID> children = JDOMQueryUtil.getRelationSet(clean1RelsExt.getRootElement(), contains);
 		assertEquals("Incorrect number of children in source 1 after cleanup", 11, children.size());
 
 		// Check that the second source was updated
@@ -374,7 +373,7 @@ public class DigitalObjectManagerMoveTest {
 		verify(managementClient, times(2)).modifyDatastream(eq(source2PID), eq(RELS_EXT.getName()), anyString(),
 				anyListOf(String.class), anyString(), anyString(), source2RelsExtUpdateCaptor.capture());
 		Document clean2RelsExt = source2RelsExtUpdateCaptor.getValue();
-		children = getRelationSet(clean2RelsExt.getRootElement(), contains);
+		children = JDOMQueryUtil.getRelationSet(clean2RelsExt.getRootElement(), contains);
 		assertEquals("Incorrect number of children in source 2 after cleanup", 1, children.size());
 
 		// Check that items from both source 1 and 2 ended up in the destination.
@@ -383,18 +382,131 @@ public class DigitalObjectManagerMoveTest {
 				anyListOf(String.class), anyString(), anyString(), destRelsExtUpdateCaptor.capture());
 
 		Document destRelsExt = destRelsExtUpdateCaptor.getValue();
-		children = getRelationSet(destRelsExt.getRootElement(), contains);
+		children = JDOMQueryUtil.getRelationSet(destRelsExt.getRootElement(), contains);
 		assertEquals("Incorrect number of children in destination container after moved", 9, children.size());
 		assertTrue("Moved children were not present in destination", children.containsAll(moving));
 	}
 
-	private Set<PID> getRelationSet(Element rdfRoot, Relationship relation) {
-		List<Element> containsEls = rdfRoot.getChild("Description", JDOMNamespaceUtil.RDF_NS).getChildren(
-				relation.name(), relation.getNamespace());
-		Set<PID> children = new HashSet<>();
-		for (Element containsEl : containsEls) {
-			children.add(new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS)));
+	@Test
+	public void rollbackNoProblemsTest() throws Exception {
+		oneSourceTest();
+
+		reset(managementClient);
+
+		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
+		digitalMan.rollbackMove(source1PID, moving);
+
+		// Verify that it doesn't try to change anything when there are no leftover tombstones
+		verify(managementClient, never()).modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(),
+				anyListOf(String.class), anyString(), anyString(), any(Document.class));
+	}
+
+	@Test
+	public void rollbackTest() throws Exception {
+		makeMatcherPair("/fedora/containerRELSEXT1.xml", source1PID);
+
+		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
+
+		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(source1PID).thenReturn(source1PID)
+				.thenReturn(null).thenReturn(null);
+
+		when(tripleStoreQueryService.hasDisseminator(eq(destPID), eq(RELS_EXT.getName()))).thenReturn(false);
+
+		try {
+			digitalMan.move(moving, destPID, "user", "");
+			fail();
+		} catch (IngestException e) {
+			// Expected
 		}
-		return children;
+
+		ArgumentCaptor<Document> sourceRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
+
+		// There should have been three updates to the source RELS-EXT, the initial, rollback the moved, and cleanup
+		verify(managementClient, times(3)).modifyDatastream(eq(source1PID), eq(RELS_EXT.getName()), anyString(),
+				anyListOf(String.class), anyString(), anyString(), sourceRelsExtUpdateCaptor.capture());
+
+		List<Document> sourceRelsAnswers = sourceRelsExtUpdateCaptor.getAllValues();
+		// Check the state of the source after removal but before cleanup
+		Document sourceRelsExt = sourceRelsAnswers.get(0);
+		Set<PID> children = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), contains);
+		assertEquals("Incorrect number of children in source container after move", 10, children.size());
+
+		Set<PID> removed = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), removedChild);
+		assertEquals("Moved child gravestones not correctly set in source container", 2, removed.size());
+
+		// Children should all be back as contains statements as part of the rollback
+		Document rbRelsExt = sourceRelsAnswers.get(1);
+		children = JDOMQueryUtil.getRelationSet(rbRelsExt.getRootElement(), contains);
+		assertEquals("Incorrect number of children in source container after first rollback", 12, children.size());
+
+		removed = JDOMQueryUtil.getRelationSet(rbRelsExt.getRootElement(), removedChild);
+		assertEquals("Child tombstones should still be present", 2, removed.size());
+
+		// Should be back to the original set of children relations by the end of rolling back
+		Document cleanRelsExt = sourceRelsAnswers.get(2);
+		children = JDOMQueryUtil.getRelationSet(cleanRelsExt.getRootElement(), contains);
+		assertEquals("Incorrect number of children in source container after rollback cleanup", 12, children.size());
+
+		removed = JDOMQueryUtil.getRelationSet(cleanRelsExt.getRootElement(), removedChild);
+		assertEquals("Child tombstones not cleaned up", 0, removed.size());
+	}
+
+	@Test
+	public void rollbackAfterDestinationUpdateTest() throws Exception {
+		makeMatcherPair("/fedora/containerRELSEXT1.xml", source1PID);
+		makeMatcherPair("/fedora/containerRELSEXT2.xml", destPID);
+
+		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
+
+		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(source1PID).thenReturn(source1PID)
+				.thenReturn(destPID).thenReturn(destPID);
+
+		when(tripleStoreQueryService.hasDisseminator(any(PID.class), eq(RELS_EXT.getName()))).thenReturn(true)
+				.thenReturn(true).thenReturn(false).thenReturn(true);
+
+		try {
+			digitalMan.move(moving, destPID, "user", "");
+			fail();
+		} catch (IngestException e) {
+			// Expected
+		}
+
+		ArgumentCaptor<Document> sourceRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
+
+		// There should have been three updates to the source RELS-EXT, the initial, rollback the moved, and cleanup
+		verify(managementClient, times(3)).modifyDatastream(eq(source1PID), eq(RELS_EXT.getName()), anyString(),
+				anyListOf(String.class), anyString(), anyString(), sourceRelsExtUpdateCaptor.capture());
+
+		List<Document> sourceRelsAnswers = sourceRelsExtUpdateCaptor.getAllValues();
+		// Check the state of the source after removal but before cleanup
+		Document sourceRelsExt = sourceRelsAnswers.get(0);
+		Set<PID> children = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), contains);
+		assertEquals("Incorrect number of children in source container after move", 10, children.size());
+
+		Set<PID> removed = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), removedChild);
+		assertEquals("Moved child gravestones not correctly set in source container", 2, removed.size());
+
+		// Should be back to the original set of children relations by the end of rolling back
+		Document cleanRelsExt = sourceRelsAnswers.get(2);
+		children = JDOMQueryUtil.getRelationSet(cleanRelsExt.getRootElement(), contains);
+		assertEquals("Incorrect number of children in source container after rollback cleanup", 12, children.size());
+
+		removed = JDOMQueryUtil.getRelationSet(cleanRelsExt.getRootElement(), removedChild);
+		assertEquals("Child tombstones not cleaned up", 0, removed.size());
+
+		ArgumentCaptor<Document> destRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
+		verify(managementClient, times(2)).modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(),
+				anyListOf(String.class), anyString(), anyString(), destRelsExtUpdateCaptor.capture());
+
+		List<Document> destRelsAnswers = destRelsExtUpdateCaptor.getAllValues();
+		// Check the state of the source after removal but before cleanup
+		Document destRelsExt = destRelsAnswers.get(0);
+		children = JDOMQueryUtil.getRelationSet(destRelsExt.getRootElement(), contains);
+		assertEquals("Incorrect number of children in destination container after move", 9, children.size());
+
+		// Should be back to the original set of children relations by the end of rolling back
+		Document destRBRelsExt = destRelsAnswers.get(1);
+		children = JDOMQueryUtil.getRelationSet(destRBRelsExt.getRootElement(), contains);
+		assertEquals("Incorrect number of children in destination container after rollback", 7, children.size());
 	}
 }

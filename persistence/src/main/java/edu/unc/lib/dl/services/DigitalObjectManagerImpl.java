@@ -84,6 +84,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.dl.xml.JDOMQueryUtil;
 import edu.unc.lib.dl.xml.ModsXmlHelper;
 
 /**
@@ -649,10 +650,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 	@Override
 	public void move(List<PID> moving, PID destination, String user, String message) throws IngestException {
-		moveNew(moving, destination, user, message);
-	}
-
-	public void moveNew(List<PID> moving, PID destination, String user, String message) throws IngestException {
 		availableCheck();
 
 		long startTime = System.currentTimeMillis();
@@ -680,20 +677,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 
 		// Determine the set of parents for all of the PIDs to be moved
-		Map<PID, List<PID>> sources = new HashMap<>();
-		for (PID pid : moving) {
-			PID source = this.tripleStoreQueryService.fetchContainer(pid);
-			if (source == null) {
-				log.warn("Attempting to move orphaned object {}", pid);
-			} else {
-				List<PID> moveFromSource = sources.get(source);
-				if (moveFromSource == null) {
-					moveFromSource = new ArrayList<>();
-					sources.put(source, moveFromSource);
-				}
-				moveFromSource.add(pid);
-			}
-		}
+		Map<PID, List<PID>> sources = getChildrenContainerMap(moving);
 
 		// Check that the user has permissions to add/remove from all sources and the destination
 		AccessGroupSet groups = GroupsThreadStore.getGroups();
@@ -707,189 +691,39 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			}
 		}
 
-		List<PID> reordered = new ArrayList<>();
 		// Get RELS-EXT documents for the set of parents and replace moved children with tombstones
 		try {
 			for (Entry<PID, List<PID>> sourceEntry : sources.entrySet()) {
 				PID sourcePID = sourceEntry.getKey();
-				updateSourceRelsExt: do {
-					DatastreamDocument relsExtResp = getXMLDatastreamIfExists(sourceEntry.getKey(), RELS_EXT.getName());
-					if (relsExtResp == null) {
-						throw new IngestException("Unable to retrieve RELS-EXT for " + sourcePID + ", aborting move operation");
-					}
-					Document relsExt = relsExtResp.getDocument();
-
-					try {
-						Element descriptionEl = relsExt.getDocument().getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
-						List<Element> containsEls = descriptionEl.getChildren(contains.name(), contains.getNamespace());
-
-						for (Element containsEl : containsEls) {
-							PID childPID = new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
-
-							// Switch the moved children to the tombstone relation
-							if (sourceEntry.getValue().contains(childPID)) {
-								containsEl.setName(removedChild.name());
-							}
-						}
-
-						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-						log.info("{}", outputter.outputString(relsExt));
-
-						managementClient.modifyDatastream(sourcePID, RELS_EXT.getName(),
-								"Removing moved children", null, null, relsExtResp.getLastModified(), relsExt);
-						break updateSourceRelsExt;
-					} catch (OptimisticLockException e) {
-						log.debug("Unable to update RELS-EXT for {}, retrying", sourcePID, e);
-					}
-					// Repeat rels-ext update if the source changed since the datastream was retrieved
-				} while (true);
-
-				// Update source MD_CONTENTS to remove children if it is present
-				updateSourceMDContents: do {
-					try {
-						DatastreamDocument mdContents = getXMLDatastreamIfExists(sourceEntry.getKey(), MD_CONTENTS.getName());
-
-						if (mdContents != null) {
-							ContainerContentsHelper.remove(mdContents.getDocument(), sourceEntry.getValue());
-
-							XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-							log.info("{}", outputter.outputString(mdContents.getDocument()));
-
-							managementClient.modifyDatastream(sourceEntry.getKey(), MD_CONTENTS.getName(),
-									"Removing " + moving.size() + " moved children", null, null,
-									mdContents.getLastModified(), mdContents.getDocument());
-						}
-						break updateSourceMDContents;
-					} catch (OptimisticLockException e) {
-						log.debug("Unable to update RELS-EXT for {}, retrying", sourcePID, e);
-					}
-				} while (true);
+				// replace the moved children with tombstones and clear them out of MD_CONTENTS
+				removeChildren(sourcePID, sourceEntry.getValue(), true);
 			}
 		} catch (Exception e) {
-			log.error("Failed to remove children from sources during move", e);
-			return;
+			log.error("Failed to remove children from sources during move, attempting to rollback", e);
+			rollbackMove(sources);
+			throw new IngestException("Failed to remove " + moving.size() + " objects from their source(s)", e);
 		}
 
+		List<PID> reordered = new ArrayList<>();
 		// Add the moved children to the destination RELS-EXT
 		try {
-			updateDestinationRelsExt: do {
-				try {
-					DatastreamDocument relsExtResp = getXMLDatastreamIfExists(destination, RELS_EXT.getName());
-					if (relsExtResp == null) {
-						throw new IngestException("Unable to retrieve RELS-EXT for destination " + destination
-								+ ", aborting move operation");
-					}
-					Document relsExt = relsExtResp.getDocument();
-
-					Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
-
-					// Get the list of existing contains relations to avoid duplicate relations
-					List<Element> containsEls = descriptionEl.getChildren(contains.name(), contains.getNamespace());
-					Set<PID> existingChildren = new HashSet<>(containsEls.size());
-					for (Element containsEl : containsEls) {
-						existingChildren.add(new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS)));
-					}
-
-					// Add moved children (which are not duplicates) to destination
-					for (PID newChild : moving) {
-						if (!existingChildren.contains(newChild)) {
-							Element newChildEl = new Element(contains.name(), contains.getNamespace());
-							newChildEl.setAttribute("resource", newChild.getURI(), JDOMNamespaceUtil.RDF_NS);
-							descriptionEl.addContent(newChildEl);
-						} else {
-							log.warn("Destination {} already contained moved child {}", destination, newChild);
-						}
-					}
-
-					XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-					log.info("{}", outputter.outputString(relsExt));
-
-					// Push changes out to the destination container
-					managementClient.modifyDatastream(destination, RELS_EXT.getName(), "Adding moved children",
-							null, null,
-							relsExtResp.getLastModified(), relsExt);
-					break updateDestinationRelsExt;
-				} catch (OptimisticLockException e) {
-					log.debug("Unable to update RELS-EXT for {}, retrying", destination, e);
-				}
-			} while (true);
+			addChildren(destination, moving, reordered);
 		} catch (Exception e) {
 			// Unexpected failure during move, need to fail operation and roll back
-			log.error("Failed to remove children from sources during move", e);
-			return;
-		}
-
-		// Update the MD_CONTENTS of the destination to add new children if the DS exists
-		try {
-			updateDestinationMDContents: do {
-				try {
-					// Update MD_CONTENTS to add new children if it is present
-					DatastreamDocument mdContentsResp = getXMLDatastreamIfExists(destination, MD_CONTENTS.getName());
-
-					if (mdContentsResp != null) {
-
-						Document mdContents = ContainerContentsHelper.addChildContentListInCustomOrder(
-								mdContentsResp.getDocument(), destination, moving, reordered);
-						managementClient.modifyDatastream(destination, MD_CONTENTS.getName(),
-								"Adding " + moving.size()
-								+ " moved children", null, null, mdContentsResp.getLastModified(), mdContents);
-					}
-					break updateDestinationMDContents;
-				} catch (OptimisticLockException e) {
-					log.debug("Unable to update MD_CONTENTS for {}, retrying", destination, e);
-				}
-			} while (true);
-
-		} catch (Exception e) {
-			log.error("Failed to remove children from sources during move", e);
-			return;
+			log.error("Failed to add children to destination {} during move, attempting to rollback", destination, e);
+			rollbackMove(sources);
+			throw new IngestException("Failed to move " + moving.size() + " objects into " + destination, e);
 		}
 
 		// Remove tombstones from source containers
 		try {
 			for (Entry<PID, List<PID>> sourceEntry : sources.entrySet()) {
-				PID sourcePID = sourceEntry.getKey();
-				updateSourceRelsExt: do {
-					// Get the current time before accessing RELS-EXT for use in optimistic locking
-					DatastreamDocument relsExtResp = getXMLDatastreamIfExists(sourceEntry.getKey(), RELS_EXT.getName());
-					if (relsExtResp == null) {
-						throw new IngestException("Unable to retrieve RELS-EXT for " + sourcePID
-								+ ", aborting move operation");
-					}
-					Document relsExt = relsExtResp.getDocument();
-
-					try {
-						Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
-						List<Element> removedEls = descriptionEl
-								.getChildren(removedChild.name(), removedChild.getNamespace());
-
-						Iterator<Element> removedIt = removedEls.iterator();
-						while (removedIt.hasNext()) {
-							Element removedEl = removedIt.next();
-							PID childPID = new PID(removedEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
-
-							// Remove the tombstone if it belongs to this source
-							if (sourceEntry.getValue().contains(childPID)) {
-								removedIt.remove();
-							}
-						}
-
-						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-						log.info("{}", outputter.outputString(relsExt));
-
-						managementClient.modifyDatastream(sourcePID, RELS_EXT.getName(),
-								"Cleaning up moved children", null,
-								null, relsExtResp.getLastModified(), relsExt);
-						break updateSourceRelsExt;
-					} catch (OptimisticLockException e) {
-						log.debug("Unable to update RELS-EXT for {}, retrying", sourcePID, e);
-					}
-					// Repeat rels-ext update if the source changed since the datastream was retrieved
-				} while (true);
+				cleanupRemovedChildren(sourceEntry.getKey(), sourceEntry.getValue());
 			}
 		} catch (Exception e) {
 			log.error("Failed to cleanup children tombstones from sources during move", e);
-			return;
+			rollbackMove(sources);
+			throw new IngestException("Failed to cleanup move of " + moving.size() + " objects to " + destination, e);
 		}
 
 		log.info("Move operation of {} items to {} completed in {}ms",
@@ -902,149 +736,237 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 	}
 
-	public void rollbackMove(List<PID> moving, PID source) throws IngestException {
-		DatastreamDocument sourceRelsExtResp = getXMLDatastreamIfExists(source, RELS_EXT.getName());
-		if (sourceRelsExtResp == null) {
-			log.error("Failed to get source RELS-EXT while attempting to roll back move operating from {}", source);
-			return;
+	private void rollbackMove(Map<PID, List<PID>> sources) throws IngestException {
+		for (Entry<PID, List<PID>> sourceEntry : sources.entrySet()) {
+			rollbackMove(sourceEntry.getKey(), sourceEntry.getValue());
 		}
-		Document sourceRelsExt = sourceRelsExtResp.getDocument();
+	}
 
-		updateSourceRelsExt: do {
-			DatastreamDocument relsExtResp = getXMLDatastreamIfExists(source, RELS_EXT.getName());
+	/**
+	 * Attempts to rollback a failed move operation by returning part way moved objects to their original source
+	 * container and cleaning up removal markers
+	 *
+	 * @param source
+	 * @param moving
+	 * @throws IngestException
+	 */
+	public void rollbackMove(PID source, List<PID> moving) throws IngestException {
+
+		try {
+			DatastreamDocument sourceRelsExtResp = getXMLDatastreamIfExists(source, RELS_EXT.getName());
+			if (sourceRelsExtResp == null) {
+				log.error("Failed to get source RELS-EXT while attempting to roll back move operating from {}", source);
+				return;
+			}
+			Document sourceRelsExt = sourceRelsExtResp.getDocument();
+			Set<PID> removedChildren = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), removedChild);
+
+			if (removedChildren.size() == 0) {
+				log.debug("No cleanup required for move operation to {}", source);
+				return;
+			}
+
+			// Clean up the destination(s)
+			// Determine where the children ended up getting moved to
+			Map<PID, List<PID>> destinationMap = getChildrenContainerMap(moving);
+			for (Entry<PID, List<PID>> destEntry : destinationMap.entrySet()) {
+				// Remove all of the moved children from the destination they ended up in
+				removeChildren(destEntry.getKey(), destEntry.getValue(), false);
+			}
+
+			List<PID> reordered = new ArrayList<>();
+
+			// Add the children back to the source
+			addChildren(source, new ArrayList<>(removedChildren), reordered);
+
+			// Clean up the tombstones
+			cleanupRemovedChildren(source, moving);
+
+		} catch (FedoraException e) {
+			log.error("Failed to automatically rollback move operation on source {}", source, e);
+		}
+	}
+
+	private Map<PID, List<PID>> getChildrenContainerMap(Collection<PID> moving) {
+		// Determine the set of parents for all of the PIDs to be moved
+		Map<PID, List<PID>> childContainerMap = new HashMap<>();
+		for (PID pid : moving) {
+			PID source = this.tripleStoreQueryService.fetchContainer(pid);
+			if (source == null) {
+				log.warn("Attempting to move orphaned object {}", pid);
+			} else {
+				List<PID> moveFromSource = childContainerMap.get(source);
+				if (moveFromSource == null) {
+					moveFromSource = new ArrayList<>();
+					childContainerMap.put(source, moveFromSource);
+				}
+				moveFromSource.add(pid);
+			}
+		}
+		return childContainerMap;
+	}
+
+	private void removeChildren(PID container, Collection<PID> children, boolean replaceWithMarkers)
+			throws FedoraException, IngestException {
+		removeRelsExt: do {
+			DatastreamDocument relsExtResp = getXMLDatastreamIfExists(container, RELS_EXT.getName());
 			if (relsExtResp == null) {
-				throw new IngestException("Unable to retrieve RELS-EXT for " + source + ", aborting move operation");
+				throw new IngestException("Unable to retrieve RELS-EXT for " + container + ", aborting move operation");
 			}
 			Document relsExt = relsExtResp.getDocument();
 
 			try {
-				Element descriptionEl = relsExt.getDocument().getRootElement()
-						.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+				Element descriptionEl = relsExt.getDocument().getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
 				List<Element> containsEls = descriptionEl.getChildren(contains.name(), contains.getNamespace());
 
-				for (Element containsEl : containsEls) {
+				Iterator<Element> containsIt = containsEls.iterator();
+				while (containsIt.hasNext()) {
+					Element containsEl = containsIt.next();
 					PID childPID = new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
 
-					// Switch the moved children to the tombstone relation
-					if (moving.contains(childPID)) {
-						containsEl.setName(removedChild.name());
+					if (children.contains(childPID)) {
+						if (replaceWithMarkers) {
+							// Switch the moved children to the tombstone relation
+							containsEl.setName(removedChild.name());
+						} else {
+							// Remove the entry
+							containsIt.remove();
+						}
 					}
 				}
 
 				XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
 				log.info("{}", outputter.outputString(relsExt));
 
-				managementClient.modifyDatastream(source, RELS_EXT.getName(), "Removing moved children", null, null,
-						relsExtResp.getLastModified(), relsExt);
-				break updateSourceRelsExt;
+				managementClient.modifyDatastream(container, RELS_EXT.getName(),
+						"Removing moved children", null, null, relsExtResp.getLastModified(), relsExt);
+				break removeRelsExt;
 			} catch (OptimisticLockException e) {
-				log.debug("Unable to update RELS-EXT for {}, retrying", source, e);
+				log.debug("Unable to update RELS-EXT for {}, retrying", container, e);
 			}
 			// Repeat rels-ext update if the source changed since the datastream was retrieved
 		} while (true);
+
+		// Update source MD_CONTENTS to remove children if it is present
+		removeMDContents: do {
+			try {
+				DatastreamDocument mdContents = getXMLDatastreamIfExists(container, MD_CONTENTS.getName());
+
+				if (mdContents != null) {
+					ContainerContentsHelper.remove(mdContents.getDocument(), children);
+
+					XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+					log.info("{}", outputter.outputString(mdContents.getDocument()));
+
+					managementClient.modifyDatastream(container, MD_CONTENTS.getName(),
+							"Removing " + children.size() + " moved children", null, null,
+							mdContents.getLastModified(), mdContents.getDocument());
+				}
+				break removeMDContents;
+			} catch (OptimisticLockException e) {
+				log.debug("Unable to update RELS-EXT for {}, retrying", container, e);
+			}
+		} while (true);
 	}
 
-
-	public void moveOld(List<PID> moving, PID destination, String user, String message) throws IngestException {
-		availableCheck();
-		PremisEventLogger logger = new PremisEventLogger(user);
-
-		List<PID> destinationPath = this.getTripleStoreQueryService().lookupRepositoryAncestorPids(destination);
-		if (destinationPath == null || destinationPath.size() == 0)
-			throw new IngestException("Cannot find the destination folder: " + destinationPath);
-
-		// destination is container
-		List<URI> cmtypes = this.getTripleStoreQueryService().lookupContentModels(destination);
-		if (!cmtypes.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
-			throw new IngestException("The destination is not a folder: " + destinationPath + " " + destination.getPid());
-		}
-
-		for (PID pid : moving) {
-			if (pid.equals(destination))
-				throw new IngestException("The destination folder and one of the moving objects are the same: " + destination);
-			for (PID destPid : destinationPath) {
-				if (pid.equals(destPid))
-					throw new IngestException("The destination folder is below one of the moving objects: " + destination);
-			}
-		}
-
-		// check for duplicate PIDs in incoming list
-		Set<PID> noDups = new HashSet<PID>(moving.size());
-		noDups.addAll(moving);
-		if (noDups.size() < moving.size()) {
-			throw new IngestException("The list of moving PIDs contains duplicates");
-		} else {
-			noDups = null;
-		}
-
-		// this is the beginning of the transaction
-		DateTime knownGoodTime = new DateTime();
-		Throwable thrown = null;
-		boolean relationshipsUpdated = false;
-		boolean destContentInventoryUpdated = false;
-		boolean eventsLoggedOkay = false;
-		List<PID> oldParents = new ArrayList<PID>();
-		List<PID> reordered = new ArrayList<PID>();
-		try {
-			// remove pids from old containers, add to new, log
-			for (PID pid : moving) {
-				PID oldParent = this.removeFromContainer(pid);
-				oldParents.add(oldParent);
-				this.getManagementClient().addObjectRelationship(destination,
-						ContentModelHelper.Relationship.contains.getURI().toString(), pid);
-				logger.logEvent(Type.MIGRATION,
-						"object moved from Container " + oldParent.getPid() + " to " + destination.getPid(), pid);
-			}
-
-			// edit Contents XML of new parent container to append/insert
-			Document newXML;
-			Document oldXML = null;
-			boolean exists = true;
+	private void addChildren(PID container, List<PID> moving, Collection<PID> reordered) throws FedoraException,
+			IngestException {
+		updateRelsExt: do {
 			try {
-				MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(destination, "MD_CONTENTS", null);
-				try(ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
-					oldXML = new SAXBuilder().build(bais);
-				} catch (JDOMException e) {
-					throw new IllegalRepositoryStateException("Cannot parse MD_CONTENTS: " + destination);
-				} catch (IOException e) {
-					throw new Error(e);
+				DatastreamDocument relsExtResp = getXMLDatastreamIfExists(container, RELS_EXT.getName());
+				if (relsExtResp == null) {
+					throw new IngestException("Unable to retrieve RELS-EXT for container " + container
+							+ ", aborting move operation");
 				}
-			} catch (NotFoundException e) {
-				exists = false;
-			}
+				Document relsExt = relsExtResp.getDocument();
 
-			if (exists) {
-				newXML = ContainerContentsHelper.addChildContentListInCustomOrder(oldXML, destination, moving, reordered);
-				this.getManagementClient().modifyInlineXMLDatastream(destination, "MD_CONTENTS", false,
-						"adding " + moving.size() + " child resources to container", new ArrayList<String>(),
-						"List of Contents", newXML);
-			}
-			destContentInventoryUpdated = true;
+				Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
 
-			// write the log events
-			forwardedManagementClient.writePremisEventsToFedoraObject(logger, moving);
+				// Get the list of existing contains relations to avoid duplicate relations
+				List<Element> containsEls = descriptionEl.getChildren(contains.name(), contains.getNamespace());
+				Set<PID> existingChildren = new HashSet<>(containsEls.size());
+				for (Element containsEl : containsEls) {
+					existingChildren.add(new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS)));
+				}
 
-			// send message for the operation
-			if (this.getOperationsMessageSender() != null) {
-				this.getOperationsMessageSender().sendMoveOperation(user, oldParents, destination, moving, reordered);
-			}
+				// Add moved children (which are not duplicates) to container
+				for (PID newChild : moving) {
+					if (!existingChildren.contains(newChild)) {
+						Element newChildEl = new Element(contains.name(), contains.getNamespace());
+						newChildEl.setAttribute("resource", newChild.getURI(), JDOMNamespaceUtil.RDF_NS);
+						descriptionEl.addContent(newChildEl);
+					} else {
+						log.warn("container {} already contained moved child {}", container, newChild);
+					}
+				}
 
-		} catch (FedoraException e) {
-			thrown = e;
-		} catch (RuntimeException e) {
-			thrown = e;
-		} finally {
-			if (thrown != null) {
-				// some stuff failed to move, log it
-				StringBuffer sb = new StringBuffer();
-				sb.append("An error occured during a move operation.\n").append("all contains relationships updated: ")
-						.append(relationshipsUpdated).append("\n").append("destination (").append(destination.getPid())
-						.append(") content inventory updated: ").append(destContentInventoryUpdated)
-						.append("events logged on moving objects: ").append(eventsLoggedOkay);
-				this.dumpRollbackInfo(knownGoodTime, moving, sb.toString());
-				throw new IngestException("There was a problem completing the move operation", thrown);
+				XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+				log.info("{}", outputter.outputString(relsExt));
+
+				// Push changes out to the container container
+				managementClient.modifyDatastream(container, RELS_EXT.getName(), "Adding moved children", null, null,
+						relsExtResp.getLastModified(), relsExt);
+				break updateRelsExt;
+			} catch (OptimisticLockException e) {
+				log.debug("Unable to update RELS-EXT for {}, retrying", container, e);
 			}
-		}
+		} while (true);
+
+		updateMDContents: do {
+			try {
+				// Update MD_CONTENTS to add new children if it is present
+				DatastreamDocument mdContentsResp = getXMLDatastreamIfExists(container, MD_CONTENTS.getName());
+
+				if (mdContentsResp != null) {
+
+					Document mdContents = ContainerContentsHelper.addChildContentListInCustomOrder(
+							mdContentsResp.getDocument(), container, moving, reordered);
+					managementClient.modifyDatastream(container, MD_CONTENTS.getName(), "Adding " + moving.size()
+							+ " moved children", null, null, mdContentsResp.getLastModified(), mdContents);
+				}
+				break updateMDContents;
+			} catch (OptimisticLockException e) {
+				log.debug("Unable to update MD_CONTENTS for {}, retrying", container, e);
+			}
+		} while (true);
+	}
+
+	public void cleanupRemovedChildren(PID container, List<PID> children) throws IngestException, FedoraException {
+
+		updateRelsExt: do {
+			// Get the current time before accessing RELS-EXT for use in optimistic locking
+			DatastreamDocument relsExtResp = getXMLDatastreamIfExists(container, RELS_EXT.getName());
+			if (relsExtResp == null) {
+				throw new IngestException("Unable to retrieve RELS-EXT for " + container + ", aborting move operation");
+			}
+			Document relsExt = relsExtResp.getDocument();
+
+			try {
+				Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
+				List<Element> removedEls = descriptionEl.getChildren(removedChild.name(), removedChild.getNamespace());
+
+				Iterator<Element> removedIt = removedEls.iterator();
+				while (removedIt.hasNext()) {
+					Element removedEl = removedIt.next();
+					PID childPID = new PID(removedEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
+
+					// Remove the tombstone if it belongs to this source
+					if (children.contains(childPID)) {
+						removedIt.remove();
+					}
+				}
+
+				XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+				log.info("{}", outputter.outputString(relsExt));
+
+				managementClient.modifyDatastream(container, RELS_EXT.getName(), "Cleaning up moved children", null, null,
+						relsExtResp.getLastModified(), relsExt);
+				break updateRelsExt;
+			} catch (OptimisticLockException e) {
+				log.debug("Unable to update RELS-EXT for {}, retrying", container, e);
+			}
+			// Repeat rels-ext update if the source changed since the datastream was retrieved
+		} while (true);
 	}
 
 	/*
