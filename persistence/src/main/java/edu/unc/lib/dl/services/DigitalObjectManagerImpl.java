@@ -787,6 +787,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 	}
 
+	/**
+	 * Generates a map of children grouped up by common immediate parents
+	 *
+	 * @param moving
+	 * @return
+	 */
 	private Map<PID, List<PID>> getChildrenContainerMap(Collection<PID> moving) {
 		// Determine the set of parents for all of the PIDs to be moved
 		Map<PID, List<PID>> childContainerMap = new HashMap<>();
@@ -806,6 +812,16 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		return childContainerMap;
 	}
 
+	/**
+	 * Remove children from the provided list within the specified container. If replaceWithMarkers is true, then instead
+	 * of removing the relations, they will be replaced with removedChild markers
+	 *
+	 * @param container
+	 * @param children
+	 * @param replaceWithMarkers
+	 * @throws FedoraException
+	 * @throws IngestException
+	 */
 	private void removeChildren(PID container, Collection<PID> children, boolean replaceWithMarkers)
 			throws FedoraException, IngestException {
 		removeRelsExt: do {
@@ -835,8 +851,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					}
 				}
 
-				XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-				log.info("{}", outputter.outputString(relsExt));
+				if (log.isDebugEnabled()) {
+					XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+					log.info("Removing children from container{}:\n{}", container, outputter.outputString(relsExt));
+				}
 
 				managementClient.modifyDatastream(container, RELS_EXT.getName(),
 						"Removing moved children", null, null, relsExtResp.getLastModified(), relsExt);
@@ -855,8 +873,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				if (mdContents != null) {
 					ContainerContentsHelper.remove(mdContents.getDocument(), children);
 
-					XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-					log.info("{}", outputter.outputString(mdContents.getDocument()));
+					if (log.isDebugEnabled()) {
+						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+						log.info("MD_CONTENTS after removing from {}:\n{}", container,
+								outputter.outputString(mdContents.getDocument()));
+					}
 
 					managementClient.modifyDatastream(container, MD_CONTENTS.getName(),
 							"Removing " + children.size() + " moved children", null, null,
@@ -869,6 +890,15 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		} while (true);
 	}
 
+	/**
+	 * Add a list of children to a container, updating MD_CONTENTS as well if present
+	 *
+	 * @param container
+	 * @param moving
+	 * @param reordered
+	 * @throws FedoraException
+	 * @throws IngestException
+	 */
 	private void addChildren(PID container, List<PID> moving, Collection<PID> reordered) throws FedoraException,
 			IngestException {
 		updateRelsExt: do {
@@ -900,8 +930,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					}
 				}
 
-				XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-				log.info("{}", outputter.outputString(relsExt));
+				if (log.isDebugEnabled()) {
+					XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+					log.info("RELS-EXT after removing children from {}:\n{}", container, outputter.outputString(relsExt));
+				}
 
 				// Push changes out to the container container
 				managementClient.modifyDatastream(container, RELS_EXT.getName(), "Adding moved children", null, null,
@@ -918,9 +950,15 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				DatastreamDocument mdContentsResp = getXMLDatastreamIfExists(container, MD_CONTENTS.getName());
 
 				if (mdContentsResp != null) {
-
 					Document mdContents = ContainerContentsHelper.addChildContentListInCustomOrder(
 							mdContentsResp.getDocument(), container, moving, reordered);
+
+					if (log.isDebugEnabled()) {
+						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+						log.info("MD_CONTENTS after adding children to {}:\n{}", container,
+								outputter.outputString(mdContents));
+					}
+
 					managementClient.modifyDatastream(container, MD_CONTENTS.getName(), "Adding " + moving.size()
 							+ " moved children", null, null, mdContentsResp.getLastModified(), mdContents);
 				}
@@ -931,7 +969,15 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		} while (true);
 	}
 
-	public void cleanupRemovedChildren(PID container, List<PID> children) throws IngestException, FedoraException {
+	/**
+	 * Cleanup removedChild references to a list of pids within a particular container.
+	 *
+	 * @param container
+	 * @param children
+	 * @throws IngestException
+	 * @throws FedoraException
+	 */
+	private void cleanupRemovedChildren(PID container, List<PID> children) throws IngestException, FedoraException {
 
 		updateRelsExt: do {
 			// Get the current time before accessing RELS-EXT for use in optimistic locking
@@ -956,8 +1002,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					}
 				}
 
-				XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-				log.info("{}", outputter.outputString(relsExt));
+				if (log.isDebugEnabled()) {
+					XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+					log.info("RELS-EXT after cleaning up children in {}:\n{}", container, outputter.outputString(relsExt));
+				}
 
 				managementClient.modifyDatastream(container, RELS_EXT.getName(), "Cleaning up moved children", null, null,
 						relsExtResp.getLastModified(), relsExt);
