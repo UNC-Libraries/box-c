@@ -324,6 +324,13 @@
 		<property name="targetMethod" value="cleanupFinishedMessages" />
 	</bean>
 	
+	<bean id="rollbackMoveJob" class="edu.unc.lib.dl.cdr.services.processing.MoveRollbackJob"></bean>
+	
+	<bean id="rollbackMoveJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="rollbackMoveJob" />
+		<property name="targetMethod" value="rollbackAllFailed" />
+	</bean>
+	
 	<bean id="embargoCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="embargoJobDetail" />
 		<property name="cronExpression" value="${scheduled.embargoUpdate.cron}" />
@@ -344,6 +351,12 @@
 		<property name="cronExpression" value="${scheduled.cleanupFinishedEnhancements.cron}" />
 	</bean>
 	
+	<bean id="moveRollbackTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="rollbackMoveJobDetail" />
+		<property name="repeatCount" value="0"/>
+		<property name="repeatInterval" value="1"/>
+	</bean>
+	
 	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
@@ -351,6 +364,7 @@
 				<ref bean="catchUpActivateCronTrigger" />
 				<ref bean="catchUpDeactivateCronTrigger" />
 				<ref bean="cleanupFinishedEnhancementsCronTrigger" />
+				<ref bean="moveRollbackTrigger" />
 			</list>
 		</property>
 		<property name="autoStartup">

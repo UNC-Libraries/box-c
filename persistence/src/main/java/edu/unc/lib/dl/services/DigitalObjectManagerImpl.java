@@ -750,6 +750,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @param moving
 	 * @throws IngestException
 	 */
+	@Override
 	public void rollbackMove(PID source, List<PID> moving) throws IngestException {
 
 		try {
@@ -781,6 +782,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 			// Clean up the tombstones
 			cleanupRemovedChildren(source, moving);
+
+			// Send out notification message that the rollback operation completed
+			if (getOperationsMessageSender() != null) {
+				getOperationsMessageSender().sendMoveOperation("cdr", destinationMap.keySet(), source, moving, reordered);
+			}
 
 		} catch (FedoraException e) {
 			log.error("Failed to automatically rollback move operation on source {}", source, e);

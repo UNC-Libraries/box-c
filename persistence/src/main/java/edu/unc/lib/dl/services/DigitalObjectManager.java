@@ -125,10 +125,10 @@ public interface DigitalObjectManager {
 	 */
 	public abstract String addOrReplaceDatastream(PID pid, Datastream datastream, File content, String mimetype,
 			String user, String message) throws UpdateException;
-	
+
 	public abstract String addOrReplaceDatastream(PID pid, Datastream datastream, String label, File content,
-			String mimetype, String user, String message) throws UpdateException; 
-	
+			String mimetype, String user, String message) throws UpdateException;
+
 	/**
 	 * Moves the specified objects from their current containers to another existing container. The destination path must
 	 * correspond to a object having the Container model. Note that the List may include PIDs from a variety of different
@@ -148,6 +148,16 @@ public interface DigitalObjectManager {
 	public abstract void move(List<PID> moving, PID destination, String user, String message)
 			throws IngestException;
 
+	/**
+	 * Attempts to rollback a failed move operation by returning part way moved objects to their original source
+	 * container and cleaning up removal markers
+	 *
+	 * @param source
+	 * @param moving
+	 * @throws IngestException
+	 */
+	public void rollbackMove(PID source, List<PID> moving) throws IngestException;
+
 	public abstract boolean isAvailable();
 
 	/**
@@ -161,6 +171,6 @@ public interface DigitalObjectManager {
 	 */
 	public abstract PID createContainer(String name, PID parent, Model extraModel, String user,
 			byte[] mods) throws IngestException;
-	
+
 
 }

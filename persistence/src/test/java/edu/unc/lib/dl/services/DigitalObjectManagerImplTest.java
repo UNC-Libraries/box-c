@@ -70,7 +70,7 @@ public class DigitalObjectManagerImplTest {
 	private final DigitalObjectManagerImpl digitalObjectManagerImpl = null;
 
 	@Resource
-	ManagementClient managementClient = null;
+	ManagementClient forwardedManagementClient = null;
 
 	@Resource
 	AccessClient accessClient = null;
@@ -108,7 +108,7 @@ public class DigitalObjectManagerImplTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		reset(managementClient);
+		reset(forwardedManagementClient);
 		reset(accessClient);
 		reset(tripleStoreQueryService);
 
@@ -131,8 +131,8 @@ public class DigitalObjectManagerImplTest {
 				return "upload://" + UUID.randomUUID();
 			}
 		};
-		when(this.managementClient.upload(any(File.class))).thenAnswer(upload);
-		when(this.managementClient.upload(any(Document.class))).thenAnswer(upload);
+		when(this.forwardedManagementClient.upload(any(File.class))).thenAnswer(upload);
+		when(this.forwardedManagementClient.upload(any(Document.class))).thenAnswer(upload);
 	}
 
 	/**
@@ -157,11 +157,12 @@ public class DigitalObjectManagerImplTest {
 	@Test
 	public void testAddRelationship() {
 		try {
-			when(managementClient.addObjectRelationship(any(PID.class), any(String.class), any(PID.class))).thenReturn(
+			when(forwardedManagementClient.addObjectRelationship(any(PID.class), any(String.class), any(PID.class)))
+					.thenReturn(
 					Boolean.TRUE);
 			this.getDigitalObjectManagerImpl().addRelationship(new PID("cdr:test1"),
 					ContentModelHelper.Relationship.contains, new PID("cdr:test2"));
-			verify(managementClient, times(1)).addObjectRelationship(any(PID.class),
+			verify(forwardedManagementClient, times(1)).addObjectRelationship(any(PID.class),
 					eq(ContentModelHelper.Relationship.contains.getURI().toString()), any(PID.class));
 		} catch (Exception e) {
 			fail("Got unexpected exception: " + e.getMessage());
@@ -186,7 +187,7 @@ public class DigitalObjectManagerImplTest {
 		when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
 
-		when(managementClient.purgeObjectRelationship(any(PID.class), any(String.class), any(PID.class)))
+		when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class), any(PID.class)))
 				.thenReturn(true);
 
 		ArrayList<URI> cms = new ArrayList<URI>();
@@ -196,12 +197,14 @@ public class DigitalObjectManagerImplTest {
 		PID test = new PID("test:delete");
 		this.getDigitalObjectManagerImpl().delete(test, "tron", "testing delete");
 
-		verify(managementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"), eq(false),
+		verify(forwardedManagementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"),
+				eq(false),
 				any(String.class), (ArrayList<String>) any(), any(String.class), any(Document.class));
-		verify(managementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class), eq(container));
-		verify(managementClient, times(1)).purgeObject(eq(test), any(String.class), eq(false));
-		verify(managementClient, times(0)).purgeObject(any(PID.class), any(String.class), eq(true));
-		verify(managementClient, times(1)).purgeObject(any(PID.class), any(String.class), anyBoolean());
+		verify(forwardedManagementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class),
+				eq(container));
+		verify(forwardedManagementClient, times(1)).purgeObject(eq(test), any(String.class), eq(false));
+		verify(forwardedManagementClient, times(0)).purgeObject(any(PID.class), any(String.class), eq(true));
+		verify(forwardedManagementClient, times(1)).purgeObject(any(PID.class), any(String.class), anyBoolean());
 	}
 
 	/**
@@ -242,7 +245,7 @@ public class DigitalObjectManagerImplTest {
 		when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
 
-		when(managementClient.purgeObjectRelationship(any(PID.class), any(String.class), any(PID.class)))
+		when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class), any(PID.class)))
 				.thenReturn(true);
 
 		ArrayList<URI> cms = new ArrayList<URI>();
@@ -251,7 +254,7 @@ public class DigitalObjectManagerImplTest {
 
 		PID test = new PID("test:delete");
 		FedoraException fe = mock(FedoraException.class);
-		when(managementClient.purgeObject(any(PID.class), any(String.class), eq(false))).thenThrow(fe);
+		when(forwardedManagementClient.purgeObject(any(PID.class), any(String.class), eq(false))).thenThrow(fe);
 		Throwable thrown = null;
 		try {
 			this.getDigitalObjectManagerImpl().delete(test, "tron", "testing delete");
@@ -265,12 +268,14 @@ public class DigitalObjectManagerImplTest {
 		// unless PID are uncontained)
 
 		// verify container was updated
-		verify(managementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"), eq(false),
+		verify(forwardedManagementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"),
+				eq(false),
 				any(String.class), any(new ArrayList<String>().getClass()), any(String.class), any(Document.class));
-		verify(managementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class), eq(container));
+		verify(forwardedManagementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class),
+				eq(container));
 
 		// purge call will fail resulting in a log dump of rollback info
-		verify(managementClient, times(1)).purgeObject(any(PID.class), any(String.class), anyBoolean());
+		verify(forwardedManagementClient, times(1)).purgeObject(any(PID.class), any(String.class), anyBoolean());
 
 		// TODO also test failure of "remove from container" operation
 	}
@@ -293,7 +298,7 @@ public class DigitalObjectManagerImplTest {
 		when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
 
-		when(managementClient.purgeObjectRelationship(any(PID.class), any(String.class), any(PID.class)))
+		when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class), any(PID.class)))
 				.thenReturn(true);
 
 		ArrayList<URI> cms = new ArrayList<URI>();
@@ -302,7 +307,7 @@ public class DigitalObjectManagerImplTest {
 
 		PID test = new PID("test:delete");
 		ServiceException fe = mock(ServiceException.class);
-		when(managementClient.purgeObject(any(PID.class), any(String.class), eq(false))).thenThrow(fe);
+		when(forwardedManagementClient.purgeObject(any(PID.class), any(String.class), eq(false))).thenThrow(fe);
 		Throwable thrown = null;
 		try {
 			this.getDigitalObjectManagerImpl().delete(test, "tron", "testing delete");
@@ -316,12 +321,14 @@ public class DigitalObjectManagerImplTest {
 		// unless PID are uncontained)
 
 		// verify container was updated
-		verify(managementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"), eq(false),
+		verify(forwardedManagementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"),
+				eq(false),
 				any(String.class), any(new ArrayList<String>().getClass()), any(String.class), any(Document.class));
-		verify(managementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class), eq(container));
+		verify(forwardedManagementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class),
+				eq(container));
 
 		// purge call will fail resulting in a log dump of rollback info
-		verify(managementClient, times(1)).purgeObject(any(PID.class), any(String.class), anyBoolean());
+		verify(forwardedManagementClient, times(1)).purgeObject(any(PID.class), any(String.class), anyBoolean());
 		assertTrue("DOM must be made unavailable after a service exception", !this.getDigitalObjectManagerImpl()
 				.isAvailable());
 	}
@@ -345,7 +352,7 @@ public class DigitalObjectManagerImplTest {
 		PID test = new PID("test:object");
 		PID test2 = new PID("test:object2");
 		this.getDigitalObjectManagerImpl().purgeRelationship(test, ContentModelHelper.Relationship.member, test2);
-		verify(managementClient, times(1)).purgeObjectRelationship(eq(test),
+		verify(forwardedManagementClient, times(1)).purgeObjectRelationship(eq(test),
 				eq(ContentModelHelper.Relationship.member.getURI().toString()), eq(test2));
 	}
 
