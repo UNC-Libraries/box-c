@@ -90,8 +90,16 @@
 			</ul>
 			<ul class="secondarymenu">
 				<c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
+					<c:choose>
+						<c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
+							<c:set var="jumpToAdmin" value="list/${resultResponse.selectedContainer.id}" />
+						</c:when>
+						<c:when test="${not empty briefObject}">
+							<c:set var="jumpToAdmin" value="list/${briefObject.ancestorPathFacet.searchKey}" />
+						</c:when>
+					</c:choose>
 					<li>
-						<a href="/admin/" target="_blank">Admin</a>
+						<a href="/admin/${jumpToAdmin}" target="_blank">Admin</a>
 					</li>
 				</c:if>
 				<c:choose>
