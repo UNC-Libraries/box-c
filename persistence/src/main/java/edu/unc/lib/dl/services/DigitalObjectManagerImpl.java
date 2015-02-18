@@ -863,7 +863,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				}
 
 				managementClient.modifyDatastream(container, RELS_EXT.getName(),
-						"Removing moved children", null, null, relsExtResp.getLastModified(), relsExt);
+						"Removing moved children", relsExtResp.getLastModified(), relsExt);
 				break removeRelsExt;
 			} catch (OptimisticLockException e) {
 				log.debug("Unable to update RELS-EXT for {}, retrying", container, e);
@@ -886,7 +886,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					}
 
 					managementClient.modifyDatastream(container, MD_CONTENTS.getName(),
-							"Removing " + children.size() + " moved children", null, null,
+							"Removing " + children.size() + " moved children",
 							mdContents.getLastModified(), mdContents.getDocument());
 				}
 				break removeMDContents;
@@ -942,7 +942,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				}
 
 				// Push changes out to the container container
-				managementClient.modifyDatastream(container, RELS_EXT.getName(), "Adding moved children", null, null,
+				managementClient.modifyDatastream(container, RELS_EXT.getName(), "Adding moved children",
 						relsExtResp.getLastModified(), relsExt);
 				break updateRelsExt;
 			} catch (OptimisticLockException e) {
@@ -966,7 +966,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					}
 
 					managementClient.modifyDatastream(container, MD_CONTENTS.getName(), "Adding " + moving.size()
-							+ " moved children", null, null, mdContentsResp.getLastModified(), mdContents);
+							+ " moved children", mdContentsResp.getLastModified(), mdContents);
 				}
 				break updateMDContents;
 			} catch (OptimisticLockException e) {
@@ -1013,7 +1013,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					log.info("RELS-EXT after cleaning up children in {}:\n{}", container, outputter.outputString(relsExt));
 				}
 
-				managementClient.modifyDatastream(container, RELS_EXT.getName(), "Cleaning up moved children", null, null,
+				managementClient.modifyDatastream(container, RELS_EXT.getName(), "Cleaning up moved children",
 						relsExtResp.getLastModified(), relsExt);
 				break updateRelsExt;
 			} catch (OptimisticLockException e) {

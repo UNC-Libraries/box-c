@@ -191,8 +191,7 @@ public class DigitalObjectManagerMoveTest {
 
 		doNothing().when(managementClient)
 				.modifyDatastream(eq(targetPID), eq(RELS_EXT.getName()), anyString(),
-				anyListOf(String.class),
-						anyString(), anyString(), argThat(sourceRelsExtMatcher));
+				anyString(), argThat(sourceRelsExtMatcher));
 
 		when(accessClient.getDatastreamDissemination(eq(targetPID), eq(RELS_EXT.getName()), anyString())).thenAnswer(
 				sourceRelsExtAnswer);
@@ -214,7 +213,7 @@ public class DigitalObjectManagerMoveTest {
 		ArgumentCaptor<Document> sourceRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 
 		verify(managementClient, times(2)).modifyDatastream(eq(source1PID), eq(RELS_EXT.getName()), anyString(),
-				anyListOf(String.class), anyString(), anyString(), sourceRelsExtUpdateCaptor.capture());
+				anyString(), sourceRelsExtUpdateCaptor.capture());
 
 		List<Document> sourceRelsAnswers = sourceRelsExtUpdateCaptor.getAllValues();
 		// Check the state of the source after removal but before cleanup
@@ -237,7 +236,7 @@ public class DigitalObjectManagerMoveTest {
 		verify(accessClient).getDatastreamDissemination(eq(destPID), eq(RELS_EXT.getName()), anyString());
 		ArgumentCaptor<Document> destRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 		verify(managementClient).modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(),
-				anyListOf(String.class), anyString(), anyString(), destRelsExtUpdateCaptor.capture());
+				anyString(), destRelsExtUpdateCaptor.capture());
 		assertFalse("Moved children were still present in source", children.containsAll(moving));
 
 		Document destRelsExt = destRelsExtUpdateCaptor.getValue();
@@ -262,7 +261,7 @@ public class DigitalObjectManagerMoveTest {
 		oneSourceTest();
 
 		verify(managementClient).modifyDatastream(eq(source1PID), eq(MD_CONTENTS.getName()), anyString(),
-				anyListOf(String.class), anyString(), anyString(), any(Document.class));
+				anyString(), any(Document.class));
 	}
 
 	@Test
@@ -280,20 +279,20 @@ public class DigitalObjectManagerMoveTest {
 		doThrow(new OptimisticLockException(""))
 				.doNothing()
 				.when(managementClient)
-				.modifyDatastream(eq(source1PID), eq(RELS_EXT.getName()), anyString(), anyListOf(String.class),
-						anyString(), anyString(), argThat(sourceRelsExtMatcher));
+				.modifyDatastream(eq(source1PID), eq(RELS_EXT.getName()), anyString(), anyString(),
+						argThat(sourceRelsExtMatcher));
 
 		doThrow(new OptimisticLockException(""))
 				.doNothing()
 				.when(managementClient)
-				.modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(), anyListOf(String.class), anyString(),
-						anyString(), any(Document.class));
+				.modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(), anyString(),
+						any(Document.class));
 
 		doThrow(new OptimisticLockException(""))
 				.doNothing()
 				.when(managementClient)
-				.modifyDatastream(eq(source1PID), eq(MD_CONTENTS.getName()), anyString(), anyListOf(String.class),
-						anyString(), anyString(), any(Document.class));
+				.modifyDatastream(eq(source1PID), eq(MD_CONTENTS.getName()), anyString(), anyString(),
+						any(Document.class));
 
 		when(accessClient.getDatastreamDissemination(eq(source1PID), eq(RELS_EXT.getName()), anyString()))
 				.thenAnswer(sourceRelsExtAnswer);
@@ -309,7 +308,7 @@ public class DigitalObjectManagerMoveTest {
 		ArgumentCaptor<Document> sourceRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 
 		verify(managementClient, times(3)).modifyDatastream(eq(source1PID), eq(RELS_EXT.getName()), anyString(),
-				anyListOf(String.class), anyString(), anyString(), sourceRelsExtUpdateCaptor.capture());
+				anyString(), sourceRelsExtUpdateCaptor.capture());
 
 		List<Document> sourceRelsAnswers = sourceRelsExtUpdateCaptor.getAllValues();
 
@@ -332,7 +331,7 @@ public class DigitalObjectManagerMoveTest {
 		// Verify that the destination had the moved children added to it
 		ArgumentCaptor<Document> destRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 		verify(managementClient, times(2)).modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(),
-				anyListOf(String.class), anyString(), anyString(), destRelsExtUpdateCaptor.capture());
+				anyString(), destRelsExtUpdateCaptor.capture());
 
 		Document destRelsExt = destRelsExtUpdateCaptor.getValue();
 		children = JDOMQueryUtil.getRelationSet(destRelsExt.getRootElement(), contains);
@@ -340,8 +339,7 @@ public class DigitalObjectManagerMoveTest {
 		assertTrue("Moved children were not present in destination", children.containsAll(moving));
 
 		verify(managementClient, times(2)).modifyDatastream(eq(source1PID), eq(MD_CONTENTS.getName()),
-				anyString(),
-				anyListOf(String.class), anyString(), anyString(), any(Document.class));
+				anyString(), anyString(), any(Document.class));
 	}
 
 	@Test
@@ -361,7 +359,7 @@ public class DigitalObjectManagerMoveTest {
 
 		ArgumentCaptor<Document> source1RelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 		verify(managementClient, times(2)).modifyDatastream(eq(source1PID), eq(RELS_EXT.getName()), anyString(),
-				anyListOf(String.class), anyString(), anyString(), source1RelsExtUpdateCaptor.capture());
+				anyString(), source1RelsExtUpdateCaptor.capture());
 
 		// Check that the first source was updated
 		Document clean1RelsExt = source1RelsExtUpdateCaptor.getValue();
@@ -371,7 +369,7 @@ public class DigitalObjectManagerMoveTest {
 		// Check that the second source was updated
 		ArgumentCaptor<Document> source2RelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 		verify(managementClient, times(2)).modifyDatastream(eq(source2PID), eq(RELS_EXT.getName()), anyString(),
-				anyListOf(String.class), anyString(), anyString(), source2RelsExtUpdateCaptor.capture());
+				anyString(), source2RelsExtUpdateCaptor.capture());
 		Document clean2RelsExt = source2RelsExtUpdateCaptor.getValue();
 		children = JDOMQueryUtil.getRelationSet(clean2RelsExt.getRootElement(), contains);
 		assertEquals("Incorrect number of children in source 2 after cleanup", 1, children.size());
@@ -379,7 +377,7 @@ public class DigitalObjectManagerMoveTest {
 		// Check that items from both source 1 and 2 ended up in the destination.
 		ArgumentCaptor<Document> destRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 		verify(managementClient).modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(),
-				anyListOf(String.class), anyString(), anyString(), destRelsExtUpdateCaptor.capture());
+				anyString(), destRelsExtUpdateCaptor.capture());
 
 		Document destRelsExt = destRelsExtUpdateCaptor.getValue();
 		children = JDOMQueryUtil.getRelationSet(destRelsExt.getRootElement(), contains);
@@ -398,7 +396,7 @@ public class DigitalObjectManagerMoveTest {
 
 		// Verify that it doesn't try to change anything when there are no leftover tombstones
 		verify(managementClient, never()).modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(),
-				anyListOf(String.class), anyString(), anyString(), any(Document.class));
+				anyString(), any(Document.class));
 	}
 
 	@Test
@@ -423,7 +421,7 @@ public class DigitalObjectManagerMoveTest {
 
 		// There should have been three updates to the source RELS-EXT, the initial, rollback the moved, and cleanup
 		verify(managementClient, times(3)).modifyDatastream(eq(source1PID), eq(RELS_EXT.getName()), anyString(),
-				anyListOf(String.class), anyString(), anyString(), sourceRelsExtUpdateCaptor.capture());
+				anyString(), sourceRelsExtUpdateCaptor.capture());
 
 		List<Document> sourceRelsAnswers = sourceRelsExtUpdateCaptor.getAllValues();
 		// Check the state of the source after removal but before cleanup
@@ -475,7 +473,7 @@ public class DigitalObjectManagerMoveTest {
 
 		// There should have been three updates to the source RELS-EXT, the initial, rollback the moved, and cleanup
 		verify(managementClient, times(3)).modifyDatastream(eq(source1PID), eq(RELS_EXT.getName()), anyString(),
-				anyListOf(String.class), anyString(), anyString(), sourceRelsExtUpdateCaptor.capture());
+				anyString(), sourceRelsExtUpdateCaptor.capture());
 
 		List<Document> sourceRelsAnswers = sourceRelsExtUpdateCaptor.getAllValues();
 		// Check the state of the source after removal but before cleanup
@@ -496,7 +494,7 @@ public class DigitalObjectManagerMoveTest {
 
 		ArgumentCaptor<Document> destRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 		verify(managementClient, times(2)).modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(),
-				anyListOf(String.class), anyString(), anyString(), destRelsExtUpdateCaptor.capture());
+				anyString(), destRelsExtUpdateCaptor.capture());
 
 		List<Document> destRelsAnswers = destRelsExtUpdateCaptor.getAllValues();
 		// Check the state of the source after removal but before cleanup

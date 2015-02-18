@@ -596,14 +596,14 @@ public class ManagementClient extends WebServiceTemplate {
 		return timestamp;
 	}
 
-	public void modifyDatastream(PID pid, String dsid, String message, List<String> altids,
-			String label, String lastModifiedDate, Document content) throws FedoraException {
+	public void modifyDatastream(PID pid, String dsid, String message,
+			String lastModifiedDate, Document content) throws FedoraException {
 		byte[] dsBytes = ClientUtils.serializeXML(content);
-		modifyDatastream(pid, dsid, message, altids, label, lastModifiedDate, dsBytes);
+		modifyDatastream(pid, dsid, message, lastModifiedDate, dsBytes);
 	}
 
-	public void modifyDatastream(PID pid, String dsid, String message, List<String> altids,
-			String label, String lastModifiedDate, byte[] content) throws FedoraException {
+	public void modifyDatastream(PID pid, String dsid, String message,
+			String lastModifiedDate, byte[] content) throws FedoraException {
 
 		PutMethod method = new PutMethod(this.getFedoraContextUrl() + "/objects/" + pid.getPid() + "/datastreams/" + dsid);
 		method.setRequestEntity(new ByteArrayRequestEntity(content));
@@ -614,9 +614,6 @@ public class ManagementClient extends WebServiceTemplate {
 		}
 		if (lastModifiedDate != null) {
 			params.setParameter("lastModifiedDate", lastModifiedDate);
-		}
-		if (label != null) {
-			params.setParameter("dsLabel", label);
 		}
 
 		try {
