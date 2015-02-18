@@ -2213,7 +2213,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		}
 		
 		var newElement = $(this.options.template({metadata : metadata, isContainer : this.isContainer, 
-				isDeleted : this.isDeleted, validationProblem : validationProblem, result : this}));
+				isDeleted : this.isDeleted, validationProblem : validationProblem}));
 		this.checkbox = null;
 		if (this.element) {
 			if (this.actionMenu)
@@ -3550,6 +3550,13 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					if (self.searchMenu) {
 						self.searchMenu.searchMenu("changeFolder", data.container? data.container.id : "");
 						self.searchMenu.searchMenu("updateFacets", url);
+					}
+					
+					// Modify the public UI link to reflect the currently selected container
+					if (data.container) {
+						var $publicLink = $("#public_ui_link");
+						var baseHref = $publicLink.data("base-href");
+						$publicLink.attr("href", $publicLink.data("base-href") + "list/" + data.container.id)
 					}
 					
 					$("#result_loading_icon").addClass("hidden");
