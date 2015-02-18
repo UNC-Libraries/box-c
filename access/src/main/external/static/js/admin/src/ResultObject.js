@@ -193,5 +193,25 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 		this.overlay[fnName].apply(this.overlay, fnArgs);
 	};
 	
+	ResultObject.prototype.getDatastream = function(dsName) {
+		if (this.metadata.datastream) {
+			for (var dsIndex in this.metadata.datastream) {
+				var ds = this.metadata.datastream[dsIndex];
+				if (ds.indexOf(dsName + "|") == 0) {
+					var fields = ds.split("|");
+					return {
+						name : fields[0],
+						mimeType : fields[1],
+						extension : fields[2],
+						fileSize : fields[3],
+						checksum : fields[4],
+						defaultWebObject : fields.length > 5? fields[5] : null
+					};
+				}
+			}
+		}
+		return false;
+	};
+	
 	return ResultObject;
 });

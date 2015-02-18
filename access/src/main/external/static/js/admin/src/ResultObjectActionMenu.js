@@ -107,6 +107,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 		if (resultObject.isContainer)
 			items["openContainer"] = {name : "Open"};
 		items["viewInCDR"] = {name : "View in CDR"};
+		var dataFile = resultObject.getDatastream("DATA_FILE");
+		if (dataFile) {
+			items["viewFile"] = {name : "View " + (dataFile['extension']? dataFile['extension'].toUpperCase() : "File")};
+		}
 		if (resultObject.metadata.type == 'Collection') {
 			items["sepbrowse"] = "";
 			items["viewTrash"] = {name : "View trash for this collection"};
@@ -145,6 +149,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 				switch (key) {
 					case "viewInCDR" :
 						window.open(serverUrl + "record/" + metadata.id,'_blank');
+						break;
+					case "viewFile" :
+						var dataFile = resultObject.getDatastream("DATA_FILE");
+						if (dataFile) {
+							window.open(serverUrl + "content/" + (dataFile['defaultWebObject']? dataFile['defaultWebObject'] : metadata.id), '_blank');
+						}
 						break;
 					case "openContainer" :
 						document.location.href = baseUrl + "list/" + metadata.id;

@@ -2213,7 +2213,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		}
 		
 		var newElement = $(this.options.template({metadata : metadata, isContainer : this.isContainer, 
-				isDeleted : this.isDeleted, validationProblem : validationProblem}));
+				isDeleted : this.isDeleted, validationProblem : validationProblem, result : this}));
 		this.checkbox = null;
 		if (this.element) {
 			if (this.actionMenu)
@@ -2362,6 +2362,26 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		this.overlay[fnName].apply(this.overlay, fnArgs);
 	};
 	
+	ResultObject.prototype.getDatastream = function(dsName) {
+		if (this.metadata.datastream) {
+			for (var dsIndex in this.metadata.datastream) {
+				var ds = this.metadata.datastream[dsIndex];
+				if (ds.indexOf(dsName + "|") == 0) {
+					var fields = ds.split("|");
+					return {
+						name : fields[0],
+						mimeType : fields[1],
+						extension : fields[2],
+						fileSize : fields[3],
+						checksum : fields[4],
+						defaultWebObject : fields.length > 5? fields[5] : null
+					};
+				}
+			}
+		}
+		return false;
+	};
+	
 	return ResultObject;
 });define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 		function($, ui) {
@@ -2472,6 +2492,10 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		if (resultObject.isContainer)
 			items["openContainer"] = {name : "Open"};
 		items["viewInCDR"] = {name : "View in CDR"};
+		var dataFile = resultObject.getDatastream("DATA_FILE");
+		if (dataFile) {
+			items["viewFile"] = {name : "View " + (dataFile['extension']? dataFile['extension'].toUpperCase() : "File")};
+		}
 		if (resultObject.metadata.type == 'Collection') {
 			items["sepbrowse"] = "";
 			items["viewTrash"] = {name : "View trash for this collection"};
@@ -2510,6 +2534,12 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				switch (key) {
 					case "viewInCDR" :
 						window.open(serverUrl + "record/" + metadata.id,'_blank');
+						break;
+					case "viewFile" :
+						var dataFile = resultObject.getDatastream("DATA_FILE");
+						if (dataFile) {
+							window.open(serverUrl + "content/" + (dataFile['defaultWebObject']? dataFile['defaultWebObject'] : metadata.id), '_blank');
+						}
 						break;
 					case "openContainer" :
 						document.location.href = baseUrl + "list/" + metadata.id;
