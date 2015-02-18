@@ -17,19 +17,23 @@ package edu.unc.lib.dl.xml;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 public class JDOMQueryUtil {
-	
+
 	public static Element getElementByAttribute(List<?> elements, String attribute, String value) {
 		return getElementByAttribute(elements, attribute, null, value);
 	}
-	
+
 	public static Element getElementByAttribute(List<?> elements, String attribute, Namespace attributeNS, String value) {
 		for (Object elementObj : elements) {
 			Element element = (Element) elementObj;
@@ -40,7 +44,7 @@ public class JDOMQueryUtil {
 		}
 		return null;
 	}
-	
+
 	public static Element getChildByAttribute(Element parent, String childName, Namespace namespace, String attribute, String value) {
 		List<?> elements;
 		if (childName != null) {
@@ -52,7 +56,7 @@ public class JDOMQueryUtil {
 		}
 		return getElementByAttribute(elements, attribute, value);
 	}
-	
+
 	public static Date parseISO6392bDateChild(Element parent, String childName, Namespace namespace) {
 		String dateString = parent.getChildText(childName, namespace);
 		if (dateString != null) {
@@ -65,5 +69,22 @@ public class JDOMQueryUtil {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Returns a set of object PIDs retrieved from the provided RDF datastream
+	 *
+	 * @param rdfRoot
+	 * @param relation
+	 * @return
+	 */
+	public static Set<PID> getRelationSet(Element rdfRoot, Relationship relation) {
+		List<Element> containsEls = rdfRoot.getChild("Description", JDOMNamespaceUtil.RDF_NS).getChildren(
+				relation.name(), relation.getNamespace());
+		Set<PID> children = new HashSet<>();
+		for (Element containsEl : containsEls) {
+			children.add(new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS)));
+		}
+		return children;
 	}
 }

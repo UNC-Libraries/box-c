@@ -28,9 +28,17 @@
 	<bean id="managementClient" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg index="0" value="edu.unc.lib.dl.fedora.ManagementClient"/>
 	</bean>
+	
+	<bean id="forwardedManagementClient" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg index="0" value="edu.unc.lib.dl.fedora.ManagementClient"/>
+	</bean>
 
 	<bean id="accessClient" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="edu.unc.lib.dl.fedora.AccessClient"/>
+	</bean>
+	
+	<bean id="accessControlService" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.dl.fedora.FedoraAccessControlService"/>
 	</bean>
 
 	<bean id="jmsTemplate" factory-method="mock" class="org.mockito.Mockito">
@@ -44,7 +52,9 @@
 
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
 		<property name="managementClient" ref="managementClient"/>
+		<property name="forwardedManagementClient" ref="forwardedManagementClient"/>
 		<property name="accessClient" ref="accessClient"/>
+		<property name="aclService" ref="accessControlService"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="schematronValidator" ref="schematronValidator"/>

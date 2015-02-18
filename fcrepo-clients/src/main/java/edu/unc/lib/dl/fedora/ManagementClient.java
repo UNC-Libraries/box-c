@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.fedora;
 
 import static edu.unc.lib.dl.util.ContentModelHelper.Administrative_PID.REPOSITORY;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_EVENTS;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,8 +35,10 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
@@ -49,7 +52,6 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.WebServiceFaultException;
@@ -99,7 +101,6 @@ import edu.unc.lib.dl.fedora.types.SetDatastreamVersionable;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionableResponse;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_EVENTS;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
@@ -595,6 +596,39 @@ public class ManagementClient extends WebServiceTemplate {
 		return timestamp;
 	}
 
+	public void modifyDatastream(PID pid, String dsid, String message,
+			String lastModifiedDate, Document content) throws FedoraException {
+		byte[] dsBytes = ClientUtils.serializeXML(content);
+		modifyDatastream(pid, dsid, message, lastModifiedDate, dsBytes);
+	}
+
+	public void modifyDatastream(PID pid, String dsid, String message,
+			String lastModifiedDate, byte[] content) throws FedoraException {
+
+		PutMethod method = new PutMethod(this.getFedoraContextUrl() + "/objects/" + pid.getPid() + "/datastreams/" + dsid);
+		method.setRequestEntity(new ByteArrayRequestEntity(content));
+
+		HttpMethodParams params = method.getParams();
+		if (message != null) {
+			params.setParameter("logMessage", message);
+		}
+		if (lastModifiedDate != null) {
+			params.setParameter("lastModifiedDate", lastModifiedDate);
+		}
+
+		try {
+			int response = httpClient.executeMethod(method);
+			if (response == 409) {
+				throw new OptimisticLockException("Datastream " + dsid + " on object " + pid
+						+ " has been modified more recently than the specified last modified date");
+			}
+		} catch (IOException e) {
+			throw new ServiceException("Failed to modify datastream " + dsid + " on object " + pid, e);
+		} finally {
+			method.releaseConnection();
+		}
+	}
+
 	public String modifyObject(PID pid, String label, String ownerid, State state, String message)
 			throws FedoraException {
 		ModifyObject req = new ModifyObject();
@@ -897,15 +931,15 @@ public class ManagementClient extends WebServiceTemplate {
 			throw new Error(e);
 		} catch (NotFoundException e) {
 			log.warn("Could not find MD_EVENTS for {}, creating a new document", pid);
-			
+
 			dom = new Document();
 			Element premis = new Element("premis",
 					JDOMNamespaceUtil.PREMIS_V2_NS).addContent(PremisEventLogger.getObjectElement(pid));
 			dom.setRootElement(premis);
-			
+
 			newDatastream = true;
 		}
-		
+
 		eventLogger.appendLogEvents(pid, dom.getRootElement());
 		String eventsLoc = this.upload(dom);
 		String logTimestamp;
@@ -916,7 +950,7 @@ public class ManagementClient extends WebServiceTemplate {
 			logTimestamp = this.modifyDatastreamByReference(pid, MD_EVENTS.getName(), false, "adding PREMIS events",
 					new ArrayList<String>(), MD_EVENTS.getLabel(), "text/xml", null, null, eventsLoc);
 		}
-		
+
 		return logTimestamp;
 	}
 

@@ -194,7 +194,7 @@ public class ContentModelHelper {
 				throw x;
 			}
 		}
-		
+
 		// FIXME: should other kinds of properties use this fragment/namespace/uri pattern?
 
 		public String getFragment() {
@@ -279,7 +279,7 @@ public class ContentModelHelper {
 	public static enum Relationship {
 		contains(JDOMNamespaceUtil.CDR_NS, "contains"), member(JDOMNamespaceUtil.CDR_NS, "member"), owner(
 				JDOMNamespaceUtil.CDR_NS, "owner"), originalDeposit(JDOMNamespaceUtil.CDR_NS, "originalDeposit"), depositedBy(
-				JDOMNamespaceUtil.CDR_NS, "depositedBy");
+				JDOMNamespaceUtil.CDR_NS, "depositedBy"), removedChild(JDOMNamespaceUtil.CDR_NS, "removedChild");
 		private URI uri;
 		private Namespace namespace;
 

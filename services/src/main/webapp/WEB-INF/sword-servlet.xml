@@ -62,9 +62,11 @@
 	</bean>
 	
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
-		<property name="managementClient" ref="forwardedManagementClient"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="forwardedManagementClient" ref="forwardedManagementClient"/>
 		<property name="accessClient" ref="accessClient"/>
 		<property name="operationsMessageSender" ref="operationsMessageSender"/>
+		<property name="aclService" ref="accessControlService"/>
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="schematronValidator" ref="schematronValidator"/>
 		<property name="available" value="true"/>
