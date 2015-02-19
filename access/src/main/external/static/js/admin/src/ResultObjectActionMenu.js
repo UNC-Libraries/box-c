@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
-		function($, ui) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'contextMenu'],
+		function($, ui, StringUtilities) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -109,7 +109,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 		items["viewInCDR"] = {name : "View in CDR"};
 		var dataFile = resultObject.getDatastream("DATA_FILE");
 		if (dataFile) {
-			items["viewFile"] = {name : "View " + (dataFile['extension']? dataFile['extension'].toUpperCase() : "File")};
+			items["viewFile"] = {name : "Download " + (dataFile['extension']? dataFile['extension'].toUpperCase() : "File")
+				+ " ("+ StringUtilities.readableFileSize(dataFile['fileSize']) + ")"};
 		}
 		if (resultObject.metadata.type == 'Collection') {
 			items["sepbrowse"] = "";

@@ -440,8 +440,8 @@ define('detachplus', [ 'jquery'], function($) {
  * Implements functionality and UI for the generic Ingest Package form
  */
 define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 
-		'ModalLoadingOverlay', 'ConfirmationDialog', 'AlertHandler'], 
-		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay, ConfirmationDialog) {
+		'ModalLoadingOverlay', 'ConfirmationDialog', 'StringUtilities', 'AlertHandler'], 
+		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay, ConfirmationDialog, StringUtilities) {
 	
 	var defaultOptions = {
 		iframeSelector : "#upload_file_frame",
@@ -479,7 +479,7 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 				var fileInfo = "";
 				if (self.ingestFile.type)
 					fileInfo += self.ingestFile.type + ", ";
-				fileInfo += self.readableFileSize(self.ingestFile.size);
+				fileInfo += StringUtilities.readableFileSize(self.ingestFile.size);
 				$(".file_info", self.$form).html(fileInfo);
 			} else
 				$(".file_info", self.$form).html("");
@@ -571,17 +571,6 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			this.overlay.remove();
 		if (this.closeConfirm)
 			this.closeConfirm.remove();
-	};
-	
-	AbstractFileUploadForm.prototype.readableFileSize = function(size) {
-		var fileSize = 0;
-		if (size > 1024 * 1024 * 1024)
-			fileSize = (Math.round(size * 100 / (1024 * 1024 * 1024)) / 100).toString() + 'gb';
-		if (size > 1024 * 1024)
-			fileSize = (Math.round(size * 100 / (1024 * 1024)) / 100).toString() + 'mb';
-		else
-			fileSize = (Math.round(size * 100 / 1024) / 100).toString() + 'kb';
-		return fileSize;
 	};
 	
 	AbstractFileUploadForm.prototype.supportsAjaxUpload = function() {
@@ -2383,8 +2372,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	return ResultObject;
-});define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
-		function($, ui) {
+});define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'contextMenu'],
+		function($, ui, StringUtilities) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -2494,7 +2483,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		items["viewInCDR"] = {name : "View in CDR"};
 		var dataFile = resultObject.getDatastream("DATA_FILE");
 		if (dataFile) {
-			items["viewFile"] = {name : "View " + (dataFile['extension']? dataFile['extension'].toUpperCase() : "File")};
+			items["viewFile"] = {name : "Download " + (dataFile['extension']? dataFile['extension'].toUpperCase() : "File")
+				+ " ("+ StringUtilities.readableFileSize(dataFile['fileSize']) + ")"};
 		}
 		if (resultObject.metadata.type == 'Collection') {
 			items["sepbrowse"] = "";
@@ -3799,6 +3789,19 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			}
 		}
 	});
+});define('StringUtilities', ['jquery'], function($) {
+	return {
+		readableFileSize : function(size) {
+			var fileSize = 0;
+			if (size > 1024 * 1024 * 1024)
+				fileSize = (Math.round(size * 100 / (1024 * 1024 * 1024)) / 100).toString() + 'gb';
+			if (size > 1024 * 1024)
+				fileSize = (Math.round(size * 100 / (1024 * 1024)) / 100).toString() + 'mb';
+			else
+				fileSize = (Math.round(size * 100 / 1024) / 100).toString() + 'kb';
+			return fileSize;
+		}
+	};
 });define('URLUtilities', ['jquery'], function($) {
 	return {
 		uriEncodeParameters : function(url) {

@@ -34,6 +34,7 @@ require.config({
 		"StructureEntry" : "cdr-admin",
 		"StructureView" : "cdr-admin",
 		"URLUtilities" : "cdr-admin",
+		"StringUtilities" : "cdr-admin",
 		
 		"editable" : "admin/lib/jqueryui-editable.min",
 		"moment" : "cdr-admin"
