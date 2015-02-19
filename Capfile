@@ -12,12 +12,12 @@ def upload_and_expand!(tarball, dir)
   execute :tar, "--warning=no-unknown-keyword", "-xzf", upload_path, "-C", dir
 end
 
-WEBAPPS = FileList[
-  "access/target/ROOT.war",
-  "admin/target/admin.war",
-  "services/target/services.war",
-  "djatoka-cdr/dist/djatoka.war"
-]
+WEBAPPS = {
+  "access" => "access/target/ROOT.war",
+  "admin" => "admin/target/admin.war",
+  "services" => "services/target/services.war",
+  "djatoka" => "djatoka-cdr/dist/djatoka.war"
+}
 
 LIB = FileList[
   "fcrepo-cdr-fesl/target/fcrepo-cdr-fesl-3.4-SNAPSHOT.jar",
@@ -54,15 +54,32 @@ namespace :update do
       upload_and_expand!(tarball, "/var/deploy/static")
     end
   end
+  
+  # Define update tasks for each webapp
+  
+  namespace :webapps do
+    
+    WEBAPPS.each do |name, path|
+      
+      desc "Update #{name} webapp"
+      task name => path do |t|
+        on roles(:web) do
+          execute :mkdir, "-p", "/var/deploy/webapps"
+
+          t.prerequisites.each do |p|
+            upload! p, "/var/deploy/webapps"
+          end
+        end
+      end
+      
+    end
+    
+  end
 
   desc "Update webapps"
   task :webapps => WEBAPPS do |t|
-    on roles(:web) do
-      execute :mkdir, "-p", "/var/deploy/webapps"
-
-      t.prerequisites.each do |p|
-        upload! p, "/var/deploy/webapps"
-      end
+    WEBAPPS.each do |name, _|
+      invoke "update:webapps:#{name}"
     end
   end
 
@@ -110,61 +127,39 @@ task :update do
   invoke "update:deposit"
 end
 
-namespace :restart do
+# Define individual service tasks (tomcat:restart, ...)
+
+SERVICES = [:deposit, :tomcat]
+ACTIONS = [:start, :stop, :restart, :status]
+
+SERVICES.each do |service|
   
-  desc "Restart the tomcat service"
-  task :tomcat do
-    on roles(:web) do
-      sudo :service, :tomcat, :restart
+  namespace service do
+    
+    ACTIONS.each do |action|
+      
+      desc "Service script: #{action} #{service}"
+      task action do
+        on roles(:web) do
+          sudo :service, service, action
+        end
+      end
+      
     end
-  end
-  
-  desc "Restart the deposit service"
-  task :deposit do
-    on roles(:web) do
-      sudo :service, :deposit, :restart
-    end
+    
   end
   
 end
 
-task :restart do
-  invoke "restart:tomcat"
-  invoke "restart:deposit"
-end
+# Define bulk service tasks (restart, ...)
 
-namespace :redeploy do
+ACTIONS.each do |action|
   
-  desc "Redeploy the access webapp"
-  task :access do
-    on roles(:web) do
-      execute :curl, "--insecure", "--silent", "\"https://manager:manager@127.0.0.1/manager/text/deploy?war=file:/var/deploy/webapps/ROOT.war&path=/&update=true\""
+  desc "Bulk service script: #{action}"
+  task action do
+    SERVICES.each do |service|
+      invoke "#{service}:#{action}"
     end
   end
   
-  desc "Redeploy the admin webapp"
-  task :admin do
-    on roles(:web) do
-      execute :curl, "--insecure", "--silent", "\"https://manager:manager@127.0.0.1/manager/text/deploy?war=file:/var/deploy/webapps/admin.war&path=/admin&update=true\""
-    end
-  end
-  
-  desc "Redeploy the services webapp"
-  task :services do
-    on roles(:web) do
-      execute :curl, "--insecure", "--silent", "\"https://manager:manager@127.0.0.1/manager/text/deploy?war=file:/var/deploy/webapps/services.war&path=/services&update=true\""
-    end
-  end
-  
-end
-
-task :redeploy do
-  invoke "redeploy:access"
-  invoke "redeploy:admin"
-  invoke "redeploy:services"
-end
-
-task :deploy do
-  invoke "update"
-  invoke "restart"
 end
