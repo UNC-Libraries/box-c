@@ -76,7 +76,7 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 					Element geographicEl = element.getChild("geographic", JDOMNamespaceUtil.MODS_V3_NS);
 					idb.getDynamicFields().put(SITE_CODE_FIELD, geographicEl.getTextTrim());
 				}
-			} else if ("note".equals(element.getName())) {
+			} else if ("subject".equals(element.getName())) {
 				if (CONTEXT_1_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
 					idb.getDynamicFields().put(CONTEXT_1_FIELD, element.getTextTrim());
 				}
