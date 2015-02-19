@@ -89,12 +89,12 @@ public class ExportController extends AbstractSolrSearchController {
 	}
 	
 	private void printHeaders(CSVPrinter printer) throws IOException {
-		printer.printRecord("Object Type", "PID", "Title", "Path", "Label", "Deleted", "Date Added", "Date Updated", "MIME Type", "Checksum", "File Size (bytes)", "Number of Children");
+		printer.printRecord("Object Type", "PID", "Title", "Path", "Label", "Depth", "Deleted", "Date Added", "Date Updated", "MIME Type", "Checksum", "File Size (bytes)", "Number of Children");
 	}
 	
 	private void printObject(CSVPrinter printer, BriefObjectMetadata object) throws IOException {
 		
-		// Vitals: object type, pid, title, path, label
+		// Vitals: object type, pid, title, path, label, depth
 		
 		printer.print(object.getResourceType());
 		printer.print(object.getPid());
@@ -108,6 +108,8 @@ public class ExportController extends AbstractSolrSearchController {
 		} else {
 			printer.print("");
 		}
+		
+		printer.print(object.getAncestorPathFacet().getHighestTier());
 		
 		// Status: deleted
 		
