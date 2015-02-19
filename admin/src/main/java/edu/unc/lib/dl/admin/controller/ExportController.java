@@ -64,7 +64,7 @@ public class ExportController extends AbstractSolrSearchController {
 		SearchRequest searchRequest = generateSearchRequest(request, searchStateFactory.createSearchState());
 		
 		SearchState searchState = searchRequest.getSearchState();
-		searchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(), SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_NAMES.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name()));
+		searchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(), SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_NAMES.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(), SearchFieldKeys.RELATIONS.name()));
 		searchState.setSortType("export");
 		searchState.setRowsPerPage(2000);
 		
@@ -89,17 +89,25 @@ public class ExportController extends AbstractSolrSearchController {
 	}
 	
 	private void printHeaders(CSVPrinter printer) throws IOException {
-		printer.printRecord("Object Type", "PID", "Title", "Path", "Deleted", "Date Added", "Date Updated", "MIME Type", "Checksum", "File Size (bytes)", "Number of Children");
+		printer.printRecord("Object Type", "PID", "Title", "Path", "Label", "Deleted", "Date Added", "Date Updated", "MIME Type", "Checksum", "File Size (bytes)", "Number of Children");
 	}
 	
 	private void printObject(CSVPrinter printer, BriefObjectMetadata object) throws IOException {
 		
-		// Vitals: object type, pid, title, path
+		// Vitals: object type, pid, title, path, label
 		
 		printer.print(object.getResourceType());
 		printer.print(object.getPid());
 		printer.print(object.getTitle());
 		printer.print(object.getAncestorNames());
+		
+		List<String> labelRelations = object.getRelation("label");
+		
+		if (labelRelations.size() > 0) {
+			printer.print(labelRelations.get(0));
+		} else {
+			printer.print("");
+		}
 		
 		// Status: deleted
 		
