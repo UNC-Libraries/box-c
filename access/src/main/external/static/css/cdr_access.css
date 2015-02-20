@@ -1317,6 +1317,12 @@ p.navigation_bar a {
 	font-weight: normal;
 }
 
+.about_page h5 {
+	margin-bottom: 6px;
+	padding-left: 10px;
+  font-size: 13px;
+}
+
 .about_page a {
 	text-decoration: underline;
 }

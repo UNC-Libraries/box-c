@@ -1,54 +1,119 @@
 <div class="contentarea about_page">
-	<h2 class="fontface">Preservation and Stewardship</h2>
+<h2 class="fontface">CDR Preservation Policy</h2>
+<h3>Purpose/Principle Statement</h3>
 
-	<p>The Carolina Digital Repository (CDR) manages the infrastructure and
-		services necessary to provide sustainable access to digital objects.
-	</p>
-	<p>The CDR is designed and operated to ensure the integrity of digital
-		files at a bitstream level (the way information is encoded).
-		Characteristics that will affect preservation are recorded in metadata
-		as part of the deposit process. The CDR regularly verifies the
-		integrity of files, maintains a record of preservation-related
-		actions,
-		and employs best practices in the field for persistent storage,
-		including back-up and recovery procedures.</p>
-	<p>Repository staff consult with prospective depositors regarding the
-		nature of their digital collections, foreseeable challenges for
-		long-term access, and strategies for meeting their preservation goals.
-	</p>
+<p>Digital materials are subject to the same principles for selection, preservation, and access as non-digital collections. </p>
 
-	<h3>Services Provided</h3>
+<p>Successful digital preservation requires a firm institutional commitment, clarity of purpose, skilled personnel, and an infrastructure with adequate resources to expand and adapt as collections and technology evolve. Rapid advances in technology dictate that digital preservation approaches respond and adapt to changes in digital media. This dynamic nature of the digital landscape heightens the importance of regularly reviewing and updating the Library's digital preservation policy. </p>
 
-	<ul class="contentul">
-		<li>Consult with pilot collection contributors for preparation of
-			submission of content into the CDR</li>
-		<li>Capture descriptive information about digital objects</li>
+<h3>Objectives</h3> 
+<p>As an integral part of the larger infrastructure that supports the stewardship of content for which the Libraries has assumed responsibility, the Carolina Digital Repository (CDR) manages the infrastructure and services necessary to provide sustainable access to digital objects. The CDR is designed and operated to ensure the integrity of digital files at a bitstream level (the way information is encoded). Characteristics that will affect preservation are recorded in metadata as part of the deposit process. The CDR regularly verifies the integrity of files, maintains a record of preservation-related actions, and employs best practices in the field for persistent storage, including back-up and recovery procedures. Repository staff consult with prospective depositors regarding the nature of their digital collections, foreseeable challenges for long-term access, and strategies for meeting their preservation goals. </p>
 
-		<li>
-			Create and maintain service application, including:
-			<ul class="contentul">
-				<li>Search</li>
-				<li>Display</li>
-				<li>Export</li>
-			</ul>
-		</li>
+<h3>Services Provided</h3> 
+<ul class="contentul">
+	<li>Consult with pilot collection contributors for preparation of submission of content into the CDR </li>
+	<li>Create and maintain service application, including: 
+		<ul class="contentul">
+		<li>Search</li> 
+		<li>Display</li> 
+		<li>Export </li>
+		</ul>
+	</li>
+	<li> Provide and manage sufficient storage for ingest and maintenance of content and associated metadata</li>
+	<li>Provide and manage persistent storage, including appropriate back-up and recovery procedures</li>
+	<li>Sustain bitstream-level preservation of digital objects</li>
+	<li>Perform system monitoring, testing and debugging</li>
+	<li>Ensure the authenticity and integrity of content through the automated creation and capture of technical metadata</li>
+	<li>Ensure continued access to the intellectual content of digital objects through the creation and capture of descriptive metadata</li>
+	<li>Provide a suite of services and functionality for maintaining digital objects to enable future access </li>
+</ul>
 
-		<li>Provide and manage sufficient storage for ingest and maintenance
-			of
-			content and associated metadata</li>
-		<li>Provide and manage persistent storage, including appropriate
-			back-up and recovery procedures</li>
-		<li>Sustain bitstream-level preservation of digital objects</li>
-		<li>Perform system monitoring, testing and debugging</li>
-	</ul>
+<h3>Scope</h3> 
+<p>The content that will be deposited into the CDR is organized into three collecting areas: </p>
+<ul class="contentul">
+	<li>UNC-Chapel Hill research/scholarship/creative work. For example: pre/post prints, grey literature, posters, datasets, learning objects, electronic theses, dissertations and other capstone works.</li>
+	<li>Born-digital special collections acquisitions. For example: email correspondence, digital literary manuscripts, photographs, audio/visual materials, research data, electronic records of UNC administrative units and student organizations.</li>
+	<li>Digitized UNC-Chapel Hill Libraries collections. For example: digitized copies of print monographs and serials, manuscripts, maps, photographs, audio/visual materials, and musical scores held at UNC-Chapel Hill (except those deposited in other preservation repositories). </li>
+</ul>	
 
-	<h3>Caveats</h3>
-	<ul class="contentul">
+<p>The following types of materials are currently not deposited into the CDR: </p>
 
-		<li>Services provided by the CDR reflect the repository's stage of
-			development and implementation of evolving standards and best
-			practices in the field. As the repository grows and the technology
-			matures, so will the CDR's capabilities for preservation and access.
-		</li>
-	</ul>
+<ul class="contentul">
+	<li>Web harvesting data </li>
+	<li>Print materials digitized through the Internet Archive Scribe workflow </li>
+	<li>Licensed electronic resources</li>
+</ul>
+
+<p>See also the CDR Collection Development Policy, linked in Appendix.</p>
+
+<h3>Preservation Strategies </h3>
+
+<h4>Preservation Priority Tiers</h4>
+ 
+<p>The Library determines preservation priorities based on user needs, risk and consequence of loss, and feasibility. The following list of priority tiers is meant to serve as a broad guideline and must be applied in context. In cases where we must make decisions about which content receives priority placement in the CDR, the following matrix will guide the decision process.</p>
+ 
+<h5>Tier 1: Highest Priority </h5>
+<ul class="contentul">
+	<li>Born-digital content with scholarly value held solely by UNC-Chapel Hill, such as digital content in archival collections.</li>
+	<li>Master files from digitization by UNC-Chapel Hill of materials with high degree of deterioration or risk of loss in original format.</li>
+	<li>Digital content preserved under the terms of formal agreements and obligations, such as grant contracts, depositor agreements, policies regarding electronic records in the University Archives, and terms of participation in the LOCKSS network</li>
+	<li>Master files of UNC-Chapel Hill theses and dissertations</li>
+</ul>
+
+<h5>Tier 2: High Priority </h5>
+
+<ul class="contentul">
+	<li>Master files from digitization by UNC-Chapel Hill of materials with low or moderate degree of deterioration or risk of loss in original format</li>
+</ul>
+
+<h5>Tier 3: Moderate Priority </h5>
+
+<ul class="contentul">
+	<li>Published content with scholarly value in files acquired, stored and managed by the Library under the terms of perpetual access and purchase agreements but likely to be similarly stored and managed by peer libraries. </li>
+	<li>Digital content accompanying print publications</li>
+</ul>
+
+<h4>Determining Levels of Preservation Priority </h4>
+<p>Levels of preservation priority consider both collecting priorities (i.e., collection development policies) and the technical preservability of the file formats and objects. Preservation priority levels are determined by library and repository staff. See appendix for more detailed information on this process, and related policies and documentation.</p>
+
+<h4>Preservation Actions </h4>
+
+<p>Preservation actions that are performed to ensure the long-term preservation of digital objects in the repository are: </p>
+<ul class="contentul">
+	<li>Bitstream maintenance</li>
+	<li>Persistent, permanent identifier</li>
+	<li>Preservation metadata</li>
+	<li>On- and off-site backup</li>
+	<li>Routine virus and file corruption checks</li>
+	<li>Periodic refreshments to new storage media</li>
+	<li>Monitoring of file format for changes that may warrant transformation/reassessment</li>
+	<li>Migration to successive format</li>
+</ul>
+
+<p> Not all actions will be performed on all objects.</p>
+
+<h4>Storage Strategy </h4>
+<h5>Media Management </h5>
+
+<p>The CDR does not manage any physical storage media outside of its own infrastructure.  Physical media will be handled per the terms of the deposit agreement.</p>
+
+<h3>Appendix</h3>
+
+<h4>File Support & Preservation Best Practices </h4>
+
+<p>Several policies outline the criteria with which the repository determines preferred file formats and/or levels of preservation support. The most common criteria cited in preservation policies are:</p> 
+
+<ul class="contentul">
+	<li>Format is commonly used, in widespread use, and/or is in current use</li>
+	<li>Availability of the format's complete documentation and specifications</li>
+	<li>Format is non-proprietary</li>
+	<li>Format is based on established standards</li>
+	<li>Format is platform-independent</li>
+	<li>Format is uncompressed</li>
+</ul>
+ 
+<h4>Related Policies and Supporting Documentation </h4>
+
+<p><a href="https://cdr.lib.unc.edu/scontent/aboutPages/collectionDevPolicy.xml">CDR Collection Development Policy</a></p>
+
 </div>
