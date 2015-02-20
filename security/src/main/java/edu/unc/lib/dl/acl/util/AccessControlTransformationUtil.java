@@ -23,7 +23,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 public class AccessControlTransformationUtil {
 	/**
 	 * Transforms an accessControl tag, which contains only ACL related settings, into a general RDF RELS-EXT element
-	 * 
+	 *
 	 * @param element
 	 * @return
 	 */
@@ -63,7 +63,7 @@ public class AccessControlTransformationUtil {
 		if (value != null) {
 			Element relation = new Element(ContentModelHelper.CDRProperty.embargoUntil.getPredicate(),
 					ContentModelHelper.CDRProperty.embargoUntil.getNamespace());
-			relation.setAttribute("datatype", "http://www.w3.org/2001/XMLSchema#dateTime");
+			relation.setAttribute("datatype", "http://www.w3.org/2001/XMLSchema#dateTime", JDOMNamespaceUtil.RDF_NS);
 			relation.setText(value);
 			description.addContent(relation);
 		}
@@ -89,7 +89,7 @@ public class AccessControlTransformationUtil {
 
 	/**
 	 * Transforms an RDF tag representing RELS-EXT into an accessControl tag, containing only acl related relations
-	 * 
+	 *
 	 * @param rdf
 	 * @return
 	 */

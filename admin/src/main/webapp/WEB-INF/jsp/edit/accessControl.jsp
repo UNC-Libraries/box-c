@@ -48,7 +48,7 @@
 		<c:set var="embargoAttr" value="${targetACLs.getAttribute('embargo-until', aclNS)}" />
 		<a href="#" class="add_embargo" data-type="combodate">
 			<c:if test="${not empty embargoAttr}">
-				<fmt:parseDate value="${embargoAttr.value}" var="parsedEmbargo" pattern="yyyy-MM-dd'T'hh:mm:ss" />
+				<fmt:parseDate value="${embargoAttr.value}" var="parsedEmbargo" pattern="yyyy-MM-dd'T'HH:mm:ss" />
 				<fmt:formatDate value="${parsedEmbargo}" pattern="MM/dd/yyyy"/>
 			</c:if>
 		</a>
