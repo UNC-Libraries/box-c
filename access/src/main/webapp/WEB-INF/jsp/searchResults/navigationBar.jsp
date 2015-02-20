@@ -23,8 +23,6 @@
 <%@ page import="edu.unc.lib.dl.search.solr.model.SearchResultResponse" %>
 <%@ page import="edu.unc.lib.dl.search.solr.util.SearchSettings" %>
 
-<c:set var="pageEndCount" value="${resultResponse.resultCount}"/>
-
 <%
 {
 	//Calculating total number of pages and current page since jstl handles casting division to ints very poorly
@@ -35,9 +33,7 @@
 	
 	if (resultCount == null || searchState == null)
 		return;
-	long totalPages = resultCount / searchState.getRowsPerPage();
-	if (resultCount % searchState.getRowsPerPage() > 0)
-		totalPages++;
+	long totalPages = (long) Math.ceil(((double) resultCount) / searchState.getRowsPerPage());
 	long currentPage = searchState.getStartRow() / searchState.getRowsPerPage() + 1;
 	
 	long sideGap = searchSettings.pagesToDisplay / 2;
@@ -55,18 +51,22 @@
 		right = totalPages;
 	}
 	
+	long pageEndCount = searchState.getStartRow() + searchState.getRowsPerPage();
+	if (pageEndCount > resultResponse.getResultCount())
+		pageEndCount = resultResponse.getResultCount();
+	
 	pageContext.setAttribute("left", left);
 	pageContext.setAttribute("right", right);
 	pageContext.setAttribute("currentPage", currentPage);
 	pageContext.setAttribute("totalPages", totalPages);
+	pageContext.setAttribute("pageEndCount", pageEndCount);
 }
 %>
 
 <p class="navigation_bar">
 	Showing 
 	<c:choose>
-		<c:when test="${resultResponse.resultCount > resultResponse.searchState.rowsPerPage + resultResponse.searchState.startRow}">
-			<c:set var="pageEndCount" value="${resultResponse.searchState.rowsPerPage + resultResponse.searchState.startRow}"/>
+		<c:when test="${totalPages > 1}">
 			
 			<c:if test="${not empty resultResponse.selectedContainer}">
 				<c:set var="containerPath" value="/${resultResponse.selectedContainer.id}"/>

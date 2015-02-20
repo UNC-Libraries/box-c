@@ -121,7 +121,7 @@ public class SearchStateUtil {
 				if (!searchState.getSortNormalOrder())
 					sortValue.append(',').append(searchSettings.sortReverse);
 				
-				params.put(searchSettings.searchStateParam("SORT_ORDER"), sortValue.toString());
+				params.put(searchSettings.searchStateParam("SORT_TYPE"), sortValue.toString());
 			}
 		}
 		
