@@ -104,7 +104,7 @@
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="maxThreads" value="${fedoraDataService.maxThreads}"/>
 		<property name="threadGroupPrefix" value="Services"/>
-		<property name="serviceTimeout" value="12000" />
+		<property name="serviceTimeout" value="${services.dataservice.timeout:12000}" />
 	</bean>
 
 	<bean id="irodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">

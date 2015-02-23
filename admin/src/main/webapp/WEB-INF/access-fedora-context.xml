@@ -72,6 +72,7 @@
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 		<property name="maxThreads" value="5" />
 		<property name="threadGroupPrefix" value="Access" />
+		<property name="serviceTimeout" value="${access.dataservice.timeout:5000}" />
 	</bean>
 	<bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
 		<property name="fedoraUrl"
