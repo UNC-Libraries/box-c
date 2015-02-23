@@ -135,6 +135,7 @@ text/x-vcard=vcf
 text/xml=xml
 application/xml=xml
 video/mpeg=mpeg
+video/mp4=mp4
 video/quicktime=mov
 video/x-la-asf=lsf
 video/x-la-asf=lsx
