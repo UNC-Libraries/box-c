@@ -533,11 +533,17 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * Populates the child count attributes of all metadata objects in the given search result response by querying for
 	 * all non-folder objects which have the metadata object's highest ancestor path tier somewhere in its ancestor path.
 	 *
-	 * @param resultResponse
+	 * Items in resultList must have their ancestorPaths populated.
+	 *
+	 * @param resultList
 	 * @param accessGroups
 	 */
 	public void getChildrenCounts(List<BriefObjectMetadata> resultList, AccessGroupSet accessGroups) {
 		this.getChildrenCounts(resultList, accessGroups, "child", null, null);
+	}
+
+	public void getChildrenCounts(List<BriefObjectMetadata> resultList, SearchRequest searchRequest) {
+		this.getChildrenCounts(resultList, searchRequest.getAccessGroups(), "child", null, this.generateSearch(searchRequest));
 	}
 
 	public void getChildrenCounts(List<BriefObjectMetadata> resultList, AccessGroupSet accessGroups, String countName,
