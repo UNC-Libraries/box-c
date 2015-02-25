@@ -94,8 +94,11 @@
 						<c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
 							<c:set var="jumpToAdmin" value="list/${resultResponse.selectedContainer.id}" />
 						</c:when>
-						<c:when test="${not empty briefObject}">
+						<c:when test="${not empty briefObject && briefObject.resourceType == 'File'}">
 							<c:set var="jumpToAdmin" value="list/${briefObject.ancestorPathFacet.searchKey}" />
+						</c:when>
+						<c:when test="${not empty briefObject}">
+							<c:set var="jumpToAdmin" value="list/${briefObject.id}" />
 						</c:when>
 					</c:choose>
 					<li>

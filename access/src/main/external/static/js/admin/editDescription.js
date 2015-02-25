@@ -76,21 +76,21 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'],
 		}, {
 			label : 'View in CDR',
 			enabled : true, 
-			itemClass : 'header_mode_tab',
+			itemClass : 'header_menu_link',
 			action : recordUrl
 		}];
 		if (originalUrl && originalUrl.length > 1){
 			menuEntries.push({
 				insertPath : ["View"],
-				label : 'View original document',
+				label : 'View original file',
 				enabled : true,
 				binding : null,
 				action : originalUrl
 			});
 			menuEntries.push({
-				label : 'Document',
+				label : 'View File',
 				enabled : true, 
-				itemClass : 'header_mode_tab',
+				itemClass : 'header_menu_link',
 				action : originalUrl
 			});
 		}

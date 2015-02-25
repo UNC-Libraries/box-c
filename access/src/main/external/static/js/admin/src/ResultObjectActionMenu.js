@@ -109,7 +109,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'co
 		items["viewInCDR"] = {name : "View in CDR"};
 		var dataFile = resultObject.getDatastream("DATA_FILE");
 		if (dataFile) {
-			items["viewFile"] = {name : "Download " + (dataFile['extension']? dataFile['extension'].toUpperCase() : "File")
+			items["viewFile"] = {name : "View File"
 				+ " ("+ StringUtilities.readableFileSize(dataFile['fileSize']) + ")"};
 		}
 		if (resultObject.metadata.type == 'Collection') {
