@@ -456,7 +456,8 @@
 
 .text_content {
 	line-height: 16px;
-	padding: 5px 18px 0 0;
+	padding: 12px 18px 0 0;
+	background-color: #fafafa;
 }
 
 .xml_tab_area .gui_content { 
@@ -485,7 +486,7 @@
 	background-color: #ffffff;
 	z-index: 1000;
 	width: inherit;
-	border-bottom: 1px solid #eeeeee;
+	border-bottom: 1px solid #bbb;
 	padding-right: 2px;
 	padding-top: 4px;
 }
@@ -508,12 +509,13 @@
 
 .xml_menu_bar {
 	margin-bottom: 3px;
-	overflow: auto;
+	overflow: visible;
 	width: inherit;
 }
 
 .xml_menu_bar > ul {
 	margin: 0;
+	padding-right: 12px;
 }
 
 .xml_menu_bar > ul > li {
@@ -539,7 +541,21 @@
 }
 
 .xml_menu_bar > ul > li > a > span:hover {
-	background-color: #eeeeee;	
+	background-color: #eeeeee;
+}
+
+.xml_menu_bar > ul > li:hover {
+	background-color: #eeeeee;
+	padding-bottom: 1px;
+}
+
+.xml_menu_bar > ul > li.active_mode_tab:hover {
+	border-bottom: none;
+	padding-bottom: 2px;
+}
+
+.xml_menu_bar > ul > li.active_mode_tab > a > span:hover {
+	background-color: transparent;
 }
 
 .xml_menu_bar > ul > li > ul {
@@ -553,6 +569,7 @@
 	z-index: 1002; 
 	background-color: #fff;
 	position: relative;
+	background-color: #eeeeee;
 }
 
 .xml_menu_bar.active > ul > li:hover {
@@ -604,13 +621,20 @@
 	float: right;
 	margin-left: 10px;
 	margin-right: 0px;
-	transition: border-color 0.2s linear 0s, box-shadow 0.2s linear 0s, color 0.2s linear 0s;
+	transition: color 0.2s linear 0s;
+	position: relative;
+	top: 1px;
+	padding-bottom: 2px;
+	padding-top: 3px;
+	border-bottom: none;
 }
 
 .xml_menu_bar .active_mode_tab {	
-	border: 1px solid #FBD850;
-	color: #EB8F00;
-	box-shadow: 0 0 3px #E5E5E5 inset, 0 0 3px #FBD850;
+	background-color: #fafafa;
+}
+
+.xml_menu_bar .active_mode_tab:hover {	
+	background-color: #fafafa;
 }
 
 .xml_menu_bar .sub_menu > li > .xml_menu_check {
@@ -618,4 +642,18 @@
 	*zoom: 1;
 	*display: inline;
 	width: 1em;
+}
+
+.header_menu_link {
+	padding-right: 10px;
+	float: right;
+}
+
+.xml_menu_bar > ul > li.header_menu_link:hover {
+	background-color: transparent;
+}
+
+.header_menu_link span {
+	background-color: #EEE;
+	border-radius: 6px;
 }

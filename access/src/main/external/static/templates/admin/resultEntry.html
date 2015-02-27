@@ -11,7 +11,7 @@
 	<td class="itemdetails">
 		<div>
 			<% if (metadata.type == "File") { %>
-				<a href="/record/<%= metadata.id %>" target="_new" class="title has_tooltip"
+				<a href="/record/<%= metadata.id %>" target="_blank" class="title has_tooltip"
 							title="View details for <%= _.escape(metadata.title) %>."><%= _.escape(metadata.title) %></a>
 			<% } else { %>
 				<a href="list/<%= metadata.id %>" class="title res_link has_tooltip"
@@ -22,10 +22,7 @@
 					</span>
 					<% }
 			 } %>
-			<% if ("DATA_FILE" in metadata.datastream) { %>
-				&nbsp;<a target="_preview" href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}" class="preview">(preview ${metadata.getDatastreamObject("DATA_FILE").extension})</a>
-			<% }
-			if (validationProblem) { %>
+			<% if (validationProblem) { %>
 				<a class="status warning_symbol" title="<%= validationProblem %>">!</a>
 			<% } %>
 			<% for (var i in metadata.tags) { 

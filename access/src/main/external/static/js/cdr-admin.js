@@ -440,8 +440,8 @@ define('detachplus', [ 'jquery'], function($) {
  * Implements functionality and UI for the generic Ingest Package form
  */
 define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 
-		'ModalLoadingOverlay', 'ConfirmationDialog', 'AlertHandler'], 
-		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay, ConfirmationDialog) {
+		'ModalLoadingOverlay', 'ConfirmationDialog', 'StringUtilities', 'AlertHandler'], 
+		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay, ConfirmationDialog, StringUtilities) {
 	
 	var defaultOptions = {
 		iframeSelector : "#upload_file_frame",
@@ -479,7 +479,7 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 				var fileInfo = "";
 				if (self.ingestFile.type)
 					fileInfo += self.ingestFile.type + ", ";
-				fileInfo += self.readableFileSize(self.ingestFile.size);
+				fileInfo += StringUtilities.readableFileSize(self.ingestFile.size);
 				$(".file_info", self.$form).html(fileInfo);
 			} else
 				$(".file_info", self.$form).html("");
@@ -571,17 +571,6 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			this.overlay.remove();
 		if (this.closeConfirm)
 			this.closeConfirm.remove();
-	};
-	
-	AbstractFileUploadForm.prototype.readableFileSize = function(size) {
-		var fileSize = 0;
-		if (size > 1024 * 1024 * 1024)
-			fileSize = (Math.round(size * 100 / (1024 * 1024 * 1024)) / 100).toString() + 'gb';
-		if (size > 1024 * 1024)
-			fileSize = (Math.round(size * 100 / (1024 * 1024)) / 100).toString() + 'mb';
-		else
-			fileSize = (Math.round(size * 100 / 1024) / 100).toString() + 'kb';
-		return fileSize;
 	};
 	
 	AbstractFileUploadForm.prototype.supportsAjaxUpload = function() {
@@ -2358,9 +2347,29 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		this.overlay[fnName].apply(this.overlay, fnArgs);
 	};
 	
+	ResultObject.prototype.getDatastream = function(dsName) {
+		if (this.metadata.datastream) {
+			for (var dsIndex in this.metadata.datastream) {
+				var ds = this.metadata.datastream[dsIndex];
+				if (ds.indexOf(dsName + "|") == 0) {
+					var fields = ds.split("|");
+					return {
+						name : fields[0],
+						mimeType : fields[1],
+						extension : fields[2],
+						fileSize : fields[3],
+						checksum : fields[4],
+						defaultWebObject : fields.length > 5? fields[5] : null
+					};
+				}
+			}
+		}
+		return false;
+	};
+	
 	return ResultObject;
-});define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
-		function($, ui) {
+});define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'contextMenu'],
+		function($, ui, StringUtilities) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -2468,6 +2477,11 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		if (resultObject.isContainer)
 			items["openContainer"] = {name : "Open"};
 		items["viewInCDR"] = {name : "View in CDR"};
+		var dataFile = resultObject.getDatastream("DATA_FILE");
+		if (dataFile) {
+			items["viewFile"] = {name : "View File"
+				+ " ("+ StringUtilities.readableFileSize(dataFile['fileSize']) + ")"};
+		}
 		if (resultObject.metadata.type == 'Collection') {
 			items["sepbrowse"] = "";
 			items["viewTrash"] = {name : "View trash for this collection"};
@@ -2505,6 +2519,12 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				switch (key) {
 					case "viewInCDR" :
 						window.open(serverUrl + "record/" + metadata.id,'_blank');
+						break;
+					case "viewFile" :
+						var dataFile = resultObject.getDatastream("DATA_FILE");
+						if (dataFile) {
+							window.open(serverUrl + "content/" + (dataFile['defaultWebObject']? dataFile['defaultWebObject'] : metadata.id), '_blank');
+						}
 						break;
 					case "openContainer" :
 						document.location.href = baseUrl + "list/" + metadata.id;
@@ -3514,6 +3534,13 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 						self.searchMenu.searchMenu("updateFacets", url);
 					}
 					
+					// Modify the public UI link to reflect the currently selected container
+					if (data.container) {
+						var $publicLink = $("#public_ui_link");
+						var baseHref = $publicLink.data("base-href");
+						$publicLink.attr("href", $publicLink.data("base-href") + "list/" + data.container.id)
+					}
+					
 					$("#result_loading_icon").addClass("hidden");
 				},
 				error : function(data) {
@@ -3754,6 +3781,19 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			}
 		}
 	});
+});define('StringUtilities', ['jquery'], function($) {
+	return {
+		readableFileSize : function(size) {
+			var fileSize = 0;
+			if (size > 1024 * 1024 * 1024)
+				fileSize = (Math.round(size * 100 / (1024 * 1024 * 1024)) / 100).toString() + 'gb';
+			if (size > 1024 * 1024)
+				fileSize = (Math.round(size * 100 / (1024 * 1024)) / 100).toString() + 'mb';
+			else
+				fileSize = (Math.round(size * 100 / 1024) / 100).toString() + 'kb';
+			return fileSize;
+		}
+	};
 });define('URLUtilities', ['jquery'], function($) {
 	return {
 		uriEncodeParameters : function(url) {

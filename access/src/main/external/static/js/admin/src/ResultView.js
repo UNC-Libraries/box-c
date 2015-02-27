@@ -138,6 +138,13 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						self.searchMenu.searchMenu("updateFacets", url);
 					}
 					
+					// Modify the public UI link to reflect the currently selected container
+					if (data.container) {
+						var $publicLink = $("#public_ui_link");
+						var baseHref = $publicLink.data("base-href");
+						$publicLink.attr("href", $publicLink.data("base-href") + "list/" + data.container.id)
+					}
+					
 					$("#result_loading_icon").addClass("hidden");
 				},
 				error : function(data) {

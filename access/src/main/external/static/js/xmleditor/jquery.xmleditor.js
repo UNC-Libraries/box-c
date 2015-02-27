@@ -95,6 +95,8 @@ $.widget( "xml.xmlEditor", {
 		addTopMenuHeaderText : 'Add Top Element',
 		addAttrMenuHeaderText : 'Add Attribute',
 		addElementMenuHeaderText : 'Add Subelement',
+		xmlEditorLabel : 'XML',
+		textEditorLabel : 'Text',
 		
 		// Set to false to get rid of the 
 		enableDocumentStatusPanel : true,
@@ -204,6 +206,7 @@ $.widget( "xml.xmlEditor", {
 			
 			// Clear out the contents of the element being initialized on
 			this.element.text("");
+			
 			// Add the editor into the dom
 			this.xmlEditorContainer = $("<div/>").attr('class', xmlEditorContainerClass).appendTo(this.element);
 		}
@@ -510,10 +513,10 @@ $.widget( "xml.xmlEditor", {
 		}
 		if (mode == 0) {
 			this.activeEditor = this.guiEditor;
-			$("#" + xmlMenuHeaderPrefix + "XML").addClass("active_mode_tab");
+			$("#" + xmlMenuHeaderPrefix + this.options.xmlEditorLabel.replace(/ /g, "_")).addClass("active_mode_tab");
 		} else {
 			this.activeEditor = this.textEditor;
-			$("#" + xmlMenuHeaderPrefix + "Text").addClass("active_mode_tab");
+			$("#" + xmlMenuHeaderPrefix + this.options.textEditorLabel.replace(/ /g, "_")).addClass("active_mode_tab");
 		}
 		this.activeEditor.activate();
 		if (this.ready)
@@ -1884,14 +1887,14 @@ function MenuBar(editor) {
 			action : "http://www.loc.gov/standards/mods/mods-outline.html"
 		} ]
 	}*/, {
-		label : 'XML',
+		label : self.editor.options.xmlEditorLabel,
 		enabled : true, 
 		itemClass : 'header_mode_tab',
 		action : function() {
 			self.editor.modeChange(0);
 		}
 	}, {
-		label : 'Text',
+		label : self.editor.options.textEditorLabel,
 		enabled : true, 
 		itemClass : 'header_mode_tab',
 		action : function() {

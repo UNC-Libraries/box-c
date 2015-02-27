@@ -43,7 +43,7 @@
 			</ul>
 			<ul class="secondarymenu">
 				<li>
-					<a href="https://${pageContext.request.serverName}/" target="_blank">Public</a>
+					<a href="https://${pageContext.request.serverName}/" data-base-href="https://${pageContext.request.serverName}/" id="public_ui_link" target="_blank">Public</a>
 				</li>
 				<c:choose>
 					<c:when test="${not empty pageContext.request.remoteUser}">

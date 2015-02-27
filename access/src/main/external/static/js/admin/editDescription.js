@@ -66,18 +66,34 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'],
 		}
 	
 		var originalUrl = module.config().originalUrl;
-		var menuEntries = (originalUrl)? [{
+		var recordUrl = module.config().recordUrl;
+		var menuEntries = [{
 			insertPath : ["View"],
-			label : 'View original document',
+			label : 'View in CDR',
 			enabled : true,
 			binding : null,
-			action : originalUrl
+			action : recordUrl
 		}, {
-			label : 'View Document',
+			label : 'View in CDR',
 			enabled : true, 
-			itemClass : 'header_mode_tab',
-			action : originalUrl
-		}]: null;
+			itemClass : 'header_menu_link',
+			action : recordUrl
+		}];
+		if (originalUrl && originalUrl.length > 1){
+			menuEntries.push({
+				insertPath : ["View"],
+				label : 'View original file',
+				enabled : true,
+				binding : null,
+				action : originalUrl
+			});
+			menuEntries.push({
+				label : 'View File',
+				enabled : true, 
+				itemClass : 'header_menu_link',
+				action : originalUrl
+			});
+		}
 		
 		var editorOptions = {
 			schema : "../../static/schemas/mods-3-5.json",
@@ -87,7 +103,9 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'],
 			},
 			libPath : "../../static/js/xmleditor/lib/",
 			menuEntries: menuEntries,
-			enforceOccurs: false
+			enforceOccurs: false,
+			xmlEditorLabel : 'Form',
+			textEditorLabel : 'XML'
 		};
 		
 		if (vocabTerms) {
