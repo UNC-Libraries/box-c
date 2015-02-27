@@ -144,32 +144,6 @@ public class SchematronValidatorTest extends Assert {
     }
     
     /**
-     * Tests the result of isValid on an invalid document.
-     */
-    @Test
-    public void testBadEPrintGenreValidation() {
-	SchematronValidator sv = new SchematronValidator();
-	sv.loadSchemas();
-
-	// now add a schema by means of a Spring Resource object
-	ClassPathResource test = new ClassPathResource("vocabularies-mods.sch", SchematronValidator.class);
-	sv.getSchemas().put("test", test);
-	sv.loadSchemas();
-
-	ClassPathResource bad = new ClassPathResource("/samples/bad-eprints-test.xml", SchematronValidator.class);
-	try {
-	    boolean valid = sv.isValid(bad, "test");
-	    Document output = sv.validate(bad, "test");
-	    XMLOutputter dbout = new XMLOutputter();
-	    dbout.setFormat(Format.getPrettyFormat());
-	    log.info(dbout.outputString(output));
-	    assertFalse("This XML must be invalid according to the schema", valid);
-	} catch (IOException e) {
-	    fail("Got exception" + e.getMessage());
-	}
-    }
-
-    /**
      * Tests the result of an invalid namespace under rightsMD.
      */
     @Test
