@@ -2681,11 +2681,11 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			splitLoadLimit : 70,
 			resultEntryTemplate : 'tpl!../templates/admin/resultEntry'
 		},
-		resultObjects: {},
 		
 		init: function(options) {
 			this.options = $.extend({}, this.defaultOptions, options);
 			var self = this;
+			this.resultObjects = {};
 			//console.time("Initialize entries");
 			require([this.options.resultEntryTemplate], function(resultEntryTemplate){
 				//console.profile();
