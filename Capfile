@@ -77,7 +77,7 @@ namespace :update do
   end
 
   desc "Update webapps"
-  task :webapps => WEBAPPS do |t|
+  task :webapps do |t|
     WEBAPPS.each do |name, _|
       invoke "update:webapps:#{name}"
     end
