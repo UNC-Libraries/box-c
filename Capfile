@@ -118,7 +118,8 @@ namespace :update do
   end
 
 end
-  
+
+desc "Update everything"
 task :update do
   invoke "update:static"
   invoke "update:webapps"
