@@ -77,7 +77,7 @@ namespace :update do
   end
 
   desc "Update webapps"
-  task :webapps => WEBAPPS do |t|
+  task :webapps do |t|
     WEBAPPS.each do |name, _|
       invoke "update:webapps:#{name}"
     end
@@ -118,13 +118,60 @@ namespace :update do
   end
 
 end
-  
+
+desc "Update everything"
 task :update do
   invoke "update:static"
   invoke "update:webapps"
   invoke "update:lib"
   invoke "update:solrlib"
   invoke "update:deposit"
+end
+
+# Clean out Tomcat directories
+
+namespace :clean do
+  
+  namespace :webapps do
+  
+    desc "Clean access webapp"
+    task :access do
+      on roles(:web) do
+        sudo :rm, "-rf", "/opt/repository/tomcat/webapps/ROOT"
+      end
+    end
+  
+    desc "Clean admin webapp"
+    task :admin do
+      on roles(:web) do
+        sudo :rm, "-rf", "/opt/repository/tomcat/webapps/admin"
+      end
+    end
+  
+    desc "Clean services webapp"
+    task :services do
+      on roles(:web) do
+        sudo :rm, "-rf", "/opt/repository/tomcat/webapps/services"
+      end
+    end
+  
+    desc "Clean djatoka webapp"
+    task :djatoka do
+      on roles(:web) do
+        sudo :rm, "-rf", "/opt/repository/tomcat/webapps/djatoka"
+      end
+    end
+  
+  end
+
+  desc "Clean all webapps"
+  task :webapps do
+    invoke "clean:webapps:access"
+    invoke "clean:webapps:admin"
+    invoke "clean:webapps:services"
+    invoke "clean:webapps:djatoka"
+  end
+  
 end
 
 # Define individual service tasks (tomcat:restart, ...)
@@ -159,6 +206,19 @@ ACTIONS.each do |action|
   task action do
     SERVICES.each do |service|
       invoke "#{service}:#{action}"
+    end
+  end
+  
+end
+
+# Define tasks for watching logs
+
+namespace :tail do
+  
+  desc "Watch catalina.out"
+  task :tomcat do
+    on roles(:web) do
+      execute :tail, "-f", "/opt/data/logs/catalina.out"
     end
   end
   
