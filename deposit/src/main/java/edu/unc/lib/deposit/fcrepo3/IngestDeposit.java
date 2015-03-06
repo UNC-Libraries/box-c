@@ -29,7 +29,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
-import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.AccessClient;
@@ -50,7 +49,6 @@ import edu.unc.lib.dl.util.JMSMessageUtil.FedoraActions;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
 /**
@@ -247,11 +245,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 					statusFactory.incrIngestedObjects(getDepositUUID(), 1);
 
 					// Verify that the job has not been interrupted before continuing
-					DepositState state = statusFactory.getState(getDepositUUID());
-					if (!DepositState.running.equals(state)) {
-						throw new JobInterruptedException("State for job " + getDepositUUID()
-								+ " is no longer running, interrupting");
-					}
+					verifyRunning();
 				}
 			} catch (DepositException e) {
 				failJob(e, Type.INGESTION, "Ingest of object {0} failed", ingestPid);
@@ -261,6 +255,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 			// listen to Fedora JMS to see when all objects are ingested
 			try {
 				while (ingestsAwaitingConfirmation.size() > 0) {
+					verifyRunning();
 					Thread.sleep(COMPLETE_CHECK_DELAY);
 				}
 

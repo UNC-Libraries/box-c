@@ -159,29 +159,6 @@ public class MakeFOXML extends AbstractDepositJob {
 
 			// TODO translate default web object, already copied, check it
 
-			// add DATA_FILE
-			Property fileLocation = dprop(m, DepositRelationship.stagingLocation);
-			if(o.hasProperty(fileLocation)) {
-				addDatastream(m, o, foxml);
-
-				// add sourceData and defaultWebData properties
-				Resource dataFileResource = m.createResource(new DatastreamPID(p.getPid() + "/DATA_FILE")
-						.getDatastreamURI());
-				relsExt.add(o, cdrprop(m, CDRProperty.sourceData), dataFileResource);
-				relsExt.add(o, cdrprop(m, CDRProperty.defaultWebData), dataFileResource);
-			}
-
-			// add any other datastreams
-			Property hasDatastream = dprop(m, DepositRelationship.hasDatastream);
-			if (o.hasProperty(hasDatastream)) {
-				StmtIterator dsIt = o.listProperties(hasDatastream);
-
-				while (dsIt.hasNext()) {
-					Statement dsStmt = dsIt.next();
-					addDatastream(m, dsStmt.getResource(), foxml);
-				}
-			}
-
 			// Add in invalid term triples
 			Property invalidTermProp = cdrprop(m, CDRProperty.invalidTerm);
 			if (o.hasProperty(invalidTermProp)) {
@@ -197,9 +174,6 @@ public class MakeFOXML extends AbstractDepositJob {
 			if (!publishObjects) {
 				relsExt.add(o, publishedProperty, "no");
 			}
-
-			// add RELS-EXT
-			saveRELSEXTtoFOXMl(relsExt, foxml);
 
 			// add MD_EVENTS
 			addEventsDS(p, foxml);
@@ -232,6 +206,32 @@ public class MakeFOXML extends AbstractDepositJob {
 						DC.isVersionable(), null);
 				foxml.getRootElement().addContent(el);
 			}
+
+			// Adding other datastreams before DATA_FILE to avoid temporary files being deleted before ingesting
+			Property hasDatastream = dprop(m, DepositRelationship.hasDatastream);
+			if (o.hasProperty(hasDatastream)) {
+				StmtIterator dsIt = o.listProperties(hasDatastream);
+
+				while (dsIt.hasNext()) {
+					Statement dsStmt = dsIt.next();
+					addDatastream(m, dsStmt.getResource(), foxml);
+				}
+			}
+
+			// add DATA_FILE
+			Property fileLocation = dprop(m, DepositRelationship.stagingLocation);
+			if (o.hasProperty(fileLocation)) {
+				addDatastream(m, o, foxml);
+
+				// add sourceData and defaultWebData properties
+				Resource dataFileResource = m.createResource(new DatastreamPID(p.getPid() + "/DATA_FILE")
+						.getDatastreamURI());
+				relsExt.add(o, cdrprop(m, CDRProperty.sourceData), dataFileResource);
+				relsExt.add(o, cdrprop(m, CDRProperty.defaultWebData), dataFileResource);
+			}
+
+			// add RELS-EXT
+			saveRELSEXTtoFOXMl(relsExt, foxml);
 
 			writeFOXML(p, foxml);
 			addClicks(1);
@@ -303,12 +303,12 @@ public class MakeFOXML extends AbstractDepositJob {
 	private void addEventsDS(PID p, Document foxml) {
 		// Add locator datastream for events, referencing the events file identified by p
 		File events = getEventsFile(p);
-		
+
 		// Use a path relative to the deposit directory
 		Path absolute = Paths.get(events.getAbsolutePath());
 		Path base = Paths.get(getDepositDirectory().getAbsolutePath());
 		Path relative = base.relativize(absolute);
-		
+
 		Element el = FOXMLJDOMUtil.makeLocatorDatastream(Datastream.MD_EVENTS.getName(), "M", relative.toString(),
 				"text/xml", "URL", Datastream.MD_EVENTS.getLabel(), false, null);
 		foxml.getRootElement().addContent(el);

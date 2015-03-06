@@ -92,6 +92,8 @@ public class VirusScanJob extends AbstractDepositJob {
 		int scannedObjects = 0;
 
 		for (Entry<PID, String> href : hrefs.entrySet()) {
+			verifyRunning();
+
 			URI manifestURI;
 			URI storageURI = null;
 			try {
