@@ -33,6 +33,7 @@ import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -224,6 +225,15 @@ public abstract class AbstractDepositJob implements Runnable {
 				"SIP Processing Job", this.getClass().getName(), "Software");
 		appendDepositEvent(getDepositPID(), event);
 		throw new JobFailedException(message, throwable);
+	}
+	
+	protected void verifyRunning() {
+		DepositState state = getDepositStatusFactory().getState(getDepositUUID());
+		
+		if (!DepositState.running.equals(state)) {
+			throw new JobInterruptedException("State for job " + getDepositUUID()
+					+ " is no longer running, interrupting");
+		}
 	}
 
 	/**
