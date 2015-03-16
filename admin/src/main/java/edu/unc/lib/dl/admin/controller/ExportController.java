@@ -101,10 +101,10 @@ public class ExportController extends AbstractSolrSearchController {
 		printer.print(object.getTitle());
 		printer.print(object.getAncestorNames());
 		
-		List<String> labelRelations = object.getRelation("label");
+		String label = object.getLabel();
 		
-		if (labelRelations.size() > 0) {
-			printer.print(labelRelations.get(0));
+		if (label != null) {
+			printer.print(label);
 		} else {
 			printer.print("");
 		}
