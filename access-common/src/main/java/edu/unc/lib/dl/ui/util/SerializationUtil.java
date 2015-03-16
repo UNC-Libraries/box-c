@@ -106,6 +106,9 @@ public class SerializationUtil {
 		if (metadata.getId() != null)
 			result.put("id", metadata.getId());
 
+		if (metadata.getLabel() != null)
+			result.put("label", metadata.getLabel());
+
 		if (metadata.getTitle() != null)
 			result.put("title", metadata.getTitle());
 
