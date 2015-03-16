@@ -262,6 +262,11 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	}
 
 	@Override
+	public String getLabel() {
+		return this.representative.getLabel();
+	}
+
+	@Override
 	public String getTitle() {
 		return this.representative.getTitle();
 	}
