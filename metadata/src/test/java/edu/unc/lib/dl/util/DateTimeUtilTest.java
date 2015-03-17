@@ -18,12 +18,13 @@
  */
 package edu.unc.lib.dl.util;
 
+import java.util.Date;
+
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -32,50 +33,103 @@ import org.junit.Test;
  */
 public class DateTimeUtilTest extends Assert {
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
+	private final DateTimeZone defaultTimeZone = DateTimeZone.getDefault();
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-    }
+	@Before
+	public void init() {
+		DateTimeZone.setDefault(DateTimeZone.forID("EST"));
+	}
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() throws Exception {
-    }
+	@After
+	public void after() {
+		DateTimeZone.setDefault(defaultTimeZone);
+	}
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-    }
+	@Test
+	public void utcToDateTest() throws Exception {
+		Date plainDate = DateTimeUtil.parseUTCDateToDate("2001");
+		DateTime date = new DateTime(plainDate.getTime());
+		assertEquals(2001, date.getYear());
 
-    /**
-     * Test method for {@link edu.unc.lib.dl.util.DateTimeUtil#parseISO8601(java.lang.String)}.
-     */
-    @Test
-    public void testParseISO8601() {
-	String test = "2008-05-04T14:24:18-05:00";
-	DateTime dt = DateTimeUtil.parseISO8601toUTC(test);
-	System.err.println("Is this UTC for "+test+"? "+dt);
+		plainDate = DateTimeUtil.parseUTCDateToDate("2001-05-08");
+		date = new DateTime(plainDate.getTime());
+		assertEquals(2001, date.getYear());
+		assertEquals(5, date.getMonthOfYear());
+		assertEquals(8, date.getDayOfMonth());
 
-	test = "200805";
-	dt = DateTimeUtil.parseISO8601toUTC(test);
-	System.err.println("Is this UTC for "+test+"? "+dt);
+		try {
+			plainDate = DateTimeUtil.parseUTCDateToDate("2002-02-01T12:13:14");
+			fail();
+		} catch (IllegalArgumentException e) {
+		}
+	}
 
-	test = "2008-05";
-	dt = DateTimeUtil.parseISO8601toUTC(test);
-	System.err.println("Is this UTC for "+test+"? "+dt);
-    }
+	@Test
+	public void utcToDateTimeTest() throws Exception {
+		DateTime date = DateTimeUtil.parseUTCToDateTime("2001");
+		assertEquals(2001, date.getYear());
+
+		date = DateTimeUtil.parseUTCToDateTime("2001-05-08");
+		assertEquals(2001, date.getYear());
+		assertEquals(5, date.getMonthOfYear());
+		assertEquals(8, date.getDayOfMonth());
+
+		date = DateTimeUtil.parseUTCToDateTime("2002-02-01T12:13:14");
+		assertEquals(2002, date.getYear());
+		assertEquals(2, date.getMonthOfYear());
+		assertEquals(1, date.getDayOfMonth());
+		assertEquals(17, date.getHourOfDay());
+		assertEquals(13, date.getMinuteOfHour());
+		assertEquals(14, date.getSecondOfMinute());
+
+		date = DateTimeUtil.parseUTCToDateTime("2004-02-04T12:13:14.005");
+		assertEquals(2004, date.getYear());
+		assertEquals(2, date.getMonthOfYear());
+		assertEquals(4, date.getDayOfMonth());
+		assertEquals(17, date.getHourOfDay());
+		assertEquals(13, date.getMinuteOfHour());
+		assertEquals(14, date.getSecondOfMinute());
+		assertEquals(5, date.getMillisOfSecond());
+
+		date = DateTimeUtil.parseUTCToDateTime("2004-02-04T12:13:14+04:00");
+		date = date.withZone(DateTimeZone.forID("UTC"));
+		assertEquals(2004, date.getYear());
+		assertEquals(2, date.getMonthOfYear());
+		assertEquals(4, date.getDayOfMonth());
+		assertEquals(8, date.getHourOfDay());
+		assertEquals(13, date.getMinuteOfHour());
+		assertEquals(14, date.getSecondOfMinute());
+		assertEquals(0, date.getMillisOfSecond());
+
+		date = DateTimeUtil.parseUTCToDateTime("2004-02-04T12:13:14.005Z");
+		assertEquals(2004, date.getYear());
+		assertEquals(2, date.getMonthOfYear());
+		assertEquals(4, date.getDayOfMonth());
+		assertEquals(12, date.getHourOfDay());
+		assertEquals(13, date.getMinuteOfHour());
+		assertEquals(14, date.getSecondOfMinute());
+		assertEquals(5, date.getMillisOfSecond());
+
+		date = DateTimeUtil.parseUTCToDateTime("2004-02-04T12:13Z");
+		assertEquals(2004, date.getYear());
+		assertEquals(2, date.getMonthOfYear());
+		assertEquals(4, date.getDayOfMonth());
+		assertEquals(12, date.getHourOfDay());
+		assertEquals(13, date.getMinuteOfHour());
+		assertEquals(0, date.getSecondOfMinute());
+		assertEquals(0, date.getMillisOfSecond());
+
+		try {
+			date = DateTimeUtil.parseUTCToDateTime("not even close");
+			fail();
+		} catch (IllegalArgumentException e) {
+		}
+	}
+
+	@Test
+	public void formatDateToUTCTest() throws Exception {
+		Date date = new Date(1407470400000L);
+		assertEquals("2014-08-08T04:00:00.000Z", DateTimeUtil.formatDateToUTC(date));
+	}
 
 }

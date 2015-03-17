@@ -90,7 +90,7 @@ public class SetDescriptiveMetadataFilterTest {
 		assertEquals("BMC Bioinformatics. 2008 May 19;9(1):241", idb.getCitation());
 
 		assertEquals("English", idb.getLanguage().get(0));
-		assertEquals(DateTimeUtil.parseUTCToDate("2008-05-19T00:00:00.000Z"), idb.getDateCreated());
+		assertEquals(DateTimeUtil.parseUTCToDate("2008-05-19T00:00:00.000"), idb.getDateCreated());
 		assertTrue(idb.getIdentifier().contains("pmpid|18489778"));
 		assertTrue(idb.getIdentifier().contains("doi|10.1186/1471-2105-9-241"));
 

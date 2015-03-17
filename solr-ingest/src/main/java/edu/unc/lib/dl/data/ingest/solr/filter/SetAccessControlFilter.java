@@ -108,7 +108,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 		String embargo = getFirstTripleValue(triples, ContentModelHelper.CDRProperty.embargoUntil.toString());
 		if (embargo != null) {
 			try {
-				Date embargoDate = DateTimeUtil.parsePartialUTCToDate(embargo);
+				Date embargoDate = DateTimeUtil.parseUTCToDate(embargo);
 				Date currentDate = new Date();
 				if (currentDate.before(embargoDate))
 					status.add("Embargoed");

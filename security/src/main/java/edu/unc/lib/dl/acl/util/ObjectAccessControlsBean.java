@@ -212,7 +212,7 @@ public class ObjectAccessControlsBean {
 			this.activeEmbargoes = new ArrayList<Date>(embargoes.size());
 			for (String embargo : embargoes) {
 				try {
-					this.activeEmbargoes.add(DateTimeUtil.parsePartialUTCToDate(embargo));
+					this.activeEmbargoes.add(DateTimeUtil.parseUTCToDate(embargo));
 				} catch (ParseException e) {
 					LOG.warn("Failed to parse embargo " + embargo, e);
 				} catch (IllegalArgumentException e) {

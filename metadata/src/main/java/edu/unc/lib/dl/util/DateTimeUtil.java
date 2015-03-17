@@ -33,76 +33,22 @@ import org.joda.time.format.ISODateTimeFormat;
  */
 public class DateTimeUtil {
 
-	/**
-	 * Parse a date in any ISO 8601 format. Default TZ is based on Locale.
-	 *
-	 * @param isoDate
-	 *           ISO8601 date/time string with or without TZ offset
-	 * @return a Joda DateTime object in UTC (call toString() to print)
-	 */
-	public static DateTime parseISO8601toUTC(String isoDate) {
-		DateTime result = null;
-		DateTimeFormatter fmt = ISODateTimeFormat.dateTimeParser().withOffsetParsed();
-		// TODO what about preserving the precision of the original?
-		DateTime isoDT = fmt.parseDateTime(isoDate);
-		if (isoDT.year().get() > 9999) {
-			// you parsed my month as part of the year!
-			try {
-				fmt = DateTimeFormat.forPattern("yyyyMMdd");
-				fmt = fmt.withZone(DateTimeZone.forID("America/New_York"));
-				isoDT = fmt.parseDateTime(isoDate);
-			} catch (IllegalArgumentException e) {
-				try {
-					fmt = DateTimeFormat.forPattern("yyyyMM");
-					fmt = fmt.withZone(DateTimeZone.forID("America/New_York"));
-					isoDT = fmt.parseDateTime(isoDate);
-				} catch (IllegalArgumentException e1) {
-					try {
-						fmt = DateTimeFormat.forPattern("yyyy");
-						fmt = fmt.withZone(DateTimeZone.forID("America/New_York"));
-						isoDT = fmt.parseDateTime(isoDate);
-					} catch (IllegalArgumentException ignored) {
-						// I guess we go with first parse?
-					}
-				}
-			}
-		}
-		result = isoDT.withZoneRetainFields(DateTimeZone.forID("Etc/UTC"));
-		return result;
-	}
-
 	public final static DateTimeFormatter utcFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
 			.withZone(DateTimeZone.UTC);
-	public final static DateTimeFormatter utcYFormatter = DateTimeFormat.forPattern("yyyy").withZone(DateTimeZone.UTC);
 	public final static DateTimeFormatter utcYMDFormatter = DateTimeFormat.forPattern("yyyy-MM-dd").withZone(
 			DateTimeZone.UTC);
-	public final static DateTimeFormatter utcYMDHMSFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss")
-			.withZone(DateTimeZone.UTC);
+
+	public static Date parseUTCDateToDate(String utcDate) throws ParseException {
+		return ISODateTimeFormat.dateParser().parseDateTime(utcDate).toDate();
+	}
 
 	public static Date parseUTCToDate(String utcDate) throws ParseException {
-		DateTime dateTime = utcFormatter.parseDateTime(utcDate);
-		return dateTime.toDate();
+		return parseUTCToDateTime(utcDate).toDate();
 	}
 
-	public static Date parsePartialUTCToDate(String utcDate) throws ParseException {
-		return parsePartialUTCToDateTime(utcDate).toDate();
-	}
-
-	public static DateTime parsePartialUTCToDateTime(String utcDate) throws ParseException {
-		if (utcDate.length() == 4) {
-			DateTime dateTime = utcYFormatter.parseDateTime(utcDate);
-			return dateTime;
-		}
-		if (utcDate.length() == 10) {
-			DateTime dateTime = utcYMDFormatter.parseDateTime(utcDate);
-			return dateTime;
-		}
-		if (utcDate.length() == 19) {
-			DateTime dateTime = utcYMDHMSFormatter.parseDateTime(utcDate);
-			return dateTime;
-		}
-		DateTime dateTime = utcFormatter.parseDateTime(utcDate);
-		return dateTime;
+	public static DateTime parseUTCToDateTime(String utcDate) throws IllegalArgumentException {
+		DateTime isoDT = ISODateTimeFormat.dateTimeParser().withOffsetParsed().parseDateTime(utcDate);
+		return isoDT.withZone(DateTimeZone.forID("UTC"));
 	}
 
 	public static String formatDateToUTC(Date date) throws ParseException {
