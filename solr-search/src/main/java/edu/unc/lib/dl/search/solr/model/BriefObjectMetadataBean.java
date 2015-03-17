@@ -317,7 +317,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 			for (String embargo : embargoUntil) {
 				Date embargoDate;
 				try {
-					embargoDate = DateTimeUtil.parsePartialUTCToDate(embargo);
+					embargoDate = DateTimeUtil.parseUTCToDate(embargo);
 					if (embargoDate.after(dateNow)) {
 						if (result == null || embargoDate.after(result)) {
 							result = embargoDate;
