@@ -57,6 +57,7 @@ public class ResubmitIngestController {
 		if (status == null || status.isEmpty()) {
 			response.setStatus(400);
 			result.put("error", "Couldn't find the deposit.");
+			log.error("Tried to resubmit deposit PID {} but couldn't find it", depositPid);
 			return result;
 		}
 		
@@ -79,6 +80,7 @@ public class ResubmitIngestController {
 		if (state == null || !state.equals(DepositState.failed.name())) {
 			response.setStatus(400);
 			result.put("error", "The deposit isn't in the failed state.");
+			log.error("Tried to resubmit deposit {} but it isn't in the failed state", depositPid);
 			return result;
 		}
 		
@@ -92,6 +94,7 @@ public class ResubmitIngestController {
 		} catch (IOException e) {
 			response.setStatus(500);
 			result.put("error", "Couldn't save the resubmitted ingest package.");
+			log.error("Couldn't create a resubmit directory for deposit PID " + depositPid, e);
 			return result;
 		}
 		
@@ -108,6 +111,7 @@ public class ResubmitIngestController {
 		} catch (IOException e) {
 			response.setStatus(500);
 			result.put("error", "Couldn't save the resubmitted ingest package.");
+			log.error("Couldn't transfer the resubmitted ingest package for deposit PID " + depositPid, e);
 			return result;
 		}
 		
@@ -121,6 +125,7 @@ public class ResubmitIngestController {
 		} catch (Exception e) {
 			response.setStatus(500);
 			result.put("error", "Couldn't scan the resubmitted ingest package.");
+			log.error("Error scanning the resubmitted ingest package for deposit PID " + depositPid, e);
 			return result;
 		}
 		
@@ -132,12 +137,14 @@ public class ResubmitIngestController {
 		if (depositPackageId == null) {
 			response.setStatus(400);
 			result.put("error", "The resubmitted ingest package doesn't have an ID.");
+			log.error("The resubmitted ingest package for deposit PID {} doesn't have an ID", depositPid);
 			return result;
 		}
 		
 		if (!depositPackageId.equals(depositPid)) {
 			response.setStatus(400);
 			result.put("error", "The resubmitted ingest package doesn't match the deposit.");
+			log.error("The resubmitted ingest package doesn't match the deposit. The deposit has PID {} but the package has ID {}.", depositPid, depositPackageId);
 			return result;
 		}
 		
