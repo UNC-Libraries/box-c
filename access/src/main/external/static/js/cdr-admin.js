@@ -2152,6 +2152,53 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	});
 	
 	return RemoteStateChangeMonitor;
+});/**
+ * Implements functionality and UI for the Resubmit Package form
+ */
+define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/resubmitPackageForm', 
+		'ModalLoadingOverlay', 'ConfirmationDialog', 'AbstractFileUploadForm'], 
+		function($, ui, _, RemoteStateChangeMonitor, resubmitPackageTemplate, ModalLoadingOverlay, ConfirmationDialog, AbstractFileUploadForm) {
+	
+	var defaultOptions = {
+			title : 'Resubmit Ingest Package',
+			createFormTemplate : resubmitPackageTemplate
+	};
+	
+	function ResubmitPackageForm(options) {
+		this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
+	};
+	
+	ResubmitPackageForm.prototype.constructor = ResubmitPackageForm;
+	ResubmitPackageForm.prototype = Object.create( AbstractFileUploadForm.prototype );
+	
+	// Validate the form and retrieve any errors
+	ResubmitPackageForm.prototype.validationErrors = function() {
+		var errors = [];
+		var packageFile = $("input[type='file']", this.$form).val();
+		if (!packageFile) {
+			errors.push("You must select an ingest package file to resubmit.");
+		}
+		return errors;
+	};
+	
+	ResubmitPackageForm.prototype.getSuccessMessage = function(data) {
+		return "The ingest package " + this.ingestFile.name + " has been successfully resubmitted. You will receive an email when it completes.";
+	};
+	
+	ResubmitPackageForm.prototype.getErrorMessage = function(data) {
+		if (data && data.error && !this.closed) {
+			this.setError(data.error);
+		}
+		return "Failed to resubmit ingest package " + this.ingestFile.name + ".";
+	};
+	
+	ResubmitPackageForm.prototype.setError = function(message) {
+		$(".errors", this.$form).show();
+		$(".error_message", this.$form).html(message);
+		this.dialog.dialog("option", "position", "center");
+	};
+	
+	return ResubmitPackageForm;
 });define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverlay'], 
 		function($, ui, _, ModalLoadingOverlay) {
 	var defaultOptions = {
@@ -4953,8 +5000,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	return AbstractStatusMonitor;
-});define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'tpl!../templates/admin/statusMonitor/depositMonitorJob', 'tpl!../templates/admin/statusMonitor/depositMonitorJobDetails'],
-		function($, ui, _, AbstractStatusMonitor, depositMonitorJobTemplate, depositMonitorDetailsTemplate) {
+});define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'tpl!../templates/admin/statusMonitor/depositMonitorJob', 'tpl!../templates/admin/statusMonitor/depositMonitorJobDetails', 'ResubmitPackageForm'],
+		function($, ui, _, AbstractStatusMonitor, depositMonitorJobTemplate, depositMonitorDetailsTemplate, ResubmitPackageForm) {
 			
 	var defaultOptions = {
 		name : "deposit",
@@ -4996,6 +5043,17 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			$.post($this.attr("href"), function(){
 				
 			});
+			return false;
+		});
+		
+		var resubmitPackageForm = new ResubmitPackageForm({
+			alertHandler : this.options.alertHandler
+		});
+		
+		$(this.element).on("click", ".resubmit_action", function() {
+			var $this = $(this);
+			// FIXME: prepending "uuid:" is a hack??
+			resubmitPackageForm.open("uuid:" + $this.data("uuid"));
 			return false;
 		});
 	};
@@ -5156,6 +5214,9 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		function($, ui, _, DepositMonitor, IndexingMonitor, EnhancementMonitor) {
 			
 	function StatusMonitorManager(element, options) {
+		this.$alertHandler = $("<div id='alertHandler'></div>");
+		this.$alertHandler.alertHandler().appendTo(document.body).hide();
+		
 		this.element = element;
 		this.options = options;
 		this.tabList = $("<ul/>").attr("id", "status_monitor_tabs").appendTo(this.element);
@@ -5189,7 +5250,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	StatusMonitorManager.prototype.addMonitors = function() {
-		this.addMonitor(new DepositMonitor(this.options));
+		this.addMonitor(new DepositMonitor($.extend({}, { alertHandler: this.$alertHandler }, this.options)));
 		this.addMonitor(new IndexingMonitor());
 		this.addMonitor(new EnhancementMonitor());
 	};

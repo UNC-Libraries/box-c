@@ -3,6 +3,7 @@
 
 	<% if (isAdmin || data.depositorName == username) { %>
 	<% if (data.state == "failed" || data.state == "paused") { %>
+		<p><a href="#" class="resubmit_action" data-uuid="<%= data.uuid %>">Resubmit</a></p>
 		<p><a href="/services/api/edit/deposit/<%= data.uuid %>?action=resume" class="monitor_action">Resume</a></p>
 	<% } %>
 	

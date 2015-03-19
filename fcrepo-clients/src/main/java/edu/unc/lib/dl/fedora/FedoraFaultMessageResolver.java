@@ -30,7 +30,7 @@ public class FedoraFaultMessageResolver {
 					|| r.contains("DatastreamNotFoundException") || r.contains("no path in db registry")
 					|| r.contains("No datastream could be returned")) {
 				throw new NotFoundException(e);
-			} else if (r.contains("ObjectExistsException")) {
+			} else if (r.contains("ObjectExistsException") || r.contains("already exists in the registry; the object can't be re-created")) {
 				throw new ObjectExistsException(e);
 			} else if (r.contains("LowlevelStorageException")) {
 				throw new FileSystemException(e);

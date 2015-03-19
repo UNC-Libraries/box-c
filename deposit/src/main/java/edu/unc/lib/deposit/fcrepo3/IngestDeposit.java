@@ -34,6 +34,7 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
+import edu.unc.lib.dl.fedora.ObjectExistsException;
 import edu.unc.lib.dl.fedora.JobForwardingJMSListener;
 import edu.unc.lib.dl.fedora.ListenerJob;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -219,6 +220,16 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 			GroupsThreadStore.storeGroups(ags);
 			GroupsThreadStore.storeUsername(depositStatus.get(DepositField.depositorName.name()));
 
+			// When ingesting, assume that an "object exists" exception is confirmation
+			// that the object exists, rather than an error.
+			boolean confirmExisting;
+			
+			if (Boolean.parseBoolean(depositStatus.get(DepositField.isResubmit.name()))) {
+				confirmExisting = true;
+			} else {
+				confirmExisting = false;
+			}
+
 			// Extract information about structure of the deposit
 			processDepositStructure();
 
@@ -239,7 +250,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 					// Register pid as needing ingest confirmation
 					ingestsAwaitingConfirmation.add(ingestPid);
 
-					ingestObject(ingestPid);
+					ingestObject(ingestPid, confirmExisting);
 
 					statusFactory.addUploadedPID(getDepositUUID(), new PID(ingestPid).getPid());
 					statusFactory.incrIngestedObjects(getDepositUUID(), 1);
@@ -306,12 +317,18 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 	}
 
 	/**
-	 * Ingests an object and its referenced files into Fedora
+	 * Ingests an object and its referenced files into Fedora.
+	 * <p>
+	 * If confirmExisting is true, we will consider an exception from Fedora
+	 * telling us the object already exists to be confirmation that it is already
+	 * ingested and remove it from the list of ingests awaiting confirmation.
+	 * Otherwise, we will rethrow such exceptions.
 	 *
 	 * @param ingestPid
+	 * @param confirmExisting
 	 * @throws DepositException
 	 */
-	private void ingestObject(String ingestPid) throws DepositException {
+	private void ingestObject(String ingestPid, boolean confirmExisting) throws DepositException {
 
 		PID pid = new PID(ingestPid);
 		File foxml = new File(foxmlDirectory, pid.getUUID() + ".xml");
@@ -347,6 +364,12 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 		} catch (FedoraTimeoutException e) {
 			log.info("Fedora ingest timed out, awaiting ingest confirmation and proceeding with the remainder of the deposit: "
 					+ e.getLocalizedMessage());
+		} catch (ObjectExistsException e) {
+			if (confirmExisting) {
+				ingestsAwaitingConfirmation.remove(ingestPid);
+			} else {
+				throw new DepositException("Failed to ingest object " + pid.getPid() + " into Fedora.", e);
+			}
 		} catch (Exception e) {
 			throw new DepositException("Failed to ingest object " + pid.getPid() + " into Fedora.", e);
 		}

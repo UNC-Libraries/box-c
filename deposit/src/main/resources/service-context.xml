@@ -222,6 +222,10 @@
 		<constructor-arg index="0" type="java.lang.Class" value="edu.unc.lib.deposit.clean.MailNotifier"/> 
 		<constructor-arg index="1" value=""/> </bean> </property> </bean> -->
 
+	<bean id="PrepareResubmitJob" class="edu.unc.lib.deposit.PrepareResubmitJob"
+		scope="prototype">
+	</bean>
+
 	<bean id="PackageIntegrityCheckJob" class="edu.unc.lib.deposit.validate.PackageIntegrityCheckJob"
 		scope="prototype">
 	</bean>

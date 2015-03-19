@@ -165,6 +165,10 @@ public abstract class AbstractDepositJob implements Runnable {
 		return new File(getDepositDirectory(), DESCRIPTION_DIR);
 	}
 
+	public File getDepositsDirectory() {
+		return depositsDirectory;
+	}
+
 	public File getDepositDirectory() {
 		return depositDirectory;
 	}
