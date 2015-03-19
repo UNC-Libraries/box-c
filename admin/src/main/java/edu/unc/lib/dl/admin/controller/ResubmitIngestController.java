@@ -73,14 +73,14 @@ public class ResubmitIngestController {
 		}
 		
 		
-		// Check that the deposit is in the failed state
+		// Check that the deposit is in the failed or paused state
 		
 		String state = status.get(DepositField.state.name());
 		
-		if (state == null || !state.equals(DepositState.failed.name())) {
+		if (state == null || !(state.equals(DepositState.failed.name()) || state.equals(DepositState.paused.name()))) {
 			response.setStatus(400);
-			result.put("error", "The deposit isn't in the failed state.");
-			log.error("Tried to resubmit deposit {} but it isn't in the failed state", depositPid);
+			result.put("error", "The deposit must be paused or failed.");
+			log.error("Tried to resubmit deposit {} but it isn't in the failed or paused state", depositPid);
 			return result;
 		}
 		
