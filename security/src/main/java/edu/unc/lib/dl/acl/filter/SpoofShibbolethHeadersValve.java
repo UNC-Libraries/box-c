@@ -87,6 +87,15 @@ public class SpoofShibbolethHeadersValve extends ValveBase {
 				request.setUserPrincipal(principal);
 			}
 			
+			// Use the REMOTE_USER value to set a spoofed mail header
+			
+			if (values.containsKey("REMOTE_USER")) {
+				String remoteUser = values.get("REMOTE_USER");
+				headers.removeHeader("mail");
+				MessageBytes memb = headers.addValue("mail");
+				memb.setString(remoteUser + "@fake.spoof");
+			}
+			
 		}
 		
 		getNext().invoke(request, response);
