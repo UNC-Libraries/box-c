@@ -167,9 +167,9 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 			// Transform the data into MODS and store it to its final resting place
 			mods = extractMods(primaryPID, dataRoot, modified);
 		} catch (TransformerException e) {
-			failJob(e, Type.NORMALIZATION, "Failed to transform metadata to MODS");
+			failJob(e, Type.NORMALIZATION, "Failed to transform metadata to MODS.");
 		} catch (Exception e) {
-			failJob(e, Type.NORMALIZATION, "Unable to deserialize the metadata file");
+			failJob(e, Type.NORMALIZATION, "Unable to deserialize the metadata file.");
 		}
 
 		// Detect if there are any attachments

@@ -99,7 +99,7 @@ public class SendDepositorEmailJob extends AbstractDepositJob {
 			message.setText(text, html);
 			this.mailSender.send(mimeMessage);
 		} catch(MessagingException e) {
-			failJob(e, null, "Cannot send notification email");
+			failJob(e, null, "Cannot send notification email.");
 		}
 	}
 

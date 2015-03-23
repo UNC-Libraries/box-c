@@ -110,7 +110,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		try {
 			mets = builder.build(getMETSFile());
 		} catch (Exception e) {
-			failJob(e, Type.NORMALIZATION, "Unexpected error parsing METS file: {0}", getMETSFile().getAbsolutePath());
+			failJob(e, Type.NORMALIZATION, "Unexpected error parsing METS file.");
 		}
 		return mets;
 	}
@@ -119,13 +119,13 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		try(FileOutputStream fos = new FileOutputStream(getMETSFile())) {
 			new XMLOutputter().output(mets, fos);
 		} catch(Exception e) {
-			failJob(e, Type.NORMALIZATION, "Unexpected error saving METS: {0}", getMETSFile());
+			failJob(e, Type.NORMALIZATION, "Unexpected error saving METS.");
 		}
 	}
 
 	protected void validateMETS() {
 		if(!getMETSFile().exists()) {
-			failJob(Type.VALIDATION, "Cannot find a METS file", "A METS was not found in the expected locations: mets.xml, METS.xml or METS.XML");
+			failJob(Type.VALIDATION, "Cannot find a METS file", "A METS was not found in the expected locations: mets.xml, METS.xml, METS.XML.");
 		}
 		Validator metsValidator = getMetsSipSchema().newValidator();
 		METSParseException handler = new METSParseException(
@@ -137,9 +137,9 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 			if (log.isDebugEnabled()) {
 				log.debug(e.getMessage());
 			}
-			failJob(handler, Type.VALIDATION, "METS is not valid with respect to schemas");
+			failJob(handler, Type.VALIDATION, "METS is not valid with respect to schemas.");
 		} catch (IOException e) {
-			failJob(e, Type.VALIDATION, "Cannot parse METS file: {0}", getMETSFile());
+			failJob(e, Type.VALIDATION, "Cannot parse METS file.");
 		}
 		recordDepositEvent(Type.VALIDATION, "METS schema(s) validated");
 	}

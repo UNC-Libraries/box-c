@@ -356,27 +356,32 @@ public class DepositSupervisor implements WorkerListener {
 				}
 
 				if (ex != null && ex instanceof JobInterruptedException) {
-					LOG.debug("Job {} was interrupted, ending without failure", depositUUID);
+					LOG.debug("Job {} in deposit {} was interrupted", jobUUID, depositUUID);
 					jobStatusFactory.interrupted(jobUUID);
 					return;
 				}
-
+				
+				if (ex != null && ex instanceof FedoraTimeoutException) {
+					LOG.warn("Fedora timed out for job {} in deposit {}, will resume after delay", jobUUID, depositUUID);
+					jobStatusFactory.failed(jobUUID);
+					resumeDeposit(depositUUID, status, getUnavailableDelaySeconds() * 1000);
+					return;
+				}
+				
 				if (ex != null) {
+					LOG.error("Job " + jobUUID + " in deposit " + depositUUID + " failed with exception", ex);
+				} else {
+					LOG.error("Job " + jobUUID + " in deposit " + depositUUID + " failed");
+				}
+				
+				if (ex instanceof JobFailedException) {
 					jobStatusFactory.failed(jobUUID, ex.getLocalizedMessage());
-
-					if (ex instanceof FedoraTimeoutException) {
-						LOG.warn("Connection to Fedora has timed out during deposit {}, requeue the task on a delay",
-								depositUUID);
-						resumeDeposit(depositUUID, status, getUnavailableDelaySeconds() * 1000);
-						return;
-					} else {
-						LOG.warn("Job failed with this exception", ex);
-					}
+					depositStatusFactory.fail(depositUUID, ex.getLocalizedMessage());
 				} else {
 					jobStatusFactory.failed(jobUUID);
+					depositStatusFactory.fail(depositUUID);
 				}
-
-				depositStatusFactory.fail(depositUUID, ex);
+				
 				return;
 			default:
 				break;
@@ -407,7 +412,8 @@ public class DepositSupervisor implements WorkerListener {
 				try {
 					queueNextJob(job, depositUUID, status, successfulJobs);
 				} catch (DepositFailedException e) {
-					depositStatusFactory.fail(depositUUID, e);
+					LOG.error("Failed to enqueue next job for deposit " + depositUUID, e);
+					depositStatusFactory.fail(depositUUID);
 				}
 				break;
 			default:
@@ -587,7 +593,8 @@ public class DepositSupervisor implements WorkerListener {
 
 			depositStatusFactory.setState(uuid, DepositState.queued);
 		} catch (DepositFailedException e) {
-			depositStatusFactory.fail(uuid, e);
+			LOG.error("Failed to resume deposit " + uuid, e);
+			depositStatusFactory.fail(uuid);
 		}
 	}
 
@@ -607,7 +614,8 @@ public class DepositSupervisor implements WorkerListener {
 
 			depositStatusFactory.setState(uuid, DepositState.queued);
 		} catch (DepositFailedException e) {
-			depositStatusFactory.fail(uuid, e);
+			LOG.error("Failed to resubmit deposit " + uuid, e);
+			depositStatusFactory.fail(uuid);
 		}
 	}
 	

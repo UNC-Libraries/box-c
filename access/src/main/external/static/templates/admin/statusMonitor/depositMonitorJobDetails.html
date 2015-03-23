@@ -12,6 +12,10 @@
 	<% } %>
 	<% } %>
 	
+	<% if (data.errorMessage) { %>
+		<p class="error_message"><label>Error:</label> <%= data.errorMessage %></p>
+	<% } %>
+	
 	<p><label>Submitter:</label> <%= data.depositorName %></p>
 	
 	<p><label>Destination:</label> <a href="/admin/list/<%= data.containerId %>"><%= data.containerId %></a></p>
@@ -55,11 +59,5 @@
 	<% } 
 	if (data.finishedTime) { %>
 		<p><label>Finished:</label> <%= dateFormat(new Date(data.finishedTime)) %></p>
-	<% } %>
-	 
-	<% if (data.errorMessage) { %>
-		<h3>Error Log</h3>
-    <p><%= data.errorMessage %></p>
-    <pre class="stacktrace"><%= data.stackTrace %></pre>
 	<% } %>
 </div>

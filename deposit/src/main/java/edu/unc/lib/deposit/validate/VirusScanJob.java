@@ -153,11 +153,11 @@ public class VirusScanJob extends AbstractDepositJob {
 			for(String uri : failures.keySet()) {
 				sb.append(uri).append(" - ").append(failures.get(uri)).append("\n");
 			}
-			failJob(Type.VIRUS_CHECK, failures.size()+ " virus check(s) failed", sb.toString());
+			failJob(Type.VIRUS_CHECK, failures.size() + " virus check(s) failed.", sb.toString());
 		} else {
 			if (scannedObjects != hrefs.size()) {
-				failJob(Type.VIRUS_CHECK, "Virus scan job did not attempt to scan all files",
-						(hrefs.size() - scannedObjects) + " objects were not scanned");
+				failJob(Type.VIRUS_CHECK, "Virus scan job did not attempt to scan all files.",
+						(hrefs.size() - scannedObjects) + " objects were not scanned.");
 			}
 			recordDepositEvent(Type.VIRUS_CHECK, "{0} files scanned for viruses.", scannedObjects);
 		}
