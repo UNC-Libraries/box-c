@@ -69,8 +69,8 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'VideoPl
 	if ($audioPlayer.length > 0)
 		toggleViewer($audioPlayer, 'audioPlayer', $(".audio_player_link"), 'showAudio', 'Listen');
 	
-	if ($(".inline_viewer_link").length > 0){
-		$(".thumbnail").bind("click", function() {
+	if ($(".inline_viewer_link").length > 0) {
+		$(".full_record_top .thumbnail").bind("click", function() {
 			$(".inline_viewer_link").trigger("click");
 			return false;
 		});
