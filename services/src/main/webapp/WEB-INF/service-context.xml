@@ -236,7 +236,7 @@
 			</list>
 		</property>
 		<property name="active" value="false"/>
-		<property name="enabled" value="true"/>
+		<property name="enabled" value="${services.catchup.enabled:true}"/>
 		<property name="pageSize" value="${catchup.pageSize}"/>
 		<property name="catchUpCheckDelay" value="${catchup.catchUpCheckDelay}"/>
 	</bean>
