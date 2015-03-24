@@ -103,6 +103,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					selector : ".res_entry td",
 					containerSelector : ".res_entry,.container_entry",
 					actionHandler : self.actionHandler,
+					alertHandler : self.options.alertHandler,
 					multipleSelectionEnabled : true,
 					resultList : self.resultObjectList,
 					batchActions : self.options.resultActions

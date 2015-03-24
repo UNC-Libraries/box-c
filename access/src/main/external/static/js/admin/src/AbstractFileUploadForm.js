@@ -18,9 +18,9 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		return defaultOptions;
 	};
 	
-	AbstractFileUploadForm.prototype.open = function(pid) {
+	AbstractFileUploadForm.prototype.open = function(pid, metadata) {
 		var self = this;
-		var formContents = this.options.createFormTemplate({pid : pid});
+		var formContents = this.options.createFormTemplate({pid : pid, metadata: metadata});
 		this.closed = false;
 		
 		this.dialog = $("<div class='containingDialog'>" + formContents + "</div>");

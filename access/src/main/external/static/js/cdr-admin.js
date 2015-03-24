@@ -456,9 +456,9 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		return defaultOptions;
 	};
 	
-	AbstractFileUploadForm.prototype.open = function(pid) {
+	AbstractFileUploadForm.prototype.open = function(pid, metadata) {
 		var self = this;
-		var formContents = this.options.createFormTemplate({pid : pid});
+		var formContents = this.options.createFormTemplate({pid : pid, metadata: metadata});
 		this.closed = false;
 		
 		this.dialog = $("<div class='containingDialog'>" + formContents + "</div>");
@@ -1750,6 +1750,55 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			return xmlStr;
 		}
 	});
+});define('EditLabelForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/editLabelForm', 
+		'ModalLoadingOverlay', 'AbstractFileUploadForm', 'AlertHandler'], 
+		function($, ui, _, RemoteStateChangeMonitor, editLabelForm, ModalLoadingOverlay, AbstractFileUploadForm) {
+	
+	var defaultOptions = {
+			title : 'Edit Label',
+			createFormTemplate : editLabelForm,
+			showUploadProgress : false
+	};
+	
+	function EditLabelForm(options) {
+		this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
+	};
+	
+	
+	EditLabelForm.prototype.constructor = EditLabelForm;
+	EditLabelForm.prototype = Object.create( AbstractFileUploadForm.prototype );
+	
+	EditLabelForm.prototype.validationErrors = function() {
+		var errors = [];
+		var label = $("input[name='label']", this.$form).val();
+		console.log(label);
+		// Validate input
+		if (!label)
+			errors.push("You must specify a label.");
+		return errors;
+	};
+	
+		
+	EditLabelForm.prototype.getSuccessMessage = function(data) {
+		return "Label has been successfully edited.";
+	};
+	
+	EditLabelForm.prototype.getErrorMessage = function(data) {
+		return "An error occurred while creating whil editing the label";
+	};
+	
+	
+	EditLabelForm.prototype.remove = function() {
+		AbstractFileUploadForm.prototype.remove.apply(this);
+		this.options.actionHandler.addEvent({
+			action : 'RefreshResult',
+			target : this.options.resultObject,
+			waitForUpdate : true
+		});
+		
+	};
+	
+	return EditLabelForm;
 });/**
  * Implements functionality and UI for the generic Ingest Package form
  */
@@ -2368,8 +2417,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	};
 	
 	return ResultObject;
-});define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'contextMenu'],
-		function($, ui, StringUtilities) {
+});define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'EditLabelForm', 'contextMenu'],
+		function($, ui, StringUtilities, EditLabelForm) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -2492,12 +2541,20 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
 		if ($.inArray('editAccessControl', metadata.permissions) != -1) 
 			items["editAccess"] = {name : 'Edit Access'};
+		
+		//Adding EditLabel Option
+		if ($.inArray('editDescription', metadata.permissions) != -1) {
+			items["editLabel"] = {name : 'Edit Label'};
+		}
+		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
 			if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
 				items["exportCSV"] = {name : 'Export as CSV'};
 			}
 		}
+		
+		
 	    items["copyid"] = {name : 'Copy PID to Clipboard'};
 		if ($.inArray('purgeForever', metadata.permissions) != -1) {
 			items["sepadmin"] = "";
@@ -2545,6 +2602,11 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					case "editAccess" :
 						self.editAccess(resultObject);
 						break;
+					
+					case "editLabel" :
+						self.editLabel(resultObject);
+						break;
+					
 					case "editDescription" :
 						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
 						document.location.href = baseUrl + "describe/" + metadata.id;
@@ -2656,6 +2718,17 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		dialog.load("acl/" + resultObject.metadata.id, function(responseText, textStatus, xmlHttpRequest){
 			dialog.dialog('option', 'position', 'center');
 		});
+	};
+	
+	//For edit label modal
+	ResultObjectActionMenu.prototype.editLabel = function(resultObject) {
+		var editLabelForm = new EditLabelForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler,
+			resultObject : resultObject
+		});
+		editLabelForm.open(resultObject.metadata.id, resultObject.metadata);
+		
 	};
 	
 	ResultObjectActionMenu.prototype.disable = function() {
@@ -2963,6 +3036,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 					selector : ".res_entry td",
 					containerSelector : ".res_entry,.container_entry",
 					actionHandler : self.actionHandler,
+					alertHandler : self.options.alertHandler,
 					multipleSelectionEnabled : true,
 					resultList : self.resultObjectList,
 					batchActions : self.options.resultActions

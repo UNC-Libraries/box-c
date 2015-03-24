@@ -97,4 +97,9 @@ public class FedoraEventMessage extends AbstractXMLEventMessage {
 	public String getRelationPredicate() {
 		return relationPredicate;
 	}
+	
+	public String getArgument(String name) {
+		return JMSMessageUtil.getCategoryByScheme(messageBody, name);
+	}
+
 }

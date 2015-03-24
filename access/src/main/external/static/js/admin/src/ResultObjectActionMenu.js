@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'contextMenu'],
-		function($, ui, StringUtilities) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'EditLabelForm', 'contextMenu'],
+		function($, ui, StringUtilities, EditLabelForm) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -122,12 +122,20 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'co
 			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
 		if ($.inArray('editAccessControl', metadata.permissions) != -1) 
 			items["editAccess"] = {name : 'Edit Access'};
+		
+		//Adding EditLabel Option
+		if ($.inArray('editDescription', metadata.permissions) != -1) {
+			items["editLabel"] = {name : 'Edit Label'};
+		}
+		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
 			if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
 				items["exportCSV"] = {name : 'Export as CSV'};
 			}
 		}
+		
+		
 	    items["copyid"] = {name : 'Copy PID to Clipboard'};
 		if ($.inArray('purgeForever', metadata.permissions) != -1) {
 			items["sepadmin"] = "";
@@ -175,6 +183,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'co
 					case "editAccess" :
 						self.editAccess(resultObject);
 						break;
+					
+					case "editLabel" :
+						self.editLabel(resultObject);
+						break;
+					
 					case "editDescription" :
 						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
 						document.location.href = baseUrl + "describe/" + metadata.id;
@@ -286,6 +299,17 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'co
 		dialog.load("acl/" + resultObject.metadata.id, function(responseText, textStatus, xmlHttpRequest){
 			dialog.dialog('option', 'position', 'center');
 		});
+	};
+	
+	//For edit label modal
+	ResultObjectActionMenu.prototype.editLabel = function(resultObject) {
+		var editLabelForm = new EditLabelForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler,
+			resultObject : resultObject
+		});
+		editLabelForm.open(resultObject.metadata.id, resultObject.metadata);
+		
 	};
 	
 	ResultObjectActionMenu.prototype.disable = function() {
