@@ -337,7 +337,7 @@
 				<th>
 					<xsl:choose>
 						<xsl:when test="$groupKey = 'dateIssued'">
-							<xsl:value-of>Date Issued</xsl:value-of>
+							<xsl:value-of>Publication Date</xsl:value-of>
 						</xsl:when>
 						<xsl:when test="$groupKey = 'dateCreated'">
 							<xsl:value-of>Date Created</xsl:value-of>
