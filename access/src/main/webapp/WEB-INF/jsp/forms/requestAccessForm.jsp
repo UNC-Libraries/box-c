@@ -30,11 +30,8 @@
 		</h2>
 		
 		<c:if test="${not empty metadata && not empty metadata.parentCollection}">
-			<c:url var="parentUrl" scope="page" value="/search">
-				<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" 
-						value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${metadata.parentCollectionObject.limitToValue}"/>
-			</c:url>
-			<p>From collection: <a href="${parentUrl}">${metadata.parentCollectionObject.displayValue }</a></p>
+			<c:url var="parentUrl" scope="page" value="/record/${metadata.parentCollection}"/>
+			<p>From collection: <a href="${parentUrl}">${metadata.parentCollectionName }</a></p>
 		</c:if>
 		
 		<c:choose>

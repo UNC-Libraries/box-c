@@ -41,24 +41,24 @@
 		</c:url>
 		<a href="<c:out value="${shiftFacetUrl}"/>">Home</a>
 	</c:if>
-	<c:forEach items="${facetNodes}" var="facetNode" varStatus="status">
+	<c:forEach items="${pathObject.entries}" var="pathEntry" varStatus="status">
 		<c:if test="${!status.first || param.displayHome}">
 			&gt; 
 		</c:if>
 		<c:choose>
 			<c:when test="${status.last && param.linkLast != true}">
-				<c:out value="${facetNode.displayValue}" />
+				<c:out value="${pathEntry.name}" />
 			</c:when>
 			<c:otherwise>
 				<c:choose>
 					<c:when test="${param.limitToContainer == true}">
-						<c:url var="shiftFacetUrl" scope="page" value="list/${facetNode.searchKey}${shiftFacetUrlBase}"></c:url>
+						<c:url var="shiftFacetUrl" scope="page" value="list/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
 					</c:when>
 					<c:otherwise>
-						<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${facetNode.searchKey}${shiftFacetUrlBase}"></c:url>
+						<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
 					</c:otherwise>
 				</c:choose>
-				<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${facetNode.displayValue}" /></a>
+				<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
 			</c:otherwise>
 		</c:choose>
 	</c:forEach>

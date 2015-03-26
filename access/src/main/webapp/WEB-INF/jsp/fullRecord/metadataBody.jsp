@@ -25,7 +25,7 @@
 <div class="metadata">
 	<table>		
 		<c:set var="searchStateUrl" scope="request" value=""/>
-		<c:set var="facetNodes" scope="request" value="${briefObject.path.facetNodes}"/>
+		<c:set var="pathObject" scope="request" value="${briefObject.ancestorPathObject}"/>
 		<tr>
 			<th>${searchSettings.searchFieldLabels['ANCESTOR_PATH']}</th>
 			<td>
@@ -43,7 +43,7 @@
 				<td>
 					<c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}">
 					</c:url>
-					<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionObject.displayValue}"/></a>
+					<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
 				</td>
 			</tr>
 		</c:if>

@@ -44,6 +44,7 @@ import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
@@ -67,6 +68,8 @@ public class FullRecordController extends AbstractSolrSearchController {
 	private XSLViewResolver xslViewResolver;
 	@Autowired
 	private FedoraDataService fedoraDataService;
+	@Autowired
+	private ObjectPathFactory pathFactory;
 
 	private static final int MAX_FOXML_TRIES = 2;
 
@@ -90,6 +93,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 		if (briefObject == null) {
 			throw new InvalidRecordRequestException();
 		}
+		// Get path information.
 		model.addAttribute("briefObject", briefObject);
 
 		boolean listAccess = AccessUtil.hasListAccessOnly(accessGroups, briefObject);

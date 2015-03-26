@@ -103,7 +103,7 @@ public class FedoraContentService {
 				&& (searchSettings.resourceTypeFile.equals(briefObject.getResourceType()) || searchSettings.resourceTypeAggregate
 						.equals(briefObject.getResourceType())))
 			throw new InvalidRecordRequestException();
-		
+
 		// If a label is available, use it for the filename
 		List<String> labelRelations = briefObject.getRelation("label");
 		String filename = null;
@@ -119,8 +119,8 @@ public class FedoraContentService {
 			// Track the download event if the request is for the original content
 			if (analyticsTracker != null && datastreamResult.getDatastreamCategory() != null
 					&& datastreamResult.getDatastreamCategory().equals(DatastreamCategory.ORIGINAL)) {
-				analyticsTracker.trackEvent(userData, briefObject.getParentCollectionObject() == null ?
-						"(no collection)" : briefObject.getParentCollectionObject().getDisplayValue(),
+				analyticsTracker.trackEvent(userData, briefObject.getParentCollection() == null ? "(no collection)"
+						: briefObject.getParentCollectionName(),
 						"download", briefObject.getTitle() + "|" + pid, null);
 			}
 
@@ -194,7 +194,7 @@ public class FedoraContentService {
 					} else {
 						filename = pid.getPid();
 					}
-					
+
 					// For metadata types files, append the datastream name
 					if (datastream.getDatastreamCategory().equals(DatastreamCategory.METADATA)
 							|| datastream.getDatastreamCategory().equals(DatastreamCategory.ADMINISTRATIVE)) {

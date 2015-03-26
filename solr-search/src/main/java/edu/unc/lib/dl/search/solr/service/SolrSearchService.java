@@ -77,6 +77,7 @@ public class SolrSearchService {
 	@Autowired
 	protected FacetFieldFactory facetFieldFactory;
 	protected FacetFieldUtil facetFieldUtil;
+	protected ObjectPathFactory pathFactory;
 
 	public SolrSearchService() {
 	}
@@ -808,6 +809,23 @@ public class SolrSearchService {
 		return null;
 	}
 
+	public Map<String, Object> getFields(String pid, List<String> fields) throws SolrServerException {
+		QueryResponse queryResponse = null;
+		SolrQuery solrQuery = new SolrQuery();
+		StringBuilder query = new StringBuilder();
+		query.append("id:").append(SolrSettings.sanitize(pid));
+		solrQuery.setQuery(query.toString());
+		for (String field : fields) {
+			solrQuery.addField(field);
+		}
+
+		queryResponse = server.query(solrQuery);
+		if (queryResponse.getResults().getNumFound() > 0) {
+			return queryResponse.getResults().get(0).getFieldValueMap();
+		}
+		return null;
+	}
+
 	/**
 	 * Returns a combined set of distinct field values for one or more fields, limited by the set of access groups
 	 * provided
@@ -888,5 +906,13 @@ public class SolrSearchService {
 
 	public void setFacetFieldUtil(FacetFieldUtil facetFieldUtil) {
 		this.facetFieldUtil = facetFieldUtil;
+	}
+
+	public ObjectPathFactory getPathFactory() {
+		return pathFactory;
+	}
+
+	public void setPathFactory(ObjectPathFactory pathFactory) {
+		this.pathFactory = pathFactory;
 	}
 }

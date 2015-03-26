@@ -29,7 +29,7 @@ public class IndexDocumentBean {
 	protected PID pid;
 	protected String id;
 	protected List<String> ancestorPath;
-	protected String ancestorNames;
+	protected String ancestorIds;
 	protected String parentCollection;
 	protected String label;
 
@@ -110,13 +110,13 @@ public class IndexDocumentBean {
 		this.ancestorPath = ancestorPath;
 	}
 
-	public String getAncestorNames() {
-		return ancestorNames;
+	public String getAncestorIds() {
+		return ancestorIds;
 	}
 
 	@Field
-	public void setAncestorNames(String ancestorNames) {
-		this.ancestorNames = ancestorNames;
+	public void setAncestorIds(String ancestorIds) {
+		this.ancestorIds = ancestorIds;
 	}
 
 	public String getParentCollection() {

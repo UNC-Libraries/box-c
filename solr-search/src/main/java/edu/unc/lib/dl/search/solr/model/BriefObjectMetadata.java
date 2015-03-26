@@ -26,6 +26,10 @@ import edu.unc.lib.dl.fedora.PID;
 public interface BriefObjectMetadata {
 	public CutoffFacet getAncestorPathFacet();
 
+	public ObjectPath getAncestorPathObject();
+
+	public void setAncestorPathObject(ObjectPath ancestorPathObject);
+
 	public CutoffFacet getPath();
 
 	public List<MultivaluedHierarchicalFacet> getContentTypeFacet();
@@ -38,8 +42,6 @@ public interface BriefObjectMetadata {
 
 	public ObjectAccessControlsBean getAccessControlBean();
 
-	public CutoffFacetNode getParentCollectionObject();
-
 	public void setCountMap(Map<String,Long> countMap);
 
 	public Map<String,Long> getCountMap();
@@ -51,6 +53,10 @@ public interface BriefObjectMetadata {
 	public List<String> getAncestorPath();
 
 	public String getAncestorNames();
+
+	public String getAncestorIds();
+
+	public String getParentCollectionName();
 
 	public String getParentCollection();
 
@@ -139,4 +145,5 @@ public interface BriefObjectMetadata {
 	public Map<String,Object> getDynamicFields();
 
 	public Date getActiveEmbargo();
+
 }
