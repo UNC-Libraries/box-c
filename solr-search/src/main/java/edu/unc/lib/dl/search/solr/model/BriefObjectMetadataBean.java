@@ -231,16 +231,6 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	}
 
 	@Override
-	public String getLabel() {
-		List<String> labelRelations = this.getRelation("label");
-		if (labelRelations == null || labelRelations.size() == 0) {
-			return null;
-		} else {
-			return labelRelations.get(0);
-		}
-	}
-
-	@Override
 	public Datastream getDefaultWebData() {
 		if (this.relationsMap == null)
 			return null;
