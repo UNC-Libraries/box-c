@@ -17,5 +17,15 @@
         "confirmFile":"cdr/tag_lib_projects",
         "ingestCleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS",
         "readOnly":"true"
+    },
+    "tag:cdr.lib.unc.edu,2015:/sfc_storhouse/":{
+        "name":"SFC Storhouse Drive (Pre-staged)",
+        "mappings":[
+            "file:/Volume/sfc_storhouse",
+            "file:/mnt/sfc_storhouse"
+        ],
+        "confirmFile":"tag_sfc_storhouse",
+        "ingestCleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS",
+        "readOnly":"true"
     }
 }
