@@ -48,6 +48,9 @@ public class PrepareResubmitJob extends AbstractDepositJob {
 		depositStatusFactory.deleteField(uuid, DepositField.resubmitDirName);
 		depositStatusFactory.deleteField(uuid, DepositField.resubmitFileName);
 		
+		// Destroy our model, since we'll recreate it in later steps
+		this.destroyModel();
+		
 	}
 	
 }
