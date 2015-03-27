@@ -129,7 +129,7 @@
     -->
     <field name="ancestorPath" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Sortable string representation of the path to this object.  This object is included if it is a container -->
-    <field name="ancestorNames" type="string" indexed="true" stored="true" required="true"/>
+    <field name="ancestorIds" type="string" indexed="true" stored="true" required="true"/>
     <!-- PID of the closest collection in this objects ancestry -->
     <field name="parentCollection" type="string" indexed="true" stored="true"/>
     

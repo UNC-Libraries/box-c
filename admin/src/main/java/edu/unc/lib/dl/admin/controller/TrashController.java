@@ -42,8 +42,7 @@ public class TrashController extends AbstractSearchController {
 	protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(),
 			SearchFieldKeys.TITLE.name(), SearchFieldKeys.DATE_UPDATED.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
 			SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.ANCESTOR_PATH.name(),
-			SearchFieldKeys.VERSION.name(), SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name(),
-			SearchFieldKeys.ANCESTOR_NAMES.name());
+			SearchFieldKeys.VERSION.name(), SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name());
 
 	@RequestMapping(value = "trash", produces = "text/html")
 	public String trashForEverything() {

@@ -1051,15 +1051,6 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		resultResponse.setSelectedContainer(selectedContainer);
 
-		// long start = System.currentTimeMillis();
-		// if (selectedContainer != null) {
-		// pathFactory.storePath(selectedContainer);
-		// }
-		// for (BriefObjectMetadata bom : resultResponse.getResultList()) {
-		// pathFactory.storePath(bom);
-		// }
-		// LOG.debug("Time spent retrieving path information {}", System.currentTimeMillis() - start);
-
 		// Get the children counts for container entries.
 		getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
 

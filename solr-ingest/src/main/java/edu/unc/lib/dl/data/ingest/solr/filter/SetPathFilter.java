@@ -91,7 +91,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 				orphaned = false;
 			}
 			if (currentPid.equals(previousPID)) {
-				currentNode.contentModels.add(row.get(3));
+				currentNode.contentModels.add(row.get(2));
 			} else {
 				previousPID = currentPid;
 				currentNode = new PathNode(row);
@@ -112,7 +112,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 		PathNode nearestCollection = null;
 		PathNode firstAggregate = null;
-		StringBuilder ancestorNames = new StringBuilder();
+		StringBuilder ancestorIds = new StringBuilder();
 		int depth = 0;
 		for (PathNode node : pathNodes) {
 			node.resourceType = ResourceType.getResourceTypeByContentModels(node.contentModels);
@@ -128,17 +128,17 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 			// Generate and store the current tiers ancestorPath value, except for the last tier
 			if (depth < pathNodes.size() - 1) {
-				ancestorPath.add(this.buildTier(++depth, node.pid, node.label));
-				this.buildAncestorNames(ancestorNames, node.label);
+				ancestorPath.add(this.buildTier(++depth, node.pid));
+				ancestorIds.append('/').append(node.pid);
 			} else {
 				// Store the last node in ancestor names only if it is a container type
 				if (!ResourceType.File.equals(node.resourceType))
-					this.buildAncestorNames(ancestorNames, node.label);
+					ancestorIds.append('/').append(node.pid);
 			}
 		}
 
 		// Store the completed ancestorNames field
-		idb.setAncestorNames(ancestorNames.toString());
+		idb.setAncestorIds(ancestorIds.toString());
 
 		// If this item is in an aggregate object then it should rollup as part of its parent
 		if (firstAggregate != null) {
@@ -163,7 +163,6 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		idb.setResourceType(currentNode.resourceType.name());
 		idb.setResourceTypeSort(currentNode.resourceType.getDisplayOrder());
 		dip.setResourceType(currentNode.resourceType);
-		dip.setLabel(currentNode.label);
 	}
 
 	/**
@@ -224,15 +223,15 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		List<String> parentAncestors = parentDIP.getDocument().getAncestorPath();
 		List<String> ancestorPath = new ArrayList<String>(parentAncestors.size() + 1);
 		ancestorPath.addAll(parentAncestors);
-		ancestorPath.add(this.buildTier(parentAncestors.size() + 1, parentDIP.getPid(), parentDIP.getLabel()));
+		ancestorPath.add(this.buildTier(parentAncestors.size() + 1, parentDIP.getPid()));
 		idb.setAncestorPath(ancestorPath);
 
-		StringBuilder ancestorNames = new StringBuilder(parentDIP.getDocument().getAncestorNames());
+		StringBuilder ancestorIds = new StringBuilder(parentDIP.getDocument().getAncestorIds());
 		// If this object isn't an item, then add itself to its ancestorNames
 		if (!ResourceType.File.equals(resourceType)) {
-			this.buildAncestorNames(ancestorNames, dip.getLabel());
+			ancestorIds.append('/').append(dip.getPid().getPid());
 		}
-		idb.setAncestorNames(ancestorNames.toString());
+		idb.setAncestorIds(ancestorIds.toString());
 
 		// If the parent has a rollup other than its own id, that means its nested inside an aggregate, so it inherits
 		if (!parentDIP.getPid().getPid().equals(parentDIP.getDocument().getRollup())) {
@@ -267,14 +266,10 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		}
 	}
 
-	private String buildTier(int depth, PID pid, String label) {
+	private String buildTier(int depth, PID pid) {
 		StringBuilder ancestorTier = new StringBuilder();
-		ancestorTier.append(depth).append(',').append(pid.getPid().replaceAll(",", "\\\\,")).append(',').append(label);
+		ancestorTier.append(depth).append(',').append(pid.getPid().replaceAll(",", "\\\\,"));
 		return ancestorTier.toString();
-	}
-
-	private StringBuilder buildAncestorNames(StringBuilder ancestorNames, String label) {
-		return ancestorNames.append('/').append(label.replaceAll("\\/", "\\\\/"));
 	}
 
 	public void setAncestorInfoQuery(String ancestorInfoQuery) {
@@ -288,7 +283,6 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 	private static class PathNode {
 		PID parentPID;
 		PID pid;
-		String label;
 		List<String> contentModels;
 		ResourceType resourceType;
 
@@ -296,9 +290,8 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 			// $p $pid $label $contentModel
 			this.parentPID = new PID(row.get(0));
 			this.pid = new PID(row.get(1));
-			this.label = row.get(2);
 			this.contentModels = new ArrayList<String>();
-			this.contentModels.add(row.get(3));
+			this.contentModels.add(row.get(2));
 		}
 	}
 }

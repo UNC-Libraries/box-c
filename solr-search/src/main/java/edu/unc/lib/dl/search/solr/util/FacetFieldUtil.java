@@ -33,7 +33,7 @@ public class FacetFieldUtil {
 
 	/**
 	 * Apply facet restrictions to a solr query based on the type of facet provided
-	 * 
+	 *
 	 * @param facetObject
 	 * @param solrQuery
 	 */
@@ -57,9 +57,10 @@ public class FacetFieldUtil {
 		StringBuilder filterQuery = new StringBuilder();
 		filterQuery.append(solrFieldName).append(":").append(endNode.getTier()).append(",");
 		if (!endNode.getSearchKey().equals("*")) {
-			filterQuery.append(SolrSettings.sanitize(endNode.getSearchKey())).append(",");
+			filterQuery.append(SolrSettings.sanitize(endNode.getSearchKey()));
+		} else {
+			filterQuery.append('*');
 		}
-		filterQuery.append('*');
 		solrQuery.addFilterQuery(filterQuery.toString());
 
 		if (facet.getCutoff() != null) {
@@ -67,7 +68,7 @@ public class FacetFieldUtil {
 			filterQuery.append('!').append(solrFieldName).append(':').append(facet.getCutoff()).append(',').append('*');
 			solrQuery.addFilterQuery(filterQuery.toString());
 		}
-		
+
 		if (facet.getFacetCutoff() != null) {
 			solrQuery.setFacetPrefix(solrFieldName, facet.getFacetCutoff() + ",");
 		}
@@ -79,23 +80,23 @@ public class FacetFieldUtil {
 
 		filterQuery.append(solrFieldName).append(":").append(SolrSettings.sanitize(facet.getSearchValue())).append(",*");
 		solrQuery.addFilterQuery(filterQuery.toString());
-		
+
 		solrQuery.add("f." + solrFieldName + ".facet.prefix", facet.getPivotValue());
 	}
 
 	private void addGenericFacetValue(GenericFacet facet, SolrQuery solrQuery) {
 		solrQuery.addFilterQuery(solrSettings.getFieldName(facet.getFieldName()) + ":\""
-				+ SolrSettings.sanitize((String) facet.getSearchValue()) + "\"");
+				+ SolrSettings.sanitize(facet.getSearchValue()) + "\"");
 	}
-	
+
 	private void addCaseInsensitiveFacetValue(CaseInsensitiveFacet facet, SolrQuery solrQuery) {
 		solrQuery.addFilterQuery(solrSettings.getFieldName(facet.getSearchName()) + ":\""
-				+ SolrSettings.sanitize((String) facet.getSearchValue()) + "\"");
+				+ SolrSettings.sanitize(facet.getSearchValue()) + "\"");
 	}
 
 	/**
 	 * Default pivoting values used for restricting facet list results.
-	 * 
+	 *
 	 * @param fieldKey
 	 * @param solrQuery
 	 */
@@ -103,11 +104,11 @@ public class FacetFieldUtil {
 		Class<?> facetClass = searchSettings.getFacetClasses().get(fieldKey);
 		this.addDefaultFacetPivot(fieldKey, facetClass, solrQuery);
 	}
-	
+
 	public void addDefaultFacetPivot(GenericFacet facet, SolrQuery solrQuery) {
 		this.addDefaultFacetPivot(facet.getFieldName(), facet.getClass(), solrQuery);
 	}
-	
+
 	public void addDefaultFacetPivot(String fieldKey, Class<?> facetClass, SolrQuery solrQuery) {
 		String solrFieldName = solrSettings.getFieldName(fieldKey);
 		if (CutoffFacet.class.equals(facetClass)) {

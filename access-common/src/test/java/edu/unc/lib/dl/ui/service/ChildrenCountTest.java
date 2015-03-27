@@ -136,7 +136,7 @@ public class ChildrenCountTest extends AbstractSolrQueryLayerTest {
 		newDoc.addField("rollup", COLLECTIONS_PID);
 		newDoc.addField("roleGroup", "public");
 		newDoc.addField("readGroup", "public");
-		newDoc.addField("ancestorNames", "");
+		newDoc.addField("ancestorIds", "");
 		newDoc.addField("resourceType", "Folder");
 		newDoc.addField("contentModel", Arrays.asList(CONTAINER.toString()));
 		docs.add(newDoc);
@@ -150,8 +150,8 @@ public class ChildrenCountTest extends AbstractSolrQueryLayerTest {
 			newDoc.addField("rollup", collUUID);
 			newDoc.addField("roleGroup", "public admin");
 			newDoc.addField("readGroup", "public");
-			newDoc.addField("ancestorNames", "/Collections/" + collName);
-			newDoc.addField("ancestorPath", Arrays.asList("1," + COLLECTIONS_PID + ",Collections"));
+			newDoc.addField("ancestorIds", "/" + COLLECTIONS_PID + "/" + collUUID);
+			newDoc.addField("ancestorPath", Arrays.asList("1," + COLLECTIONS_PID));
 			newDoc.addField("resourceType", "Collection");
 			newDoc.addField("contentModel", Arrays.asList(CONTAINER.toString(), COLLECTION.toString()));
 			docs.add(newDoc);
@@ -164,9 +164,9 @@ public class ChildrenCountTest extends AbstractSolrQueryLayerTest {
 				newDoc.addField("rollup", "uuid:" + id);
 				newDoc.addField("roleGroup", "public admin");
 				newDoc.addField("readGroup", "public");
-				newDoc.addField("ancestorNames", "/Collections/" + collName + "/folder" + id);
+				newDoc.addField("ancestorIds", "/" + COLLECTIONS_PID + "/" + collUUID + "/uuid:" + id);
 				newDoc.addField("ancestorPath",
-						Arrays.asList("1," + COLLECTIONS_PID + ",Collections", "2," + collUUID + "," + collName));
+ Arrays.asList("1," + COLLECTIONS_PID, "2," + collUUID));
 				newDoc.addField("resourceType", "Folder");
 				newDoc.addField("contentModel", Arrays.asList(CONTAINER.toString()));
 				docs.add(newDoc);
@@ -179,9 +179,9 @@ public class ChildrenCountTest extends AbstractSolrQueryLayerTest {
 					newDoc.addField("rollup", "uuid:" + fid);
 					newDoc.addField("roleGroup", "public admin");
 					newDoc.addField("readGroup", "public");
-					newDoc.addField("ancestorNames", "/Collections/" + collName + "/folder" + id);
+					newDoc.addField("ancestorIds", "/" + COLLECTIONS_PID + "/" + collUUID + "/uuid:" + id);
 					newDoc.addField("ancestorPath",
-							Arrays.asList("1," + COLLECTIONS_PID + ",Collections", "2," + collUUID + "," + collName));
+ Arrays.asList("1," + COLLECTIONS_PID, "2," + collUUID));
 					newDoc.addField("resourceType", "File");
 					newDoc.addField("contentModel", Arrays.asList(SIMPLE.toString()));
 					docs.add(newDoc);

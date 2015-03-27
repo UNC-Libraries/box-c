@@ -103,7 +103,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 						0L);
 			} else {
 				path = new CutoffFacet(ancestorPathFacet);
-				path.addNode(id, title);
+				path.addNode(id);
 			}
 		}
 		return path;

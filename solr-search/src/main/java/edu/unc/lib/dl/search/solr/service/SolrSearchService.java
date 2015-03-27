@@ -77,7 +77,6 @@ public class SolrSearchService {
 	@Autowired
 	protected FacetFieldFactory facetFieldFactory;
 	protected FacetFieldUtil facetFieldUtil;
-	protected ObjectPathFactory pathFactory;
 
 	public SolrSearchService() {
 	}
@@ -908,11 +907,4 @@ public class SolrSearchService {
 		this.facetFieldUtil = facetFieldUtil;
 	}
 
-	public ObjectPathFactory getPathFactory() {
-		return pathFactory;
-	}
-
-	public void setPathFactory(ObjectPathFactory pathFactory) {
-		this.pathFactory = pathFactory;
-	}
 }

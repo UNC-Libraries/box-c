@@ -92,13 +92,12 @@
 		<property name="searchStateFactory" ref="searchStateFactory" />
 		<property name="facetFieldUtil" ref="facetFieldUtil" />
 		<property name="collectionsPid" ref="collectionsPid" />
-		<property name="pathFactory" ref="pathFactory" />
 	</bean>
 	
 	<bean id="pathFactory" class="edu.unc.lib.dl.search.solr.service.ObjectPathFactory">
 		<property name="search" ref="queryLayer" />
-		<property name="cacheSize" value="10000" />
-		<property name="timeToLiveMilli" value="120000" />
+		<property name="cacheSize" value="2000" />
+		<property name="timeToLiveMilli" value="60000" />
 		<property name="solrSettings" ref="solrSettings" />
 	</bean>
 	
