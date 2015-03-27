@@ -31,39 +31,40 @@ public class IndexDocumentBean {
 	protected List<String> ancestorPath;
 	protected String ancestorNames;
 	protected String parentCollection;
-	
+	protected String label;
+
 	protected List<String> scope;
 	protected String rollup;
 	protected Boolean isPart = Boolean.FALSE;
 	protected Long _version_;
-	
+
 	protected List<String> datastream;
 	protected Long filesizeSort;
 	protected Long filesizeTotal;
-	
+
 	protected List<String> relations;
-	
+
 	protected List<String> contentModel;
 	protected String resourceType;
 	protected Integer resourceTypeSort;
-	
+
 	protected String creatorSort;
 	protected String defaultSortType;
 	protected Long displayOrder;
-	
+
 	protected List<String> contentType;
-	
+
 	protected Date timestamp;
 	protected Date lastIndexed;
-	
+
 	protected List<String> roleGroup;
 	protected List<String> readGroup;
 	protected List<String> adminGroup;
 	protected List<String> status;
 	protected List<String> contentStatus;
-	
+
 	protected List<String> identifier;
-	
+
 	// Descriptive fields
 	protected String title;
 	protected List<String> otherTitle;
@@ -74,15 +75,15 @@ public class IndexDocumentBean {
 	protected List<String> creator;
 	protected List<String> contributor;
 	protected List<String> department;
-	
+
 	protected Date dateCreated;
 	protected Date dateAdded;
 	protected Date dateUpdated;
-	
+
 	protected String citation;
-	
+
 	protected String fullText;
-	
+
 	@Field("*_d")
 	protected Map<String, Object> dynamicFields;
 
@@ -127,6 +128,15 @@ public class IndexDocumentBean {
 		this.parentCollection = parentCollection;
 	}
 
+	public String getLabel() {
+		return label;
+	}
+
+	@Field
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
 	public List<String> getScope() {
 		return scope;
 	}
@@ -139,12 +149,12 @@ public class IndexDocumentBean {
 	public String getRollup() {
 		return rollup;
 	}
-	
+
 	@Field
 	public void setRollup(String rollup) {
 		this.rollup = rollup;
 	}
-	
+
 	public Boolean getIsPart() {
 		return isPart;
 	}
@@ -414,7 +424,7 @@ public class IndexDocumentBean {
 	public void setDepartment(List<String> department) {
 		this.department = department;
 	}
-	
+
 	public Date getDateCreated() {
 		return dateCreated;
 	}
@@ -432,7 +442,7 @@ public class IndexDocumentBean {
 	public void setDateAdded(Date dateAdded) {
 		this.dateAdded = dateAdded;
 	}
-	
+
 	public void setDateAdded(String dateAdded) throws ParseException {
 		this.dateAdded = DateTimeUtil.parseUTCToDate(dateAdded);
 	}
@@ -445,7 +455,7 @@ public class IndexDocumentBean {
 	public void setDateUpdated(Date dateUpdated) {
 		this.dateUpdated = dateUpdated;
 	}
-	
+
 	public void setDateUpdated(String dateUpdated) throws ParseException {
 		this.dateUpdated = DateTimeUtil.parseUTCToDate(dateUpdated);
 	}
@@ -453,7 +463,7 @@ public class IndexDocumentBean {
 	public String getCitation() {
 		return citation;
 	}
-	
+
 	@Field
 	public void setCitation(String citation) {
 		this.citation = citation;
