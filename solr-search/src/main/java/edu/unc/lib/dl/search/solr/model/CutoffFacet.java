@@ -142,10 +142,7 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 	
 	@Override
 	public String getDisplayValue() {
-		CutoffFacetNode lastNode = this.getHighestTierNode();
-		if (lastNode == null)
-			return null;
-		return lastNode.getSearchKey();
+		return getSearchKey();
 	}
 	
 	@Override

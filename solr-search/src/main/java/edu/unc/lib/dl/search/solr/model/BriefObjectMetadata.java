@@ -28,7 +28,7 @@ public interface BriefObjectMetadata {
 
 	public ObjectPath getObjectPath();
 
-	public void setObjectPath(ObjectPath pathObject);
+	public void setObjectPath(ObjectPath objectPath);
 
 	public CutoffFacet getPath();
 

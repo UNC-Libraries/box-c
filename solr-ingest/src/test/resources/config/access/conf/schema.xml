@@ -132,6 +132,7 @@
     <field name="ancestorIds" type="string" indexed="true" stored="true" required="true"/>
     <!-- PID of the closest collection in this objects ancestry -->
     <field name="parentCollection" type="string" indexed="true" stored="true"/>
+    <field name="label" type="string" indexed="true" stored="true" required="true"/>
     
     <!-- Facet for scoping this object to a particular set of views -->
     <field name="scope" type="string" indexed="true" stored="true" multiValued="true"/>

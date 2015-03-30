@@ -41,7 +41,7 @@
 		</c:url>
 		<a href="<c:out value="${shiftFacetUrl}"/>">Home</a>
 	</c:if>
-	<c:forEach items="${pathObject.entries}" var="pathEntry" varStatus="status">
+	<c:forEach items="${objectPath.entries}" var="pathEntry" varStatus="status">
 		<c:if test="${!status.first || param.displayHome}">
 			&gt; 
 		</c:if>

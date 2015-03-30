@@ -362,8 +362,8 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	}
 
 	@Override
-	public void setObjectPath(ObjectPath pathObject) {
-		representative.setObjectPath(pathObject);
+	public void setObjectPath(ObjectPath objectPath) {
+		representative.setObjectPath(objectPath);
 	}
 
 	@Override
