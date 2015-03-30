@@ -44,7 +44,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				var containerPath = null;
 				if (container) {
 					containerPath = pathTrailTemplate({
-						ancestorPath : container.ancestorPath,
+						objectPath : container.objectPath,
 						queryMethod : 'list',
 						filterParams : data.searchQueryUrl,
 						skipLast : true

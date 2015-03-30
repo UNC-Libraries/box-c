@@ -25,7 +25,7 @@
 <div class="metadata">
 	<table>		
 		<c:set var="searchStateUrl" scope="request" value=""/>
-		<c:set var="pathObject" scope="request" value="${briefObject.ancestorPathObject}"/>
+		<c:set var="pathObject" scope="request" value="${briefObject.objectPath}"/>
 		<tr>
 			<th>${searchSettings.searchFieldLabels['ANCESTOR_PATH']}</th>
 			<td>

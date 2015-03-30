@@ -26,9 +26,9 @@ import edu.unc.lib.dl.fedora.PID;
 public interface BriefObjectMetadata {
 	public CutoffFacet getAncestorPathFacet();
 
-	public ObjectPath getAncestorPathObject();
+	public ObjectPath getObjectPath();
 
-	public void setAncestorPathObject(ObjectPath ancestorPathObject);
+	public void setObjectPath(ObjectPath pathObject);
 
 	public CutoffFacet getPath();
 

@@ -55,8 +55,7 @@ public class DeleteSolrTreeAction extends AbstractIndexingAction {
 			// Delete the containers contents
 			solrUpdateDriver.deleteByQuery(
 					solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())
-							+ ":" + SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue())
-							+ ",*");
+							+ ":" + SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue()));
 		} else {
 			// Targeting an individual file, just delete it.
 			solrUpdateDriver.delete(updateRequest.getTargetID());

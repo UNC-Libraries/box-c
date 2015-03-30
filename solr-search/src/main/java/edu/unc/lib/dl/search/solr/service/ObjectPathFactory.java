@@ -26,7 +26,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap.Builder;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
@@ -37,6 +36,8 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
+ * Factory for generating hierarchical path information
+ *
  * @author bbpennel
  * @date Mar 18, 2015
  */
@@ -47,101 +48,99 @@ public class ObjectPathFactory {
 	private SolrSearchService search;
 	private SolrSettings solrSettings;
 
+	// Max number of entries allowed in the cache
 	private int cacheSize;
+	// Amount of time, in millisecords, that a cached entry is considered valid
 	private long timeToLiveMilli = 5000L;
 
-	private Map<String, PathParentBond> childToParent;
-	// private final PathParentBond root = new PathParentBond();
+	// Cache of path information. Key is the pid of the object cached
+	private Map<String, PathCacheData> pathCache;
 
-	private List<String> bondFields;
+	private List<String> pathFields;
 	private String titleFieldName;
 	private String typeFieldName;
-	private String ancestorsFieldName;
-
-	public ObjectPathFactory() {
-
-	}
 
 	@PostConstruct
 	public void init() {
-		Builder<String, PathParentBond> mapBuilder = new Builder<String, PathParentBond>();
+		Builder<String, PathCacheData> mapBuilder = new Builder<String, PathCacheData>();
 		mapBuilder.maximumWeightedCapacity(cacheSize);
-		this.childToParent = mapBuilder.build();
+		this.pathCache = mapBuilder.build();
 
 		titleFieldName = solrSettings.getFieldName(SearchFieldKeys.TITLE.name());
 		typeFieldName = solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name());
-		ancestorsFieldName = solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name());
-		bondFields = Arrays.asList(titleFieldName, typeFieldName);
+		pathFields = Arrays.asList(titleFieldName, typeFieldName);
 	}
 
+	/**
+	 * Retrieve the name of the object identified by pid
+	 *
+	 * @param pid
+	 * @return
+	 */
 	public String getName(String pid) {
-		PathParentBond bond = getBond(pid);
-		return bond != null ? bond.name : null;
+		PathCacheData pathData = getPathData(pid);
+		return pathData != null ? pathData.name : null;
 	}
 
+	/**
+	 * Retrieve the path of ancestor information leading up to the provided object.
+	 *
+	 * Path is determined by the ancestorPath field of the BriefObjectMetadata object, so no path information can be
+	 * retrieved if ancestorPath is not provided.
+	 *
+	 * @param bom
+	 * @return
+	 */
 	public ObjectPath getPath(BriefObjectMetadata bom) {
 		if (bom.getAncestorPathFacet() == null)
 			return null;
 
 		// Refresh the cache for the object being looked up if it is a container
 		if (isContainer(bom.getResourceType())) {
-			childToParent.put(bom.getId(), new PathParentBond(bom.getTitle(), true));
+			pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), true));
 		}
 
 		List<ObjectPathEntry> entries = new ArrayList<>();
 
-		String parentPID = null;
-		// Retrieve bonds for each node in the ancestor path
+		// Retrieve path data for each node in the ancestor path
 		for (HierarchicalFacetNode node : bom.getAncestorPathFacet().getFacetNodes()) {
 			String pid = node.getSearchKey();
-			PathParentBond bond = getBond(pid);
-			bond.parent = parentPID;
+			PathCacheData pathData = getPathData(pid);
 
-			entries.add(new ObjectPathEntry(pid, bond.name, bond.isContainer));
-
-			parentPID = pid;
+			entries.add(new ObjectPathEntry(pid, pathData.name, pathData.isContainer));
 		}
 
 		return new ObjectPath(entries);
 	}
 
-	// Builds a list of path info, in order by tier
-	public ObjectPath getPath(String pid) {
-
-		List<ObjectPathEntry> entries = new ArrayList<>();
-
-		String currentPID = pid;
-		do {
-			PathParentBond bond = getBond(pid);
-			currentPID = bond.parent;
-
-			entries.add(new ObjectPathEntry(pid, bond.name, bond.isContainer));
-		} while (currentPID != null);
-
-		return new ObjectPath(Lists.reverse(entries));
-	}
-
-	private PathParentBond getBond(String pid) {
-		PathParentBond cacheBond = childToParent.get(pid);
+	/**
+	 * Returns a path data for a single entry, as identified by pid. The data is either retrieved from the cache if it is
+	 * not older than the allowed time to live, or retrieved from the index
+	 *
+	 * @param pid
+	 * @return
+	 */
+	private PathCacheData getPathData(String pid) {
+		PathCacheData cacheData = pathCache.get(pid);
 		// Check if the cached values are still up to date
-		if (cacheBond != null && System.currentTimeMillis() <= (cacheBond.retrievedAt + timeToLiveMilli)) {
+		if (cacheData != null && System.currentTimeMillis() <= (cacheData.retrievedAt + timeToLiveMilli)) {
 			log.debug("Retrieved path information for {} from cache", pid);
-			return cacheBond;
+			return cacheData;
 		}
 
 		// Cache wasn't available, retrieve fresh data from solr
 		try {
-			Map<String, Object> fields = search.getFields(pid, bondFields);
+			Map<String, Object> fields = search.getFields(pid, pathFields);
 
-			PathParentBond bond = new PathParentBond((String) fields.get(titleFieldName),
+			PathCacheData pathData = new PathCacheData((String) fields.get(titleFieldName),
 					isContainer((String) fields.get(typeFieldName)));
 
-			// Cache the results for this bond
-			childToParent.put(pid, bond);
+			// Cache the results for this entry
+			pathCache.put(pid, pathData);
 
 			log.debug("Retrieved path information for {} from solr", pid);
 
-			return bond;
+			return pathData;
 		} catch (SolrServerException e) {
 			log.error("Failed to get object path information for {}", pid, e);
 		}
@@ -168,20 +167,15 @@ public class ObjectPathFactory {
 		this.solrSettings = solrSettings;
 	}
 
-	// PID to title lookup
-	// PID to parent pid
-	public static class PathParentBond {
-		public String parent;
+	public static class PathCacheData {
 
 		public String name;
 
 		public boolean isContainer;
 
-		public long lastIndexed;
-
 		public long retrievedAt;
 
-		public PathParentBond(String name, boolean isContainer) {
+		public PathCacheData(String name, boolean isContainer) {
 			this.name = name;
 			this.isContainer = isContainer;
 			retrievedAt = System.currentTimeMillis();

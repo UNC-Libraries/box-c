@@ -26,7 +26,7 @@
 	<h2>${pageSubtitle}</h2>
 	<div class="results_header_hierarchy_path">
 		<c:if test="${not empty resultResponse.selectedContainer}">
-			<c:set var="pathObject" scope="request" value="${resultResponse.selectedContainer.ancestorPathObject}"/>
+			<c:set var="pathObject" scope="request" value="${resultResponse.selectedContainer.objectPath}"/>
 			<c:import url="common/hierarchyTrail.jsp">
 				<c:param name="fieldKey">ANCESTOR_PATH</c:param>
 				<c:param name="linkLast">true</c:param>

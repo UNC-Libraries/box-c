@@ -357,13 +357,13 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	}
 
 	@Override
-	public ObjectPath getAncestorPathObject() {
-		return representative.getAncestorPathObject();
+	public ObjectPath getObjectPath() {
+		return representative.getObjectPath();
 	}
 
 	@Override
-	public void setAncestorPathObject(ObjectPath ancestorPathObject) {
-		representative.setAncestorPathObject(ancestorPathObject);
+	public void setObjectPath(ObjectPath pathObject) {
+		representative.setObjectPath(pathObject);
 	}
 
 	@Override

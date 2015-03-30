@@ -515,7 +515,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		query = new StringBuilder();
 		query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':')
-				.append(SolrSettings.sanitize(metadataObject.getPath().getSearchValue())).append(",*");
+				.append(SolrSettings.sanitize(metadataObject.getPath().getSearchValue()));
 
 		solrQuery.setFacet(true);
 		solrQuery.addFilterQuery(query.toString());

@@ -48,7 +48,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
 	protected CutoffFacet ancestorPathFacet;
 	protected CutoffFacet path;
-	protected ObjectPath ancestorPathObject;
+	protected ObjectPath objectPath;
 	protected String ancestorNames;
 	protected String parentName;
 	protected List<MultivaluedHierarchicalFacet> contentTypeFacet;
@@ -280,12 +280,12 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 			return parentName;
 		}
 
-		if (ancestorPathObject == null) {
+		if (objectPath == null) {
 			if (pathFactory != null && parentCollection != null) {
 				parentName = pathFactory.getName(parentCollection);
 			}
 		} else {
-			parentName = ancestorPathObject.getName(id);
+			parentName = objectPath.getName(id);
 		}
 
 		return parentName;
@@ -340,18 +340,18 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	}
 
 	@Override
-	public ObjectPath getAncestorPathObject() {
+	public ObjectPath getObjectPath() {
 		// Retrieve the ancestor path on demand if it is not already set
-		if (ancestorPathObject == null && pathFactory != null) {
-			this.ancestorPathObject = pathFactory.getPath(this);
+		if (objectPath == null && pathFactory != null) {
+			this.objectPath = pathFactory.getPath(this);
 		}
 
-		return ancestorPathObject;
+		return objectPath;
 	}
 
 	@Override
-	public void setAncestorPathObject(ObjectPath ancestorPathObject) {
-		this.ancestorPathObject = ancestorPathObject;
+	public void setObjectPath(ObjectPath objectPath) {
+		this.objectPath = objectPath;
 	}
 
 	public static void setPathFactory(ObjectPathFactory pathFactory) {
@@ -361,17 +361,17 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	@Override
 	public String getAncestorNames() {
 		if (ancestorNames == null) {
-			if (ancestorPathObject == null && pathFactory != null) {
-				this.ancestorPathObject = pathFactory.getPath(this);
+			if (objectPath == null && pathFactory != null) {
+				objectPath = pathFactory.getPath(this);
+			}
 
-				if (ancestorPathObject != null) {
-					StringBuilder ancestorNames = new StringBuilder();
-					for (ObjectPathEntry entry : ancestorPathObject.getEntries()) {
-						ancestorNames.append('/').append(entry.getName());
-					}
-
-					this.ancestorNames = ancestorNames.toString();
+			if (objectPath != null) {
+				StringBuilder ancestorNames = new StringBuilder();
+				for (ObjectPathEntry entry : objectPath.getEntries()) {
+					ancestorNames.append('/').append(entry.getName().replaceAll("\\/", "\\\\/"));
 				}
+
+				this.ancestorNames = ancestorNames.toString();
 			}
 		}
 
