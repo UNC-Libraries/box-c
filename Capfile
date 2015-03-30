@@ -174,39 +174,26 @@ namespace :clean do
   
 end
 
-# Define individual service tasks (tomcat:restart, ...)
+# Define individual service tasks (restart:tomcat, ...)
 
 SERVICES = [:deposit, :tomcat]
 ACTIONS = [:start, :stop, :restart, :status]
 
-SERVICES.each do |service|
+ACTIONS.each do |action|
+
+  SERVICES.each do |service|
   
-  namespace service do
-    
-    ACTIONS.each do |action|
+    namespace action do
       
-      desc "Service script: #{action} #{service}"
-      task action do
+      desc "Service script: service #{action} #{service}"
+      task service do
         on roles(:web) do
           sudo :service, service, action
         end
       end
-      
-    end
     
-  end
-  
-end
-
-# Define bulk service tasks (restart, ...)
-
-ACTIONS.each do |action|
-  
-  desc "Bulk service script: #{action}"
-  task action do
-    SERVICES.each do |service|
-      invoke "#{service}:#{action}"
     end
+  
   end
   
 end
@@ -219,6 +206,13 @@ namespace :tail do
   task :tomcat do
     on roles(:web) do
       execute :tail, "-f", "/opt/data/logs/catalina.out"
+    end
+  end
+  
+  desc "Watch deposit.log"
+  task :deposit do
+    on roles(:web) do
+      sudo :tail, "-f", "/opt/data/logs/deposit.log"
     end
   end
   
